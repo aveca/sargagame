@@ -1,0 +1,104 @@
+/* ====================================================================
+   sg-brand-tokens.css — SARGAGAME DESIGN TOKENS (SOURCE DE VÉRITÉ UNIQUE)
+   Sprint Brand System 2026-09-04. Règle : UNE source → primitives →
+   features → pages → 6 domaines. Fichier ADDITIF : ne redéfinit AUCUN
+   token --sg-bg/ink/card/... déjà posé par index.html (light/dark) ou
+   les skins ; il AJOUTE les tokens marque manquants avec les valeurs
+   canoniques (public/a-propos/colors_and_type.css + skill sg-design-system).
+   Importé APRÈS les CSS legacy dans Sargasses_PROD.jsx.
+   ROLLBACK : retirer les 2 lignes d'import (tokens + components).
+   ==================================================================== */
+:root{
+  /* ---- Marque : hiérarchie stricte (1 rôle = 1 valeur) ---- */
+  --sg-brand:#E8A800;            /* Brand primary = action premium */
+  --sg-brand-strong:#FFC72C;     /* Brand secondary = highlight/CTA */
+  --sg-brand-soft:#FFE47A;       /* Accent clair (gradients, glints) */
+  --sg-brand-bg:rgba(232,168,0,.07);
+  --sg-brand-bg-strong:rgba(255,199,44,.15);
+  --sg-teal:#009E8E;             /* mer / confiance / liens */
+  --sg-teal-light:#1EC8B0;
+  --sg-teal-bg:rgba(0,158,142,.08);
+  --sg-teal-deep:#0A5C4A;        /* fond RegionNav (existant, conservé) */
+  --sg-teal-deep-2:#0D7F63;      /* fond RegionNav (existant, conservé) */
+
+  /* ---- Texte / surfaces (defaults = thème clair index.html) ---- */
+  --sg-text-primary:#0D0D0D;
+  --sg-text-secondary:#5A5A5A;
+  --sg-text-muted:#686868;
+  --sg-surface:#FFFFFF;
+  --sg-surface-sunken:#FDFCF7;
+  --sg-surface-elevated:#FFFFFF;
+  --sg-border-soft:rgba(0,0,0,.08);
+
+  /* ---- Statuts : trio EXCLUSIF couleur + FORME-SVG + MOT (R3 : jamais d'or) ---- */
+  --sg-success:#22C55E;
+  --sg-success-bg:rgba(34,197,94,.10);
+  --sg-warning:#B87A00;
+  --sg-warning-bg:rgba(184,122,0,.10);
+  --sg-danger:#E8522A;
+  --sg-danger-bg:rgba(232,82,42,.10);
+  --sg-info:#009E8E;
+  --sg-info-bg:rgba(0,158,142,.08);
+
+  /* ---- Typographie (Anton = accent rare, Bricolage = pilier, Mono = chiffres) ---- */
+  --sg-font-display:"Anton","Bricolage Grotesque",sans-serif;
+  --sg-font-sans:"Bricolage Grotesque",system-ui,-apple-system,sans-serif;
+  --sg-font-mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --sg-fs-display:clamp(28px,7vw,42px);
+  --sg-fs-h1:clamp(24px,6vw,32px);
+  --sg-fs-h2:22px;
+  --sg-fs-h3:18px;
+  --sg-fs-body:15px;
+  --sg-fs-small:13px;
+  --sg-fs-caption:12px;
+  --sg-fs-button:15px;
+  --sg-fs-label:13px;
+  --sg-lh-display:1.05;
+  --sg-lh-heading:1.25;
+  --sg-lh-body:1.55;
+  --sg-ls-display:-.02em;
+  --sg-ls-caps:.08em;
+
+  /* ---- Formes (recette unique : bord ink + ombre DURE bas-droite) ---- */
+  --sg-border-w:2.5px;
+  --sg-r-xs:8px;
+  --sg-r-sm:12px;
+  --sg-r-md:14px;
+  --sg-r-lg:16px;
+  --sg-r-xl:20px;
+  --sg-r-2xl:24px;
+  --sg-r-pill:999px;
+  --sg-shadow-pop-1:2px 2px 0 #0D0D0D;
+  --sg-shadow-pop-2:4px 4px 0 #0D0D0D;
+  --sg-shadow-pop-3:6px 6px 0 #0D0D0D;
+  --sg-shadow-soft:0 1px 3px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);
+  --sg-shadow-gold:0 2px 12px rgba(232,168,0,.40);
+  --sg-focus-ring:0 0 0 3px rgba(255,199,44,.45);
+
+  /* ---- Espacement (échelle 4px, pas de valeurs arbitraires) ---- */
+  --sg-sp-1:4px;
+  --sg-sp-2:8px;
+  --sg-sp-3:12px;
+  --sg-sp-4:16px;
+  --sg-sp-5:20px;
+  --sg-sp-6:24px;
+  --sg-sp-8:32px;
+  --sg-sp-10:40px;
+
+  /* ---- Cibles tactiles / états ---- */
+  --sg-touch-min:44px;
+  --sg-cta-gold-text:#0D0D0D;    /* texte sur or = TOUJOURS encre */
+  --sg-disabled-opacity:.45;
+}
+/* Thème sombre : seuls les tokens neutres suivent, la marque ne change pas
+   (1 seule marque sur les 6 domaines, clair comme sombre). */
+.theme-dark{
+  --sg-text-primary:#E6EDF3;
+  --sg-text-secondary:#ADBAC7;
+
+  --sg-text-muted:#8B949E;
+  --sg-surface:#161B22;
+  --sg-surface-sunken:#0D1117;
+  --sg-surface-elevated:#21262D;
+  --sg-border-soft:rgba(255,255,255,.08);
+}

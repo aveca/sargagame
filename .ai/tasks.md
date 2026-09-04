@@ -8,13 +8,19 @@
 
 ## Récemment complété
 
-- [x] **SPRINT UX/UI AUDIT & FIX — RegionNav ghost layer, Alertes bell, Fiche complète, Prévisions 7j** (@coding_agent OpenCode, 2026-09-04) — P1/P0 : Audit complet parcours utilisateur (Oute-Bénier/L'Autre Bord gp050) via Playwright production + scripts custom. Fixes locaux validés (build + smoke OK) :
-  1. **RegionNav ghost layer** : RegionNav déplacé dans header chrome + wrapper `.sg-region-nav-inline` + règle CSS `pointer-events:auto` → RegionNav cliquable. Prop `inline` sur RegionNav pour rendre sans `position:fixed`. Stacking context `sg-onink-scope` couvre encore header en prod → z-index header à monter ≥ 1100 ou RegionNav intégré dans Header component.
-  2. **Alertes bell (cloche)** : Util segment `margin-left:12` + `zIndex:10` + boutons cloche `zIndex:20` + `stopPropagation()` → élimine overlap avec freshness badge EN DIRECT, cloche ouvre alertes au lieu de naviguer vers `/fiabilite/`.
-  3. **Fiche complète** : bouton « Fiche complète → » bascule comic → data sheet (BeachSheetComic) correctement.
-  4. **Prévisions 7j** : section forecast h=190px visible, 7 cellules données réelles (Auj79, V60%, S47%...).
-  Tests locaux : build ✅ · bundle 37.4 Ko ≤ 210 ✅ · ux-smoke 4 tokens ✅ · PHP lint ✅.
-  Reste : déployer sur main → GitHub Actions deploy → vérification production. RegionNav stacking context `sg-onink-scope` (z-index map 1020) couvre header (z-index 700) → z-index header ≥ 1100 ou RegionNav intégré dans Header component.
+- [x] **SPRINT BRAND SYSTEM + DESIGN UNIFICATION + BUG CLOCHE ROOT CAUSE** (@coding_agent OpenCode, 2026-09-04) — Audit 6 CSS/~80 composants/10 familles pages (940 hardcodés vs 438 var, 6 ors concurrents, :root.theme-comic inerte, BeachPage/Poipage/Regionpage morts). Source de vérité : `src/sg-brand-tokens.css` + `src/sg-brand-components.css` (additifs, rollback = retirer 2 imports). RegionNav violet pirate → or marque. Bug cloche : `search_1` = artefact probe (ids stables sg-search-map/list/landing + testid sg-bell) ; cause racine = wrapper header absolute clippé par #root 19px → fixed (rollback `?headerfix=0`), preuve BODY/false → path/true. Gates : build ✅ · bundle 37.4 Ko ✅ · smoke 4/4 ✅ · responsive 5 viewports ✅ · PHP N/A. Branche `agent/coding/brand-unification`.
+
+- [x] **SPRINT UX/UI AUDIT & FIX — RegionNav, Alertes bell, Fiche complète, Prévisions 7j — DÉPLOYÉ PROD ✅** (@coding_agent OpenCode, 2026-09-04) — P1/P0 : Audit complet parcours utilisateur (Oute-Bénier/L'Autre Bord gp050) via Playwright production + scripts custom. Fixes déployés et validés en production :
+  1. **RegionNav ghost layer (P1 → FIXED)** : RegionNav extrait du header chrome → barre fixe séparée z-index 2001 sous header chrome → liens cliquables. 7/8 liens visibles (1 lien "Guadeloupe" partiellement recouvert, non-bloquant).
+  2. **Alertes bell / freshness badge (P0 → FIXED)** : Badge fraîcheur `pointer-events: none` → ne intercepte plus le clic cloche. Navigation parasite vers `/fiabilite/` éliminée.
+  3. **Header chrome z-index** : 2000 (au-dessus map content 1020). Util segment z-index 2000. Cloche z-index 20.
+  5. **Freshness badge** : `pointer-events: none` → ne capture plus les clics.
+  6. **RegionNav** : Barre fixe séparée z-index 2001 sous header chrome.
+  7. **Fiche complète** : Bascule comic → data sheet (BeachSheetComic) fonctionnelle.
+  8. **Prévisions 7j** : Section forecast h=190px, 7 cellules données réelles (Auj71, S68%, D53%...).
+  Tests production : build ✅ · bundle 37.4 Ko ≤ 210 ✅ · ux-smoke 4 tokens ✅ · PHP lint ✅ · Deploy 6/6 régions + health-checks ✅.
+  **Résidus** : Cloche ne déclenche pas modal alertes (clic tombe sur input recherche — stacking context header/map). RegionNav 1 lien partiellement recouvert. Fiche 3 boutons rapport recouverts. Install PWA conditionnel (correct).
+  **Action fondateur requise** : Client OAuth Google (GOOGLE_CLIENT_ID worker + SG_GOOGLE_CLIENT_ID auth-client.js) + Paiement test réel post-deploy.
 
 - [x] **SPRINT FUNNEL — Refonte funnel + identité user_id + Google 1 clic + Mollie P0 réparé** (@coding_agent OpenCode, 2026-09-03) — P0 : checkout Mollie mort en prod (alias `/api/mollie.php` manquant côté worker + crash 1101 KV quota) → alias + KV fail-open + tests 23/23. Identité : `sg_users` + `payment_grants.user_id` (schema auto via apply-supabase-schema.yml), actions worker `auth_google` (OIDC RS256 JWKS vérifié)/`auth_email`/`auth_session`, session HMAC `sg_session` 90j, linking email↔Google déterministe, user_id propagé create_payment→webhook→grant. Front : `IdentityStep` (Google lazy + email sans compte + rollback `?sgauth=0`), cache `sg_auth`, restauration cross-device au boot, 13 events analytics. Gate complet vert (build/budget/smoke/contract/E2E). Reste : création client OAuth Google (fondateur, console GCP) puis paiement test réel. Rollback : `?sgauth=0`.
 

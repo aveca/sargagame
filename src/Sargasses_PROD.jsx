@@ -22,6 +22,8 @@ import "./Themes.css"
 import "./app-runtime.css"
 import "./sg-ux-2026.css"
 import "./sprint20.css"
+import "./sg-brand-tokens.css"
+import "./sg-brand-components.css"
 import { detectExtendedRegion } from "./lib/regions-extended.js"
 import RegionNav from "./components/RegionNav.jsx"
 import LeadCapture from "./LeadCapture.jsx"
@@ -107,6 +109,12 @@ const POSTE_OFF=(()=>{try{return /[?&]poste=0/.test(window.location.search)}catc
 // Rollback ?account=0 → retombe sur le toast/prompt d'avant + cloche toujours visible.
 const LazyAccountSheet=lazyWithRetry(()=>import("./AccountSheet"))
 const ACCOUNT_OFF=(()=>{try{return /[?&]account=0/.test(window.location.search)}catch(_){return false}})()
+// Header chrome fixed (2026-09-04, sprint brand) : le wrapper était absolute → clippé par
+// #root effondré (~19px, .theme-comic #root{position:relative}, cf. MINE-ROOT-RELATIVE
+// dans Themes.css) → cloche/MQ-GP/logo non hit-testables en navigateur. fixed = même
+// géométrie (top/left/right 0, body overflow hidden = zéro scroll) mais échappe au clip,
+// comme la barre RegionNav voisine. Rollback ?headerfix=0.
+const HEADERFIX_OFF=(()=>{try{return /[?&]headerfix=0/.test(window.location.search)}catch(_){return false}})()
 // CleanList — /plages-sans-sargasses/ A/B `clean_list` (port proto-planb-clean-nearby)
 const LazyCleanList=lazyWithRetry(()=>import("./CleanList"))
 // Conditions — /conditions/<slug>/ A/B `pw_conditions`
@@ -5750,7 +5758,7 @@ function SearchBar({value,onChange,lang}){
           <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.4"/>
           <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
         </svg>
-        <input type="search" value={value} onChange={e=>onChange(e.target.value)}
+        <input id="sg-search-map" data-testid="sg-search-map" type="search" value={value} onChange={e=>onChange(e.target.value)}
           placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
           aria-label={_t(lang,"Chercher une plage","Search a beach","Buscar una playa")}
           autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false}
@@ -5897,7 +5905,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
             <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" strokeWidth="2.4"/>
             <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
           </svg>
-          <input value={q} onChange={e=>setQ(e.target.value)} type="search"
+          <input id="sg-search-list" data-testid="sg-search-list" value={q} onChange={e=>setQ(e.target.value)} type="search"
             onFocus={()=>setQFocus(true)} onBlur={()=>setQFocus(false)}
             autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
             placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
@@ -7565,7 +7573,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=!ACCOUNT_OFF?!!alertsOn:(perm==="granted")
           if(!ACCOUNT_OFF&&onToggleAlerts){
-            return(<button aria-label={on?_t(lang,"Désactiver les alertes sargasses","Turn off sargassum alerts","Desactivar alertas de sargazo"):_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+            return(<button data-testid="sg-bell" aria-label={on?_t(lang,"Désactiver les alertes sargasses","Turn off sargassum alerts","Desactivar alertas de sargazo"):_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
               title={on?_t(lang,"Alertes activées — couper","Alerts on — turn off","Alertas activadas — apagar"):_t(lang,"Activer les alertes","Enable alerts","Activar alertas")}
               onClick={(e)=>{e.stopPropagation();onToggleAlerts("header")}}
               style={{position:'relative',zIndex:20}}>
@@ -7577,7 +7585,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
             </button>)
           }
           const iosBrowser=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!(window.navigator.standalone===true||window.matchMedia("(display-mode: standalone)").matches)
-          return(<button aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
+          return(<button data-testid="sg-bell" aria-label={_t(lang,"Activer les alertes sargasses","Enable sargassum alerts","Activar alertas de sargazo")}
             onClick={(e)=>{
               e.stopPropagation();
               if(on){try{sgToast({tone:"success",msg:_t(lang,"Le Veilleur t'écrit déjà chaque matin 🔔","The Watchman already writes you each morning 🔔","El Vigía ya te escribe cada mañana 🔔")})}catch(_){}; return}
@@ -10381,7 +10389,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
                   <circle cx="11" cy="11" r="7" stroke="currentColor" strokeWidth="2.4"/>
                   <path d="M16.5 16.5 L21 21" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
                 </svg>
-                <input value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
+                <input id="sg-search-landing" data-testid="sg-search-landing" value={pickQ} onChange={e=>{setPickQ(e.target.value)}}
                   type="search" autoComplete="off" autoCorrect="off" autoCapitalize="off" spellCheck={false} enterKeyHint="search"
                   onFocus={()=>track("sg_landing_pick_search",{})}
                   placeholder={_t(lang,"Chercher une plage…","Search a beach…","Buscar una playa…")}
@@ -14585,7 +14593,7 @@ useEffect(()=>{
             bottom-sheet (header z700 < backdrop semi-transparent z1005) et casse
             l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
-          position:"absolute",top:0,left:0,right:0,zIndex:2000,
+          position:HEADERFIX_OFF?"absolute":"fixed",top:0,left:0,right:0,zIndex:2000,
           padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
@@ -14657,10 +14665,10 @@ useEffect(()=>{
         {view==="map"&&(
           <div style={{
             position:"absolute",left:0,right:0,zIndex:700,
-            bottom:`calc(${SGNAV_OFF?90:128}px + max(12px, env(safe-area-inset-bottom,0px)) + 8px)`,
+            top:`calc(100vh - 213px)`,
             padding:"0 16px",
             pointerEvents:"none",
-            maxHeight:"calc(100vh - 140px)",
+            height:"65px",
           }}>
             {/* Wrapper no longer has pointerEvents:auto — it would block
                 clicks on pins flanking the search band horizontally even at
