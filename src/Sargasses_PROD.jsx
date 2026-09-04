@@ -7554,13 +7554,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           <span className="sg-live-lbl">{liveLbl}</span>
           {isLive&&fresh&&<span className="sg-live-age">· {fresh}</span>}
           {/* Satellite freshness badge — TASK-P1-005: visible after React mount, not just boot skeleton */}
-          {satLbl?<span className="sg-seg sg-freshness" aria-label={_t(lang,"Fraîcheur satellite","Satellite freshness","Freshness satellite")}><span>{satLbl}</span></span>:null}
+          {satLbl?<span className="sg-seg sg-freshness" aria-label={_t(lang,"Fraîcheur satellite","Satellite freshness","Freshness satellite")} style={{pointerEvents:'none'}}><span>{satLbl}</span></span>:null}
         </a>
 
       {/* Cloche alertes = INTERRUPTEUR ON/OFF (fonction distincte de l'icône compte → zéro
           redondance ; remplit la barre). Plein = alertes actives ; barré = coupées. Un clic
           bascule (optIn/optOut OneSignal) + toast. Rollback ?account=0 → ancien opt-in direct. */}
-      <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")} style={{marginLeft:12,position:'relative',zIndex:100}}>
+      <div className="sg-seg sg-util" role="group" aria-label={_t(lang,"Préférences","Preferences","Preferencias")} style={{marginLeft:12,position:'relative',zIndex:2000}}>
         {(onToggleAlerts||onEnableNotif)&&(()=>{
           const perm=(typeof Notification!=="undefined")?Notification.permission:"default"
           const on=!ACCOUNT_OFF?!!alertsOn:(perm==="granted")
@@ -14585,7 +14585,7 @@ useEffect(()=>{
             bottom-sheet (header z700 < backdrop semi-transparent z1005) et casse
             l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
         <div style={{
-          position:"absolute",top:0,left:0,right:0,zIndex:1100,
+          position:"absolute",top:0,left:0,right:0,zIndex:2000,
           padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
