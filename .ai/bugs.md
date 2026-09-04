@@ -16,6 +16,12 @@
   3. RegionNav.jsx : prop `inline` pour rendre sans `position:fixed`
 - **Statut** : **FIXÉ EN PROD** — 7/8 liens visibles (1 lien "Guadeloupe" partiellement recouvert par DIV générique, non-bloquant). RegionNav barre fixe z-index 2001 sous header chrome (z-index 2000) au-dessus map content (z-index 1020).
 
+### BUG-2026-030 — [OUVERT, P2] Maplabel overlap — pin mq001 non cliquable (recouvert par label Saint-Pierre)
+- **Sévérité** : P2 — au cam par défaut 390px, le label `.sg-maplabel` mq001 (« Plage des Salines ») est recouvert par le label « Plage de Saint-Pierre » (score 80/88) → `locator.click` timeout (test `funnel-payment.spec.ts:82` + repro locale).
+- **Preuve de non-régression** : échec IDENTIQUE sur main pristine f5bdc3bd (worktree + build + test, EXIT:1, même intercepteur) et sur branche brand — le système de declutter/cam WorldMapView n'est touché par aucun diff du sprint (header fixed = même boîte, CSS additifs sans sélecteur map, RegionNav hors carte).
+- **Impact produit** : mineur (zoom/pan déclutterise ; 20/21 E2E passent, smoke 4/4, funnel réel OK) — à traiter dans un sprint carte dédié (declutter ou fallback click), pas ici.
+- **Date** : 2026-09-04 · **Fichiers** : `src/WorldMapView.jsx` (declutter), `tests/e2e/funnel-payment.spec.ts:82-95`
+
 ### BUG-2026-029 — [FIXÉ PROD 2026-09-04] Cloche alertes — clic navigue vers /fiabilite/ au lieu d'ouvrir alertes
 - **Sévérité** : P0 — clic sur cloche alertes (header) navigue vers `/fiabilite/` au lieu d'ouvrir centre alertes
 - **Date** : 2026-09-04 · **Fichiers** : `src/Sargasses_PROD.jsx` (Header component + freshness badge)

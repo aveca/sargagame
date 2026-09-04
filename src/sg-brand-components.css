@@ -120,7 +120,10 @@
   border:var(--sg-border-w) solid #0D0D0D;border-radius:var(--sg-r-xl) var(--sg-r-xl) 0 0;
   box-shadow:0 -8px 32px rgba(0,0,0,.25);
 }
-.sg-modal-panel{
+/* NOTE : pas de règle `.sg-modal-panel` ici — le panel paywall live
+   (PremiumModal.jsx) est VOLONTAIREMENT exclu de tout skin (revenu protégé).
+   Les nouvelles modales utilisent `.sg-brand-modal`. */
+.sg-brand-modal{
   background:var(--sg-surface,var(--sg-surface-elevated,#fff));
   border:var(--sg-border-w) solid #0D0D0D;border-radius:var(--sg-r-2xl);
   box-shadow:var(--sg-shadow-pop-3),0 24px 64px rgba(0,0,0,.30);
