@@ -173,13 +173,18 @@ export function ComicPaywall({
   walletRedirect,
   onPayEmailInput,
   onPassBuy,
-  PAY_CUR
+  PAY_CUR,
+  track,
 }) {
   const [panel, setPanel] = useState(0)
   const [animating, setAnimating] = useState(false)
   const [showOffer, setShowOffer] = useState(false)
   const panelRefs = useRef([])
   const containerRef = useRef(null)
+  // CRO 2026-09-04 : la variante world trace déjà sg_premium_modal_close (backdrop + ×) ;
+  // le "Plus tard" comic était muet → funnel aveugle aux abandons comic. Dwell local.
+  const comicOpenedAt = useRef(Date.now())
+  useEffect(()=>{ comicOpenedAt.current = Date.now() }, [])
 
   // A11y : takeover plein écran = vraie modale (Échap, focus trap, focus restauré)
   useModalA11y(containerRef, onClose)
@@ -468,7 +473,7 @@ export function ComicPaywall({
         </button>
         
         <button
-          onClick={onClose}
+          onClick={()=>{const ts=Math.round((Date.now()-comicOpenedAt.current)/1000);try{track&&track("sg_premium_modal_close",{source:source||"comic",time_spent:ts,via:"plus_tard"})}catch(_){};onClose()}}
           style={{
             width: "100%", maxWidth: 320, margin: "0 auto",
             padding: "12px", background: "transparent",

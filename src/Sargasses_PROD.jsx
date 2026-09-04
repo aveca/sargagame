@@ -14646,8 +14646,11 @@ useEffect(()=>{
           </div>
         </div>
 
-        {/* RegionNav — separate fixed bar below header chrome (z-index 2001) to stay above map content but below header */}
-        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none'}}>
+        {/* RegionNav — separate fixed bar below header chrome (z-index 2001) to stay above map content but below header.
+            CRO 2026-09-04 (prouvé screenshot prod) : la barre recouvrait le haut du paywall/checkout
+            (× 44px non tappable, titre masqué — z 2001 > modal 1100, régression sprint brand). Masquée
+            pendant le paywall comme le header (display:showPremium?"none"). Rollback : revert. */}
+        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none',display:showPremium?"none":undefined}}>
           <div className="sg-region-nav-inline" style={{pointerEvents:'auto'}}>
             <RegionNav inline={true} />
           </div>

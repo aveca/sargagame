@@ -374,6 +374,7 @@ async function main() {
         sessions: funnel.session_start ?? null,
         lockClicks: funnel.forecast_lock_click ?? null,
         modalOpens,
+        modalCloses: funnel.premium_modal_close ?? null, // CRO 2026-09-04 : abandons paywall (via+dwell en Supabase)
         modalCta: ctaTotal,   // unified CTA = pass_cta (+ premium_modal_cta if ever emitted)
         sampleStarts: null,
         emailSubmits: funnel.email_submit ?? null,

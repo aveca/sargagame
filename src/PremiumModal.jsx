@@ -115,7 +115,7 @@ export default function PremiumModal({
 
   // Common props passed to all paywall variants
   const commonPaywallProps = {
-    lang, source, onClose, onActivated,
+    lang, source, onClose, onActivated, track,
     sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,

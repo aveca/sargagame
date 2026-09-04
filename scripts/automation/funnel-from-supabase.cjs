@@ -31,7 +31,7 @@ function svcHeaders(extra) {
 // premium_modal_cta et checkout_redirect RETIRÉS (2026-08-18) : jamais émis par le frontend.
 // 2026-08-25: sg_mollie_checkout_redirect = vrai redirect Mollie, sg_onsite_checkout_opened = overlay carte.
 // 2026-08-25 FIX (P1 funnel blind): checkout_redirect gardé en ALIAS legacy (events pré-2026-08-18 dans la fenêtre)
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
+const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_close', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated']
 
