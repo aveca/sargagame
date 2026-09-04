@@ -16,11 +16,14 @@
   3. RegionNav.jsx : prop `inline` pour rendre sans `position:fixed`
 - **Statut** : **FIXÉ EN PROD** — 7/8 liens visibles (1 lien "Guadeloupe" partiellement recouvert par DIV générique, non-bloquant). RegionNav barre fixe z-index 2001 sous header chrome (z-index 2000) au-dessus map content (z-index 1020).
 
-### BUG-2026-030 — [OUVERT, P2] Maplabel overlap — pin mq001 non cliquable (recouvert par label Saint-Pierre)
-- **Sévérité** : P2 — au cam par défaut 390px, le label `.sg-maplabel` mq001 (« Plage des Salines ») est recouvert par le label « Plage de Saint-Pierre » (score 80/88) → `locator.click` timeout (test `funnel-payment.spec.ts:82` + repro locale).
-- **Preuve de non-régression** : échec IDENTIQUE sur main pristine f5bdc3bd (worktree + build + test, EXIT:1, même intercepteur) et sur branche brand — le système de declutter/cam WorldMapView n'est touché par aucun diff du sprint (header fixed = même boîte, CSS additifs sans sélecteur map, RegionNav hors carte).
-- **Impact produit** : mineur (zoom/pan déclutterise ; 20/21 E2E passent, smoke 4/4, funnel réel OK) — à traiter dans un sprint carte dédié (declutter ou fallback click), pas ici.
-- **Date** : 2026-09-04 · **Fichiers** : `src/WorldMapView.jsx` (declutter), `tests/e2e/funnel-payment.spec.ts:82-95`
+### BUG-2026-030 — [FIXÉ 2026-09-04, sprint carte] Maplabel overlap — pin mq001 non cliquable
+- **Cause racine (prouvée par mesure)** : la boîte d'arbitrage du `declutter()` (`[L-w/2,L+w/2]×[T-h,T]`, modèle centré-au-dessus) ne correspond plus à la boîte peinte (`[L,L+w]×[T,T+h]`, ancrée top-left depuis le retrait de `translate(-50%,-100%)` le 2026-08-31). Preuve chiffrée (VW430) : mq029 arb `[65.7,203.7]×[200.1,252.1]` vs mq036 arb `[211.3,304.3]×[188.1,240.1]` = disjointes → conservées, mais boîtes réelles `[134.7,264.7]×[248.1,292.1]` vs `[257.8,342.8]×[236.1,280.1]` = chevauchantes. Le test cliquait `.first()` en ordre DOM (jamais une cible valide si masqué/sous héros).
+- **Fix (2 lignes produit + durcissement test)** : `src/WorldMapView.jsx` `declutter()` → boîte réelle + marge 4px (`l:L-4, r:L+w+4, t:T-4, b:T+h+4`, priorité sélection>gravité>nord-sud inchangée) ; `tests/e2e/funnel-payment.spec.ts:82` → 1er label visible ET atteignable (hit-test au centre, le héros opaque "Meilleur choix" pouvant recouvrir un label selon la data du jour — ses boutons ouvrent la même fiche, UX intacte).
+- **Validation** : 0 overlap visible 390/430/768/1024/1440 · E2E 21/21 local · smoke 4/4 · weekhub 5/5 · bundle 37.4 Ko.
+- **Suivi** : declutter hero-aware (masquer labels sous panneau opaque) = follow-up documenté, non fait (0 changement visible, risque inutile).
+- **Sévérité d'origine** : P2 — label mq001 recouvert (bouton héros "88 Plage de Saint-Pierre" ou label voisin selon data du jour) → `locator.click` timeout.
+- **Non-régression prouvée** : échec IDENTIQUE sur main pristine f5bdc3bd (worktree + build + test) — bug pré-existant, jamais attribué au sprint branding.
+- **Date** : 2026-09-04 · **Fichiers** : `src/WorldMapView.jsx` (`declutter()`), `tests/e2e/funnel-payment.spec.ts:82-95
 
 ### BUG-2026-029 — [FIXÉ PROD 2026-09-04] Cloche alertes — clic navigue vers /fiabilite/ au lieu d'ouvrir alertes
 - **Sévérité** : P0 — clic sur cloche alertes (header) navigue vers `/fiabilite/` au lieu d'ouvrir centre alertes

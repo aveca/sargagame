@@ -1,5 +1,15 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-04 · SPRINT CARTE — BUG-2026-030 overlap labels (fix ciblé)
+
+**Repro** : `funnel-payment.spec.ts:82` timeout — centre du 1er label couvert par bouton héros "88 Plage de Saint-Pierre" (panneau opaque "Meilleur choix", pe:auto). Échec identique sur main pristine f5bdc3bd → pré-existant, non attribué au sprint branding.
+**Cause racine (mesurée)** : `declutter()` arbitrait une géométrie fantôme (modèle centré-au-dessus hérité du `translate(-50%,-100%)` retiré le 2026-08-31) alors que les labels sont ancrés top-left : paires réellement chevauchantes conservées (chiffres mq029/mq036 en preuve).
+**Fix** : `src/WorldMapView.jsx` boîte d'arbitrage = boîte réelle + marge 4px (priorité inchangée) ; test → 1er label visible ET atteignable (hit-test centre). UX intacte : héros et labels ouvrent la même fiche ; label sous panneau opaque jamais tapable par un utilisateur.
+**Gates** : build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 local ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅ · 0 overlap 390→1440 ✅ · 0 erreur JS ✅. Règles sprint respectées : brand CSS/cloche/Mollie/pages mortes intouchés.
+**Suivi** : declutter hero-aware = follow-up (0 changement visible, non fait).
+
+---
+
 ## 2026-09-04 · SPRINT BRAND SYSTEM + DESIGN UNIFICATION (Phase 1-10)
 
 **Audit (0 modif)** : 6 CSS (Themes/app-runtime/sg-ux-2026/sprint20/map-wow/colors_and_type) + ~80 composants + 10 familles de pages. Trouvé : 940 styles hardcodés vs 438 `var(--sg-*)` ; 6 variantes or concurrentes (gbtn/cta-premium/sg-paygold/bs-gobtn/bm-cta/lc-gbtn) ; `:root.theme-comic` inerte ; RegionNav 100 % inline + cross-sell violet pirate (#7C3AED, banni par la bible) ; BeachPage/Poipage/Regionpage = code mort non importé (laissé en place).
