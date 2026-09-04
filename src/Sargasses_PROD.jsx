@@ -14635,9 +14635,13 @@ useEffect(()=>{
               }}
               onEnableNotif={()=>forceEnablePush("header")}
               alertsOn={alertsOn} onToggleAlerts={toggleAlerts}/>
-            <div className="sg-region-nav-inline">
-              <RegionNav inline={true} />
-            </div>
+          </div>
+        </div>
+
+        {/* RegionNav — separate fixed bar above header chrome (z-index 2001) to stay above map content */}
+        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:2001,pointerEvents:'none'}}>
+          <div className="sg-region-nav-inline" style={{pointerEvents:'auto'}}>
+            <RegionNav inline={true} />
           </div>
         </div>
 
