@@ -1,4 +1,37 @@
 ---
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT DS-VAGUE-1 + CI-RELIABILITY
+
+### Travail effectué
+- **Résumé 1 ligne** : 3 boutons migrés DS (armor triple officielle + pill) + 3 fixes CI démontrés + hero-aware mesuré/conservé.
+- **Détails** : armor `.sg-btn-primary×3`/`.sg-btn-pill×3` (skins 0,1,1 et 0,2,1 prouvés bloquants par probe) ; iOS tutorial + ScrollStory + BriefMatin migrés, `.bm-cta` supprimé ; secret-scan `pk_*` exclus, ci-funnel 4e token, .gitignore junk ; C : 5/6 labels sous héros → conservé (même fiche, découvrabilité).
+
+### Fichiers modifiés
+- `src/sg-brand-components.css` — armor + pill + focus armoré
+- `src/BriefMatin.jsx`, `src/ScrollStory.jsx`, `src/Sargasses_PROD.jsx` (1 bouton) — migration Vague 1
+- `.github/workflows/secret-scan.yml`, `ci-funnel.yml`, `.gitignore` — fiabilisation CI
+- `.ai/*` — docs (matrice CI dans changelog)
+
+### Tests réalisés
+- [x] build exit 0 · bundle 37.4 Ko · E2E 21/21 · smoke 4/4 · weekhub 5/5
+- [x] avant/après BriefMatin (or/encre/ombre/pilule) · touch 48 · contraste 9.3 · focus clavier prouvé · RM none
+- [x] YAML parse OK · secret-scan local 0 hit · CI PR = test réel des 3 changements
+- [x] PHP N/A (aucun touché)
+
+### Problèmes restants
+- [ ] CI PR à vérifier (6/6 attendues)
+- [ ] Vague 2+ (badges/chips/cards/fields/modals) = prochains sprints ; money/funnel = Vague 5 CRO-dédiée
+- [ ] #623 OPEN stale (FTPS, FTP désactivé → recommandation close) ; activer branch protection = action fondateur
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy → vérif live boutons migrés — Rôle : release
+2. Vague 2 badges/chips — Rôle : coding
+
+### Branche / PR
+- Branche : `agent/coding/ds-migration-ci`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT CARTE — BUG-2026-030 FIXÉ, E2E 21/21 LOCAL
 
 ### Travail effectué

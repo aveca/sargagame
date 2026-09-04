@@ -44,6 +44,31 @@
   color:var(--sg-text-primary,#0D0D0D);box-shadow:var(--sg-shadow-pop-1);
   border-radius:var(--sg-r-md);
 }
+/* ---------- ARMOR (recette repo prouvée : TRIPLE-classe + !important) ----------
+   Les skins .theme-comic/.theme-soft (thème comic = DÉFAUT) forcent TOUT <button>
+   en carte papier, y compris via `.theme-comic .sg-onink-scope button{…!important}`
+   (0,2,1) qui bat le doublé-classe (0,2,0) — cf. MINE-SKIN-THEME dans Themes.css
+   et .sg-mapnav triple-classe (leçon payée 3×). L'armor DS est donc TRIPLE-classe
+   (0,3,0) + !important. Sans cela, le DS ne peindrait jamais sous le thème défaut.
+   Armor ajoutée UNIQUEMENT aux variantes migrées (primary + pill) — les autres
+   variantes la recevront à leur vague (pas d'escalade préventive). */
+.sg-btn-primary.sg-btn-primary.sg-btn-primary{
+  background:linear-gradient(180deg,var(--sg-brand-soft),var(--sg-brand-strong) 55%,var(--sg-brand))!important;
+  color:var(--sg-cta-gold-text)!important;
+  border:var(--sg-border-w) solid #0D0D0D!important;
+  border-radius:var(--sg-r-lg)!important;
+  box-shadow:var(--sg-shadow-pop-3)!important;
+}
+/* Modificateur officiel : CTA pilule (ScrollStory carte-live, BriefMatin).
+   2 usages réels → variante justifiée (politique A5). Triple pour battre le
+   border-radius:11px !important du skin. */
+.sg-btn-pill.sg-btn-pill.sg-btn-pill{border-radius:var(--sg-r-pill)!important}
+/* Focus visible ARMORÉ (triple + !important) : l'armor du box-shadow ci-dessus
+   écraserait sinon l'anneau de focus — le clavier n'aurait aucun repère. */
+.sg-btn-primary.sg-btn-primary.sg-btn-primary:focus-visible{
+  box-shadow:var(--sg-shadow-pop-3),0 0 0 3px #0D0D0D,var(--sg-focus-ring)!important;
+  outline:none;
+}
 /* états */
 .sg-btn:hover{filter:brightness(1.03)}
 .sg-btn-primary:hover{box-shadow:var(--sg-shadow-pop-3),var(--sg-shadow-gold)}

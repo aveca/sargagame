@@ -442,7 +442,7 @@ export default function BriefMatin({data,lang="fr",onClose,onPremium,onReliabili
               <span className="bm-rel">{L.rel}<a href="#" onClick={onRel}>{L.relL}</a></span>
             </div>
 
-            <button className="bm-cta bm-cta" onClick={onCta}>{ctaDone?("✓ "+L.ctaDone):L.cta}</button>
+            <button className="sg-btn sg-btn-primary sg-btn-pill" style={{width:"100%"}} onClick={onCta}>{ctaDone?("✓ "+L.ctaDone):L.cta}</button>
           </section>
         </div>
       </div>
@@ -455,9 +455,11 @@ export default function BriefMatin({data,lang="fr",onClose,onPremium,onReliabili
 /* ============================================================
    CSS scopé — préfixé .bm-root. Racine .sg-onink-scope → le skin
    theme-comic forcerait les <button> ; on les re-spécifie en
-   .bm-root <tag>.bm-x.bm-x / .bm-cta.bm-cta (0,3,x) + !important
+   .bm-root <tag>.bm-x.bm-x (0,3,x) + !important
    pour battre .theme-comic .sg-onink-scope button{…!important} (0,2,1).
    Palette paper/ink en DUR (jamais var(--sg-*) — tokens comic inertes).
+   CTA migré DS (sprint migration, Vague 1) : .sg-btn.sg-btn-primary.sg-btn-pill
+   (armor DS intégrée) — l'ancienne armure .bm-cta.bm-cta est SUPPRIMÉE.
    ============================================================ */
 const BM_CSS=`
 .bm-root{position:fixed;inset:0;z-index:4200;background:#06140f;color:#fff;
@@ -507,11 +509,6 @@ const BM_CSS=`
 .bm-rel{font-size:11px;color:#5A5A5A;line-height:1.3;flex:1;min-width:150px}
 .bm-rel a{color:#009E8E;font-weight:700;text-decoration:underline;text-underline-offset:2px}
 .bm-root a.bm-rel,.bm-rel a{cursor:pointer}
-.bm-root button.bm-cta.bm-cta{display:block;width:100%;margin-top:12px;border:2.5px solid #0D0D0D!important;cursor:pointer;
-  font-family:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;font-weight:800;font-size:16px;color:#1a1300!important;min-height:48px;padding:12px 18px;border-radius:100px;
-  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 42%,#E89400 100%)!important;box-shadow:4px 4px 0 #0D0D0D!important;
-  transition:transform .14s cubic-bezier(.175,.885,.32,1.275),box-shadow .2s ease}
-.bm-root button.bm-cta.bm-cta:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #0D0D0D!important}
 @media (min-width:740px){.bm-brief{max-width:460px}}
 @keyframes bmCardIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes bmTopIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
@@ -521,6 +518,5 @@ const BM_CSS=`
   .bm-scene *{animation:none!important}
   .bm-cloud,.bm-sunGlow{animation:none!important}
   .bm-brief,.bm-top{animation:none!important;opacity:1!important;transform:none!important}
-  .bm-root button.bm-cta.bm-cta{transition:none!important}
 }
 `

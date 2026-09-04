@@ -380,10 +380,8 @@ export default function ScrollStory({lang,onShowMap}){
         {/* CTA du dernier temps */}
         <div style={{position:"absolute",left:"6%",bottom:"max(38px,5.5%)",opacity:"var(--b5o)",
           pointerEvents:beat===4?"auto":"none"}}>
-          <button onClick={onShowMap} className="gbtn" style={{background:"#FFC72C",color:"#120821",border:"none",
-            cursor:"pointer",fontFamily:"inherit",fontWeight:800,fontSize:15,padding:"14px 22px",borderRadius:999,
-            boxShadow:"0 8px 28px rgba(255,199,44,.3)"}}>
-            <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:7,display:"inline-block"}}/>
+          <button onClick={onShowMap} className="sg-btn sg-btn-primary sg-btn-pill">
+            <BrandIcon name="map" size={15} accent="#0D0D0D" style={{flexShrink:0}}/>
             {T("Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
           </button>
         </div>
