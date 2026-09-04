@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] **SPRINT CRO — funnel prouvé + fix paywall + instrumentation** (@coding_agent OpenCode, 2026-09-04) — Business : 0 paiement Mollie/30j, funnel 7j 1363→167→4 CTA (2,4 %)→4 onsite→0 redirect→0 ; money-path vivant prouvé live (Mollie iframes LIVE, erreur guidée, 0 JS). Fix : RegionNav masqué au paywall (× non tappable prouvé → BUTTON_OK). Instrumentation : Plus tard comic tracké + modalCloses au funnel. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅. Branche `agent/coding/cro-revenue`.
+
 - [x] **SPRINT DS-MIGRATION-VAGUE-1 + CI-RELIABILITY** (@coding_agent OpenCode, 2026-09-04) — Audit 6 variantes or ; armor triple officielle (skins prouvés bloquants) + `.sg-btn-pill` ; 3 boutons migrés (iOS tutorial, ScrollStory, BriefMatin, `.bm-cta` supprimé) avec preuves avant/après + a11y ; money/funnel = exceptions Vague 5, lc-gbtn = exception jeu. CI : matrice échecs (preexisting/false-positive/environmental), secret-scan `pk_*` exclus, ci-funnel 4e token, .gitignore junk. C hero-aware : mesuré puis conservé. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅. Branche `agent/coding/ds-migration-ci`.
 
 - [x] **SPRINT CARTE — BUG-2026-030 overlap labels FIXÉ** (@coding_agent OpenCode, 2026-09-04) — Cause : declutter arbitrait géométrie fantôme (translate retiré 2026-08-31), paires réelles conservées + héros "Meilleur choix" recouvrant (data-dependent). Fix : boîte réelle + marge 4px (WorldMapView.jsx) + test hit-test 1er atteignable (funnel-payment.spec.ts:82). Gates : build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 local ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅ · 0 overlap 5 viewports ✅. Règles sprint respectées. Branche `agent/coding/bug-2026-030`.

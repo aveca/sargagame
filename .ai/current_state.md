@@ -1,4 +1,36 @@
 ---
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT CRO — funnel prouvé, fix paywall, funnel aveugle comblé
+
+### Travail effectué
+- **Résumé 1 ligne** : 0 paiement/30j prouvé + money-path vivant prouvé + RegionNav masqué au paywall + dismiss comic instrumenté.
+- **Détails** : funnel 7j 1363→167→4→4→0→0 (CTA 2,4 % toutes îles) ; probes live : 5 iframes Mollie LIVE, submit vide = erreur guidée, 0 JS ; × paywall non tappable (RegionNav 2001) → display:none si showPremium ; "Plus tard" muet → event via+dwell ; FUNNEL_KEYS + daily-metrics modalCloses.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — RegionNav display si showPremium
+- `src/PremiumModal.jsx` (+track props), `src/PremiumModal/ComicPaywall.jsx` (Plus tard tracké)
+- `scripts/automation/funnel-from-supabase.cjs` (clé), `daily-stats-check.cjs` (modalCloses)
+- `.ai/*` — business status + diagnostic + plan revenu
+
+### Tests réalisés
+- [x] build exit 0 · bundle 37.4 Ko · E2E 21/21 · smoke 4/4 · PHP N/A
+- [x] probes live MQ : paywall→onsite→Mollie iframes→erreur guidée, 0 erreur
+- [x] avant/après : nav absente au paywall, × tappable, barre présente sur carte
+
+### Problèmes restants
+- [ ] CI PR à vérifier
+- [ ] Trafic minuscule (GP ~0/j) = plafond volume ; CTA 2,4 % = chantier valeur/prix (non mesurable sans trafic → avant/après direct seulement)
+- [ ] B2B 15 vues → 0 step (page /pro à auditer, sprint dédié)
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy → vérif live paywall — Rôle : release
+2. Sprint acquisition (GP collapse) OU page /pro B2B — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/cro-revenue`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT DS-VAGUE-1 + CI-RELIABILITY
 
 ### Travail effectué

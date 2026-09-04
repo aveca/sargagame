@@ -1,5 +1,15 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-04 · SPRINT CRO — funnel prouvé + RegionNav-paywall + dismiss instrumentation
+
+**BUSINESS (daily-metrics 2026-09-04, prouvé)** : Mollie 30j = 0 paiement (lastPaid 2026-07-19) · Stripe run-off 14 abos/€69.86 · funnel 7j Supabase : 1363 sessions → 167 paywall → 4 CTA (2,4 %) → 4 onsite → 0 redirect → 0 conversion (toutes îles : MQ 63→3, GP 38→1, FL 34→0, PC 25→0) · B2B 15 vues → 0 step · GA4 MQ ~16-95/j, GP ~0-1/j.
+**Money-path vivant (probes live MQ, prouvé)** : paywall→CTA→identité→onsite→5 iframes Mollie LIVE (testMode=false)→submit carte vide = erreur guidée "champs non valides" → 0 erreur JS. Abandon = friction/intention, pas casse. 400 `claim_referral_credit` = bruit bénin (worker sg-payments ne connaît pas l'action ; b2b-api la verrouille days:0) — P2, non touché.
+**FIX #1 livré** : RegionNav fixe (z 2001) recouvrait le haut paywall/checkout (× 44px NON tappable prouvé hit-test, régression sprint brand) → `display:showPremium?"none"` comme le header. Avant/après screenshot + × BUTTON_OK + 0 erreur ; carte : barre toujours présente.
+**Instrumentation** : "Plus tard" comic traquait RIEN → `sg_premium_modal_close{via:plus_tard}` (+track aux props communes) ; `premium_modal_close` ajouté aux FUNNEL_KEYS + `modalCloses` au bloc daily-metrics (prochain run pipeline).
+**Gates** : build ✅ · 37.4 Ko ✅ · E2E 21/21 ✅ · smoke 4/4 ✅ · PHP N/A.
+
+---
+
 ## 2026-09-04 · SPRINT DS-MIGRATION-VAGUE-1 + CI-RELIABILITY
 
 **A1 audit** : 6 variantes or (gbtn×9+scroll, cta-premium×1, sg-paygold×3, bs-gobtn×3, bm-cta×1, lc-gbtn×3). Money/funnel (paywall, lock, bs-gobtn, sg-paygold submits, onPay, forecast_beat, alertes) = EXCEPTIONS Vague 5 (CRO) ; lc-gbtn = exception jeu (sémantique statuts).
