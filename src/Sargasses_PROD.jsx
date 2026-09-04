@@ -14638,8 +14638,8 @@ useEffect(()=>{
           </div>
         </div>
 
-        {/* RegionNav — separate fixed bar above header chrome (z-index 2001) to stay above map content */}
-        <div style={{position:'fixed',top:0,left:0,right:0,zIndex:2001,pointerEvents:'none'}}>
+        {/* RegionNav — separate fixed bar below header chrome (z-index 2001) to stay above map content but below header */}
+        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none'}}>
           <div className="sg-region-nav-inline" style={{pointerEvents:'auto'}}>
             <RegionNav inline={true} />
           </div>
