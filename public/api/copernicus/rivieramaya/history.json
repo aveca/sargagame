@@ -3195,8 +3195,8 @@
         },
         {
           "id": "rm009",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.12,
+          "status": "clean"
         },
         {
           "id": "rm010",
@@ -4243,6 +4243,13 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.11
+    },
+    {
+      "date": "2026-09-04",
+      "beach": "rm009",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
     }
   ]
 }
