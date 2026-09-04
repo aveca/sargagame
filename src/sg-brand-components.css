@@ -1,0 +1,155 @@
+/* ====================================================================
+   sg-brand-components.css — PRIMITIVES SARGAGAME (consomment les tokens)
+   Boutons / badges / cards / inputs / chips / sheets-modals / focus.
+   ADDITIF : aucune règle ne cible un composant existant sans préfixe
+   .sg- ; les 6 variantes or historiques (.gbtn, .cta-premium, .sg-paygold,
+   .bs-gobtn, .bm-cta, .lc-gbtn) restent fonctionnelles — les nouvelles
+   surfaces utilisent .sg-btn*. ROLLBACK : retirer l'import.
+   Accessibilité : focus visible partout, touch ≥44px, jamais couleur seule
+   (badges = couleur + forme + mot), texte sur or = encre (contraste AA).
+   ==================================================================== */
+
+/* ---------- BOUTONS : 6 variantes, 6 états ---------- */
+.sg-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--sg-sp-2);
+  min-height:var(--sg-touch-min);padding:13px var(--sg-sp-5);
+  border-radius:var(--sg-r-lg);border:var(--sg-border-w) solid #0D0D0D;
+  font:700 var(--sg-fs-button)/1.2 var(--sg-font-sans);letter-spacing:0;
+  cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;text-decoration:none;box-sizing:border-box;
+  transition:transform .08s ease,box-shadow .08s ease,background .12s ease,opacity .12s;
+}
+.sg-btn-primary{
+  background:linear-gradient(180deg,var(--sg-brand-soft),var(--sg-brand-strong) 55%,var(--sg-brand));
+  color:var(--sg-cta-gold-text);box-shadow:var(--sg-shadow-pop-3);
+}
+.sg-btn-secondary{
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  color:var(--sg-text-primary,#0D0D0D);box-shadow:var(--sg-shadow-pop-2);
+}
+.sg-btn-tertiary{
+  background:var(--sg-brand-bg);color:var(--sg-text-primary,#0D0D0D);
+  border-color:var(--sg-brand);box-shadow:var(--sg-shadow-pop-1);
+}
+.sg-btn-ghost{
+  background:transparent;color:var(--sg-text-primary,#0D0D0D);
+  border-color:transparent;box-shadow:none;min-height:var(--sg-touch-min);
+}
+.sg-btn-danger{
+  background:var(--sg-danger);color:#fff;box-shadow:var(--sg-shadow-pop-2);
+}
+.sg-btn-icon{
+  width:var(--sg-touch-min);height:var(--sg-touch-min);padding:0;flex:none;
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  color:var(--sg-text-primary,#0D0D0D);box-shadow:var(--sg-shadow-pop-1);
+  border-radius:var(--sg-r-md);
+}
+/* états */
+.sg-btn:hover{filter:brightness(1.03)}
+.sg-btn-primary:hover{box-shadow:var(--sg-shadow-pop-3),var(--sg-shadow-gold)}
+.sg-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 #0D0D0D}
+.sg-btn-ghost:active{transform:none;box-shadow:none;background:var(--sg-brand-bg)}
+.sg-btn:focus-visible,.sg-badge:focus-visible,.sg-chip:focus-visible,
+.sg-field input:focus-visible,.sg-input:focus-visible{
+  outline:none;box-shadow:var(--sg-focus-ring);
+}
+.sg-btn[disabled],.sg-btn[aria-disabled="true"]{
+  opacity:var(--sg-disabled-opacity);cursor:not-allowed;transform:none;
+  box-shadow:var(--sg-shadow-pop-1);
+}
+.sg-btn.is-loading{pointer-events:none;opacity:.75}
+
+/* ---------- BADGES : statut = couleur + forme + MOT (jamais couleur seule) ---------- */
+.sg-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  min-height:28px;padding:4px var(--sg-sp-3);border-radius:var(--sg-r-pill);
+  border:2px solid #0D0D0D;box-shadow:var(--sg-shadow-pop-1);
+  font:800 var(--sg-fs-caption)/1.4 var(--sg-font-sans);letter-spacing:var(--sg-ls-caps);
+  text-transform:uppercase;white-space:nowrap;
+}
+.sg-badge-fresh{background:var(--sg-teal);color:#fff}
+.sg-badge-recent{background:var(--sg-brand-bg-strong);color:#0D0D0D}
+.sg-badge-warning{background:var(--sg-warning);color:#fff}
+.sg-badge-danger{background:var(--sg-danger);color:#fff}
+.sg-badge-info{background:var(--sg-info);color:#fff}
+.sg-badge-success{background:var(--sg-success);color:#fff}
+.sg-badge svg{width:14px;height:14px;flex:none}
+
+/* ---------- CARDS : 1 recette (bord ink + ombre dure) ---------- */
+.sg-card{
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  border:var(--sg-border-w) solid #0D0D0D;border-radius:var(--sg-r-lg);
+  box-shadow:var(--sg-shadow-pop-2);padding:var(--sg-sp-4);box-sizing:border-box;
+}
+.sg-card-elevated{box-shadow:var(--sg-shadow-pop-3)}
+.sg-card-flat{box-shadow:var(--sg-shadow-pop-1)}
+
+/* ---------- CHIPS / PILLS ---------- */
+.sg-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  min-height:36px;padding:6px var(--sg-sp-3);border-radius:var(--sg-r-pill);
+  border:2px solid #0D0D0D;background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  box-shadow:var(--sg-shadow-pop-1);
+  font:700 var(--sg-fs-small)/1.2 var(--sg-font-sans);color:var(--sg-text-primary,#0D0D0D);
+  cursor:pointer;touch-action:manipulation;
+}
+.sg-chip[aria-pressed="true"]{background:var(--sg-brand-strong);color:#0D0D0D}
+
+/* ---------- INPUTS : search + form (recette .sg-field existante, tokenisée) ---------- */
+.sg-field input,.sg-field select,.sg-field textarea,.sg-input{
+  width:100%;min-height:48px;padding:13px 14px;border-radius:var(--sg-r-sm);
+  border:var(--sg-border-w) solid #0D0D0D;
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  color:var(--sg-text-primary,#0D0D0D);
+  font:600 16px/1.4 var(--sg-font-sans);box-sizing:border-box;outline:none;
+  box-shadow:var(--sg-shadow-pop-1);
+}
+.sg-field input:focus,.sg-field select:focus,.sg-field textarea:focus,.sg-input:focus{
+  box-shadow:var(--sg-shadow-pop-1),var(--sg-focus-ring);
+}
+.sg-field .sg-field-error,.sg-input-error{
+  border-color:var(--sg-danger);
+  box-shadow:var(--sg-shadow-pop-1),0 0 0 3px var(--sg-danger-bg);
+}
+.sg-field-hint{font:400 var(--sg-fs-small)/1.5 var(--sg-font-sans);color:var(--sg-text-secondary)}
+.sg-field-error-msg{font:700 var(--sg-fs-small)/1.5 var(--sg-font-sans);color:var(--sg-danger)}
+
+/* ---------- MODALS / SHEETS : même langage visuel ---------- */
+.sg-sheet{
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  border:var(--sg-border-w) solid #0D0D0D;border-radius:var(--sg-r-xl) var(--sg-r-xl) 0 0;
+  box-shadow:0 -8px 32px rgba(0,0,0,.25);
+}
+/* NOTE : pas de règle `.sg-modal-panel` ici — le panel paywall live
+   (PremiumModal.jsx) est VOLONTAIREMENT exclu de tout skin (revenu protégé).
+   Les nouvelles modales utilisent `.sg-brand-modal`. */
+.sg-brand-modal{
+  background:var(--sg-surface,var(--sg-surface-elevated,#fff));
+  border:var(--sg-border-w) solid #0D0D0D;border-radius:var(--sg-r-2xl);
+  box-shadow:var(--sg-shadow-pop-3),0 24px 64px rgba(0,0,0,.30);
+}
+.sg-sheet-handle{width:44px;height:5px;border-radius:var(--sg-r-pill);background:#0D0D0D;opacity:.85}
+
+/* ---------- TYPO utilitaires (grammaire fonts) ---------- */
+.sg-display{
+  font-family:var(--sg-font-display);font-size:var(--sg-fs-display);
+  line-height:var(--sg-lh-display);letter-spacing:var(--sg-ls-display);
+  text-transform:uppercase;font-weight:400;
+}
+.sg-h1{font:800 var(--sg-fs-h1)/var(--sg-lh-heading) var(--sg-font-sans)}
+.sg-h2{font:800 var(--sg-fs-h2)/var(--sg-lh-heading) var(--sg-font-sans)}
+.sg-h3{font:700 var(--sg-fs-h3)/var(--sg-lh-heading) var(--sg-font-sans)}
+.sg-body{font:400 var(--sg-fs-body)/var(--sg-lh-body) var(--sg-font-sans)}
+.sg-small{font:400 var(--sg-fs-small)/1.5 var(--sg-font-sans)}
+.sg-caption{font:700 var(--sg-fs-caption)/1.4 var(--sg-font-sans);letter-spacing:var(--sg-ls-caps);text-transform:uppercase}
+.sg-mono{font-family:var(--sg-font-mono)}
+
+/* ---------- Divers marque ---------- */
+.sg-divider{height:2px;background:#0D0D0D;opacity:.12;border:none;margin:var(--sg-sp-4) 0}
+.sg-live-dot-brand{width:10px;height:10px;border-radius:50%;background:var(--sg-teal);flex:none}
+
+/* ---------- Reduced motion : plancher dur ---------- */
+@media (prefers-reduced-motion:reduce){
+  .sg-btn,.sg-chip,.sg-badge{transition:none}
+  .sg-btn:active{transform:none}
+}

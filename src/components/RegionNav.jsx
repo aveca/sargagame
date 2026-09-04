@@ -47,7 +47,7 @@ export default function RegionNav({inline=false}) {
   const lang = (() => { try { const p = window.location.pathname; if (p.startsWith("/es")) return "es"; if (p.startsWith("/en")) return "en"; return "fr" } catch { return "fr" } })()
 
   const baseStyle = {
-    background: 'linear-gradient(135deg, #0a5c4a, #0d7f63)',
+    background: 'linear-gradient(135deg, var(--sg-teal-deep,#0a5c4a), var(--sg-teal-deep-2,#0d7f63))',
     padding: '10px 16px',
     display: 'flex',
     gap: 8,
@@ -102,10 +102,11 @@ export default function RegionNav({inline=false}) {
           margin: '8px auto 0',
           maxWidth: 600,
           padding: '12px 16px',
-          background: 'linear-gradient(135deg, #7C3AED, #A855F7)',
-          borderRadius: 12,
-          boxShadow: '0 4px 16px rgba(124, 58, 237, 0.3)',
-          color: 'white',
+          background: 'linear-gradient(180deg, var(--sg-brand-soft,#FFE47A), var(--sg-brand-strong,#FFC72C))',
+          border: '2.5px solid #0D0D0D',
+          borderRadius: 16,
+          boxShadow: '4px 4px 0 #0D0D0D',
+          color: '#0D0D0D',
           fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
           textAlign: 'center',
           animation: 'slideDown .3s ease'
@@ -117,14 +118,14 @@ export default function RegionNav({inline=false}) {
               {_t(lang, "Vous consultez plusieurs régions? Découvrez notre plan multi-région Enterprise →", "Checking multiple regions? Discover our multi-region Enterprise plan →", "¿Consultas varias regiones? Descubre nuestro plan multi-región Enterprise →")}
             </span>
             <a href="/b2b" onClick={(e) => { track("sg_cross_sell_click", { from: current, visited: JSON.parse(localStorage.getItem(VISITED_KEY) || '[]') }) }} style={{
-              padding: '6px 14px', borderRadius: 8, border: '2px solid white',
-              background: 'rgba(255,255,255,0.2)', color: 'white',
+              padding: '6px 14px', borderRadius: 8, border: '2.5px solid #0D0D0D',
+              background: '#0D0D0D', color: '#FFC72C',
               font: '700 12px/1 "Bricolage Grotesque"', textDecoration: 'none', whiteSpace: 'nowrap'
             }}>
               {_t(lang, "Voir l'offre →", "See offer →", "Ver oferta →")}
             </a>
             <button onClick={dismissCrossSell} aria-label={_t(lang, "Fermer", "Close", "Cerrar")} style={{
-              background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white',
+              background: 'transparent', border: '2px solid #0D0D0D', color: '#0D0D0D',
               borderRadius: 8, width: 32, height: 32, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16
             }}>✕</button>

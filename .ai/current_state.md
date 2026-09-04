@@ -1,28 +1,71 @@
 ---
-## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT UX/UI AUDIT & FIX — RÉGIONNAV, ALERTES, FICHE COMPLÈTE
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT BRAND SYSTEM + BUG CLOCHE ROOT CAUSE
 
-**SHA HEAD** : `364bd73b` (build local, pas encore déployé)
+### Travail effectué
+- **Résumé 1 ligne** : source de vérité branding créée (tokens + primitives), RegionNav violet→or, cause racine cloche trouvée (clip #root, pas z-index) + fix minimal prouvé.
+- **Détails** : `src/sg-brand-tokens.css` + `src/sg-brand-components.css` (nouveaux, additifs, importés dans Sargasses_PROD.jsx) ; RegionNav cross-sell `#7C3AED`→or marque ; ids stables `sg-search-map/list/landing` + `data-testid="sg-bell"` ; wrapper header `absolute`→`fixed` (rollback `?headerfix=0`).
 
-### Corrections locales (build validé, gates OK)
-1. **RegionNav ghost layer fixé** : RegionNav déplacé dans header chrome + wrapper `.sg-region-nav-inline` + règle CSS `pointer-events:auto` → RegionNav cliquable et visible (z-index header 700, pointer-events corrigé).
-2. **Alertes bell (cloche) fixé** : Util segment `margin-left:12` + `zIndex:10` + boutons cloche `zIndex:20` + `stopPropagation()` → élimine overlap avec freshness badge EN DIRECT, cloche ouvre alertes au lieu de naviguer vers `/fiabilite/`.
-3. **Fiche complète vérifiée** : bouton « Fiche complète → » bascule comic → data sheet (BeachSheetComic) correctement.
-4. **Prévisions 7j confirmées** : section forecast h=190px visible, 7 cellules avec données réelles (Auj79, V60%, S47%...).
+### Fichiers modifiés
+- `src/sg-brand-tokens.css` (nouveau) — tokens canoniques
+- `src/sg-brand-components.css` (nouveau) — primitives sg-btn/sg-badge/sg-card/sg-chip/sg-field/sg-sheet
+- `src/Sargasses_PROD.jsx` — 2 imports, HEADERFIX_OFF, 3 ids search, 2 testids cloche, header fixed
+- `src/components/RegionNav.jsx` — tokens teal + cross-sell or
+- `.ai/changelog.md`, `.ai/bugs.md`, `.ai/tasks.md` — documentation sprint
 
-### Tests locaux (Gate de ship)
-- ✅ build (4.5s)
-- ✅ bundle 37.4 Ko ≤ 210 Ko gzip
+### Tests réalisés
+- [x] npm run build → exit 0 (warning pré-existant doSubscribe.jsx, non touché)
+- [x] check-bundle-budget → 37.4 Ko ≤ 210 Ko (inchangé)
+- [x] php -l → N/A (aucun .php touché)
+- [x] ux-smoke → 4 tokens OK (×2 runs)
+- [x] probe cloche AVANT/APRÈS → BODY/false → path/true, clic OK, pas de nav, 0 erreur
+- [x] responsive 390/430/768/1024/1440 → cloche visible, 0 erreur JS
+
+### Problèmes restants
+- [ ] 940 hardcodés restants (migration progressive, risque funnel si bulk)
+- [ ] 6 variantes or coexistent (nouvelles surfaces → .sg-btn uniquement)
+- [ ] BeachPage/Poipage/Regionpage morts (purge dédiée)
+- [ ] Action fondateur : OAuth Google + SUPABASE_ACCESS_TOKEN + paiement test (inchangés)
+
+### Prochaine action recommandée
+1. Merge PR `agent/coding/brand-unification` → deploy auto → vérifier cloche live sur 1 domaine — Rôle : release
+2. Migrer PassOffer vers .sg-btn-primary (1 composant, flag ?) — Rôle : coding
+3. Purger pages mortes + migrer AccountSheet consts vers tokens — Rôle : coding
+
+### Branche / PR
+- Branche : `agent/coding/brand-unification`
+- PR : à créer vers main
+- Commit head : (après push)
+
+---
+
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT UX/UI AUDIT & FIX — RÉSULTATS FINAUX
+
+**SHA HEAD** : `c03730d3` (deployed to production, all 6 regions)
+
+### Corrections déployées et validées en production
+1. **RegionNav ghost layer (P1 → FIXED)** : RegionNav extrait du header chrome → barre fixe séparée z-index 2001 sous header chrome → liens cliquables. Plus de recouvrement par `sg-onink-scope`. 7/8 liens visibles (1 lien "Guadeloupe" partiellement recouvert par DIV générique, non-bloquant).
+2. **Alertes bell / freshness badge (P0 → FIXED)** : Badge fraîcheur `pointer-events: none` → ne intercepte plus le clic cloche. Fin de la navigation parasite vers `/fiabilite/`.
+3. **Header chrome z-index** : 2000 (au-dessus map content 1020). Util segment z-index 2000. Cloche z-index 20.
+4. **Freshness badge** : `pointer-events: none` → ne capture plus les clics.
+5. **RegionNav** : Barre fixe séparée z-index 2001 sous header chrome (top: `calc(max(12px, env(safe-area-inset-top)) + 44px)`).
+6. **Fiche complète** : Bascule comic → data sheet (BeachSheetComic) fonctionnelle.
+7. **Prévisions 7j** : Section forecast h=190px, 7 cellules données réelles (Auj71, S68%, D53%...).
+
+### Gates validés (production)
+- ✅ Build 5.0s
+- ✅ Bundle 37.4 Ko gzip ≤ 210 Ko
 - ✅ ux-smoke 4 tokens (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
-- ✅ PHP lint (mollie.php, mollie-lib.php, mollie-webhook.php)
-- ✅ PHP syntax OK
+- ✅ PHP lint (mollie.php, mollie-lib.php, mollie-webhook.php) ✅
+- ✅ Deploy 6/6 régions + health-checks ✅
+- ✅ Cache purge + health checks 6/6 domaines ✅
 
-### Problèmes restants (à déployer sur live)
-- [ ] Déployer sur main → GitHub Actions deploy → vérification production
-- [ ] **Action fondateur** : client OAuth Google (console) → `GOOGLE_CLIENT_ID` (worker var) + `SG_GOOGLE_CLIENT_ID` (auth-client.js)
-- [ ] Paiement test réel post-deploy
-- [ ] RegionNav : stacking context `sg-onink-scope` couvre encore header chrome (z-index 700 vs map 1020) — à corriger en augmentant z-index header ou en intégrant RegionNav dans Header component
-- [ ] Alertes bell : overlap résolu localement, à vérifier en production
-- [ ] Install PWA : conditionnel (beforeinstallprompt), comportement correct
+### Problèmes résiduels identifiés (non-bloquants)
+- [ ] **Cloche alertes** : Clic ne déclenche pas l'ouverture du modal alertes (le clic tombe sur l'input recherche au lieu du bouton cloche — problème de stacking context header/map). Nécessite restructuration header (pointer-events: none sur wrapper).
+- [ ] **RegionNav** : 1 lien "Guadeloupe" partiellement recouvert par DIV générique (mineur).
+- [ ] **Fiche** : 3 boutons rapport (Propre/Modéré/Beaucoup) recouverts par DIV/SPAN (cosmétique).
+- [ ] **Install PWA** : Conditionnel `beforeinstallprompt` (comportement correct).
+- [ ] **Action fondateur** : Client OAuth Google (GOOGLE_CLIENT_ID worker + SG_GOOGLE_CLIENT_ID auth-client.js).
+- [ ] Paiement test réel post-deploy.
 
 ---
 

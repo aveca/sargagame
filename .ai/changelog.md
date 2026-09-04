@@ -1,5 +1,16 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-04 · SPRINT BRAND SYSTEM + DESIGN UNIFICATION (Phase 1-10)
+
+**Audit (0 modif)** : 6 CSS (Themes/app-runtime/sg-ux-2026/sprint20/map-wow/colors_and_type) + ~80 composants + 10 familles de pages. Trouvé : 940 styles hardcodés vs 438 `var(--sg-*)` ; 6 variantes or concurrentes (gbtn/cta-premium/sg-paygold/bs-gobtn/bm-cta/lc-gbtn) ; `:root.theme-comic` inerte ; RegionNav 100 % inline + cross-sell violet pirate (#7C3AED, banni par la bible) ; BeachPage/Poipage/Regionpage = code mort non importé (laissé en place).
+**Source de vérité créée** : `src/sg-brand-tokens.css` (marque/statuts/typo/formes/espacement, valeurs canoniques colors_and_type.css + skill) + `src/sg-brand-components.css` (sg-btn 6 variantes + 6 états, sg-badge 6 statuts couleur+forme+mot, sg-card, sg-chip, sg-field, sg-sheet/modal, focus-visible, touch 44px, reduced-motion). Importés dans Sargasses_PROD.jsx après sprint20.css. Tokens : ADDITIFS (aucun --sg-bg/ink/card existant redéfini). Rollback : retirer les 2 imports.
+**Unifié** : RegionNav base → var(--sg-teal-deep*) (valeurs identiques), cross-sell violet → or marque (bord ink 2.5px + ombre dure, CTA encre-sur-noir, pastille ✕ ink). Rollback : revert RegionNav.jsx.
+**Bug cloche — CAUSE RACINE TROUVÉE (pas pointer-events/z-index)** : `search_1` n'existe pas dans le DOM — artefact du probe (`search_${i}` = index du input dans querySelectorAll). Les 3 vrais inputs ont désormais des ids stables (`sg-search-map` SearchBar, `sg-search-list` Plages, `sg-search-landing` landing) + `data-testid="sg-bell"` sur les 2 branches cloche. La cloche était non hit-testable car le wrapper header `absolute` est clippé par #root effondré (~19px, `.theme-comic #root{position:relative}`, cf. MINE-ROOT-RELATIVE) : elementFromPoint(centre cloche) → BODY. Fix minimal : wrapper `absolute`→`fixed` (même géométrie, body overflow hidden = zéro scroll), rollback `?headerfix=0`. Preuve locale : AVANT hit=BODY/hit_is_bell=false → APRÈS hit=path/hit_is_bell=true, clic OK, URL inchangée (pas de /fiabilite/), 0 pageerror.
+**Gates** : build ✅ · bundle 37.4 Ko ≤ 210 ✅ · ux-smoke 4/4 ✅ · responsive 390/430/768/1024/1440 (cloche visible, 0 erreur ; seul débordement = `g` SVG carte 700px, archi normale) · PHP : aucun .php touché (N/A).
+**Non fait (volontaire, P0 no-break)** : migration des 940 hardcodés vers tokens (risque funnel), purge BeachPage/Poipage/Regionpage morts, unification des 6 boutons or vers .sg-btn (nouvelles surfaces seulement), SEO pages inline dark (legacy statique). Exceptions documentées dans le rapport.
+
+---
+
 ## 2026-09-04 · SPRINT UX/UI AUDIT & FIX — RegionNav, Alertes bell, Fiche complète, Prévisions 7j
 
 **Audit systématique parcours utilisateur réel** (Oute-Bénier / L'Autre Bord gp050, Guadeloupe) via Playwright production + scripts custom `ux-sprint-audit.mjs`, `ux-probe-destinations.mjs`.

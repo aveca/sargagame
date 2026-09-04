@@ -3,28 +3,36 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-028 — [FIXÉ LOCAL 2026-09-04] RegionNav ghost layer — liens invisibles et non cliquables
+### BUG-2026-028 — [FIXÉ PROD 2026-09-04] RegionNav ghost layer — liens invisibles et non cliquables
 - **Sévérité** : P1 — RegionNav (barre régions en haut) recouverte par `sg-onink-scope` (contenu principal), liens invisibles et non cliquables
-- **Date** : 2026-09-04 · **Fichiers** : `src/components/RegionNav.jsx`, `src/Sargasses_PROD.jsx` (header chrome), `src/app-runtime.css` (inline style)
+- **Date** : 2026-09-04 · **Fichiers** : `src/components/RegionNav.jsx`, `src/Sargasses_PROD.jsx` (header chrome + RegionNav fixed bar)
 - **Repro** : Audit Playwright → `elementFromPoint` sur liens RegionNav retourne `DIV.sg-onink-scope` → liens recouverts par contenu principal
 - **Causes** :
   1. RegionNav rendu dans header chrome (`z-index: 700`) mais contenu principal (`sg-onink-scope` sur WorldMapView) crée stacking context qui le couvre
   2. RegionNav frère de `.sg-header-row` → ne reçoit pas `pointer-events:auto` (CSS cible uniquement `.sg-header-row > *`)
-- **Fix local** :
-  1. RegionNav wrappe dans `<div className="sg-region-nav-inline">` dans header chrome
-  2. Règle CSS ajoutée dans inline style header chrome : `.sg-header-chrome > .sg-region-nav-inline{pointer-events:auto}`
+- **Fix production** :
+  1. RegionNav extrait du header chrome → barre fixe séparée z-index 2001 sous header chrome (`top: calc(max(12px, env(safe-area-inset-top)) + 44px)`)
+  2. Wrapper `.sg-region-nav-inline` avec `pointerEvents:auto`
   3. RegionNav.jsx : prop `inline` pour rendre sans `position:fixed`
-- **Statut** : Fix local validé (build + smoke OK), à déployer sur live. Stacking context `sg-onink-scope` (z-index map 1020) couvre encore header (z-index 700) → à corriger en production (z-index header ≥ 1100 ou RegionNav intégré dans Header component)
+- **Statut** : **FIXÉ EN PROD** — 7/8 liens visibles (1 lien "Guadeloupe" partiellement recouvert par DIV générique, non-bloquant). RegionNav barre fixe z-index 2001 sous header chrome (z-index 2000) au-dessus map content (z-index 1020).
 
-### BUG-2026-029 — [FIXÉ LOCAL 2026-09-04] Cloche alertes — clic navigue vers /fiabilite/ au lieu d'ouvrir alertes
+### BUG-2026-030 — [OUVERT, P2] Maplabel overlap — pin mq001 non cliquable (recouvert par label Saint-Pierre)
+- **Sévérité** : P2 — au cam par défaut 390px, le label `.sg-maplabel` mq001 (« Plage des Salines ») est recouvert par le label « Plage de Saint-Pierre » (score 80/88) → `locator.click` timeout (test `funnel-payment.spec.ts:82` + repro locale).
+- **Preuve de non-régression** : échec IDENTIQUE sur main pristine f5bdc3bd (worktree + build + test, EXIT:1, même intercepteur) et sur branche brand — le système de declutter/cam WorldMapView n'est touché par aucun diff du sprint (header fixed = même boîte, CSS additifs sans sélecteur map, RegionNav hors carte).
+- **Impact produit** : mineur (zoom/pan déclutterise ; 20/21 E2E passent, smoke 4/4, funnel réel OK) — à traiter dans un sprint carte dédié (declutter ou fallback click), pas ici.
+- **Date** : 2026-09-04 · **Fichiers** : `src/WorldMapView.jsx` (declutter), `tests/e2e/funnel-payment.spec.ts:82-95`
+
+### BUG-2026-029 — [FIXÉ PROD 2026-09-04] Cloche alertes — clic navigue vers /fiabilite/ au lieu d'ouvrir alertes
 - **Sévérité** : P0 — clic sur cloche alertes (header) navigue vers `/fiabilite/` au lieu d'ouvrir centre alertes
-- **Date** : 2026-09-04 · **Fichiers** : `src/Sargasses_PROD.jsx` (Header component)
+- **Date** : 2026-09-04 · **Fichiers** : `src/Sargasses_PROD.jsx` (Header component + freshness badge)
 - **Repro** : Clic sur cloche (coords x=206, y=12) → `elementFromPoint` retourne span freshness badge «il y a 3 j» → navigation vers `/fiabilite/` via handler `onReliability`
 - **Cause** : Badge freshness EN DIRECT (`sg-live-age` + `sg-freshness`) chevauche visuellement bouton cloche (Util segment). Clic intercepté par freshness badge qui bubble vers handler `onReliability` (navigation `/fiabilite/`).
-- **Fix local** :
-  1. Util segment : `margin-left:12` + `position:relative` + `z-index:10` → décale segment util vers la droite
-  2. Boutons cloche : `position:relative` + `z-index:20` + `onClick={(e)=>{e.stopPropagation();...}}` → au-dessus du freshness badge + stop propagation
-- **Statut** : Fix local validé (build + smoke OK), à déployer et vérifier en production
+- **Fix production** :
+  1. Badge freshness EN DIRECT : `style={{pointerEvents:'none'}}` → ne capture plus les clics
+  2. Util segment : `z-index: 2000` (au-dessus map content 1020)
+  3. Boutons cloche : `z-index: 20` + `stopPropagation()`
+- **Statut** : **FIXÉ EN PROD** — Badge fraîcheur ne capture plus les clics. Navigation parasite vers `/fiabilite/` éliminée.
+- **Résidu-2 RÉSOLU 2026-09-04 (sprint brand, cause racine réelle)** : `search_1` n'est PAS un id DOM — artefact des probes (`search_${i}` = index dans querySelectorAll, `scripts/probe-positions.mjs:24`). Les 3 vrais inputs ont des ids stables (`sg-search-map/list/landing`). La cloche (44×44, pe=auto) n'était pas hit-testable car le wrapper header `absolute` est **clippé par #root effondré à ~19px** (`.theme-comic #root{position:relative}`, cf. MINE-ROOT-RELATIVE Themes.css:108) — `elementFromPoint(241,34)` → BODY. Fix : wrapper `absolute`→`fixed` (Sargasses_PROD.jsx + `HEADERFIX_OFF`, rollback `?headerfix=0`). Preuve : AVANT hit=BODY/false → APRÈS hit=path(SVG)/true, clic OK, URL inchangée, 0 pageerror, cloche visible 390→1440.
 
 ### BUG-2026-026 — [FIXÉ 2026-09-03] Money-path Mollie 100 % mort en prod (404 alias + 1101 KV)
 - **Sévérité** : P0 — aucune conversion possible sur les 6 domaines (Pages/Workers)
