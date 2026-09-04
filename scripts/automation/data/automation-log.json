@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-08-03T14:03:02.147Z",
-      "dryRun": false,
-      "script": "seo-link-graph",
-      "action": "analyze",
-      "sites": 2,
-      "structuralOrphans": 392
-    },
-    {
-      "timestamp": "2026-08-03T14:03:02.479Z",
-      "dryRun": false,
-      "script": "seo-broken-links",
-      "action": "check",
-      "sites": 2,
-      "totalBroken": 47
-    },
-    {
       "timestamp": "2026-08-03T14:03:02.717Z",
       "dryRun": false,
       "script": "seo-schema-validator",
@@ -1591,6 +1575,65 @@
         "https://sargasses-martinique.com/pro/en/pricing/",
         "https://sargasses-martinique.com/pro/en/collectivites/"
       ]
+    },
+    {
+      "timestamp": "2026-09-04T15:17:19.960Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 70,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 3,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "gp": {
+          "indexed": 87,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "florida": {
+          "indexed": 16,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "puntacana": {
+          "indexed": 7,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "rivieramaya": {
+          "indexed": 21,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-04T15:17:21.803Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 44,
+        "critical": 0,
+        "warnings": 44
+      }
     }
   ]
 }
