@@ -1408,8 +1408,8 @@ export default function WorldMapView({
       // fond de carte descende au bord physique.
       position:"fixed",zIndex:1020,overflow:"hidden",touchAction:"none",userSelect:"none",
       ...((typeof document!=="undefined"&&document.documentElement.classList.contains("sg-standalone"))
-        ?{top:0,left:0,right:0,bottom:"auto",width:"100%",height:"var(--sg-vh,100%)"}
-        :{inset:0}),
+        ?{top:"var(--sg-header-offset,108px)",left:0,right:0,bottom:"auto",width:"100%",height:"calc(var(--sg-vh,100%) - var(--sg-header-offset,108px))"}
+        :{top:"var(--sg-header-offset,108px)",left:0,right:0,bottom:"var(--sg-header-offset,108px)"}),
       // forced-color-adjust HÉRITE → préserve les VRAIES couleurs golden-hour de TOUTE la
       // carte (fond + CTA dorés + dots de statut) même si le système force les couleurs
       // (thème contraste Windows / filtre couleur / forced-colors navigateur). Sans ça,
