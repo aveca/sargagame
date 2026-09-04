@@ -689,7 +689,12 @@ export default function WorldMapView({
       const inView = (W===0||H===0) ? true : (L>=-30 && L<=W+30 && T>=-10 && T<=H+50)
       boxes.push({el, inView, sel:el.dataset.sel==='1', rank:RANK[el.dataset.status]??3,
         vy:parseFloat(el.dataset.vy)||0,
-        l:L-w/2-4, r:L+w/2+4, t:T-h-4, b:T+4})
+        // BUG-2026-030 : la boîte d'arbitrage DOIT épouser la boîte peinte. Le label est
+        // ancré top-left sur le pin (left/top = point pin, AUCUN translate depuis le
+        // retrait de translate(-50%,-100%) le 2026-08-31) → boîte réelle [L,L+w]×[T,T+h].
+        // L'ancien modèle centré-au-dessus ([L-w/2,L+w/2]×[T-h,T]) arbitrait une géométrie
+        // fantôme : paires réellement chevauchantes conservées (ex. mq001/Saint-Pierre).
+        l:L-4, r:L+w+4, t:T-4, b:T+h+4})
     })
     // Tri = priorité : sélectionnée d'abord, puis GRAVITÉ (avoid=rouge < moderate=jaune < clean=vert),
     // puis nord→sud. Les rouges/jaunes sont donc TOUJOURS traitées avant les vertes.

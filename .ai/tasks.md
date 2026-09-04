@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] **SPRINT CARTE — BUG-2026-030 overlap labels FIXÉ** (@coding_agent OpenCode, 2026-09-04) — Cause : declutter arbitrait géométrie fantôme (translate retiré 2026-08-31), paires réelles conservées + héros "Meilleur choix" recouvrant (data-dependent). Fix : boîte réelle + marge 4px (WorldMapView.jsx) + test hit-test 1er atteignable (funnel-payment.spec.ts:82). Gates : build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 local ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅ · 0 overlap 5 viewports ✅. Règles sprint respectées. Branche `agent/coding/bug-2026-030`.
+
 - [x] **SPRINT BRAND SYSTEM + DESIGN UNIFICATION + BUG CLOCHE ROOT CAUSE** (@coding_agent OpenCode, 2026-09-04) — Audit 6 CSS/~80 composants/10 familles pages (940 hardcodés vs 438 var, 6 ors concurrents, :root.theme-comic inerte, BeachPage/Poipage/Regionpage morts). Source de vérité : `src/sg-brand-tokens.css` + `src/sg-brand-components.css` (additifs, rollback = retirer 2 imports). RegionNav violet pirate → or marque. Bug cloche : `search_1` = artefact probe (ids stables sg-search-map/list/landing + testid sg-bell) ; cause racine = wrapper header absolute clippé par #root 19px → fixed (rollback `?headerfix=0`), preuve BODY/false → path/true. Gates : build ✅ · bundle 37.4 Ko ✅ · smoke 4/4 ✅ · responsive 5 viewports ✅ · PHP N/A. Branche `agent/coding/brand-unification`.
 
 - [x] **SPRINT UX/UI AUDIT & FIX — RegionNav, Alertes bell, Fiche complète, Prévisions 7j — DÉPLOYÉ PROD ✅** (@coding_agent OpenCode, 2026-09-04) — P1/P0 : Audit complet parcours utilisateur (Oute-Bénier/L'Autre Bord gp050) via Playwright production + scripts custom. Fixes déployés et validés en production :

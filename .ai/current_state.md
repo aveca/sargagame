@@ -1,4 +1,37 @@
 ---
+## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT CARTE — BUG-2026-030 FIXÉ, E2E 21/21 LOCAL
+
+### Travail effectué
+- **Résumé 1 ligne** : overlap labels résolu (boîte declutter = boîte réelle) + test durci (1er label visible ET atteignable) → 21/21 local.
+- **Détails** : cause = arbitrage sur géométrie fantôme (translate retiré 2026-08-31) ; intercepteur réel = bouton héros "Meilleur choix" (même fiche, UX intacte). Règles sprint respectées (brand/cloche/Mollie/pages mortes intouchés).
+
+### Fichiers modifiés
+- `src/WorldMapView.jsx` — `declutter()` boîte réelle + marge 4px
+- `tests/e2e/funnel-payment.spec.ts` — hit-test 1er label atteignable
+- `.ai/bugs.md` (030 → FIXÉ), `.ai/changelog.md`, `.ai/tasks.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 37.4 Ko ≤ 210 Ko (inchangé)
+- [x] E2E funnel+bottomnav → 21/21 local (était 20/21)
+- [x] ux-smoke → 4 tokens OK
+- [x] weekhub → 5/5 (autre test maplabel)
+- [x] 0 overlap visible 390/430/768/1024/1440 + cloche visible + 0 erreur JS
+
+### Problèmes restants
+- [ ] CI PR à vérifier (playwright doit passer vert avec ce fix)
+- [ ] declutter hero-aware = follow-up documenté (NEXT)
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy auto → vérif carte live — Rôle : release
+2. Migration design contrôlée par famille de composants (NEXT sprint) — Rôle : coding
+
+### Branche / PR
+- Branche : `agent/coding/bug-2026-030`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT BRAND SYSTEM + BUG CLOCHE ROOT CAUSE
 
 ### Travail effectué

@@ -91,8 +91,26 @@ test.describe("Funnel Principal B2C", () => {
     expect(mapLabels).toBeGreaterThanOrEqual(3)
 
     // 2. Clic sur une plage → fiche détail (use Playwright click for actionability check)
-    const visibleLabel = page.locator(".sg-maplabel[role='button']").first()
-    await visibleLabel.click({ timeout: 10000 })
+    // BUG-2026-030 : `.first()` en ordre DOM peut viser un label masqué par le declutter
+    // (jamais une cible de tap valide) → premier label VISIBLE, intention inchangée.
+    // + panneau héros "Meilleur choix" (opaque, pe:auto, data-dependent) peut recouvrir un
+    // label : on choisit le 1er label visible ET réellement atteignable (hit-test au centre).
+    // Un label sous un panneau opaque n'est tapable par AUCUN utilisateur — le funnel réel
+    // (tap plage → fiche) reste validé sur une vraie cible.
+    const tapIdx = await page.evaluate(() => {
+      const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
+        const r = el.getBoundingClientRect()
+        return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
+      })
+      for (let i = 0; i < els.length; i++) {
+        const r = els[i].getBoundingClientRect()
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+        if (hit && (hit === els[i] || els[i].contains(hit))) return i
+      }
+      return -1
+    })
+    expect(tapIdx).toBeGreaterThanOrEqual(0)
+    await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
 
     // Attendre que la fiche soit visible (BeachSheetComic = .bsc-sheet, fallback BeachSheet = .sheet, legacy = .lc-detail)
     const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
