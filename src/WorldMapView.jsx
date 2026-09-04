@@ -1821,7 +1821,7 @@ export default function WorldMapView({
           sinon un tap "tremblé" (>2px) sur un bouton (ex. « Voir la plage ») est traité
           comme un pan → setSelected(null) + setPointerCapture volent le clic au bouton
           → la fiche ne s'ouvrait jamais au doigt (P0 audit). */}
-      <div data-vmui="1" style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:10}}>
+      <div data-vmui="1" style={{position:"fixed",top:"var(--sg-header-offset,108px)",left:0,right:0,bottom:0,pointerEvents:"none",zIndex:10}}>
 
         {/* Barre top */}
         <div style={{
