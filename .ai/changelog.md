@@ -1,5 +1,16 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-04 · SPRINT DS-MIGRATION-VAGUE-1 + CI-RELIABILITY
+
+**A1 audit** : 6 variantes or (gbtn×9+scroll, cta-premium×1, sg-paygold×3, bs-gobtn×3, bm-cta×1, lc-gbtn×3). Money/funnel (paywall, lock, bs-gobtn, sg-paygold submits, onPay, forecast_beat, alertes) = EXCEPTIONS Vague 5 (CRO) ; lc-gbtn = exception jeu (sémantique statuts).
+**Découverte structurelle** : `.theme-comic button{…!important}` (0,1,1) + `.sg-onink-scope button{…!important}` (0,2,1) interdisent TOUTE migration boutons sans armor → **armor officielle TRIPLE-classe + !important** (recette .sg-mapnav) sur primary + nouveau modificateur `.sg-btn-pill` (2 usages).
+**Vague 1 migrée** : iOS tutorial "J'ai compris" + ScrollStory "Ouvrir la carte live" + BriefMatin CTA → `sg-btn sg-btn-primary (+pill)` ; règles `.bm-cta` SUPPRIMÉES (consolidation). Avant/après BriefMatin : or/encre/ombre-dure/pilule conservés (E89400→E8A800 canonique, ombre 4→6 pop-3, h 49→48) ; touch 48, contraste 9.3, focus anneau prouvé clavier, RM transition none.
+**B audit CI** : matrice — #628 playwright = PREEXISTING (fix #629) · #627 scan = FALSE_POSITIVE (pk_live publiable dans tmp/out2.js) · main CI Tests 17:07 = ENVIRONMENTAL (fc7 data, auto-résolu) · branch NON protégée → checks consultatifs, pas bloquants. **Fixes CI** : secret-scan exclut `pk_(live|test)_` (vrais `live_*` Mollie toujours détectés) · ci-funnel ajoute le 4e token WHITE_OR_TRANSPARENT (aligné ci-tests) · .gitignore couvre junk racine + tmp/out2.js (cause #627). YAML validé, la CI de la PR teste les 3 changements.
+**C hero-aware declutter** : MESURÉ (5/6 labels sous bbox héros à 390) → CONSERVÉ (boutons héros ouvrent la même fiche, masquer réduirait la découvrabilité, gain nul). E2E hit-test déjà robuste.
+**Gates** : build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅ · responsive/a11y ✅.
+
+---
+
 ## 2026-09-04 · SPRINT CARTE — BUG-2026-030 overlap labels (fix ciblé)
 
 **Repro** : `funnel-payment.spec.ts:82` timeout — centre du 1er label couvert par bouton héros "88 Plage de Saint-Pierre" (panneau opaque "Meilleur choix", pe:auto). Échec identique sur main pristine f5bdc3bd → pré-existant, non attribué au sprint branding.

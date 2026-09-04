@@ -8760,7 +8760,7 @@ function InstallPrompt({canAutoShow=true}={}){
             </div>
 
             <button onClick={()=>{setShowIosTutorial(false);dismiss();track("sg_pwa_ios_tutorial_done")}}
-              className="gbtn" style={{width:"100%",textAlign:"center",fontSize:15,padding:"14px 24px"}}>
+              className="sg-btn sg-btn-primary" style={{width:"100%",textAlign:"center"}}>
               {_t(lang,"J'ai compris","Got it","Entendido")}
             </button>
 

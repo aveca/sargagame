@@ -31,4 +31,5 @@ jobs:
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
       - run: grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log
       - run: grep -q 'ERRORS=\[\]' /tmp/smoke.log
+      - run: grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log
       - run: grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log
