@@ -1,4 +1,38 @@
 ---
+## 2026-09-05 · Agent: coding_agent (OpenCode) · SPRINT B2B — modal restauré, parcours ?pro=1 → essai/paylink
+
+### Travail effectué
+- **Résumé 1 ligne** : B2BModal éventré (dialogue vide live) → fonction originale restaurée + crash É2 fixé + partage + events débloqués.
+- **Détails** : séquence É1→É4 vérifiée (tiers, prix, gate email, paylink Mollie réel, trial non soumis) ; ternaire fiabilite/ ; share WhatsApp/email pré-remplis ; allowlist + FUNNEL_KEYS ; GP : sitemap/robots shadowés + GA4 vs Supabase documentés.
+
+### Fichiers modifiés
+- `src/PremiumModal/B2BModal.jsx` — restauration + fix + share row
+- `src/Sargasses_PROD.jsx` — allowlist 7 events
+- `scripts/automation/funnel-from-supabase.cjs` — 4 clés B2B
+- `.ai/*` — business + bugs + décisions
+
+### Tests réalisés
+- [x] build exit 0 · bundle 37.4 Ko · E2E 21/21 · smoke 4/4 · PHP N/A
+- [x] ?pro=1 É1→É4 locale (tiers/prix/gate/paylink, 0 erreur, 0 submit)
+- [x] b2b-trial.php 400 invalid_email (contrat vivant, 0 effet)
+- [x] B2B responsive 390/1440 (0 overflow, touch ≥44)
+
+### Problèmes restants
+- [ ] CI PR à vérifier
+- [ ] Trial submit réel non testé (email réel requis → fondateur ou 1er vrai prospect)
+- [ ] sitemap/robots shadowés (PR #627 connexe, sprint deploy dédié)
+- [ ] #coordonnées WhatsApp/tél fondateur manquantes pour CTA contact direct
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy → vérif ?pro=1 live — Rôle : release
+2. Outreach écrit vers 5-10 hôtels MQ avec message fourni — Rôle : fondateur/growth
+
+### Branche / PR
+- Branche : `agent/coding/b2b-revenue`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-04 · Agent: coding_agent (OpenCode) · SPRINT CRO — funnel prouvé, fix paywall, funnel aveugle comblé
 
 ### Travail effectué

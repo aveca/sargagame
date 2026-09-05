@@ -3,6 +3,17 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-031 — [FIXÉ 2026-09-05, sprint B2B] Modal offre B2B vide — ?pro=1 sans contenu
+- **Sévérité** : P0 produit — 15 vues/semaine → 0 étape (mécanique, pas CRO)
+- **Cause** : `B2BModal.jsx` éventré au split PremiumModal (ef8aa7d0) : logique gardée, render = placeholder. Prouvé live (dialogue 0 caractère).
+- **Fix** : fonction originale restaurée depuis d37dd3ba~1 + crash É2 (`_relHref` circulaire → ternaire inline) + share + allowlist/FUNNEL_KEYS.
+- **Validation** : É1→É4 locale, gate email, paylink Mollie réel, 0 erreur, E2E 21/21, smoke 4/4.
+
+### BUG-2026-032 — [OUVERT, P2 SEO/deploy] sitemap.xml + robots.txt servent le fallback SPA
+- **Symptôme** : `/sitemap.xml` et `/robots.txt` répondent 200 avec le HTML de l'app (44 Ko) alors que `dist/sitemap.xml` (90 Ko) et `dist/robots.txt` existent → sitemap invisible aux crawlers.
+- **Piste** : catch-all Pages/functions shadowant les statics (cf. PR #627 ouverte sur le routing). À traiter dans un sprint deploy dédié (risque routage).
+- **Date** : 2026-09-05 · **Fichiers** : `functions/[[path]].js`, `functions/_routes.json`, `dist/sitemap.xml`
+
 ### BUG-2026-028 — [FIXÉ PROD 2026-09-04] RegionNav ghost layer — liens invisibles et non cliquables
 - **Sévérité** : P1 — RegionNav (barre régions en haut) recouverte par `sg-onink-scope` (contenu principal), liens invisibles et non cliquables
 - **Date** : 2026-09-04 · **Fichiers** : `src/components/RegionNav.jsx`, `src/Sargasses_PROD.jsx` (header chrome + RegionNav fixed bar)

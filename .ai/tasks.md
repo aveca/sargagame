@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] **SPRINT B2B REVENUE — modal offre restauré + partage + instrumentation** (@coding_agent OpenCode, 2026-09-05) — Root cause : ?pro=1 = dialogue vide (stub depuis split). Restauration fonction originale (É1→É4, tiers, prix, gate email, paylink Mollie) + fix crash É2 (relHref circulaire) + share WhatsApp/email + allowlist/FUNNEL_KEYS débloqués. GP : sitemap/robots shadowés + divergence GA4/Supabase documentés. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅. Branche `agent/coding/b2b-revenue`.
+
 - [x] **SPRINT CRO — funnel prouvé + fix paywall + instrumentation** (@coding_agent OpenCode, 2026-09-04) — Business : 0 paiement Mollie/30j, funnel 7j 1363→167→4 CTA (2,4 %)→4 onsite→0 redirect→0 ; money-path vivant prouvé live (Mollie iframes LIVE, erreur guidée, 0 JS). Fix : RegionNav masqué au paywall (× non tappable prouvé → BUTTON_OK). Instrumentation : Plus tard comic tracké + modalCloses au funnel. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅. Branche `agent/coding/cro-revenue`.
 
 - [x] **SPRINT DS-MIGRATION-VAGUE-1 + CI-RELIABILITY** (@coding_agent OpenCode, 2026-09-04) — Audit 6 variantes or ; armor triple officielle (skins prouvés bloquants) + `.sg-btn-pill` ; 3 boutons migrés (iOS tutorial, ScrollStory, BriefMatin, `.bm-cta` supprimé) avec preuves avant/après + a11y ; money/funnel = exceptions Vague 5, lc-gbtn = exception jeu. CI : matrice échecs (preexisting/false-positive/environmental), secret-scan `pk_*` exclus, ci-funnel 4e token, .gitignore junk. C hero-aware : mesuré puis conservé. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅ · weekhub 5/5 ✅. Branche `agent/coding/ds-migration-ci`.
