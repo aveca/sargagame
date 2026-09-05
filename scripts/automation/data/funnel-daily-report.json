@@ -1,7 +1,7 @@
 {
   "window_hours": 24,
-  "since": "2026-09-04T03:59:11.469Z",
-  "total_events": 987,
+  "since": "2026-09-04T10:27:41.864Z",
+  "total_events": 1081,
   "funnel": [
     {
       "key": "map_open",
@@ -13,19 +13,19 @@
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 95
+      "count": 97
     },
     {
       "key": "verdict_scan_view",
       "label": "Verdict viewed",
       "icon": "📊",
-      "count": 60
+      "count": 62
     },
     {
       "key": "premium_modal_open",
       "label": "Paywall seen",
       "icon": "🔒",
-      "count": 19
+      "count": 20
     },
     {
       "key": "cta",
@@ -56,17 +56,17 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 4750
+      "rate": 4850
     },
     {
       "from": "Beach selected",
       "to": "Verdict viewed",
-      "rate": 63.2
+      "rate": 63.9
     },
     {
       "from": "Verdict viewed",
       "to": "Paywall seen",
-      "rate": 31.7
+      "rate": 32.3
     },
     {
       "from": "Paywall seen",
@@ -92,9 +92,9 @@
   "global_rate": 0,
   "counts": {
     "map_open": 2,
-    "beach_open": 95,
-    "verdict_scan_view": 60,
-    "premium_modal_open": 19,
+    "beach_open": 97,
+    "verdict_scan_view": 62,
+    "premium_modal_open": 20,
     "pass_cta": 0,
     "onsite_checkout_opened": 0,
     "mollie_checkout_redirect": 0,
@@ -105,21 +105,21 @@
   "engagement": {
     "verdict_expand": 0,
     "forecast_view": 0,
-    "paywall_view": 19,
+    "paywall_view": 20,
     "payment_failed": 0,
     "premium_feature_click": 0
   },
   "by_island": {
-    "PUNTACANA": {
-      "beach_open": 25,
-      "verdict_scan_view": 16,
-      "premium_modal_open": 7
-    },
     "GP": {
-      "beach_open": 21,
-      "verdict_scan_view": 14,
+      "beach_open": 28,
+      "verdict_scan_view": 18,
       "premium_modal_open": 1,
       "map_open": 2
+    },
+    "PUNTACANA": {
+      "beach_open": 20,
+      "verdict_scan_view": 14,
+      "premium_modal_open": 8
     },
     "MQ": {
       "beach_open": 15,
@@ -134,8 +134,8 @@
   },
   "by_pw_style": {
     "world": {
-      "modal_open": 19,
-      "paywall_view": 19,
+      "modal_open": 20,
+      "paywall_view": 20,
       "cta": 0,
       "conversion": 0
     }
