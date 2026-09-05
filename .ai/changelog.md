@@ -1,5 +1,17 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-05 · SPRINT B2B REVENUE — modal offre restauré + partage + instrumentation
+
+**ROOT CAUSE (prouvée live)** : `?pro=1` ouvrait un dialogue VIDE (0 caractères) — `B2BModal.jsx` éventré depuis le split PremiumModal (ef8aa7d0) : logique conservée, render remplacé par placeholder. 15 vues/semaine → 0 étape, mécaniquement.
+**Restauration** : fonction originale complète depuis d37dd3ba~1 (séquence É1 verdict réel → É2 preuve registre → É3 tiers → É4 ask email-gaté → token 30j / paylink annuel Mollie / TerritoireMeeting). Vérifiée É1→É4 locale : tiers Brief/Pro/Territoire, prix 79€/690€, gate email (désactivé vide → activé rempli, SANS submit), paylink Mollie réel, 0 erreur.
+**Fix crash É2** : `_relHref()` (import circulaire lib/relHref.js) plantait le rendu (ErrBound silencieux + console droppée en prod) → ternaire inline (idiome BriefMatin) + NOTE anti-import.
+**Outreach-ready** : rangée partage É4 (WhatsApp wa.me/?text= SANS numéro inventé + mailto: pré-remplis, deep-link ?pro=1) + events `sg_b2b_share`.
+**Instrumentation** : allowlist SG_FUNNEL_EVENTS += premium_modal_close (le CRO modalCloses était AVEUGLE : event émis mais jeté), b2b_share/paylink_click/tier_select/space_open/step_back/rel_click (émis mais jetés) ; FUNNEL_KEYS += share/paylink/tier/space.
+**GP sanity** : DNS/HTTP 200 OK ; MAIS robots.txt+sitemap.xml servent le fallback SPA (90Ko sitemap ignoré) → défaut routage Pages (cf. PR #627 ouverte) ; GA4≈0 vs Supabase ~50/j → divergence tracking (consent), pas trafic nul. Documenté, non touché (risque deploy).
+**Gates** : build ✅ · 37.4 Ko ✅ · E2E 21/21 ✅ · smoke 4/4 ✅ · B2B 390/1440 (0 overflow, touch OK) ✅ · b2b-trial 400 invalid_email (0 effet) ✅.
+
+---
+
 ## 2026-09-04 · SPRINT CRO — funnel prouvé + RegionNav-paywall + dismiss instrumentation
 
 **BUSINESS (daily-metrics 2026-09-04, prouvé)** : Mollie 30j = 0 paiement (lastPaid 2026-07-19) · Stripe run-off 14 abos/€69.86 · funnel 7j Supabase : 1363 sessions → 167 paywall → 4 CTA (2,4 %) → 4 onsite → 0 redirect → 0 conversion (toutes îles : MQ 63→3, GP 38→1, FL 34→0, PC 25→0) · B2B 15 vues → 0 step · GA4 MQ ~16-95/j, GP ~0-1/j.

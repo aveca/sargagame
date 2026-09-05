@@ -1976,6 +1976,12 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
   "sg_b2b_offer_view","sg_b2b_step","sg_b2b_intent","sg_b2b_trial_activated","sg_pass_offer_view",
+  // CRO B2B 2026-09-05 : ces events ÉTAIENT émis mais JETÉS (absents du set → jamais
+  // loggés Supabase, funnel aveugle). paylink_click = intention annuelle (revenu),
+  // tier_select/space_open = engagement offre et trial→usage, step_back/rel_click = friction/preuve.
+  "sg_b2b_paylink_click","sg_b2b_tier_select","sg_b2b_space_open","sg_b2b_step_back","sg_b2b_rel_click","sg_b2b_share",
+  // CRO 2026-09-04 : abandons paywall B2C (via+dwell) — émis par PremiumModal, jamais comptés.
+  "sg_premium_modal_close",
   // Paywall B2C offre-first (A/B pw_pass_seq, 2026-07-02) : ouverture de l'écran preuve
   // opt-in (critère de mort <3 % → default-off) + retour. Le bras A/B ride en ab_pw_pass_seq.
   "sg_pass_proof_open","sg_pass_seq_back",
