@@ -1,13 +1,13 @@
 {
   "window_days": 7,
-  "since": "2026-08-29T15:03:30.977Z",
-  "total_rows": 9861,
+  "since": "2026-08-29T20:16:00.052Z",
+  "total_rows": 10374,
   "counts": {
-    "session_start": 1245,
-    "forecast_lock_click": 88,
-    "premium_modal_open": 158,
+    "session_start": 1249,
+    "forecast_lock_click": 84,
+    "premium_modal_open": 170,
     "premium_modal_close": 0,
-    "beach_open": 1345,
+    "beach_open": 1304,
     "pass_cta": 3,
     "conversion": 0,
     "email_submit": 0,
@@ -24,44 +24,44 @@
   "mollie_redirects": 0,
   "onsite_opened": 3,
   "rates": {
-    "session_to_lock": 7.1,
-    "lock_to_beach": 1528.4,
-    "beach_to_modal": 11.7,
-    "modal_to_cta": 1.9,
+    "session_to_lock": 6.7,
+    "lock_to_beach": 1552.4,
+    "beach_to_modal": 13,
+    "modal_to_cta": 1.8,
     "cta_to_onsite": 100,
     "onsite_to_mollie": 0,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "FLORIDA": {
-      "beach_open": 493,
-      "session_start": 339,
-      "premium_modal_open": 31,
-      "forecast_lock_click": 48,
-      "b2b_offer_view": 1
-    },
-    "PUNTACANA": {
-      "premium_modal_open": 22,
-      "beach_open": 166,
-      "session_start": 174,
-      "b2b_offer_view": 3,
-      "forecast_lock_click": 12
-    },
     "GP": {
-      "session_start": 321,
-      "beach_open": 355,
+      "session_start": 316,
+      "beach_open": 323,
       "premium_modal_open": 37,
       "pass_cta": 1,
       "onsite_checkout_opened": 1,
       "forecast_lock_click": 10,
       "b2b_offer_view": 1
     },
+    "FLORIDA": {
+      "beach_open": 496,
+      "session_start": 338,
+      "premium_modal_open": 34,
+      "forecast_lock_click": 48,
+      "b2b_offer_view": 1
+    },
+    "PUNTACANA": {
+      "session_start": 177,
+      "beach_open": 168,
+      "premium_modal_open": 26,
+      "b2b_offer_view": 3,
+      "forecast_lock_click": 12
+    },
     "MQ": {
-      "session_start": 389,
-      "beach_open": 269,
-      "forecast_lock_click": 11,
-      "premium_modal_open": 62,
+      "session_start": 396,
+      "beach_open": 255,
+      "premium_modal_open": 67,
+      "forecast_lock_click": 7,
       "b2b_offer_view": 2,
       "pass_cta": 2,
       "onsite_checkout_opened": 2
