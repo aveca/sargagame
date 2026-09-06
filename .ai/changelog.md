@@ -1,5 +1,10 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · ACTIVATION FINALE BIS — re-vérifié, toujours BLOCKED (zéro changement code)
+
+**Re-audit** : env toujours vide ; `.env` inchangé (CF uniquement) ; secrets worker TOUJOURS `[]` (vérifié API `secret list`) ; apply-schema toujours 401 (dernier run 06:03) ; worker live outreach-2 sain (dry_run ON, OFF) ; preflight live refuse proprement sans clé ; contrats 36/36 re-vérifiés verts.
+**Conclusion inchangée** : DB + 4 secrets + 1–3 prospects = fondateur. Aucun envoi/post effectué ou effectuale. Voir checklist au rapport.
+
 ## 2026-09-06 · ACTIVATION FINALE — audit credentials, BLOCKED prouvé (zéro changement code)
 
 **Credentials (présence uniquement)** : process env = tout ABSENT ; `.env` = CLOUDFLARE_API_KEY/EMAIL/ACCOUNT_ID présents (valeurs jamais lues) ; tout le reste (SUPABASE_*, RESEND_*, FB_*, ADMIN_*) ABSENT partout accessible.
