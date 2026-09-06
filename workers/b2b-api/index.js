@@ -72,6 +72,13 @@ export default {
     if (path.includes('mollie.php') && method === 'POST') return handleMollieCheckout(request);
 
     // ── B2B routes ─────────────────────────────────────────────────
+    // CRO B2B 2026-09-05 (BUG-2026-033) : le JSON statique /api/b2b-paylinks.json
+    // (publié par le build : liens + montants annuels Mollie) était happé par la
+    // route worker → 404, liens annuels invisibles dans le modal Pro. Passthrough
+    // vers l'origine Pages (les sous-requêtes contournent les routes workers) où
+    // le catch-all functions/[[path]].js le sert depuis dist/. GET exact UNIQUEMENT :
+    // aucun POST/action existant ne matche ce chemin → money-path intact.
+    if (method === 'GET' && path === '/api/b2b-paylinks.json') return fetch(request);
     const match = path.match(/\/api\/(b2b-[\w-]+?)(?:\.php)?$/);
     if (!match) return err('Not found', 404);
 
