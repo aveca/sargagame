@@ -1,4 +1,34 @@
 ---
+## 2026-09-06 · Agent: coding_agent (OpenCode) · BUG-2026-033 — passthrough paylinks, en attente deploy
+
+### Travail effectué
+- **Résumé 1 ligne** : fix ciblé routage statique paylinks annuels + test contrat, en route vers merge/deploy.
+- **Détails** : GET exact `/api/b2b-paylinks.json` → origine ; 7/7 local ; trial/POST/webhook intacts.
+
+### Fichiers modifiés
+- `workers/b2b-api/index.js` — passthrough STRICT (GET exact uniquement)
+- `scripts/tests/worker-b2b-passthrough.test.cjs` — nouveau (auto-découvert par run-tests.cjs)
+- `.ai/bugs.md` (033), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
+
+### Tests réalisés
+- [x] worker passthrough 7/7 local
+- [ ] build + E2E + smoke (Phase 2, avant commit)
+- [ ] CI PR (fc7 pré-existant documenté d'avance)
+- [ ] deploy + live MQ/GP (paylinks 200, lien annuel, trial gate, 0 submit)
+
+### Problèmes restants
+- [ ] BUG-2026-032 (sitemap/robots) — NON touché, sprint deploy dédié
+- [ ] Trial submit réel jamais testé (email réel requis)
+
+### Prochaine action recommandée
+1. Valider → commit → PR → CI → merge → deploy → live — Rôle : release (cette session)
+
+### Branche / PR
+- Branche : `agent/coding/b2b-revenue`
+- PR : à créer (dédiée 033)
+
+---
+
 ## 2026-09-05 · Agent: coding_agent (OpenCode) · SPRINT B2B — modal restauré, parcours ?pro=1 → essai/paylink
 
 ### Travail effectué

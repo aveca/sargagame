@@ -1,5 +1,15 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · BUG-2026-033 — passthrough paylinks (finalisation B2B)
+
+**État avant deploy** : modal ?pro=1 live OK (tiers, gate email, share), MAIS lien annuel absent — `GET /api/b2b-paylinks.json` 404 live (MQ+GP prouvés) alors que `dist/` le contient et `b2b-trial.php` répond (400 invalid_email prouvé).
+**Root cause** : route Worker `/api/b2b*` intercepte avant le statique ; worker sans binding ASSETS ni handler → 404.
+**Fix** : `workers/b2b-api/index.js` — passthrough `fetch(request)` pour GET exact `/api/b2b-paylinks.json` uniquement. POST/actions/webhook/trial/prix/checkout intacts par construction.
+**Tests** : `scripts/tests/worker-b2b-passthrough.test.cjs` 7/7.
+**État attendu après deploy** : paylinks 200 + lien annuel visible É1/É4, trial inchangé.
+
+---
+
 ## 2026-09-05 · SPRINT B2B REVENUE — modal offre restauré + partage + instrumentation
 
 **ROOT CAUSE (prouvée live)** : `?pro=1` ouvrait un dialogue VIDE (0 caractères) — `B2BModal.jsx` éventré depuis le split PremiumModal (ef8aa7d0) : logique conservée, render remplacé par placeholder. 15 vues/semaine → 0 étape, mécaniquement.

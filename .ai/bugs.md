@@ -3,6 +3,13 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-033 — [FIXÉ 2026-09-06, en attente deploy] paylinks annuels 404 live — Worker shadowant le statique
+- **Sévérité** : P1 B2B — lien annuel Mollie invisible dans le modal Pro (trial unaffected)
+- **Cause prouvée** : `dist/api/b2b-paylinks.json` existe ; `functions/[[path]].js` le servirait (.json → ASSETS) ; MAIS la route Worker `/api/b2b*` intercepte avant et `workers/b2b-api/index.js` n'a ni binding ASSETS ni handler statique → 404. `b2b-trial.php` non concerné (route action, contrat 400 prouvé live).
+- **Fix** : passthrough STRICT — `GET` exact `/api/b2b-paylinks.json` → `fetch(request)` vers origine Pages. POST/actions/webhook/trial/prix/checkout intacts par construction (garde méthode + chemin exact).
+- **Tests** : `scripts/tests/worker-b2b-passthrough.test.cjs` 7/7 (passthrough, corps intact, POST non affecté, 404 existants inchangés).
+- **Fichiers** : `workers/b2b-api/index.js`, `scripts/tests/worker-b2b-passthrough.test.cjs`
+
 ### BUG-2026-031 — [FIXÉ 2026-09-05, sprint B2B] Modal offre B2B vide — ?pro=1 sans contenu
 - **Sévérité** : P0 produit — 15 vues/semaine → 0 étape (mécanique, pas CRO)
 - **Cause** : `B2BModal.jsx` éventré au split PremiumModal (ef8aa7d0) : logique gardée, render = placeholder. Prouvé live (dialogue 0 caractère).
