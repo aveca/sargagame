@@ -614,7 +614,7 @@ export default {
       return json({ ok: true });
     }
     if (p === '/api/outreach/health' || p === '/health') {
-      return json({ ok: true, outreach: 'outreach-1', dry_run: cc.dryRun, enabled: cc.enabled });
+      return json({ ok: true, outreach: 'outreach-2', dry_run: cc.dryRun, enabled: cc.enabled });
     }
     return json({ error: 'not_found' }, 404);
   },
