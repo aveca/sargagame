@@ -1,5 +1,11 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · LONG SESSION — fc7-alignment : dérive free tier corrigée structurellement
+
+**Cause prouvée** : le commit data du pipeline stageait `_private/forecast-full.json` SANS `fc7/` → dérive (mq 36, gp 83, …), free tier « Ma plage » périmé + gate CI rouge.
+**Fix** : `regen-fc7.cjs` + stage fc7 dans le step de commit data (pattern `|| true` respecté) + realignement immédiat (229 fichiers, test 100 % vert) + `.claude/worktrees/` ignoré (bruit CI).
+**Gates** : fc7-alignment 100 % local ✅ · build/app intouchés.
+
 ## 2026-09-06 · LONG SESSION — BUG-2026-032 routage sitemap/robots (P0 SEO)
 
 **Audit P0** : money-path vivant (verify_subscription 200), aucun secret exposé, outreach gelé (credentials absents). Trouvé : `/sitemap.xml`+`/robots.txt` → SPA HTML 200 live (44 Ko) → SEO Guard rouge quotidien depuis le 01/09 (grep `<loc>` = 0 URLs).

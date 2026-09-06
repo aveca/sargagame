@@ -914,6 +914,14 @@ jobs:
           # une sentinelle vient d'être ajoutée (cas 'precheur' 2026-06-30). Root + régions.
           git add public/api/copernicus/_private/forecast-full.json 2>/dev/null || true
           git add public/api/copernicus/*/_private/forecast-full.json 2>/dev/null || true
+          # FREE TIER « Ma plage » (fc7-alignment rouge chronique) : les fc7 publics
+          # DOIVENT suivre les privés à chaque run — le commit ci-dessus stageait les
+          # privés SANS les fc7 → dérive systématique (privé frais commité, fc7 figés,
+          # free tier périmé + gate rouge). regen-fc7 = recopie déterministe mirror-exact,
+          # zéro invention ; pathspecs isolés (cf. leçon 2026-06-15 ci-dessus).
+          node scripts/regen-fc7.cjs
+          git add public/api/copernicus/fc7 2>/dev/null || true
+          git add public/api/copernicus/*/fc7 2>/dev/null || true
           # Sorties par région du pipeline multi-régions (mq/, gp/, puntacana/, …)
           # banks/grid régionaux inclus : persistance inter-runs = signal d'arrivée forecast
           # Chaque pathspec ajouté SÉPARÉMENT — `git add a b c` est ATOMIQUE : si UN

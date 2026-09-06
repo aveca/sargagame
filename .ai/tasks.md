@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [ ] **FC7-ALIGNMENT — dérive free tier + gate rouge** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Cause prouvée : commit data pipeline stageait les privés SANS les fc7 → dérive (ex. mq 36, gp 83). Fix : `regen-fc7` + stage fc7 dans daily-copernicus + realignement immédiat (229 fichiers, 0 divergence) + `.claude/worktrees/` ignoré. Reste : CI → merge → deploy → live.
+
 - [x] **BUG-2026-032 — routage sitemap/robots + prune domaines morts** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — PR #645 (routing) + #646 (prune). Live : sitemap 200 XML 539 loc 0 barbados, robots 200, **SEO Guard SUCCESS 06/09** (1er vert après 6 jours rouges 01→06/09). Tests 7/7 ×2 · 21/21 · smoke 4/4.
 
 - [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
