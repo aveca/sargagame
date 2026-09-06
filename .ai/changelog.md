@@ -3,9 +3,9 @@
 ## 2026-09-06 · BUG-2026-033 — passthrough paylinks (finalisation B2B)
 
 **État avant deploy** : modal ?pro=1 live OK (tiers, gate email, share), MAIS lien annuel absent — `GET /api/b2b-paylinks.json` 404 live (MQ+GP prouvés) alors que `dist/` le contient et `b2b-trial.php` répond (400 invalid_email prouvé).
-**Root cause** : route Worker `/api/b2b*` intercepte avant le statique ; worker sans binding ASSETS ni handler → 404.
-**Fix** : `workers/b2b-api/index.js` — passthrough `fetch(request)` pour GET exact `/api/b2b-paylinks.json` uniquement. POST/actions/webhook/trial/prix/checkout intacts par construction.
-**Tests** : `scripts/tests/worker-b2b-passthrough.test.cjs` 7/7.
+**Root cause (corrigée en cours de route)** : 1er fix sur b2b-api, mais le corps live `{"error":"not_found"}` = fallthrough **sg-payments** → fix reporté là (passthrough identique GET exact) ; fix b2b-api conservé (zones routées b2b-api).
+**Fix** : `workers/sg-payments/src/index.ts` (+ b2b-api) — passthrough `fetch(request)` pour GET exact `/api/b2b-paylinks.json` uniquement. POST/actions/webhook/trial/prix/checkout intacts par construction.
+**Tests** : 2 contrats 7/7 (`worker-b2b-passthrough`, `worker-payments-passthrough`).
 **État attendu après deploy** : paylinks 200 + lien annuel visible É1/É4, trial inchangé.
 
 ---
