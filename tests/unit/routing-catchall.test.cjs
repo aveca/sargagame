@@ -27,6 +27,7 @@ async function main() {
     '/sitemap.xml': { ok: true, body: '<?xml version="1.0"?><urlset></urlset>', type: 'application/xml' },
     '/robots.txt': { ok: true, body: 'User-agent: *\nAllow: /', type: 'text/plain' },
     '/index.html': { ok: true, body: '<html>APP</html>', type: 'text/html' },
+    '/beach/anse-mitan/': { ok: true, body: '<html><title>Anse Mitan (Martinique)</title></html>', type: 'text/html' },
   };
   const env = {
     ASSETS: {
@@ -51,6 +52,8 @@ async function main() {
   ok(r.status === 200 && r.body.includes('<html>APP</html>'), 'racine toujours SPA fallback');
   r = await get('/une-plage-quelconque/');
   ok(r.status === 200 && r.body.includes('<html>APP</html>'), 'page SEO toujours SPA fallback');
+  r = await get('/beach/anse-mitan/');
+  ok(r.status === 200 && r.body.includes('Anse Mitan (Martinique)'), 'page statique existante servie (pas la coquille)');
   r = await get('/api/b2b-paylinks.json');
   ok(r.body === 'no asset', 'chemin api/*.json délégué à ASSETS (pas de 404 handler)');
 
