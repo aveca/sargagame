@@ -1,5 +1,10 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist
+
+**Ajouts (zéro activation live)** : `/status` enrichi (secrets présence-only, email_today, queue, runtime heartbeats/erreurs, version outreach-2) ; `outreach-preflight.cjs` (+ `--gate` : refuse si DB KO, Resend absent, 0 dry-run) ; `outreach-verify-dry-run.cjs` (DRY RUN VERIFIED) ; `outreach-preflight.test.cjs` 12/12 ; commandes npm ; `docs/outreach-activation.md` (8 étapes fondateur, rollback).
+**Gates** : preflight 12/12 ✅ · outreach 36/36 ✅ · YAML/package OK ✅ · aucun envoi/post réel (par design, inchangé).
+
 ## 2026-09-06 · TENTATIVE ACTIVATION OUTREACH — bloquée côté fondateur (zéro changement code)
 
 **Audit** : worker live sain (`/health` 200, dry_run ON, OFF) ; `apply-supabase-schema` TOUJOURS 401 (token expiré depuis 2026-07-30, 5 échecs) → tables OUTREACH absentes de prod (non vérifiable sans clé, présumé) ; aucun secret provisionnable d'ici (pas d'auth CF) ; aucun prospect réel disponible (non inventé).

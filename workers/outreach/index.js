@@ -423,7 +423,7 @@ async function setPost(env, id, patch) {
     // les 3 jobs écrivent déjà un heartbeat à chaque run, couverture 30 min).
     // Le watchdog lit n'importe quel heartbeat récent + les compteurs ci-dessous.
 
-// ─── Admin (agrégats uniquement, JAMAIS de PII) ───────────────────────────
+// ─── Admin (agrégats uniquement, JAMAIS de PII ni de secrets) ─────────────
 async function adminStatus(env, cc) {
   const counts = {};
   try {
@@ -433,18 +433,52 @@ async function adminStatus(env, cc) {
       for (const x of rows) counts[x.status] = (counts[x.status] || 0) + 1;
     }
   } catch (_) {}
-  const hb = await sb(env, 'outreach_events?select=kind,created_at,detail&order=created_at.desc&limit=5')
+  const hb = await sb(env, 'outreach_events?select=kind,created_at,detail&order=created_at.desc&limit=20')
     .then((r) => (r.ok ? r.json().catch(() => []) : [])).catch(() => []);
-  let fb = { scheduled: -1, published7d: -1 };
+  let fb = { scheduled: -1, published7d: -1, failed: -1 };
   try {
     fb.scheduled = await sbCount(env, 'social_posts?status=eq.scheduled');
     fb.published7d = await sbCount(env, `social_posts?status=eq.published&published_at=gte.${new Date(Date.now() - 7 * 86400000).toISOString()}`);
+    fb.failed = await sbCount(env, 'social_posts?status=eq.failed');
   } catch (_) {}
+  // Compteurs jour (UTC) pour le monitoring. -1 = illisible (le preflight marque
+  // WARN, jamais PASS). Ajoutés sprint activation (monitoring §11) — lecture seule.
+  const day = `${todayIso()}T00:00:00Z`;
+  const cnt = async (q) => { try { return await sbCount(env, q); } catch (_) { return -1; } };
+  const emailToday = {
+    sent: await cnt(`outreach_events?created_at=gte.${day}&kind=eq.sent&dry_run=eq.false`),
+    failed: await cnt(`outreach_events?created_at=gte.${day}&kind=in.(failed,bounced)`),
+    replies: await cnt(`outreach_events?created_at=gte.${day}&kind=in.(replied,positive,negative)`),
+    retries: await cnt(`outreach_events?created_at=gte.${day}&kind=eq.retry`),
+    dry_runs: await cnt(`outreach_events?created_at=gte.${day}&kind=eq.dry_run`),
+  };
+  const lastHb = hb.find((e) => e.kind === 'heartbeat') || null;
+  const lastErr = hb.find((e) => e.kind === 'failed') || null;
   return {
-    ok: true, version: 'outreach-1',
+    ok: true, version: 'outreach-2',
     enabled: cc.enabled, email: cc.emailOn, fb_enabled: cc.fbOn, dry_run: cc.dryRun,
+    // Présence UNIQUEMENT (jamais de valeurs) pour le pre-flight secrets.
+    secrets: {
+      service_key: !!env.SUPABASE_SERVICE_KEY,
+      resend_key: !!env.RESEND_API_KEY,
+      fb_token: !!env.FB_PAGE_TOKEN,
+      admin_key: !!env.ADMIN_KEY,
+    },
     limits: { daily: cc.dailyLimit, hourly: cc.hourlyLimit, batch: cc.batch },
-    contacts_by_status: counts, facebook_posts: fb, recent_events: hb,
+    contacts_by_status: counts,
+    queue: {
+      ready: counts.ready || 0, queued: counts.queued || 0,
+      failed: counts.failed || 0, sent: counts.sent || 0,
+    },
+    email_today: emailToday,
+    facebook_posts: fb,
+    runtime: {
+      last_heartbeat_at: lastHb ? lastHb.created_at : null,
+      last_heartbeat_detail: lastHb ? String(lastHb.detail || '').slice(0, 120) : null,
+      last_error_at: lastErr ? lastErr.created_at : null,
+      last_error_detail: lastErr ? String(lastErr.detail || '').slice(0, 120) : null,
+    },
+    recent_events: hb.slice(0, 5),
   };
 }
 
