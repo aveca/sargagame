@@ -8,12 +8,15 @@ compatibility_date = "2026-08-19"
 
 # Schedules UTC (fenêtres d'envoi = tz métier calculées dans le code, jamais locale).
 # Petits batches fréquents plutôt qu'un gros traitement unique.
+# LIMITE FREE : 5 cron triggers/compte (sg-payments en utilise 2) → ce worker
+# en déclare 3 exactement (queue, relances, facebook). Pas de cron health dédié :
+# chaque job écrit déjà un heartbeat (couverture 30 min, meilleure qu'un hourly).
+# Headroom nul : tout nouveau cron (ici ou ailleurs) exige Workers Paid ($5/mo).
 [triggers]
 crons = [
   "*/30 * * * *",   # process_email_queue (STEP 0, premier contact)
   "20 * * * *",     # process_email_followups (STEP 1-2, relances)
   "45 11 * * *",    # process_facebook_queue (11:45 UTC ≈ 07:45 MQ)
-  "10 * * * *",     # health_check (heartbeat + compteurs)
 ]
 
 [vars]

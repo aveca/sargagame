@@ -53,7 +53,10 @@ pour les liens opt-out ; vide = mention reply-STOP seule), `FB_MQ/GP_PAGE_ID`.
 | `*/30 * * * *` | `process_email_queue` (STEP 0) |
 | `20 * * * *` | `process_email_followups` (STEP 1-2) |
 | `45 11 * * *` | `process_facebook_queue` (≈07:45 MQ) |
-| `10 * * * *` | `health_check` (heartbeat) |
+
+3 crons exactement (limite Free : 5/compte, sg-payments en utilise 2 — headroom
+nul, Workers Paid requis pour tout cron supplémentaire). Pas de cron health :
+chaque job écrit un heartbeat (couverture 30 min).
 
 Séquence email : STEP 0 contact → +4j relance → +7j dernière. Arrêt immédiat :
 réponse, opt-out, bounce, campagne désactivée, kill switch. Retry : réseau/429/5xx

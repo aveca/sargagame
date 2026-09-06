@@ -419,20 +419,9 @@ async function setPost(env, id, patch) {
   } catch (_) {}
 }
 
-async function jobHealth(env, cc, dry) {
-  const since = new Date(Date.now() - 24 * 3600000).toISOString().slice(0, 10);
-  let sentDay = -1, errDay = -1, queued = -1;
-  try {
-    sentDay = await sbCount(env, `outreach_events?created_at=gte.${todayIso()}T00:00:00Z&kind=eq.sent&dry_run=eq.false`);
-    const er = await sb(env, `outreach_events?select=id&created_at=gte.${since}T00:00:00Z&kind=in.(failed,bounced)&limit=1`, 'GET', null, { Prefer: 'count=exact' });
-    const cr = er.headers.get('Content-Range') || '';
-    const m = cr.match(/\/(\d+)\s*$/);
-    errDay = m ? parseInt(m[1], 10) : 0;
-    queued = await sbCount(env, `outreach_contacts?status=in.(ready,queued)`);
-  } catch (_) {}
-  await logEvent(env, 'heartbeat', null, null, `health sent_day=${sentDay} err_24h=${errDay} queue=${queued}`, dry);
-  return { sentDay, errDay, queued };
-}
+    // Retiré : job health dédié (pas de cron libre sous la limite free —
+    // les 3 jobs écrivent déjà un heartbeat à chaque run, couverture 30 min).
+    // Le watchdog lit n'importe quel heartbeat récent + les compteurs ci-dessous.
 
 // ─── Admin (agrégats uniquement, JAMAIS de PII) ───────────────────────────
 async function adminStatus(env, cc) {
@@ -453,9 +442,9 @@ async function adminStatus(env, cc) {
   } catch (_) {}
   return {
     ok: true, version: 'outreach-1',
-    enabled: cc.enabled, email: cc.emailOn, facebook: cc.fbOn, dry_run: cc.dryRun,
+    enabled: cc.enabled, email: cc.emailOn, fb_enabled: cc.fbOn, dry_run: cc.dryRun,
     limits: { daily: cc.dailyLimit, hourly: cc.hourlyLimit, batch: cc.batch },
-    contacts_by_status: counts, facebook: fb, recent_events: hb,
+    contacts_by_status: counts, facebook_posts: fb, recent_events: hb,
   };
 }
 
@@ -469,7 +458,6 @@ export default {
       '*/30 * * * *': 'email_queue',
       '20 * * * *': 'email_followups',
       '45 11 * * *': 'facebook',
-      '10 * * * *': 'health',
     };
     let job = JOB_BY_CRON[cron] || 'email_queue';
     // Garde-fous globaux AVANT tout traitement.
@@ -491,9 +479,6 @@ export default {
       } else if (job === 'facebook') {
         const r = await jobFacebook(env, cc, dry);
         await logEvent(env, 'heartbeat', null, null, `job=facebook published=${r.published} errors=${r.errors}`, dry);
-      } else {
-        const r = await jobHealth(env, cc, dry);
-        void r;
       }
     } catch (e) {
       await logEvent(env, 'failed', null, null, `job=${job} exception:${String((e && e.message) || e).slice(0, 120)}`, dry);
