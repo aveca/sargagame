@@ -12,10 +12,10 @@
 - `.ai/*` — diagnostic + décisions + mémoire
 
 ### Tests réalisés
-- [x] outreach-queue 36/36 local (queue, idempotence, retry, stops, quotas, batch, tz, FB, killswitch, dry-run, admin, unsub, webhook, reply)
+- [x] outreach-queue 36/36 local ET en CI (queue, idempotence, retry, stops, quotas, batch, tz, FB, killswitch, dry-run, admin, unsub, webhook, reply)
 - [x] YAML parse OK · node --check OK
-- [ ] CI PR (à vérifier)
-- [ ] deploy + smoke dry-run live (après merge)
+- [x] CI PR 6/6 utiles (fc7 pré-existant seul rouge) · deploy + smoke dry-run LIVE verts
+- [x] Live : worker répond, dry_run:true, enabled:false, /status 401 sans clé
 
 ### Problèmes restants
 - [ ] Secrets à provisionner (fondateur) : SUPABASE_SERVICE_KEY, ADMIN_KEY, RESEND_API_KEY, FB_PAGE_TOKEN + vars + OUTREACH_* GH + schéma si token expiré + seed 1–3 prospects
