@@ -1,5 +1,11 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · OUTREACH — fix limite cron Free + warning doublon
+
+**Deploy initial** : worker live `https://outreach.m4ngo.workers.dev` (vars sûres), MAIS schedules partiellement appliqués — **limite Free 5 crons/compte** (sg-payments: 2, code 10072).
+**Fix** : 4→3 crons (health dédié supprimé, heartbeats portés par les 3 jobs) + clé `facebook` dupliquée renommée + README. Headroom nul → Workers Paid ($5/mo) recommandé pour tout cron futur.
+**Reste fondateur** : `SUPABASE_ACCESS_TOKEN` 401 persistant (apply-schema KO) → schéma OUTREACH à appliquer en SQL Editor + 4 secrets worker + seed prospects.
+
 ## 2026-09-06 · SPRINT OUTREACH 0-PC — Worker automation + queues DB + CI
 
 **Diagnostic** : aucun worker automation ; Supabase sans tables outreach ; email = SMTP scripts + Resend PHP ; Meta = rien ; `stripe-config.php` local NON commité (gitignoré, pas de fuite repo) ; deploy workers via matrice deploy-live ; schéma auto via apply-supabase-schema (si token valide).
