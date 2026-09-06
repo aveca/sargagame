@@ -796,6 +796,14 @@ export default {
       return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' } });
     }
 
+    // CRO B2B 2026-09-06 (BUG-2026-033) : le JSON statique /api/b2b-paylinks.json
+    // (liens + montants annuels Mollie publiés par le build) tombait sur ce
+    // fallthrough 404 car aucune route ne le sert. Passthrough STRICT vers
+    // l'origine Pages : GET exact uniquement (les sous-requêtes contournent les
+    // routes workers). POST/actions/webhook/trial/prix/checkout intacts : aucun
+    // d'eux ne matche ce chemin, et la garde méthode l'exclut.
+    if (request.method === 'GET' && path === '/api/b2b-paylinks.json') return fetch(request);
+
     return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: { 'Content-Type': 'application/json' } });
   },
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {

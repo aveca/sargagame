@@ -6,9 +6,10 @@
 - **Détails** : GET exact `/api/b2b-paylinks.json` → origine ; 7/7 local ; trial/POST/webhook intacts.
 
 ### Fichiers modifiés
-- `workers/b2b-api/index.js` — passthrough STRICT (GET exact uniquement)
-- `scripts/tests/worker-b2b-passthrough.test.cjs` — nouveau (auto-découvert par run-tests.cjs)
-- `.ai/bugs.md` (033), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
+- `workers/sg-payments/src/index.ts` — passthrough STRICT (GET exact uniquement, avant fallthrough)
+- `workers/b2b-api/index.js` — même passthrough (zones routées b2b-api)
+- `scripts/tests/worker-b2b-passthrough.test.cjs` + `worker-payments-passthrough.test.cjs` — nouveaux (7/7 chacun)
+- `.ai/bugs.md` (033 corrigé : sg-payments), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
 
 ### Tests réalisés
 - [x] worker passthrough 7/7 local

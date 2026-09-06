@@ -5,10 +5,10 @@
 
 ### BUG-2026-033 — [FIXÉ 2026-09-06, en attente deploy] paylinks annuels 404 live — Worker shadowant le statique
 - **Sévérité** : P1 B2B — lien annuel Mollie invisible dans le modal Pro (trial unaffected)
-- **Cause prouvée** : `dist/api/b2b-paylinks.json` existe ; `functions/[[path]].js` le servirait (.json → ASSETS) ; MAIS la route Worker `/api/b2b*` intercepte avant et `workers/b2b-api/index.js` n'a ni binding ASSETS ni handler statique → 404. `b2b-trial.php` non concerné (route action, contrat 400 prouvé live).
+- **Cause prouvée** : `dist/api/b2b-paylinks.json` existe ; `functions/[[path]].js` le servirait (.json → ASSETS) ; MAIS une route Worker intercepte avant. **Correction de trajectoire** : le 1er fix visait `b2b-api`, mais le corps live `{"error":"not_found"}` (minuscules) provient du fallthrough final de **sg-payments** — c'est lui qui sert ce chemin en prod. Fix reporté sur sg-payments (passthrough identique) ; fix b2b-api conservé (inoffensif, couvre les zones routées b2b-api).
 - **Fix** : passthrough STRICT — `GET` exact `/api/b2b-paylinks.json` → `fetch(request)` vers origine Pages. POST/actions/webhook/trial/prix/checkout intacts par construction (garde méthode + chemin exact).
-- **Tests** : `scripts/tests/worker-b2b-passthrough.test.cjs` 7/7 (passthrough, corps intact, POST non affecté, 404 existants inchangés).
-- **Fichiers** : `workers/b2b-api/index.js`, `scripts/tests/worker-b2b-passthrough.test.cjs`
+- **Tests** : `scripts/tests/worker-b2b-passthrough.test.cjs` 7/7 + `scripts/tests/worker-payments-passthrough.test.cjs` 7/7 (passthrough, corps intact, POST non affecté, 404 existants inchangés).
+- **Fichiers** : `workers/b2b-api/index.js`, `workers/sg-payments/src/index.ts`, `scripts/tests/worker-*-passthrough.test.cjs`
 
 ### BUG-2026-031 — [FIXÉ 2026-09-05, sprint B2B] Modal offre B2B vide — ?pro=1 sans contenu
 - **Sévérité** : P0 produit — 15 vues/semaine → 0 étape (mécanique, pas CRO)
