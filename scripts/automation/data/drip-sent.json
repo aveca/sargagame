@@ -1499,9 +1499,9 @@
     "j14": "2026-07-07T19:55:15.893Z"
   },
   "7688543eb756d12022fd82508778d008": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 69,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 70,
     "j3": "2026-06-27T13:43:09.354Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1545,9 +1545,9 @@
     "j7": "2026-07-03T03:00:58.462Z"
   },
   "f24fa7f75a1cbd7a8061591062d0f55b": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 69,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 70,
     "j3": "2026-06-29T04:11:53.346Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-20",
@@ -1839,9 +1839,9 @@
     "j7": "2026-07-10T19:30:38.653Z"
   },
   "0719411b6ef13537b924e81b94f763b3": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 62,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 63,
     "j3": "2026-07-07T09:41:51.748Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-27",
@@ -1863,9 +1863,9 @@
     "j3": "2026-07-07T19:55:19.813Z"
   },
   "514b3e54c667029f802166864ae8d425": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 62,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 63,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-07-27",
     "j3": "2026-07-07T19:55:21.832Z",
@@ -2106,9 +2106,9 @@
     "install_nudge_last": "2026-07-16"
   },
   "b5a538525d310703b6f9d73d3fdab97e": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 53,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 54,
     "j3": "2026-07-16T13:53:00.625Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-08-05",
@@ -2232,9 +2232,9 @@
   },
   "f168862bc95f05b6d63e0325ef3006c5": {},
   "84c69d4dae5d80b011420853f9877f61": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 51,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 52,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-08-07",
     "j3": "2026-07-18T13:17:55.619Z",
@@ -2367,9 +2367,9 @@
     "j14": "2026-08-02T02:48:35.208Z"
   },
   "4e7f45069e4a3b6baeb53e6b2e481793": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 47,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 48,
     "j3": "2026-07-22T02:40:36.399Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-08-11",
@@ -2766,9 +2766,9 @@
     "j14": "2026-08-15T18:39:55.974Z"
   },
   "c03cd4d8a02506f11baf359f01948ab9": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 34,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 35,
     "install_nudge_count": 3,
     "install_nudge_last": "2026-08-24",
     "j3": "2026-08-04T19:41:13.938Z",
@@ -2889,9 +2889,9 @@
     "j14": "2026-08-19T06:54:01.124Z"
   },
   "94c35534f45ab6f02bf4a052c5e67d4c": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 29,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 30,
     "j3": "2026-08-08T18:39:39.910Z",
     "install_nudge_count": 3,
     "install_nudge_last": "2026-08-29",
@@ -3175,7 +3175,8 @@
     "install_nudge_count": 2,
     "install_nudge_last": "2026-09-05",
     "j3": "2026-08-26T19:58:31.731Z",
-    "j7": "2026-08-30T16:25:32.567Z"
+    "j7": "2026-08-30T16:25:32.567Z",
+    "j14": "2026-09-06T15:16:52.596Z"
   },
   "90dbe235de57a2784b6dad11ff3bc949": {},
   "1688896083a2eaa7c3f4bc88dc137b44": {
@@ -3199,9 +3200,9 @@
     "j7": "2026-09-01T16:23:05.619Z"
   },
   "2a5b6529e61a84aed3e3f2069c0703e0": {
-    "daily_last": "2026-09-04",
-    "daily_sig": "Precheur|clean|65|clean|0|",
-    "daily_count": 10,
+    "daily_last": "2026-09-06",
+    "daily_sig": "Precheur|clean|66|clean|0|",
+    "daily_count": 11,
     "j3": "2026-08-28T22:06:44.860Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-08-29",
