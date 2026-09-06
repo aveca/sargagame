@@ -10,7 +10,7 @@
 
 - [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
 
-- [ ] **ACTIVATION OUTREACH — BLOQUÉE FONDATEUR** (2026-09-06) — Worker sain, gates verts, watchdog OK. Manque : secrets ×4, migration SQL (token CI expiré), 1–3 prospects réels, flips dry-run. AUCUN envoi réel effectué (volontaire). Voir rapport + checklist.
+- [ ] **ACTIVATION OUTREACH — BLOCKED FONDATEUR (prouvé)** (2026-09-06) — Secrets worker = [] (vérifié API), DB non migrable sans token/SQL Editor, 0 prospect. Watchdog OK, gates verts. Checklist précise au rapport.
 
 - [x] **SPRINT OUTREACH 0-PC — Worker automation + queues DB + CI** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — Worker cron Cloudflare + Supabase + Resend/Meta, 36/36 contrats (2 vrais bugs trouvés), deploy live `outreach.m4ngo.workers.dev` (dry-run ON, envois OFF), smoke live vert. Limite Free contournée (3 crons). Reste fondateur : secrets + schéma SQL + seed + flips.
 

@@ -1,5 +1,11 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · ACTIVATION FINALE — audit credentials, BLOCKED prouvé (zéro changement code)
+
+**Credentials (présence uniquement)** : process env = tout ABSENT ; `.env` = CLOUDFLARE_API_KEY/EMAIL/ACCOUNT_ID présents (valeurs jamais lues) ; tout le reste (SUPABASE_*, RESEND_*, FB_*, ADMIN_*) ABSENT partout accessible.
+**Preuves via token CF (lecture seule)** : `wrangler secret list --name outreach` = `[]` (zéro secret provisionné) ; preflight live refuse proprement sans clé (table FAIL, 0 fuite).
+**Conclusion §4** : `BLOCKED — SUPABASE DDL REQUIRES CREDENTIAL NOT AVAILABLE TO CURRENT RUNTIME` pour la DB (PostgREST ne fait pas de DDL de toute façon ; Management API 401 ; SQL Editor = seule voie) + secrets impossibles à créer sans valeurs (non inventées) + 0 prospect disponible. Watchdog manuel re-vérifié SUCCESS. Gates locaux verts (36/36, 21/21, smoke 4/4).
+
 ## 2026-09-06 · OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist
 
 **Ajouts (zéro activation live)** : `/status` enrichi (secrets présence-only, email_today, queue, runtime heartbeats/erreurs, version outreach-2) ; `outreach-preflight.cjs` (+ `--gate` : refuse si DB KO, Resend absent, 0 dry-run) ; `outreach-verify-dry-run.cjs` (DRY RUN VERIFIED) ; `outreach-preflight.test.cjs` 12/12 ; commandes npm ; `docs/outreach-activation.md` (8 étapes fondateur, rollback).
