@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [ ] **ACTIVATION OUTREACH — BLOQUÉE FONDATEUR** (2026-09-06) — Worker sain, gates verts, watchdog OK. Manque : secrets ×4, migration SQL (token CI expiré), 1–3 prospects réels, flips dry-run. AUCUN envoi réel effectué (volontaire). Voir rapport + checklist.
+
 - [x] **SPRINT OUTREACH 0-PC — Worker automation + queues DB + CI** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — Worker cron Cloudflare + Supabase + Resend/Meta, 36/36 contrats (2 vrais bugs trouvés), deploy live `outreach.m4ngo.workers.dev` (dry-run ON, envois OFF), smoke live vert. Limite Free contournée (3 crons). Reste fondateur : secrets + schéma SQL + seed + flips.
 
 - [x] **BUG-2026-033 — passthrough paylinks annuels** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — `GET /api/b2b-paylinks.json` 404 live (vrai serveur = sg-payments, pas b2b-api) → passthrough GET exact vers origine (2 workers) + 2 contrats 7/7. Live MQ+GP : paylinks 200 + lien annuel Mollie visible + gate intact + 0 submit + 0 erreur. PR #634 mergée, deploy SUCCESS. Trial/POST/webhook intacts.
