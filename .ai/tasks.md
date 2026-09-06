@@ -8,7 +8,7 @@
 
 ## Récemment complété
 
-- [ ] **BUG-2026-032 — routage sitemap/robots** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Cause prouvée : `_routes.json` sans `*.xml`/`*.txt` → fallback SPA (SEO Guard rouge quotidien expliqué). Fix : excludes + garde-fou ASSETS, test 7/7. Reste : CI → merge → deploy → live + dispatch SEO Guard.
+- [x] **BUG-2026-032 — routage sitemap/robots + prune domaines morts** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅ si deploy vert) — `_routes.json` sans `*.xml`/`*.txt` → fallback SPA + 19 URLs barbados (sans DNS) dans sitemap (SEO Guard rouge expliqué). Fix : excludes + garde-fou ASSETS + `seoIndex:false` + prune central (19 retirées, 539+ gardées). Tests 7/7 ×2 · build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅.
 
 - [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
 
