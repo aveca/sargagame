@@ -1,5 +1,12 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · LONG SESSION — BUG-2026-032 routage sitemap/robots (P0 SEO)
+
+**Audit P0** : money-path vivant (verify_subscription 200), aucun secret exposé, outreach gelé (credentials absents). Trouvé : `/sitemap.xml`+`/robots.txt` → SPA HTML 200 live (44 Ko) → SEO Guard rouge quotidien depuis le 01/09 (grep `<loc>` = 0 URLs).
+**Cause** : `_routes.json` sans `*.xml`/`*.txt` → catch-all `[[path]].js` → fallback index.html.
+**Fix** : excludes déclaratifs + garde-fou ASSETS dans le catch-all. Test contrat 7/7 persisté.
+**Gates** : routing 7/7 ✅ · build/app intouchés.
+
 ## 2026-09-06 · ACTIVATION FINALE BIS — re-vérifié, toujours BLOCKED (zéro changement code)
 
 **Re-audit** : env toujours vide ; `.env` inchangé (CF uniquement) ; secrets worker TOUJOURS `[]` (vérifié API `secret list`) ; apply-schema toujours 401 (dernier run 06:03) ; worker live outreach-2 sain (dry_run ON, OFF) ; preflight live refuse proprement sans clé ; contrats 36/36 re-vérifiés verts.

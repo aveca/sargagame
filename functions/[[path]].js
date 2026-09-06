@@ -22,6 +22,18 @@ export async function onRequest(context) {
     return env.ASSETS.fetch(request);
   }
 
+  // BUG-2026-032 : sitemap.xml / robots.txt (et tout .xml/.txt) tombaient dans
+  // le fallback SPA → index.html 200 (SEO Guard rouge quotidien, sitemap
+  // invisible). _routes.json les exclut désormais des Functions, mais ce
+  // garde-fou couvre aussi le cas où le routage changerait : servir le fichier.
+  if (pathname.match(/\.(xml|txt)$/)) {
+    try {
+      const fileResponse = await env.ASSETS.fetch(request);
+      if (fileResponse.ok) return fileResponse;
+    } catch(e) {}
+    return new Response('Not found', { status: 404 });
+  }
+
   // API routes — mapper vers fichiers JSON
   if (pathname.startsWith('/api/')) {
     // Laisser passer les routes Worker

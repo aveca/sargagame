@@ -16,9 +16,10 @@
 - **Fix** : fonction originale restaurée depuis d37dd3ba~1 + crash É2 (`_relHref` circulaire → ternaire inline) + share + allowlist/FUNNEL_KEYS.
 - **Validation** : É1→É4 locale, gate email, paylink Mollie réel, 0 erreur, E2E 21/21, smoke 4/4.
 
-### BUG-2026-032 — [OUVERT, P2 SEO/deploy] sitemap.xml + robots.txt servent le fallback SPA
+### BUG-2026-032 — [FIXÉ 2026-09-06, en attente deploy] sitemap.xml + robots.txt servent le fallback SPA
 - **Symptôme** : `/sitemap.xml` et `/robots.txt` répondent 200 avec le HTML de l'app (44 Ko) alors que `dist/sitemap.xml` (90 Ko) et `dist/robots.txt` existent → sitemap invisible aux crawlers.
-- **Piste** : catch-all Pages/functions shadowant les statics (cf. PR #627 ouverte sur le routing). À traiter dans un sprint deploy dédié (risque routage).
+- **Piste** : catch-all Pages/functions shadowant les statics (cf. PR #627 ouverte sur le routing). CONFIRMÉ 2026-09-06 : `_routes.json` sans `*.xml`/`*.txt` → fallback index.html 200. Explique le SEO Guard rouge quotidien (grep `<loc>` = 0 URLs → exit 1).
+- **Fix (2026-09-06)** : excludes `*.xml`+`*.txt` dans `_routes.json` + garde-fou ASSETS dans `[[path]].js`. Test `tests/unit/routing-catchall.test.cjs` 7/7.
 - **Date** : 2026-09-05 · **Fichiers** : `functions/[[path]].js`, `functions/_routes.json`, `dist/sitemap.xml`
 
 ### BUG-2026-028 — [FIXÉ PROD 2026-09-04] RegionNav ghost layer — liens invisibles et non cliquables
