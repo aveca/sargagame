@@ -1,6 +1,6 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-09-06T18:52:04.581Z",
+  "generatedAt": "2026-09-06T20:15:40.158Z",
   "window": {
     "from": "2026-08-08",
     "to": "2026-09-06",
@@ -15,7 +15,7 @@
     "statusHitRatePct": 97
   },
   "freshness": {
-    "computedAt": "2026-09-06T18:52:04.474Z",
+    "computedAt": "2026-09-06T20:15:40.058Z",
     "backtestAgeHours": 0,
     "observationLagDays": 0,
     "stale": false
