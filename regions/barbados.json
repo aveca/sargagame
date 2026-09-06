@@ -5,6 +5,7 @@
   "domain": "sargassumbarbados.com",
   "ftpDir": "barbados-ftp",
   "live": false,
+  "seoIndex": false,
   "primaryLang": "en",
   "secondaryLangs": [
     "es"

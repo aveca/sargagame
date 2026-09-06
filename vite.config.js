@@ -2578,6 +2578,16 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
               try { generateDedicatedPages(r, outDir) } catch (e) { console.warn(`   ⚠ pages dédiées ${r.id}:`, e.message) }
             }
           } catch (e) { console.warn('   ⚠ pages dédiées legacy:', e.message) }
+
+          // BUG-2026-032 : le dist/ partagé sert 6 projets Pages — retirer du
+          // sitemap les URLs des domaines sans indexation (regions/*.json
+          // "seoIndex": false, ex. barbados sans DNS) : sinon crawl errors +
+          // SEO Guard rouge. Dernier écrivain sitemap → hook ici, jamais avant.
+          try {
+            const { pruneDeadDomains } = _require('./scripts/lib/sitemap-prune.cjs')
+            const pruned = pruneDeadDomains(outDir)
+            if (pruned.domains.length) console.log(`   → sitemap: ${pruned.removed} URL(s) retirée(s) [${pruned.domains.join(', ')}], ${pruned.kept} conservée(s)`)
+          } catch (e) { console.warn('   ⚠ sitemap prune:', e.message) }
         } catch (e) {
           console.warn('SEO pages:', e.message)
         }
