@@ -1,5 +1,11 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · TENTATIVE ACTIVATION OUTREACH — bloquée côté fondateur (zéro changement code)
+
+**Audit** : worker live sain (`/health` 200, dry_run ON, OFF) ; `apply-supabase-schema` TOUJOURS 401 (token expiré depuis 2026-07-30, 5 échecs) → tables OUTREACH absentes de prod (non vérifiable sans clé, présumé) ; aucun secret provisionnable d'ici (pas d'auth CF) ; aucun prospect réel disponible (non inventé).
+**Exécuté** : watchdog déclenché manuellement → SUCCESS skip gracieux (pas de faux positif) ; gates locaux verts (outreach 36/36, E2E 21/21, smoke 4/4).
+**Verdict honnête** : statut = READY-FOR-ACTIVATION, **pas LIVE** (0 email + 0 post réels, par design tant que le fondateur n'a pas provisionné). Checklist fondateur précise en rapport (secrets ×4, SQL Editor, 1–3 prospects, flips, watchdog secrets).
+
 ## 2026-09-06 · OUTREACH — fix limite cron Free + warning doublon
 
 **Deploy initial** : worker live `https://outreach.m4ngo.workers.dev` (vars sûres), MAIS schedules partiellement appliqués — **limite Free 5 crons/compte** (sg-payments: 2, code 10072).
