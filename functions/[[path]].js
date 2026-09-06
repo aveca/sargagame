@@ -100,7 +100,16 @@ export async function onRequest(context) {
     }
   }
 
-  // SPA fallback — servir index.html
+  // SPA fallback — servir index.html, MAIS d'abord le fichier statique s'il
+  // existe (BUG-2026-032 partie 2) : le dist/ contient 500+ pages SEO statiques
+  // (/beach/*, /plages/, /fiabilite/, …) avec head unique, que ce catch-all
+  // masquait en servant la coquille générique partout (contenu dupliqué aux
+  // yeux des crawlers). Les statiques embarquent le même bundle app (#root +
+  // /assets) : UX identique, SEO réel. Inconnu → fallback inchangé.
+  try {
+    const staticResponse = await env.ASSETS.fetch(request);
+    if (staticResponse.ok) return staticResponse;
+  } catch(e) {}
   try {
     const indexResponse = await env.ASSETS.fetch(
       new Request(new URL('/index.html', url.origin), { method: 'GET' })
