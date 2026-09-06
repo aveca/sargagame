@@ -12,10 +12,10 @@
 - `.ai/bugs.md` (033 corrigé : sg-payments), `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`
 
 ### Tests réalisés
-- [x] worker passthrough 7/7 local
-- [ ] build + E2E + smoke (Phase 2, avant commit)
-- [ ] CI PR (fc7 pré-existant documenté d'avance)
-- [ ] deploy + live MQ/GP (paylinks 200, lien annuel, trial gate, 0 submit)
+- [x] worker passthrough 7/7 local ×2 + worker-auth 23/23 (money intact)
+- [x] build + E2E + smoke (Phase 2, avant commit)
+- [x] CI PR 5/6 (fc7 pré-existant documenté, contrats worker verts en CI)
+- [x] deploy SUCCESS (workers inclus) + live MQ/GP (paylinks 200, lien annuel, trial gate, 0 submit, 0 erreur)
 
 ### Problèmes restants
 - [ ] BUG-2026-032 (sitemap/robots) — NON touché, sprint deploy dédié
