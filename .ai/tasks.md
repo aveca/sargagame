@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [ ] **SPRINT OUTREACH 0-PC — Worker automation + queues DB + CI** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Worker cron Cloudflare + Supabase (contacts/events/social) + Resend/Meta, quotas, claim atomique, retry, stops, tz, kill switches OFF+dry-run par défaut, admin sans PII, unsubscribe, webhook, reply, seed social. Contrats 36/36 (2 vrais bugs trouvés). Reste : CI → merge → deploy → smoke dry-run live → provisionnement fondateur.
+
 - [x] **BUG-2026-033 — passthrough paylinks annuels** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — `GET /api/b2b-paylinks.json` 404 live (vrai serveur = sg-payments, pas b2b-api) → passthrough GET exact vers origine (2 workers) + 2 contrats 7/7. Live MQ+GP : paylinks 200 + lien annuel Mollie visible + gate intact + 0 submit + 0 erreur. PR #634 mergée, deploy SUCCESS. Trial/POST/webhook intacts.
 
 - [x] **SPRINT B2B REVENUE — modal offre restauré + partage + instrumentation** (@coding_agent OpenCode, 2026-09-05) — Root cause : ?pro=1 = dialogue vide (stub depuis split). Restauration fonction originale (É1→É4, tiers, prix, gate email, paylink Mollie) + fix crash É2 (relHref circulaire) + share WhatsApp/email + allowlist/FUNNEL_KEYS débloqués. GP : sitemap/robots shadowés + divergence GA4/Supabase documentés. Gates : build ✅ · 37.4 Ko ✅ · 21/21 ✅ · smoke 4/4 ✅. Branche `agent/coding/b2b-revenue`.

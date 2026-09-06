@@ -1,0 +1,56 @@
+name: Outreach watchdog (daily)
+
+# Surveille le Worker outreach 0-PC : heartbeat Cron, file bloquée, erreurs,
+# token FB. Alerte email UNIQUEMENT sur anomalie (pas de bruit).
+# Secrets requis (repo GH) : OUTREACH_WORKER_URL (ex. https://outreach.xxx.workers.dev),
+# OUTREACH_ADMIN_KEY. Absents → skip gracieux (exit 0), jamais rouge artificiel.
+
+on:
+  schedule:
+    - cron: '30 7 * * *' # 07:30 UTC, après la vague d'envois du matin MQ
+  workflow_dispatch:
+
+concurrency:
+  group: outreach-watchdog
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check outreach status
+        env:
+          OUTREACH_WORKER_URL: ${{ secrets.OUTREACH_WORKER_URL }}
+          OUTREACH_ADMIN_KEY: ${{ secrets.OUTREACH_ADMIN_KEY }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: |
+          if [ -z "$OUTREACH_WORKER_URL" ] || [ -z "$OUTREACH_ADMIN_KEY" ]; then
+            echo "Secrets watchdog absents — skip gracieux (worker pas encore provisionné)."
+            exit 0
+          fi
+          STATUS=$(curl -fsS --max-time 25 "$OUTREACH_WORKER_URL/status?key=$OUTREACH_ADMIN_KEY") || {
+            echo "::error::Worker outreach injoignable ($OUTREACH_WORKER_URL)"
+            node scripts/automation/notify-failure.cjs 2>/dev/null || true
+            exit 1
+          }
+          echo "$STATUS" | node -e "
+            let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+              try{
+                const j=JSON.parse(s);
+                const fail=[];
+                const hb=(j.recent_events||[]).find(e=>e.kind==='heartbeat');
+                if(!hb) fail.push('aucun heartbeat en base');
+                else if(Date.now()-new Date(hb.created_at).getTime()>90*60000) fail.push('dernier heartbeat > 90 min');
+                const errs=(j.recent_events||[]).filter(e=>e.kind==='failed').length;
+                if(errs>=5) fail.push(errs+' échecs récents');
+                const q=Object.entries(j.contacts_by_status||{}).filter(([k])=>['ready','queued'].includes(k)).reduce((a,[,v])=>a+v,0);
+                if(q>100) fail.push('file bloquée: '+q);
+                if(fail.length){console.error('ANOMALIE: '+fail.join(' ; '));process.exit(1)}
+                console.log('Watchdog OK : heartbeats présents, file='+q+', dry_run='+j.dry_run);
+              }catch(e){console.error('Statut illisible: '+e.message);process.exit(1)}
+            })" || {
+            echo "::error::Anomalie outreach détectée"
+            WORKFLOW_NAME='Outreach watchdog' RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" node scripts/automation/notify-failure.cjs 2>/dev/null || true
+            exit 1
+          }

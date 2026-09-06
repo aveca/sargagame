@@ -1,0 +1,48 @@
+# workers/outreach — automation outreach 0-PC (sprint 2026-09-06).
+# Cron Cloudflare → Supabase (queues) → Resend (email) / Meta Graph (Facebook).
+# AUCUNE route custom : exposé sur workers.dev (l'admin passe par ?key=).
+# Le token CI ne peut pas éditer les routes anyway (cf. b2b-api/wrangler.toml).
+name = "outreach"
+main = "index.js"
+compatibility_date = "2026-08-19"
+
+# Schedules UTC (fenêtres d'envoi = tz métier calculées dans le code, jamais locale).
+# Petits batches fréquents plutôt qu'un gros traitement unique.
+[triggers]
+crons = [
+  "*/30 * * * *",   # process_email_queue (STEP 0, premier contact)
+  "20 * * * *",     # process_email_followups (STEP 1-2, relances)
+  "45 11 * * *",    # process_facebook_queue (11:45 UTC ≈ 07:45 MQ)
+  "10 * * * *",     # health_check (heartbeat + compteurs)
+]
+
+[vars]
+SUPABASE_URL = "https://rswdmjtdzrucqzzukfmd.supabase.co"
+# --- Kill switches (défaut : TOUT OFF + dry-run → zéro envoi réel au deploy) ---
+OUTREACH_ENABLED = "false"
+EMAIL_OUTREACH_ENABLED = "false"
+FACEBOOK_OUTREACH_ENABLED = "false"
+OUTREACH_DRY_RUN = "true"
+# --- Quotas (petits, configurables) ---
+DAILY_EMAIL_LIMIT = "10"
+HOURLY_EMAIL_LIMIT = "5"
+PER_DOMAIN_PER_DAY_LIMIT = "1"
+MAX_BATCH_SIZE = "10"
+MAX_RETRIES = "3"
+FOLLOWUP_DELAY_DAYS_1 = "4"
+FOLLOWUP_DELAY_DAYS_2 = "7"
+# --- Fenêtres d'envoi (heure locale destinataire, bornes incluses) ---
+SEND_HOUR_START = "8"
+SEND_HOUR_END = "18"
+# --- Campagnes actives (CSV) ---
+ENABLED_CAMPAIGNS = "b2b-hotel-01"
+# --- Expéditeur (vide = envoi désactivé ; domaine vérifié Resend requis) ---
+# Secret RESEND_API_KEY → wrangler secret put RESEND_API_KEY
+RESEND_FROM = ""
+# --- Facebook (vide = désactivé ; pages MQ/GP uniquement v1) ---
+# Secret FB_PAGE_TOKEN → wrangler secret put FB_PAGE_TOKEN
+FB_MQ_PAGE_ID = ""
+FB_GP_PAGE_ID = ""
+# --- Admin/observabilité (jamais en clair, jamais loggé) ---
+# Secret ADMIN_KEY → wrangler secret put ADMIN_KEY (openssl rand -hex 32)
+# Secret SUPABASE_SERVICE_KEY → wrangler secret put SUPABASE_SERVICE_KEY
