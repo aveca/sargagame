@@ -8,7 +8,7 @@
 
 ## Récemment complété
 
-- [ ] **OUTREACH POST-CONFIG — preflight/gate/verify + checklist** (@coding_agent OpenCode, 2026-09-06, EN COURS) — /status enrichi (monitoring §11), preflight+gate+verify testés 12/12, docs activation. Reste : CI → merge → deploy → smoke. Activation live = fondateur (secrets+SQL+prospects).
+- [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
 
 - [ ] **ACTIVATION OUTREACH — BLOQUÉE FONDATEUR** (2026-09-06) — Worker sain, gates verts, watchdog OK. Manque : secrets ×4, migration SQL (token CI expiré), 1–3 prospects réels, flips dry-run. AUCUN envoi réel effectué (volontaire). Voir rapport + checklist.
 
