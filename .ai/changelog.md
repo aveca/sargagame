@@ -1,5 +1,15 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · SPRINT OUTREACH 0-PC — Worker automation + queues DB + CI
+
+**Diagnostic** : aucun worker automation ; Supabase sans tables outreach ; email = SMTP scripts + Resend PHP ; Meta = rien ; `stripe-config.php` local NON commité (gitignoré, pas de fuite repo) ; deploy workers via matrice deploy-live ; schéma auto via apply-supabase-schema (si token valide).
+**Implémenté** : `workers/outreach/` (cron UTC → Supabase → Resend/Meta, batch ≤10, quotas jour/heure/domaine, claim atomique, retry backoff, stops, fenêtres tz Intl, dry-run défaut ON, kill switches, admin agrégats sans PII, unsubscribe HMAC, webhook bounce, reply, seed social déterministe) + migration `supabase/schema.sql` (outreach_contacts/events, social_posts) + `scripts/tests/outreach-queue.test.cjs` **36/36** (2 vrais bugs trouvés par les tests : relances sans 'sent', bypass auth clé vide) + workflows `outreach.yml` (CI+deploy+smoke dry-run) et `outreach-watchdog.yml` + README.
+**Sécurité** : fail-closed partout (quotas illisibles = 0 envoi, secret absent = 401) ; aucun secret/PII en logs ; séquences douces (J+4/J+7, stop immédiat).
+**À provisionner (fondateur)** : secrets `SUPABASE_SERVICE_KEY`, `ADMIN_KEY`, `RESEND_API_KEY`, `FB_PAGE_TOKEN` + vars (`RESEND_FROM` domaine vérifié, `FB_*_PAGE_ID`, `UNSUB_BASE`, flips enabled/dry-run) + `OUTREACH_WORKER_URL`/`OUTREACH_ADMIN_KEY` (GH, watchdog) + appliquer le schéma si le token CI est expiré + 1–3 prospects seed.
+**Gates** : worker 36/36 ✅ · YAML OK ✅ · build/app intouchés (bundle inchangé).
+
+---
+
 ## 2026-09-06 · BUG-2026-033 — passthrough paylinks (finalisation B2B)
 
 **État avant deploy** : modal ?pro=1 live OK (tiers, gate email, share), MAIS lien annuel absent — `GET /api/b2b-paylinks.json` 404 live (MQ+GP prouvés) alors que `dist/` le contient et `b2b-trial.php` répond (400 invalid_email prouvé).

@@ -1,4 +1,35 @@
 ---
+## 2026-09-06 · Agent: coding_agent (OpenCode) · SPRINT OUTREACH 0-PC — worker + DB + CI prêts, envois OFF
+
+### Travail effectué
+- **Résumé 1 ligne** : automation outreach autonome (Worker cron + Supabase + Resend/Meta) livrée en dry-run OFF par défaut, 36/36 tests.
+- **Détails** : workers/outreach (4 jobs, quotas, claim atomique, retry, stops, tz, kill switches, admin sans PII, unsubscribe, webhook, reply, seed social) ; migration schema.sql ; contrats ; workflows CI/deploy + watchdog ; README.
+
+### Fichiers modifiés
+- `workers/outreach/index.js`, `wrangler.toml`, `README.md` (nouveaux)
+- `supabase/schema.sql` (§ OUTREACH), `scripts/tests/outreach-queue.test.cjs`
+- `.github/workflows/outreach.yml`, `outreach-watchdog.yml`
+- `.ai/*` — diagnostic + décisions + mémoire
+
+### Tests réalisés
+- [x] outreach-queue 36/36 local (queue, idempotence, retry, stops, quotas, batch, tz, FB, killswitch, dry-run, admin, unsub, webhook, reply)
+- [x] YAML parse OK · node --check OK
+- [ ] CI PR (à vérifier)
+- [ ] deploy + smoke dry-run live (après merge)
+
+### Problèmes restants
+- [ ] Secrets à provisionner (fondateur) : SUPABASE_SERVICE_KEY, ADMIN_KEY, RESEND_API_KEY, FB_PAGE_TOKEN + vars + OUTREACH_* GH + schéma si token expiré + seed 1–3 prospects
+- [ ] BUG-2026-032 (sitemap/robots) toujours séparé, non touché
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy → smoke dry-run live — Rôle : release
+2. Provisionnement fondateur puis phase dry-run → 1–3 prospects — Rôle : fondateur
+
+### Branche / PR
+- Branche : `agent/coding/outreach-0pc`
+- PR : à créer vers main
+
+---
 ## 2026-09-06 · Agent: coding_agent (OpenCode) · BUG-2026-033 — passthrough paylinks, en attente deploy
 
 ### Travail effectué

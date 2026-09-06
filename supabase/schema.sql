@@ -287,3 +287,81 @@ create policy "b2b_leads_select" on public.b2b_leads for select using (true);
 drop policy if exists "b2b_leads_update" on public.b2b_leads;
 create policy "b2b_leads_update" on public.b2b_leads for update using (true);
 create index if not exists b2b_leads_status_idx on public.b2b_leads (status, created_at);
+
+-- =====================================================================
+-- OUTREACH AUTOMATION 0-PC (sprint 2026-09-06) : file d'attente cold
+-- email hôtelier + posts sociaux, pilotée par le Worker workers/outreach
+-- (Cron Cloudflare). Idempotent (create if not exists). Horaires en UTC ;
+-- les fenêtres d'envoi sont calculées par le Worker (Intl, tz par région).
+-- AUCUN contact seedé ici (PII) : insertion par le fondateur (SQL Editor).
+-- =====================================================================
+
+-- 1) Contacts outreach (machine d'état explicite, jamais un booléen sent)
+create table if not exists public.outreach_contacts (
+  id                uuid primary key default gen_random_uuid(),
+  hotel_name        text not null,
+  contact_name      text,
+  email             text not null,
+  country           text,
+  region            text not null default 'MQ',  -- MQ | GP | FLORIDA | PUNTACANA | RIVIERAMAYA | TULUM
+  language          text not null default 'fr',  -- fr | en | es
+  source            text,                          -- d'où vient le prospect
+  status            text not null default 'new',   -- new|ready|queued|sending|sent|replied|positive|negative|unsubscribed|bounced|paused|failed
+  campaign_id       text not null default 'b2b-hotel-01',
+  current_step      int not null default 0,        -- 0=contact, 1=relance, 2=dernière
+  next_action_at    timestamptz,                   -- NULL = dû immédiatement (si status actif)
+  last_sent_at      timestamptz,
+  last_error_at     timestamptz,
+  last_error        text,
+  provider_message_id text,
+  reply_status      text,                          -- NULL | replied | positive | negative
+  unsubscribe_at    timestamptz,
+  attempts          int not null default 0,        -- tentatives étape courante (backoff)
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now()
+);
+alter table public.outreach_contacts enable row level security;
+drop policy if exists "outreach_contacts_all" on public.outreach_contacts;
+create policy "outreach_contacts_all" on public.outreach_contacts for all using (true) with check (true);
+create index if not exists outreach_contacts_due_idx on public.outreach_contacts (status, next_action_at) where status in ('ready','queued','failed');
+create index if not exists outreach_contacts_email_idx on public.outreach_contacts (email);
+
+-- 2) Journal append-only (sélection/envois/erreurs/réponses/dry-run)
+create table if not exists public.outreach_events (
+  id           uuid primary key default gen_random_uuid(),
+  created_at   timestamptz not null default now(),
+  contact_id   uuid references public.outreach_contacts(id) on delete set null,
+  kind         text not null,   -- selected|sent|failed|retry|bounced|replied|positive|negative|unsubscribed|heartbeat|dry_run|skipped
+  step         int,
+  detail       text,            -- raison de sélection, code erreur, réf provider (JAMAIS de secret)
+  dry_run      boolean not null default false
+);
+alter table public.outreach_events enable row level security;
+drop policy if exists "outreach_events_all" on public.outreach_events;
+create policy "outreach_events_all" on public.outreach_events for all using (true) with check (true);
+create index if not exists outreach_events_created_idx on public.outreach_events (created_at);
+create index if not exists outreach_events_contact_idx on public.outreach_events (contact_id);
+
+-- 3) Posts sociaux planifiés (déterminstes,Rotation contrôlée côté Worker)
+create table if not exists public.social_posts (
+  id             uuid primary key default gen_random_uuid(),
+  platform       text not null default 'facebook', -- facebook (extensible)
+  page_id        text,
+  region         text not null default 'MQ',
+  language       text not null default 'fr',
+  category       text not null default 'meteo',    -- meteo|conseil|prevision|tourisme|cta|educatif
+  content        text not null,
+  media_url      text,
+  scheduled_at   timestamptz not null,
+  status         text not null default 'scheduled', -- draft|scheduled|publishing|published|failed|cancelled
+  provider_post_id text,
+  attempts       int not null default 0,
+  last_error     text,
+  published_at   timestamptz,
+  created_at     timestamptz not null default now(),
+  updated_at     timestamptz not null default now()
+);
+alter table public.social_posts enable row level security;
+drop policy if exists "social_posts_all" on public.social_posts;
+create policy "social_posts_all" on public.social_posts for all using (true) with check (true);
+create index if not exists social_posts_due_idx on public.social_posts (status, scheduled_at) where status = 'scheduled';
