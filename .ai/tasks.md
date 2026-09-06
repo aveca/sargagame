@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [ ] **BUG-2026-032 — routage sitemap/robots** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Cause prouvée : `_routes.json` sans `*.xml`/`*.txt` → fallback SPA (SEO Guard rouge quotidien expliqué). Fix : excludes + garde-fou ASSETS, test 7/7. Reste : CI → merge → deploy → live + dispatch SEO Guard.
+
 - [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
 
 - [ ] **ACTIVATION OUTREACH — BLOCKED FONDATEUR (prouvé ×2)** (2026-09-06) — Secrets worker = [] (re-vérifié API), DB non migrable, 0 prospect. Watchdog OK, gates verts (36/36 re-vérifié). Checklist précise au rapport.

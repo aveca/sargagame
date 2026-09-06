@@ -19,6 +19,8 @@
     "*.avif",
     "*.map",
     "*.json",
+    "*.xml",
+    "*.txt",
     "*.webmanifest"
   ]
 }
