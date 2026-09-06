@@ -4,9 +4,9 @@
   "n": 24,
   "agreement": 0.958,
   "thresholds": {
-    "clean": 0.01,
-    "mod": 0.012
+    "clean": 0.009,
+    "mod": 0.01
   },
-  "verifiedAt": "2026-09-04T16:04:50.592Z",
+  "verifiedAt": "2026-09-06T15:15:15.222Z",
   "metric": "accord statut S2 near-shore vs ERDDAP settled (history), fenêtre ±5j"
 }
