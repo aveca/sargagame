@@ -114,6 +114,12 @@
 
 ---
 
+## DEC-2026-09-07 — HARD ASSET : 5 formats/surface, BeachSheet exemplaire (panel moat/perf/CRO)
+
+- **Décision** : 5 formats obligatoires/surface (matrice `docs/ASSET-MATRIX.md`), chacun avec FONCTION : SVG=comprendre, IMAGE=preuve, GIF=évolution, VIDEO=immersion, PDF=objet.
+- **Arbitrages** : (1) *Moat* : GIF = drift-strip SVG animé synchro data (raster irait stale — §3 préfère, §8 impose), tracké `sg_gif_view {render:"svg-animated"}`. (2) *Perf* : PDF = objet client-side print/PDF, 0 fichier, 0 eager (lazy). Jours gated exclus (`unlockedRows` testé). (3) *CRO* : rapport GRATUIT (cadeau avant l'ask), CTA inchangé, `?report=0`.
+- **Conséquences** : `mediaKit.js` + `BeachDayReport.jsx` + 7 events allowlist + contrat 41/41. Gate PASS Map/BeachSheet/Verdict/Forecast ; AI/B2B = TASK-ASSET-002/003 ; B2G = exception non-live ; GIF raster quotidien = 004 optionnel.
+
 ## Procchac
 
 Pour ajouter une décision : ajouter date + pourquoi + conséquences.

@@ -1,5 +1,8 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-09-07 — HARD ASSET : BeachSheet exemplaire 5 formats (GATE VERT, branche `agent/coding/hard-asset-beach-report`, PR no-auto-merge)**
+> Rapport plage du jour (PDF objet, `?report=0`) + drift-strip SVG + 7 events, contrat 41/41, bundle 37,6 Ko, smoke 4/4. Worktree partagé : PR manuelle requise (hunk SPRINT 0 co-localisé). P0 GP canonical : fix LONG SESSION #2 à vérifier en prod.
+
 > **🎯 2026-09-03 — SPRINT FUNNEL : IDENTITÉ user_id + GOOGLE 1 CLIC + MOLLIE P0 RÉPARÉ**
 
 ## 🚨 ACTIONS FONDATEUR (2, ~5 min total)

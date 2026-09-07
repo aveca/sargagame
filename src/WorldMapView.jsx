@@ -451,6 +451,15 @@ export default function WorldMapView({
     return()=>{ok=false}
   },[])
 
+  // ── SPRINT 0: Map Intelligence ──
+  useEffect(()=>{
+    try{
+      if(typeof window!=="undefined"&&window.track&&!/[?&]behavior_track=0/.test(window.location.search)){
+        window.track("sg_map_view",{region:island,viewport:{w:window.innerWidth,h:window.innerHeight},component:"WorldMapView"})
+      }
+    }catch(_){}
+  },[])
+
   // toVB(lat,lng) → [vx,vy] dans l'espace viewBox 800×600
   const toVB = useMemo(()=>{
     if(!outline) return null
@@ -506,6 +515,16 @@ export default function WorldMapView({
           accuracyPct:acc?acc.hitRatePct:null, accuracySamples:acc?acc.samples:null}
       })
   },[beaches,island,toVB,forecastByBeach,trackRec])
+
+  // ── SPRINT 0: Map ready (after beachList is defined) ──
+  useEffect(()=>{
+    if(!dataReady||!beachList.length) return
+    try{
+      if(typeof window!=="undefined"&&window.track&&!/[?&]behavior_track=0/.test(window.location.search)){
+        window.track("sg_map_ready",{region:island,pin_count:beachList.length,component:"WorldMapView"})
+      }
+    }catch(_){}
+  },[dataReady,beachList.length])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -1079,8 +1098,11 @@ export default function WorldMapView({
           const s=toSvg(e.clientX,e.clientY), c=camRef.current
           const f=c.k<2?2.5/c.k:K_MIN/c.k
           const wx=(s[0]-c.tx)/c.k, wy=(s[1]-c.ty)/c.k
+          const prevK=c.k
           c.k=Math.max(K_MIN,Math.min(K_MAX,c.k*f))
           c.tx=s[0]-wx*c.k; c.ty=s[1]-wy*c.k; clampCam(); writeCam()
+          // SPRINT 0: map zoom tracking
+          try{if(typeof window!=="undefined"&&window.track&&!/[?&]behavior_track=0/.test(window.location.search)){window.track("sg_map_zoom",{region:island,from_level:prevK,to_level:c.k,trigger:"double_tap",component:"WorldMapView"})}}catch(_){}
         }
         lastTapRef.current=now
       }
@@ -1626,7 +1648,7 @@ export default function WorldMapView({
               const dotCol=st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
               return(
                 <g key={b.id} data-beach={b.id} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer",pointerEvents:"auto"}}
-                  onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
+                  onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot",beach_id:b.id,status:st});track&&track("sg_beach_pin_click",{beach_id:b.id,region:island,source:"dot",status:st})}catch(_){}; onOpenBeach(b) } }}>
                   <circle r={mapPinHitOff?"8":"16"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
                 </g>
@@ -1644,7 +1666,7 @@ export default function WorldMapView({
                   // n'était pas tapable au doigt → funnel cassé, fix P0 audit). La couleur du
                   // pin indique déjà le statut, pas besoin d'aperçu intermédiaire.
                   selectBeach(b)
-                  if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_pin"})}catch(_){}; onOpenBeach(b) }
+                  if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_pin",beach_id:b.id,status:st});track&&track("sg_beach_pin_click",{beach_id:b.id,region:island,source:"pin",status:st})}catch(_){}; onOpenBeach(b) }
                 }}>
                 {/* Hit-zone tactile ≥44px (transparente, art inchangé) — fix dead/rage-clicks carte. Sprint #25: enlarged to 26 for Puntacana dense bbox */}
                 {!mapPinHitOff&&<circle r="26" cy="-9" fill="transparent"/>}
@@ -1770,7 +1792,7 @@ export default function WorldMapView({
           const st=b.days[day]
           const col=STATUS_C[st]||"#888"
           const li=lang==="en"?1:lang==="es"?2:0
-          const openB=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label"})}catch(_){}; onOpenBeach(b) } }
+          const openB=e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_label",beach_id:b.id,status:st})}catch(_){}; onOpenBeach(b) } }
             return(
             <div key={b.id}
               className="sg-maplabel"
@@ -2442,7 +2464,7 @@ export default function WorldMapView({
             sélectionnée AVANT toute déselection par la couche carte (fix P0 tap au doigt). */}
         {selected&&(
           <button type="button" className="sg-mapcta" onClick={openBeach}
-            onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ lastPtrOpenRef.current=Date.now(); try{track&&track("sg_beach_open",{from:"map_cta"})}catch(_){}; onOpenBeach(sb) } }}
+            onPointerDown={(e)=>{ try{e.stopPropagation()}catch(_){}; const sb=selected; if(sb&&onOpenBeach){ lastPtrOpenRef.current=Date.now(); try{track&&track("sg_beach_open",{from:"map_cta",beach_id:sb.id,status:sb.days?.[day]||sb.status})}catch(_){}; onOpenBeach(sb) } }}
             style={{
             position:"absolute",left:"50%",bottom:"calc(176px + env(safe-area-inset-bottom))",
             transform:"translateX(-50%)",pointerEvents:"auto",touchAction:"manipulation",
