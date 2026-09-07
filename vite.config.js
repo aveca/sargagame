@@ -267,22 +267,29 @@ export default defineConfig({
         return html.replace('</head>', tags + '</head>')
       },
     },
-    // ── Meta région-aware de l'index.html (nouvelles régions EN/ES) ──
-    // MQ/GP strictement inchangés (REGION null ou id mq/gp → html retourné tel quel).
+    // ── Meta région-aware de l'index.html (nouvelles régions EN/ES + GP FR) ──
+    // MQ strictement inchangé (REGION null ou id mq → html retourné tel quel).
+    // GP : primaryLang=fr, secondaryLangs=[en,es] → même traitement que nouvelles régions.
     {
       name: 'region-index-html',
       transformIndexHtml(html) {
-        if (!REGION || REGION.id === 'mq' || REGION.id === 'gp') return html
+        if (!REGION || REGION.id === 'mq') return html
         const name = REGION.name, domain = REGION.domain, lang = REGION.primaryLang
         // ES first sur les marchés hispanophones : head/FAQ/noscript dans la langue primaire.
+        // FR (GP) : head/FAQ/noscript en français.
         const es = lang === 'es'
+        const fr = lang === 'fr'
         const title = es
           ? `Sargazo y Algas en ${name} Hoy — Mapa de Playas en Vivo y Pronóstico 7 Días 2026`
+          : fr
+          ? `Sargasses et Algues en ${name} Aujourd'hui — Carte des Plages en Direct et Prévisions 7 Jours 2026`
           : `${name} Sargassum & Seaweed Today — Live Beach Map & 7-Day Forecast 2026`
         const desc = es
           ? `¿Qué playa de ${name} está sin sargazo hoy? Mapa en vivo playa por playa, Beach Score 0-100 y pronóstico de 7 días. Actualizado 4 veces al día con datos satelitales.`
+          : fr
+          ? `Quelle plage de ${name} est sans sargasse aujourd'hui ? Carte en direct plage par plage, Beach Score 0-100 et prévisions 7 jours. Mis à jour 4 fois par jour avec données satellite.`
           : `Which ${name} beach is free of sargassum and seaweed today? Live per-beach map, Beach Score 0-100 and 7-day forecast. Updated 4× daily from satellite data.`
-        const siteName = es ? `Sargazo ${name}` : `Sargassum ${name}`
+        const siteName = es ? `Sargazo ${name}` : fr ? `Sargasses ${name}` : `Sargassum ${name}`
         const today = new Date().toISOString().slice(0, 10)
         const beaches = REGION.beaches || []
         const communes = [...new Set(beaches.map(b => b.commune).filter(Boolean))]
@@ -296,8 +303,8 @@ export default defineConfig({
           .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${title}"`)
           .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${desc}"`)
           .replace(/(<meta property="og:site_name" content=)"[^"]*"/, `$1"${siteName}"`)
-          .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : 'en_US'}"`)
-          .replace(/(<meta property="og:image:alt" content=)"[^"]*"/, `$1"${es ? `Beach Score 0-100 para cada playa de ${name} — sargazo, oleaje, viento, sol` : `Beach Score 0-100 for every ${name} beach — sargassum, swell, wind, sun`}"`)
+          .replace(/(<meta property="og:locale" content=)"[^"]*"/, `$1"${lang === 'es' ? 'es_MX' : lang === 'fr' ? 'fr_FR' : 'en_US'}"`)
+          .replace(/(<meta property="og:image:alt" content=)"[^"]*"/, `$1"${es ? `Beach Score 0-100 para cada playa de ${name} — sargazo, oleaje, viento, sol` : fr ? `Beach Score 0-100 pour chaque plage de ${name} — sargasses, houle, vent, soleil` : `Beach Score 0-100 for every ${name} beach — sargassum, swell, wind, sun`}"`)
           .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${title}"`)
           .replace(/(<meta name="twitter:description" content=)"[^"]*"/, `$1"${desc}"`)
           .replace(/(<meta name="geo.region" content=)"[^"]*"/, `$1"${REGION.countryCode || ''}"`)
@@ -307,16 +314,20 @@ export default defineConfig({
           .replace(/https:\/\/sargasses-martinique\.com/g, `https://${domain}`)
 
         // ── 2) hreflang home : langue primaire à la racine + chaque langue secondaire
-        //      RÉELLEMENT émise (fichier de contenu <id>.<lang>.json présent) sous
-        //      /<lang>/, + x-default = primaire. Source unique = region-langs.cjs, le
-        //      MÊME oracle que region-seo-pages (génération) et prepare-ftp (déploiement)
-        //      → jamais de hreflang vers un /en/ inexistant. FL/PC (secondaryLangs:["es"]
-        //      sans florida.es.json) → cluster identique à avant (en racine + x-default) ;
-        //      Riviera Maya → es racine + en /en/ + x-default. ──
-        const _RL = _require('./scripts/lib/region-langs.cjs')
-        const _homeAlts = _RL.emittedLangs(REGION)
-          .map(l => `<link rel="alternate" hreflang="${l}" href="https://${domain}${_RL.langPrefix(REGION, l)}/" />`)
-          .join('\n    ')
+        //      Pour GP (fr primaire, en/es secondaires) : génération directe sans region-langs.cjs
+        //      (region-langs.cjs normalise fr→en, inutilisable pour les marchés FR).
+        let _homeAlts = ''
+        if (REGION.id === 'gp') {
+          // GP : fr à la racine, en/es sous /en/ /es/
+          _homeAlts = `<link rel="alternate" hreflang="fr" href="https://${domain}/" />
+    <link rel="alternate" hreflang="en" href="https://${domain}/en/" />
+    <link rel="alternate" hreflang="es" href="https://${domain}/es/" />`
+        } else {
+          const _RL = _require('./scripts/lib/region-langs.cjs')
+          _homeAlts = _RL.emittedLangs(REGION)
+            .map(l => `<link rel="alternate" hreflang="${l}" href="https://${domain}${_RL.langPrefix(REGION, l)}/" />`)
+            .join('\n    ')
+        }
         html = html.replace(
           /<link rel="alternate" hreflang="fr"[^>]*\/>\s*<link rel="alternate" hreflang="en"[^>]*\/>\s*<link rel="alternate" hreflang="es"[^>]*\/>\s*<link rel="alternate" hreflang="x-default"[^>]*\/>/,
           `${_homeAlts}\n    <link rel="alternate" hreflang="x-default" href="https://${domain}/" />`
@@ -325,8 +336,8 @@ export default defineConfig({
         // ── 2.5) REGION.sceneTheme : surcharge --sg-* (scène golden-hour) PAR MARCHÉ.
         //      Partiel : seules les vars retunées sont émises (ex. mer plus turquoise
         //      Caraïbe, sable plus pâle Floride) ; le reste retombe sur le défaut golden
-        //      de index.html. Injecté APRÈS le :root de base → la cascade gagne. MQ/GP
-        //      court-circuités plus haut (l.96) = aucun override sur les marchés FR.
+        //      de index.html. Injecté APRÈS le :root de base → la cascade gagne. MQ court-circuité
+        //      plus haut = aucun override sur le marché FR MQ. GP passe par ce plugin.
         const sceneTheme = REGION.sceneTheme
         if (sceneTheme && typeof sceneTheme === 'object') {
           const VMAP = { sky0: '--sg-sky-0', sky1: '--sg-sky-1', sky2: '--sg-sky-2', sky3: '--sg-sky-3', seaTop: '--sg-sea-top', seaBot: '--sg-sea-bot', sand: '--sg-sand', rim: '--sg-rim', glit: '--sg-glit', sarg: '--sg-sarg', sargD: '--sg-sarg-d', sargL: '--sg-sarg-l', sargGlint: '--sg-sarg-glint', sargStrand: '--sg-sarg-strand', satBody: '--sg-sat-body', satTop: '--sg-sat-top', satLens: '--sg-sat-lens' }

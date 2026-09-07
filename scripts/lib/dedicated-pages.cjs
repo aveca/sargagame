@@ -253,16 +253,17 @@ function generateDedicatedPages(region, distDir) {
     regionPois = poisAll.regions?.martinique?.pois?.slice(0,2) || [];
   }
 
-  // Determine beaches list: inline for new regions, ALL_BEACHES for legacy mq/gp
+  // Determine beaches list: inline for new regions, filtered by island for legacy mq/gp
   let beaches = [];
   if (Array.isArray(region.beaches) && region.beaches.length) {
     beaches = region.beaches;
   } else if (region.id === 'mq' || region.id === 'gp') {
     try {
       const all = JSON.parse(fs.readFileSync(path.join(ROOT, 'public/data/beaches-list.json'), 'utf-8'));
-      // For legacy build (dist is mq-flavored), generate for BOTH islands so /beach covers all;
-      // prepare-ftp will later filter per-ftp if needed. For now generate all.
-      beaches = all;
+      // Filter by island: MQ only generates MQ beaches, GP only generates GP beaches.
+      // The island key is in beach.island ('mq' or 'gp') or derived from beachFilter.
+      const targetIsland = (region.beachFilter && region.beachFilter.island) || region.id;
+      beaches = all.filter(b => b.island === targetIsland);
     } catch (e) {
       console.warn(`   ⚠ dedicated: beaches-list.json load fail: ${e.message}`);
       beaches = [];
