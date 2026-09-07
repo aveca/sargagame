@@ -1905,7 +1905,7 @@
         },
         {
           "id": "tu003",
-          "afai": 0.19,
+          "afai": 0.2,
           "status": "moderate"
         },
         {
@@ -1920,7 +1920,7 @@
         },
         {
           "id": "tu006",
-          "afai": 0.19,
+          "afai": 0.2,
           "status": "moderate"
         },
         {
@@ -1930,7 +1930,7 @@
         },
         {
           "id": "tu008",
-          "afai": 0.2,
+          "afai": 0.21,
           "status": "moderate"
         }
       ]
