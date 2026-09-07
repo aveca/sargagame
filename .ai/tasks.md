@@ -8,9 +8,8 @@
 
 ## Récemment complété
 
-- [ ] **BUG-2026-032 partie 2 — pages statiques masquées par le catch-all** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Preuve : `/beach/anse-mitan/` live = coquille générique alors que dist a la page unique. Cause : catch-all servait index.html sans essayer ASSETS (400+ pages SEO invisibles aux crawlers). Fix : ASSETS-first + fallback. Test 8/8. Reste : CI → merge → deploy → live.
-
-- [ ] **FC7-ALIGNMENT — dérive free tier + gate rouge** (@coding_agent OpenCode, 2026-09-06, EN COURS) — Cause prouvée : commit data pipeline stageait les privés SANS les fc7 → dérive (ex. mq 36, gp 83). Fix : `regen-fc7` + stage fc7 dans daily-copernicus + realignement immédiat (229 fichiers, 0 divergence) + `.claude/worktrees/` ignoré. Reste : CI → merge → deploy → live.
+- [x] **BUG-2026-032 partie 2 — pages statiques masquées par le catch-all** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Preuve : `/beach/anse-mitan/` live = coquille générique alors que dist a la page unique. Cause : catch-all servait index.html sans essayer ASSETS (400+ pages SEO invisibles aux crawlers). Fix : ASSETS-first + fallback. Test 8/8. PR #649 merged, live vérifié : beach pages uniques + canonical correct + app boot.
+- [x] **FC7-ALIGNMENT — dérive free tier + gate rouge** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Cause prouvée : commit data pipeline stageait les privés SANS les fc7 → dérive (ex. mq 36, gp 83). Fix : `regen-fc7` + stage fc7 dans daily-copernicus + realignement immédiat (229 fichiers, 0 divergence) + `.claude/worktrees/` ignoré. Run 34057331521 20:13 UTC : fc7 régénérés 229 fichiers, push OK, deploy-live déclenché. CI 100 % verte. Live : fc7 frais du jour, data freshness 0.1h.
 
 - [x] **BUG-2026-032 — routage sitemap/robots + prune domaines morts** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — PR #645 (routing) + #646 (prune). Live : sitemap 200 XML 539 loc 0 barbados, robots 200, **SEO Guard SUCCESS 06/09** (1er vert après 6 jours rouges 01→06/09, confirmé ×2). Tests 7/7 ×2 · 21/21 · smoke 4/4.
 - [x] **FC7-ALIGNMENT — dérive free tier corrigée structurellement** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Commit data stageait privés sans fc7 → regen+stage dans daily-copernicus + realignement (229 fichiers, 0 divergence) + PR #647 (CI 100 % verte, 1ère depuis des jours). Live : fc7 frais du jour. Note : robots.txt live = version Cloudflare Managed (Allow:/ search, AI bots bloqués — setting produit, hors scope).
@@ -116,7 +115,15 @@
 
 ## P0 — Bloquant / urgent
 
-### TASK-P0-002 Tulum clean count = 0 — configurer au moins 1 plage status: "clean"
+### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
+- **Priorité** : P0
+- **Rôle** : coding_agent
+- **Description** : `sargasses-guadeloupe.com` (racine, `/plages/`, `/beach/*`) sert le contenu Martinique (titre "Plages Martinique aujourd'hui...") + canonical `https://sargasses-martinique.com/` partout. MQ trafic ~16-95/j vs GP ~0/j → racine technique probable (SEO : Google ignore le domaine GP car duplicate content + canonical MQ).
+- **Cause identifiée** : plugin `region-index-html` dans `vite.config.js` (ligne ~191312) force le canonical MQ pour les builds non-MQ/GP. Le build GP reçoit `REGION.id='gp'` mais le plugin ne met pas à jour le canonical/hreflang/title pour GP.
+- **Fichiers** : `vite.config.js` (plugin `region-index-html`), `regions/gp.json` (vérifier `domain`), `src/Sargasses_PROD.jsx` (canonical dynamique si nécessaire).
+- **Fix requis** : canonical = domaine de la région (`REGION.domain`), contenu GP (titres, h1, meta), hreflang bidir MQ↔GP. Test : live GP racine + `/plages/` + `/beach/*` = titre GP + canonical GP + hreflang 4 (x2 MQ + x2 GP).
+- **Estimation** : 2h
+- **Statut** : [ ] NEW — identifié 2026-09-06 dans long-session-2
 - **Priorité** : P0
 - **Rôle** : data_agent / product_agent
 - **Description** : Tulum a 8 plages en config, toutes `status: "moderate"`, aucune `clean`. Audit affiche "0 playas limpias" → utilisateur voit zéro plage propre. Décision produit : ces plages sont-elles réellement sans sargasse (clean) ou modérées ? Ajuster config `regions/tulum.json` ou logique clean count.

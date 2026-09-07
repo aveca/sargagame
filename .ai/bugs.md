@@ -3,6 +3,15 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-034 — [OUVERT 2026-09-06, P0 SEO] GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
+- **Sévérité** : P0 — GP ~0/j vs MQ ~16-95/j, racine technique probable
+- **Symptôme** : `sargasses-guadeloupe.com` (racine, `/plages/`, `/beach/*`) sert le contenu Martinique (titre "Plages Martinique aujourd'hui — Score 0-100...") + canonical `https://sargasses-martinique.com/` partout. hreflang=4 (x2 MQ + x2 GP) mais contenu identique MQ.
+- **Cause identifiée** : plugin `region-index-html` dans `vite.config.js` (ligne ~191312) force le canonical MQ pour les builds non-MQ/GP. Le build GP reçoit `REGION.id='gp'` mais le plugin ne met pas à jour le canonical/hreflang/title pour GP → canonical MQ + contenu MQ.
+- **Repro** : `curl sargasses-guadeloupe.com` + `curl sargasses-guadeloupe.com/beach/grande-anse/` → titre "Plages Martinique..." + canonical `sargasses-martinique.com` (preuve live 2026-09-06).
+- **Fix requis** : canonical = domaine de la région (`REGION.domain`), contenu GP (titres, h1, meta description), hreflang bidir MQ↔GP. Test : live GP racine + `/plages/` + `/beach/*` = titre GP + canonical GP + hreflang 4 (x2 MQ + x2 GP).
+- **Fichiers** : `vite.config.js` (plugin `region-index-html`), `regions/gp.json` (vérifier `domain`), `src/Sargasses_PROD.jsx` (canonical dynamique si nécessaire).
+- **Date** : 2026-09-06 · identifié dans long-session-2
+
 ### BUG-2026-033 — [FIXÉ 2026-09-06, en attente deploy] paylinks annuels 404 live — Worker shadowant le statique
 - **Sévérité** : P1 B2B — lien annuel Mollie invisible dans le modal Pro (trial unaffected)
 - **Cause prouvée** : `dist/api/b2b-paylinks.json` existe ; `functions/[[path]].js` le servirait (.json → ASSETS) ; MAIS une route Worker intercepte avant. **Correction de trajectoire** : le 1er fix visait `b2b-api`, mais le corps live `{"error":"not_found"}` (minuscules) provient du fallthrough final de **sg-payments** — c'est lui qui sert ce chemin en prod. Fix reporté sur sg-payments (passthrough identique) ; fix b2b-api conservé (inoffensif, couvre les zones routées b2b-api).
