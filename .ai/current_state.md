@@ -1,4 +1,46 @@
 ---
+## 2026-09-06 · Agent: coding_agent (OpenCode) · LONG SESSION — SEO static pages + fc7 auto-alignement + GP canonical BUG
+
+### Travail effectué
+- **Résumé 1 ligne** : BUG-2026-032 partie 2 corrigé (pages SEO statiques servies avant fallback SPA) + daily-copernicus fc7 auto-alignement confirmé (run 34057331521) + GP canonical BUG identifié (domaine GP sert contenu MQ + canonical MQ).
+- **Détails** :
+  1. **BUG-2026-032 p2** : catch-all `[[path]].js` servait index.html partout → 400+ pages `/beach/*` + `/plages/` + `/fiabilite/` invisibles aux crawlers (contenu dupliqué). Fix : ASSETS-first + fallback inchangé. Tests routing 8/8, live vérifié : `/beach/anse-mitan/` = titre unique + canonical correct + app boot.
+  2. **daily-copernicus fc7** : run 34057331521 20:13 UTC → `regen-fc7.cjs` exécuté dans step commit → 229 fichiers fc7 régénérés (0 purge), push OK, deploy-live déclenché. Pipeline stable, data freshness 0.1h.
+  3. **GP canonical BUG** : `sargasses-guadeloupe.com` sert le contenu Martinique (titre "Plages Martinique...") + canonical `sargasses-martinique.com` partout (racine, `/plages/`, `/beach/*`). Cause : plugin `region-index-html` dans `vite.config.js` applique le canonical MQ au build GP. MQ trafic ~16-95/j vs GP ~0/j → racine technique probable.
+
+### Fichiers modifiés
+- `functions/[[path]].js` — ASSETS-first catch-all (BUG-2026-032 p2)
+- `tests/unit/routing-catchall.test.cjs` — + test page statique existante (8/8)
+- `.ai/tasks.md`, `.ai/changelog.md`, `.ai/bugs.md` — documentation
+
+### Tests réalisés
+- [x] routing 8/8 local + CI ✅
+- [x] build exit 0 ✅
+- [x] check-bundle-budget → 37.4 Ko ✅
+- [x] E2E 21/21 ✅
+- [x] ux-smoke 4/4 ✅
+- [x] CI 100 % verte (branch-policy, funnel, perf, playwright, scan, test-frontend) ✅
+- [x] Live MQ/GP : beach pages uniques + app boot + data fresh 0.1h ✅
+- [x] daily-copernicus run 34057331521 SUCCESS + fc7 229 fichiers ✅
+
+### Problèmes restants
+- [ ] **GP canonical BUG** : domaine GP sert contenu MQ + canonical MQ → expliquer GP ~0/j vs MQ ~16-95/j. Fix requis : canonical GP sur domaine GP, contenu GP (région-aware), hreflang bidir. Sprint dédié.
+- [ ] **Outreach** : credentials TOUJOURS ABSENT (Supabase/Resend/Meta/Admin) → gel maintenu, watchdog OK.
+- [ ] **Funnel B2C** : instrumentation à auditer (map→beach→paywall→checkout→payment events par région).
+- [ ] **B2B** : page `/pro` à auditer (15 vues → 0 step).
+
+### Prochaine action recommandée
+1. **GP canonical BUG** : fixer `region-index-html` plugin (canonical = domaine de la région, pas MQ) + contenu GP + hreflang → déployer → vérifier indexation GP. Rôle : coding
+2. **Funnel B2C audit** : vérifier events Supabase `analytics_events` par étape/par région → identifier trous. Rôle : coding/data
+3. **Outreach** : ne reprendre QUE si fondateur provisionne (4 secrets + schema + 1-3 prospects). Watchdog maintient.
+
+### Branche / PR
+- Branche : `agent/coding/long-session-2` (BUG-2026-032 p2 merged via PR #649)
+- PR #649 : MERGED 2026-09-06T19:00:06Z
+- Commit head : `a11e0cccb` (docs handoff 032+fc7)
+- Prochaine branche GP canonical : `agent/coding/gp-canonical-fix`
+
+---
 ## 2026-09-06 · Agent: coding_agent (OpenCode) · SPRINT OUTREACH 0-PC — worker + DB + CI prêts, envois OFF
 
 ### Travail effectué

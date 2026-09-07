@@ -1,5 +1,16 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-06 · LONG SESSION — BUG-2026-032 partie 2 : pages statiques servies AVANT fallback SPA (SEO critique)
+
+**Preuve** : `/beach/anse-mitan/` live = coquille générique (titre "Plages Martinique...") alors que `dist/beach/anse-mitan/index.html` a le titre unique "Anse Mitan (Martinique) — Propre, Beach Score 59/100" + canonical correct. Cause : catch-all `[[path]].js` servait index.html partout sans essayer ASSETS → 400+ pages SEO dupliquées aux yeux des crawlers.
+**Fix** : ASSETS-first dans le catch-all (staticResponse.ok → return) + fallback index.html inchangé. Même bundle app (les statiques embarquent le même JS), UX identique, SEO réel.
+**Gates** : routing 8/8 ✅ · build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 ✅ · smoke 4/4 ✅ · CI 100 % ✅ · live vérifié (beach pages uniques + app boot).
+
+## 2026-09-06 · LONG SESSION — daily-copernicus : auto-alignement fc7 CONFIRMÉ (run 34057331521)
+
+**Preuve** : step commit data exécute `node scripts/regen-fc7.cjs` → "fc7 régénérés : 229 fichiers (+0 purgés)" par région (mq 53, gp 83, florida 20, rivieramaya 20, puntacana 12, tulum 8, barbados 12, root 21). Commit data 266 fichiers, push OK, deploy-live déclenché.
+**Gates** : pipeline SUCCESS · data freshness 0.1h · fc7 aligné structurellement (plus de dérive free tier).
+
 ## 2026-09-06 · LONG SESSION — fc7-alignment : dérive free tier corrigée structurellement
 
 **Cause prouvée** : le commit data du pipeline stageait `_private/forecast-full.json` SANS `fc7/` → dérive (mq 36, gp 83, …), free tier « Ma plage » périmé + gate CI rouge.
