@@ -1,17 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-06-08",
-      "sites": {
-        "mq": {
-          "combined": null
-        },
-        "gp": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-06-15",
       "sites": {
         "mq": {
@@ -712,6 +701,107 @@
             },
             "TTFB": {
               "p75": 615,
+              "good": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "date": "2026-09-07",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 1423,
+              "good": null
+            },
+            "INP": {
+              "p75": 395,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 409,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 1512,
+              "good": null
+            },
+            "INP": {
+              "p75": 503,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 476,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 1241,
+              "good": null
+            },
+            "INP": {
+              "p75": 262,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 479,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 1590,
+              "good": null
+            },
+            "INP": {
+              "p75": 283,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": {
+            "LCP": {
+              "p75": 1562,
+              "good": null
+            },
+            "INP": {
+              "p75": 282,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 502,
               "good": null
             }
           }

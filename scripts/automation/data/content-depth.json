@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-31T18:15:40.684Z",
+  "generatedAt": "2026-09-07T16:42:33.978Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "medianWords": 41,
-      "thinCount": 211,
+      "pageCount": 805,
+      "medianWords": 88,
+      "thinCount": 651,
       "richCount": 80,
       "thinPages": [
         {
@@ -172,10 +172,10 @@
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "medianWords": 195,
-      "thinCount": 211,
-      "richCount": 111,
+      "pageCount": 840,
+      "medianWords": 90,
+      "thinCount": 649,
+      "richCount": 110,
       "thinPages": [
         {
           "url": "/404.html",
@@ -317,27 +317,27 @@
         },
         {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1888
+          "words": 1886
         },
         {
           "url": "/plages/plage-de-la-caravelle/",
-          "words": 1876
+          "words": 1878
         },
         {
           "url": "/plages/plage-de-deshaies/",
-          "words": 1853
+          "words": 1855
         },
         {
           "url": "/plages/plage-de-malendure/",
           "words": 1845
         },
         {
-          "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1840
+          "url": "/plages/plage-du-gosier/",
+          "words": 1841
         },
         {
-          "url": "/plages/plage-du-gosier/",
-          "words": 1839
+          "url": "/plages/plage-de-la-desirade-sud/",
+          "words": 1840
         }
       ]
     }

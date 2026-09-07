@@ -1,37 +1,179 @@
 {
-  "generatedAt": "2026-08-31T18:15:40.144Z",
+  "generatedAt": "2026-09-07T16:42:33.310Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "uniqueTitles": 208,
-      "uniqueDescs": 188,
-      "duplicateTitleGroups": 1,
-      "duplicateDescGroups": 1,
-      "duplicateTitlePages": 3,
-      "duplicateDescPages": 3,
+      "pageCount": 805,
+      "uniqueTitles": 435,
+      "uniqueDescs": 415,
+      "duplicateTitleGroups": 213,
+      "duplicateDescGroups": 213,
+      "duplicateTitlePages": 427,
+      "duplicateDescPages": 427,
       "duplicateTitles": [
         {
-          "title": "Widget sargasses gratuit — l'état des plages en direct sur votre site",
-          "count": 3,
+          "title": "Akumal Bay (Riviera Maya) — Moderada, Beach Score 62/100",
+          "count": 2,
           "sample": [
-            "en/widget/index.html",
-            "es/widget/index.html",
-            "widget/index.html"
+            "beach/akumal-bay/index.html",
+            "beach/rm005/index.html"
+          ]
+        },
+        {
+          "title": "Anse à l'Âne (Martinique) — Propre, Beach Score 49/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-ane/index.html",
+            "beach/mq010/index.html"
+          ]
+        },
+        {
+          "title": "Anse à l’Eau (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-eau/index.html",
+            "beach/gp073/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Barque (Ste-Anne) (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-ste-anne/index.html",
+            "beach/gp023/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Barque (VH) (Guadeloupe) — Propre, Beach Score 59/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-vh/index.html",
+            "beach/gp083/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Gourde (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-gourde/index.html",
+            "beach/gp004/index.html"
+          ]
+        },
+        {
+          "title": "Anse à Sable (Guadeloupe) — Propre, Beach Score 70/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-sable/index.html",
+            "beach/gp032/index.html"
+          ]
+        },
+        {
+          "title": "Anse Belleville (Martinique) — Propre, Beach Score 63/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-belleville/index.html",
+            "beach/mq030/index.html"
+          ]
+        },
+        {
+          "title": "Anse-Bertrand Nord (Guadeloupe) — Propre, Beach Score 59/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-bertrand-nord/index.html",
+            "beach/gp020/index.html"
+          ]
+        },
+        {
+          "title": "Anse Bonneville (Martinique) — Propre, Beach Score 44/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-bonneville/index.html",
+            "beach/mq035/index.html"
           ]
         }
       ],
       "duplicateDescs": [
         {
-          "desc": "Widget gratuit sargasses Martinique et Guadeloupe. Affichez l'état des plages en",
-          "count": 3,
+          "desc": "Moderada aujourd'hui à Akumal Bay, Riviera Maya. Beach Score 62/100. Pronóstico ",
+          "count": 2,
           "sample": [
-            "en/widget/index.html",
-            "es/widget/index.html",
-            "widget/index.html"
+            "beach/akumal-bay/index.html",
+            "beach/rm005/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à l'Âne, Martinique. Beach Score 49/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-ane/index.html",
+            "beach/mq010/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à l’Eau, Guadeloupe. Beach Score 45/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-eau/index.html",
+            "beach/gp073/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Barque (Ste-Anne), Guadeloupe. Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-ste-anne/index.html",
+            "beach/gp023/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Barque (VH), Guadeloupe. Beach Score 59/100. Prév",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-vh/index.html",
+            "beach/gp083/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Gourde, Guadeloupe. Beach Score 45/100. Prévision",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-gourde/index.html",
+            "beach/gp004/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à Sable, Guadeloupe. Beach Score 70/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-sable/index.html",
+            "beach/gp032/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse Belleville, Martinique. Beach Score 63/100. Prévision ",
+          "count": 2,
+          "sample": [
+            "beach/anse-belleville/index.html",
+            "beach/mq030/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse-Bertrand Nord, Guadeloupe. Beach Score 59/100. Prévisi",
+          "count": 2,
+          "sample": [
+            "beach/anse-bertrand-nord/index.html",
+            "beach/gp020/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse Bonneville, Martinique. Beach Score 44/100. Prévision ",
+          "count": 2,
+          "sample": [
+            "beach/anse-bonneville/index.html",
+            "beach/mq035/index.html"
           ]
         }
       ],
-      "issueCount": 552,
+      "issueCount": 699,
       "issues": [
         {
           "file": "404.html",
@@ -48,6 +190,36 @@
           "kind": "title-too-long",
           "length": 85,
           "value": "Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Martinique"
+        },
+        {
+          "file": "activity/dive/index.html",
+          "kind": "desc-length-warn",
+          "length": 91
+        },
+        {
+          "file": "activity/family/index.html",
+          "kind": "desc-length-warn",
+          "length": 93
+        },
+        {
+          "file": "activity/kids/index.html",
+          "kind": "desc-length-warn",
+          "length": 90
+        },
+        {
+          "file": "activity/parking/index.html",
+          "kind": "desc-length-warn",
+          "length": 98
+        },
+        {
+          "file": "activity/snorkel/index.html",
+          "kind": "desc-length-warn",
+          "length": 93
+        },
+        {
+          "file": "activity/surf/index.html",
+          "kind": "desc-length-warn",
+          "length": 90
         },
         {
           "file": "agir/index.html",
@@ -82,150 +254,269 @@
           "kind": "missing-desc"
         },
         {
-          "file": "bulletin-sargasses-martinique/index.html",
+          "file": "beach/anse-a-la-barque-ste-anne/index.html",
           "kind": "title-length-warn",
-          "length": 67,
-          "value": "Bulletin sargasses Martinique du jour — état des plages aujourd'hui"
+          "length": 69,
+          "value": "Anse à la Barque (Ste-Anne) (Guadeloupe) — Propre, Beach Score 45/100"
         },
         {
-          "file": "carte-sargasses/index.html",
+          "file": "beach/anse-a-la-barque-vh/index.html",
           "kind": "title-length-warn",
-          "length": 62,
-          "value": "Carte des sargasses Martinique aujourd'hui — temps réel (2026)"
+          "length": 63,
+          "value": "Anse à la Barque (VH) (Guadeloupe) — Propre, Beach Score 59/100"
         },
         {
-          "file": "cgv.html",
+          "file": "beach/anse-canot-marie-galante/index.html",
           "kind": "title-length-warn",
-          "length": 65,
-          "value": "Conditions générales de vente · Sargasses Martinique & Guadeloupe"
+          "length": 68,
+          "value": "Anse Canot (Marie-Galante) (Guadeloupe) — Propre, Beach Score 45/100"
         },
         {
-          "file": "cgv.html",
-          "kind": "desc-too-long",
-          "length": 229
-        },
-        {
-          "file": "comic-cartes.html",
-          "kind": "missing-desc"
-        },
-        {
-          "file": "comprendre-sargasses/index.html",
-          "kind": "title-length-warn",
-          "length": 70,
-          "value": "Comprendre les sargasses : origines, prolifération et prévision (2026)"
-        },
-        {
-          "file": "comprendre-sargasses/index.html",
-          "kind": "desc-length-warn",
-          "length": 98
-        },
-        {
-          "file": "conditions/index.html",
-          "kind": "desc-length-warn",
-          "length": 191
-        },
-        {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
-        },
-        {
-          "file": "conditions/mer-calme/index.html",
-          "kind": "desc-length-warn",
-          "length": 107
-        },
-        {
-          "file": "conditions/snorkeling/index.html",
-          "kind": "desc-length-warn",
-          "length": 99
-        },
-        {
-          "file": "conditions/uv-fort/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Plages avec UV très fort aujourd’hui — Martinique (protégez-vous)"
-        },
-        {
-          "file": "confidentialite/index.html",
-          "kind": "desc-too-long",
-          "length": 268
-        },
-        {
-          "file": "confidentialite.html",
-          "kind": "title-length-warn",
-          "length": 64,
-          "value": "Politique de confidentialité · Sargasses Martinique & Guadeloupe"
-        },
-        {
-          "file": "confidentialite.html",
-          "kind": "desc-length-warn",
-          "length": 119
-        },
-        {
-          "file": "confirme/index.html",
-          "kind": "missing-desc"
-        },
-        {
-          "file": "danger-sargasses-h2s/index.html",
-          "kind": "desc-length-warn",
-          "length": 98
-        },
-        {
-          "file": "detection-satellite-sargasses/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Détection satellite des sargasses : AFAI, OLCI, Copernicus (2026)"
-        },
-        {
-          "file": "en/best-beaches-martinique/index.html",
+          "file": "beach/anse-corps-de-garde/index.html",
           "kind": "title-length-warn",
           "length": 61,
-          "value": "Best beaches in Martinique without sargassum — Real-time 2026"
+          "value": "Anse Corps de Garde (Martinique) — Propre, Beach Score 49/100"
         },
         {
-          "file": "en/index.html",
+          "file": "beach/anse-de-la-baie-olive/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Anse de la Baie Olive (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-de-vieux-fort-mg/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Anse de Vieux-Fort (MG) (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-du-bourg-saintes/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Anse du Bourg (Saintes) (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-du-figuier-saintes/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Anse du Figuier (Saintes) (Guadeloupe) — Propre, Beach Score 50/100"
+        },
+        {
+          "file": "beach/anse-du-mancenillier/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Anse du Mancenillier (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-riviere-trinite/index.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Anse Rivière (Trinité) (Martinique) — Propre, Beach Score 44/100"
+        },
+        {
+          "file": "beach/anse-sainte-marguerite/index.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Anse Sainte-Marguerite (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/bb009/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Miami Beach / Enterprise (Barbados) — Clean, Beach Score 47/100"
+        },
+        {
+          "file": "beach/bourg-de-case-pilote/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Bourg de Case-Pilote (Martinique) — Propre, Beach Score 59/100"
+        },
+        {
+          "file": "beach/fl007/index.html",
           "kind": "desc-length-warn",
           "length": 119
         },
         {
-          "file": "en/sargassum-alerts/index.html",
+          "file": "beach/gp001/index.html",
           "kind": "title-length-warn",
-          "length": 66,
-          "value": "Sargassum alerts Martinique & Guadeloupe — Real-time notifications"
+          "length": 65,
+          "value": "Plage de Saint-François (Guadeloupe) — Propre, Beach Score 45/100"
         }
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "uniqueTitles": 247,
-      "uniqueDescs": 228,
-      "duplicateTitleGroups": 1,
-      "duplicateDescGroups": 1,
-      "duplicateTitlePages": 3,
-      "duplicateDescPages": 2,
+      "pageCount": 840,
+      "uniqueTitles": 469,
+      "uniqueDescs": 450,
+      "duplicateTitleGroups": 214,
+      "duplicateDescGroups": 214,
+      "duplicateTitlePages": 429,
+      "duplicateDescPages": 428,
       "duplicateTitles": [
         {
-          "title": "Widget sargasses gratuit — l'état des plages en direct sur votre site",
-          "count": 3,
+          "title": "Akumal Bay (Riviera Maya) — Moderada, Beach Score 62/100",
+          "count": 2,
           "sample": [
-            "en/widget/index.html",
-            "es/widget/index.html",
-            "widget/index.html"
+            "beach/akumal-bay/index.html",
+            "beach/rm005/index.html"
+          ]
+        },
+        {
+          "title": "Anse à l'Âne (Guadeloupe) — Propre, Beach Score 49/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-ane/index.html",
+            "beach/mq010/index.html"
+          ]
+        },
+        {
+          "title": "Anse à l’Eau (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-eau/index.html",
+            "beach/gp073/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Barque (Ste-Anne) (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-ste-anne/index.html",
+            "beach/gp023/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Barque (VH) (Guadeloupe) — Propre, Beach Score 59/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-vh/index.html",
+            "beach/gp083/index.html"
+          ]
+        },
+        {
+          "title": "Anse à la Gourde (Guadeloupe) — Propre, Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-gourde/index.html",
+            "beach/gp004/index.html"
+          ]
+        },
+        {
+          "title": "Anse à Sable (Guadeloupe) — Propre, Beach Score 70/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-sable/index.html",
+            "beach/gp032/index.html"
+          ]
+        },
+        {
+          "title": "Anse Belleville (Guadeloupe) — Propre, Beach Score 63/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-belleville/index.html",
+            "beach/mq030/index.html"
+          ]
+        },
+        {
+          "title": "Anse-Bertrand Nord (Guadeloupe) — Propre, Beach Score 59/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-bertrand-nord/index.html",
+            "beach/gp020/index.html"
+          ]
+        },
+        {
+          "title": "Anse Bonneville (Guadeloupe) — Propre, Beach Score 44/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-bonneville/index.html",
+            "beach/mq035/index.html"
           ]
         }
       ],
       "duplicateDescs": [
         {
-          "desc": "Widget gratuit sargasses Guadeloupe et Martinique. Affichez l'état des plages en",
+          "desc": "Moderada aujourd'hui à Akumal Bay, Riviera Maya. Beach Score 62/100. Pronóstico ",
           "count": 2,
           "sample": [
-            "en/widget/index.html",
-            "es/widget/index.html"
+            "beach/akumal-bay/index.html",
+            "beach/rm005/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à l'Âne, Guadeloupe. Beach Score 49/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-ane/index.html",
+            "beach/mq010/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à l’Eau, Guadeloupe. Beach Score 45/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-l-eau/index.html",
+            "beach/gp073/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Barque (Ste-Anne), Guadeloupe. Beach Score 45/100",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-ste-anne/index.html",
+            "beach/gp023/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Barque (VH), Guadeloupe. Beach Score 59/100. Prév",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-barque-vh/index.html",
+            "beach/gp083/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à la Gourde, Guadeloupe. Beach Score 45/100. Prévision",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-la-gourde/index.html",
+            "beach/gp004/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse à Sable, Guadeloupe. Beach Score 70/100. Prévision 7 j",
+          "count": 2,
+          "sample": [
+            "beach/anse-a-sable/index.html",
+            "beach/gp032/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse Belleville, Guadeloupe. Beach Score 63/100. Prévision ",
+          "count": 2,
+          "sample": [
+            "beach/anse-belleville/index.html",
+            "beach/mq030/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse-Bertrand Nord, Guadeloupe. Beach Score 59/100. Prévisi",
+          "count": 2,
+          "sample": [
+            "beach/anse-bertrand-nord/index.html",
+            "beach/gp020/index.html"
+          ]
+        },
+        {
+          "desc": "Propre aujourd'hui à Anse Bonneville, Guadeloupe. Beach Score 44/100. Prévision ",
+          "count": 2,
+          "sample": [
+            "beach/anse-bonneville/index.html",
+            "beach/mq035/index.html"
           ]
         }
       ],
-      "issueCount": 604,
+      "issueCount": 750,
       "issues": [
         {
           "file": "404.html",
@@ -242,6 +533,36 @@
           "kind": "title-too-long",
           "length": 85,
           "value": "Pourquoi nous faire confiance — À propos · Sources & fiabilité — Sargasses Guadeloupe"
+        },
+        {
+          "file": "activity/dive/index.html",
+          "kind": "desc-length-warn",
+          "length": 91
+        },
+        {
+          "file": "activity/family/index.html",
+          "kind": "desc-length-warn",
+          "length": 93
+        },
+        {
+          "file": "activity/kids/index.html",
+          "kind": "desc-length-warn",
+          "length": 90
+        },
+        {
+          "file": "activity/parking/index.html",
+          "kind": "desc-length-warn",
+          "length": 98
+        },
+        {
+          "file": "activity/snorkel/index.html",
+          "kind": "desc-length-warn",
+          "length": 93
+        },
+        {
+          "file": "activity/surf/index.html",
+          "kind": "desc-length-warn",
+          "length": 90
         },
         {
           "file": "agir/index.html",
@@ -287,106 +608,82 @@
           "kind": "missing-desc"
         },
         {
-          "file": "bulletin-sargasses-guadeloupe/index.html",
+          "file": "beach/anse-a-la-barque-ste-anne/index.html",
           "kind": "title-length-warn",
-          "length": 67,
-          "value": "Bulletin sargasses Guadeloupe du jour — état des plages aujourd'hui"
+          "length": 69,
+          "value": "Anse à la Barque (Ste-Anne) (Guadeloupe) — Propre, Beach Score 45/100"
         },
         {
-          "file": "carte-sargasses/index.html",
+          "file": "beach/anse-a-la-barque-vh/index.html",
           "kind": "title-length-warn",
-          "length": 62,
-          "value": "Carte des sargasses Guadeloupe aujourd'hui — temps réel (2026)"
+          "length": 63,
+          "value": "Anse à la Barque (VH) (Guadeloupe) — Propre, Beach Score 59/100"
         },
         {
-          "file": "cgv.html",
+          "file": "beach/anse-canot-marie-galante/index.html",
           "kind": "title-length-warn",
-          "length": 65,
-          "value": "Conditions générales de vente · Sargasses Guadeloupe & Martinique"
+          "length": 68,
+          "value": "Anse Canot (Marie-Galante) (Guadeloupe) — Propre, Beach Score 45/100"
         },
         {
-          "file": "cgv.html",
-          "kind": "desc-too-long",
-          "length": 229
-        },
-        {
-          "file": "comic-cartes.html",
-          "kind": "missing-desc"
-        },
-        {
-          "file": "comprendre-sargasses/index.html",
-          "kind": "title-length-warn",
-          "length": 70,
-          "value": "Comprendre les sargasses : origines, prolifération et prévision (2026)"
-        },
-        {
-          "file": "comprendre-sargasses/index.html",
-          "kind": "desc-length-warn",
-          "length": 98
-        },
-        {
-          "file": "conditions/index.html",
-          "kind": "desc-length-warn",
-          "length": 191
-        },
-        {
-          "file": "conditions/mer-agitee/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
-        },
-        {
-          "file": "conditions/mer-calme/index.html",
-          "kind": "desc-length-warn",
-          "length": 107
-        },
-        {
-          "file": "conditions/snorkeling/index.html",
-          "kind": "desc-length-warn",
-          "length": 99
-        },
-        {
-          "file": "conditions/uv-fort/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Plages avec UV très fort aujourd’hui — Guadeloupe (protégez-vous)"
-        },
-        {
-          "file": "confidentialite/index.html",
-          "kind": "desc-too-long",
-          "length": 268
-        },
-        {
-          "file": "confidentialite.html",
-          "kind": "title-length-warn",
-          "length": 64,
-          "value": "Politique de confidentialité · Sargasses Guadeloupe & Martinique"
-        },
-        {
-          "file": "confidentialite.html",
-          "kind": "desc-length-warn",
-          "length": 119
-        },
-        {
-          "file": "confirme/index.html",
-          "kind": "missing-desc"
-        },
-        {
-          "file": "danger-sargasses-h2s/index.html",
-          "kind": "desc-length-warn",
-          "length": 98
-        },
-        {
-          "file": "detection-satellite-sargasses/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Détection satellite des sargasses : AFAI, OLCI, Copernicus (2026)"
-        },
-        {
-          "file": "en/best-beaches-guadeloupe/index.html",
+          "file": "beach/anse-corps-de-garde/index.html",
           "kind": "title-length-warn",
           "length": 61,
-          "value": "Best beaches in Guadeloupe without sargassum — Real-time 2026"
+          "value": "Anse Corps de Garde (Guadeloupe) — Propre, Beach Score 49/100"
+        },
+        {
+          "file": "beach/anse-de-la-baie-olive/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Anse de la Baie Olive (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-de-vieux-fort-mg/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Anse de Vieux-Fort (MG) (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-du-bourg-saintes/index.html",
+          "kind": "title-length-warn",
+          "length": 65,
+          "value": "Anse du Bourg (Saintes) (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-du-figuier-saintes/index.html",
+          "kind": "title-length-warn",
+          "length": 67,
+          "value": "Anse du Figuier (Saintes) (Guadeloupe) — Propre, Beach Score 50/100"
+        },
+        {
+          "file": "beach/anse-du-mancenillier/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Anse du Mancenillier (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/anse-riviere-trinite/index.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Anse Rivière (Trinité) (Guadeloupe) — Propre, Beach Score 44/100"
+        },
+        {
+          "file": "beach/anse-sainte-marguerite/index.html",
+          "kind": "title-length-warn",
+          "length": 64,
+          "value": "Anse Sainte-Marguerite (Guadeloupe) — Propre, Beach Score 45/100"
+        },
+        {
+          "file": "beach/bb009/index.html",
+          "kind": "title-length-warn",
+          "length": 63,
+          "value": "Miami Beach / Enterprise (Barbados) — Clean, Beach Score 47/100"
+        },
+        {
+          "file": "beach/bourg-de-case-pilote/index.html",
+          "kind": "title-length-warn",
+          "length": 62,
+          "value": "Bourg de Case-Pilote (Guadeloupe) — Propre, Beach Score 59/100"
         }
       ]
     }
