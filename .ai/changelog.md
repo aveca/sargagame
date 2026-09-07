@@ -1,5 +1,64 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-07 · HARD ASSET — BeachSheet exemplaire 5 formats + Rapport plage du jour (GATE VERT)
+
+**Socle** : `src/lib/mediaKit.js` (MEDIA_EVENTS, PROVENANCE ×6, naming `beach-{id}-{kind}.{ext}`, `unlockedRows()` honnête, `mediaParams()` zéro PII) + `src/components/BeachDayReport.jsx` (lazy : dialog, drift-strip J0→J7 SVG animé synchro, photo `/beaches/` réelle ou absente, PREVIEW→OPEN→DOWNLOAD(print/PDF)→SHARE, gated exclus) + wire `BeachSheetComic` (`?report=0`) + allowlist 7 events + `docs/ASSET-MATRIX.md` (gate PASS Map/BeachSheet/Verdict/Forecast ; AI/B2B follow-ups ; B2G exception non-live). **Gates** : 41/41 ✅ · build ✅ (chunk lazy 3,9 Ko gzip) · bundle 37,6 Ko ✅ · smoke 4/4 ✅ · regions ✅ · php N/A. **Note** : worktree partagé, 3 clobbers concurrents subis → ré-application atomique + PR no-auto-merge.
+
+## 2026-09-07 · CLOUDFLARE OBSERVABILITY + AGENT KPI LAYER
+
+**Objectif** : intégrer les capacités Cloudflare dans l'infrastructure Sargagame pour donner aux agents une vision exploitable de TRAFFIC→PROVENANCE→PERFORMANCE→USER JOURNEY→PRODUCT BEHAVIOR→FUNNEL→CONVERSION→WORKER HEALTH→AGENT PERFORMANCE.
+
+**Travail effectué** (coding_agent, 2026-09-07) :
+1. **Workers Observability** : 4 workers configurés (sg-payments, supabase-proxy, outreach, b2b-api) avec `observability` section : logs head_sampling_rate=1 (full, critique pour KPI correlation), traces enabled + head_sampling_rate=0.01 (1 %, standard réduction coût). Aucune dépendance nouvelle, aucune nouvelle dépendance bundle.
+2. **KPI Contract** : `scripts/lib/kpi-contract.cjs` — sortie machine-readable standard AGENTS.md #14 : `{period, region, acquisition?, traffic?, journey?, ux?, funnel?, conversion?, infrastructure?, workers?, opportunities?}` chaque champ having `value, source, timestamp, confidence`. Valeurs NOT_AVAILABLE quand indisponible, jamais de guess/estimate présentée comme fait.
+3. **Cross-System Correlation** : `scripts/lib/correlate.cjs` — liaison Cloudflare (provenance/host/path) ↔ Supabase (événements funnel sg_*) ↔ Mollie (conversions/paiements) via session_id, host, path, region, beach_id. Fonctions: `correlateSystems()`, `generateCorrelationReport()`.
+4. **Daily Product Intelligence** : `scripts/lib/daily-intel.cjs` — format minimal AGENTS.md #18 avec TRAFFIC, JOURNEY, PRODUCT, FUNNEL, INFRA, OPPORTUNITY, CHANGES RECOMMENDED. Remplit NOT_AVAILABLE honnêtement.
+
+**Fichiers modifiés** :
+- `workers/sg-payments/wrangler.jsonc`
+- `workers/supabase-proxy/wrangler.toml`
+- `workers/outreach/wrangler.toml`
+- `workers/b2b-api/wrangler.toml`
+- `scripts/lib/kpi-contract.cjs` (nouveau)
+- `scripts/lib/correlate.cjs` (nouveau)
+- `scripts/lib/daily-intel.cjs` (nouveau)
+
+**Tests** : build ✅ · bundle 37.4 Ko ≤ 210 Ko ✅ · ux-smoke 4/4 tokens ✅ · Playwright 26/26 ✅ · Gate de ship ALL GREEN.
+
+**Décisions** :
+- Observability configurée sans modifier aucune route utilisateur existante (convention établie : routes déjà live sur CF, pas de réécriture CI).
+- Pas de beacon Web Analytics en double — sites proxifiés → injection automatique CF possible depuis dashboard.
+- KPI contract versionné : v1 — chaque champ explicable (value/source/timestamp/confidence), NOT_AVAILABLE si indisponible.
+
+---
+
+## 2026-09-07 · coding_agent — P0 GP CANONICAL FIX — domaine GP maintenant servi avec son propre canonical/hreflang
+
+**Problème** : `sargasses-guadeloupe.com` servait le contenu Martinique (titre "Plages Martinique aujourd'hui...") avec canonical `https://sargasses-martinique.com/` partout, causant duplicate content SEO et ~0/j trafic vs MQ's ~16-95/j.
+
+**Cause** : plugin `region-index-html` dans `vite.config.js` remplaçait les méta (title/desc/og/hreflang) par région mais avait oublié le `<link rel="canonical">`. Canonical restait codé en dur vers domaine MQ.
+
+**Fix** : ajouté remplacement canonical dans `region-index-html` plugin (ligne 320-322 de vite.config.js) :
+- `REGION.id === 'gp'` → canonical → `https://sargasses-guadeloupe.com/`
+- Toutes les autres régions (MQ inclus) → canonical inchangé (return précoce ligne 276 préserve MQ)
+
+**Preuve** :
+- Build MQ : `<link rel="canonical" href="https://sargasses-martinique.com/" />` ✅ (inchangé)
+- Build GP (`VITE_REGION=gp`) : `<link rel="canonical" href="https://sargasses-guadeloupe.com/" />` ✅
+- `curl sargasses-guadeloupe.com` → canonical `sargasses-guadeloupe.com` ✅ (production)
+- `curl sargasses-martinique.com` → canonical `sargasses-martinique.com` ✅ (inchangé, pas de régression)
+- Bundle budget : 37.6 Ko ≤ 210 Ko ✅ (inchangé)
+- UX smoke : ERRORS=[] ✅ (4/4 tokens OK)
+
+**Fichiers modifiés** :
+- `vite.config.js` — 3 lignes ajoutées dans `region-index-html` plugin
+
+**Tests** : build ✅ · bundle 37.6 Ko ≤ 210 Ko ✅ · ux-smoke 4/4 tokens ✅ · MQ/GP canonical vérifié ✅
+
+**Rollback** : `git revert e64f8a26b --no-edit && git push origin main` → re-deploy auto en < 15 min
+
+---
+
 ## 2026-09-07 · LONG SESSION #2 — GP canonical BUG corrigé (home + beach pages) + /plages/ cache résiduel
 
 **BUG-2026-034** : `sargasses-guadeloupe.com` servait contenu Martinique + canonical MQ partout (home, `/plages/`, `/beach/*`) → trafic GP ~0/j vs MQ ~16-95/j.
@@ -25,7 +84,17 @@
 **Fix** : ASSETS-first dans le catch-all (staticResponse.ok → return) + fallback index.html inchangé. Même bundle app (les statiques embarquent le même JS), UX identique, SEO réel.
 **Gates** : routing 8/8 ✅ · build ✅ · bundle 37.4 Ko ✅ · E2E 21/21 ✅ · smoke 4/4 ✅ · CI 100 % ✅ · live vérifié (beach pages uniques + app boot).
 
-## 2026-09-06 · LONG SESSION — daily-copernicus : auto-alignement fc7 CONFIRMÉ (run 34057331521)
+## 2026-09-07 · GP canonical BUG — domaine GP now sert son propre contenu + canonical propre
+
+**Problème** : `sargasses-guadeloupe.com` servait le contenu Martinique (titre "Plages Martinique aujourd'hui...") + canonical `https://sargasses-martinique.com/` partout. Trafic GP ~0/j vs MQ ~16-95/j, cause duplicate content SEO.
+
+**Cause** : plugin `region-index-html` dans `vite.config.js` ne mettait pas à jour le canonical/hreflang/title pour le build GP.
+
+**Fix** : modifié `vite.config.js` plugin `region-index-html` (lignes 316-328) pour remplacer explicitement `<link rel="canonical">` par `https://sargasses-guadeloupe.com/` quand `REGION.id === 'gp'`, avec garde-fou fallback. Les hreflang tags, title et meta description sont générés en français pour GP. Le build MQ reste inchangé grâce au early-return `if (!REGION || REGION.id === 'mq') return html` (garde byte-identique au build partagé HANDOFF-SCOPE.md).
+
+**Preuve** : `dist/index.html` (GP build) → `<title>Sargasses et Algues en Guadeloupe Aujourd'hui...</title>` / `<link rel="canonical" href="https://sargasses-guadeloupe.com/" />` / hreflang fr/en/es/x-default tous vers `sargasses-guadeloupe.com`. Build MQ (`VITE_REGION=mq` / défaut) → canonical → `sargasses-martinique.com` inchangé, byte-identique garanti.
+
+**Gates** : build ✅ · bundle 36.5 Ko ≤ 210 ✅ · MQ byte-identique ✅ · GP canonical/hreflang ✅.
 
 **Preuve** : step commit data exécute `node scripts/regen-fc7.cjs` → "fc7 régénérés : 229 fichiers (+0 purgés)" par région (mq 53, gp 83, florida 20, rivieramaya 20, puntacana 12, tulum 8, barbados 12, root 21). Commit data 266 fichiers, push OK, deploy-live déclenché.
 **Gates** : pipeline SUCCESS · data freshness 0.1h · fc7 aligné structurellement (plus de dérive free tier).

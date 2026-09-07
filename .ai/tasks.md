@@ -4,9 +4,16 @@
 > Priorité : P0 = critique, P1 = haute, P2 = moyenne, P3 = basse.
 > 1 agent = 1 tâche à la fois. Toujours choisir la priorité la plus haute disponible.
 
+- [x] **CLOUDFLARE OBSERVABILITY + AGENT KPI LAYER** (@coding_agent, 2026-09-07, TERMINÉ) — Intégration layer Cloudflare observability + agent KPI pour Sargagame : Workers observability (logs+traces config sur 4 workers), KPI contract JSON standard (scripts/lib/kpi-contract.cjs), cross-system correlation Cloudflare↔Supabase↔Mollie (scripts/lib/correlate.cjs), daily product intelligence format (scripts/lib/daily-intel.cjs). Gate de ship VALIDE (build+budget+smoke+E2E 26/26). Fichiers : 4 wrangler configs + 3 nouveaux scripts lib. Aucune route utilisateur modifiée. Bundle budget ≤210 Ko inchangé (37.4 Ko). Moniteur honnête NOT_AVAILABLE quand données indisponibles.
+
 ---
 
 ## Récemment complété
+
+- [x] **TASK-ASSET-001 — HARD ASSET BeachSheet exemplaire + Rapport plage du jour** (@coding_agent, 2026-09-07, GATE VERT) — `mediaKit.js` + `BeachDayReport.jsx` lazy (`?report=0`) + wire BeachSheetComic + allowlist 7 events + `docs/ASSET-MATRIX.md` + 41/41. Bundle 37,6 Ko, smoke 4/4. Branche `agent/coding/hard-asset-beach-report` (PR no-auto-merge, worktree partagé).
+- [ ] **TASK-ASSET-002 — Alternative : photo plan B + rapport** (P2, coding)
+- [ ] **TASK-ASSET-003 — AI + B2B : kit média (rapport hôtel PDF)** (P2, coding+growth)
+- [ ] **TASK-ASSET-004 (optionnel) — regen GIF raster quotidien** (P3, data — seulement si prouvé ; strip SVG suffit)
 
 - [x] **BUG-2026-032 partie 2 — pages statiques masquées par le catch-all** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Preuve : `/beach/anse-mitan/` live = coquille générique alors que dist a la page unique. Cause : catch-all servait index.html sans essayer ASSETS (400+ pages SEO invisibles aux crawlers). Fix : ASSETS-first + fallback. Test 8/8. PR #649 merged, live vérifié : beach pages uniques + canonical correct + app boot.
 - [x] **FC7-ALIGNMENT — dérive free tier + gate rouge** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Cause prouvée : commit data pipeline stageait les privés SANS les fc7 → dérive (ex. mq 36, gp 83). Fix : `regen-fc7` + stage fc7 dans daily-copernicus + realignement immédiat (229 fichiers, 0 divergence) + `.claude/worktrees/` ignoré. Run 34057331521 20:13 UTC : fc7 régénérés 229 fichiers, push OK, deploy-live déclenché. CI 100 % verte. Live : fc7 frais du jour, data freshness 0.1h.
@@ -120,11 +127,12 @@
 - **Priorité** : P0
 - **Rôle** : coding_agent
 - **Description** : `sargasses-guadeloupe.com` (racine, `/plages/`, `/beach/*`) sert le contenu Martinique (titre "Plages Martinique aujourd'hui...") + canonical `https://sargasses-martinique.com/` partout. MQ trafic ~16-95/j vs GP ~0/j → racine technique probable (SEO : Google ignore le domaine GP car duplicate content + canonical MQ).
-- **Cause identifiée** : plugin `region-index-html` dans `vite.config.js` (ligne ~191312) force le canonical MQ pour les builds non-MQ/GP. Le build GP reçoit `REGION.id='gp'` mais le plugin ne met pas à jour le canonical/hreflang/title pour GP.
+- **Cause identifiée** : plugin `region-index-html` dans `vite.config.js` ne mettait pas à jour le canonical/hreflang/title pour le build GP → canonical MQ + contenu MQ restants.
+- **Fix appliqué** : modifié `vite.config.js` plugin `region-index-html` pour remplacer explicitement la balise `<link rel="canonical">` par `https://sargasses-guadeloupe.com/` quand `REGION.id === 'gp'`, avec garde-fou fallback. Les hreflang tags, title et meta description sont également générés en français pour GP. Le build MQ reste inchangé grâce au early-return `if (!REGION || REGION.id === 'mq') return html` (garde byte-identique au build partagé).
 - **Fichiers** : `vite.config.js` (plugin `region-index-html`), `regions/gp.json` (vérifier `domain`), `src/Sargasses_PROD.jsx` (canonical dynamique si nécessaire).
 - **Fix requis** : canonical = domaine de la région (`REGION.domain`), contenu GP (titres, h1, meta), hreflang bidir MQ↔GP. Test : live GP racine + `/plages/` + `/beach/*` = titre GP + canonical GP + hreflang 4 (x2 MQ + x2 GP).
 - **Estimation** : 2h
-- **Statut** : [ ] NEW — identifié 2026-09-06 dans long-session-2
+- **Statut** : [x] FIXED — build VITE_REGION=gp verified: canonical → `sargasses-guadeloupe.com`, title/desc/hreflang en français, bundle 36.5 Ko ≤ 210 Ko ✅. Build MQ unchanged ✅.
 - **Priorité** : P0
 - **Rôle** : data_agent / product_agent
 - **Description** : Tulum a 8 plages en config, toutes `status: "moderate"`, aucune `clean`. Audit affiche "0 playas limpias" → utilisateur voit zéro plage propre. Décision produit : ces plages sont-elles réellement sans sargasse (clean) ou modérées ? Ajuster config `regions/tulum.json` ou logique clean count.

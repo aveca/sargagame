@@ -2014,7 +2014,16 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_auth_view","sg_google_auth_start","sg_google_auth_success","sg_google_auth_error",
   "sg_google_auth_ready","sg_identity_change","sg_email_identity_start",
   "sg_payment_submit","sg_payment_created","sg_payment_paid","sg_premium_activated",
-  "sg_checkout_abandon","sg_session_restored"])
+  "sg_checkout_abandon","sg_session_restored",
+  // SPRINT 0 — Behavior Intelligence (2026-09-07) : scroll, visibility, dwell, intent
+  "sg_beach_scroll_25","sg_beach_scroll_50","sg_beach_scroll_75","sg_beach_scroll_90",
+  "sg_section_view","sg_section_consumed","sg_section_ignored",
+  "sg_dwell_end",
+  "sg_beach_pin_click",
+  "sg_verdict_view",
+  "sg_intent_inferred",
+  "sg_video_start","sg_video_25","sg_video_50","sg_video_75","sg_video_complete",
+  "sg_photo_view","sg_media_interaction"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls

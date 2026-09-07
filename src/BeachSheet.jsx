@@ -16,6 +16,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { _t, fcDay, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
+import { useScrollIntelligence, useContentVisibility, useDwellTracking, IntentEngine } from "./behaviorTracking.js"
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
@@ -109,10 +110,12 @@ function useReveal(opts={}){
 }
 
 /* ── StorySection — scroll-reveal wrapper ── */
-function StorySection({children,delay=0,className="",style={}}){
+function StorySection({children,delay=0,className="",style={},sectionId,beachId,region}){
   const [ref,revealed]=useReveal()
+  useContentVisibility({ section_id:sectionId||"unknown", beach_id:beachId, region, ref })
+  useDwellTracking({ section_id:sectionId||"unknown", beach_id:beachId, region, ref })
   return(
-    <div ref={ref} className={"bs-story-section "+(revealed?"bs-revealed":"")+" "+className}
+    <div ref={ref} data-section={sectionId} className={"bs-story-section "+(revealed?"bs-revealed":"")+" "+className}
       style={{
         minHeight:"100svh",display:"flex",flexDirection:"column",justifyContent:"center",
         padding:"40px 20px",boxSizing:"border-box",position:"relative",
@@ -325,7 +328,7 @@ export default function BeachSheet({
         {/* ── STORY SECTIONS (scroll-driven reveals) ── */}
         <div style={{padding:"0 0 4px"}}>
           {/* #1 — Score reveal */}
-          <StorySection delay={0}>
+          <StorySection delay={0} sectionId="score" beachId={beach?.id} region={beach?.island}>
             <div style={{textAlign:"center",maxWidth:360,margin:"0 auto"}}>
               <div style={{font:"800 10px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".16em",textTransform:"uppercase",marginBottom:16}}>{_t(lang,"INDICE DU JOUR","TODAY'S SCORE","ÍNDICE DE HOY")}</div>
               {hasScore
@@ -338,7 +341,7 @@ export default function BeachSheet({
           </StorySection>
 
           {/* #2 — Verdict reveal */}
-          <StorySection delay={.1} style={{padding:"40px 24px"}}>
+          <StorySection delay={.1} sectionId="verdict" beachId={beach?.id} region={beach?.island} style={{padding:"40px 24px"}}>
             <div style={{
               background:vmeta.color,border:`3px solid ${COMIC.ink}`,borderRadius:20,boxShadow:`5px 5px 0 ${COMIC.ink}`,
               padding:"24px 20px",textAlign:"center",position:"relative",overflow:"hidden",maxWidth:400,margin:"0 auto",width:"100%",boxSizing:"border-box"
@@ -367,7 +370,7 @@ export default function BeachSheet({
           </StorySection>
 
           {/* #3 — Forecast 7j */}
-          <StorySection delay={.2}>
+          <StorySection delay={.2} sectionId="forecast" beachId={beach?.id} region={beach?.island}>
             <div style={{maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
               <div style={{font:"800 10px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".16em",textTransform:"uppercase",marginBottom:20,textAlign:"center"}}>{_t(lang,"PRÉVISION 7 JOURS","7-DAY FORECAST","PRONÓSTICO 7 DÍAS")}</div>
               {fcDays.length>0
@@ -394,7 +397,7 @@ export default function BeachSheet({
 
           {/* #4 — Plan B (only if avoid/moderate) */}
           {(status==="avoid"||status==="moderate")&&planB.length>0&&(
-            <StorySection delay={.3}>
+            <StorySection delay={.3} sectionId="planb" beachId={beach?.id} region={beach?.island}>
               <div style={{maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
                 <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",marginBottom:20}}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
@@ -422,7 +425,7 @@ export default function BeachSheet({
           )}
 
           {/* #5 — CTA Story section */}
-          <StorySection delay={.4} style={{padding:"30px 20px 60px"}}>
+          <StorySection delay={.4} sectionId="cta" beachId={beach?.id} region={beach?.island} style={{padding:"30px 20px 60px"}}>
             <div style={{textAlign:"center",maxWidth:400,margin:"0 auto"}}>
               <div style={{font:"800 10px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".16em",textTransform:"uppercase",marginBottom:12}}>
                 {_t(lang,"LA SUITE","THE REST","EL RESTO")}
