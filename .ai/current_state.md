@@ -1,4 +1,49 @@
 ---
+## 2026-09-07 · Agent: coding_agent (OpenCode) · LONG SESSION #2 — GP canonical BUG corrigé (home + beach pages) + /plages/ cache résiduel
+
+### Travail effectué
+- **Résumé 1 ligne** : BUG-2026-034 corrigé (GP canonical) — home page + beach pages ont maintenant canonical GP correct ; `/plages/` cache résiduel.
+- **Détails** :
+  1. **BUG-2026-034** : `sargasses-guadeloupe.com` servait contenu Martinique + canonical MQ partout → trafic GP ~0/j vs MQ ~16-95/j. Cause : plugin `region-index-html` retournait tôt pour GP + `generateDedicatedPages` générait 136 plages avec domaine MQ. Fix : plugin traite GP (templates FR, hreflang fr/en/es) + `dedicated-pages.cjs` filtre par island (mq/gp). PR #650 merged, deploy SUCCESS.
+  2. **Résultat live** : Home GP titre FR + canonical GP + hreflang 4 ✅ ; Beach pages GP 83 plages canonical GP ✅ ; Beach pages MQ 53 plages canonical MQ ✅ ; Home MQ inchangé ✅.
+  3. **Résidu** : `/plages/` GP sert encore contenu MQ (cache Cloudflare Pages) — "Purge Cache" job exécuté mais page possiblement non purgée. À surveiller / purger manuellement si persiste.
+
+### Fichiers modifiés
+- `vite.config.js` — plugin region-index-html : GP support FR + hreflang direct
+- `scripts/lib/dedicated-pages.cjs` — filtre plages par island (mq/gp)
+- `.ai/tasks.md`, `.ai/changelog.md`, `.ai/bugs.md`, `.ai/current_state.md` — documentation
+
+### Tests réalisés
+- [x] routing 8/8 local + CI ✅
+- [x] sitemap-prune 7/7 ✅
+- [x] build exit 0 ✅
+- [x] check-bundle-budget → 37.4 Ko ✅
+- [x] E2E 13/13 ✅
+- [x] ux-smoke 4/4 ✅
+- [x] CI 100 % verte (branch-policy, funnel, perf, playwright, scan, test-frontend) ✅
+- [x] Deploy Live SUCCESS (6 régions) ✅
+- [x] Live GP home : titre FR + canonical GP + hreflang 4 ✅
+- [x] Live GP beach pages : 83 plages canonical GP ✅
+- [x] Live MQ beach pages : 53 plages canonical MQ ✅
+- [ ] Live GP `/plages/` : contenu GP (cache résiduel)
+
+### Problèmes restants
+- [ ] **GP `/plages/` cache** : purger manuellement via Cloudflare dashboard si persiste >24h
+- [ ] **Outreach** : credentials TOUJOURS ABSENT (Supabase/Resend/Meta/Admin) → gel maintenu
+- [ ] **Funnel B2C** : instrumentation à auditer (map→beach→paywall→checkout→payment events par région)
+- [ ] **B2B** : page `/pro` à auditer (15 vues → 0 step)
+
+### Prochaine action recommandée
+1. **GP `/plages/` cache** : vérifier dans 24h, purger manuellement si nécessaire (Cloudflare dashboard → Purge Cache → `https://sargasses-guadeloupe.com/plages/*`). Rôle : coding
+2. **Funnel B2C audit** : vérifier events Supabase `analytics_events` par étape/par région → identifier trous. Rôle : coding/data
+3. **Outreach** : ne reprendre QUE si fondateur provisionne (4 secrets + schema + 1-3 prospects). Watchdog maintient.
+
+### Branche / PR
+- Branche : `agent/coding/gp-canonical-fix` (merged via PR #650)
+- PR #650 : MERGED 2026-09-07T01:25:28Z
+- Commit head : `699068803` (fix GP canonical)
+
+---
 ## 2026-09-06 · Agent: coding_agent (OpenCode) · LONG SESSION — SEO static pages + fc7 auto-alignement + GP canonical BUG
 
 ### Travail effectué

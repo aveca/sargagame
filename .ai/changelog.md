@@ -1,5 +1,24 @@
 # .ai/changelog.md — Historique des changements agents
 
+## 2026-09-07 · LONG SESSION #2 — GP canonical BUG corrigé (home + beach pages) + /plages/ cache résiduel
+
+**BUG-2026-034** : `sargasses-guadeloupe.com` servait contenu Martinique + canonical MQ partout (home, `/plages/`, `/beach/*`) → trafic GP ~0/j vs MQ ~16-95/j.
+
+**Cause** : plugin `region-index-html` dans `vite.config.js` retournait tôt pour GP, et `generateDedicatedPages` générait TOUTES les plages (MQ+GP) avec domaine MQ.
+
+**Fix** (PR #650 merged, deploy SUCCESS) :
+1. `vite.config.js` : retire GP du retour précoce, ajoute templates FR (titre/desc/og:locale), hreflang direct fr/en/es pour GP (region-langs.cjs ne supporte pas FR).
+2. `dedicated-pages.cjs` : filtre les plages par island (mq/gp) au lieu de générer les 136. MQ build → 53 plages MQ, GP build → 83 plages GP, chacun avec son domaine.
+
+**Résultat live vérifié** :
+- ✅ Home GP : titre "Sargasses et Algues en Guadeloupe...", canonical `sargasses-guadeloupe.com`, hreflang 4 (fr/en/es/x-default)
+- ✅ Beach pages GP : canonical `sargasses-guadeloupe.com/beach/...` (83 plages)
+- ✅ Beach pages MQ : canonical `sargasses-martinique.com/beach/...` (53 plages)
+- ✅ Home MQ : inchangé, correct
+- ⚠️ `/plages/` GP : encore contenu MQ (cache Cloudflare Pages résiduel, "Purge Cache" job exécuté mais page possiblement non purgée) — à surveiller
+
+**Tests** : routing 8/8, sitemap-prune 7/7, bundle 37.4 Ko, smoke 4/4, E2E 13/13, CI 100% vert.
+
 ## 2026-09-06 · LONG SESSION — BUG-2026-032 partie 2 : pages statiques servies AVANT fallback SPA (SEO critique)
 
 **Preuve** : `/beach/anse-mitan/` live = coquille générique (titre "Plages Martinique...") alors que `dist/beach/anse-mitan/index.html` a le titre unique "Anse Mitan (Martinique) — Propre, Beach Score 59/100" + canonical correct. Cause : catch-all `[[path]].js` servait index.html partout sans essayer ASSETS → 400+ pages SEO dupliquées aux yeux des crawlers.

@@ -3,14 +3,18 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-034 — [OUVERT 2026-09-06, P0 SEO] GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
-- **Sévérité** : P0 — GP ~0/j vs MQ ~16-95/j, racine technique probable
-- **Symptôme** : `sargasses-guadeloupe.com` (racine, `/plages/`, `/beach/*`) sert le contenu Martinique (titre "Plages Martinique aujourd'hui — Score 0-100...") + canonical `https://sargasses-martinique.com/` partout. hreflang=4 (x2 MQ + x2 GP) mais contenu identique MQ.
-- **Cause identifiée** : plugin `region-index-html` dans `vite.config.js` (ligne ~191312) force le canonical MQ pour les builds non-MQ/GP. Le build GP reçoit `REGION.id='gp'` mais le plugin ne met pas à jour le canonical/hreflang/title pour GP → canonical MQ + contenu MQ.
-- **Repro** : `curl sargasses-guadeloupe.com` + `curl sargasses-guadeloupe.com/beach/grande-anse/` → titre "Plages Martinique..." + canonical `sargasses-martinique.com` (preuve live 2026-09-06).
-- **Fix requis** : canonical = domaine de la région (`REGION.domain`), contenu GP (titres, h1, meta description), hreflang bidir MQ↔GP. Test : live GP racine + `/plages/` + `/beach/*` = titre GP + canonical GP + hreflang 4 (x2 MQ + x2 GP).
-- **Fichiers** : `vite.config.js` (plugin `region-index-html`), `regions/gp.json` (vérifier `domain`), `src/Sargasses_PROD.jsx` (canonical dynamique si nécessaire).
-- **Date** : 2026-09-06 · identifié dans long-session-2
+### BUG-2026-034 — [FIXÉ 2026-09-07, PR #650 merged] GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
+- **Sévérité** : P0 — GP ~0/j vs MQ ~16-95/j, racine technique prouvée
+- **Symptôme** : `sargasses-guadeloupe.com` (home, `/plages/`, `/beach/*`) servait le contenu Martinique (titre "Plages Martinique aujourd'hui...") + canonical `https://sargasses-martinique.com/` partout. hreflang=4 mais contenu identique MQ.
+- **Cause identifiée** : 
+  1. Plugin `region-index-html` dans `vite.config.js` retournait tôt pour GP (ligne 275) → pas de transformation.
+  2. `generateDedicatedPages` dans `dedicated-pages.cjs` générait TOUTES les 136 plages (MQ+GP) avec le domaine de la région courante. Comme la boucle tournait GP puis MQ, le build MQ final écrasait les pages GP avec domaine MQ.
+- **Fix** (PR #650) :
+  1. `vite.config.js` : retire GP du retour précoce, ajoute templates FR (titre/desc/og:locale fr_FR), hreflang direct fr/en/es/x-default pour GP (bypass region-langs.cjs qui ne supporte que en/es).
+  2. `dedicated-pages.cjs` : filtre les plages par `island` (mq/gp) au lieu de générer les 136. MQ build → 53 plages MQ, GP build → 83 plages GP, chacun avec son domaine.
+- **Résultat live** : Home GP titre FR + canonical GP + hreflang 4 ✅ ; 83 beach pages GP canonical GP ✅ ; 53 beach pages MQ canonical MQ ✅.
+- **Résidu** : `/plages/` GP sert encore contenu MQ (cache Cloudflare Pages résiduel, job "Purge Cache" exécuté mais page possiblement non purgée). À surveiller, purger manuellement si >24h.
+- **Date** : 2026-09-07 · Fixé dans PR #650, deploy live SUCCESS
 
 ### BUG-2026-033 — [FIXÉ 2026-09-06, en attente deploy] paylinks annuels 404 live — Worker shadowant le statique
 - **Sévérité** : P1 B2B — lien annuel Mollie invisible dans le modal Pro (trial unaffected)
