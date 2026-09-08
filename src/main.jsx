@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react'
 import ReactDOM from 'react-dom/client'
 import MapSkeleton from './components/MapSkeleton.jsx'
+import './phase-b-sprint1.css'
 
 const App = lazy(() => import('./Sargasses_PROD.jsx'))
 
