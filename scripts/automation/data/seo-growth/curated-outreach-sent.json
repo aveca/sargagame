@@ -139,8 +139,22 @@
       "emailHash": "0a4c3232af1491b4feb3c20d97f39035",
       "authority": "medium",
       "market": "fr"
+    },
+    "tourcrib.com": {
+      "date": "2026-09-08T14:22:19.714Z",
+      "status": "sent",
+      "emailHash": "17940b3030d37ba4cde0d211c0139d1a",
+      "authority": "medium",
+      "market": "fr"
+    },
+    "byemyself.com": {
+      "date": "2026-09-08T14:22:35.620Z",
+      "status": "sent",
+      "emailHash": "53d831d516f48a98980fd3b3c5af2cc7",
+      "authority": "medium",
+      "market": "fr"
     }
   },
-  "lastRun": "2026-09-01T14:43:44.449Z",
-  "totalSent": 20
+  "lastRun": "2026-09-08T14:22:35.621Z",
+  "totalSent": 22
 }

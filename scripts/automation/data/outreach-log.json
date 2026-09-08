@@ -655,8 +655,26 @@
       "error": null,
       "url": "https://godominicantravel.com/sargassum-or-seaweed-in-punta-cana/",
       "market": "dr"
+    },
+    "puntacanard.com": {
+      "date": "2026-09-08T14:09:29.788Z",
+      "emailHash": "64dd649a44fc5889c44fa2c4d8ab6605",
+      "emailDomain": "puntacanard.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://puntacanard.com/travel-tips/sargassum-in-punta-cana-what-to-know-before-your-trip/",
+      "market": "dr"
+    },
+    "boattripspuntacana.com": {
+      "date": "2026-09-08T14:09:34.148Z",
+      "emailHash": "5ea627cf405c668298dc98207813411b",
+      "emailDomain": "boattripspuntacana.com",
+      "status": "sent",
+      "error": null,
+      "url": "https://boattripspuntacana.com/seaweed-in-punta-cana/",
+      "market": "dr"
     }
   },
-  "lastRun": "2026-09-01T14:32:23.223Z",
-  "totalSent": 74
+  "lastRun": "2026-09-08T14:09:34.148Z",
+  "totalSent": 76
 }
