@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react'
 import ReactDOM from 'react-dom/client'
 import MapSkeleton from './components/MapSkeleton.jsx'
 import './phaseBRescue.css'
+import './phaseBRescueRuntime.js'
 
 const App = lazy(() => import('./Sargasses_PROD.jsx'))
 
