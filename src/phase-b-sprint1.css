@@ -25,6 +25,18 @@ textarea,
   font-family: "Anton", "Bricolage Grotesque", sans-serif !important;
 }
 
+/* Catch inline legacy font declarations emitted by the monolithic runtime. */
+[style*="AntonLC"],
+[style*="'AntonLC'"],
+[style*='"AntonLC"'] {
+  font-family: "Anton", "Bricolage Grotesque", sans-serif !important;
+}
+[style*="Comic Neue"],
+[style*="'Comic Neue'"],
+[style*='"Comic Neue"'] {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif !important;
+}
+
 /* Existing gated bars must remain readable; entitlement is communicated by the badge. */
 .bs-sheet [style*="blur(3px)"] {
   filter: none !important;
