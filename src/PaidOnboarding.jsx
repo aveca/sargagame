@@ -89,7 +89,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {suggestions.map(b => {
                 const on = favSet.has(b.id)
-                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? "#E8A800" : "#1f9d57"
+                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? "#B87A00" : "#22C55E"
                 return (
                   <button key={b.id} onClick={() => onToggleFav && onToggleFav(b.id)} aria-pressed={on} style={{
                     display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", borderRadius: 13, cursor: "pointer", textAlign: "left",

@@ -96,7 +96,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
           box-shadow:2px 2px 0 #0d0b14;text-transform:uppercase;letter-spacing:.4px}
         .arena-onb .skip{background:none;border:none;color:#fff;font:800 13px/1 "Bricolage Grotesque";
           text-shadow:1px 1px 0 rgba(0,0,0,.5);cursor:pointer;padding:6px}
-        .arena-onb h1{font:400 30px/1 "AntonLC","Anton",sans-serif;color:#fff;
+        .arena-onb h1{font:400 30px/1 "Anton",sans-serif;color:#fff;
           text-shadow:3px 3px 0 #0d0b14;transform:rotate(-2deg);letter-spacing:.5px;margin:14px 0 0}
         .arena-onb .sub{margin-top:6px;font-weight:700;font-size:13px;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
         .arena-onb .panel{background:#fdf6e3;border:3px solid #0d0b14;border-radius:14px;padding:12px;

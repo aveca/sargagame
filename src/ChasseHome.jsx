@@ -2056,9 +2056,9 @@ export default function ChasseHome(props){
    public/comic-cartes.html + public/themes-lab/arena.css.
    ==================================================================== */
 export const CSS=`
-@font-face{font-family:"AntonLC";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Anton";src:url("/fonts/anton-1Ptgg87LROyAm3Kz-C8.woff2") format("woff2");font-weight:400;font-display:swap}
 .lc-root{--ink:#0d0b14;--paper:#fdf6e3;--red:#e8322a;--yel:#ffd23f;--blu:#1c7fb0;--org:#ff8a3d;--grn:#27c46b;--pur:#7b46d6;
-  font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 0 0/9px 9px,
     radial-gradient(rgba(13,11,20,.14) 1.4px,transparent 1.5px) 4.5px 4.5px/9px 9px,
@@ -2066,7 +2066,7 @@ export const CSS=`
     linear-gradient(170deg,#2e1a5e,#6a2f9e 30%,#ffb36b 66%,#ff8a3d);
   padding:14px 12px 60px;-webkit-tap-highlight-color:transparent}
 .lc-root *{box-sizing:border-box}
-.lc-eyebrow{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);
+.lc-eyebrow{font-family:"Anton",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);
   background:var(--yel);display:inline-block;border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
 .lc-center{display:block;margin:0 auto;text-align:center}
 .lc-sub{font-size:13px;line-height:1.35;color:#241f30;max-width:340px;margin:8px auto 0;text-align:center}
@@ -2084,13 +2084,13 @@ export const CSS=`
 .lc-gomap:active{transform:translateY(2px);box-shadow:0 3px 0 var(--ink)}
 .lc-gomap-ic{flex:0 0 auto;font-size:26px;filter:drop-shadow(1px 2px 0 rgba(13,11,20,.5))}
 .lc-gomap-tx{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.1}
-.lc-gomap-tx b{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);letter-spacing:.3px}
+.lc-gomap-tx b{font-family:"Anton",system-ui,sans-serif;font-size:16px;color:#fff;text-shadow:2px 2px 0 var(--ink);letter-spacing:.3px}
 .lc-gomap-tx small{font-weight:800;font-size:11.5px;color:#eaf7ff;margin-top:2px}
-.lc-gomap-go{flex:0 0 auto;font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:44px;height:44px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
+.lc-gomap-go{flex:0 0 auto;font-family:"Anton",system-ui,sans-serif;font-size:26px;color:var(--ink);background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;width:44px;height:44px;display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
 .lc-streak{flex:0 0 auto;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:4px 10px;
   box-shadow:3px 3px 0 var(--ink);text-align:center;line-height:1}
 .lc-streak .lc-fire{font-size:15px}
-.lc-streak b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;margin-left:2px}
+.lc-streak b{font-family:"Anton",system-ui,sans-serif;font-size:18px;margin-left:2px}
 .lc-streak small{display:block;font-size:8.5px;font-weight:700;color:#7a7488;letter-spacing:.3px;margin-top:2px;text-transform:uppercase}
 
 /* hero / carte du jour */
@@ -2105,8 +2105,8 @@ export const CSS=`
   border-radius:16px;border:3px solid var(--ink);box-shadow:0 8px 0 rgba(13,11,20,.4);
   background:repeating-linear-gradient(135deg,#7b46d6 0 14px,#6a3bc0 14px 28px)}
 .lc-back-art{position:relative;display:grid;place-items:center}
-.lc-back-q{position:absolute;font-family:"AntonLC",system-ui,sans-serif;font-size:54px;color:#fff;text-shadow:3px 3px 0 var(--ink)}
-.lc-back-lbl{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;color:#fff;text-shadow:2px 2px 0 var(--ink);
+.lc-back-q{position:absolute;font-family:"Anton",system-ui,sans-serif;font-size:54px;color:#fff;text-shadow:3px 3px 0 var(--ink)}
+.lc-back-lbl{font-family:"Anton",system-ui,sans-serif;font-size:15px;color:#fff;text-shadow:2px 2px 0 var(--ink);
   text-transform:uppercase;letter-spacing:.4px;padding:0 10px}
 .lc-rear{transform:rotateY(180deg);align-items:stretch;justify-content:center}
 .lc-rear .lc-card{width:100%}
@@ -2120,14 +2120,14 @@ export const CSS=`
 .lc-reduce .lc-burst{animation:none;opacity:.4}
 @keyframes lc-burstin{0%{transform:translate(-50%,-50%) scale(.2) rotate(-30deg);opacity:0}
   60%{opacity:.8}100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:.6}}
-.lc-streakup{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:#fff;
+.lc-streakup{font-family:"Anton",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:#fff;
   background:rgba(13,11,20,.65);border:2.5px solid var(--ink);border-radius:20px;padding:5px 14px;
   text-shadow:1.5px 1.5px 0 var(--ink);box-shadow:3px 3px 0 var(--ink)}
 .lc-streakup.win{background:linear-gradient(180deg,#3fd98a,var(--grn))}
 
 /* boutons guess */
 .lc-guesses{display:flex;gap:8px;max-width:340px;margin:16px auto 0}
-.lc-gbtn{-webkit-appearance:none;appearance:none;flex:1;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:#fff;
+.lc-gbtn{-webkit-appearance:none;appearance:none;flex:1;font-family:"Anton",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:#fff;
   border:3px solid var(--ink);border-radius:11px;padding:11px 6px;text-shadow:1.5px 1.5px 0 rgba(13,11,20,.6);
   box-shadow:3px 3px 0 var(--ink);cursor:pointer;transition:transform .08s}
 .lc-gbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
@@ -2140,7 +2140,7 @@ export const CSS=`
 .lc-verdictpow{transform:rotate(-4deg) scale(1.2);animation:lc-pop .5s cubic-bezier(.18,1.4,.4,1) both}
 .lc-reduce .lc-verdictpow{animation:none}
 @keyframes lc-pop{0%{transform:rotate(-4deg) scale(0)}70%{transform:rotate(-4deg) scale(1.35)}100%{transform:rotate(-4deg) scale(1.2)}}
-.lc-cta{font-family:"AntonLC",system-ui,sans-serif;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:#fff;
+.lc-cta{font-family:"Anton",system-ui,sans-serif;font-size:16px;letter-spacing:.5px;text-transform:uppercase;color:#fff;
   background:linear-gradient(180deg,#ff5a4f,var(--red));border:3px solid var(--ink);border-radius:12px;padding:12px 20px;
   text-shadow:2px 2px 0 rgba(13,11,20,.55);box-shadow:4px 4px 0 var(--ink);cursor:pointer;transition:transform .08s}
 .lc-cta:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
@@ -2153,11 +2153,11 @@ export const CSS=`
 .lc-coll-sub{font-size:12px;color:#fff;text-shadow:1px 1px 0 rgba(13,11,20,.5);font-weight:700;margin-top:7px}
 /* outils Pokédex : recherche + filtres */
 .lc-coll-tools{margin:0 0 13px}
-.lc-coll-search{width:100%;font-family:"Comic Neue",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
+.lc-coll-search{width:100%;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
   background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:10px 13px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
 .lc-coll-search::placeholder{color:#9a93a8}
 .lc-coll-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
-.lc-chip{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:.4px;color:var(--ink);
+.lc-chip{font-family:"Anton",system-ui,sans-serif;font-size:11px;letter-spacing:.4px;color:var(--ink);
   background:var(--paper);border:2.5px solid var(--ink);border-radius:20px;padding:5px 12px;box-shadow:2px 2px 0 var(--ink);cursor:pointer;forced-color-adjust:none}
 .lc-chip.on{color:#fff}
 .lc-chip.on.s-all{background:var(--ink)}
@@ -2168,7 +2168,7 @@ export const CSS=`
 
 /* ---- DÉTAIL PLAGE « monde comic » (plein écran, même univers) ---- */
 .lc-detail{position:fixed;inset:0;z-index:1200;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-  font-family:"Comic Neue","Comic Sans MS",system-ui,sans-serif;color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);
   background:
     radial-gradient(rgba(13,11,20,.12) 1.4px,transparent 1.5px) 0 0/9px 9px,
     linear-gradient(170deg,#2e1a5e,#6a2f9e 28%,#ffb36b 70%,#ff8a3d);
@@ -2201,17 +2201,17 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   stroke:rgba(255,255,255,.55);stroke-width:2.5;transform-origin:center;animation:lc-zip .5s steps(4,end) forwards}
 @keyframes lc-zip{0%{opacity:.9;transform:scale(.55)}100%{opacity:0;transform:scale(1.6)}}
 .lc-reduce .lc-detail-illu .lc-zip{display:none}
-.lc-detail-tag{position:absolute;left:12px;bottom:10px;font-family:"AntonLC",system-ui,sans-serif;font-size:10px;color:#fff;
+.lc-detail-tag{position:absolute;left:12px;bottom:10px;font-family:"Anton",system-ui,sans-serif;font-size:10px;color:#fff;
   background:var(--ink);border:2px solid #fff;padding:3px 9px;border-radius:14px;letter-spacing:.5px}
 .lc-detail-body{max-width:520px;margin:0 auto;padding:16px 18px 60px}
-.lc-detail-name{font-family:"AntonLC",system-ui,sans-serif;font-size:30px;line-height:1;margin:6px 0 8px;color:var(--ink);
+.lc-detail-name{font-family:"Anton",system-ui,sans-serif;font-size:30px;line-height:1;margin:6px 0 8px;color:var(--ink);
   text-shadow:2px 2px 0 #fff;letter-spacing:.3px}
-.lc-detail-head{display:inline-block;font-family:"AntonLC",system-ui,sans-serif;font-size:22px;color:#fff;
+.lc-detail-head{display:inline-block;font-family:"Anton",system-ui,sans-serif;font-size:22px;color:#fff;
   border:2.5px solid var(--ink);border-radius:9px;padding:5px 12px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
 .lc-detail-head.s-ok{background:var(--grn)}.lc-detail-head.s-mod{background:var(--org)}.lc-detail-head.s-bad{background:var(--red)}
 .lc-detail-sub{font-size:13px;font-weight:700;margin:11px 0 14px;color:#0d2330}
 .lc-detail-score{display:flex;align-items:center;gap:11px;margin-bottom:14px}
-.lc-detail-scnum{font-family:"AntonLC",system-ui,sans-serif;font-size:34px;line-height:.9;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
+.lc-detail-scnum{font-family:"Anton",system-ui,sans-serif;font-size:34px;line-height:.9;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
 .lc-detail-scnum small{font-size:14px;opacity:.6}
 .lc-detail-score .lc-hp{flex:1;height:14px;border:2.5px solid var(--ink);border-radius:10px;background:#fff;box-shadow:2px 2px 0 var(--ink)}
 .lc-detail-facts{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
@@ -2244,7 +2244,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-detail-fav.on{color:#E8522A;background:#fff}
 /* strip 7 jours (case BD) */
 .lc-detail-fc{margin:4px 0 18px}
-.lc-detail-fc-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
+.lc-detail-fc-h{font-family:"Anton",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;margin-bottom:7px;color:var(--ink)}
 /* Repère de saison — bloc MUET, distinct du verdict (aucune couleur statut, pas
    d'ombre BD agressive, pas d'animation). Firewall visuel : il ne doit jamais se
    lire comme le verdict daté. Disclosure statique (reduced-motion-inert). */
@@ -2252,10 +2252,10 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-season-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%;
   -webkit-appearance:none;appearance:none;background:#f3f1f7;border:1px solid #ddd8e6;
   border-radius:10px;cursor:pointer;text-align:left;padding:9px 11px;color:#6a6478;font-family:inherit}
-.lc-season-eye{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:#6a6478}
+.lc-season-eye{font-family:"Anton",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:#6a6478}
 .lc-season-eye i{font-style:normal;font-weight:700;opacity:.75;font-size:11px;letter-spacing:.2px}
 .lc-season-teaser{flex:1;font-size:12.5px;font-weight:700;color:#6a6478}
-.lc-season-chev{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;color:#6a6478;line-height:1;width:18px;text-align:center}
+.lc-season-chev{font-family:"Anton",system-ui,sans-serif;font-size:17px;color:#6a6478;line-height:1;width:18px;text-align:center}
 .lc-season-body{margin-top:8px}
 .lc-season-body p{font-size:13px;line-height:1.5;color:#4a4458;margin:0 0 9px}
 .lc-season-disc{font-size:11.5px;font-style:italic;color:#8a8498;margin:10px 0 0}
@@ -2269,8 +2269,8 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-fc-cell.now.s-ok{background:var(--grn)}.lc-fc-cell.now.s-mod{background:var(--org)}.lc-fc-cell.now.s-bad{background:var(--red)}
 .lc-fc-cell.now{color:#fff}
 .lc-fc-cell.lock{background:repeating-linear-gradient(45deg,#eee 0 5px,#fff 5px 10px)}
-.lc-fc-day{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
-.lc-fc-dot{font-family:"AntonLC",system-ui,sans-serif;font-size:14px;line-height:1}
+.lc-fc-day{font:800 9px/1 "Bricolage Grotesque",system-ui,sans-serif;text-transform:uppercase;opacity:.8}
+.lc-fc-dot{font-family:"Anton",system-ui,sans-serif;font-size:14px;line-height:1}
 .lc-fc-cell.lock .lc-fc-dot{font-size:11px;filter:grayscale(1);opacity:.7}
 /* PREMIUM estimé (persistance, confiance basse) : couleur du statut MAIS atténuée +
    liseré pointillé → honnête « estimation, pas certitude », jamais un gris muet. */
@@ -2281,16 +2281,16 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-fc-cell.now.far{opacity:.82;border-style:dashed}
 /* aperçu prévision réelle (item 09) — teinte du statut (la « forme », estompée) + cadenas + confiance.
    Frontière calquée sur ForecastChart : on laisse SENTIR la couleur du verdict, sans révéler le détail. */
-.lc-fc-cap{font:700 10px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.7;margin:-3px 0 7px}
+.lc-fc-cap{font:700 10px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.7;margin:-3px 0 7px}
 .lc-fc-cell.teaser{background:#fff}
 .lc-fc-cell.teaser.s-ok{background:#dff6e8}
 .lc-fc-cell.teaser.s-mod{background:#ffeccd}
 .lc-fc-cell.teaser.s-bad{background:#f9d9d6}
 .lc-fc-cell.teaser.far{opacity:.62}
 .lc-fc-cell.teaser .lc-fc-dot{font-size:11px;opacity:.78}
-.lc-fc-conf{font:800 8px/1 "Comic Neue",system-ui,sans-serif;opacity:.72}
+.lc-fc-conf{font:800 8px/1 "Bricolage Grotesque",system-ui,sans-serif;opacity:.72}
 .lc-fc-legend{font:700 9.5px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.62;margin-top:7px;text-align:center}
-.lc-fc-line{font:800 11px/1.3 "Comic Neue",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
+.lc-fc-line{font:800 11px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
   background:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:8px 9px;box-shadow:2px 2px 0 var(--ink)}
 .lc-fc-line.ok{background:#dff6e8}
 .lc-fc-line.warn{background:#ffe6c7}
@@ -2299,7 +2299,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-h2s{margin:2px 0 18px;border:3px solid var(--ink);border-radius:13px;padding:11px 13px 12px;box-shadow:0 4px 0 var(--ink);forced-color-adjust:none}
 .lc-h2s.bad{background:#fff0ed}
 .lc-h2s.mod{background:#fff7e6}
-.lc-h2s-h{display:flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:var(--ink);line-height:1}
+.lc-h2s-h{display:flex;align-items:center;gap:8px;font-family:"Anton",system-ui,sans-serif;font-size:15px;letter-spacing:.4px;color:var(--ink);line-height:1}
 .lc-h2s.bad .lc-h2s-h{color:var(--red)}
 .lc-h2s-ic{font-size:17px;line-height:1}
 .lc-h2s-txt{font-size:12.5px;font-weight:700;line-height:1.45;color:#2a1f1f;margin:8px 0 0}
@@ -2324,8 +2324,8 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-defi{max-width:520px;margin:22px auto 0;text-align:center}
 .lc-defi-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32);position:relative}
 .lc-defi-cur{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-.lc-defi-cur b{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;letter-spacing:.3px;text-transform:uppercase}
-.lc-defi-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:26px;color:#fff;background:var(--grn);border:2.5px solid var(--ink);border-radius:9px;padding:2px 11px;box-shadow:2px 2px 0 var(--ink);text-shadow:1.5px 1.5px 0 var(--ink)}
+.lc-defi-cur b{font-family:"Anton",system-ui,sans-serif;font-size:18px;letter-spacing:.3px;text-transform:uppercase}
+.lc-defi-sc{font-family:"Anton",system-ui,sans-serif;font-size:26px;color:#fff;background:var(--grn);border:2.5px solid var(--ink);border-radius:9px;padding:2px 11px;box-shadow:2px 2px 0 var(--ink);text-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-defi-card .lc-sub{margin:9px 0 12px;color:#2a2536;font-weight:700}
 /* SÉRIE 7 JOURS (#28) — ruban de la septaine (case BD, data réelle) */
 .lc-week{max-width:520px;margin:22px auto 0;text-align:center}
@@ -2342,17 +2342,17 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-week-pip.cold{background:#efe7d6}
 .lc-week-pip.cold .lc-week-pip-ic{filter:grayscale(1);opacity:.7}
 .lc-week-pip.next{background:repeating-linear-gradient(45deg,#fff6d8 0 6px,#fff 6px 12px);border-style:dashed}
-.lc-week-pip-d{font:800 9px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;opacity:.85}
-.lc-week-pip-ic{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;line-height:1}
+.lc-week-pip-d{font:800 9px/1 "Bricolage Grotesque",system-ui,sans-serif;text-transform:uppercase;opacity:.85}
+.lc-week-pip-ic{font-family:"Anton",system-ui,sans-serif;font-size:15px;line-height:1}
 .lc-week-pip:not(.on):not(.cold):not(.next) .lc-week-pip-ic{font-size:12px;filter:grayscale(1);opacity:.65}
 .lc-week-meta{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin-bottom:2px}
-.lc-week-state{font:800 11px/1.2 "Comic Neue",system-ui,sans-serif;color:var(--ink);background:#fff;border:2.5px solid var(--ink);
+.lc-week-state{font:800 11px/1.2 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);background:#fff;border:2.5px solid var(--ink);
   border-radius:20px;padding:4px 11px;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
 .lc-week-state.live{background:linear-gradient(180deg,#ffe06a,var(--yel))}
 .lc-week-state.cold{background:#efe7d6;color:#5a5360}
-.lc-week-best{font:800 11px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink)}
-.lc-week-best b{font-family:"AntonLC",system-ui,sans-serif;font-size:15px}
-.lc-week-prog{font:800 11px/1.35 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.82;margin-top:9px}
+.lc-week-best{font:800 11px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink)}
+.lc-week-best b{font-family:"Anton",system-ui,sans-serif;font-size:15px}
+.lc-week-prog{font:800 11px/1.35 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.82;margin-top:9px}
 .lc-week-sealsub{margin:9px 0 0!important;font-size:12px!important}
 .lc-week-cta{margin-top:13px}
 .lc-root .lc-week-card .lc-week-state{background:#fff!important;border:2.5px solid var(--ink)!important;border-radius:20px!important;box-shadow:2px 2px 0 var(--ink)!important}
@@ -2362,7 +2362,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 /* fiabilité du Veilleur (jauge track-record) */
 .lc-reliab{max-width:520px;margin:22px auto 0;text-align:center}
 .lc-reliab-card{margin-top:10px;background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:16px 16px 14px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
-.lc-reliab-pct{font-family:"AntonLC",system-ui,sans-serif;font-size:46px;line-height:.9;color:var(--grn);text-shadow:2px 2px 0 var(--ink)}
+.lc-reliab-pct{font-family:"Anton",system-ui,sans-serif;font-size:46px;line-height:.9;color:var(--grn);text-shadow:2px 2px 0 var(--ink)}
 .lc-reliab-pct small{font-size:22px}
 .lc-reliab-bar{height:14px;margin:10px 0;border:2.5px solid var(--ink);border-radius:10px;background:#fff;overflow:hidden;box-shadow:2px 2px 0 var(--ink);forced-color-adjust:none}
 .lc-reliab-fill{height:100%;background:linear-gradient(90deg,#3fd98a,var(--grn));border-right:2px solid var(--ink)}
@@ -2372,7 +2372,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-cap-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px 15px;box-shadow:0 5px 0 var(--ink),0 12px 22px rgba(13,11,20,.32)}
 .lc-cap-card .lc-sub{margin:7px 0 11px;color:#2a2536;font-weight:700;font-size:13px}
 .lc-cap-row{display:flex;gap:8px}
-.lc-cap-in{flex:1;min-width:0;font-family:"Comic Neue",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
+.lc-cap-in{flex:1;min-width:0;font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:16px;font-weight:700;color:var(--ink);
   background:#fff;border:2.5px solid var(--ink);border-radius:11px;padding:11px 13px;box-shadow:2px 2px 0 var(--ink) inset;forced-color-adjust:none}
 .lc-cap-in::placeholder{color:#9a93a8}
 .lc-cap-btn{width:auto!important;flex:0 0 auto;padding:11px 16px!important;font-size:15px!important}
@@ -2387,7 +2387,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-lvl-card{position:relative;z-index:1;max-width:330px;width:100%;text-align:center;background:var(--paper);
   border:3px solid var(--ink);border-radius:18px;padding:30px 22px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5)}
 .lc-lvl-veil{display:flex;justify-content:center;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
-.lc-lvl-rank{display:inline-block;margin:12px 0 4px;font-family:"AntonLC",system-ui,sans-serif;font-size:24px;color:#fff;
+.lc-lvl-rank{display:inline-block;margin:12px 0 4px;font-family:"Anton",system-ui,sans-serif;font-size:24px;color:#fff;
   text-shadow:2px 2px 0 var(--ink);border:3px solid var(--ink);border-radius:11px;padding:6px 16px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
 .lc-lvl-card .lc-sub{margin:8px 0 16px;color:#2a2536;font-weight:700}
 .lc-reduce .lc-levelup{animation:none}
@@ -2413,7 +2413,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-card.lc-locked::before{content:"";position:absolute;inset:6px;z-index:3;border-radius:9px;pointer-events:none;
   background:repeating-linear-gradient(45deg,rgba(13,11,20,.16) 0 9px,rgba(13,11,20,.04) 9px 18px)}
 .lc-collect{position:absolute;z-index:5;bottom:14px;left:50%;transform:translateX(-50%) rotate(-3deg);
-  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:1px;color:var(--ink);
+  font-family:"Anton",system-ui,sans-serif;font-size:11px;letter-spacing:1px;color:var(--ink);
   background:var(--yel);border:2.5px solid var(--ink);border-radius:7px;padding:4px 10px;box-shadow:2px 2px 0 var(--ink);white-space:nowrap}
 .lc-ty{flex:0 0 auto;width:22px;height:22px;border-radius:50%;border:2px solid var(--ink);display:grid;place-items:center;
   font-size:12px;background:radial-gradient(circle at 35% 30%,#fff,#cfeafe)}
@@ -2428,31 +2428,31 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-bn.s-ok{background:linear-gradient(90deg,#3e2470,#0f7d72)}
 .lc-bn.s-mod{background:linear-gradient(90deg,#f0b73a,#d4912a)}
 .lc-bn.s-bad{background:linear-gradient(90deg,#ff6a4a,#d8351f)}
-.lc-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;line-height:1.05;text-shadow:1.5px 1.5px 0 var(--ink);
+.lc-nm{font-family:"Anton",system-ui,sans-serif;font-size:13px;color:#fff;line-height:1.05;text-shadow:1.5px 1.5px 0 var(--ink);
   flex:1;text-transform:uppercase;letter-spacing:.3px}
-.lc-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);line-height:1}
+.lc-sc{font-family:"Anton",system-ui,sans-serif;font-size:18px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);line-height:1}
 .lc-illu{position:relative;display:block;height:96px;border-bottom:2.5px solid var(--ink);overflow:hidden}
 .lc-illu svg{position:absolute;inset:0;width:100%;height:100%}
-.lc-rar{position:absolute;left:5px;bottom:4px;font-family:"AntonLC",system-ui,sans-serif;font-size:8px;color:#fff;
+.lc-rar{position:absolute;left:5px;bottom:4px;font-family:"Anton",system-ui,sans-serif;font-size:8px;color:#fff;
   background:var(--ink);padding:1.5px 6px;border-radius:12px;letter-spacing:.4px;border:1.5px solid rgba(255,255,255,.5)}
 .lc-card.r-rare .lc-rar{background:#1f7fc0}
 .lc-card.r-epic .lc-rar{background:#7a3fc0}
 .lc-card.r-leg .lc-rar{background:#c47a12;color:#fff8e0}
 .lc-card.r-leg .lc-ty{background:radial-gradient(circle at 35% 30%,#fff,#ffe08a);box-shadow:0 0 8px rgba(246,183,60,.9)}
-.lc-pow{position:absolute;z-index:3;top:-9px;right:-5px;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;transform:rotate(9deg)}
+.lc-pow{position:absolute;z-index:3;top:-9px;right:-5px;font-family:"Anton",system-ui,sans-serif;font-size:13px;transform:rotate(9deg)}
 .lc-pow b{display:inline-block;border:2.5px solid var(--ink);border-radius:6px;padding:1px 7px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-pow.s-ok b{background:var(--grn)}.lc-pow.s-mod b{background:var(--org)}.lc-pow.s-bad b{background:var(--red)}
 .lc-bd{display:block;padding:6px 8px 8px}
 .lc-atk{display:flex;gap:6px;align-items:baseline;padding:3px 0}
-.lc-atkt{font-family:"AntonLC",system-ui,sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink);flex:1;letter-spacing:.2px}
-.lc-atkv{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;color:var(--red);text-shadow:1px 1px 0 var(--ink)}
+.lc-atkt{font-family:"Anton",system-ui,sans-serif;font-size:10px;text-transform:uppercase;color:var(--ink);flex:1;letter-spacing:.2px}
+.lc-atkv{font-family:"Anton",system-ui,sans-serif;font-size:12px;color:var(--red);text-shadow:1px 1px 0 var(--ink)}
 .lc-ft{display:flex;justify-content:space-between;font-size:7.5px;color:#7a7488;padding-top:3px;margin-top:2px;border-top:1.5px solid var(--ink)}
 
 /* premium / lock */
 .lc-lock{max-width:520px;margin:30px auto 0;text-align:center}
 .lc-lock-card{position:relative;background:linear-gradient(135deg,#e9d3ff,#b88be8 60%,#f3e8ff);border:3px solid var(--ink);
   border-radius:16px;box-shadow:0 6px 0 rgba(13,11,20,.35);padding:18px 14px 16px}
-.lc-lock-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:"AntonLC",system-ui,sans-serif;
+.lc-lock-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-family:"Anton",system-ui,sans-serif;
   font-size:13px;background:var(--pur);color:#fff;border:2.5px solid var(--ink);border-radius:20px;padding:3px 12px;
   text-shadow:1.5px 1.5px 0 var(--ink);box-shadow:2px 2px 0 var(--ink)}
 .lc-lock .lc-cta{margin-top:12px}
@@ -2469,9 +2469,9 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
   background:linear-gradient(160deg,#8a55e8,#6a3bc0 45%,#4f2a99);cursor:default}
 .lc-pack-top{filter:drop-shadow(2px 3px 0 rgba(13,11,20,.5))}
-.lc-pack-lbl{font-family:"AntonLC",system-ui,sans-serif;font-size:24px;line-height:.95;color:#fff;
+.lc-pack-lbl{font-family:"Anton",system-ui,sans-serif;font-size:24px;line-height:.95;color:#fff;
   text-shadow:3px 3px 0 var(--ink);text-align:center;letter-spacing:.5px;transform:rotate(-2deg)}
-.lc-pack-count{font:800 11px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);background:var(--yel);
+.lc-pack-count{font:800 11px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);background:var(--yel);
   border:2.5px solid var(--ink);border-radius:20px;padding:4px 11px;box-shadow:2px 2px 0 var(--ink)}
 .lc-pack-shine{position:absolute;inset:0;pointer-events:none;
   background:linear-gradient(115deg,transparent 38%,rgba(255,255,255,.45) 48%,transparent 58%);
@@ -2502,11 +2502,11 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 
 /* PALIER de complétion (rang Veilleur + barre) */
 .lc-rank{display:flex;align-items:center;gap:8px;margin-top:8px;flex-wrap:wrap}
-.lc-rank-badge{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);
+.lc-rank-badge{font-family:"Anton",system-ui,sans-serif;font-size:11px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);
   border:2.5px solid var(--ink);border-radius:8px;padding:3px 9px;box-shadow:2px 2px 0 var(--ink);letter-spacing:.4px;white-space:nowrap}
 .lc-rank-bar{flex:1;min-width:90px;height:11px;background:#fff;border:2.5px solid var(--ink);border-radius:10px;overflow:hidden;box-shadow:2px 2px 0 var(--ink)}
 .lc-rank-fill{height:100%;border-right:2px solid var(--ink);transition:width .6s cubic-bezier(.22,1,.36,1)}
-.lc-rank-next{font:800 10px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);white-space:nowrap}
+.lc-rank-next{font:800 10px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);white-space:nowrap}
 
 /* ---- holo renforcé sur épique / légendaire ---- */
 .lc-root .lc-card.r-epic::after{opacity:1}
@@ -2522,7 +2522,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
    supérieure (préfixe .lc-root) + !important, sinon rareté & couleurs
    sautent (cartes cream, verdicts blancs).
    ==================================================================== */
-.lc-root .lc-gbtn{font-family:"AntonLC",system-ui,sans-serif!important;border-radius:11px!important}
+.lc-root .lc-gbtn{font-family:"Anton",system-ui,sans-serif!important;border-radius:11px!important}
 .lc-root .lc-gbtn.s-ok{background:linear-gradient(180deg,#3fd98a,var(--grn))!important}
 .lc-root .lc-gbtn.s-mod{background:linear-gradient(180deg,#ffd569,var(--org))!important;color:var(--ink)}
 .lc-root .lc-gbtn.s-bad{background:linear-gradient(180deg,#ff6a4a,var(--red))!important}
@@ -2542,11 +2542,11 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
    z-index 1150 < détail 1200 < levelup 1250. Rareté = couleurs TCG.
    ==================================================================== */
 .lc-badge-btn{display:inline-flex;align-items:center;gap:6px;margin-top:10px;cursor:pointer;
-  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);
+  font-family:"Anton",system-ui,sans-serif;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink);
   background:var(--paper);border:2.5px solid var(--ink);border-radius:20px;padding:5px 12px;box-shadow:2px 2px 0 var(--ink);
   forced-color-adjust:none;transition:transform .08s}
 .lc-badge-btn:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
-.lc-badge-bcnt{font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:#fff;background:var(--ink);
+.lc-badge-bcnt{font-family:"Anton",system-ui,sans-serif;font-size:11px;color:#fff;background:var(--ink);
   border-radius:12px;padding:2px 8px;margin-left:2px}
 .lc-root .lc-badge-btn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:20px!important;box-shadow:2px 2px 0 var(--ink)!important}
 .lc-badgesheet{position:fixed;inset:0;z-index:1150;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -2558,11 +2558,11 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-badge-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
-.lc-badge-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:16px;
+.lc-badge-title{display:inline-flex;align-items:center;gap:8px;font-family:"Anton",system-ui,sans-serif;font-size:16px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
-.lc-badge-cnt{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;background:var(--ink);
+.lc-badge-cnt{font-family:"Anton",system-ui,sans-serif;font-size:13px;color:#fff;background:var(--ink);
   display:inline-block;border-radius:14px;padding:2px 12px;margin:8px 0 4px;letter-spacing:.5px}
-.lc-badge-toh{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:var(--ink);
+.lc-badge-toh{font-family:"Anton",system-ui,sans-serif;font-size:12px;letter-spacing:.6px;color:var(--ink);
   opacity:.72;margin:18px 0 9px;text-align:left}
 .lc-badge-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .lc-badge-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;
@@ -2574,9 +2574,9 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-badge-card.lc-badge-locked{background:repeating-linear-gradient(45deg,#eceaf0 0 7px,#f6f4f8 7px 14px);opacity:.55}
 .lc-badge-ic{font-size:38px;line-height:1;filter:drop-shadow(1.5px 2px 0 rgba(13,11,20,.35))}
 .lc-badge-card.lc-badge-locked .lc-badge-ic{filter:grayscale(1);opacity:.7}
-.lc-badge-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:12px;line-height:1.05;color:var(--ink);
+.lc-badge-nm{font-family:"Anton",system-ui,sans-serif;font-size:12px;line-height:1.05;color:var(--ink);
   letter-spacing:.2px;text-transform:uppercase}
-.lc-badge-rar{font:800 8.5px/1 "Comic Neue",system-ui,sans-serif;letter-spacing:.4px;color:#fff;background:var(--ink);
+.lc-badge-rar{font:800 8.5px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.4px;color:#fff;background:var(--ink);
   border-radius:10px;padding:2px 7px}
 .lc-badge-card.b-rare .lc-badge-rar{background:var(--blu)}
 .lc-badge-card.b-epic .lc-badge-rar{background:var(--pur)}
@@ -2614,24 +2614,24 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-ladder-iris{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid var(--ink);
   display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-ladder-mid{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.lc-ladder-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:var(--ink);
+.lc-ladder-nm{font-family:"Anton",system-ui,sans-serif;font-size:13px;letter-spacing:.3px;color:var(--ink);
   text-transform:uppercase;line-height:1.05}
-.lc-ladder-th{font:800 10px/1 "Comic Neue",system-ui,sans-serif;color:var(--ink);opacity:.7}
-.lc-ladder-tag{flex:none;font-family:"AntonLC",system-ui,sans-serif;font-size:11px;color:var(--ink);background:var(--yel);
+.lc-ladder-th{font:800 10px/1 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.7}
+.lc-ladder-tag{flex:none;font-family:"Anton",system-ui,sans-serif;font-size:11px;color:var(--ink);background:var(--yel);
   border:2px solid var(--ink);border-radius:11px;padding:2px 9px;box-shadow:1.5px 1.5px 0 var(--ink);letter-spacing:.4px}
 .lc-ladder-ok{flex:none;font-size:14px;font-weight:800;color:var(--grn,#27c46b);width:22px;text-align:center}
 .lc-ladder-foot{margin:10px auto 2px;max-width:320px;font-weight:800}
 .lc-ladder-stats{display:flex;gap:10px;justify-content:center;margin-top:14px}
 .lc-ladder-stat{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--ink);color:var(--paper);
   border-radius:13px;padding:8px 16px;min-width:96px}
-.lc-ladder-stat b{font-family:"AntonLC",system-ui,sans-serif;font-size:19px;line-height:1}
-.lc-ladder-stat span{font:800 9px/1.1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;opacity:.85}
+.lc-ladder-stat b{font-family:"Anton",system-ui,sans-serif;font-size:19px;line-height:1}
+.lc-ladder-stat span{font:800 9px/1.1 "Bricolage Grotesque",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;opacity:.85}
 @media(prefers-reduced-motion:reduce){.lc-laddersheet{animation:none}}
 
 /* ====================================================================
    CENTRE D'ALERTES « MES ALERTES » (#19) — cloche header + modale comic.
    z-index 1140 < badges 1150 < détail 1200 < levelup 1250.
-   --paper / --ink / ombres dures ; Anton titre, Comic Neue corps.
+   --paper / --ink / ombres dures ; Anton titre, Bricolage Grotesque corps.
    ==================================================================== */
 .lc-bells{position:relative;flex:0 0 auto;width:44px;height:44px;cursor:pointer;-webkit-appearance:none;appearance:none;
   background:var(--paper);border:2.5px solid var(--ink);border-radius:50%;box-shadow:2px 2px 0 var(--ink);
@@ -2639,7 +2639,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-bells:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
 .lc-bell-ic{font-size:18px;line-height:1}
 .lc-bell-count{position:absolute;top:-7px;right:-7px;min-width:19px;height:19px;padding:0 4px;
-  font-family:"AntonLC",system-ui,sans-serif;font-size:11px;line-height:19px;color:#fff;text-align:center;
+  font-family:"Anton",system-ui,sans-serif;font-size:11px;line-height:19px;color:#fff;text-align:center;
   background:var(--red);border:2px solid var(--ink);border-radius:11px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-root .lc-bells{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
 /* MON ESPACE (#10) — bouton header + sheet */
@@ -2649,12 +2649,12 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-root .lc-spacebtn{background:var(--paper)!important;border:2.5px solid var(--ink)!important;border-radius:50%!important;box-shadow:2px 2px 0 var(--ink)!important}
 .lc-space-pro{background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:14px;margin:12px 0 4px;box-shadow:3px 3px 0 var(--ink)}
 .lc-space-pro.on{background:#eafaf0}
-.lc-space-pro-badge{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;color:var(--ink);letter-spacing:.4px}
+.lc-space-pro-badge{font-family:"Anton",system-ui,sans-serif;font-size:17px;color:var(--ink);letter-spacing:.4px}
 .lc-space-pro-sub{font-size:13px;color:#3a4a52;margin:4px 0 10px;line-height:1.4}
 .lc-space-manage{display:inline-block;font-weight:800;font-size:13px;color:#0d2330;text-decoration:none;border-bottom:3px solid var(--yel);padding-bottom:1px}
 .lc-space-passinfo{font-size:12.5px;color:#3a4a52;line-height:1.45;margin-top:2px}
 .lc-space-pro .lc-cta{margin-top:2px}
-.lc-space-sec-h{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;color:var(--ink);margin:18px 0 9px}
+.lc-space-sec-h{font-family:"Anton",system-ui,sans-serif;font-size:13px;letter-spacing:.6px;color:var(--ink);margin:18px 0 9px}
 .lc-space-fav-list{display:flex;flex-direction:column;gap:8px}
 .lc-space-fav{display:flex;align-items:center;gap:10px;width:100%;text-align:left;-webkit-appearance:none;appearance:none;background:var(--paper);border:2.5px solid var(--ink);border-radius:11px;padding:10px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .lc-space-fav:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
@@ -2665,7 +2665,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-space-empty{font-size:13px;color:#3a4a52;line-height:1.45;margin:2px 0 0}
 .lc-space-alerts{display:flex;align-items:center;gap:12px;width:100%;-webkit-appearance:none;appearance:none;background:var(--yel);border:2.5px solid var(--ink);border-radius:12px;padding:11px 14px;cursor:pointer;box-shadow:3px 3px 0 var(--ink)}
 .lc-space-alerts:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
-.lc-space-alerts-n{font-family:"AntonLC",system-ui,sans-serif;font-size:19px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:8px;min-width:30px;text-align:center;padding:1px 6px;line-height:1.25}
+.lc-space-alerts-n{font-family:"Anton",system-ui,sans-serif;font-size:19px;color:var(--ink);background:var(--paper);border:2px solid var(--ink);border-radius:8px;min-width:30px;text-align:center;padding:1px 6px;line-height:1.25}
 .lc-space-alerts-tx{font-weight:800;font-size:14px;color:var(--ink)}
 .lc-space-pro-link{display:block;width:100%;margin-top:18px;-webkit-appearance:none;appearance:none;background:none;border:none;border-top:2px dashed var(--ink);padding:14px 4px 2px;font-family:inherit;font-weight:800;font-size:13px;color:#0d2330;text-align:center;cursor:pointer;line-height:1.4}
 .lc-space-pro-link:active{opacity:.7}
@@ -2680,9 +2680,9 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   padding:24px 18px 22px;box-shadow:0 7px 0 var(--ink),0 16px 30px rgba(13,11,20,.5);forced-color-adjust:none}
 .lc-alerts-x{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;-webkit-appearance:none;appearance:none;
   border:2.5px solid var(--ink);background:var(--yel);color:var(--ink);font-size:16px;font-weight:800;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
-.lc-alerts-title{display:inline-flex;align-items:center;gap:8px;font-family:"AntonLC",system-ui,sans-serif;font-size:18px;
+.lc-alerts-title{display:inline-flex;align-items:center;gap:8px;font-family:"Anton",system-ui,sans-serif;font-size:18px;
   letter-spacing:.5px;color:var(--ink);text-shadow:1.5px 1.5px 0 #fff}
-.lc-alerts-pv{display:inline-block;margin:8px 0 0;font:800 9px/1 "Comic Neue",system-ui,sans-serif;letter-spacing:.5px;
+.lc-alerts-pv{display:inline-block;margin:8px 0 0;font:800 9px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.5px;
   text-transform:uppercase;color:#fff;background:var(--pur);border:2px solid var(--ink);border-radius:10px;padding:3px 9px;box-shadow:1.5px 1.5px 0 var(--ink)}
 .lc-alerts-sub{font-size:12px;line-height:1.35;color:#2a2536;font-weight:700;margin:9px 0 14px}
 .lc-alerts-list{display:flex;flex-direction:column;gap:11px}
@@ -2696,17 +2696,17 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
   display:grid;place-items:center;font-size:17px;line-height:1;box-shadow:2px 2px 0 var(--ink)}
 .lc-alert-pill.s-ok{background:#dff6e8}.lc-alert-pill.s-mod{background:#ffeccd}.lc-alert-pill.s-bad{background:#f9d9d6}
 .lc-alert-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
-.lc-alert-when{font:800 9.5px/1 "Comic Neue",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;color:#7a7488}
-.lc-alert-name{font-family:"AntonLC",system-ui,sans-serif;font-size:15px;line-height:1.05;color:var(--ink);letter-spacing:.2px;text-transform:uppercase}
+.lc-alert-when{font:800 9.5px/1 "Bricolage Grotesque",system-ui,sans-serif;text-transform:uppercase;letter-spacing:.4px;color:#7a7488}
+.lc-alert-name{font-family:"Anton",system-ui,sans-serif;font-size:15px;line-height:1.05;color:var(--ink);letter-spacing:.2px;text-transform:uppercase}
 .lc-alert-msg{font-size:12.5px;font-weight:800;color:var(--ink);line-height:1.3;display:flex;flex-wrap:wrap;align-items:center;gap:5px}
 .lc-alert-arrow{display:inline-flex;align-items:center;gap:5px;flex-wrap:wrap}
-.lc-alert-arrow i{font-style:normal;font-family:"AntonLC",system-ui,sans-serif;font-size:10px;color:#fff;text-shadow:1px 1px 0 var(--ink);
+.lc-alert-arrow i{font-style:normal;font-family:"Anton",system-ui,sans-serif;font-size:10px;color:#fff;text-shadow:1px 1px 0 var(--ink);
   border:2px solid var(--ink);border-radius:6px;padding:1.5px 7px;letter-spacing:.3px}
 .lc-alert-arrow i.s-ok{background:var(--grn)}.lc-alert-arrow i.s-mod{background:var(--org);color:var(--ink);text-shadow:1px 1px 0 #fff}.lc-alert-arrow i.s-bad{background:var(--red)}
-.lc-alert-arrow em{font-style:normal;font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:var(--ink)}
+.lc-alert-arrow em{font-style:normal;font-family:"Anton",system-ui,sans-serif;font-size:13px;color:var(--ink)}
 .lc-alert-detail{font-size:11.5px;font-weight:700;line-height:1.35;color:#5a5360;margin-top:2px}
 .lc-alert-open{align-self:flex-start;margin-top:7px;-webkit-appearance:none;appearance:none;cursor:pointer;
-  font-family:"AntonLC",system-ui,sans-serif;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);
+  font-family:"Anton",system-ui,sans-serif;font-size:10px;letter-spacing:.4px;text-transform:uppercase;color:var(--ink);
   background:var(--yel);border:2.5px solid var(--ink);border-radius:9px;padding:5px 11px;box-shadow:2px 2px 0 var(--ink);transition:transform .08s}
 .lc-alert-open:active{transform:translateY(2px);box-shadow:0 0 0 var(--ink)}
 .lc-root .lc-alert-card{background:#fff!important;border:2.5px solid var(--ink)!important;border-left-width:6px!important;border-radius:13px!important;box-shadow:0 4px 0 var(--ink)!important}
@@ -2718,7 +2718,7 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 /* état vide honnête */
 .lc-alert-empty{text-align:center;padding:14px 6px 6px}
 .lc-alert-empty-veil{display:flex;justify-content:center;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
-.lc-alert-empty-h{font-family:"AntonLC",system-ui,sans-serif;font-size:17px;line-height:1.1;color:var(--ink);
+.lc-alert-empty-h{font-family:"Anton",system-ui,sans-serif;font-size:17px;line-height:1.1;color:var(--ink);
   text-shadow:1.5px 1.5px 0 #fff;margin:12px 0 0}
 .lc-alert-empty .lc-sub{margin:9px auto 0;font-style:italic;color:#2a2536;font-weight:700}
 @media(prefers-reduced-motion:reduce){.lc-alerts{animation:none}}

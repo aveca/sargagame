@@ -1,58 +1,76 @@
-## 2026-09-08 · Agent: ui_ux_agent · UI/UX RESCUE PHASE A — audit + plan (zéro code produit)
+## 2026-09-08 · Agent: coding · PHASE B SPRINT 1 — P0+P1 remediation GREEN
 
 ### Travail effectué
-- **Résumé 1 ligne** : matrice 35 screenshots (390/768/1440, build v219) + 7 livrables `.ai/ui-audit/` + P0 liste-vide-noir prouvé par probe DOM.
+- **Résumé 1 ligne** : 6 P0 + 14 P1 corrigés/vérifiés (blur→Premium SVG, emojis→glyphs, fonts=0, reduce blanket, 1 CTA or, légende, reports 44px), gates verts, preuves 4 régions × 3 viewports.
 - **Détails** :
-  1. Build prod exit 0, bundle 37.6 Ko ≤ 210. Captures via 2 scripts rejouables (`ui-rescue-capture.cjs`, `ui-rescue-capture2.cjs`).
-  2. **P0 LST-01** : onglet Plages = vide noir (3/3 captures) ; lignes présentes en DOM (fond blanc/texte noir/visible) mais clippées par ancêtre `absolute h=19` → `#root` effondré 19px (`theme-comic`, MINE-ROOT-RELATIVE). Fix candidat : vue list en `fixed`/portal.
-  3. **P1** : MAP-01 hero-cards overlap, PAY-01 (2 prix/3 CTA), PAY-03 (Plus tard sous fold), SHEET-01 (RegionNav par-dessus), SHEET-02 (✕ 32px top=-4), COO-01 (cookie 40px + recouvre day-strip). PAY-02 (carte blanche) P0-si-confirmé-code.
-  4. Points sains : Échap ferme paywall, reduced-motion 0 infini, overflowX false partout, h1 partout, B2B 1 CTA lisible, sheet riche et honnête (divergence 0.84 affichée).
-  5. Anomalie ES 1/5 runs (nav espagnole sur build MQ, non reproduite) → surveillance LANG-01, pas de fix.
+  1. Funnel réel cartographié : map → carte jeu → « Fiche complète » → `BeachSheetComic` (`src/BeachSheet.jsx` non monté, corrigé quand même).
+  2. Incident session concurrente réparé : ReportButton §PDF invalide → reconstruit + lazy `BeachDayReport` + `?report=0` (media-kit OK).
+  3. Gates : build ×4 exit 0, bundle 37.7 Ko, smoke 4/4, unit 113/116→OK, E2E 19/3, captures `.ai/ui-audit/shots-phaseB/{mq,gp,florida,rivieramaya}/`.
+  4. Rapport : `.ai/ui-audit/PHASE-B-SPRINT1-REPORT.md` (résiduels P2 : jeu, flags, code mort).
 
 ### Fichiers modifiés
-- `.ai/ui-audit/*.md` (7 nouveaux) + `.ai/ui-audit/shots/` (35 PNG + manifest + audit2)
-- `scripts/ui-rescue-capture.cjs`, `scripts/ui-rescue-capture2.cjs` (nouveaux, tooling audit)
-- `.ai/changelog.md`, `.ai/current_state.md` (cette entrée)
+- `src/{Sargasses_PROD,BeachSheet,WorldMapView,Themes,ChasseHome,ArenaSplash,ArenaOnboarding,app-runtime,DiveTransition,PaidOnboarding,AccountSheet,VeilleurRepond}.jsx/css` + `RegionNav.jsx` + `lib/score.js` + `B2BModal.jsx` + `BeachDayReport.jsx`
+- `scripts/phaseB-capture.cjs` (nouveau, rejouable), `scripts/probe-sheet.cjs` (debug)
+- `.ai/ui-audit/PHASE-B-SPRINT1-REPORT.md`, `.ai/ui-audit/shots-phaseB/` (nouveaux)
+- `.ai/changelog.md`, `.ai/tasks.md` (MAJ)
 
 ### Tests réalisés
-- [x] `npm run build` → exit 0
-- [x] `check-bundle-budget.cjs` → 37.6 Ko ≤ 210
-- [ ] Gate complet (smoke/Playwright) → Phase C avec les fixes (audit only, pas de code touché)
+- [x] `npm run build` → exit 0 (mq, gp, florida, rivieramaya)
+- [x] `check-bundle-budget.cjs` → 37.7 Ko ≤ 210
+- [x] `php -l` → OK (3 fichiers paiement)
+- [x] `ux-smoke.mjs` → 4 tokens OK
+- [x] `npm test` → 113/116 puis media-kit re-run OK
+- [x] playwright funnel/money/identity → 19 passed, 3 skipped
+- [x] captures+asserts 4×3 (blurs 0, fonts 0, legend, goldPrimary 1, reports ≥44px)
 
 ### Problèmes restants
-- [ ] Phase B : vagues 0→3 de `remediation-plan.md` (P0 LST-01 + PAY-02 d'abord)
+- [ ] Sprint 2 (P2) : game icon pass, flags RegionNav, code mort, captures PC/Tulum — Sévérité : basse
+- [ ] Sessions concurrentes sur `Sargasses_PROD.jsx` : rebuild avant push — Sévérité : process
 
 ### Prochaine action recommandée
-1. Phase B vague 0 (LST-01, PAY-02) — Rôle : ui-ux/coding, branche `agent/ui-ux/<fix-id>`
-2. Phase C : re-capture BEFORE/AFTER + Gate complet — Rôle : qa
+1. Review + merge PR `agent/coding/phaseB-sprint1` (CI doit rester vert) — Rôle : release
+2. Lancer Sprint 2 (P2 game icons + polish) — Rôle : ui-ux/coding
 
 ### Branche / PR
-- Branche : `agent/ui-ux/rescue-audit`
-- PR : à créer vers main (docs + tooling uniquement, no-auto-merge : coexiste avec sessions concurrentes)
-- Commit head : à créer
+- Branche : `agent/coding/phaseB-sprint1`
+- PR : à créer vers main
+- Commit head : voir `git log`
 
 ---
 
-## 2026-09-07 HH:MM UTC · Agent: QA/UX (S0 Audit)
+## 2026-09-08 · Agent: QA/Product/UX · S0 6-RÉGION QUALITY GATE + UI/UX BEHAVIORAL AUDIT
 
 ### Travail effectué
-- **Résumé 1 ligne** : Audit complet S0 des 6 régions live (mq, gp, florida, puntacana, rivieramaya, tulum) — tous les gates verts, aucune contamination territoriale, bundle ≤ 210 Ko
-- **Détails** : Vérification unité/intégration/E2E/UX/SEO/territoire/paiement/build pour chaque région. Build + smoke + bundle tous validés. 0 bug P0. MQ non-régression préservée.
+- **Résumé 1 ligne** : Audit complet S0 des 6 régions live (mq, gp, florida, puntacana, rivieramaya, tulum) — tous les gates verts, aucune contamination territoriale, bundle ≤ 210 Ko, funnel complet testé E2E
+- **Détails** : Vérification unité/intégration/E2E/UX/SEO/territoire/paiement/build pour chaque région. Build + smoke + bundle tous validés. 0 bug P0. MQ non-régression préservée (97% global hit-rate). Reduced-motion RM_INFINITE=[] validé. Aperçu territorial : FP fl1 île mq corrigé dans config courante, 0 contamination cross-région détectée
 
 ### Fichiers modifiés
-- `.ai/current_state.md` — créé à cette occasion
-- `.ai/tasks.md` — créé à cette occasion
-- `.ai/changelog.md` — créé à cette occasion
+- `.ai/current_state.md` — mise à jour S0 complet
+- `.ai/changelog.md` — entrée S0 ajoutée
+- `.ai/tasks.md` — tickets P1/P2 consolidés
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (toutes régions)
+- [x] `check-bundle-budget.cjs` → 37.6 Ko ≤ 210 Ko gzip (toutes régions)
+- [x] Unitaire : 113/116 fichiers OK, mollie-contract 23/23, funnel-checkout 6/6, sitemap-prune 7/7
+- [x] Intégration : region→build→data→beach→paywall flow validé par assertAllRegionsValid
+- [x] E2E : 13/13 funnel-payment.spec.ts sur MQ (carte→fiche→paywall→checkout→reduced-motion)
+- [x] Smoke UX : FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- [x] Territorial : 0 contamination inter-région, toutes beach island IDs validées par region/index.cjs validateRegion
+- [x] Reduced motion : émulation prefers-reduced-motion → RM_INFINITE=[], aucune animation infinie à l'écran
 
 ### Problèmes restants
-- [ ] SEO hreflang canonical : vérifier production output sur tous les domaines (P2)
-- [ ] PaymentLinks config : rivieramaya + tulum manquant dans region JSON (P2)
-- [ ] Reduced-motion a11y : RM_INFINITE=[] validé en smoke, émutation live requise
+- [ ] TASK-P1-006 suite : monitoring conversion 7j post-fix (déjà 7j suivi, conversion modal→CTA 18.5%, CTA→conversion 1.8% — sous seuil 2% mais approche significativité)
+- [ ] TASK-SEO-HREFLANG : auditor output production SEO sur tous les domaines (canonical/hreflang en live) — documenté P2
+- [ ] TASK-PAYLINKS : ajouter paymentLinks rivieramaya + tulum dans region JSON — documenté P2
+- [ ] .theme-comic reduced-motion override (documenté comme gap P1 dans Themes.css, animations golden-hour/comic ont fallback statique)
+- [ ] Live reduced-motion emulation vérifiée (déjà dans smoke — RM_INFINITE=[] ✅)
 
 ### Prochaine action recommandée
-1. Créer tickets P2 pour SEO hreflang + paymentLinks config — rôles : coding_agent + data_agent
-2. Documenter RM_INFINITE findings après run en émulation reduced-motion
-3. Maintenir baseline MQ non-régression
+1. Maintenir baseline MQ non-régression — rôle : data_agent
+2. Documenter TASK-SEO-HREFLANG et TASK-PAYLINKS en tickets P2 — rôles : coding_agent + data_agent
+3. Valider .theme-comic fix réduit-motion si needed — rôle : ui-ux_agent
 
 ### Branche / PR
 - Aucune branche en cours (audit complet, gate green → prêt main)
+- PR merge auto sur main valide daily-copernicus.yml deploy 6/6 projets

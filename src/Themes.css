@@ -43,7 +43,7 @@ body.theme-comic{
      le token #fdf6e3 est inerte, cf. DETTE-TOKENS-INERTES en tête de fichier.) */
   background:#0d1117 !important;
   color:var(--sg-ink);
-  font-family:"Bricolage Grotesque","Comic Neue",system-ui,sans-serif;
+  font-family:"Bricolage Grotesque",system-ui,sans-serif;
 }
 .theme-comic h1,.theme-comic h2,.theme-comic h3,.theme-comic [class*="-title"]{
   font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.4px;
@@ -81,15 +81,26 @@ body.theme-comic{
 .theme-comic .sg-cta,.theme-comic [class*="cta"],.theme-comic button[type="submit"]{
   font-family:"Anton","Bricolage Grotesque",sans-serif !important;letter-spacing:.5px;
   text-shadow:1px 1px 0 rgba(255,255,255,.45) !important;
-  color:#0d0b14 !important;background:linear-gradient(180deg,#ffe06a,#ffc72c 55%,#e8a800) !important;
+  color:#0d0b14 !important;background:linear-gradient(180deg,#FFE47A,#FFC72C 55%,#E8A800) !important;
 }
 .theme-comic button:active,.theme-comic .sg-cta:active,.theme-comic [role="button"]:active{
   box-shadow:0 0 0 var(--sg-ink) !important;transform:translate(3px,3px) !important}
 .theme-comic .sg-bottom-nav{background:var(--sg-card) !important;border-top:3px solid var(--sg-ink) !important}
 .theme-comic .sheet-handle{background:var(--sg-ink) !important;opacity:.85}
 
-/* Reduced motion — plancher dur (cf. design-system) */
+/* Reduced motion — plancher dur (cf. design-system) : P0-06.
+   Toute animation/transition décorative est neutralisée sous
+   `prefers-reduced-motion`, états finaux préservés (contenu, navigation,
+   feedback essentiels intacts — on fige, on ne cache jamais). */
 @media (prefers-reduced-motion: reduce) {
+  .theme-comic *,
+  .theme-comic *::before,
+  .theme-comic *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
   .theme-comic .live .dot,
   .theme-comic .cta,
   .theme-comic .halo,

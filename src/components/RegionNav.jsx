@@ -69,7 +69,7 @@ export default function RegionNav({inline=false}) {
   return (
     <>
       <div style={wrapperStyle}>
-        <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>🌍 SargaGame Network —</span>
+        <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>SargaGame Network —</span>
         <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
           {REGIONS.map(r => {
             const isCurrent = r.domain === current
@@ -113,7 +113,7 @@ export default function RegionNav({inline=false}) {
         }}>
           <style>{`@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap'}}>
-            <span style={{fontSize: 16}}>🌍</span>
+            <span style={{fontSize: 16}} aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg></span>
             <span style={{font: '600 13px/1.3 "Bricolage Grotesque"', flex: 1, minWidth: 200}}>
               {_t(lang, "Vous consultez plusieurs régions? Découvrez notre plan multi-région Enterprise →", "Checking multiple regions? Discover our multi-region Enterprise plan →", "¿Consultas varias regiones? Descubre nuestro plan multi-región Enterprise →")}
             </span>

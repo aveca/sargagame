@@ -106,9 +106,9 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
       :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)
   })()
   const STATUS={
-    clean:{c:"#27c46b",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},
-    moderate:{c:"#e8a800",l:_t(lang,"Algues modérées","Moderate seaweed","Algas moderadas")},
-    avoid:{c:"#e8522a",l:_t(lang,"À éviter aujourd'hui","Avoid today","Evitar hoy")},
+    clean:{c:"#22C55E",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},
+    moderate:{c:"#B87A00",l:_t(lang,"Algues modérées","Moderate seaweed","Algas moderadas")},
+    avoid:{c:"#E8522A",l:_t(lang,"À éviter aujourd'hui","Avoid today","Evitar hoy")},
   }
   const stOf=lv2=>STATUS[lv2&&lv2.status]||null
   // Grille É2 : la plage active si elle a un forecast, sinon la MEILLEURE plage de
@@ -231,7 +231,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
   //    checklist : classes DOUBLÉES (0,2,0) battent .theme-comic button (0,1,1).
   //    .sgseq-* = primitives génériques réutilisables (scaler le B2C, fondateur 2026-07-02).
   const CSS_B2F=`
-  .b2f-cta.b2f-cta{width:100%;text-align:center;font:800 16px/1 'Bricolage Grotesque',sans-serif!important;padding:16px;border-radius:15px!important;border:3px solid ${I.ink}!important;box-shadow:3px 3px 0 ${I.ink}!important;background:linear-gradient(180deg,#ffe06a,#ffc72c 55%,#e8a800)!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;cursor:pointer;letter-spacing:0}
+  .b2f-cta.b2f-cta{width:100%;text-align:center;font:800 16px/1 'Bricolage Grotesque',sans-serif!important;padding:16px;border-radius:15px!important;border:2.5px solid ${I.ink}!important;box-shadow:4px 4px 0 ${I.ink}!important;background:linear-gradient(180deg,#FFE47A,#FFC72C 55%,#E8A800)!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;cursor:pointer;letter-spacing:0}
   .b2f-cta.b2f-cta:disabled{background:#e7e2d4!important;opacity:.7;cursor:default}
   .b2f-cta.b2f-cta:active{transform:translate(3px,3px);box-shadow:0 0 0 ${I.ink}!important}
   .b2f-hero.b2f-hero{display:block;text-align:left;width:100%;box-sizing:border-box;background:linear-gradient(160deg,#fff3c8,#ffe08a)!important;border:3px solid ${I.ink}!important;box-shadow:4px 4px 0 ${I.ink}!important;border-radius:16px!important;color:${I.ink}!important;-webkit-text-fill-color:${I.ink}!important;text-shadow:none!important;padding:13px 14px;position:relative}

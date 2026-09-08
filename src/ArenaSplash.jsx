@@ -24,7 +24,7 @@ export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES 
       <style>{`
         .arena-splash{position:fixed;inset:0;z-index:3000;display:flex;flex-direction:column;
           align-items:center;justify-content:center;gap:14px;padding:24px;
-          font-family:"Comic Neue",system-ui,sans-serif;color:#fff;
+          font-family:"Bricolage Grotesque",system-ui,sans-serif;color:#fff;
           background:
             radial-gradient(rgba(255,255,255,.06) 1.2px,transparent 1.3px) 0 0/8px 8px,
             linear-gradient(180deg,#10202b,#0c2a3a 60%,#3a2a18);
@@ -42,7 +42,7 @@ export default function ArenaSplash({onDone,lang="fr",track,wordmark="SARGASSES 
         .arena-splash .orbe .pow{position:absolute;top:-12px;right:-10px;background:#e8322a;
           border:3px solid #0d0b14;border-radius:8px;padding:2px 9px;color:#fff;
           font:400 15px/1 "Anton",sans-serif;transform:rotate(6deg);box-shadow:2px 2px 0 #0d0b14}
-        .arena-splash h1{margin:8px 0 0;font:400 32px/1 "AntonLC","Anton",sans-serif;
+        .arena-splash h1{margin:8px 0 0;font:400 32px/1 "Anton",sans-serif;
           color:#fff;text-shadow:3px 3px 0 #0d0b14;transform:rotate(-2deg);letter-spacing:.5px}
         .arena-splash .wm{font:400 16px/1 "Anton",sans-serif;color:#ffd23f;letter-spacing:1px;
           text-shadow:2px 2px 0 #0d0b14;transform:rotate(1deg)}

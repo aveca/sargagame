@@ -184,7 +184,7 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
               <div style={{...subTxt, margin:"6px 0 11px"}}>{_t(lang,"Une alerte le matin où ta plage tourne — jamais pour rien. En saison calme, on ne te ping pas.","One alert the morning your beach turns — never for nothing. In calm season we won't ping you.","Una alerta la mañana en que tu playa cambia — nunca por nada. En temporada calma no te molestamos.")}</div>
               {on ? (
                 <>
-                  <div style={{...subTxt, color:INK, marginBottom:10}}>{_t(lang,"Le Veilleur t'écrit chaque matin 🔔","Le Veilleur writes you each morning 🔔","El Vigía te escribe cada mañana 🔔")}</div>
+                  <div style={{...subTxt, color:INK, marginBottom:10}}>{_t(lang,"Le Veilleur t'écrit chaque matin","Le Veilleur writes you each morning","El Vigía te escribe cada mañana")}</div>
                   <button onClick={doToggle} style={ghostBtn}>{_t(lang,"Désactiver les alertes","Turn off alerts","Desactivar alertas")}</button>
                 </>
               ) : perm==="denied" ? (

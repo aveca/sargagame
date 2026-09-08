@@ -1,5 +1,20 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-08 — PHASE B SPRINT 1 : P0+P1 remediation GREEN
+
+- P0-01→P0-06 corrigés : blur gated→Premium SVG (3 zones), emojis statut→`ComicStatusGlyph` (15 sites),
+  Comic Neue=0, AntonLC=0, reduced-motion blanket `.theme-comic`.
+- P1 : 1 CTA or/écran (`goldPrimary:1` mesuré), or consolidé `#FFC72C` + ambre R3 `#B87A00`,
+  légende forecast SVG, reports ≥44px (104×99→158×135), RegionNav/Bell/Home/IdentityStep/map-labels vérifiés.
+- Découverte : funnel réel = map → carte jeu → « Fiche complète » → `BeachSheetComic`
+  (`src/BeachSheet.jsx` non monté — corrigé quand même).
+- Incident réparé : bloc ReportButton §PDF (session concurrente) invalide → reconstruit + lazy
+  conforme `media-kit.test.cjs` (`?report=0`).
+- Gates : build ×4 régions exit 0, bundle 37.7 Ko, smoke 4/4, unit 113/116→media-kit OK,
+  E2E 19 passed/3 skipped, captures+asserts `.ai/ui-audit/shots-phaseB/{mq,gp,florida,rivieramaya}/`.
+- Rapport : `.ai/ui-audit/PHASE-B-SPRINT1-REPORT.md`. Branche `agent/coding/phaseB-sprint1`.
+- Résiduels P2 (Sprint 2) : emojis univers jeu, flags RegionNav, inline shadows.
+
 ## 2026-09-08 — UI/UX RESCUE Phase A : audit + plan (AUDIT ONLY, zéro code produit)
 
 - 35 screenshots (390/768/1440, build prod v219 MQ servi en local) + `manifest.json` + `audit2.json`

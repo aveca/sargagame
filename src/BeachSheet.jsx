@@ -22,11 +22,11 @@ import { useScrollIntelligence, useContentVisibility, useDwellTracking, IntentEn
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
 function verdictMeta(status,lang){
   const M={
-    clean:{color:"#22C55E",emoji:"😎",verb:_t(lang,"Vas-y","Go","Adelante")},
-    moderate:{color:"#B87A00",emoji:"😐",verb:_t(lang,"Prudence","Careful","Cuidado")},
-    avoid:{color:"#E8522A",emoji:"🚫",verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
+    clean:{color:"#22C55E",icon:SVG_ICONS.clean,verb:_t(lang,"Vas-y","Go","Adelante")},
+    moderate:{color:"#B87A00",icon:SVG_ICONS.moderate,verb:_t(lang,"Prudence","Careful","Cuidado")},
+    avoid:{color:"#E8522A",icon:SVG_ICONS.avoid,verb:_t(lang,"Pas aujourd'hui","Not today","Hoy no")},
   }
-  return M[status]||{color:"#1c7fb0",emoji:"🛰️",verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
+  return M[status]||{color:"#1c7fb0",icon:SVG_ICONS.loading,verb:_t(lang,"Le veilleur scanne","Scanning","Escaneando")}
 }
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
 function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
@@ -42,7 +42,7 @@ function nearestCleanAlt(beach,allBeaches){
   for(const b of cand){const d=haversineKm(beach.lat,beach.lng,b.lat,b.lng);if(d<bd){bd=d;best=b}}
   return best
 }
-function forecastColor(status){return status==="clean"?"#22C55E":status==="moderate"?"#F59E0B":status==="avoid"?"#E8522A":"#5A5A5A"}
+function forecastColor(status){return status==="clean"?"#22C55E":status==="moderate"?"#B87A00":status==="avoid"?"#E8522A":"#5A5A5A"}
 function forecastLabel(status,lang){return status==="clean"?_t(lang,"Calme","Calm","Calma"):status==="moderate"?_t(lang,"Surveiller","Watch","Vigilar"):status==="avoid"?_t(lang,"Éviter","Avoid","Evitar"):"-"}
 
 /* ── Golden-hour tokens (subset of SCENE_TOKENS) ── */
@@ -177,6 +177,15 @@ function AnimatedScore({target,duration=1500,size=64}){
   )
 }
 
+/* ── SVG Icons (design system: color + form + word, no OS emojis) ── */
+const SVG_ICONS = {
+  clean: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>,
+  moderate: <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" strokeWidth="2.6"/><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor"/></svg>,
+  avoid: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>,
+  lock: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a4 4 0 0 1 8 0v4"/></svg>,
+  loading: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden="true"><circle cx="12" cy="12" r="10"/></svg>
+}
+
 /* ── Forecast bar ── */
 function ForecastBar({day,status,index,lang="fr",gated=false,onUnlock}){
   const [ref,revealed]=useReveal()
@@ -185,19 +194,21 @@ function ForecastBar({day,status,index,lang="fr",gated=false,onUnlock}){
   return(
     <div ref={ref} style={{display:"flex",alignItems:"center",gap:10,width:"100%",position:"relative"}}>
       <span style={{font:"700 11px/1 'Bricolage Grotesque'",color:COMIC.sub,minWidth:28,textAlign:"right"}}>{day||"·"}</span>
-      <div style={{flex:1,height:28,borderRadius:8,background:COMIC.ink+"0d",border:`2px solid ${COMIC.ink}`,overflow:"hidden",position:"relative",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
+      <div style={{flex:1,height:28,borderRadius:8,background:COMIC.ink+"0d",border:`2px solid ${COMIC.ink}`,overflow:"hidden",position:"relative"}}>
         <div style={{height:"100%",borderRadius:6,background:col,width:revealed?pct+"%":"0%",transition:"width 1s cubic-bezier(.22,1,.36,1) "+(index*.12)+"s"}}/>
         {gated&&(
           <div onClick={onUnlock} style={{
             position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
-            background:"rgba(13,17,23,0.7)",cursor:"pointer",zIndex:2,
+            background:"rgba(13,17,23,0.85)",cursor:"pointer",zIndex:2,
             borderRadius:6
           }}>
             <span style={{
+              display:"inline-flex",alignItems:"center",gap:6,
               font:"700 10px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",
-              letterSpacing:".5px",background:"rgba(13,17,23,0.9)",padding:"2px 8px",borderRadius:4
+              letterSpacing:".5px",background:"rgba(13,17,23,0.95)",padding:"3px 10px",borderRadius:4,
+              border:`2px solid #FFC72C`
             }}>
-              🔒 {_t(lang,"Plan Alert €29/mo","Plan Alert €29/mo","Plan Alerta €29/mes")}
+              {SVG_ICONS.lock} {_t(lang,"Plan Alert €29/mo","Plan Alert €29/mo","Plan Alerta €29/mes")}
             </span>
           </div>
         )}
@@ -274,14 +285,20 @@ export default function BeachSheet({
         @keyframes bsRow{0%{transform:translateX(-14px);opacity:0}100%{transform:translateX(0);opacity:1}}
         @keyframes bsGlow{0%,100%{opacity:.5}50%{opacity:1}}
         @keyframes bsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
-        .bs-card{background:${COMIC.cream};border:3px solid ${COMIC.ink};border-radius:16px;box-shadow:3px 3px 0 ${COMIC.ink}}
+        .bs-card{background:${COMIC.cream};border:2.5px solid ${COMIC.ink};border-radius:16px;box-shadow:4px 4px 0 ${COMIC.ink}}
         .bs-chip{font:800 12px/1 'Bricolage Grotesque',sans-serif;color:${COMIC.ink};background:#fff;border:2.5px solid ${COMIC.ink};border-radius:999px;padding:7px 11px;display:inline-flex;align-items:center;gap:6px}
-        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:3px solid ${COMIC.ink};box-shadow:3px 3px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
-        .bs-gobtn:active{transform:translate(3px,3px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bs-gobtn{width:100%;text-align:center;font:800 17px/1 'Bricolage Grotesque',sans-serif;padding:16px;border-radius:16px;border:2.5px solid ${COMIC.ink};box-shadow:6px 6px 0 ${COMIC.ink};background:${COMIC.gold};color:${COMIC.ink};cursor:pointer;transition:transform .08s ease}
+        .bs-gobtn:active{transform:translate(6px,6px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bs-secbtn{width:auto;text-align:center;font:800 15px/1 'Bricolage Grotesque',sans-serif;padding:13px 26px;border-radius:16px;border:2.5px solid ${COMIC.ink};box-shadow:4px 4px 0 ${COMIC.ink};background:#fff;color:${COMIC.ink};cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease}
+        .bs-secbtn:active{transform:translate(4px,4px);box-shadow:0 0 0 ${COMIC.ink}}
+        .bs-scrollcue{display:flex;justify-content:center;margin-top:26px;animation:bsCue 1.6s ease-in-out 2 both}
+        @keyframes bsCue{0%,100%{transform:translateY(0);opacity:.55}50%{transform:translateY(7px);opacity:1}}
         .bs-sheet button{-webkit-appearance:none;appearance:none;font-family:inherit}
         @media (prefers-reduced-motion:reduce){
           .bs-story-section{opacity:1!important;transform:none!important;transition:none!important}
           .bs-reveal-anim{animation:none!important}
+          .bs-scrollcue{animation:none!important;opacity:.7}
+          .bs-sheet{scroll-behavior:auto!important}
         }
       `}</style>
 
@@ -337,6 +354,9 @@ export default function BeachSheet({
               <div style={{font:"600 13px/1.5 'Bricolage Grotesque'",color:COMIC.sub,marginTop:12,maxWidth:280,margin:"12px auto 0"}}>
                 {beach.scoreReason||_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")}
               </div>
+              <div className="bs-scrollcue" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+              </div>
             </div>
           </StorySection>
 
@@ -386,12 +406,24 @@ export default function BeachSheet({
                   </div>}
               {!isPremium&&fcDays.length>0&&(
                 <div style={{textAlign:"center",marginTop:16}}>
-                  <button onClick={onCTA} className="bs-gobtn" style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,padding:"12px 24px",width:"auto",fontSize:15}}>
+                  <button onClick={onCTA} style={{
+                    display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,
+                    padding:"12px 24px",fontSize:15,minHeight:48,borderRadius:12,
+                    border:"2.5px solid #0D0D0D",background:"#fff",
+                    color:"#0D0D0D",font:"700 15px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
+                    boxShadow:"4px 4px 0 #0D0D0D",cursor:"pointer"
+                  }}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
                     {_t(lang,"Débloquer les 7 jours","Unlock 7 days","Desbloquear 7 días")}
                   </button>
                 </div>
               )}
+              {/* Légende forecast : couleur + forme-SVG + mot (jamais couleur seule) */}
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginTop:14,flexWrap:"wrap"}} aria-label={_t(lang,"Légende prévision","Forecast legend","Leyenda pronóstico")}>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,font:"700 10.5px/1 'Bricolage Grotesque'",color:COMIC.sub}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#22C55E" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 13l4 4L19 7"/></svg>{_t(lang,"Calme","Calm","Calma")}</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,font:"700 10.5px/1 'Bricolage Grotesque'",color:COMIC.sub}}><svg width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="#B87A00" strokeWidth="2.6"/><path d="M12 3a9 9 0 0 0 0 18z" fill="#B87A00"/></svg>{_t(lang,"Surveiller","Watch","Vigilar")}</span>
+                <span style={{display:"inline-flex",alignItems:"center",gap:5,font:"700 10.5px/1 'Bricolage Grotesque'",color:COMIC.sub}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#E8522A" strokeWidth="3.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>{_t(lang,"Éviter","Avoid","Evitar")}</span>
+              </div>
             </div>
           </StorySection>
 
@@ -406,7 +438,7 @@ export default function BeachSheet({
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {planB.slice(0,3).map((b,i)=>(
                     <button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-                      style={{display:"flex",alignItems:"center",gap:12,padding:"12px 14px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%"}}>
+                      style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`4px 4px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",font:"800 14px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:COMIC.ink}}>
                       <div style={{width:48,height:48,borderRadius:10,background:`linear-gradient(135deg,#155A5A,#1A5852)`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12c2-2 4-3 6-3s4 1 6 3c2 2 4 3 6 3"/><path d="M2 17c2-1.5 4-2 6-2s4 .5 6 2c2 1.5 4 2 6 2"/><path d="M2 7c2 1 4 1.5 6 1.5S12 7 14 6c2-1 4-1 6 0"/></svg>
                       </div>
@@ -436,7 +468,15 @@ export default function BeachSheet({
               <div style={{font:"600 14px/1.5 'Bricolage Grotesque'",color:COMIC.sub,margin:"12px 0 20px",maxWidth:320,marginLeft:"auto",marginRight:"auto"}}>
                 {_t(lang,"Sois prévenu·e des changements. Alerte personnelle, prévisions complètes, photos terrain.","Get warned when it changes. Personal alerts, full forecasts, on-the-ground photos.","Recibe avisos cuando cambie. Alertas personales, pronósticos completos, fotos reales.")}
               </div>
-              <button className="bs-gobtn" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,width:"auto",padding:"14px 32px",fontSize:16}}>
+              <button className="bs-secbtn" onClick={onCTA} style={{
+              display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,
+              padding:"14px 32px",fontSize:16,minHeight:52,borderRadius:18,
+              border:"2.5px solid #0D0D0D",
+              background:"linear-gradient(180deg,#FFE47A,#FFC72C 55%,#E8A800)",
+              color:"#0D0D0D",font:"700 16px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
+              boxShadow:"6px 6px 0 #0D0D0D",cursor:"pointer",letterSpacing:".5px",
+              textShadow:"1px 1px 0 rgba(255,255,255,.45)"
+            }}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>
                 {ctaLabel} →
               </button>
@@ -491,7 +531,7 @@ export default function BeachSheet({
           {/* Data age warning — shown when satellite data is 12-24h old */}
           {satAge!=null&&satAge>=12&&(
             <div style={{display:"flex",alignItems:"flex-start",gap:8,padding:"10px 12px",marginBottom:12,borderRadius:10,background:"#FFF3E0",border:"1.5px solid #FFB74D",font:"600 11.5px/1.4 'Bricolage Grotesque'",color:"#E65100"}}>
-              <span style={{fontSize:15,flexShrink:0}}>⏳</span>
+              <span style={{flexShrink:0,display:"inline-flex"}} aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></span>
               <span>{_t(lang,
                 `Données datées de ${Math.round(satAge)} h — conditions côtières changent vite. Consulte les webcams pour une vue live.`,
                 `Data ${Math.round(satAge)}h old — nearshore conditions shift fast. Check webcams for a live view.`,
@@ -512,16 +552,19 @@ export default function BeachSheet({
               </div>
               <div style={{display:"flex",gap:5}}>
                 {fcDays.map((d,i)=>{const gated=!isPremium&&i>=2;return(
-                  <div key={i} style={{flex:1,textAlign:"center",position:"relative",filter:gated?"blur(3px)":"none",opacity:gated?.65:1}}>
+                  <div key={i} style={{flex:1,textAlign:"center",position:"relative"}}>
                     <div style={{height:34,borderRadius:7,border:`2.5px solid ${COMIC.ink}`,background:comicStatusColor(d.status),animation:"bsPop .5s cubic-bezier(.16,1,.3,1) both",animationDelay:(.15+i*.05)+"s"}}/>
                     {gated&&(
-                      <div onClick={()=>{trk("sg_paywall_forecast_click",{beach_id:beach?.id,day:i});onCTA()}} style={{
-                        position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",
-                        background:"rgba(13,17,23,0.7)",cursor:"pointer",zIndex:2,borderRadius:7,
-                        font:"700 8px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",letterSpacing:".3px"
+                      <button type="button" onClick={()=>{trk("sg_paywall_forecast_click",{beach_id:beach?.id,day:i});onCTA()}} aria-label={_t(lang,"Débloquer les prévisions Premium","Unlock Premium forecast","Desbloquear pronóstico Premium")} style={{
+                        position:"absolute",inset:"0 0 18px 0",display:"flex",alignItems:"center",justifyContent:"center",
+                        background:"rgba(13,17,23,0.55)",cursor:"pointer",zIndex:2,borderRadius:7,
+                        border:"none",padding:0
                       }}>
-                        🔒 {_t(lang,"€29/mo","€29/mo","€29/mes")}
-                      </div>
+                        <span style={{display:"inline-flex",alignItems:"center",gap:4,font:"800 8px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",letterSpacing:".3px",background:"rgba(13,17,23,0.9)",padding:"4px 7px",borderRadius:5,border:"1.5px solid #FFC72C"}}>
+                          <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                          {_t(lang,"Premium","Premium","Premium")}
+                        </span>
+                      </button>
                     )}
                     <span style={{display:"block",font:"800 9px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,position:"relative",zIndex:1}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
                   </div>)}).slice(0,7)}
@@ -538,7 +581,7 @@ export default function BeachSheet({
               </div>
               <div style={{display:"flex",flexDirection:"column",gap:7}}>
                 {planB.slice(0,3).map((b,i)=><button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-                  style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",width:"100%"}}>
+                  style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"13px 16px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`4px 4px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",color:COMIC.ink,textAlign:"left",width:"100%"}}>
                   <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
                   <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span>
                 </button>)}
@@ -555,7 +598,9 @@ export default function BeachSheet({
               boxShadow:`0 2px 8px ${hasScore&&beach.score<50?"rgba(255,183,77,0.2)":"rgba(129,199,132,0.2)"}`
             }}>
               <div style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-                <span style={{fontSize:18,flexShrink:0}}>{hasScore&&beach.score<50?"⚠️":"✅"}</span>
+                <span style={{fontSize:18,flexShrink:0,display:"inline-flex"}} aria-hidden="true">{hasScore&&beach.score<50
+                  ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E65100" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 2.5 20h19z"/><path d="M12 9v5M12 17.5v.01"/></svg>
+                  : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B5E20" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M5 13l4 4L19 7"/></svg>}</span>
                 <div style={{flex:1,minWidth:200}}>
                   <div style={{font:"800 13px/1.3 'Bricolage Grotesque'",color:hasScore&&beach.score<50?"#E65100":"#1B5E20"}}>
                     {hasScore&&beach.score<50
@@ -577,9 +622,17 @@ export default function BeachSheet({
           {/* Track B2B CTA shown */}
           {!isPremium&&useEffect(()=>{trk("sg_beach_cta_b2b_shown",{beach_id:beach?.id,score:beach?.score||null,status})},[beach?.id,beach?.score,status,isPremium])}
 
-          {/* CTA collant */}
+          {/* CTA collant — PRIMARY: gold pop-3 per design system */}
           <div style={{position:"sticky",bottom:0,paddingTop:8,paddingBottom:"env(safe-area-inset-bottom,0px)",background:`linear-gradient(to top, ${COMIC.cream} 72%, transparent)`}}>
-            <button className="bs-gobtn" onClick={onCTA} style={{display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8}}>
+            <button className="bs-gobtn" onClick={onCTA} style={{
+              display:"inline-flex",alignItems:"center",justifyContent:"center",gap:8,
+              minHeight:52,padding:"13px 24px",borderRadius:18,
+              border:"2.5px solid #0D0D0D",
+              background:"linear-gradient(180deg,#FFE47A,#FFC72C 55%,#E8A800)",
+              color:"#0D0D0D",font:"700 16px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
+              boxShadow:"6px 6px 0 #0D0D0D",cursor:"pointer",textDecoration:"none",
+              letterSpacing:".5px",textShadow:"1px 1px 0 rgba(255,255,255,.45)"
+            }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style={{flexShrink:0}}><path d="M12 2.6l2.6 6.1 6.6.6-5 4.3 1.5 6.5L12 17l-5.7 3.4 1.5-6.5-5-4.3 6.6-.6z"/></svg>
               {ctaLabel} →
             </button>

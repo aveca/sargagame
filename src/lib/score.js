@@ -139,7 +139,7 @@ export function labelFor(score, afai) {
     return { label: 'BON', color: '#6AC15A' } // propre mais venteux/couvert = vert, jamais orange
   }
   if (st === 'moderate') {
-    return score >= 52 ? { label: 'MOYEN', color: '#E8A800' } : { label: 'PASSABLE', color: '#E87B1E' }
+    return score >= 52 ? { label: 'MOYEN', color: '#B87A00' } : { label: 'PASSABLE', color: '#E87B1E' }
   }
   if (st === 'avoid') {
     return score >= 30 ? { label: 'ÉVITER', color: '#E8512A' } : { label: 'NON', color: '#C93A1E' }
@@ -148,7 +148,7 @@ export function labelFor(score, afai) {
   if (score >= 90) return { label: 'EXCEPTIONNEL', color: '#00B086' }
   if (score >= 80) return { label: 'SUPER', color: '#1EC8B0' }
   if (score >= 70) return { label: 'BON', color: '#6AC15A' }
-  if (score >= 55) return { label: 'MOYEN', color: '#E8A800' }
+  if (score >= 55) return { label: 'MOYEN', color: '#B87A00' }
   if (score >= 40) return { label: 'PASSABLE', color: '#E87B1E' }
   if (score >= 25) return { label: 'ÉVITER', color: '#E8512A' }
   return { label: 'NON', color: '#C93A1E' }

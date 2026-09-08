@@ -20,7 +20,7 @@ const STATUS_C = { clean: "#22C55E", moderate: "#B87A00", avoid: "#E8522A" }
 const INK = "#0d0b14"
 // Monde GTA : chrome en verre sombre (glass) + boutons primaires or (cohérence hero).
 const GLASS = { background:"rgba(20,11,32,.46)", border:"1px solid rgba(255,255,255,.22)", boxShadow:"0 8px 26px rgba(0,0,0,.42)", backdropFilter:"blur(11px)", WebkitBackdropFilter:"blur(11px)" }
-const GOLD  = { background:"linear-gradient(180deg,#ffe07a,#ffb338)", border:"1px solid rgba(0,0,0,.18)", boxShadow:"0 8px 22px rgba(255,150,60,.45)" }
+const GOLD  = { background:"linear-gradient(180deg,#FFE47A,#FFC72C)", border:"1px solid rgba(0,0,0,.18)", boxShadow:"0 8px 22px rgba(255,150,60,.45)" }
 const STATUS_LBL = {
   clean:    ["Propre","Clean","Limpia"],
   moderate: ["Modéré","Moderate","Moderado"],
@@ -146,8 +146,8 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
     badge=_e("g",{opacity:"0"})
     // taille FIXE (pas ×S) : c'est un LABEL, il doit rester lisible même à la vue régionale où le
     // splat est petit. Léger fond-ombre encre derrière (2e text décalé) pour décoller du fond.
-    const sh=_e("text",{x:0,y:2,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"26",fill:INK,opacity:".35"}); sh.textContent=label; badge.appendChild(sh)
-    const txt=_e("text",{x:0,y:0,"text-anchor":"middle","font-family":"'AntonLC','Anton',sans-serif","font-weight":"400","font-size":"26",fill:col,stroke:INK,"stroke-width":"3.5","paint-order":"stroke","stroke-linejoin":"round"})
+    const sh=_e("text",{x:0,y:2,"text-anchor":"middle","font-family":"'Anton',sans-serif","font-weight":"400","font-size":"26",fill:INK,opacity:".35"}); sh.textContent=label; badge.appendChild(sh)
+    const txt=_e("text",{x:0,y:0,"text-anchor":"middle","font-family":"'Anton',sans-serif","font-weight":"400","font-size":"26",fill:col,stroke:INK,"stroke-width":"3.5","paint-order":"stroke","stroke-linejoin":"round"})
     txt.textContent=label
     // Fond semi-transparent pour éviter le chevauchement et garantir la lisibilité
     const bg=_e("rect",{x:-22,y:-14,width:44,height:28,rx:6,ry:6,fill:"rgba(13,11,20,0.65)",stroke:INK,"stroke-width":"0.5",opacity:0.9})
@@ -389,7 +389,7 @@ export default function WorldMapView({
   const tapFxIdRef = useRef(0)
   const [trackRec, setTrackRec] = useState(null)  // track-record.json for per-beach accuracy
 
-  // Map interaction hint — "👉 Tape une plage pour voir son état"
+  // Map interaction hint — "Tape une plage pour voir son état" (texte seul, sans emoji OS)
   // Shows once per session (sessionStorage), auto-dismiss after 3s or on first pin tap.
   const [mapHintPhase, setMapHintPhase] = useState(()=>{
     try{ return sessionStorage.getItem("sg_map_hint_seen") ? null : "show" }catch{ return "show" }
@@ -1722,7 +1722,7 @@ export default function WorldMapView({
                   {isSel&&b.score!=null
                     ? <text x="0" y="-11.4" textAnchor="middle"
                         fontSize="8.5" fontWeight="800" fill={INK}
-                        fontFamily="'AntonLC','Anton',sans-serif">{Math.round(b.score)}</text>
+                        fontFamily="'Anton',sans-serif">{Math.round(b.score)}</text>
                     : <circle cx="0" cy="-14.4" r="3" fill="#fff" stroke={INK} strokeWidth=".7"/>}
                 </g>
                 {/* Per-beach accuracy badge — trust signal on selected pin */}
@@ -1953,8 +1953,8 @@ export default function WorldMapView({
           left:0,right:0,maxWidth:560,margin:"0 auto",padding:"0 18px",pointerEvents:"none",
         }}>
           {(mapTitleOff||!selected)&&(<>
-          <h2 style={{
-            fontFamily:"'AntonLC','Anton',sans-serif",
+<h2 style={{
+            fontFamily:"'Anton',sans-serif",
             fontWeight:400,letterSpacing:"-.01em",textTransform:"uppercase",
             fontSize:"clamp(24px,6.4vw,32px)",lineHeight:.96,color:"#fff",
             textShadow:`2px 2px 0 ${INK},0 3px 14px rgba(0,0,0,.45)`,margin:0,
@@ -1974,7 +1974,7 @@ export default function WorldMapView({
               }}/>
             </div>
             <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
+              <b style={{fontFamily:"'Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
             </span>
           </div>
           </>)}
@@ -2248,7 +2248,11 @@ export default function WorldMapView({
               : weekDigest.flips>0
                 ? _t(lang,`Cette semaine : ${weekDigest.flips} à surveiller · bascule ${ti(lang,DAY_LBL[weekDigest.flipDay])}`,`This week: ${weekDigest.flips} to watch · flips ${ti(lang,DAY_LBL[weekDigest.flipDay])}`,`Esta semana: ${weekDigest.flips} a vigilar · cambia ${ti(lang,DAY_LBL[weekDigest.flipDay])}`)
                 : _t(lang,`Cette semaine : ${weekDigest.bestN} plages propres · meilleur ${ti(lang,DAY_LBL[weekDigest.bestDay])}`,`This week: ${weekDigest.bestN} clean · best ${ti(lang,DAY_LBL[weekDigest.bestDay])}`,`Esta semana: ${weekDigest.bestN} limpias · mejor ${ti(lang,DAY_LBL[weekDigest.bestDay])}`)
-            const emoji = weekDigest.calm ? "🌴" : weekDigest.flips>0 ? "👁" : "📅"
+            const icon = weekDigest.calm
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
+              : weekDigest.flips>0
+                ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h0"/></svg>
+                : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
             return (
             <div ref={digestBtnRef}
               role={weekhubOff?undefined:"button"} tabIndex={weekhubOff?undefined:0}
@@ -2264,7 +2268,7 @@ export default function WorldMapView({
               borderRadius:999,padding:"7px 13px",
               fontWeight:800,fontSize:11.5,lineHeight:1,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",
             }}>
-              <span aria-hidden="true">{emoji}</span>
+              <span aria-hidden="true">{icon}</span>
               <span>{lbl}</span>
               {!weekhubOff&&<span aria-hidden="true" style={{fontWeight:800,color:"#0a7d33"}}>↗</span>}
             </div>
@@ -2386,7 +2390,7 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 11px",
             pointerEvents:"none",whiteSpace:"nowrap",
           }}>
-            <div style={{font:"400 14px/1.1 'AntonLC','Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
+            <div style={{font:"400 14px/1.1 'Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
             <div style={{font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
               textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5,color:INK}}>
               <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]]||"#9aa0a8",border:`1.5px solid ${INK}`}}/>
@@ -2493,7 +2497,7 @@ export default function WorldMapView({
             whiteSpace:"nowrap",
             animation:mapHintPhase==="hiding"?"wmHintOut .3s ease-in both":"wmHintIn .3s ease-out both",
           }}>
-            👉 Tape une plage pour voir son état
+            {_t(lang,"Tape une plage pour voir son état","Tap a beach to see its status","Toca una playa para ver su estado")}
           </div>
         )}
 

@@ -25,7 +25,7 @@ export default function DiveTransition({ beach, lang = "fr", onDone }) {
 
   const name = (beach && beach.name) || ""
   const st = (beach && beach.status) || "clean"
-  const stCol = st === "clean" ? "#22C55E" : st === "moderate" ? "#E8A800" : "#E8522A"
+  const stCol = st === "clean" ? "#22C55E" : st === "moderate" ? "#B87A00" : "#E8522A"
   const lbl = st === "clean"
     ? _t(lang, "propre aujourd'hui", "clean today", "limpia hoy")
     : st === "moderate" ? _t(lang, "modéré", "moderate", "moderada") : _t(lang, "à éviter", "avoid", "evitar")
