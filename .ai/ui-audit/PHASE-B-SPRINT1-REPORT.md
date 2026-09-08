@@ -132,4 +132,4 @@ Chaque fix est visuel et indépendant : `git revert <sha>` par fichier, ou flags
 
 ---
 
-**Commit SHA** : `2d2d7cc97` (branche `agent/coding/phaseB-sprint1`, 22 fichiers, +1026/−1236).
+**Commit SHA** : `154310717` (branche `agent/coding/phaseB-sprint1`, 22 fichiers, +1026/−1236).
