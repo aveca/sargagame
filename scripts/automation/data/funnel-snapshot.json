@@ -1,13 +1,13 @@
 {
   "window_days": 7,
-  "since": "2026-09-01T16:31:48.959Z",
-  "total_rows": 15318,
+  "since": "2026-09-01T21:04:03.002Z",
+  "total_rows": 15460,
   "counts": {
-    "session_start": 1123,
-    "forecast_lock_click": 39,
-    "premium_modal_open": 157,
-    "premium_modal_close": 20,
-    "beach_open": 1061,
+    "session_start": 1101,
+    "forecast_lock_click": 38,
+    "premium_modal_open": 164,
+    "premium_modal_close": 21,
+    "beach_open": 1072,
     "pass_cta": 2,
     "conversion": 0,
     "email_submit": 0,
@@ -29,50 +29,50 @@
   "onsite_opened": 2,
   "rates": {
     "session_to_lock": 3.5,
-    "lock_to_beach": 2720.5,
-    "beach_to_modal": 14.8,
-    "modal_to_cta": 1.3,
+    "lock_to_beach": 2821.1,
+    "beach_to_modal": 15.3,
+    "modal_to_cta": 1.2,
     "cta_to_onsite": 100,
     "onsite_to_mollie": 0,
     "cta_to_mollie": 0,
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "MQ": {
-      "session_start": 241,
-      "premium_modal_open": 33,
-      "beach_open": 246,
-      "forecast_lock_click": 7,
-      "pass_cta": 2,
-      "onsite_checkout_opened": 2,
-      "b2b_offer_view": 1,
-      "premium_modal_close": 1
-    },
-    "PUNTACANA": {
-      "session_start": 245,
-      "beach_open": 176,
-      "premium_modal_open": 45,
-      "forecast_lock_click": 11,
-      "b2b_offer_view": 4,
-      "premium_modal_close": 6
-    },
     "GP": {
-      "beach_open": 229,
-      "session_start": 265,
-      "premium_modal_open": 26,
+      "session_start": 253,
+      "beach_open": 222,
+      "premium_modal_open": 24,
       "forecast_lock_click": 4,
       "premium_modal_close": 2
     },
+    "MQ": {
+      "session_start": 225,
+      "beach_open": 250,
+      "premium_modal_open": 32,
+      "pass_cta": 2,
+      "onsite_checkout_opened": 2,
+      "b2b_offer_view": 1,
+      "forecast_lock_click": 4,
+      "premium_modal_close": 1
+    },
     "FLORIDA": {
-      "session_start": 356,
-      "beach_open": 399,
-      "premium_modal_open": 47,
-      "forecast_lock_click": 17,
+      "session_start": 359,
+      "beach_open": 401,
+      "premium_modal_open": 51,
+      "forecast_lock_click": 18,
       "premium_modal_close": 11
     },
+    "PUNTACANA": {
+      "session_start": 247,
+      "beach_open": 186,
+      "premium_modal_open": 51,
+      "forecast_lock_click": 12,
+      "b2b_offer_view": 4,
+      "premium_modal_close": 7
+    },
     "RIVIERAMAYA": {
-      "session_start": 16,
-      "beach_open": 11,
+      "session_start": 17,
+      "beach_open": 13,
       "premium_modal_open": 6
     }
   }
