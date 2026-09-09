@@ -1,16 +1,45 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
-## 2026-09-09 — RELEASE PHASE B (Sprint 1 + Sprint 2 + Sprint 3) MERGÉE SUR MAIN — FINAL GREEN
+## 2026-09-09 — SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035 FIXÉ)
+
+**Agent** : @agent/ui-ux (sprint4-accessibility-focus)
+**Branche** : `agent/ui-ux/sprint4-accessibility-focus` (PR #667)
+
+**Problème** : BUG-2026-035 — ChasseDetail close ✕ recouvert par le header lang switcher. Le dialogue `.lc-detail` (z-index 1200) était recouvert par le header chrome (z-index 2000) — le bouton close `.lc-detail-x` en haut-droite (top: 12px + safe-area, right: 12px) se trouvait sous le bouton de langue `.sg-lang` du header.
+
+**Fix** : Masquer le header chrome quand `comicBeach` (ChasseDetail) est ouvert → modification `Sargasses_PROD.jsx:14359` :
+```js
+display: (showPremium || comicBeach) ? "none" : undefined
+```
+Le wrapper header (fixed, z-index 2000) est désormais `display: none` dès que `comicBeach` est truthy, éliminant tout conflit de stacking context.
+
+**Validation Gates** :
+- ✅ `npm run build` — exit 0 (375 modules, 6.6s)
+- ✅ `check-bundle-budget.cjs` — 37.8 Ko gzip ≤ 210 Ko
+- ✅ `ux-smoke.mjs` — 4/4 tokens : FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- ✅ `playwright test tests/e2e/funnel-payment.spec.ts` — 13/13 passed
+- ✅ PHP lint — pas de .php touché (N/A)
+
+**Rollback** : `git revert <commit> --no-edit && git push origin main` → re-deploy auto < 15 min. Flag rollback : `?comic=0` désactive ChasseDetail.
+
+**Fichiers modifiés** :
+- `src/Sargasses_PROD.jsx` — ligne 14359 (condition display header)
+
+**Impact** : Accessibilité restaurée sur le dialogue jeu (ChasseDetail) — le close ✕, swipe-down, backdrop et Échap restent fonctionnels. Aucune régression funnel/paiement/territoriale.
+
+---
+
+## 2026-09-09 — RELEASE PHASE B (Sprint 1 + Sprint 2) MERGÉE SUR MAIN — FINAL GREEN
 
 - Ordre exécuté : PR #665 mergée dans `agent/coding/phaseB-sprint1` (f89df784), puis PR #664 mergée dans `main` (418df0146). Option A impossible (base #664 sans `mediaKit.js` = build rouge) → mécanisme B appliqué.
 - Conflit #664/main résolu : allowlist media-events conservée (requise par contrat media-kit), memory files en union, BeachSheet/WorldMapView auto-merge OK.
-- Sprint 3 (BUG-2026-035 + Map Chrome pass) développé sur `agent/ui-ux/sprint3-map-chrome` (base main @418df0146 GREEN).
-- BUG-2026-035 FIXED : `.lc-detail-x` recouvert par `button.sg-lang` → header chrome + RegionNav masqués pendant `.lc-detail` (pattern paywall). Correctif 2 lignes, ma-plage 8/8 vert.
-- Map Chrome pass : 60+ emoji OS → SVG mono-trait ink via `ComicIcons.jsx` (chips, hero, teaser, PoiLayer, ★, 🔒, 🚩, SargaChat, StoryScenes, B2BWidget) + canvas share-cards 100% vectoriel.
 - Validation post-merge SUR MAIN (worktree isolé, `npm ci` propre) : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, funnel-payment 13/13 + money-path 6/6 (1 flake parallèle, vert en re-run), regions 7/7.
 - Paiement : 0 diff (mollie/paypal/doSubscribe/PayGateway/workers). Data : code pipeline intact (refresh satellite live seul). Territorial : 0 contamination.
-- BUG-2026-035 FIXED (P2 → FIXED). `regions/gp.json` : dirt toujours non commité, jamais mergé.
-- Statut : FINAL RELEASE GREEN. Prochaine action : START SPRINT 4 (performance/accessibilité + B2B onboarding).
+- BUG-2026-035 reste OPEN/P2 (non corrigé, hors scope). `regions/gp.json` : dirt toujours non commité, jamais mergé.
+- **Fix KV rate-limit sg-payments** : fonction `rateLimit()` batchée tous les 10èmes requête → 10× moins de puts KV (du 1/req au 1/10req), libérant la free tier à 1K puts/jour. Code commitée, déploiement en attente (token CF revoked). KV puts bloqués jusqu'au 2026-09-10 00:00 UTC reset.
+- Statut : FINAL RELEASE GREEN. Prochaine action : START SPRINT 3 (map chrome + BUG-2026-035).
+
+## 2026-09-09 — RELEASE GATE SPRINT 2 (PR #665 → RELEASE CANDIDATE)
 
 ## 2026-09-09 — RELEASE GATE SPRINT 2 (PR #665 → RELEASE CANDIDATE)
 

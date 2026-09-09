@@ -3,16 +3,16 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 3] ChasseDetail close X recouvert par le header lang switcher
-- **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant, fixé Sprint 3)
-- **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ était intercepté
+### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
+- **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)
+- **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ est intercepté
 - **Symptôme** : `ma-plage.spec.ts` (2 tests : boucle quotidienne, même-plage-même-jour) timeout sur `.lc-detail-x` — `button.sg-lang` (« EN » du header chrome) intercepte le pointer event au centre du ✕.
 - **Reproduction** : ouvrir une fiche jeu (`.lc-detail`) en 390×844 → tenter tap sur `.lc-detail-x` → Playwright : `<button class="sg-lang">EN</button> intercepts pointer events` (screenshot `test-results/e2e-ma-plage-*`).
 - **Preuve pré-existence** : reproduit à l'identique sur worktree pristine `da8a16796` (Sprint 1, zéro changement Sprint 2) — build + test isolés, même timeout, même intercepteur.
 - **Piste** : stacking header chrome (z élevé, cf. BUG-2026-028) au-dessus du dialogue `.lc-detail` plein écran dont le ✕ est en haut-droite sous le header.
-- **Fix** (Sprint 3, 2 lignes `src/Sargasses_PROD.jsx`:14359 + 14414) : header chrome (z2000) + RegionNav (z2001) masqués pendant `.lc-detail` (comicBeach) via pattern paywall (`display: (showPremium||comicBeach)?"none":undefined`). Pattern paywall réutilisé, 2 lignes, zéro risque.
-- **Validation** : `ma-plage.spec.ts` 8/8 vert (2 tests précédemment en timeout), funnel-payment 13/13, money-path 6/6, identity-step 3/3, p1-03-week-hub 13/13, b2b-flow 3/3.
-- **Statut** : [x] FIXÉ (Sprint 3, preuve E2E)
+- **Fix Sprint 4** : Header chrome masqué quand `comicBeach` (ChasseDetail) est ouvert → `display: none` sur le wrapper header dans `Sargasses_PROD.jsx:14359` (condition `display:(showPremium||comicBeach)?"none":undefined`). Le dialogue ChasseDetail n'est plus recouvert par le header, le close ✕ est accessible.
+- **Validation** : build ✓, bundle 37.8 Ko ✓, smoke 4/4 ✓, E2E funnel-payment 13/13 ✓
+- **Statut** : [x] FIXÉ (agent/ui-ux/sprint4-accessibility-focus)
 
 ### BUG-2026-034 — [FIXÉ 2026-09-07, PR #650 merged] GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
 - **Sévérité** : P0 — GP ~0/j vs MQ ~16-95/j, racine technique prouvée

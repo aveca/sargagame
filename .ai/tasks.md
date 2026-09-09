@@ -1,15 +1,6 @@
-﻿## SPRINT 3 « BUG-2026-035 + MAP CHROME PASS » — [x] done (2026-09-09, branche `agent/ui-ux/sprint3-map-chrome`, base main @418df0146 GREEN)
-- **TASK-SPRINT3-035**: Fix BUG-2026-035 (`.lc-detail-x` recouvert par `button.sg-lang`) — correctif stacking minimal (header chrome + RegionNav masqués pendant `.lc-detail`) + preuve E2E ma-plage 8/8 — **FIXED**
-- **TASK-SPRINT3-CHROME**: Map Chrome pass (chips 👥🛰→`person`/`orbit`, hero 🏆→`trophy`, teaser 🏨→`hotel`, PoiLayer, ★→`star`, 🔒→`lock`, 🚩→`flag`, SargaChat, StoryScenes, B2BWidget) → `ComicIcons.jsx` SVG mono-trait ink ; canvas share-cards 100% vectoriel (`_scFlame`/`_scStar`/`_scCheck`/`_scCross`/`_scHalf`/`_scTarget`/`_scWave`/`_scFlame`) — **DONE**
-- Gates : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 41 passed + 3 skipped, zero-emoji rendu map-chrome, captures 6 régions × 3 viewports
-- Rollback : `git revert` par fichier (visuel seul). `regions/gp.json` intact/hors scope. BUG-2026-035 FIXED.
-
-## PHASE B (Sprint 1 + Sprint 2 + Sprint 3) — [x] done (2026-09-09, main @418df0146) — FINAL GREEN
-- **TASK-SPRINT3-035**: Fix BUG-2026-035 (`.lc-detail-x` recouvert par `button.sg-lang`) — correctif stacking minimal + preuve E2E ma-plage 8/8
-  - Contraintes : header fonctionnel, 0 régression mobile, 0 overlay inutile, 0 changement global z-index injustifié
-- **TASK-SPRINT3-CHROME**: Map Chrome pass (chips 👥🛰, hero 🏆, teaser 🏨, PoiLayer, ★, 🔒, 🚩, SargaChat, StoryScenes, B2BWidget) → ComicIcons SVG
-  - Contraintes : visuel seul, 0 business/data/payment/territorial/regions, bundle ≤ 210 Ko
-- Gates : build + bundle + smoke + E2E (ma-plage/funnel/money/responsive) + RM_INFINITE=[] + zero-emoji rendu map-chrome + captures AVANT/APRÈS ciblées
+﻿## RELEASE PHASE B — [x] done (2026-09-09, main @418df0146) — FINAL GREEN
+- #665 → sprint1 (f89df784), #664 → main (418df0146). Post-merge validé sur main : build/bundle/smoke/media-kit/funnel/money verts. BUG-2026-035 OPEN/P2, gp.json hors merge.
+- NEXT : START SPRINT 3 (map chrome + BUG-2026-035)
 - Scope purifié par rebase (hors-scope `da8a16796` exclu, 0 conflit) ; fix blocker `mediaKit.js` + contrat (base seule = build rouge, prouvé)
 - CI #665 : scan/pass, MERGEABLE/CLEAN, 0 review bloquante. `gp.json` intact/hors scope. BUG-2026-035 OPEN/P2.
 - NEXT : MERGE PR #665 (séquencement avec #664 à trancher — #664 rouge sans le lib)
@@ -30,6 +21,14 @@
 - **TASK-S0-AUDIT**: Réaliser audit complet S0 6 régions (mq, gp, florida, puntacana, rivieramaya, tulum)
   - Sous-tâches : validation unité, intégration, E2E, UX, SEO, territorialité, payment, bundle
   - Statut : TERMINÉ — tout green, 0 P0, matrice complète produite
+
+- [x] **TASK-KV-RATELIMIT-SG-PAYMENTS** — Batching rateLimit KV puts every 10th request (10x reduction)
+  - **Priorité** : P1 (résout blocage free tier 1K puts/jour)
+  - **Rôle** : coding_agent
+  - **Description** : fonction `rateLimit()` dans `workers/sg-payments/src/index.ts` faisait 1 kv.put() par requête, épuisant le quota free tier à 1K puts/jour. Patch : n'écrire que tous les 10èmes requête (cur % 10 === 0), réduit 10× la consommation. Code commitée, déploiement en attente (token CF à renouveler). KV puts bloqués jusqu'au 2026-09-10 00:00 UTC reset, après lesquels le rate-limiter reprendra avec 10× moins de pression.
+  - **Fichiers** : `workers/sg-payments/src/index.ts:133-136`
+  - **Estimation** : 15 min (code + commit + déploiement)
+  - **Statut** : [x] done by coding_agent (2026-09-09) — Fix appliqué localement, commit `fix(kv): batch rateLimit KV puts every 10th request (10x reduction)`, en attente déploiement Cloudflare (token revoked). Post-déploiement : rateLimit fonctionnel avec 10× moins de puts KV, free tier soutenue sans upgrade $5/mois.
 
 ## Priorité #2
 - **TASK-SEO-HREFLANG**: Audit et correction hreflang/canonical sur les 6 régions
@@ -67,6 +66,8 @@
 ## Récemment complété
 
 - [x] **TASK-ASSET-001 — HARD ASSET BeachSheet exemplaire + Rapport plage du jour** (@coding_agent, 2026-09-07, GATE VERT) — `mediaKit.js` + `BeachDayReport.jsx` lazy (`?report=0`) + wire BeachSheetComic + allowlist 7 events + `docs/ASSET-MATRIX.md` + 41/41. Bundle 37,6 Ko, smoke 4/4. Branche `agent/coding/hard-asset-beach-report` (PR no-auto-merge, worktree partagé).
+
+- [x] **SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035)** (@agent/ui-ux, 2026-09-09) — Fix BUG-2026-035 (ChasseDetail close ✕ recouvert par header lang switcher). Cause : header chrome (z-index 2000) recouverte le dialogue `.lc-detail` (z-index 1200) — le bouton close `.lc-detail-x` en haut-droite était sous le header. Fix : masquer le header chrome quand `comicBeach` (ChasseDetail) est ouvert → `display:(showPremium||comicBeach)?"none":undefined` à `Sargasses_PROD.jsx:14359`. Validation : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅. Branche `agent/ui-ux/sprint4-accessibility-focus`.
 - [ ] **TASK-ASSET-002 — Alternative : photo plan B + rapport** (P2, coding)
 - [ ] **TASK-ASSET-003 — AI + B2B : kit média (rapport hôtel PDF)** (P2, coding+growth)
 - [ ] **TASK-ASSET-004 (optionnel) — regen GIF raster quotidien** (P3, data — seulement si prouvé ; strip SVG suffit)

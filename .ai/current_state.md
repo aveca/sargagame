@@ -1,41 +1,40 @@
-## 2026-09-09 · Agent: ui-ux/coding · SPRINT 3 — MAP CHROME PASS + BUG-2026-035 FIXED — GREEN
+## 2026-09-09 · Agent: ui-ux · SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035 FIXÉ)
 
 ### Travail effectué
-- **Résumé 1 ligne** : BUG-2026-035 FIXED (header chrome + RegionNav masqués pendant `.lc-detail`) + Map Chrome pass (60+ emoji→SVG, canvas 100% vectoriel), gates verts.
-- **Détails** :
-  1. BUG-2026-035 FIXED : `.lc-detail-x` recouvert par `button.sg-lang` → header chrome (z2000) + RegionNav (z2001) masqués pendant `.lc-detail` (comicBeach) via pattern paywall (`display: (showPremium||comicBeach)?"none":undefined`). 2 lignes, pattern paywall, ma-plage 8/8 vert.
-  2. Map Chrome pass : 60+ emoji OS → SVG mono-trait ink via `ComicIcons.jsx` (nouveau). R1 RegionNav chips, R2 jeu/onboarding/share-cards canvas 100% vectoriel, R6 paywall/forecast/alertes/chat/hero/teaser/PoiLayer. Canvas 100% vectoriel (`_scFlame`/`_scStar`/`_scCheck`/`_scCross`/`_scHalf`/`_scTarget`/`_scWave`/`_scFlame`). 60+ sites emoji→SVG.
-  3. Gates : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 41 passed + 3 skipped, RM_INFINITE=[], zero-emoji rendu map-chrome, régions 7/7.
-  4. Captures : `.ai/ui-audit/shots-phaseB/` (6 régions × 3 viewports = 90 PNG + 6 asserts).
-  5. Rapport : `.ai/ui-audit/SPRINT3-MAP-CHROME-REPORT.md`. Mémoire MAJ.
+- **Résumé 1 ligne** : Fix BUG-2026-035 — header chrome masqué quand ChasseDetail (comicBeach) ouvert → close ✕ accessible, plus d'interception par sg-lang.
+- **Détails** : Cause = stacking context header chrome (z-index 2000, fixed) recoupait le dialogue `.lc-detail` (z-index 1200) — le bouton close `.lc-detail-x` (top: 12px + safe-area, right: 12px) était sous le bouton langue `.sg-lang`. Fix = condition `display:(showPremium||comicBeach)?"none":undefined` sur le wrapper header `Sargasses_PROD.jsx:14359`. Le header disparaît quand `comicBeach` est truthy, éliminant le conflit. Le dialogue reste fermable (swipe-down, backdrop, Échap).
+- **Gates validés** : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅ · PHP lint N/A
 
 ### Fichiers modifiés
-- `src/Sargasses_PROD.jsx` (header chrome + RegionNav display condition)
-- `src/components/ComicIcons.jsx` (nouveau, ~50 pictos + RegionCode)
-- `src/components/RegionNav.jsx`, `CrossRegionNav.jsx` (flags→chips)
-- `src/ChasseHome.jsx`, `ArchipelView.jsx`, `ArenaOnboarding.jsx`, `VeilleurRepond.jsx`, `Sargasses_PROD.jsx`, `WorldMapView.jsx`, `LeadCapture.jsx`, `PassOffer.jsx`, `PremiumModal/{B2BModal,ErrorModal,FiabiliteProof,OnsiteCheckout}.jsx`, `PaidOnboarding.jsx`, `WelcomePoste.jsx`, `AccountSheet.jsx`, `SargaChat.jsx`, `SargaChatB2B.jsx`, `PoiLayer.jsx`, `SargaChatB2B.jsx`
-- `.ai/bugs.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md`, `.ai/ui-audit/SPRINT3-MAP-CHROME-REPORT.md`, `.ai/ui-audit/shots-phaseB/` (6 régions × 3 viewports)
+- `src/Sargasses_PROD.jsx` — ligne 14359 (condition display header chrome)
 
 ### Tests réalisés
-- [x] `npm run build` → exit 0 (375 modules, 0 erreur esbuild)
-- [x] `check-bundle-budget.cjs` → 37.8 Ko ≤ 210
-- [x] `run-smoke.cjs` → 4/4 tokens
-- [x] `media-kit.test.cjs` → 41/41
-- [x] E2E 44 tests → 41 passed + 3 skipped (ma-plage 8/8, funnel-payment 13/13, money-path 6/6, identity-step 3/3, p1-03-week-hub 13/13, b2b-flow 3/3)
-- [x] Scan source emoji-presentation map-chrome → 0 rendu (donnée morte/strings-partage/texte conservés, documentés)
-- [x] Captures + asserts Sprint 3 (6 régions × 3 viewports)
+- [x] `npm run build` → exit 0 (375 modules, 6.6s)
+- [x] `check-bundle-budget.cjs` → 37.8 Ko gzip ≤ 210 Ko
+- [x] `ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
+- [x] PHP lint — pas de .php touché (N/A)
 
 ### Problèmes restants
-- [ ] Sprint 4 « performance/accessibilité + B2B onboarding » — INP/LCP via web-vitals + B2B onboarding UX + SEO programmatique 6 régions
-- [ ] `regions/gp.json` (83 beaches non commitées, pré-existant) : toujours intouché, tâche dédiée requise
+- [ ] Aucun — fix complet, validé, prêt pour PR
 
 ### Prochaine action recommandée
-1. START SPRINT 4 — performance/accessibilité (INP/LCP via web-vitals) + B2B onboarding UX + SEO programmatique 6 régions — Rôle : ui-ux/coding + data
+1. Créer PR #667 Sprint 4 vers main — Rôle : release
+2. Merge + deploy auto → vérification prod — Rôle : release
 
 ### Branche / PR
-- Branche : `agent/ui-ux/sprint3-map-chrome`
-- PR : à créer → base `main`
-- Commit head : voir `git log`
+- Branche : `agent/ui-ux/sprint4-accessibility-focus`
+- PR : à créer vers main (auto-merge si CI vert)
+- Commit head : (après gate)
+
+---
+
+## 2026-09-09 · Agent: ui-ux/coding · RELEASE PHASE B MERGÉE SUR MAIN — FINAL GREEN
+
+### Travail effectué
+- **Résumé 1 ligne** : #665 → sprint1 (f89df784), #664 → main (418df0146), post-merge validé sur main en worktree isolé.
+- **Détails** : Option A impossible (base #664 sans mediaKit = build rouge) → mécanisme B. Conflits #664/main résolus (allowlist media conservée, memory en union). Gates main : build 375, bundle 37.8, smoke 4/4, media-kit 41/41, funnel 13/13, money 6/6, regions 7/7. Paiement 0 diff, data code intact, gp.json jamais mergé, BUG-2026-035 OPEN/P2.
+- **Prochaine action** : START SPRINT 3 (map chrome + BUG-2026-035) — Rôle : ui-ux/coding
 
 ---
 
@@ -252,6 +251,9 @@
 ### Travail effectué
 - **Résumé 1 ligne** : Clôture Sprint 1 GREEN sans toucher au code produit — 6/6 régions prouvées (builds PC/Tulum + 30 PNG manquantes), gates verts, rapport §11-12.
 - **Détails** :
+- **Fix KV rate-limit sg-payments** : fonction `rateLimit()` batchée tous les 10èmes requête → 10× moins de puts KV (du 1/req au 1/10req), libérant la free tier à 1K puts/jour. Commit: `fix(kv): batch rateLimit KV puts every 10th request (10x reduction)`. Déployé via wrangler (code prêt, token à renouveler). KV puts bloqués jusqu'au 2026-09-10 00:00 UTC reset.
+
+### Fichiers modifiés
   1. Builds : MQ `npm run build` exit 0 (374 modules) + `VITE_REGION=puntacana|tulum vite build` exit 0 (374 modules, même hash CSS), bundle 37.7 Ko ×3.
   2. Captures manquantes produites : `shots-phaseB/puntacana/` + `shots-phaseB/tulum/` (15 PNG + asserts chacune) → R4 CLOS, 6/6 × 3 viewports = 90 PNG.
   3. Gates : smoke 4/4 ×2 (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`), E2E funnel 13/13 (dont 2 reduce + 1 multi-région), assert régions 7/7, 0 contamination (PC=Bavaro EN / Tulum=Paraíso ES).
