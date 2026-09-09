@@ -3258,7 +3258,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
               opacity:isLocked?(i===freeThreshold?0.72:0.5):typeOpacity,
               pointerEvents:isLocked?"none":"auto",
               position:"relative"}}>
-              {wxIcon&&<span style={{fontSize:13,lineHeight:1}}>{wxIcon}</span>}
+              {wxIcon&&<span style={{fontSize:13,lineHeight:1,display:"inline-flex",color:"var(--sg-mid,#5A5A5A)"}}><ComicIcon name={wxIcon} size={13}/></span>}
               {dayTemp!=null&&<span style={{fontSize:9,fontWeight:700,color:"var(--sg-mid,#5A5A5A)",
                 letterSpacing:".01em"}}>{dayTemp}°</span>}
               <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,lineHeight:1,
@@ -4149,7 +4149,7 @@ function GeoSoftAsk({lang,onAsk,label,src,style}){
       style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 10px",borderRadius:999,
         border:"1px solid var(--sg-border,rgba(13,13,13,.14))",background:"var(--sg-card,rgba(255,255,255,.55))",
         color:"var(--sg-mid,#5A5A5A)",fontSize:12,fontWeight:600,fontFamily:"inherit",cursor:"pointer",lineHeight:1.1,...(style||{})}}>
-      📍 {label||_t(lang,"Voir la distance","Show distance","Ver distancia")}
+      <ComicIcon name="pin" size={12}/> {label||_t(lang,"Voir la distance","Show distance","Ver distancia")}
     </button>
   )
 }
@@ -5655,10 +5655,10 @@ function BeachScoreBadge({afai,weather,lang}){
    WEATHER ICON helper (for 7-day forecast)
    ═══════════════════════════════════════════════════════════════════════════ */
 function getDayWeatherIcon(precipMm,cloudPct,windKmh){
-  if(windKmh>30)return"\uD83D\uDCA8" // wind
-  if(precipMm>2)return"\uD83C\uDF27\uFE0F" // rain
-  if(cloudPct>60)return"\uD83C\uDF24\uFE0F" // partly cloudy
-  return"\u2600\uFE0F" // sun
+  if(windKmh>30)return"wind" // vent fort
+  if(precipMm>2)return"rain" // pluie
+  if(cloudPct>60)return"cloud" // couvert
+  return"sun" // dégagé
 }
 /* ═══════════════════════════════════════════════════════════════════════════
    HISTORY CHART — Sparkline SVG showing AFAI trend (7-30 days)
@@ -6379,7 +6379,7 @@ function PushPrimer({lang,onAccept,onDismiss}){
         maxWidth:480,margin:"0 auto",padding:"12px 14px",
         display:"flex",alignItems:"center",gap:10,
       }}>
-        <div style={{fontSize:22,flexShrink:0}}>{"\ud83d\udd14"}</div>
+        <div style={{fontSize:22,flexShrink:0,display:"inline-flex",color:"var(--sg-ink,#0D0D0D)"}}><ComicIcon name="bell" size={22}/></div>
         <div style={{flex:1,minWidth:0,fontSize:13,fontWeight:600,
           color:"var(--sg-ink,#0D0D0D)",lineHeight:1.3}}>
           {_t(lang,"Sois pr\u00e9venu si tes plages favorites changent.","Get notified when your favorite beaches change.","Ent\u00e9rate si tus playas favoritas cambian.")}

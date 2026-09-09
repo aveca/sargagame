@@ -1,10 +1,9 @@
-﻿## SPRINT 2 « GAME ICON PASS » — [~] in_progress by ui-ux/coding (2026-09-09, branche `agent/ui-ux/sprint2-game-icon-pass`)
-- **TASK-SPRINT2-GLYPHS**: Remplacer les derniers emojis OS par pictos SVG mono-trait ink (DS : 1 rôle=1 valeur, trio statut couleur+forme+mot)
-  - R1 : flags RegionNav → SVG/code-chip (routage/libellés inchangés)
-  - R2 : emojis univers jeu (ChasseDetail/arène, ChasseHome, ArchipelView, B2BModal, share-card, VeilleurRepond) → set SVG dédié
-  - R6 : checklist paywall ✅ + FbPostsStrip + utilitaires (🔔📍) → glyphs
-  - Contraintes : AUCUNE touche business/paiement/données/scaffold territorial (regions/gp.json intouchable) ; gates en non-régression seule (build + bundle + smoke + funnel-payment)
-  - Critère succès : 0 emoji OS rendu sur les surfaces R1/R2/R6 + gates verts + rollback `git revert` par fichier
+﻿## SPRINT 2 « GAME ICON PASS » — [x] done (2026-09-09, branche `agent/ui-ux/sprint2-game-icon-pass`)
+- **TASK-SPRINT2-GLYPHS**: R1 (flags→code-chips, barre 186px) + R2 (jeu→ComicIcons, canvas vectoriel) + R6 (paywall/community→glyphs) — DONE
+  - Gates : build exit 0 (375 modules, 0 erreur esbuild), bundle 37.8 Ko ≤ 210, smoke 4/4, E2E 39 passed + 3 skipped + 2 failed pré-existants (BUG-2026-035, prouvé sur worktree pristine `da8a16796`)
+  - Preuves : `.ai/ui-audit/SPRINT2-GAME-ICON-PASS-REPORT.md` + `.ai/ui-audit/shots-sprint2/mq/` (3 viewports × 5 surfaces + asserts)
+  - Frontières : glyphes texte conservés, share-messages inchangés, map-chrome → Sprint 3 candidat
+  - Suivi : PR empilée sur `agent/coding/phaseB-sprint1` (base PR #664) ; BUG-2026-035 → fix z-index dédié ; règle process : ne jamais rmdir un dossier contenant une jonction
 
 ## PHASE B SPRINT 1 — [x] done (2026-09-09, GREEN) — CLÔTURE FINALE
 - **TASK-PHASEB-SPRINT1**: Remédiation globale P0 (01→06) + P1 conversion/navigation
