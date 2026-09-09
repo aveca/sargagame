@@ -1,4 +1,15 @@
-﻿## SPRINT 2 « GAME ICON PASS » — [x] done → RELEASE CANDIDATE (2026-09-09, PR #665)
+﻿## SPRINT 3 « BUG-2026-035 + MAP CHROME PASS » — [x] done (2026-09-09, branche `agent/ui-ux/sprint3-map-chrome`, base main @418df0146 GREEN)
+- **TASK-SPRINT3-035**: Fix BUG-2026-035 (`.lc-detail-x` recouvert par `button.sg-lang`) — correctif stacking minimal (header chrome + RegionNav masqués pendant `.lc-detail`) + preuve E2E ma-plage 8/8 — **FIXED**
+- **TASK-SPRINT3-CHROME**: Map Chrome pass (chips 👥🛰→`person`/`orbit`, hero 🏆→`trophy`, teaser 🏨→`hotel`, PoiLayer, ★→`star`, 🔒→`lock`, 🚩→`flag`, SargaChat, StoryScenes, B2BWidget) → `ComicIcons.jsx` SVG mono-trait ink ; canvas share-cards 100% vectoriel (`_scFlame`/`_scStar`/`_scCheck`/`_scCross`/`_scHalf`/`_scTarget`/`_scWave`/`_scFlame`) — **DONE**
+- Gates : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 41 passed + 3 skipped, zero-emoji rendu map-chrome, captures 6 régions × 3 viewports
+- Rollback : `git revert` par fichier (visuel seul). `regions/gp.json` intact/hors scope. BUG-2026-035 FIXED.
+
+## PHASE B (Sprint 1 + Sprint 2 + Sprint 3) — [x] done (2026-09-09, main @418df0146) — FINAL GREEN
+- **TASK-SPRINT3-035**: Fix BUG-2026-035 (`.lc-detail-x` recouvert par `button.sg-lang`) — correctif stacking minimal + preuve E2E ma-plage 8/8
+  - Contraintes : header fonctionnel, 0 régression mobile, 0 overlay inutile, 0 changement global z-index injustifié
+- **TASK-SPRINT3-CHROME**: Map Chrome pass (chips 👥🛰, hero 🏆, teaser 🏨, PoiLayer, ★, 🔒, 🚩, SargaChat, StoryScenes, B2BWidget) → ComicIcons SVG
+  - Contraintes : visuel seul, 0 business/data/payment/territorial/regions, bundle ≤ 210 Ko
+- Gates : build + bundle + smoke + E2E (ma-plage/funnel/money/responsive) + RM_INFINITE=[] + zero-emoji rendu map-chrome + captures AVANT/APRÈS ciblées
 - Scope purifié par rebase (hors-scope `da8a16796` exclu, 0 conflit) ; fix blocker `mediaKit.js` + contrat (base seule = build rouge, prouvé)
 - CI #665 : scan/pass, MERGEABLE/CLEAN, 0 review bloquante. `gp.json` intact/hors scope. BUG-2026-035 OPEN/P2.
 - NEXT : MERGE PR #665 (séquencement avec #664 à trancher — #664 rouge sans le lib)

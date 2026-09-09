@@ -14350,13 +14350,16 @@ useEffect(()=>{
             Masqué pendant le paywall premium (ComicPaywall = takeover plein écran
             type ChasseDetail) : sinon le rail gris MQ/GP fuite AU-DESSUS du panel
             bottom-sheet (header z700 < backdrop semi-transparent z1005) et casse
-            l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture. */}
+            l'immersion BD au moment exact de la conversion. Réaffiché à la fermeture.
+            BUG-2026-035 (Sprint 3) : aussi masqué pendant .lc-detail (ChasseDetail,
+            z1200 < header z2000) — sinon le switch sg-lang recouvre le ✕ de la
+            fiche et intercepte son tap. Réaffiché à la fermeture (onClose). */}
         <div style={{
           position:HEADERFIX_OFF?"absolute":"fixed",top:0,left:0,right:0,zIndex:2000,
           padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
-          display:showPremium?"none":undefined,
+          display:(showPremium||comicBeach)?"none":undefined,
         }}>
           {/* Header chrome follows the same pattern as sg-map-chrome:
               wrapper pe:none so the empty band between pill-items passes
@@ -14407,8 +14410,10 @@ useEffect(()=>{
         {/* RegionNav — separate fixed bar below header chrome (z-index 2001) to stay above map content but below header.
             CRO 2026-09-04 (prouvé screenshot prod) : la barre recouvrait le haut du paywall/checkout
             (× 44px non tappable, titre masqué — z 2001 > modal 1100, régression sprint brand). Masquée
-            pendant le paywall comme le header (display:showPremium?"none"). Rollback : revert. */}
-        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none',display:showPremium?"none":undefined}}>
+            pendant le paywall comme le header (display:showPremium?"none"). BUG-2026-035 (Sprint 3) :
+            aussi masquée pendant .lc-detail (z2001 > dialogue z1200, même recouvrement du ✕).
+            Rollback : revert. */}
+        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none',display:(showPremium||comicBeach)?"none":undefined}}>
           <div className="sg-region-nav-inline" style={{pointerEvents:'auto'}}>
             <RegionNav inline={true} />
           </div>

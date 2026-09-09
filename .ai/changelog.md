@@ -1,5 +1,17 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-09 — RELEASE PHASE B (Sprint 1 + Sprint 2 + Sprint 3) MERGÉE SUR MAIN — FINAL GREEN
+
+- Ordre exécuté : PR #665 mergée dans `agent/coding/phaseB-sprint1` (f89df784), puis PR #664 mergée dans `main` (418df0146). Option A impossible (base #664 sans `mediaKit.js` = build rouge) → mécanisme B appliqué.
+- Conflit #664/main résolu : allowlist media-events conservée (requise par contrat media-kit), memory files en union, BeachSheet/WorldMapView auto-merge OK.
+- Sprint 3 (BUG-2026-035 + Map Chrome pass) développé sur `agent/ui-ux/sprint3-map-chrome` (base main @418df0146 GREEN).
+- BUG-2026-035 FIXED : `.lc-detail-x` recouvert par `button.sg-lang` → header chrome + RegionNav masqués pendant `.lc-detail` (pattern paywall). Correctif 2 lignes, ma-plage 8/8 vert.
+- Map Chrome pass : 60+ emoji OS → SVG mono-trait ink via `ComicIcons.jsx` (chips, hero, teaser, PoiLayer, ★, 🔒, 🚩, SargaChat, StoryScenes, B2BWidget) + canvas share-cards 100% vectoriel.
+- Validation post-merge SUR MAIN (worktree isolé, `npm ci` propre) : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, funnel-payment 13/13 + money-path 6/6 (1 flake parallèle, vert en re-run), regions 7/7.
+- Paiement : 0 diff (mollie/paypal/doSubscribe/PayGateway/workers). Data : code pipeline intact (refresh satellite live seul). Territorial : 0 contamination.
+- BUG-2026-035 FIXED (P2 → FIXED). `regions/gp.json` : dirt toujours non commité, jamais mergé.
+- Statut : FINAL RELEASE GREEN. Prochaine action : START SPRINT 4 (performance/accessibilité + B2B onboarding).
+
 ## 2026-09-09 — RELEASE GATE SPRINT 2 (PR #665 → RELEASE CANDIDATE)
 
 - Rebase de portée : commit local-only `da8a16796` exclu du diff (PR = 41 fichiers, 100 % Sprint 2 + fix blocker, 0 conflit).
