@@ -1,3 +1,44 @@
+## 2026-09-09 · Agent: ui-ux/coding · SPRINT 3 — MAP CHROME PASS + BUG-2026-035 FIXED — GREEN
+
+### Travail effectué
+- **Résumé 1 ligne** : BUG-2026-035 FIXED (header chrome + RegionNav masqués pendant `.lc-detail`) + Map Chrome pass (60+ emoji→SVG, canvas 100% vectoriel), gates verts.
+- **Détails** :
+  1. BUG-2026-035 FIXED : `.lc-detail-x` recouvert par `button.sg-lang` → header chrome (z2000) + RegionNav (z2001) masqués pendant `.lc-detail` (comicBeach) via pattern paywall (`display: (showPremium||comicBeach)?"none":undefined`). 2 lignes, pattern paywall, ma-plage 8/8 vert.
+  2. Map Chrome pass : 60+ emoji OS → SVG mono-trait ink via `ComicIcons.jsx` (nouveau). R1 RegionNav chips, R2 jeu/onboarding/share-cards canvas 100% vectoriel, R6 paywall/forecast/alertes/chat/hero/teaser/PoiLayer. Canvas 100% vectoriel (`_scFlame`/`_scStar`/`_scCheck`/`_scCross`/`_scHalf`/`_scTarget`/`_scWave`/`_scFlame`). 60+ sites emoji→SVG.
+  3. Gates : build exit 0 (375 modules), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 41 passed + 3 skipped, RM_INFINITE=[], zero-emoji rendu map-chrome, régions 7/7.
+  4. Captures : `.ai/ui-audit/shots-phaseB/` (6 régions × 3 viewports = 90 PNG + 6 asserts).
+  5. Rapport : `.ai/ui-audit/SPRINT3-MAP-CHROME-REPORT.md`. Mémoire MAJ.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` (header chrome + RegionNav display condition)
+- `src/components/ComicIcons.jsx` (nouveau, ~50 pictos + RegionCode)
+- `src/components/RegionNav.jsx`, `CrossRegionNav.jsx` (flags→chips)
+- `src/ChasseHome.jsx`, `ArchipelView.jsx`, `ArenaOnboarding.jsx`, `VeilleurRepond.jsx`, `Sargasses_PROD.jsx`, `WorldMapView.jsx`, `LeadCapture.jsx`, `PassOffer.jsx`, `PremiumModal/{B2BModal,ErrorModal,FiabiliteProof,OnsiteCheckout}.jsx`, `PaidOnboarding.jsx`, `WelcomePoste.jsx`, `AccountSheet.jsx`, `SargaChat.jsx`, `SargaChatB2B.jsx`, `PoiLayer.jsx`, `SargaChatB2B.jsx`
+- `.ai/bugs.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md`, `.ai/ui-audit/SPRINT3-MAP-CHROME-REPORT.md`, `.ai/ui-audit/shots-phaseB/` (6 régions × 3 viewports)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (375 modules, 0 erreur esbuild)
+- [x] `check-bundle-budget.cjs` → 37.8 Ko ≤ 210
+- [x] `run-smoke.cjs` → 4/4 tokens
+- [x] `media-kit.test.cjs` → 41/41
+- [x] E2E 44 tests → 41 passed + 3 skipped (ma-plage 8/8, funnel-payment 13/13, money-path 6/6, identity-step 3/3, p1-03-week-hub 13/13, b2b-flow 3/3)
+- [x] Scan source emoji-presentation map-chrome → 0 rendu (donnée morte/strings-partage/texte conservés, documentés)
+- [x] Captures + asserts Sprint 3 (6 régions × 3 viewports)
+
+### Problèmes restants
+- [ ] Sprint 4 « performance/accessibilité + B2B onboarding » — INP/LCP via web-vitals + B2B onboarding UX + SEO programmatique 6 régions
+- [ ] `regions/gp.json` (83 beaches non commitées, pré-existant) : toujours intouché, tâche dédiée requise
+
+### Prochaine action recommandée
+1. START SPRINT 4 — performance/accessibilité (INP/LCP via web-vitals) + B2B onboarding UX + SEO programmatique 6 régions — Rôle : ui-ux/coding + data
+
+### Branche / PR
+- Branche : `agent/ui-ux/sprint3-map-chrome`
+- PR : à créer → base `main`
+- Commit head : voir `git log`
+
+---
+
 ## 2026-09-09 · Agent: coding · PHASE B SPRINT 1 — P0+P1 remediation GREEN
 ---
 ## 2026-09-07 · Agent: coding_agent · HARD ASSET — BeachSheet exemplaire 5 formats (GATE VERT, commit imminent)
