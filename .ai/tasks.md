@@ -1,4 +1,9 @@
-﻿## SPRINT 2 « GAME ICON PASS » — [x] done → RELEASE CANDIDATE (2026-09-09, PR #665)
+﻿## SPRINT 3 « BUG-2026-035 + MAP CHROME PASS » — [~] in_progress by ui-ux/coding (2026-09-09, branche `agent/ui-ux/sprint3-map-chrome`, base main @418df0146 GREEN)
+- **TASK-SPRINT3-035**: Fix BUG-2026-035 (`.lc-detail-x` recouvert par `button.sg-lang`) — correctif stacking minimal + preuve E2E ma-plage 8/8
+  - Contraintes : header fonctionnel, 0 régression mobile, 0 overlay inutile, 0 changement global z-index injustifié
+- **TASK-SPRINT3-CHROME**: Map Chrome pass (chips 👥🛰, hero 🏆, teaser 🏨, PoiLayer, ★, 🔒, 🚩, SargaChat, StoryScenes, B2BWidget) → ComicIcons SVG
+  - Contraintes : visuel seul, 0 business/data/payment/territorial/regions, bundle ≤ 210 Ko
+- Gates : build + bundle + smoke + E2E (ma-plage/funnel/money/responsive) + RM_INFINITE=[] + zero-emoji rendu map-chrome + captures AVANT/APRÈS ciblées
 - Scope purifié par rebase (hors-scope `da8a16796` exclu, 0 conflit) ; fix blocker `mediaKit.js` + contrat (base seule = build rouge, prouvé)
 - CI #665 : scan/pass, MERGEABLE/CLEAN, 0 review bloquante. `gp.json` intact/hors scope. BUG-2026-035 OPEN/P2.
 - NEXT : MERGE PR #665 (séquencement avec #664 à trancher — #664 rouge sans le lib)
