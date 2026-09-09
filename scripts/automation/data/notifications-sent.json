@@ -73,6 +73,12 @@
     "puntacana:pc012:clean>moderate",
     "rivieramaya:rm006:moderate>clean",
     "rivieramaya:rm009:moderate>clean",
-    "rivieramaya:rm012:moderate>clean"
+    "rivieramaya:rm012:moderate>clean",
+    "rivieramaya:rm003:moderate>clean",
+    "rivieramaya:rm004:moderate>clean",
+    "rivieramaya:rm005:moderate>clean",
+    "rivieramaya:rm011:moderate>clean",
+    "rivieramaya:rm019:moderate>clean",
+    "rivieramaya:rm020:moderate>clean"
   ]
 }
