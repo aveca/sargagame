@@ -1,19 +1,56 @@
 {
-  "generatedAt": "2026-08-31T18:15:40.399Z",
+  "generatedAt": "2026-09-07T16:42:33.635Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
+      "pageCount": 805,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 173,
-      "pagesWithHreflang": 157,
-      "issueCount": 177,
+      "pagesWithCanonical": 612,
+      "pagesWithHreflang": 595,
+      "issueCount": 390,
       "byKind": {
+        "canonical-off-domain": 158,
         "missing-canonical": 171,
         "canonical-invalid-url": 1,
-        "canonical-mismatch": 1,
+        "canonical-mismatch": 56,
         "hreflang-target-missing": 4
       },
       "issues": [
+        {
+          "file": "activity/dive/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/dive/",
+          "expected": "sargasses-martinique.com"
+        },
+        {
+          "file": "activity/family/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/family/",
+          "expected": "sargasses-martinique.com"
+        },
+        {
+          "file": "activity/kids/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/kids/",
+          "expected": "sargasses-martinique.com"
+        },
+        {
+          "file": "activity/parking/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/parking/",
+          "expected": "sargasses-martinique.com"
+        },
+        {
+          "file": "activity/snorkel/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/snorkel/",
+          "expected": "sargasses-martinique.com"
+        },
+        {
+          "file": "activity/surf/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/surf/",
+          "expected": "sargasses-martinique.com"
+        },
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
@@ -24,222 +61,309 @@
           "canonical": "/pro/"
         },
         {
-          "file": "google22dbf19e7b743f5a.html",
-          "kind": "missing-canonical"
+          "file": "beach/akumal-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumcancun.com/beach/akumal-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "googlead132357ff9b38c4.html",
-          "kind": "missing-canonical"
+          "file": "beach/arena-gorda/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/arena-gorda/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "jeu/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bahia-honda/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/bahia-honda/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "sarg_carte_satellite_app.html",
-          "kind": "canonical-mismatch",
-          "canonical": "/carte-sargasses/",
-          "pageUrl": "/sarg_carte_satellite_app.html"
+          "file": "beach/bathsheba/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bathsheba/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-martinique.com/en/sargassum-today/"
+          "file": "beach/bavaro-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/bavaro-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "es",
-          "href": "https://sargasses-martinique.com/es/sargazo-hoy/"
+          "file": "beach/bb001/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/carlisle-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "sargasses-pres-de-moi/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-martinique.com/en/sargassum-near-me/"
+          "file": "beach/bb002/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/mullins-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "sargasses-pres-de-moi/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "es",
-          "href": "https://sargasses-martinique.com/es/sargazo-cerca-de-mi/"
+          "file": "beach/bb003/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/paynes-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb004/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brownes-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/anse-mitan/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb005/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brandons-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/cancun/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb006/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/rockley-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/fort-lauderdale/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb007/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/dover-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/grande-anse-arlet/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb008/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/silver-sands/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb009/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/miami-beach-enterprise/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/les-salines/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb010/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/crane-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/miami-beach/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb011/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bottom-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/pointe-faula/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb012/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bathsheba/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/punta-cana/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bottom-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bottom-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/sainte-anne-gp/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/brandons-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brandons-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-mvp/tulum/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/brownes-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brownes-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "veilleur-studio/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/cabeza-de-toro/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/cabeza-de-toro/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-l-ane/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/caleta-tankah/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/beach/caleta-tankah/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-l-eau/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/carlisle-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/carlisle-bay/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/clearwater-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/clearwater-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-la-barque-vh/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/cocoa-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/cocoa-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-la-gourde/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/crandon-park/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/crandon-park/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-a-sable/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/crane-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/crane-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-belleville/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/daytona-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/daytona-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-bertrand-nord/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/deerfield-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/deerfield-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-bonneville/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/delray-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/delray-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-cafard/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/dover-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/dover-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-canot-marie-galante/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/el-cortecito/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/el-cortecito/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-caritan/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl001/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/miami-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-ceron/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl002/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/south-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-champagne/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl003/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/fort-lauderdale-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-charpentier/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl004/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/palm-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-collat/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl005/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/jupiter-beach/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-corps-de-garde/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl006/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/key-west-smathers/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-cosmy/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl007/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/key-largo/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-couleuvre/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl008/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/islamorada/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-crawen/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl009/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/marathon-sombrero/",
+          "expected": "sargasses-martinique.com"
         },
         {
-          "file": "widget/embed/anse-de-galet/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-la-baie-olive/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl010/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/cocoa-beach/",
+          "expected": "sargasses-martinique.com"
         }
       ]
     },
     "gp": {
-      "pageCount": 405,
+      "pageCount": 840,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 212,
-      "pagesWithHreflang": 196,
-      "issueCount": 177,
+      "pagesWithCanonical": 647,
+      "pagesWithHreflang": 630,
+      "issueCount": 474,
       "byKind": {
+        "canonical-off-domain": 158,
         "missing-canonical": 171,
         "canonical-invalid-url": 1,
-        "canonical-mismatch": 1,
+        "canonical-mismatch": 140,
         "hreflang-target-missing": 4
       },
       "issues": [
+        {
+          "file": "activity/dive/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/dive/",
+          "expected": "sargasses-guadeloupe.com"
+        },
+        {
+          "file": "activity/family/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/family/",
+          "expected": "sargasses-guadeloupe.com"
+        },
+        {
+          "file": "activity/kids/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/kids/",
+          "expected": "sargasses-guadeloupe.com"
+        },
+        {
+          "file": "activity/parking/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/parking/",
+          "expected": "sargasses-guadeloupe.com"
+        },
+        {
+          "file": "activity/snorkel/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/snorkel/",
+          "expected": "sargasses-guadeloupe.com"
+        },
+        {
+          "file": "activity/surf/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/activity/surf/",
+          "expected": "sargasses-guadeloupe.com"
+        },
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
@@ -250,206 +374,256 @@
           "canonical": "/pro/"
         },
         {
-          "file": "google22dbf19e7b743f5a.html",
-          "kind": "missing-canonical"
+          "file": "beach/akumal-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumcancun.com/beach/akumal-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "googlead132357ff9b38c4.html",
-          "kind": "missing-canonical"
+          "file": "beach/arena-gorda/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/arena-gorda/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "jeu/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bahia-honda/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/bahia-honda/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "sarg_carte_satellite_app.html",
-          "kind": "canonical-mismatch",
-          "canonical": "/carte-sargasses/",
-          "pageUrl": "/sarg_carte_satellite_app.html"
+          "file": "beach/bathsheba/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bathsheba/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-guadeloupe.com/en/sargassum-today/"
+          "file": "beach/bavaro-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/bavaro-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "es",
-          "href": "https://sargasses-guadeloupe.com/es/sargazo-hoy/"
+          "file": "beach/bb001/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/carlisle-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "sargasses-pres-de-moi/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-guadeloupe.com/en/sargassum-near-me/"
+          "file": "beach/bb002/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/mullins-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "sargasses-pres-de-moi/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "es",
-          "href": "https://sargasses-guadeloupe.com/es/sargazo-cerca-de-mi/"
+          "file": "beach/bb003/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/paynes-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb004/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brownes-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/anse-mitan/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb005/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brandons-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/cancun/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb006/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/rockley-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/fort-lauderdale/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb007/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/dover-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/grande-anse-arlet/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb008/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/silver-sands/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb009/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/miami-beach-enterprise/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/les-salines/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb010/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/crane-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/miami-beach/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb011/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bottom-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/pointe-faula/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bb012/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bathsheba/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/punta-cana/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/bottom-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/bottom-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/sainte-anne-gp/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/brandons-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brandons-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-mvp/tulum/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/brownes-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/brownes-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "veilleur-studio/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/cabeza-de-toro/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/cabeza-de-toro/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-l-ane/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/caleta-tankah/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargazotulum.com/beach/caleta-tankah/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-l-eau/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/carlisle-bay/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/carlisle-bay/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/clearwater-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/clearwater-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-la-barque-vh/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/cocoa-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/cocoa-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-la-gourde/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/crandon-park/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/crandon-park/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-a-sable/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/crane-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/crane-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-belleville/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/daytona-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/daytona-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-bertrand-nord/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/deerfield-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/deerfield-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-bonneville/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/delray-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/delray-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-cafard/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/dover-beach/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumbarbados.com/beach/dover-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-canot-marie-galante/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/el-cortecito/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassumpuntacana.com/beach/el-cortecito/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-caritan/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl001/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/miami-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-ceron/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl002/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/south-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-champagne/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl003/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/fort-lauderdale-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-charpentier/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl004/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/palm-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-collat/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl005/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/jupiter-beach/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-corps-de-garde/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl006/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/key-west-smathers/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-cosmy/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl007/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/key-largo/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-couleuvre/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl008/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/islamorada/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-crawen/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl009/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/marathon-sombrero/",
+          "expected": "sargasses-guadeloupe.com"
         },
         {
-          "file": "widget/embed/anse-de-galet/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-la-baie-olive/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
+          "file": "beach/fl010/index.html",
+          "kind": "canonical-off-domain",
+          "canonical": "https://sargassummiami.com/beach/cocoa-beach/",
+          "expected": "sargasses-guadeloupe.com"
         }
       ]
     }

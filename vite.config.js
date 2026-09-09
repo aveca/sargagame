@@ -2283,11 +2283,16 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
             else sitemapGPBeaches += sitemapEntry
           }
           // ── /plages/ index page — all beaches grouped by commune ──
-          // Loop order GP → MQ is deliberate: dist/ is copied to both FTP dirs,
-          // and prepare-ftp.cjs only substitutes Martinique→Guadeloupe on the GP
-          // side. So we need the FINAL state of dist/ to be Martinique-flavored
-          // (hence MQ last) for the MQ copy to be correct.
-          for (const islandCode of ['gp', 'mq']) {
+          // For Cloudflare Pages: each region build (VITE_REGION=gp|mq|...) generates
+          // its OWN /plages/ page. The old GP→MQ loop wrote both to the same file,
+          // with MQ last overwriting GP. For Pages, each build is separate, so we only
+          // generate the current region's page. For FTP legacy, prepare-ftp.cjs uses
+          // the _gp/ mirror created here to stamp the GP version onto guadeloupe-ftp/.
+          const currentIslandCode = REGION?.id || 'mq'
+          // For Pages: each region builds separately → only current region.
+          // For FTP legacy (daily-copernicus schedule): GP build also creates _gp/ mirror.
+          const islandCodes = [currentIslandCode]
+          for (const islandCode of islandCodes) {
             const isMQ = islandCode === 'mq'
             const island = isMQ ? 'Martinique' : 'Guadeloupe'
             const domain = isMQ ? domainMQ : domainGP
@@ -2341,9 +2346,9 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
               .replace('</body>', `\n    <noscript>${plagesNoscript}</noscript>\n</body>`)
             writeFileSync(resolve(plagesDir, 'index.html'), plagesHtml)
             // Stash the GP-flavored version in the _gp/ mirror so prepare-ftp.cjs
-            // can stamp it onto guadeloupe-ftp/ after the MQ iteration overwrites
-            // dist/plages/index.html on its second pass.
-            if (!isMQ) {
+            // can stamp it onto guadeloupe-ftp/ after the GP build.
+            // Only the GP build creates this mirror.
+            if (islandCode === 'gp') {
               const gpMirrorDir = resolve(outDir, '_gp', 'plages')
               mkdirSync(gpMirrorDir, { recursive: true })
               writeFileSync(resolve(gpMirrorDir, 'index.html'), toGpMirror(plagesHtml))
@@ -2402,7 +2407,7 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
             }
             console.log(`   → ${(COAST_ZONES[islandCode] || []).length} hubs zones côtières ${islandCode.toUpperCase()}`)
           }
-          console.log('   \u2192 /plages/ index page g\u00e9n\u00e9r\u00e9e (MQ + GP)')
+          console.log(`   → /plages/ index page générée (${currentIslandCode.toUpperCase()})`)
 
           // ── /conditions/* — aggregation pages by today's weather + sargassum ──
           // New URL surface area that updates daily without fresh editorial work.
@@ -2418,7 +2423,10 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
               : `Données rafraîchies il y a ${Math.round(weatherAgeMs / 3600000)}h`
 
             // Same GP-first/MQ-last ordering as /plages/ — see comment there.
-            for (const islandCode of ['gp', 'mq']) {
+            // For Cloudflare Pages: each region build generates its OWN conditions pages.
+            // The old GP→MQ loop wrote both. For Pages, each build is separate.
+            const condIslandCodes = IS_NEW_REGION ? [currentIslandCode] : (currentIslandCode === 'gp' ? ['gp', 'mq'] : ['mq'])
+            for (const islandCode of condIslandCodes) {
               const isMQ = islandCode === 'mq'
               const island = isMQ ? 'Martinique' : 'Guadeloupe'
               const domain = isMQ ? domainMQ : domainGP

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T18:15:41.742Z",
+  "generatedAt": "2026-09-07T16:42:35.100Z",
   "sites": {
     "mq": {
       "donorCount": 5,
@@ -29,12 +29,12 @@
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
-        "/agir/",
-        "/b2b/",
-        "/bulletin-sargasses-martinique/",
-        "/comic-cartes.html",
-        "/conditions/",
-        "/confidentialite/"
+        "/activity/dive/",
+        "/activity/family/",
+        "/activity/kids/",
+        "/activity/parking/",
+        "/activity/snorkel/",
+        "/activity/surf/"
       ]
     },
     "gp": {
@@ -66,11 +66,11 @@
         "/alertes/",
         "/danger-sargasses-h2s/",
         "/previsions/",
-        "/agir/",
-        "/algues-guadeloupe/",
-        "/b2b/",
-        "/bulletin-sargasses-guadeloupe/",
-        "/comic-cartes.html"
+        "/activity/dive/",
+        "/activity/family/",
+        "/activity/kids/",
+        "/activity/parking/",
+        "/activity/snorkel/"
       ]
     }
   }

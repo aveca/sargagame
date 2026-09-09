@@ -1,16 +1,46 @@
 {
-  "generatedAt": "2026-08-31T18:15:39.225Z",
+  "generatedAt": "2026-09-07T16:42:32.163Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "noIncomingCount": 197,
-      "fewIncomingCount": 42,
-      "phantomCount": 14,
+      "pageCount": 805,
+      "noIncomingCount": 579,
+      "fewIncomingCount": 99,
+      "phantomCount": 16,
       "noIncoming": [
         {
           "url": "/404.html",
           "in": 0,
           "out": 1
+        },
+        {
+          "url": "/activity/dive/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/family/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/kids/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/parking/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/snorkel/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/surf/",
+          "in": 0,
+          "out": 3
         },
         {
           "url": "/agir/",
@@ -33,388 +63,363 @@
           "out": 1
         },
         {
-          "url": "/bulletin-sargasses-martinique/",
-          "in": 0,
-          "out": 11
-        },
-        {
-          "url": "/comic-cartes.html",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/conditions/",
-          "in": 0,
-          "out": 9
-        },
-        {
-          "url": "/confidentialite/",
-          "in": 0,
-          "out": 12
-        },
-        {
-          "url": "/confirme/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/en/widget/",
+          "url": "/beach/akumal-bay/",
           "in": 0,
           "out": 3
         },
         {
-          "url": "/es/widget/",
+          "url": "/beach/anse-a-l-eau/",
           "in": 0,
           "out": 3
         },
         {
-          "url": "/expansion-survey/",
+          "url": "/beach/anse-a-la-barque-ste-anne/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/for-hotels/",
+          "url": "/beach/anse-a-la-barque-vh/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/google22dbf19e7b743f5a.html",
+          "url": "/beach/anse-a-la-gourde/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/googlead132357ff9b38c4.html",
+          "url": "/beach/anse-a-sable/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/jeu/",
+          "url": "/beach/anse-bertrand-nord/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/neptunes_fury.html",
+          "url": "/beach/anse-canot-marie-galante/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/onboarding.html",
+          "url": "/beach/anse-champagne/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/payment/error.html",
+          "url": "/beach/anse-crawen/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/payment/good.html",
+          "url": "/beach/anse-de-galet/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/pro/widget-config/",
+          "url": "/beach/anse-de-la-baie-olive/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sarg_carte_satellite_app.html",
+          "url": "/beach/anse-de-pigeon/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/sargasses-aout-2026/",
+          "url": "/beach/anse-de-vieux-fort-mg/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sargasses-aujourdhui/",
+          "url": "/beach/anse-du-bourg-saintes/",
           "in": 0,
-          "out": 11
+          "out": 3
         },
         {
-          "url": "/sargasses-pour-hotels/",
+          "url": "/beach/anse-du-figuier-saintes/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sargasses-pres-de-moi/",
+          "url": "/beach/anse-du-mancenillier/",
           "in": 0,
-          "out": 10
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena-app.html",
+          "url": "/beach/anse-gros-sable/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena-v2.html",
+          "url": "/beach/anse-kahouanne/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena.html",
+          "url": "/beach/anse-laborde/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-1.html",
+          "url": "/beach/anse-mire/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-2.html",
+          "url": "/beach/anse-piton/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-3.html",
+          "url": "/beach/anse-rodrigue/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-4.html",
+          "url": "/beach/anse-sainte-marguerite/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-5.html",
+          "url": "/beach/anse-tarare/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-6.html",
+          "url": "/beach/anse-turlet/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/neon.html",
+          "url": "/beach/arena-gorda/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veille/",
+          "url": "/beach/bahia-honda/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/",
+          "url": "/beach/bathsheba/",
           "in": 0,
-          "out": 10
+          "out": 3
         },
         {
-          "url": "/veilleur-studio/",
+          "url": "/beach/bavaro-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur/",
+          "url": "/beach/bb001/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/weekend.html",
+          "url": "/beach/bb002/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/widget/embed/",
+          "url": "/beach/bb003/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-l-ane/",
+          "url": "/beach/bb004/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-l-eau/",
+          "url": "/beach/bb005/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-la-barque-ste-anne/",
+          "url": "/beach/bb006/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-la-barque-vh/",
+          "url": "/beach/bb007/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-la-gourde/",
+          "url": "/beach/bb008/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-sable/",
+          "url": "/beach/bb009/",
           "in": 0,
-          "out": 0
-        },
-        {
-          "url": "/widget/embed/anse-belleville/",
-          "in": 0,
-          "out": 1
+          "out": 3
         }
       ],
       "fewIncoming": [
         {
-          "url": "/conditions/plages-enfants/",
+          "url": "/beach/anse-a-l-ane/",
           "in": 1,
-          "out": 19
-        },
-        {
-          "url": "/conditions/snorkeling/",
-          "in": 1,
-          "out": 14
-        },
-        {
-          "url": "/en/sargassum-health/",
-          "in": 1,
-          "out": 5
-        },
-        {
-          "url": "/en/satellite-sargassum-detection/",
-          "in": 1,
-          "out": 2
-        },
-        {
-          "url": "/en/what-to-do-sargassum-martinique/",
-          "in": 1,
-          "out": 5
-        },
-        {
-          "url": "/lexique/",
-          "in": 1,
-          "out": 8
-        },
-        {
-          "url": "/nettoyer-sargasses/",
-          "in": 1,
-          "out": 5
-        },
-        {
-          "url": "/pro/en/sargassum-forecast-miami-hotels/",
-          "in": 1,
-          "out": 4
-        },
-        {
-          "url": "/que-faire-sargasses-martinique/",
-          "in": 1,
-          "out": 13
-        },
-        {
-          "url": "/sargasses-martinique-cette-semaine/",
-          "in": 1,
-          "out": 12
-        },
-        {
-          "url": "/veilleur-mvp/anse-mitan/",
-          "in": 1,
-          "out": 1
-        },
-        {
-          "url": "/veilleur-mvp/cancun/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/veilleur-mvp/fort-lauderdale/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/veilleur-mvp/grande-anse-arlet/",
-          "in": 1,
-          "out": 1
-        },
-        {
-          "url": "/veilleur-mvp/les-salines/",
-          "in": 1,
-          "out": 1
-        },
-        {
-          "url": "/veilleur-mvp/miami-beach/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/veilleur-mvp/pointe-faula/",
-          "in": 1,
-          "out": 1
-        },
-        {
-          "url": "/veilleur-mvp/punta-cana/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/veilleur-mvp/sainte-anne-gp/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/veilleur-mvp/tulum/",
-          "in": 1,
-          "out": 0
-        },
-        {
-          "url": "/bilan-sargasses-2025/",
-          "in": 2,
-          "out": 5
-        },
-        {
-          "url": "/en/best-beaches-martinique/",
-          "in": 2,
-          "out": 2
-        },
-        {
-          "url": "/en/best-beaches-no-sargassum/",
-          "in": 2,
           "out": 3
         },
         {
-          "url": "/en/sargassum-season/",
-          "in": 2,
+          "url": "/beach/anse-belleville/",
+          "in": 1,
           "out": 3
         },
         {
-          "url": "/en/understanding-sargassum/",
-          "in": 2,
-          "out": 2
-        },
-        {
-          "url": "/es/alertas-sargazo/",
-          "in": 2,
+          "url": "/beach/anse-bonneville/",
+          "in": 1,
           "out": 3
         },
         {
-          "url": "/es/mapa-sargazo/",
-          "in": 2,
+          "url": "/beach/anse-cafard/",
+          "in": 1,
           "out": 3
         },
         {
-          "url": "/es/mejores-playas-sin-sargazo/",
-          "in": 2,
+          "url": "/beach/anse-caritan/",
+          "in": 1,
           "out": 3
         },
         {
-          "url": "/es/temporada-sargazo/",
-          "in": 2,
+          "url": "/beach/anse-ceron/",
+          "in": 1,
           "out": 3
         },
         {
-          "url": "/faq/",
-          "in": 2,
-          "out": 7
+          "url": "/beach/anse-charpentier/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-collat/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-corps-de-garde/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-cosmy/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-couleuvre/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-des-galets/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-dufour/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-figuier/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-gros-raisins/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-grosse-roche/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-l-etang/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-mabouya/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-macabou/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-madame/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-meunier/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-michel/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-mitan/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-noire/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-riviere-trinite/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-trabaud/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/anse-turin/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/baie-coco/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/bourg-de-case-pilote/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/beach/bourg-de-tartane/",
+          "in": 1,
+          "out": 3
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 188,
+          "in": 627,
           "out": 18
+        },
+        {
+          "url": "/plages/",
+          "in": 337,
+          "out": 56
         },
         {
           "url": "/previsions/",
@@ -432,13 +437,8 @@
           "out": 7
         },
         {
-          "url": "/plages/",
-          "in": 63,
-          "out": 56
-        },
-        {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
         },
         {
@@ -458,14 +458,14 @@
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "in": 23,
+          "in": 22,
           "out": 11
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
-          "in": 63,
+          "in": 337,
           "out": 56
         },
         {
@@ -482,11 +482,6 @@
           "url": "/plages/plages-sud-martinique/",
           "in": 19,
           "out": 22
-        },
-        {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 21
         },
         {
           "url": "/plages/plages-cote-atlantique-martinique/",
@@ -510,8 +505,13 @@
         },
         {
           "url": "/",
-          "in": 188,
+          "in": 627,
           "out": 18
+        },
+        {
+          "url": "/sargasses-la-trinite/",
+          "in": 3,
+          "out": 17
         }
       ],
       "phantom": [
@@ -524,9 +524,25 @@
         {
           "url": "/track-click.php",
           "incomingFrom": [
-            "/alertes/",
-            "/bilan-sargasses-2025/",
-            "/bulletin-sargasses-martinique/"
+            "/activity/dive/",
+            "/activity/family/",
+            "/activity/kids/"
+          ]
+        },
+        {
+          "url": "/playas/",
+          "incomingFrom": [
+            "/activity/dive/",
+            "/activity/family/",
+            "/activity/kids/"
+          ]
+        },
+        {
+          "url": "/beaches/",
+          "incomingFrom": [
+            "/beach/arena-gorda/",
+            "/beach/bahia-honda/",
+            "/beach/bathsheba/"
           ]
         },
         {
@@ -607,15 +623,45 @@
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "noIncomingCount": 203,
-      "fewIncomingCount": 42,
-      "phantomCount": 18,
+      "pageCount": 840,
+      "noIncomingCount": 501,
+      "fewIncomingCount": 194,
+      "phantomCount": 73,
       "noIncoming": [
         {
           "url": "/404.html",
           "in": 0,
           "out": 1
+        },
+        {
+          "url": "/activity/dive/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/family/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/kids/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/parking/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/snorkel/",
+          "in": 0,
+          "out": 3
+        },
+        {
+          "url": "/activity/surf/",
+          "in": 0,
+          "out": 3
         },
         {
           "url": "/agir/",
@@ -643,383 +689,358 @@
           "out": 1
         },
         {
-          "url": "/bulletin-sargasses-guadeloupe/",
-          "in": 0,
-          "out": 11
-        },
-        {
-          "url": "/comic-cartes.html",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/conditions/",
-          "in": 0,
-          "out": 9
-        },
-        {
-          "url": "/confidentialite/",
-          "in": 0,
-          "out": 12
-        },
-        {
-          "url": "/confirme/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/en/sargassum-season/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/en/widget/",
+          "url": "/beach/akumal-bay/",
           "in": 0,
           "out": 3
         },
         {
-          "url": "/es/temporada-sargazo/",
-          "in": 0,
-          "out": 1
-        },
-        {
-          "url": "/es/widget/",
+          "url": "/beach/arena-gorda/",
           "in": 0,
           "out": 3
         },
         {
-          "url": "/expansion-survey/",
+          "url": "/beach/bahia-honda/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/for-hotels/",
+          "url": "/beach/bathsheba/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/google22dbf19e7b743f5a.html",
+          "url": "/beach/bavaro-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/googlead132357ff9b38c4.html",
+          "url": "/beach/bb001/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/jeu/",
+          "url": "/beach/bb002/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/neptunes_fury.html",
+          "url": "/beach/bb003/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/onboarding.html",
+          "url": "/beach/bb004/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/payment/error.html",
+          "url": "/beach/bb005/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/payment/good.html",
+          "url": "/beach/bb006/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/pro/widget-config/",
+          "url": "/beach/bb007/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sarg_carte_satellite_app.html",
+          "url": "/beach/bb008/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/sargasses-aout-2026/",
+          "url": "/beach/bb009/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sargasses-aujourdhui/",
+          "url": "/beach/bb010/",
           "in": 0,
-          "out": 11
+          "out": 3
         },
         {
-          "url": "/sargasses-bouillante/",
+          "url": "/beach/bb011/",
           "in": 0,
-          "out": 14
+          "out": 3
         },
         {
-          "url": "/sargasses-les-saintes/",
+          "url": "/beach/bb012/",
           "in": 0,
-          "out": 13
+          "out": 3
         },
         {
-          "url": "/sargasses-marie-galante/",
+          "url": "/beach/bottom-bay/",
           "in": 0,
-          "out": 13
+          "out": 3
         },
         {
-          "url": "/sargasses-pour-hotels/",
+          "url": "/beach/brandons-beach/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/sargasses-pres-de-moi/",
+          "url": "/beach/brownes-beach/",
           "in": 0,
-          "out": 9
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena-app.html",
+          "url": "/beach/cabeza-de-toro/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena-v2.html",
+          "url": "/beach/caleta-tankah/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/arena.html",
+          "url": "/beach/carlisle-bay/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-1.html",
+          "url": "/beach/clearwater-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-2.html",
+          "url": "/beach/cocoa-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-3.html",
+          "url": "/beach/crandon-park/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-4.html",
+          "url": "/beach/crane-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-5.html",
+          "url": "/beach/daytona-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/cand-6.html",
+          "url": "/beach/deerfield-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/themes-lab/neon.html",
+          "url": "/beach/delray-beach/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veille/",
+          "url": "/beach/dover-beach/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/",
+          "url": "/beach/el-cortecito/",
           "in": 0,
-          "out": 10
+          "out": 3
         },
         {
-          "url": "/veilleur-studio/",
+          "url": "/beach/fl001/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur/",
+          "url": "/beach/fl002/",
           "in": 0,
-          "out": 2
+          "out": 3
         },
         {
-          "url": "/weekend.html",
+          "url": "/beach/fl003/",
           "in": 0,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/widget/embed/",
+          "url": "/beach/fl004/",
           "in": 0,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/widget/embed/anse-a-l-ane/",
+          "url": "/beach/fl005/",
           "in": 0,
-          "out": 1
+          "out": 3
+        },
+        {
+          "url": "/beach/fl006/",
+          "in": 0,
+          "out": 3
         }
       ],
       "fewIncoming": [
         {
-          "url": "/conditions/plages-enfants/",
+          "url": "/beach/anse-a-l-ane/",
           "in": 1,
-          "out": 26
+          "out": 3
         },
         {
-          "url": "/conditions/snorkeling/",
+          "url": "/beach/anse-a-l-eau/",
           "in": 1,
-          "out": 12
+          "out": 3
         },
         {
-          "url": "/en/best-beaches-no-sargassum/",
+          "url": "/beach/anse-a-la-barque-ste-anne/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/en/sargassum-health/",
+          "url": "/beach/anse-a-la-barque-vh/",
           "in": 1,
-          "out": 4
+          "out": 3
         },
         {
-          "url": "/en/satellite-sargassum-detection/",
+          "url": "/beach/anse-a-la-gourde/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/en/what-to-do-sargassum-guadeloupe/",
+          "url": "/beach/anse-a-sable/",
           "in": 1,
-          "out": 5
+          "out": 3
         },
         {
-          "url": "/es/alertas-sargazo/",
+          "url": "/beach/anse-belleville/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/es/mapa-sargazo/",
+          "url": "/beach/anse-bertrand-nord/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/es/mejores-playas-sin-sargazo/",
+          "url": "/beach/anse-bonneville/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/lexique/",
+          "url": "/beach/anse-cafard/",
           "in": 1,
-          "out": 8
+          "out": 3
         },
         {
-          "url": "/meteo-sargasses-guadeloupe/",
+          "url": "/beach/anse-canot-marie-galante/",
           "in": 1,
-          "out": 8
+          "out": 3
         },
         {
-          "url": "/nettoyer-sargasses/",
+          "url": "/beach/anse-caritan/",
           "in": 1,
-          "out": 5
+          "out": 3
         },
         {
-          "url": "/pro/en/sargassum-forecast-miami-hotels/",
+          "url": "/beach/anse-ceron/",
           "in": 1,
-          "out": 4
+          "out": 3
         },
         {
-          "url": "/que-faire-sargasses-guadeloupe/",
+          "url": "/beach/anse-champagne/",
           "in": 1,
-          "out": 11
+          "out": 3
         },
         {
-          "url": "/sargasses-guadeloupe-cette-semaine/",
+          "url": "/beach/anse-charpentier/",
           "in": 1,
-          "out": 12
+          "out": 3
         },
         {
-          "url": "/sargasses-saint-francois/",
+          "url": "/beach/anse-collat/",
           "in": 1,
-          "out": 13
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/anse-mitan/",
+          "url": "/beach/anse-corps-de-garde/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/cancun/",
+          "url": "/beach/anse-cosmy/",
           "in": 1,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/fort-lauderdale/",
+          "url": "/beach/anse-couleuvre/",
           "in": 1,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "url": "/beach/anse-crawen/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/les-salines/",
+          "url": "/beach/anse-de-galet/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/miami-beach/",
+          "url": "/beach/anse-de-la-baie-olive/",
           "in": 1,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/pointe-faula/",
+          "url": "/beach/anse-de-pigeon/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/punta-cana/",
+          "url": "/beach/anse-de-vieux-fort-mg/",
           "in": 1,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/sainte-anne-gp/",
+          "url": "/beach/anse-des-galets/",
           "in": 1,
-          "out": 1
+          "out": 3
         },
         {
-          "url": "/veilleur-mvp/tulum/",
+          "url": "/beach/anse-du-bourg-saintes/",
           "in": 1,
-          "out": 0
+          "out": 3
         },
         {
-          "url": "/bilan-sargasses-2025/",
-          "in": 2,
-          "out": 7
+          "url": "/beach/anse-du-figuier-saintes/",
+          "in": 1,
+          "out": 3
         },
         {
-          "url": "/comprendre-sargasses/",
-          "in": 2,
-          "out": 9
+          "url": "/beach/anse-du-mancenillier/",
+          "in": 1,
+          "out": 3
         },
         {
-          "url": "/en/best-beaches-guadeloupe/",
-          "in": 2,
-          "out": 2
+          "url": "/beach/anse-dufour/",
+          "in": 1,
+          "out": 3
         },
         {
-          "url": "/en/understanding-sargassum/",
-          "in": 2,
-          "out": 1
+          "url": "/beach/anse-figuier/",
+          "in": 1,
+          "out": 3
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 313,
+          "in": 752,
           "out": 15
+        },
+        {
+          "url": "/plages/",
+          "in": 364,
+          "out": 56
         },
         {
           "url": "/previsions/",
@@ -1027,29 +1048,19 @@
           "out": 8
         },
         {
-          "url": "/carte-sargasses/",
-          "in": 131,
-          "out": 14
-        },
-        {
           "url": "/alertes/",
           "in": 127,
           "out": 7
         },
         {
-          "url": "/plages/",
-          "in": 94,
-          "out": 86
+          "url": "/carte-sargasses/",
+          "in": 127,
+          "out": 14
         },
         {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
-        },
-        {
-          "url": "/plages/plages-sud-grande-terre/",
-          "in": 36,
-          "out": 39
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
@@ -1065,18 +1076,18 @@
           "url": "/a-propos/",
           "in": 25,
           "out": 9
+        },
+        {
+          "url": "/widget/",
+          "in": 21,
+          "out": 2
         }
       ],
       "topDonors": [
         {
           "url": "/plages/",
-          "in": 94,
-          "out": 86
-        },
-        {
-          "url": "/plages/plages-sud-grande-terre/",
-          "in": 36,
-          "out": 39
+          "in": 364,
+          "out": 56
         },
         {
           "url": "/conditions/uv-fort/",
@@ -1084,32 +1095,17 @@
           "out": 37
         },
         {
-          "url": "/plages/plages-basse-terre-cote-caraibe/",
-          "in": 25,
-          "out": 28
-        },
-        {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 26
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 26
-        },
-        {
-          "url": "/plages/plages-iles-guadeloupe/",
-          "in": 23,
-          "out": 26
+          "out": 19
         },
         {
           "url": "/conditions/baignade-ideale/",
           "in": 6,
-          "out": 25
+          "out": 19
         },
         {
-          "url": "/conditions/mer-agitee/",
+          "url": "/conditions/mer-calme/",
           "in": 6,
           "out": 19
         },
@@ -1117,6 +1113,26 @@
           "url": "/meilleures-plages-guadeloupe-sargasses/",
           "in": 34,
           "out": 17
+        },
+        {
+          "url": "/sargasses-sainte-rose/",
+          "in": 3,
+          "out": 16
+        },
+        {
+          "url": "/sargasses-terre-de-haut-les-saintes/",
+          "in": 3,
+          "out": 16
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "in": 10,
+          "out": 16
+        },
+        {
+          "url": "/sargasses-la-desirade/",
+          "in": 3,
+          "out": 15
         }
       ],
       "phantom": [
@@ -1129,9 +1145,25 @@
         {
           "url": "/track-click.php",
           "incomingFrom": [
-            "/alertes/",
-            "/algues-guadeloupe/",
-            "/bilan-sargasses-2025/"
+            "/activity/dive/",
+            "/activity/family/",
+            "/activity/kids/"
+          ]
+        },
+        {
+          "url": "/playas/",
+          "incomingFrom": [
+            "/activity/dive/",
+            "/activity/family/",
+            "/activity/kids/"
+          ]
+        },
+        {
+          "url": "/beaches/",
+          "incomingFrom": [
+            "/beach/arena-gorda/",
+            "/beach/bahia-honda/",
+            "/beach/bathsheba/"
           ]
         },
         {
@@ -1151,87 +1183,114 @@
           ]
         },
         {
-          "url": "/cookies/",
+          "url": "/plages/plage-de-la-francaise/",
           "incomingFrom": [
-            "/confidentialite/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/privacy/",
+          "url": "/plages/plage-de-sch-lcher/",
           "incomingFrom": [
-            "/confidentialite/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/cgu/",
+          "url": "/plages/anse-collat/",
           "incomingFrom": [
-            "/confidentialite/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/terms/",
+          "url": "/plages/anse-madame/",
           "incomingFrom": [
-            "/confidentialite/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/meteo-sargasses-martinique/",
+          "url": "/plages/anse-turin/",
           "incomingFrom": [
-            "/meteo-sargasses-guadeloupe/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/en/sargassum-today/",
+          "url": "/plages/grande-anse-du-carbet/",
           "incomingFrom": [
-            "/sargasses-aujourdhui/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/es/sargazo-hoy/",
+          "url": "/plages/anse-charpentier/",
           "incomingFrom": [
-            "/sargasses-aujourdhui/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/sargasses-martinique-cette-semaine/",
+          "url": "/plages/bourg-de-case-pilote/",
           "incomingFrom": [
-            "/sargasses-guadeloupe-cette-semaine/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/en/sargassum-near-me/",
+          "url": "/plages/plage-du-vetiver/",
           "incomingFrom": [
-            "/sargasses-pres-de-moi/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/es/sargazo-cerca-de-mi/",
+          "url": "/plages/anse-des-galets/",
           "incomingFrom": [
-            "/sargasses-pres-de-moi/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/plages/anse-mitan/",
+          "url": "/plages/plage-de-saint-pierre/",
           "incomingFrom": [
-            "/veilleur-mvp/anse-mitan/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
           ]
         },
         {
-          "url": "/plages/grande-anse-d-arlet/",
+          "url": "/plages/anse-belleville/",
           "incomingFrom": [
-            "/veilleur-mvp/grande-anse-arlet/"
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/plages/"
           ]
         },
         {
-          "url": "/plages/plage-des-salines/",
+          "url": "/plages/anse-grosse-roche/",
           "incomingFrom": [
-            "/veilleur-mvp/les-salines/"
+            "/conditions/mer-agitee/",
+            "/conditions/uv-fort/",
+            "/plages/"
           ]
         },
         {
-          "url": "/plages/pointe-faula/",
+          "url": "/plages/anse-michel/",
           "incomingFrom": [
-            "/veilleur-mvp/pointe-faula/"
+            "/conditions/mer-agitee/",
+            "/plages/"
           ]
         }
       ]

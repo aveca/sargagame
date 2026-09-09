@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T18:15:31.154Z",
+  "generatedAt": "2026-09-07T16:42:19.946Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,14 +12,14 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 6897,
-          "clicks": 1036
+          "impressions": 5631,
+          "clicks": 705
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-martinique.com/alertes/",
-          "impressions": 2,
+          "impressions": 4,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -93,13 +93,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 9523,
-          "clicks": 1395
+          "impressions": 7505,
+          "clicks": 839
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 2224,
-          "clicks": 419
+          "impressions": 1792,
+          "clicks": 281
         }
       ],
       "orphans": [

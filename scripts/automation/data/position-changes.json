@@ -1,96 +1,106 @@
 {
-  "generatedAt": "2026-08-31T18:15:31.091Z",
-  "comparedTo": "2026-08-24",
+  "generatedAt": "2026-09-07T16:42:19.898Z",
+  "comparedTo": "2026-08-31",
   "alerts": {
     "drops": [
       {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/",
+        "prevPos": 35.4,
+        "currPos": 39.7,
+        "delta": 4.3,
+        "impressions": 285
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/sargasses-record-2026/",
+        "prevPos": 9.2,
+        "currPos": 13.5,
+        "delta": 4.3,
+        "impressions": 151
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages/pointe-faula/",
+        "prevPos": 5.7,
+        "currPos": 22.5,
+        "delta": 16.8,
+        "impressions": 36
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/que-es-el-sargazo/",
+        "prevPos": 24.8,
+        "currPos": 28,
+        "delta": 3.2,
+        "impressions": 158
+      },
+      {
         "site": "gp",
         "page": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
-        "prevPos": 17.8,
-        "currPos": 22.5,
-        "delta": 4.7,
-        "impressions": 79
+        "prevPos": 22.5,
+        "currPos": 28.5,
+        "delta": 6,
+        "impressions": 70
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages-sans-sargasses/",
+        "prevPos": 6.8,
+        "currPos": 10.2,
+        "delta": 3.4,
+        "impressions": 103
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/sargassum-forecast/",
+        "prevPos": 60.5,
+        "currPos": 64,
+        "delta": 3.5,
+        "impressions": 86
       },
       {
         "site": "mq",
         "page": "https://sargasses-martinique.com/plages/anse-michel/",
-        "prevPos": 4.4,
-        "currPos": 8.6,
-        "delta": 4.2,
+        "prevPos": 8.6,
+        "currPos": 11.7,
+        "delta": 3.1,
         "impressions": 85
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+        "prevPos": 3.4,
+        "currPos": 7.3,
+        "delta": 3.9,
+        "impressions": 33
       }
     ],
     "gains": [
       {
         "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/",
-        "prevPos": 22.8,
-        "currPos": 1.2,
-        "delta": -21.6,
-        "impressions": 21
+        "page": "https://sargasses-guadeloupe.com/conditions/snorkeling/",
+        "prevPos": 57.2,
+        "currPos": 41,
+        "delta": -16.2,
+        "impressions": 26
       },
       {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/",
-        "prevPos": 38.2,
-        "currPos": 24.3,
-        "delta": -13.9,
-        "impressions": 203
-      },
-      {
-        "site": "florida",
-        "page": "https://sargassummiami.com/seaweed-map/",
-        "prevPos": 36.2,
-        "currPos": 26.7,
-        "delta": -9.5,
-        "impressions": 245
-      },
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
-        "prevPos": 33.1,
-        "currPos": 23.9,
-        "delta": -9.2,
-        "impressions": 27
-      },
-      {
-        "site": "florida",
-        "page": "https://sargassummiami.com/beaches-without-sargassum-today/",
-        "prevPos": 25.5,
-        "currPos": 16.4,
-        "delta": -9.1,
-        "impressions": 119
-      },
-      {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/semaforo-del-sargazo/",
-        "prevPos": 23.3,
-        "currPos": 16.6,
-        "delta": -6.7,
-        "impressions": 56
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+        "prevPos": 21.9,
+        "currPos": 13.4,
+        "delta": -8.5,
+        "impressions": 47
       }
     ],
     "appeared": [
       {
-        "site": "florida",
-        "page": "https://sargassummiami.com/miami-beach-seaweed-map-today/",
-        "avgPos": 16.9,
-        "clicks": 4,
-        "impressions": 49
-      },
-      {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/en/sargassum-forecast/",
-        "avgPos": 60.5,
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+        "avgPos": 51.3,
         "clicks": 0,
-        "impressions": 56
-      },
-      {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/que-es-el-sargazo/",
-        "avgPos": 24.8,
-        "clicks": 0,
-        "impressions": 49
+        "impressions": 125
       }
     ],
     "vanished": [],
