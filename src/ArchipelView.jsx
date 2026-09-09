@@ -20,7 +20,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const[satSay,setSatSay]=useState(null)
   const sayIdxRef=useRef(0),sayTimerRef=useRef(0)
   const skyRef=useRef(null),camBaseRef=useRef(null)
-  const SAT_SAY={fr:["Hé ! Je bosse, là 🛰️","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu 😄","Eh, je travaille, moi !"],en:["Hey! I'm working 🛰️","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me 😄","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando 🛰️","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste 😄","¡Eh, que trabajo!"]}
+  const SAT_SAY={fr:["Hé ! Je bosse, là","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu","Eh, je travaille, moi !"],en:["Hey! I'm working","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste","¡Eh, que trabajo!"]}
   const veilleurSpeak=()=>{const arr=SAT_SAY[lang]||SAT_SAY.fr;setSatSay(arr[sayIdxRef.current%arr.length]);sayIdxRef.current++;if(sayTimerRef.current)clearTimeout(sayTimerRef.current)}
   const[ready,setReady]=useState(false)
   const{proj,count}=useMemo(()=>{

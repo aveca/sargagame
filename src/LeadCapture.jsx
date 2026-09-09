@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react"
+import ComicIcon from "./components/ComicIcons.jsx"
 import { _t, track } from "./Sargasses_PROD.jsx"
 
 const LEAD_DISMISSED_KEY = "sg_lead_dismissed"
@@ -93,7 +94,7 @@ export default function LeadCapture() {
         setSubmitted(true)
         if (isB2C) {
           const reg = getRegion();
-          setMessage(_t(lang, `✅ Vous recevrez les alertes sargassum pour ${reg} par email`, `✅ You will receive sargassum alerts for ${reg} by email`, `✅ Recibirás alertas de sargazo para ${reg} por email`))
+          setMessage(_t(lang, `Vous recevrez les alertes sargassum pour ${reg} par email`, `You will receive sargassum alerts for ${reg} by email`, `Recibirás alertas de sargazo para ${reg} por email`))
           track("sg_lead_b2c_submit", { domain: getDomain(), region: getRegion() })
         } else {
           setMessage(_t(lang, "Merci ! On vous contacte sous 24h.", "Thanks! We'll contact you within 24h.", "¡Gracias! Te contactamos en 24h."))
@@ -106,7 +107,7 @@ export default function LeadCapture() {
       // Fallback: B2C silent, B2B redirect
       if (isB2C) {
         setSubmitted(true)
-        setMessage(_t(lang, "✅ Alertes activées !", "✅ Alerts on!", "✅ ¡Alertas activadas!"))
+        setMessage(_t(lang, "Alertes activées !", "Alerts on!", "¡Alertas activadas!"))
       } else {
         window.location.href = "/b2b"
       }
@@ -167,12 +168,13 @@ export default function LeadCapture() {
             ×
           </button>
           <div style={{ display: "flex", gap: 6, justifyContent: "center", marginBottom: 10 }}>
-            <button type="button" onClick={() => setMode('b2c')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2c' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2c' ? '#0d7f63' : 'white', color: mode==='b2c' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}>{"🏖️ " + _t(lang, "Je veux des alertes plage", "I want beach alerts", "Quiero alertas de playa")}</button>
-            <button type="button" onClick={() => setMode('b2b')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2b' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2b' ? '#0d7f63' : 'white', color: mode==='b2b' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}>{"🏨 " + _t(lang, "Je suis un hôtel/pro", "I'm a hotel/pro", "Soy un hotel/pro")}</button>
+            <button type="button" onClick={() => setMode('b2c')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2c' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2c' ? '#0d7f63' : 'white', color: mode==='b2c' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}><ComicIcon name="wave" size={13}/> {_t(lang, "Je veux des alertes plage", "I want beach alerts", "Quiero alertas de playa")}</span></button>
+            <button type="button" onClick={() => setMode('b2b')} style={{ flex: 1, padding: "8px 10px", borderRadius: 20, border: mode==='b2b' ? '2px solid #0d7f63' : '1px solid #ddd', background: mode==='b2b' ? '#0d7f63' : 'white', color: mode==='b2b' ? 'white' : '#0d1117', font: "700 12px/1 'Bricolage Grotesque'", cursor: "pointer", maxWidth: 220 }}><span style={{display:"inline-flex",alignItems:"center",gap:6}}><ComicIcon name="hotel" size={13}/> {_t(lang, "Je suis un hôtel/pro", "I'm a hotel/pro", "Soy un hotel/pro")}</span></button>
           </div>
           <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", ...(isMobile ? { flexDirection: "column", alignItems: "stretch" } : {}) }}>
-            <span style={{ flex: 1, font: "600 14px/1.3 'Bricolage Grotesque'", color: "#0d1117", ...(isMobile ? { textAlign: "center" } : {}) }}>
-              {mode==='b2c' ? _t(lang, "🏖️ Alerte sargasses gratuite par région", "🏖️ Free sargassum alerts by region", "🏖️ Alertas gratuitas por región") : _t(lang, "📍 Recevez l'alerte sargassum pour vos plages", "📍 Get sargassum alerts for your beaches", "📍 Reciba alertas de sargazo para sus playas")}
+            <span style={{ flex: 1, font: "600 14px/1.3 'Bricolage Grotesque'", color: "#0d1117", display:"inline-flex", alignItems:"center", gap:6, ...(isMobile ? { textAlign: "center" } : {}) }}>
+              <ComicIcon name={mode==='b2c'?"wave":"pin"} size={14}/>
+              {mode==='b2c' ? _t(lang, "Alerte sargasses gratuite par région", "Free sargassum alerts by region", "Alertas gratuitas por región") : _t(lang, "Recevez l'alerte sargassum pour vos plages", "Get sargassum alerts for your beaches", "Reciba alertas de sargazo para sus playas")}
             </span>
             <form onSubmit={handleSubmit} style={{ display: "flex", gap: 8, flex: 1, minWidth: 200, ...(isMobile ? { flexDirection: "column" } : {}) }}>
               <input
@@ -217,7 +219,7 @@ export default function LeadCapture() {
         </>
       ) : (
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", justifyContent: "center" }}>
-          <span style={{ font: "600 14px/1.3 'Bricolage Grotesque'", color: "#1c8f4e" }}>{message}</span>
+          <span style={{ font: "600 14px/1.3 'Bricolage Grotesque'", color: "#1c8f4e", display:"inline-flex", alignItems:"center", gap:7 }}><ComicIcon name="check" size={15} color="#1c8f4e"/>{message}</span>
           <a href="/b2b" style={{ padding: "10px 18px", borderRadius: 8, border: "2px solid #0d7f63", background: "white", color: "#0d7f63", font: "700 14px/1 'Bricolage Grotesque'", textDecoration: "none", whiteSpace: "nowrap" }}>
             {_t(lang, "Voir les offres pro →", "See pro offers →", "Ver ofertas pro →")}
           </a>

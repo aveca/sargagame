@@ -1,4 +1,5 @@
 import React,{useEffect,memo,useRef,useState}from"react"
+import ComicIcon from"./components/ComicIcons.jsx"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
 import{PASS_CENTS,seasonalCents}from"./lib/pass-price.js"
@@ -153,9 +154,9 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             {_t(lang, `Débloquer · ${money(displayCents, cur, lang)}`, `Unlock · ${money(displayCents, cur, lang)}`, `Desbloquear · ${money(displayCents, cur, lang)}`)}
           </span>
           <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
-            <span>🔒 Mollie</span><span aria-hidden="true">·</span>
-            <span>💳 {_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
-            <span>⚡ {_t(lang,"Sans engagement","No commitment","Sin compromiso")}</span>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="lock" size={10}/> Mollie</span><span aria-hidden="true">·</span>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="card" size={11}/> {_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="zap" size={10}/> {_t(lang,"Sans engagement","No commitment","Sin compromiso")}</span>
           </span>
         </button>
       )}

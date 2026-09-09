@@ -3,6 +3,16 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-035 — [OUVERT, P2 E2E-only] ChasseDetail close X recouvert par le header lang switcher
+- **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)
+- **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ est intercepté
+- **Symptôme** : `ma-plage.spec.ts` (2 tests : boucle quotidienne, même-plage-même-jour) timeout sur `.lc-detail-x` — `button.sg-lang` (« EN » du header chrome) intercepte le pointer event au centre du ✕.
+- **Reproduction** : ouvrir une fiche jeu (`.lc-detail`) en 390×844 → tenter tap sur `.lc-detail-x` → Playwright : `<button class="sg-lang">EN</button> intercepts pointer events` (screenshot `test-results/e2e-ma-plage-*`).
+- **Preuve pré-existence** : reproduit à l'identique sur worktree pristine `da8a16796` (Sprint 1, zéro changement Sprint 2) — build + test isolés, même timeout, même intercepteur.
+- **Piste** : stacking header chrome (z élevé, cf. BUG-2026-028) au-dessus du dialogue `.lc-detail` plein écran dont le ✕ est en haut-droite sous le header.
+- **Action** : hors scope Sprint 2 (touche chrome header/dialogue, zone money-path-adjacente) → fix dédié avec mesure z-index + capture avant/après. Sprint 3 candidat.
+- **Statut** : [ ] à diagnostiquer/fixer (qa/coding)
+
 ### BUG-2026-034 — [FIXÉ 2026-09-07, PR #650 merged] GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
 - **Sévérité** : P0 — GP ~0/j vs MQ ~16-95/j, racine technique prouvée
 - **Symptôme** : `sargasses-guadeloupe.com` (home, `/plages/`, `/beach/*`) servait le contenu Martinique (titre "Plages Martinique aujourd'hui...") + canonical `https://sargasses-martinique.com/` partout. hreflang=4 mais contenu identique MQ.

@@ -1,6 +1,7 @@
 import React,{useState,useRef,useEffect,useMemo,useCallback} from "react"
 import {createPortal} from "react-dom"
 import {useSwipeClose} from "./useSwipeClose"
+import ComicIcon from "./components/ComicIcons.jsx"
 
 /* ============================================================
    LE VEILLEUR TE RÉPOND — assistant VISUEL, 100% CLIENT, ZÉRO-LLM.
@@ -31,8 +32,8 @@ const STR={
       placeholder:"Dis-moi ce que tu cherches…",send:"Envoyer",close:"Fermer",
       intro:"Salut — dis-moi où tu veux aller et pour qui, je regarde la mer et je te réponds avec la crique qu'il te faut. Ex : « une plage propre près de Sainte-Anne, pour les enfants ».",
       lbl:{clean:"PROPRE",moderate:"MODÉRÉ",avoid:"À ÉVITER"},
-      score:s=>"score "+s+"/100",kidsFact:"👶 Familles",snorkFact:"🤿 Snorkeling",
-      okFact:"🌊 Baignade OK ce matin",checkFact:"⚠️ Vérifie sur place",
+      score:s=>"score "+s+"/100",kidsFact:"Familles",snorkFact:"Snorkeling",
+      okFact:"Baignade OK ce matin",checkFact:"Vérifie sur place",
       h2s:"Algues en décomposition possibles à proximité — indice dérivé, pas une mesure de gaz. Si ça sent l'œuf pourri, éloigne-toi (déconseillé enfants/asthme/grossesse).",
       planb:n=>["Plan B propre à côté : ",n],
       ctaAlert:n=>"Être prévenu·e si ça change à "+n,ctaSheet:n=>"Voir la fiche de "+n,
@@ -45,8 +46,8 @@ const STR={
       placeholder:"Tell me what you're looking for…",send:"Send",close:"Close",
       intro:"Hey — tell me where you want to go and for whom, I'll check the sea and answer with the right cove. E.g. “a clean beach near me, for kids”.",
       lbl:{clean:"CLEAN",moderate:"MODERATE",avoid:"AVOID"},
-      score:s=>"score "+s+"/100",kidsFact:"👶 Families",snorkFact:"🤿 Snorkeling",
-      okFact:"🌊 Safe to swim this morning",checkFact:"⚠️ Check on site",
+      score:s=>"score "+s+"/100",kidsFact:"Families",snorkFact:"Snorkeling",
+      okFact:"Safe to swim this morning",checkFact:"Check on site",
       h2s:"Decomposing sargassum possibly nearby — a derived indicator, not a gas reading. If it smells like rotten eggs, move away (not advised for kids/asthma/pregnancy).",
       planb:n=>["Clean Plan B nearby: ",n],
       ctaAlert:n=>"Get notified if it changes at "+n,ctaSheet:n=>"See "+n+"'s page",
@@ -59,8 +60,8 @@ const STR={
       placeholder:"Dime qué buscas…",send:"Enviar",close:"Cerrar",
       intro:"Hola — dime a dónde quieres ir y para quién, miro el mar y te respondo con la cala que necesitas. Ej.: «una playa limpia cerca de mí, para niños».",
       lbl:{clean:"LIMPIA",moderate:"MODERADA",avoid:"EVITAR"},
-      score:s=>"puntaje "+s+"/100",kidsFact:"👶 Familias",snorkFact:"🤿 Snorkel",
-      okFact:"🌊 Baño OK esta mañana",checkFact:"⚠️ Verifica en el lugar",
+      score:s=>"puntaje "+s+"/100",kidsFact:"Familias",snorkFact:"Snorkel",
+      okFact:"Baño OK esta mañana",checkFact:"Verifica en el lugar",
       h2s:"Posible sargazo en descomposición cerca — un índice derivado, no una medición de gas. Si huele a huevo podrido, aléjate (no recomendado para niños/asma/embarazo).",
       planb:n=>["Plan B limpio cerca: ",n],
       ctaAlert:n=>"Avísame si cambia en "+n,ctaSheet:n=>"Ver la ficha de "+n,
@@ -257,9 +258,9 @@ export default function VeilleurRepond(props){
                     <div className="vr-nm">{beach.name} <span>{beach.commune?("· "+beach.commune):""}</span></div>
                     <div className="vr-src">{L.measured}{beach.afai!=null?(" · AFAI "+Number(beach.afai).toFixed(2)):""}</div>
                     <div className="vr-facts">
-                      {beach.kids&&<span className="vr-fact">{L.kidsFact}</span>}
-                      {beach.snorkel&&<span className="vr-fact">{L.snorkFact}</span>}
-                      <span className="vr-fact">{st==="clean"?L.okFact:L.checkFact}</span>
+                      {beach.kids&&<span className="vr-fact"><ComicIcon name="baby" size={13} style={{verticalAlign:-2}}/> {L.kidsFact}</span>}
+                      {beach.snorkel&&<span className="vr-fact"><ComicIcon name="mask" size={13} style={{verticalAlign:-2}}/> {L.snorkFact}</span>}
+                      <span className="vr-fact">{st==="clean"?<><ComicIcon name="wave" size={13} style={{verticalAlign:-2}}/> {L.okFact}</>:<><ComicIcon name="half" size={13} style={{verticalAlign:-2}}/> {L.checkFact}</>}</span>
                     </div>
                     {st==="avoid"&&<div className="vr-h2s">{L.h2s}</div>}
                     {res.planB&&(
