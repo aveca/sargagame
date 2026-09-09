@@ -1,0 +1,885 @@
+{
+ "region": "rivieramaya",
+ "date": "2026-09-09T19:24:59.619Z",
+ "viewports": {
+  "390x844": {
+   "home": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 0,
+    "reportBtns": [
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "gamecard": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 104,
+      "h": 99
+     },
+     {
+      "label": "Modéré",
+      "w": 104,
+      "h": 99
+     },
+     {
+      "label": "Beaucoup",
+      "w": 104,
+      "h": 99
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "sheet": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Installer l'app\nAccès direct, alertes push, hors-ligne\nInsta"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 104,
+      "h": 99
+     },
+     {
+      "label": "Modéré",
+      "w": 104,
+      "h": 99
+     },
+     {
+      "label": "Beaucoup",
+      "w": 104,
+      "h": 99
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "paywall": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Peut-être plus tard\n×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-modal-panel",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-paywall-world",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-fiabilite-proof ",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Pass 30 jours\nToutes les",
+      "w": 294,
+      "h": 269
+     },
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   }
+  },
+  "768x1024": {
+   "home": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 0,
+    "reportBtns": [
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "gamecard": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Installer l'app\nAccès direct, alertes push, hors-ligne\nInsta"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Modéré",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Beaucoup",
+      "w": 158,
+      "h": 135
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "sheet": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Installer l'app\nAccès direct, alertes push, hors-ligne\nInsta"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Modéré",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Beaucoup",
+      "w": 158,
+      "h": 135
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "paywall": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Peut-être plus tard\n×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-modal-panel",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-paywall-world",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-fiabilite-proof ",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Pass 30 jours\nToutes les",
+      "w": 346,
+      "h": 269
+     },
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   }
+  },
+  "1440x900": {
+   "home": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 0,
+    "reportBtns": [
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "gamecard": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Installer l'app\nAccès direct, alertes push, hors-ligne\nInsta"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Modéré",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Beaucoup",
+      "w": 158,
+      "h": 135
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "sheet": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "MQ\nGP\nEN DIRECT\n· il y a 3h\nDonnées satellite en retard — de"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Sois prévenu si tes plages favorites changent.\nActiver\n✕"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✕",
+      "text": "Installer l'app\nAccès direct, alertes push, hors-ligne\nInsta"
+     },
+     {
+      "tag": "BUTTON",
+      "cls": "",
+      "chars": "✕",
+      "text": "✕"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": true,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Propre",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Modéré",
+      "w": 158,
+      "h": 135
+     },
+     {
+      "label": "Beaucoup",
+      "w": 158,
+      "h": 135
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   },
+   "paywall": {
+    "emojis": [
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Sargasses Martinique en temps réel — carte et plages aujourd"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "Peut-être plus tard\n×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-modal-panel",
+      "chars": "✓",
+      "text": "×\nVOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par pla"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-paywall-world",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "VOTRE PLAGE, VÉRIFIÉE AVANT DE PARTIR\n\nScore 0-100 par plage"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-fiabilite-proof ",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\nPREUVE DE CALIBRATION\nSOURCE : BACKTEST QUOTIDIEN SATELLIT"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     },
+     {
+      "tag": "DIV",
+      "cls": "sg-onink-scope",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nA"
+     },
+     {
+      "tag": "DIV",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables\n12k+ voyageurs\nSatellite"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓\n97% fiables"
+     },
+     {
+      "tag": "SPAN",
+      "cls": "",
+      "chars": "✓",
+      "text": "✓"
+     }
+    ],
+    "blurs": [],
+    "comicNeue": 0,
+    "antonLC": 0,
+    "legend": false,
+    "goldPrimary": 1,
+    "reportBtns": [
+     {
+      "label": "Pass 30 jours\nToutes les",
+      "w": 372,
+      "h": 269
+     },
+     {
+      "label": "Une plage propre près de",
+      "w": 235,
+      "h": 44
+     }
+    ],
+    "focusable": 0,
+    "unfocusable": 0
+   }
+  }
+ }
+}

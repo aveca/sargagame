@@ -419,8 +419,52 @@
     "hotelxcaret.com": {
       "date": "2026-09-01T14:46:02.680Z",
       "status": "no-email"
+    },
+    "mahekalbeachresort.com": {
+      "date": "2026-09-08T14:22:33.438Z",
+      "emailHash": "e04df6c89a337b084d7d1d3a41558c4f",
+      "emailDomain": "mahekalbeachresort.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "eldoradoresorts.com": {
+      "date": "2026-09-08T14:22:34.514Z",
+      "status": "no-email"
+    },
+    "thefives.com": {
+      "date": "2026-09-08T14:22:36.036Z",
+      "emailHash": "23e89331792caa4f503996af1540961b",
+      "emailDomain": "thefives.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "unico2087.com": {
+      "date": "2026-09-08T14:22:36.902Z",
+      "status": "no-email"
+    },
+    "belmond.com": {
+      "date": "2026-09-08T14:22:38.742Z",
+      "emailHash": "6a0e96bdf8a2f127d880dadfc64aa4af",
+      "emailDomain": "belmond.com",
+      "island": "rivieramaya",
+      "status": "sent",
+      "error": null
+    },
+    "tulum.com": {
+      "date": "2026-09-08T14:22:40.013Z",
+      "status": "no-email"
+    },
+    "rivieramaya.com": {
+      "date": "2026-09-08T14:22:41.759Z",
+      "status": "no-email"
+    },
+    "mahekal.com": {
+      "date": "2026-09-08T14:22:42.247Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-09-01T14:46:02.680Z",
-  "totalSent": 17
+  "lastRun": "2026-09-08T14:22:42.247Z",
+  "totalSent": 20
 }

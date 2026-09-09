@@ -1480,7 +1480,7 @@ export default function WorldMapView({
           padding:"3px 8px",font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
           color:"#5A5A5A",whiteSpace:"nowrap",
         }}>
-          <span aria-hidden="true" style={{fontSize:9}}>👥</span>
+          <span aria-hidden="true" style={{fontSize:9,display:"inline-flex"}}><ComicIcon name="person" size={9}/></span>
           <span>12k+ voyageurs</span>
         </span>
         <span style={{
@@ -1490,7 +1490,7 @@ export default function WorldMapView({
           padding:"3px 8px",font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",
           color:"#5A5A5A",whiteSpace:"nowrap",
         }}>
-          <span aria-hidden="true" style={{fontSize:9}}>🛰</span>
+          <span aria-hidden="true" style={{fontSize:9,display:"inline-flex"}}><ComicIcon name="orbit" size={9}/></span>
           <span>Satellite</span>
         </span>
       </div>
@@ -1994,7 +1994,7 @@ export default function WorldMapView({
               style={{marginTop:9,display:"flex",alignItems:"center",gap:9,pointerEvents:"auto",maxWidth:360,width:"100%",
                 background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"9px 12px",
                 cursor:"pointer",textAlign:"left"}}>
-              <span style={{font:"800 8.5px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:INK,background:"#ffd23f",border:`1.5px solid ${INK}`,borderRadius:6,padding:"4px 6px",flexShrink:0}}>★ {_t(lang,"MA PLAGE","MY BEACH","MI PLAYA")}</span>
+              <span style={{font:"800 8.5px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:INK,background:"#ffd23f",border:`1.5px solid ${INK}`,borderRadius:6,padding:"4px 6px",flexShrink:0}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="star" size={9}/></span> {_t(lang,"MA PLAGE","MY BEACH","MI PLAYA")}</span>
               <span style={{flex:1,minWidth:0}}>
                 <span style={{display:"block",font:"800 13px/1.15 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{mb.name}</span>
                 <span style={{display:"flex",alignItems:"center",gap:6,marginTop:3,font:"700 10.5px/1 'Bricolage Grotesque',sans-serif",color:INK}}>
@@ -2040,7 +2040,7 @@ export default function WorldMapView({
             <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
               {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
             </span>
-            <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}>🏆 {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
+            <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="trophy" size={10}/></span> {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}
               style={{display:"flex",alignItems:"center",gap:11,background:"#fdf6e3",border:`3px solid ${INK}`,boxShadow:`4px 4px 0 ${INK}`,borderRadius:14,padding:"11px 13px",cursor:"pointer",textAlign:"left"}}>
@@ -2134,7 +2134,7 @@ export default function WorldMapView({
               <span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",color:"#b4540a"}}>{_t(lang,"aperçu","preview","vista previa")}</span>
             </div>
             <div style={{display:"flex",alignItems:"center",gap:11}}>
-              <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,background:"#f1ede2",border:`1.5px solid ${INK}`}}>🏨</span>
+              <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:"#f1ede2",border:`1.5px solid ${INK}`}}><ComicIcon name="hotel" size={22}/></span>
               <div style={{flex:"1 1 auto",minWidth:0}}>
                 <div style={{font:"800 14px/1.2 'Bricolage Grotesque'",color:"#1a1726",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{previewHotel}</div>
                 <div style={{font:"600 11px/1.35 'Bricolage Grotesque'",color:"#6b6b75",marginTop:2}}>{previewBeach
@@ -2187,7 +2187,7 @@ export default function WorldMapView({
                 padding:"4px 10px",
                 font:"800 10.5px/1.2 'Bricolage Grotesque',system-ui,sans-serif",
                 color:"#fdfcf7",textShadow:"0 1px 2px rgba(0,0,0,.55)"}}>
-              <span aria-hidden="true">🏨</span>{_t(lang,"Vous gérez un hôtel ?","Run a hotel?","¿Gestionas un hotel?")}
+              <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="hotel" size={13}/></span>{_t(lang,"Vous gérez un hôtel ?","Run a hotel?","¿Gestionas un hotel?")}
             </button>
           )}
         </div>
@@ -2307,7 +2307,7 @@ export default function WorldMapView({
               border:`2px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,borderRadius:12,
               padding:"6px 12px",font:"800 11px/1.3 'Bricolage Grotesque',system-ui,sans-serif",
             }}>
-              ⭐ {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
+              <span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="star" size={11}/></span> {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
             </div>
           )}
           <div style={{
@@ -2318,7 +2318,7 @@ export default function WorldMapView({
             {DAY_LBL.map((lbl,i)=>{
               const locked = i>=1 && !mapPremium
               return(
-              <button type="button" key={i} aria-label={ti(lang,lbl)+(locked?" 🔒":"")} style={{
+              <button type="button" key={i} aria-label={ti(lang,lbl)} style={{
                 WebkitAppearance:"none",appearance:"none",
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
                 background:day===i?"#ff7a2f":(mapPremium&&i>=1?"rgba(255,199,44,.18)":"transparent"),
@@ -2415,7 +2415,7 @@ export default function WorldMapView({
                   return(
                     <div key={d} role="img" aria-label={`${lbl} · ${stLbl}${tier==="low"?" · "+_t(lang,"indicatif","indicative","indicativo"):""}`}
                       style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,width:17,position:"relative"}}>
-                      {isHit&&<span aria-hidden="true" style={{position:"absolute",top:-9,fontSize:8,lineHeight:1}}>🚩</span>}
+                      {isHit&&<span aria-hidden="true" style={{position:"absolute",top:-9,lineHeight:1,display:"inline-flex"}}><ComicIcon name="flag" size={8}/></span>}
                       <span style={{font:"800 7px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:isHit?3:0}}>{lbl}</span>
                       <div style={{width:15,height:15,borderRadius:4,boxSizing:"border-box",
                         background:bg||"#efe9da",
