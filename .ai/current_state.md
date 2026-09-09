@@ -1,3 +1,43 @@
+## 2026-09-09 · Agent: ui-ux · SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035 FIXÉ)
+
+### Travail effectué
+- **Résumé 1 ligne** : Fix BUG-2026-035 — header chrome masqué quand ChasseDetail (comicBeach) ouvert → close ✕ accessible, plus d'interception par sg-lang.
+- **Détails** : Cause = stacking context header chrome (z-index 2000, fixed) recoupait le dialogue `.lc-detail` (z-index 1200) — le bouton close `.lc-detail-x` (top: 12px + safe-area, right: 12px) était sous le bouton langue `.sg-lang`. Fix = condition `display:(showPremium||comicBeach)?"none":undefined` sur le wrapper header `Sargasses_PROD.jsx:14359`. Le header disparaît quand `comicBeach` est truthy, éliminant le conflit. Le dialogue reste fermable (swipe-down, backdrop, Échap).
+- **Gates validés** : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅ · PHP lint N/A
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — ligne 14359 (condition display header chrome)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (375 modules, 6.6s)
+- [x] `check-bundle-budget.cjs` → 37.8 Ko gzip ≤ 210 Ko
+- [x] `ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
+- [x] PHP lint — pas de .php touché (N/A)
+
+### Problèmes restants
+- [ ] Aucun — fix complet, validé, prêt pour PR
+
+### Prochaine action recommandée
+1. Créer PR #667 Sprint 4 vers main — Rôle : release
+2. Merge + deploy auto → vérification prod — Rôle : release
+
+### Branche / PR
+- Branche : `agent/ui-ux/sprint4-accessibility-focus`
+- PR : à créer vers main (auto-merge si CI vert)
+- Commit head : (après gate)
+
+---
+
+## 2026-09-09 · Agent: ui-ux/coding · RELEASE PHASE B MERGÉE SUR MAIN — FINAL GREEN
+
+### Travail effectué
+- **Résumé 1 ligne** : #665 → sprint1 (f89df784), #664 → main (418df0146), post-merge validé sur main en worktree isolé.
+- **Détails** : Option A impossible (base #664 sans mediaKit = build rouge) → mécanisme B. Conflits #664/main résolus (allowlist media conservée, memory en union). Gates main : build 375, bundle 37.8, smoke 4/4, media-kit 41/41, funnel 13/13, money 6/6, regions 7/7. Paiement 0 diff, data code intact, gp.json jamais mergé, BUG-2026-035 OPEN/P2.
+- **Prochaine action** : START SPRINT 3 (map chrome + BUG-2026-035) — Rôle : ui-ux/coding
+
+---
+
 ## 2026-09-09 · Agent: coding · PHASE B SPRINT 1 — P0+P1 remediation GREEN
 ---
 ## 2026-09-07 · Agent: coding_agent · HARD ASSET — BeachSheet exemplaire 5 formats (GATE VERT, commit imminent)
@@ -211,6 +251,9 @@
 ### Travail effectué
 - **Résumé 1 ligne** : Clôture Sprint 1 GREEN sans toucher au code produit — 6/6 régions prouvées (builds PC/Tulum + 30 PNG manquantes), gates verts, rapport §11-12.
 - **Détails** :
+- **Fix KV rate-limit sg-payments** : fonction `rateLimit()` batchée tous les 10èmes requête → 10× moins de puts KV (du 1/req au 1/10req), libérant la free tier à 1K puts/jour. Commit: `fix(kv): batch rateLimit KV puts every 10th request (10x reduction)`. Déployé via wrangler (code prêt, token à renouveler). KV puts bloqués jusqu'au 2026-09-10 00:00 UTC reset.
+
+### Fichiers modifiés
   1. Builds : MQ `npm run build` exit 0 (374 modules) + `VITE_REGION=puntacana|tulum vite build` exit 0 (374 modules, même hash CSS), bundle 37.7 Ko ×3.
   2. Captures manquantes produites : `shots-phaseB/puntacana/` + `shots-phaseB/tulum/` (15 PNG + asserts chacune) → R4 CLOS, 6/6 × 3 viewports = 90 PNG.
   3. Gates : smoke 4/4 ×2 (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`), E2E funnel 13/13 (dont 2 reduce + 1 multi-région), assert régions 7/7, 0 contamination (PC=Bavaro EN / Tulum=Paraíso ES).

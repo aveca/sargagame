@@ -14356,7 +14356,7 @@ useEffect(()=>{
           padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
-          display:showPremium?"none":undefined,
+          display:(showPremium||comicBeach)?"none":undefined,
         }}>
           {/* Header chrome follows the same pattern as sg-map-chrome:
               wrapper pe:none so the empty band between pill-items passes
