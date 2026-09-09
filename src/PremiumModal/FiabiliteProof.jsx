@@ -6,6 +6,7 @@
  * Props: { lang, __REL, regime, onClose }
  */
 import React, { useMemo } from "react"
+import ComicIcon from "../components/ComicIcons.jsx"
 
 const REGIME_LABELS = {
   high: { fr: "saison haute", en: "high season", es: "temporada alta" },
@@ -179,7 +180,7 @@ export function FiabiliteProof({
         font: "700 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
         color: "#16A34A", whiteSpace: "nowrap"
       }}>
-        <span aria-hidden="true">✅</span>
+        <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="check" size={12} color="#16A34A"/></span>
         <span>{verifiedText}</span>
       </div>
       

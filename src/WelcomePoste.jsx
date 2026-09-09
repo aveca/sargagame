@@ -9,6 +9,7 @@
 // (fin du 800 écrasé / rotation / ombre portée — le grief central). a11y : role=dialog, focus
 // ✕ à l'ouverture, focus-trap (1 seul niveau), Échap, reduced-motion. Flag ?poste=0.
 import React, { useEffect, useRef, useMemo, useState, useCallback } from "react"
+import ComicIcon from "./components/ComicIcons.jsx"
 import { useSwipeClose } from "./useSwipeClose"
 
 const INK = "#0d0b14", PAPER = "#fdf6e3", GOLD = "#FFC72C", SUB = "#4a4458"
@@ -130,7 +131,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
           background:PAPER, borderBottom:`2.5px solid ${INK}`, padding:`max(12px,env(safe-area-inset-top)) clamp(14px,4.5vw,22px) 11px`}}>
           <Watcher size={40}/>
           <div style={{flex:1, minWidth:0}}>
-            <span style={{display:"inline-block", font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing:".06em", textTransform:"uppercase", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:6, padding:"3px 7px", marginBottom:5}}>⭐ {_t(lang,"Pass activé","Pass active","Pase activo")}</span>
+            <span style={{display:"inline-block", font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing:".06em", textTransform:"uppercase", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:6, padding:"3px 7px", marginBottom:5}}> <ComicIcon name="star" size={11}/> {_t(lang,"Pass activé","Pass active","Pase activo")}</span>
             <div style={{font:"400 clamp(22px,6vw,30px)/1.06 'Anton','Bricolage Grotesque',sans-serif", letterSpacing:"0", textTransform:"uppercase"}}>{_t(lang,"Le Veilleur a pris son poste","Le Veilleur is on watch","Le Veilleur está de guardia")}</div>
             <div style={{...subTxt, marginTop:3}}>{_t(lang,"Voici ce qu'il garde pour toi.","Here's what he's keeping for you.","Esto es lo que cuida para ti.")}</div>
           </div>

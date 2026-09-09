@@ -10,6 +10,7 @@
 // card, mascotte Watcher). Flag rollback ?account=0 (géré côté Sargasses_PROD).
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose"
+import ComicIcon from "./components/ComicIcons.jsx"
 
 const INK = "#0d0b14", PAPER = "#fdf6e3", GOLD = "#FFC72C", SUB = "#4a4458"
 const _t = (lang, fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
@@ -138,7 +139,7 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
             {isPremium ? (
               <div style={{...card, background:"linear-gradient(135deg,#fff6d8,#fdf6e3 60%)", outline:`2px solid ${GOLD}`, outlineOffset:-6}}>
                 <div style={{display:"flex", alignItems:"center", gap:8, marginBottom:8}}>
-                  <span style={{display:"inline-flex", alignItems:"center", gap:5, font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing:".05em", textTransform:"uppercase", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:6, padding:"4px 8px"}}>⭐ {planLabel}</span>
+                  <span style={{display:"inline-flex", alignItems:"center", gap:5, font:"700 11px/1 'Bricolage Grotesque',system-ui,sans-serif", letterSpacing:".05em", textTransform:"uppercase", color:INK, background:GOLD, border:`2px solid ${INK}`, borderRadius:6, padding:"4px 8px"}}> <ComicIcon name="star" size={11}/> {planLabel}</span>
                 </div>
                 {email ? (
                   <>
@@ -184,7 +185,7 @@ export default function AccountSheet({ lang="fr", isPremium=false, onClose, onEn
               <div style={{...subTxt, margin:"6px 0 11px"}}>{_t(lang,"Une alerte le matin où ta plage tourne — jamais pour rien. En saison calme, on ne te ping pas.","One alert the morning your beach turns — never for nothing. In calm season we won't ping you.","Una alerta la mañana en que tu playa cambia — nunca por nada. En temporada calma no te molestamos.")}</div>
               {on ? (
                 <>
-                  <div style={{...subTxt, color:INK, marginBottom:10}}>{_t(lang,"Le Veilleur t'écrit chaque matin 🔔","Le Veilleur writes you each morning 🔔","El Vigía te escribe cada mañana 🔔")}</div>
+                  <div style={{...subTxt, color:INK, marginBottom:10}}>{_t(lang,"Le Veilleur t'écrit chaque matin","Le Veilleur writes you each morning","El Vigía te escribe cada mañana")}</div>
                   <button onClick={doToggle} style={ghostBtn}>{_t(lang,"Désactiver les alertes","Turn off alerts","Desactivar alertas")}</button>
                 </>
               ) : perm==="denied" ? (

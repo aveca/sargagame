@@ -1,0 +1,55 @@
+{
+ "listTabs": [
+  "Carte",
+  "Plages",
+  "Premium"
+ ],
+ "listView": {
+  "h1": "Toutes les plages de Martinique",
+  "items": 53,
+  "bodyStart": "Toutes les plages de Martinique\n53\nPLAGES · 45 PROPRES\nMEILLEURE AUJOURD'HUI\nGRANDE ANSE DU CARBET\nLe Carbet · 86/100\nPROPRE\nPROPRES\n45\nFAVORIS\n0\nÉVITER\n3\nTRIER PAR\nMEILLEURES\nPLUS PROCHES\nA–Z\nLE VEILLEUR\n7 jours d'avance · alerte dès qu'une plage change\n→\nPLAGE DES SALINES\nSainte-Anne · 52 min\nSUPER\n72\n/100\nANSE CARITAN\nSainte-Anne · 48 min\nSUPER\n77\n/100\nANSE MEUNIER\nSainte-Anne · 50 min\nSUPER\n77\n/100\nPLAGE DU BOURG (SAINTE-ANNE)\nSainte-Anne · 48 min\nSUPER\n77\n/100\nANSE TRABAUD\nSainte-Anne · 52 min\nSUPER\n72\n/100\nANSE MACABOU\nSainte-Anne · 55 min\nSUPER\n77\n/100\nANSE MICHEL\nSainte-Anne · 46 min\nS"
+ },
+ "sheetScrollers": [
+  {
+   "cls": "DIV",
+   "sh": 696,
+   "ch": 19
+  },
+  {
+   "cls": "lc-detail",
+   "sh": 2195,
+   "ch": 844
+  }
+ ],
+ "paywallBottomText": "· Mollie\nActive ta reco du jour\nDéjà 590+ qui suivent leurs plages\nE-mail (reçu d'accès)\nNom du titulaire\nNuméro de carte\nVISA\nExpiration\nCVC\nPaiement chiffré · tes données carte ne sont jamais stockées chez nous\nPayer 4,99 € — activer maintenant\nSans engagement · Annule en 2 clics · Mollie sécurisé\n✓\n97% fiables\n👥\n12k+ voyageurs\n🛰\nSatellite\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nAUJ\nN\nS\nE\nW\n1 km\nPlage des Salines\nMODÉRÉ\nAnse Noire\nMODÉRÉ\nAnse Turin\nPROPRE\nAnse L’Étang\nMODÉRÉ\nPointe Faula\nÀ ÉVITER\nPlage de Sinaï\nPROPRE\nDONNÉE EN RETARD\nil y a 3 j\nMARTINIQUE AUJOURD'HUI\n45 plages propres aujourd'hui\nOÙ TE BAIGNER MAINTENANT ?\n🏆 MEILLEUR CHOIX AUJOURD’HUI\n86\nGrande Anse du Carbet\nFaible risque de sargasses · \n→ stable\nDonnées satellite il y a 3 j\nVoir →\n86\nAnse Turin\n86\nPlage de Saint-Pierre\nPropre\nModéré\nÀ éviter\n🏨\nVous gérez un hôtel ?\nUne plage propre près de moi\nAuj\n+1j\n+2j\n+3j\n+4j\n+5j\nTape une plage",
+ "cookieBanner": {
+  "present": true,
+  "bottom": 728,
+  "top": 628,
+  "text": "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser. En savoir plus\nAccepter\nRefuser",
+  "buttons": [
+   {
+    "label": "Accepter",
+    "w": 179,
+    "h": 40
+   },
+   {
+    "label": "Refuser",
+    "w": 179,
+    "h": 40
+   }
+  ]
+ },
+ "focus": {
+  "focusables": 80,
+  "noAccessibleName": 2,
+  "negTabindex": 0,
+  "firstFocusOutline": "none 3px rgb(13, 13, 13) 2px 2px 0px 0px",
+  "activeIsBody": false
+ },
+ "escapeClosesPaywall": true,
+ "reducedMotion": {
+  "totalAnimations": 0,
+  "infiniteRemaining": 0
+ }
+}

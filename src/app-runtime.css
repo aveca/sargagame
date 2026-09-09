@@ -54,7 +54,7 @@ button:active,a:active,[role="button"]:active{transform:scale(.91)!important;opa
 /* Gold button */
 .gbtn{
   display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E89400 100%);
+  background:linear-gradient(158deg,#FFE47A 0%,#FFC72C 40%,#E8A800 100%);
   border:none;border-radius:22px;color:#0D0D0D;font-weight:700;font-size:15px;
   padding:14px 28px;cursor:pointer;position:relative;overflow:hidden;
   font-family:'Bricolage Grotesque',system-ui,sans-serif;
@@ -214,7 +214,7 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 /* Toggle MQ/GP : SEULE surface or pleine de la barre */
 .sg-iso{position:relative;overflow:hidden;padding:0!important}
 .sg-iso .sg-iso-knob{position:absolute;top:3px;bottom:3px;width:calc(50% - 3px);border-radius:10px;z-index:0;
-  background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);box-shadow:inset 0 0 0 2px var(--sg-ink,#0d0b14);
+  background:linear-gradient(158deg,#FFE47A,#FFC72C,#E8A800);box-shadow:inset 0 0 0 2px var(--sg-ink,#0d0b14);
   transition:transform .3s cubic-bezier(.22,1,.36,1)}
 .sg-iso button{position:relative;z-index:1;padding:0 13px!important;height:100%;border:0!important;background:none!important;
   box-shadow:none!important;border-radius:0!important;cursor:pointer;font-family:"Bricolage Grotesque",sans-serif!important;

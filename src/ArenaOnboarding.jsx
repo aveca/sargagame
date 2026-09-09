@@ -1,4 +1,5 @@
 import React,{useState,useEffect} from "react";
+import ComicIcon from "./components/ComicIcons.jsx";
 
 /* ARENA ONBOARDING — flow 3 étapes comic fidèle à /themes-lab/arena.html (écrans 2-4) :
    Bienvenue → Le satellite scanne → Choisis ton terrain. Plein cadre, première visite.
@@ -37,7 +38,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     // étape 1
     welcome:{fr:["BIENVENUE,","CHASSEUR DE PLAGES"],en:["WELCOME,","BEACH HUNTER"],es:["BIENVENIDO,","CAZADOR DE PLAYAS"]},
     p1a:{fr:"Le Veilleur scrute la côte martiniquaise depuis l'espace.",en:"The Watcher scans the Martinique coast from space.",es:"El Vigía escruta la costa de Martinica desde el espacio."},
-    p1b:{fr:"Chaque plage devient une <b>carte</b>. Son score sur 100, ce sont ses <b>points de vie</b>. Collectionne les plages PROPRES, fuis les ⚠️ À ÉVITER.",en:"Each beach becomes a <b>card</b>. Its score out of 100 is its <b>hit points</b>. Collect CLEAN beaches, flee the ⚠️ AVOID ones.",es:"Cada playa es una <b>carta</b>. Su puntuación sobre 100 son sus <b>puntos de vida</b>. Colecciona las playas LIMPIAS, huye de las ⚠️ EVITAR."},
+    p1b:{fr:"Chaque plage devient une <b>carte</b>. Son score sur 100, ce sont ses <b>points de vie</b>. Collectionne les plages PROPRES, fuis les À ÉVITER.",en:"Each beach becomes a <b>card</b>. Its score out of 100 is its <b>hit points</b>. Collect CLEAN beaches, flee the AVOID ones.",es:"Cada playa es una <b>carta</b>. Su puntuación sobre 100 son sus <b>puntos de vida</b>. Colecciona las playas LIMPIAS, huye de las EVITAR."},
     r1a:{fr:"<b>136+ plages</b> lues au satellite, 4×/jour — Copernicus &amp; NOAA. Mesuré, pas deviné.",en:"<b>136+ beaches</b> read by satellite, 4×/day — Copernicus &amp; NOAA. Measured, not guessed.",es:"<b>136+ playas</b> leídas por satélite, 4×/día — Copernicus y NOAA. Medido, no adivinado."},
     r1b:{fr:"<b>Le verdict du matin</b> sur ta plage — et le Plan B des 3 plages propres les plus proches.",en:"<b>The morning verdict</b> on your beach — plus a Plan B: the 3 nearest clean beaches.",es:"<b>El veredicto de la mañana</b> en tu playa — y un Plan B: las 3 playas limpias más cercanas."},
     cta1:{fr:"Commencer l'aventure",en:"Start the adventure",es:"Empezar la aventura"},
@@ -55,7 +56,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
     terrain:{fr:["CHOISIS","TON TERRAIN"],en:["CHOOSE","YOUR TURF"],es:["ELIGE","TU TERRENO"]},
     terrainSub:{fr:"Quelle mer Le Veilleur doit-il veiller pour toi ?",en:"Which sea should the Watcher keep for you?",es:"¿Qué mar debe velar el Vigía para ti?"},
     chosen:{fr:"✓ Choisie",en:"✓ Chosen",es:"✓ Elegida"},
-    soon:{fr:"🔒 Bientôt",en:"🔒 Soon",es:"🔒 Pronto"},
+    soon:{fr:"Bientôt",en:"Soon",es:"Pronto"},
     cta3:{fr:"Entrer en Martinique",en:"Enter Martinique",es:"Entrar en Martinica"},
     cta3s:{fr:"Tu pourras changer dans Réglages",en:"You can change in Settings",es:"Podrás cambiar en Ajustes"},
     cleanPill:{fr:"PROPRES",en:"CLEAN",es:"LIMPIAS"},
@@ -96,7 +97,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
           box-shadow:2px 2px 0 #0d0b14;text-transform:uppercase;letter-spacing:.4px}
         .arena-onb .skip{background:none;border:none;color:#fff;font:800 13px/1 "Bricolage Grotesque";
           text-shadow:1px 1px 0 rgba(0,0,0,.5);cursor:pointer;padding:6px}
-        .arena-onb h1{font:400 30px/1 "AntonLC","Anton",sans-serif;color:#fff;
+        .arena-onb h1{font:400 30px/1 "Anton",sans-serif;color:#fff;
           text-shadow:3px 3px 0 #0d0b14;transform:rotate(-2deg);letter-spacing:.5px;margin:14px 0 0}
         .arena-onb .sub{margin-top:6px;font-weight:700;font-size:13px;text-shadow:1px 1px 0 rgba(0,0,0,.5)}
         .arena-onb .panel{background:#fdf6e3;border:3px solid #0d0b14;border-radius:14px;padding:12px;
@@ -174,8 +175,8 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
             <div className="txt" style={{fontWeight:800}} dangerouslySetInnerHTML={{__html:L(p1a,lang)}}/>
             <div className="txt" style={{marginTop:8}} dangerouslySetInnerHTML={{__html:L(t.p1b,lang)}}/>
           </div>
-          <div className="row"><span style={{fontSize:26}}>🌊</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.r1a,lang)}}/></div>
-          <div className="row"><span style={{fontSize:26}}>🎴</span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.r1b,lang)}}/></div>
+          <div className="row"><span style={{fontSize:26,display:"inline-flex"}}><ComicIcon name="wave" size={26}/></span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.r1a,lang)}}/></div>
+          <div className="row"><span style={{fontSize:26,display:"inline-flex"}}><ComicIcon name="deck" size={26}/></span><span className="txt" style={{flex:1}} dangerouslySetInnerHTML={{__html:L(t.r1b,lang)}}/></div>
         </div>
         <div className="spacer"/>
         <button className="btn yel" onClick={next}>{L(t.cta1,lang)}<small>{L(t.cta1s,lang)}</small></button>
@@ -233,7 +234,7 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
         <div className="stack">
           <div className="panel" style={{padding:0,overflow:"hidden",position:"relative",borderWidth:4}}>
             <div style={{background:"linear-gradient(90deg,#3e2470,#0f7d72)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
-              <span style={{fontSize:30}}>🏝️</span>
+              <span style={{fontSize:30,display:"inline-flex"}}><ComicIcon name="palm" size={30}/></span>
               <span style={{flex:1}}>
                 <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>{RL?RL.toUpperCase():"MARTINIQUE"}</span>
                 <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#d8fff6"}}>{RL?(regBeaches.length?regBeaches.join(", ")+"…":RL):"Les Salines, Grande-Anse d'Arlet, Tartane…"}</span>
@@ -249,12 +250,12 @@ export default function ArenaOnboarding({onDone,onSkip,lang="fr",track,region=nu
           </div>
           {!RL && <div className="panel" style={{padding:0,overflow:"hidden",opacity:.85,borderStyle:"dashed"}}>
             <div style={{background:"linear-gradient(90deg,#6b6577,#403b4d)",padding:"10px 12px",display:"flex",alignItems:"center",gap:8,borderBottom:"3px solid #0d0b14"}}>
-              <span style={{fontSize:30}}>🦋</span>
+              <span style={{fontSize:30,display:"inline-flex"}}><ComicIcon name="butterfly" size={30}/></span>
               <span style={{flex:1}}>
                 <span style={{display:"block",fontFamily:"Anton",color:"#fff",fontSize:18,textShadow:"1.5px 1.5px 0 #0d0b14"}}>GUADELOUPE</span>
                 <span style={{display:"block",font:"800 10px/1.2 'Bricolage Grotesque'",color:"#e9e6f0"}}>Grande-Terre &amp; Basse-Terre</span>
               </span>
-              <span className="pill" style={{background:"#ffd23f",borderWidth:2.5}}>{L(t.soon,lang)}</span>
+              <span className="pill" style={{background:"#ffd23f",borderWidth:2.5,display:"inline-flex",alignItems:"center",gap:5}}><ComicIcon name="lock" size={11}/> {L(t.soon,lang)}</span>
             </div>
           </div>}
         </div>

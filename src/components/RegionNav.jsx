@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from "react"
 import { track, _t } from "../Sargasses_PROD.jsx"
+import { RegionCode } from "./ComicIcons.jsx"
 
+// SPRINT 2 R1 : flags emoji OS → pastilles code (RegionCode). Champs `flag`
+// conservés en donnée morte (revert instantané), jamais rendus.
 const REGIONS = [
-  { domain: 'sargasses-martinique.com', label: 'Martinique', flag: '🇲🇶' },
-  { domain: 'sargasses-guadeloupe.com', label: 'Guadeloupe', flag: '🇬🇵' },
-  { domain: 'sargassumcancun.com', label: 'Cancún', flag: '🇲🇽' },
-  { domain: 'sargazotulum.com', label: 'Tulum', flag: '🇲🇽' },
-  { domain: 'sargassumpuntacana.com', label: 'Punta Cana', flag: '🇩🇴' },
-  { domain: 'sargassummiami.com', label: 'Miami', flag: '🇺🇸' },
+  { domain: 'sargasses-martinique.com', label: 'Martinique', code: 'MQ', flag: '🇲🇶' },
+  { domain: 'sargasses-guadeloupe.com', label: 'Guadeloupe', code: 'GP', flag: '🇬🇵' },
+  { domain: 'sargassumcancun.com', label: 'Cancún', code: 'RM', flag: '🇲🇽' },
+  { domain: 'sargazotulum.com', label: 'Tulum', code: 'TL', flag: '🇲🇽' },
+  { domain: 'sargassumpuntacana.com', label: 'Punta Cana', code: 'PC', flag: '🇩🇴' },
+  { domain: 'sargassummiami.com', label: 'Miami', code: 'FL', flag: '🇺🇸' },
   // SPRINT 21 — expansion sans NDD sur puntacana.com
-  { domain: 'sargassumpuntacana.com/haiti', label: 'Haïti', flag: '🇭🇹' },
-  { domain: 'sargassumpuntacana.com/sainte-lucie', label: 'Sainte-Lucie', flag: '🇱🇨' },
-  { domain: 'sargassumpuntacana.com/barbade', label: 'Barbade', flag: '🇧🇧' },
+  { domain: 'sargassumpuntacana.com/haiti', label: 'Haïti', code: 'HT', flag: '🇭🇹' },
+  { domain: 'sargassumpuntacana.com/sainte-lucie', label: 'Sainte-Lucie', code: 'LC', flag: '🇱🇨' },
+  { domain: 'sargassumpuntacana.com/barbade', label: 'Barbade', code: 'BB', flag: '🇧🇧' },
 ]
 
 const VISITED_KEY = "sg_visited_regions"
@@ -48,9 +51,9 @@ export default function RegionNav({inline=false}) {
 
   const baseStyle = {
     background: 'linear-gradient(135deg, var(--sg-teal-deep,#0a5c4a), var(--sg-teal-deep-2,#0d7f63))',
-    padding: '10px 16px',
+    padding: '8px 12px',
     display: 'flex',
-    gap: 8,
+    gap: 6,
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignItems: 'center',
@@ -69,7 +72,7 @@ export default function RegionNav({inline=false}) {
   return (
     <>
       <div style={wrapperStyle}>
-        <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>🌍 SargaGame Network —</span>
+        <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>SargaGame Network —</span>
         <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
           {REGIONS.map(r => {
             const isCurrent = r.domain === current
@@ -77,7 +80,7 @@ export default function RegionNav({inline=false}) {
               <a key={r.domain} href={`https://${r.domain}`}
                 onClick={() => handleRegionClick(r.domain)}
                 style={{
-                  padding: '6px 12px',
+                  padding: '5px 9px',
                   borderRadius: 20,
                   fontSize: 13,
                   color: 'white',
@@ -85,11 +88,13 @@ export default function RegionNav({inline=false}) {
                   background: isCurrent ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.12)',
                   fontWeight: isCurrent ? 700 : 400,
                   pointerEvents: isCurrent ? 'none' : 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
                 }}
                 onMouseEnter={e => { if (!isCurrent) e.currentTarget.style.background = 'rgba(255,255,255,0.25)' }}
                 onMouseLeave={e => { if (!isCurrent) e.currentTarget.style.background = 'rgba(255,255,255,0.12)' }}
               >
-                {r.flag} {r.label}{isCurrent ? ' (you are here)' : ''}
+                <RegionCode code={r.code} />{r.label}{isCurrent ? ' (you are here)' : ''}
               </a>
             )
           })}
@@ -113,7 +118,7 @@ export default function RegionNav({inline=false}) {
         }}>
           <style>{`@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
           <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap'}}>
-            <span style={{fontSize: 16}}>🌍</span>
+            <span style={{fontSize: 16}} aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z"/></svg></span>
             <span style={{font: '600 13px/1.3 "Bricolage Grotesque"', flex: 1, minWidth: 200}}>
               {_t(lang, "Vous consultez plusieurs régions? Découvrez notre plan multi-région Enterprise →", "Checking multiple regions? Discover our multi-region Enterprise plan →", "¿Consultas varias regiones? Descubre nuestro plan multi-región Enterprise →")}
             </span>

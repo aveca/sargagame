@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from "react"
+import { RegionCode } from "./ComicIcons.jsx"
+
+// SPRINT 2 R1 : flags emoji OS → pastilles code (RegionCode, codes déjà uniques).
+// Champs `flag` conservés en donnée morte (revert instantané), jamais rendus.
 
 const REGIONS = [
   { code: "MQ", name: "Martinique", domain: "sargasses-martinique.com", lang: "fr", flag: "🇲🇶" },
@@ -120,6 +124,8 @@ export default function CrossRegionNav() {
                 borderRadius: 20,
                 textDecoration: "none",
                 whiteSpace: "nowrap",
+                display: "inline-flex",
+                alignItems: "center",
                 ...style,
                 transition: "background .15s, border .15s, color .15s",
               }}
@@ -129,7 +135,7 @@ export default function CrossRegionNav() {
               }}
               title={r.name}
             >
-              {r.flag} {r.name}{isCurrent ? " (you are here)" : ""}
+              <RegionCode code={r.code} />{r.name}{isCurrent ? " (you are here)" : ""}
             </a>
           )
         })}
@@ -203,7 +209,7 @@ export default function CrossRegionNav() {
                   }}
                   title={r.name}
                 >
-                  {r.flag} {r.name}{isCurrent ? " (you are here)" : ""}
+                  <RegionCode code={r.code} />{r.name}{isCurrent ? " (you are here)" : ""}
                 </a>
               )
             })}

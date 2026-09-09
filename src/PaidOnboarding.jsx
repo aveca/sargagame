@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react"
+import ComicIcon from "./components/ComicIcons.jsx"
 
 /**
  * PaidOnboarding — accueil GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`).
@@ -79,7 +80,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
 
       <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 480, width: "100%", margin: "0 auto", overflowY: "auto" }}>
         <div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: 6, font: "800 10px/1 'Bricolage Grotesque'", letterSpacing: ".09em", textTransform: "uppercase", color: INK, background: YEL, border: `2px solid ${INK}`, borderRadius: 6, padding: "5px 9px", boxShadow: `2px 2px 0 ${INK}`, marginBottom: 14 }}>
-          ⭐ {t("Pass activé · Le Veilleur est à son poste", "Pass active · Le Veilleur is on watch", "Pase activo · Le Veilleur está de guardia")} · {t("Étape", "Step", "Paso")} {step + 1}/4
+          <ComicIcon name="star" size={12}/> {t("Pass activé · Le Veilleur est à son poste", "Pass active · Le Veilleur is on watch", "Pase activo · Le Veilleur está de guardia")} · {t("Étape", "Step", "Paso")} {step + 1}/4
         </div>
 
         {step === 0 && (
@@ -89,7 +90,7 @@ export default function PaidOnboarding({ lang = "fr", allBeaches = [], favorites
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
               {suggestions.map(b => {
                 const on = favSet.has(b.id)
-                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? "#E8A800" : "#1f9d57"
+                const col = b.status === "avoid" ? "#E8522A" : b.status === "moderate" ? "#B87A00" : "#22C55E"
                 return (
                   <button key={b.id} onClick={() => onToggleFav && onToggleFav(b.id)} aria-pressed={on} style={{
                     display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", borderRadius: 13, cursor: "pointer", textAlign: "left",
