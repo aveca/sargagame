@@ -17,6 +17,7 @@
  * Mollie ne bootent pas dans un conteneur display:none.
  */
 import React, { useState, useRef, useEffect, useCallback } from "react"
+import ComicIcon from "../components/ComicIcons.jsx"
 import { track } from "../Sargasses_PROD.jsx"
 import { seasonalCents } from "../lib/pass-price.js"
 import { sgUid } from "../supabasePhotos.js"
@@ -287,7 +288,7 @@ export function OnsiteCheckout({
                 {((lang === "es" ? "SARGAZO " : "SARGASSUM ") + String(REGION?.name || "")).toUpperCase()}
               </span>
             )}
-            🔒 {PAY_CAPTURE_ONLY ? _t(lang, "Sans carte", "No card", "Sin tarjeta") : _t(lang, "Paiement sécurisé · Mollie", "Secure payment · Mollie", "Pago seguro · Mollie")}
+            <span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="lock" size={13}/></span> {PAY_CAPTURE_ONLY ? _t(lang, "Sans carte", "No card", "Sin tarjeta") : _t(lang, "Paiement sécurisé · Mollie", "Secure payment · Mollie", "Pago seguro · Mollie")}
           </span>
         </div>
 

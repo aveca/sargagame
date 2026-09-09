@@ -1,12 +1,13 @@
 // ErrorModal.jsx — UI d'erreur réutilisable (modal + inline) pour le chemin de l'argent
 // EXTRAIT de PremiumModal.jsx — utilisé par B2BModal, PassOffer, PremiumModal
 import React,{useEffect} from "react"
+import ComicIcon from "../components/ComicIcons.jsx"
 import * as SG from "../Sargasses_PROD.jsx"
 
 const { COMIC, _t } = SG
 
 // ErrorModal — Modal d'erreur standardisé (design comic, cohérent)
-export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="⚠️",lang="fr"}){
+export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon=null,lang="fr"}){
   if(!isOpen) return null
   const I=COMIC
   const handleKeyDown=(e)=>{
@@ -38,7 +39,7 @@ export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="�
           cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"
         }}>×</button>
         <div style={{textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:12}}>{icon}</div>
+          <div style={{fontSize:48,marginBottom:12,display:"flex",justifyContent:"center"}}>{icon||<ComicIcon name="cross" size={44} color={COMIC.red}/>}</div>
           <h2 id="error-title" style={{font:"800 20px/1.2 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:12}}>{title}</h2>
           <p style={{font:"500 16px/1.5 'Bricolage Grotesque'",color:"#333",marginBottom:20}}>{message}</p>
           {ctaLabel && (
@@ -58,7 +59,7 @@ export function ErrorModal({isOpen,onClose,title,message,ctaLabel,onCta,icon="�
  * ErrorInline — Affichage d'erreur en ligne (dans le flux, pas modal)
  * Usage: <ErrorInline message={payError} icon="⚠️" />
  */
-export function ErrorInline({message,icon="⚠️",className=""}){
+export function ErrorInline({message,icon=null,className=""}){
   if(!message) return null
   const I=COMIC
   return(
@@ -67,7 +68,7 @@ export function ErrorInline({message,icon="⚠️",className=""}){
       background:"rgba(232,82,42,0.1)",border:`1.5px solid ${COMIC.red}`,
       borderRadius:12,color:COMIC.ink,font:"600 15px/1.4 'Bricolage Grotesque'"
     }}>
-      <span style={{fontSize:20,flexShrink:0}}>{icon}</span>
+      <span style={{fontSize:20,flexShrink:0,display:"inline-flex"}}>{icon||<ComicIcon name="cross" size={18}/>}</span>
       <span style={{flex:1}}>{message}</span>
     </div>
   )
@@ -95,7 +96,7 @@ export function ToastError({message,onDismiss,autoDismiss=5000,lang="fr"}){
           to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
       `}</style>
-      <span style={{fontSize:20}}>⚠️</span>
+      <span style={{fontSize:20,display:"inline-flex"}}><ComicIcon name="cross" size={18} color="#fff"/></span>
       <span style={{font:"600 15px/1.4 'Bricolage Grotesque'"}}>{message}</span>
       <button onClick={onDismiss} aria-label={_t(lang,"Fermer","Close","Cerrar")} style={{
         background:"none",border:"none",color:"#fff",fontSize:20,lineHeight:1,

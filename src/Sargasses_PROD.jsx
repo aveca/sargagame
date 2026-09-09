@@ -6,6 +6,7 @@
  * Stack : React 18 · Leaflet · Bricolage Grotesque + Anton · Open-Meteo
  */
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
+import ComicIcon from"./components/ComicIcons.jsx"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 // Contrat de prévision PARTAGÉ (source unique : scripts/lib/forecast-contract.cjs —
@@ -447,6 +448,15 @@ function _fichePageUrl(beach){
 // délègue à shareBeachCard (historique, intact). 'streak' = VEILLE-CARD DE SÉRIE :
 // le "Wordle de la mer" — la série du Veilleur en grille de pastilles, SANS lien
 // (portée max). Canvas pur, fonts déjà chargées, domaine du region-config.
+// SPRINT 2 — share-cards 100 % vectorielles (zéro emoji OS dans les PNG viraux,
+// rendu identique sur tous les OS). Ancrées aux mêmes coordonnées que les glyphes remplacés.
+function _scFlame(x,cx,cy,s,color){x.save();x.translate(cx,cy);x.scale(s/24,s/24);x.fillStyle=color;x.beginPath();x.moveTo(0,-11);x.bezierCurveTo(4,-6,8,-3,8,3);x.bezierCurveTo(8,8,4,11,0,11);x.bezierCurveTo(-4,11,-8,8,-8,3);x.bezierCurveTo(-8,-1,-5,-3,-4,-6);x.bezierCurveTo(-3,-4,-2,-3,-1,-3);x.bezierCurveTo(-2,-6,-1,-9,0,-11);x.closePath();x.fill();x.restore()}
+function _scStar(x,cx,cy,r,color){x.save();x.translate(cx,cy);x.fillStyle=color;x.beginPath();for(let i=0;i<10;i++){const rr=i%2?r*.45:r,a=-Math.PI/2+i*Math.PI/5;x[i?"lineTo":"moveTo"](Math.cos(a)*rr,Math.sin(a)*rr)}x.closePath();x.fill();x.restore()}
+function _scCheck(x,cx,cy,s,color,lw){x.save();x.strokeStyle=color;x.lineWidth=lw||s*.14;x.lineCap="round";x.lineJoin="round";x.beginPath();x.moveTo(cx-s*.32,cy+s*.02);x.lineTo(cx-s*.08,cy+s*.26);x.lineTo(cx+s*.34,cy-s*.28);x.stroke();x.restore()}
+function _scCross(x,cx,cy,s,color,lw){x.save();x.strokeStyle=color;x.lineWidth=lw||s*.14;x.lineCap="round";x.beginPath();x.moveTo(cx-s*.26,cy-s*.26);x.lineTo(cx+s*.26,cy+s*.26);x.moveTo(cx+s*.26,cy-s*.26);x.lineTo(cx-s*.26,cy+s*.26);x.stroke();x.restore()}
+function _scHalf(x,cx,cy,r,color){x.save();x.strokeStyle=color;x.lineWidth=Math.max(3,r*.14);x.beginPath();x.arc(cx,cy,r,0,7);x.stroke();x.fillStyle=color;x.beginPath();x.arc(cx,cy,r,-Math.PI/2,Math.PI/2);x.closePath();x.fill();x.restore()}
+function _scTarget(x,cx,cy,r,color){x.save();x.strokeStyle=color;x.lineWidth=Math.max(4,r*.12);[1,.62,.3].forEach(k=>{x.beginPath();x.arc(cx,cy,r*k,0,7);x.stroke()});x.restore()}
+function _scWave(x,cx,cy,w,color){x.save();x.strokeStyle=color;x.lineWidth=Math.max(4,w*.07);x.lineCap="round";for(const dy of[-w*.12,w*.12]){x.beginPath();for(let px=-w/2;px<=w/2;px+=8){const py=dy+Math.sin((px/w)*Math.PI*2)*w*.07;if(px===-w/2)x.moveTo(cx+px,cy+py);else x.lineTo(cx+px,cy+py)}x.stroke()}x.restore()}
 async function buildShareCard(opts){
   opts=opts||{};const variant=opts.variant||"beach",lang=opts.lang||"fr"
   if(variant==="top")return _scTopCard(opts,lang)
@@ -469,12 +479,12 @@ async function buildShareCard(opts){
     x.fillStyle="#07201E";x.beginPath();x.arc(0,8,24,0,7);x.fill();x.fillStyle="#3fd07f";x.beginPath();x.arc(0,8,16,0,7);x.fill();x.fillStyle="#EAFBF8";x.beginPath();x.arc(-6,2,6,0,7);x.fill()
     x.restore()
     const n=Math.max(0,opts.streak||0),best=opts.best||n,gap=96
-    x.fillStyle="#FFD884";x.font="400 130px 'Anton',system-ui,sans-serif";x.fillText("🔥 "+n,W/2,500)
+    x.fillStyle="#FFD884";x.font="400 130px 'Anton',system-ui,sans-serif";    x.fillStyle="#FFD884";x.font="400 130px 'Anton',system-ui,sans-serif";const _ns=String(n),_nw=x.measureText(_ns).width,_tw=64+24+_nw,_tx=W/2-_tw/2;x.textAlign="left";x.fillText(_ns,_tx+88,500);_scFlame(x,_tx+32,448,96,"#FFC72C");x.textAlign="center"
     x.fillStyle="#fff";x.font="400 58px 'Anton',system-ui,sans-serif";x.fillText(_t(lang,"JOURS DE VEILLE","DAYS ON WATCH","DÍAS DE VIGÍA"),W/2,584)
     const dots=Math.min(n,21),per=7
     for(let i=0;i<dots;i++){const row=Math.floor(i/per),col=i%per,cnt=Math.min(dots-row*per,per),sx=W/2-((cnt-1)*gap)/2;x.fillStyle="#22C55E";x.beginPath();x.arc(sx+col*gap,690+row*86,32,0,7);x.fill()}
     x.fillStyle="rgba(255,255,255,.92)";x.font="800 44px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(_t(lang,"Tu fais mieux ?","Beat my streak?","¿Me superas?"),W/2,H-210)
-    if(best>n){x.fillStyle="rgba(255,255,255,.6)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText("⭐ "+_t(lang,"record "+best,"best "+best,"récord "+best),W/2,H-160)}
+    if(best>n){x.fillStyle="rgba(255,255,255,.6)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";const _rt=_t(lang,"record "+best,"best "+best,"récord "+best),_rw=x.measureText(_rt).width,_tt=36+14+_rw,_t2=W/2-_tt/2;x.textAlign="left";x.fillText(_rt,_t2+50,H-160);_scStar(x,_t2+18,H-172,18,"rgba(255,255,255,.6)");x.textAlign="center"}
     const ds=new Date().toLocaleDateString(lang==="en"?"en-GB":lang==="es"?"es-ES":"fr-FR",{day:"numeric",month:"long"})
     x.fillStyle="rgba(255,255,255,.72)";x.font="500 32px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(ds+"  ·  "+_scDomain(),W/2,H-86)
     const blob=await new Promise(r=>cv.toBlob(r,"image/png",.92));if(!blob)return false
@@ -526,7 +536,7 @@ async function _scTopCard(opts,lang){
     x.fillStyle="rgba(255,255,255,.82)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(why,W/2,ny+78)
     const days=(opts.forecast||beach.forecast||[]).slice(0,3)
     if(days.length){const cw=150,sx=W/2-(days.length*cw)/2+cw/2,dy=H-330;days.forEach((d,i)=>{x.fillStyle=verdictMeta(d.status,lang).color;x.beginPath();x.arc(sx+i*cw,dy,30,0,7);x.fill();x.fillStyle="rgba(255,255,255,.72)";x.font="600 26px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText((d.day||"").slice(0,5),sx+i*cw,dy+66)})}
-    x.fillStyle="rgba(255,255,255,.9)";x.font="700 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(beach.commune?("🚗 "+beach.commune):_t(lang,"Cap sur cette plage","Head here today","Vamos a esta playa"),W/2,H-180)
+    x.fillStyle="rgba(255,255,255,.9)";x.font="700 30px 'Bricolage Grotesque',system-ui,sans-serif";    x.fillText(beach.commune?beach.commune:_t(lang,"Cap sur cette plage","Head here today","Vamos a esta playa"),W/2,H-180)
     _scFooter(x,W,H,lang)
     return await _scShip(cv,"plage-du-jour.png",_t(lang,"La plage du jour selon le Veilleur 🛰️☀️","Beach of the day per the Watchman 🛰️☀️","La playa del día según el Vigía 🛰️☀️"))
   }catch(e){return false}
@@ -541,17 +551,17 @@ async function _scMissedCard(opts,lang){
     const RR=(xx,yy,w,h,r)=>{x.beginPath();if(x.roundRect)x.roundRect(xx,yy,w,h,r);else x.rect(xx,yy,w,h)}
     _scChrome(x,W,H,RR,250);x.textAlign="center"
     const correct=!!opts.correct
-    x.font="400 120px 'Anton',system-ui,sans-serif";x.fillText(correct?"🎯":"🌊🤷",W/2,470)
+    x.font="400 120px 'Anton',system-ui,sans-serif";if(correct){_scTarget(x,W/2,412,52,"#FFD884")}else{_scWave(x,W/2-30,412,120,"rgba(255,255,255,.9)");x.fillStyle="#fff";x.textAlign="left";x.fillText("?",W/2+45,448);x.textAlign="center"}
     x.fillStyle="#fff";x.font="400 92px 'Anton',system-ui,sans-serif";x.fillText(correct?_t(lang,"J'AI EU L'ŒIL","NAILED THE CALL","TUVE OJO"):_t(lang,"LA MER M'A EU","THE SEA FOOLED ME","EL MAR ME ENGAÑÓ"),W/2,600)
     x.fillStyle="#FFD884";x.font="800 46px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(correct?_t(lang,"J'ai deviné le verdict du jour","I called today's verdict","Adiviné el veredicto de hoy"):_t(lang,"J'ai mal deviné le verdict du jour","I misread today's verdict","Fallé el veredicto de hoy"),W/2,672)
-    const chips=[{s:"clean",e:"😎",c:"#22C55E"},{s:"moderate",e:"😐",c:"#F59E0B"},{s:"avoid",e:"🚫",c:"#E8522A"}]
+    const chips=[{s:"clean",c:"#22C55E"},{s:"moderate",c:"#F59E0B"},{s:"avoid",c:"#E8522A"}]
     const cw=210,gap=24,total=chips.length*cw+(chips.length-1)*gap,sx=W/2-total/2,cy=812
     chips.forEach((ch,i)=>{const cx=sx+i*(cw+gap),picked=ch.s===opts.guess
       RR(cx,cy,cw,96,20);x.fillStyle=picked?ch.c+"33":"rgba(255,255,255,.06)";x.fill();x.strokeStyle=picked?ch.c:"rgba(255,255,255,.18)";x.lineWidth=picked?4:2;x.stroke()
-      x.fillStyle=picked?"#fff":"rgba(255,255,255,.5)";x.font="400 52px 'Anton',system-ui,sans-serif";x.fillText(ch.e,cx+cw/2,cy+64)
+      x.fillStyle=picked?"#fff":"rgba(255,255,255,.5)";const _gc=picked?"#fff":"rgba(255,255,255,.5)";if(ch.s==="clean")_scCheck(x,cx+cw/2,cy+48,40,_gc,7);else if(ch.s==="avoid")_scCross(x,cx+cw/2,cy+48,40,_gc,7);else _scHalf(x,cx+cw/2,cy+48,22,_gc)
       if(picked&&!correct){x.strokeStyle="#fff";x.lineWidth=7;x.lineCap="round";x.beginPath();x.moveTo(cx+20,cy+20);x.lineTo(cx+cw-20,cy+96-20);x.stroke()}})
     const streak=Math.max(0,opts.streak||0)
-    if(!correct&&streak>0){x.fillStyle="rgba(255,255,255,.7)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText("🔥 "+_t(lang,"série interrompue à "+streak,"streak broke at "+streak,"racha rota en "+streak),W/2,988)}
+    if(!correct&&streak>0){x.fillStyle="rgba(255,255,255,.7)";x.font="600 30px 'Bricolage Grotesque',system-ui,sans-serif";const _bt=_t(lang,"série interrompue à "+streak,"streak broke at "+streak,"racha rota en "+streak),_bw=x.measureText(_bt).width,_bx=W/2-(30+12+_bw)/2;x.textAlign="left";x.fillText(_bt,_bx+42,988);_scFlame(x,_bx+15,976,30,"rgba(255,255,255,.7)");x.textAlign="center"}
     x.fillStyle="#fff";x.font="800 44px 'Bricolage Grotesque',system-ui,sans-serif";x.fillText(correct?_t(lang,"Tu lis la mer aussi bien ?","Read the sea as well?","¿Lees el mar igual?"):_t(lang,"Tu lis mieux la mer que moi ?","Read the sea better than me?","¿Lees mejor el mar?"),W/2,H-200)
     _scFooter(x,W,H,lang)
     return await _scShip(cv,"defi-veilleur.png",correct?_t(lang,"J'ai eu l'œil du Veilleur 🛰️🎯 — tu fais mieux ?","Got the Watchman's eye 🛰️🎯 — beat it?","Tuve el ojo del Vigía 🛰️🎯 — ¿me superas?"):_t(lang,"Le défi du Veilleur m'a eu 😅 — tu fais mieux ? 🛰️","The Watchman's Challenge fooled me 😅 — beat it? 🛰️","El Desafío del Vigía me engañó 😅 — ¿me superas? 🛰️"))
@@ -1422,7 +1432,7 @@ function beachStoryBeats(beach,forecast,lang){
         <g style={{transform:"translateX(calc(var(--p0)*104px - 16px))"}}>{miVeil(298,248,mwing,mlens)}</g>
         {typeof beach.score==="number"&&<g style={{opacity:"var(--p0)",transformBox:"fill-box",transformOrigin:"center",transform:"scale(calc(.72 + var(--p0)*.28))"}}><path d="M500 206 C526 206 544 224 544 250 C544 276 526 294 500 294 C474 294 456 276 456 250 C456 224 474 206 500 206 Z" fill={beach.scoreColor||vm.color}/><text x="500" y="263" fontFamily="'Anton',sans-serif" fontSize="38" fill="#fff" textAnchor="middle">{beach.score}</text></g>}
       </g>},
-    {eyebrow:T("LA SUITE","WHAT'S NEXT","LO QUE VIENE"),heading:`${turn?T("Ça se dégrade","It's turning","Empeora"):T("Demain, ça tient","Tomorrow holds","Mañana aguanta")} ${turn?"⚠️":"☀️"}`,sub:T("5 jours d'avance, plage par plage. Le satellite a déjà regardé.","5 days ahead, beach by beach. The satellite already looked.","5 días por delante."),
+    {eyebrow:T("LA SUITE","WHAT'S NEXT","LO QUE VIENE"),heading:`${turn?T("Ça se dégrade","It's turning","Empeora"):T("Demain, ça tient","Tomorrow holds","Mañana aguanta")}`,sub:T("5 jours d'avance, plage par plage. Le satellite a déjà regardé.","5 days ahead, beach by beach. The satellite already looked.","5 días por delante."),
       scene:<g>
         <rect width="800" height="600" fill="#06211E"/><circle cx="400" cy="206" r="132" fill="#0A2E2A"/>
         <g style={{transform:"translateX(calc(var(--p1)*70px - 35px))"}}><line x1="250" y1="206" x2="560" y2="206" stroke="#FFC72C" strokeWidth="2" strokeDasharray="5 8" opacity=".55"/></g>
@@ -3910,7 +3920,7 @@ function BeachReport({beach,lang,communityReports}){
       )}
       {queued&&(
         <div style={{marginTop:8,fontSize:11,fontWeight:600,color:"var(--sg-mid,#7a7768)",display:"flex",alignItems:"center",gap:6}}>
-          <span aria-hidden="true">📡</span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
+          <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="orbit" size={14}/></span>{_t(lang,"Hors-ligne — ton signalement partira au retour du réseau.","Offline — your report will send when you're back online.","Sin conexión — tu reporte se enviará al volver la red.")}
         </div>
       )}
       {RAMASSAGE_ENABLED&&(
@@ -4000,7 +4010,7 @@ function BeachReport({beach,lang,communityReports}){
 function FbPostsStrip({beach,fbPosts,lang}){
   const posts=fbPosts?.[beach?.id]||fbPosts?.[BEACH_TO_SARG?.[beach?.id]]||[]
   if(!posts.length)return null
-  const statusEmoji=(s)=>s==="avoid"?"🚫":s==="moderate"?"⚠️":s==="clean"?"✅":"💬"
+  const statusGlyph=(s)=>s==="avoid"?"cross":s==="moderate"?"half":s==="clean"?"check":"chat"
   const timeAgo=(iso)=>{
     try{
       const d=Math.max(0,Date.now()-new Date(iso).getTime())
@@ -4015,14 +4025,14 @@ function FbPostsStrip({beach,fbPosts,lang}){
     <div style={{margin:"14px 0 4px",padding:"12px 14px",borderRadius:14,
       background:"var(--sg-bgD,#F7F5EF)",border:"1px solid var(--sg-border,rgba(0,0,0,.04))"}}>
       <div style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
-        <span>📷</span>
+        <span><ComicIcon name="camera" size={12}/> </span>
         {lang==="es"?`${posts.length} reporte${posts.length>1?"s":""} reciente${posts.length>1?"s":""} de visitantes (Facebook)`:lang==="en"?`${posts.length} recent visitor ${posts.length>1?"reports":"report"} (Facebook)`:`${posts.length} retour${posts.length>1?"s":""} visiteur${posts.length>1?"s":""} récent${posts.length>1?"s":""} (Facebook)`}
       </div>
       {posts.map((p,i)=>(
         <div key={i} style={{marginBottom:i<posts.length-1?14:0,paddingBottom:i<posts.length-1?14:0,
           borderBottom:i<posts.length-1?"1px solid var(--sg-border,rgba(0,0,0,.05))":"none"}}>
           <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:6}}>
-            <span style={{fontSize:18,lineHeight:1}}>{statusEmoji(p.inferredStatus)}</span>
+            <span style={{fontSize:18,lineHeight:1,display:"inline-flex"}}><ComicIcon name={statusGlyph(p.inferredStatus)} size={17}/></span>
             <span style={{fontSize:12,fontWeight:700,color:"var(--sg-ink)"}}>{p.author}</span>
             <span style={{fontSize:11,color:"var(--sg-mid)"}}>{timeAgo(p.scrapedAt)}</span>
           </div>
@@ -4035,12 +4045,12 @@ function FbPostsStrip({beach,fbPosts,lang}){
               texte reste comme preuve "vérifié au sol". Lien source conservé si besoin. */}
           {p.photos&&p.photos.length>0&&(
             <a href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{display:"inline-block",marginBottom:p.commentSample?8:4,fontSize:11,fontWeight:700,color:"var(--sg-mid)"}}>
-              📷 {p.photos.length} {_t(lang,"photo(s) au sol","on-site photo(s)","foto(s) in situ")} →
+              <ComicIcon name="camera" size={11}/> {p.photos.length} {_t(lang,"photo(s) au sol","on-site photo(s)","foto(s) in situ")} →
             </a>
           )}
           {p.commentSample&&(
             <div style={{fontSize:11,color:"var(--sg-mid)",lineHeight:1.4,paddingLeft:10,borderLeft:"2px solid rgba(0,0,0,.08)"}}>
-              💬 {p.commentSample}{p.commentCount>1?` · +${p.commentCount-1} ${_t(lang,"autres","more","más")}`:""}
+              <ComicIcon name="chat" size={12}/> {p.commentSample}{p.commentCount>1?` · +${p.commentCount-1} ${_t(lang,"autres","more","más")}`:""}
             </div>
           )}
           <a href={p.sourceUrl} target="_blank" rel="noopener nofollow" style={{
@@ -5235,7 +5245,7 @@ const fcUp = false
             style={{display:"flex",alignItems:"center",gap:9,margin:"10px 0 2px",padding:"9px 12px",borderRadius:12,
             background:"rgba(34,197,94,.10)",border:"1px solid rgba(34,197,94,.26)",textDecoration:"none",cursor:"pointer",
             width:"100%",fontFamily:"inherit",textAlign:"left"}}>
-            <span aria-hidden="true" style={{fontSize:15,lineHeight:1}}>✅</span>
+            <span aria-hidden="true" style={{fontSize:15,lineHeight:1,display:"inline-flex"}}><ComicIcon name="check" size={15} color="#16A34A"/></span>
             <span style={{flex:1,fontSize:12.5,fontWeight:700,color:"var(--sg-ink,#13241F)",lineHeight:1.3}}>
               {(()=>{
                 // Chiffre RÉEL injecté au build (__RELIABILITY__, même source que /fiabilite/).
@@ -7857,7 +7867,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
               style={{display:"inline-flex",alignItems:"center",gap:7,margin:"0 0 16px",padding:"7px 13px",borderRadius:999,
                 background:"rgba(34,197,94,.12)",border:`1px solid rgba(34,197,94,${PAY_CAPTURE_ONLY?".4":".24"})`,textDecoration:"none",
                 fontSize:12,fontWeight:600,color:PAY_CAPTURE_ONLY?"#1B7A4B":"#8FE3B0",cursor:IS_NEW_REGION?"default":"pointer"}}>
-              <span aria-hidden="true">✅</span>
+              <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="check" size={13} color={PAY_CAPTURE_ONLY?"#1B7A4B":"#8FE3B0"}/></span>
               <span>{_t(lang,`${__REL.cleanPct}% de nos prévisions « mer propre » vérifiées · ${reg}`,`${__REL.cleanPct}% of our “clean water” forecasts verified · ${reg}`,`${__REL.cleanPct}% de nuestros pronósticos “agua limpia” verificados · ${reg}`)}{!IS_NEW_REGION&&<span style={{opacity:.65}}>  →</span>}</span>
             </a>
           })()}
@@ -7911,7 +7921,7 @@ function CaptureGateModal({lang,onSubmit,onClose,onPay,beach}){
             </button>
           </div>
         </>):(<>
-          <div style={{fontSize:48,marginBottom:16}}>✅</div>
+          <div style={{fontSize:48,marginBottom:16,display:"flex",justifyContent:"center"}}><ComicIcon name="check" size={46} color="#22C55E"/></div>
           <h3 style={{fontSize:24,color:"#fff",margin:"0 0 10px 0"}}>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}</h3>
           <p style={{fontSize:15,color:"rgba(255,255,255,.65)",lineHeight:1.5,margin:"0 0 20px"}}>
             {_t(lang,"On t'envoie le brief sargasses par email — ta meilleure plage, les jours propres, et une alerte si ça se dégrade.","We'll email you the sargassum brief — your best beach, clean days, and an alert if it worsens.","Te enviamos el informe de sargazo por email — tu mejor playa, los días limpios y una alerta si empeora.")}
@@ -7947,7 +7957,7 @@ function ExitEmailBand({lang,pick,onClose,trigger="exitcap"}){
       animation:"slideUp .35s cubic-bezier(.22,1,.36,1)"}}>
       {done?(
         <div style={{flex:1,fontSize:12.5,fontWeight:700,color:C.green,textAlign:"center",padding:"3px 0"}}>
-          <span style={{fontSize:18,marginRight:6}}>✅</span>
+          <span style={{fontSize:18,marginRight:6,display:"inline-flex",verticalAlign:"-3px"}}><ComicIcon name="check" size={17}/></span>
           {_t(lang,"C'est noté — Le Veilleur t'écrit demain matin : le verdict de ta plage, mesuré au satellite cette nuit.","Done — the Watchman writes tomorrow morning: your beach's verdict, measured by satellite overnight.","Listo — el Vigía te escribe mañana: el veredicto de tu playa, medido por satélite esta noche.")}
         </div>
       ):(<>
@@ -8201,7 +8211,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
       <div style={{margin:"0 0 12px",padding:"16px",borderRadius:16,
         background:"linear-gradient(135deg,#190c2c,#142824)",border:"1px solid rgba(255,199,44,.18)"}}>
         <div style={{fontSize:13.5,fontWeight:800,color:C.green,marginBottom:12,display:"flex",alignItems:"center",gap:7}}>
-          <span style={{fontSize:18}}>✅</span>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}
+          <span style={{fontSize:18,display:"inline-flex"}}><ComicIcon name="check" size={17}/></span>{_t(lang,"La veille est lancée.","Your watch is on.","La vigilancia empezó.")}
         </div>
         <div style={{display:"flex",flexDirection:"column",gap:0}}>
           {steps.map((s,i)=>(
@@ -8225,7 +8235,7 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
     <div style={{margin:"0 0 12px",padding:"14px 16px",borderRadius:16,
       background:"linear-gradient(135deg,#190c2c,#142824)",
       textAlign:"center",fontSize:13,fontWeight:600,color:C.green}}>
-      <span style={{fontSize:20,display:"block",marginBottom:4}}>✅</span>
+      <span style={{fontSize:20,display:"flex",justifyContent:"center",marginBottom:4}}><ComicIcon name="check" size={19}/></span>
       {_t(lang,"C'est fait ! Premier email dans 3 jours.","You're in! First email in 3 days.","¡Listo! Primer email en 3 días.")}
     </div>
   )
@@ -10492,7 +10502,7 @@ function AlertHub({lang,island,beach,onPremium,onShowMap,onClose,onEnableAlerts}
           <div style={{position:"relative"}}>
             {submitted ? (
               <div style={{textAlign:"center",fontSize:14,fontWeight:600,color:"#1c7fb0"}}>
-                <span style={{fontSize:22,display:"block",marginBottom:6}}>✅</span>
+                <span style={{fontSize:22,display:"flex",justifyContent:"center",marginBottom:6}}><ComicIcon name="check" size={21}/></span>
                 {_t(lang,"C'est fait ! Le verdict du matin arrive dans ta boîte.","You're in! The morning verdict will arrive in your inbox.","¡Listo! El veredicto matutino llegará a tu bandeja.")}
                 {PushCta}
               </div>
@@ -10734,7 +10744,7 @@ function VerdictDuJourCard({beach,lang}){
         </div>
       ):(
         <div className={cachedRef.current?"":"vdj-pop"}>
-          <div style={{fontSize:15,fontWeight:800,margin:"8px 0 10px",color:correct?"#16A34A":"#C97E3A"}}>{correct?_t(lang,"Bravo ! 🎉","Nailed it! 🎉","¡Bien! 🎉"):_t(lang,"Le vrai verdict :","The real verdict:","El veredicto:")}</div>
+          <div style={{fontSize:15,fontWeight:800,margin:"8px 0 10px",color:correct?"#16A34A":"#C97E3A",display:"flex",alignItems:"center",gap:7}}>{correct?<><ComicIcon name="party" size={16}/> {_t(lang,"Bravo !","Nailed it!","¡Bien!")}</>:_t(lang,"Le vrai verdict :","The real verdict:","El veredicto:")}</div>
           <div style={{display:"flex",alignItems:"center",gap:12}}>
             {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={54}/>}
             <div style={{flex:1,minWidth:0}}>
@@ -10783,7 +10793,7 @@ function WorldChallengeCard({beach,lang,active,phaseGrad,onGuess,streak}){
           </div>
         ):(
           <div className="wf-pop">
-            <div style={{fontSize:16,fontWeight:800,color:correct?"#22C55E":"#FFD884",margin:"14px 0 10px"}}>{correct?_t(lang,"Bravo ! 🎉 +1 série","Nailed it! 🎉 +1 streak","¡Bien! 🎉 +1 racha"):_t(lang,"Raté ! Le vrai verdict :","Missed! The real verdict:","¡Fallaste! El veredicto:")}</div>
+            <div style={{fontSize:16,fontWeight:800,color:correct?"#22C55E":"#FFD884",margin:"14px 0 10px",display:"flex",alignItems:"center",gap:7}}>{correct?<><ComicIcon name="party" size={17}/> {_t(lang,"Bravo ! +1 série","Nailed it! +1 streak","¡Bien! +1 racha")}</>:_t(lang,"Raté ! Le vrai verdict :","Missed! The real verdict:","¡Fallaste! El veredicto:")}</div>
             <div style={{display:"flex",alignItems:"center",gap:12}}>
               {hasScore&&<ScoreBlob score={beach.score} color={beach.scoreColor||vm.color} size={58}/>}
               <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800,color:vm.color}}>{vm.verb}</div><div style={{fontSize:12.5,lineHeight:1.4,color:"rgba(255,255,255,.84)"}}>{why}</div></div>
@@ -10807,25 +10817,25 @@ function WorldBonus({level,topBeach,lang,onPremium,onClose}){
     <div role="dialog" aria-modal="true" aria-label={_t(lang,"Bonus débloqué","Bonus unlocked","Bono")} style={{position:"absolute",inset:0,zIndex:25,display:"flex",alignItems:"center",justifyContent:"center",padding:26,
       background:"radial-gradient(120% 90% at 50% 28%,rgba(17,70,62,.96),rgba(4,9,11,.97))",animation:"wfBonusIn .4s cubic-bezier(.22,1,.36,1) both"}}>
       <div className="wf-pop" style={{maxWidth:360,width:"100%",textAlign:"center",color:"#fff"}}>
-        <div style={{fontSize:48,lineHeight:1}}>🎁</div>
-        <div style={{marginTop:6,fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884"}}>🔥 {_t(lang,"SÉRIE DE","STREAK OF","RACHA DE")} {level} · {_t(lang,"BONUS DÉBLOQUÉ","BONUS UNLOCKED","BONO DESBLOQUEADO")}</div>
+        <div style={{fontSize:48,lineHeight:1,display:"flex",justifyContent:"center"}}><ComicIcon name="gift" size={46}/></div>
+        <div style={{marginTop:6,fontSize:12,fontWeight:800,letterSpacing:".08em",color:"#FFD884",display:"flex",alignItems:"center",justifyContent:"center",gap:6}}><ComicIcon name="flame" size={13}/> {_t(lang,"SÉRIE DE","STREAK OF","RACHA DE")} {level} · {_t(lang,"BONUS DÉBLOQUÉ","BONUS UNLOCKED","BONO DESBLOQUEADO")}</div>
         <h2 style={{margin:"8px 0 0",fontFamily:"'Anton',system-ui,sans-serif",fontSize:30,lineHeight:1.06}}>{_t(lang,"Tu as l'œil du Veilleur","You've got the Watchman's eye","Tienes el ojo del Vigía")}</h2>
         {topBeach&&<div style={{margin:"16px 0 0",padding:"14px 16px",borderRadius:16,background:"rgba(255,255,255,.07)",border:"1px solid rgba(95,211,201,.35)",textAlign:"left"}}>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#3fd07f",textTransform:"uppercase"}}>🎁 {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
+          <div style={{fontSize:11,fontWeight:800,letterSpacing:".06em",color:"#3fd07f",textTransform:"uppercase",display:"flex",alignItems:"center",gap:6}}><ComicIcon name="gift" size={13}/> {_t(lang,"Offert : ta reco du moment","Free: your pick right now","Gratis: tu recomendación")}</div>
           <div style={{display:"flex",alignItems:"center",gap:12,marginTop:8}}>
             {typeof topBeach.score==="number"&&<ScoreBlob score={topBeach.score} color={topBeach.scoreColor||vm.color} size={52}/>}
             <div style={{flex:1,minWidth:0}}><div style={{fontSize:16,fontWeight:800}}>{topBeach.name}</div><div style={{fontSize:12.5,color:"rgba(255,255,255,.82)"}}>{topBeach.commune?topBeach.commune+" · ":""}{vm.verb}</div></div>
           </div>
           <button onClick={async()=>{try{track("sg_share",{variant:"top",beach_id:topBeach.id,score:topBeach.score})}catch(_){};try{await buildShareCard({variant:"top",beach:topBeach,forecast:topBeach.forecast,lang})}catch(_){}}}
             style={{display:"block",width:"100%",marginTop:12,padding:"10px",borderRadius:12,border:"1px solid rgba(255,216,132,.5)",cursor:"pointer",background:"rgba(255,216,132,.1)",color:"#FFD884",fontWeight:800,fontSize:13,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
-            ☀️ {_t(lang,"Partager la plage du jour","Share beach of the day","Compartir la playa del día")}</button>
+            <span style={{display:"inline-flex",verticalAlign:"-3px"}}><ComicIcon name="sun" size={14}/></span> {_t(lang,"Partager la plage du jour","Share beach of the day","Compartir la playa del día")}</button>
         </div>}
         {/* Veille-Card de Série AVANT le CTA premium : le partage frappe au pic
             émotionnel (le "Wordle de la mer", actif d'acquisition organique). */}
         <button onClick={async()=>{try{track("sg_share",{variant:"streak",level})}catch(_){}; let best=level;try{best=parseInt(localStorage.getItem("sg_world_best")||String(level))||level}catch(_){}; try{await buildShareCard({variant:"streak",streak:level,best,lang})}catch(_){}}}
           style={{display:"block",width:"100%",marginTop:16,padding:"14px",borderRadius:16,border:"1px solid rgba(95,211,201,.5)",cursor:"pointer",
           fontFamily:"'Bricolage Grotesque',system-ui,sans-serif",fontSize:14.5,fontWeight:800,color:"#3fd07f",background:"rgba(95,211,201,.08)"}}>
-          🔥 {_t(lang,"Partager ma série","Share my streak","Compartir mi racha")}
+          <ComicIcon name="flame" size={15}/> {_t(lang,"Partager ma série","Share my streak","Compartir mi racha")}
         </button>
         <button onClick={()=>{try{track("sg_world_bonus_premium",{level})}catch(_){}; onPremium&&onPremium("world_bonus")}}
           style={{display:"block",width:"100%",marginTop:10,padding:"15px",borderRadius:16,border:"none",cursor:"pointer",
@@ -10920,7 +10930,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   const sayIdxRef=useRef(0),sayTimerRef=useRef(0)
   const skyRef=useRef(null),camBaseRef=useRef(null)
   const yoleRef=useRef(null),yoleRafRef=useRef(0) // parallaxe douce du fond au pan
-  const SAT_SAY={fr:["Hé ! Je bosse, là 🛰️","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu 😄","Eh, je travaille, moi !"],en:["Hey! I'm working 🛰️","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me 😄","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando 🛰️","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste 😄","¡Eh, que trabajo!"]}
+  const SAT_SAY={fr:["Hé ! Je bosse, là","Repose-moi, je scanne !","Doucement… je veille.","Oh ! Tu m'as eu","Eh, je travaille, moi !"],en:["Hey! I'm working","Put me back, I'm scanning!","Easy… I'm on watch.","Oh! You got me","Hey, I'm on duty!"],es:["¡Eh! Estoy trabajando","¡Suéltame, escaneo!","Tranqui… estoy vigilando.","¡Oh! Me pillaste","¡Eh, que trabajo!"]}
   const veilleurSpeak=()=>{const arr=SAT_SAY[lang]||SAT_SAY.fr;setSatSay(arr[sayIdxRef.current%arr.length]);sayIdxRef.current++;if(sayTimerRef.current)clearTimeout(sayTimerRef.current)}
   const[ready,setReady]=useState(false)
   const SPAN_PX=1000,MID=0.82,FAR=0.32,NEAR=2.6
@@ -11797,7 +11807,7 @@ export default function App(){
               if(d.trialEnd)localStorage.setItem("sg_premium_trial_end",String(d.trialEnd))
             }
             setIsPremium(true);setShowWelcome(true)
-            try{sgToast({tone:"success",title:_t(lang,"Accès retrouvé ✅","Access restored ✅","Acceso recuperado ✅"),msg:_t(lang,"Ton Pass est de nouveau actif sur cet appareil.","Your Pass is active again on this device.","Tu Pase vuelve a estar activo en este dispositivo.")})}catch(_){}
+            try{sgToast({tone:"success",title:_t(lang,"Accès retrouvé","Access restored","Acceso recuperado"),msg:_t(lang,"Ton Pass est de nouveau actif sur cet appareil.","Your Pass is active again on this device.","Tu Pase vuelve a estar activo en este dispositivo.")})}catch(_){}
             track("sg_premium_unlock_from_email",{status:d.status||"restore_link",src:src||"restore_link"})
           }else{
             try{sgToast({tone:"info",title:_t(lang,"Accès introuvable","Access not found","Acceso no encontrado"),msg:_t(lang,"Aucun accès actif pour cet e-mail. Écris à alerte@sargasses-martinique.com et on règle ça.","No active access for this email. Email alerte@sargasses-martinique.com and we'll sort it.","Sin acceso activo para este email. Escribe a alerte@sargasses-martinique.com y lo resolvemos.")})}catch(_){}

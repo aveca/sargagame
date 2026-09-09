@@ -10,6 +10,7 @@
  */
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
+import ComicIcon from "./components/ComicIcons.jsx"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -2104,7 +2105,7 @@ export default function WorldMapView({
               marginTop:9,display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
               background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 12px",
             }}>
-              <span style={{fontSize:14}}>✅</span>
+              <span style={{fontSize:14,display:"inline-flex"}}><ComicIcon name="check" size={14}/></span>
               <span style={{font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#177A42"}}>
                 {_t(lang,"C'est fait. Le verdict du matin t'attend demain — mesuré, pas deviné.","Done. The morning verdict lands tomorrow — measured, not guessed.","Listo. El veredicto de la mañana llega mañana — medido, no adivinado.")}
               </span>

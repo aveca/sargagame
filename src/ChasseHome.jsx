@@ -21,6 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
+import ComicIcon from "./components/ComicIcons.jsx"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -69,13 +70,13 @@ function rarity(score){
   return            {cls:"r-com", lbl:{fr:"COMMUNE",en:"COMMON",es:"COMÚN"},         stars:"★★☆☆☆"}
 }
 
-/* emoji-type : varie le visuel même entre plages « propres » */
+/* picto-type : varie le visuel même entre plages « propres » (noms ComicIcon, cf. typeIcon) */
 function typeEmoji(b){
-  if(b.status==="avoid") return "⚠️"
-  if(b.snorkel) return "🐠"
-  if(b.status==="moderate") return "🌬️"
-  if((b.score||0)>=88) return "🌴"
-  return "🌊"
+  if(b.status==="avoid") return "cross"
+  if(b.snorkel) return "fish"
+  if(b.status==="moderate") return "wind"
+  if((b.score||0)>=88) return "palm"
+  return "wave"
 }
 
 /* n° de carte (depuis l'id : mq016 → 016) */
@@ -85,12 +86,12 @@ function cardNum(b){ const m=b&&b.id&&String(b.id).match(/(\d+)/); return m?m[1]
 function powers(b,lang){
   const _t=(o)=>o[lang]||o.fr
   const out=[]
-  if(b.status==="avoid") out.push(["☠",_t({fr:"Sargasses +++",en:"Sargassum +++",es:"Sargazo +++"})])
-  else if(b.status==="moderate") out.push(["👁",_t({fr:"À surveiller",en:"Watch it",es:"Vigilar"})])
-  if(b.snorkel) out.push(["🤿",_t({fr:"Snorkeling",en:"Snorkeling",es:"Snorkel"})])
-  if(b.kids) out.push(["👶",_t({fr:"Familles",en:"Families",es:"Familias"})])
-  if(b.parking) out.push(["🅿️",_t({fr:"Parking",en:"Parking",es:"Parking"})])
-  if(b.drive!=null&&isFinite(b.drive)) out.push(["🚗",_t({fr:"à "+b.drive+" min",en:b.drive+" min away",es:"a "+b.drive+" min"})])
+  if(b.status==="avoid") out.push(["skull",_t({fr:"Sargasses +++",en:"Sargassum +++",es:"Sargazo +++"})])
+  else if(b.status==="moderate") out.push(["eye",_t({fr:"À surveiller",en:"Watch it",es:"Vigilar"})])
+  if(b.snorkel) out.push(["mask",_t({fr:"Snorkeling",en:"Snorkeling",es:"Snorkel"})])
+  if(b.kids) out.push(["baby",_t({fr:"Familles",en:"Families",es:"Familias"})])
+  if(b.parking) out.push(["parking",_t({fr:"Parking",en:"Parking",es:"Parking"})])
+  if(b.drive!=null&&isFinite(b.drive)) out.push(["car",_t({fr:"à "+b.drive+" min",en:b.drive+" min away",es:"a "+b.drive+" min"})])
   if(!out.length) out.push(["≈",_t({fr:"Eau calme",en:"Calm water",es:"Agua tranquila"})])
   return out.slice(0,2)
 }
@@ -181,14 +182,14 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
         <span className={`lc-bn s-${v.st}`}>
           <span className="lc-nm">{beach.name}</span>
           <span className="lc-sc">{sc!=null?sc:"—"}</span>
-          <span className="lc-ty">{typeEmoji(beach)}</span>
+          <span className="lc-ty"><ComicIcon name={typeEmoji(beach)} size={13}/></span>
         </span>
         <span className="lc-hp" aria-hidden="true"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
         <span className="lc-illu"><Illu st={v.st} score={sc||0} uid={uid}/>
           <span className="lc-rar">{r.stars} {_t(r.lbl)}</span></span>
         <span className="lc-bd">
           {pw.map(([e,t],i)=>(
-            <span className="lc-atk" key={i}><span className="lc-atke">{e}</span>
+            <span className="lc-atk" key={i}><span className="lc-atke"><ComicIcon name={e} size={14}/></span>
               <span className="lc-atkt">{t}</span></span>
           ))}
           <span className="lc-ft"><span>N° {cardNum(beach)}</span><span>{beach.commune||"Copernicus"}</span></span>
@@ -235,9 +236,9 @@ function H2sNote({status,lang}){
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
   return (
     <div className={"lc-h2s "+(bad?"bad":"mod")} role="note">
-      <div className="lc-h2s-h"><span className="lc-h2s-ic" aria-hidden="true">{bad?"⚠️":"👃"}</span>{_t(H2S_TXT[k].h)}</div>
+      <div className="lc-h2s-h"><span className="lc-h2s-ic" aria-hidden="true" style={{display:"inline-flex"}}>{bad?<ComicIcon name="cross" size={15}/> : <ComicIcon name="odor" size={15}/>}</span>{_t(H2S_TXT[k].h)}</div>
       <p className="lc-h2s-txt">{_t(H2S_TXT[k].t)}</p>
-      {bad&&<div className="lc-h2s-sens"><b aria-hidden="true">👶</b><span>{_t(H2S_TXT.bad.s)}</span></div>}
+      {bad&&<div className="lc-h2s-sens"><b aria-hidden="true" style={{display:"inline-flex",verticalAlign:"-3px"}}><ComicIcon name="baby" size={15}/></b><span>{_t(H2S_TXT.bad.s)}</span></div>}
       <div className="lc-h2s-src">{_t(H2S_TXT.src)}</div>
     </div>
   )
@@ -402,7 +403,7 @@ function PartnerCard({beach,lang,track}){
     <div style={{margin:"16px 0 0",padding:"11px 13px",borderRadius:14,border:"2px solid rgba(13,11,20,.16)",background:"#fff",boxShadow:"2px 2px 0 rgba(13,11,20,.07)",display:"flex",alignItems:"center",gap:12,fontFamily:"'Bricolage Grotesque',system-ui,sans-serif"}}>
       {p.logo
         ? <img src={p.logo} alt="" width={42} height={42} style={{flex:"0 0 auto",borderRadius:10,objectFit:"cover",border:"1.5px solid rgba(13,11,20,.12)"}}/>
-        : <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",fontSize:21,background:"#f1ede2",border:"1.5px solid rgba(13,11,20,.12)"}}>🏨</span>}
+        : <span style={{flex:"0 0 auto",width:42,height:42,borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",background:"#f1ede2",border:"1.5px solid rgba(13,11,20,.12)"}}><ComicIcon name="hotel" size={22}/></span>}
       <div style={{flex:"1 1 auto",minWidth:0}}>
         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
           <span style={{font:"800 8.5px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:"#7a7320",background:"#fbf2c4",border:"1px solid rgba(13,11,20,.18)",borderRadius:4,padding:"2px 5px"}}>{_t({fr:"Partenaire",en:"Partner",es:"Socio"})}</span>
@@ -613,13 +614,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           const L={clean:_t({fr:"Propre",en:"Clean",es:"Limpia"}),moderate:_t({fr:"Modéré",en:"Moderate",es:"Moderada"}),avoid:_t({fr:"À éviter",en:"Avoid",es:"Evitar"})}
           return (
           <div role="status" style={{margin:"6px 2px 8px",display:"inline-flex",alignItems:"center",gap:6,background:"#FFEDD5",border:"2px solid #0d0b14",boxShadow:"2px 2px 0 #0d0b14",borderRadius:9,padding:"6px 10px",font:"800 11px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:"#9a3412"}}>
-            ⚠️ {_t({fr:"Ça a changé depuis hier",en:"It changed since yesterday",es:"Cambió desde ayer"})} — <b>{L[myChange.from]||myChange.from}</b> → <b>{L[myChange.to]||myChange.to}</b>
+            <ComicIcon name="bell" size={13}/> {_t({fr:"Ça a changé depuis hier",en:"It changed since yesterday",es:"Cambió desde ayer"})} — <b>{L[myChange.from]||myChange.from}</b> → <b>{L[myChange.to]||myChange.to}</b>
           </div>
         )})()}
         {why&&whyOpen&&(
           <section className="lc-why" aria-label={_t({fr:"Pourquoi ce verdict",en:"Why this verdict",es:"Por qué este veredicto"})}>
             <div className="lc-season-body">
-              {why.ageH!=null&&<p>🛰️ {(()=>{
+              {why.ageH!=null&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="orbit" size={14}/> {(()=>{
                 const lbl=why.ageSat
                   ? {fr:"Dernière mesure satellite",en:"Last satellite reading",es:"Última medición satelital"}
                   : {fr:"Dernière mise à jour des données",en:"Last data update",es:"Última actualización de datos"}
@@ -627,11 +628,11 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                   ? _t({fr:`${lbl.fr} : il y a ${why.ageH} h.`,en:`${lbl.en}: ${why.ageH}h ago.`,es:`${lbl.es}: hace ${why.ageH} h.`})
                   : _t({fr:`${lbl.fr} : il y a ${Math.round(why.ageH/24)} j.`,en:`${lbl.en}: ${Math.round(why.ageH/24)}d ago.`,es:`${lbl.es}: hace ${Math.round(why.ageH/24)} días.`})
               })()}</p>}
-              {why.ageH!=null&&why.ageH>=12&&!why.stale&&<p>⏳ {_t({fr:`Les données ont ${why.ageH} h — les conditions côtières changent vite. Vérifie les webcams pour une vue live.`,en:`Data is ${why.ageH}h old — nearshore conditions shift fast. Check webcams for a live view.`,es:`Los datos tienen ${why.ageH} h — las condiciones costeras cambian rápido. Consulta las cámaras web para una vista en vivo.`})}</p>}
-              {why.stale&&<p>⏳ {_t({fr:"Le satellite a du retard — on préfère te le dire : verdict à lire avec réserve.",en:"The satellite feed is running late — we'd rather tell you: read this verdict with caution.",es:"El satélite va con retraso — preferimos decírtelo: lee este veredicto con reserva."})}</p>}
-              {why.interp&&<p>🧭 {_t({fr:"Trop près du rivage pour une lecture directe : estimée depuis les pixels marins voisins.",en:"Too close to shore for a direct reading: estimated from neighboring sea pixels.",es:"Demasiado cerca de la costa para una lectura directa: estimada desde los píxeles marinos vecinos."})}</p>}
-              {why.conf!=null&&<p>🎯 {_t({fr:`Confiance dans la prévision de demain : ${why.conf} %.`,en:`Confidence in tomorrow's forecast: ${why.conf}%.`,es:`Confianza en el pronóstico de mañana: ${why.conf} %.`})}</p>}
-              {why.global&&<p>📊 {_t({fr:`${why.global.pct} % de nos verdicts vérifiés a posteriori (${why.global.n} comparaisons, tous régimes confondus).`,en:`${why.global.pct}% of our verdicts verified after the fact (${why.global.n} comparisons, all regimes).`,es:`${why.global.pct} % de nuestros veredictos verificados a posteriori (${why.global.n} comparaciones, todos los regímenes).`})}</p>}
+              {why.ageH!=null&&why.ageH>=12&&!why.stale&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="hourglass" size={14}/> {_t({fr:`Les données ont ${why.ageH} h — les conditions côtières changent vite. Vérifie les webcams pour une vue live.`,en:`Data is ${why.ageH}h old — nearshore conditions shift fast. Check webcams for a live view.`,es:`Los datos tienen ${why.ageH} h — las condiciones costeras cambian rápido. Consulta las cámaras web para una vista en vivo.`})}</p>}
+              {why.stale&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="hourglass" size={14}/> {_t({fr:"Le satellite a du retard — on préfère te le dire : verdict à lire avec réserve.",en:"The satellite feed is running late — we'd rather tell you: read this verdict with caution.",es:"El satélite va con retraso — preferimos decírtelo: lee este veredicto con reserva."})}</p>}
+              {why.interp&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="compass" size={14}/> {_t({fr:"Trop près du rivage pour une lecture directe : estimée depuis les pixels marins voisins.",en:"Too close to shore for a direct reading: estimated from neighboring sea pixels.",es:"Demasiado cerca de la costa para una lectura directa: estimada desde los píxeles marinos vecinos."})}</p>}
+              {why.conf!=null&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="target" size={14}/> {_t({fr:`Confiance dans la prévision de demain : ${why.conf} %.`,en:`Confidence in tomorrow's forecast: ${why.conf}%.`,es:`Confianza en el pronóstico de mañana: ${why.conf} %.`})}</p>}
+              {why.global&&<p style={{display:"flex",alignItems:"center",gap:6}}><ComicIcon name="chart" size={14}/> {_t({fr:`${why.global.pct} % de nos verdicts vérifiés a posteriori (${why.global.n} comparaisons, tous régimes confondus).`,en:`${why.global.pct}% of our verdicts verified after the fact (${why.global.n} comparisons, all regimes).`,es:`${why.global.pct} % de nuestros veredictos verificados a posteriori (${why.global.n} comparaciones, todos los regímenes).`})}</p>}
               <p><a href={why.relHref} target="_blank" rel="noopener">{_t({fr:"On publie nos erreurs — va voir ce qu'on vaut vraiment →",en:"We publish our misses — see for yourself what we're worth →",es:"Publicamos nuestros errores — comprueba lo que valemos →"})}</a></p>
             </div>
           </section>
@@ -641,8 +642,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           <span className="lc-hp"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
         </div>
         <div className="lc-detail-facts">
-          {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b>{e}</b> {t}</span>)}
-          {beach.commune&&<span className="lc-detail-fact">📍 {beach.commune}</span>}
+          {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name={e} size={14}/></b> {t}</span>)}
+          {beach.commune&&<span className="lc-detail-fact"><b style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="pin" size={14}/></b> {beach.commune}</span>}
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
@@ -811,10 +812,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         <div className="lc-detail-actions">
           {onToggleFav&&<button type="button" className={"lc-detail-full lc-detail-fav"+(favorites.includes(beach.id)?" on":"")} aria-pressed={favorites.includes(beach.id)}
             onClick={()=>{ if(track)try{track(favorites.includes(beach.id)?"sg_chasse_unfav":"sg_chasse_fav",{beach_id:beach.id})}catch(_){}; onToggleFav(beach.id) }}>
-            {favorites.includes(beach.id)?"❤️ "+_t({fr:"Suivie",en:"Saved",es:"Guardada"}):"🤍 "+_t({fr:"Suivre",en:"Save",es:"Seguir"})}
+            {favorites.includes(beach.id)?<span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="heart" size={14}/></span>+" "+_t({fr:"Suivie",en:"Saved",es:"Guardada"}):<span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="heart" size={14}/></span>+" "+_t({fr:"Suivre",en:"Save",es:"Seguir"})}
           </button>}
           <button type="button" className="lc-detail-full" onClick={share}>
-            📣 {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
+            <ComicIcon name="mega" size={15}/> {shared?_t({fr:"Copié !",en:"Copied!",es:"¡Copiado!"}):_t({fr:"Partager",en:"Share",es:"Compartir"})}
           </button>
           <button type="button" className="lc-detail-full lc-detail-go" onClick={onFull}>
             {_t({fr:"Fiche complète →",en:"Full sheet →",es:"Ficha completa →"})}
@@ -973,7 +974,7 @@ function AlertsModal({alerts,lang,onClose,onOpenBeach,track,preview}){
       <div className="lc-alerts-modal" onClick={e=>e.stopPropagation()}>
         <button type="button" ref={closeRef} className="lc-alerts-x" onClick={onClose}
           aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
-        <div className="lc-alerts-title"><span aria-hidden="true">🔔</span>{_t(ALERTS_I18N.title)}</div>
+        <div className="lc-alerts-title"><ComicIcon name="bell" size={16}/>{_t(ALERTS_I18N.title)}</div>
         {preview&&<div className="lc-alerts-pv">{_t(ALERTS_I18N.preview)}</div>}
         <p className="lc-alerts-sub">{_t(ALERTS_I18N.sub)}</p>
         {alerts.length ? (
@@ -984,7 +985,7 @@ function AlertsModal({alerts,lang,onClose,onOpenBeach,track,preview}){
                 const dv=vof("avoid")
                 return (
                   <div key={a.key} className={`lc-alert-card s-${dv.st}`}>
-                    <span className={`lc-alert-pill s-${dv.st}`} aria-hidden="true">👃</span>
+                    <span className={`lc-alert-pill s-${dv.st}`} aria-hidden="true" style={{display:"inline-flex",alignItems:"center",justifyContent:"center"}}><ComicIcon name="odor" size={18}/></span>
                     <span className="lc-alert-body">
                       <span className="lc-alert-when">{alertWhen(0,lang)}</span>
                       <span className="lc-alert-name">{b.name}</span>
@@ -1003,7 +1004,7 @@ function AlertsModal({alerts,lang,onClose,onOpenBeach,track,preview}){
               const nv=vof(a.to), ov=vof(a.from)
               return (
                 <div key={a.key} className={`lc-alert-card s-${nv.st}`}>
-                  <span className={`lc-alert-pill s-${nv.st}`} aria-hidden="true">{a.to==="avoid"?"⚠️":a.to==="moderate"?"🌬️":"🌊"}</span>
+                  <span className={`lc-alert-pill s-${nv.st}`} aria-hidden="true" style={{display:"inline-flex",alignItems:"center",justifyContent:"center"}}><ComicIcon name={a.to==="avoid"?"cross":a.to==="moderate"?"half":"check"} size={18}/></span>
                   <span className="lc-alert-body">
                     <span className="lc-alert-when">{alertWhen(a.day,lang)}{a.conf!=null?" · "+a.conf+"%":""}</span>
                     <span className="lc-alert-name">{b.name}</span>
@@ -1078,7 +1079,7 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
       <div className="lc-alerts-modal lc-space-modal" onClick={e=>e.stopPropagation()}>
         <button type="button" ref={closeRef} className="lc-alerts-x" onClick={onClose}
           aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
-        <div className="lc-alerts-title"><span aria-hidden="true">{isPremium?"⭐":"👤"}</span>{_t(SPACE_I18N.title)}</div>
+        <div className="lc-alerts-title"><span aria-hidden="true" style={{display:"inline-flex"}}>{isPremium?<ComicIcon name="star" size={15}/> : <ComicIcon name="person" size={15}/>}</span>{_t(SPACE_I18N.title)}</div>
 
         {isPremium ? (
           <>
@@ -1145,7 +1146,7 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
           }
           return (
             <div style={{marginTop:12,padding:"14px 16px",borderRadius:14,background:"linear-gradient(135deg,rgba(124,58,237,.10),rgba(168,85,247,.10))",border:"1px solid rgba(168,85,247,.25)"}}>
-              <div style={{fontWeight:700,fontSize:14,marginBottom:2}}>{_t({fr:"Invite un proche, offre-lui la mer claire 🎁",en:"Gift a friend a clear sea 🎁",es:"Regala a alguien el mar tranquilo 🎁"})}</div>
+              <div style={{fontWeight:700,fontSize:14,marginBottom:2}}><span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="gift" size={15}/></span> {_t({fr:"Invite un proche, offre-lui la mer claire",en:"Gift a friend a clear sea",es:"Regala a alguien el mar tranquilo"})}</div>
               <div style={{fontSize:12.5,opacity:.8,marginBottom:10}}>{_t({fr:"Invite un proche : vous gagnez tous les deux un Pass 30 jours offert.",en:"Invite a friend: you both get a free 30-day Pass.",es:"Invita a alguien: los dos ganáis un Pase de 30 días gratis."})}</div>
               <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
                 <code style={{flex:"1 1 170px",fontSize:11.5,background:"rgba(0,0,0,.18)",padding:"8px 10px",borderRadius:8,wordBreak:"break-all"}}>{url}</code>
@@ -1189,7 +1190,7 @@ function SpaceSheet({favorites=[],beaches=[],isPremium,alertCount=0,lang,track,o
         {onOpenPro&&(
           <button type="button" className="lc-space-pro-link"
             onClick={()=>{ if(track)try{track("sg_space_pro_click")}catch(_){}; onOpenPro() }}>
-            <span aria-hidden="true">🏨</span> {_t(SPACE_I18N.proLink)}
+            <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="hotel" size={14}/></span> {_t(SPACE_I18N.proLink)}
           </button>
         )}
       </div>
@@ -1233,7 +1234,7 @@ const STREAK7_I18N={
        en:"Guess the verdict every morning. Seven days in a row = one week sealed.",
        es:"Adivina el veredicto cada mañana. Siete días seguidos = una semana sellada."},
   dayShort:{fr:["J1","J2","J3","J4","J5","J6","J7"],en:["D1","D2","D3","D4","D5","D6","D7"],es:["D1","D2","D3","D4","D5","D6","D7"]},
-  live:{fr:"série en cours 🔥",en:"streak live 🔥",es:"racha activa 🔥"},
+  live:{fr:"série en cours",en:"streak live",es:"racha activa"},
   cold:{fr:"série en pause — reviens demain pour la relancer",en:"streak paused — come back tomorrow to revive it",es:"racha en pausa — vuelve mañana para reactivarla"},
   none:{fr:"Joue la carte du jour pour démarrer ta série.",en:"Play today's card to start your streak.",es:"Juega la carta del día para empezar tu racha."},
   best:{fr:"record",en:"best",es:"récord"},
@@ -1292,35 +1293,35 @@ function sgUnlockCnt(){ try{ return (typeof window!=="undefined"&&typeof window.
 /* ctx = { collected[], collSet:Set, streak, best, unlocks } ; chaque condition lit du RÉEL */
 const CHASSE_BADGES=[
   /* — Pokédex (plages collectées) : miroir des paliers TIERS — */
-  {id:"first_collect", icon:"🎴", rar:"com",  fr:"Première Carte",   en:"First Card",       es:"Primera Carta",
+  {id:"first_collect", icon:"deck", rar:"com",  fr:"Première Carte",   en:"First Card",       es:"Primera Carta",
    cond:(c)=>c.collSet.size>=1},
-  {id:"dex_5",         icon:"⭐", rar:"com",  fr:"Apprenti Veilleur", en:"Veilleur Trainee", es:"Aprendiz",
+  {id:"dex_5",         icon:"star", rar:"com",  fr:"Apprenti Veilleur", en:"Veilleur Trainee", es:"Aprendiz",
    cond:(c)=>c.collSet.size>=5},
-  {id:"dex_12",        icon:"🧭", rar:"rare", fr:"Éclaireur",         en:"Scout",            es:"Explorador",
+  {id:"dex_12",        icon:"compass", rar:"rare", fr:"Éclaireur",         en:"Scout",            es:"Explorador",
    cond:(c)=>c.collSet.size>=12},
-  {id:"dex_25",        icon:"🗺️", rar:"epic", fr:"Cartographe",       en:"Cartographer",     es:"Cartógrafo",
+  {id:"dex_25",        icon:"map", rar:"epic", fr:"Cartographe",       en:"Cartographer",     es:"Cartógrafo",
    cond:(c)=>c.collSet.size>=25},
-  {id:"dex_45",        icon:"🏆", rar:"leg",  fr:"Maître Veilleur",   en:"Veilleur Master",  es:"Maestro",
+  {id:"dex_45",        icon:"trophy", rar:"leg",  fr:"Maître Veilleur",   en:"Veilleur Master",  es:"Maestro",
    cond:(c)=>c.collSet.size>=45},
-  {id:"dex_70",        icon:"👑", rar:"leg",  fr:"Légende du Lagon",  en:"Lagoon Legend",    es:"Leyenda del Lagón",
+  {id:"dex_70",        icon:"crown", rar:"leg",  fr:"Légende du Lagon",  en:"Lagoon Legend",    es:"Leyenda del Lagón",
    cond:(c)=>c.collSet.size>=70},
   /* — Série (devine le verdict) : streak réel + record réel — */
-  {id:"streak_5",      icon:"🔥", rar:"rare", fr:"Série de 5",        en:"Streak of 5",      es:"Racha de 5",
+  {id:"streak_5",      icon:"flame", rar:"rare", fr:"Série de 5",        en:"Streak of 5",      es:"Racha de 5",
    cond:(c)=>(c.streak>=5||c.best>=5)},
-  {id:"streak_10",     icon:"💥", rar:"epic", fr:"Série de 10",       en:"Streak of 10",     es:"Racha de 10",
+  {id:"streak_10",     icon:"burst", rar:"epic", fr:"Série de 10",       en:"Streak of 10",     es:"Racha de 10",
    cond:(c)=>(c.streak>=10||c.best>=10)},
-  {id:"streak_20",     icon:"⚡", rar:"leg",  fr:"Série de 20",       en:"Streak of 20",     es:"Racha de 20",
+  {id:"streak_20",     icon:"zap", rar:"leg",  fr:"Série de 20",       en:"Streak of 20",     es:"Racha de 20",
    cond:(c)=>(c.streak>=20||c.best>=20)},
   /* — Tous les verdicts collectés (clean + moderate + avoid présents dans la collection) — */
-  {id:"verdict_all",   icon:"🌈", rar:"epic", fr:"Tous les Verdicts", en:"Every Verdict",    es:"Todos los Veredictos",
+  {id:"verdict_all",   icon:"rainbow", rar:"epic", fr:"Tous les Verdicts", en:"Every Verdict",    es:"Todos los Veredictos",
    cond:(c)=>c.statusSet&&c.statusSet.has("clean")&&c.statusSet.has("moderate")&&c.statusSet.has("avoid")},
   /* — Système jeu : déblocages (solutions / pistes) — */
-  {id:"unlock_1",      icon:"🔓", rar:"com",  fr:"Premier Déblocage", en:"First Unlock",     es:"Primer Desbloqueo",
+  {id:"unlock_1",      icon:"unlock", rar:"com",  fr:"Premier Déblocage", en:"First Unlock",     es:"Primer Desbloqueo",
    cond:(c)=>c.unlocks>=1},
-  {id:"unlock_8",      icon:"🔬", rar:"rare", fr:"Données Déverrouillées", en:"Data Unlocked", es:"Datos Desbloqueados",
+  {id:"unlock_8",      icon:"check", rar:"rare", fr:"Données Déverrouillées", en:"Data Unlocked", es:"Datos Desbloqueados",
    cond:(c)=>c.unlocks>=8},
   /* — Engagement (email capté — vraie valeur funnel) — */
-  {id:"watcher",       icon:"📬", rar:"rare", fr:"Le Veilleur Veille", en:"Watcher On",      es:"El Vigía Vela",
+  {id:"watcher",       icon:"mail", rar:"rare", fr:"Le Veilleur Veille", en:"Watcher On",      es:"El Vigía Vela",
    cond:(c)=>!!c.email}
 ]
 const BADGE_RAR={
@@ -1351,7 +1352,7 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
       <div className="lc-badge-modal" onClick={e=>e.stopPropagation()}>
         <button type="button" ref={closeRef} className="lc-badge-x" onClick={onClose}
           aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
-        <div className="lc-badge-title"><span aria-hidden="true">🏅</span>{_t({fr:"BADGES DÉBLOQUÉS",en:"BADGES UNLOCKED",es:"INSIGNIAS"})}</div>
+        <div className="lc-badge-title"><ComicIcon name="trophy" size={17}/>{_t({fr:"BADGES DÉBLOQUÉS",en:"BADGES UNLOCKED",es:"INSIGNIAS"})}</div>
         <div className="lc-badge-cnt">{unlocked.length}/{badges.length}</div>
         {unlocked.length ? (
           <div className="lc-badge-grid">
@@ -1359,7 +1360,7 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
               const r=BADGE_RAR[b.rar]||BADGE_RAR.com
               return (
                 <div key={b.id} className={"lc-badge-card lc-badge-pop "+r.cls} style={{"--delay":(i*0.05)+"s"}}>
-                  <span className="lc-badge-ic" aria-hidden="true">{b.icon}</span>
+                  <span className="lc-badge-ic" aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name={b.icon} size={36}/></span>
                   <span className="lc-badge-nm">{b[lang]||b.fr}</span>
                   <span className="lc-badge-rar">{_t(r.lbl)}</span>
                 </div>
@@ -1375,9 +1376,9 @@ function BadgesSheet({badges,unlockedSet,onClose,lang}){
             <div className="lc-badge-grid">
               {locked.map(b=>(
                 <div key={b.id} className="lc-badge-card lc-badge-locked">
-                  <span className="lc-badge-ic" aria-hidden="true">{b.icon}</span>
+                  <span className="lc-badge-ic" aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name={b.icon} size={36}/></span>
                   <span className="lc-badge-nm">{b[lang]||b.fr}</span>
-                  <span className="lc-badge-rar">🔒</span>
+                  <span className="lc-badge-rar"><ComicIcon name="lock" size={11}/></span>
                 </div>
               ))}
             </div>
@@ -1413,7 +1414,7 @@ const LADDER_I18N={
   toNext:{fr:(n)=>n===1?"plus qu'1 plage pour le rang suivant":"encore "+n+" plages pour le rang suivant",
           en:(n)=>n===1?"1 more beach to the next rank":n+" more beaches to the next rank",
           es:(n)=>n===1?"1 playa más para el siguiente rango":n+" playas más para el siguiente rango"},
-  maxed:{fr:"Rang maximum atteint — Légende du Lagon 👑",en:"Top rank reached — Lagoon Legend 👑",es:"Rango máximo alcanzado — Leyenda del Lagón 👑"},
+   maxed:{fr:"Rang maximum atteint — Légende du Lagon",en:"Top rank reached — Lagoon Legend",es:"Rango máximo alcanzado — Leyenda del Lagón"},
   statColl:{fr:"plages collectées",en:"beaches collected",es:"playas coleccionadas"},
   statBest:{fr:"record de série",en:"best streak",es:"mejor racha"},
   empty:{fr:"Commence ta collection : tape une carte pour la débloquer.",en:"Start your collection: tap a card to unlock it.",es:"Empieza tu colección: toca una carta para desbloquearla."}
@@ -1438,31 +1439,31 @@ function LadderSheet({tiers,count,best,onClose,lang}){
       <div className="lc-ladder-modal" onClick={e=>e.stopPropagation()}>
         <button type="button" ref={closeRef} className="lc-badge-x" onClick={onClose}
           aria-label={_t({fr:"Fermer",en:"Close",es:"Cerrar"})}>✕</button>
-        <div className="lc-badge-title"><span aria-hidden="true">🪜</span>{_t(LADDER_I18N.title)}</div>
+        <div className="lc-badge-title"><ComicIcon name="ladder" size={16}/>{_t(LADDER_I18N.title)}</div>
         <p className="lc-sub lc-center lc-ladder-sub">{_t(LADDER_I18N.sub)}</p>
         <div className="lc-ladder-list">
           {rows.map(({t,i})=>{
             const reached=i<=curIdx, isYou=i===curIdx
             return (
               <div key={t.n} className={"lc-ladder-row"+(isYou?" lc-ladder-you":"")+(reached?"":" lc-ladder-lock")}>
-                <span className="lc-ladder-iris" style={{background:reached?t.iris:"#cdc6b8"}} aria-hidden="true">{reached?"":"🔒"}</span>
+                <span className="lc-ladder-iris" style={{background:reached?t.iris:"#cdc6b8"}} aria-hidden="true">{reached?"":<ComicIcon name="lock" size={15}/>}</span>
                 <div className="lc-ladder-mid">
                   <span className="lc-ladder-nm">{_t(t)}</span>
                   <span className="lc-ladder-th">{(LADDER_I18N.beaches[lang]||LADDER_I18N.beaches.fr)(t.n)}</span>
                 </div>
                 {isYou
                   ? <span className="lc-ladder-tag">{_t(LADDER_I18N.you)}</span>
-                  : reached ? <span className="lc-ladder-ok" aria-label={_t(LADDER_I18N.reached)}>✓</span> : null}
+                  : reached ? <span className="lc-ladder-ok" aria-label={_t(LADDER_I18N.reached)} style={{display:"inline-flex"}}><ComicIcon name="check" size={14}/></span> : null}
               </div>
             )
           })}
         </div>
         <p className="lc-sub lc-center lc-ladder-foot">{count<=0
           ? _t(LADDER_I18N.empty)
-          : (nx ? (LADDER_I18N.toNext[lang]||LADDER_I18N.toNext.fr)(toNext) : _t(LADDER_I18N.maxed))}</p>
+          : (nx ? (LADDER_I18N.toNext[lang]||LADDER_I18N.toNext.fr)(toNext) : <span style={{display:"inline-flex",alignItems:"center",gap:5}}><ComicIcon name="crown" size={13}/> {_t(LADDER_I18N.maxed)}</span>)}</p>
         <div className="lc-ladder-stats">
           <div className="lc-ladder-stat"><b>{count}</b><span>{_t(LADDER_I18N.statColl)}</span></div>
-          <div className="lc-ladder-stat"><b>{Math.max(0,+best||0)}🔥</b><span>{_t(LADDER_I18N.statBest)}</span></div>
+          <div className="lc-ladder-stat"><b style={{display:"inline-flex",alignItems:"center",gap:4}}>{Math.max(0,+best||0)}<ComicIcon name="flame" size={13}/></b><span>{_t(LADDER_I18N.statBest)}</span></div>
         </div>
       </div>
     </div>
@@ -1726,7 +1727,7 @@ export default function ChasseHome(props){
           <span className="lc-date">{dateLbl}{fresh?" · maj "+fresh:""}</span>
         </div>
         <div className="lc-streak" title={_t(I18N.streak)} {...(spaceEnabled&&streakTapOn?{role:"button",tabIndex:0,"aria-label":_t(I18N.streak),onClick:()=>_openSpaceTap("sg_streak_tap"),onKeyDown:_kd(()=>_openSpaceTap("sg_streak_tap"))}:{})}>
-          <span className="lc-fire">🔥</span><b>{st.streak}</b>
+          <span className="lc-fire" style={{display:"inline-flex"}}><ComicIcon name="flame" size={14}/></span><b>{st.streak}</b>
           <small>{_t(I18N.best)} {st.best}</small>
         </div>
         {/* CLOCHE — centre d'alertes (#19), data réelle, flag ?alerts=0 */}
@@ -1734,7 +1735,7 @@ export default function ChasseHome(props){
           <button type="button" className="lc-bells"
             onClick={()=>{ if(track)try{track("sg_alerts_open",{count:alerts.length})}catch(_){}; setAlertsOpen(true) }}
             aria-label={_t(ALERTS_I18N.bell)} title={_t(ALERTS_I18N.bell)}>
-            <span className="lc-bell-ic" aria-hidden="true">🔔</span>
+            <span className="lc-bell-ic" aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="bell" size={17}/></span>
             {alerts.length>0&&<span className="lc-bell-count" aria-hidden="true">{alerts.length}</span>}
           </button>
         )}
@@ -1742,14 +1743,14 @@ export default function ChasseHome(props){
           <button type="button" className="lc-spacebtn"
             onClick={()=>{ if(track)try{track("sg_space_open")}catch(_){}; setSpaceOpen(true) }}
             aria-label={_t(SPACE_I18N.btn)} title={_t(SPACE_I18N.btn)}>
-            <span aria-hidden="true">{isPremium?"⭐":"👤"}</span>
+            <span aria-hidden="true" style={{display:"inline-flex"}}>{isPremium?<ComicIcon name="star" size={17}/> : <ComicIcon name="person" size={17}/>}</span>
           </button>
         )}
       </div>
 
       {/* ---- CARTE = cœur produit (« carte sargasses ») : accès direct proéminent ---- */}
       <button type="button" className="lc-gomap" onClick={()=>{ if(track)try{track("sg_chasse_mapcta")}catch(_){}; onShowMap&&onShowMap() }}>
-        <span className="lc-gomap-ic">🗺️</span>
+        <span className="lc-gomap-ic" style={{display:"inline-flex"}}><ComicIcon name="map" size={26}/></span>
         <span className="lc-gomap-tx">
           <b>{_t({fr:"VOIR LA CARTE SARGASSES",en:"SEE THE SARGASSUM MAP",es:"VER EL MAPA DE SARGAZO"})}</b>
           <small>{(()=>{const ok=(pickBeaches||[]).filter(b=>b&&b.status==="clean").length,tot=(pickBeaches||[]).filter(b=>b&&b.status&&b.score!=null).length;return _t({fr:ok+"/"+tot+" plages propres aujourd'hui · en direct",en:ok+"/"+tot+" clean beaches today · live",es:ok+"/"+tot+" playas limpias hoy · en directo"})})()}</small>
@@ -1810,7 +1811,7 @@ export default function ChasseHome(props){
             <div className="lc-result">
               <div className={"lc-streakup"+(outcome==="win"?" win":"")}>
                 {outcome==="win"
-                  ? _t({fr:"+1 · série "+st.streak+" 🔥",en:"+1 · streak "+st.streak+" 🔥",es:"+1 · racha "+st.streak+" 🔥"})
+                  ? <span style={{display:"inline-flex",alignItems:"center",gap:6}}>{_t({fr:"+1 · série "+st.streak,en:"+1 · streak "+st.streak,es:"+1 · racha "+st.streak})} <ComicIcon name="flame" size={15}/></span>
                   : _t({fr:"série à 0 — la vedette était "+_t(dayV),en:"streak reset — the star was "+_t(dayV),es:"racha a 0 — la estrella era "+_t(dayV)})}
               </div>
               <button type="button" className="lc-cta yel"
@@ -1826,7 +1827,7 @@ export default function ChasseHome(props){
       {/* ---- CAPTURE EMAIL (funnel — gratuit, distinct du premium) ---- */}
       <section className="lc-capture">
         {capDone ? (
-          <div className="lc-cap-done"><span>✅</span> {_t({fr:"C'est lancé — le verdict t'attendra chaque matin.",en:"You're set — the verdict waits each morning.",es:"¡Listo! El veredicto te espera cada mañana."})}</div>
+          <div className="lc-cap-done"><span style={{display:"inline-flex",verticalAlign:"-3px"}}><ComicIcon name="check" size={16}/></span> {_t({fr:"C'est lancé — le verdict t'attendra chaque matin.",en:"You're set — the verdict waits each morning.",es:"¡Listo! El veredicto te espera cada mañana."})}</div>
         ) : (
           <div className="lc-cap-card">
             <div className="lc-eyebrow">{_t({fr:"LE VERDICT, CHAQUE MATIN",en:"THE VERDICT, EVERY MORNING",es:"EL VEREDICTO, CADA MAÑANA"})}</div>
@@ -1852,7 +1853,7 @@ export default function ChasseHome(props){
             <div className="lc-rank-bar"><div className="lc-rank-fill" style={{width:Math.round(tier.prog*100)+"%",background:tier.cur.iris}}/></div>
             <span className="lc-rank-next">{tier.nx
               ? _t({fr:(tier.nx.n-collSet.size)+" → "+tier.nx.fr,en:(tier.nx.n-collSet.size)+" → "+tier.nx.en,es:(tier.nx.n-collSet.size)+" → "+tier.nx.es})
-              : _t({fr:"rang max 👑",en:"max rank 👑",es:"rango máx 👑"})}</span>
+              : <span style={{display:"inline-flex",alignItems:"center",gap:4}}>{_t({fr:"rang max",en:"max rank",es:"rango máx"})} <ComicIcon name="crown" size={12}/></span>}</span>
           </div>
           {/* BADGES + CLASSEMENT — boutons discrets ouvrant leur modale (data RÉELLE) */}
           {(badgesEnabled||ladderEnabled)&&(
@@ -1861,7 +1862,7 @@ export default function ChasseHome(props){
                 <button type="button" className="lc-badge-btn"
                   onClick={()=>{ if(track)try{track("sg_badge_open",{count:unlockedBadges.size})}catch(_){}; setBadgesOpen(true) }}
                   aria-label={_t({fr:"Voir mes badges",en:"See my badges",es:"Ver mis insignias"})}>
-                  <span aria-hidden="true">🏅</span> {_t({fr:"Badges",en:"Badges",es:"Insignias"})}
+                  <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="trophy" size={15}/></span> {_t({fr:"Badges",en:"Badges",es:"Insignias"})}
                   <b className="lc-badge-bcnt">{unlockedBadges.size}/{CHASSE_BADGES.length}</b>
                 </button>
               )}
@@ -1869,7 +1870,7 @@ export default function ChasseHome(props){
                 <button type="button" className="lc-badge-btn"
                   onClick={()=>{ if(track)try{track("sg_ladder_open",{collected:collSet.size,rank:tier.cur.fr})}catch(_){}; setLadderOpen(true) }}
                   aria-label={_t({fr:"Voir le classement des Veilleurs",en:"See the Veilleur ranks",es:"Ver la clasificación de Vigías"})}>
-                  <span aria-hidden="true">🪜</span> {_t({fr:"Classement",en:"Ranks",es:"Clasificación"})}
+                  <span aria-hidden="true" style={{display:"inline-flex"}}><ComicIcon name="ladder" size={15}/></span> {_t({fr:"Classement",en:"Ranks",es:"Clasificación"})}
                   <b className="lc-badge-bcnt">{_t(tier.cur)}</b>
                 </button>
               )}
@@ -1901,7 +1902,7 @@ export default function ChasseHome(props){
       {/* ---- DÉFI DU JOUR : plus chaud / plus froid (mini-jeu) ---- */}
       {defiPair&&(
         <section className="lc-defi">
-          <div className="lc-eyebrow lc-center">{_t({fr:"🎯 DÉFI DU JOUR",en:"🎯 DAILY CHALLENGE",es:"🎯 DESAFÍO DEL DÍA"})}</div>
+          <div className="lc-eyebrow lc-center"><ComicIcon name="target" size={12}/> {_t({fr:"DÉFI DU JOUR",en:"DAILY CHALLENGE",es:"DESAFÍO DEL DÍA"})}</div>
           <div className="lc-defi-card">
             {(!defiRes&&!defiDone) ? (
               <>
@@ -1911,8 +1912,8 @@ export default function ChasseHome(props){
                   en:"Is “"+defiPair[1].name+"” cleaner, or less?",
                   es:"¿“"+defiPair[1].name+"” está más limpia, o menos?"})}</p>
                 <div className="lc-guesses">
-                  <button type="button" className="lc-gbtn s-ok" onClick={()=>guessDefi("up")}>⬆️ {_t({fr:"PLUS PROPRE",en:"CLEANER",es:"MÁS LIMPIA"})}</button>
-                  <button type="button" className="lc-gbtn s-bad" onClick={()=>guessDefi("down")}>⬇️ {_t({fr:"MOINS",en:"LESS",es:"MENOS"})}</button>
+                  <button type="button" className="lc-gbtn s-ok" onClick={()=>guessDefi("up")}>▲ {_t({fr:"PLUS PROPRE",en:"CLEANER",es:"MÁS LIMPIA"})}</button>
+                  <button type="button" className="lc-gbtn s-bad" onClick={()=>guessDefi("down")}>▼ {_t({fr:"MOINS",en:"LESS",es:"MENOS"})}</button>
                 </div>
               </>
             ) : (
@@ -1932,7 +1933,7 @@ export default function ChasseHome(props){
       {/* ---- SÉRIE 7 JOURS (#28) : ruban de la septaine, dérivé du streak RÉEL ---- */}
       {streak7Enabled&&(
         <section className="lc-week" aria-label={_t(STREAK7_I18N.title)}>
-          <div className="lc-eyebrow lc-center">🔥 {_t(STREAK7_I18N.title)}</div>
+          <div className="lc-eyebrow lc-center"><ComicIcon name="flame" size={12}/> {_t(STREAK7_I18N.title)}</div>
           <div className={"lc-week-card"+(weekSeal?" sealed":"")}>
             {weekSeal&&<span className="lc-pow s-ok lc-verdictpow lc-week-pow"><b>{_t(STREAK7_I18N.sealed)}</b></span>}
             <p className="lc-sub">{sweek.s===0?_t(STREAK7_I18N.none):_t(STREAK7_I18N.sub)}</p>
@@ -1945,7 +1946,7 @@ export default function ChasseHome(props){
                 return (
                   <div key={i} className={"lc-week-pip"+(filled?(sweek.live?" on":" cold"):"")+(isNext?" next":"")}>
                     <span className="lc-week-pip-d">{(STREAK7_I18N.dayShort[lang]||STREAK7_I18N.dayShort.fr)[i]}</span>
-                    <span className="lc-week-pip-ic" aria-hidden="true">{filled?"🔥":(isNext?"·":"🔒")}</span>
+                    <span className="lc-week-pip-ic" aria-hidden="true" style={{display:"inline-flex"}}>{filled?<ComicIcon name="flame" size={14}/>:(isNext?"·":<ComicIcon name="lock" size={12}/>)}</span>
                   </div>
                 )
               })}
@@ -1953,9 +1954,9 @@ export default function ChasseHome(props){
             {/* ligne d'état honnête : vivante / en pause / vide + record + progression */}
             <div className="lc-week-meta">
               <span className={"lc-week-state"+(sweek.live?" live":sweek.s>0?" cold":"")}>
-                {sweek.s===0?"—":sweek.live?_t(STREAK7_I18N.live):_t(STREAK7_I18N.cold)}
+                {sweek.s===0?"—":sweek.live?<span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="flame" size={12}/> {_t(STREAK7_I18N.live)}</span>:_t(STREAK7_I18N.cold)}
               </span>
-              <span className="lc-week-best">{_t(STREAK7_I18N.best)} <b>{st.best}</b> 🔥</span>
+              <span className="lc-week-best">{_t(STREAK7_I18N.best)} <b>{st.best}</b> <ComicIcon name="flame" size={12}/></span>
             </div>
             {weekSeal ? (
               <p className="lc-sub lc-center lc-week-sealsub">{_t(STREAK7_I18N.sealedSub)}</p>

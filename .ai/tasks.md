@@ -1,10 +1,17 @@
-﻿# S0 — 6-Région Quality Gate Tasks
+﻿## SPRINT 2 « GAME ICON PASS » — [~] in_progress by ui-ux/coding (2026-09-09, branche `agent/ui-ux/sprint2-game-icon-pass`)
+- **TASK-SPRINT2-GLYPHS**: Remplacer les derniers emojis OS par pictos SVG mono-trait ink (DS : 1 rôle=1 valeur, trio statut couleur+forme+mot)
+  - R1 : flags RegionNav → SVG/code-chip (routage/libellés inchangés)
+  - R2 : emojis univers jeu (ChasseDetail/arène, ChasseHome, ArchipelView, B2BModal, share-card, VeilleurRepond) → set SVG dédié
+  - R6 : checklist paywall ✅ + FbPostsStrip + utilitaires (🔔📍) → glyphs
+  - Contraintes : AUCUNE touche business/paiement/données/scaffold territorial (regions/gp.json intouchable) ; gates en non-régression seule (build + bundle + smoke + funnel-payment)
+  - Critère succès : 0 emoji OS rendu sur les surfaces R1/R2/R6 + gates verts + rollback `git revert` par fichier
 
-## PHASE B SPRINT 1 — [x] done (2026-09-08, GREEN)
+## PHASE B SPRINT 1 — [x] done (2026-09-09, GREEN) — CLÔTURE FINALE
 - **TASK-PHASEB-SPRINT1**: Remédiation globale P0 (01→06) + P1 conversion/navigation
-  - Preuves : `.ai/ui-audit/PHASE-B-SPRINT1-REPORT.md` + `.ai/ui-audit/shots-phaseB/{mq,gp,florida,rivieramaya}/`
-  - Suivi Sprint 2 (P2) : game icon pass (ChasseDetail/arène), flags RegionNav → SVG, nettoyage code mort
-    (StatusBadge/FilterChip/filtersIcon), captures puntacana/tulum dédiées si doute.
+  - Preuves : `.ai/ui-audit/PHASE-B-SPRINT1-REPORT.md` (§11-12 clôture) + `.ai/ui-audit/shots-phaseB/{mq,gp,florida,rivieramaya,puntacana,tulum}/` (6/6 × 3 viewports, 90 PNG + 6 asserts.json)
+  - Clôture 2026-09-09 : build MQ exit 0 + builds PC/Tulum exit 0 (37.7 Ko), smoke 4/4 ×2, E2E funnel 13/13, RM_INFINITE=[], 0 contamination, MQ non-régression, P0 6/6 + P1 14/14, 0 ticket créé (R6 documenté P2)
+  - Suivi Sprint 2 (P2) : « game icon pass » — R1 flags RegionNav→SVG + R2 emojis jeu→set SVG + R6 paywall ✅/FbPostsStrip→glyphs ; R3 fil de l'eau ; R5 code mort Sprint 3
+  - Hors scope noté : ajout non commité 83 `beaches` dans `regions/gp.json` (pré-existant, non touché, tâche dédiée requise)
 
 ## Priorité #1 — [x] done
 - **TASK-S0-AUDIT**: Réaliser audit complet S0 6 régions (mq, gp, florida, puntacana, rivieramaya, tulum)

@@ -1,5 +1,6 @@
 import React,{useState,useEffect,useRef,useCallback} from "react"
 import {SeqDots} from "../SeqPrimitives.jsx"
+import ComicIcon from "../components/ComicIcons.jsx"
 import * as SG from "../Sargasses_PROD.jsx"
 import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "../ga4-ecommerce.js"
 import useModalA11y from "../hooks/useModalA11y.js"
@@ -37,7 +38,7 @@ function TerritoireMeeting({lang,email,org}){
   )
   return(
     <div style={{marginTop:14,padding:"14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:I.blue,boxShadow:`3px 3px 0 ${I.ink}`}}>
-      <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:"#fdfcf7"}}>🏛️ {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>
+      <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:"#fdfcf7",display:"flex",alignItems:"center",gap:7}}><ComicIcon name="bank" size={15}/> {_t(lang,"Programmons un point","Let's schedule a call","Programemos un punto")}</div>
       <div style={{font:"600 12px/1.5 'Bricolage Grotesque'",color:"#eef9f6",margin:"5px 0 10px"}}>{_t(lang,"Votre accès est déjà ouvert — explorez seul si vous préférez. Un échange de 15 min seulement si VOUS le souhaitez : on cale vos plages, votre devis et votre bon de commande. L'essai ne déclenche aucun prélèvement.","Your access is already open — explore on your own if you prefer. A 15-min call only if YOU want it: we scope your beaches, your quote and your purchase order. The trial triggers no charge.","Su acceso ya está abierto — explore solo si prefiere. Una llamada de 15 min solo si USTED quiere: definimos sus playas, su presupuesto y su orden de compra. La prueba no genera ningún cobro.")}</div>
       <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} aria-label={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
       <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} aria-label={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
@@ -195,13 +196,13 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
   const TIERS=[
-    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
+    {id:"brief",icon:"mail",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
       pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
-    {id:"pro",icon:"🔔",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
+    {id:"pro",icon:"bell",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
       pitch:_t(lang,"Devenez LA référence sargasses de votre plage : mis en avant dans l'app au moment où le voyageur vérifie avant de réserver, brief du matin, alertes, prévision 7 j, et un encart à vos couleurs sur votre propre site. Pour hôtels & resorts.","Become THE sargassum reference for your beach: featured in the app right when travelers check before booking, morning brief, alerts, 7-day forecast, and a panel in your own colors on your website. For hotels & resorts.","Conviértase en LA referencia de sargazo de su playa: destacado en la app justo cuando el viajero comprueba antes de reservar, informe matinal, alertas, pronóstico 7 días, y un panel con sus colores en su propia web. Para hoteles y resorts."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
-    {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois HT","from €199/mo excl. tax","desde 199 €/mes sin IVA"),
+    {id:"territoire",icon:"bank",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois HT","from €199/mo excl. tax","desde 199 €/mes sin IVA"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_territoire"},
   ]
@@ -286,7 +287,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
         <style>{CSS_B2F}</style>
         <button className="b2f-x" onClick={onClose} aria-label={_t(lang,"Fermer","Close","Cerrar")}>✕</button>
         {seqOn&&!sent&&step>1&&<button className="b2f-back" onClick={()=>goBack(step)} aria-label={_t(lang,"Retour","Back","Atrás")}>‹</button>}
-        <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`,marginLeft:seqOn&&!sent&&step>1?46:0}}>🏨 {_t(lang,"Pro · Hôtels & collectivités","Pro · Hotels & towns","Pro · Hoteles y municipios")}</div>
+        <div style={{display:"inline-flex",alignItems:"center",gap:6,font:"800 10px/1 'Bricolage Grotesque'",letterSpacing:".09em",textTransform:"uppercase",color:I.ink,background:I.blue,border:`2px solid ${I.ink}`,borderRadius:6,padding:"4px 8px",boxShadow:`2px 2px 0 ${I.ink}`,marginLeft:seqOn&&!sent&&step>1?46:0}}> <ComicIcon name="hotel" size={13}/> {_t(lang,"Pro · Hôtels & collectivités","Pro · Hotels & towns","Pro · Hoteles y municipios")}</div>
         {seqOn&&!sent&&<SeqDots n={4} at={step} ink={I.ink} gold={I.gold}/>}
         {!sent&&!seqOn?<>
           {/* ── ÉCRAN UNIQUE D'ORIGINE (rollback ?b2bseq=0) — structure intacte, seul le
@@ -302,7 +303,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
                 outline:tier===t.id?`0`:"0",opacity:1}}>
                 {t.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}
                 <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>
-                  <span style={{font:"800 15px/1.1 'Bricolage Grotesque'",color:I.ink}}>{t.icon} {t.name}</span>
+                  <span style={{font:"800 15px/1.1 'Bricolage Grotesque'",color:I.ink}}><span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name={t.icon} size={15}/></span> {t.name}</span>
                   <span style={{font:"800 14px/1 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{t.price}</span>
                 </div>
                 <div style={{font:"600 12px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:4}}>{t.pitch}</div>
@@ -341,7 +342,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
             </div>
           </>:totalCount>0?<>
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
-              <span style={{fontSize:20,flexShrink:0}} aria-hidden="true">🛰️</span>
+              <span style={{fontSize:20,flexShrink:0,display:"inline-flex"}} aria-hidden="true"><ComicIcon name="orbit" size={19}/></span>
               <div>
                 <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages propres ce matin`,`${cleanCount}/${totalCount} beaches clean this morning`,`${cleanCount}/${totalCount} playas limpias esta mañana`)}</div>
                 {freshLine&&<div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>{freshLine}</div>}
@@ -354,7 +355,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
             </select>}
           </>:<>
             <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              🛰️ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
+              <span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="orbit" size={14}/></span> {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
             </div>
           </>}
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
@@ -378,7 +379,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
                 return(<div key={i} className={"b2f-fc-day"+(d?"":" lock")}>
                   <div className="b2f-fc-lab">{dayLab(i)}</div>
                   {d&&stc?<><div className="b2f-fc-dot" style={{background:stc.c}}/><div className="b2f-fc-conf">{d.confidence?d.confidence+" %":""}</div></>
-                    :<div aria-hidden="true" style={{fontSize:13,lineHeight:"14px",color:"#6a6478"}}>🔒</div>}
+                    :<div aria-hidden="true" style={{fontSize:13,lineHeight:"14px",color:"#6a6478",display:"inline-flex"}}><ComicIcon name="lock" size={13}/></div>}
                 </div>)
               })}
             </div>
@@ -402,7 +403,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
           <div className="b2f-hero" style={{marginBottom:9}}>
             {cur.featured&&<span style={{position:"absolute",top:-9,right:12,font:"800 9px/1 'Bricolage Grotesque'",letterSpacing:".06em",textTransform:"uppercase",background:I.ink,color:I.gold,padding:"3px 7px",borderRadius:5}}>{_t(lang,"Populaire","Popular","Popular")}</span>}
             <div style={{display:"flex",alignItems:"baseline",justifyContent:"space-between",gap:8}}>
-              <span style={{font:"800 16px/1.1 'Bricolage Grotesque'",color:I.ink}}>{cur.icon} {cur.name}</span>
+              <span style={{font:"800 16px/1.1 'Bricolage Grotesque'",color:I.ink}}><span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name={cur.icon} size={16}/></span> {cur.name}</span>
               <span style={{font:"800 13.5px/1.2 'Bricolage Grotesque'",color:I.ink,whiteSpace:"nowrap"}}>{cur.id==="pro"&&proPay&&proPay.amt
                 ?_t(lang,`79 €/mois ou ${proPay.amt}/an`,`€79/mo or ${proPay.amt}/yr`,`79 €/mes o ${proPay.amt}/año`)
                 :cur.price}</span>
@@ -417,7 +418,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
           <div style={{display:"flex",flexDirection:"column",gap:7,marginBottom:12}}>
             {TIERS.filter(t=>t.id!==tier).map(t=>(
               <button key={t.id} className="b2f-row" onClick={()=>{setTier(t.id);try{track("sg_b2b_tier_select",{tier:t.id})}catch(_){}}}>
-                <span style={{font:"800 13px/1.35 'Bricolage Grotesque'"}}>{t.icon} {t.name} — {t.price}</span>
+                <span style={{font:"800 13px/1.35 'Bricolage Grotesque'"}}><span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name={t.icon} size={13}/></span> {t.name} — {t.price}</span>
                 <span style={{font:"600 11.5px/1.35 'Bricolage Grotesque'",color:"#52525b",display:"block"}}>{t.id==="brief"
                   ?_t(lang,"Le brief quotidien par email. Gîtes, restos, clubs plage.","The daily brief by email. Guesthouses, restaurants, beach clubs.","El informe diario por email. Alojamientos, restaurantes, clubes de playa.")
                   :t.id==="territoire"?_t(lang,"Communes & offices de tourisme : multi-plages, rapports, API.","Towns & tourism boards: multi-beach, reports, API.","Municipios y oficinas de turismo: multi-playa, informes, API.")
@@ -432,7 +433,7 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
               submit() STRICTEMENT INCHANGÉ (money-path). Paylink = 1re apparition. ── */}
           <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{_t(lang,"Votre accès s'ouvre maintenant.","Your access opens now.","Su acceso se abre ahora.")}</div>
           <button className="b2f-row" onClick={()=>goBack(4)} style={{marginBottom:10}} aria-label={_t(lang,"Modifier le format","Change format","Cambiar formato")}>
-            <span style={{font:"800 12.5px/1.35 'Bricolage Grotesque'"}}>{cur.icon} {cur.name} · {cur.id==="pro"&&proPay&&proPay.amt?_t(lang,`79 €/mois ou ${proPay.amt}/an`,`€79/mo or ${proPay.amt}/yr`,`79 €/mes o ${proPay.amt}/año`):cur.price} · {_t(lang,"essai 30 j sans carte","30-day trial, no card","prueba 30 días sin tarjeta")}</span>
+            <span style={{font:"800 12.5px/1.35 'Bricolage Grotesque'"}}><span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name={cur.icon} size={12}/></span> {cur.name} · {cur.id==="pro"&&proPay&&proPay.amt?_t(lang,`79 €/mois ou ${proPay.amt}/an`,`€79/mo or ${proPay.amt}/yr`,`79 €/mes o ${proPay.amt}/año`):cur.price} · {_t(lang,"essai 30 j sans carte","30-day trial, no card","prueba 30 días sin tarjeta")}</span>
             <span style={{font:"800 11.5px/1.35 'Bricolage Grotesque'",color:"#6a6478",display:"block",marginTop:2}}>{_t(lang,"Modifier ‹","Change ‹","Cambiar ‹")}</span>
           </button>
           {tier==="pro"&&<>
