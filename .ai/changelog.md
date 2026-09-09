@@ -1,5 +1,13 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-09 — RELEASE GATE SPRINT 2 (PR #665 → RELEASE CANDIDATE)
+
+- Rebase de portée : commit local-only `da8a16796` exclu du diff (PR = 41 fichiers, 100 % Sprint 2 + fix blocker, 0 conflit).
+- Release blocker : base distante sans `src/lib/mediaKit.js` (importé par BeachDayReport) → base seule = build rouge (prouvé). Fix `11a0e0f79` : lib + contrat media-kit restaurés (docs exclues). Corollaire : PR #664 est rouge sans ce fix — ordre de merge à trancher.
+- Gates re-validés après rebase : build 375 modules, bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 39+3skip+2 pré-existants (BUG-2026-035 OPEN/P2).
+- CI #665 : scan/pass, MERGEABLE/CLEAN, 0 review bloquante. `regions/gp.json` : dirt pré-existant intact, hors scope.
+- Statut : SPRINT 2 = DONE / RELEASE CANDIDATE. Prochaine action : MERGE PR #665 (après décision de séquencement avec #664).
+
 ## 2026-09-09 — SPRINT 2 « GAME ICON PASS » : R1+R2+R6 → SVG (DONE, gates verts)
 
 - Nouveau `src/components/ComicIcons.jsx` (~50 pictos mono-trait ink + `RegionCode`), dépendance-free.

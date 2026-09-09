@@ -57,3 +57,14 @@
 `src/components/ComicIcons.jsx` (nouveau) · `RegionNav.jsx` · `CrossRegionNav.jsx` · `ChasseHome.jsx` · `ArchipelView.jsx` · `ArenaOnboarding.jsx` · `VeilleurRepond.jsx` · `Sargasses_PROD.jsx` · `WorldMapView.jsx` · `LeadCapture.jsx` · `PassOffer.jsx` · `PaidOnboarding.jsx` · `WelcomePoste.jsx` · `AccountSheet.jsx` · `PremiumModal/{B2BModal,ErrorModal,FiabiliteProof,OnsiteCheckout}.jsx` · `.ai/{tasks,bugs,changelog,current_state}.md` · ce rapport · `shots-sprint2/mq/`.
 
 **Non touchés** : `regions/` (dont `gp.json`), paiements (`mollie*.php`, `doSubscribe.jsx`, `PayGatewayHandler`), data pipeline, prix/plans, mapping territorial, tests existants.
+
+---
+
+## 9. RELEASE GATE — 2026-09-09 (PR #665 → `agent/coding/phaseB-sprint1`)
+
+- **Rebase de portée** : la branche contenait le commit local-only `da8a16796` (HARD ASSET, jamais poussé) → PR incluait du hors-scope. Rebase `--onto origin/agent/coding/phaseB-sprint1` (conflits : 0). Diff final : 41 fichiers, 100 % Sprint 2 + fix blocker.
+- **Release blocker trouvé et fixé (§6, seul élargissement autorisé)** : la base distante ne contient pas `src/lib/mediaKit.js` alors que `BeachDayReport.jsx` l'importe → **la base SEULE ne build pas** (erreur rollup `Could not resolve`, prouvée). `11a0e0f79` restaure `src/lib/mediaKit.js` + `scripts/tests/media-kit.test.cjs` depuis `da8a16796` (`docs/ASSET-MATRIX.md` exclu, hors scope). Conséquence : **PR #664 est rouge sans ce fix** — ordre de merge à gérer (voir PR #665).
+- **Gates re-validés APRÈS rebase+fix** : build exit 0 (375 modules, 0 esbuild), bundle 37.8 Ko, smoke 4/4, media-kit 41/41, E2E 39+3skip+2 pré-existants (BUG-2026-035).
+- **CI PR #665** : `scan/pass` sur le nouveau head, `MERGEABLE/CLEAN`, 0 review bloquante, 0 thread.
+- **`regions/gp.json`** : dirt pré-existant intact, hors PR, documenté.
+- **Statut** : `SPRINT 2 = DONE / RELEASE CANDIDATE` — prêt à merger (séquencement avec #664 à trancher par le release manager).

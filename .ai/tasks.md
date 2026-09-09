@@ -1,4 +1,7 @@
-﻿## SPRINT 2 « GAME ICON PASS » — [x] done (2026-09-09, branche `agent/ui-ux/sprint2-game-icon-pass`)
+﻿## SPRINT 2 « GAME ICON PASS » — [x] done → RELEASE CANDIDATE (2026-09-09, PR #665)
+- Scope purifié par rebase (hors-scope `da8a16796` exclu, 0 conflit) ; fix blocker `mediaKit.js` + contrat (base seule = build rouge, prouvé)
+- CI #665 : scan/pass, MERGEABLE/CLEAN, 0 review bloquante. `gp.json` intact/hors scope. BUG-2026-035 OPEN/P2.
+- NEXT : MERGE PR #665 (séquencement avec #664 à trancher — #664 rouge sans le lib)
 - **TASK-SPRINT2-GLYPHS**: R1 (flags→code-chips, barre 186px) + R2 (jeu→ComicIcons, canvas vectoriel) + R6 (paywall/community→glyphs) — DONE
   - Gates : build exit 0 (375 modules, 0 erreur esbuild), bundle 37.8 Ko ≤ 210, smoke 4/4, E2E 39 passed + 3 skipped + 2 failed pré-existants (BUG-2026-035, prouvé sur worktree pristine `da8a16796`)
   - Preuves : `.ai/ui-audit/SPRINT2-GAME-ICON-PASS-REPORT.md` + `.ai/ui-audit/shots-sprint2/mq/` (3 viewports × 5 surfaces + asserts)

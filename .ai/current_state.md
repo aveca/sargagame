@@ -38,6 +38,23 @@
 
 ---
 
+## 2026-09-09 · Agent: ui-ux/coding · RELEASE GATE SPRINT 2 — RELEASE CANDIDATE (PR #665)
+
+### Travail effectué
+- **Résumé 1 ligne** : PR #665 purifiée (rebase, hors-scope exclu), blocker build fixé, gates re-validés, CI verte, prête à merger.
+- **Détails** :
+  1. Rebase `--onto origin/agent/coding/phaseB-sprint1` (0 conflit) : diff = 41 fichiers Sprint 2 + fix.
+  2. Blocker : base sans `mediaKit.js` → build rouge prouvé ; `11a0e0f79` restaure lib + test (docs exclues). #664 rouge sans ce fix.
+  3. Gates : build 375, bundle 37.8, smoke 4/4, media-kit 41/41, E2E 39+3skip+2 pré-existants.
+  4. CI #665 scan/pass, MERGEABLE/CLEAN, 0 review. `gp.json` intact/hors scope. BUG-2026-035 OPEN/P2.
+- **Prochaine action** : MERGE PR #665 (séquencement #664 à trancher) — Rôle : release
+
+### Branche / PR
+- Branche : `agent/ui-ux/sprint2-game-icon-pass`
+- PR : #665 (base `agent/coding/phaseB-sprint1`)
+
+---
+
 ## 2026-09-09 · Agent: ui-ux/coding · SPRINT 2 « GAME ICON PASS » — DONE
 
 ### Travail effectué
