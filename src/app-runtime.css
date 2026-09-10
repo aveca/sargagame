@@ -468,6 +468,12 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
    sauf variante comic. Rollback : ?sguxlot3=0 (classes omises). */
 .sg-sticky-dark.sg-sticky-dark.sg-sticky-dark{background:linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99)) !important}
 .sg-paybtn.sg-paybtn.sg-paybtn{background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317) !important}
+/* ═══ LOT 4 — badges sticky hors ≤480px : mesurés 72px débordant de 57px hors
+   barre 294px sur 390px (texte rogné « Sans engagemen… ») + doublon du hero
+   (Mollie/sécurisé/sans engagement déjà dans la carte + trust row). La barre
+   sticky ne garde que texte + CTA → CTA dominant, zéro overflow. Triple-classe
+   + !important pour battre le display:flex inline. Rollback : ?sguxlot4=0. */
+@media(max-width:480px){.sg-sticky-badges.sg-sticky-badges.sg-sticky-badges{display:none !important}}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);

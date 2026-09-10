@@ -37,6 +37,8 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const uxCtaV2 = (()=>{try{return !/[?&]sguxcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Lot 3 — armure fond barre sticky vs skin theme (rollback ?sguxlot3=0).
   const uxLot3 = (()=>{try{return !/[?&]sguxlot3=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // Lot 4 — badges sticky masqués ≤480px, doublon hero + overflow 57px (rollback ?sguxlot4=0).
+  const uxLot4 = (()=>{try{return !/[?&]sguxlot4=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const isComic = pwVariant === "comic"
 
   return (
@@ -157,7 +159,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           <span style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {_t(lang, `Débloquer · ${money(displayCents, cur, lang)}`, `Unlock · ${money(displayCents, cur, lang)}`, `Desbloquear · ${money(displayCents, cur, lang)}`)}
           </span>
-          <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
+          <span className={uxLot4?"sg-sticky-badges":undefined} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="lock" size={10}/> Mollie</span><span aria-hidden="true">·</span>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="card" size={11}/> {_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="zap" size={10}/> {_t(lang,"Sans engagement","No commitment","Sin compromiso")}</span>
