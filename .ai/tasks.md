@@ -273,6 +273,12 @@
   - Rôle : coding_agent. Screenshot 390px : `.theme-comic button{bg !important}` écrasait gradients inline → sticky + Payer en boîte BLANCHE, textes invisibles. Triple-classe (0,3,0) pattern repo, valeurs inline d'origine. Vérifié avant/après par exécution. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
   - Fichiers : `src/PassOffer.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/app-runtime.css`.
 
+## UI/CRO mobile — lot 4 [x] done (2026-09-10, main @64e00ae89)
+- **TASK-UI-STICKY-OVERFLOW**: badges sticky hors ≤480px, overflow 57px supprimé (rollback `?sguxlot4=0`)
+  - Rôle : coding_agent. Mesure 390px : badges 72px débordaient hors barre 294px (live + local). Classe `sg-sticky-badges` + media query triple-classe. Barre 120→78px, texte + CTA, zéro overflow vérifié screenshot. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
+  - Déploiement lot 3 vérifié LIVE : sticky gradient sombre servi en prod (preuve propagation).
+  - Fichiers : `src/PassOffer.jsx`, `src/app-runtime.css`.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)

@@ -1,5 +1,12 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 4 — STICKY OVERFLOW SUPPRIMÉ (LIVE @64e00ae89)
+
+**Agent** : coding-agent. **Fichiers** : `src/PassOffer.jsx`, `src/app-runtime.css` (9 insertions).
+**Correction** : badges sticky doublons masqués ≤480px (overflow 57px mesuré live+local), barre 120→78px. Rollback `?sguxlot4=0`. Vérifié screenshot.
+**Vérif déploiement** : lot 3 confirmé LIVE (gradient sombre servi en prod MQ) ; 6/6 domaines 200.
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E 13/13.
+
 ## 2026-09-10 — UI LOT 3 — ARMURE CTA MONEY VS THEME (LIVE @b255bb662)
 
 **Agent** : coding-agent. **Fichiers** : `src/PassOffer.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/app-runtime.css` (12 insertions).

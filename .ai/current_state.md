@@ -1,3 +1,18 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 4 — STICKY OVERFLOW SUPPRIMÉ + LOT 3 VÉRIFIÉ LIVE
+
+### Travail effectué
+- **Résumé 1 ligne** : Déploiement lot 3 vérifié LIVE (gradient sombre servi en prod) + badges sticky 72px débordant de 57px masqués ≤480px (rollback `?sguxlot4=0`), barre 120→78px, CTA dominant, vérifié screenshot.
+- **Fichiers modifiés** : `src/PassOffer.jsx` (classe `sg-sticky-badges` + flag), `src/app-runtime.css` (media query triple-classe).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Mesures DOM + screenshots 390px avant/après · 6/6 domaines live 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `64e00ae89` · Push `origin/main` direct OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 3 — ARMURE CTA MONEY VS THEME DÉPLOYÉE
 
 ### Travail effectué
