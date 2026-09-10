@@ -1,3 +1,18 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 5 — HERO CTA DANS LE VIEWPORT DÉPLOYÉ
+
+### Travail effectué
+- **Résumé 1 ligne** : Mesure 390×844 (CTA or y907-960, panel 1882px, sticky concurrent toujours visible) → repli boîte valeur ≤480px (stats tripliquées) → CTA y813-866 + prix visible au chargement, rollback `?sguxlot5=0`, screenshots avant/après.
+- **Fichiers modifiés** : `src/PremiumModal/WorldPaywall.jsx` (classe `sg-valeur-box` + flag), `src/app-runtime.css` (media query).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Mesures DOM + screenshots 390px avant/après · live MQ 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `89010f99a` · Push `origin/main` direct OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 4 — STICKY OVERFLOW SUPPRIMÉ + LOT 3 VÉRIFIÉ LIVE
 
 ### Travail effectué

@@ -279,6 +279,11 @@
   - Déploiement lot 3 vérifié LIVE : sticky gradient sombre servi en prod (preuve propagation).
   - Fichiers : `src/PassOffer.jsx`, `src/app-runtime.css`.
 
+## UI/CRO mobile — lot 5 [x] done (2026-09-10, main @89010f99a)
+- **TASK-UI-HERO-FOLD**: CTA or hero sous le fold → repli boîte valeur ≤480px (rollback `?sguxlot5=0`)
+  - Rôle : coding_agent. Mesure 390×844 : CTA y907-960 (~116px scroll), cause stats tripliquées. Repli → CTA y813-866, prix visible au chargement, screenshot avant/après. Zéro copy/prix/tracking, sticky préservé, desktop inchangé. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
+  - Fichiers : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css`.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)

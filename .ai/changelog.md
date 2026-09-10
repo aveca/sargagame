@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 5 — HERO CTA DANS LE VIEWPORT (LIVE @89010f99a)
+
+**Agent** : coding-agent. **Fichiers** : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css` (9 insertions).
+**Correction** : repli boîte valeur ≤480px (stats tripliquées poussaient le CTA or à y907-960) → CTA y813-866, prix visible au chargement. Rollback `?sguxlot5=0`. Zéro copy/prix/tracking.
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 4 — STICKY OVERFLOW SUPPRIMÉ (LIVE @64e00ae89)
 
 **Agent** : coding-agent. **Fichiers** : `src/PassOffer.jsx`, `src/app-runtime.css` (9 insertions).
