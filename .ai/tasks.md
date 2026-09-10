@@ -296,6 +296,11 @@
 - **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
   - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
+## UI/CRO mobile — lot 10 [x] exécuté sans changement code (2026-09-10, verdict mesuré)
+- **TASK-UI-HERO-EDGE**: pills en lisière héros opaque — AUCUN fix, décision mesurée :
+  - Mesure 390px : Turin/L'Étang/Sinaï 44px intra-bande (pas lisière), Faula 4px lisière ; pills opaques lisibles sur crème (screenshots) ; pins/clics/données intacts sans toucher au code. Nudge ±8px futile + logique dynamique en zone keeper (course prouvée lot 7). Forcer = régression probable, gain nul.
+- **TASK-UI-LEAD-AUDIT**: déclencheur LeadCapture — 15s OU 2 scrolls, dismiss 7j, `?lead=0` existant : standard, AUCUN changement.
+
 ## UI/CRO mobile — lot 8 [x] done (2026-09-10, main @0f87dbeb2)
 - **TASK-UI-CONSENT**: consent checkout 18px → 24px + texte 11.5 → 12.5px (rollback `?sguxlot8=0`)
   - Contexte : keeper héros/labels reverté (affamage E2E prouvé, doc lot 7) — verrou paiement intouché sauf lisibilité case. Vérifié : toggle label → checked → Payer actif (aria). Zéro copy/logique. Gates : build 375 OK, bundle 37.9 Ko, E2E 13/13.
