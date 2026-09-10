@@ -273,6 +273,12 @@ export default function WorldMapView({
   // à l'écran (la fiche). Réapparaissent dès qu'aucune plage n'est sélectionnée. La géoloc reste
   // joignable par le chip bas « près de moi ». Rollback ?maptitle=0 → toujours visible (état actuel).
   const mapTitleOff = (()=>{try{return /[?&]maptitle=0/.test(window.location.search)}catch(_){return false}})()
+  // Lot 6 — stack bas carte remonté au-dessus de la BottomNav : pill « près de moi »
+  // 12px masqués mesurés à 390px (y726-770 vs nav y758, tap tombant sur la nav — prouvé
+  // elementFromPoint). +20px UNIFORME sur les 5 ancrages (pill 74, scrub 120, son 124,
+  // partage 176, légende 164/210) : tous les jours relatifs (2px pill/scrub, 7px
+  // légende/scrub) sont conservés par construction. Rollback ?sguxlot6=0.
+  const navLift = (()=>{try{return /[?&]sguxlot6=0/.test(window.location.search)?0:20}catch(_){return 20}})()
   // Dead-click carte (audit UX 2026-07-01 : 56+11 clics morts/rapport sur le fond SVG). Deux causes,
   // deux remèdes : (1) un pan finit par un clic fantôme → il ne fait plus rien (suppressBgClickRef) ;
   // (2) un tap FRANC sans sélection tombait dans le vide (océan / île / tache de sargasses, toutes en
@@ -2165,7 +2171,7 @@ export default function WorldMapView({
             adverse 2026-07-02). Constant aussi plage sélectionnée (le digest s'y
             cache) : pas de chrome qui saute au tap. */}
         <div style={{
-          position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + env(safe-area-inset-bottom))`,
+          position:"absolute",left:16,bottom:`calc(${((mapPremium&&!mapDecideOff)?210:164)+navLift}px + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
           {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
@@ -2197,7 +2203,7 @@ export default function WorldMapView({
             la couleur EST blanche, indépendante du fond de pastille (le crème ne
             peignait pas de façon fiable sur iOS → texte ink sur carte sombre = noir). */}
         <button type="button" className="sg-mapchip" style={{
-          position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
+          position:"absolute",right:16,bottom:`calc(${74+navLift}px + env(safe-area-inset-bottom))`,
           pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
           background:"#190c2c",
           color:"#fdfcf7",border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
@@ -2211,7 +2217,7 @@ export default function WorldMapView({
         <button type="button" aria-label={muted?_t(lang,"Activer le son d'échouage","Enable beaching sound","Activar sonido"):_t(lang,"Couper le son d'échouage","Mute beaching sound","Silenciar")}
           onClick={()=>{ const m=!muted; setMuted(m); mutedRef.current=m; if(!m){ ensureAudio(); playBoump(.9) } }}
           style={{
-            position:"absolute",right:16,bottom:"calc(124px + env(safe-area-inset-bottom))",
+            position:"absolute",right:16,bottom:`calc(${124+navLift}px + env(safe-area-inset-bottom))`,
             pointerEvents:"auto",width:42,height:42,display:"inline-flex",alignItems:"center",justifyContent:"center",
             background:"#fdf6e3",color:INK,border:`2.5px solid ${INK}`,fontSize:17,
             borderRadius:999,cursor:"pointer",boxShadow:`3px 3px 0 ${INK}`,
@@ -2224,7 +2230,7 @@ export default function WorldMapView({
           <button type="button" className="sg-mapchip" aria-label={_t(lang,"Partager ma plage","Share my beach","Compartir mi playa")}
             onClick={onShareSel}
             style={{
-              position:"absolute",right:16,bottom:"calc(176px + env(safe-area-inset-bottom))",
+              position:"absolute",right:16,bottom:`calc(${176+navLift}px + env(safe-area-inset-bottom))`,
               pointerEvents:"auto",width:42,height:42,display:"inline-flex",alignItems:"center",justifyContent:"center",
               cursor:"pointer",
             }}>
@@ -2236,7 +2242,7 @@ export default function WorldMapView({
             Premium (mapPremium) : 6 jours déverrouillés, prévision RÉELLE par plage,
             ZÉRO cadenas. C'est LE bénéfice premium visible sur la home (la carte). */}
         <div style={{
-          position:"absolute",left:0,right:0,bottom:"calc(120px + env(safe-area-inset-bottom))",
+          position:"absolute",left:0,right:0,bottom:`calc(${120+navLift}px + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",alignItems:"center",gap:7,pointerEvents:"none",
         }}>
           {/* DÉCISION — pastille « Ta semaine » COMPACTE + PROACTIVE (griefs fondateur : ne pas
