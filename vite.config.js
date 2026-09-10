@@ -2607,6 +2607,19 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
             const pruned = pruneDeadDomains(outDir)
             if (pruned.domains.length) console.log(`   → sitemap: ${pruned.removed} URL(s) retirée(s) [${pruned.domains.join(', ')}], ${pruned.kept} conservée(s)`)
           } catch (e) { console.warn('   ⚠ sitemap prune:', e.message) }
+          // Sitemap strictement territorial : la boucle Sprint #25 écrit les pages
+          // dédiées de TOUTES les régions (cross-domain voulu sur disque), mais chaque
+          // sitemap.xml ne doit lister que son propre domaine (constat LIVE : MQ listait
+          // 91 GP + 27 Miami + 20 PC + 27 Cancun + 16 Tulum). Dernier écrivain sitemap.
+          try {
+            const { pruneForeignDomains } = _require('./scripts/lib/sitemap-prune.cjs')
+            const { getBuildRegion } = _require('./regions/index.cjs')
+            const br = getBuildRegion()
+            if (br && br.domain) {
+              const pf = pruneForeignDomains(outDir, br.domain)
+              if (pf.removed) console.log(`   → sitemap: ${pf.removed} URL(s) étrangère(s) retirée(s) [${br.domain}], ${pf.kept} conservée(s)`)
+            }
+          } catch (e) { console.warn('   ⚠ sitemap foreign prune:', e.message) }
         } catch (e) {
           console.warn('SEO pages:', e.message)
         }

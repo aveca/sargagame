@@ -10,7 +10,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { pruneDeadDomains, deadDomains } = require('../../scripts/lib/sitemap-prune.cjs');
+const { pruneDeadDomains, deadDomains, pruneForeignDomains } = require('../../scripts/lib/sitemap-prune.cjs');
 
 let passed = 0, failed = 0;
 function ok(cond, label) {
@@ -52,6 +52,30 @@ fs.rmSync(reg, { recursive: true, force: true });
 // Fichier réel du repo : barbados doit être le seul domaine exclu.
 const realDead = deadDomains(path.join(__dirname, '..', '..', 'regions'));
 ok(realDead.length === 1 && realDead[0] === 'sargassumbarbados.com', `seul barbados exclu en prod (got ${JSON.stringify(realDead)})`);
+
+// Filtre territorial (constat LIVE 2026-09-10 : sitemap MQ listait 91 GP + 27
+// Miami + 20 PC + 27 Cancun + 16 Tulum — la boucle Sprint #25 écrit les pages
+// de toutes les régions, mais chaque sitemap ne doit lister que son domaine).
+{
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'smfor-'));
+  fs.writeFileSync(path.join(dir, 'sitemap.xml'),
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
+    `  <url><loc>https://sargasses-martinique.com/plages/</loc></url>\n` +
+    `  <url><loc>https://sargasses-guadeloupe.com/plages/</loc></url>\n` +
+    `  <url><loc>https://sargassummiami.com/beach/miami-beach/</loc></url>\n` +
+    `  <url><loc>https://sargasses-martinique.com/beach/anse-mitan/</loc></url>\n` +
+    `</urlset>\n`, 'utf-8');
+  const r = pruneForeignDomains(dir, 'sargasses-martinique.com');
+  ok(r.removed === 2 && r.kept === 2, `prune étranger retire 2, garde 2 (got ${r.removed}/${r.kept})`);
+  const after2 = fs.readFileSync(path.join(dir, 'sitemap.xml'), 'utf-8');
+  ok(after2.indexOf('sargasses-guadeloupe.com') < 0 && after2.indexOf('sargassummiami.com') < 0, 'aucune URL étrangère restante');
+  ok((after2.match(/<loc>/g) || []).length === 2, 'sitemap toujours valide (2 loc)');
+  const r2 = pruneForeignDomains(dir, 'sargasses-martinique.com');
+  ok(r2.removed === 0 && r2.kept === 2, 'idempotent : re-run = 0 suppression');
+  const r3 = pruneForeignDomains(dir, '');
+  ok(r3.removed === 0 && r3.kept === 0, 'domaine vide = no-op de sécurité');
+  fs.rmSync(dir, { recursive: true, force: true });
+}
 
 console.log(`\nsitemap-prune: ${passed} pass / ${failed} fail`);
 process.exit(failed ? 1 : 0);
