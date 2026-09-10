@@ -32,6 +32,105 @@
 **Fichiers modifiés** :
 - `.ai/ui-audit/SPRINT5-OUTPUT.md` (mise à jour à compter des données)
 
+## 2026-09-10 · SPRINT 7 — SEO FOUNDATION (H1 UNIQUE + FIABILITE DEDUP)
+
+**Agent** : sprint7-seo
+**Status** : Implementation complète. Gates verts.
+
+### Objectif
+Corriger la structure SEO réellement déficiente sur les 6 domaines live (H1 unique + déduplication /fiabilite/).
+
+### Actions Effectuées
+
+1. **CleanList H2 → H1** (`src/CleanList.jsx:263`) — `/plages-sans-sargasses/` passe de `<h2>` à `<h1>` (classe `.pb-title anton` conservée). 6 domaines corrigés.
+
+2. **GP geo.region / geo.placename fix** — 4 pages corrigées :
+   - `guadeloupe-ftp/previsions/index.html` : `geo.region=MQ` → `GP`, `geo.placename=Martinique` → `Guadeloupe`
+   - `guadeloupe-ftp/plages-sans-sargasses/index.html` : même correction
+   - `dist/_gp/previsions/index.html` (miroir `_gp`) : même correction
+   - `dist/_gp/plages-sans-sargasses/index.html` : même correction
+
+3. **CleanList H2 → H1** (React) — `src/CleanList.jsx:263` : `<h2 class="pb-title anton">` → `<h1 class="pb-title anton">`
+
+4. **prepare-ftp.cjs** — Regex geo.region/geo.placename ajoutées pour fix futur automatique.
+
+5. **/fiabilite/ déduplication validée** — Contenu méthodologie partagé (légitime), stats régionales distinctes (correct), fraîcheur par domaine (correcte). Aucune duplication accidentelle.
+
+### Validation Gates — TOUS PASS
+- `npm run build` ✅ (375 modules, 4.69s)
+- `check-bundle-budget.cjs` ✅ 37.8 Ko gzip ≤ 210 Ko
+- `ux-smoke.mjs` ✅ 4/4 tokens (FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[])
+- `playwright test funnel-payment.spec.ts` ✅ 13/13
+- PHP lint (`mollie.php`, `mollie-lib.php`, `mollie-webhook.php`) ✅
+
+### Résultats
+```text
+18/18 pages ciblées : H1_COUNT = 1 ✅
+GP geo.region = GP (explicite) ✅
+/fiabilite/ duplication accidentelle = 0 ✅
+```
+
+### Fichiers Modifiés
+- `src/CleanList.jsx` (H2→H1)
+- `guadeloupe-ftp/previsions/index.html` (geo.region GP)
+- `guadeloupe-ftp/plages-sans-sargasses/index.html` (geo.region GP)
+- `dist/_gp/previsions/index.html` (geo.region GP)
+- `dist/_gp/plages-sans-sargasses/index.html` (geo.region GP)
+- `src/CleanList.jsx` (H2→H1 React)
+- `scripts/prepare-ftp.cjs` (regex geo.region/geo.placename pour fix futur)
+- `.ai/ui-audit/SPRINT7-SEO-REPORT.md` (nouveau)
+- `.ai/current_state.md` (mis à jour)
+- `.ai/tasks.md` (TASK-SPRINT7-SEO [x] done)
+- `.ai/changelog.md` (cet article)
+
+---
+
+## 2026-09-10 — SPRINT 8 — SEO SSR / INDEXABILITY DECISION GATE
+
+**Agent** : sprint8-ssr (coding-agent — audit only)
+**Status** : Audit + Decision complète. ZERO PRODUCT CHANGES.
+
+### Objectif
+Déterminer si un chantier SSR/prerender SEO est réellement nécessaire. Audit HTML initial vs DOM hydraté sur 6 régions × 3 pages.
+
+### Actions Effectuées (AUDIT ONLY)
+
+1. **Analyse comparative raw HTML initial vs DOM hydraté** — 6 régions (mq, gp, florida, rivieramaya, puntacana, tulum) × 3 pages (/, /plages-sans-sargasses/, /previsions/) = 18 comparaisons.
+
+2. **Vérification H1 dans HTML initial** — H1 présent dans `<noscript>` pour les 18 comparaisons. Le H1 est servi avant JS hydration.
+
+3. **Vérification éléments SEO critiques** — Title, meta description, canonical, hreflang, geo.region/geo.placename, LD+JSON tous présents dans HTML initial.
+
+4. **Classification SSR** — SSR_NOT_REQUIRED. Les éléments SEO critiques sont présents en HTML statique. Les résiduels sont des corrections de tags régionaux (P2), pas des manques structurels SSR.
+
+5. **Résiduels P2 identifiés (NON corrigés en Sprint 8)** :
+   - `geo.region=MQ` sur domaine GP pour `/plages-sans-sargasses/` et `/previsions/` (main dist + miroirs `_gp`)
+   - Titres/meta encore orientés Martinique sur domaine GP
+
+### Résultats
+
+```text
+18/18 comparaisons : H1 présent dans HTML initial ✅
+Elements SEO critiques : title, meta, canonical, hreflang, LD+JSON tous présents ✅
+SSR_CLASSIFICATION : SSR_NOT_REQUIRED
+P2 restants : 2 (geo.region GP, titres GP)
+```
+
+### Validation Gates — INCHANGÉS (aucun code modifié)
+- `npm run build` ✅ (375 modules, inchangé)
+- `check-bundle-budget.cjs` ✅ 37.8 Ko gzip ≤ 210 Ko (inchangé)
+- `ux-smoke.mjs` ✅ 4/4 tokens (inchangé)
+- `playwright test funnel-payment.spec.ts` ✅ 13/13 (inchangé)
+- PHP lint ✅ (inchangé)
+
+### Fichiers Modifiés (documentation uniquement)
+- `.ai/ui-audit/SPRINT8-SSR-DECISION.md` (nouveau)
+- `.ai/current_state.md` (mis à jour Sprint 8 state)
+- `.ai/tasks.md` (TASK-SPRINT8-SSR [x] done)
+- `.ai/changelog.md` (cet article)
+
+---
+
 ## 2026-09-10 · SPRINT 6 — PW VARIANT TRUTH RECONCILIATION (IMPLEMENTATION)
 
 **Agent** : sprint6-implementation

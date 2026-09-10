@@ -1,3 +1,38 @@
+## 2026-09-10 · Agent: sprint8-ssr (coding-agent) · SPRINT 8 — SEO SSR / INDEXABILITY DECISION GATE
+
+### Travail effectué
+- **Résumé 1 ligne** : Sprint 8 SEO SSR/Indexability decision gate — audit HTML initial vs DOM rendu, 18/18 H1 présent via <noscript>, classification SSR_NOT_REQUIRED, P2 regional tag corruption (MQ→GP)
+- **Détails** : Analyse comparative des 6 régions × 3 pages (/ /plages-sans-sargasses/ /previsions/). H1 présent dans <noscript> initial pour toutes les pages. Titres/meta régionaux MQ-centriques sur domaine GP. Aucun besoin SSR — éléments SEO présents en HTML statique. Problèmes P2 corrigibles via prepare-ftp.cjs regex + rebuild.
+
+### Fichiers modifiés
+- `.ai/current_state.md` — mise à jour Sprint 8 state
+- `.ai/tasks.md` — TASK-SPRINT8-SSR ajouté
+- `.ai/changelog.md` — entrée Sprint 8 ajoutée
+
+### Tests réalisés
+- [x] Analyse manuelle 18/18 pages (H1 via <noscript>)
+- [x] Comparaison HTML initial / DOM hydraté pour 6 régions × 3 pages
+- [ ] npm run build → exit 0 (inchangé, 375 modules)
+- [ ] check-bundle-budget → 37.8 Ko ≤ 210 Ko (inchangé)
+- [ ] ux-smoke.mjs → 4/4 tokens OK (inchangé)
+- [ ] playwright test funnel-payment.spec.ts → 13/13 (inchangé)
+
+### Problèmes restants
+- [ ] P2-001 : geo.region=MQ on GP domain for /plages-sans-sargasses/ et /previsions/ (main dist + _gp mirrors) — sévérité P2 — action: prepare-ftp.cjs regex + rebuild
+- [ ] P2-002 : titres/meta Martinique-centriques sur domaine GP — sévérité P2 — action: même correction
+
+### Prochaine action recommandée
+1. Corriger tags régionaux MQ→GP via prepare-ftp.cjs et rebuild — Rôle : coding_agent
+2. Valider corrected build — Rôle : qa_agent
+3. Laisser rapport Sprint 8 en documentation — rôle : release
+
+### Branche / PR
+- Branche : non applicable (audit seulement, pas d'implémentation)
+- PR : non créé (Sprint 8 = audit+decision only, zero product changes)
+- Commit head : non applicable
+
+---
+
 ## 2026-09-09 · Agent: ui-ux · SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035 FIXÉ)
 
 ### Travail effectué
@@ -21,6 +56,7 @@
 - [ ] **TASK-DEBT-HARVEST**: Inventaire dette — audit S0/Sprint 5 complet. Rapport `.ai/ui-audit/DEBT-HARVEST-REPORT.md` créé avec classification DT-ID, scoring 1-5, TOP 10 dettes, TOP 3 opportunités ROI. **SCOPE_CHANGES = NONE**. Aucune modification produit.
 - [ ] **SPRINT5-OUTPUT**: Monitoring 7j post-fix complet. Validation OBSERVABILITY_CONFIRMED pour comic CTA tracking. DATA_NOT_COMPARABLE pour comparaisons CRO entre fenêtres. `.ai/ui-audit/SPRINT5-OUTPUT.md` créé avec fenêtre 2026-09-08 24h, comic CTA 1.4% (1/70), world CTA=0 attendue pour petit volume, windows non comparables. FINAL_DATA_WINDOW, DATA_DEFINITIONS, COMIC, WORLD, COMPARABILITY, OBSERVABILITY_STATUS, LIMITATIONS tous remplis. **ERRATUM ajouté** : ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP) → SPRINT5-OUTPUT.md corrigé.
 - [ ] **SPRINT6-DECISION**: TOP_1 = PW_VARIANT TRUTH RECONCILIATION. ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP), fix local-only, attribution funnel structurée impossible. `.ai/ui-audit/SPRINT6-DECISION-REPORT.md` créé. Decision : freeze explicite "pw_style":"world" + disposition diff local ComicPaywall.jsx.
+- [ ] **SPRINT7-SEO**: SEO Foundation — H1 unique + /fiabilite/ dedup. 18/18 pages H1 OK (CleanList fixé, Previsions OK, Fiabilite OK). GP geo.region fixés (previsions, plages-sans-sargasses, miroirs _gp). `/fiabilite/` déduplication validée (méthodologie partagée légitime, stats régionales distinctes). `.ai/ui-audit/SPRINT7-SEO-REPORT.md` créé.
 
 ### Prochaine action recommandée
 1. Créer PR #667 Sprint 4 vers main — Rôle : release

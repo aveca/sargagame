@@ -105,6 +105,21 @@
   - **Sortie** : SPRINT6-DECISION-REPORT.md + disposition diff local + AB_FREEZE_MAP explicite.
   - **Estimation** : 1 session.
   - **Statut** : [x] done — implémentation Sprint 6 complète : revert diff local ComicPaywall.jsx, freeze explicite `pw_style:"world"` dans AB_FREEZE_MAP, attribution funnel honnête (NOT_MEASURABLE), erratum Sprint 5 propagé.
+- **TASK-SPRINT7-SEO**: SEO Foundation — H1 unique + /fiabilite/ dedup (6 domaines)
+  - **Rôle** : coding_agent + seo_agent
+  - **Description** : Corriger H1 unique sur 18 pages ciblées (6 domaines × 3 pages : /plages-sans-sargasses/, /previsions/, /fiabilite/) + corriger geo.region/geo.placename pour GP (previsions, plages-sans-sargasses, miroirs _gp) + valider déduplication /fiabilite/.
+  - **Preuves requises** : 18/18 pages H1_COUNT=1, geo.region=GP sur GP, 0 duplication accidentelle /fiabilite/, gates build/bundle/smoke/E2E verts.
+  - **Contraintes** : NE PAS toucher regions/, pricing, Mollie, paiement, data pipeline. Préserver bundle ≤ 210 KB gzip, RM_INFINITE=[], ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], territorial=PASS, payment=PASS, data=PASS.
+  - **Sortie obligatoire** : `.ai/ui-audit/SPRINT7-SEO-REPORT.md` (format handoff exact), MAJ `.ai/current_state.md`, `.ai/tasks.md`, `.ai/changelog.md`.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — 18/18 H1 OK, GP geo.region fixés, /fiabilite/ déduplication validée, rapport `.ai/ui-audit/SPRINT7-SEO-REPORT.md` créé.
+- **TASK-SPRINT8-SSR**: SEO SSR / Indexability Decision Gate — Audit only
+  - **Rôle** : coding_agent (audit) + product_agent (decision)
+  - **Description** : Analyser raw HTML initial vs DOM hydraté sur 6 régions × 3 pages (/, /plages-sans-sargasses/, /previsions/) pour déterminer si SSR est nécessaire. H1 présents dans <noscript> pour les 18 comparaisons. Titres/meta MQ-centriques sur domaine GP. Decision: SSR_NOT_REQUIRED — éléments SEO présents en HTML statique, résiduels P2 documentés (geo.region=MQ sur GP, titres Martinique-centric sur GP).
+  - **Contraintes** : ZERO PRODUCT CHANGES. Audit + decision + documentation uniquement. Ne pas implémenter SSR, ne pas corriger les P2 GP dans ce sprint.
+  - **Sortie obligatoire** : `.ai/ui-audit/SPRINT8-SSR-DECISION.md` (format handoff exact), MAJ `.ai/current_state.md`, `.ai/tasks.md`, `.ai/changelog.md`.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — Decision: SSR_NOT_REQUIRED, rapport `.ai/ui-audit/SPRINT8-SSR-DECISION.md` créé, P2 résiduels documentés (GP geo.region=MQ, GP titres Martinique-centric), zéro code produit modifié.
 
 ## Priorité #5
 - **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression

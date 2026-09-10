@@ -260,7 +260,7 @@ export default function CleanList(props){
     SR.appendChild(document.createRange().createContextualFragment(SCENE_MARKUP));
     var planb=document.createElement("section");planb.id="planb";
     planb.setAttribute("aria-label",_t(lang,"Plages propres aujourd'hui","Clean beaches today","Playas limpias hoy"));
-    planb.innerHTML=['<div class="pb-head"><div>','<div class="pb-kicker"><span id="clKicker"></span></div>','<h2 class="pb-title anton" id="clTitle"></h2>','<div class="pb-sub"><span class="pb-live"><b></b><span id="clLiveTxt"></span></span></div>','</div></div>','<div class="pb-rail" id="clRail"></div>'].join("");
+    planb.innerHTML=['<div class="pb-head"><div>','<div class="pb-kicker"><span id="clKicker"></span></div>','<h1 class="pb-title anton" id="clTitle"></h1>','<div class="pb-sub"><span class="pb-live"><b></b><span id="clLiveTxt"></span></span></div>','</div></div>','<div class="pb-rail" id="clRail"></div>'].join("");
     SR.appendChild(planb);
     const hooks={track:(n,p)=>{try{cbRef.current.track&&cbRef.current.track(n,p);}catch(e){}},onOpenBeach:(b)=>{try{cbRef.current.onOpenBeach&&cbRef.current.onOpenBeach(b);}catch(e){}},onShowMap:()=>{try{cbRef.current.onShowMap&&cbRef.current.onShowMap();}catch(e){}}};
     let eng=null;

@@ -384,6 +384,11 @@ Sitemap: https://${domain}/sitemap.xml
       content = content.replace(/##GP_AMPRAW_MQ##/g, 'Guadeloupe & Martinique')
       content = content.replace(/##GP_AND_MQ##/g, 'Guadeloupe and Martinique')
 
+      // geo.region / geo.placename : forcer GP sur toutes les pages GP
+      content = content
+        .replace(/(<meta name="geo.region" content=)"[^"]*"/, '$1"GP"')
+        .replace(/(<meta name="geo.placename" content=)"[^"]*"/, '$1"Guadeloupe"')
+
       // Dédup générique EN/ES : repointer UNIQUEMENT canonical/hreflang/og:url vers
       // MQ (le swap ci-dessus vient de les mettre en self-GP). Le reste de la page
       // (GA4 GP, texte, liens internes) reste GP — seul le signal de dédup change.
