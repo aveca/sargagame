@@ -474,6 +474,12 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
    sticky ne garde que texte + CTA → CTA dominant, zéro overflow. Triple-classe
    + !important pour battre le display:flex inline. Rollback : ?sguxlot4=0. */
 @media(max-width:480px){.sg-sticky-badges.sg-sticky-badges.sg-sticky-badges{display:none !important}}
+/* ═══ LOT 5 — repli boîte valeur ≤480px : stats tripliquées dans le 1er viewport
+   (badges header 136+/4× + boîte valeur 136+/4×/97% + trust row) et CTA or du hero
+   sous le fold (mesuré y907-960 à 390×844, ~116px de scroll). Le repli remonte
+   prix + CTA dans le viewport, desktop inchangé, aucun copy/prix/tracking touché.
+   Rollback : ?sguxlot5=0 (classe omise). */
+@media(max-width:480px){.sg-valeur-box.sg-valeur-box.sg-valeur-box{display:none !important}}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);

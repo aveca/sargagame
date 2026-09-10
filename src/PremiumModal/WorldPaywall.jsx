@@ -156,6 +156,8 @@ export function WorldPaywall({
   const regions = REGION_LABELS
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
+  // Lot 5 — repli boîte valeur ≤480px, stats tripliquées (rollback ?sguxlot5=0).
+  const uxLot5 = (()=>{try{return !/[?&]sguxlot5=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
@@ -366,7 +368,7 @@ export function WorldPaywall({
             Augmente le taux de conversion CTA→paiement en rappelant ce que
             l'utilisateur obtient. Placées juste avant PassOffer, ces pastilles
             renforcent la décision sans ajouter de dépendance. */}
-        <div style={{
+        <div className={uxLot5?"sg-valeur-box":undefined} style={{
           marginBottom: 14, padding: "12px 14px",
           background: "rgba(13,17,23,.6)", border: "1.5px solid rgba(34,197,94,.3)",
           borderRadius: 12, marginTop: 6
