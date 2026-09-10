@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 3 — ARMURE CTA MONEY VS THEME (LIVE @b255bb662)
+
+**Agent** : coding-agent. **Fichiers** : `src/PassOffer.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/app-runtime.css` (12 insertions).
+**Correction** : armure triple-classe restaurant les gradients inline des 2 CTA money blanchis par le skin theme. Rollback `?sguxlot3=0`. Vérifié screenshot avant/après.
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 2 — COLLISIONS MOBILE (LIVE @815fb34a2)
 
 **Agent** : coding-agent. **Fichier** : `src/Sargasses_PROD.jsx` (2 lignes).

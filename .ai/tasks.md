@@ -268,6 +268,11 @@
   - Rôle : coding_agent. Sonde Playwright 390px : FAB y648-694 sous bandeau y628-728 (z960<1025) → remonté 224px si consentement indécis ; toast 74→94px. Vérifié par exécution + rollback vérifié. Gates : esbuild OK, build 375 OK, bundle 37.8 Ko, E2E 13/13.
   - Prochain : lot 3 score/reco fiche + concurrence visuelle paywall.
 
+## UI/CRO mobile — lot 3 [x] done (2026-09-10, main @b255bb662)
+- **TASK-UI-PAYWALL-ARMOR**: armure fonds CTA money vs skin theme-comic (rollback `?sguxlot3=0`)
+  - Rôle : coding_agent. Screenshot 390px : `.theme-comic button{bg !important}` écrasait gradients inline → sticky + Payer en boîte BLANCHE, textes invisibles. Triple-classe (0,3,0) pattern repo, valeurs inline d'origine. Vérifié avant/après par exécution. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
+  - Fichiers : `src/PassOffer.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/app-runtime.css`.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)

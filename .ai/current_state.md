@@ -1,3 +1,18 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 3 — ARMURE CTA MONEY VS THEME DÉPLOYÉE
+
+### Travail effectué
+- **Résumé 1 ligne** : Screenshot 390px → cause racine `.theme-comic button{bg:var(--sg-card)!important}` (gagnant prouvé par énumération stylesheets) blanchissait barre sticky + bouton Payer ; armure triple-classe aux valeurs inline d'origine, rollback `?sguxlot3=0`, vérifié avant/après + overlay checkout screenshot.
+- **Fichiers modifiés** : `src/PassOffer.jsx` (classe `sg-sticky-dark`), `src/PremiumModal/OnsiteCheckout.jsx` (classe `sg-paybtn`), `src/app-runtime.css` (2 règles armure).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Screenshots 390px avant (boîte blanche) / après (dégradés restaurés) + overlay Payer or lisible
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `b255bb662` (rebasé, data-only distant, zéro conflit) · Push `origin/main` OK → `deploy-live.yml` déclenché · Live MQ 200 vérifié (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 2 — COLLISIONS MOBILE (FAB COOKIE + TOAST NAV) DÉPLOYÉ
 
 ### Travail effectué
