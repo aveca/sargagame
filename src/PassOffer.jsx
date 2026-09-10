@@ -33,6 +33,8 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
   const pd = perDay(displayCents, PASS.days, cur, lang)
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
+  // UI mobile CRO — CTA thumb reach (rollback ?sguxcta=0). Ne touche ni pricing ni tracking.
+  const uxCtaV2 = (()=>{try{return !/[?&]sguxcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const isComic = pwVariant === "comic"
 
   return (
@@ -146,11 +148,11 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         // seuls ~30 % de la barre étaient cliquables — le reste (texte/badges) était
         // une zone morte qui recouvrait le CTA « Commencer maintenant » sur mobile
         // → taps morts sur le CTA money, modal→CTA plafonné à 12,7 %).
-        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
+        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: uxCtaV2 ? "12px 14px calc(12px + env(safe-area-inset-bottom,0px))" : "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
           <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
-          <span style={{ flex: "0 0 auto", padding: "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
+          <span style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {_t(lang, `Débloquer · ${money(displayCents, cur, lang)}`, `Unlock · ${money(displayCents, cur, lang)}`, `Desbloquear · ${money(displayCents, cur, lang)}`)}
           </span>
           <span style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
