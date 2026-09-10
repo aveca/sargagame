@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 9 — HÉROS COMPACT + ARMURE (LIVE @4860682c4)
+
+**Agent** : coding-agent. **Fichiers** : `src/WorldMapView.jsx`, `src/app-runtime.css` (+25-3).
+**Corrections** : héros 168→142px (5→3 collisions, labels intacts) + armure fonds crème vs reset onink (vrais triples 0,3,0). Rollback `?sguxlot9=0`. Hit-test inchangé prouvé.
+**Gates** : esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 8 — CONSENT CHECKOUT LISIBLE (LIVE @0f87dbeb2)
 
 **Agent** : coding-agent. **Fichier** : `src/PremiumModal/OnsiteCheckout.jsx` (2 lignes).

@@ -1,3 +1,18 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 9 — HÉROS COMPACT + ARMURE DÉPLOYÉS
+
+### Travail effectué
+- **Résumé 1 ligne** : Héros 168→142px (espaces + fraîche doublon) et armure fonds vs reset onink (vrais triples 0,3,0 — `.x.x` double ne bat pas 0,2,1, prouvé par énumération stylesheets) ; carte crème restaurée, hit-test inchangé, 5→3 collisions.
+- **Fichiers modifiés** : `src/WorldMapView.jsx` (flag + 3 classes), `src/app-runtime.css` (compact ≤480px + 2 règles armure).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Anatomie DOM + paint order + screenshots 390px avant/après · live MQ 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `4860682c4` (rebasé, data distant zéro conflit) · Push `origin/main` OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 8 — CONSENT CHECKOUT LISIBLE DÉPLOYÉ
 
 ### Travail effectué

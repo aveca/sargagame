@@ -301,6 +301,12 @@
   - Contexte : keeper héros/labels reverté (affamage E2E prouvé, doc lot 7) — verrou paiement intouché sauf lisibilité case. Vérifié : toggle label → checked → Payer actif (aria). Zéro copy/logique. Gates : build 375 OK, bundle 37.9 Ko, E2E 13/13.
   - Fichier : `src/PremiumModal/OnsiteCheckout.jsx` (2 lignes).
 
+## UI/CRO mobile — lot 9 [x] done (2026-09-10, main @4860682c4)
+- **TASK-UI-HERO-COMPACT-ARMOR**: héros 168→142px + armure fonds vs reset onink (rollback `?sguxlot9=0`)
+  - Rôle : coding_agent. Mesures 390px : anatomie (marges/gaps/bouton/alts/fraîche doublon header), 5 intersections héros↔labels. Compactage espaces + repli fraîche (168→142, 5→3 hits, labels intacts). Audit paint : bouton héros transparent (reset onink bat inline) → armure triple-classe VRAIE (0,3,0), carte crème restaurée, hit-test inchangé (prouvé elementFromPoint avant/après). Leçon : `.x.x` = (0,2,0) double, pas triple — armors lots 3/4/5/6 vérifiés suffisants vs leurs opposants, inchangés.
+  - Gates : build 375 OK, bundle 37.9 Ko, E2E 13/13, screenshots avant/après.
+  - Fichiers : `src/WorldMapView.jsx`, `src/app-runtime.css`.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
