@@ -12,7 +12,7 @@
 - [ ] tsc worker → en CI (pas de typescript local) ; PHP lint → N/A (aucun `.php` touché)
 
 ### Déploiement
-- Commit : `fb2d16d68` · Push `origin/main` OK → workflows déclenchés · worker sg-payments redéployé par `deploy-live.yml`
+- Commit : `fb2d16d68` · Push `origin/main` OK · CI Tests #2014 SUCCESS (était FAILURE) · Perf SUCCESS · Secret SUCCESS · Deploy Live #141 SUCCESS (6 régions + workers + health-check + purge) · 6/6 domaines live 200 vérifiés
 ---
 
 ## 2026-09-10 · Agent: coding-agent · UI LOT 9 — HÉROS COMPACT + ARMURE DÉPLOYÉS
