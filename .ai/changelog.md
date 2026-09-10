@@ -1,5 +1,12 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI/CRO MOBILE LOT 1 — CTA STICKY THUMB REACH (LIVE @9bf9c5c66)
+
+**Agent** : coding-agent. **Fichier** : `src/PassOffer.jsx` (seul).
+**Changement** : CTA sticky « Débloquer » 34px→48px min-height, font 12.5→14, padding safe-area bas. Rollback `?sguxcta=0` (ancien style) / `?nosticky=0` (existant).
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13 · live MQ 200.
+**Note** : chantier Mollie fermé (non rouvert) ; mesure business en parallèle, sans attente pipeline.
+
 ## 2026-09-09 — SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035 FIXÉ)
 
 **Agent** : @agent/ui-ux (sprint4-accessibility-focus)

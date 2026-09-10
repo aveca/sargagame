@@ -257,6 +257,12 @@
 
 ---
 
+## UI/CRO mobile — lot 1 [x] done (2026-09-10, main @9bf9c5c66)
+- **TASK-UI-MOBILE-CTA**: CTA sticky PassOffer thumb reach 48px + safe-area padding (rollback `?sguxcta=0`)
+  - Rôle : coding_agent. Parcours : MAP→FICHE→PAYWALL→CTA→PAIEMENT.
+  - Fichier : `src/PassOffer.jsx` (seul). Gates : esbuild OK, build 375 OK, bundle 37.8 Ko, E2E funnel-payment 13/13.
+  - Chantier Mollie non rouvert. Prochain : chevauchement carte/navigation/CTA + états loading/error/stale.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)

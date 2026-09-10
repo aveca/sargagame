@@ -1,3 +1,28 @@
+## 2026-09-10 · Agent: coding-agent · UI/CRO MOBILE LOT 1 — CTA STICKY THUMB REACH (LIVE)
+
+### Travail effectué
+- **Résumé 1 ligne** : CTA sticky PassOffer passé de ~34px à 48px min-height + padding safe-area bas — parcours MAP→FICHE→PAYWALL→CTA→PAIEMENT, rollback `?sguxcta=0`.
+- **Détails** : Problème réel = zone de tap du bouton « Débloquer » trop petite (~34px) et collée au bord bas sans safe-area sur iPhone. Fix = `minHeight:48`, `padding:12px 20px`, `fontSize:14`, `paddingBottom:calc(12px + env(safe-area-inset-bottom))` sur la barre sticky. Flag `uxCtaV2` (défaut ON, `?sguxcta=0` = ancien style, `?nosticky=0` existant conservé). Zéro logique métier/pricing/tracking touchée (`buy()` + `sg_pass_cta` inchangés). Chantier Mollie non rouvert.
+- **Fichiers modifiés** : `src/PassOffer.jsx` (seul).
+
+### Tests réalisés
+- [x] esbuild `src/PassOffer.jsx` → OK
+- [x] `npm run build` → exit 0 (375 modules)
+- [x] `check-bundle-budget.cjs` → 37.8 Ko ≤ 210 Ko
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
+- [ ] `ux-smoke.mjs` local → non lançable ici (preview 4173 indisponible en shell) — couvert par E2E équivalent + CI `ci-tests.yml` post-push
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `9bf9c5c66` (rebasé sur `a3d1b7596` data-only, zéro conflit)
+- Push : `origin/main` OK → `deploy-live.yml` déclenché
+- Live : `sargasses-martinique.com` → 200 (vérifié)
+
+### Prochaine action recommandée
+1. Vérifier run `deploy-live.yml` vert + 6 domaines live — Rôle : release
+2. Lot UI mobile 2 : chevauchement carte/navigation/CTA + états loading/error/stale — Rôle : coding
+---
+
 ## 2026-09-10 · Agent: sprint8-ssr (coding-agent) · SPRINT 8 — SEO SSR / INDEXABILITY DECISION GATE
 
 ### Travail effectué
