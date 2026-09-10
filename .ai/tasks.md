@@ -296,6 +296,11 @@
 - **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
   - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
+## UI/CRO mobile — lot 8 [x] done (2026-09-10, main @0f87dbeb2)
+- **TASK-UI-CONSENT**: consent checkout 18px → 24px + texte 11.5 → 12.5px (rollback `?sguxlot8=0`)
+  - Contexte : keeper héros/labels reverté (affamage E2E prouvé, doc lot 7) — verrou paiement intouché sauf lisibilité case. Vérifié : toggle label → checked → Payer actif (aria). Zéro copy/logique. Gates : build 375 OK, bundle 37.9 Ko, E2E 13/13.
+  - Fichier : `src/PremiumModal/OnsiteCheckout.jsx` (2 lignes).
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)

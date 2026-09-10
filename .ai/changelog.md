@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 8 — CONSENT CHECKOUT LISIBLE (LIVE @0f87dbeb2)
+
+**Agent** : coding-agent. **Fichier** : `src/PremiumModal/OnsiteCheckout.jsx` (2 lignes).
+**Correction** : case 18→24px + texte 11.5→12.5px, rollback `?sguxlot8=0`. Toggle → Payer actif vérifié. Zéro copy/logique.
+**Gates** : esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 7 PARTIEL — FONTS RE-ARBITRATION (LIVE @13a424fd6)
 
 **Agent** : coding-agent. **Fichier** : `src/WorldMapView.jsx` (+13-1).

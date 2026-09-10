@@ -1,3 +1,19 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 8 — CONSENT CHECKOUT LISIBLE DÉPLOYÉ
+
+### Travail effectué
+- **Résumé 1 ligne** : Case consentement 18→24px + texte légal 11.5→12.5px (rollback `?sguxlot8=0`) — toggle label vérifié → checked → Payer actif, logique consentement inchangée, screenshot.
+- **Contexte lot 7/8** : keeper héros reverté (affamage E2E prouvé par bissection) ; collision héros/labels documentée sans masquage (pins/labels/clics intacts) ; badges AUJ transitoires par design.
+- **Fichiers modifiés** : `src/PremiumModal/OnsiteCheckout.jsx` (2 lignes).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Toggle consent vérifié par exécution + screenshot 390px · live MQ 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `0f87dbeb2` · Push `origin/main` direct OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 7 PARTIEL — FONTS RE-ARBITRATION SHIPPÉE, KEEPER REVERTÉ (GATE VERT)
 
 ### Travail effectué
