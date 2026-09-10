@@ -8446,7 +8446,7 @@ function FavToast({show,lang,onPremiumClick,isPremium}){
   },[show,isPremium])
   if(!visible)return null
   return(
-    <div style={{position:"fixed",bottom:"calc(74px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
+    <div style={{position:"fixed",bottom:/[?&]sguxlot2=0(?:&|$)/.test(window.location.search)?"calc(74px + env(safe-area-inset-bottom, 0px))":"calc(94px + env(safe-area-inset-bottom, 0px))",left:"50%",transform:"translateX(-50%)",
       zIndex:805,background:"var(--sg-card,#fff)",color:"var(--sg-ink)",
       boxSizing:"border-box",
       padding:isPremium?"10px 18px":"12px 16px",borderRadius:14,
@@ -14756,7 +14756,7 @@ useEffect(()=>{
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(150px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:(cookieConsent===null&&!/[?&]sguxlot2=0(?:&|$)/.test(window.location.search))?"calc(224px + env(safe-area-inset-bottom))":"calc(150px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
