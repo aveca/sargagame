@@ -279,6 +279,12 @@ export default function WorldMapView({
   // partage 176, légende 164/210) : tous les jours relatifs (2px pill/scrub, 7px
   // légende/scrub) sont conservés par construction. Rollback ?sguxlot6=0.
   const navLift = (()=>{try{return /[?&]sguxlot6=0/.test(window.location.search)?0:20}catch(_){return 20}})()
+  // Lot 7 — ré-arbitrage au chargement des polices uniquement (voir effet ci-dessous).
+  // Le keeper bloc héros a été REVERTÉ : son masquage variait selon la course
+  // héros-mount/arbitrage et affamait parfois le funnel E2E (0 label visible).
+  // Collision héros/labels documentée en backlog (TASK-UI-HERO-OVERLAP) pour une
+  // approche sans course. Rollback ?sguxlot7=0 (désactive le ré-arbitrage polices).
+  const heroKeeperOff = (()=>{try{return /[?&]sguxlot7=0/.test(window.location.search)}catch(_){return false}})()
   // Dead-click carte (audit UX 2026-07-01 : 56+11 clics morts/rapport sur le fond SVG). Deux causes,
   // deux remèdes : (1) un pan finit par un clic fantôme → il ne fait plus rien (suppressBgClickRef) ;
   // (2) un tap FRANC sans sélection tombait dans le vide (océan / île / tache de sargasses, toutes en
@@ -777,7 +783,13 @@ export default function WorldMapView({
   // Positions inchangées (vx/vy fixes) → un simple declutter() suffit. useLayoutEffect =
   // SYNCHRONE avant paint : les labels gardés sont révélés dans le MÊME frame que leur
   // apparition → plus de "noms qui popent 90ms après les pins" (glitch de chargement).
-  useLayoutEffect(()=>{ declutter() },[day,labeledIds,selected,declutter])
+  // Lot 7 — emailSent ajouté aux deps : quand le héros se démonte (email soumis), les
+  // labels qu'il couvrait doivent réapparaître sans attendre un geste.
+  useLayoutEffect(()=>{ declutter() },[day,labeledIds,selected,emailSent,declutter])
+  // Lot 7 — les webfonts (Anton/Bricolage) élargissent les labels APRÈS l'arbitrage →
+  // chevauchements résiduels. Un seul ré-arbitrage au chargement des polices (idempotent,
+  // visuel seul, hit-test et pins intacts). Rollback ?sguxlot7=0 via heroKeeperOff (même flag).
+  useEffect(()=>{ let on=true; try{ if(!heroKeeperOff&&document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>{ if(on){ try{declutter()}catch(_){} } }) }catch(_){} return ()=>{on=false} },[declutter,heroKeeperOff])
 
   // ── EFFET D'ÉCHOUAGE (live, GATÉ RÉALISME) : seules les plages PRÉVUES touchées (statut `avoid`
   // au jour affiché) voient un banc s'échouer ; plages propres/modérées = rien (jamais de fausse
