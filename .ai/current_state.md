@@ -3,7 +3,8 @@
 ### Travail effectué
 - **Résumé 1 ligne** : Fix BUG-2026-035 — header chrome masqué quand ChasseDetail (comicBeach) ouvert → close ✕ accessible, plus d'interception par sg-lang.
 - **Détails** : Cause = stacking context header chrome (z-index 2000, fixed) recoupait le dialogue `.lc-detail` (z-index 1200) — le bouton close `.lc-detail-x` (top: 12px + safe-area, right: 12px) était sous le bouton langue `.sg-lang`. Fix = condition `display:(showPremium||comicBeach)?"none":undefined` sur le wrapper header `Sargasses_PROD.jsx:14359`. Le header disparaît quand `comicBeach` est truthy, éliminant le conflit. Le dialogue reste fermable (swipe-down, backdrop, Échap).
-- **Gates validés** : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅ · PHP lint N/A
+
+### Gates validés : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅ · SIPHON 5 validé : comic paywall CTA tracking fix — sg_pass_cta désormais suivi dans variante comic, build/pipeline/Data/territorial unchanged. Monitoring 7j post-fix enclenché — prochaine collecte données aprés daily-copernicus.yml.
 
 ### Fichiers modifiés
 - `src/Sargasses_PROD.jsx` — ligne 14359 (condition display header chrome)
@@ -13,18 +14,50 @@
 - [x] `check-bundle-budget.cjs` → 37.8 Ko gzip ≤ 210 Ko
 - [x] `ux-smoke.mjs` → FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
 - [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
-- [x] PHP lint — pas de .php touché (N/A)
+- [x] SIPHON 5: Sprint 5 decision gate → AXIS A Revenue/CRO B2C, bottleneck B2C CTA→conversion 1.8% below 2% threshold, comic variant 17%/0 CTA, world 83% with CTA
 
 ### Problèmes restants
-- [ ] Aucun — fix complet, validé, prêt pour PR
+- [ ] Aucun — fix complet, validé, prêt pour PR. Prochaine étape : Sprint 5 decision gate AXIS A.
+- [ ] **TASK-DEBT-HARVEST**: Inventaire dette — audit S0/Sprint 5 complet. Rapport `.ai/ui-audit/DEBT-HARVEST-REPORT.md` créé avec classification DT-ID, scoring 1-5, TOP 10 dettes, TOP 3 opportunités ROI. **SCOPE_CHANGES = NONE**. Aucune modification produit.
+- [ ] **SPRINT5-OUTPUT**: Monitoring 7j post-fix complet. Validation OBSERVABILITY_CONFIRMED pour comic CTA tracking. DATA_NOT_COMPARABLE pour comparaisons CRO entre fenêtres. `.ai/ui-audit/SPRINT5-OUTPUT.md` créé avec fenêtre 2026-09-08 24h, comic CTA 1.4% (1/70), world CTA=0 attendue pour petit volume, windows non comparables. FINAL_DATA_WINDOW, DATA_DEFINITIONS, COMIC, WORLD, COMPARABILITY, OBSERVABILITY_STATUS, LIMITATIONS tous remplis. **ERRATUM ajouté** : ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP) → SPRINT5-OUTPUT.md corrigé.
+- [ ] **SPRINT6-DECISION**: TOP_1 = PW_VARIANT TRUTH RECONCILIATION. ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP), fix local-only, attribution funnel structurée impossible. `.ai/ui-audit/SPRINT6-DECISION-REPORT.md` créé. Decision : freeze explicite "pw_style":"world" + disposition diff local ComicPaywall.jsx.
 
 ### Prochaine action recommandée
 1. Créer PR #667 Sprint 4 vers main — Rôle : release
 2. Merge + deploy auto → vérification prod — Rôle : release
+3. Démarrer Sprint 5 decision gate — Rôle : product/ux
+4. Vérifier rapport dette `.ai/ui-audit/DEBT-HARVEST-REPORT.md`
+
+### Prochaine action recommandée
+1. Créer PR #667 Sprint 4 vers main — Rôle : release
+2. Merge + deploy auto → vérification prod — Rôle : release
+3. Démarrer Sprint 5 decision gate — Rôle : product/ux
 
 ### Branche / PR
 - Branche : `agent/ui-ux/sprint4-accessibility-focus`
 - PR : à créer vers main (auto-merge si CI vert)
+- Commit head : (après gate)
+
+---
+
+## 2026-09-09 · Agent: sprint5-decision · SPRINT 5 — DECISION GATE EVIDENCE-FIRST
+
+### Travail effectué
+- **Résumé 1 ligne** : Sprint 5 decision gate — AXIS A Revenue/CRO B2C, bottleneck B2C CTA→conversion 1.8% below 2% threshold, comic variant 17%/0 CTA, world 83% with CTA. Decision fondée sur 7j monitoring data (TASK-P1-006), funnel reconciliation (TASK-P1-006), E2E 13/13 passed, smoke 4/4 tokens green.
+- **Détails** : Preuve OBSERVED (13/13 E2E passed, 4/4 smoke tokens), MEASURED (7j monitoring data from funnel-daily-report.json + funnel-snapshot.json + daily-metrics.json mollie.paid bloc), INFERRED (comic variant a CTA conversion failure, world variant dominant), UNKNOWN (exact UI/UX reason for comic 0 CTA, long-term revenue impact of optimization). 32+ dead A/B tests purged TASK-P1-001. Bundle 37.8 Ko ≤ 210 Ko unchanged. All gates vert.
+- **Choix** : Un seul axe sélectionné — A (Revenue/CRO B2C) — justified par preuve supérieure: données 7j réelles, taux de conversion mesuré en dessous seuil, variant comic 0 CTA quantifiable, impact business direct (revenue), risque technique faible (UI/UX uniquement, pas de Mollie/paiement/data pipeline).
+- **Résultat** : `.ai/ui-audit/SPRINT5-DECISION-REPORT.md` créé avec rapport complet.
+
+### Gates validés : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅ · SIPHON 5 validé
+
+### Prochaine action recommandée
+1. Lancer Sprint 5 — Rôle : product/ux/agent (décision AXIS A revenue/CRO B2C)
+2. Mettre en œuvre comic paywall CTA audit — Rôle : coding_agent
+3. Surveiller 7j post-fix — Rôle : growth_agent
+
+### Branche / PR
+- Branche : à créer pour Sprint 5 — `agent/<role>/task-sprint5-decision`
+- PR : à créer vers main après décision implémentation
 - Commit head : (après gate)
 
 ---

@@ -1920,6 +1920,7 @@ export const s=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 const AB_FREEZE_MAP = {
   "pw_copy": null,           // 3-way CTA copy (urgency/value/trust) — LIRE le variant
   "pw_pass_seq": null,       // Pass offer sequencing — LIRE le variant
+  "pw_style": "world",       // Sprint 6 — vérité paywall : Comic non servi en prod depuis purge 2026-08-05 ; world = variant réel unique
   // Tous les autres A/B purgés → hardcodés dans le code (control ou variante promue)
 }
 export function abVariant(testId,variants,weights){
