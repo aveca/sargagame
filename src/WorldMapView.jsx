@@ -285,6 +285,9 @@ export default function WorldMapView({
   // Collision héros/labels documentée en backlog (TASK-UI-HERO-OVERLAP) pour une
   // approche sans course. Rollback ?sguxlot7=0 (désactive le ré-arbitrage polices).
   const heroKeeperOff = (()=>{try{return /[?&]sguxlot7=0/.test(window.location.search)}catch(_){return false}})()
+  // Lot 9 — héros compact mobile : paddings/gaps resserrés + ligne fraîche repliée
+  // (doublon du badge fraîcheur header). Rollback ?sguxlot9=0.
+  const uxLot9 = (()=>{try{return !/[?&]sguxlot9=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Dead-click carte (audit UX 2026-07-01 : 56+11 clics morts/rapport sur le fond SVG). Deux causes,
   // deux remèdes : (1) un pan finit par un clic fantôme → il ne fait plus rien (suppressBgClickRef) ;
   // (2) un tap FRANC sans sélection tombait dans le vide (océan / île / tache de sargasses, toutes en
@@ -2053,7 +2056,7 @@ export default function WorldMapView({
             :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
           return (
-          <div style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
+          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
             {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
             <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
               {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
@@ -2061,6 +2064,7 @@ export default function WorldMapView({
             <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="trophy" size={10}/></span> {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}
+              className={uxLot9?"sg-hero-main":undefined}
               style={{display:"flex",alignItems:"center",gap:11,background:"#fdf6e3",border:`3px solid ${INK}`,boxShadow:`4px 4px 0 ${INK}`,borderRadius:14,padding:"11px 13px",cursor:"pointer",textAlign:"left"}}>
               <span style={{flexShrink:0,width:44,height:44,borderRadius:12,background:bcol,border:`2px solid ${INK}`,display:"flex",alignItems:"center",justifyContent:"center",font:"800 17px/1 'JetBrains Mono',monospace",color:"#fff",textShadow:"0 1px 2px rgba(0,0,0,.4)"}}>{Math.round(best.score)}</span>
               <span style={{flex:1,minWidth:0}}>
@@ -2069,13 +2073,13 @@ export default function WorldMapView({
                   <i style={{width:8,height:8,borderRadius:"50%",background:bcol,border:`1px solid ${INK}`,flexShrink:0}}/>
                   {verdict}{driftT&&<>&nbsp;·&nbsp;<b>{driftT}</b></>}
                 </span>
-                {fresh&&<span style={{display:"block",font:"600 9.5px/1.2 'Bricolage Grotesque',sans-serif",color:"#6b6478",marginTop:3}}>{fresh}</span>}
+                {fresh&&<span className={uxLot9?"sg-hero-fresh":undefined} style={{display:"block",font:"600 9.5px/1.2 'Bricolage Grotesque',sans-serif",color:"#6b6478",marginTop:3}}>{fresh}</span>}
               </span>
               <span style={{flexShrink:0,font:"800 11.5px/1 'Bricolage Grotesque',sans-serif",color:INK,background:"#ffd23f",border:`2px solid ${INK}`,borderRadius:9,padding:"7px 9px",boxShadow:`2px 2px 0 ${INK}`,whiteSpace:"nowrap"}}>{_t(lang,"Voir →","See it →","Ver →")}</span>
             </button>
             {/* Alternatives immédiates — pas de clic-per-clic pour comparer */}
             {alts.length>0&&(
-              <div style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:2,scrollbarWidth:"none"}}>
+                <div className={uxLot9?"sg-hero-alts":undefined} style={{display:"flex",gap:6,overflowX:"auto",paddingBottom:2,scrollbarWidth:"none"}}>
                 {alts.map((b,i)=>{
                   const sc=Math.round(b.score);const st=b.days[day];const col=STATUS_C[st]||"#9aa0a8";
                   return (

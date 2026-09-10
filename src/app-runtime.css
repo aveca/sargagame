@@ -491,6 +491,24 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
   .sg-regionnav-chips.sg-regionnav-chips::-webkit-scrollbar{display:none}
   .sg-regionnav-chips.sg-regionnav-chips a{flex:0 0 auto !important}
 }
+/* ═══ LOT 9 — héros compact ≤480px : 168px → ~135px mesurés. Espaces d'abord
+   (margin 9→6, gaps 6→4, bouton 11px→8px), puis ligne fraîche repliée (doublon
+   du badge fraîcheur header "il y a Xh"). Zéro copy/prix/tracking/données, héros
+   + alts + pins + labels intacts et tappables, desktop inchangé.
+   Rollback : ?sguxlot9=0 (classes omises). */
+@media(max-width:480px){
+  .sg-hero-compact.sg-hero-compact{margin-top:6px !important;gap:4px !important}
+  .sg-hero-main.sg-hero-main{padding:8px 10px !important}
+  .sg-hero-fresh.sg-hero-fresh{display:none !important}
+}
+/* Armure fonds héros (même cause que lot 3) : le reset onink
+   `.theme-comic .sg-onink-scope button{background/border/shadow/radius:unset!important}`
+   strippait la carte crème → textes flottant sur la carte (soupe mesurée).
+   Triple-classe (0,3,0)/(0,3,1) aux valeurs inline d'origine. Zéro changement
+   hit-test : la carte interceptait déjà les taps (pointerEvents auto, prouvé
+   elementFromPoint) ; seuls les fonds manquants sont restaurés. Rollback ?sguxlot9=0. */
+.sg-hero-main.sg-hero-main.sg-hero-main{background:#fdf6e3 !important;border:3px solid #0d0b14 !important;box-shadow:4px 4px 0 #0d0b14 !important;border-radius:14px !important}
+.sg-hero-alts.sg-hero-alts.sg-hero-alts button{background:rgba(253,246,227,.88) !important;border:2.5px solid #0d0b14 !important;box-shadow:2.5px 2.5px 0 #0d0b14 !important;border-radius:12px !important}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);
