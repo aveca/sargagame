@@ -1,3 +1,19 @@
+## 2026-09-10 · Agent: coding-agent · P0 SITEMAP TERRITORIAL STRICT DÉPLOYÉ
+
+### Travail effectué
+- **Résumé 1 ligne** : Cause racine sitemap multi-domaines trouvée (boucle Sprint #25 + merge seed mixte, builds MQ/GP uniquement) → `pruneForeignDomains` dernier écrivain → sitemap MQ 403 mixtes → 222 propres, test 12/12, déployé.
+- **Détails** : Miami/PC sitemaps propres (nouveaux builds, early-return) vs MQ mixte (legacy) — prouvé par builds locaux comparés (FL 118 propres, MQ 403 mixtes). Florida/GP/PC/Cancun/Tulum vérifiés propres ou corrigés par le même hook. Pages cross-domain conservées sur disque (fiches cross-région honnêtes + canonicals). HT/LC = DATA_GAP (rien à indexer) ; BB = `seoIndex:false` déjà pruné.
+- **Fichiers modifiés** : `scripts/lib/sitemap-prune.cjs` (+`pruneForeignDomains`), `vite.config.js` (hook), `tests/unit/sitemap-prune.test.cjs` (+5 asserts).
+
+### Tests réalisés
+- [x] `sitemap-prune` 12/12 (7 existants + 5 nouveaux) · build MQ 375 OK · dist sitemap 222/222 MQ
+- [x] bundle 37.9 Ko ≤ 210 · E2E funnel-payment 13/13 · live à confirmer post-deploy
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `974e89992` · Push `origin/main` OK → workflows déclenchés · Live sitemap MQ à vérifier propre post-deploy
+---
+
 ## 2026-09-10 · Agent: coding-agent · P0 MULTI-SITES — AUDIT LIVE + GARDE TERRITORY-ROUTING DÉPLOYÉE
 
 ### Travail effectué
