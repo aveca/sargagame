@@ -558,9 +558,9 @@ export function OnsiteCheckout({
                 setConsentOk(e.target.checked)
                 if (e.target.checked) setPayError("")
               }}
-              style={{ flexShrink: 0, marginTop: 2, width: 18, height: 18, accentColor: "#FFC72C", cursor: "pointer" }}
+              style={{ flexShrink: 0, marginTop: (!isComic&&!/sguxlot8=0/.test(window.location.search||""))?0:2, width: (!isComic&&!/sguxlot8=0/.test(window.location.search||""))?24:18, height: (!isComic&&!/sguxlot8=0/.test(window.location.search||""))?24:18, accentColor: "#FFC72C", cursor: "pointer" }}
             />
-            <span style={{ fontSize: 11.5, lineHeight: 1.45, color: isComic ? "#0D0B14" : "rgba(255,255,255,.72)" }}>
+            <span style={{ fontSize: (!isComic&&!/sguxlot8=0/.test(window.location.search||""))?12.5:11.5, lineHeight: 1.45, color: isComic ? "#0D0B14" : "rgba(255,255,255,.72)" }}>
               {_t(lang,
                 "J'accepte que ma prévision 7 jours et mes alertes me soient fournies immédiatement, dès mon paiement, et je reconnais qu'en demandant cet accès immédiat je perds mon droit de rétractation de 14 jours une fois l'accès ouvert (art. L221-28 13° du Code de la consommation). En cas de problème, contactez-nous.",
                 "I agree that my 7-day forecast and alerts are provided immediately upon payment, and I acknowledge that by requesting this immediate access I lose my 14-day right of withdrawal once access is opened (art. L221-28 13° French Consumer Code / Directive 2011/83/EU). If anything goes wrong, just email us.",
