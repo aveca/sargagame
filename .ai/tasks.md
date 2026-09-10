@@ -284,6 +284,11 @@
   - Rôle : coding_agent. Mesure 390×844 : CTA y907-960 (~116px scroll), cause stats tripliquées. Repli → CTA y813-866, prix visible au chargement, screenshot avant/après. Zéro copy/prix/tracking, sticky préservé, desktop inchangé. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
   - Fichiers : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css`.
 
+## UI/CRO mobile — lot 6 AUDIT (2026-09-10, mesuré, non implémenté — décision layout requise)
+- **TASK-UI-PILL-NAV**: pill « Une plage propre près de moi » 12px sous BottomNav (mesuré 390px : pill y726-770 vs nav y758-844, WorldMapView.jsx:2200 `bottom:74px`)
+  - Contrainte prouvée : stack vertical finement réglé (pill 74-118, scrub 120+, son 124-166, légende 164+) — monter le pill seul percute scrub (2px de jour) et bouton son ; demande décision layout (déplacer son/partage en cascade ou ancrer le stack au-dessus de la nav), pas un one-liner sûr. Reporté, documenté avec mesures.
+- **TASK-UI-REGION-FOLD**: grille cross-sell RegionNav 9 chips ~370px au-dessus de la carte (screenshot) — carte visible ~560-1250 seulement ; repli mobile à scoper (trafic cross-domain en jeu), pas au jugé.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
