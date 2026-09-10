@@ -140,7 +140,7 @@ function computeReport(rows) {
     }
   }
 
-  // Par pw_style (A/B variant) — aggregate from params JSON
+  // Par pw_style (A/B variant) — aggregate from params JSON (honest: only events carrying pw_style)
   const byPWStyle = {}
   for (const r of rows) {
     const evt = String(r.event || '').replace(/^sg_/, '')
@@ -148,12 +148,13 @@ function computeReport(rows) {
     let params = {}
     try { params = typeof r.params === 'string' ? JSON.parse(r.params) : (r.params || {}) } catch (_) {}
     const style = params.pw_style || 'unknown'
-    if (!byPWStyle[style]) byPWStyle[style] = { modal_open: 0, paywall_view: 0, cta: 0, conversion: 0 }
+    if (!byPWStyle[style]) byPWStyle[style] = { modal_open: 0, paywall_view: 0, cta: 'NOT_MEASURABLE', conversion: 'NOT_MEASURABLE' }
     if (evt === 'premium_modal_open') byPWStyle[style].modal_open++
     if (evt === 'paywall_view') byPWStyle[style].paywall_view++
   }
-  // Also count cta/conversion per pw_style (these events don't carry pw_style directly)
-  // We attribute them to the most recently seen pw_style per session (best effort)
+  // CTA/conversion do NOT carry pw_style in params — cannot be attributed per variant honestly.
+  // Previous comment claimed "best effort" attribution but it was never implemented.
+  // Keeping as NOT_MEASURABLE to prevent false attribution.
 
   return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, engagement, by_island: byIsland, by_pw_style: byPWStyle }
 }
@@ -218,7 +219,9 @@ function formatReport(report, windowHours) {
     lines.push('  By paywall variant (pw_style):')
     for (const st of styles) {
       const data = report.by_pw_style[st]
-      lines.push(`    ${st}: modal_open=${data.modal_open} paywall_view=${data.paywall_view}`)
+      const cta = data.cta === 'NOT_MEASURABLE' ? 'NOT_MEASURABLE' : data.cta
+      const conv = data.conversion === 'NOT_MEASURABLE' ? 'NOT_MEASURABLE' : data.conversion
+      lines.push(`    ${st}: modal_open=${data.modal_open} paywall_view=${data.paywall_view} cta=${cta} conversion=${conv}`)
     }
     lines.push('')
   }

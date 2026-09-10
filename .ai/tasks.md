@@ -51,7 +51,71 @@
 ## Priorité #5
 - **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
   - Responsable : devops_agent
-  - Dépendances : daily-copernicus.yml, backtest-results.json
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+
+## Priorité #0 — SPRINT 5 DECISION GATE
+- **TASK-SPRINT5-DECISION**: Décider l'axe d'investissement Sprint 5 avec preuves — un seul axe de A-E
+  - **Rôle** : product_agent + ui-ux_agent (décision unique, preuves obligatoires)
+  - **Description** : Sprint 5 commence par phase de décision fondée sur preuves disponibles.
+    Sélectionner exactement UN axe parmi A-E et produire rapport SPRINT5-DECISION-REPORT.md.
+    Ne pas implémenter le changement — déterminer uniquement où investir ensuite.
+  - **Preuves requises** : Classifier chaque constat en OBSERVED/MEASURED/INFERRED/UNKNOWN;
+    classifier chaque bottleneck en severity/frequency/business impact/technical risk/evidence quality.
+    Justifier le choix par la preuve (ne pas choisir automatiquement CRO ou B2B).
+  - **Contraintes** : NE PAS toucher regions/, territorial mapping, Copernicus/ERDDAP, pricing,
+    Mollie, paiement, data pipeline, SEO scaffold. Préserver bundle ≤ 210 KB gzip,
+    RM_INFINITE=[], ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], territorial=PASS,
+    payment=PASS, data=PASS.
+  - **Sortie obligatoire** : Format SPRINT_5_DECISION avec AXIS, BOTTLENECK, EVIDENCE, BASELINE,
+    HYPOTHESIS, PROPOSED_CHANGE, SUCCESS_METRIC, RISK, NEXT_ACTION (UNE seule action).
+  - **Estimation** : 1 session (courte) — lecture état + classification + choix + rédaction rapport.
+  - **Statut** : [x] done — décision AXIS A Revenue/CRO B2C prise, rapport `.ai/ui-audit/SPRINT5-DECISION-REPORT.md` créé.
+- **TASK-SPRINT5-COMIC-FIX**: Correction Sprint 5 — comic paywall CTA tracking
+  - **Rôle** : coding_agent
+  - **Description** : Ajout tracking `sg_pass_cta` au bouton "Commencer l'aventure →" du ComicPaywall
+    (`.ai/ui-audit/SPRINT5-COMIC-PAYWALL-REPORT.md`). Preuve: 7j monitoring 0/16 comic CTA vs 80/96 world CTA.
+    Root cause: événement non déclenché dans variante comic — le bouton "Plus tard" était muet
+    (documenté 2026-09-04 CRO commit). Fix: ajout tracking CTA click dans onClick du bouton
+    "Commencer l'aventure →". Validation: build OK, bundle 37.8 Ko ≤ 210 Ko, smoke 4/4, E2E 13/13 pass.
+  - **Fichiers** : `src/PremiumModal/ComicPaywall.jsx` — ligne 456 (onClick du bouton "Commencer l'aventure →")
+  - **Statut** : [x] done **local-only, jamais committé, jamais déployé** — `M src/PremiumModal/ComicPaywall.jsx` non commité. ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP). Sprint 6 revert effectué.
+- **TASK-SPRINT5-MONITORING**: Surveillance 7 jours post-fix — collecte données CTA→conversion
+  - **Rôle** : growth_agent + data_agent
+  - **Description** : Après exécutions de daily-copernicus.yml, récupérer données funnel-daily-report.json,
+    daily-metrics.json, analytics-snapshot.json. Séparer COMIC vs WORLD. Produire tableau VARIANT/MODALS/CTA/CTA_RATE/CHECKOUT/CHECKOUT_RATE/MOLLIE/MOLLIE_RATE/PAID/PAYMENT_RATE.
+    Comparer PRE-FIX vs POST-FIX. Interpréter selon 4 cas (A/B/C/D). Note volume petit N, ne pas conclure causalité sans significativité statistique. Remplir SPRINT5-OUTPUT.md.
+  - **Dépendencies** : funnel-daily-report.json, daily-metrics.json, analytics-snapshot.json, daily-copernicus.yml
+  - **Sortie** : SPRINT5-OUTPUT.md comblé, interprétation, recommandation
+  - **Statut** : [x] done — rapport `.ai/ui-audit/SPRINT5-OUTPUT.md` créé avec analyse data quality reconciliation, fenêtre 2026-09-08 24h, comic CTA 1.4% (1/70) VALIDÉ, world CTA=0 pour petit volume, classification A/B (OBSERVABILITY_CONFIRMED + DATA_NOT_COMPARABLE), limitations documentées.
+- **TASK-DEBT-HARVEST**: Inventaire dette — audit uniquement, classification + backlog
+  - **Rôle** : auditor_agent (cet agent)
+  - **Description** : Audit dettes techniques/UX/a11y/observability/performance/design-system/multi-région/SEO.
+    Classifier avec DT-ID format PROVEN/LIKELY/UNKNOWN. Produire scoring 1-5 Business/Frequency/Technical Risk/Effort/Evidence quality.
+    Produire TOP 10 DEBTS et TOP 3 ROI OPPORTUNITIES. SCOPE_CHANGES = NONE.
+    Ne aucune modification produit. Audit + classification + backlog uniquement.
+  - **Dépendencies** : .ai/current_state.md, .ai/tasks.md, .ai/bugs.md, .ai/changelog.md, .ai/ui-audit/
+  - **Sortie** : `.ai/ui-audit/DEBT-HARVEST-REPORT.md` comblé
+  - **Statut** : [x] done — rapport créé, classification effectuée, backlog prioritaire produit
+- **TASK-SPRINT6-DECISION**: Sprint 6 — Décision réconciliation pw_variant (comic dead path / fix local-only / attribution impossible)
+  - **Rôle** : product_agent + ui-ux_agent (décision unique, preuves obligatoires)
+  - **Description** : `pw_style` absent de AB_FREEZE_MAP → ComicPaywall mort en prod depuis purge A/B 2026-08-05. Fix Sprint 5 local-only non déployé. Attribution funnel CTA/variante impossible (commentaire sans implémentation). Sprint 5 monitoring = world-only. Décider : freeze explicite "pw_style":"world" (no-op runtime, documente réalité) + disposition diff local ComicPaywall.jsx (revert recommandé) OU réactivation comic contrôlée AVANT attribution réparée.
+  - **Preuves** : PROVEN ×5 — AB_FREEZE_MAP sans pw_style (Sargasses_PROD.jsx:1920-1942), funnel-daily-report.cjs:155-156 (attribution commentée), funnel-daily-report.json by_pw_style={world:70}, pw-verdict.json, git diff local-only ComicPaywall.jsx.
+  - **Contraintes** : NE PAS toucher regions/, pricing, Mollie, paiement, data pipeline. Préserver bundle ≤ 210 KB gzip, RM_INFINITE=[], smoke 4/4. Zéro modification ComicPaywall hors disposition diff existant. Ne pas réactiver comic sans attribution CTA/variante réparée AVANT.
+  - **Sortie** : SPRINT6-DECISION-REPORT.md + disposition diff local + AB_FREEZE_MAP explicite.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — implémentation Sprint 6 complète : revert diff local ComicPaywall.jsx, freeze explicite `pw_style:"world"` dans AB_FREEZE_MAP, attribution funnel honnête (NOT_MEASURABLE), erratum Sprint 5 propagé.
+
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 ﻿# .ai/tasks.md — Backlog priorisé
 
