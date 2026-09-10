@@ -3239,7 +3239,8 @@
   },
   "74f4b0e544b33528a853ed6f7f0132d4": {
     "j3": "2026-08-30T16:25:39.679Z",
-    "j7": "2026-09-03T20:48:28.911Z"
+    "j7": "2026-09-03T20:48:28.911Z",
+    "j14": "2026-09-10T20:45:49.223Z"
   },
   "b4e5d527f4fe0f1a9caf3eb3406f5045": {
     "daily_last": "2026-08-28",
@@ -3263,5 +3264,10 @@
     "daily_last": "2026-09-10",
     "daily_sig": "Juanillo Beach (Cap Cana)|moderate|36|moderate|0|",
     "daily_count": 3
+  },
+  "7693488c933820a0d08069540e8713da": {
+    "daily_last": "2026-09-10",
+    "daily_sig": "Fort Lauderdale Beach|clean|63|clean|0|",
+    "daily_count": 1
   }
 }
