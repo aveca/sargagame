@@ -296,7 +296,7 @@
 - **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
   - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
-## P0 MULTI-SITES — sitemap territorial strict [x] done (2026-09-10, main @974e89992)
+## P0 MULTI-SITES — sitemap territorial strict [x] done+vérifié LIVE (2026-09-10, main @974e89992, deploy #146 SUCCESS)
 - **TASK-SEO-SITEMAP-TERRITORY**: sitemap.xml par build filtré au domaine propre (`pruneForeignDomains`)
   - Rôle : coding_agent. Cause racine : boucle Sprint #25 (toutes régions dans chaque build MQ/GP, cross-domain voulu sur disque) + merge seed mixte → sitemap MQ 403 URLs multi-domaines (222 MQ + 91 GP + 27 Miami + 20 PC + 27 Cancun + 16 Tulum, prouvé build local). Fix : `pruneForeignDomains(outDir, getBuildRegion().domain)` dernier écrivain sitemap (vite.config) — pages cross-domain conservées (canonicals corrects), seul le sitemap est filtré. Preuve locale : 415 étrangères retirées, 222 MQ restantes, test 12/12. Gates : build 375 OK, bundle 37.9 Ko, E2E 13/13.
   - Fichiers : `scripts/lib/sitemap-prune.cjs`, `vite.config.js`, `tests/unit/sitemap-prune.test.cjs` (+5 asserts).

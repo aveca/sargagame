@@ -11,7 +11,7 @@
 - [ ] PHP lint → N/A (aucun `.php` touché)
 
 ### Déploiement
-- Commit : `974e89992` · Push `origin/main` OK → workflows déclenchés · Live sitemap MQ à vérifier propre post-deploy
+- Commit : `974e89992` · Deploy Live #146 SUCCESS (22:49→22:53) · Live vérifié : MQ 222/222 propres (était 403 mixtes), GP 91/91 propres
 ---
 
 ## 2026-09-10 · Agent: coding-agent · P0 MULTI-SITES — AUDIT LIVE + GARDE TERRITORY-ROUTING DÉPLOYÉE
