@@ -480,6 +480,17 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
    prix + CTA dans le viewport, desktop inchangé, aucun copy/prix/tracking touché.
    Rollback : ?sguxlot5=0 (classe omise). */
 @media(max-width:480px){.sg-valeur-box.sg-valeur-box.sg-valeur-box{display:none !important}}
+/* ═══ LOT 6 — RegionNav compact ≤480px : 9 chips en 3 lignes ≈185px de chrome fixe
+   → 1 ligne scrollable ≈54px (mesuré 390px : carte visible dès y~110 au lieu de y~242).
+   Titre masqué (redondant avec le logo header), chips scroll horizontal (même pattern
+   que la barre desktop CrossRegionNav), tap préservé, desktop inchangé.
+   Rollback : ?sguxlot6=0 (classes omises). */
+@media(max-width:480px){
+  .sg-regionnav-title.sg-regionnav-title{display:none !important}
+  .sg-regionnav-chips.sg-regionnav-chips{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;justify-content:flex-start !important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .sg-regionnav-chips.sg-regionnav-chips::-webkit-scrollbar{display:none}
+  .sg-regionnav-chips.sg-regionnav-chips a{flex:0 0 auto !important}
+}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);

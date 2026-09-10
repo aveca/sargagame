@@ -48,6 +48,8 @@ export default function RegionNav({inline=false}) {
   }
 
   const lang = (() => { try { const p = window.location.pathname; if (p.startsWith("/es")) return "es"; if (p.startsWith("/en")) return "en"; return "fr" } catch { return "fr" } })()
+  // Lot 6 — grille 9 chips compactée ≤480px (rollback ?sguxlot6=0, même flag que stack bas carte).
+  const uxLot6 = (()=>{try{return !/[?&]sguxlot6=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
   const baseStyle = {
     background: 'linear-gradient(135deg, var(--sg-teal-deep,#0a5c4a), var(--sg-teal-deep-2,#0d7f63))',
@@ -72,8 +74,8 @@ export default function RegionNav({inline=false}) {
   return (
     <>
       <div style={wrapperStyle}>
-        <span style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>SargaGame Network —</span>
-        <div style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
+        <span className={uxLot6?"sg-regionnav-title":undefined} style={{fontSize: 13, color: '#b8f0dd', whiteSpace: 'nowrap', fontWeight: 600}}>SargaGame Network —</span>
+        <div className={uxLot6?"sg-regionnav-chips":undefined} style={{display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center'}}>
           {REGIONS.map(r => {
             const isCurrent = r.domain === current
             return (
