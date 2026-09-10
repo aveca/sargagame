@@ -1,3 +1,18 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 6 — PILL STACK + REGIONNAV COMPACT DÉPLOYÉS
+
+### Travail effectué
+- **Résumé 1 ligne** : Stack bas carte +20px uniforme (pill retappable, tap prouvé BUTTON) + RegionNav 186px→44px scroll (carte dès y~108), rollback `?sguxlot6=0`, screenshots avant/après.
+- **Fichiers modifiés** : `src/WorldMapView.jsx` (5 ancrages + flag `navLift`), `src/components/RegionNav.jsx` (2 classes + flag), `src/app-runtime.css` (media query).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Mesures DOM + screenshots 390px avant/après (pill, chips, map) · live MQ 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commits : `fd24ffa55` (stack) + `9b9558f95` (regionnav), push groupé `origin/main` OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 5 — HERO CTA DANS LE VIEWPORT DÉPLOYÉ
 
 ### Travail effectué

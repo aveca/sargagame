@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 6 — PILL STACK + REGIONNAV COMPACT (LIVE @9b9558f95)
+
+**Agent** : coding-agent. **Fichiers** : `src/WorldMapView.jsx` (11+5), `src/components/RegionNav.jsx` (6+2), `src/app-runtime.css` (+11).
+**Corrections** : stack bas +20px uniforme (pill retappable, jours conservés) ; RegionNav 186→44px scroll (+134px carte). Rollback `?sguxlot6=0`. Vérifié mesures + screenshots.
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 5 — HERO CTA DANS LE VIEWPORT (LIVE @89010f99a)
 
 **Agent** : coding-agent. **Fichiers** : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css` (9 insertions).

@@ -284,10 +284,11 @@
   - Rôle : coding_agent. Mesure 390×844 : CTA y907-960 (~116px scroll), cause stats tripliquées. Repli → CTA y813-866, prix visible au chargement, screenshot avant/après. Zéro copy/prix/tracking, sticky préservé, desktop inchangé. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
   - Fichiers : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css`.
 
-## UI/CRO mobile — lot 6 AUDIT (2026-09-10, mesuré, non implémenté — décision layout requise)
-- **TASK-UI-PILL-NAV**: pill « Une plage propre près de moi » 12px sous BottomNav (mesuré 390px : pill y726-770 vs nav y758-844, WorldMapView.jsx:2200 `bottom:74px`)
-  - Contrainte prouvée : stack vertical finement réglé (pill 74-118, scrub 120+, son 124-166, légende 164+) — monter le pill seul percute scrub (2px de jour) et bouton son ; demande décision layout (déplacer son/partage en cascade ou ancrer le stack au-dessus de la nav), pas un one-liner sûr. Reporté, documenté avec mesures.
-- **TASK-UI-REGION-FOLD**: grille cross-sell RegionNav 9 chips ~370px au-dessus de la carte (screenshot) — carte visible ~560-1250 seulement ; repli mobile à scoper (trafic cross-domain en jeu), pas au jugé.
+## UI/CRO mobile — lot 6 [x] done (2026-09-10, main @9b9558f95)
+- **TASK-UI-PILL-NAV**: pill « près de moi » +20px uniforme stack (rollback `?sguxlot6=0`)
+  - Décision : option C (translation uniforme pill 74→94, scrub 120→140, son 124→144, partage 176→196, légende 164→184/210→230) — jours relatifs conservés par construction ; tap prouvé BUTTON (était NAV). `WorldMapView.jsx` + flag `navLift`. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
+- **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
+  - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
 ## P0 — Bloquant / urgent
 
