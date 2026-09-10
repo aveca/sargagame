@@ -1,3 +1,23 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 2 — COLLISIONS MOBILE (FAB COOKIE + TOAST NAV) DÉPLOYÉ
+
+### Travail effectué
+- **Résumé 1 ligne** : Sonde Playwright 390px → 2 collisions réelles corrigées : FAB archipel masqué par bandeau cookie (y648-694 sous y628-728, z960<1025) remonté à 224px tant que consentement indécis ; toast favoris décollé de la BottomNav (74→94px). Rollback `?sguxlot2=0`, vérifié dans les 2 sens.
+- **Détails** : Inspection par exécution (sonde fixed/sticky map+fiche+paywall), pas au jugé. Constaté et laissé tel quel : emails checkout déjà 16px (pas de zoom iOS), CTA fiche 48-52px + safe-area déjà OK, RegionNav 186px mesuré (refonte = hors scope minimal). Fichiers : `src/Sargasses_PROD.jsx` seul (2 lignes). Sondes temporaires supprimées avant commit.
+- **Fichiers modifiés** : `src/Sargasses_PROD.jsx` (FAB archipel + FavToast).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E funnel-payment 13/13
+- [x] Géométrie vérifiée par exécution : FAB y574-620 vs bandeau y628-728 = 8px de jour ; rollback `?sguxlot2=0` → y648-694 (ancien)
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `815fb34a2` · Push `origin/main` OK → `deploy-live.yml` déclenché · Live MQ 200 vérifié (nouveau build en propagation)
+
+### Prochaine action
+1. Confirmer run `deploy-live.yml` vert + live nouveau build — Rôle : release
+2. Lot 3 : score/reco fiche au-dessus du fold + concurrence visuelle paywall — Rôle : coding
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI/CRO MOBILE LOT 1 — CTA STICKY THUMB REACH (LIVE)
 
 ### Travail effectué

@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 2 — COLLISIONS MOBILE (LIVE @815fb34a2)
+
+**Agent** : coding-agent. **Fichier** : `src/Sargasses_PROD.jsx` (2 lignes).
+**Corrections** : FAB archipel remonté au-dessus du bandeau cookie (collision mesurée y648-694 vs y628-728) ; toast favoris décollé BottomNav (74→94px). Rollback `?sguxlot2=0`, vérifié ON+OFF par exécution.
+**Gates** : esbuild OK · build 375 OK · bundle 37.8 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI/CRO MOBILE LOT 1 — CTA STICKY THUMB REACH (LIVE @9bf9c5c66)
 
 **Agent** : coding-agent. **Fichier** : `src/PassOffer.jsx` (seul).

@@ -263,6 +263,11 @@
   - Fichier : `src/PassOffer.jsx` (seul). Gates : esbuild OK, build 375 OK, bundle 37.8 Ko, E2E funnel-payment 13/13.
   - Chantier Mollie non rouvert. Prochain : chevauchement carte/navigation/CTA + états loading/error/stale.
 
+## UI/CRO mobile — lot 2 [x] done (2026-09-10, main @815fb34a2)
+- **TASK-UI-MOBILE-OVERLAP**: FAB archipel vs bandeau cookie + toast favoris vs BottomNav (rollback `?sguxlot2=0`)
+  - Rôle : coding_agent. Sonde Playwright 390px : FAB y648-694 sous bandeau y628-728 (z960<1025) → remonté 224px si consentement indécis ; toast 74→94px. Vérifié par exécution + rollback vérifié. Gates : esbuild OK, build 375 OK, bundle 37.8 Ko, E2E 13/13.
+  - Prochain : lot 3 score/reco fiche + concurrence visuelle paywall.
+
 ## P0 — Bloquant / urgent
 
 ### TASK-P0-005 GP canonical BUG — domaine GP sert contenu MQ + canonical MQ (trafic ~0/j)
