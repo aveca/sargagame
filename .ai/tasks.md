@@ -284,6 +284,12 @@
   - Rôle : coding_agent. Mesure 390×844 : CTA y907-960 (~116px scroll), cause stats tripliquées. Repli → CTA y813-866, prix visible au chargement, screenshot avant/après. Zéro copy/prix/tracking, sticky préservé, desktop inchangé. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.
   - Fichiers : `src/PremiumModal/WorldPaywall.jsx`, `src/app-runtime.css`.
 
+## UI/CRO mobile — lot 7 [x] partiel (2026-09-10, main @13a424fd6)
+- **TASK-UI-LABEL-FONTS**: ré-arbitrage labels au chargement webfonts + retrigger emailSent (rollback `?sguxlot7=0`)
+  - Rôle : coding_agent. `document.fonts.ready` → `declutter()` (idempotent, corrige dérive boîtes post-fallback) + `emailSent` en deps effet (labels reviennent quand héros se démonte). Gate vert 13/13.
+- **TASK-UI-HERO-OVERLAP [REVERTÉ, backlog précis]**: keeper bloc héros masquait les labels sous le héros mais affamait le funnel E2E (0 label visible, course héros-mount/arbitrage — prouvé par bissection `false&&` 6.3s vs timeout, et persistance sans le keeper exclue par rebuild+retest). Reverté proprement (zéro résidu `heroBox`/`sg-hero-block`). Collision héros/labels (Anse Turin/St-Pierre/Belleville) et badges AUJ (transitoires ~4s par design once+fade) documentées pour approche sans course.
+  - Fichiers : `src/WorldMapView.jsx` (+13-1).
+
 ## UI/CRO mobile — lot 6 [x] done (2026-09-10, main @9b9558f95)
 - **TASK-UI-PILL-NAV**: pill « près de moi » +20px uniforme stack (rollback `?sguxlot6=0`)
   - Décision : option C (translation uniforme pill 74→94, scrub 120→140, son 124→144, partage 176→196, légende 164→184/210→230) — jours relatifs conservés par construction ; tap prouvé BUTTON (était NAV). `WorldMapView.jsx` + flag `navLift`. Gates : build 375 OK, bundle 37.8 Ko, E2E 13/13.

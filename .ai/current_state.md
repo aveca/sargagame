@@ -1,3 +1,19 @@
+## 2026-09-10 · Agent: coding-agent · UI LOT 7 PARTIEL — FONTS RE-ARBITRATION SHIPPÉE, KEEPER REVERTÉ (GATE VERT)
+
+### Travail effectué
+- **Résumé 1 ligne** : Keeper héros reverté après bissection prouvant sa responsabilité dans l'affamage E2E (0 label visible) ; shippé : ré-arbitrage `document.fonts.ready` + retrigger `emailSent`, gate 13/13 vert, déployé.
+- **Détails** : Enquête complète — arbitration [data-vx] saine (0 intersection), collisions prouvées : héros opaque vs labels (cas 1+3) et badges AUJ vs pills (cas 2, transitoires ~4s once+fade par design, non touchés). Keeper implémenté + vérifié (0 heroHits) mais E2E rouge (timeout tapIdx) ; bissection `false&&` → 6.3s vert ; rebuild sans keeper → vert. Revert propre (grep `heroBox`/`sg-hero-block` = 0). Leçons : arbitrage dépendant du timing de mount = course ; labels nés cachés + masquage agressif = famine funnel.
+- **Fichiers modifiés** : `src/WorldMapView.jsx` (+13-1 : flag, fonts effect, emailSent dep).
+
+### Tests réalisés
+- [x] esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E funnel-payment 13/13 (après revert)
+- [x] Bissection keeper OFF/ON · rollback `?sguxlot7=0` vérifié · hit-test fiche OK · live MQ 200
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `13a424fd6` · Push `origin/main` direct OK → `deploy-live.yml` déclenché · Live MQ 200 (nouveau build en propagation)
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 6 — PILL STACK + REGIONNAV COMPACT DÉPLOYÉS
 
 ### Travail effectué

@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — UI LOT 7 PARTIEL — FONTS RE-ARBITRATION (LIVE @13a424fd6)
+
+**Agent** : coding-agent. **Fichier** : `src/WorldMapView.jsx` (+13-1).
+**Shippé** : ré-arbitrage `document.fonts.ready` + retrigger `emailSent` (rollback `?sguxlot7=0`). **Reverté** : keeper héros (affamage E2E prouvé par bissection, zéro résidu). Badges AUJ laissés intacts (transitoires par design).
+**Gates** : esbuild OK · build 375 OK · bundle 37.9 Ko ≤ 210 · E2E 13/13 · live MQ 200.
+
 ## 2026-09-10 — UI LOT 6 — PILL STACK + REGIONNAV COMPACT (LIVE @9b9558f95)
 
 **Agent** : coding-agent. **Fichiers** : `src/WorldMapView.jsx` (11+5), `src/components/RegionNav.jsx` (6+2), `src/app-runtime.css` (+11).
