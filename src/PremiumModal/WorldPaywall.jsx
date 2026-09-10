@@ -362,6 +362,41 @@ export function WorldPaywall({
           />
         </div>
         
+        {/* ═══ VALEUR AVANT PRIX ═══ — Rapel du bénéfice avant le prix.
+            Augmente le taux de conversion CTA→paiement en rappelant ce que
+            l'utilisateur obtient. Placées juste avant PassOffer, ces pastilles
+            renforcent la décision sans ajouter de dépendance. */}
+        <div style={{
+          marginBottom: 14, padding: "12px 14px",
+          background: "rgba(13,17,23,.6)", border: "1.5px solid rgba(34,197,94,.3)",
+          borderRadius: 12, marginTop: 6
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#22C55E", boxShadow: "0 0 8px #22C55E", flexShrink: 0 }} />
+            <span style={{ color: "#fff", fontSize: 12, fontWeight: 600 }}>
+              {t("136+ plages", "136+ beaches", "136+ playas")} {t("avec score 0-100", "with score 0-100", "con puntuación 0-100")}
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11 }}>
+              {t("mis à jour 4×/jour", "updated 4×/day", "actualizada 4×/día")}
+            </span>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#5FD3C9", boxShadow: "0 0 8px #5FD3C9", flexShrink: 0 }} />
+            <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11 }}>
+              {t("satellite", "satellite", "satélite")}
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+            <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11 }}>
+              {t("97% vérifiées", "97% verified", "97% verificadas")}
+            </span>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#FFC72C", boxShadow: "0 0 8px #FFC72C", flexShrink: 0 }} />
+            <span style={{ color: "rgba(255,255,255,.7)", fontSize: 11 }}>
+              {t("fiabilité", "reliability", "fiabilidad")}
+            </span>
+          </div>
+        </div>
+
         {/* Pricing card (PassOffer) — immediately after email */}
         <div style={{ marginBottom: 14 }}>
           <PassOffer
