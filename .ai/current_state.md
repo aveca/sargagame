@@ -11,7 +11,7 @@
 - [ ] PHP lint → N/A (aucun `.php` touché)
 
 ### Déploiement
-- Commit : `974e89992` · Deploy Live #146 SUCCESS (22:49→22:53) · Live vérifié : MQ 222/222 propres (était 403 mixtes), GP 91/91 propres
+- Commit : `974e89992` · Deploy Live #146 SUCCESS (22:49→22:53) · Live vérifié : MQ 222/222 propres (était 403 mixtes), GP 91/91 propres · P1 pages plAGES data-driven enrichment LIVE : 6/6 domaines enrichis avec plages voisines, résorts proches, facts, activities depuis flags réels beach ; zéro invention ; build 37.9 Ko ≤ 210 Ko ; ux-smoke 4/4 ; E2E funnel 13/13
 ---
 
 ## 2026-09-10 · Agent: coding-agent · P0 MULTI-SITES — AUDIT LIVE + GARDE TERRITORY-ROUTING DÉPLOYÉE

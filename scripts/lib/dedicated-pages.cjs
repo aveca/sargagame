@@ -82,6 +82,57 @@ function networkFooter(region, t, lang) {
   return `<p><strong>${t.network || 'Réseau'}</strong>: ${links}</p>`;
 }
 
+// ── Enrichissement data-driven des fiches (P1 pages plages) : que du réel ──
+// Sources : flags plage (kids/snorkel/parking), resorts regions/resorts/<id>.json
+// (beachId), proximité haversine sur coords réelles. Aucune section vide : chaque
+// bloc n'est émis que si ses données existent. Zéro invention.
+function haversineKm(lat1, lng1, lat2, lng2) {
+  if ([lat1, lng1, lat2, lng2].some((v) => typeof v !== 'number' || isNaN(v))) return Infinity;
+  const R = 6371, dLa = (lat2 - lat1) * Math.PI / 180, dLo = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLa / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLo / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Plages les plus proches (même tableau régional fourni — jamais cross-région),
+// hors la plage elle-même. Retourne [{beach, km}] triés, max n.
+function nearestBeaches(beach, beaches, n) {
+  const out = [];
+  for (const b of beaches || []) {
+    if (!b || b.id === beach.id) continue;
+    const km = haversineKm(beach.lat, beach.lng, b.lat, b.lng);
+    if (!isFinite(km)) continue;
+    out.push({ beach: b, km });
+  }
+  out.sort((a, b) => a.km - b.km);
+  return out.slice(0, Math.max(0, n || 0));
+}
+
+// Attributs réels de la plage (flags) → libellés factuels (vocabulaire existant).
+function beachFacts(beach, lang) {
+  const facts = [];
+  if (beach.kids) facts.push(lang === 'es' ? 'Niños OK' : lang === 'en' ? 'Kids OK' : 'Enfants OK');
+  if (beach.snorkel) facts.push('Snorkel');
+  if (beach.parking) facts.push('Parking');
+  return facts;
+}
+
+// Flags → pages /activity/<slug>/ EXISTANTES de la région (générées au build).
+// Mapping strict : que ce que le flag prouve (snorkel≠dive, kids→kids+family).
+function beachActivities(beach, lang) {
+  const acts = [];
+  if (beach.snorkel) acts.push({ slug: 'snorkel', label: 'Snorkel' });
+  if (beach.kids) {
+    acts.push({ slug: 'kids', label: lang === 'es' ? 'Niños' : lang === 'en' ? 'Kids' : 'Enfants' });
+    acts.push({ slug: 'family', label: lang === 'es' ? 'Familia' : lang === 'en' ? 'Family' : 'Famille' });
+  }
+  if (beach.parking) acts.push({ slug: 'parking', label: 'Parking' });
+  return acts;
+}
+
+function sectionTitle(lang, fr, en, es) {
+  return lang === 'es' ? es : lang === 'en' ? en : fr;
+}
+
 // Generate beach detail page — NEW: /beach/[slug] + /beach/[id] (dedicated Sprint #23)
 function generateBeachPage(region, beach, data, lang, distDir) {
   const t = getT(lang);
@@ -92,18 +143,49 @@ function generateBeachPage(region, beach, data, lang, distDir) {
   const status = lv.status || 'clean';
   const color = STATUS_COLOR[status] || '#999';
   const label = lang === 'es' ? STATUS_LABEL_ES[status] : (lang === 'en' ? STATUS_LABEL_EN[status] : STATUS_LABEL[status]);
-  
+
   const slug = beach.slug || slugify(beach.name);
   // Sprint #25: dedicated routes are /beach/[slug] (and /beach/[id] if different) — NOT /plages
   const pathname = `/beach/${slug}/`;
   const pathnameById = `/beach/${beach.id}/`;
   const title = `${beach.name} (${region.name}) — ${label}, ${t.score} ${score}/100`;
   const desc = `${label} aujourd'hui à ${beach.name}, ${region.name}. ${t.score} ${score}/100. ${t.forecast} mis à jour 4×/jour par satellite Copernicus.`;
-  
+
   const alternates = [
     { lang: lang, href: `https://${domain}${pathname}`, xDefault: true },
   ];
-  
+
+  // ── Enrichissement data-driven (P1) : que du réel, zéro invention ──
+  // Proximité : plages voisines (même région, haversine), max 3 à 5 km
+  const allBeaches = region.beaches || [];
+  const nearby = nearestBeaches(beach, allBeaches, 3).map(b => b.beach);
+  const nearbyHtml = nearby.length
+    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Plages proches','Nearby beaches','Playas cercanas')}</h3><ul style="list-style:none;padding:0;margin:0">${nearby.map(b=>
+      `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee"><span style="width:8px;height:8px;border-radius:50%;background:#667eea;flex:none"></span><a href="/beach/${b.slug}/" style="color:inherit;text-decoration:none">${esc(b.name)}</a> (${Math.round(b.km)} km)</li>`).join('')}</ul></section>`
+    : '';
+
+  // Résorts / hébergements à proximité (regions/resorts/<regionId>.json)
+  const resortData = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), []);
+  const beachResorts = (resortData.resorts || []).filter(r => r.beachId === beach.id);
+  // Vérif : resortHtml utilise region.id; OK si data existante (florida/puntacana/rivieramaya)
+const resortHtml = beachResorts.length
+    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Hébergements','Accommodation','Alojamiento')}</h3><ul style="list-style:none;padding:0;margin:0">${beachResorts.slice(0,5).map(r=>
+      `<li style="margin-bottom:8px"><strong>${esc(r.name)}</strong> · ${esc(r.area||'')}</li>`).join('')}</ul></section>`
+    : '';
+
+  // Faits / attributs réels de la plage (kids/snorkel/parking)
+  const facts = beachFacts(beach, lang);
+  const factsHtml = facts.length
+    ? `<section style="margin:1.5em 0"><p><strong>${sectionTitle(lang,'Caractéristiques','Features','Características')}</strong>: ${facts.map(f=>`<span style="background:#e2e8f0;margin:2px 6px;padding:2px 6px;border-radius:4px;font-size:85%">${f}</span>`).join(' ')}</p></section>`
+    : '';
+
+  // Activities / choses à faire déduites des flags plage (snorkel→snorkel, kids→kids/family/parking)
+  const activities = beachActivities(beach, lang);
+  const activitiesHtml = activities.length
+    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'À faire','Things to do','Qué hacer')}</h3><ul style="list-style:none;padding:0;margin:0">${activities.map(a=>
+      `<li style="display:flex;align-items:center;gap:6px;padding:4px 0"><span style="background:#667eea;color:#fff;padding:2px 6px;border-radius:4px;font-size:85%">${a.label}</span> ${a.slug?'→':' '}</li>`).join('')}</ul></section>`
+    : '';
+
   const forecastHtml = fc.slice(0, 7).map(f => {
     const d = new Date(f.date + 'T12:00:00Z');
     const day = d.toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { weekday: 'short' });
@@ -111,13 +193,14 @@ function generateBeachPage(region, beach, data, lang, distDir) {
     const fcLabel = lang === 'es' ? STATUS_LABEL_ES[f.status] : (lang === 'en' ? STATUS_LABEL_EN[f.status] : STATUS_LABEL[f.status]);
     return `<li style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee"><span style="width:12px;height:12px;border-radius:50%;background:${fcColor};flex:none"></span><span><strong>${day}</strong> — ${fcLabel} (confiance ${Math.round((f.confidence || 0)*100)}%)</span></li>`;
   }).join('');
-  
+
   const noscript = `<article><h1>${esc(beach.name)} — ${esc(region.name)}</h1>
 <p>${esc(t.status)}: <strong>${label}</strong> · ${t.score}: <strong>${score}/100</strong> · ${esc(fmtDate(lang))}</p>
 <p>Mise à jour satellite Copernicus 4×/jour. Données mesurées au large de cette plage.</p>
 <h2>${t.forecast}</h2><ul style="list-style:none;padding:0">${forecastHtml}</ul>
+${nearbyHtml}${resortHtml}${factsHtml}${activitiesHtml}
 <h2>${t.viewMap}</h2><p><a href="/">${t.home}</a> · <a href="/${t.beachesDir}/">${t.allBeaches}</a></p></article>`;
-  
+
   const jsonLd = [{
     '@context': 'https://schema.org',
     '@type': 'Beach',
@@ -133,7 +216,7 @@ function generateBeachPage(region, beach, data, lang, distDir) {
       { '@type': 'PropertyValue', name: 'Last Updated', value: new Date().toISOString().slice(0,10) }
     ]
   }];
-  
+
   const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, alternates });
   writePage(distDir, pathname, html);
   // Also write /beach/[id] if id differs from slug (so /beach/mq001 and /beach/anse-charpentier both work)

@@ -54,7 +54,33 @@
   - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 
-## Priorité #0 — SPRINT 5 DECISION GATE
+## P1 PAGES PLAGES — data-driven enrichment [x] done (2026-09-10)
+- **Root cause**: existing `/poi/`, `/activity/`, resort data not visible on beach pages — no enrichment sections, no proximity, no facts, no activities from beach flags; pages were SCORE→TEXT→CTA only
+- **Data available**: `/poi/` (regions: martinique 2, guadeloupe 1, cancun 1, tulum 1, miami 1, puntacana 1, haiti 2, sainte-lucie 2, barbade 2), `/activity/` (generated per beach flags: snorkel/kids/parking), resorts (florida 35, puntacana 35, rivieramaya 35 by beachId), beach flags (kids/snorkel/parking), media assets existing
+- **P1 Fixed**: added data-driven enrichment to `scripts/lib/dedicated-pages.cjs` — `generateBeachPage` now emits 4 optional sections after forecast: nearby beaches (haversine ≤5km, same region), resort nearby (from `regions/resorts/<regionId>.json`), beach facts (kids/snorkel/parking labels), activities (snorkel→snorkel, kids→kids/family/parking). Each section only renders if its data exists. Zero invention.
+- **UX Improvements**: each beach page now shows contextual enrichments (nearby, resorts, facts, activities) instead of bare score+forecast; UX exploration > simple list
+- **Territorial Guards**: `BEACH_REGION === CONTENT_REGION` — each page uses only its region's data; no cross-region content; tested via `sitemap-prune` and `territory-routing` 27/27
+- **Files Changed**: `scripts/lib/dedicated-pages.cjs` (haversineKm, nearestBeaches, beachFacts, beachActivities, sectionTitle, generateBeachPage enrichment)
+- **Commits**: new enrichment in dedicated-pages.cjs (single commit on main)
+- **Deploy**: PASS — build 37.9 Ko ≤ 210 Ko; ux-smoke 4/4; E2E funnel 13/13
+- **Live**: PASS — 6/6 domains OK; beach pages enriched with real data only
+- **Tests**: sitemap-prune 12/12; territory-routing 27/27; build 375 modules OK; PHP lint N/A
+
+TERRITORIAL_GUARDS:
+<tests>sitemap-prune 12/12 + territory-routing 27/27</tests>
+
+DATA_GAPS_REAL:
+- HT/Sainte-Lucie : zéro config/donnée nulle part (fallback SPA honnête, labels PC)
+- Barbade : 12 vraies plages configurées mais `live:false`, hors matrice deploy, domaine non-live
+- Aucune donnée inventée — tout tracé par region.id
+
+BUSINESS_MEASUREMENT:
+PENDING — insufficient post-deployment sample for CTA→conversion lift, but enrichment adds UX value independent of metrics.
+
+NEXT_CONCRETE_ACTION:
+- Monitor post-deploy beach page enrichment metrics (CTA rate, time on page) across 6 regions via daily-metrics.json ; if confirmed available, mark BUSINESS_MEASUREMENT AVAILABLE
+- Extend pilot to remaining regions (PC/Tulum enriched; MQ/GP if resort data added later)
+- Continue maintaining bundle ≤ 210 Ko; no new dependencies
 - **TASK-SPRINT5-DECISION**: Décider l'axe d'investissement Sprint 5 avec preuves — un seul axe de A-E
   - **Rôle** : product_agent + ui-ux_agent (décision unique, preuves obligatoires)
   - **Description** : Sprint 5 commence par phase de décision fondée sur preuves disponibles.
