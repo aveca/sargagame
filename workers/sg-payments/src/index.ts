@@ -130,10 +130,10 @@ async function rateLimit(env: Env, key: string, limit: number, windowSec = 60): 
     const bucket = `${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
     const cur = parseInt(await kv(env).get(bucket) || '0');
     if (cur >= limit) return false;
-    // Only write every 10th request — reduces KV puts 10x
-    if (cur % 10 === 0) {
-      await kv(env).put(bucket, String(cur + 10), { expirationTtl: windowSec * 2 });
-    }
+    // Comptage exact (1 put/requête) : le batching par dizaines faussait le
+    // compteur (0→10→20 = limite 20 atteinte en 2 appels, 429 sauvages sur
+    // payment_status/auth_* — revert c64dfc5c3, comportement validé restauré).
+    await kv(env).put(bucket, String(cur + 1), { expirationTtl: windowSec * 2 });
   } catch (e: any) {
     console.log('rateLimit KV KO — fail-open:', e?.message);
   }
