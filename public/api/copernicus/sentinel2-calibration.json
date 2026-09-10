@@ -1,12 +1,12 @@
 {
   "active": false,
-  "reason": "insufficient-pairs (19/20)",
-  "n": 19,
+  "reason": "insufficient-pairs (15/20)",
+  "n": 15,
   "agreement": null,
   "thresholds": {
     "clean": 0.005,
     "mod": 0.015
   },
-  "verifiedAt": "2026-09-10T04:00:52.902Z",
+  "verifiedAt": "2026-09-10T10:59:22.199Z",
   "metric": "accord statut S2 near-shore vs ERDDAP settled (history), fenêtre ±5j"
 }
