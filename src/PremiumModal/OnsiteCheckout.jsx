@@ -573,6 +573,7 @@ export function OnsiteCheckout({
         <button
           onClick={() => { try { doSubscribe() } catch (_) {} }}
           disabled={payBusy}
+          className={(!isComic&&!/sguxlot3=0/.test(window.location.search||""))?"sg-paybtn":undefined}
           aria-disabled={consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk ? "true" : undefined}
           style={{
             width: "100%", padding: 15, borderRadius: 14, marginTop: 16,

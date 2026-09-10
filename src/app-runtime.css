@@ -460,6 +460,14 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
 .sg-toast__x:active{transform:scale(.9)}
 @keyframes sgToastIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
 @keyframes sgStickyIn{from{opacity:0;transform:translateY(100%)}to{opacity:1;transform:translateY(0)}}
+/* ═══ ARMURE FONDS CTA MONEY (lot 3) — constat screenshot 390px : le skin
+   `.theme-comic button{bg:var(--sg-card)!important}` (0,1,1) écrasait les
+   gradients inline → barre sticky + bouton Payer rendus en boîte BLANCHE,
+   textes latéraux invisibles. Triple-classe (0,3,0) pour battre (0,1,1),
+   valeurs = les inline d'origine (aucun redesign). Classes posées par le JSX
+   sauf variante comic. Rollback : ?sguxlot3=0 (classes omises). */
+.sg-sticky-dark.sg-sticky-dark.sg-sticky-dark{background:linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99)) !important}
+.sg-paybtn.sg-paybtn.sg-paybtn{background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317) !important}
 
 /* ══════════ SKELETON tokenisé (chargement = pro, pas vide gris) ══════════ */
 .sg-sk{background:linear-gradient(100deg,var(--sg-cardS,#EFEDE6) 30%,var(--sg-card,#F8F6F0) 50%,var(--sg-cardS,#EFEDE6) 70%);

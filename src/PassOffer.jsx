@@ -35,6 +35,8 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
   // UI mobile CRO — CTA thumb reach (rollback ?sguxcta=0). Ne touche ni pricing ni tracking.
   const uxCtaV2 = (()=>{try{return !/[?&]sguxcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // Lot 3 — armure fond barre sticky vs skin theme (rollback ?sguxlot3=0).
+  const uxLot3 = (()=>{try{return !/[?&]sguxlot3=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const isComic = pwVariant === "comic"
 
   return (
@@ -148,7 +150,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         // seuls ~30 % de la barre étaient cliquables — le reste (texte/badges) était
         // une zone morte qui recouvrait le CTA « Commencer maintenant » sur mobile
         // → taps morts sur le CTA money, modal→CTA plafonné à 12,7 %).
-        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className="sg-sticky" style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: uxCtaV2 ? "12px 14px calc(12px + env(safe-area-inset-bottom,0px))" : "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
+        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className={"sg-sticky"+((!isComic&&uxLot3)?" sg-sticky-dark":"")} style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: uxCtaV2 ? "12px 14px calc(12px + env(safe-area-inset-bottom,0px))" : "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
           <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
