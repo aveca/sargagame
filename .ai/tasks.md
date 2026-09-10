@@ -296,6 +296,12 @@
 - **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
   - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
+## P0 MULTI-SITES — audit LIVE + garde territory-routing [x] done (2026-09-10, main @d4574656e)
+- **P0#1 navigation/Pages** : NON REPRODUIT — BottomNav 3 onglets sur 6/6 domaines, clic Plages → vue liste + back OK, Premium → paywall OK (testé LIVE MQ) ; aucune entrée « Pages » n'existe ; /plages/ 200 + H1/canonical régionaux partout.
+- **P0#2 HT/LC/BB** : COMPORTEMENT CONFIRMÉ, cause = PAS DE DONNÉES (aucun config haiti/sainte-lucie ; barbados.json 12 plages mais domaine non-live + path non provisionné) → DATA_GAP_REAL, fallback SPA honnête (labels PC). Rien fabriqué. 6 domaines LIVE : datasets corrects (Miami→FL, Cancun→RM, Tulum→TU, MQ, GP, PC 12 labels).
+- **P0#3 fiches** : AUCUN BUG — `/plages/<slug>/` titre+canonical régionaux concordants ; cross-domain sert le contenu de la région propriétaire avec son canonical (honnête). Sitemap.xml multi-domaines noté (locs étrangères ignorées par Google, P2 SEO).
+- **Garde ajoutée** : `tests/unit/territory-routing.test.cjs` 27/27 — unicité domaines, matrice deploy==régions, mapping projets Cloudflare, island/préfixe inline, gaps HT/LC/BB documentés.
+
 ## P0 CI/CD — rateLimit KV batching [x] fixed+verified (2026-09-10, main @fb2d16d68, deploy #141 SUCCESS)
 - **TASK-CI-RATELIMIT**: revert batch `put(cur+10)` → compteur exact `put(cur+1)` (rollback c64dfc5c3)
   - Rôle : coding_agent + security_agent (money-path). Cause : batching faisait passer limite 20 en ~2 appels → 429 sauvages sur `mol_*` (payment_status polls, auth_*) + CI Tests rouge (`worker-auth.contract` 8 échecs). Impact prod : polling paiement étranglé après 2 polls. Fix = restauration verbatim du code validé pré-09-09 (fail-open conservé). Preuve locale : contrat 23/23 vert. Pas de nouveau mécanisme de charge → pas de re-test paiement requis.

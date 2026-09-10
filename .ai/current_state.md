@@ -1,3 +1,19 @@
+## 2026-09-10 · Agent: coding-agent · P0 MULTI-SITES — AUDIT LIVE + GARDE TERRITORY-ROUTING DÉPLOYÉE
+
+### Travail effectué
+- **Résumé 1 ligne** : 6 domaines + 3 paths HT/LC/BB + onglets + fiches testés LIVE : P0#1 non reproduit (tabs OK), P0#2 = DATA_GAP (pas de données HT/LC, BB non-live), P0#3 = sain (contenu+canonical concordants) ; garde `territory-routing.test.cjs` 27/27 ajoutée et déployée.
+- **Preuves** : BottomNav 3 onglets 6/6 ; clic Plages → liste + back, Premium → paywall (MQ LIVE) ; maps Miami→FL / Cancun→RM / Tulum→TU / MQ / PC-12-labels ; `/plages/<slug>/` titres+canonical régionaux ; cross-domain → contenu propriétaire + son canonical ; sitemap multi-domaines noté P2.
+- **Fichiers modifiés** : `tests/unit/territory-routing.test.cjs` (nouveau, 27 asserts).
+
+### Tests réalisés
+- [x] 21 probes Playwright LIVE (nav/plages/dataset ×6 + 3 territoires) · E2E onglets+fiches LIVE
+- [x] `territory-routing` 27/27 local · CI Tests + deploy-live vérifiés via API (voir rapport)
+- [ ] PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `d4574656e` · Push `origin/main` OK → workflows déclenchés · Live 6/6 à confirmer post-deploy
+---
+
 ## 2026-09-10 · Agent: coding-agent · P0 CI/CD — RATELIMIT KV BATCHING REVERTÉ ET DÉPLOYÉ
 
 ### Travail effectué
