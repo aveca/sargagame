@@ -296,6 +296,11 @@
 - **TASK-UI-REGION-FOLD**: grille 9 chips 186px → 1 ligne scroll 44px (rollback `?sguxlot6=0`)
   - Décision : scroll horizontal (pattern barre desktop), titre masqué, tap préservé, desktop inchangé. Mesuré : carte dès y~108 (était y~242, +134px). `RegionNav.jsx` + `app-runtime.css`. Screenshot avant/après.
 
+## P0 CI/CD — rateLimit KV batching [x] fixed (2026-09-10, main @fb2d16d68)
+- **TASK-CI-RATELIMIT**: revert batch `put(cur+10)` → compteur exact `put(cur+1)` (rollback c64dfc5c3)
+  - Rôle : coding_agent + security_agent (money-path). Cause : batching faisait passer limite 20 en ~2 appels → 429 sauvages sur `mol_*` (payment_status polls, auth_*) + CI Tests rouge (`worker-auth.contract` 8 échecs). Impact prod : polling paiement étranglé après 2 polls. Fix = restauration verbatim du code validé pré-09-09 (fail-open conservé). Preuve locale : contrat 23/23 vert. Pas de nouveau mécanisme de charge → pas de re-test paiement requis.
+  - Fichier : `workers/sg-payments/src/index.ts` (4+4 lignes).
+
 ## UI/CRO mobile — lot 10 [x] exécuté sans changement code (2026-09-10, verdict mesuré)
 - **TASK-UI-HERO-EDGE**: pills en lisière héros opaque — AUCUN fix, décision mesurée :
   - Mesure 390px : Turin/L'Étang/Sinaï 44px intra-bande (pas lisière), Faula 4px lisière ; pills opaques lisibles sur crème (screenshots) ; pins/clics/données intacts sans toucher au code. Nudge ±8px futile + logique dynamique en zone keeper (course prouvée lot 7). Forcer = régression probable, gain nul.

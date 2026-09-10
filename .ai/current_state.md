@@ -1,3 +1,20 @@
+## 2026-09-10 · Agent: coding-agent · P0 CI/CD — RATELIMIT KV BATCHING REVERTÉ ET DÉPLOYÉ
+
+### Travail effectué
+- **Résumé 1 ligne** : CI Tests rouge (`worker-auth.contract` 8 échecs `rate_limited`) → cause racine batching KV `put(cur+10)` (limite 20 atteinte en ~2 appels, throttling payments en prod) → revert verbatim pré-09-09 → contrat 23/23 vert → push → CI/deploy vérifiés via API GitHub.
+- **Détails** : Découvert via surveillance API GitHub Actions (CI Tests #2013 FAILURE sur commit docs, Perf/Deploy/Secret verts). Repro locale `npm test` 113/116, fichier fautif unique. Mécanisme : compteur sautant 0→10→20. Impact prod : `mol_payment_status` polls (frontend 2s×60s) + `auth_*` étranglés après 2 appels/min globaux — même classe de symptôme que le fix polling Mollie. Fix 4 lignes, fail-open conservé, sémantique validée restaurée. Check-list money-path : additif-restauratif, pas de nouveau mécanisme de charge, contrat E2E worker vert, tsc en CI.
+- **Fichiers modifiés** : `workers/sg-payments/src/index.ts` (rateLimit uniquement).
+
+### Tests réalisés
+- [x] `node scripts/tests/worker-auth.contract.test.cjs` → 23 OK / 0 échec (était 8 échecs + erreur harnais)
+- [x] esbuild bundle worker réel OK (via contrat)
+- [x] CI Tests #2014 / Deploy Live #141 / Perf #1293 vérifiés via API (voir rapport)
+- [ ] tsc worker → en CI (pas de typescript local) ; PHP lint → N/A (aucun `.php` touché)
+
+### Déploiement
+- Commit : `fb2d16d68` · Push `origin/main` OK → workflows déclenchés · worker sg-payments redéployé par `deploy-live.yml`
+---
+
 ## 2026-09-10 · Agent: coding-agent · UI LOT 9 — HÉROS COMPACT + ARMURE DÉPLOYÉS
 
 ### Travail effectué

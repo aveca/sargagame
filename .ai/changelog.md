@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-10 — P0 CI/CD — RATELIMIT KV BATCHING REVERTÉ (LIVE @fb2d16d68)
+
+**Agent** : coding-agent. **Fichier** : `workers/sg-payments/src/index.ts` (4+4 lignes).
+**Cause** : batch `put(cur+10)` → limite 20 atteinte en ~2 appels → 429 sur `mol_*` (polls payment_status + auth) + CI Tests rouge (contrat 8 échecs). **Fix** : compteur exact `put(cur+1)` verbatim pré-09-09. Contrat 23/23 vert. Fail-open conservé.
+**Gates** : contrat worker 23/23 · CI/deploy vérifiés via API GitHub · live MQ 200.
+
 ## 2026-09-10 — UI LOT 9 — HÉROS COMPACT + ARMURE (LIVE @4860682c4)
 
 **Agent** : coding-agent. **Fichiers** : `src/WorldMapView.jsx`, `src/app-runtime.css` (+25-3).
