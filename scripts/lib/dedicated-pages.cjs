@@ -155,12 +155,27 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
     { lang: lang, href: `https://${domain}${pathname}`, xDefault: true },
   ];
 
-  // ── Enrichissement data-driven (P1) : que du réel, zéro invention ──
+  // ── Enrichissement data-driven (P1) Phase 4 : que du réel, zéro invention ──
   // Proximité : plages voisines (même région, haversine), max 3 à 5 km
   const nearby = nearestBeaches(beach, allBeaches, 3);
   const nearbyHtml = nearby.length
-    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Plages proches','Nearby beaches','Playas cercanas')}</h3><ul style="list-style:none;padding:0;margin:0">${nearby.map(b=>
-      `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee"><span style="width:8px;height:8px;border-radius:50%;background:#667eea;flex:none"></span><a href="/beach/${b.beach.slug || slugify(b.beach.name)}/" style="color:inherit;text-decoration:none">${esc(b.beach.name)}</a> (${Math.round(b.km)} km)</li>`).join('')}</ul></section>`
+    ? `<section style="margin:1.5em 0">
+      <h3 style="font:800 12px/1 'Bricolage Grotesque';color:#0D0D0D;margin:0 0 0.5em;display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.2 7.8l2.8-2.8"/></svg>
+        ${sectionTitle(lang,'Plages proches','Nearby beaches','Playas cercanas')}
+        <span style="font:700 10px/1 'Bricolage Grotesque';color:#667eea;background:#e8eaff;padding:1px 6px;border-radius:999;border:1px solid #667eea">${nearby.length}</span>
+      </h3>
+      <ul style="list-style:none;padding:0;margin:0">${nearby.map(b=>
+        `<li style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;margin-bottom:6px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='#667eea';this.style.boxShadow='2px 2px 0 #667eea'" onmouseout="this.style.borderColor='#e8eaff';this.style.boxShadow='1px 1px 0 #667eea'">
+          <a href="/beach/${b.beach.slug || slugify(b.beach.name)}/" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;flex:1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.2 7.8l2.8-2.8"/></svg>
+            <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${esc(b.beach.name)}</span>
+          </a>
+          <span style="display:flex;align-items:center;gap:4px;font:700 11px/1 'Bricolage Grotesque';color:#667eea;white-space:nowrap;background:#e8eaff;padding:2px 8px;border-radius:999;border:1px solid #667eea">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.2 7.8l2.8-2.8"/></svg>
+            ${b.km < 1 ? Math.round(b.km * 1000) + ' m' : Math.round(b.km) + ' km'}
+          </span>
+        </li>`).join('')}</ul></section>`
     : '';
 
   // Résorts / hébergements à proximité (regions/resorts/<regionId>.json)
@@ -168,24 +183,63 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
   const resortData = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), []);
   const resortsArray = Array.isArray(resortData) ? resortData : (resortData.resorts || []);
   const beachResorts = resortsArray.filter(r => r.beachId === beach.id);
-  // Vérif : resortHtml utilise region.id; OK si data existante (florida/puntacana/rivieramaya)
-const resortHtml = beachResorts.length
-    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Hébergements','Accommodation','Alojamiento')}</h3><ul style="list-style:none;padding:0;margin:0">${beachResorts.slice(0,5).map(r=>
-      `<li style="margin-bottom:8px"><strong>${esc(r.name)}</strong> · ${esc(r.area||'')}</li>`).join('')}</ul></section>`
+  // Only show resorts for FL/PC/RM (regions with actual data)
+  const hasResortData = ['florida', 'puntacana', 'rivieramaya'].includes(region.id);
+  const resortHtml = beachResorts.length && hasResortData
+    ? `<section style="margin:1.5em 0">
+      <h3 style="font:800 12px/1 'Bricolage Grotesque';color:#0D0D0D;margin:0 0 0.5em;display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        ${sectionTitle(lang,'Hébergements','Accommodation','Alojamiento')}
+        <span style="font:700 10px/1 'Bricolage Grotesque';color:#22C55E;background:#dcfce7;padding:1px 6px;border-radius:999;border:1px solid #22C55E">${beachResorts.length} vérifiés</span>
+      </h3>
+      <ul style="list-style:none;padding:0;margin:0">${beachResorts.slice(0,5).map(r=>
+        `<li style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;margin-bottom:6px">
+          <span style="font:800 12px/1 'Bricolage Grotesque';color:#0D0D0D">${esc(r.name)}</span>
+          <span style="color:#6B6B6B;font:700 11px/1 'Bricolage Grotesque'">${esc(r.area||'')}</span>
+        </li>`).join('')}</ul></section>`
     : '';
 
-  // Faits / attributs réels de la plage (kids/snorkel/parking)
+  // Faits / attributs réels de la plage (kids/snorkel/parking) — as chips with icons
   const facts = beachFacts(beach, lang);
   const factsHtml = facts.length
-    ? `<section style="margin:1.5em 0"><p><strong>${sectionTitle(lang,'Caractéristiques','Features','Características')}</strong>: ${facts.map(f=>`<span style="background:#e2e8f0;margin:2px 6px;padding:2px 6px;border-radius:4px;font-size:85%">${f}</span>`).join(' ')}</p></section>`
+    ? `<section style="margin:1.5em 0">
+      <h3 style="font:800 12px/1 'Bricolage Grotesque';color:#0D0D0D;margin:0 0 0.5em;display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.2 7.8l2.8-2.8"/></svg>
+        ${sectionTitle(lang,'Caractéristiques','Features','Características')}
+        <span style="font:700 10px/1 'Bricolage Grotesque';color:#667eea;background:#e8eaff;padding:1px 6px;border-radius:999;border:1px solid #667eea">${facts.length}</span>
+      </h3>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${facts.map(f=>`<span style="display:inline-flex;align-items:center;gap:4px;background:#e2e8f0;margin:2px 6px;padding:4px 10px;border-radius:999;font:700 10px/1 'Bricolage Grotesque';color:#0D0D0D;border:1px solid #cbd5e1">${f === 'Enfants OK' || f === 'Kids OK' || f === 'Niños OK' ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3"/><path d="M6 21a9 9 0 0 1 12 0"/><path d="M6 15a3 3 0 0 1 6 0"/></svg>' : f === 'Snorkel' ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22v-4"/><path d="M18 18a6 6 0 0 0-12 0"/><path d="M6 14a8 8 0 0 1 12 0"/><circle cx="12" cy="10" r="2"/></svg>' : '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17v-5"/><path d="M15 17v-5"/></svg>'}${esc(f)}</span>`).join(' ')}</div></section>`
     : '';
 
-  // Activities / choses à faire déduites des flags plage (snorkel→snorkel, kids→kids/family/parking)
+  // Activities / choses à faire — categorised with icons (snorkeling, family, parking)
   const activities = beachActivities(beach, lang);
-  const activitiesHtml = activities.length
-    ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'À faire','Things to do','Qué hacer')}</h3><ul style="list-style:none;padding:0;margin:0">${activities.map(a=>
-      `<li style="display:flex;align-items:center;gap:6px;padding:4px 0"><span style="background:#667eea;color:#fff;padding:2px 6px;border-radius:4px;font-size:85%">${a.label}</span> ${a.slug?'→':' '}</li>`).join('')}</ul></section>`
-    : '';
+  const hasActivities = activities.length > 0;
+  let activitiesHtml = '';
+  if (hasActivities) {
+    // Group activities by category
+    const cats = [];
+    if (activities.some(a => a.slug === 'snorkel')) cats.push({ key: 'snorkeling', label: { fr: 'Snorkeling / Baignade', en: 'Snorkeling / Swimming', es: 'Snorkeling / Bañarse' }, icon: 'snorkel' });
+    if (activities.some(a => a.slug === 'kids' || a.slug === 'family')) cats.push({ key: 'family', label: { fr: 'Famille / Enfants', en: 'Family / Kids', es: 'Familia / Niños' }, icon: 'family' });
+    if (activities.some(a => a.slug === 'parking')) cats.push({ key: 'parking', label: { fr: 'Accès / Parking', en: 'Access / Parking', es: 'Acceso / Aparcamiento' }, icon: 'parking' });
+    
+    activitiesHtml = `<section style="margin:1.5em 0">
+      <h3 style="font:800 12px/1 'Bricolage Grotesque';color:#0D0D0D;margin:0 0 0.5em;display:flex;align-items:center;gap:6px">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>
+        ${sectionTitle(lang,'À faire','Things to do','Qué hacer')}
+        <span style="font:700 10px/1 'Bricolage Grotesque';color:#667eea;background:#e8eaff;padding:1px 6px;border-radius:999;border:1px solid #667eea">${cats.reduce((s,c)=>s+(activities.filter(a=>a.slug===c.items?.[0]?.id).length||0),0)}</span>
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:8px">${cats.map(cat=>{
+        const catActs = activities.filter(a => (cat.key==='snorkeling'&&a.slug==='snorkel')||(cat.key==='family'&&(a.slug==='kids'||a.slug==='family'))||(cat.key==='parking'&&a.slug==='parking'));
+        if(!catActs.length) return '';
+        return `<div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font:700 10px/1 'Bricolage Grotesque';color:#6B6B6B;text-transform:uppercase;letter-spacing:0.5px">${cat.label[lang]||cat.label.fr}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${catActs.map(a=>`<button style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;cursor:pointer;font:700 11px/1 'Bricolage Grotesque';color:#0D0D0D;text-align:left;transition:all 0.15s" onmouseover="this.style.borderColor='#667eea';this.style.boxShadow='2px 2px 0 #667eea'" onmouseout="this.style.borderColor='#e8eaff';this.style.boxShadow='1px 1px 0 #667eea'">
+            <span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#e8eaff;color:#667eea;flex:none">${cat.key==='snorkeling'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=\"M12 22v-4\"/><path d=\"M18 18a6 6 0 0 0-12 0\"/><path d=\"M6 14a8 8 0 0 1 12 0\"/><circle cx=\"12\" cy=\"10\" r=\"2\"/></svg>':cat.key==='family'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>':cat.key==='parking'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17v-5"/><path d="M15 17v-5"/></svg>':''}</span>
+            <span style="font:700 11px/1 \'Bricolage Grotesque\';color:#0D0D0D;flex:1">${esc(cat.label[lang]||cat.label.fr)}</span>
+            <span style="color:#6B6B6B;font:700 11px/1 \'Bricolage Grotesque\'">→</span>
+          </button>`).join('')}</div></div>`;
+      }).join('')}</div></section>`;
+  }
 
   const forecastHtml = fc.slice(0, 7).map(f => {
     const d = new Date(f.date + 'T12:00:00Z');
