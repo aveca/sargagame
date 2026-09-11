@@ -1,4 +1,15 @@
-﻿## RELEASE PHASE B — [x] done (2026-09-09, main @418df0146) — FINAL GREEN
+﻿## SPRINT J0-J30 (CTO) — [x] done (2026-09-11, gates verts, prêt à publier)
+- **OBJ1 CRO** : offre-avant-email (`?sgpayorder=0`) + sg_pass_cta en backup critique. Cause : friction email-first, pas une casse (1,3 % chronique).
+- **OBJ2 alternatives** : planB existait → + sg_planb_view + repli honnête si vide (même île ≤60 km, jamais d'invention).
+- **OBJ3 partage** : rapport existait → + bouton WhatsApp wa.me + `sg_pdf_share{whatsapp}`, texte factuel.
+- **OBJ4 B2B** : tunnel trial→token→espace→widget→paylink vérifié de bout en bout en code (paylinks pro_annual 690 € live) → + télémétrie espace (zéro PII, money-path intact).
+- **OBJ5 ground truth** : vote 1-tap existait → + allowlists (jamais de publi directe, seuil ≥3, verdict intouché).
+- **OBJ6 analytics** : 7 events dans SG_FUNNEL_EVENTS + FUNNEL_KEYS (2 scripts) + taux cta_view_to_click/alt_view_to_click.
+- **Gates** : build 380 · bundle 37.9 · smoke 4/4 · funnel 13/13 · j0 7/7 · j0-contract 51/51 · territory 27/27 · sitemap 12/12.
+- **Connu pré-existant (prouvé pristine)** : mollie-payment.spec tape le live pages.dev (échec hors sprint) ; harnais window.track aveugle chunk lazy.
+- **NEXT** : monitorer modal_to_cta + cta_view_to_click + alt_view_to_click + trial_activated sur 7 j ; Beach World NON démarré (conforme mission).
+
+## RELEASE PHASE B — [x] done (2026-09-09, main @418df0146) — FINAL GREEN
 - #665 → sprint1 (f89df784), #664 → main (418df0146). Post-merge validé sur main : build/bundle/smoke/media-kit/funnel/money verts. BUG-2026-035 OPEN/P2, gp.json hors merge.
 - NEXT : START SPRINT 3 (map chrome + BUG-2026-035)
 - Scope purifié par rebase (hors-scope `da8a16796` exclu, 0 conflit) ; fix blocker `mediaKit.js` + contrat (base seule = build rouge, prouvé)
@@ -170,9 +181,12 @@ NEXT_CONCRETE_ACTION:
 
 ## Récemment complété
 
-- [x] **TASK-ASSET-001 — HARD ASSET BeachSheet exemplaire + Rapport plage du jour** (@coding_agent, 2026-09-07, GATE VERT) — `mediaKit.js` + `BeachDayReport.jsx` lazy (`?report=0`) + wire BeachSheetComic + allowlist 7 events + `docs/ASSET-MATRIX.md` + 41/41. Bundle 37,6 Ko, smoke 4/4. Branche `agent/coding/hard-asset-beach-report` (PR no-auto-merge, worktree partagé).
+- [x] **P1 PAGES PLAGES — data-driven enrichment (static SEO pages)** (@coding_agent, 2026-09-11) — Racine : pages beach ne montraient que SCORE→TEXT→CTA, les données `/poi/`, `/activity/`, resort non utilisées. Enrichissement : `haversineKm`, `nearestBeaches`, `beachFacts`, `beachActivities`, `sectionTitle` dans `scripts/lib/dedicated-pages.cjs`. 4 sections optionnelles après forecast : plages proches (≤5km même région), résorts proches (regions/resorts/<id>.json), facts (kids/snorkel/parking), activities (snorkel/kids/parking). Chaque section ne s'affiche que si données réelles existent. Zero invention. Build 37.9 Ko ≤ 210 Ko, ux-smoke 4/4, E2E 13/13, 6/6 domains LIVE. TERRITORIAL_GUARDS: sitemap-prune 12/12 + territory-routing 27/27. Fichiers : `scripts/lib/dedicated-pages.cjs`. Commit `70519fd0f` + `26777bed6` (fix resort array + nearby slug/km).
+
+- [x] **P1 PAGES PLAGES — React BeachSheetComic resort plumbing** (@coding_agent, 2026-09-11) — Import `getResortsForBeach` depuis `src/lib/resorts.js`, prop `resorts` passée à `BeachSheetComic`, fonction `getResortsForBeach(regionId, beachId)` dans `src/lib/resorts.js` (charge JSON régions resorts). Commit `c8a9f6dc2`. Prochaine étape : composant d'enrichissement dédié pour éviter le conflit fragment/div dans Sargasses_PROD.jsx.
 
 - [x] **SPRINT 4 — ACCESSIBILITY FOCUS TRAP (BUG-2026-035)** (@agent/ui-ux, 2026-09-09) — Fix BUG-2026-035 (ChasseDetail close ✕ recouvert par header lang switcher). Cause : header chrome (z-index 2000) recouverte le dialogue `.lc-detail` (z-index 1200) — le bouton close `.lc-detail-x` en haut-droite était sous le header. Fix : masquer le header chrome quand `comicBeach` (ChasseDetail) est ouvert → `display:(showPremium||comicBeach)?"none":undefined` à `Sargasses_PROD.jsx:14359`. Validation : build ✅ · bundle 37.8 Ko ≤ 210 Ko ✅ · smoke 4/4 ✅ · E2E funnel-payment 13/13 ✅. Branche `agent/ui-ux/sprint4-accessibility-focus`.
+- [x] **DIAG TULUM domaine Cloudflare (2026-09-11)** — `sargazotulum.com` → HTTP 200, application Tulum opérationnelle (Cloudflare custom domain project `sargagame-tulum`). `sargassumtulum.com` → NXDOMAIN, domaine non provisionné Cloudflare. Aucune correction repo nécessaire ; action humaine requise dans Cloudflare Pages. État : domaine canonique/fonctionnel = `sargazotulum.com` ; domaine demandé non provisionné = `sargassumtulum.com`. Preuve : curl `https://sargazotulum.com/` → 200 + app Tulum ; `nslookup sargassumtulum.com` → Non-existent domain ; DNS CNAME validée dans audit DNS. Action : ajouter `sargassumtulum.com` comme custom domain Cloudflare Pages → project `sargagame-tumor` (CNAME vers `sargagame-tulum.pages.dev`, proxied=true). Après propagation : `https://sargassumtulum.com/` → HTTP 200 + application Tulum. Fichiers modifiés : Aucun (repo configuration déjà correcte ; problème exclusivement provisioning Cloudflare). Priorité : P2 (provisioning domain, non-blocant produit).
 - [ ] **TASK-ASSET-002 — Alternative : photo plan B + rapport** (P2, coding)
 - [ ] **TASK-ASSET-003 — AI + B2B : kit média (rapport hôtel PDF)** (P2, coding+growth)
 - [ ] **TASK-ASSET-004 (optionnel) — regen GIF raster quotidien** (P3, data — seulement si prouvé ; strip SVG suffit)

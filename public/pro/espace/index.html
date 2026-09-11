@@ -814,6 +814,17 @@
     }).catch(function(){$("bmeta").textContent=tr("unavail");});
     function ST(s){return s==="clean"?"var(--clean)":s==="moderate"?"var(--moderate)":s==="avoid"?"var(--avoid)":"#888";}
 
+    // ── J0-J30 : télémétrie funnel B2B (fire-and-forget, zéro PII — jamais d'email).
+    // Réutilise la taxonomie app (sg_b2b_*) → mêmes FUNNEL_KEYS, funnel visible.
+    // Consentement : même règle que track() (sg_cookie_consent==="accepted").
+    function sgEv(ev,p){try{
+      if(localStorage.getItem("sg_cookie_consent")!=="accepted")return;
+      fetch("https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",{method:"POST",keepalive:true,
+        headers:{"apikey":"sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz","Authorization":"Bearer sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz","Content-Type":"application/json","Prefer":"return=minimal"},
+        body:JSON.stringify({event:ev,params:p||{},island:(typeof island!=="undefined"?String(island).toUpperCase():null)})}).catch(function(){});
+    }catch(_){}}
+    try{sgEv("sg_b2b_space_open",{source:"espace"});}catch(_){}
+
     // ── 3. widget builder ──
     var b=$("b"),nm=$("nm"),a=$("a"),prev=$("prev"),code=$("code");
     BEACHES.forEach(function(r){var o=document.createElement("option");o.value=r[0];o.textContent=r[2]+(r[3]==="GP"?" (GP)":"");if(r[0]===beachSlug)o.selected=true;b.appendChild(o);});
@@ -824,7 +835,7 @@
     function snippet(){var d=dom();var s='<div style="max-width:520px">\n  <iframe\n    src="https://'+d+'/widget/embed/?'+qs()+'"\n    width="100%" height="168" frameborder="0"\n    title="'+tr("widgetIframeTitle")+(nm.value?(" — "+nm.value.replace(/"/g,"")):"")+'"\n    style="border:0;width:100%"\n  ></iframe>\n';if(!token){s+='  <p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#888;text-align:right">'+tr("widgetCredit")+' <a href="https://'+d+'/" style="color:#009E8E;text-decoration:none">Sargasses</a></p>\n';}s+='</div>';return s;}
     function upd(){prev.src="/widget/embed/?"+qs();code.textContent=snippet();setPreviewLink(b.value,dom());}
     [b,nm,a].forEach(function(e){e.addEventListener("input",upd);e.addEventListener("change",upd);});
-    $("copy").addEventListener("click",function(){navigator.clipboard.writeText(code.textContent).then(function(){$("copy").textContent=tr("copied");setTimeout(function(){$("copy").textContent=tr("copyBtn")},1700);});});
+    $("copy").addEventListener("click",function(){try{sgEv("sg_b2b_widget_preview",{source:"espace_copy",beach:(b&&b.value)||null});}catch(_){}navigator.clipboard.writeText(code.textContent).then(function(){$("copy").textContent=tr("copied");setTimeout(function(){$("copy").textContent=tr("copyBtn")},1700);});});
     upd();
 
     // ── 5. abonnement self-serve ──
@@ -839,6 +850,7 @@
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.ok&&d.token){
             token=d.token; upd();
+            try{sgEv("sg_b2b_trial_activated",{source:"espace",beach:selBeach||null});}catch(_){}
             $("wlNote").textContent=tr("trialActiveNote");
             var pb=$("proBanner"); if(pb)pb.style.display="flex";
             var tf=$("trialForm"); if(tf)tf.style.display="none";
@@ -860,6 +872,7 @@
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); var sr=$("subResult"); sr.style.display="block"; sr.textContent=tr("emailFirst"); return; }
       var btn=$("subMonthly"); btn.textContent=tr("redirecting"); btn.disabled=true;
+      try{sgEv("sg_b2b_paylink_click",{tier:"pro_monthly",source:"espace"});}catch(_){}
       fetch("https://"+DOMAIN+"/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:PLAN_MO,hosted:1,email:em,island:(island||"MQ").toLowerCase(),source:"b2b_espace_monthly"})})
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.checkoutUrl){ location.href=d.checkoutUrl; }
@@ -869,7 +882,9 @@
     $("subMonthly").addEventListener("click",subscribeMonthly);
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
       var u=d&&d.links&&d.links[PLAN_YR_KEY]&&d.links[PLAN_YR_KEY].url;
-      if(u)$("subscribe").href=u;
+      if(u){$("subscribe").href=u;
+        $("subscribe").addEventListener("click",function(){try{sgEv("sg_b2b_paylink_click",{tier:String(PLAN_YR_KEY||"pro_annual"),source:"espace"});}catch(_){}});
+      }
     }).catch(function(){});
 
     if(token){

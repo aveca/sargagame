@@ -159,6 +159,12 @@ export function WorldPaywall({
   // Lot 5 — repli boîte valeur ≤480px, stats tripliquées (rollback ?sguxlot5=0).
   const uxLot5 = (()=>{try{return !/[?&]sguxlot5=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
+  // CRO J0-J30 — offre AVANT email (rollback ?sgpayorder=0).
+  // Diagnostic : email `required` au-dessus de l'offre = friction d'enregistrement
+  // anticipé (modal→CTA chronique ~1,3 %). L'email reste capturé (sg_email →
+  // pré-remplit OnsiteCheckout) mais APRÈS le clic d'intention.
+  const payOrderOfferFirst = (()=>{try{return !/[?&]sgpayorder=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
     try { return localStorage.getItem("sg_email") || "" } catch (_) { return "" }
@@ -336,7 +342,10 @@ export function WorldPaywall({
           )
         })()}
         
-        {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef) ═══ */}
+        {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef) ═══
+            CRO J0-J30 : rendu APRÈS l'offre par défaut (?sgpayorder=0 = avant).
+            L'email reste optionnel ici (pré-remplit OnsiteCheckout via sg_email). */}
+        {!payOrderOfferFirst && (
         <div style={{ marginBottom: 14 }}>
           <label style={{
             display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
@@ -346,7 +355,6 @@ export function WorldPaywall({
           </label>
           <input
             type="email"
-            required
             autoComplete="email"
             placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
             defaultValue={emailValue}
@@ -363,6 +371,7 @@ export function WorldPaywall({
             onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
           />
         </div>
+        )}
         
         {/* ═══ VALEUR AVANT PRIX ═══ — Rapel du bénéfice avant le prix.
             Augmente le taux de conversion CTA→paiement en rappelant ce que
@@ -399,7 +408,9 @@ export function WorldPaywall({
           </div>
         </div>
 
-        {/* Pricing card (PassOffer) — immediately after email */}
+        {/* Pricing card (PassOffer) — CRO J0-J30 : AVANT l'email par défaut
+            (offre d'abord, enregistrement après). ?sgpayorder=0 = ordre historique. */}
+        {payOrderOfferFirst && (
         <div style={{ marginBottom: 14 }}>
           <PassOffer
             lang={lang}
@@ -407,7 +418,48 @@ export function WorldPaywall({
             onBuy={onPassBuy}
           />
         </div>
-        
+        )}
+
+        {/* ═══ EMAIL INPUT (fin, ordre offre-d'abord) ═══ */}
+        {payOrderOfferFirst && (
+        <div style={{ marginBottom: 14 }}>
+          <label style={{
+            display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
+            marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
+          }}>
+            {t("Email pour recevoir ton accès", "Email to receive your access", "Email para recibir tu acceso")}
+          </label>
+          <input
+            type="email"
+            autoComplete="email"
+            placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
+            defaultValue={emailValue}
+            onChange={handleEmailChange}
+            style={{
+              width: "100%", padding: "13px 14px",
+              background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
+              borderRadius: 12, color: "#fff", fontSize: 15,
+              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+              fontWeight: 600, outline: "none", boxSizing: "border-box",
+              transition: "border-color .15s ease"
+            }}
+            onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
+            onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
+          />
+        </div>
+        )}
+
+        {/* ═══ Ordre historique (rollback ?sgpayorder=0) : offre après email+valeur ═══ */}
+        {!payOrderOfferFirst && (
+        <div style={{ marginBottom: 14 }}>
+          <PassOffer
+            lang={lang}
+            currency={PAY_CUR}
+            onBuy={onPassBuy}
+          />
+        </div>
+        )}
+
         {/* ═══ BELOW THE FOLD — trust + features ═══ */}
         
         {/* FiabiliteProof */}

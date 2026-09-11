@@ -67,6 +67,17 @@ export default function BeachDayReport({ beach, fcDays, unlocked, satLabel, satT
       else if (navigator.clipboard) { await navigator.clipboard.writeText(text + " " + window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2200) }
     } catch (_) {}
   }
+  // J0-J30 — WhatsApp explicite (priorité mobile mission) : deep-link wa.me avec le
+  // même texte factuel (plage + état + date + lien, aucune promesse). Tracking réutilisé :
+  // sg_pdf_share {interaction:"whatsapp"}. Jamais de texte hors data fiche.
+  const doWhatsApp = () => {
+    const text = _t(lang, `Rapport ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Mesuré au satellite, pas deviné.`, `Report ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Measured by satellite, not guessed.`, `Informe ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Medido por satélite.`)
+    trk("sg_pdf_share", mediaParams({ beach_id: beach?.id, region, screen: "day_report", asset_id: assetId, asset_type: "pdf", interaction: "whatsapp" }))
+    try {
+      const url = "https://wa.me/?text=" + encodeURIComponent(text + " " + window.location.href)
+      window.open(url, "_blank", "noopener")
+    } catch (_) {}
+  }
 
   const st = beach?.status || "_loading"
   return (
@@ -153,6 +164,9 @@ export default function BeachDayReport({ beach, fcDays, unlocked, satLabel, satT
         </button>
         <button type="button" onClick={doShare} style={{ flex: 1, minWidth: 140, minHeight: 48, borderRadius: 12, border: "2.5px solid #141414", background: "#fff", color: "#141414", font: "800 14px/1 'Bricolage Grotesque'", cursor: "pointer" }}>
           {copied ? _t(lang, "✓ Copié !", "✓ Copied!", "✓ ¡Copiado!") : _t(lang, "⤴ Partager", "⤴ Share", "⤴ Compartir")}
+        </button>
+        <button type="button" onClick={doWhatsApp} aria-label={_t(lang, "Partager sur WhatsApp", "Share on WhatsApp", "Compartir en WhatsApp")} style={{ flex: 1, minWidth: 140, minHeight: 48, borderRadius: 12, border: "2.5px solid #141414", background: "#25D366", color: "#141414", font: "800 14px/1 'Bricolage Grotesque'", cursor: "pointer" }}>
+          {_t(lang, "WhatsApp", "WhatsApp", "WhatsApp")}
         </button>
       </div>
       <div className="sg-dr-only" style={{ font: "600 10.5px/1.4 'Bricolage Grotesque'", color: "#888", marginTop: 8, textAlign: "center" }}>

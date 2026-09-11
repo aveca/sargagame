@@ -214,7 +214,9 @@ async function fetchFunnelFromSupabase() {
   // 2026-08-25 FIX (P1 funnel blind): checkout_redirect (sg_checkout_redirect) RETIRÉ du front
   // (toujours 0) → canonique est mollie_checkout_redirect ; alias legacy gardé pour fenêtre
   // historique. + onsite_checkout_opened / pay_onsite_back (overlay carte) chaînon manquant.
-  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back']
+  // J0-J30 : + pass_offer_view (CTA vu), planb_view/pick (alternative), beach_report +
+  // observation (ground truth), b2b_widget_preview (widget). Comptés, jamais filtrés.
+  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'pass_offer_view', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back', 'planb_view', 'planb_pick', 'beach_report', 'observation', 'b2b_widget_preview']
   const counts = {}
   for (const k of FUNNEL_KEYS) counts[k] = 0
   const PAGE = 1000
@@ -376,6 +378,12 @@ async function main() {
         modalOpens,
         modalCloses: funnel.premium_modal_close ?? null, // CRO 2026-09-04 : abandons paywall (via+dwell en Supabase)
         modalCta: ctaTotal,   // unified CTA = pass_cta (+ premium_modal_cta if ever emitted)
+        ctaViews: funnel.pass_offer_view ?? null, // J0-J30 : offre réellement affichée (dénominateur propre vu→clic)
+        altViews: funnel.planb_view ?? null,      // J0-J30 : bloc « où aller plutôt » affiché
+        altClicks: funnel.planb_pick ?? null,     // J0-J30 : clic vers fiche alternative
+        groundTruth: funnel.beach_report ?? null, // J0-J30 : votes terrain (submit 1-tap)
+        observations: funnel.observation ?? null, // J0-J30 : odeur/observations (sg_observation)
+        widgetPreviews: funnel.b2b_widget_preview ?? null, // J0-J30 : aperçu widget B2B
         sampleStarts: null,
         emailSubmits: funnel.email_submit ?? null,
         checkoutRedirects: mollieRedirects,
@@ -390,6 +398,8 @@ async function main() {
           session_to_lock: pct(funnel.forecast_lock_click || 0, funnel.session_start || 0),
           lock_to_modal: pct(modalOpens, funnel.forecast_lock_click || 0),
           modal_to_cta: pct(ctaTotal, modalOpens),
+          cta_view_to_click: pct(ctaTotal, funnel.pass_offer_view || 0), // J0-J30 : vrai taux offre→clic
+          alt_view_to_click: pct(funnel.planb_pick || 0, funnel.planb_view || 0), // J0-J30 : alternative
           cta_to_onsite: pct(onsiteOpened, ctaTotal),
           onsite_to_mollie: pct(mollieRedirects, onsiteOpened),
           cta_to_redirect: pct(mollieRedirects, ctaTotal),

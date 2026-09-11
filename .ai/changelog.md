@@ -1,5 +1,12 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-11 — SPRINT J0-J30 (CTO) — funnel CRO + alternatives + partage + B2B + ground truth + analytics
+
+**Agent** : coding-agent (mission J0-J30). **Fichiers** : `src/PremiumModal/WorldPaywall.jsx` (offre-avant-email `?sgpayorder=0`), `src/Sargasses_PROD.jsx` (sg_pass_cta backup critique + allowlist 7 events + planB view + repli honnête), `src/components/BeachDayReport.jsx` (bouton WhatsApp `sg_pdf_share{whatsapp}`), `public/pro/espace/index.html` (télémétrie B2B sgEv, money-path intact), `scripts/automation/daily-stats-check.cjs` + `funnel-from-supabase.cjs` (clés + taux cta_view_to_click/alt_view_to_click), `scripts/tests/j0-sprint-contract.test.cjs` (51 asserts), `tests/e2e/j0-sprint.spec.ts` (7 tests).
+**Diagnostic** : modal→CTA chronique ~1,3 % (14 j : 390 modales → 5 CTA), pas une casse (chaîne buy→onPassBuy intacte, E2E vert). Cause : friction email-first + backup tracking asymétrique. PlanB/rapport/vote existaient — manquaient view-tracking, repli honnête, WhatsApp, allowlists.
+**Gates** : build 380 OK · bundle 37.9 Ko ≤ 210 · smoke 4/4 · funnel-payment 13/13 · j0 7/7 · money 9+3skip (mollie-payment.spec = échec pré-existant prouvé sur HEAD pristine : tape le live pages.dev) · territory 27/27 · sitemap 12/12 · run-tests main-tree OK (2 échecs = worktree tiers jolly-yalow cassé).
+**Limites** : harnais E2E window.track aveugle sur events du chunk lazy (sg_pass_cta prouvé via comportement + contrat + prod) ; ?paywall=1 nettoie la query avant lecture flags lazy (E2E passe par BottomNav).
+
 ## 2026-09-10 — P0 CI/CD — RATELIMIT KV BATCHING REVERTÉ (LIVE @fb2d16d68)
 
 **Agent** : coding-agent. **Fichier** : `workers/sg-payments/src/index.ts` (4+4 lignes).

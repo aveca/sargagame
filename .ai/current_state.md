@@ -1,3 +1,41 @@
+## 2026-09-11 · Agent: coding-agent · SPRINT J0-J30 (CTO) IMPLÉMENTÉ, GATES VERTS
+
+### Travail effectué
+- **Résumé 1 ligne** : CRO paywall (offre-avant-email `?sgpayorder=0` + backup sg_pass_cta), planB view-tracking + repli honnête, bouton WhatsApp rapport, télémétrie espace B2B, allowlists analytics — build/bundle/smoke/E2E verts.
+- **Détails** : diagnostic 14 j (390 modales → 5 CTA ≈ 1,3 % chronique, chaîne intacte) ; planB/rapport/vote existaient (gaps comblés, pas de 2e système) ; tunnel B2B trial→paylink vérifié en code (pro_annual 690 € live) ; money-path additif only ; Beach World NON démarré.
+
+### Fichiers modifiés
+- `src/PremiumModal/WorldPaywall.jsx` — reorder offre/email + flag (OBJ1)
+- `src/Sargasses_PROD.jsx` — critical sg_pass_cta + 7 events allowlist + planB view + fallback (OBJ1/2/5/6)
+- `src/components/BeachDayReport.jsx` — bouton WhatsApp (OBJ3)
+- `public/pro/espace/index.html` — sgEv télémétrie B2B (OBJ4)
+- `scripts/automation/daily-stats-check.cjs`, `funnel-from-supabase.cjs` — clés + taux (OBJ6)
+- `scripts/tests/j0-sprint-contract.test.cjs` (51), `tests/e2e/j0-sprint.spec.ts` (7) — nouveaux
+
+### Tests réalisés
+- [x] npm run build → exit 0 (380 modules)
+- [x] check-bundle-budget → 37.9 Ko ≤ 210 Ko
+- [x] php -l → N/A (aucun `.php` touché)
+- [x] ux-smoke → 4/4 tokens OK
+- [x] funnel-payment 13/13 + j0-sprint 7/7 + money 9 passed/3 skipped + territory 27/27 + sitemap 12/12
+- [ ] mollie-payment.spec → échec PRÉ-EXISTANT prouvé sur HEAD pristine (tape le live pages.dev, hors sprint)
+
+### Problèmes restants
+- [ ] Monitorer 7 j : modal_to_cta, cta_view_to_click, alt_view_to_click, trial_activated — Sévérité : suivi
+- [ ] Harnais E2E window.track aveugle sur chunk lazy (sg_pass_cta) — couvert par contrat statique + prod — Sévérité : basse
+
+### Prochaine action recommandée
+1. Merge + deploy (push main → daily-copernicus + deploy-live) — Rôle : release
+2. Vérifier live : paywall ordre + ?sgpayorder=0 + events 24 h — Rôle : qa
+3. Monitorer taux J+7 — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/j0-sprint`
+- PR : à créer vers main
+- Commit head : (après commit)
+
+---
+
 ## 2026-09-10 · Agent: coding-agent · P0 SITEMAP TERRITORIAL STRICT DÉPLOYÉ
 
 ### Travail effectué
@@ -379,6 +417,15 @@
 
 ### Travail effectué
 - **Résumé 1 ligne** : Intégration layer Cloudflare observability + agent KPI pour Sargagame : Workers observability (logs+traces config sur 4 workers), KPI contract JSON standard, cross-system correlation (Cloudflare↔Supabase↔Mollie), daily product intelligence format. Gate de ship VALIDE (build+budget+smoke+E2E).
+
+### Diagnostic Tulum domaine Cloudflare (2026-09-11)
+- **Résumé 1 ligne** : `sargazotulum.com` → HTTP 200, application Tulum opérationnelle (Cloudflare custom domain project `sargagame-tulum`). `sargassumtulum.com` → NXDOMAIN, domaine non provisionné Cloudflare. Aucune correction repo nécessaire ; action humaine requise dans Cloudflare Pages.
+- **État actuel** : domaine canonique/fonctionnel = `sargazotulum.com` ; domaine demandé non provisionné = `sargassumtulum.com`
+- **Preuves** : curl `https://sargazotulum.com/` → 200 + app Tulum ; `nslookup sargassumtulum.com` → Non-existent domain ; DNS CNAME `sargazotulum.com → sargagame-tulum.pages.dev` validée dans audit DNS
+- **Fichiers modifiés** : Aucun (repo configuration déjà correcte ; problème exclusivement provisioning Cloudflare)
+- **Action humaine requise** : Ajouter `sargassumtulum.com` comme custom domain dans Cloudflare Pages → project `sargagame-tulum` (CNAME vers `sargagame-tulum.pages.dev`, proxied=true). Après propagation : `https://sargassumtulum.com/` → HTTP 200 + application Tulum.
+
+---
 - **Détails** :
   1. **Workers Observability** : configuré `observability` section sur 4 workers (sg-payments, supabase-proxy, outreach, b2b-api) avec head_sampling_rate logs=1, traces=0.01. Vérifié que CSP n'est pas actif (comment only), sites proxifiés → Web Analytics auto-injection possible sans beacon duplicate.
   2. **KPI Contract** : créé `scripts/lib/kpi-contract.cjs` — sortie machine-readable standard avec champs `value, source, timestamp, confidence` par période/région. Format dicté par AGENTS.md #14. Valeurs NOT_AVAILABLE quand indisponible, jamais de guess/estimate présentée comme fait.

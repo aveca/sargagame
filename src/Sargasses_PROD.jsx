@@ -2003,6 +2003,15 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_google_auth_ready","sg_identity_change","sg_email_identity_start",
   "sg_payment_submit","sg_payment_created","sg_payment_paid","sg_premium_activated",
   "sg_checkout_abandon","sg_session_restored",
+  // SPRINT J0-J30 (2026-09-11) : visibilité funnel des alternatives, du signalement
+  // terrain et du widget — ces events ÉTAIENT émis mais JETÉS (absents du set →
+  // jamais loggés Supabase, funnel aveugle). Mapping mission : alternative_view =
+  // sg_planb_view, alternative_click = sg_planb_pick, ground_truth_submit =
+  // sg_beach_report (+sg_observation/sg_beach_event/sg_obs_smell), report_* =
+  // sg_pdf_* (déjà couverts), widget_* = sg_b2b_* existants.
+  "sg_planb_view","sg_planb_pick",
+  "sg_beach_report","sg_observation","sg_beach_event","sg_obs_smell",
+  "sg_b2b_widget_preview",
   // SPRINT 0 — Behavior Intelligence (2026-09-07) : scroll, visibility, dwell, intent
   "sg_beach_scroll_25","sg_beach_scroll_50","sg_beach_scroll_75","sg_beach_scroll_90",
   "sg_section_view","sg_section_consumed","sg_section_ignored",
@@ -2057,7 +2066,12 @@ export function track(event,params={}){
       JSON.stringify({client_id:cid,events:[{name:event,params:p}]}))
   }catch{}
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
+  // CRO J0-J30 : sg_pass_cta ajouté (2026-09-11) — le CTA avait le MÊME sink Supabase
+  // que modal_open mais AUCUN backup Apps Script, contrairement à l'ouverture modale.
+  // Sans ce backup, une perte Supabase (consent/adblock/RLS) rend le CTA invisible
+  // quand la modale reste visible → taux modal→CTA faussé. Additif, zéro flux touché.
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
+    ||event==="sg_pass_cta"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
@@ -3524,7 +3538,7 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
               isPremium={isPremium} weatherDaily={weather?.daily||null} weeklyData={activeWeekly}/>
           :<div style={{padding:16,borderRadius:14,background:"var(--sg-bgD,#F7F5EF)",fontSize:13,color:"var(--sg-mid,#5A5A5A)"}}>
               {_t(lang,"Vérification en cours, reviens demain.","Verification in progress, check back tomorrow.","Verificación en curso, vuelve mañana.")}
-            </div>}
+        </div>}
         <div style={{marginTop:16,padding:"14px 16px",borderRadius:14,background:"var(--sg-card,#fff)",
           border:"1px solid var(--sg-border,rgba(0,0,0,.06))",boxShadow:"0 2px 12px rgba(0,0,0,.04)"}}>
           <div style={{fontSize:11,fontWeight:700,letterSpacing:".05em",color:"var(--sg-mid,#5A5A5A)",textTransform:"uppercase",marginBottom:6}}>
@@ -4484,6 +4498,17 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
       .filter(b=>b._d<=60)
       .sort((a,b)=>a._d-b._d).slice(0,3)
   },[beach?.id,allBeaches,status])
+  // J0-J30 (alternative_view) : le pick (sg_planb_pick) existait, la VUE jamais —
+  // taux vu→clic incalculable. Une seule émission par fiche (ref par beach.id).
+  const planBSeenRef=useRef(null)
+  useEffect(()=>{
+    if(!beach||!beach.id)return
+    if(planB.length>0&&planBSeenRef.current!==beach.id){
+      planBSeenRef.current=beach.id
+      trk("sg_planb_view",{beach_id:beach.id,island:beach.island,status,count:planB.length})
+    }
+    if(planB.length===0&&planBSeenRef.current===beach.id)planBSeenRef.current=null
+  },[beach?.id,planB.length])
   const requestClose=()=>{
     if(closingRef.current)return; closingRef.current=true
     try{sheetRef.current&&(sheetRef.current.style.transition="transform .26s cubic-bezier(.4,0,1,1)",sheetRef.current.style.transform="translateY(102%)")
@@ -4762,7 +4787,14 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
               style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:"2.5px solid " + COMIC.ink,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
               <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
               <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
-          </div>
+            </div>
+        </div>}
+        {/* J0-J30 — repli honnête : état défavorable SANS alternative fiable (aucune
+            plage clean même île ≤60 km). On ne montre PAS de plage douteuse et on ne
+            promet rien : le verdict reste gratuit demain. Jamais d'invention. */}
+        {(status==="avoid"||status==="moderate")&&planB.length===0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
+          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Pas d'alternative propre à proximité aujourd'hui","No clean alternative nearby today","Sin alternativa limpia cerca hoy")}</div>
+          <div style={{font:"600 12px/1.45 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Le verdict du jour reste gratuit — reviens demain matin, la mer aura peut-être tourné.","Today's verdict stays free — check back tomorrow morning, the sea may have turned.","El veredicto de hoy sigue gratis — vuelve mañana, el mar puede haber cambiado.")}</div>
         </div>}
         {/* Signaler — l'utilisateur sur place corrige le satellite (l'échoué n'est pas vu du ciel).
             Alimente _communityOverride (« terrain prime », seuil ≥3). */}
