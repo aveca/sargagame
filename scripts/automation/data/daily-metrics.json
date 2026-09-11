@@ -4771,7 +4771,7 @@
   },
   {
     "date": "2026-09-11",
-    "time": "2026-09-11T11:10:57.118Z",
+    "time": "2026-09-11T16:18:09.832Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 597,
@@ -4779,24 +4779,32 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 106,
-      "lockClicks": 4,
-      "modalOpens": 22,
+      "sessions": 95,
+      "lockClicks": 7,
+      "modalOpens": 28,
       "modalCloses": null,
-      "modalCta": 1,
+      "modalCta": 5,
+      "ctaViews": 22,
+      "altViews": 0,
+      "altClicks": 0,
+      "groundTruth": 1,
+      "observations": 0,
+      "widgetPreviews": 0,
       "sampleStarts": null,
       "emailSubmits": 0,
       "checkoutRedirects": 0,
-      "onsiteCheckoutOpened": 1,
+      "onsiteCheckoutOpened": 5,
       "payOnsiteBack": 0,
       "mollieCheckoutRedirects": 0,
       "conversions": 0,
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 3.8,
-        "lock_to_modal": 550,
-        "modal_to_cta": 4.5,
+        "session_to_lock": 7.4,
+        "lock_to_modal": 400,
+        "modal_to_cta": 17.9,
+        "cta_view_to_click": 22.7,
+        "alt_view_to_click": 0,
         "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
         "cta_to_redirect": 0,
@@ -4804,13 +4812,13 @@
       }
     },
     "email": {
-      "sent": 5423,
+      "sent": 5463,
       "delivered": null,
-      "opened": 46,
+      "opened": 48,
       "clicked": 35,
       "bounced": null,
-      "openRate": 0.85,
-      "clickRate": 76.09,
+      "openRate": 0.88,
+      "clickRate": 72.92,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -4861,7 +4869,7 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-11T11:11:13.032Z"
+      "fetchedAt": "2026-09-11T16:18:18.134Z"
     },
     "ga4": {
       "date": "2026-09-10",
@@ -4871,7 +4879,7 @@
       },
       "gp": {
         "sessions": 0,
-        "users": 274
+        "users": 315
       }
     }
   }
