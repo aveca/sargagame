@@ -1,5 +1,11 @@
 # Changelog — S0 6-Région Quality Gate Audit
 
+## 2026-09-11 — FINITION DISTRIBUTION — /aujourdhui/ + drafts + UTM + Concierge 29€ + presse/soutenir
+
+**Agent** : coding-agent (mission finition). **Fichiers** : `scripts/lib/today-pages.cjs` (NOUVEAU, /aujourdhui/ MQ+_gp + /hoy/ Tulum, anti-doublon natif), `scripts/lib/civic-pages.cjs` (NOUVEAU, /presse/ + /soutenir/), `scripts/automation/verdict-du-jour.cjs` (NOUVEAU, drafts FB/WA/IG/Reddit/email, jamais d'envoi), `scripts/automation/email-reactivation.cjs` (NOUVEAU, dry-run par défaut), `scripts/automation/B2B_PROSPECT_HUNT.md` (NOUVEAU, protocole 100 prospects), `src/Sargasses_PROD.jsx` (_shareUrl UTM + session_start UTM), `src/components/BeachDayReport.jsx` (shareHref UTM), `public/pro/espace/index.html` (toggle Concierge 29€/Pro 79€, ?offre=concierge, EUR only), `scripts/automation/b2b-cold-outreach.cjs` (CTA Concierge FR), `vite.config.js` (hooks today/civic + maillage /aujourdhui/), `.github/workflows/daily-social-reservoir.yml` (drafts quotidiens), `scripts/tests/distro-contract.test.cjs` (61 asserts), `tests/e2e/distro.spec.ts` (5 tests).
+**Décisions** : pas de /today//hoy/ US (pages natives existantes — anti-cannibalisation) ; soutien SANS paiement branché (pas de reçu fiscal, pas de mélange premium) ; USD verrouillé Pro (brief_monthly_usd inexistant serveur) ; visuels/vidéos génératifs hors capacité agent (formats prêts via drafts).
+**Gates** : build 380 OK · bundle 37.9 Ko · smoke 4/4 · funnel-payment 13/13 · j0 7/7 · distro 5/5 · distro-contract 61/61 · j0-contract 51/51 · territory 27/27 · sitemap 12/12 · routing 8/8 · aucun .php modifié.
+
 ## 2026-09-11 — SPRINT J0-J30 (CTO) — funnel CRO + alternatives + partage + B2B + ground truth + analytics
 
 **Agent** : coding-agent (mission J0-J30). **Fichiers** : `src/PremiumModal/WorldPaywall.jsx` (offre-avant-email `?sgpayorder=0`), `src/Sargasses_PROD.jsx` (sg_pass_cta backup critique + allowlist 7 events + planB view + repli honnête), `src/components/BeachDayReport.jsx` (bouton WhatsApp `sg_pdf_share{whatsapp}`), `public/pro/espace/index.html` (télémétrie B2B sgEv, money-path intact), `scripts/automation/daily-stats-check.cjs` + `funnel-from-supabase.cjs` (clés + taux cta_view_to_click/alt_view_to_click), `scripts/tests/j0-sprint-contract.test.cjs` (51 asserts), `tests/e2e/j0-sprint.spec.ts` (7 tests).
