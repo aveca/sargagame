@@ -30,9 +30,11 @@
 3. Monitorer taux J+7 — Rôle : growth/data
 
 ### Branche / PR
-- Branche : `agent/coding/j0-sprint`
-- PR : à créer vers main
-- Commit head : (après commit)
+- Branche : `agent/coding/j0-sprint` (commit `15bdf2b6d`, pushée)
+- PR : #669 vers main (https://github.com/aveca/sargagame/pull/669)
+- CI : 5/6 verts (funnel, test-frontend, perf, scan, branch-policy) · playwright en cours
+- Règle : merger uniquement si CI 6/6 verte (ne pas merger sur rouge — vérifier que l'éventuel échec playwright = mollie-payment.spec pré-existant)
+- Commit head : `15bdf2b6d`
 
 ---
 
