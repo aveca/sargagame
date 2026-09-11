@@ -1,0 +1,145 @@
+#!/usr/bin/env node
+// distro-contract.test.cjs — Sprint finition distribution (P0/P1).
+// Vérifie STATICEMENT : /aujourdhui/, pages civiques, drafts verdict-du-jour,
+// attribution UTM, toggle Concierge espace, outreach Concierge, email reactivation.
+// Ne prétend rien de fonctionnel : prouve la présence + cohérence.
+const fs = require('fs')
+const path = require('path')
+const ROOT = path.resolve(__dirname, '..', '..')
+const R = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8')
+
+let pass = 0, fail = 0
+function check(name, cond, detail) {
+  if (cond) { pass++; console.log(`  ok  ${name}`) }
+  else { fail++; console.error(`  FAIL ${name}${detail ? ' — ' + detail : ''}`) }
+}
+
+console.log('— P0 /aujourdhui/ —')
+const TODAY = R('scripts/lib/today-pages.cjs')
+check('lib today-pages existe + exporte generateTodayPages/todaySlugFor',
+  /generateTodayPages/.test(TODAY) && /todaySlugFor/.test(TODAY))
+check('hook build core (vite.config, après month-pages)',
+  R('vite.config.js').includes("generateTodayPages(null, outDir)"))
+check('hook build régions (après dedicated)',
+  R('vite.config.js').includes('generateTodayPages(REGION'))
+check('anti-doublon natif seo-content', /nativeToday/.test(TODAY))
+check('aucune donnée météo/vent/odeur chiffrée inventée (page rendue)', (() => {
+  try {
+    const h = fs.readFileSync(path.join(ROOT, 'dist/aujourdhui/index.html'), 'utf8')
+    const body = h.replace(/<head>[\s\S]*?<\/head>/, '')
+    return !/\d+\s?(km\/h|°C|noeuds|nds|m\/s|beaufort)/i.test(body) && !/odeur|H2S|fréquentation|qualité de l.eau/i.test(body)
+  } catch { return false }
+})())
+check('bandeau stale honnête', /stale/.test(TODAY) && /hier/i.test(TODAY))
+check('JSON-LD ItemList + WebPage + Breadcrumb', /ItemList/.test(TODAY) && /BreadcrumbList/.test(TODAY))
+check('sitemap changefreq daily priorité 0.9', /changefreq>daily/.test(TODAY) && /0\.9/.test(TODAY))
+// Runtime : génération MQ/GP réelle (dist/ = build local).
+try {
+  const { generateTodayPages } = require('../lib/today-pages.cjs')
+  check('module chargeable', typeof generateTodayPages === 'function')
+} catch (e) { check('module chargeable', false, e.message) }
+for (const f of ['dist/aujourdhui/index.html', 'dist/_gp/aujourdhui/index.html']) {
+  let h = null
+  try { h = fs.readFileSync(path.join(ROOT, f), 'utf8') } catch {}
+  check(`${f} générée`, !!h)
+  if (h) {
+    check(`${f} canonical own-domain`, /sargasses-(martinique|guadeloupe)\.com\/aujourdhui\//.test(h))
+    check(`${f} titre intention`, /aujourd.hui/i.test((h.match(/<title>([^<]+)<\/title>/) || [])[1] || ''))
+    check(`${f} liens fiches`, (h.match(/href="\/(plages|beach)\//g) || []).length >= 3)
+  }
+}
+try {
+  const smMQ = R('dist/sitemap-martinique.xml')
+  check('sitemap MQ liste /aujourdhui/', smMQ.includes('/aujourdhui/'))
+  // Sitemap GP : vidé par pruneForeignDomains dans un build MQ (comportement
+  // pré-existant : chaque build-région ne garde que son domaine ; le build GP
+  // regarnit sitemap-guadeloupe.xml). Garantie durable = page _gp + canonical.
+  const smGP = R('dist/sitemap-guadeloupe.xml')
+  const gp = fs.readFileSync(path.join(ROOT, 'dist/_gp/aujourdhui/index.html'), 'utf8')
+  check('page _gp canonical GP (garantie inter-builds)', gp.includes('https://sargasses-guadeloupe.com/aujourdhui/'))
+  check('sitemap GP présent (regarnit au build GP)', smGP.includes('urlset'))
+} catch (e) { check('sitemaps core lisibles', false, e.message) }
+
+console.log('— P0 maillage /aujourdhui/ —')
+const VITE = R('vite.config.js')
+check('plages-sans-sargasses → /aujourdhui/', VITE.includes('href="/aujourdhui/"'))
+check('carte-sargasses footer → /aujourdhui/', (VITE.match(/href="\/aujourdhui\/"/g) || []).length >= 3)
+
+console.log('— P0 distribution drafts —')
+const VD = R('scripts/automation/verdict-du-jour.cjs')
+check('générateur drafts existe', /FACEBOOK/.test(VD) && /WHATSAPP/.test(VD) && /REDDIT/.test(VD))
+check('jamais d\u2019envoi auto (écrit .md uniquement)', !/sendMail|fetch\(ENDPOINT|api\.indexnow/.test(VD))
+check('liens UTM draft', /utm_source=social/.test(VD))
+check('liens vers today natif (anti-404)', /todaySlugFor/.test(VD))
+check('prune 7 jours anti-bloat', /7 \* 86400000/.test(VD))
+const day = new Date().toISOString().slice(0, 10)
+let drafts = 0
+for (const r of ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']) {
+  try { fs.readFileSync(path.join(ROOT, 'scripts/automation/data/verdict-du-jour', `${day}-${r}.md`), 'utf8'); drafts++ } catch {}
+}
+check(`drafts du jour présents (6 régions)`, drafts === 6, `${drafts}/6`)
+check('workflow reservoir branche les drafts', R('.github/workflows/daily-social-reservoir.yml').includes('verdict-du-jour.cjs'))
+
+console.log('— P0 partage UTM —')
+const PROD = R('src/Sargasses_PROD.jsx')
+check('helper _shareUrl central', /function _shareUrl/.test(PROD))
+check('UTM préservées si présentes', /utm_/.test(PROD.split('function _shareUrl')[1].split('}')[0] || ''))
+check('ctxShare tagué menu', /_shareUrl\(_fichePageUrl\(b\),"menu"\)/.test(PROD))
+check('share card taguée card', /"card"\)/.test(PROD))
+check('share funnel tagué funnel', /"funnel"\)/.test(PROD))
+check('session_start porte UTM landing', /utm_source:cut/.test(PROD))
+const RPT = R('src/components/BeachDayReport.jsx')
+check('rapport shareHref whatsapp/report', /shareHref\('whatsapp'\)/.test(RPT) && /shareHref\('report'\)/.test(RPT))
+
+console.log('— P0 email réactivation —')
+const RE = R('scripts/automation/email-reactivation.cjs')
+check('script existe, dry-run par défaut', /DRY-RUN/.test(RE) && /--send/.test(RE))
+check('réutilise builders weekend', /email-weekend/.test(RE))
+check('exclusion B2B + unsub + cap', /B2B_SOURCES/.test(RE) && /List-Unsubscribe/.test(RE) && /CAP/.test(RE))
+check('barbados exclu', /barbados/.test(RE))
+
+console.log('— P1 B2B Concierge 29€ —')
+const ESP = R('public/pro/espace/index.html')
+check('toggle Concierge/Pro présent', /tierConcierge/.test(ESP) && /tierPro/.test(ESP))
+check('clés brief_* existantes serveur utilisées', /brief_monthly/.test(ESP) && /brief_annual/.test(ESP))
+check('USD verrouillé Pro (pas de brief USD serveur)', /CUR==="USD"/.test(ESP))
+check('deep-link ?offre=concierge', /offre\|tier\)=concierge/.test(ESP))
+check('tracking tier dynamique (pas de pro_monthly en dur)', !/tier:"pro_monthly"/.test(ESP))
+const OUT = R('scripts/automation/b2b-cold-outreach.cjs')
+check('outreach C0 → ?offre=concierge (FR)', /offre=concierge/.test(OUT))
+check('outreach mentionne 29€ (FR)', /29 €\/mois \(Concierge\)/.test(OUT))
+check('caps/dédup outreach intacts', /CAP_NEW/.test(OUT) && /bounced/.test(OUT))
+check('hunt doc 100 prospects', fs.existsSync(path.join(ROOT, 'scripts/automation/B2B_PROSPECT_HUNT.md')))
+
+console.log('— P1 presse + soutien —')
+const CIV = R('scripts/lib/civic-pages.cjs')
+check('lib civic-pages (presse+soutenir)', /generateCivicPages/.test(CIV))
+check('graphiques calculés (history+backtest)', /history\.json/.test(CIV) && /backtest-results/.test(CIV))
+check('pas de reçu fiscal (soutien)', /aucun reçu fiscal/i.test(CIV))
+check('pas de mélange premium', /séparé, sur le pass|pas un don fiscalement/i.test(CIV))
+check('verdict intouchable', /modifier un verdict/i.test(CIV))
+for (const f of ['dist/presse/index.html', 'dist/_gp/presse/index.html', 'dist/soutenir/index.html', 'dist/_gp/soutenir/index.html']) {
+  let h = null
+  try { h = fs.readFileSync(path.join(ROOT, f), 'utf8') } catch {}
+  check(`${f} générée`, !!h)
+}
+check('hook civic core (vite.config)', VITE.includes('generateCivicPages(null, outDir)'))
+
+console.log('— Gardes —')
+check('aucun three.js ajouté par le sprint (diff)', (() => {
+  try {
+    const { execSync } = require('child_process')
+    const diff = execSync('git diff -- src/ public/pro/espace/index.html', { cwd: ROOT, encoding: 'utf8' })
+    return ![...diff.split('\n')].filter(l => l.startsWith('+') && !l.startsWith('+++')).some(l => /from\s+["']three["']|getContext\(\s*["']webgl/i.test(l))
+  } catch { return false }
+})())
+check('aucun .php modifié', (() => {
+  try {
+    const { execSync } = require('child_process')
+    const st = execSync('git status -s -- public/api scripts', { cwd: ROOT, encoding: 'utf8' })
+    return ![...st.split('\n')].some(l => l.trim().endsWith('.php'))
+  } catch { return false }
+})())
+
+console.log(`\n${pass} ok, ${fail} échecs`)
+process.exit(fail ? 1 : 0)

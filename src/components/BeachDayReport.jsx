@@ -59,12 +59,23 @@ export default function BeachDayReport({ beach, fcDays, unlocked, satLabel, satT
     trk("sg_pdf_download", mediaParams({ beach_id: beach?.id, region, screen: "day_report", asset_id: assetId, asset_type: "pdf", interaction: "print" }))
     try { window.print() } catch (_) {}
   }
+  // P0 attribution — même convention que _shareUrl (app) : UTM préservées si
+  // déjà présentes (chaîne de partage), sinon utm_source=<canal> + medium=share +
+  // campaign=beach_report. WhatsApp : utm_source=whatsapp (cf. plan acquisition).
+  const shareHref = (channel) => {
+    try {
+      const href = window.location.href
+      if (/[?&]utm_/.test(href)) return href
+      const ch = String(channel || 'report').replace(/[^a-z]/g, '').slice(0, 20) || 'report'
+      return href + (href.includes('?') ? '&' : '?') + 'utm_source=' + ch + '&utm_medium=share&utm_campaign=beach_report'
+    } catch (_) { return window.location.href }
+  }
   const doShare = async () => {
     const text = _t(lang, `Rapport ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Mesuré au satellite, pas deviné.`, `Report ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Measured by satellite, not guessed.`, `Informe ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Medido por satélite.`)
     trk("sg_pdf_share", mediaParams({ beach_id: beach?.id, region, screen: "day_report", asset_id: assetId, asset_type: "pdf", interaction: "share" }))
     try {
-      if (navigator.share) { await navigator.share({ title: text, text, url: window.location.href }) }
-      else if (navigator.clipboard) { await navigator.clipboard.writeText(text + " " + window.location.href); setCopied(true); setTimeout(() => setCopied(false), 2200) }
+      if (navigator.share) { await navigator.share({ title: text, text, url: shareHref('report') }) }
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(text + " " + shareHref('report')); setCopied(true); setTimeout(() => setCopied(false), 2200) }
     } catch (_) {}
   }
   // J0-J30 — WhatsApp explicite (priorité mobile mission) : deep-link wa.me avec le
@@ -74,7 +85,7 @@ export default function BeachDayReport({ beach, fcDays, unlocked, satLabel, satT
     const text = _t(lang, `Rapport ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Mesuré au satellite, pas deviné.`, `Report ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Measured by satellite, not guessed.`, `Informe ${beach?.name || ""} — ${statusLabel(beach?.status, lang)} (${dayNum()}). Medido por satélite.`)
     trk("sg_pdf_share", mediaParams({ beach_id: beach?.id, region, screen: "day_report", asset_id: assetId, asset_type: "pdf", interaction: "whatsapp" }))
     try {
-      const url = "https://wa.me/?text=" + encodeURIComponent(text + " " + window.location.href)
+      const url = "https://wa.me/?text=" + encodeURIComponent(text + " " + shareHref('whatsapp'))
       window.open(url, "_blank", "noopener")
     } catch (_) {}
   }

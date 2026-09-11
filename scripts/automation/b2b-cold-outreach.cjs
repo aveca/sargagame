@@ -98,9 +98,12 @@ function buildC0(c, key) {
   const domain = domainFor(c)
   // Token par destinataire (&b=) → l'app logue la visite par prospect (funnel tracking).
   const b = key ? `&b=${String(key).slice(0, 12)}` : ''
-  const pro = `https://${domain}/pro/espace/?utm_source=email&utm_medium=b2b_cold&utm_campaign=c0${b}`
+  const proBase = `https://${domain}/pro/espace/?utm_source=email&utm_medium=b2b_cold&utm_campaign=c0${b}`
   const place = c.town || (c.island === 'GP' ? 'Guadeloupe' : 'Martinique')
   const L = localeFor(c)
+  // P1 Concierge 29 € : les prospects FR (EUR, brief_monthly existant) atterrissent
+  // sur l'offre d'appel présélectionnée. EN/ES (USD, pas de brief mensuel) : Pro inchangé.
+  let pro = proBase + (L === 'fr' ? '&offre=concierge' : '')
   // Segmentation déterministe (FR seul = marché B2B live MQ/GP ; EN/ES inchangés).
   const seg = inferType(c)                 // 'hotel' | 'collectivite'
   const dh = L === 'fr' ? dataHook(c, seg) : null  // vraie donnée plage(s), ou null
@@ -192,7 +195,7 @@ function buildC0(c, key) {
     } else {
       T.pain = `D'habitude, une plage qui bascule dans la nuit, vous l'apprenez en même temps que le client — à l'accueil, déçu. Le Veilleur inverse l'ordre : un satellite veille la mer (Copernicus + NOAA), traduit en prévision <strong>par plage</strong>, J+1→J+7. L'alerte « le matin où ça bascule » arrive <strong>avant</strong> l'échouage.`
       T.flip = `Concret : un matin, ${dh ? dh.beach : 'votre plage'} vire au rouge. Prévenu la veille, vous orientez les arrivées du jour vers une crique abritée à 10 min — personne pris en traître, pas d'avis « plage pleine d'algues ».`
-      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : 79 €/mois ou 690 €/an. 100 % en ligne, à votre rythme.`
+      T.ask = `<strong>Essai 30 jours, sans carte.</strong> Ensuite, si ça vous sert : à partir de <strong>29 €/mois (Concierge)</strong> — 79 €/mois ou 690 €/an en Pro. 100 % en ligne, à votre rythme.`
       T.ctaText = dh ? `Voir ${dh.beach} en direct · essai 30 j` : 'Voir mes plages · essai 30 j'
     }
   }
@@ -214,8 +217,9 @@ function buildC0(c, key) {
 function buildC4(c, key) {
   const domain = domainFor(c)
   const b = key ? `&b=${String(key).slice(0, 12)}` : ''
-  const pro = `https://${domain}/pro/espace/?utm_source=email&utm_medium=b2b_cold&utm_campaign=c4${b}`
   const L = localeFor(c)
+  // P1 Concierge : même deep-link offre que C0 (FR uniquement).
+  const pro = `https://${domain}/pro/espace/?utm_source=email&utm_medium=b2b_cold&utm_campaign=c4${b}` + (L === 'fr' ? '&offre=concierge' : '')
   const F = {
     fr: {
       subject: `Re: ${c.name} — vos plages, mesurées au satellite`,

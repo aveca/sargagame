@@ -446,6 +446,17 @@ function _fichePageUrl(beach){
   const slug=getCanonicalSlug(beach)
   return slug?origin+"/plages/"+slug+"/":origin
 }
+// P0 attribution — UTM sur TOUS les liens partagés (share → visit mesurable dans
+// GA4 + Supabase via sg_session_start qui porte l'UTM d'atterrissage).
+// Préserve les UTM existantes (chaîne de partage) et le ?ref= referral.
+function _shareUrl(url,channel){
+  try{
+    if(!url||/[?&]utm_/.test(url))return url
+    const sep=url.includes("?")?"&":"?"
+    const ch=String(channel||"share").replace(/[^a-z]/g,"").slice(0,20)||"share"
+    return url+sep+"utm_source="+ch+"&utm_medium=share&utm_campaign=beach_report"
+  }catch(_){return url}
+}
 // buildShareCard(opts) — générateur de cartes virales multi-variant. 'beach'
 // délègue à shareBeachCard (historique, intact). 'streak' = VEILLE-CARD DE SÉRIE :
 // le "Wordle de la mer" — la série du Veilleur en grille de pastilles, SANS lien
@@ -5466,7 +5477,7 @@ const fcUp = false
               if(await shareBeachCard(beach,lang,forecast))return
               // FALLBACK (partage de fichier indispo) : texte + lien (référral si premium).
               const refCode=isPremium?localStorage.getItem("sg_referral_code"):""
-              const url=_fichePageUrl(beach)+(refCode?"?ref="+refCode:"")
+              const url=_shareUrl(_fichePageUrl(beach)+(refCode?"?ref="+refCode:""),"card")
               const isRef=!!refCode
               const _st=ST[beach.status]||ST._loading
               const _stl=lang==="es"?_st.les:lang==="en"?_st.le:_st.l
@@ -9610,7 +9621,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   const shareBeach=b=>{
     const txt=`${b.name} ${b.score}/100 · ${statusShort(b)} ${T("aujourd'hui","today","hoy")} ☀️`
     // Deep-link vers la fiche de la plage (région-aware via _fichePageUrl), jamais l'accueil.
-    const url=_fichePageUrl(b)
+    const url=_shareUrl(_fichePageUrl(b),"funnel")
     track("sg_share",{beach_id:b.id,method:"funnel"})
     try{if(navigator.share){navigator.share({title:b.name,text:txt,url}).catch(()=>{});return}}catch(_){}
     try{navigator.clipboard&&navigator.clipboard.writeText(`${txt} ${url}`.trim())}catch(_){}
@@ -11880,8 +11891,9 @@ export default function App(){
       const qs=params.toString();window.history.replaceState({},"",getPathname()+(qs?"?"+qs:""))
     }catch{}
   },[])
-  // Analytics: session start
-  useEffect(()=>{track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0)});s("sg_seen",1)},[])
+  // Analytics: session start (+ UTM d'atterrissage pour l'attribution share → visit :
+  // source/medium/campaign tronqués, jamais de PII — l'URL complète n'est pas loggée).
+  useEffect(()=>{let utm={};try{const q=new URLSearchParams(window.location.search||"");const cut=v=>(v||"").slice(0,40);utm={utm_source:cut(q.get("utm_source")),utm_medium:cut(q.get("utm_medium")),utm_campaign:cut(q.get("utm_campaign"))};if(!utm.utm_source&&!utm.utm_medium&&!utm.utm_campaign)utm={}}catch(_){utm={}}track("sg_session_start",{island,is_premium:isPremium,is_returning:!!g("sg_seen",0),...utm});s("sg_seen",1)},[])
   // Redirect old query params to new narrative stations
   useEffect(()=>{
     try{
@@ -13734,7 +13746,7 @@ useEffect(()=>{
   const closeCtx=useCallback(()=>{setCtxMenu(cur=>{if(cur){try{track("sg_ctx_dismiss",{context:cur.beach?"beach":"scene"})}catch(_){}}return null})},[])
   const ctxShare=useCallback(b=>{
     try{
-      const url=_fichePageUrl(b)
+      const url=_shareUrl(_fichePageUrl(b),"menu")
       if(navigator.share){try{navigator.share({title:b.name,url}).catch(()=>{})}catch(_){}}
       else if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(()=>{try{sgToast({title:_t(lang,"Lien copié","Link copied","Enlace copiado"),msg:b.name,tone:"success"})}catch(_){}}).catch(()=>{try{sgToast({title:b.name,msg:url,tone:"info"})}catch(_){}})}
       else{try{sgToast({title:b.name,msg:url,tone:"info"})}catch(_){}}

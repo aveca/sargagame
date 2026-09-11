@@ -1,3 +1,41 @@
+## 2026-09-11 · Agent: coding-agent · FINITION DISTRIBUTION IMPLÉMENTÉE, GATES VERTS
+
+### Travail effectué
+- **Résumé 1 ligne** : /aujourdhui/ data-driven (MQ+_gp, /hoy/ Tulum, anti-doublon natif US) + drafts verdict-du-jour quotidiens + UTM partage + réactivation email (dry-run) + Concierge 29€ (toggle + outreach) + kit presse + /soutenir/ — gates verts.
+- **Détails** : PR #669 mergée (vérifié) ; pas de /today//hoy/ US (pages natives `beaches-without-sargassum-today` existantes) ; soutien SANS paiement (sécurité money-path) ; USD verrouillé Pro (brief_monthly_usd inexistant) ; visuels/vidéos génératifs hors capacité agent ; 0 .php modifié.
+
+### Fichiers modifiés
+- `scripts/lib/today-pages.cjs` + `scripts/lib/civic-pages.cjs` (NOUVEAUX) + hooks `vite.config.js`
+- `scripts/automation/verdict-du-jour.cjs` + `email-reactivation.cjs` + `B2B_PROSPECT_HUNT.md` (NOUVEAUX) + step workflow reservoir
+- `src/Sargasses_PROD.jsx` (_shareUrl + session UTM), `src/components/BeachDayReport.jsx` (shareHref UTM)
+- `public/pro/espace/index.html` (toggle Concierge), `scripts/automation/b2b-cold-outreach.cjs` (CTA Concierge FR)
+- `scripts/tests/distro-contract.test.cjs` (61), `tests/e2e/distro.spec.ts` (5)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (380 modules, hooks today/civic visibles en log)
+- [x] check-bundle-budget → 37.9 Ko ≤ 210 Ko
+- [x] php -l → N/A (aucun `.php` touché)
+- [x] ux-smoke → 4/4 tokens OK
+- [x] funnel-payment 13/13 · j0-sprint 7/7 · distro 5/5 · distro-contract 61/61 · j0-contract 51/51
+- [x] territory 27/27 · sitemap 12/12 · routing 8/8
+
+### Problèmes restants
+- [ ] Paiement soutien non branché (décision sécurité, pas un bug) — Sévérité : P2
+- [ ] brief_monthly_usd inexistant → Concierge EUR only — Sévérité : P3 (décision fondateur si USD voulu)
+- [ ] Visuels/vidéos génératifs : pas d'outil dans l'environnement — Sévérité : P2 (formats prêts via drafts)
+
+### Prochaine action recommandée
+1. Merge PR finition → deploy-live → vérifier 6 domaines + /aujourdhui/ + espace + UTM — Rôle : release
+2. Rituel matinal : poster drafts verdict-du-jour (manuel) — Rôle : growth
+3. Prospection B2B 20/j selon hunt doc — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/finition-distro`
+- PR : à créer vers main
+- Commit head : (après commit)
+
+---
+
 ## 2026-09-11 · Agent: coding-agent · SPRINT J0-J30 (CTO) IMPLÉMENTÉ, GATES VERTS
 
 ### Travail effectué

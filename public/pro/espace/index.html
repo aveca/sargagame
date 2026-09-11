@@ -412,6 +412,16 @@
         </div>
         <div id="trialResult" style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--clean) 12%,var(--paper));border:2px solid var(--clean);color:var(--ink);font-size:14px;line-height:1.55"></div>
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+          <!-- P1 Concierge 29 € — sélecteur d'offre (EUR uniquement : brief_monthly_usd
+               n'existe pas côté mollie-lib allowlist → toggle masqué en USD).
+               Les 4 clés (brief/pro × mensuel/annuel) existent déjà côté serveur :
+               zéro changement money-path, que de la présentation. Rollback : le
+               toggle retiré = Pro par défaut (comportement historique intact). -->
+          <div class="cta-row" id="tierRow" role="radiogroup" aria-label="Offre" style="margin-bottom:14px">
+            <button type="button" class="cta sec" id="tierConcierge" role="radio" aria-checked="false" data-i18n="tierConcierge">Concierge — 29 €/mois</button>
+            <button type="button" class="cta sec" id="tierPro" role="radio" aria-checked="true" data-i18n="tierPro">Pro — 79 €/mois</button>
+          </div>
+          <p id="tierDesc" data-i18n="tierDescPro" style="font-size:13px;color:var(--mid);margin:0 0 12px">Tout Concierge + marque blanche du widget + mise en avant sur Sargagame.</p>
           <div class="price-wrap"><span class="price">79&nbsp;€</span><span class="price-mo">/&nbsp;mois &nbsp;·&nbsp; ou 690&nbsp;€/an</span></div>
           <div class="price-note" data-i18n="priceNote">2 mois offerts en annuel · résiliable à tout moment</div>
           <div class="cta-row">
@@ -684,6 +694,10 @@
       trialActivating:{fr:"Activation…",en:"Activating…",es:"Activando…"},
       trialRetry:{fr:"Réessayer →",en:"Try again →",es:"Reintentar →"},
       priceNote:{fr:"2 mois offerts en annuel · résiliable à tout moment",en:"2 months free on annual · cancel anytime",es:"2 meses gratis en anual · cancelable cuando quieras"},
+      tierConcierge:{fr:"Concierge — 29 €/mois",en:"Concierge — €29/mo",es:"Concierge — 29 €/mes"},
+      tierPro:{fr:"Pro — 79 €/mois",en:"Pro — €79/mo",es:"Pro — 79 €/mes"},
+      tierDescConcierge:{fr:"Brief quotidien + alertes + widget + alternative. L'essentiel pour répondre à vos clients.",en:"Daily brief + alerts + widget + alternative. The essentials to answer your guests.",es:"Informe diario + alertas + widget + alternativa. Lo esencial para responder a tus clientes."},
+      tierDescPro:{fr:"Tout Concierge + marque blanche du widget + mise en avant sur Sargagame.",en:"Everything in Concierge + widget white-label + feature on Sargagame.",es:"Todo Concierge + marca blanca del widget + promoción en Sargagame."},
       subSmall:{fr:"Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.",en:"Ready to subscribe without waiting for the trial to end? Enter your work email above, then “Subscribe” — secure Mollie payment, cancel anytime.",es:"¿Listo para suscribirte sin esperar al final de la prueba? Introduce tu email profesional arriba, luego «Suscribirse» — pago seguro Mollie, cancelable cuando quieras."},
       footerSrc:{fr:"Source : données satellite Copernicus Marine — ",en:"Source: Copernicus Marine satellite data — ",es:"Fuente: datos satelitales Copernicus Marine — "},
       docTitle:{fr:"Votre Espace Pro — Sargasses",en:"Your Pro Space — Sargassum",es:"Tu Espacio Pro — Sargazo"},
@@ -743,6 +757,47 @@
     var MO=CUR==="USD"?"89":"79", YR=CUR==="USD"?"790":"690";
     var PLAN_MO=CUR==="USD"?"pro_monthly_usd":"pro_monthly";
     var PLAN_YR_KEY=CUR==="USD"?"pro_annual_usd":"pro_annual";
+    // P1 Concierge 29 € — les 4 clés existent côté serveur (mol_b2b_plans +
+    // paylinks brief_*/pro_*). EUR uniquement : brief_monthly_usd n'existe pas
+    // dans l'allowlist PHP → toggle masqué en USD (Pro seul, inchangé).
+    var TIER=(CUR==="USD")?"pro":"pro";
+    var PAYLINKS_CACHE=null;
+    var BASE_MO=(CUR==="USD"?"89":"79"), BASE_YR=(CUR==="USD"?"790":"690");
+    var BASE_PLAN_MO=(CUR==="USD"?"pro_monthly_usd":"pro_monthly"), BASE_PLAN_YR=(CUR==="USD"?"pro_annual_usd":"pro_annual");
+    function tierDef(t){return t==="concierge"?{mo:"29",yr:"290",planMo:"brief_monthly",planYr:"brief_annual"}:{mo:BASE_MO,yr:BASE_YR,planMo:BASE_PLAN_MO,planYr:BASE_PLAN_YR};}
+    function resolveAnnual(){try{var u=PAYLINKS_CACHE&&PAYLINKS_CACHE[PLAN_YR_KEY]&&PAYLINKS_CACHE[PLAN_YR_KEY].url;if(u){$("subscribe").href=u;}}catch(_){}}
+    function setTier(t, silent){
+      if(CUR==="USD")t="pro";
+      TIER=t;
+      var d=tierDef(t);
+      MO=d.mo; YR=d.yr; PLAN_MO=d.planMo; PLAN_YR_KEY=d.planYr;
+      try{
+        var _pe=document.querySelector(".price"); if(_pe)_pe.textContent=money(MO);
+        var _pm=document.querySelector(".price-mo");
+        if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
+        var _sm=$("subMonthly"); if(_sm)_sm.textContent=subMoLabel();
+        var _sa=$("subscribe"); if(_sa)_sa.textContent=subYrLabel();
+        var _tc=$("tierConcierge"),_tp=$("tierPro");
+        if(_tc)_tc.setAttribute("aria-checked",t==="concierge"?"true":"false");
+        if(_tp)_tp.setAttribute("aria-checked",t==="pro"?"true":"false");
+        // État visuel sélectionné (sans toucher aux classes .cta existantes).
+        try{
+          if(_tc){_tc.style.borderColor=t==="concierge"?"var(--ink)":"";_tc.style.background=t==="concierge"?"var(--goldL)":"";}
+          if(_tp){_tp.style.borderColor=t==="pro"?"var(--ink)":"";_tp.style.background=t==="pro"?"var(--goldL)":"";}
+        }catch(_){}
+        var _td=$("tierDesc"); if(_td)_td.textContent=tr(t==="concierge"?"tierDescConcierge":"tierDescPro");
+        resolveAnnual();
+      }catch(_){}
+      try{if(!silent)sgEv("sg_b2b_tier_select",{tier:PLAN_MO,source:"espace"});}catch(_){}
+    }
+    function setTierInit(){
+      // État par défaut sans event (pas de faux tier_select au chargement).
+      try{
+        var q="";try{q=location.search||"";}catch(_){}
+        if(CUR!=="USD"&&/[?&](offre|tier)=concierge/.test(q)){setTier("concierge");return;}
+        setTier("pro", true);
+      }catch(_){}
+    }
 
     document.documentElement.lang=LANG;
     document.title=tr("docTitle");
@@ -872,7 +927,7 @@
       var em=($("trialEmail").value||"").trim();
       if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){ $("trialEmail").focus(); var sr=$("subResult"); sr.style.display="block"; sr.textContent=tr("emailFirst"); return; }
       var btn=$("subMonthly"); btn.textContent=tr("redirecting"); btn.disabled=true;
-      try{sgEv("sg_b2b_paylink_click",{tier:"pro_monthly",source:"espace"});}catch(_){}
+      try{sgEv("sg_b2b_paylink_click",{tier:String(PLAN_MO||"pro_monthly"),source:"espace"});}catch(_){}
       fetch("https://"+DOMAIN+"/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:PLAN_MO,hosted:1,email:em,island:(island||"MQ").toLowerCase(),source:"b2b_espace_monthly"})})
         .then(function(r){return r.json()}).then(function(d){
           if(d&&d.checkoutUrl){ location.href=d.checkoutUrl; }
@@ -881,11 +936,23 @@
     }
     $("subMonthly").addEventListener("click",subscribeMonthly);
     fetch("https://"+DOMAIN+"/api/b2b-paylinks.json",{cache:"no-store"}).then(function(r){return r.json()}).then(function(d){
+      try{if(d&&d.links)PAYLINKS_CACHE=d.links;}catch(_){}
+      resolveAnnual();
       var u=d&&d.links&&d.links[PLAN_YR_KEY]&&d.links[PLAN_YR_KEY].url;
-      if(u){$("subscribe").href=u;
+      if(u){
         $("subscribe").addEventListener("click",function(){try{sgEv("sg_b2b_paylink_click",{tier:String(PLAN_YR_KEY||"pro_annual"),source:"espace"});}catch(_){}});
       }
     }).catch(function(){});
+    // Câblage toggle Concierge/Pro (masqué en USD : pas de brief_monthly_usd serveur).
+    try{
+      if(CUR==="USD"){var _tr=$("tierRow"); if(_tr)_tr.style.display="none";}
+      else{
+        $("tierConcierge").addEventListener("click",function(){setTier("concierge");});
+        $("tierPro").addEventListener("click",function(){setTier("pro");});
+        // Deep-link outbound : /pro/espace/?offre=concierge présélectionne le 29 €.
+        try{setTierInit();}catch(_){}
+      }
+    }catch(_){}
 
     if(token){
       fetch("https://"+DOMAIN+"/api/widget-token.php?k="+encodeURIComponent(token),{cache:"no-store"}).then(function(r){return r.json()}).then(function(j){

@@ -1,4 +1,16 @@
-﻿## SPRINT J0-J30 (CTO) — [x] done (2026-09-11, gates verts, prêt à publier)
+﻿## FINITION DISTRIBUTION — [x] done (2026-09-11, gates verts, PR à créer)
+- **P0 /aujourdhui/** : today-pages.cjs (MQ+_gp data-driven, /hoy/ Tulum, anti-doublon natif US) + hooks build + sitemap daily 0.9 + maillage statique.
+- **P0 distribution** : verdict-du-jour.cjs (drafts 6 régions FB/WA/IG/Reddit/email, jamais d'envoi, prune 7 j) + workflow reservoir.
+- **P0 UTM** : _shareUrl central (menu/card/funnel) + session_start UTM + shareHref rapport (whatsapp/report).
+- **P0 email** : email-reactivation.cjs (dry-run défaut, cap 600, B2B exclus, unsub) — template vérifié en dry-run sur toutes régions.
+- **P1 Concierge 29€** : toggle espace (clés brief_* existantes, EUR only, ?offre=concierge) + outreach C0/C4 FR → Concierge.
+- **P1 outbound** : B2B_PROSPECT_HUNT.md (critères, protocole vérification, 8 clusters, séquence, garde-fous) ; 2 URLs mortes rejetées par vérification.
+- **P1 presse/soutenir** : civic-pages.cjs (/presse/ 3 graphiques réels + /soutenir/ sans reçu fiscal ni paiement branché).
+- **Gates** : build 380 · bundle 37.9 · smoke 4/4 · funnel 13/13 · j0 7/7 · distro 5/5 · distro-contract 61/61 · territory 27/27 · sitemap 12/12 · 0 .php modifié.
+- **Non fait (capacités)** : visuels génératifs / vidéos courtes (pas d'outil image/vidéo dans l'environnement agent) ; paiement soutien (décision sécurité money-path).
+- **NEXT** : merge → deploy 6 domaines → vérifier /aujourdhui/ + espace + UTM live → rituel matinal (poster drafts) → prospection 20/j.
+
+## SPRINT J0-J30 (CTO) — [x] done (2026-09-11, gates verts, prêt à publier)
 - **OBJ1 CRO** : offre-avant-email (`?sgpayorder=0`) + sg_pass_cta en backup critique. Cause : friction email-first, pas une casse (1,3 % chronique).
 - **OBJ2 alternatives** : planB existait → + sg_planb_view + repli honnête si vide (même île ≤60 km, jamais d'invention).
 - **OBJ3 partage** : rapport existait → + bouton WhatsApp wa.me + `sg_pdf_share{whatsapp}`, texte factuel.
