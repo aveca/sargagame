@@ -13,6 +13,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 // utilisé aussi par les tests node). Import namespace : interop CJS/ESM sûre.
 import * as FContract from "../scripts/lib/forecast-contract.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { getResortsForBeach } from "./lib/resorts.js"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
@@ -4399,7 +4400,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false,resorts=[]}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -14580,7 +14581,8 @@ useEffect(()=>{
                 isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
                 onFollowBeach={requestFollow}
                 fcBlocked={fcBlockedId===selectedBeach.id}
-                freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}/>
+                freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}
+                resorts={getResortsForBeach(IS_NEW_REGION?REGION.id:selectedBeach.island, selectedBeach.id)}/>
             </ErrBound>
           )
         })()}
