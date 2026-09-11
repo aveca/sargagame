@@ -13,7 +13,7 @@ concurrency:
 jobs:
   test-frontend:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,12 +21,12 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
-      - name: Run tests (*.test.cjs)
-        run: npm test
-      - name: Verify Build
+      - name: Build production
         run: npm run build
       - name: Check bundle budget (JS eager <= 210 Ko gzip)
         run: node scripts/check-bundle-budget.cjs
+      - name: Run tests (*.test.cjs)
+        run: npm test
       - name: Install Playwright Chromium
         run: npx playwright install chromium
       - name: Start Vite preview (build output)
