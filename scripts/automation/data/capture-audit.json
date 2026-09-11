@@ -1,5 +1,5 @@
 {
- "date": "2026-09-04T15:18:51.942Z",
+ "date": "2026-09-11T15:18:46.559Z",
  "domains": {
   "https://sargasses-martinique.com": {
    "checks": {
@@ -17,7 +17,7 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "696ms",
+    "lcp_under_2_5s": "820ms",
     "cta_count_above_fold": "26 visibles"
    }
   },
@@ -37,7 +37,7 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "660ms",
+    "lcp_under_2_5s": "360ms",
     "cta_count_above_fold": "26 visibles"
    }
   },
@@ -57,7 +57,7 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "508ms",
+    "lcp_under_2_5s": "608ms",
     "cta_count_above_fold": "24 visibles"
    }
   },
@@ -77,7 +77,7 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "840ms",
+    "lcp_under_2_5s": "572ms",
     "cta_count_above_fold": "24 visibles"
    }
   },
@@ -97,7 +97,7 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "732ms",
+    "lcp_under_2_5s": "756ms",
     "cta_count_above_fold": "24 visibles"
    }
   }
