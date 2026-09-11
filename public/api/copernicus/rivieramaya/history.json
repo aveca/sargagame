@@ -3155,7 +3155,7 @@
       "levels": [
         {
           "id": "rm001",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3175,7 +3175,7 @@
         },
         {
           "id": "rm005",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
@@ -3205,7 +3205,7 @@
         },
         {
           "id": "rm011",
-          "afai": 0.1,
+          "afai": 0.09,
           "status": "clean"
         },
         {
