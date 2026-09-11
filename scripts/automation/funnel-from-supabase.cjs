@@ -31,7 +31,10 @@ function svcHeaders(extra) {
 // premium_modal_cta et checkout_redirect RETIRÉS (2026-08-18) : jamais émis par le frontend.
 // 2026-08-25: sg_mollie_checkout_redirect = vrai redirect Mollie, sg_onsite_checkout_opened = overlay carte.
 // 2026-08-25 FIX (P1 funnel blind): checkout_redirect gardé en ALIAS legacy (events pré-2026-08-18 dans la fenêtre)
-const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_close', 'beach_open', 'pass_cta', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
+// J0-J30 (2026-09-11) : + pass_offer_view (CTA vu), planb_view/pick (alternative),
+// beach_report/observation/beach_event/obs_smell (ground truth), b2b_widget_preview (widget).
+const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_close', 'beach_open', 'pass_cta', 'pass_offer_view', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
+  'planb_view', 'planb_pick', 'beach_report', 'observation', 'beach_event', 'obs_smell', 'b2b_widget_preview',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated', 'b2b_share',
   'b2b_paylink_click', 'b2b_tier_select', 'b2b_space_open']
@@ -80,6 +83,8 @@ function computeFunnel(rows) {
     lock_to_beach: pct(f.beach_open, f.forecast_lock_click),
     beach_to_modal: pct(f.premium_modal_open, f.beach_open),
     modal_to_cta: pct(ctaTotal, f.premium_modal_open),
+    cta_view_to_click: pct(ctaTotal, f.pass_offer_view || 0), // J0-J30 : offre vue → clic
+    alt_view_to_click: pct(f.planb_pick || 0, f.planb_view || 0), // J0-J30 : alternative vue → clic
     cta_to_onsite: pct(onsiteOpened, ctaTotal),
     onsite_to_mollie: pct(mollieRedirects, onsiteOpened),
     cta_to_mollie: pct(mollieRedirects, ctaTotal),
