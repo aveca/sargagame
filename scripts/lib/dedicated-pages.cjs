@@ -134,7 +134,7 @@ function sectionTitle(lang, fr, en, es) {
 }
 
 // Generate beach detail page — NEW: /beach/[slug] + /beach/[id] (dedicated Sprint #23)
-function generateBeachPage(region, beach, data, lang, distDir) {
+function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) {
   const t = getT(lang);
   const domain = region.domain;
   const lv = data.levels?.find(l => l.id === beach.id) || {};
@@ -157,16 +157,17 @@ function generateBeachPage(region, beach, data, lang, distDir) {
 
   // ── Enrichissement data-driven (P1) : que du réel, zéro invention ──
   // Proximité : plages voisines (même région, haversine), max 3 à 5 km
-  const allBeaches = region.beaches || [];
-  const nearby = nearestBeaches(beach, allBeaches, 3).map(b => b.beach);
+  const nearby = nearestBeaches(beach, allBeaches, 3);
   const nearbyHtml = nearby.length
     ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Plages proches','Nearby beaches','Playas cercanas')}</h3><ul style="list-style:none;padding:0;margin:0">${nearby.map(b=>
-      `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee"><span style="width:8px;height:8px;border-radius:50%;background:#667eea;flex:none"></span><a href="/beach/${b.slug}/" style="color:inherit;text-decoration:none">${esc(b.name)}</a> (${Math.round(b.km)} km)</li>`).join('')}</ul></section>`
+      `<li style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #eee"><span style="width:8px;height:8px;border-radius:50%;background:#667eea;flex:none"></span><a href="/beach/${b.beach.slug || slugify(b.beach.name)}/" style="color:inherit;text-decoration:none">${esc(b.beach.name)}</a> (${Math.round(b.km)} km)</li>`).join('')}</ul></section>`
     : '';
 
   // Résorts / hébergements à proximité (regions/resorts/<regionId>.json)
+  // JSON is a direct array [{...}], not {resorts: [...]}
   const resortData = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), []);
-  const beachResorts = (resortData.resorts || []).filter(r => r.beachId === beach.id);
+  const resortsArray = Array.isArray(resortData) ? resortData : (resortData.resorts || []);
+  const beachResorts = resortsArray.filter(r => r.beachId === beach.id);
   // Vérif : resortHtml utilise region.id; OK si data existante (florida/puntacana/rivieramaya)
 const resortHtml = beachResorts.length
     ? `<section style="margin:1.5em 0"><h3>${sectionTitle(lang,'Hébergements','Accommodation','Alojamiento')}</h3><ul style="list-style:none;padding:0;margin:0">${beachResorts.slice(0,5).map(r=>
@@ -362,7 +363,7 @@ function generateDedicatedPages(region, distDir) {
     if (!beach || !beach.id) continue;
     // For new regions, ensure island matches (legacy already filtered above includes both islands for shared build)
     if (region.id !== 'mq' && region.id !== 'gp' && beach.island !== region.id) continue;
-    sitemap.push(generateBeachPage(region, beach, data, lang, distDir));
+    sitemap.push(generateBeachPage(region, beach, data, lang, distDir, beaches));
   }
   // If legacy mq build, also ensure we counted correctly: we generated for all islands once, not per lang
   // 2. POI pages — /poi/[slug] + /poi/[id]
