@@ -13,10 +13,11 @@
  * Each section triggers animation once on first reveal via IntersectionObserver.
  * prefers-reduced-motion: all transitions skipped, content shown immediately.
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { _t, fcDay, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
 import { useScrollIntelligence, useContentVisibility, useDwellTracking, IntentEngine } from "./behaviorTracking.js"
+import { EnhancedAlternativesPanel } from "./components/EnhancedAlternativesPanel.jsx"
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
@@ -427,34 +428,17 @@ export default function BeachSheet({
             </div>
           </StorySection>
 
-          {/* #4 — Plan B (only if avoid/moderate) */}
-          {(status==="avoid"||status==="moderate")&&planB.length>0&&(
-            <StorySection delay={.3} sectionId="planb" beachId={beach?.id} region={beach?.island}>
-              <div style={{maxWidth:420,margin:"0 auto",width:"100%",boxSizing:"border-box"}}>
-                <div style={{display:"flex",alignItems:"center",gap:8,justifyContent:"center",marginBottom:20}}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                  <span style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"PLUTÔT ALLER ICI","GO HERE INSTEAD","MEJOR VE AQUÍ")}</span>
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  {planB.slice(0,3).map((b,i)=>(
-                    <button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-                      style={{display:"flex",alignItems:"center",gap:12,padding:"13px 16px",borderRadius:14,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`4px 4px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",textAlign:"left",width:"100%",font:"800 14px/1.2 'Bricolage Grotesque',system-ui,sans-serif",color:COMIC.ink}}>
-                      <div style={{width:48,height:48,borderRadius:10,background:`linear-gradient(135deg,#155A5A,#1A5852)`,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M2 12c2-2 4-3 6-3s4 1 6 3c2 2 4 3 6 3"/><path d="M2 17c2-1.5 4-2 6-2s4 .5 6 2c2 1.5 4 2 6 2"/><path d="M2 7c2 1 4 1.5 6 1.5S12 7 14 6c2-1 4-1 6 0"/></svg>
-                      </div>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{font:"800 14px/1.2 'Bricolage Grotesque'",color:COMIC.ink}}>{b.name}</div>
-                        <div style={{font:"600 11px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:3}}>
-                          {Math.round(b._d)} km · {stLabel("clean",lang)}
-                        </div>
-                      </div>
-                      <span style={{font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.sub,flexShrink:0}}>→</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </StorySection>
-          )}
+{/* #4 — Enhanced Alternatives Panel (P0) */}
+          <Suspense fallback={null}>
+            <EnhancedAlternativesPanel
+              beach={beach}
+              allBeaches={allBeaches}
+              lang={lang}
+              onBeachClick={onBeachClick}
+              track={trk}
+              status={status}
+            />
+          </Suspense>
 
           {/* #5 — CTA Story section */}
           <StorySection delay={.4} sectionId="cta" beachId={beach?.id} region={beach?.island} style={{padding:"30px 20px 60px"}}>
@@ -572,22 +556,18 @@ export default function BeachSheet({
             </div>
           )}
 
-          {/* Plan B compact */}
-          {planB.length>0&&(
-            <div className="bs-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
-              <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>
-                {_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}
-              </div>
-              <div style={{display:"flex",flexDirection:"column",gap:7}}>
-                {planB.slice(0,3).map((b,i)=><button key={b.id} onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-                  style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"13px 16px",borderRadius:12,border:`2.5px solid ${COMIC.ink}`,background:"#fff",boxShadow:`4px 4px 0 ${COMIC.ink}`,cursor:"pointer",fontFamily:"inherit",font:"800 13px/1 'Bricolage Grotesque',system-ui,sans-serif",color:COMIC.ink,textAlign:"left",width:"100%"}}>
-                  <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
-                  <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span>
-                </button>)}
-              </div>
-            </div>
-          )}
+          {/* Enhanced Alternatives Panel (P0) — compact mode */}
+          <Suspense fallback={null}>
+            <EnhancedAlternativesPanel
+              beach={beach}
+              allBeaches={allBeaches}
+              lang={lang}
+              onBeachClick={onBeachClick}
+              track={trk}
+              status={status}
+              compact={true}
+            />
+          </Suspense>
 
           {/* B2B Contextual CTA — based on beach score */}
           {!isPremium&&(

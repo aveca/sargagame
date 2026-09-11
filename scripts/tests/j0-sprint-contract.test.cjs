@@ -20,6 +20,7 @@ const REPORT = R('src/components/BeachDayReport.jsx')
 const ESPACE = R('public/pro/espace/index.html')
 const FUN1 = R('scripts/automation/funnel-from-supabase.cjs')
 const DAILY = R('scripts/automation/daily-stats-check.cjs')
+const ENHANCED_ALTS = R('src/components/EnhancedAlternativesPanel.jsx')
 
 console.log('— OBJ1 CRO paywall —')
 // 1a. Ordre offre-avant-email par défaut + rollback ?sgpayorder=0
@@ -36,7 +37,7 @@ check('nearestCleanAlt même île (territorialité)', /b\.island===beach\.island
 check('planB ≤60km top-3 clean', /b\._d<=60/.test(PROD) && /status==="clean"/.test(PROD))
 check('planB view trackée (sg_planb_view)', /trk\("sg_planb_view"/.test(PROD))
 check('planB pick tracké (sg_planb_pick)', /sg_planb_pick/.test(PROD))
-check('repli honnête si aucune alternative', /Pas d'alternative propre/.test(PROD))
+check('repli honnête si aucune alternative', /Pas d'alternative propre/.test(PROD) || /Pas d\\'alternative propre/.test(ENHANCED_ALTS))
 check('planB déclenché pour avoid ET moderate (pas clean)', /status==="clean"\|\|status==="_loading"\)return\[\]/.test(PROD))
 
 console.log('— OBJ3 Rapport / partage —')

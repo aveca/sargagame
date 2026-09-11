@@ -100,6 +100,8 @@ const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
 // Rapport plage du jour (HARD ASSET §PDF) : modale preview→download→share, lazy → 0 octet eager.
 // Rollback ?report=0 (désactive bouton + modale dans BeachSheetComic).
 const BeachDayReport=lazyWithRetry(()=>import("./components/BeachDayReport.jsx"))
+// Enhanced Alternatives Panel — 3 alternatives with distance, confidence, reason (P0)
+const EnhancedAlternativesPanel=lazyWithRetry(()=>import("./components/EnhancedAlternativesPanel.jsx"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
@@ -4790,23 +4792,17 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
           onBeachClick={onBeachClick}
           track={trk}
         />
-        {/* Plan B — où aller maintenant (avoid/moderate) */}
-        {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
-          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
-          <div style={{display:"flex",flexDirection:"column",gap:7}}>
-            {planB.map((b,i)=><button key={b.id} className="bsc-row" onClick={()=>{trk("sg_planb_pick",{from:beach.id,to:b.id,rank:i});onBeachClick&&onBeachClick(b)}}
-              style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:8,padding:"10px 12px",borderRadius:12,border:"2.5px solid " + COMIC.ink,background:"#fff",boxShadow:`2px 2px 0 ${COMIC.ink}`,cursor:"pointer",font:"800 13px/1 'Bricolage Grotesque'",color:COMIC.ink,textAlign:"left",animationDelay:(.1+i*.08)+"s"}}>
-              <span style={{display:"flex",alignItems:"center",gap:8,minWidth:0}}><i style={{width:9,height:9,borderRadius:"50%",background:COMIC.clean,flexShrink:0}}/><span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{b.name}</span></span>
-              <span style={{color:COMIC.sub,font:"700 11px/1 'Bricolage Grotesque'",whiteSpace:"nowrap"}}>{Math.round(b._d)} km →</span></button>)}
-            </div>
-        </div>}
-        {/* J0-J30 — repli honnête : état défavorable SANS alternative fiable (aucune
-            plage clean même île ≤60 km). On ne montre PAS de plage douteuse et on ne
-            promet rien : le verdict reste gratuit demain. Jamais d'invention. */}
-        {(status==="avoid"||status==="moderate")&&planB.length===0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
-          <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Pas d'alternative propre à proximité aujourd'hui","No clean alternative nearby today","Sin alternativa limpia cerca hoy")}</div>
-          <div style={{font:"600 12px/1.45 'Bricolage Grotesque'",color:COMIC.sub}}>{_t(lang,"Le verdict du jour reste gratuit — reviens demain matin, la mer aura peut-être tourné.","Today's verdict stays free — check back tomorrow morning, the sea may have turned.","El veredicto de hoy sigue gratis — vuelve mañana, el mar puede haber cambiado.")}</div>
-        </div>}
+{/* Enhanced Alternatives Panel — 3 alternatives with distance, confidence, reason (P0) */}
+        <Suspense fallback={null}>
+          <EnhancedAlternativesPanel
+            beach={beach}
+            allBeaches={allBeaches}
+            lang={lang}
+            onBeachClick={onBeachClick}
+            track={trk}
+            status={status}
+          />
+        </Suspense>
         {/* Signaler — l'utilisateur sur place corrige le satellite (l'échoué n'est pas vu du ciel).
             Alimente _communityOverride (« terrain prime », seuil ≥3). */}
         <BeachReport beach={beach} lang={lang} communityReports={communityReports}/>
