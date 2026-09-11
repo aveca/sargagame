@@ -14,6 +14,7 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import * as FContract from "../scripts/lib/forecast-contract.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { getResortsForBeach } from "./lib/resorts.js"
+import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
@@ -4743,6 +4744,16 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
             </div>
           )}
         </div>
+        {/* Enrichissement data-driven : plages proches + resorts + facts + activities (via composant isolé) */}
+        <BeachSheetEnrichment
+          beach={beach}
+          regionId={IS_NEW_REGION ? REGION.id : beach.island}
+          lang={lang}
+          allBeaches={allBeaches}
+          resorts={resorts}
+          onBeachClick={onBeachClick}
+          track={trk}
+        />
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
