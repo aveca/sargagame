@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-08-10T12:10:00.722Z",
-      "dryRun": false,
-      "script": "seo-link-graph",
-      "action": "analyze",
-      "sites": 2,
-      "structuralOrphans": 396
-    },
-    {
-      "timestamp": "2026-08-10T12:10:01.073Z",
-      "dryRun": false,
-      "script": "seo-broken-links",
-      "action": "check",
-      "sites": 2,
-      "totalBroken": 329
-    },
-    {
       "timestamp": "2026-08-10T12:10:01.309Z",
       "dryRun": false,
       "script": "seo-schema-validator",
@@ -1599,6 +1583,65 @@
         "https://sargasses-martinique.com/pro/en/",
         "https://sargasses-martinique.com/pro/en/hotels/"
       ]
+    },
+    {
+      "timestamp": "2026-09-11T15:18:18.512Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 55,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 3,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "gp": {
+          "indexed": 83,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 2,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "florida": {
+          "indexed": 17,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "puntacana": {
+          "indexed": 5,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 4,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "rivieramaya": {
+          "indexed": 19,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-11T15:18:20.815Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 40,
+        "critical": 0,
+        "warnings": 40
+      }
     }
   ]
 }
