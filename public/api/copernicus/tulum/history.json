@@ -1595,42 +1595,42 @@
       "levels": [
         {
           "id": "tu001",
-          "afai": 0.16,
+          "afai": 0.2,
           "status": "moderate"
         },
         {
           "id": "tu002",
-          "afai": 0.16,
+          "afai": 0.2,
           "status": "moderate"
         },
         {
           "id": "tu003",
-          "afai": 0.16,
+          "afai": 0.2,
           "status": "moderate"
         },
         {
           "id": "tu004",
-          "afai": 0.16,
+          "afai": 0.19,
           "status": "moderate"
         },
         {
           "id": "tu005",
-          "afai": 0.16,
+          "afai": 0.19,
           "status": "moderate"
         },
         {
           "id": "tu006",
-          "afai": 0.16,
+          "afai": 0.19,
           "status": "moderate"
         },
         {
           "id": "tu007",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.17,
+          "status": "moderate"
         },
         {
           "id": "tu008",
-          "afai": 0.16,
+          "afai": 0.2,
           "status": "moderate"
         }
       ]
@@ -2384,35 +2384,42 @@
       "beach": "tu002",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.2
     },
     {
       "date": "2026-09-12",
       "beach": "tu003",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.2
     },
     {
       "date": "2026-09-12",
       "beach": "tu004",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.19
     },
     {
       "date": "2026-09-12",
       "beach": "tu006",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.19
     },
     {
       "date": "2026-09-12",
       "beach": "tu008",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu007",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
     }
   ]
 }

@@ -4885,7 +4885,7 @@
   },
   {
     "date": "2026-09-12",
-    "time": "2026-09-12T04:08:19.719Z",
+    "time": "2026-09-12T10:40:57.111Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 597,
@@ -4893,19 +4893,19 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 82,
-      "lockClicks": 18,
-      "modalOpens": 50,
+      "sessions": 84,
+      "lockClicks": 27,
+      "modalOpens": 61,
       "modalCloses": null,
       "modalCta": 4,
-      "ctaViews": 25,
+      "ctaViews": 26,
       "altViews": 0,
       "altClicks": 0,
-      "groundTruth": 1,
+      "groundTruth": 2,
       "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 0,
+      "emailSubmits": 1,
       "checkoutRedirects": 0,
       "onsiteCheckoutOpened": 4,
       "payOnsiteBack": 0,
@@ -4914,10 +4914,10 @@
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 22,
-        "lock_to_modal": 277.8,
-        "modal_to_cta": 8,
-        "cta_view_to_click": 16,
+        "session_to_lock": 32.1,
+        "lock_to_modal": 225.9,
+        "modal_to_cta": 6.6,
+        "cta_view_to_click": 15.4,
         "alt_view_to_click": 0,
         "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
@@ -4926,13 +4926,13 @@
       }
     },
     "email": {
-      "sent": 5465,
+      "sent": 5494,
       "delivered": null,
       "opened": 48,
-      "clicked": 35,
+      "clicked": 36,
       "bounced": null,
-      "openRate": 0.88,
-      "clickRate": 72.92,
+      "openRate": 0.87,
+      "clickRate": 75,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -4983,7 +4983,7 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-12T04:08:28.183Z"
+      "fetchedAt": "2026-09-12T10:41:11.870Z"
     },
     "ga4": {
       "date": "2026-09-11",
@@ -4993,7 +4993,7 @@
       },
       "gp": {
         "sessions": 3,
-        "users": 292
+        "users": 293
       }
     }
   }
