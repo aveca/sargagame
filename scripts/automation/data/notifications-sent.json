@@ -1,14 +1,4 @@
 {
-  "2026-09-05": [
-    "rivieramaya:rm009:clean>moderate",
-    "rivieramaya:rm003:moderate>clean",
-    "rivieramaya:rm004:moderate>clean",
-    "rivieramaya:rm005:moderate>clean",
-    "rivieramaya:rm011:moderate>clean",
-    "rivieramaya:rm012:moderate>clean",
-    "rivieramaya:rm019:moderate>clean",
-    "rivieramaya:rm020:moderate>clean"
-  ],
   "2026-09-06": [
     "puntacana:pc001:clean>moderate",
     "puntacana:pc002:clean>moderate",
@@ -104,5 +94,10 @@
     "rivieramaya:rm019:clean>moderate",
     "rivieramaya:rm020:clean>moderate",
     "florida:fl004:moderate>clean"
+  ],
+  "2026-09-13": [
+    "puntacana:pc008:moderate>clean",
+    "puntacana:pc009:moderate>clean",
+    "puntacana:pc010:moderate>clean"
   ]
 }
