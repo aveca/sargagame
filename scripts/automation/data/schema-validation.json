@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-07T16:42:33.014Z",
+  "generatedAt": "2026-09-14T17:11:40.947Z",
   "sites": {
     "mq": {
-      "pageCount": 805,
-      "pagesWithSchema": 600,
-      "totalBlocks": 1068,
+      "pageCount": 808,
+      "pagesWithSchema": 603,
+      "totalBlocks": 1073,
       "parseFailures": 0,
       "errorCount": 18,
       "warningCount": 20,
@@ -204,9 +204,9 @@
       ]
     },
     "gp": {
-      "pageCount": 840,
-      "pagesWithSchema": 635,
-      "totalBlocks": 1192,
+      "pageCount": 843,
+      "pagesWithSchema": 638,
+      "totalBlocks": 1197,
       "parseFailures": 0,
       "errorCount": 18,
       "warningCount": 20,

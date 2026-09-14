@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T16:42:19.946Z",
+  "generatedAt": "2026-09-14T17:11:27.466Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,14 +12,14 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 5631,
-          "clicks": 705
+          "impressions": 4543,
+          "clicks": 437
         }
       ],
       "orphans": [
         {
           "url": "https://sargasses-martinique.com/alertes/",
-          "impressions": 4,
+          "impressions": 2,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -93,13 +93,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 7505,
-          "clicks": 839
+          "impressions": 6223,
+          "clicks": 550
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 1792,
-          "clicks": 281
+          "impressions": 1472,
+          "clicks": 182
         }
       ],
       "orphans": [
@@ -125,7 +125,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/previsions/",
-          "impressions": 1,
+          "impressions": 5,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -145,7 +145,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
-          "impressions": 0,
+          "impressions": 2,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -155,7 +155,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/sargassum-alerts/",
-          "impressions": 0,
+          "impressions": 1,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [

@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-07T16:42:33.635Z",
+  "generatedAt": "2026-09-14T17:11:41.571Z",
   "sites": {
     "mq": {
-      "pageCount": 805,
+      "pageCount": 808,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 612,
-      "pagesWithHreflang": 595,
+      "pagesWithCanonical": 615,
+      "pagesWithHreflang": 598,
       "issueCount": 390,
       "byKind": {
         "canonical-off-domain": 158,
@@ -315,10 +315,10 @@
       ]
     },
     "gp": {
-      "pageCount": 840,
+      "pageCount": 843,
       "pagesSkippedNoindex": 22,
-      "pagesWithCanonical": 647,
-      "pagesWithHreflang": 630,
+      "pagesWithCanonical": 650,
+      "pagesWithHreflang": 633,
       "issueCount": 474,
       "byKind": {
         "canonical-off-domain": 158,

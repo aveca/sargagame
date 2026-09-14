@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-07T16:42:34.423Z",
+  "generatedAt": "2026-09-14T17:11:42.452Z",
   "sites": {
     "mq": {
-      "sitemapSize": 162,
-      "ownDomainCount": 162,
+      "sitemapSize": 165,
+      "ownDomainCount": 165,
       "crossDomainCount": 0,
-      "diskCount": 613,
+      "diskCount": 616,
       "sitemapUrls404Count": 0,
       "diskMissingCount": 451,
       "sitemapUrls404": [],
@@ -44,14 +44,15 @@
       "crossDomainSample": []
     },
     "gp": {
-      "sitemapSize": 189,
-      "ownDomainCount": 189,
+      "sitemapSize": 0,
+      "ownDomainCount": 0,
       "crossDomainCount": 0,
-      "diskCount": 807,
+      "diskCount": 810,
       "sitemapUrls404Count": 0,
-      "diskMissingCount": 629,
+      "diskMissingCount": 810,
       "sitemapUrls404": [],
       "diskMissing": [
+        "/a-propos/",
         "/activity/dive/",
         "/activity/family/",
         "/activity/kids/",
@@ -59,8 +60,11 @@
         "/activity/snorkel/",
         "/activity/surf/",
         "/agir/",
+        "/alertes/",
+        "/algues-guadeloupe/",
         "/articles/alerte-saison-2026-gp-2026-04-09/",
         "/articles/point-semaine-avril-2026-mq-2026-04-09/",
+        "/aujourdhui/",
         "/b2b/",
         "/beach/akumal-bay/",
         "/beach/anse-a-l-ane/",
@@ -77,11 +81,7 @@
         "/beach/anse-caritan/",
         "/beach/anse-ceron/",
         "/beach/anse-champagne/",
-        "/beach/anse-charpentier/",
-        "/beach/anse-collat/",
-        "/beach/anse-corps-de-garde/",
-        "/beach/anse-cosmy/",
-        "/beach/anse-couleuvre/"
+        "/beach/anse-charpentier/"
       ],
       "crossDomainSample": []
     }
