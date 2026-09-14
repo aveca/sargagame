@@ -1,3 +1,9 @@
+
+## 2026-09-14 — BUG-SEC-001 : token Cloudflare committé par session concurrente (BLOQUEUR PUSH, ACTION FONDATEUR)
+- **Quoi** : commit local 6c1086dba (session concurrente, même machine) a committé scripts/fix-cf-403.cjs contenant un Cloudflare User API Token en clair → GitHub push protection bloque tout push de main contenant ce commit.
+- **État** : fichier supprimé du worktree (b990d586b) mais token TOUJOURS présent dans lhistorique git local (branche agent/wip/concurrent-ma-plage-audit, NON poussée). Main nettoyée (reset sur 009c884fe + cherry-pick docs ad86f5815) et poussée OK. Aucun secret dans main distante.
+- **Action fondateur (1 min)** : Cloudflare Dashboard → My Profile → API Tokens → révoquer le token exposé (le commit local reste une copie à purger ensuite via le fondateur : supprimer la branche locale ou réécrire).
+- **Règle rappelée** : ne jamais coller de token dans un script committé ; utiliser variables d environnement / secrets GH.
 # .ai/bugs.md — Bugs connus avec reproduction
 
 > Les agents QA et Coding se réfèrent à ce fichier.
