@@ -1,3 +1,7 @@
+## 2026-09-14 — Territoires complets + paywall have-vs-get + transport slot + B2B demo row
+
+**Agent** : coding-agent (mission product-experience). **Travail** : 13 fichiers, 368+ / 13-. **Fixes critiques** : countryCode GP/Tulum ajoutés (SEO hreflang) + homeName Cancún + fusion données plages (sargasses + fallback métadonnées) → onglet Plages fonctionnel · paywall have-vs-get (?mphave=0) avec données réelles · slot transport RHUMZ dans Ma Plage (mq/gp uniquement) + bouton démo B2B dans pro/espace · paywall glyphes SVG (pas d'emoji) + drift nowrap anti-orphelin. **Gates** : build 384 · bundle 37.9 Ko · E2E 13/13 · j0 51/51 · 6/6 domaines 200 · 0 .php touché · money-path intact. **Non fait** : RHUMZ outbound (config côté partenaire absente) · acquisition leviers 2/3 restants · B2B lead capture non câblé (infrastructure prête).
+
 ## 2026-09-14 — UX/CONVERSION visuel shippé (P0 friction paiement + P1 système visuel)
 
 **Agent** : coding-agent (mission product-experience). **Preuves** : 9 screenshots 390px + mesures (0 tap <44px, 0 pageerror, funnel E2E 13/13). **Fix visuels, 0 logique/paiement/data** : checkout labels MOL_LABEL, paywall glyphs ComicIcon, MaPlage hero scene, drift nowrap. **Flow paiement mesuré** : 2 clics vers formulaire (email+4 Mollie+consent+Payer), déjà minimal. **Deploy** : CI 4/4 vert, Deploy Live 6/6 + purge + health OK, live v219 b=19e901b8. Wording CTA inchangé (mesure modal_to_cta préservée).
