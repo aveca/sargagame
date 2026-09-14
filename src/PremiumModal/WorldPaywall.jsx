@@ -346,6 +346,36 @@ export function WorldPaywall({
           )
         })()}
         
+        {/* ═══ HAVE vs GET — cadrage "ce que j'ai / ce que j'obtiens" (UX conversion).
+            Données 100 % réelles (même verdict que la fiche) : le gratuit du jour
+            d'abord, le Pass comme sa suite logique. Additif, wording offre/prix
+            inchangé (mesure CTA préservée). Rollback ?mphave=0. ═══ */}
+        {(() => { try { if (/[?&]mphave=0/.test(window.location.search)) return null } catch (_) {}
+          const haveLbl = (() => {
+            const m = { clean: t("Propre aujourd'hui", "Clean today", "Limpia hoy"),
+              moderate: t("À surveiller", "Worth checking", "A vigilar"),
+              avoid: t("À éviter aujourd'hui", "Avoid today", "Evitar hoy") }
+            return (beach && beach.name)
+              ? `${beach.name} — ${m[beach.status] || m.moderate}`
+              : t("Le verdict du jour", "Today's verdict", "El veredicto del día")
+          })()
+          return (
+          <div style={{ marginBottom: 14, borderRadius: 12, overflow: "hidden", border: "1px solid rgba(255,255,255,.1)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "rgba(255,255,255,.04)",
+              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,.85)" }}>
+              <span aria-hidden="true" style={{ fontSize: 13 }}>✓</span>
+              <span style={{ flex: 1, minWidth: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                {t("AUJOURD'HUI (gratuit) : ", "TODAY (free): ", "HOY (gratis): ")}{haveLbl}
+              </span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "rgba(255,199,44,.08)",
+              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontSize: 12, fontWeight: 800, color: "#FFC72C" }}>
+              <span aria-hidden="true" style={{ fontSize: 13 }}>→</span>
+              <span>{t("AVEC LE PASS : 7 jours · alertes · alternatives", "WITH THE PASS: 7 days · alerts · alternatives", "CON EL PASE: 7 días · alertas · alternativas")}</span>
+            </div>
+          </div>
+          ) })()}
+        
         {/* ═══ EMAIL INPUT (P0 fix — bind to payEmailRef) ═══
             CRO J0-J30 : rendu APRÈS l'offre par défaut (?sgpayorder=0 = avant).
             L'email reste optionnel ici (pré-remplit OnsiteCheckout via sg_email). */}

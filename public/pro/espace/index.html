@@ -433,10 +433,21 @@
         </div>
         <p class="reassure"><span id="s5reSpan">Paiement sécurisé Mollie (carte / virement). Dès l'activation, votre <strong>token Pro</strong> arrive par email — il active la marque blanche du widget et votre mise en avant. Une question ? </span><a id="mailLink" href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a>.</p>
       </div>
-    </section>
-  </main>
+</section>
+    </main>
 
-  <footer>
+    <!-- ═══ B2B DEMO ROW — « Voir un exemple » sans recréer d'infrastructure ═══ -->
+    <section class="demo-row" style="padding:24px 20px;background:linear-gradient(180deg,var(--paper),var(--paperD));border-top:1px solid var(--border);margin-top:24px">
+      <div style="max-width:640px;margin:0 auto;text-align:center">
+        <h2 style="font:800 clamp(20px,4vw,26px)/1.2 var(--display);color:var(--ink);margin:0 0 8px" data-i18n="demoTitle">Voulez-vous voir un exemple ?</h2>
+        <p style="font:400 15px/1.5 var(--ui);color:var(--mid);margin:0 0 16px;max-width:480px;margin-left:auto;margin-right:auto" data-i18n="demoDesc">Choisissez une plage, nous générons l'aperçu widget + brief PDF pour votre établissement.</p>
+        <div class="cta-row" style="justify-content:center;flex-wrap:wrap;gap:12px">
+          <button type="button" class="cta" id="demoBtn" style="min-width:220px" data-i18n="demoBtn">Voir un exemple →</button>
+        </div>
+      </div>
+    </section>
+
+    <footer>
     <p><span data-i18n="footerSrc">Source : données satellite Copernicus Marine — </span><a href="/">Le Veilleur · Sargasses Pro</a></p>
   </footer>
 
@@ -715,7 +726,10 @@
       trialActiveNote:{fr:"✓ Essai Pro actif 30 jours — marque blanche du widget activée.",en:"✓ Pro trial active for 30 days — widget white-label enabled.",es:"✓ Prueba Pro activa 30 días — marca blanca del widget activada."},
       wlActiveNote:{fr:"✓ Marque blanche active — votre token Pro retire le crédit Sargasses du widget.",en:"✓ White-label active — your Pro token removes the Sargasses credit from the widget.",es:"✓ Marca blanca activa — tu token Pro quita el crédito Sargasses del widget."},
       widgetCredit:{fr:"Conditions en direct par",en:"Live conditions by",es:"Condiciones en vivo por"},
-      widgetIframeTitle:{fr:"Conditions de plage",en:"Beach conditions",es:"Condiciones de playa"}
+      widgetIframeTitle:{fr:"Conditions de plage",en:"Beach conditions",es:"Condiciones de playa"},
+      demoTitle:{fr:"Voulez-vous voir un exemple ?",en:"Want to see an example?",es:"¿Quieres ver un ejemplo?"},
+      demoDesc:{fr:"Choisissez une plage, nous générons l'aperçu widget + brief PDF pour votre établissement.",en:"Pick a beach, we generate the widget preview + PDF brief for your property.",es:"Elige una playa, generamos la vista previa del widget + el brief PDF para tu establecimiento."},
+      demoBtn:{fr:"Voir un exemple →",en:"See an example →",es:"Ver un ejemplo →"}
     };
     // Copies riches (gras) rendues en DOM sûr — pas d'innerHTML
     var RICH={
@@ -790,6 +804,15 @@
       }catch(_){}
       try{if(!silent)sgEv("sg_b2b_tier_select",{tier:PLAN_MO,source:"espace"});}catch(_){}
     }
+    // Demo button handler
+    $("demoBtn").addEventListener("click",function(){
+      try{sgEv("sg_b2b_demo_cta",{source:"espace"});}catch(_){}
+      // Ouvre l'aperçu démo avec la plage de l'hôtel si dispo, sinon première plage
+      const demoSlug = SLUG2ID[beachSlug] || BEACHES[0][0];
+      setPreviewLink(demoSlug, DOMAIN);
+      const win = window.open("https://"+DOMAIN+"/?preview_partner=demo&preview_name="+encodeURIComponent(nm.value||"Hôtel Démonstration")+"&preview_beach="+encodeURIComponent(demoSlug), '_blank', 'noopener,noreferrer');
+      if(win) win.focus();
+    });
     function setTierInit(){
       // État par défaut sans event (pas de faux tier_select au chargement).
       try{

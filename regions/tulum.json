@@ -2,6 +2,7 @@
   "id": "tulum",
   "name": "Tulum",
   "country": "Mexico",
+  "countryCode": "MX",
   "domain": "sargazotulum.com",
   "ftpDir": "tulum-ftp",
   "primaryLang": "es",

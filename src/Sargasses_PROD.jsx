@@ -12939,9 +12939,14 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
       // 1. Build full beach list (strip stale status/afai from JSON)
       let beaches=IS_NEW_REGION
         ?REGION.beaches.map(b=>({...b}))   // plages inline de la région (status placeholder jusqu'à la pipeline dédiée)
-        :Array.isArray(beachData)&&beachData.length>0
-        ?beachData.map(b=>{const{status,afai,...rest}=b;return rest})
-        :[...BEACHES_FALLBACK]
+        :[...BEACHES_FALLBACK].map(b=>{
+          // Pour les régions existantes (MQ/GP) : fusionner les données sargasses
+          // (status, afai, score, confidence, forecast) avec les métadonnées
+          // de la plage (commune, lat, lng, kids, snorkel, parking, drive) depuis
+          // le fallback. On keye par id pour la fusion.
+          const sarg=beachData?.find(s=>s.id===b.id)
+          return sarg ? {...b, ...sarg} : b
+        })
       // 2a. Merge sargassum data — nouvelles régions : levels keyés par id de plage
       // (échantillonnage direct par plage par la pipeline multi-régions, pas de
       // mapping SARG_TO_BEACH ni d'interpolation inter-îles MQ/GP). Si le domaine

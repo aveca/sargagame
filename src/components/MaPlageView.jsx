@@ -313,6 +313,59 @@ export function MaPlageView({
         <div className="mp-scrollcue" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </div>
+
+        {/* ── TRANSPORT SLOT — RHUMZ (contextuel, territoires disponibles uniquement) ── */}
+        {(beach && ['mq', 'gp'].includes(beach.island)) && (
+          <div style={{ marginTop: 16, padding: '0 16px 16px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '14px 16px', borderRadius: 14,
+              background: '#FFF9E6', border: '2px solid #FFC72C',
+              boxShadow: '2px 2px 0 #FFC72C'
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFC72C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M18 8c0-2.5-2-4.5-4.5-4.5S9 5.5 9 8c0 1.5.7 2.8 1.8 3.6V18" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M6 18h.01M18 18h.01" strokeLinecap="round"/>
+                <path d="M4 20a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-4z"/>
+              </svg>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{
+                  font: '800 13px/1.2 "Bricolage Grotesque"', color: '#B87A00',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+                }}>
+                  Besoin d'un trajet vers cette plage ?
+                </div>
+                <div style={{
+                  font: '600 12px/1.3 "Bricolage Grotesque"', color: '#8B5A00',
+                  marginTop: 2
+                }}>
+                  RHUMZ vous y emmène
+                </div>
+              </div>
+              <button onClick={() => { try { track('sg_transport_cta', { beach_id: beach.id, partner: 'rhumz' }) } catch (_) {}; window.open('https://rhumz.com', '_blank', 'noopener,noreferrer') }}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  padding: '10px 14px', borderRadius: 12,
+                  background: '#FFC72C', color: '#0D0B14',
+                  font: '800 13px/1 "Bricolage Grotesque"',
+                  border: '2px solid #0D0B14', boxShadow: '2px 2px 0 #0D0B14',
+                  cursor: 'pointer', transition: 'transform .08s'
+                }}
+                onMouseDown={(e) => e.currentTarget.style.transform = 'translate(2px,2px)'}
+                onMouseUp={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
+                onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
+              >
+                <span>Ouvrir RHUMZ</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* ── SCROLL CUE ── */}
+        <div className="mp-scrollcue" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
       </div>
     </>
   );

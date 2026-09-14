@@ -2,6 +2,7 @@
   "id": "gp",
   "name": "Guadeloupe",
   "country": "France (DROM)",
+  "countryCode": "GP",
   "domain": "sargasses-guadeloupe.com",
   "ftpDir": "guadeloupe-ftp",
   "primaryLang": "fr",
