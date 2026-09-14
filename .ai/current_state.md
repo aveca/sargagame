@@ -1,3 +1,15 @@
+## 2026-09-14 01:20 UTC · Agent: coding-agent (release)
+
+### Travail effectué
+- **Résumé 1 ligne** : commit 009c884fe mergé (rebase clean sur 7ff6fbc1c), CI 4/4 verte, Deploy Live SUCCESS 6/6, vérifié live.
+- **Preuves** : CI Tests + Perf + Secret scan SUCCESS ; Deploy Live : build 6 régions + 3 workers + 6 Pages + purge + health 6/6 + notify ; live 6/6 domaines 200 ; MQ bouton Ma plage + 53 labels 0 erreur ; GP bouton + 83 labels + canonical GP 0 erreur ; POST /api/mollie.php verify_subscription → 200 {active:false,reason:no_pass_grant} (money-path intact).
+
+### Prochaine action recommandée
+1. Monitorer 7j : ma_plage_open→fav→alerts→premium_cta (nouveaux events Supabase) + taux onsite→Mollie — Rôle : growth/data
+2. Rituel matinal drafts verdict-du-jour + prospection B2B 20/j — Rôle : growth
+
+---
+
 ## 2026-09-14 21:30 UTC · Agent: coding-agent (conversion/payants)
 
 ### Travail effectué
