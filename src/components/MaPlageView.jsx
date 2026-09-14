@@ -31,7 +31,8 @@ export function MaPlageView({
   onBeachClick,
   onEnableAlerts,
   alertsOn = false,
-  onToggleAlerts
+  onToggleAlerts,
+  region = {}
 }) {
   // Handle swipe close (défini avant useSwipeClose : le hook attend onClose en 1er arg)
   const requestClose = useCallback(() => {
@@ -314,8 +315,8 @@ export function MaPlageView({
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
         </div>
 
-        {/* ── TRANSPORT SLOT — RHUMZ (contextuel, territoires disponibles uniquement) ── */}
-        {(beach && ['mq', 'gp'].includes(beach.island)) && (
+        {/* ── TRANSPORT SLOT — configurable par région (transport.provider, transport.bookingUrl) ── */}
+        {(beach && region?.transport?.bookingUrl) && (
           <div style={{ marginTop: 16, padding: '0 16px 16px' }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12,
@@ -339,14 +340,15 @@ export function MaPlageView({
                   font: '600 12px/1.3 "Bricolage Grotesque"', color: '#8B5A00',
                   marginTop: 2
                 }}>
-                  RHUMZ vous y emmène
+                  {region.transport?.displayName || 'RHUMZ'} vous y emmène
                 </div>
               </div>
               <button onClick={() => { 
-                try { track('sg_transport_cta', { beach_id: beach.id, partner: 'rhumz' }) } catch (_) {}; 
-                // Use RHUMZ reservation page with beach context for better UX
-                const rhumzUrl = `https://www.rhumz.com/reservation/?destination=${encodeURIComponent(beach.name)}&island=${beach.island}`;
-                window.open(rhumzUrl, '_blank', 'noopener,noreferrer'); 
+                try { track('sg_transport_cta', { beach_id: beach.id, partner: region.transport?.provider || 'rhumz' }) } catch (_) {}; 
+                // Use region's transport booking URL with beach context for better UX
+                const baseUrl = region.transport?.bookingUrl || 'https://www.rhumz.com/reservation/';
+                const params = region.transport?.supportsBeachContext ? `?destination=${encodeURIComponent(beach.name)}&island=${beach.island}` : '';
+                window.open(baseUrl + params, '_blank', 'noopener,noreferrer'); 
               }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -360,7 +362,7 @@ export function MaPlageView({
                 onMouseUp={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
               >
-                <span>Réserver avec RHUMZ</span>
+                <span>Réserver avec {region.transport?.displayName || 'RHUMZ'}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </button>
             </div>

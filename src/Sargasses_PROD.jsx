@@ -14771,6 +14771,7 @@ useEffect(()=>{
             onEnableAlerts={()=>forceEnablePush("ma_plage")}
             alertsOn={alertsOn}
             onToggleAlerts={toggleAlerts}
+            region={REGION}
           /></Suspense></ErrBound>
         )}
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).

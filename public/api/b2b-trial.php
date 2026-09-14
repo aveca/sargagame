@@ -15,6 +15,8 @@
  * accès Pro arrive par email »). Les deux best-effort : un échec n'empêche JAMAIS le
  * token d'être rendu au front (l'essai s'active de toute façon).
  *
+ * NOUVEAU : (3) enregistre le lead dans Supabase (table b2b_leads) pour suivi commercial.
+ *
  * ZÉRO secret nouveau (signature dérivée de stripe-config ; email via cfg.resend_key
  * déjà partagé, comme mol_b2b_grant_once). Additif : n'altère AUCUN flux de paiement.
  */
@@ -88,6 +90,37 @@ curl_setopt_array($ch, [
 ]);
 @curl_exec($ch);
 @curl_close($ch);
+
+// NOUVEAU : Best-effort — enregistre le lead B2B dans Supabase (table b2b_leads).
+// N'empêche JAMAIS le token d'être rendu. Utilise la service_key pour écriture serveur.
+$supabaseUrl = $cfg['supabase_url'] ?? getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+$serviceKey  = $cfg['supabase_service_key'] ?? getenv('SUPABASE_SERVICE_KEY') ?? '';
+if ($supabaseUrl && $serviceKey) {
+    $leadData = [
+        'email'      => $email,
+        'org_name'   => $name,
+        'beach_slug' => $beach,
+        'island'     => $island,
+        'source'     => 'b2b_trial',
+        'token'      => $token,
+        'created_at' => date('c'),
+    ];
+    $ch = curl_init($supabaseUrl . '/rest/v1/b2b_leads');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($leadData),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_HTTPHEADER     => [
+            'apikey: ' . $serviceKey,
+            'Authorization: Bearer ' . $serviceKey,
+            'Content-Type: application/json',
+            'Prefer: return=minimal',
+        ],
+    ]);
+    @curl_exec($ch);
+    @curl_close($ch);
+}
 
 // Instrumente l'ENTRÉE du funnel B2B (essai démarré) dans Supabase — le seul funnel
 // qui rapporte, désormais VISIBLE (funnel-b2b-from-supabase.cjs). sg_analytics_event

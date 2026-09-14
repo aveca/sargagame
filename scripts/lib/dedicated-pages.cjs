@@ -321,6 +321,42 @@ ${nearbyHtml}${resortHtml}${factsHtml}${activitiesHtml}
   <p style="font:11px/1.4 'Bricolage Grotesque';color:#888;margin:12px 0 0">Chaque partage contient un lien UTM unique pour mesurer l'impact</p>
 </section>
 
+<script>
+// Track share events
+function trackShareEvent(eventName, beachId, platform) {
+  try {
+    if (window.gtag) {
+      gtag('event', eventName, { beach_id: beachId, platform: platform });
+    }
+  } catch (e) {}
+}
+
+// Override shareWithUTM to add tracking
+const originalShareWithUTM = window.shareWithUTM;
+window.shareWithUTM = function(platform) {
+  const beachId = '${esc(beach.id)}';
+  trackShareEvent('sg_share_click', beachId, platform);
+  trackShareEvent('sg_share_outbound', beachId, platform);
+  if (originalShareWithUTM) originalShareWithUTM(platform);
+};
+
+// Track view of share section
+document.addEventListener('DOMContentLoaded', function() {
+  const shareSection = document.querySelector('section[style*="fef9e7"]');
+  if (shareSection) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          trackShareEvent('sg_share_view', '${esc(beach.id)}', 'page_load');
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+    observer.observe(shareSection);
+  }
+});
+</script>
+
 <h2>${t.viewMap}</h2><p><a href="/">${t.home}</a> · <a href="/${t.beachesDir}/">${t.allBeaches}</a></p></article>`;
 
   const jsonLd = [{

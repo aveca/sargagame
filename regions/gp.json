@@ -40,5 +40,11 @@
   "geoDetect": {
     "latMin": 15.85,
     "latMax": 16.55
+  },
+  "transport": {
+    "provider": "rhumz",
+    "displayName": "RHUMZ",
+    "bookingUrl": "https://www.rhumz.com/reservation/",
+    "supportsBeachContext": true
   }
 }
