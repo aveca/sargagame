@@ -1,3 +1,11 @@
+## 2026-09-14 — MA PLAGE VIEW SHIPPÉE + FIXES P0 RUNTIME (beach-decision lang, lazy defaults, scope App)
+
+**Agent** : coding-agent (mission conversion/payants). **Racine** : working tree avec MaPlageView non committée qui cassait l'app (showMaPlage/MAPLAGE_OFF déclarés dans BeachSheetComic mais lus par Header/App → ReferenceError), findAlternatives() plantait en ReferenceError: lang (raisons alternatives jamais rendues, EN/ES forcées FR), MaPlageView/Boostrap alternatives lazy sans export default (ErrBound à l'ouverture), endpoint météo /api/weather inexistant (404), Suspense non importé, useSwipeClose appelé sans onClose.
+**Fix** : MAPLAGE_OFF en scope module + showMaPlage dans App (?maplage=0 rollback) ; findAlternatives normalise options {lang} + string legacy (raisons EN/ES correctes, prouvé Node) ; export default MaPlageView + EnhancedAlternativesPanel ; MaPlageView utilise useWeather(Open-Meteo réel) + useSwipeClose(requestClose) + import Suspense ; alert-engine appels {lang} + messages ...arguments corrigés ; dead handleClick supprimé ; 5 events sg_ma_plage_* ajoutés à SG_FUNNEL_EVENTS + FUNNEL_KEYS (2 scripts) pour mesurer la piste commerciale.
+**Fichiers** : src/Sargasses_PROD.jsx, src/components/MaPlageView.jsx (NOUVEAU), src/components/EnhancedAlternativesPanel.jsx, src/lib/beach-decision.js, src/lib/alert-engine.js (NOUVEAU), scripts/automation/funnel-from-supabase.cjs, scripts/automation/daily-stats-check.cjs, public/api/b2b-partners.json (régénéré build).
+**Gates** : build exit 0 (384 modules) · bundle 37.9 Ko ≤ 210 · E2E funnel-payment 13/13 · j0-contract 51/51 · unit 117/119 (2 échecs = worktrees .claude préexistants, hors repo) · MaPlage vérifiée live-preview : bouton visible, ouverture vide + favori (verdict+chips+alternatives+honnêteté stale), rollback ?maplage=0, 0 pageerror · money-path intact (0 .php touché, Mollie non rouverte).
+**Non fait** : axe pipeline exclu (daily-copernicus non touché ; remote 2026-09-13 sain, satellite ~33h stale=true affiché honnêtement) ; fuite checkout onsite 5→0 du 11/09 = micro-échantillon, à monitorer via nouveaux events.
+
 # Changelog — S0 6-Région Quality Gate Audit
 
 ## 2026-09-11 — FINITION DISTRIBUTION — /aujourdhui/ + drafts + UTM + Concierge 29€ + presse/soutenir

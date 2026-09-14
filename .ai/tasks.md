@@ -1,3 +1,13 @@
+## MA PLAGE + FIXES P0 — [x] done (2026-09-14, gates verts, prêt merge/deploy)
+- **P0 scope** : showMaPlage/MAPLAGE_OFF hors scope (ReferenceError app) → module scope + state App + ?maplage=0.
+- **P0 lang** : findAlternatives ReferenceError lang → normalisé {lang}/string, raisons EN/ES prouvées.
+- **P0 lazy** : MaPlageView + EnhancedAlternativesPanel sans default (ErrBound) → export default ; Suspense import ; useSwipeClose(requestClose).
+- **P1 météo** : /api/weather 404 → useWeather Open-Meteo réel ; honnêteté stale conservée (Satellite il y a 85h, Confiance —).
+- **P1 i18n/alerts** : alert-engine {lang} + ...arguments ; dead handleClick supprimé.
+- **Mesure** : 5 events sg_ma_plage_* en allowlists (Supabase funnel) pour piloter la piste commerciale.
+- **Gates** : build 384 · bundle 37.9 · E2E 13/13 · j0 51/51 · unit 117/119 (2 worktrees préexistants).
+- **NEXT** : merge → deploy 6 domaines → vérifier Ma Plage live → monitorer 7j.
+
 ﻿## FINITION DISTRIBUTION — [x] done (2026-09-11, gates verts, PR à créer)
 - **P0 /aujourdhui/** : today-pages.cjs (MQ+_gp data-driven, /hoy/ Tulum, anti-doublon natif US) + hooks build + sitemap daily 0.9 + maillage statique.
 - **P0 distribution** : verdict-du-jour.cjs (drafts 6 régions FB/WA/IG/Reddit/email, jamais d'envoi, prune 7 j) + workflow reservoir.

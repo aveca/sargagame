@@ -35,6 +35,8 @@ function svcHeaders(extra) {
 // beach_report/observation/beach_event/obs_smell (ground truth), b2b_widget_preview (widget).
 const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_close', 'beach_open', 'pass_cta', 'pass_offer_view', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back',
   'planb_view', 'planb_pick', 'beach_report', 'observation', 'beach_event', 'obs_smell', 'b2b_widget_preview',
+  // MA PLAGE view (2026-09-14) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
+  'ma_plage_open', 'ma_plage_fav_toggle', 'ma_plage_alerts_toggle', 'ma_plage_alerts_enable', 'ma_plage_premium_cta',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated', 'b2b_share',
   'b2b_paylink_click', 'b2b_tier_select', 'b2b_space_open']

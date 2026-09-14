@@ -129,18 +129,6 @@ function EnhancedAlternativeRow({ alt, rank, lang, onBeachClick, track, compact 
     ? _t(lang, 'PROPRE', 'CLEAN', 'LIMPIA')
     : _t(lang, 'MODÉRÉE', 'MODERATE', 'MODERADA');
 
-  const handleClick = (e) => {
-    e.stopPropagation();
-    if (track) track('sg_planb_pick', { 
-      from: beach.id,  // Note: beach is the current beach, not alt.beach
-      to: alt.beach.id, 
-      rank: idx 
-    });
-    if (onBeachClick) onBeachClick(alt.beach);
-  };
-
-  // We need access to the current beach for tracking - passed via context or closure
-  // For now, we'll use a simplified tracking
   const onClick = (e) => {
     e.stopPropagation();
     if (track) track('sg_planb_pick', { 
@@ -398,3 +386,5 @@ export function EnhancedVerdictBadge({ beach, lang = 'fr', size = 'normal' }) {
 }
 
 export { getVerdictLabel, buildVerdictDetail, findAlternatives };
+
+export default EnhancedAlternativesPanel;

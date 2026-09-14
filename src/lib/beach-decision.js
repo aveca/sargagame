@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 /**
  * Haversine distance in km
  */
-function haversineKm(lat1, lng1, lat2, lng2) {
+export function haversineKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
@@ -123,12 +123,17 @@ export function findAlternatives(beach, allBeaches, options = {}) {
     return [];
   }
 
+  // options peut être un objet {lang, maxAlternatives, ...} (canonique) ou une
+  // string lang legacy (alert-engine historique) — on normalise sans casser.
+  const opts = typeof options === 'string' ? { lang: options } : (options || {});
+  const lang = opts.lang || 'fr';
+
   const {
     maxAlternatives = 3,
     maxDistanceKm = 60,
     sameIslandOnly = true,
     includeModerate = true
-  } = options;
+  } = opts;
 
   const candidates = allBeaches.filter(b => {
     if (b.id === beach.id) return false;

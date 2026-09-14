@@ -102,6 +102,11 @@ const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
 const BeachDayReport=lazyWithRetry(()=>import("./components/BeachDayReport.jsx"))
 // Enhanced Alternatives Panel — 3 alternatives with distance, confidence, reason (P0)
 const EnhancedAlternativesPanel=lazyWithRetry(()=>import("./components/EnhancedAlternativesPanel.jsx"))
+// Ma Plage View — favorite beach with alerts & alternatives (P0)
+const MaPlageView=lazyWithRetry(()=>import("./components/MaPlageView.jsx"))
+// Flag rollback Ma Plage (module scope — lu par Header + App) : ?maplage=0 désactive
+// le bouton header + la vue (fiche/carte intactes).
+const MAPLAGE_OFF=(()=>{try{return /[?&]maplage=0/.test(window.location.search)}catch(_){return false}})()
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
@@ -2025,6 +2030,11 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_planb_view","sg_planb_pick",
   "sg_beach_report","sg_observation","sg_beach_event","sg_obs_smell",
   "sg_b2b_widget_preview",
+  // MA PLAGE view (2026-09-14) : ces events ÉTAIENT émis par MaPlageView mais JETÉS
+  // (absents du set → jamais loggés Supabase, piste commerciale aveugle). Couvre :
+  // ouverture vue, toggle favori, activation alertes, CTA premium.
+  "sg_ma_plage_open","sg_ma_plage_fav_toggle","sg_ma_plage_alerts_toggle",
+  "sg_ma_plage_alerts_enable","sg_ma_plage_premium_cta",
   // SPRINT 0 — Behavior Intelligence (2026-09-07) : scroll, visibility, dwell, intent
   "sg_beach_scroll_25","sg_beach_scroll_50","sg_beach_scroll_75","sg_beach_scroll_90",
   "sg_section_view","sg_section_consumed","sg_section_ignored",
@@ -3624,7 +3634,7 @@ function cachedFetch(url,cacheKey){
     return d
   })
 }
-function useWeather(beach){
+export function useWeather(beach){
   const[data,setData]=useState(null)
   useEffect(()=>{
     if(!beach)return setData(null)
@@ -4410,6 +4420,7 @@ export const COMIC={
   gold:"linear-gradient(180deg,#FFE47A,#FFC72C)",
 }
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
+export { comicStatusColor }
 // Statut = couleur + FORME-SVG + MOT (BIBLE trio). Forme en <path> (jamais l'Unicode ●/◐) :
 // ✓ propre (vert) · ◐ modéré (ambre) · ✕ alerte (corail). 2px ink → lisibilité <15px.
 function ComicStatusGlyph({status,size=12,color="#fff"}){
@@ -4574,10 +4585,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
   // illisible (grief fondateur 2026-07-01). Colonne centrée ≤560px au-delà de 720px,
   // mobile strictement inchangé. Rollback : ?deskfit=0.
   const deskFitOn=(()=>{try{return !/[?&]deskfit=0/.test(window.location.search)}catch(_){return true}})()
-  // Rapport plage du jour (HARD ASSET §PDF) : modale preview→download→share.
-  // Rollback ?report=0 → bouton + modale désactivés (fiche intacte).
-  const REPORT_OFF=(()=>{try{return /[?&]report=0/.test(window.location.search)}catch(_){return false}})()
-  const [showReport,setShowReport]=useState(false)
+// Rapport plage du jour (HARD ASSET §PDF) : modale preview→download→share.
+// Rollback ?report=0 → bouton + modale désactivés (fiche intacte).
+const REPORT_OFF=(()=>{try{return /[?&]report=0/.test(window.location.search)}catch(_){return false}})()
+const [showReport,setShowReport]=useState(false)
   return(
     <>
       <style>{`
@@ -7493,7 +7504,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,stale,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,stale,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts,onOpenMaPlage}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
   // paywall). Répond au « aucun tracking de mon paiement sur le site ». Flag rollback
@@ -7596,6 +7607,16 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle cx="12" cy="8" r="3.4" stroke="currentColor" strokeWidth="2"/>
               <path d="M5.5 19.5a6.5 6.5 0 0 1 13 0" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              {isPremium&&<circle cx="18" cy="6" r="2.4" fill="#FFC72C" stroke="#0d0b14" strokeWidth="1.2"/>}
+            </svg>
+          </button>
+        )}
+        {/* Ma Plage button — opens favorite beach with alerts & alternatives */}
+        {!MAPLAGE_OFF&&onOpenMaPlage&&(
+          <button onClick={onOpenMaPlage} aria-label={_t(lang,"Ma plage","My beach","Mi playa")}
+            title={_t(lang,"Ma plage — verdict, alertes, alternatives","My beach — verdict, alerts, alternatives","Mi playa — veredicto, alertas, alternativas")}>
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
               {isPremium&&<circle cx="18" cy="6" r="2.4" fill="#FFC72C" stroke="#0d0b14" strokeWidth="1.2"/>}
             </svg>
           </button>
@@ -11461,6 +11482,8 @@ export default function App(){
   const _fcQuotaConsume=(id)=>{try{localStorage.setItem("sg_fc_quota",JSON.stringify({day:FContract.localDayKey(),beachId:id}))}catch(_){}}
   const[showPremium,setShowPremium]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
+  // MA PLAGE — état App (le bouton Header + la vue partagent ce state ; rollback ?maplage=0).
+  const[showMaPlage,setShowMaPlage]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
   const[showB2BChat,setShowB2BChat]=useState(false) // concierge B2B (SargaChatB2B)
@@ -14457,7 +14480,8 @@ useEffect(()=>{
                 }
               }}
               onEnableNotif={()=>forceEnablePush("header")}
-              alertsOn={alertsOn} onToggleAlerts={toggleAlerts}/>
+              alertsOn={alertsOn} onToggleAlerts={toggleAlerts}
+              onOpenMaPlage={()=>{setShowMaPlage(true);track("sg_ma_plage_open",{source:"header"})}}/>
           </div>
         </div>
         {/* RegionNav — separate fixed bar below header chrome (z-index 2001) to stay above map content but below header.
@@ -14727,6 +14751,23 @@ useEffect(()=>{
           onManage={()=>{setShowAccount(false);openAccessCheck("account")}}
           onUpgrade={()=>{setShowAccount(false);openPremium("account")}}
           supportEmail={SUPPORT_EMAIL} track={track}/></Suspense></ErrBound>}
+        {/* MA PLAGE — favorite beach with alerts & alternatives (P0) */}
+        {showMaPlage&&!MAPLAGE_OFF&&(
+          <ErrBound><Suspense fallback={null}><MaPlageView
+            lang={lang}
+            allBeaches={allBeaches}
+            sargData={sargData}
+            userPos={userPos}
+            onClose={()=>setShowMaPlage(false)}
+            onPremiumClick={openPremium}
+            isPremium={isPremium}
+            track={track}
+            onBeachClick={onBeachClick}
+            onEnableAlerts={()=>forceEnablePush("ma_plage")}
+            alertsOn={alertsOn}
+            onToggleAlerts={toggleAlerts}
+          /></Suspense></ErrBound>
+        )}
         {/* JOURNAL DU VEILLEUR — nouveautés pour visiteurs qui reviennent (gated wn1).
             Garde-fous : jamais par-dessus le hero/paywall/fiche ouverte. */}
         {whatsNew&&!showHero&&!showPrevLanding&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(

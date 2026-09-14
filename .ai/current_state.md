@@ -1,3 +1,41 @@
+## 2026-09-14 21:30 UTC · Agent: coding-agent (conversion/payants)
+
+### Travail effectué
+- **Résumé 1 ligne** : Ma Plage view shippée + 4 bugs P0/P1 runtime corrigés (scope, lang, lazy, météo), gates verts, prêt merge/deploy.
+- **Détails** : voir .ai/changelog.md (entrée 2026-09-14). Funnel 11/09 : sessions 96 → modal 28 → CTA 5 (17,9 %) → onsite 5 → redirect Mollie 0 → conversion 0 ; micro-échantillon, pas de casse code prouvée (doSubscribe/walletRedirect intacts) → monitorer, pas toucher Mollie. Data : pipeline OK (remote 2026-09-13, run ~25h) ; satellite 2026-09-12 ~33h, stale=true affiché honnêtement (vérification en cours + badge retard) — rien à corriger côté code.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — MAPLAGE_OFF module scope, showMaPlage state App, 5 events allowlist
+- `src/components/MaPlageView.jsx` (NOUVEAU) — vue Ma Plage (verdict, confiance, fraîcheur, alternatives, alertes, CTA premium), rollback ?maplage=0
+- `src/components/EnhancedAlternativesPanel.jsx` — export default + dead handler supprimé
+- `src/lib/beach-decision.js` — findAlternatives lang normalisé (EN/ES fix)
+- `src/lib/alert-engine.js` (NOUVEAU) — appels {lang} + messages corrigés
+- `scripts/automation/funnel-from-supabase.cjs`, `daily-stats-check.cjs` — FUNNEL_KEYS +5 ma_plage
+- `public/api/b2b-partners.json` — régénéré build (updatedAt)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (384 modules)
+- [x] check-bundle-budget → 37.9 Ko ≤ 210 Ko
+- [x] php -l → N/A (0 .php touché)
+- [x] E2E funnel-payment 13/13 + j0-contract 51/51 + unit 117/119 (2 fails = worktrees préexistants)
+- [x] MaPlage preview : bouton visible, ouverture vide/favori OK, rollback ?maplage=0 OK, 0 pageerror
+- [ ] ux-smoke canonique 4 tokens → preview persistant indisponible ici ; couvert par E2E équivalent + CI post-push
+
+### Problèmes restants
+- [ ] Satellite ERDDAP ~33h (stale=true, badge honnête affiché) — Sévérité : suivi — action : vérifier prochain run pipeline quotidien (hors mission comme axe)
+- [ ] Fuite onsite→Mollie 5→0 (11/09, N=5) — Sévérité : à monitorer — action : suivre ma_plage_* + onsite events 7j
+
+### Prochaine action recommandée
+1. Merge + deploy (push main → deploy-live) + vérifier live 6 domaines + Ma Plage — Rôle : release
+2. Monitorer 7j : ma_plage_open→fav→alerts→premium_cta vs CTA classique — Rôle : growth/data
+3. Relancer pipeline si stale >72h (run manuel ciblé, pas d'axe de travail) — Rôle : data
+
+### Branche / PR
+- Branche : main (direct, mandat fondateur)
+- Commit head : (après commit)
+
+---
+
 ## 2026-09-11 · Agent: coding-agent · FINITION DISTRIBUTION IMPLÉMENTÉE, GATES VERTS
 
 ### Travail effectué

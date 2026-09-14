@@ -216,7 +216,7 @@ async function fetchFunnelFromSupabase() {
   // historique. + onsite_checkout_opened / pay_onsite_back (overlay carte) chaînon manquant.
   // J0-J30 : + pass_offer_view (CTA vu), planb_view/pick (alternative), beach_report +
   // observation (ground truth), b2b_widget_preview (widget). Comptés, jamais filtrés.
-  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'pass_offer_view', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back', 'planb_view', 'planb_pick', 'beach_report', 'observation', 'b2b_widget_preview']
+  const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta', 'pass_cta', 'pass_offer_view', 'conversion', 'email_submit', 'mollie_checkout_redirect', 'checkout_redirect', 'onsite_checkout_opened', 'pay_onsite_back', 'planb_view', 'planb_pick', 'beach_report', 'observation', 'b2b_widget_preview', 'ma_plage_open', 'ma_plage_fav_toggle', 'ma_plage_alerts_toggle', 'ma_plage_alerts_enable', 'ma_plage_premium_cta']
   const counts = {}
   for (const k of FUNNEL_KEYS) counts[k] = 0
   const PAGE = 1000
