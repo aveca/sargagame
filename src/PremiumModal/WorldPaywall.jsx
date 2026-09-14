@@ -196,9 +196,10 @@ export function WorldPaywall({
         "Desbloquear acceso mundial"
       ),
       features: [
-        t("5 régions • 136+ plages • Score 0-100", "5 regions • 136+ beaches • Score 0-100", "5 regiones • 136+ playas • Puntuación 0-100"),
-        t("Satellite Copernicus • Données 4×/jour", "Copernicus satellite • Data 4×/day", "Satélite Copernicus • Datos 4×/día"),
-        t("Prévisions J+7 • Alertes push gratuites", "J+7 forecasts • Free push alerts", "Previsiones J+7 • Alertas push gratis")
+        t("🏖️ 136+ plages · Score 0-100 · 5 régions", "🏖️ 136+ beaches · Score 0-100 · 5 regions", "🏖️ 136+ playas · Puntuación 0-100 · 5 regiones"),
+        t("🛰️ Satellite Copernicus · Données 4×/jour", "🛰️ Copernicus satellite · Data 4×/day", "🛰️ Satélite Copernicus · Datos 4×/día"),
+        t("🔔 Alerte le jour où ta plage bascule", "🔔 Alert the day your beach flips", "🔔 Alerta el día que tu playa cambia"),
+        t("💰 Un prix unique · Pas d'abonnement", "💰 One price · No subscription", "💰 Un precio único · Sin suscripción")
       ]
     }
     

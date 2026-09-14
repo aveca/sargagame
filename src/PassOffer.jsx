@@ -98,7 +98,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               boxShadow: isComic ? "3px 3px 0 #0D0B14" : "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: isComic ? "2px solid #0D0B14" : "none",
             }}>
-              {_t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
+              {_t(lang, "Voir mes plages propres →", "See my clean beaches →", "Ver mis playas limpias →")}
             </span>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -157,7 +157,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
           <span style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
-            {_t(lang, `Débloquer · ${money(displayCents, cur, lang)}`, `Unlock · ${money(displayCents, cur, lang)}`, `Desbloquear · ${money(displayCents, cur, lang)}`)}
+            {_t(lang, `Voir mes plages propres · ${money(displayCents, cur, lang)}`, `See clean beaches · ${money(displayCents, cur, lang)}`, `Ver playas limpias · ${money(displayCents, cur, lang)}`)}
           </span>
           <span className={uxLot4?"sg-sticky-badges":undefined} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="lock" size={10}/> Mollie</span><span aria-hidden="true">·</span>
