@@ -7,6 +7,7 @@
  */
 import React, { useState, useEffect, useMemo } from "react"
 import PassOffer from "../PassOffer.jsx"
+import ComicIcon from "../components/ComicIcons.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
 import { VeilleurMark } from "./VeilleurMark.jsx"
@@ -195,11 +196,13 @@ export function WorldPaywall({
         "Unlock worldwide access",
         "Desbloquear acceso mundial"
       ),
+      // Pictos = set SVG maison (Bible v1 : JAMAIS d'emoji OS — voir BADGE_ICONS
+      // ci-dessus). Wording inchangé (mesure CTA en cours, ne pas y toucher).
       features: [
-        t("🏖️ 136+ plages · Score 0-100 · 5 régions", "🏖️ 136+ beaches · Score 0-100 · 5 regions", "🏖️ 136+ playas · Puntuación 0-100 · 5 regiones"),
-        t("🛰️ Satellite Copernicus · Données 4×/jour", "🛰️ Copernicus satellite · Data 4×/day", "🛰️ Satélite Copernicus · Datos 4×/día"),
-        t("🔔 Alerte le jour où ta plage bascule", "🔔 Alert the day your beach flips", "🔔 Alerta el día que tu playa cambia"),
-        t("💰 Un prix unique · Pas d'abonnement", "💰 One price · No subscription", "💰 Un precio único · Sin suscripción")
+        { icon: "palm", text: t("136+ plages · Score 0-100 · 5 régions", "136+ beaches · Score 0-100 · 5 regions", "136+ playas · Puntuación 0-100 · 5 regiones") },
+        { icon: "orbit", text: t("Satellite Copernicus · Données 4×/jour", "Copernicus satellite · Data 4×/day", "Satélite Copernicus · Datos 4×/día") },
+        { icon: "bell", text: t("Alerte le jour où ta plage bascule", "Alert the day your beach flips", "Alerta el día que tu playa cambia") },
+        { icon: "bank", text: t("Un prix unique · Pas d'abonnement", "One price · No subscription", "Un precio único · Sin suscripción") }
       ]
     }
     
@@ -496,12 +499,15 @@ export function WorldPaywall({
               border: "1px solid rgba(255,255,255,.06)",
               borderRadius: 10
             }}>
+              <span style={{ display: "inline-flex", flexShrink: 0, color: "#FFC72C" }} aria-hidden="true">
+                <ComicIcon name={feat.icon} size={15} />
+              </span>
               <span style={{
                 color: "rgba(255,255,255,.8)", fontSize: 12,
                 fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
                 fontWeight: 500
               }}>
-                {feat}
+                {feat.text}
               </span>
             </div>
           ))}

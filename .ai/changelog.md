@@ -1,3 +1,7 @@
+## 2026-09-14 — UX/CONVERSION visuel (P0 friction paiement + P1 système visuel)
+
+**Agent** : coding-agent (mission product-experience). **Preuves visuelles** : 9 screenshots 390px (home/carte/fiche/Ma Plage/paywall/checkout) + mesures (0 tap <44px, 0 pageerror). **Fix visuels uniquement, 0 logique métier/paiement/data** : OnsiteCheckout labels email MOL_FIELD→MOL_LABEL (le label ressemblait à un 2e champ vide) ; WorldPaywall features emoji→ComicIcon (palm/orbit/bell/bank, restaure passe glyphes) ; MaPlageView hero scène golden-hour + Veilleur 118 (?maplage=0 couvre) ; WorldMapView drift nowrap anti-orphelin (?maphero=0 couvre). **Flow paiement mesuré** : 2 clics vers formulaire (email+4 Mollie+consent+ Payer), déjà minimal → non touché. **Gates** : build 384 · bundle 37.9 · E2E 13/13 · j0 51/51.
+
 ## 2026-09-14 — MA PLAGE VIEW SHIPPÉE + FIXES P0 RUNTIME (beach-decision lang, lazy defaults, scope App)
 
 **Agent** : coding-agent (mission conversion/payants). **Racine** : working tree avec MaPlageView non committée qui cassait l'app (showMaPlage/MAPLAGE_OFF déclarés dans BeachSheetComic mais lus par Header/App → ReferenceError), findAlternatives() plantait en ReferenceError: lang (raisons alternatives jamais rendues, EN/ES forcées FR), MaPlageView/Boostrap alternatives lazy sans export default (ErrBound à l'ouverture), endpoint météo /api/weather inexistant (404), Suspense non importé, useSwipeClose appelé sans onClose.

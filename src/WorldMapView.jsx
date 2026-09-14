@@ -2071,7 +2071,7 @@ export default function WorldMapView({
                 <span style={{display:"block",font:"800 15px/1.1 'Bricolage Grotesque',sans-serif",color:INK,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{best.name}</span>
                 <span style={{display:"flex",alignItems:"center",gap:6,marginTop:3,font:"700 11px/1.2 'Bricolage Grotesque',sans-serif",color:INK}}>
                   <i style={{width:8,height:8,borderRadius:"50%",background:bcol,border:`1px solid ${INK}`,flexShrink:0}}/>
-                  {verdict}{driftT&&<>&nbsp;·&nbsp;<b>{driftT}</b></>}
+                  <span style={{flex:1,minWidth:0}}>{verdict}{driftT&&<span style={{whiteSpace:"nowrap"}}>&nbsp;·&nbsp;<b>{driftT}</b></span>}</span>
                 </span>
                 {fresh&&<span className={uxLot9?"sg-hero-fresh":undefined} style={{display:"block",font:"600 9.5px/1.2 'Bricolage Grotesque',sans-serif",color:"#6b6478",marginTop:3}}>{fresh}</span>}
               </span>

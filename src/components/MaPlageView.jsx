@@ -222,11 +222,16 @@ export function MaPlageView({
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
         
-        {/* ── HERO: golden-hour scene + beach name ── */}
-        <div style={{position:'relative',height:'min(480px,46svh)',overflow:'hidden',borderRadius:'0 0 26px 26px',margin:'-10px -16px 0'}}>
-          <div style={{position:'absolute',inset:0,background:`linear-gradient(180deg, ${COMIC.ink}0d 0%, transparent 35%, transparent 50%, rgba(0,0,0,.5) 100%)`}} />
-          <div style={{position:'absolute',top:'38%',left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
-            <Veilleur mood={beach.status === 'clean' ? 'serein' : beach.status === 'moderate' ? 'scan' : 'alerte'} size={72} />
+        {/* ── HERO: scène golden-hour + Veilleur + nom plage (même univers que
+            les fiches : fondargen, pas de vide beige). 100 % statique côté data
+            (dégradé + mascotte), verdict réel par-dessus. Rollback ?maplage=0. ── */}
+        <div style={{position:'relative',height:'min(480px,46svh)',overflow:'hidden',borderRadius:'0 0 26px 26px',margin:'-10px -16px 0',
+          background:'linear-gradient(180deg,#0B2230 0%,#155A5A 42%,#C97E3A 78%,#F2B05E 100%)'}}>
+          <div aria-hidden="true" style={{position:'absolute',left:'50%',top:'16%',width:120,height:120,transform:'translateX(-50%)',
+            background:'radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,rgba(232,148,0,0) 72%)',opacity:.9}} />
+          <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg, rgba(11,34,48,.25) 0%, transparent 35%, transparent 50%, rgba(0,0,0,.55) 100%)'}} />
+          <div style={{position:'absolute',top:'30%',left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
+            <Veilleur mood={beach.status === 'clean' ? 'serein' : beach.status === 'moderate' ? 'scan' : 'alerte'} size={118} />
           </div>
           <div style={{position:'absolute',bottom:20,left:20,right:20,zIndex:1}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:'clamp(28px,8vw,42px)',lineHeight:.92,color:'#fff',textTransform:'uppercase',letterSpacing:'-.3px',textShadow:'0 2px 16px rgba(0,0,0,.5)',wordBreak:'break-word'}}>{beach.name}</div>

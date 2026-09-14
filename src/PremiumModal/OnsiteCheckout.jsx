@@ -350,12 +350,15 @@ export function OnsiteCheckout({
           />
         )}
 
-        {/* Email EN PREMIER (avant wallets et carte) — l'accès est lié à l'email */}
+        {/* Email EN PREMIER (avant wallets et carte) — l'accès est lié à l'email.
+            Note : le libellé utilise MOL_LABEL (pas MOL_FIELD — la boîte sombre
+            héberge l'iframe, pas le texte ; un label "boîte" ressemble à un 2e
+            champ vide et fait croire à une double saisie). */}
         {!PAY_CAPTURE_ONLY && (
           <div style={{ marginBottom: 14 }}>
             <label style={{
-              ...MOL_FIELD,
-              color: isComic ? "#0D0B14" : MOL_FIELD.color
+              ...MOL_LABEL,
+              color: isComic ? "#0D0B14" : MOL_LABEL.color
             }}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
             <input
               ref={payEmailRef}
@@ -380,8 +383,8 @@ export function OnsiteCheckout({
         {PAY_CAPTURE_ONLY && (
           <div style={{ marginBottom: 14 }}>
             <label style={{
-              ...MOL_FIELD,
-              color: isComic ? "#0D0B14" : MOL_FIELD.color
+              ...MOL_LABEL,
+              color: isComic ? "#0D0B14" : MOL_LABEL.color
             }}>{_t(lang, "E-mail (reçu d'accès)", "Email (access receipt)", "Email (recibo de acceso)")}</label>
             <input
               ref={payEmailRef}
