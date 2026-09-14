@@ -49,7 +49,44 @@ function pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, alte
   }
   
   if (robots) html = html.replace(/<meta name="robots"[^>]*>\s*/gi, '');
-  html = html.replace('</head>', `${robots ? `<meta name="robots" content="${robots}" />\n` : ''}${altBlock}\n${ld}\n${videoMeta ? videoMeta + '\n' : ''}</head>`);
+  // Share with UTM tracking function (inline script for all generated pages)
+  const shareScript = `<script>
+function shareWithUTM(platform) {
+  const url = new URL(window.location.href);
+  // Add UTM params for tracking
+  url.searchParams.set('utm_source', platform);
+  url.searchParams.set('utm_medium', 'social');
+  url.searchParams.set('utm_campaign', 'beach_share');
+  url.searchParams.set('utm_content', 'beach_share');
+  const shareUrl = url.toString();
+  
+  const urls = {
+    whatsapp: 'https://wa.me/?text=' + encodeURIComponent(shareUrl + ' — ' + document.title),
+    facebook: 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(shareUrl),
+    twitter: 'https://twitter.com/intent/tweet?url=' + encodeURIComponent(shareUrl) + '&text=' + encodeURIComponent(document.title + ' — ' + shareUrl),
+    email: 'mailto:?subject=' + encodeURIComponent(document.title) + '&body=' + encodeURIComponent(shareUrl),
+    copy: async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Lien copié !');
+      } catch (e) {
+        const input = document.createElement('input');
+        input.value = shareUrl;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        alert('Lien copié !');
+      }
+    };
+  
+  if (platform === 'copy') {
+    urls.copy();
+  } else if (urls[platform]) {
+    window.open(urls[platform], '_blank', 'noopener,noreferrer');
+  }
+}</script>`;
+  html = html.replace('</head>', shareScript + '\n' + (robots ? `<meta name="robots" content="${robots}" />\n` : '') + altBlock + '\n' + ld + (videoMeta ? videoMeta + '\n' : '') + '</head>');
   html = html.replace('<div id="root">', `<noscript>${noscript}</noscript>\n<div id="root">`);
   return html;
 }
@@ -254,6 +291,36 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
 <p>Mise à jour satellite Copernicus 4×/jour. Données mesurées au large de cette plage.</p>
 <h2>${t.forecast}</h2><ul style="list-style:none;padding:0">${forecastHtml}</ul>
 ${nearbyHtml}${resortHtml}${factsHtml}${activitiesHtml}
+
+<!-- ═══ PARTAGE / REFERRAL — UTM tracking natif, zéro dépendance ═══ -->
+<section style="margin:1.5em 0;padding:1.5em;background:#fef9e7;border:2px solid #FFC72C;border-radius:12;text-align:center">
+  <h3 style="font:800 14px/1.3 'Bricolage Grotesque';color:#B87A00;margin:0 0 12px;">Partager cette plage</h3>
+  <p style="font:500 13px/1.5 'Bricolage Grotesque';color:#444;margin:0 0 16px;">Aidez vos amis à choisir la meilleure plage aujourd'hui</p>
+  <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
+    <button onclick="shareWithUTM('whatsapp')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:10px;background:#25D366;color:#fff;font:800 14px/1 'Bricolage Grotesque';border:none;cursor:pointer;box-shadow:0 2px 0 #1db954" onmouseover="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M17.47 5.45c-.88.39-1.84.64-2.83.73-1.17-.55-2.53-.88-3.94-.88-3.75 0-6.81 3.06-6.81 6.82 0 .53.06 1.05.17 1.55-5.67-.28-10.7-3-11.9-7.1-.1-.64-.03-1.28.3-1.82 2.28.32 4.54 2.41 5.37 5.41-.77.02-1.51-.19-2.12-.52v.07c-2.78 1.51-4.73 4.79-4.41 8.2.4 2.3 1.9 4.3 4.5 4.82-1.66-.04-3.2-.7-4.44-1.86-.12.43-.18.86-.18 1.3 0 2.77 1.92 5.1 4.5 5.64-2.7 0-5.2-1.34-6.82-3.3.47.64.75 1.35.75 2.1 0 2.1-.17 4.2-.47 6.2 3.5 3.8 8.9 3.1 13.7 0 8.3-5.5 11.6-11.6 0-.18 0-.36-.02-.53.8-.55 1.5-1.7 2.1-2.9.9-.6 1.7-1.5 2.4-2.4 1.2z"/></svg>
+      <span>WhatsApp</span>
+    </button>
+    <button onclick="shareWithUTM('facebook')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:10px;background:#1877F2;color:#fff;font:800 13px/1 'Bricolage Grotesque';border:none;cursor:pointer;box-shadow:0 2px 0 #166FE5" onmouseover="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+      <span>Facebook</span>
+    </button>
+    <button onclick="shareWithUTM('twitter')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:10px;background:#1DA1F2;color:#fff;font:800 13px/1 'Bricolage Grotesque';border:none;cursor:pointer;box-shadow:0 2px 0 #0C85D0" onmouseover="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M18.2 6.1c-.7.3-1.5.5-2.3.6.8-.5 1.4-1.3 1.7-2.2-.6.5-1.4.8-2.2 1-.6-.4-1.3-.7-2-.8-.4 1.4-.4 2.7-.4 4.2 0 3.1 1.6 5.8 4 6.5-2.1-.1-4-1.5-5.2-3.5-.1.5-.1 1-.1 1.5 0 2.7 1.9 4.9 4.5 5.4-.3 0-.6-.1-.9-.2C15 18 12 18.6 8.5 18.6c-2.4 0-4.6-.7-6.4-2-.3.5-.6 1-.6 1.5 0 2.2 1.1 4.2 2.8 5.4-.6 0-.7-.2-1-.5 0 3.3 2.5 6.1 5.8 6.7-.6.1-.8.1-1.2.1 0 .1 0 .1-.1.2.5.9 1.9 2.4 4.5.9"/></svg>
+      <span>Twitter</span>
+    </button>
+    <button onclick="shareWithUTM('email')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:10px;background:#0D0D0D;color:#fff;font:800 13px/1 'Bricolage Grotesque';border:none;cursor:pointer;box-shadow:0 2px 0 #000" onmouseover="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      <span>Email</span>
+    </button>
+    <button onclick="shareWithUTM('copy')" style="display:inline-flex;align-items:center;gap:8px;padding:12px 18px;border-radius:10px;background:#0D0D0D;color:#fff;font:800 13px/1 'Bricolage Grotesque';border:none;cursor:pointer;box-shadow:0 2px 0 #000" onmouseover="this.style.transform='translateY(-1px)'" onmouseleave="this.style.transform='translateY(0)'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span>Copier</span>
+    </button>
+  </div>
+  <p style="font:11px/1.4 'Bricolage Grotesque';color:#888;margin:12px 0 0">Chaque partage contient un lien UTM unique pour mesurer l'impact</p>
+</section>
+
 <h2>${t.viewMap}</h2><p><a href="/">${t.home}</a> · <a href="/${t.beachesDir}/">${t.allBeaches}</a></p></article>`;
 
   const jsonLd = [{

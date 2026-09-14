@@ -342,7 +342,12 @@ export function MaPlageView({
                   RHUMZ vous y emmène
                 </div>
               </div>
-              <button onClick={() => { try { track('sg_transport_cta', { beach_id: beach.id, partner: 'rhumz' }) } catch (_) {}; window.open('https://rhumz.com', '_blank', 'noopener,noreferrer') }}
+              <button onClick={() => { 
+                try { track('sg_transport_cta', { beach_id: beach.id, partner: 'rhumz' }) } catch (_) {}; 
+                // Use RHUMZ reservation page with beach context for better UX
+                const rhumzUrl = `https://www.rhumz.com/reservation/?destination=${encodeURIComponent(beach.name)}&island=${beach.island}`;
+                window.open(rhumzUrl, '_blank', 'noopener,noreferrer'); 
+              }}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 6,
                   padding: '10px 14px', borderRadius: 12,
@@ -355,7 +360,7 @@ export function MaPlageView({
                 onMouseUp={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
                 onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
               >
-                <span>Ouvrir RHUMZ</span>
+                <span>Réserver avec RHUMZ</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
               </button>
             </div>

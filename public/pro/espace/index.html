@@ -804,14 +804,74 @@
       }catch(_){}
       try{if(!silent)sgEv("sg_b2b_tier_select",{tier:PLAN_MO,source:"espace"});}catch(_){}
     }
-    // Demo button handler
+    // Demo button handler — capture lead instead of just opening preview
     $("demoBtn").addEventListener("click",function(){
       try{sgEv("sg_b2b_demo_cta",{source:"espace"});}catch(_){}
-      // Ouvre l'aperçu démo avec la plage de l'hôtel si dispo, sinon première plage
+      // Open lead capture modal instead of preview
+      const leadModal = document.createElement('div');
+      leadModal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+      leadModal.innerHTML = `
+        <div style="background:white;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,.3);position:relative;">
+          <button onclick="this.closest('div').remove()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:none;font-size:24px;cursor:pointer;color:#666;">×</button>
+          <h3 style="font:800 20px/1.2 'Bricolage Grotesque',sans-serif;color:#0D0B14;margin:0 0 8px;">Voir un exemple pour votre établissement</h3>
+          <p style="font:400 14px/1.5 system-ui,sans-serif;color:#444;margin:0 0 20px;">Choisissez une plage, nous générons l'aperçu widget + brief PDF pour votre établissement.</          >
+          <form id="demoLeadForm" style="display:flex;flex-direction:column;gap:12px;">
+            <input type="email" id="demoEmail" placeholder="votre@email.com" required style="padding:12px 14px;border:2px solid #ddd;border-radius:8px;font:16px system-ui,sans-serif;" autocomplete="email">
+            <input type="text" id="demoHotel" placeholder="Nom de votre établissement" style="padding:12px 14px;border:2px solid #ddd;border-radius:8px;font:16px system-ui,sans-serif;">
+            <select id="demoBeach" style="padding:12px 14px;border:2px solid #ddd;border-radius:8px;font:16px system-ui,sans-serif;">
+              <option value="">Sélectionnez une plage</option>
+            </select>
+            <button type="submit" style="background:#FFC72C;color:#0D0B14;font:800 16px/1 'Bricolage Grotesque',sans-serif;padding:14px;border:none;border-radius:10px;cursor:pointer;box-shadow:2px 2px 0 #0D0B14;">Recevoir l'exemple →</button>
+            <p style="font:12px/1.4 system-ui,sans-serif;color:#666;text-align:center;margin:0;">Sans engagement · Réponse sous 24h ouvrées</p>
+          </form>
+        </div>
+      `;
+      document.body.appendChild(leadModal);
+      // Populate beach select
+      const select = leadModal.querySelector('#demoBeach');
       const demoSlug = SLUG2ID[beachSlug] || BEACHES[0][0];
-      setPreviewLink(demoSlug, DOMAIN);
-      const win = window.open("https://"+DOMAIN+"/?preview_partner=demo&preview_name="+encodeURIComponent(nm.value||"Hôtel Démonstration")+"&preview_beach="+encodeURIComponent(demoSlug), '_blank', 'noopener,noreferrer');
-      if(win) win.focus();
+      BEACHES.forEach(b => {
+        const opt = document.createElement('option');
+        opt.value = b[0];
+        opt.textContent = b[2] + (b[3] === 'GP' ? ' (GP)' : '');
+        if (b[0] === demoSlug) opt.selected = true;
+        select.appendChild(opt);
+      }
+      // Form submit
+      leadModal.querySelector('#demoLeadForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = leadModal.querySelector('#demoEmail').value.trim();
+        const hotel = leadModal.querySelector('#demoHotel').value.trim();
+        const beachId = leadModal.querySelector('#demoBeach').value;
+        if (!email || !email.includes('@') || !hotel || !beachId) return;
+        const btn = leadModal.querySelector('button[type="submit"]');
+        btn.disabled = true; btn.textContent = 'Envoi…';
+        try {
+          const res = await fetch('https://' + DOMAIN + '/api/b2b-lead.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, hotel, beach: beachId, source: 'demo_button', demo: true })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (data.ok) {
+            leadModal.innerHTML = `
+              <div style="background:white;border-radius:16px;padding:32px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.3);">
+                <div style="font-size:48px;margin-bottom:12px;">✓</div>
+                <h3 style="font:800 20px/1.2 'Bricolage Grotesque',sans-serif;color:#0D0B14;margin:0 0 8px;">C'est noté !</h3>
+                <p style="font:400 15px/1.5 system-ui,sans-serif;color:#444;margin:0 0 24px;">Nous allons préparer l'exemple pour <strong>${hotel}</strong> sur la plage sélectionnée et vous l'envoyer par email sous 24h.</p>
+                <button onclick="this.closest('div').remove()" style="background:#FFC72C;color:#0D0B14;font:800 16px/1 'Bricolage Grotesque',sans-serif;padding:14px 28px;border:none;border-radius:10px;cursor:pointer;box-shadow:2px 2px 0 #0D0B14;">Fermer</button>
+              `;
+            try { sgEv("sg_b2b_lead_submit", { source: "espace", hotel, beach: beachId }); } catch (_) {}
+          } else {
+            btn.disabled = false; btn.textContent = 'Réessayer';
+            alert('Erreur : ' + (data.error || 'Inconnue'));
+          }
+        } catch (err) {
+          btn.disabled = false; btn.textContent = 'Réessayer';
+          alert('Erreur réseau');
+        }
+      });
+      document.body.appendChild(leadModal);
     });
     function setTierInit(){
       // État par défaut sans event (pas de faux tier_select au chargement).
