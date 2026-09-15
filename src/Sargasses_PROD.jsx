@@ -104,6 +104,10 @@ const BeachDayReport=lazyWithRetry(()=>import("./components/BeachDayReport.jsx")
 const EnhancedAlternativesPanel=lazyWithRetry(()=>import("./components/EnhancedAlternativesPanel.jsx"))
 // Ma Plage View — favorite beach with alerts & alternatives (P0)
 const MaPlageView=lazyWithRetry(()=>import("./components/MaPlageView.jsx"))
+// PRODUCT UX RESET (2026-09-15) — nouvelle IA mobile-first : Accueil/Plages/Carte/Ma Plage/Pass.
+// Lazy → hors bundle eager. Rollback global ?newia=0 (retombe sur BottomNav 3 onglets historique).
+const LazyExperienceReset=lazyWithRetry(()=>import("./components/ExperienceReset.jsx"))
+const NEWIA_OFF=(()=>{try{return /[?&]newia=0/.test(window.location.search)}catch(_){return false}})()
 // Flag rollback Ma Plage (module scope — lu par Header + App) : ?maplage=0 désactive
 // le bouton header + la vue (fiche/carte intactes).
 const MAPLAGE_OFF=(()=>{try{return /[?&]maplage=0/.test(window.location.search)}catch(_){return false}})()
@@ -2047,7 +2051,10 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // HARD ASSET REQUIREMENT (2026-09-07) : SVG=comprendre, GIF=raconter (drift
   // strip SVG animé, path préféré §3), PDF=objet (Rapport plage du jour).
   "sg_svg_view","sg_gif_view",
-  "sg_pdf_preview","sg_pdf_open","sg_pdf_download","sg_pdf_share"])
+  "sg_pdf_preview","sg_pdf_open","sg_pdf_download","sg_pdf_share",
+  // PRODUCT UX RESET (2026-09-15) : navigation 5 onglets + comparateur + exploration.
+  "sg_nav_tab","sg_compare_add","sg_compare_open","sg_plages_filter","sg_home_best_open",
+  "sg_suivi_alert_toggle"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
@@ -3020,6 +3027,39 @@ function SciFooter({lang}){
 }
 
 function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=false}){
+  // PRODUCT UX RESET : 5 onglets (Accueil/Plages/Carte/Ma Plage/Pass) sauf ?newia=0.
+  if(!NEWIA_OFF){
+    const LL=T[lang]||T.fr
+    const tabs=[
+      {id:"home",label:_t(lang,"Accueil","Home","Inicio"),g:"⌂"},
+      {id:"list",label:LL.navList,g:"≈"},
+      {id:"map",label:LL.navMap,g:"◉"},
+      {id:"suivi",label:"Ma Plage",g:"★"},
+      {id:"premium",label:LL.navPremium,g:"◆"},
+    ]
+    if(isPremium) return(
+      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"8px 4px max(12px,env(safe-area-inset-bottom))"}}>
+        {tabs.filter(t=>t.id!=="premium").map(t=>{
+          const active=(view===t.id)||(t.id==="map"&&view==="map");
+          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,fontWeight:active?800:700,padding:"4px 10px",minHeight:48,minWidth:56,justifyContent:"center",opacity:active?1:.75}}>
+            {active&&<div style={{position:"absolute",top:-2,width:24,height:3,borderRadius:2,background:C.gold}}/>}
+            <span style={{fontSize:20,lineHeight:1}}>{t.g}</span><span>{t.label}</span>
+          </button>)})}
+      </nav>
+    )
+    return(
+      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"8px 4px max(12px,env(safe-area-inset-bottom))"}}>
+        {tabs.map(t=>{
+          const active=t.id==="premium"?premiumOpen:(view===t.id);
+          const isPr=t.id==="premium"
+          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:isPr?12:12,fontWeight:active?800:700,padding:"4px 8px",position:"relative",minHeight:48,minWidth:isPr?60:52,justifyContent:"center",opacity:active?1:.78}}>
+            {active&&<div style={{position:"absolute",top:-2,width:24,height:3,borderRadius:2,background:C.gold}}/>}
+            <span style={isPr?{width:30,height:30,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",background:active?"linear-gradient(135deg,#FFC72C,#E8A800)":"#FFE47A",border:"2px solid var(--sg-ink,#0d0b14)",boxShadow:"2px 2px 0 var(--sg-ink,#0d0b14)",fontSize:15}:{fontSize:20,lineHeight:1}}>{t.g}</span>
+            <span>{t.label}</span>
+          </button>)})}
+      </nav>
+    )
+  }
   const LL=T[lang]||T.fr
   // Le jeu reste un EASTER EGG (toast d'inactivité), jamais un onglet de menu
   // (directive user 14/06 : « j'aimais bien le jeu en petit easter egg pas en menu »).
@@ -11448,7 +11488,9 @@ export default function App(){
     if(saved)return saved
     return"mq"
   })
-  const[view,setView]=useState("map") // map | list | learn | premium
+  const[view,setView]=useState("map") // map | list | home | suivi (+ learn/premium legacy)
+  // PRODUCT UX RESET — comparateur (2-3 plages, jamais de donnée inventée).
+  const[compareIds,setCompareIds]=useState([])
   const[search,setSearch]=useState("")
   const[filter,setFilter]=useState(0) // index in T.filters
   const[selectedBeach,setSelectedBeach]=useState(null)
@@ -13602,6 +13644,8 @@ useEffect(()=>{
     const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
     sessionStorage.setItem("sg_beach_views",String(v))
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
+    // PRODUCT UX RESET — historique personnel récent (local, jamais de donnée inventée).
+    try{const h=JSON.parse(localStorage.getItem("sg_last_beaches")||"[]").filter(x=>x!==b.id);h.unshift(b.id);localStorage.setItem("sg_last_beaches",JSON.stringify(h.slice(0,12)))}catch(_){}
   },[sargData, lang])// eslint-disable-line react-hooks/exhaustive-deps -- one-shot: deps intentionally empty
   // ⭐ Pins carte → DÉTAIL COMIC (ChasseDetail in-world) au lieu de la fiche data
   // « scroll satellite » (PRODUCT.md §8). Default OFF (fix funnel stability 2026-08-12 :
@@ -14619,9 +14663,17 @@ useEffect(()=>{
             Rollback ?sgnav=0. La vue Liste est remontée (économie de rendu levée — la
             clarté du funnel prime sur ~5 Ko de bundle lazy). */}
         {!SGNAV_OFF&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&(
-          <BottomNav view={view==="list"?"list":"map"} lang={lang} premiumOpen={showPremium}
+          <BottomNav view={view} lang={lang} premiumOpen={showPremium}
             isPremium={isPremium} onChangeView={(id)=>{
-              if(id==="map"){setSelectedBeach(null);setComicBeach(null);setView("map");
+              if(id==="home"&&!NEWIA_OFF){setSelectedBeach(null);setComicBeach(null);setView("home");
+                setShowArchipel(false);
+                setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                track("sg_nav_tab",{tab:"home"})}
+              else if(id==="suivi"&&!NEWIA_OFF){setSelectedBeach(null);setComicBeach(null);setView("suivi");
+                setShowArchipel(false);
+                setShowVerticals(false);setShowChat(false);setShowVeille(false);
+                track("sg_nav_tab",{tab:"suivi"});try{track("sg_ma_plage_open",{src:"tab"})}catch(_){}}
+              else if(id==="map"){setSelectedBeach(null);setComicBeach(null);setView("map");
                 setShowArchipel(true);
                 setShowVerticals(false);setShowChat(false);setShowVeille(false);
                 track("sg_nav_tab",{tab:"map"})}
@@ -14631,6 +14683,55 @@ useEffect(()=>{
                 track("sg_nav_tab",{tab:"list"})}
               else if(id==="premium"){openPremium("bottom_nav");track("sg_nav_tab",{tab:"premium"})}
             }}/>
+        )}
+        {/* PRODUCT UX RESET — vues ACCUEIL / PLAGES+ / SUIVI + comparateur (lazy, ?newia=0 = off).
+            Carte = vue map existante. Jamais par-dessus fiche/paywall/hero.
+            FIXED (jamais absolute) : #root est effondré (~19px, .theme-comic) → un
+            absolute inset:0 donne un scroller de 19px aux clics morts (hit-test BODY). */}
+        {!NEWIA_OFF&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&view==="home"&&(
+          <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
+            <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="home"
+              allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos}
+              islandName={IS_NEW_REGION?REGION.name:(island==="gp"?"Guadeloupe":"Martinique")}
+              onOpenBeach={onBeachClick} track={track}
+              onGo={(tab,b)=>{ if(tab==="compare"&&b){setCompareIds(p=>p.includes(b.id)?p:(p.length>=3?p:[...p,b.id]));try{track("sg_compare_add",{beach_id:b.id,src:"home"})}catch(_){}}
+                else if(tab==="fav"&&b){toggleFav(b.id)}
+                else if(tab==="suivi"){setView("suivi");try{track("sg_ma_plage_open",{src:"home"})}catch(_){}}
+                else setView(tab==="map"?"map":tab==="list"?"list":"map") }}
+              onPremium={(src)=>openPremium("xp_home_"+(src||"pass"))}
+            /></Suspense></ErrBound>
+          </div>
+        )}
+        {!NEWIA_OFF&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&view==="suivi"&&(
+          <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
+            <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="suivi"
+              allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos}
+              isPremium={isPremium} alertsOn={alertsOn} onToggleAlerts={toggleAlerts}
+              onOpenBeach={onBeachClick} track={track}
+              onGoPlages={()=>setView("list")}
+              onPremium={(src)=>openPremium("xp_suivi_"+(src||"pass"))}
+            /></Suspense></ErrBound>
+          </div>
+        )}
+        {!NEWIA_OFF&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&view==="list"&&(
+          <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
+            <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="plages"
+              allBeaches={allBeaches} sargData={sargData} favorites={favorites} compareIds={compareIds} userPos={userPos}
+              onOpenBeach={onBeachClick} onToggleFav={(b)=>toggleFav(b.id)} track={track}
+              onToggleCompare={(b)=>{setCompareIds(p=>p.includes(b.id)?p.filter(x=>x!==b.id):(p.length>=3?p:[...p,b.id]));try{track("sg_compare_add",{beach_id:b.id,src:"plages"})}catch(_){}}}
+            /></Suspense></ErrBound>
+          </div>
+        )}
+        {!NEWIA_OFF&&compareIds.length>0&&!showPremium&&(
+          <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="compare"
+            allBeaches={allBeaches} compareIds={compareIds} favorites={favorites} userPos={userPos}
+            onOpenBeach={(b)=>{setCompareIds([]);onBeachClick(b)}} track={track}
+            onToggleFav={(b)=>toggleFav(b.id)}
+            onCloseCompare={()=>setCompareIds([])}
+          /></Suspense></ErrBound>
+        )}
+        {!!(!NEWIA_OFF&&compareIds.length>1&&!selectedBeach&&!showPremium)&&(
+          <button type="button" onClick={()=>{try{track("sg_compare_open",{n:compareIds.length})}catch(_){};setCompareIds(c=>[...c])}} style={{display:"none"}} data-testid="xp-compare-open" />
         )}
         {/* BOTTOM SHEET (beach detail) — refonte « Comic Pop » verdict-first (2026-06-21).
             Remplace l'ancien split BeachSheet/BeachDive : une seule fiche, cohérente

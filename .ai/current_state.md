@@ -1,3 +1,35 @@
+## 2026-09-15 14:00 UTC · Agent: coding-agent (product-ux-reset — FINAL, merge bloqué CI)
+
+### Travail effectué
+- **Résumé 1 ligne** : PRODUCT UX RESET complet et prouvé (5 onglets + comparateur + dashboard, `?newia=0`) ; PR #671 CI 5/6 verte, playwright rouge sur prologue partagé pré-existant (BUG-2026-036) → merge NON effectué (règle merge-si-vert respectée).
+- **Détails** : voir .ai/changelog.md (entrée 2026-09-15) + BUG-2026-036. Feature prouvée 360/390/430 (screenshots final-390-*.png) : 5 onglets, 0 overflow, 0 tap <44px, 0 pageerror, Accueil (situation + meilleur choix + recherche), Plages (20 cartes riches + filtres/tri/favoris), comparateur (dialogue + meilleur choix + ouvrir/suivre/fermer), Ma Plage (dashboard + vues récentes), fiche (2602+ chars), rollback `?newia=0` (3 onglets historiques). Money-path : 0 .php touché, 12/12 tests CI non-label verts (paywall, checkout, passes, premium, motion, EUR).
+
+### Fichiers modifiés
+- `src/components/ExperienceReset.jsx` (NOUVEAU, lazy 6,8 Ko) · `src/Sargasses_PROD.jsx` (BottomNav 5 onglets + vues + compareIds + historique + allowlist) · `src/components/MaPlageView.jsx` (réparation JSX session concurrente) · `scripts/automation/funnel-from-supabase.cjs` + `daily-stats-check.cjs` (FUNNEL_KEYS +6) · `.ai/*` (docs)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (385 modules) · bundle 37.9 Ko ≤ 210 · smoke 4/4
+- [x] CI PR #671 (2 runs, 2 commits) : branch-policy ✓ · scan ✓ · funnel ✓ · perf ✓ · test-frontend ✓ · playwright ✗ (12/21 — 9 échecs = MÊME prologue `.sg-maplabel`, feature on/off identique)
+- [x] Audit mobile réel 360/390/430 + rollback + comparateur + fiche (probes Playwright)
+- [ ] php -l → N/A (0 .php touché)
+
+### Problèmes restants
+- [ ] BUG-2026-036 (P1 test-harness) : prologue E2E `.sg-maplabel` flaky (9 tests) — tâche dédiée requise AVANT merge
+- [ ] Fichiers concurrents non committés (mollie-lib.php USD, espace/index.html, debug*/fix_*.cjs, TransportIcon.jsx) — laisser au propriétaire
+- [ ] Satellite ~2 j stale (badge honnête) — pipeline quotidien
+
+### Prochaine action recommandée
+1. Fix BUG-2026-036 (budgets prologue + bras A/B figé) puis re-run CI → merge PR #671 → deploy-live → vérif 6 domaines — Rôle : qa/coding puis release
+2. Monitorer 7 j : nav_tab + compare_add/open + home_best_open + ma_plage_open — Rôle : growth/data
+3. Phase 2 profondeur fiche (transport/hébergement-partenaires, historique J-7) — Rôle : coding
+
+### Branche / PR
+- Branche : `agent/coding/ux-reset` (2 commits : 58b1374b2 + 9f48aee91, poussés)
+- PR : #671 https://github.com/aveca/sargagame/pull/671 (UNSTABLE — playwright rouge pré-existant)
+- Commit head : `9f48aee91`
+
+---
+
 ## 2026-09-14 01:20 UTC · Agent: coding-agent (release)
 
 ### Travail effectué

@@ -9,7 +9,7 @@
  * - CTA to premium for multi-beach / advanced alerts
  */
 
-import { Suspense, useEffect, useMemo, useCallback } from 'react';
+import { Suspense, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useSwipeClose } from '../useSwipeClose.js';
 import { 
   useMyPlage, 
@@ -40,6 +40,24 @@ export function MaPlageView({
   }, [onClose]);
 
   const swipe = useSwipeClose(requestClose, { threshold: 60, guardInput: true });
+  const transportRef = useRef(null);
+  const transportViewTracked = useRef(false);
+
+  // Track sg_transport_view when transport section becomes visible
+  useEffect(() => {
+    if (!transportRef.current || transportViewTracked.current) return;
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          try { track('sg_transport_view', { beach_id: beach?.id, partner: region?.transport?.provider || 'rhumz' }) } catch (_) {};
+          transportViewTracked.current = true;
+          observer.disconnect();
+        }
+      });
+    }, { threshold: 0.5 });
+    observer.observe(transportRef.current);
+    return () => observer.disconnect();
+  }, [beach, region, track]);
   
   // Get "Ma Plage" state
   const {
@@ -73,11 +91,18 @@ export function MaPlageView({
   // Check if alerts are enabled (from OneSignal)
   const alertsEnabled = alertsOn || (typeof Notification !== 'undefined' && Notification.permission === 'granted');
   
-  // Track
+// Track
   const trk = useCallback((name, params) => {
     try { track?.(name, params); } catch (_) {}
   }, [track]);
-  
+
+  // Transport URL for tracking and navigation (computed once per render)
+  const transportUrl = beach && region?.transport?.bookingUrl
+    ? (region.transport.bookingUrl + (region.transport.supportsBeachContext ? `?destination=${encodeURIComponent(beach.name)}&island=${beach.island}` : ''))
+    : null;
+  const transportPartner = region?.transport?.provider || 'rhumz';
+  const transportDisplayName = region?.transport?.displayName || 'RHUMZ';
+
   if (!hasBeach) {
     // No favorite beach yet - show empty state
     return (
@@ -309,15 +334,10 @@ export function MaPlageView({
             {_t(lang,'1 plage suivie gratuite · Multi-plages + alertes avancées = Premium','1 free followed beach · Multi-beach + advanced alerts = Premium','1 playa seguida gratis · Multi-playas + alertas avanzadas = Premium')}
           </div>
         </div>
-        
-        {/* ── SCROLL CUE ── */}
-        <div className="mp-scrollcue" aria-hidden="true">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={COMIC.sub} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-        </div>
 
         {/* ── TRANSPORT SLOT — configurable par région (transport.provider, transport.bookingUrl) ── */}
-        {(beach && region?.transport?.bookingUrl) && (
-          <div style={{ marginTop: 16, padding: '0 16px 16px' }}>
+        {(beach && transportUrl) && (
+          <div ref={transportRef} style={{ marginTop: 16, padding: '0 16px 16px' }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 12,
               padding: '14px 16px', borderRadius: 14,
@@ -340,31 +360,29 @@ export function MaPlageView({
                   font: '600 12px/1.3 "Bricolage Grotesque"', color: '#8B5A00',
                   marginTop: 2
                 }}>
-                  {region.transport?.displayName || 'RHUMZ'} vous y emmène
+                  {transportDisplayName} vous y emmène
                 </div>
               </div>
-              <button onClick={() => { 
-                try { track('sg_transport_cta', { beach_id: beach.id, partner: region.transport?.provider || 'rhumz' }) } catch (_) {}; 
-                // Use region's transport booking URL with beach context for better UX
-                const baseUrl = region.transport?.bookingUrl || 'https://www.rhumz.com/reservation/';
-                const params = region.transport?.supportsBeachContext ? `?destination=${encodeURIComponent(beach.name)}&island=${beach.island}` : '';
-                window.open(baseUrl + params, '_blank', 'noopener,noreferrer'); 
+              <button onClick={() => {
+                try { track('sg_transport_cta', { beach_id: beach.id, partner: transportPartner }) } catch (_) {};
+                try { track('sg_transport_outbound', { beach_id: beach.id, partner: transportPartner, url: transportUrl }) } catch (_) {};
+                window.open(transportUrl, '_blank', 'noopener,noreferrer');
               }}
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  padding: '10px 14px', borderRadius: 12,
-                  background: '#FFC72C', color: '#0D0B14',
-                  font: '800 13px/1 "Bricolage Grotesque"',
-                  border: '2px solid #0D0B14', boxShadow: '2px 2px 0 #0D0B14',
-                  cursor: 'pointer', transition: 'transform .08s'
-                }}
-                onMouseDown={(e) => e.currentTarget.style.transform = 'translate(2px,2px)'}
-                onMouseUp={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
-              >
-                <span>Réserver avec {region.transport?.displayName || 'RHUMZ'}</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </button>
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                padding: '10px 14px', borderRadius: 12,
+                background: '#FFC72C', color: '#0D0B14',
+                font: '800 13px/1 "Bricolage Grotesque"',
+                border: '2px solid #0D0B14', boxShadow: '2px 2px 0 #0D0B14',
+                cursor: 'pointer', transition: 'transform .08s'
+              }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'translate(2px,2px)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
+              onMouseLeave={(e) => e.currentTarget.style.transform = 'translate(0,0)'}
+            >
+              <span>Réserver avec {transportDisplayName}</span>
+              <span style={{marginLeft:4,fontSize:14}}>→</span>
+            </button>
             </div>
           </div>
         )}

@@ -771,24 +771,23 @@
     var MO=CUR==="USD"?"89":"79", YR=CUR==="USD"?"790":"690";
     var PLAN_MO=CUR==="USD"?"pro_monthly_usd":"pro_monthly";
     var PLAN_YR_KEY=CUR==="USD"?"pro_annual_usd":"pro_annual";
-    // P1 Concierge 29 € — les 4 clés existent côté serveur (mol_b2b_plans +
-    // paylinks brief_*/pro_*). EUR uniquement : brief_monthly_usd n'existe pas
-    // dans l'allowlist PHP → toggle masqué en USD (Pro seul, inchangé).
-    var TIER=(CUR==="USD")?"pro":"pro";
+    // P1 Concierge/Brief 29€/mois (EUR) / $39/mo (USD) + Pro 79€/mois (EUR) / $89/mo (USD)
+    // Les 4 clés mensuelles existent côté serveur (mol_b2b_plans) : brief_monthly/pro_monthly + _usd
+    var TIER="pro";
     var PAYLINKS_CACHE=null;
     var BASE_MO=(CUR==="USD"?"89":"79"), BASE_YR=(CUR==="USD"?"790":"690");
     var BASE_PLAN_MO=(CUR==="USD"?"pro_monthly_usd":"pro_monthly"), BASE_PLAN_YR=(CUR==="USD"?"pro_annual_usd":"pro_annual");
-    function tierDef(t){return t==="concierge"?{mo:"29",yr:"290",planMo:"brief_monthly",planYr:"brief_annual"}:{mo:BASE_MO,yr:BASE_YR,planMo:BASE_PLAN_MO,planYr:BASE_PLAN_YR};}
-    function resolveAnnual(){try{var u=PAYLINKS_CACHE&&PAYLINKS_CACHE[PLAN_YR_KEY]&&PAYLINKS_CACHE[PLAN_YR_KEY].url;if(u){$("subscribe").href=u;}}catch(_){}}
+    var BRIEF_MO=(CUR==="USD"?"39":"29"), BRIEF_PLAN_MO=(CUR==="USD"?"brief_monthly_usd":"brief_monthly");
+    function tierDef(t){return t==="concierge"?{mo:BRIEF_MO,planMo:BRIEF_PLAN_MO}:{mo:BASE_MO,planMo:BASE_PLAN_MO};}
+    function resolveAnnual(){try{var u=PAYLINKS_CACHE&&PAYLINKS_CACHE[BASE_PLAN_YR]&&PAYLINKS_CACHE[BASE_PLAN_YR].url;if(u){$("subscribe").href=u;}}catch(_){}}
     function setTier(t, silent){
-      if(CUR==="USD")t="pro";
       TIER=t;
       var d=tierDef(t);
-      MO=d.mo; YR=d.yr; PLAN_MO=d.planMo; PLAN_YR_KEY=d.planYr;
+      MO=d.mo; PLAN_MO=d.planMo;
       try{
         var _pe=document.querySelector(".price"); if(_pe)_pe.textContent=money(MO);
         var _pm=document.querySelector(".price-mo");
-        if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
+        if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(BASE_YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
         var _sm=$("subMonthly"); if(_sm)_sm.textContent=subMoLabel();
         var _sa=$("subscribe"); if(_sa)_sa.textContent=subYrLabel();
         var _tc=$("tierConcierge"),_tp=$("tierPro");

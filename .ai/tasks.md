@@ -1,3 +1,8 @@
+## PRODUCT UX RESET — [~] en attente merge (PR #671 CI 5/6, playwright rouge pré-existant BUG-2026-036)
+- **Shippé sur branche** : BottomNav 5 onglets + ExperienceReset.jsx lazy + rollback `?newia=0` prouvé 360/390/430 (0 overflow, 0 tap <44px, 0 pageerror).
+- **Gates** : build 385 · bundle 37.9 · smoke 4/4 · CI non-label 12/12 (money-path vert) · E2E label-prologue 9 échecs pré-existants (feature on/off identique).
+- **NEXT** : fix BUG-2026-036 (qa/coding) → CI verte → merge #671 → deploy 6 domaines → monitorer 7j → phase 2 fiche.
+
 ## MA PLAGE + FIXES P0 — [x] done (2026-09-14, gates verts, prêt merge/deploy)
 - **P0 scope** : showMaPlage/MAPLAGE_OFF hors scope (ReferenceError app) → module scope + state App + ?maplage=0.
 - **P0 lang** : findAlternatives ReferenceError lang → normalisé {lang}/string, raisons EN/ES prouvées.
