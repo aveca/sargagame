@@ -1,23 +1,23 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-09-14T21:42:25.053Z",
+  "generatedAt": "2026-09-15T11:33:11.056Z",
   "window": {
-    "from": "2026-08-16",
-    "to": "2026-09-14",
+    "from": "2026-08-17",
+    "to": "2026-09-15",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-07-27",
-    "to": "2026-09-14",
-    "days": 50,
+    "to": "2026-09-15",
+    "days": 51,
     "sampleSize": 3906,
     "statusHitRatePct": 98
   },
   "freshness": {
-    "computedAt": "2026-09-14T21:42:24.976Z",
+    "computedAt": "2026-09-15T11:33:10.965Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
   "sampleSize": 3339,
@@ -27,14 +27,14 @@
   ],
   "method": "Chaque jour, la prévision J+1→J+6 émise est figée. On la compare ensuite à l'observation satellite réelle à l'échéance. Le « taux de justesse » = % de jours où le statut prévu (mer propre / modéré / éviter) correspond à l'observé.",
   "overall": {
-    "statusHitRatePct": 98,
+    "statusHitRatePct": 99,
     "afaiMAE": 0.013,
     "caveat": "Chiffre global, tous régimes confondus — fourni pour transparence, mais un global masque que les ALERTES de saison calme sont moins fiables que les prévisions « mer propre ». Voir byRegime."
   },
   "byHorizon": [
     {
       "day": 1,
-      "hitRatePct": 97,
+      "hitRatePct": 98,
       "pairs": 609
     },
     {
@@ -59,7 +59,7 @@
     },
     {
       "day": 6,
-      "hitRatePct": 99,
+      "hitRatePct": 100,
       "pairs": 504
     }
   ],
@@ -67,24 +67,24 @@
     "unknown": {
       "samples": 126,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 120,
+      "cleanSamples": 124,
       "alertReliabilityPct": 0,
-      "alertSamples": 6,
-      "falseAlarmRatePct": 5
+      "alertSamples": 2,
+      "falseAlarmRatePct": 2
     },
     "calm": {
       "samples": 3213,
       "cleanReliabilityPct": 100,
-      "cleanSamples": 3167,
+      "cleanSamples": 3166,
       "alertReliabilityPct": 0,
-      "alertSamples": 46,
+      "alertSamples": 47,
       "falseAlarmRatePct": 1
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-08-16 → 2026-09-14) se sont vérifiées (sur 3167) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-08-16 → 2026-09-14) proved correct (over 3167); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-08-16 → 2026-09-14) resultaron correctos (sobre 3167); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-08-17 → 2026-09-15) se sont vérifiées (sur 3166) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-08-17 → 2026-09-15) proved correct (over 3166); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-08-17 → 2026-09-15) resultaron correctos (sobre 3166); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
@@ -100,8 +100,8 @@
       "name": "Bas du Fort",
       "island": "gp",
       "samples": 159,
-      "hitRatePct": 94,
-      "afaiMAE": 0.029
+      "hitRatePct": 93,
+      "afaiMAE": 0.03
     },
     {
       "id": "gp-deshaies",
@@ -181,7 +181,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.007
+      "afaiMAE": 0.008
     },
     {
       "id": "anse-mitan",
@@ -205,15 +205,15 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.011
     },
     {
       "id": "diamant",
       "name": "Le Diamant",
       "island": "mq",
       "samples": 159,
-      "hitRatePct": 76,
-      "afaiMAE": 0.049
+      "hitRatePct": 79,
+      "afaiMAE": 0.046
     },
     {
       "id": "vauclin",

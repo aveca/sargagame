@@ -1,15 +1,15 @@
 {
   "window_days": 7,
-  "since": "2026-09-07T21:49:42.615Z",
-  "total_rows": 12243,
+  "since": "2026-09-08T11:37:40.430Z",
+  "total_rows": 11632,
   "counts": {
-    "session_start": 811,
-    "forecast_lock_click": 83,
-    "premium_modal_open": 304,
-    "premium_modal_close": 62,
-    "beach_open": 915,
+    "session_start": 742,
+    "forecast_lock_click": 84,
+    "premium_modal_open": 315,
+    "premium_modal_close": 65,
+    "beach_open": 919,
     "pass_cta": 6,
-    "pass_offer_view": 166,
+    "pass_offer_view": 172,
     "conversion": 0,
     "email_submit": 1,
     "mollie_checkout_redirect": 0,
@@ -23,7 +23,7 @@
     "beach_event": 4,
     "obs_smell": 0,
     "b2b_widget_preview": 0,
-    "ma_plage_open": 20,
+    "ma_plage_open": 21,
     "ma_plage_fav_toggle": 3,
     "ma_plage_alerts_toggle": 3,
     "ma_plage_alerts_enable": 0,
@@ -41,11 +41,11 @@
   "mollie_redirects": 0,
   "onsite_opened": 6,
   "rates": {
-    "session_to_lock": 10.2,
-    "lock_to_beach": 1102.4,
-    "beach_to_modal": 33.2,
-    "modal_to_cta": 2,
-    "cta_view_to_click": 3.6,
+    "session_to_lock": 11.3,
+    "lock_to_beach": 1094,
+    "beach_to_modal": 34.3,
+    "modal_to_cta": 1.9,
+    "cta_view_to_click": 3.5,
     "alt_view_to_click": 0,
     "cta_to_onsite": 100,
     "onsite_to_mollie": 0,
@@ -53,26 +53,28 @@
     "mollie_to_conversion": 0
   },
   "by_island": {
-    "GP": {
-      "session_start": 203,
-      "beach_open": 241,
-      "premium_modal_open": 26,
-      "pass_offer_view": 20,
-      "forecast_lock_click": 5,
+    "FLORIDA": {
+      "beach_open": 179,
+      "session_start": 185,
+      "premium_modal_open": 49,
+      "pass_offer_view": 29,
+      "forecast_lock_click": 13,
       "premium_modal_close": 9,
-      "planb_view": 7,
-      "ma_plage_open": 9,
+      "pass_cta": 1,
+      "onsite_checkout_opened": 1,
       "beach_report": 1,
-      "ma_plage_alerts_toggle": 1,
-      "ma_plage_premium_cta": 1
+      "beach_event": 1,
+      "ma_plage_open": 2,
+      "b2b_offer_view": 1,
+      "b2b_step": 1
     },
     "PUNTACANA": {
-      "session_start": 279,
-      "premium_modal_open": 147,
-      "pass_offer_view": 62,
-      "beach_open": 222,
+      "session_start": 266,
+      "beach_open": 228,
+      "premium_modal_open": 150,
+      "pass_offer_view": 61,
       "premium_modal_close": 24,
-      "forecast_lock_click": 46,
+      "forecast_lock_click": 47,
       "observation": 1,
       "pass_cta": 1,
       "onsite_checkout_opened": 1,
@@ -82,9 +84,30 @@
       "beach_event": 2,
       "email_submit": 1
     },
+    "GP": {
+      "session_start": 169,
+      "beach_open": 234,
+      "forecast_lock_click": 5,
+      "premium_modal_open": 29,
+      "pass_offer_view": 22,
+      "premium_modal_close": 11,
+      "planb_view": 7,
+      "ma_plage_open": 9,
+      "beach_report": 1,
+      "ma_plage_alerts_toggle": 1,
+      "ma_plage_premium_cta": 1
+    },
+    "RIVIERAMAYA": {
+      "beach_open": 22,
+      "session_start": 17,
+      "premium_modal_open": 9,
+      "pass_offer_view": 9,
+      "premium_modal_close": 5,
+      "ma_plage_open": 1
+    },
     "MQ": {
-      "session_start": 112,
-      "beach_open": 251,
+      "session_start": 104,
+      "beach_open": 256,
       "premium_modal_open": 77,
       "pass_offer_view": 50,
       "premium_modal_close": 16,
@@ -100,27 +123,10 @@
       "ma_plage_alerts_toggle": 2,
       "ma_plage_premium_cta": 1
     },
-    "FLORIDA": {
-      "session_start": 198,
-      "beach_open": 181,
-      "premium_modal_open": 48,
-      "pass_offer_view": 28,
-      "forecast_lock_click": 13,
-      "premium_modal_close": 9,
-      "pass_cta": 1,
-      "onsite_checkout_opened": 1,
-      "beach_report": 1,
-      "beach_event": 1,
-      "ma_plage_open": 2,
-      "b2b_offer_view": 1,
-      "b2b_step": 1
-    },
-    "RIVIERAMAYA": {
-      "beach_open": 20,
-      "session_start": 19,
-      "premium_modal_open": 6,
-      "pass_offer_view": 6,
-      "premium_modal_close": 4
+    "TULUM": {
+      "premium_modal_open": 1,
+      "pass_offer_view": 1,
+      "session_start": 1
     }
   }
 }
