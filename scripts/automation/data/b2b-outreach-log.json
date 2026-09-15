@@ -463,8 +463,40 @@
     "mahekal.com": {
       "date": "2026-09-08T14:22:42.247Z",
       "status": "no-email"
+    },
+    "lasalandra.com.mx": {
+      "date": "2026-09-15T14:48:46.108Z",
+      "status": "no-email"
+    },
+    "bemextourism.com": {
+      "date": "2026-09-15T14:48:46.392Z",
+      "status": "no-email"
+    },
+    "cancun.travel": {
+      "date": "2026-09-15T14:48:50.550Z",
+      "status": "no-email"
+    },
+    "solbeachhouse.com": {
+      "date": "2026-09-15T14:48:51.205Z",
+      "status": "no-email"
+    },
+    "puntacana.com": {
+      "date": "2026-09-15T14:48:54.005Z",
+      "status": "no-email"
+    },
+    "hardrockhotelpuntacana.com": {
+      "date": "2026-09-15T14:48:55.729Z",
+      "status": "no-email"
+    },
+    "bahiaprincipe.com": {
+      "date": "2026-09-15T14:49:01.836Z",
+      "status": "no-email"
+    },
+    "melia.com": {
+      "date": "2026-09-15T14:49:02.610Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-09-08T14:22:42.247Z",
+  "lastRun": "2026-09-15T14:49:02.610Z",
   "totalSent": 20
 }
