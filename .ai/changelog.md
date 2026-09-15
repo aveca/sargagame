@@ -1,3 +1,10 @@
+## 2026-09-15 — DEPLOY PR #672 (merge 18385d13) : deploy-live SUCCESS, health 6/6, B2B monthly live vérifié
+
+**Deploy** : run 34990339818 SUCCESS — build+bundle, workers sg-payments/supabase-proxy/b2b-api, Pages 6 régions, purge cache, health 6/6 (martinique, guadeloupe, miami, puntacana, cancun, tulum).
+**CI finale PR** : 6/6 verte (playwright 21/21 en 3m04s après fix BUG-2026-036, contre 9 échecs avant).
+**Preuves live** : 6/6 domaines 200 · chunks prod WorldMapView-C2sFBFLD (readiness+dismiss) + PremiumModal (monthly_bridge) · espace MQ (29€/79€/690€) + Miami (39$/89$) · trial/create_subscription validants pré-Mollie (MQ+Miami) · paylinks annuels (690€/290€/790$/390$).
+**Reste** : §8 fondateur (trial réel, paiement test, lecture analytics).
+
 ## 2026-09-15 — B2B MONTHLY : essai + mensuel + annuel réellement achetables (trial→token→checkout)
 
 **Agent** : coding-agent (mission dernière-étape-b2b-monthly). **Constat racine** : la contradiction venait d'un P0 — le script inline de `/pro/espace/` contenait `}` au lieu de `});` (demo modal, commit mergé 8ee27ae26) → **TOUT le JS espace était mort en prod** (trial, mensuel, toggle, démo). Réparé + garde contrat `vm.Script` anti-régression.

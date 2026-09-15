@@ -1,4 +1,25 @@
-## 2026-09-15 16:00 UTC · Agent: coding-agent (b2b-monthly — FINAL, PR à créer)
+## 2026-09-15 16:30 UTC · Agent: coding-agent (PR #672 MERGÉE + DÉPLOYÉE — DONE)
+
+### Travail effectué
+- **Résumé 1 ligne** : PR #672 mergée (18385d13) + deploy-live SUCCESS (build, 3 workers, 6 Pages, purge, health 6/6) + vérification live complète : B2B monthly réellement achetable, BUG-2026-036 fixé et vert en CI.
+- **CI finale PR #672** : 6/6 verte (branch-policy, scan, funnel, test-frontend, perf, playwright 21/21 en 3m04s — contre 9 échecs avant fix).
+- **Preuves live (post-deploy)** : 6/6 domaines 200 · espace MQ (29€/79€/690€, trial+mensuel) + Miami (39$/89$, tiers, trial+mensuel) · trial→invalid_email + bogus plan→Plan inconnu + sans email→rejet (zéro appel Mollie, MQ+Miami) · paylinks annuels live (690€/290€/790$/390$ + URLs) · B2BModal bridge dans le bundle prod (monthly_bridge) · readiness + dismiss dans le chunk map prod.
+- **Reste (gardes, pas de code)** : ① curl trial réel avec vraie adresse ② 1er paiement mensuel réel (nouveau mécanisme de charge) ③ lecture analytics_events (subscription_created/b2b_trial_to_paid) — actions fondateur, §8 du rapport.
+- **Risque process noté** : session concurrente édite les mêmes fichiers en direct (funnel-payment.spec.ts : variante innerTexts non committée ; HomeJuicy/app-runtime/RegionNav dirty) — restauré une suppression de 10 lignes de mon BottomNav ; recommandé : rebase sur main (contient le fix vert).
+
+### Fichiers (PR #672, 3 commits)
+- 886d07615 B2B monthly · 9f48aee91 z1600+contraste · dc76bad29 fix BUG-2026-036 · (+22301a05d retrigger vide)
+
+### Prochaine action recommandée
+1. Exécuter §8 (trial réel + paiement test + analytics) — Rôle : fondateur
+2. Monitorer funnel-b2b (trials/subs/paid) + nav/compare B2C 7 j — Rôle : growth/data
+3. Résoudre l'édition concurrente (rebase) — Rôle : process/fondateur
+
+### Branche / PR
+- Branche : `agent/coding/b2b-monthly` (poussée, mergée)
+- PR : #672 https://github.com/aveca/sargagame/pull/672 — MERGED 15:43:19Z
+- SHA mergé : `18385d13be85ad6f24c1b4e431e4d827fba37edc`
+- Deploy : run 34990339818 SUCCESS (health 6/6)
 
 ### Travail effectué
 - **Résumé 1 ligne** : B2B Monthly terminé hors argent réel : P0 JS espace mort trouvé+fixé, mensuel 29€/79€ (+USD) et annuels par tier exposés, trial→token→checkout câblés, grants USD 30j, events manquants émis, preuves locales + live-sûres.
