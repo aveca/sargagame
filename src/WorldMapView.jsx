@@ -396,13 +396,6 @@ export default function WorldMapView({
   const [outline, setOutline]   = useState(null)
   const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
   const [pinTier,  setPinTier]  = useState({})    // id→'dot'|'full' : déclutter des pins denses (zoom-aware)
-  // Héros « meilleur choix » repliable (BUG-2026-036) : sur mobile first-visit, le
-  // panneau opaque recouvre parfois TOUS les labels tappables (aucun hit-test ne
-  // passe → la carte est intouchable derrière un panneau sans sortie). Le × rend
-  // la carte aux doigts ; état de session (revient à la prochaine visite).
-  // Rollback : ?maphero=0 masque déjà tout le bloc (inchangé).
-  const [heroFolded,setHeroFolded]=useState(()=>{try{return sessionStorage.getItem("sg_hero_fold")==="1"}catch(_){return false}})
-  const foldHero=useCallback(()=>{try{sessionStorage.setItem("sg_hero_fold","1")}catch(_){}; setHeroFolded(true)},[])
   const [loadErr, setLoadErr]   = useState(false)
   const [day,     setDay]       = useState(0)
   const [selected, setSelected] = useState(null)  // beach object enrichi
@@ -2058,7 +2051,7 @@ export default function WorldMapView({
               recommandée par défaut. Ancien strip TOP3 conservé en forme minimale
               pour les alternatives. Rollback ?maphero=0 → bloc masqué. ══ */}
           {(()=>{try{if(/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
-          if(!dataReady||beachList.length<3||selected||emailSent||heroFolded)return null
+          if(!dataReady||beachList.length<3||selected||emailSent)return null
           const ranked=[...beachList].filter(b=>b.score!=null&&b.days&&b.days[day]!=null)
             .sort((a,b)=>{const sd=(b.score||0)-(a.score||0);if(sd!==0)return sd;return (b.conf?.[day]||0)-(a.conf?.[day]||0)})
           if(!ranked.length)return null
@@ -2074,17 +2067,21 @@ export default function WorldMapView({
             :bst==="moderate"?_t(lang,"Risque modéré de sargasses","Moderate sargassum risk","Riesgo moderado de sargazo")
             :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
-          return (
-          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360,position:"relative"}}>
-            {/* Repli carte (BUG-2026-036) : sans sortie, le panneau opaque enterre les
-                pins sur mobile. 44×44, 4 voies de sortie du hero = ce × + Voir → + alts. */}
-            <button type="button" data-testid="sg-hero-dismiss" onClick={foldHero}
-              aria-label={_t(lang,"Replier — voir la carte","Fold — show the map","Plegar — ver el mapa")}
-              style={{position:"absolute",top:-14,right:-8,width:44,height:44,borderRadius:"50%",background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,color:INK,fontSize:17,fontWeight:900,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>×</button>
+const dismissBtn = React.createElement("button", {
+              type: "button",
+              id: "sg-hero-dismiss",
+              onClick: () => { try { localStorage.setItem("sg_hero_fold", "1") } catch (_) {} },
+              style: dismissBtnStyle
+            }, "✕")
+return (
+          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
             {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
-            <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
-              {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
-            </span>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
+                {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
+              </span>
+              {dismissBtn}
+            </div>
             <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="trophy" size={10}/></span> {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}
