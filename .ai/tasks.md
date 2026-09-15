@@ -1,4 +1,10 @@
-## B2B MONTHLY — [x] done local + live-sûr (2026-09-15, PR à créer)
+## FERMETURE #672 — BUG-2026-036 [x] fixé (2026-09-15, 13/13 + 8/8 en local)
+- **Cause** : wait 1er-label-visible (ordre DOM data-dépendant) + héros opaque sans sortie couvrant tout.
+- **Fix** : readiness `data-sg-labels-ready` + héros repliable (× 44px, session) + 14 prologues basculés (assertions intactes).
+- **Preuves** : funnel 13/13 · bottomnav 8/8 · matrice 4 configs · j0 65/65 · screenshot carte libérée.
+- **NEXT** : CI verte → merge #672 → deploy-live → health 6/6 → vérif espace MQ+Miami + monthly + trial.
+
+## B2B MONTHLY — [x] done local + live-sûr (2026-09-15, PR #672 — merge bloqué : BUG-2026-036 CI, voir ci-dessus)
 - **P0 trouvé+fixé** : JS espace 100 % mort (`)` manquant, BUG-2026-037) → trial/mensuel/toggle/démo ressuscités, garde contrat.
 - **Mensuel visible** : Concierge 29€/Pro 79€ (EUR+USD) + annuels PAR TIER (290€/690€, 390$/790$) + paylinks live, comparables côte à côte.
 - **Trial** : offer→CTA→email+établissement→token 30j→accès immédiat→mensuel ; B2BModal pont mensuel (?tier=&email=).

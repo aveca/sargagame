@@ -38,7 +38,7 @@ function setupTrackInterceptor(page: Page) {
 
 async function openFirstBeach(page: Page) {
   await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
   const tapIdx = await page.evaluate(() => {
     const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
@@ -78,7 +78,7 @@ async function openPaywall(page: Page, qs = "?paywall=1") {
 // le chunk lazy PremiumModal lise ses flags rollback.
 async function openPaywallViaNav(page: Page, qs = "") {
   await page.goto(TEST_URL + qs, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
   const tabs = page.locator(".sg-bottom-nav button")
   await tabs.nth(2).click({ timeout: 10000 })

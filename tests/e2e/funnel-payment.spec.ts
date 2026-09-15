@@ -84,7 +84,7 @@ test.describe("Funnel Principal B2C", () => {
 
     // 1. Landing — carte monde (storage cleared by initScript, session_start fires)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 });
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {});
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(2000);
 
     const mapLabels = await page.locator(".sg-maplabel").count()
@@ -97,18 +97,32 @@ test.describe("Funnel Principal B2C", () => {
     // label : on choisit le 1er label visible ET réellement atteignable (hit-test au centre).
     // Un label sous un panneau opaque n'est tapable par AUCUN utilisateur — le funnel réel
     // (tap plage → fiche) reste validé sur une vraie cible.
-    const tapIdx = await page.evaluate(() => {
-      const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
-        const r = el.getBoundingClientRect()
-        return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
+    // BUG-2026-036 : si le héros « Meilleur choix » recouvre TOUS les labels (first-visit
+    // mobile, data-dependent), aucun hit-test ne passe. Vrai parcours utilisateur : on
+    // replie le héros via son × (la carte devient tappable), puis on re-cherche.
+    // Assertions et timeouts inchangés.
+    const findTapIdx = () =>
+      page.evaluate(() => {
+        const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
+          const r = el.getBoundingClientRect()
+          return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
+        })
+        for (let i = 0; i < els.length; i++) {
+          const r = els[i].getBoundingClientRect()
+          const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+          if (hit && (hit === els[i] || els[i].contains(hit))) return i
+        }
+        return -1
       })
-      for (let i = 0; i < els.length; i++) {
-        const r = els[i].getBoundingClientRect()
-        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
-        if (hit && (hit === els[i] || els[i].contains(hit))) return i
+    let tapIdx = await findTapIdx()
+    if (tapIdx < 0) {
+      const dismiss = page.locator('[data-testid="sg-hero-dismiss"]').first()
+      if (await dismiss.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await dismiss.click({ timeout: 5000 }).catch(() => {})
+        await page.waitForTimeout(800)
+        tapIdx = await findTapIdx()
       }
-      return -1
-    })
+    }
     expect(tapIdx).toBeGreaterThanOrEqual(0)
     await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
 

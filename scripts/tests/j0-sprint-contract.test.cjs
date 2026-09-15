@@ -102,6 +102,16 @@ check('espace inline scripts parsables (P0 2026-09-15 : un `)` manquant tuait TO
   } catch { return false }
 })())
 
+console.log('— BUG-2026-036 readiness carte (mission fermeture #672) —')
+const WMV = R('src/WorldMapView.jsx')
+check('declutter publie data-sg-labels-ready (arbitrage achevé, els>0)', /data-sg-labels-ready/.test(WMV) && /els\.length>0/.test(WMV))
+check('héros repliable sg-hero-dismiss (44px, session, ?maphero=0 intact)', /sg-hero-dismiss/.test(WMV) && /sg_hero_fold/.test(WMV) && /maphero=0/.test(WMV))
+check('prologues E2E attendent la readiness (pas 1er label visible)', (() => {
+  const F = ['tests/e2e/funnel-payment.spec.ts', 'tests/e2e/bottomnav-redesign.spec.ts', 'tests/e2e/responsive.spec.ts', 'tests/e2e/j0-sprint.spec.ts']
+  return F.every((f) => /waitForSelector\("\[data-sg-labels-ready\]"/.test(R(f)) && !/waitForSelector\("\.sg-maplabel", \{ timeout/.test(R(f)))
+})())
+check('funnel-82 repli héros quand aucun label tappable (assertions intactes)', /sg-hero-dismiss/.test(R('tests/e2e/funnel-payment.spec.ts')) && /toBeGreaterThanOrEqual\(0\)/.test(R('tests/e2e/funnel-payment.spec.ts')))
+
 console.log('— OBJ7 gardes —')
 check('aucun runtime 3D introduit par le sprint (diff git)', (() => {
   try {
