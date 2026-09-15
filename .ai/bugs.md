@@ -9,6 +9,15 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-037 — [x] FIXÉ 2026-09-15 (mission B2B monthly) TOUT le JS de /pro/espace/ mort en prod (`)` manquant)
+- **Date** : 2026-09-15 (introduit par commit mergé 8ee27ae26, code modale démo).
+- **Sévérité** : P0 — trial, mensuel, toggle Concierge/Pro, démo, vérif token : RIEN ne fonctionnait sur la page (script inline 100 % mort, `SyntaxError: missing ) after argument list`).
+- **Symptôme** : `pageerror` au chargement de `/pro/espace/`, boutons inertes (prix figé 79 €, toggle sans effet, trial/mensuel sans requête).
+- **Cause** : `BEACHES.forEach(b => { ... }` fermé par `}` au lieu de `});` (+ une balise `</ >` malformée dans le template, cosmétique).
+- **Fix** : `}` → `});` + `</p>` (public/pro/espace/index.html) ; garde contrat `vm.Script` sur les 3 blocs inline dans j0-sprint-contract (échec si régression).
+- **Validation** : extraction + `node --check` 3/3 OK · E2E local espace (toggle 29€, shape create_subscription exacte, deep-link, 0 pageerror) · j0 61/61 · distro 60/60.
+- **Statut** : [x] FIXÉ (branche agent/coding/b2b-monthly)
+
 ### BUG-2026-036 — [OUVERT, P1 test-harness] E2E `.sg-maplabel` : prologue partagé timeout en runner (9 tests, local + CI)
 - **Date** : 2026-09-15 · **Sévérité** : P1 (bloque la CI, produit sain)
 - **Symptôme** : 9/21 tests E2E échouent au MÊME prologue (`goto` → `waitForSelector(.sg-maplabel, 30s)` → `waitForTimeout(2000)` ; le wait 30 s consomme le budget du test 30 s → échec arithmétique dès que le sélecteur dépasse ~28 s). Local 12/13, CI 12/21 (2 runs, 2 commits).

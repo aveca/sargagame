@@ -44,6 +44,8 @@ const PASS_PRICES: Record<string, Record<string, number | null>> = {
 const B2B_PLANS: Record<string, { amount: number; currency: string; description: string; interval: string }> = {
   pro_monthly: { amount: 79.00, currency: 'EUR', description: 'Sargasses Pro — mensuel (79 €/mois)', interval: '1 month' },
   brief_monthly: { amount: 29.00, currency: 'EUR', description: 'Sargasses Brief — mensuel (29 €/mois)', interval: '1 month' },
+  pro_monthly_usd: { amount: 89.00, currency: 'USD', description: 'Sargassum Pro — monthly ($89/mo)', interval: '1 month' },
+  brief_monthly_usd: { amount: 39.00, currency: 'USD', description: 'Sargassum Brief — monthly ($39/mo)', interval: '1 month' },
 };
 
 const PASS_DURATIONS: Record<string, number> = { p30: 30, trip7: 7, season: 210 };
@@ -533,7 +535,7 @@ export default {
     // ─── Mollie Webhook ──────────────────────────────────
     if (path === '/api/mollie-webhook' || path === '/api/mollie-webhook.php') {
       if (request.method === 'GET') return new Response(JSON.stringify({ ok: true }), { headers: { 'Content-Type': 'application/json' } });
-      return handleWebhook(request, env);
+      return handleWebhook(request, env, ctx);
     }
 
     // ─── Widget Token ────────────────────────────────────
@@ -1139,7 +1141,7 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
 
 // ─── Webhook Handler ─────────────────────────────────────────────────
 
-async function handleWebhook(request: Request, env: Env): Promise<Response> {
+async function handleWebhook(request: Request, env: Env, ctx?: ExecutionContext): Promise<Response> {
   const raw = await request.text();
   const secret = env.MOLLIE_WEBHOOK_SECRET;
   if (!secret) return new Response(JSON.stringify({ error: 'webhook_unavailable' }), { status: 503 });
@@ -1174,8 +1176,16 @@ async function handleWebhook(request: Request, env: Env): Promise<Response> {
     if (type === 'subscription') {
       const sub = await mollieReq('GET', `v2/subscriptions/${id}`, apiKey);
       const status = sub.status || ''; const metadata = sub.metadata || {}; const planKey = metadata.plan || ''; const cid = sub.customerId || '';
-      if (['subscription.created', 'subscription.updated'].includes(event) && planKey && ['pro_monthly', 'brief_monthly'].includes(planKey) && ['active', 'pending'].includes(status)) await grantB2B(env, cid, planKey, sub.id);
-      if (event === 'subscription.paid' && planKey && ['pro_monthly', 'brief_monthly'].includes(planKey)) await grantB2B(env, cid, planKey, sub.id);
+      if (['subscription.created', 'subscription.updated'].includes(event) && planKey && ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'].includes(planKey) && ['active', 'pending'].includes(status)) {
+        await grantB2B(env, cid, planKey, sub.id);
+        // Funnel B2B : abonnement réellement créé (tracking-only, jamais bloquant).
+        if (event === 'subscription.created') { try { ctx?.waitUntil(supa(env, 'analytics_events', 'POST', { event: 'subscription_created', params: { plan: planKey, subscription_id: sub.id } }).catch(() => {})); } catch (_) {} }
+      }
+      if (event === 'subscription.paid' && planKey && ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'].includes(planKey)) {
+        await grantB2B(env, cid, planKey, sub.id);
+        // Funnel B2B : essai→payé (tracking-only, jamais bloquant).
+        try { ctx?.waitUntil(supa(env, 'analytics_events', 'POST', { event: 'b2b_trial_to_paid', params: { plan: planKey, subscription_id: sub.id } }).catch(() => {})); } catch (_) {}
+      }
       if (['subscription.canceled', 'subscription.expired'].includes(event)) { await kv(env).delete(`mollie_grant_${sub.id}`); await supa(env, 'payment_grants', 'PATCH', { status: 'revoked' }, `?subscription_id=eq.${sub.id}&type=eq.b2b_pro`); }
       await kv(env).put(markerKey, '1', { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: 'subscription', status, event }));

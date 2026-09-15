@@ -27,7 +27,7 @@ const OUT_PATH = path.join(__dirname, 'data', 'funnel-b2b-snapshot.json')
 const DAYS = (() => { const a = process.argv.find((x) => x.startsWith('--days=')); const n = a ? parseInt(a.slice(7), 10) : 90; return Number.isFinite(n) && n > 0 ? n : 90 })()
 const PAGE = 1000 // cap REST Supabase par requête → pagination par Range
 
-const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_paid']
+const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_paid', 'subscription_created']
 
 function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
@@ -55,17 +55,21 @@ async function fetchAll(cutoffIso) {
 }
 
 function compute(rows) {
-  const counts = { trials: 0, activated: 0, paid: 0 }
+  const counts = { trials: 0, activated: 0, paid: 0, subs: 0 }
   const byIsland = {}
   const paidByPlan = {}
   for (const r of rows) {
     const evt = String(r.event || '')
     const isl = (r.island || 'MQ').toUpperCase()
-    byIsland[isl] = byIsland[isl] || { trials: 0, activated: 0, paid: 0 }
+    byIsland[isl] = byIsland[isl] || { trials: 0, activated: 0, paid: 0, subs: 0 }
     if (evt === 'b2b_trial_started') { counts.trials++; byIsland[isl].trials++ }
     else if (evt === 'b2b_widget_activated') { counts.activated++; byIsland[isl].activated++ }
     else if (evt === 'b2b_trial_to_paid') {
       counts.paid++; byIsland[isl].paid++
+      const plan = (r.params && r.params.plan) || 'unknown'
+      paidByPlan[plan] = (paidByPlan[plan] || 0) + 1
+    } else if (evt === 'subscription_created') {
+      counts.subs++; byIsland[isl].subs++
       const plan = (r.params && r.params.plan) || 'unknown'
       paidByPlan[plan] = (paidByPlan[plan] || 0) + 1
     }
@@ -94,7 +98,7 @@ async function main() {
     fs.writeFileSync(OUT_PATH, JSON.stringify(snapshot, null, 2))
     console.log(`[funnel-b2b] écrit ${OUT_PATH}`)
   } catch (e) { console.error('[funnel-b2b] write error:', e && e.message) }
-  console.log(`[funnel-b2b] ${DAYS}j · essais ${f.counts.trials} · activés ${f.counts.activated} · payés ${f.counts.paid} · essai→payé ${f.rates.trial_to_paid}%`)
+  console.log(`[funnel-b2b] ${DAYS}j · essais ${f.counts.trials} · activés ${f.counts.activated} · payés ${f.counts.paid} · abonnements ${f.counts.subs} · essai→payé ${f.rates.trial_to_paid}%`)
 }
 
 main().catch((e) => { console.error('[funnel-b2b] erreur non fatale:', e && e.message); process.exit(0) })

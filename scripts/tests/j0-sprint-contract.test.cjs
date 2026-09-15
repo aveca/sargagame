@@ -77,6 +77,31 @@ for (const ev of NEW_EV) {
 check('pass_offer_view dans FUNNEL_KEYS (2 scripts)', FUN1.includes("'pass_offer_view'") && DAILY.includes("'pass_offer_view'"))
 check('daily-stats ctaViews + altViews + rates', /ctaViews/.test(DAILY) && /alt_view_to_click/.test(DAILY) && /cta_view_to_click/.test(DAILY))
 
+console.log('— OBJ4b B2B monthly front (mission 2026-09-15) —')
+const B2BM = R('src/PremiumModal/B2BModal.jsx')
+const MOLLIB = R('public/api/mollie-lib.php')
+const WH = R('public/api/mollie-webhook.php')
+const WK = R('workers/sg-payments/src/index.ts')
+check('espace toggle Concierge actif en USD (plus de masquage)', !/if\(CUR==="USD"\)\{var _tr/.test(ESPACE))
+check('espace deep-link ?tier= + ?email=', /\?tier=/.test(B2BM) && /get\("tier"\)/.test(ESPACE) && /get\("email"\)/.test(ESPACE))
+check('B2BModal pont mensuel → espace (monthly_bridge)', /monthly_bridge/.test(B2BM) && /\/pro\/espace\/\?tier=/.test(B2BM))
+check('espace télémétrie lead_success (zéro PII)', /sg_b2b_lead_success/.test(ESPACE))
+check('plans USD mensuels PHP (89/39)', /pro_monthly_usd/.test(MOLLIB) && /brief_monthly_usd/.test(MOLLIB))
+check('grant mensuel 30j inclut USD (pas 365)', /'pro_monthly_usd', 'brief_monthly_usd'/.test(MOLLIB))
+check('webhook PHP grants USD + subscription_created + trial_to_paid', /'pro_monthly_usd', 'brief_monthly_usd'/.test(WH) && /subscription_created/.test(WH) && /b2b_trial_to_paid/.test(WH))
+check('worker B2B_PLANS USD + grants USD + analytics', /pro_monthly_usd/.test(WK) && /brief_monthly_usd/.test(WK) && /subscription_created/.test(WK) && /b2b_trial_to_paid/.test(WK))
+check('clés funnel b2b_lead_success + subscription_created', FUN1.includes("'b2b_lead_success'") && FUN1.includes("'subscription_created'") && DAILY.includes("'b2b_lead_success'") && DAILY.includes("'subscription_created'"))
+
+check('espace inline scripts parsables (P0 2026-09-15 : un `)` manquant tuait TOUT le JS espace)', (() => {
+  try {
+    const blocks = [...ESPACE.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1])
+    if (!blocks.length) return false
+    const vm = require('vm')
+    for (const b of blocks) { new vm.Script(b) }
+    return true
+  } catch { return false }
+})())
+
 console.log('— OBJ7 gardes —')
 check('aucun runtime 3D introduit par le sprint (diff git)', (() => {
   try {

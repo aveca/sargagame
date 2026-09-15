@@ -412,8 +412,8 @@
         </div>
         <div id="trialResult" style="display:none;margin-top:14px;padding:14px 16px;border-radius:12px;background:color-mix(in srgb,var(--clean) 12%,var(--paper));border:2px solid var(--clean);color:var(--ink);font-size:14px;line-height:1.55"></div>
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
-          <!-- P1 Concierge 29 € — sélecteur d'offre (EUR uniquement : brief_monthly_usd
-               n'existe pas côté mollie-lib allowlist → toggle masqué en USD).
+          <!-- P1 Concierge 29 € — sélecteur d'offre (EUR + USD : les 4 clés
+               mensuelles existent côté serveur PHP + worker).
                Les 4 clés (brief/pro × mensuel/annuel) existent déjà côté serveur :
                zéro changement money-path, que de la présentation. Rollback : le
                toggle retiré = Pro par défaut (comportement historique intact). -->
@@ -771,23 +771,24 @@
     var MO=CUR==="USD"?"89":"79", YR=CUR==="USD"?"790":"690";
     var PLAN_MO=CUR==="USD"?"pro_monthly_usd":"pro_monthly";
     var PLAN_YR_KEY=CUR==="USD"?"pro_annual_usd":"pro_annual";
-    // P1 Concierge/Brief 29€/mois (EUR) / $39/mo (USD) + Pro 79€/mois (EUR) / $89/mo (USD)
-    // Les 4 clés mensuelles existent côté serveur (mol_b2b_plans) : brief_monthly/pro_monthly + _usd
+    // P1 Concierge/Brief 29€/mois (EUR) / $39/mo (USD) + Pro 79€/mois (EUR) / $89/mo (USD).
+    // Les 4 clés mensuelles existent côté serveur (mol_b2b_plans PHP + B2B_PLANS worker).
     var TIER="pro";
     var PAYLINKS_CACHE=null;
     var BASE_MO=(CUR==="USD"?"89":"79"), BASE_YR=(CUR==="USD"?"790":"690");
     var BASE_PLAN_MO=(CUR==="USD"?"pro_monthly_usd":"pro_monthly"), BASE_PLAN_YR=(CUR==="USD"?"pro_annual_usd":"pro_annual");
     var BRIEF_MO=(CUR==="USD"?"39":"29"), BRIEF_PLAN_MO=(CUR==="USD"?"brief_monthly_usd":"brief_monthly");
-    function tierDef(t){return t==="concierge"?{mo:BRIEF_MO,planMo:BRIEF_PLAN_MO}:{mo:BASE_MO,planMo:BASE_PLAN_MO};}
-    function resolveAnnual(){try{var u=PAYLINKS_CACHE&&PAYLINKS_CACHE[BASE_PLAN_YR]&&PAYLINKS_CACHE[BASE_PLAN_YR].url;if(u){$("subscribe").href=u;}}catch(_){}}
+    var BRIEF_YR=(CUR==="USD"?"390":"290"), BRIEF_PLAN_YR=(CUR==="USD"?"brief_annual_usd":"brief_annual");
+    function tierDef(t){return t==="concierge"?{mo:BRIEF_MO,planMo:BRIEF_PLAN_MO,yr:BRIEF_YR,planYr:BRIEF_PLAN_YR}:{mo:BASE_MO,planMo:BASE_PLAN_MO,yr:BASE_YR,planYr:BASE_PLAN_YR};}
+    function resolveAnnual(){try{var u=PAYLINKS_CACHE&&PAYLINKS_CACHE[PLAN_YR_KEY]&&PAYLINKS_CACHE[PLAN_YR_KEY].url;if(u){$("subscribe").href=u;}}catch(_){}}
     function setTier(t, silent){
       TIER=t;
       var d=tierDef(t);
-      MO=d.mo; PLAN_MO=d.planMo;
+      MO=d.mo; PLAN_MO=d.planMo; YR=d.yr; PLAN_YR_KEY=d.planYr;
       try{
         var _pe=document.querySelector(".price"); if(_pe)_pe.textContent=money(MO);
         var _pm=document.querySelector(".price-mo");
-        if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(BASE_YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
+        if(_pm)_pm.textContent=(LANG==="es"?"/ mes · o ":LANG==="en"?"/ mo · or ":"/ mois · ou ")+money(YR)+(LANG==="es"?"/año":LANG==="en"?"/yr":"/an");
         var _sm=$("subMonthly"); if(_sm)_sm.textContent=subMoLabel();
         var _sa=$("subscribe"); if(_sa)_sa.textContent=subYrLabel();
         var _tc=$("tierConcierge"),_tp=$("tierPro");
@@ -813,7 +814,7 @@
         <div style="background:white;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 40px rgba(0,0,0,.3);position:relative;">
           <button onclick="this.closest('div').remove()" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border:none;background:none;font-size:24px;cursor:pointer;color:#666;">×</button>
           <h3 style="font:800 20px/1.2 'Bricolage Grotesque',sans-serif;color:#0D0B14;margin:0 0 8px;">Voir un exemple pour votre établissement</h3>
-          <p style="font:400 14px/1.5 system-ui,sans-serif;color:#444;margin:0 0 20px;">Choisissez une plage, nous générons l'aperçu widget + brief PDF pour votre établissement.</          >
+            <p style="font:400 14px/1.5 system-ui,sans-serif;color:#444;margin:0 0 20px;">Choisissez une plage, nous générons l'aperçu widget + brief PDF pour votre établissement.</p>
           <form id="demoLeadForm" style="display:flex;flex-direction:column;gap:12px;">
             <input type="email" id="demoEmail" placeholder="votre@email.com" required style="padding:12px 14px;border:2px solid #ddd;border-radius:8px;font:16px system-ui,sans-serif;" autocomplete="email">
             <input type="text" id="demoHotel" placeholder="Nom de votre établissement" style="padding:12px 14px;border:2px solid #ddd;border-radius:8px;font:16px system-ui,sans-serif;">
@@ -835,7 +836,7 @@
         opt.textContent = b[2] + (b[3] === 'GP' ? ' (GP)' : '');
         if (b[0] === demoSlug) opt.selected = true;
         select.appendChild(opt);
-      }
+      });
       // Form submit
       leadModal.querySelector('#demoLeadForm').addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -853,6 +854,7 @@
           });
           const data = await res.json().catch(() => ({}));
           if (data.ok) {
+            try { sgEv("sg_b2b_lead_success", { source: "espace", hotel, beach: beachId }); } catch (_) {}
             leadModal.innerHTML = `
               <div style="background:white;border-radius:16px;padding:32px;max-width:420px;width:100%;text-align:center;box-shadow:0 20px 40px rgba(0,0,0,.3);">
                 <div style="font-size:48px;margin-bottom:12px;">✓</div>
@@ -876,7 +878,12 @@
       // État par défaut sans event (pas de faux tier_select au chargement).
       try{
         var q="";try{q=location.search||"";}catch(_){}
-        if(CUR!=="USD"&&/[?&](offre|tier)=concierge/.test(q)){setTier("concierge");return;}
+        var tm="";try{tm=new URLSearchParams(location.search).get("tier")||"";}catch(_){}
+        // Pont B2BModal mensuel : ?tier=concierge|pro (prioritaire), legacy ?offre=concierge.
+        // brief (id modal) = concierge (id espace).
+        if(tm==="concierge"||tm==="brief"){setTier("concierge");return;}
+        if(tm==="pro"){setTier("pro",true);return;}
+        if(/[?&](offre|tier)=concierge/.test(q)){setTier("concierge");return;}
         setTier("pro", true);
       }catch(_){}
     }
@@ -1025,15 +1032,19 @@
         $("subscribe").addEventListener("click",function(){try{sgEv("sg_b2b_paylink_click",{tier:String(PLAN_YR_KEY||"pro_annual"),source:"espace"});}catch(_){}});
       }
     }).catch(function(){});
-    // Câblage toggle Concierge/Pro (masqué en USD : pas de brief_monthly_usd serveur).
+    // Câblage toggle Concierge/Pro (EUR + USD : les 4 clés mensuelles existent
+    // côté serveur PHP + worker — plus de masquage USD).
     try{
-      if(CUR==="USD"){var _tr=$("tierRow"); if(_tr)_tr.style.display="none";}
-      else{
-        $("tierConcierge").addEventListener("click",function(){setTier("concierge");});
-        $("tierPro").addEventListener("click",function(){setTier("pro");});
-        // Deep-link outbound : /pro/espace/?offre=concierge présélectionne le 29 €.
-        try{setTierInit();}catch(_){}
-      }
+      $("tierConcierge").addEventListener("click",function(){setTier("concierge");});
+      $("tierPro").addEventListener("click",function(){setTier("pro");});
+      // Deep-links : /pro/espace/?offre=concierge (legacy) ou ?tier=concierge|pro
+      // (pont B2BModal mensuel) + ?email= (pré-remplit l'email pro).
+      try{
+        var _tem=$("trialEmail");
+        var _qe=""; try{_qe=new URLSearchParams(location.search).get("email")||"";}catch(_){}
+        if(_qe&&/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(_qe)&&_tem&&!_tem.value)_tem.value=_qe.slice(0,120);
+        setTierInit();
+      }catch(_){}
     }catch(_){}
 
     if(token){

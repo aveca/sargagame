@@ -1,3 +1,42 @@
+## 2026-09-15 16:00 UTC · Agent: coding-agent (b2b-monthly — FINAL, PR à créer)
+
+### Travail effectué
+- **Résumé 1 ligne** : B2B Monthly terminé hors argent réel : P0 JS espace mort trouvé+fixé, mensuel 29€/79€ (+USD) et annuels par tier exposés, trial→token→checkout câblés, grants USD 30j, events manquants émis, preuves locales + live-sûres.
+- **Détails** : voir .ai/changelog.md (entrée B2B MONTHLY 2026-09-15) + BUG-2026-037 [x]. Money-path additif only ; 0 paiement réel créé (garde) ; 0 PII écrite en prod par l'agent.
+
+### Fichiers modifiés
+- `public/api/mollie-lib.php` — isMonthly += USD (fix 365j→30j)
+- `public/api/mollie-webhook.php` — allowlists USD + subscription_created + b2b_trial_to_paid (tracking-only)
+- `workers/sg-payments/src/index.ts` — B2B_PLANS USD + allowlists USD + 2 events (ctx threadé)
+- `public/pro/espace/index.html` — fix `)` P0, toggle USD, ?tier/?email, lead_success, annuels par tier
+- `src/PremiumModal/B2BModal.jsx` — pont mensuel → espace
+- `scripts/automation/funnel-from-supabase.cjs`, `funnel-b2b-from-supabase.cjs` (+compteur subs), `daily-stats-check.cjs`
+- `scripts/tests/worker-auth.contract.test.cjs` (+15 B2B), `j0-sprint-contract.test.cjs` (+10), `distro-contract.test.cjs` (garde PHP allowlist)
+- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`, `.ai/bugs.md`
+
+### Tests réalisés
+- [x] worker-auth.contract 37/37 · j0 61/61 · distro 60/60 · npm test 116/119 (2 fails = filets pré-existants, voir note)
+- [x] build 385 · bundle 37.9 Ko · smoke 4/4 · php -l ×2
+- [x] E2E local espace (tiers/toggle/validation/shape/deep-link/overflow/errors) + annuels live hrefs
+- [x] Probes live sûres MQ+Miami : trial→invalid_email, bogus plan→Plan inconnu, sans email→rejet (zéro appel Mollie)
+- [ ] Mint trial réel / subscription réelle / analytics prod → NON exécutés (gardes — voir rapport §8)
+
+### Problèmes restants
+- [ ] Vérifications live finales §8 (1 curl trial + 1 paiement test + requêtes Supabase) — Sévérité : action fondateur — voir rapport
+- [ ] BUG-2026-036 (playwright label-prologue) toujours ouvert — bloque les merges CI, hors mission
+
+### Prochaine action recommandée
+1. Review + merge PR b2b-monthly (CI verte attendue sauf playwright pré-existant) → deploy-live (workers inclus) → probes §8 — Rôle : release
+2. Exécuter §8 (trial réel + paiement test + analytics) — Rôle : fondateur (1 curl + 1 CB + 2 requêtes)
+3. Monitorer funnel-b2b (trials/subs/paid) — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/b2b-monthly`
+- PR : à créer vers main
+- Commit head : (après commit)
+
+---
+
 ## 2026-09-15 14:00 UTC · Agent: coding-agent (product-ux-reset — FINAL, merge bloqué CI)
 
 ### Travail effectué

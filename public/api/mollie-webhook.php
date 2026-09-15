@@ -170,13 +170,17 @@ try {
 
          // Grant Pro token for B2B monthly subscriptions (active/pending)
          if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
-             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
+             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'], true)) {
                  if (in_array($status, ['active', 'pending'], true)) {
                      $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $island);
                      if (!($result['mirror_ok'] ?? true)) {
                          http_response_code(500);
                          echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
                          exit;
+                     }
+                     // Funnel B2B : abonnement réellement créé (tracking-only, jamais bloquant).
+                     if ($event === 'subscription.created' && function_exists('sg_analytics_event')) {
+                         @sg_analytics_event('subscription_created', ['plan' => $planKey, 'subscription_id' => $subscription->id], $island);
                      }
                  }
              }
@@ -194,7 +198,7 @@ try {
          }
 
          if ($event === 'subscription.paid') {
-             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
+             if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'], true)) {
                  $result = mol_b2b_grant_once($customerId, $planKey, $subscription->id, null, $island);
                  if (!($result['mirror_ok'] ?? true)) {
                      http_response_code(500);
@@ -202,6 +206,11 @@ try {
                      exit;
                  }
                  error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId");
+                 // Funnel B2B : essai→payé (tient la promesse docs/B2B_DELIVERABILITY.md ;
+                 // tracking-only, jamais bloquant).
+                 if (function_exists('sg_analytics_event')) {
+                     @sg_analytics_event('b2b_trial_to_paid', ['plan' => $planKey, 'subscription_id' => $subscription->id], $island);
+                 }
              }
              // B2B Concierge: mark payment confirmed if concierge_id in metadata
              if (isset($metadata['concierge_id']) && isset($metadata['prospect_id'])) {

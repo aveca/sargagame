@@ -41,7 +41,9 @@ const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open
   'nav_tab', 'compare_add', 'compare_open', 'plages_filter', 'home_best_open', 'suivi_alert_toggle',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated', 'b2b_share',
-  'b2b_paylink_click', 'b2b_tier_select', 'b2b_space_open']
+  'b2b_paylink_click', 'b2b_tier_select', 'b2b_space_open',
+  // B2B MONTHLY (2026-09-15) — lead démo abouti + abonnement réellement créé (webhook)
+  'b2b_lead_success', 'subscription_created']
 
 async function fetchAll(cutoffIso) {
   const rows = []

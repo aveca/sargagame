@@ -1,3 +1,12 @@
+## B2B MONTHLY — [x] done local + live-sûr (2026-09-15, PR à créer)
+- **P0 trouvé+fixé** : JS espace 100 % mort (`)` manquant, BUG-2026-037) → trial/mensuel/toggle/démo ressuscités, garde contrat.
+- **Mensuel visible** : Concierge 29€/Pro 79€ (EUR+USD) + annuels PAR TIER (290€/690€, 390$/790$) + paylinks live, comparables côte à côte.
+- **Trial** : offer→CTA→email+établissement→token 30j→accès immédiat→mensuel ; B2BModal pont mensuel (?tier=&email=).
+- **Backend** : grant USD 30j (était 365j), allowlists USD (PHP+worker), plans USD worker, events subscription_created + b2b_trial_to_paid (tracking-only).
+- **Preuves** : worker 37/37 · j0 61/61 · distro 60/60 · build/bundle/smoke verts · php -l · E2E local espace vert · probes live sûres MQ+Miami · paylinks annuels live.
+- **NON prouvé (gardes)** : mint trial réel, subscription réelle, analytics prod → voir rapport §8 (1 curl + 1 paiement fondateur).
+- **NEXT** : merge → deploy → probes §8 → monitorer funnel-b2b.
+
 ## PRODUCT UX RESET — [~] en attente merge (PR #671 CI 5/6, playwright rouge pré-existant BUG-2026-036)
 - **Shippé sur branche** : BottomNav 5 onglets + ExperienceReset.jsx lazy + rollback `?newia=0` prouvé 360/390/430 (0 overflow, 0 tap <44px, 0 pageerror).
 - **Gates** : build 385 · bundle 37.9 · smoke 4/4 · CI non-label 12/12 (money-path vert) · E2E label-prologue 9 échecs pré-existants (feature on/off identique).

@@ -189,7 +189,9 @@ function mol_b2b_grant_once(string $customerId, string $planKey, string $subscri
         return ['granted' => false, 'reason' => 'already_granted', 'token' => $existing, 'mirror_ok' => true];
     }
 
-    $isMonthly = in_array($planKey, ['pro_monthly', 'brief_monthly'], true);
+    // Mensuel = TOUTES les clés *_monthly* (EUR + USD). Oublier une variante ici
+    // offrait 365 j au lieu de 30 j (BUG fix 2026-09-15 : pro_monthly_usd).
+    $isMonthly = in_array($planKey, ['pro_monthly', 'brief_monthly', 'pro_monthly_usd', 'brief_monthly_usd'], true);
     $durationDays = $durationDaysOverride ?? ($isMonthly ? 30 : 365);
     $expiresAt = time() + ($durationDays * 86400);
 
