@@ -1,0 +1,252 @@
+
+Running 8 tests using 8 workers
+
+[1/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:87:3 › Ma plage — free tier › boucle quotidienne : « ça a changé » depuis hier sur la carte
+[2/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:61:3 › Ma plage — free tier › suivre une plage débloque ses 7 jours réels (sans payer)
+[3/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:155:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé
+[4/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:125:3 › Ma plage — free tier › quota épuisé → 2e plage : état actuel gratuit + mur Premium, JAMAIS débloquée
+[5/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:43:3 › Ma plage — free tier › homepage hero: meilleur choix réel + verdict + CTA
+[6/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:204:3 › Ma plage — free tier › mobile 375/390/430 : zéro overflow horizontal sur home + fiche
+[7/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:224:3 › Ma plage — free tier › API 404 → état honnête, aucune donnée fabriquée
+[8/8] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:187:3 › Ma plage — free tier › fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés
+  1) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:125:3 › Ma plage — free tier › quota épuisé → 2e plage : état actuel gratuit + mur Premium, JAMAIS débloquée 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      132 |     })
+      133 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 134 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+          |                ^
+      135 |     await page.locator('button:has-text("Voir →")').first().click()
+      136 |     await page.waitForSelector('.lc-detail', { timeout: 25000 })
+      137 |
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:134:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-275e6-ur-Premium-JAMAIS-débloquée-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-275e6-ur-Premium-JAMAIS-débloquée-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-275e6-ur-Premium-JAMAIS-débloquée-mobile-chromium\error-context.md
+
+
+  2) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:61:3 › Ma plage — free tier › suivre une plage débloque ses 7 jours réels (sans payer) 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      64 |
+      65 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 66 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+         |                ^
+      67 |
+      68 |     // Ouvre la fiche via le héros
+      69 |     await page.locator('button:has-text("Voir →")').first().click()
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:66:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-1992c-s-7-jours-réels-sans-payer--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-1992c-s-7-jours-réels-sans-payer--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-1992c-s-7-jours-réels-sans-payer--mobile-chromium\error-context.md
+
+
+  3) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:87:3 › Ma plage — free tier › boucle quotidienne : « ça a changé » depuis hier sur la carte 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      90 |     // 1ère visite : suit une plage (pose sg_my_beach + snapshot du jour)
+      91 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 92 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+         |                ^
+      93 |     await page.locator('button:has-text("Voir →")').first().click()
+      94 |     const follow = page.locator('button:has-text("Suivre gratuitement cette plage")')
+      95 |     await expect(follow).toBeVisible({ timeout: 15000 })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:92:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-e6ba7--»-depuis-hier-sur-la-carte-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-e6ba7--»-depuis-hier-sur-la-carte-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-e6ba7--»-depuis-hier-sur-la-carte-mobile-chromium\error-context.md
+
+
+  4) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:204:3 › Ma plage — free tier › mobile 375/390/430 : zéro overflow horizontal sur home + fiche 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForSelector: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      212 |
+      213 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 214 |     await page.waitForSelector('.sg-maplabel', { timeout: 45000 })
+          |                ^
+      215 |     await page.waitForTimeout(1500)
+      216 |     await noOverflow() // home
+      217 |
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:214:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-e3e3e-w-horizontal-sur-home-fiche-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-e3e3e-w-horizontal-sur-home-fiche-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-e3e3e-w-horizontal-sur-home-fiche-mobile-chromium\error-context.md
+
+
+  5) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:43:3 › Ma plage — free tier › homepage hero: meilleur choix réel + verdict + CTA 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      43 |   test('homepage hero: meilleur choix réel + verdict + CTA', async ({ page }) => {
+      44 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 45 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+         |                ^
+      46 |
+      47 |     // Kicker « Meilleur choix aujourd'hui » visible
+      48 |     await expect(page.locator('text=/Meilleur choix aujourd/i').first()).toBeVisible({ timeout: 15000 })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:45:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-bd9df-leur-choix-réel-verdict-CTA-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-bd9df-leur-choix-réel-verdict-CTA-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-bd9df-leur-choix-réel-verdict-CTA-mobile-chromium\error-context.md
+
+
+  6) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:224:3 › Ma plage — free tier › API 404 → état honnête, aucune donnée fabriquée 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      226 |
+      227 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 228 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+          |                ^
+      229 |     await page.locator('button:has-text("Voir →")').first().click()
+      230 |     const follow = page.locator('button:has-text("Suivre gratuitement cette plage")')
+      231 |     await expect(follow).toBeVisible({ timeout: 15000 })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:228:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-1acf5-ête-aucune-donnée-fabriquée-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-1acf5-ête-aucune-donnée-fabriquée-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-1acf5-ête-aucune-donnée-fabriquée-mobile-chromium\error-context.md
+
+
+  7) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:155:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      156 |     await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
+      157 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 158 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+          |                ^
+      159 |     await page.locator('button:has-text("Voir →")').first().click()
+      160 |     await page.locator('button:has-text("Suivre gratuitement cette plage")').click()
+      161 |     await expect(page.locator('text=/Ta plage · offerts/i')).toBeVisible({ timeout: 15000 })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:158:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-c88d4-non-recompté-accès-conservé-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-c88d4-non-recompté-accès-conservé-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-c88d4-non-recompté-accès-conservé-mobile-chromium\error-context.md
+
+
+  8) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:187:3 › Ma plage — free tier › fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés 
+
+    Test timeout of 30000ms exceeded.
+
+    TimeoutError: page.waitForSelector: Timeout 30000ms exceeded.
+    Call log:
+      - waiting for locator('.sg-maplabel') to be visible
+
+
+      188 |     await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
+      189 |     await page.goto('/', { waitUntil: 'domcontentloaded' })
+    > 190 |     await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+          |                ^
+      191 |     await page.locator('button:has-text("Voir →")').first().click()
+      192 |
+      193 |     // État actuel LABELLÉ « MAINTENANT » + strip PRÉVISION 7 JOURS distinct
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:190:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-fea43-N-sont-visuellement-séparés-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-fea43-N-sont-visuellement-séparés-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-fea43-N-sont-visuellement-séparés-mobile-chromium\error-context.md
+
+
+  8 failed
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:43:3 › Ma plage — free tier › homepage hero: meilleur choix réel + verdict + CTA 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:61:3 › Ma plage — free tier › suivre une plage débloque ses 7 jours réels (sans payer) 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:87:3 › Ma plage — free tier › boucle quotidienne : « ça a changé » depuis hier sur la carte 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:125:3 › Ma plage — free tier › quota épuisé → 2e plage : état actuel gratuit + mur Premium, JAMAIS débloquée 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:155:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:187:3 › Ma plage — free tier › fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:204:3 › Ma plage — free tier › mobile 375/390/430 : zéro overflow horizontal sur home + fiche 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:224:3 › Ma plage — free tier › API 404 → état honnête, aucune donnée fabriquée 

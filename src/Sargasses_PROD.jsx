@@ -3038,23 +3038,23 @@ function BottomNav({view,onChangeView,lang,premiumOpen,glass=false,isPremium=fal
       {id:"premium",label:LL.navPremium,g:"◆"},
     ]
     if(isPremium) return(
-      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"8px 4px max(12px,env(safe-area-inset-bottom))"}}>
+      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"6px 2px max(10px,env(safe-area-inset-bottom))"}}>
         {tabs.filter(t=>t.id!=="premium").map(t=>{
           const active=(view===t.id)||(t.id==="map"&&view==="map");
-          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:12,fontWeight:active?800:700,padding:"4px 10px",minHeight:48,minWidth:56,justifyContent:"center",opacity:active?1:.75}}>
+          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:11.5,fontWeight:active?800:700,padding:"4px 6px",minHeight:48,minWidth:52,justifyContent:"center",position:"relative",opacity:active?1:.85}}>
             {active&&<div style={{position:"absolute",top:-2,width:24,height:3,borderRadius:2,background:C.gold}}/>}
-            <span style={{fontSize:20,lineHeight:1}}>{t.g}</span><span>{t.label}</span>
+            <span style={{fontSize:19,lineHeight:1}}>{t.g}</span><span>{t.label}</span>
           </button>)})}
       </nav>
     )
     return(
-      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"8px 4px max(12px,env(safe-area-inset-bottom))"}}>
+      <nav className="sg-bottom-nav" style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1040,display:"flex",justifyContent:"space-around",alignItems:"stretch",background:"var(--sg-card,#fff)",borderTop:"2.5px solid var(--sg-ink,#0d0b14)",boxShadow:"0 -4px 0 -1px var(--sg-ink,#0d0b14)",padding:"6px 2px max(10px,env(safe-area-inset-bottom))"}}>
         {tabs.map(t=>{
           const active=t.id==="premium"?premiumOpen:(view===t.id);
           const isPr=t.id==="premium"
-          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:isPr?12:12,fontWeight:active?800:700,padding:"4px 8px",position:"relative",minHeight:48,minWidth:isPr?60:52,justifyContent:"center",opacity:active?1:.78}}>
+          return(<button key={t.id} onClick={()=>onChangeView(t.id)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:2,background:"none",border:"none",cursor:"pointer",color:"var(--sg-ink,#0d0b14)",fontFamily:"'Bricolage Grotesque',sans-serif",fontSize:11.5,fontWeight:active?800:700,padding:"4px 4px",position:"relative",minHeight:48,minWidth:isPr?54:52,justifyContent:"center",opacity:active?1:.85}}>
             {active&&<div style={{position:"absolute",top:-2,width:24,height:3,borderRadius:2,background:C.gold}}/>}
-            <span style={isPr?{width:30,height:30,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",background:active?"linear-gradient(135deg,#FFC72C,#E8A800)":"#FFE47A",border:"2px solid var(--sg-ink,#0d0b14)",boxShadow:"2px 2px 0 var(--sg-ink,#0d0b14)",fontSize:15}:{fontSize:20,lineHeight:1}}>{t.g}</span>
+            <span style={isPr?{width:29,height:29,borderRadius:999,display:"flex",alignItems:"center",justifyContent:"center",background:active?"linear-gradient(135deg,#FFC72C,#E8A800)":"#FFE47A",border:"2px solid var(--sg-ink,#0d0b14)",boxShadow:"2px 2px 0 var(--sg-ink,#0d0b14)",fontSize:14}:{fontSize:19,lineHeight:1}}>{t.g}</span>
             <span>{t.label}</span>
           </button>)})}
       </nav>

@@ -1,0 +1,228 @@
+
+Running 8 tests using 8 workers
+
+[1/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:231:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Carte → retour à la carte depuis Plages
+[2/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:176:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Plages → vue liste (BeachListView)
+[3/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut
+[4/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:351:3 › Smoke essentiel — redesign funnel › FUNNEL_REACHED=map+fiche+paywall respecté (post-redesign)
+[5/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:276:3 › FABs allégés — Redesign funnel UX (2026-08-11) › seulement 2 FABs restants sur la carte (SargaChat + Archipel)
+[6/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:312:3 › CTA Paywall clarifié — Redesign funnel UX (2026-08-11) › verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte')
+[7/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium
+[8/8] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:264:3 › BottomNav — Redesign funnel UX (2026-08-11) › rollback ?sgnav=0 cache la BottomNav
+  1) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:312:3 › CTA Paywall clarifié — Redesign funnel UX (2026-08-11) › verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte') 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+      313 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      314 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 315 |     await page.waitForTimeout(2000)
+          |                ^
+      316 |     await dismissCookieBanner(page)
+      317 |
+      318 |     // Clic sur une plage → verdict
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:315:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-CTA-a12cf-ium-pas-Activer-mon-alerte--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-CTA-a12cf-ium-pas-Activer-mon-alerte--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-CTA-a12cf-ium-pas-Activer-mon-alerte--mobile-chromium\error-context.md
+
+
+  2) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+      212 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      213 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 214 |     await page.waitForTimeout(2000)
+          |                ^
+      215 |     await dismissCookieBanner(page)
+      216 |     await dismissPremiumModal(page)
+      217 |     await page.waitForTimeout(1000)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:214:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\error-context.md
+
+
+  3) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:276:3 › FABs allégés — Redesign funnel UX (2026-08-11) › seulement 2 FABs restants sur la carte (SargaChat + Archipel) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      284 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      285 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 286 |     await page.waitForTimeout(2000)
+          |                ^
+      287 |     // Still dismiss any overlays that snuck in
+      288 |     await dismissPremiumModal(page)
+      289 |     await dismissCookieBanner(page)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:286:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-FAB-aca43-a-carte-SargaChat-Archipel--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-FAB-aca43-a-carte-SargaChat-Archipel--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-FAB-aca43-a-carte-SargaChat-Archipel--mobile-chromium\error-context.md
+
+
+  4) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      155 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      156 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 157 |     await page.waitForTimeout(2000)
+          |                ^
+      158 |     // Must dismiss cookie banner FIRST — it covers the BottomNav
+      159 |     await dismissCookieBanner(page)
+      160 |     await dismissPremiumModal(page)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:157:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\error-context.md
+
+
+  5) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:176:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Plages → vue liste (BeachListView) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      178 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      179 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 180 |     await page.waitForTimeout(2000)
+          |                ^
+      181 |     await dismissCookieBanner(page)
+      182 |     await dismissPremiumModal(page)
+      183 |     await page.waitForTimeout(1000)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:180:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-16159--→-vue-liste-BeachListView--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-16159--→-vue-liste-BeachListView--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-16159--→-vue-liste-BeachListView--mobile-chromium\error-context.md
+
+
+  6) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:351:3 › Smoke essentiel — redesign funnel › FUNNEL_REACHED=map+fiche+paywall respecté (post-redesign) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      355 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      356 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 357 |     await page.waitForTimeout(2000)
+          |                ^
+      358 |     await dismissCookieBanner(page)
+      359 |
+      360 |     // MAP atteinte
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:357:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Smo-46ce3-all-respecté-post-redesign--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Smo-46ce3-all-respecté-post-redesign--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Smo-46ce3-all-respecté-post-redesign--mobile-chromium\error-context.md
+
+
+  7) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:264:3 › BottomNav — Redesign funnel UX (2026-08-11) › rollback ?sgnav=0 cache la BottomNav 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      265 |     await page.goto(TEST_URL + "?sgnav=0", { waitUntil: "load", timeout: 60000 })
+      266 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 267 |     await page.waitForTimeout(2000)
+          |                ^
+      268 |
+      269 |     // La BottomNav ne doit PAS être visible
+      270 |     const navVisible = await page.locator(selectors.bottomNav).first().isVisible({ timeout: 2000 }).catch(() => false)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:267:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-57267--sgnav-0-cache-la-BottomNav-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-57267--sgnav-0-cache-la-BottomNav-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-57267--sgnav-0-cache-la-BottomNav-mobile-chromium\error-context.md
+
+
+  8) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:231:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Carte → retour à la carte depuis Plages 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Test timeout of 30000ms exceeded.
+
+      233 |     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+      234 |     await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    > 235 |     await page.waitForTimeout(2000)
+          |                ^
+      236 |     await dismissCookieBanner(page)
+      237 |
+      238 |     // Aller sur l'onglet Plages
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:235:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-14b32-ur-à-la-carte-depuis-Plages-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-14b32-ur-à-la-carte-depuis-Plages-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-14b32-ur-à-la-carte-depuis-Plages-mobile-chromium\error-context.md
+
+
+  8 failed
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:176:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Plages → vue liste (BeachListView) 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:231:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Carte → retour à la carte depuis Plages 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:264:3 › BottomNav — Redesign funnel UX (2026-08-11) › rollback ?sgnav=0 cache la BottomNav 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:276:3 › FABs allégés — Redesign funnel UX (2026-08-11) › seulement 2 FABs restants sur la carte (SargaChat + Archipel) 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:312:3 › CTA Paywall clarifié — Redesign funnel UX (2026-08-11) › verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte') 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:351:3 › Smoke essentiel — redesign funnel › FUNNEL_REACHED=map+fiche+paywall respecté (post-redesign) 

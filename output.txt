@@ -1,0 +1,536 @@
+
+Running 90 tests using 8 workers
+
+[1/90] [mobile-chromium] › tests\e2e\b2b-flow.spec.ts:6:3 › B2B Pro Flow › pro pricing page loads with CTA buttons
+[2/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:53:3 › Around Me Intelligence (flag gated) › opens with flag, no geolocation prompt on load
+[3/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium
+[4/90] [mobile-chromium] › tests\e2e\b2b-flow.spec.ts:61:3 › B2B Pro Flow › no horizontal scroll on /pro/ at mobile viewport
+[5/90] [mobile-chromium] › tests\e2e\b2b-flow.spec.ts:29:3 › B2B Pro Flow › trial form accepts email and submits
+[6/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:176:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Plages → vue liste (BeachListView)
+[7/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut
+[8/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:231:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Carte → retour à la carte depuis Plages
+[9/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:264:3 › BottomNav — Redesign funnel UX (2026-08-11) › rollback ?sgnav=0 cache la BottomNav
+[10/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:276:3 › FABs allégés — Redesign funnel UX (2026-08-11) › seulement 2 FABs restants sur la carte (SargaChat + Archipel)
+[11/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:312:3 › CTA Paywall clarifié — Redesign funnel UX (2026-08-11) › verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte')
+[12/90] [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:351:3 › Smoke essentiel — redesign funnel › FUNNEL_REACHED=map+fiche+paywall respecté (post-redesign)
+[13/90] [mobile-chromium] › tests\e2e\contract-pass-one-time.spec.ts:24:3 › Contract — Pass one-time Mollie › contract: doSubscribe passe one-time = create_payment, jamais create_subscription
+[mobile-chromium] › tests\e2e\contract-pass-one-time.spec.ts:24:3 › Contract — Pass one-time Mollie › contract: doSubscribe passe one-time = create_payment, jamais create_subscription
+CONTRACT PASS — Source audit OK : create_payment pour passCtx, create_subscription réservé au non-passCtx
+
+[14/90] [mobile-chromium] › tests\e2e\contract-pass-one-time.spec.ts:51:3 › Contract — Pass one-time Mollie › DOM du paywall : titre mentionne le pass, jamais "essai gratuit"
+[15/90] [mobile-chromium] › tests\e2e\distro.spec.ts:6:3 › Distro P0 — /aujourdhui/ › page today : h1 intention + liens fiches + canonical self
+[16/90] [mobile-chromium] › tests\e2e\distro.spec.ts:24:3 › Distro P1 — presse & soutenir › /presse/ : 3 angles + graphiques + méthodologie
+[17/90] [mobile-chromium] › tests\e2e\distro.spec.ts:34:3 › Distro P1 — presse & soutenir › /soutenir/ : paliers sans reçu fiscal ni mélange premium
+  1) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('nav.sg-bottom-nav button:has-text("Premium")').first()
+    Expected: visible
+    Timeout: 3000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 3000ms
+      - waiting for locator('nav.sg-bottom-nav button:has-text("Premium")').first()
+
+
+      171 |     await expect(mapTab).toBeVisible({ timeout: 3000 })
+      172 |     await expect(listTab).toBeVisible({ timeout: 3000 })
+    > 173 |     await expect(premiumTab).toBeVisible({ timeout: 3000 })
+          |                              ^
+      174 |   })
+      175 |
+      176 |   test("onglet Plages → vue liste (BeachListView)", async ({ page }) => {
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:173:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-bc358-ble-sur-la-carte-par-défaut-mobile-chromium\error-context.md
+
+
+[18/90] [mobile-chromium] › tests\e2e\distro.spec.ts:56:3 › Distro P1 — espace Concierge › défaut : Pro 79 € (rollback implicite sans param)
+[19/90] [mobile-chromium] › tests\e2e\distro.spec.ts:45:3 › Distro P1 — espace Concierge › ?offre=concierge présélectionne le 29 €
+[20/90] [mobile-chromium] › tests\e2e\forecast-lock-diagnostic.spec.ts:4:3 › Forecast Lock Click Diagnostic › MQ mobile: forecast lock click fires sg_forecast_lock_click
+[21/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:82:3 › Funnel Principal B2C › carte → fiche → paywall: funnel reaché + events trackés
+[22/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:169:3 › Funnel Principal B2C › paywall affiche le CTA Premium
+  2) [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('nav.sg-bottom-nav button:has-text("Premium")').first()
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('nav.sg-bottom-nav button:has-text("Premium")').first()
+
+
+      220 |     // Clic sur l'onglet Premium
+      221 |     const premiumTab = page.locator(selectors.bottomNavTabPremium).first()
+    > 222 |     await expect(premiumTab).toBeVisible({ timeout: 5000 })
+          |                              ^
+      223 |     await premiumTab.click()
+      224 |     await page.waitForTimeout(1500)
+      225 |
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\bottomnav-redesign.spec.ts:222:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-bottomnav-redesign-Bot-9f92c-vent-sg-nav-tab-tab-premium-mobile-chromium\error-context.md
+
+
+[23/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:212:3 › Funnel Principal B2C › pas d'erreurs JS critiques au chargement
+[24/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:198:3 › Funnel Principal B2C › rollback ?flag=0 désactive le paywall
+[25/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:235:3 › Funnel Payment — Checkout Flow › paywall → email → CTA checkout visible
+[26/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:266:3 › Funnel Payment — Checkout Flow › paywall affiche les passes (trip7, p30, season)
+[27/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:288:3 › Funnel Payment — Checkout Flow › rollback ?pwcomic=0 désactive la variante comic
+[28/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:317:3 › Funnel Payment — Premium State › premium localStorage: activation après paiement mocké
+[29/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:337:3 › Funnel Payment — Premium State › premium state persistence across reload
+[30/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:358:3 › Funnel Payment — Premium State › premium state: pas de paywall auto-ouvert sans deep link
+[mobile-chromium] › tests\e2e\forecast-lock-diagnostic.spec.ts:4:3 › Forecast Lock Click Diagnostic › MQ mobile: forecast lock click fires sg_forecast_lock_click
+Forecast charts: 23
+
+Locked overlays: 0
+
+Débloquer text elements: 0
+
+Locked style elements: 0
+
+Lock elements: 3
+
+Role buttons: 12
+
+Divs with SVG: 25
+
+Chart div 0 children: 662, HTML length: 172826
+
+Chart div 1 children: 660, HTML length: 172474
+
+Chart div 2 children: 40, HTML length: 3445
+
+[31/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:384:3 › Funnel Payment — Reduced Motion › reduced-motion: RM_INFINITE=[] (no infinite CSS animations on body/root)
+[32/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:408:3 › Funnel Payment — Reduced Motion › reduced-motion: paywall pas d'animation infinie
+[33/90] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:438:3 › Funnel Payment — Multi-Region › EUR region (MQ): paywall affiche prix EUR
+[34/90] [mobile-chromium] › tests\e2e\identity-step.spec.ts:18:3 › Identity step — checkout › A/B : email identity → user_id serveur + chip identité, Google absent sans client_id
+[35/90] [mobile-chromium] › tests\e2e\identity-step.spec.ts:68:3 › Identity step — checkout › C : rollback ?sgauth=0 → aucune étape identification, email seul
+[36/90] [mobile-chromium] › tests\e2e\identity-step.spec.ts:82:3 › Identity step — checkout › Contrat : doSubscribe joint authToken aux create_payment + events identité trackés
+[37/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:89:3 › J0 sprint — CRO paywall order › défaut : offre AVANT email
+[38/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:104:3 › J0 sprint — CRO paywall order › rollback ?sgpayorder=0 : email AVANT offre
+[39/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:119:3 › J0 sprint — CRO paywall order › clic CTA ouvre le checkout + event aval tracké (pas de CTA fantôme)
+[40/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:140:3 › J0 sprint — fiche plage › verdict couvert : planB OU repli honnête OU clean + vote terrain présent
+[41/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:159:3 › J0 sprint — fiche plage › vote terrain émet sg_beach_report
+[42/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:170:3 › J0 sprint — fiche plage › rapport du jour : modale + bouton WhatsApp
+  3) [mobile-chromium] › tests\e2e\around-me.spec.ts:53:3 › Around Me Intelligence (flag gated) › opens with flag, no geolocation prompt on load 
+
+    Test timeout of 30000ms exceeded while running "beforeEach" hook.
+
+      19 | test.describe("Around Me Intelligence (flag gated)", () => {
+      20 |   test.describe.configure({ mode: "serial" })
+    > 21 |   test.beforeEach(async ({ page }) => {
+         |        ^
+      22 |     await page.addInitScript(() => {
+      23 |       // Clear stale premium state to prevent modal auto-open
+      24 |       localStorage.removeItem("sg_premium")
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\around-me.spec.ts:21:8
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:4173/?world_around_me=1", waiting until "networkidle"
+
+
+      48 |       })
+      49 |     })
+    > 50 |     await page.goto(BASE_URL + WORLD_FLAG, { waitUntil: "networkidle" })
+         |                ^
+      51 |   })
+      52 |
+      53 |   test("opens with flag, no geolocation prompt on load", async ({ page }) => {
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\around-me.spec.ts:50:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-around-me-Around-Me-In-65ffc--geolocation-prompt-on-load-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-around-me-Around-Me-In-65ffc--geolocation-prompt-on-load-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-around-me-Around-Me-In-65ffc--geolocation-prompt-on-load-mobile-chromium\error-context.md
+
+
+[43/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:68:3 › Around Me Intelligence (flag gated) › click locate button triggers geolocation
+[44/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:88:3 › Around Me Intelligence (flag gated) › permission accepted -> sorts by distance (Martinique center)
+[45/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:109:3 › Around Me Intelligence (flag gated) › permission denied -> falls back to region bbox center
+[46/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:128:3 › Around Me Intelligence (flag gated) › Paris coordinates -> honest empty state (outside coverage)
+[47/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:146:3 › Around Me Intelligence (flag gated) › funnel unchanged: map+fiche+paywall still reachable
+[48/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:172:3 › Around Me Intelligence (flag gated) › sort panel toggles between distance and score
+[49/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:198:3 › Around Me Intelligence (flag gated) › rollback ?world_around_me=0 disables feature completely
+[50/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:205:3 › Around Me Intelligence (flag gated) › paywall gating: locked beach opens paywall not beach sheet
+[51/90] [mobile-chromium] › tests\e2e\around-me.spec.ts:232:3 › Around Me Intelligence (flag gated) › opt-out géoloc: refuse stores optout, no banner on reload
+  4) [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:140:3 › J0 sprint — fiche plage › verdict couvert : planB OU repli honnête OU clean + vote terrain présent 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0
+    Received:    -1
+
+      53 |     return -1
+      54 |   })
+    > 55 |   expect(tapIdx).toBeGreaterThanOrEqual(0)
+         |                  ^
+      56 |   await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+      57 |   // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
+      58 |   const comic = page.locator(".lc-detail").first()
+        at openFirstBeach (C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:55:18)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:142:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--a465b--clean-vote-terrain-présent-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--a465b--clean-vote-terrain-présent-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-j0-sprint-J0-sprint-—--a465b--clean-vote-terrain-présent-mobile-chromium\error-context.md
+
+
+  5) [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:104:3 › J0 sprint — CRO paywall order › rollback ?sgpayorder=0 : email AVANT offre 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0
+    Received:    -1
+
+      112 |       return el ? el.getBoundingClientRect().top + window.scrollY : -1
+      113 |     })
+    > 114 |     expect(offerY).toBeGreaterThanOrEqual(0)
+          |                    ^
+      115 |     expect(emailY).toBeGreaterThanOrEqual(0)
+      116 |     expect(emailY).toBeLessThan(offerY)
+      117 |   })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:114:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--99bdd-ayorder-0-email-AVANT-offre-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--99bdd-ayorder-0-email-AVANT-offre-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-j0-sprint-J0-sprint-—--99bdd-ayorder-0-email-AVANT-offre-mobile-chromium\error-context.md
+
+
+[52/90] [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:184:3 › J0 sprint — espace B2B › /pro/espace/ : trial + widget + paylink présents
+[53/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:57:3 › Ma plage — free tier › homepage hero: meilleur choix réel + verdict + CTA
+[54/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:82:3 › Ma plage — free tier › suivre une plage débloque ses 7 jours réels (sans payer)
+  6) [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:159:3 › J0 sprint — fiche plage › vote terrain émet sg_beach_report 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0
+    Received:    -1
+
+      53 |     return -1
+      54 |   })
+    > 55 |   expect(tapIdx).toBeGreaterThanOrEqual(0)
+         |                  ^
+      56 |   await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+      57 |   // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
+      58 |   const comic = page.locator(".lc-detail").first()
+        at openFirstBeach (C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:55:18)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:161:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--ff551-errain-émet-sg-beach-report-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--ff551-errain-émet-sg-beach-report-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-j0-sprint-J0-sprint-—--ff551-errain-émet-sg-beach-report-mobile-chromium\error-context.md
+
+
+  7) [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:170:3 › J0 sprint — fiche plage › rapport du jour : modale + bouton WhatsApp 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 0
+    Received:    -1
+
+      53 |     return -1
+      54 |   })
+    > 55 |   expect(tapIdx).toBeGreaterThanOrEqual(0)
+         |                  ^
+      56 |   await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+      57 |   // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
+      58 |   const comic = page.locator(".lc-detail").first()
+        at openFirstBeach (C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:55:18)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\j0-sprint.spec.ts:171:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-j0-sprint-J0-sprint-—--b53a9-jour-modale-bouton-WhatsApp-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-j0-sprint-J0-sprint-—--b53a9-jour-modale-bouton-WhatsApp-mobile-chromium\error-context.md
+
+
+[55/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:117:3 › Ma plage — free tier › boucle quotidienne : « ça a changé » depuis hier sur la carte
+[56/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:164:3 › Ma plage — free tier › quota épuisé → 2e plage : état actuel gratuit + mur Premium, JAMAIS débloquée
+[57/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:194:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé
+[58/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:229:3 › Ma plage — free tier › fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés
+  8) [mobile-chromium] › tests\e2e\identity-step.spec.ts:18:3 › Identity step — checkout › A/B : email identity → user_id serveur + chip identité, Google absent sans client_id 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('button').filter({ hasText: /Commencer maintenant|Débloquer|Start now/i }).first()
+
+
+      38 |     // Ouvrir le checkout (clic sur le CTA de l'offre pass)
+      39 |     const buyBtn = page.locator('button').filter({ hasText: /Commencer maintenant|Débloquer|Start now/i }).first();
+    > 40 |     await buyBtn.click({ timeout: 10000 });
+         |                  ^
+      41 |     await page.waitForTimeout(1500);
+      42 |
+      43 |     // Le bouton Google est masqué (client_id vide côté build local)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\identity-step.spec.ts:40:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-identity-step-Identity-464ba-oogle-absent-sans-client-id-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-identity-step-Identity-464ba-oogle-absent-sans-client-id-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-identity-step-Identity-464ba-oogle-absent-sans-client-id-mobile-chromium\error-context.md
+
+
+  9) [mobile-chromium] › tests\e2e\identity-step.spec.ts:68:3 › Identity step — checkout › C : rollback ?sgauth=0 → aucune étape identification, email seul 
+
+    TimeoutError: locator.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('button').filter({ hasText: /Commencer maintenant|Débloquer|Start now/i }).first()
+
+
+      70 |     await page.waitForTimeout(2500);
+      71 |     const buyBtn = page.locator('button').filter({ hasText: /Commencer maintenant|Débloquer|Start now/i }).first();
+    > 72 |     await buyBtn.click({ timeout: 10000 });
+         |                  ^
+      73 |     await page.waitForTimeout(1500);
+      74 |     await expect(page.locator('[data-testid="sg-identity-chip"]')).toHaveCount(0);
+      75 |     await expect(page.locator('[data-testid="sg-google-button"]')).toHaveCount(0);
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\identity-step.spec.ts:72:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-identity-step-Identity-5f311-e-identification-email-seul-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-identity-step-Identity-5f311-e-identification-email-seul-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-identity-step-Identity-5f311-e-identification-email-seul-mobile-chromium\error-context.md
+
+
+[59/90] [mobile-chromium] › tests\e2e\mollie-payment.spec.ts:25:1 › mollie-payment-flow-smoke
+[60/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:246:3 › Ma plage — free tier › mobile 375/390/430 : zéro overflow horizontal sur home + fiche
+[61/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:129:3 › Money-path B2C — régressions 2026-08-23 › T1 — carte: create_payment porte redirectUrl app + cents EUR + grant local au succès
+[62/90] [mobile-chromium] › tests\e2e\ma-plage.spec.ts:266:3 › Ma plage — free tier › API 404 → état honnête, aucune donnée fabriquée
+[63/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:164:8 › Money-path B2C — régressions 2026-08-23 › T2 — wallet Google Pay: consentement requis avant tout POST, puis 1 seul create_payment
+[64/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:185:8 › Money-path B2C — régressions 2026-08-23 › T3 — wallet: erreur API Mollie → message utilisateur visible + bouton réutilisable (jamais muet)
+[65/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:202:3 › Money-path B2C — régressions 2026-08-23 › T4 — ?pass=pNN exige une preuve de paiement (session_id)
+[66/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:223:3 › Money-path B2C — régressions 2026-08-23 › T5 — ?mollie_return=1 : paiement confirmé → grant + purge + anti-replay
+[67/90] [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:269:8 › Money-path B2C — régressions 2026-08-23 › T6 — Échap ferme l'overlay checkout (paywall intact), puis le paywall
+[68/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:107:3 › P1-03 — Week Hub / Prévisions 7 jours › 1-3) preview fiche: prévisions visibles, J0 libre, jours suivants verrouillés
+[69/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:123:3 › P1-03 — Week Hub / Prévisions 7 jours › 4) clic lock preview → paywall réel + sg_forecast_lock_click
+[70/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:136:3 › P1-03 — Week Hub / Prévisions 7 jours › 5) clavier Enter/Space sur lock preview → paywall
+[71/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:155:3 › P1-03 — Week Hub / Prévisions 7 jours › 6) fiche complète: lock overlay → paywall + event, aucune Interaction perdue
+[72/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:173:3 › P1-03 — Week Hub / Prévisions 7 jours › 7) retour fiche → carte
+[73/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:181:3 › P1-03 — Week Hub / Prévisions 7 jours › 8) changement de plage → même structure 7j
+[74/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:194:3 › P1-03 — Week Hub / Prévisions 7 jours › 9) état stale: données retardées → badge honnête
+  10) [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:129:3 › Money-path B2C — régressions 2026-08-23 › T1 — carte: create_payment porte redirectUrl app + cents EUR + grant local au succès 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('button:has-text("Commencer maintenant"), button:has-text("Start now"), button:has-text("Empezar ahora")').first()
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 15000ms
+      - waiting for locator('button:has-text("Commencer maintenant"), button:has-text("Start now"), button:has-text("Empezar ahora")').first()
+
+
+      89 |   await page.waitForTimeout(900)
+      90 |   const buy = page.locator('button:has-text("Commencer maintenant"), button:has-text("Start now"), button:has-text("Empezar ahora")').first()
+    > 91 |   await expect(buy).toBeVisible({ timeout: 15000 })
+         |                     ^
+      92 |   // Dispatch DOM direct (déterministe) : le sheet animé + scrollable rend les clics
+      93 |   // géométriques instables (coordonnées shiftées pendant sgPwEnter / scroll).
+      94 |   await buy.evaluate((el: HTMLElement) => el.click())
+        at openCheckout (C:\Users\user\Documents\Backup\sargagame\tests\e2e\money-path-regression.spec.ts:91:21)
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\money-path-regression.spec.ts:131:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-money-path-regression--9673d-s-EUR-grant-local-au-succès-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-money-path-regression--9673d-s-EUR-grant-local-au-succès-mobile-chromium\error-context.md
+
+
+[75/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:210:3 › P1-03 — Week Hub / Prévisions 7 jours › 10) état empty: aucune donnée weekly → strip lock fallback honnête
+[76/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:224:3 › P1-03 — Week Hub / Prévisions 7 jours › 11) mobile 390×844: aucun overflow horizontal, touch ≥44px
+[77/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:235:3 › P1-03 — Week Hub / Prévisions 7 jours › 12) desktop 1920×1080: fiche lisible, prévisions visibles
+[78/90] [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:244:3 › P1-03 — Week Hub / Prévisions 7 jours › 13) ?prev_az=1: ForecastChart lock → clic ouvre le beat (comportement réel promu)
+[79/90] [mobile-chromium] › tests\e2e\pay-consent-deadclick.spec.ts:26:3 › Pay consent dead-click — feedback au lieu de mort › tap Payer sans cocher la case → erreur guidée au lieu de dead click
+[80/90] [mobile-chromium] › tests\e2e\pay-consent-deadclick.spec.ts:46:3 › Pay consent dead-click — feedback au lieu de mort › tap Payer après avoir coché → pas d'erreur consent
+[81/90] [mobile-chromium] › tests\e2e\responsive.spec.ts:7:3 › Responsive Layouts › map loads with visible pins
+[82/90] [mobile-chromium] › tests\e2e\responsive.spec.ts:16:3 › Responsive Layouts › BottomNav visible
+[83/90] [mobile-chromium] › tests\e2e\responsive.spec.ts:25:3 › Responsive Layouts › no horizontal scroll
+[84/90] [mobile-chromium] › tests\e2e\sticky-cta-tap.spec.ts:24:3 › Sticky CTA — surface de tap complète (money path) › tap sur la zone texte de la barre sticky → ouvre le checkout
+[85/90] [mobile-chromium] › tests\e2e\sticky-cta-tap.spec.ts:34:3 › Sticky CTA — surface de tap complète (money path) › tap sur la zone badges (droite) de la barre sticky → ouvre le checkout
+  11) [mobile-chromium] › tests\e2e\ma-plage.spec.ts:194:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: locator.waitFor: Test timeout of 30000ms exceeded.
+    Call log:
+      - waiting for locator('.bsc-sheet, .lc-detail, .sheet').first() to be visible
+
+
+      214 |     await page.locator('button[aria-label="Ma plage"], button[aria-label="My beach"], button[aria-label="Mi playa"]').first().click({ force: true })
+      215 |     // Detail sheet can be .bsc-sheet (comic), .lc-detail (legacy), or .sheet
+    > 216 |     await page.locator('.bsc-sheet, .lc-detail, .sheet').first().waitFor({ state: 'visible', timeout: 25000 })
+          |                                                                  ^
+      217 |
+      218 |     // Re-ouverture : toujours débloquée, 0 cadenas, quota IDENTIQUE (pas re-compté)
+      219 |     await expect(page.locator('text=/Ta plage · offerts/i')).toBeVisible({ timeout: 15000 })
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\ma-plage.spec.ts:216:66
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-ma-plage-Ma-plage-—-fr-c88d4-non-recompté-accès-conservé-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-ma-plage-Ma-plage-—-fr-c88d4-non-recompté-accès-conservé-mobile-chromium\error-context.md
+
+
+[86/90] [mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:92:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: forecast lock keyboard Enter/Space
+  12) [mobile-chromium] › tests\e2e\mollie-payment.spec.ts:25:1 › mollie-payment-flow-smoke ────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:4173/?frustration=0&paywall=1", waiting until "networkidle"
+
+
+      32 |   
+      33 |   // 1. Load the map page with paywall deep link
+    > 34 |   await page.goto(BASE_URL + '/?frustration=0&paywall=1', { waitUntil: 'networkidle' });
+         |              ^
+      35 |   await waitForVisibleMapLabel(page)
+      36 |
+      37 |   // 2. Accept cookie consent if banner present
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\mollie-payment.spec.ts:34:14
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-mollie-payment-mollie-payment-flow-smoke-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-mollie-payment-mollie-payment-flow-smoke-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-mollie-payment-mollie-payment-flow-smoke-mobile-chromium\error-context.md
+
+
+[87/90] [mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:55:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: fiche plage → prévisions → lock click
+[88/90] [mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:156:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: états loading/stale/empty
+[89/90] [mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:175:3 › WeekHub / Prévisions 7 jours — Forecast Lock › Accessibility: forecast lock keyboard navigation
+[90/90] [mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:125:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: prévisions data validation
+[mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:55:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: fiche plage → prévisions → lock click
+Forecast text content found in dialog
+
+Lock button found: 0
+
+Débloquer button visible: false
+
+Teaser strip visible: false
+
+sg_forecast_lock_click events: 0
+
+All events: []
+
+[mobile-chromium] › tests\e2e\weekhub-forecast.spec.ts:125:3 › WeekHub / Prévisions 7 jours — Forecast Lock › MQ mobile: prévisions data validation
+Forecast text content found in dialog
+
+Gated/locked bars: 0
+
+Status indicators found: 12
+
+Confidence curve visible: false
+
+Honest disclaimer visible: false
+
+  13) [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:244:3 › P1-03 — Week Hub / Prévisions 7 jours › 13) ?prev_az=1: ForecastChart lock → clic ouvre le beat (comportement réel promu) 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+      248 |     await waitForVisibleMapLabel(page, 45000).catch(() => {})
+      249 |     await dismissCookies(page)
+    > 250 |     await page.waitForTimeout(4500)
+          |                ^
+      251 |     // la landing /previsions/ s'affiche seulement si le bras prev_az montre son ForecastChart
+      252 |     const bars = page.locator(".fc-bar")
+      253 |     if (await bars.count() === 0) { test.skip(true, "landing prev_az non rendue"); return }
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\p1-03-week-hub.spec.ts:250:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-p1-03-week-hub-P1-03-—-17cce-at-comportement-réel-promu--mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-p1-03-week-hub-P1-03-—-17cce-at-comportement-réel-promu--mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-p1-03-week-hub-P1-03-—-17cce-at-comportement-réel-promu--mobile-chromium\error-context.md
+
+
+  13 failed
+    [mobile-chromium] › tests\e2e\around-me.spec.ts:53:3 › Around Me Intelligence (flag gated) › opens with flag, no geolocation prompt on load 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:154:3 › BottomNav — Redesign funnel UX (2026-08-11) › BottomNav visible sur la carte par défaut 
+    [mobile-chromium] › tests\e2e\bottomnav-redesign.spec.ts:211:3 › BottomNav — Redesign funnel UX (2026-08-11) › onglet Premium → ouvre paywall + event sg_nav_tab tab=premium 
+    [mobile-chromium] › tests\e2e\identity-step.spec.ts:18:3 › Identity step — checkout › A/B : email identity → user_id serveur + chip identité, Google absent sans client_id 
+    [mobile-chromium] › tests\e2e\identity-step.spec.ts:68:3 › Identity step — checkout › C : rollback ?sgauth=0 → aucune étape identification, email seul 
+    [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:104:3 › J0 sprint — CRO paywall order › rollback ?sgpayorder=0 : email AVANT offre 
+    [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:140:3 › J0 sprint — fiche plage › verdict couvert : planB OU repli honnête OU clean + vote terrain présent 
+    [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:159:3 › J0 sprint — fiche plage › vote terrain émet sg_beach_report 
+    [mobile-chromium] › tests\e2e\j0-sprint.spec.ts:170:3 › J0 sprint — fiche plage › rapport du jour : modale + bouton WhatsApp 
+    [mobile-chromium] › tests\e2e\ma-plage.spec.ts:194:3 › Ma plage — free tier › même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé 
+    [mobile-chromium] › tests\e2e\mollie-payment.spec.ts:25:1 › mollie-payment-flow-smoke ──────────
+    [mobile-chromium] › tests\e2e\money-path-regression.spec.ts:129:3 › Money-path B2C — régressions 2026-08-23 › T1 — carte: create_payment porte redirectUrl app + cents EUR + grant local au succès 
+    [mobile-chromium] › tests\e2e\p1-03-week-hub.spec.ts:244:3 › P1-03 — Week Hub / Prévisions 7 jours › 13) ?prev_az=1: ForecastChart lock → clic ouvre le beat (comportement réel promu) 
+  3 skipped
+  9 did not run
+  65 passed (3.1m)

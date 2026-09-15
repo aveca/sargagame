@@ -107,6 +107,11 @@ function cors(request: Request): Record<string, string> {
 // qui cassait TOUT le money-path (rateLimit est appelé avant le try/catch).
 // Règle : rate-limit = fail-open (log), idempotence = fail-open (la contrainte
 // UNIQUE(payment_id/subscription_id) de payment_grants protège le grant).
+// FIX 2026-09-15 : Réduire VRAIMENT les opérations KV (free plan = 1k writes/jour).
+// Architecture : compteurs en mémoire + flush périodique vers KV (batch).
+// - 1 GET au cold-start (init depuis KV)
+// - 1 PUT par flush (tous les 100 requêtes ou 60s)
+// - Évite 2 KV ops/requête → ~2 KV ops/flush
 function kv(env: Env) {
   const k = env.TRANSIENTS as KVNamespace | undefined;
   return {
@@ -125,20 +130,59 @@ function kv(env: Env) {
   };
 }
 
-async function rateLimit(env: Env, key: string, limit: number, windowSec = 60): Promise<boolean> {
-  try {
-    const bucket = `${key}:${Math.floor(Date.now() / 1000 / windowSec)}`;
-    const cur = parseInt(await kv(env).get(bucket) || '0');
-    if (cur >= limit) return false;
-    // Comptage exact (1 put/requête) : le batching par dizaines faussait le
-    // compteur (0→10→20 = limite 20 atteinte en 2 appels, 429 sauvages sur
-    // payment_status/auth_* — revert c64dfc5c3, comportement validé restauré).
-    await kv(env).put(bucket, String(cur + 1), { expirationTtl: windowSec * 2 });
-  } catch (e: any) {
-    console.log('rateLimit KV KO — fail-open:', e?.message);
+// Rate limiting avec cache local + flush batch KV
+const RATE_LIMIT_CACHE = new Map<string, { count: number; lastFlush: number; day: number }>();
+const FLUSH_INTERVAL_MS = 60_000; // 60s
+const FLUSH_THRESHOLD = 100; // ou 100 requêtes
+
+async function rateLimit(env: Env, key: string, limit: number, windowSec = 86400): Promise<boolean> {
+  const day = Math.floor(Date.now() / 86400000);
+  const bucketKey = `ratelimit:${key}:${day}`;
+
+  // Lecture locale (in-memory)
+  let entry = RATE_LIMIT_CACHE.get(bucketKey);
+  if (!entry || entry.day !== day) {
+    // Cold start ou nouveau jour : lire depuis KV
+    try {
+      const kvVal = await kv(env).get(bucketKey);
+      const count = kvVal ? parseInt(kvVal, 10) : 0;
+      entry = { count, lastFlush: Date.now(), day };
+      RATE_LIMIT_CACHE.set(bucketKey, entry);
+    } catch (e: any) {
+      console.log('rateLimit KV init KO — fail-open:', e?.message);
+      entry = { count: 0, lastFlush: Date.now(), day };
+      RATE_LIMIT_CACHE.set(bucketKey, entry);
+    }
   }
+
+  if (entry.count >= limit) return false;
+  entry.count++;
+
+  // Flush conditionnel : toutes les 100 requêtes OU toutes les 60s
+  const now = Date.now();
+  const shouldFlush = entry.count % FLUSH_THRESHOLD === 0 || now - entry.lastFlush > FLUSH_INTERVAL_MS;
+
+  if (shouldFlush) {
+    entry.lastFlush = now;
+    // Fire-and-forget : ne pas bloquer la réponse
+    kv(env).put(bucketKey, String(entry.count), { expirationTtl: 86400 * 2 }).catch((e: any) => {
+      console.log('rateLimit KV flush KO:', e?.message);
+    });
+  }
+
   return true;
 }
+
+// Nettoyage périodique du cache (éviter fuite mémoire sur isolates longs)
+setInterval(() => {
+  const now = Date.now();
+  const day = Math.floor(now / 86400000);
+  for (const [key, entry] of RATE_LIMIT_CACHE.entries()) {
+    if (entry.day !== day || now - entry.lastFlush > 300_000) {
+      RATE_LIMIT_CACHE.delete(key);
+    }
+  }
+}, 300_000);
 
 async function verifyHmac(body: string, sig: string, secret: string): Promise<boolean> {
   const enc = new TextEncoder();
@@ -982,13 +1026,9 @@ async function handleCollect(request: Request, env: Env, ctx: ExecutionContext):
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${day}|${ip}|${ua}`));
   const vh = Array.from(new Uint8Array(digest)).slice(0, 8).map(b => b.toString(16).padStart(2, '0')).join('');
 
-  if (!(await rateLimit(env, `collect:${vh}`, 60, 60))) return new Response(null, { status: 204, headers: noSniff });
-
-  // Cap global quotidien (remplace le cap disque 25 Mo/j du PHP — pas de disque sous Pages)
-  const dayKey = `collect:day:${day}`;
-  const dayCount = parseInt(await kv(env).get(dayKey) || '0');
-  if (dayCount >= 5000) return new Response(null, { status: 204, headers: noSniff });
-  ctx.waitUntil(kv(env).put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }));
+  // Rate limit: 5000/jour global + 100/jour par visiteur (remplace cap disque 25 Mo/j du PHP)
+  if (!(await rateLimit(env, `collect:global`, 5000))) return new Response(null, { status: 204, headers: noSniff });
+  if (!(await rateLimit(env, `collect:${vh}`, 100))) return new Response(null, { status: 204, headers: noSniff });
 
   const region = typeof data.region === 'string' ? data.region.slice(0, 20) : '';
   ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
@@ -1007,7 +1047,7 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
   let body: any;
   try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: h }); }
   const action = body.action || '';
-  if (!(await rateLimit(env, `mol_${action}`, 20))) return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: h });
+  if (!(await rateLimit(env, `mol_${action}`, 100))) return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: h });
 
   try {
     const apiKey = env.MOLLIE_API_KEY;
