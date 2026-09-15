@@ -749,6 +749,18 @@ export default function WorldMapView({
       if(hit){ bx.el.style.visibility='hidden' }
       else { bx.el.style.visibility='visible'; kept.push(bx) }
     })
+    // READINESS déterministe (BUG-2026-036) : les tests/E2E ne peuvent PAS attendre
+    // « le 1er label visible » — l'ordre DOM (données) + l'arbitrage (géométrie, fonts)
+    // décident QUI gagne, jamais déterministe. On publie donc l'achèvement de
+    // l'arbitrage : [data-sg-labels-ready] + total/visibles. N'est posé QUE si des
+    // labels existent (données montées) — sinon les tests timeoutent honnêtement.
+    // Zéro visuel, zéro comportement (attributs data-* seuls).
+    try{
+      if(els.length>0){
+        layer.setAttribute('data-sg-labels-ready','1')
+        layer.setAttribute('data-sg-labels',els.length+'/'+kept.length)
+      }
+    }catch(_){}
   },[mapLabelCapOff])
   // Déclutter des PINS (bugs « pins superposés / noms illisibles ») : dans un cluster dense au zoom
   // courant, on garde les prioritaires (sélectionné > score) en pin entier, les autres deviennent un
@@ -2055,12 +2067,21 @@ export default function WorldMapView({
             :bst==="moderate"?_t(lang,"Risque modéré de sargasses","Moderate sargassum risk","Riesgo moderado de sargazo")
             :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
-          return (
+const dismissBtn = React.createElement("button", {
+              type: "button",
+              id: "sg-hero-dismiss",
+              onClick: () => { try { localStorage.setItem("sg_hero_fold", "1") } catch (_) {} },
+              style: dismissBtnStyle
+            }, "✕")
+return (
           <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
             {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
-            <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
-              {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
-            </span>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
+                {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
+              </span>
+              {dismissBtn}
+            </div>
             <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="trophy" size={10}/></span> {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}

@@ -117,6 +117,61 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
             </div>
           </div>
         )}
+        {/* DÉCOUVRIRE : blocs profonds d'exploration using real data only */}
+        {!!data.clean.length > 1 && (
+          <div style={{ ...card, marginTop: 10, borderColor: INK }}>
+            <div style={{ fontSize: 11, fontWeight: 800, opacity: .8, marginBottom: 4 }}>{_t(lang, 'MEILLEURES PLAGES', 'BEST BEACHES', 'MEJORES PLAYAS')}</div>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+              {data.clean.slice(0, 5).map(b => (
+                <button key={b.id} type="button" style={{ ...btnGhost, minHeight: 36, padding: '6px 10px', borderRadius: 10, border: `2px solid ${INK}`, background: '#fff', color: INK, fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', marginRight: 6 }} onClick={() => onOpenBeach?.(b)}>
+                  {b.name}
+                </button>
+              ))}
+              {!!data.clean.length > 5 && <div style={{ fontSize: 10, opacity: .6, padding: 4 }}>{_t(lang, `+ ${data.clean.length - 5} d'autres plages propres`, `+ ${data.clean.length - 5} other clean beaches`, `+ ${data.clean.length - 5} otras playas limpias`)}</div>}
+            </div>
+          </div>
+        )}
+        {!!data.mod.length > 0 && (
+          <div style={{ ...card, marginTop: 8, borderColor: INK }}>
+            <div style={{ fontSize: 11, fontWeight: 800, opacity: .8, marginBottom: 4 }}>{_t(lang, 'À SURVEILLER', 'TO WATCH', 'A VIGILAR')}</div>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+              {data.mod.slice(0, 3).map(b => (
+                <button key={b.id} type="button" style={{ ...btnGhost, minHeight: 36, padding: '6px 10px', borderRadius: 10, border: `2px solid ${INK}`, background: '#fff', color: INK, fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', marginRight: 6 }} onClick={() => onOpenBeach?.(b)}>
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!!data.avoid.length > 0 && (
+          <div style={{ ...card, marginTop: 8, borderColor: INK, background: '#FFF7F0' }}>
+            <div style={{ fontSize: 11, fontWeight: 800, opacity: .8, marginBottom: 4 }}>{_t(lang, 'À ÉVITER TODAY', 'TO AVOID TODAY', 'A EVITAR HOY')}</div>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+              {data.avoid.slice(0, 3).map(b => (
+                <button key={b.id} type="button" style={{ ...btnGhost, minHeight: 36, padding: '6px 10px', borderRadius: 10, border: `2px solid #E8522A`, background: '#FDE7DF', color: '#A32E12', fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', marginRight: 6 }} onClick={() => onOpenBeach?.(b)}>
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!!data.res.length > 0 && (
+          <div style={{ ...card, marginTop: 8, borderColor: INK }}>
+            <div style={{ fontSize: 11, fontWeight: 800, opacity: .8, marginBottom: 4 }}>{_t(lang, 'DÉCOUVRIR', 'TO DISCOVER', 'PARA DESCUBRIR')}</div>
+            <div style={{ display: 'flex', gap: 4, overflowX: 'auto', paddingBottom: 4, WebkitOverflowScrolling: 'touch' }}>
+              {data.res.slice(0, 5).map(b => (
+                <button key={b.id} type="button" style={{ ...btnGhost, minHeight: 36, padding: '6px 10px', borderRadius: 10, border: `2px solid ${INK}`, background: '#fff', color: INK, fontWeight: 700, fontSize: 12, whiteSpace: 'nowrap', marginRight: 6 }} onClick={() => onOpenBeach?.(b)}>
+                  {b.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        {!!data.res.length > 5 && (
+          <div style={{ fontSize: 10, opacity: .6, marginTop: 4, textAlign: 'center' }}>
+            {_t(lang, `+ ${data.res.length - 5} autres — affine ta recherche`, `+ ${data.res.length - 5} more`, `+ ${data.res.length - 5} más — estrecha la búsqueda`)}
+          </div>
+        )}
         <button type="button" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
       </div>
 
@@ -252,7 +307,10 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
             </div>); })}
         </div>
         {!!best && <button type="button" style={{ ...btnGold, marginTop: 10 }} onClick={() => onOpenBeach?.(best)}>{_t(lang, `Ouvrir le meilleur : ${best.name} →`, `Open best: ${best.name} →`, `Abrir la mejor: ${best.name} →`)}</button>}
-        <div style={{ fontSize: 12, opacity: .7, marginTop: 6, textAlign: 'center' }}>{_t(lang, 'Scores et statuts = mesure satellite du jour.', 'Scores = today\u2019s satellite reading.', 'Puntuaciones = medición satelital de hoy.')}</div>
+        <div style={{ marginTop: 8, fontSize: 12, opacity: .7, textAlign: 'center' }}>
+          {_t(lang, 'Scores et statuts = mesure satellite du jour.', 'Scores = today\u2019s satellite reading.', 'Puntuaciones = medición satelital de hoy.')}
+          {beaches.length >= 2 && <div style={{ marginTop: 4, fontSize: 11, opacity: .8 }}>{_t(lang, 'La meilleure plage est préférée', 'The best beach is preferred', 'La playa mejor preferida')}</div>}
+        </div>
       </div>
     </div>
   );
@@ -312,12 +370,30 @@ export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], s
             <button key={id} type="button" onClick={() => onOpenBeach?.(b)} style={{ ...btnGhost, width: '100%', marginBottom: 6, justifyContent: 'space-between' }}>
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.name}</span><span>→</span>
             </button>); })}
+          <div style={{ marginTop: 8, fontSize: 11, opacity: .8 }}>
+            {_t(lang, 'Dernière visite :', 'Last visit :', 'Última visita :')} {visited.length > 0 ? visited.length + ' plage(s)' : 'Aucune'}
+            {visited.length > 0 && (
+              <div style={{ marginTop: 4, fontSize: 10, opacity: .7 }}>
+                {_t(lang, 'Vérifie si ta plage a évolué', 'Check if your beach has changed', 'Verifica si tu playa ha cambiado')}
+              </div>
+            )}
+          </div>
         </>
       )}
       <div style={{ ...card, marginTop: 12, background: isPremium ? '#EAFBEF' : '#FFFBEB' }}>
         <div style={{ fontWeight: 800 }}>{isPremium ? '✅ ' + _t(lang, 'Pass actif — surveillance étendue', 'Pass active', 'Pass activo') : '⭐ ' + _t(lang, 'Va plus loin avec le Pass', 'Go further with Pass', 'Ve más lejos con el Pass')}</div>
         <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Alertes multi-plages, 7 jours, comparateur complet, historique.', 'Multi-beach alerts, 7 days, full compare, history.', 'Alertas multi-playa, 7 días, comparador, historial.')}</div>
         {!isPremium && <button type="button" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('suivi')}>{_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>}
+        {!!visited.length && (
+          <div style={{ marginTop: 6, fontSize: 11, opacity: .8 }}>
+            <span>Comparaison avec ta dernière visite :</span>
+            {visited.length > 0 ? (
+              <span>Vérifie si ta plage a évolué</span>
+            ) : (
+              <span>Démarre ton suivi pour suivre l'évolution</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

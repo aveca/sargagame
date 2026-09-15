@@ -82,35 +82,42 @@ test.describe("Funnel Principal B2C", () => {
   test("carte → fiche → paywall: funnel reaché + events trackés", async ({ page }) => {
     const tracker = setupTrackInterceptor(page);
 
-    // 1. Landing — carte monde (storage cleared by initScript, session_start fires)
+    // 1. Landing — home feed (new 5-tab UI) → navigate to Carte tab
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 });
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {});
+    // Click Carte tab in BottomNav (5-tab UI: Accueil, Plages, Carte, Ma Plage, Pass)
+    const carteTab = page.locator('nav.sg-bottom-nav button:has-text("Carte"), nav.sg-bottom-nav button:has-text("Map"), nav.sg-bottom-nav button:has-text("Mapa")').first()
+    await expect(carteTab).toBeVisible({ timeout: 15000 })
+    await carteTab.click()
+    await page.waitForTimeout(1500)
+
+    // Use data-sg-labels-ready as the proper readiness indicator (set by WorldMapView
+    // after declutter arbitration). Catch timeout honestly — if this attribute
+    // is never set (data missing), we continue anyway to not break the funnel
+    // on regions without labels mounted.
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(2000);
 
-    const mapLabels = await page.locator(".sg-maplabel").count()
-    expect(mapLabels).toBeGreaterThanOrEqual(3)
+    // Count visible labels (not visibility:hidden from declutter)
+    const visibleMapLabels = await page.locator(".sg-maplabel").allInnerTexts().then(texts => {
+      return texts.filter(t => t.trim().length > 0).length;
+    });
+    expect(visibleMapLabels).toBeGreaterThanOrEqual(3)
 
     // 2. Clic sur une plage → fiche détail (use Playwright click for actionability check)
     // BUG-2026-030 : `.first()` en ordre DOM peut viser un label masqué par le declutter
     // (jamais une cible de tap valide) → premier label VISIBLE, intention inchangée.
-    // + panneau héros "Meilleur choix" (opaque, pe:auto, data-dependent) peut recouvrir un
-    // label : on choisit le 1er label visible ET réellement atteignable (hit-test au centre).
-    // Un label sous un panneau opaque n'est tapable par AUCUN utilisateur — le funnel réel
-    // (tap plage → fiche) reste validé sur une vraie cible.
-    const tapIdx = await page.evaluate(() => {
-      const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
-        const r = el.getBoundingClientRect()
-        return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
-      })
-      for (let i = 0; i < els.length; i++) {
-        const r = els[i].getBoundingClientRect()
-        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
-        if (hit && (hit === els[i] || els[i].contains(hit))) return i
+    // On filtre les labels visibles (visibility:visible + width/height > 0) et clique le premier.
+    const visibleLabels = await page.locator(".sg-maplabel[role='button']").all()
+    let clicked = false
+    for (const label of visibleLabels) {
+      const isVisible = await label.isVisible().catch(() => false)
+      if (isVisible) {
+        await label.click({ timeout: 10000 })
+        clicked = true
+        break
       }
-      return -1
-    })
-    expect(tapIdx).toBeGreaterThanOrEqual(0)
-    await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+    }
+    expect(clicked).toBe(true)
 
     // Attendre que la fiche soit visible (BeachSheetComic = .bsc-sheet, fallback BeachSheet = .sheet, legacy = .lc-detail)
     const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
