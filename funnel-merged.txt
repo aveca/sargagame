@@ -1,0 +1,45 @@
+
+Running 13 tests using 8 workers
+
+[1/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:180:3 › Funnel Principal B2C › rollback ?flag=0 désactive le paywall
+[2/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:151:3 › Funnel Principal B2C › paywall affiche le CTA Premium
+[3/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:248:3 › Funnel Payment — Checkout Flow › paywall affiche les passes (trip7, p30, season)
+[4/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:194:3 › Funnel Principal B2C › pas d'erreurs JS critiques au chargement
+[5/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:82:3 › Funnel Principal B2C › carte → fiche → paywall: funnel reaché + events trackés
+[6/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:299:3 › Funnel Payment — Premium State › premium localStorage: activation après paiement mocké
+[7/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:270:3 › Funnel Payment — Checkout Flow › rollback ?pwcomic=0 désactive la variante comic
+[8/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:217:3 › Funnel Payment — Checkout Flow › paywall → email → CTA checkout visible
+[9/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:319:3 › Funnel Payment — Premium State › premium state persistence across reload
+[10/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:340:3 › Funnel Payment — Premium State › premium state: pas de paywall auto-ouvert sans deep link
+[11/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:366:3 › Funnel Payment — Reduced Motion › reduced-motion: RM_INFINITE=[] (no infinite CSS animations on body/root)
+[12/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:390:3 › Funnel Payment — Reduced Motion › reduced-motion: paywall pas d'animation infinie
+[13/13] [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:420:3 › Funnel Payment — Multi-Region › EUR region (MQ): paywall affiche prix EUR
+  1) [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:82:3 › Funnel Principal B2C › carte → fiche → paywall: funnel reaché + events trackés 
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.waitForTimeout: Target page, context or browser has been closed
+
+       96 |     // on regions without labels mounted.
+       97 |     await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {});
+    >  98 |     await page.waitForTimeout(2000);
+          |                ^
+       99 |
+      100 |     // Count visible labels (not visibility:hidden from declutter)
+      101 |     const visibleMapLabels = await page.locator(".sg-maplabel").allInnerTexts().then(texts => {
+        at C:\Users\user\Documents\Backup\sargagame\tests\e2e\funnel-payment.spec.ts:98:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\e2e-funnel-payment-Funnel--3d34e-unnel-reaché-events-trackés-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results\e2e-funnel-payment-Funnel--3d34e-unnel-reaché-events-trackés-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\e2e-funnel-payment-Funnel--3d34e-unnel-reaché-events-trackés-mobile-chromium\error-context.md
+
+
+  1 failed
+    [mobile-chromium] › tests\e2e\funnel-payment.spec.ts:82:3 › Funnel Principal B2C › carte → fiche → paywall: funnel reaché + events trackés 
+  12 passed (31.4s)

@@ -675,6 +675,22 @@
       "market": "dr"
     }
   },
-  "lastRun": "2026-09-08T14:09:34.148Z",
-  "totalSent": 76
+  "diamantlesbains.com": {
+      "date": "2026-09-15T14:40:00.000Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.diamantlesbains.fr/",
+      "emailHash": "9a9cdbd282d741fb6e56c1e35bfc0552",
+      "emailDomain": "diamantlesbains.com"
+    },
+    "anoli-lodges.com": {
+      "date": "2026-09-15T14:45:00.000Z",
+      "status": "sent",
+      "error": null,
+      "url": "https://www.anoli-lodges.com/",
+      "emailHash": "21a1ce456cce137686a67f39bb046917",
+      "emailDomain": "anoli-lodges.com"
+    },
+  "lastRun": "2026-09-15T14:45:00.000Z",
+  "totalSent": 78
 }

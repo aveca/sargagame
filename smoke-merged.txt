@@ -1,0 +1,9 @@
+MAP_LABELS_TIMEOUT: page.waitForFunction: Timeout 30000ms exceeded.
+FICHE_STEP_ERROR: page.waitForSelector: Timeout 12000ms exceeded.
+Call log:
+[2m  - waiting for locator('.bsc-sheet, .lc-detail, .sheet') to be visible[22m
+
+FUNNEL_REACHED=paywall
+WHITE_OR_TRANSPARENT_BUTTONS=[]
+ERRORS=[]
+RM_INFINITE=[]

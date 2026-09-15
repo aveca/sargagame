@@ -981,4 +981,16 @@ Verified fix: JS content-type application/javascript ✅ (not text/html), deploy
 ""  
 "**CONCLUSION**: OBSERVABILITY_CONFIRMED for comic CTA tracking fix; DATA_NOT_COMPARABLE for CRO claims between windows"  
 ""  
-"**NEXT_ACTION**: Await next daily-copernicus.yml run for larger volume monitoring; do not claim CRO uplift on single 24h window" 
+"**NEXT_ACTION**: Await next daily-copernicus.yml run for larger volume monitoring; do not claim CRO uplift on single 24h window
+
+## 2026-09-15 — B2B OUTREACH 2 CONTACTS
+
+**Agent** : coding-agent (mission b2b-outreach). **Tâche** : emails automatisés vers 2 contacts B2B vérifiés (Diamant Les Bains + Anoli Lodges) via SMTP alerte@sargasses-martinique.com. Log outreach-log.json mis à jour (totalSent: 78). Statut: SENT. Passe en mode surveillance SENT→REPLY. Voir `.ai/current_state.md` et `.ai/tasks.md` pour détails.
+
+**Preuves** : 2 emails envoyés contacts validés : contact@diamantlesbains.com (Hôtel Diamant Les Bains, MQ), admin@anoli-lodges.com (Anoli Lodges, MQ). Email hashs: 9a9cdbd282d741fb6e56c1e35bfc0552 / 21a1ce456cce137686a67f39bb046917. Domains: diamantlesbains.com / anoli-lodges.com. Marché: Martinique (MQ).
+
+**Gates** : mailReady() → true · SMTP configuration · outreach-log.json mis à jour · bundle budget inchangé · aucune régression.
+
+**Non fait** : réponse REPLY en attente sur 7 jours · suivi commercial B2B suite éventuelle.
+
+**Fichiers modifiés** : `scripts/automation/data/outreach-log.json` (2 entrées ajoutées), `.ai/current_state.md` (mise à jour état), `.ai/tasks.md` (tâche marquée [x] done), `.ai/changelog.md` (nouvelle entrée). 

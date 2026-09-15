@@ -1,0 +1,19 @@
+Contact 1: {
+  "email": "contact@diamantlesbains.com",
+  "name": "Hôtel Diamant Les Bains",
+  "town": "Le Diamant",
+  "island": "MQ",
+  "fit": "hotel",
+  "hook": "Votre résidence hôtelière en bordure de la grande plage du Diamant, face au Rocher, est en première ligne pour les arrivages de sargasses qui peuvent gâcher l'expérience des clients sur cette baie exposée.",
+  "url": "https://www.diamant-les-bains.fr/"
+}
+---
+Contact 2: {
+  "email": "admin@anoli-lodges.com",
+  "name": "Anoli Lodges",
+  "town": "Sainte-Anne",
+  "island": "MQ",
+  "fit": "lodge-gite",
+  "hook": "Vos lodges du quartier Bellevue sont à 5 minutes de la plage des Salines, l'une des plages les plus exposées aux échouages de sargasses du sud de la Martinique — vos clients vous demandent sûrement souvent si la plage sera praticable pendant leur séjour.",
+  "url": "https://www.anoli-lodges.com/"
+}

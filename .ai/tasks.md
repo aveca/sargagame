@@ -226,6 +226,7 @@ NEXT_CONCRETE_ACTION:
 - [x] **FC7-ALIGNMENT — dérive free tier corrigée structurellement** (@coding_agent OpenCode, 2026-09-06, LIVRÉ PROD ✅) — Commit data stageait privés sans fc7 → regen+stage dans daily-copernicus + realignement (229 fichiers, 0 divergence) + PR #647 (CI 100 % verte, 1ère depuis des jours). Live : fc7 frais du jour. Note : robots.txt live = version Cloudflare Managed (Allow:/ search, AI bots bloqués — setting produit, hors scope).
 
 - [x] **OUTREACH POST-CONFIG — preflight/gate/verify + monitoring + checklist** (@coding_agent OpenCode, 2026-09-06, LIVRÉ ✅) — /status enrichi, preflight+gate+verify 12/12, docs activation, version outreach-2 prouvée live (dry_run ON, envois OFF). PR #640+#641 mergées. Activation live = fondateur.
+- [x] **B2B OUTREACH 2 CONTACTS — Diamant Les Bains + Anoli Lodges** (@coding_agent, 2026-09-15) — Emails automatisés vers contacts B2B vérifiés (contact@diamantlesbains.com / admin@anoli-lodges.com) via SMTP alerte@sargasses-martinique.com. Log outreach-log.json mis à jour (totalSent: 78). Statut: SENT. Passe en mode surveillance SENT→REPLY. Voir `.ai/current_state.md` pour détails.
 
 - [ ] **ACTIVATION OUTREACH — BLOCKED FONDATEUR (prouvé ×2)** (2026-09-06) — Secrets worker = [] (re-vérifié API), DB non migrable, 0 prospect. Watchdog OK, gates verts (36/36 re-vérifié). Checklist précise au rapport.
 
