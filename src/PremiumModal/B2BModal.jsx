@@ -493,6 +493,17 @@ export function B2BModal({lang,onClose,sargData=null,island=null,beach=null,sour
           {(tier==="pro"||tier==="brief")&&payOf(tier)&&<div style={{textAlign:"center",marginTop:10}}>
             <a href={payOf(tier).url} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"confirm"})}catch(_){}}} style={{font:"800 12.5px/1.5 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline"}}>{_t(lang,`Vous savez déjà que vous resterez ? L'année : ${payOf(tier).amt} (2 mois offerts) →`,`Already know you'll stay? The year: ${payOf(tier).amt} (2 months free) →`,`¿Ya sabe que se quedará? El año: ${payOf(tier).amt} (2 meses gratis) →`)}</a>
           </div>}
+          {/* Pont MENSUEL (B2B Monthly) : l'abonnement récurrent vit dans /pro/espace/
+              (create_subscription Mollie, une seule implémentation) — on y envoie le
+              tier + l'email déjà saisis (?tier=&email=, sans PII superflue).
+              pro/brief seulement, JAMAIS territoire. */}
+          {(tier==="pro"||tier==="brief")&&(()=>{
+            let href="/pro/espace/?tier="+(tier==="brief"?"concierge":"pro");
+            try{const em=(email||"").trim();if(/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))href+="&email="+encodeURIComponent(em)}catch(_){}
+            return(<div style={{textAlign:"center",marginTop:8}}>
+              <a href={href} onClick={()=>{try{track("sg_b2b_paylink_click",{tier,at:"monthly_bridge"})}catch(_){}}} style={{display:"inline-block",font:"800 13px/1.4 'Bricolage Grotesque'",color:"#fff",background:"#0a1620",borderRadius:999,padding:"10px 18px",textDecoration:"none",boxShadow:`2px 2px 0 ${I.ink}`}}>{_t(lang,`Passer au mensuel : ${tier==="brief"?"29 €":"79 €"}/mois →`,`Go monthly: ${tier==="brief"?"€29":"€79"}/mo →`,`Pasar al mensual: ${tier==="brief"?"29 €":"79 €"}/mes →`)}</a>
+            </div>)
+          })()}
           {/* Territoire (mairies/communes) : accès déjà ouvert + opt-in « programmons un point »
              → demande de devis/RDV transférée au fondateur (b2b-meeting.php). Funnel hybride. */}
           {tier==="territoire"&&<TerritoireMeeting lang={lang} email={email.trim()} org={org.trim()}/>}

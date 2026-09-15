@@ -139,11 +139,13 @@ check('aucun three.js ajouté par le sprint (diff)', (() => {
     return ![...diff.split('\n')].filter(l => l.startsWith('+') && !l.startsWith('+++')).some(l => /from\s+["']three["']|getContext\(\s*["']webgl/i.test(l))
   } catch { return false }
 })())
-check('aucun .php modifié', (() => {
+check('money-path PHP : seuls mollie-lib.php + mollie-webhook.php (mission B2B monthly 2026-09-15, additif, couvert par worker-auth.contract)', (() => {
   try {
     const { execSync } = require('child_process')
     const st = execSync('git status -s -- public/api scripts', { cwd: ROOT, encoding: 'utf8' })
-    return ![...st.split('\n')].some(l => l.trim().endsWith('.php'))
+    const touched = [...st.split('\n')].map(l => l.trim()).filter(l => l.endsWith('.php')).map(l => l.replace(/^[AM? ]+/, ''))
+    const allowed = ['public/api/mollie-lib.php', 'public/api/mollie-webhook.php']
+    return touched.every(f => allowed.includes(f))
   } catch { return false }
 })())
 

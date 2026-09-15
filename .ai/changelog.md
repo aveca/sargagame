@@ -1,3 +1,13 @@
+## 2026-09-15 — B2B MONTHLY : essai + mensuel + annuel réellement achetables (trial→token→checkout)
+
+**Agent** : coding-agent (mission dernière-étape-b2b-monthly). **Constat racine** : la contradiction venait d'un P0 — le script inline de `/pro/espace/` contenait `}` au lieu de `});` (demo modal, commit mergé 8ee27ae26) → **TOUT le JS espace était mort en prod** (trial, mensuel, toggle, démo). Réparé + garde contrat `vm.Script` anti-régression.
+**Front** : espace = offre Concierge 29€/Pro 79€ (toggle EUR+USD, USD démasqué — les 4 clés existent), mensuel vs annuel côte à côte PAR TIER (Concierge 29€/290€, Pro 79€/690€, USD 39$/89$ + 390$/790$ — l'annuel suivait toujours le Pro, incohérence corrigée), deep-links `?tier=`+`?email=` (pont B2BModal), `sg_b2b_lead_success` démo ; B2BModal = pont « Passer au mensuel » → espace (tier+email, `paylink_click{at:monthly_bridge}`), annuel inchangé, Territoire exclu.
+**Backend (bugs reproduits uniquement)** : PHP `mol_b2b_grant_once` USD → 365 j au lieu de 30 j (fix 1 ligne) ; allowlists grants USD (PHP webhook ×2, worker ×2) ; plans USD ajoutés au worker `B2B_PLANS` ; events manquants émis (tracking-only) : `subscription_created` + `b2b_trial_to_paid` (PHP webhook + worker webhook, tient la promesse docs/B2B_DELIVERABILITY.md). `create_subscription`/`mol_b2b_grant_once` réutilisés, sinon intacts.
+**Funnel** : `b2b_lead_success` + `subscription_created` dans FUNNEL_KEYS (×2) + B2B_KEYS (compteur subs).
+**Preuves** : worker-auth.contract 37/37 (4 plans → checkoutUrl mocké, grant USD 30,0 j, 2 events, 0 appel Mollie sur rejets) · j0 61/61 · distro 60/60 · build 385 · bundle 37,9 Ko · smoke 4/4 · php -l ×2 · E2E local espace (tiers, toggle, validation, shape create_subscription exacte, deep-link, 0 pageerror, 0 overflow) · probes live sûres MQ+Miami (trial invalid→400, bogus plan→`Plan inconnu`, sans email→rejet, AVANT tout appel Mollie) · paylinks annuels live (690€/290€/790$/390$ + URLs).
+**NON exécuté (gardes money/PII)** : mint trial réel (spammerait une vraie adresse + PII prod) · création subscription réelle (argent réel) · réception analytics prod (post-deploy). Voir rapport §8.
+**Fichiers** : public/api/mollie-lib.php, public/api/mollie-webhook.php, workers/sg-payments/src/index.ts, public/pro/espace/index.html, src/PremiumModal/B2BModal.jsx, 3 scripts funnel, 2 tests.
+
 ## 2026-09-15 — PRODUCT UX RESET : nouvelle IA 5 onglets + comparateur + Ma Plage dashboard (?newia=0)
 
 **Agent** : coding-agent (mission product-ux-reset). **Racine** : parcours trop court (~20 s : carte → fiche → paywall), 3 onglets, Ma Plage = modale occasionnelle, zéro comparateur, écrans peu profonds.

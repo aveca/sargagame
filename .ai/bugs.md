@@ -9,13 +9,23 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-036 — [OUVERT, P1 test-harness] E2E `.sg-maplabel` : prologue partagé timeout en runner (9 tests, local + CI)
-- **Date** : 2026-09-15 · **Sévérité** : P1 (bloque la CI, produit sain)
-- **Symptôme** : 9/21 tests E2E échouent au MÊME prologue (`goto` → `waitForSelector(.sg-maplabel, 30s)` → `waitForTimeout(2000)` ; le wait 30 s consomme le budget du test 30 s → échec arithmétique dès que le sélecteur dépasse ~28 s). Local 12/13, CI 12/21 (2 runs, 2 commits).
-- **Preuves NON-régression produit** : (1) échoue à l'identique avec `?newia=0` (feature OFF) + serveur preview frais ; (2) smoke canonique 4/4 vert (FUNNEL_REACHED=map+fiche+paywall) ; (3) probes manuelles : 10 labels en DOM dont 3 visibles stables 360/390/430, UA iPhone, avec l'interceptor de tracking VERBATIM, 0 pageerror ; (4) les 12 tests non-label passent en CI (tout le money-path : paywall, checkout, passes, premium, motion, EUR).
-- **Piste** : `waitForSelector` défaut `state:'visible'` vs labels `visibility:hidden` par declutter (7 hidden / 3 visible stables) + budget test 30 s fixe = construction fragile ; data satellite 2 j stale et tirage bras A/B (`sg_ab` fresh-profile) changent l'arbitrage d'une run à l'autre.
-- **Action** : tâche dédiée (hors reset UX) : budgets timeouts du prologue partagé (`test.slow()` / attente polling au lieu de waits fixes) + figer le bras A/B carte en E2E ; re-run CI après prochain refresh pipeline. Ne PAS « réparer » le produit (aucune casse prouvée).
-- **Statut** : [ ] ouvert — PR #671 en attente de CI verte pour merge (règle merge-si-vert)
+### BUG-2026-037 — [x] FIXÉ 2026-09-15 (mission B2B monthly) TOUT le JS de /pro/espace/ mort en prod (`)` manquant)
+- **Date** : 2026-09-15 (introduit par commit mergé 8ee27ae26, code modale démo).
+- **Sévérité** : P0 — trial, mensuel, toggle Concierge/Pro, démo, vérif token : RIEN ne fonctionnait sur la page (script inline 100 % mort, `SyntaxError: missing ) after argument list`).
+- **Symptôme** : `pageerror` au chargement de `/pro/espace/`, boutons inertes (prix figé 79 €, toggle sans effet, trial/mensuel sans requête).
+- **Cause** : `BEACHES.forEach(b => { ... }` fermé par `}` au lieu de `});` (+ une balise `</ >` malformée dans le template, cosmétique).
+- **Fix** : `}` → `});` + `</p>` (public/pro/espace/index.html) ; garde contrat `vm.Script` sur les 3 blocs inline dans j0-sprint-contract (échec si régression).
+- **Validation** : extraction + `node --check` 3/3 OK · E2E local espace (toggle 29€, shape create_subscription exacte, deep-link, 0 pageerror) · j0 61/61 · distro 60/60.
+- **Statut** : [x] FIXÉ (branche agent/coding/b2b-monthly)
+
+### BUG-2026-036 — [x] FIXÉ 2026-09-15 (mission fermeture #672) E2E `.sg-maplabel` : prologue + héros couvre-tout
+- **Cause exacte (prouvée par mesure, 2 couches)** :
+  1. `waitForSelector('.sg-maplabel')` (défaut `state:'visible'`) attend le **1er label du DOM** ; or les labels naissent `visibility:hidden` et `declutter()` (WorldMapView.jsx) ne révèle que les gagnants (ordre DOM = données, arbitrage = géométrie+fonts → data-dépendant). Donnée du jour : 10 montés, 3 visibles en positions 3/5/6, les 3 premiers cachés à jamais → timeout arithmétique (30 s de wait dans un budget test 30 s). rAF sain (60,4 fps), 0 long task — pas un problème de lenteur.
+  2. Même visibles, les labels étaient **sous le héros opaque « Meilleur choix »** (panneau first-visit sans sortie) → hit-test nul (tapIdx=-1) → carte intouchable aussi pour un vrai utilisateur.
+- **Fix produit** : `declutter()` publie `data-sg-labels-ready=1` + `data-sg-labels="total/visibles"` quand l'arbitrage a tourné avec labels montés (zéro visuel) ; héros repliable via × 44px (`data-testid="sg-hero-dismiss"`, session `sg_hero_fold`, `?maphero=0` intact).
+- **Fix tests (synchro seule)** : 14 prologues (funnel×1, bottomnav×8, responsive×3, j0×2) attendent `[data-sg-labels-ready]` (mêmes timeouts) ; funnel-82 replie le héros si aucun label tappable (vrai parcours, assertions/timeouts/skips inchangés) ; `mapReady` + `mapHeroDismiss` centralisés dans tests/utils/selectors.ts.
+- **Validation** : funnel 13/13 + bottomnav 8/8 en local ; matrice 4 configs (défaut, ?newia=0, ?maphero=0, les deux) : ready=true, tapIdx≥0, 0 erreur ; screenshot carte libérée (labels tappables sur l'île).
+- **Statut** : [x] FIXÉ (branche agent/coding/b2b-monthly, commit à venir)
 
 ### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
 - **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)

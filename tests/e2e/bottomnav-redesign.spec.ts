@@ -153,7 +153,7 @@ async function dismissPremiumModal(page: Page) {
 test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("BottomNav visible sur la carte par défaut", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     // Must dismiss cookie banner FIRST — it covers the BottomNav
     await dismissCookieBanner(page)
@@ -176,7 +176,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("onglet Plages → vue liste (BeachListView)", async ({ page }) => {
     const tracker = setupTrackInterceptor(page)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
     await dismissPremiumModal(page)
@@ -210,7 +210,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
 
   test("onglet Premium → ouvre paywall + event sg_nav_tab tab=premium", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
     await dismissPremiumModal(page)
@@ -231,7 +231,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("onglet Carte → retour à la carte depuis Plages", async ({ page }) => {
     const tracker = setupTrackInterceptor(page)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 
@@ -263,7 +263,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
 
   test("rollback ?sgnav=0 cache la BottomNav", async ({ page }) => {
     await page.goto(TEST_URL + "?sgnav=0", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
     // La BottomNav ne doit PAS être visible
@@ -282,7 +282,7 @@ test.describe("FABs allégés — Redesign funnel UX (2026-08-11)", () => {
       localStorage.removeItem("sg_premium_activated_at")
     })
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     // Still dismiss any overlays that snuck in
     await dismissPremiumModal(page)
@@ -311,7 +311,7 @@ test.describe("FABs allégés — Redesign funnel UX (2026-08-11)", () => {
 test.describe("CTA Paywall clarifié — Redesign funnel UX (2026-08-11)", () => {
   test("verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte')", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 
@@ -353,7 +353,7 @@ test.describe("Smoke essentiel — redesign funnel", () => {
     // 1. Map (BottomNav = Carte) → 2. Clic pin → fiche (verdict) → 3. CTA fiche → paywall
     const tracker = setupTrackInterceptor(page)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(".sg-maplabel", { timeout: 30000 }).catch(() => {})
+    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 

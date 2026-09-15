@@ -20,6 +20,13 @@ export const selectors = {
 
   // ── Map / Carte ───────────────────────────────────────────────────
   mapPin: '.sg-maplabel',
+  // Repli du héros « Meilleur choix » (BUG-2026-036) : sans lui, le panneau opaque
+  // peut recouvrir tous les labels en first-visit mobile → carte intouchable.
+  mapHeroDismiss: '[data-testid="sg-hero-dismiss"]',
+  // Readiness déterministe (BUG-2026-036) : posé par declutter() quand l'arbitrage
+  // a tourné ≥1 fois avec des labels montés. Attendre ÇA, jamais « 1er label visible »
+  // (l'ordre DOM + l'arbitrage décident qui gagne — non déterministe).
+  mapReady: '[data-sg-labels-ready]',
 
   // ── Verdict (fiche plage) ─────────────────────────────────────────
   verdict: '.bsc-sheet, .lc-detail, .sheet',  // comic detail (default) OR legacy ChasseDetail OR fallback BeachSheet

@@ -241,6 +241,68 @@ async function main() {
     globalThis.fetch = mollieGet
   }
 
+  console.log('\n— B2B monthly : create_subscription + webhook grant + analytics —')
+  {
+    // Plan inconnu → rejet AVANT tout appel Mollie (pas d'objet créé, pas d'argent touché)
+    let mollieCalls = 0
+    const baseFetch = globalThis.fetch
+    globalThis.fetch = async (url, opts = {}) => { if (String(url).startsWith('https://api.mollie.com/')) mollieCalls++; return baseFetch(url, opts) }
+    const badPlan = await (await post('create_subscription', { plan: 'nope_monthly', email: 'hotel@example.com' })).json()
+    ok(/Plan inconnu/.test(badPlan.error || ''), 'create_subscription rejette un plan inconnu (allowlist)')
+    ok(mollieCalls === 0, 'plan inconnu → ZÉRO appel Mollie (aucun objet créé)')
+    const noEmail = await (await post('create_subscription', { plan: 'pro_monthly' })).json()
+    ok(/customerId ou email/.test(noEmail.error || ''), 'create_subscription exige customerId ou email')
+    ok(mollieCalls === 0, 'sans email → ZÉRO appel Mollie')
+    globalThis.fetch = baseFetch
+
+    // Plans valides EUR + USD → checkoutUrl (Mollie mockée, aucun réseau réel)
+    for (const [plan, cur] of [['pro_monthly', 'EUR'], ['brief_monthly', 'EUR'], ['pro_monthly_usd', 'USD'], ['brief_monthly_usd', 'USD']]) {
+      const r = await post('create_subscription', { plan, hosted: true, email: `hotel-${plan}@example.com` })
+      const d = await r.json()
+      ok(d.subscriptionId && d.checkoutUrl, `create_subscription ${plan} (${cur}) → subscriptionId + checkoutUrl`)
+    }
+
+    // Webhook subscription.created USD → grant 30 j (pas 365) + event subscription_created
+    const subId = 'sub_usd_test1'
+    const subBody = JSON.stringify({ id: subId, type: 'subscription', event: 'subscription.created' })
+    const subSig = crypto.createHmac('sha256', env.MOLLIE_WEBHOOK_SECRET).update(subBody).digest('hex')
+    const mollieGet2 = globalThis.fetch
+    globalThis.fetch = async (url, opts = {}) => {
+      if (String(url).includes(`api.mollie.com/v2/subscriptions/${subId}`)) {
+        return new Response(JSON.stringify({ id: subId, status: 'active', customerId: 'cst_test1', metadata: { plan: 'pro_monthly_usd' } }), { status: 200 })
+      }
+      return mollieGet2(url, opts)
+    }
+    const wh = await worker.fetch(new Request('https://sargasses-martinique.com/api/mollie-webhook', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mollie-Signature': subSig }, body: subBody,
+    }), env, { waitUntil() {} })
+    ok((await wh.json()).received === true, 'webhook subscription.created accepté (HMAC OK)')
+    await new Promise((r) => setTimeout(r, 100))
+    const grant = db.payment_grants.find((g) => g.subscription_id === subId)
+    ok(!!grant && grant.plan === 'pro_monthly_usd', 'grant USD écrit avec le bon plan')
+    const daysLeft = grant ? (Date.parse(grant.expires_at) - Date.now()) / 86400000 : -1
+    ok(daysLeft > 20 && daysLeft < 60, `grant USD = ~30 j (pas 365) — mesuré ${daysLeft.toFixed(1)} j`)
+    const subEv = db.analytics_events.find((e) => e.event === 'subscription_created')
+    ok(!!subEv, 'event subscription_created émis au webhook')
+    // Webhook subscription.paid EUR → event b2b_trial_to_paid
+    const paidId = 'sub_eur_paid1'
+    const paidBody = JSON.stringify({ id: paidId, type: 'subscription', event: 'subscription.paid' })
+    const paidSig = crypto.createHmac('sha256', env.MOLLIE_WEBHOOK_SECRET).update(paidBody).digest('hex')
+    globalThis.fetch = async (url, opts = {}) => {
+      if (String(url).includes(`api.mollie.com/v2/subscriptions/${paidId}`)) {
+        return new Response(JSON.stringify({ id: paidId, status: 'active', customerId: 'cst_test2', metadata: { plan: 'pro_monthly' } }), { status: 200 })
+      }
+      return mollieGet2(url, opts)
+    }
+    const wh2 = await worker.fetch(new Request('https://sargasses-martinique.com/api/mollie-webhook', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Mollie-Signature': paidSig }, body: paidBody,
+    }), env, { waitUntil() {} })
+    ok((await wh2.json()).received === true, 'webhook subscription.paid accepté')
+    await new Promise((r) => setTimeout(r, 100))
+    ok(!!db.analytics_events.find((e) => e.event === 'b2b_trial_to_paid'), 'event b2b_trial_to_paid émis au webhook paid')
+    globalThis.fetch = mollieGet2
+  }
+
   globalThis.fetch = realFetch
   try { fs.unlinkSync(out) } catch (_) {}
 
