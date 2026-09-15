@@ -1,3 +1,41 @@
+## 2026-09-15 12:00 UTC · Agent: coding-agent (product-ux-reset)
+
+### Travail effectué
+- **Résumé 1 ligne** : PRODUCT UX RESET shippé sur branche (nouvelle IA 5 onglets + comparateur + Ma Plage dashboard, `?newia=0`), gates verts, audit mobile 360/390/430 prouvé.
+- **Détails** : voir .ai/changelog.md (entrée 2026-09-15). Parcours cible : ACCUEIL → PLAGES → CARTE → FICHE → COMPARAISON → FAVORI → MA PLAGE → HISTORIQUE → PARTAGE → PAYWALL (paywall après valeur : overlay 3-vues + Pass en dernier onglet, inchangés). Money-path additif-only, 0 .php touché. Session concurrente : fichiers money (mollie-lib.php USD, espace/index.html) + junk debug*/fix_* laissés intacts et NON committés ; MaPlageView.jsx réparée (build rouge) à intention égale.
+
+### Fichiers modifiés
+- `src/components/ExperienceReset.jsx` (NOUVEAU) — Home/Plages/Compare/Suivi, 100 % données réelles
+- `src/Sargasses_PROD.jsx` — BottomNav 5 onglets, vues home/suivi/plages+, compareIds, historique sg_last_beaches, allowlist +6 events
+- `src/components/MaPlageView.jsx` — réparation JSX build-bloquant (session concurrente)
+- `scripts/automation/funnel-from-supabase.cjs`, `scripts/automation/daily-stats-check.cjs` — FUNNEL_KEYS +6
+- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`, `.ai/bugs.md` — docs
+
+### Tests réalisés
+- [x] npm run build → exit 0 (385 modules, chunk ExperienceReset lazy 6,8 Ko gzip)
+- [x] check-bundle-budget → 37.9 Ko ≤ 210 Ko
+- [x] ux-smoke → 4/4 tokens OK (map+fiche+paywall, ERRORS=[], ghost=[], RM_INFINITE=[])
+- [x] E2E funnel-payment → 12/13 (1 échec `.sg-maplabel` data-dépendant, prouvé non-régression via `?newia=0` + serveur frais → voir bugs.md)
+- [x] Audit mobile 360/390/430 → 5 onglets, 0 overflow, 0 tap <44px, 0 pageerror, compare + fiche OK, rollback OK
+- [ ] php -l → N/A (0 .php touché)
+
+### Problèmes restants
+- [ ] E2E `funnel reaché` rouge data-dépendant (satellite 2 j stale) — Sévérité : P2 test-harness — action : re-run après prochain run pipeline frais ; ne pas "réparer" le produit (funnel prouvé par smoke + probe)
+- [ ] Fichiers concurrents non committés (mollie-lib.php USD, espace/index.html, debug*/fix_*.cjs, TransportIcon.jsx) — Sévérité : process — action : laisser à la session propriétaire ; ne jamais commiter ici
+- [ ] Satellite ERDDAP ~2 j (badge honnête affiché) — Sévérité : suivi — action : pipeline quotidien
+
+### Prochaine action recommandée
+1. Review + merge PR `agent/coding/ux-reset` (CI doit rester verte) + deploy + vérif live 6 domaines — Rôle : release
+2. Monitorer 7 j : nav_tab + compare_add/open + home_best_open + ma_plage_open vs CTA classique — Rôle : growth/data
+3. Profondeur fiche (transport/hébergement-partenaires si disponibles, historique J-7) — Rôle : coding (phase 2)
+
+### Branche / PR
+- Branche : `agent/coding/ux-reset`
+- PR : à créer vers main
+- Commit head : (après commit)
+
+---
+
 ## 2026-09-14 01:20 UTC · Agent: coding-agent (release)
 
 ### Travail effectué

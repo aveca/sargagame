@@ -9,6 +9,14 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-036 — [OUVERT, P2 test-harness] E2E `funnel reaché` : `.sg-maplabel` absent quand satellite ~2 j stale
+- **Date** : 2026-09-15 · **Sévérité** : P2 (funnel prod OK, seul le test échoue)
+- **Symptôme** : `funnel-payment.spec.ts:82` (`waitForSelector .sg-maplabel` 30 s → 0 label → timeout, expect ≥3) — 12/13 passent.
+- **Reproduction** : satellite ERDDAP ~2 j stale (badge « DONNÉE EN RETARD il y a 2 j ») → hero persistant → labels non montés en 30 s sous runner.
+- **Preuve NON-régression (produit)** : échoue à l'identique avec `?newia=0` (feature désactivée) + serveur preview frais ; smoke 4/4 vert (FUNNEL_REACHED=map+fiche+paywall) ; probe manuelle : 10 labels visibles 360/390/430, fiche + paywall atteignables.
+- **Action** : re-run après prochain run pipeline frais ; ne PAS « réparer » le produit (risque de casse pour un artefact de timing/data). Si persiste avec data fraîche → rouvrir comme P1.
+- **Statut** : [ ] à re-vérifier data fraîche
+
 ### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
 - **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)
 - **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ est intercepté
