@@ -9,13 +9,13 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
-### BUG-2026-036 — [OUVERT, P2 test-harness] E2E `funnel reaché` : `.sg-maplabel` absent quand satellite ~2 j stale
-- **Date** : 2026-09-15 · **Sévérité** : P2 (funnel prod OK, seul le test échoue)
-- **Symptôme** : `funnel-payment.spec.ts:82` (`waitForSelector .sg-maplabel` 30 s → 0 label → timeout, expect ≥3) — 12/13 passent.
-- **Reproduction** : satellite ERDDAP ~2 j stale (badge « DONNÉE EN RETARD il y a 2 j ») → hero persistant → labels non montés en 30 s sous runner.
-- **Preuve NON-régression (produit)** : échoue à l'identique avec `?newia=0` (feature désactivée) + serveur preview frais ; smoke 4/4 vert (FUNNEL_REACHED=map+fiche+paywall) ; probe manuelle : 10 labels visibles 360/390/430, fiche + paywall atteignables.
-- **Action** : re-run après prochain run pipeline frais ; ne PAS « réparer » le produit (risque de casse pour un artefact de timing/data). Si persiste avec data fraîche → rouvrir comme P1.
-- **Statut** : [ ] à re-vérifier data fraîche
+### BUG-2026-036 — [OUVERT, P1 test-harness] E2E `.sg-maplabel` : prologue partagé timeout en runner (9 tests, local + CI)
+- **Date** : 2026-09-15 · **Sévérité** : P1 (bloque la CI, produit sain)
+- **Symptôme** : 9/21 tests E2E échouent au MÊME prologue (`goto` → `waitForSelector(.sg-maplabel, 30s)` → `waitForTimeout(2000)` ; le wait 30 s consomme le budget du test 30 s → échec arithmétique dès que le sélecteur dépasse ~28 s). Local 12/13, CI 12/21 (2 runs, 2 commits).
+- **Preuves NON-régression produit** : (1) échoue à l'identique avec `?newia=0` (feature OFF) + serveur preview frais ; (2) smoke canonique 4/4 vert (FUNNEL_REACHED=map+fiche+paywall) ; (3) probes manuelles : 10 labels en DOM dont 3 visibles stables 360/390/430, UA iPhone, avec l'interceptor de tracking VERBATIM, 0 pageerror ; (4) les 12 tests non-label passent en CI (tout le money-path : paywall, checkout, passes, premium, motion, EUR).
+- **Piste** : `waitForSelector` défaut `state:'visible'` vs labels `visibility:hidden` par declutter (7 hidden / 3 visible stables) + budget test 30 s fixe = construction fragile ; data satellite 2 j stale et tirage bras A/B (`sg_ab` fresh-profile) changent l'arbitrage d'une run à l'autre.
+- **Action** : tâche dédiée (hors reset UX) : budgets timeouts du prologue partagé (`test.slow()` / attente polling au lieu de waits fixes) + figer le bras A/B carte en E2E ; re-run CI après prochain refresh pipeline. Ne PAS « réparer » le produit (aucune casse prouvée).
+- **Statut** : [ ] ouvert — PR #671 en attente de CI verte pour merge (règle merge-si-vert)
 
 ### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
 - **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)

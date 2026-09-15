@@ -1,38 +1,32 @@
-## 2026-09-15 12:00 UTC · Agent: coding-agent (product-ux-reset)
+## 2026-09-15 14:00 UTC · Agent: coding-agent (product-ux-reset — FINAL, merge bloqué CI)
 
 ### Travail effectué
-- **Résumé 1 ligne** : PRODUCT UX RESET shippé sur branche (nouvelle IA 5 onglets + comparateur + Ma Plage dashboard, `?newia=0`), gates verts, audit mobile 360/390/430 prouvé.
-- **Détails** : voir .ai/changelog.md (entrée 2026-09-15). Parcours cible : ACCUEIL → PLAGES → CARTE → FICHE → COMPARAISON → FAVORI → MA PLAGE → HISTORIQUE → PARTAGE → PAYWALL (paywall après valeur : overlay 3-vues + Pass en dernier onglet, inchangés). Money-path additif-only, 0 .php touché. Session concurrente : fichiers money (mollie-lib.php USD, espace/index.html) + junk debug*/fix_* laissés intacts et NON committés ; MaPlageView.jsx réparée (build rouge) à intention égale.
+- **Résumé 1 ligne** : PRODUCT UX RESET complet et prouvé (5 onglets + comparateur + dashboard, `?newia=0`) ; PR #671 CI 5/6 verte, playwright rouge sur prologue partagé pré-existant (BUG-2026-036) → merge NON effectué (règle merge-si-vert respectée).
+- **Détails** : voir .ai/changelog.md (entrée 2026-09-15) + BUG-2026-036. Feature prouvée 360/390/430 (screenshots final-390-*.png) : 5 onglets, 0 overflow, 0 tap <44px, 0 pageerror, Accueil (situation + meilleur choix + recherche), Plages (20 cartes riches + filtres/tri/favoris), comparateur (dialogue + meilleur choix + ouvrir/suivre/fermer), Ma Plage (dashboard + vues récentes), fiche (2602+ chars), rollback `?newia=0` (3 onglets historiques). Money-path : 0 .php touché, 12/12 tests CI non-label verts (paywall, checkout, passes, premium, motion, EUR).
 
 ### Fichiers modifiés
-- `src/components/ExperienceReset.jsx` (NOUVEAU) — Home/Plages/Compare/Suivi, 100 % données réelles
-- `src/Sargasses_PROD.jsx` — BottomNav 5 onglets, vues home/suivi/plages+, compareIds, historique sg_last_beaches, allowlist +6 events
-- `src/components/MaPlageView.jsx` — réparation JSX build-bloquant (session concurrente)
-- `scripts/automation/funnel-from-supabase.cjs`, `scripts/automation/daily-stats-check.cjs` — FUNNEL_KEYS +6
-- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md`, `.ai/bugs.md` — docs
+- `src/components/ExperienceReset.jsx` (NOUVEAU, lazy 6,8 Ko) · `src/Sargasses_PROD.jsx` (BottomNav 5 onglets + vues + compareIds + historique + allowlist) · `src/components/MaPlageView.jsx` (réparation JSX session concurrente) · `scripts/automation/funnel-from-supabase.cjs` + `daily-stats-check.cjs` (FUNNEL_KEYS +6) · `.ai/*` (docs)
 
 ### Tests réalisés
-- [x] npm run build → exit 0 (385 modules, chunk ExperienceReset lazy 6,8 Ko gzip)
-- [x] check-bundle-budget → 37.9 Ko ≤ 210 Ko
-- [x] ux-smoke → 4/4 tokens OK (map+fiche+paywall, ERRORS=[], ghost=[], RM_INFINITE=[])
-- [x] E2E funnel-payment → 12/13 (1 échec `.sg-maplabel` data-dépendant, prouvé non-régression via `?newia=0` + serveur frais → voir bugs.md)
-- [x] Audit mobile 360/390/430 → 5 onglets, 0 overflow, 0 tap <44px, 0 pageerror, compare + fiche OK, rollback OK
+- [x] npm run build → exit 0 (385 modules) · bundle 37.9 Ko ≤ 210 · smoke 4/4
+- [x] CI PR #671 (2 runs, 2 commits) : branch-policy ✓ · scan ✓ · funnel ✓ · perf ✓ · test-frontend ✓ · playwright ✗ (12/21 — 9 échecs = MÊME prologue `.sg-maplabel`, feature on/off identique)
+- [x] Audit mobile réel 360/390/430 + rollback + comparateur + fiche (probes Playwright)
 - [ ] php -l → N/A (0 .php touché)
 
 ### Problèmes restants
-- [ ] E2E `funnel reaché` rouge data-dépendant (satellite 2 j stale) — Sévérité : P2 test-harness — action : re-run après prochain run pipeline frais ; ne pas "réparer" le produit (funnel prouvé par smoke + probe)
-- [ ] Fichiers concurrents non committés (mollie-lib.php USD, espace/index.html, debug*/fix_*.cjs, TransportIcon.jsx) — Sévérité : process — action : laisser à la session propriétaire ; ne jamais commiter ici
-- [ ] Satellite ERDDAP ~2 j (badge honnête affiché) — Sévérité : suivi — action : pipeline quotidien
+- [ ] BUG-2026-036 (P1 test-harness) : prologue E2E `.sg-maplabel` flaky (9 tests) — tâche dédiée requise AVANT merge
+- [ ] Fichiers concurrents non committés (mollie-lib.php USD, espace/index.html, debug*/fix_*.cjs, TransportIcon.jsx) — laisser au propriétaire
+- [ ] Satellite ~2 j stale (badge honnête) — pipeline quotidien
 
 ### Prochaine action recommandée
-1. Review + merge PR `agent/coding/ux-reset` (CI doit rester verte) + deploy + vérif live 6 domaines — Rôle : release
-2. Monitorer 7 j : nav_tab + compare_add/open + home_best_open + ma_plage_open vs CTA classique — Rôle : growth/data
-3. Profondeur fiche (transport/hébergement-partenaires si disponibles, historique J-7) — Rôle : coding (phase 2)
+1. Fix BUG-2026-036 (budgets prologue + bras A/B figé) puis re-run CI → merge PR #671 → deploy-live → vérif 6 domaines — Rôle : qa/coding puis release
+2. Monitorer 7 j : nav_tab + compare_add/open + home_best_open + ma_plage_open — Rôle : growth/data
+3. Phase 2 profondeur fiche (transport/hébergement-partenaires, historique J-7) — Rôle : coding
 
 ### Branche / PR
-- Branche : `agent/coding/ux-reset`
-- PR : à créer vers main
-- Commit head : (après commit)
+- Branche : `agent/coding/ux-reset` (2 commits : 58b1374b2 + 9f48aee91, poussés)
+- PR : #671 https://github.com/aveca/sargagame/pull/671 (UNSTABLE — playwright rouge pré-existant)
+- Commit head : `9f48aee91`
 
 ---
 

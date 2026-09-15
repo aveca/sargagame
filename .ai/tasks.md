@@ -1,9 +1,7 @@
-## PRODUCT UX RESET — [x] done (2026-09-15, gates verts, PR à créer)
-- **Nouvelle IA** : BottomNav 5 onglets (Accueil/Plages/Carte/Ma Plage/Pass) + ExperienceReset.jsx lazy (Home, PlagesExplorer, CompareSheet, SuiviDashboard), rollback `?newia=0` prouvé.
-- **Profondeur** : recherche/filtres/tri/favoris/comparer (Plages), meilleur choix + à-éviter + suivis (Accueil), multi-favoris + vues récentes + alertes (Ma Plage), historique sg_last_beaches, 6 events funnel.
-- **Mobile** : 360/390/430 → 0 overflow, 0 tap <44px, 0 pageerror, fixed (doctrine root 19px), contraste navy corrigé.
-- **Gates** : build 385 · bundle 37.9 · smoke 4/4 · E2E 12/13 (1 data-dépendant prouvé non-régression) · 0 .php touché.
-- **NEXT** : merge PR → deploy 6 domaines → vérifier live → monitorer 7j → phase 2 (fiche transport/hébergement/historique J-7).
+## PRODUCT UX RESET — [~] en attente merge (PR #671 CI 5/6, playwright rouge pré-existant BUG-2026-036)
+- **Shippé sur branche** : BottomNav 5 onglets + ExperienceReset.jsx lazy + rollback `?newia=0` prouvé 360/390/430 (0 overflow, 0 tap <44px, 0 pageerror).
+- **Gates** : build 385 · bundle 37.9 · smoke 4/4 · CI non-label 12/12 (money-path vert) · E2E label-prologue 9 échecs pré-existants (feature on/off identique).
+- **NEXT** : fix BUG-2026-036 (qa/coding) → CI verte → merge #671 → deploy 6 domaines → monitorer 7j → phase 2 fiche.
 
 ## MA PLAGE + FIXES P0 — [x] done (2026-09-14, gates verts, prêt merge/deploy)
 - **P0 scope** : showMaPlage/MAPLAGE_OFF hors scope (ReferenceError app) → module scope + state App + ?maplage=0.
