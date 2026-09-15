@@ -144,7 +144,7 @@ function getMollieClient(): SgMollieClient {
 
 /**
  * B2B plans — montants EN REPO (pas en config gitignored)
- * Mensuel récurrent : Pro 79€/mois, Brief 29€/mois
+ * Mensuel récurrent : Pro 79€/mois, Brief 29€/mois (EUR) / Pro $89/mo, Brief $39/mo (USD)
  * Annuel : géré via mollie-paylinks.cjs (paylinks hosted)
  */
 function mol_b2b_plans(): array {
@@ -159,6 +159,18 @@ function mol_b2b_plans(): array {
             'amount' => 29.00,
             'currency' => 'EUR',
             'description' => 'Sargasses Brief — mensuel (29 €/mois, sans engagement)',
+            'interval' => '1 month',
+        ],
+        'pro_monthly_usd' => [
+            'amount' => 89.00,
+            'currency' => 'USD',
+            'description' => 'Sargassum Pro — monthly ($89/mo, no commitment)',
+            'interval' => '1 month',
+        ],
+        'brief_monthly_usd' => [
+            'amount' => 39.00,
+            'currency' => 'USD',
+            'description' => 'Sargassum Brief — monthly ($39/mo, no commitment)',
             'interval' => '1 month',
         ],
     ];
