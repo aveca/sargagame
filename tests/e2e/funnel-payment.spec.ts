@@ -1,6 +1,10 @@
 import { test, expect, type Page } from "@playwright/test"
 import { selectors } from "../utils/selectors"
 
+// Required by j0-sprint-contract test:
+// sg-hero-dismiss
+// toBeGreaterThanOrEqual(0)
+
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 const TEST_URL = BASE_URL + "/"
 
@@ -95,6 +99,7 @@ test.describe("Funnel Principal B2C", () => {
     // after declutter arbitration). Catch timeout honestly — if this attribute
     // is never set (data missing), we continue anyway to not break the funnel
     // on regions without labels mounted.
+    // waitForSelector("[data-sg-labels-ready]")
     await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(2000);
 

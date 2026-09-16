@@ -231,6 +231,13 @@ export default function WorldMapView({
   // sinon. `alertsOn` (piloté par le parent) prime ; fallback = permission navigateur seule.
   const bellOn = alertsOn!=null ? !!alertsOn : notifGranted
   const [premiumHint, setPremiumHint] = useState(false)
+  // Héros « Meilleur choix » repliable (BUG-2026-036) : × 44px, persistance
+  // via localStorage sg_hero_fold, ?maphero=0 intact (garde du bloc).
+  // FIX BUG-2026-038 : le style du bouton n'était jamais défini (ReferenceError
+  // `dismissBtnStyle` → render ENTIER de la carte jeté au boundary : carte noire,
+  // 0 label, readiness jamais publiée). Défini ici + testid pour E2E + repli
+  // stateful (le setItem seul ne re-rendait jamais).
+  const [heroFolded, setHeroFolded] = useState(()=>{ try{ return localStorage.getItem("sg_hero_fold")==="1" }catch(_){ return false } })
   // Mode « dérive Premium » sur les jours futurs : échouage en BOUCLE (sensation
   // d'arrivée continue) + halo qui pulse sur les plages prévues touchées + badge
   // « touchée J+N » + sens de dérive. Tout piloté par la donnée RÉELLE (days[day]/drift/
@@ -2051,7 +2058,7 @@ export default function WorldMapView({
               recommandée par défaut. Ancien strip TOP3 conservé en forme minimale
               pour les alternatives. Rollback ?maphero=0 → bloc masqué. ══ */}
           {(()=>{try{if(/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
-          if(!dataReady||beachList.length<3||selected||emailSent)return null
+          if(!dataReady||beachList.length<3||selected||emailSent||heroFolded)return null
           const ranked=[...beachList].filter(b=>b.score!=null&&b.days&&b.days[day]!=null)
             .sort((a,b)=>{const sd=(b.score||0)-(a.score||0);if(sd!==0)return sd;return (b.conf?.[day]||0)-(a.conf?.[day]||0)})
           if(!ranked.length)return null
@@ -2067,11 +2074,14 @@ export default function WorldMapView({
             :bst==="moderate"?_t(lang,"Risque modéré de sargasses","Moderate sargassum risk","Riesgo moderado de sargazo")
             :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
+const DISMISS_BTN_STYLE={width:44,height:44,minWidth:44,minHeight:44,borderRadius:"50%",border:`2.5px solid ${INK}`,background:"#fdf6e3",boxShadow:`2px 2px 0 ${INK}`,color:INK,font:"800 16px/1 'Bricolage Grotesque',sans-serif",cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0};
 const dismissBtn = React.createElement("button", {
               type: "button",
               id: "sg-hero-dismiss",
-              onClick: () => { try { localStorage.setItem("sg_hero_fold", "1") } catch (_) {} },
-              style: dismissBtnStyle
+              "data-testid": "sg-hero-dismiss",
+              "aria-label": _t(lang,"Replier","Collapse","Ocultar"),
+              onClick: () => { try { localStorage.setItem("sg_hero_fold", "1") } catch (_) {} setHeroFolded(true) },
+              style: DISMISS_BTN_STYLE
             }, "✕")
 return (
           <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>

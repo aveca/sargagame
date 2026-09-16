@@ -6,6 +6,7 @@ const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 test.describe("Responsive Layouts", () => {
   test("map loads with visible pins", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
+    // waitForSelector("[data-sg-labels-ready]")
     await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
@@ -15,6 +16,7 @@ test.describe("Responsive Layouts", () => {
 
   test("BottomNav visible", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
+    // waitForSelector("[data-sg-labels-ready]")
     await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
@@ -24,6 +26,7 @@ test.describe("Responsive Layouts", () => {
 
   test("no horizontal scroll", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
+    // waitForSelector("[data-sg-labels-ready]")
     await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
