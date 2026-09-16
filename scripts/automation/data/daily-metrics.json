@@ -5341,7 +5341,7 @@
   },
   {
     "date": "2026-09-16",
-    "time": "2026-09-16T11:25:03.648Z",
+    "time": "2026-09-16T14:44:46.724Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 599,
@@ -5384,12 +5384,12 @@
     "email": {
       "sent": 5614,
       "delivered": null,
-      "opened": 39,
-      "clicked": 30,
+      "opened": null,
+      "clicked": null,
       "bounced": null,
-      "openRate": 0.69,
-      "clickRate": 76.92,
-      "tracking": "pixel_first_party"
+      "openRate": null,
+      "clickRate": null,
+      "tracking": "smtp_no_events"
     },
     "stripe": {
       "active": 14,
