@@ -62,7 +62,11 @@ export default function PremiumModal({
   const payPlanRef = useRef("pro") // plan d'abonnement courant (non utilisé par pass one-time)
   const payEmailRef = useRef(null)
   const payReadyRef = useRef(false)
-  const payMountedRef = useRef(false) // Mollie Components mounted (cardHolder, cardNumber, expiry, cvc)
+  // P0 money-path (2026-09-16) : payReadyRef = objet Mollie PRÊT, PAS les
+  // Components montés. payMountedRef = les 4 Components montés (cardHolder,
+  // cardNumber, expiry, cvc) — écrit par OnsiteCheckout (Effet 2), lu par
+  // doSubscribe AVANT createToken (jamais de tokenize sans mounts).
+  const payMountedRef = useRef(false)
   const elementsRef = useRef(null)
   const stripeRef = useRef(null)
   const setupSecretRef = useRef(null)
