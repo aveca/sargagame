@@ -107,10 +107,27 @@ const WMV = R('src/WorldMapView.jsx')
 check('declutter publie data-sg-labels-ready (arbitrage achevé, els>0)', /data-sg-labels-ready/.test(WMV) && /els\.length>0/.test(WMV))
 check('héros repliable sg-hero-dismiss (44px, session, ?maphero=0 intact)', /sg-hero-dismiss/.test(WMV) && /sg_hero_fold/.test(WMV) && /maphero=0/.test(WMV))
 check('prologues E2E attendent la readiness (pas 1er label visible)', (() => {
+  // Forme LITTÉRALE historique OU centralisée (tests/utils/selectors.ts,
+  // mission #672) — les deux valent si la VALEUR reste [data-sg-labels-ready].
+  // L'interdit : attendre le 1er label visible (ordre DOM data-dépendant).
+  const SEL = R('tests/utils/selectors.ts')
+  if (!/mapReady:\s*'\[data-sg-labels-ready\]'/.test(SEL)) return false
   const F = ['tests/e2e/funnel-payment.spec.ts', 'tests/e2e/bottomnav-redesign.spec.ts', 'tests/e2e/responsive.spec.ts', 'tests/e2e/j0-sprint.spec.ts']
-  return F.every((f) => /waitForSelector\("\[data-sg-labels-ready\]"/.test(R(f)) && !/waitForSelector\("\.sg-maplabel", \{ timeout/.test(R(f)))
+  return F.every((f) => {
+    const c = R(f)
+    const usesReadiness = /waitForSelector\("\[data-sg-labels-ready\]"|selectors\.mapReady|mapReady/.test(c)
+    const usesOldPrologue = /waitForSelector\("\.sg-maplabel", \{ timeout/.test(c)
+    return usesReadiness && !usesOldPrologue
+  })
 })())
-check('funnel-82 repli héros quand aucun label tappable (assertions intactes)', /sg-hero-dismiss/.test(R('tests/e2e/funnel-payment.spec.ts')) && /toBeGreaterThanOrEqual\(0\)/.test(R('tests/e2e/funnel-payment.spec.ts')))
+check('funnel-82 repli héros quand aucun label tappable (assertions intactes)', (() => {
+  // Spec : repli via le sélecteur centralisé (ou littéral) + assertions intactes.
+  // Produit : le bouton porte data-testid="sg-hero-dismiss" (jalon E2E réel).
+  const F = R('tests/e2e/funnel-payment.spec.ts')
+  const specOk = (/mapHeroDismiss/.test(F) || /sg-hero-dismiss/.test(F)) && /toBeGreaterThanOrEqual\(0\)/.test(F)
+  const prodOk = /"data-testid":\s*"sg-hero-dismiss"/.test(WMV) && /sg_hero_fold/.test(WMV)
+  return specOk && prodOk
+})())
 
 console.log('— OBJ7 gardes —')
 check('aucun runtime 3D introduit par le sprint (diff git)', (() => {

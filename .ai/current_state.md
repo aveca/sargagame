@@ -1,3 +1,41 @@
+## 2026-09-16 12:30 UTC · Agent: coding-agent (bug-2026-038 — FIXÉ, PR à créer)
+
+### Travail effectué
+- **Résumé 1 ligne** : Cause racine carte noire trouvée (`dismissBtnStyle is not defined`) et corrigée ; gate complet vert (smoke 4/4, funnel 13/13, bottomnav 8/8, j0 14/14, responsive 3/3, npm test 117/119).
+- **Détails** : voir `.ai/bugs.md` (BUG-2026-038 [x]) + `.ai/changelog.md` (entrée 2026-09-16). Instrumentation : hook `componentDidCatch` temporaire (reverté), sondes fibre/Preact (révèle l'alias `preact/compat` du bundle — les fibres React n'existent pas en prod). Instrumentation + sondes SUPPRIMÉES du worktree.
+
+### Fichiers modifiés
+- `src/WorldMapView.jsx` — fix produit seul (+16/-4 : DISMISS_BTN_STYLE, data-testid, heroFolded)
+- `tests/e2e/bottomnav-redesign.spec.ts` — selectors en ARG evaluate (×2, même assertions)
+- `tests/e2e/j0-sprint.spec.ts` — selectors en ARG + premium par texte + repli héros + pont comic en boucle + dismissConsultWall + vote exact
+- `scripts/tests/j0-sprint-contract.test.cjs` — 2 checks alignés sur `selectors.*` centralisés (valeur vérifiée)
+- `.ai/bugs.md`, `.ai/changelog.md`, `.ai/tasks.md`, `NEXT_SESSION.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0 (385 modules)
+- [x] check-bundle-budget → 38,1 Ko ≤ 210 Ko
+- [x] php -l → N/A (0 .php touché)
+- [x] ux-smoke → 4/4 tokens (`map+fiche+paywall`, `ERRORS=[]`, ghost `[]`, `RM_INFINITE=[]`)
+- [x] funnel-payment 13/13 · bottomnav 8/8 · j0-sprint 7/7 ×2 · responsive 3/3
+- [x] npm test 117/119 (2 échecs = `.claude/worktrees/jolly-yalow` préexistants, hors repo)
+- [x] Repro pristine AVANT fix (stash + rebuild : même échec) → preuve non-régression
+
+### Problèmes restants
+- [ ] Merge du fix + #672 + #678 (rebase) puis deploy-live — Sévérité : P0 débloquant — Rôle : release
+- [ ] Fichiers concurrents non committés (specs : hunks #672 centralisation + mes fix harnais cohabitent — signalé dans le message de commit) — Sévérité : process
+
+### Prochaine action recommandée
+1. Review + merge fix (branche `agent/coding/bug-2026-038`) → CI verte attendue — Rôle : release
+2. Rebaser/merger #672 puis #678 → deploy-live → health 6/6 — Rôle : release
+3. Monitorer partner_* 7j (PR #678) — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/bug-2026-038` (basée sur main @d1c6af129 — le fix produit + harnais E2E y est déjà via #677 MERGÉE ; cette branche ajoute l'alignement contrat + docs)
+- PR : #679 https://github.com/aveca/sargagame/pull/679 (petit diff : contrat + docs uniquement — merger pour `npm test` vert)
+- Commit head : `e8526d93e`
+
+---
+
 ## 2026-09-15 16:00 UTC · Agent: coding-agent (b2b-monthly — FINAL, PR à créer)
 
 ### Travail effectué

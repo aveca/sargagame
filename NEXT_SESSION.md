@@ -1,5 +1,10 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-09-16 — BUG-2026-038 FIXÉ (branche `agent/coding/bug-2026-038`, PR à créer) — débloque #672 + #678**
+> Cause racine : `dismissBtnStyle is not defined` (bouton × héros, WorldMapView.jsx) → carte noire + boundary + 0 labels. Fix : style 44px + testid + repli stateful. Gates : build 385, bundle 38.1 Ko, smoke 4/4, funnel 13/13, bottomnav 8/8, j0 7/7 ×2, responsive 3/3, npm test 117/119 (2 filets worktrees préexistants). Harnais aligné sans affaiblir (selectors en ARG, premium par texte, pont comic en boucle, contrat j0). Détails : `.ai/bugs.md` (BUG-2026-038) + `.ai/tasks.md` (tête).
+>
+> **NEXT** : merger le fix → CI verte → merger #672 puis #678 (rebase) → deploy-live → health 6/6 → monitorer partner_* 7j.
+
 > **🎯 2026-09-07 — HARD ASSET : BeachSheet exemplaire 5 formats (GATE VERT, branche `agent/coding/hard-asset-beach-report`, PR no-auto-merge)**
 > Rapport plage du jour (PDF objet, `?report=0`) + drift-strip SVG + 7 events, contrat 41/41, bundle 37,6 Ko, smoke 4/4. Worktree partagé : PR manuelle requise (hunk SPRINT 0 co-localisé). P0 GP canonical : fix LONG SESSION #2 à vérifier en prod.
 
