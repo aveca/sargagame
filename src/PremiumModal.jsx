@@ -62,6 +62,7 @@ export default function PremiumModal({
   const payPlanRef = useRef("pro") // plan d'abonnement courant (non utilisé par pass one-time)
   const payEmailRef = useRef(null)
   const payReadyRef = useRef(false)
+  const payMountedRef = useRef(false) // Mollie Components mounted (cardHolder, cardNumber, expiry, cvc)
   const elementsRef = useRef(null)
   const stripeRef = useRef(null)
   const setupSecretRef = useRef(null)
@@ -81,7 +82,7 @@ export default function PremiumModal({
     lang, source, onActivated, onClose,
     payPlanRef, passCtxRef, payEmailRef,
     payBusy, setPayBusy, payError, setPayError,
-    payReadyRef, payRedirecting, setPayRedirecting,
+    payReadyRef, payMountedRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess,
     consentFlag, consentOk,
     elementsRef, stripeRef, setupSecretRef, mollieRef,
@@ -133,7 +134,7 @@ export default function PremiumModal({
     payStep, setPayStep,
     passCtxRef, payPlanRef, payEmailRef,
     payBusy, setPayBusy, payError, setPayError,
-    payReadyRef, payRedirecting, setPayRedirecting,
+    payReadyRef, payMountedRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess,
     consentFlag, consentOk, setConsentOk,
     mollieRef,

@@ -64,6 +64,7 @@ export function usePaymentLogic({
   payError,
   setPayError,
   payReadyRef,
+  payMountedRef,
   payRedirecting,
   setPayRedirecting,
   paySuccess,
@@ -293,6 +294,23 @@ export function usePaymentLogic({
       try{track("sg_mollie_ready_after_wait",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
       // on garde payBusy true et on continue vers le flux Mollie ci-dessous
     }
+    // Attendre que les Mollie Components soient montés (cardHolder, cardNumber, expiry, cvc)
+    if(PAY_PROVIDER==="mollie"&&!PAY_CAPTURE_ONLY&&!payMountedRef.current){
+      setPayError(_t(lang,"Le formulaire de paiement se prépare…","Payment form is getting ready…","El formulario de pago se está preparando…"))
+      let waited=0
+      while(!payMountedRef.current && waited<5000){
+        await new Promise(r=>setTimeout(r,120))
+        waited+=120
+      }
+      if(!payMountedRef.current){
+        setPayBusy(false)
+        setPayError(_t(lang,"Le formulaire de paiement met du temps à charger. Réessaie.","Payment form is taking a while. Please retry.","El formulario de pago tarda en cargar. Reintenta."))
+        try{track("sg_mollie_mounted_timeout",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
+        return
+      }
+      setPayError("")
+      try{track("sg_mollie_mounted_after_wait",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
+    }
     if(PAY_CAPTURE_ONLY){
       setPayBusy(true);setPayError("")
       try{submitLead(email,"gap_freemium")}catch(_){}
@@ -476,7 +494,7 @@ export function usePaymentLogic({
       track("sg_pay_onsite_error",{plan,provider:"stripe",message:msg.slice(0,90)})
       track("sg_payment_failed",{plan,source:source||"unknown",provider:"stripe",reason:msg.slice(0,50)})
     }
-  },[lang,source,onActivated,onClose,payPlanRef,passCtxRef,payEmailRef,payBusy,setPayBusy,setPayError,payReadyRef,setPayRedirecting,setPaySuccess,consentFlag,consentOk,elementsRef,stripeRef,setupSecretRef,mollieRef,PAY_PROVIDER,PAY_CAPTURE_ONLY,PAY_CUR,_t,track,submitLead,sgReferredBy,sgMyReferralCode,purchase,getPlanMeta,walletRedirect])
+  },[lang,source,onActivated,onClose,payPlanRef,passCtxRef,payEmailRef,payBusy,setPayBusy,setPayError,payReadyRef,payMountedRef,setPayRedirecting,setPaySuccess,consentFlag,consentOk,elementsRef,stripeRef,setupSecretRef,mollieRef,PAY_PROVIDER,PAY_CAPTURE_ONLY,PAY_CUR,_t,track,submitLead,sgReferredBy,sgMyReferralCode,purchase,getPlanMeta,walletRedirect])
 
   return { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput }
 }

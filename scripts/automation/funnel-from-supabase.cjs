@@ -40,6 +40,9 @@ const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open
   // PARTENAIRES CONTEXTUELS (2026-09-16) — slot PartnerContext (transport/shopping
   // après verdict + alternatives). Miroir de SG_FUNNEL_EVENTS.
   'partner_view', 'partner_cta', 'partner_outbound',
+  // PARTNER COMMERCE (2026-09-16) — commerce intégré natif
+  'product_view', 'cart_add', 'cart_open', 'checkout_start', 'checkout_payment',
+  'order_paid', 'order_failed', 'order_confirmed', 'order_cancelled',
   // PRODUCT UX RESET (2026-09-15) — navigation + comparateur + exploration
   'nav_tab', 'compare_add', 'compare_open', 'plages_filter', 'home_best_open', 'suivi_alert_toggle',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)

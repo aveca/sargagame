@@ -37,6 +37,7 @@ export function OnsiteCheckout({
   payError,
   setPayError,
   payReadyRef,
+  payMountedRef,
   payRedirecting,
   setPayRedirecting,
   paySuccess,
@@ -77,7 +78,6 @@ export function OnsiteCheckout({
   const molNumberRef = useRef(null)
   const molExpiryRef = useRef(null)
   const molCvcRef = useRef(null)
-  const payMountedRef = useRef(false)
   // molReady = state miroir de payReadyRef → re-déclenche l'effet de montage des
   // Components si payStep devient true AVANT la fin de l'init Mollie (race 2026-08-23).
   const [molReady, setMolReady] = useState(false)

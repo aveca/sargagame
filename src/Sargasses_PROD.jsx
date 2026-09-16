@@ -2048,6 +2048,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // events ÉTAIENT émis sous sg_transport_* par MaPlageView mais JETÉS (absents
   // du set → jamais loggés Supabase). Canonique : sg_partner_view/cta/outbound.
   "sg_partner_view","sg_partner_cta","sg_partner_outbound",
+  // PARTNER COMMERCE (2026-09-16) : commerce intégré natif (produit → panier → paiement → commande)
+  "sg_product_view","sg_cart_add","sg_cart_open","sg_checkout_start","sg_checkout_payment",
+  "sg_order_paid","sg_order_failed","sg_order_confirmed","sg_order_cancelled",
   // SPRINT 0 — Behavior Intelligence (2026-09-07) : scroll, visibility, dwell, intent
   "sg_beach_scroll_25","sg_beach_scroll_50","sg_beach_scroll_75","sg_beach_scroll_90",
   "sg_section_view","sg_section_consumed","sg_section_ignored",
