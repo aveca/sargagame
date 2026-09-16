@@ -70,16 +70,23 @@ async function openFirstBeach(page: Page) {
   }
   expect(tapIdx).toBeGreaterThanOrEqual(0)
   await page.locator(`${selectors.mapPin}[role='button']:visible`).nth(tapIdx).click({ timeout: 10000 })
-  // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data.
-  // Le bouton pont est SOUS le fold (la fiche comic scrolle) → isVisible le rate
-  // sans scroll préalable. On descend en bas de fiche avant de le chercher.
-  const comic = page.locator(".lc-detail").first()
-  if (await comic.isVisible({ timeout: 4000 }).catch(() => false)) {
+  // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
+  // (.bsc-sheet, où vivent vote/rapport/planB). Le chunk comic est LAZY et le
+  // bouton pont est SOUS le fold → boucle jusqu'à .bsc-sheet visible (max ~15 s).
+  // Sans pont, on garde la surface courante (les assertions tranchent).
+  const tBridge0 = Date.now()
+  while (Date.now() - tBridge0 < 15000) {
+    if (await page.locator(".bsc-sheet").first().isVisible({ timeout: 1000 }).catch(() => false)) break
+    const comic = page.locator(".lc-detail").first()
+    if (!(await comic.isVisible({ timeout: 1000 }).catch(() => false))) break
     await comic.evaluate((el) => { try { el.scrollTo(0, el.scrollHeight) } catch (_) {} }).catch(() => {})
-    await page.waitForTimeout(600)
+    await page.waitForTimeout(700)
     const full = page.locator(".lc-detail button").filter({ hasText: /Fiche complète|full report|ficha completa/i }).first()
-    if (await full.isVisible({ timeout: 6000 }).catch(() => false)) {
+    if (await full.isVisible({ timeout: 2000 }).catch(() => false)) {
       await full.click({ timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(1200)
+    } else {
+      await page.waitForTimeout(1500)
     }
   }
   const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
