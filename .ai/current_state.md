@@ -31,8 +31,8 @@
 
 ### Branche / PR
 - Branche : `agent/coding/bug-2026-038` (basée sur main @d1c6af129 — le fix produit + harnais E2E y est déjà via #677 MERGÉE ; cette branche ajoute l'alignement contrat + docs)
-- PR : à créer vers main (petit diff : contrat + docs uniquement)
-- Commit head : (après commit)
+- PR : #679 https://github.com/aveca/sargagame/pull/679 (petit diff : contrat + docs uniquement — merger pour `npm test` vert)
+- Commit head : `e8526d93e`
 
 ---
 
