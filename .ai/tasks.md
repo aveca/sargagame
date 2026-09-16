@@ -1,3 +1,10 @@
+## BUG-2026-038 — [x] FIXÉ 2026-09-16 (cause racine `dismissBtnStyle is not defined`, branche `agent/coding/bug-2026-038`)
+- **Cause** : bouton × héros référençait un style jamais défini → ReferenceError au render dès que le héros s'affiche → WorldMapView entier jeté au boundary (carte noire, 0 label, readiness jamais publiée). Masqué quand le héros ne s'affiche pas (d'où le vert #672).
+- **Fix produit** : `DISMISS_BTN_STYLE` 44px + `data-testid` + repli stateful `heroFolded` (`sg_hero_fold`, `?maphero=0` intact) — `src/WorldMapView.jsx` seul. AroundMeController/Mollie/partners non touchés.
+- **Fix harnais (assertions intactes)** : `selectors` en ARG d'`evaluate` (bottomnav ×2, j0) · onglet premium par texte (nth(2)=Carte en 5 onglets) · repli héros + pont comic→data en boucle + dismissal wall partagé dans j0 · vote en match exact · contrat j0 aligné sur `selectors.*`.
+- **Preuves** : build 385 · bundle 38.1 · smoke 4/4 · funnel 13/13 · bottomnav 8/8 · j0 7/7 ×2 · responsive 3/3 · npm test 117/119 (2 = filets worktrees préexistants).
+- **NEXT** : merger contrat+docs (`agent/coding/bug-2026-038`) → `npm test` vert sur main → merger #672 puis #678 (rebase) → deploy-live → health 6/6.
+
 ## FERMETURE #672 — BUG-2026-036 [x] fixé (2026-09-15, 13/13 + 8/8 en local)
 - **Cause** : wait 1er-label-visible (ordre DOM data-dépendant) + héros opaque sans sortie couvrant tout.
 - **Fix** : readiness `data-sg-labels-ready` + héros repliable (× 44px, session) + 14 prologues basculés (assertions intactes).

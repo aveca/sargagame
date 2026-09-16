@@ -27,6 +27,17 @@
 - **Validation** : funnel 13/13 + bottomnav 8/8 en local ; matrice 4 configs (défaut, ?newia=0, ?maphero=0, les deux) : ready=true, tapIdx≥0, 0 erreur ; screenshot carte libérée (labels tappables sur l'île).
 - **Statut** : [x] FIXÉ (branche agent/coding/b2b-monthly, commit à venir)
 
+### BUG-2026-038 — [x] FIXÉ 2026-09-16 (mission bug-2026-038) Vue Carte noire + boundary, 0 label : `dismissBtnStyle is not defined`
+- **Date** : 2026-09-16 (branche agent/coding/ux-reset-clean, commit eed805fed présent).
+- **Sévérité** : P0 funnel — la carte est l'entrée (carte → verdict → paywall) ; toutes les surfaces non-carte restaient vertes.
+- **Symptôme** : onglet Carte → carte noire + « Une erreur s'est produite… » (fallback ErrBound), 0 `.sg-maplabel`, `data-sg-labels-ready` jamais publié, 0 console.error/pageerror en prod.
+- **Cause exacte (prouvée par instrumentation, pas au jugé)** : le bouton × du héros « Meilleur choix » (feature BUG-2026-036, WorldMapView.jsx:2074) référençait `style: dismissBtnStyle`, variable JAMAIS déclarée → `ReferenceError` au render dès que le bloc héros s'affiche (`dataReady && ≥3 plages`, IIFE) → render ENTIER de WorldMapView jeté au boundary. Masqué quand le héros ne s'affiche pas (dataReady false, emailSent, ?maphero=0) — d'où le vert « local » de la mission #672. Deuxième vice du même bouton : `localStorage.setItem` seul (aucun re-render → × inerte) + `id:` sans `data-testid:` (le sélecteur E2E `[data-testid="sg-hero-dismiss"]` ne le trouvait jamais).
+- **Preuve pré-existence** : reproduit à l'identique sur arbre pristine (stash tracked + rebuild 385, zéro fichier mission) — même test, même snapshot (carte noire + boundary). WorldMapView.jsx intact par ailleurs (`git diff` : 0 ligne carte hors fix).
+- **Fix (cause racine uniquement, `src/WorldMapView.jsx`)** : `DISMISS_BTN_STYLE` défini (44×44, grammaire comic) ; `data-testid="sg-hero-dismiss"` ajouté (id conservé) + `aria-label` ; repli stateful `heroFolded` (init `sg_hero_fold`, garde du bloc, `?maphero=0` intact). AroundMeController, Mollie/KV/B2B, partners : NON touchés. Aucune donnée inventée.
+- **Validation** : build 385 · bundle 38,1 Ko · smoke 4/4 (`map+fiche+paywall`, `ERRORS=[]`, ghost `[]`, `RM_INFINITE=[]`) · funnel 13/13 · bottomnav 8/8 · j0 7/7 ×2 (14/14) · responsive 3/3 · `npm test` 117/119 (2 échecs = filets `.claude/worktrees/jolly-yalow` préexistants, hors repo) · sonde live : boundary absente, ready `10/3`, labels 10/3, × présent, tap→fiche comic OK, 0 pageerror.
+- **Harnais (même pattern, assertions intactes)** : `selectors` passé en ARG d'`evaluate` (bottomnav ×2, j0 `openFirstBeach`) ; `openPaywallViaNav` clique l'onglet premium PAR TEXTE (nth(2)=Carte en UI 5 onglets) ; repli héros porté dans `openFirstBeach` ; pont comic→data en boucle (~15 s) ; dismissal wall « N PLAGES » partagé + re-vérifié avant vote/rapport ; vote ciblé en match exact ; contrat j0 aligné sur `selectors.*` centralisés (valeur `[data-sg-labels-ready]` vérifiée).
+- **Statut** : [x] FIXÉ — produit (`WorldMapView.jsx`) + harnais E2E absorbés et MERGÉS via #677 (main @d1c6af129) ; alignement contrat + docs : branche `agent/coding/bug-2026-038`, PR à créer vers main
+
 ### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
 - **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)
 - **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ est intercepté
