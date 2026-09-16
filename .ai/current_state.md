@@ -1,4 +1,21 @@
-## 2026-09-16 15:30 UTC · Agent: coding-agent (partners #678 — REBASE sur main, validation en cours)
+## 2026-09-16 15:00 UTC · Agent: coding-agent (séquence #679 → #672-vérifiée → #678 → deploy → health — CLOSE)
+
+### Travail effectué
+- **Résumé 1 ligne** : #679 mergée (CI 6/6) · #672 déjà mergée (rien à faire) · #678 rebasée (1 commit, docs en union) → CI 6/6 → mergée 14:42Z · incident deploy sg-payments 10021 PRÉ-EXISTANT contourné par fix e6a5b195f déjà sur main · run suivant SUCCESS · live 6/6 ×200 + money-path 200.
+- **Détails** : rebase `--onto origin/main` (3 commits #672 obsolètes droppés) ; embourbement intermédiaire (`rebase --continue` refusé malgré 0 chemin non fusionné) résolu par abort + replay + `checkout --ours` docs + skip docs périmé. Validation arbre rebasé : build · bundle 38.1 · partners-contract 34/34 · E2E partners 2/2 · smoke 4/4 · funnel 13/13 · bottomnav 8/8 · j0 7/7 · responsive 3/3. Deploy : run 35110363748 FAILED (worker 10021, 5 runs rouges avant #678) → run 35110923587 SUCCESS (workers 3/3, Pages 6/6, purge, health 6/6).
+
+### Fichiers modifiés (cette passe)
+- `.ai/tasks.md`, `.ai/current_state.md`, `NEXT_SESSION.md` — clôture mission
+
+### Prochaine action recommandée
+1. Monitorer 7j : partner_view→cta→outbound par trackingId — Rôle : growth/data
+2. Rituel matinal drafts + prospection B2B 20/j — Rôle : growth
+3. Shopping GP si partenariat confirmé (TODO) — Rôle : product/fondateur
+
+### Branche / PR
+- #679 MERGED · #672 MERGED (pré-existant) · #678 MERGED 14:42Z · deploy SUCCESS · health 6/6 live vérifié
+
+---
 
 ### Travail effectué
 - **Résumé 1 ligne** : Branche partners rejouée sur main @20d9aa09b (`--onto`, 3 commits #672 obsolètes droppés) → 1 commit produit (21 fichiers, auto-mergé sans conflit) ; docs en union ; validation arbre rebasé en cours.
