@@ -125,4 +125,26 @@
 Pour ajouter une décision : ajouter date + pourquoi + conséquences.
 Ne PAS doublonner, toujours éditer celle existante (a) si déjà mentionnée ailleurs dans le repo.
 
+---
+
+## DEC-2026-09-16 — Handoff system : NEXT_SESSION.md vs .ai/current_state.md
+
+- **Date/Heure UTC** : 2026-09-16
+- **Contexte** : Deux fichiers de handoff coexistaient avec des responsabilités floues :
+  - `NEXT_SESSION.md` (racine repo) : handoff concis, tête de session courante
+  - `.ai/current_state.md` : historique complet de tous les handoffs détaillés
+- **Analyse** : Selon CLAUDE.md (Index des docs) :
+  - `NEXT_SESSION.md` = "Handoff. Tête = session courante. Tenir à jour à chaque chunk ; archiver les entrées > ~7 j. **Seul état qui survit côté agent web.**"
+  - `.ai/current_state.md` = "État réel + dernier handoff" — "À chaque session"
+  - Note CLAUDE.md : "⚠️ Le dossier `~/.claude/.../memory/` n'existe que sur la machine du fondateur, **absent du container web/mobile**. → `npm run session` retombe sur la tête de `NEXT_SESSION.md` si le dossier mémoire est absent. `NEXT_SESSION.md` = handoff/WIP/décisions, **PAS la source des chiffres**."
+- **Décision** : **Source de vérité canonique pour l'état courant = `NEXT_SESSION.md`** (concise, survit cross-container). `.ai/current_state.md` = **historique détaillé complet** (archive de tous les handoffs, format template, ne survit pas dans le container web).
+- **Responsabilités** :
+  - `NEXT_SESSION.md` : tête de session (1 entrée max), actions fondateurs, next steps immédiats, blocs "Ce qui a changé"
+  - `.ai/current_state.md` : append-only, une entrée par tâche terminée (format `.ai/handoff-template.md`), historique complet pour audit/review
+- **Conséquences** :
+  - Au démarrage session : lire `NEXT_SESSION.md` (tête) + `.ai/current_state.md` (dernière entrée complète) + `npm run session`
+  - À la fin de tâche : mettre à jour **les deux** — `NEXT_SESSION.md` (tête concise) + `.ai/current_state.md` (entrée détaillée template)
+  - `npm run session` continue de dériver MRR/métriques depuis `daily-metrics.json` et retombe sur `NEXT_SESSION.md` si mémoire desktop absente
+  - Pas de suppression de `.ai/current_state.md` — nécessaire pour l'historique complet et les audits
+
 Fin.)
