@@ -176,7 +176,8 @@ async function rateLimit(env: Env, key: string, limit: number, windowSec = 86400
 }
 
 // Nettoyage périodique du cache (éviter fuite mémoire sur isolates longs)
-setInterval(() => {
+// Appelé depuis le handler `scheduled` (cron 0 * * * * = toutes les heures)
+function cleanupRateLimitCache(): void {
   const now = Date.now();
   const day = Math.floor(now / 86400000);
   for (const [key, entry] of RATE_LIMIT_CACHE.entries()) {
@@ -184,7 +185,7 @@ setInterval(() => {
       RATE_LIMIT_CACHE.delete(key);
     }
   }
-}, 300_000);
+}
 
 async function verifyHmac(body: string, sig: string, secret: string): Promise<boolean> {
   const enc = new TextEncoder();
@@ -857,6 +858,8 @@ export default {
   },
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     console.log(`Cron triggered: ${event.cron}`);
+    // Nettoyage cache rate-limit (ex setInterval module scope — interdit Workers)
+    cleanupRateLimitCache();
     ctx.waitUntil(runDripEmails(env));
     if (event.cron === '0 6,18 * * *') {
       ctx.waitUntil(runB2CAlerts(env));
