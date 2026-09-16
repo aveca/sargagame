@@ -6,16 +6,18 @@ const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 test.describe("Responsive Layouts", () => {
   test("map loads with visible pins", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+    // waitForSelector("[data-sg-labels-ready]")
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
-    const mapLabels = await page.locator(".sg-maplabel").count()
+    const mapLabels = await page.locator(selectors.mapPin).count()
     expect(mapLabels).toBeGreaterThanOrEqual(3)
   })
 
   test("BottomNav visible", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+    // waitForSelector("[data-sg-labels-ready]")
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
     const nav = page.locator(selectors.bottomNav).first()
@@ -24,7 +26,8 @@ test.describe("Responsive Layouts", () => {
 
   test("no horizontal scroll", async ({ page }) => {
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+    // waitForSelector("[data-sg-labels-ready]")
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
     await page.waitForTimeout(2000)
 
     const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth)

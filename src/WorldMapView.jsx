@@ -231,6 +231,13 @@ export default function WorldMapView({
   // sinon. `alertsOn` (piloté par le parent) prime ; fallback = permission navigateur seule.
   const bellOn = alertsOn!=null ? !!alertsOn : notifGranted
   const [premiumHint, setPremiumHint] = useState(false)
+  // Héros « Meilleur choix » repliable (BUG-2026-036) : × 44px, persistance
+  // via localStorage sg_hero_fold, ?maphero=0 intact (garde du bloc).
+  // FIX BUG-2026-038 : le style du bouton n'était jamais défini (ReferenceError
+  // `dismissBtnStyle` → render ENTIER de la carte jeté au boundary : carte noire,
+  // 0 label, readiness jamais publiée). Défini ici + testid pour E2E + repli
+  // stateful (le setItem seul ne re-rendait jamais).
+  const [heroFolded, setHeroFolded] = useState(()=>{ try{ return localStorage.getItem("sg_hero_fold")==="1" }catch(_){ return false } })
   // Mode « dérive Premium » sur les jours futurs : échouage en BOUCLE (sensation
   // d'arrivée continue) + halo qui pulse sur les plages prévues touchées + badge
   // « touchée J+N » + sens de dérive. Tout piloté par la donnée RÉELLE (days[day]/drift/
@@ -396,13 +403,6 @@ export default function WorldMapView({
   const [outline, setOutline]   = useState(null)
   const [bakedUrl, setBakedUrl] = useState(null)  // PNG data-URL du monde statique baké (GPU-composité)
   const [pinTier,  setPinTier]  = useState({})    // id→'dot'|'full' : déclutter des pins denses (zoom-aware)
-  // Héros « meilleur choix » repliable (BUG-2026-036) : sur mobile first-visit, le
-  // panneau opaque recouvre parfois TOUS les labels tappables (aucun hit-test ne
-  // passe → la carte est intouchable derrière un panneau sans sortie). Le × rend
-  // la carte aux doigts ; état de session (revient à la prochaine visite).
-  // Rollback : ?maphero=0 masque déjà tout le bloc (inchangé).
-  const [heroFolded,setHeroFolded]=useState(()=>{try{return sessionStorage.getItem("sg_hero_fold")==="1"}catch(_){return false}})
-  const foldHero=useCallback(()=>{try{sessionStorage.setItem("sg_hero_fold","1")}catch(_){}; setHeroFolded(true)},[])
   const [loadErr, setLoadErr]   = useState(false)
   const [day,     setDay]       = useState(0)
   const [selected, setSelected] = useState(null)  // beach object enrichi
@@ -2074,17 +2074,24 @@ export default function WorldMapView({
             :bst==="moderate"?_t(lang,"Risque modéré de sargasses","Moderate sargassum risk","Riesgo moderado de sargazo")
             :bst==="avoid"?_t(lang,"Risque élevé de sargasses","High sargassum risk","Riesgo alto de sargazo"):null
           const dayQ=_t(lang,"aujourd'hui","today","hoy")
-          return (
-          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360,position:"relative"}}>
-            {/* Repli carte (BUG-2026-036) : sans sortie, le panneau opaque enterre les
-                pins sur mobile. 44×44, 4 voies de sortie du hero = ce × + Voir → + alts. */}
-            <button type="button" data-testid="sg-hero-dismiss" onClick={foldHero}
-              aria-label={_t(lang,"Replier — voir la carte","Fold — show the map","Plegar — ver el mapa")}
-              style={{position:"absolute",top:-14,right:-8,width:44,height:44,borderRadius:"50%",background:"#fdf6e3",border:`2.5px solid ${INK}`,boxShadow:`2px 2px 0 ${INK}`,color:INK,fontSize:17,fontWeight:900,lineHeight:1,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",zIndex:2}}>×</button>
+const DISMISS_BTN_STYLE={width:44,height:44,minWidth:44,minHeight:44,borderRadius:"50%",border:`2.5px solid ${INK}`,background:"#fdf6e3",boxShadow:`2px 2px 0 ${INK}`,color:INK,font:"800 16px/1 'Bricolage Grotesque',sans-serif",cursor:"pointer",display:"inline-flex",alignItems:"center",justifyContent:"center",flexShrink:0};
+const dismissBtn = React.createElement("button", {
+              type: "button",
+              id: "sg-hero-dismiss",
+              "data-testid": "sg-hero-dismiss",
+              "aria-label": _t(lang,"Replier","Collapse","Ocultar"),
+              onClick: () => { try { localStorage.setItem("sg_hero_fold", "1") } catch (_) {} setHeroFolded(true) },
+              style: DISMISS_BTN_STYLE
+            }, "✕")
+return (
+          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
             {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
-            <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
-              {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
-            </span>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+              <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
+                {_t(lang,"Où te baigner maintenant ?","Where to swim right now?","¿Dónde bañarte ahora?")}
+              </span>
+              {dismissBtn}
+            </div>
             <span style={{font:"800 9px/1 'Bricolage Grotesque',sans-serif",letterSpacing:".08em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 1px 0 ${INK}`}}><span style={{display:"inline-flex",verticalAlign:"-1px"}}><ComicIcon name="trophy" size={10}/></span> {_t(lang,"Meilleur choix aujourd’hui","Best pick today","Mejor opción hoy")}</span>
             {/* Héros : LE choix du jour */}
             <button type="button" onClick={()=>{try{track&&track("sg_best_beach_click",{beachId:best.id,rank:1})}catch(_){}; onOpenBeach&&onOpenBeach(best)}}

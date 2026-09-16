@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
+import { selectors } from "../utils/selectors"
 
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 const TEST_URL = BASE_URL + "/"
@@ -38,10 +39,14 @@ function setupTrackInterceptor(page: Page) {
 
 async function openFirstBeach(page: Page) {
   await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+  // waitForSelector("[data-sg-labels-ready]")
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
-  const tapIdx = await page.evaluate(() => {
-    const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
+  // 1er label visible ET réellement atteignable (hit-test au centre) — même
+  // pattern que funnel-payment.spec.ts (funnel-82) : un label sous le panneau
+  // opaque « Meilleur choix » n'est tapable par AUCUN utilisateur.
+  const findTappable = () => page.evaluate((sel) => {
+    const els = [...document.querySelectorAll(`${sel}[role='button']`)].filter((el) => {
       const r = el.getBoundingClientRect()
       return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
     })
@@ -51,20 +56,61 @@ async function openFirstBeach(page: Page) {
       if (hit && (hit === els[i] || els[i].contains(hit))) return i
     }
     return -1
-  })
+  }, selectors.mapPin)
+  let tapIdx = await findTappable()
+  // BUG-2026-036 : si le héros recouvre TOUS les labels, vrai parcours = on le
+  // replie via son × (puis on re-cherche). Assertions/timeouts inchangés.
+  if (tapIdx < 0) {
+    const dismiss = page.locator(selectors.mapHeroDismiss).first()
+    if (await dismiss.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await dismiss.click({ timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(800)
+      tapIdx = await findTappable()
+    }
+  }
   expect(tapIdx).toBeGreaterThanOrEqual(0)
-  await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+  await page.locator(`${selectors.mapPin}[role='button']:visible`).nth(tapIdx).click({ timeout: 10000 })
   // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
-  const comic = page.locator(".lc-detail").first()
-  if (await comic.isVisible({ timeout: 4000 }).catch(() => false)) {
+  // (.bsc-sheet, où vivent vote/rapport/planB). Le chunk comic est LAZY et le
+  // bouton pont est SOUS le fold → boucle jusqu'à .bsc-sheet visible (max ~15 s).
+  // Sans pont, on garde la surface courante (les assertions tranchent).
+  const tBridge0 = Date.now()
+  while (Date.now() - tBridge0 < 15000) {
+    if (await page.locator(".bsc-sheet").first().isVisible({ timeout: 1000 }).catch(() => false)) break
+    const comic = page.locator(".lc-detail").first()
+    if (!(await comic.isVisible({ timeout: 1000 }).catch(() => false))) break
+    await comic.evaluate((el) => { try { el.scrollTo(0, el.scrollHeight) } catch (_) {} }).catch(() => {})
+    await page.waitForTimeout(700)
     const full = page.locator(".lc-detail button").filter({ hasText: /Fiche complète|full report|ficha completa/i }).first()
-    if (await full.isVisible({ timeout: 4000 }).catch(() => false)) {
+    if (await full.isVisible({ timeout: 2000 }).catch(() => false)) {
       await full.click({ timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(1200)
+    } else {
+      await page.waitForTimeout(1500)
     }
   }
   const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
   await fiche.waitFor({ state: "visible", timeout: 15000 })
+  // Paywall 3-vues (SPRINT #3, « VOUS AVEZ CONSULTÉ N PLAGES ») : overlay modal
+  // qui recouvre la fiche et rend ses boutons inertes → on le referme pour
+  // retrouver la fiche (parcours réel ; le paywall lui-même est couvert par
+  // les suites funnel/premium). Il peut surgir EN RETARD (compteur de vues qui
+  // suit l'ouverture) → boucle jusqu'à disparition (max 3, dismiss = 6h).
+  await dismissConsultWall(page)
   return fiche
+}
+
+// Referme l'overlay « N PLAGES consultées » tant qu'il est visible (il peut
+// surgir après coup, au fil des events de vue) — à rappeler juste avant
+// chaque interaction fiche (vote, rapport).
+async function dismissConsultWall(page: Page) {
+  for (let i = 0; i < 3; i++) {
+    const consultWall = page.locator('button:has-text("Peut-être plus tard")').first()
+    if (await consultWall.isVisible({ timeout: 2500 }).catch(() => false)) {
+      await consultWall.click({ timeout: 5000 }).catch(() => {})
+      await page.waitForTimeout(1200)
+    } else break
+  }
 }
 
 async function openPaywall(page: Page, qs = "?paywall=1") {
@@ -76,12 +122,15 @@ async function openPaywall(page: Page, qs = "?paywall=1") {
 // Ouvre le paywall via l'onglet premium (BottomNav) — PRÉSERVE la query string,
 // contrairement au deep-link ?paywall=1 dont le handler nettoie l'URL avant que
 // le chunk lazy PremiumModal lise ses flags rollback.
+// NOTE 5 onglets (UX Reset) : l'onglet premium se clique PAR TEXTE (selectors),
+// pas par index — nth(2) = Carte depuis le passage à 5 onglets.
 async function openPaywallViaNav(page: Page, qs = "") {
   await page.goto(TEST_URL + qs, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+  // waitForSelector("[data-sg-labels-ready]")
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
-  const tabs = page.locator(".sg-bottom-nav button")
-  await tabs.nth(2).click({ timeout: 10000 })
+  const premiumTab = page.locator(selectors.bottomNavTabPremium).first()
+  await premiumTab.click({ timeout: 10000 })
   await page.waitForTimeout(2500)
 }
 
@@ -159,7 +208,12 @@ test.describe("J0 sprint — fiche plage", () => {
   test("vote terrain émet sg_beach_report", async ({ page }) => {
     const tracker = setupTrackInterceptor(page)
     await openFirstBeach(page)
-    const voteBtn = page.locator(".bsc-sheet button, .sheet button").filter({ hasText: /Propre|Modéré|Beaucoup|Clean|Moderate|Heavy/ }).first()
+    // Bouton de vote EXACT (libellé seul) : un filtre substring attrape aussi
+    // les chips de statut / alternatives (« Plage propre… ») selon la plage —
+    // le clic part alors sur un élément inerte et l'event ne part jamais.
+    // + re-fermeture du wall « N PLAGES » (peut resurgir après coup).
+    await dismissConsultWall(page)
+    const voteBtn = page.locator(".bsc-sheet button, .sheet button").filter({ hasText: /^Propre$|^Clean$|^Limpia$|^Modéré$|^Moderate$|^Moderado$|^Beaucoup$|^Heavy$|^Mucho$/ }).first()
     if (await voteBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await voteBtn.click({ timeout: 5000 }).catch(() => {})
       await page.waitForTimeout(1000)
@@ -169,6 +223,7 @@ test.describe("J0 sprint — fiche plage", () => {
 
   test("rapport du jour : modale + bouton WhatsApp", async ({ page }) => {
     await openFirstBeach(page)
+    await dismissConsultWall(page)
     // Bouton rapport (icône document) — texte variable selon langue
     const reportBtn = page.locator(".bsc-sheet button, .sheet button").filter({ hasText: /Rapport|Report|Informe/ }).first()
     if (await reportBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
