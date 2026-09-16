@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
+import { selectors } from "../utils/selectors"
 
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 const TEST_URL = BASE_URL + "/"
@@ -38,10 +39,10 @@ function setupTrackInterceptor(page: Page) {
 
 async function openFirstBeach(page: Page) {
   await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+  await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
   const tapIdx = await page.evaluate(() => {
-    const els = [...document.querySelectorAll(".sg-maplabel[role='button']")].filter((el) => {
+    const els = [...document.querySelectorAll(`${selectors.mapPin}[role='button']`)].filter((el) => {
       const r = el.getBoundingClientRect()
       return getComputedStyle(el).visibility === "visible" && r.width > 0 && r.height > 0
     })
@@ -53,7 +54,7 @@ async function openFirstBeach(page: Page) {
     return -1
   })
   expect(tapIdx).toBeGreaterThanOrEqual(0)
-  await page.locator(".sg-maplabel[role='button']:visible").nth(tapIdx).click({ timeout: 10000 })
+  await page.locator(`${selectors.mapPin}[role='button']:visible`).nth(tapIdx).click({ timeout: 10000 })
   // Le tap peut ouvrir le takeover comic (.lc-detail) : pont vers la fiche data
   const comic = page.locator(".lc-detail").first()
   if (await comic.isVisible({ timeout: 4000 }).catch(() => false)) {
@@ -78,7 +79,7 @@ async function openPaywall(page: Page, qs = "?paywall=1") {
 // le chunk lazy PremiumModal lise ses flags rollback.
 async function openPaywallViaNav(page: Page, qs = "") {
   await page.goto(TEST_URL + qs, { waitUntil: "load", timeout: 60000 })
-  await page.waitForSelector("[data-sg-labels-ready]", { timeout: 30000 }).catch(() => {})
+  await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
   await page.waitForTimeout(2000)
   const tabs = page.locator(".sg-bottom-nav button")
   await tabs.nth(2).click({ timeout: 10000 })
