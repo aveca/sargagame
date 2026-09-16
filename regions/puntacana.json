@@ -227,5 +227,11 @@
     "yearly": "https://buy.stripe.com/4gM8wRfbZ1oK7Kt1FF0co0K",
     "tripPass": "https://buy.stripe.com/3cIeVf1l93wSggZ9870co0N"
   },
-  "noTrial": true
+  "noTrial": true,
+  "partners": {
+    "_note": "Partenaires contextuels (services, jamais pubs agressives). Résolution par src/lib/partners.js — ZÉRO condition codée en dur dans les composants.",
+    "transport": { "local": null, "multiIsland": null },
+    "shopping": [],
+    "_todo": "Aucun partenariat transport/shopping confirmé pour puntacana. RHUMZ multi-îles affiché UNIQUEMENT sur mq/gp (couverture confirmée) — ne jamais l'activer ici sans disponibilité confirmée."
+  }
 }

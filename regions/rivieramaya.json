@@ -322,5 +322,11 @@
     "freshTitles": true,
     "dateModifiedFromPipeline": true
   },
-  "noTrial": true
+  "noTrial": true,
+  "partners": {
+    "_note": "Partenaires contextuels (services, jamais pubs agressives). Résolution par src/lib/partners.js — ZÉRO condition codée en dur dans les composants.",
+    "transport": { "local": null, "multiIsland": null },
+    "shopping": [],
+    "_todo": "Aucun partenariat transport/shopping confirmé pour rivieramaya. RHUMZ multi-îles affiché UNIQUEMENT sur mq/gp (couverture confirmée) — ne jamais l'activer ici sans disponibilité confirmée."
+  }
 }

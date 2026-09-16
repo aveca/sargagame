@@ -1,3 +1,24 @@
+## 2026-09-16 15:30 UTC · Agent: coding-agent (partners #678 — REBASE sur main, validation en cours)
+
+### Travail effectué
+- **Résumé 1 ligne** : Branche partners rejouée sur main @20d9aa09b (`--onto`, 3 commits #672 obsolètes droppés) → 1 commit produit (21 fichiers, auto-mergé sans conflit) ; docs en union ; validation arbre rebasé en cours.
+- **Détails** : rebase intermédiaire embourbé (conflits docs + `rebase --continue` refusé malgré 0 chemin non fusionné) → résolu par `abort` + replay propre + `checkout --ours` docs + skip du commit docs périmé. Sondes temporaires supprimées. Money-path : `workers/sg-payments/src/index.ts` modifié par une session concurrente EN COURS — NON touché, NON committé.
+
+### Fichiers modifiés (cette passe)
+- `.ai/bugs.md` (entrée [OUVERT] périmée supprimée), `.ai/changelog.md`, `.ai/tasks.md` (entrées rebase), `.ai/current_state.md`, `NEXT_SESSION.md` — à committer
+
+### Tests à réaliser (arbre rebasé)
+- [ ] npm run build → exit 0 · check-bundle-budget ≤ 210 Ko
+- [ ] partners-contract 34/34 · E2E partners-context 2/2 · smoke 4/4 · funnel/bottomnav/j0/responsive
+- [ ] push --force-with-lease → CI #678 → merge → deploy-live → health 6/6
+
+### Branche / PR
+- Branche : `agent/coding/partners-context` (rebasée, 1 commit produit + 1 commit docs à venir)
+- PR : #678 https://github.com/aveca/sargagame/pull/678
+- Commit head : 1ce55d1cf
+
+---
+
 ## 2026-09-16 12:30 UTC · Agent: coding-agent (bug-2026-038 — FIXÉ, PR à créer)
 
 ### Travail effectué

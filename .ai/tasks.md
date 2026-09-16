@@ -1,3 +1,7 @@
+## PR #678 — [~] rebase sur main @20d9aa09b (#677 fix + #679 contrat inclus), validation en cours
+- **Rebase** : `--onto` (3 commits #672 obsolètes droppés) → 1 commit partners (21 fichiers) · docs en union · sondes temporaires supprimées.
+- **Reste** : build + partners-contract + E2E partners + smoke + suites Carte → push --force-with-lease → CI → merge → deploy-live → health 6/6.
+
 ## BUG-2026-038 — [x] FIXÉ 2026-09-16 (cause racine `dismissBtnStyle is not defined`, branche `agent/coding/bug-2026-038`)
 - **Cause** : bouton × héros référençait un style jamais défini → ReferenceError au render dès que le héros s'affiche → WorldMapView entier jeté au boundary (carte noire, 0 label, readiness jamais publiée). Masqué quand le héros ne s'affiche pas (d'où le vert #672).
 - **Fix produit** : `DISMISS_BTN_STYLE` 44px + `data-testid` + repli stateful `heroFolded` (`sg_hero_fold`, `?maphero=0` intact) — `src/WorldMapView.jsx` seul. AroundMeController/Mollie/partners non touchés.

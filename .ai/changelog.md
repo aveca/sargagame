@@ -1,3 +1,9 @@
+## 2026-09-16 — PR #678 REBASÉE sur main (post-#677/#679) : partenaires prêts pour CI verte
+
+**Agent** : coding-agent. **Rebase** : `agent/coding/partners-context` rejouée sur `origin/main` @20d9aa09b en ne gardant que le commit partners (`--onto`, 3 commits #672 obsolètes droppés) — produit auto-mergé SANS conflit ; 4 docs en conflit résolues par union (entrées #679 conservées + entrée partenaires, lignes périmées BUG-2026-038 [OUVERT] corrigées). Sondes temporaires supprimées.
+**Contenu PR (21 fichiers)** : config `partners` régions + générateur + résolveur + `PartnerContext` lazy + 3 surfaces + tracking `sg_partner_*` + contrat 34/34 + E2E 2/2 (inchangé, cf. entrée partenaires 2026-09-16).
+**NEXT** : valider l'arbre rebasé (build + contrat + E2E partners + smoke + Carte) → push --force-with-lease → CI → merge → deploy-live → health 6/6.
+
 ## 2026-09-16 — BUG-2026-038 FIXÉ : `dismissBtnStyle is not defined` tuait la carte (noir + boundary + 0 label)
 
 **Agent** : coding-agent (mission bug-2026-038, arbre `agent/coding/ux-reset-clean`, repro pristine). **Cause exacte** (instrumentation fibre + hook `componentDidCatch` temporaire, reverté) : `ReferenceError: dismissBtnStyle is not defined` — le bouton × du héros « Meilleur choix » (WorldMapView.jsx:2074, feature BUG-2026-036) référençait un style jamais déclaré → dès que le bloc héros s'affiche (`dataReady && ≥3 plages`), le render ENTIER de WorldMapView part au boundary ErrBound (carte noire, 0 label, `data-sg-labels-ready` jamais publié, 0 console/pageerror en prod Preact). Masqué quand le héros ne s'affiche pas (d'où le vert #672). Vices collatéraux du même bouton : `setItem` seul (× inerte, aucun re-render) + `id:` sans `data-testid:` (sélecteur E2E introuvable).

@@ -22,6 +22,7 @@ import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
 import ComicIcon from "./components/ComicIcons.jsx"
+import { PartnerContext } from "./components/PartnerContext.jsx"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -848,6 +849,12 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             </div>
           </div>
         ) : null}
+
+        {/* Services contextuels (transport/shopping) — APRÈS consultation plage
+            + APRÈS alternatives « où aller plutôt » (décision aller/ne-pas-aller).
+            Config régionale (partners.js) : un seul CTA transport, badge
+            « Partenaire », verdict 100% ERDDAP. Kill-switch ?partnerctx=0. */}
+        <PartnerContext regionId={beach.island} beach={beach} lang={lang} track={track}/>
 
         {/* REPÈRE DE SAISON — DERNIER bloc, sous le verdict + la prévision : orientation
             réservation 2-3 sem, muette, repliée. Jamais sur la preview/le verdict. */}

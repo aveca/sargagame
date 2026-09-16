@@ -37,6 +37,9 @@ const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open
   'planb_view', 'planb_pick', 'beach_report', 'observation', 'beach_event', 'obs_smell', 'b2b_widget_preview',
   // MA PLAGE view (2026-09-14) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'ma_plage_open', 'ma_plage_fav_toggle', 'ma_plage_alerts_toggle', 'ma_plage_alerts_enable', 'ma_plage_premium_cta',
+  // PARTENAIRES CONTEXTUELS (2026-09-16) — slot PartnerContext (transport/shopping
+  // après verdict + alternatives). Miroir de SG_FUNNEL_EVENTS.
+  'partner_view', 'partner_cta', 'partner_outbound',
   // PRODUCT UX RESET (2026-09-15) — navigation + comparateur + exploration
   'nav_tab', 'compare_add', 'compare_open', 'plages_filter', 'home_best_open', 'suivi_alert_toggle',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)

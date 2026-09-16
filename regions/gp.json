@@ -46,5 +46,23 @@
     "displayName": "RHUMZ",
     "bookingUrl": "https://www.rhumz.com/reservation/",
     "supportsBeachContext": true
+  },
+  "partners": {
+    "_note": "Partenaires contextuels (services, jamais pubs agressives). SOURCE DE VÉRITÉ régionale : un partenaire ne s'affiche que si enabled:true ET que regions contient la région courante. Résolution par src/lib/partners.js — ZÉRO condition codée en dur dans les composants.",
+    "transport": {
+      "local": null,
+      "multiIsland": {
+        "name": "RHUMZ",
+        "category": "VTC / transport",
+        "url": "https://www.rhumz.com/",
+        "bookingUrl": "https://www.rhumz.com/reservation/",
+        "regions": ["mq", "gp"],
+        "supportsBeachContext": true,
+        "enabled": true,
+        "trackingId": "rhumz"
+      }
+    },
+    "shopping": [],
+    "_todo": "Taxis Martinique = Martinique uniquement (pas de couverture GP confirmée) → local:null. Lovelly (Fort-de-France) = Martinique uniquement → shopping:[]. Ne rien activer pour GP sans disponibilité confirmée."
   }
 }

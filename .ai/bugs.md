@@ -8,6 +8,8 @@
 
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
+>
+> Note 2026-09-16 : l'entrée BUG-2026-038 [OUVERT] rédigée par la mission partenaires (rebase) est SUPPRIMÉE ici — le bug est [x] FIXÉ (entrée dédiée plus bas, fix mergé #677 + contrat #679). Historique de la découverte conservé dans `.ai/changelog.md` (entrée partenaires 2026-09-16).
 
 ### BUG-2026-037 — [x] FIXÉ 2026-09-15 (mission B2B monthly) TOUT le JS de /pro/espace/ mort en prod (`)` manquant)
 - **Date** : 2026-09-15 (introduit par commit mergé 8ee27ae26, code modale démo).
