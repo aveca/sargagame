@@ -33,6 +33,15 @@ const {
   sgToast, sgVerifySub, submitLead, track, walletAvail
 } = SG
 
+// P0 money-path (2026-09-16) : payReadyRef = objet Mollie PRÊT, PAS les
+// Components montés. createToken() sans mounts → erreur Mollie
+// "Not all required components are mounted" (7× sg_payment_failed en prod,
+// texte vendeur brut affiché à l'utilisateur). La garde ci-dessous attend les
+// mounts (jamais de tokenize sans mounts) + retry le message transitoire +
+// mappe vers un texte friendly. Aucun texte vendeur brut côté UI/analytics.
+const MOL_NOT_MOUNTED_RE = /not all required components are mounted/i
+const MOL_NOT_LOADED_RE = /not yet loaded|not loaded/i
+
 // Fetch avec timeout (45s) — un cold-start serveur ne doit JAMAIS laisser le
 // bouton « Activation… » tourner indéfiniment (payBusy locké = vente perdue).
 const SG_FETCH_TIMEOUT_MS = 45000
@@ -74,6 +83,7 @@ export function usePaymentLogic({
   stripeRef,
   setupSecretRef,
   mollieRef,
+  payMountedRef,
   PAY_PROVIDER,
   PAY_CAPTURE_ONLY,
   PAY_CUR,
@@ -303,17 +313,46 @@ export function usePaymentLogic({
     try{submitLead(email,"onsite_checkout")}catch(_){}
     if(PAY_PROVIDER==="mollie"){
       setPayBusy(true);setPayError("")
+      // Garde mounts (P0 2026-09-16) : payReadyRef = objet Mollie prêt, PAS les
+      // 4 Components montés. Tokenizer sans mounts = erreur Mollie garantie
+      // ("Not all required components are mounted") → on attend les mounts
+      // (effet OnsiteCheckout, flag partagé) au lieu de tirer dans le vide.
+      // Jamais de tokenize sans mounts ; jamais de texte vendeur brut.
+      const mountsReady = () => !!(mollieRef.current && payMountedRef && payMountedRef.current)
+      if(!mountsReady()){
+        setPayError(_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento."))
+        let mWaited = 0
+        while(!mountsReady() && mWaited < 6000){
+          await new Promise(r=>setTimeout(r,150))
+          mWaited += 150
+        }
+        if(!mountsReady()){
+          setPayBusy(false)
+          setPayError(_t(lang,"Le paiement sécurisé met du temps à charger. Réessaie.","Secure checkout is taking a while. Please retry.","El pago seguro tarda en cargar. Reintenta."))
+          try{track("sg_mollie_components_not_mounted",{plan,pass:passCtxRef.current?.pass,waited:mWaited})}catch(_){}
+          return
+        }
+        setPayError("")
+        try{track("sg_mollie_mounted_after_wait",{plan,pass:passCtxRef.current?.pass,waited:mWaited})}catch(_){}
+      }
       try{
         let token=null,tErr=null
         try { track("sg_card_tokenize_attempt", { plan, pass: passCtxRef.current?.pass }) } catch (_) {}
-        for(let i=0;i<3;i++){
+        for(let i=0;i<4;i++){
           const res=await mollieRef.current.createToken()
           if(res.token){token=res.token;break}
           tErr=res.error
-          if(!/not yet loaded|not loaded/i.test(String((tErr&&tErr.message)||"")))break
+          // Retry transitoire : objet pas encore chargé OU handshake iframes en
+          // cours ("not all required components are mounted" = mounts appelés
+          // mais iframes pas prêtes). Le reste échoue immédiatement (vraie erreur).
+          if(!MOL_NOT_LOADED_RE.test(String((tErr&&tErr.message)||""))&&!MOL_NOT_MOUNTED_RE.test(String((tErr&&tErr.message)||"")))break
           await new Promise(r=>setTimeout(r,700))
         }
-        if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
+        if(tErr||!token){
+          const rawMsg=(tErr&&tErr.message)||""
+          if(MOL_NOT_MOUNTED_RE.test(String(rawMsg)))throw new Error("components_not_mounted")
+          throw new Error(rawMsg||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
+        }
         try { track("sg_card_tokenize_success", { plan, pass: passCtxRef.current?.pass }) } catch (_) {}
         const _pc=passCtxRef.current
         const _pcCur=_pc?_pc.cur:undefined
@@ -401,11 +440,14 @@ export function usePaymentLogic({
         const msg=e&&e.name==="AbortError"
           ?_t(lang,"Le serveur met du temps à répondre. Vérifie ta connexion et réessaie.","The server is slow to respond. Check your connection and retry.","El servidor tarda en responder. Comprueba tu conexión y reintenta.")
           :(e&&e.message)?String(e.message):""
-        setPayError(/not yet loaded|not loaded/i.test(msg)
-          ?_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento.")
-          :(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")))
-        track("sg_pay_onsite_error",{plan,provider:"mollie",message:msg.slice(0,90)})
-        track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:msg.slice(0,50)})
+        // Taxonomie propre : le cas mounts (attente épuisée ou retry épuisé)
+        // n'expose JAMAIS le texte vendeur brut ("Not all required...") ni à
+        // l'utilisateur ni dans analytics — code stable mesurable à la place.
+        const isMountErr=msg==="components_not_mounted"||MOL_NOT_MOUNTED_RE.test(msg)||MOL_NOT_LOADED_RE.test(msg)
+        const friendlyLoading=_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento.")
+        setPayError(isMountErr?friendlyLoading:(msg||_t(lang,"Paiement impossible. Réessaie.","Payment failed. Retry.","Pago imposible. Reintenta.")))
+        track("sg_pay_onsite_error",{plan,provider:"mollie",message:(isMountErr?"components_not_mounted":msg).slice(0,90)})
+        track("sg_payment_failed",{plan,source:source||"unknown",provider:"mollie",reason:(isMountErr?"components_not_mounted":msg).slice(0,50)})
         return
       }
     }
@@ -476,7 +518,7 @@ export function usePaymentLogic({
       track("sg_pay_onsite_error",{plan,provider:"stripe",message:msg.slice(0,90)})
       track("sg_payment_failed",{plan,source:source||"unknown",provider:"stripe",reason:msg.slice(0,50)})
     }
-  },[lang,source,onActivated,onClose,payPlanRef,passCtxRef,payEmailRef,payBusy,setPayBusy,setPayError,payReadyRef,setPayRedirecting,setPaySuccess,consentFlag,consentOk,elementsRef,stripeRef,setupSecretRef,mollieRef,PAY_PROVIDER,PAY_CAPTURE_ONLY,PAY_CUR,_t,track,submitLead,sgReferredBy,sgMyReferralCode,purchase,getPlanMeta,walletRedirect])
+  },[lang,source,onActivated,onClose,payPlanRef,passCtxRef,payEmailRef,payBusy,setPayBusy,setPayError,payReadyRef,payMountedRef,setPayRedirecting,setPaySuccess,consentFlag,consentOk,elementsRef,stripeRef,setupSecretRef,mollieRef,PAY_PROVIDER,PAY_CAPTURE_ONLY,PAY_CUR,_t,track,submitLead,sgReferredBy,sgMyReferralCode,purchase,getPlanMeta,walletRedirect])
 
   return { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput }
 }

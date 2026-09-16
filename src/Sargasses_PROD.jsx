@@ -2079,6 +2079,11 @@ export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
+  // Trafic synthétique (E2E/probes, Playwright) : navigator.webdriver=true →
+  // tag `synthetic` sur TOUS les events (jamais exclu, jamais filtré côté
+  // client). Les agrégations écartent ce flag des KPI business : on ne
+  // présente jamais des tests internes comme des clients (P0 mesure fiable).
+  try{if(typeof navigator!=="undefined"&&navigator.webdriver)p.synthetic=true}catch(_){}
   // Funnel session instrumentation: add stable anonymous session ID to all funnel events
   // to join CTA → checkout → payment → grant by session (not by user PII).
   if(SG_FUNNEL_EVENTS.has(event)){try{p.sg_session_id=sgUid()}catch(_){p.sg_session_id=""}}
