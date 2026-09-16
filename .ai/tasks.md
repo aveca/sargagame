@@ -1,7 +1,10 @@
-## PR #678 — [x] MERGÉE 2026-09-16T14:42Z (rebase propre, CI 6/6) → deploy-live en cours
-- **Rebase** : `--onto origin/main` (3 commits #672 obsolètes droppés) → 1 commit produit (21 fichiers) + docs en union · CI PR 6/6 (policy/funnel/perf/playwright/scan/test-frontend).
-- **Validation locale arbre rebasé** : build exit 0 · bundle 38.1 · partners-contract 34/34 · E2E partners 2/2 · smoke 4/4 · funnel 13/13 · bottomnav 8/8 · j0 7/7 · responsive 3/3.
-- **Reste** : attendre Deploy Live (push main) → health 6/6 → monitorer partner_view→cta→outbound 7j.
+## P0 MONEY-PATH — [~] createToken gardé par mounts (PR #682, CI en cours)
+- **Cause/fix** : voir BUG-2026-039. Preuves locales : build · bundle 38.1 · smoke 4/4 · contrat 12/12 · T1/T4/T5 · funnel 13/13 · fast-click → tokenize atteint.
+- **Reste** : CI verte → merge → deploy auto → vérif prod (iframes field sans submit) → mesurer not_mounted vs failed 7j → réconcilier KPI (Phase 2).
+
+## PR #678 — [~] rebase sur main @20d9aa09b (#677 fix + #679 contrat inclus), validation en cours
+- **Rebase** : `--onto` (3 commits #672 obsolètes droppés) → 1 commit partners (21 fichiers) · docs en union · sondes temporaires supprimées.
+- **Reste** : build + partners-contract + E2E partners + smoke + suites Carte → push --force-with-lease → CI → merge → deploy-live → health 6/6.
 
 ## BUG-2026-038 — [x] FIXÉ 2026-09-16 (cause racine `dismissBtnStyle is not defined`, branche `agent/coding/bug-2026-038`)
 - **Cause** : bouton × héros référençait un style jamais défini → ReferenceError au render dès que le héros s'affiche → WorldMapView entier jeté au boundary (carte noire, 0 label, readiness jamais publiée). Masqué quand le héros ne s'affiche pas (d'où le vert #672).
@@ -218,9 +221,12 @@ NEXT_CONCRETE_ACTION:
   - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 
----
-
-# .ai/tasks.md — Backlog priorisé
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+﻿# .ai/tasks.md — Backlog priorisé
 
 > Lu par tous les agents pour choisir leur prochaine tâche.
 > Priorité : P0 = critique, P1 = haute, P2 = moyenne, P3 = basse.

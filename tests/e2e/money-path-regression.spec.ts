@@ -87,7 +87,11 @@ async function openCheckout(page: Page) {
   // Laisser finir l'animation d'entrée du sheet (~420ms) — un click force pendant
   // le translateY tombe hors viewport (flake constaté et documenté).
   await page.waitForTimeout(900)
-  const buy = page.locator('button:has-text("Commencer maintenant"), button:has-text("Start now"), button:has-text("Empezar ahora")').first()
+  // CTA sticky PassOffer : le libellé visible a changé ("Voir mes plages
+  // propres · prix"), l'aria-label "Commencer maintenant" est stable
+  // (convention selectors.ts : aria-label > texte i18n). Même bouton, mêmes
+  // assertions — alignement harnais, pas d'affaiblissement.
+  const buy = page.locator('button[aria-label="Commencer maintenant"], button[aria-label="Start now"], button[aria-label="Empezar ahora"]').first()
   await expect(buy).toBeVisible({ timeout: 15000 })
   // Dispatch DOM direct (déterministe) : le sheet animé + scrollable rend les clics
   // géométriques instables (coordonnées shiftées pendant sgPwEnter / scroll).

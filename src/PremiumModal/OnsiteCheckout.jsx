@@ -78,6 +78,11 @@ export function OnsiteCheckout({
   const molNumberRef = useRef(null)
   const molExpiryRef = useRef(null)
   const molCvcRef = useRef(null)
+  // P0 money-path : le flag mounted est PARTAGÉ (PremiumModal le crée, passé en
+  // prop) — doSubscribe le lit avant createToken. Fallback local si prop absente
+  // (rendu isolé) : le mount fonctionne, seul le tracking d'attente est muet.
+  const _localMountedRef = useRef(false)
+  const mountedRef = payMountedRef || _localMountedRef
   // molReady = state miroir de payReadyRef → re-déclenche l'effet de montage des
   // Components si payStep devient true AVANT la fin de l'init Mollie (race 2026-08-23).
   const [molReady, setMolReady] = useState(false)
@@ -198,7 +203,7 @@ export function OnsiteCheckout({
 
   // Effet 2 — montage des 4 Mollie Components (uniquement quand payStep=true).
   useEffect(() => {
-    if (!payStep || PAY_CAPTURE_ONLY || PAY_PROVIDER !== "mollie" || payMountedRef.current) return
+    if (!payStep || PAY_CAPTURE_ONLY || PAY_PROVIDER !== "mollie" || mountedRef.current) return
     if (!mollieRef.current || !molNumberRef.current) return
     const _molBg = "#241837"
     const styles = {
@@ -216,7 +221,7 @@ export function OnsiteCheckout({
       number.mount(molNumberRef.current)
       expiry.mount(molExpiryRef.current)
       cvc.mount(molCvcRef.current)
-      payMountedRef.current = true
+      mountedRef.current = true
       try { track("sg_onsite_checkout_opened", { plan: payPlanRef.current, pass: passCtx?.pass, source: source || "unknown", sg_session_id: sgUid() }) } catch (_) {}
     } catch (e) {
       try { console.error("sg_mollie_mount_failed", e) } catch (_) {}
