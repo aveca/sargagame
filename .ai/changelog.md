@@ -1,3 +1,11 @@
+## 2026-09-16 — P0 MONEY-PATH : jamais de createToken sans Components montés (branche `agent/coding/money-path-p0`, PR #682)
+
+**Agent** : coding-agent (mission maître Phase 1). **Cause exacte** (code + sondes prod, worktree dédié) : `payReadyRef` = objet Mollie PRÊT, PAS les 4 Components montés ; `doSubscribe` tirait `createToken()` sans garde → 7× `sg_payment_failed` prod (texte vendeur brut Mollie affiché + tracké). Sondes prod : 1 iframe (controller), 0 field, Payer actif. + prod mute les `console.*` (vite `esbuild.drop`) → échecs de mount 100 % silencieux. Suites E2E connues innocentées (Mollie stubbé + consent refusé → muettes dans Supabase).
+**Fix (3 fichiers, happy path inchangé)** : `payMountedRef` partagé (PremiumModal crée, OnsiteCheckout pose au succès des 4 mounts, doSubscribe attend ≤6 s) + retry du message transitoire + mapping friendly + reason `components_not_mounted` + event `sg_mollie_components_not_mounted` + tag `synthetic` sur `track()` (webdriver). Détails : `.ai/decisions.md` (DEC-2026-09-16), `.ai/bugs.md` (BUG-2026-039).
+**Preuves** : build 388 · bundle 38.1 · smoke 4/4 · contrat 12/12 · money-path-regression T1/T4/T5 (T2/T3/T6 fixme pré-existants) · funnel 13/13 · sonde fast-click : tokenize atteint, erreur carte honnête (plus de texte vendeur) · serveur `cardToken` OK · 0 .php.
+**Fichiers** : `src/PremiumModal.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/PremiumModal/doSubscribe.jsx`, `src/Sargasses_PROD.jsx` (tag synthetic), `scripts/tests/mollie-mount-guard.test.cjs` (NOUVEAU), `tests/e2e/money-path-regression.spec.ts` (locateur aria-label, même bouton).
+**NEXT** : CI #682 → merge → deploy auto → vérif prod (compter les iframes field SANS submit + money-path probe) → mesurer `sg_mollie_components_not_mounted` vs `sg_payment_failed` 7j.
+
 ## 2026-09-16 — PR #678 REBASÉE sur main (post-#677/#679) : partenaires prêts pour CI verte
 
 **Agent** : coding-agent. **Rebase** : `agent/coding/partners-context` rejouée sur `origin/main` @20d9aa09b en ne gardant que le commit partners (`--onto`, 3 commits #672 obsolètes droppés) — produit auto-mergé SANS conflit ; 4 docs en conflit résolues par union (entrées #679 conservées + entrée partenaires, lignes périmées BUG-2026-038 [OUVERT] corrigées). Sondes temporaires supprimées.

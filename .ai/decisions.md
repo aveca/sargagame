@@ -6,6 +6,15 @@
 
 ---
 
+## DEC-2026-09-16 — Money-path : jamais de tokenize sans mounts + taxonomy stable + tag synthetic
+
+- **Date/Heure UTC** : 2026-09-16 (mission money-path-p0, PR #682).
+- **Contexte** : 7× `sg_payment_failed` prod (texte vendeur brut Mollie). Cause : `payReadyRef` = objet Mollie prêt, PAS les Components montés ; aucun garde avant `createToken()` ; prod mute les `console.*` (vite `esbuild.drop`) donc échecs de mount 100 % silencieux.
+- **Décision** : (1) flag partagé `payMountedRef` écrit au succès des 4 mounts, lu avant tokenize avec attente ≤6 s puis erreur friendly (jamais de tokenize sans mounts) ; (2) retry du message transitoire + mapping friendly, reason `components_not_mounted`, event `sg_mollie_components_not_mounted` (zéro texte vendeur brut UI/analytics) ; (3) `track()` tague `synthetic:true` quand `navigator.webdriver` (jamais exclu côté client ; les agrégations écartent le flag des KPI — on ne présente jamais des tests comme des clients).
+- **Conséquences** : happy path inchangé (mêmes events, mêmes montants) ; fast-click → attente puis tokenize normal ; mount bloqué → message honnête + retry à la réouverture ; funnel Phase 2 filtrera `synthetic`.
+
+---
+
 ## DEC-2026-08-27 — TASK-P2-008b collect.php sous Cloudflare Pages — Worker sg-payments (option B)
 
 - **Date/Heure UTC** : 2026-08-27 07:00 UTC

@@ -1,3 +1,7 @@
+## P0 MONEY-PATH — [~] createToken gardé par mounts (PR #682, CI en cours)
+- **Cause/fix** : voir BUG-2026-039. Preuves locales : build · bundle 38.1 · smoke 4/4 · contrat 12/12 · T1/T4/T5 · funnel 13/13 · fast-click → tokenize atteint.
+- **Reste** : CI verte → merge → deploy auto → vérif prod (iframes field sans submit) → mesurer not_mounted vs failed 7j → réconcilier KPI (Phase 2).
+
 ## PR #678 — [~] rebase sur main @20d9aa09b (#677 fix + #679 contrat inclus), validation en cours
 - **Rebase** : `--onto` (3 commits #672 obsolètes droppés) → 1 commit partners (21 fichiers) · docs en union · sondes temporaires supprimées.
 - **Reste** : build + partners-contract + E2E partners + smoke + suites Carte → push --force-with-lease → CI → merge → deploy-live → health 6/6.

@@ -1,4 +1,23 @@
-## 2026-09-16 15:30 UTC · Agent: coding-agent (partners #678 — REBASE sur main, validation en cours)
+## 2026-09-16 16:30 UTC · Agent: coding-agent (money-path-p0 — FIX CODÉ+TESTÉ, PR #682)
+
+### Travail effectué
+- **Résumé 1 ligne** : Garde mounts avant createToken + retry + mapping friendly + tag synthetic ; contrat 12/12 ; gates locaux verts ; PR #682 ouverte.
+- **Détails** : `.ai/decisions.md` (DEC-2026-09-16), `.ai/bugs.md` (BUG-2026-039), `.ai/changelog.md` (entrée 2026-09-16). Worktree dédié `money-path-p0` (ownership écriture) ; arbre partagé NON touché (session concurrente active dessus : `payMountedRef` partiel + commerce partenaires — signalé pour convergence au merge). Sondes temporaires supprimées avant commit (à vérifier).
+- **Preuves** : build 388 · bundle 38.1 · smoke 4/4 · contrat 12/12 · T1/T4/T5 · funnel 13/13 · j0/funnel-checkout/regions OK · fast-click → tokenize atteint.
+
+### Fichiers modifiés
+- `src/PremiumModal.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/PremiumModal/doSubscribe.jsx`, `src/Sargasses_PROD.jsx`, `scripts/tests/mollie-mount-guard.test.cjs` (NOUVEAU), `tests/e2e/money-path-regression.spec.ts` (locateur), `.ai/*`, `NEXT_SESSION.md`
+
+### Prochaine action recommandée
+1. CI #682 verte → merge → deploy auto — Rôle : release (moi, en cours de surveillance)
+2. Vérif prod : compter field iframes SANS submit + money-path probe — Rôle : qa
+3. Mesurer not_mounted vs failed 7j + réconcilier KPI (Phase 2) — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/money-path-p0` (worktree dédié)
+- PR : #682 https://github.com/aveca/sargagame/pull/682
+
+---
 
 ### Travail effectué
 - **Résumé 1 ligne** : Branche partners rejouée sur main @20d9aa09b (`--onto`, 3 commits #672 obsolètes droppés) → 1 commit produit (21 fichiers, auto-mergé sans conflit) ; docs en union ; validation arbre rebasé en cours.

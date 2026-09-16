@@ -40,6 +40,13 @@
 - **Harnais (même pattern, assertions intactes)** : `selectors` passé en ARG d'`evaluate` (bottomnav ×2, j0 `openFirstBeach`) ; `openPaywallViaNav` clique l'onglet premium PAR TEXTE (nth(2)=Carte en UI 5 onglets) ; repli héros porté dans `openFirstBeach` ; pont comic→data en boucle (~15 s) ; dismissal wall « N PLAGES » partagé + re-vérifié avant vote/rapport ; vote ciblé en match exact ; contrat j0 aligné sur `selectors.*` centralisés (valeur `[data-sg-labels-ready]` vérifiée).
 - **Statut** : [x] FIXÉ — produit (`WorldMapView.jsx`) + harnais E2E absorbés et MERGÉS via #677 (main @d1c6af129) ; alignement contrat + docs : branche `agent/coding/bug-2026-038`, PR à créer vers main
 
+### BUG-2026-039 — [~] EN COURS 2026-09-16 (mission money-path-p0) `sg_payment_failed` : createToken sans Components montés
+- **Date** : 2026-09-16 (branche `agent/coding/money-path-p0`, PR #682).
+- **Sévérité** : P0 revenue reliability — 7× `sg_payment_failed` prod (`provider=mollie`, reason=`Not all required components are mounted, see https...`), séquence pass_cta → onsite_checkout_opened → auth_view → failed, 0 redirect Mollie.
+- **Cause exacte (prouvée : code + sondes prod)** : `payReadyRef` = objet Mollie PRÊT, PAS les 4 Components montés. `doSubscribe` ne vérifiait jamais les mounts avant `createToken()` → clic rapide (handshake iframes en cours) ou mount bloqué (bloqueur) = erreur Mollie garantie, texte vendeur brut affiché + tracké. Sondes prod : 1 seule iframe (controller), 0 field, Payer actif. + prod MUTE les console.* (vite `esbuild.drop`, `vite.config.js:2703`) → mount failures 100 % silencieux.
+- **Fix** : flag partagé `payMountedRef` (écrit au mount, lu avant tokenize, attente 6 s) + retry du message transitoire + mapping friendly + reason `components_not_mounted` + event `sg_mollie_components_not_mounted`. Preuve fast-click locale : tokenize atteint, erreur carte honnête.
+- **Statut** : [~] fix codé + testé local (PR #682) — reste CI → merge → deploy → vérif prod (0 field → 4 fields SANS submit).
+
 ### BUG-2026-035 — [FIXÉ 2026-09-09, Sprint 4] ChasseDetail close X recouvert par le header lang switcher
 - **Date** : 2026-09-09 (découvert Sprint 2, prouvé pré-existant)
 - **Sévérité** : P2 — le dialogue reste fermable (swipe-down, backdrop, Échap) ; seul le tap sur ✕ est intercepté
