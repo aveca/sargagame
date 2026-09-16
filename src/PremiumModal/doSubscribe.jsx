@@ -84,7 +84,6 @@ export function usePaymentLogic({
   stripeRef,
   setupSecretRef,
   mollieRef,
-  payMountedRef,
   PAY_PROVIDER,
   PAY_CAPTURE_ONLY,
   PAY_CUR,
