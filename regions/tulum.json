@@ -98,5 +98,11 @@
     "yearly": "price_1Tgc8VP9RK8Orx515ZK16pl4",
     "tripPass": "price_1TiiGbP9RK8Orx51ceTbpwpM"
   },
-  "live": false
+  "live": false,
+  "partners": {
+    "_note": "Partenaires contextuels (services, jamais pubs agressives). Résolution par src/lib/partners.js — ZÉRO condition codée en dur dans les composants.",
+    "transport": { "local": null, "multiIsland": null },
+    "shopping": [],
+    "_todo": "Aucun partenariat transport/shopping confirmé pour tulum. RHUMZ multi-îles affiché UNIQUEMENT sur mq/gp (couverture confirmée) — ne jamais l'activer ici sans disponibilité confirmée."
+  }
 }

@@ -9,6 +9,17 @@
 > Les agents QA et Coding se réfèrent à ce fichier.
 > Format : ID-YYYY-NNN (année + num auto). Bug fixé → [x] et reste en mémoire.
 
+### BUG-2026-038 — [OUVERT, P0 funnel] Vue Carte (onglet Carte) : carte noire + boundary « Une erreur s'est produite », 0 label, readiness jamais publiée
+- **Date** : 2026-09-16 (découvert mission partenaires-contextuels, branche agent/coding/ux-reset-clean).
+- **Sévérité** : P0 — la carte est l'entrée du funnel (carte → verdict → paywall) ; toutes les surfaces non-carte restent vertes (Plages, fiche, paywall, Ma Plage).
+- **Symptôme** : onglet Carte → zone carte noire, texte « Une erreur s'est produite. Réessayez ou rafraîchissez la page. » (fallback ErrBound Sargasses_PROD.jsx:170-171), 0 `.sg-maplabel`, `data-sg-labels-ready` jamais publié. Sonde : `{ready:null, labels:0, errbound:true}`, 0 console.error / 0 pageerror (erreur catchée par React, sgLogError silencieux ici — composant exact NON isolé).
+- **Contexte** : badge honnête « Données satellite en retard — de plus de 24 h » affiché (piste : chemin stale/etat qui throw au render — hypothèse NON prouvée).
+- **Preuve pré-existence** : reproduit à l'identique sur arbre pristine (stash tracked + rebuild 385, SANS aucun fichier partenaires) — même test, même ligne, même snapshot (carte noire + boundary). Aucun fichier carte touché par la mission partenaires (WorldMapView.jsx intact, `git diff --stat` : 0 ligne carte).
+- **Impact mesuré** : ux-smoke FUNNEL_REACHED=paywall (son prologue `.sg-maplabel>=3` est pré-#672, ne voit jamais la fiche) · funnel-payment 12/13 (seul `carte → fiche → paywall` meurt, prouvé flaky-environnement+produit) · bottomnav-redesign 0/8 (tous sur prologue mapReady, jamais résolu).
+- **Reproduction** : `npm run build` + `vite preview --port 4173` → Playwright 390×844 → onglet Carte → 12 s → carte noire + boundary.
+- **Piste** : isoler le composant (fiber React / découper ExperienceReset Carte vs WorldMapView vs hero) ; vérifier chemin stale-data ; lire l'erreur via window.sgErrorReporter temporaire ou console.error dans componentDidCatch.
+- **Statut** : [ ] à diagnostiquer (qa_agent/coding_agent) — BLOQUE la CI verte (donc le merge partenaires + #671/#672).
+
 ### BUG-2026-037 — [x] FIXÉ 2026-09-15 (mission B2B monthly) TOUT le JS de /pro/espace/ mort en prod (`)` manquant)
 - **Date** : 2026-09-15 (introduit par commit mergé 8ee27ae26, code modale démo).
 - **Sévérité** : P0 — trial, mensuel, toggle Concierge/Pro, démo, vérif token : RIEN ne fonctionnait sur la page (script inline 100 % mort, `SyntaxError: missing ) after argument list`).

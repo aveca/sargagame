@@ -60,6 +60,12 @@
     "lngMin": -59.65,
     "lngMax": -59.35
   },
+  "partners": {
+    "_note": "Partenaires contextuels (services, jamais pubs agressives). Région PRÉPARÉE mais NON live — aucun partenaire activé. Résolution par src/lib/partners.js.",
+    "transport": { "local": null, "multiIsland": null },
+    "shopping": [],
+    "_todo": "Barbados non live : aucun partenariat confirmé. Ne rien activer avant le câblage Mollie + confirmation de couverture."
+  },
   "competitors": [
     "NOAA SIR (institutional only)",
     "Hotel-posted beach signs (offline, not searchable)",

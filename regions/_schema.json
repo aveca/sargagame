@@ -45,6 +45,72 @@
       }
     },
     "geoDetect": { "type": "object", "description": "Bbox used by client-side GPS auto-detect to assign region from user coords" },
+    "transport": {
+      "type": "object",
+      "description": "LEGACY — bloc transport historique (mq/gp). Le front préfère `partners` (résolution src/lib/partners.js). Conservé pour compatibilité.",
+      "properties": {
+        "provider": { "type": "string" },
+        "displayName": { "type": "string" },
+        "bookingUrl": { "type": "string" },
+        "supportsBeachContext": { "type": "boolean" }
+      }
+    },
+    "partners": {
+      "type": "object",
+      "description": "Partenaires contextuels (services, jamais pubs agressives). SOURCE DE VÉRITÉ : un partenaire ne s'affiche que si enabled:true ET regions contient la région courante. Jamais de commission/prix inventés.",
+      "properties": {
+        "transport": {
+          "type": "object",
+          "properties": {
+            "local": {
+              "type": ["object", "null"],
+              "properties": {
+                "name": { "type": "string" },
+                "category": { "type": "string" },
+                "url": { "type": "string" },
+                "bookingUrl": { "type": "string" },
+                "regions": { "type": "array", "items": { "type": "string" } },
+                "supportsBeachContext": { "type": "boolean" },
+                "enabled": { "type": "boolean" },
+                "trackingId": { "type": "string" }
+              },
+              "required": ["name", "category", "url", "regions", "enabled", "trackingId"]
+            },
+            "multiIsland": {
+              "type": ["object", "null"],
+              "properties": {
+                "name": { "type": "string" },
+                "category": { "type": "string" },
+                "url": { "type": "string" },
+                "bookingUrl": { "type": "string" },
+                "regions": { "type": "array", "items": { "type": "string" } },
+                "supportsBeachContext": { "type": "boolean" },
+                "enabled": { "type": "boolean" },
+                "trackingId": { "type": "string" }
+              },
+              "required": ["name", "category", "url", "regions", "enabled", "trackingId"]
+            }
+          }
+        },
+        "shopping": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "category": { "type": "string" },
+              "url": { "type": "string" },
+              "location": { "type": "string" },
+              "regions": { "type": "array", "items": { "type": "string" } },
+              "supportsBeachContext": { "type": "boolean" },
+              "enabled": { "type": "boolean" },
+              "trackingId": { "type": "string" }
+            },
+            "required": ["name", "category", "url", "regions", "enabled", "trackingId"]
+          }
+        }
+      }
+    },
     "competitors": { "type": "array", "items": { "type": "string" } },
     "differentiators": { "type": "array", "items": { "type": "string" } },
     "beaches": { "type": "array", "description": "Optional inline beach list for new regions before beaches-list.json migration" }

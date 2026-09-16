@@ -1,0 +1,102 @@
+{
+  "_note": "GÉNÉRÉ par scripts/automation/gen-context-partners.cjs depuis regions/*.json (SOURCE DE VÉRITÉ) — NE PAS éditer à la main (éditer le partners de la région puis régénérer). Affichage = enabled:true ET regions contient la région courante (src/lib/partners.js). Verdict sargasses = 100% data ERDDAP, jamais influencé.",
+  "updatedAt": "2026-09-16",
+  "regions": {
+    "barbados": {
+      "transport": {
+        "local": null,
+        "multiIsland": null
+      },
+      "shopping": []
+    },
+    "florida": {
+      "transport": {
+        "local": null,
+        "multiIsland": null
+      },
+      "shopping": []
+    },
+    "gp": {
+      "transport": {
+        "local": null,
+        "multiIsland": {
+          "name": "RHUMZ",
+          "category": "VTC / transport",
+          "url": "https://www.rhumz.com/",
+          "bookingUrl": "https://www.rhumz.com/reservation/",
+          "regions": [
+            "mq",
+            "gp"
+          ],
+          "supportsBeachContext": true,
+          "enabled": true,
+          "trackingId": "rhumz"
+        }
+      },
+      "shopping": []
+    },
+    "mq": {
+      "transport": {
+        "local": {
+          "name": "Taxis Martinique",
+          "category": "taxi",
+          "url": "https://taxismartinique.com/",
+          "regions": [
+            "mq"
+          ],
+          "supportsBeachContext": true,
+          "enabled": true,
+          "trackingId": "taxis_martinique"
+        },
+        "multiIsland": {
+          "name": "RHUMZ",
+          "category": "VTC / transport",
+          "url": "https://www.rhumz.com/",
+          "bookingUrl": "https://www.rhumz.com/reservation/",
+          "regions": [
+            "mq",
+            "gp"
+          ],
+          "supportsBeachContext": true,
+          "enabled": true,
+          "trackingId": "rhumz"
+        }
+      },
+      "shopping": [
+        {
+          "name": "Lovelly",
+          "category": "bijoux / souvenir / shopping local",
+          "url": "https://lovelly.fr/",
+          "location": "Fort-de-France",
+          "regions": [
+            "mq"
+          ],
+          "supportsBeachContext": true,
+          "enabled": true,
+          "trackingId": "lovelly"
+        }
+      ]
+    },
+    "puntacana": {
+      "transport": {
+        "local": null,
+        "multiIsland": null
+      },
+      "shopping": []
+    },
+    "rivieramaya": {
+      "transport": {
+        "local": null,
+        "multiIsland": null
+      },
+      "shopping": []
+    },
+    "tulum": {
+      "transport": {
+        "local": null,
+        "multiIsland": null
+      },
+      "shopping": []
+    }
+  }
+}

@@ -102,6 +102,10 @@ const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
 const BeachDayReport=lazyWithRetry(()=>import("./components/BeachDayReport.jsx"))
 // Enhanced Alternatives Panel — 3 alternatives with distance, confidence, reason (P0)
 const EnhancedAlternativesPanel=lazyWithRetry(()=>import("./components/EnhancedAlternativesPanel.jsx"))
+// Services contextuels (transport/shopping) — slot APRÈS verdict + alternatives
+// (décision aller/ne-pas-aller). Config régionale (partners.js), badge
+// « Partenaire », verdict 100% ERDDAP. Lazy → 0 octet eager. Rollback ?partnerctx=0.
+const PartnerContext=lazyWithRetry(()=>import("./components/PartnerContext.jsx"))
 // Ma Plage View — favorite beach with alerts & alternatives (P0)
 const MaPlageView=lazyWithRetry(()=>import("./components/MaPlageView.jsx"))
 // PRODUCT UX RESET (2026-09-15) — nouvelle IA mobile-first : Accueil/Plages/Carte/Ma Plage/Pass.
@@ -2039,6 +2043,11 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // ouverture vue, toggle favori, activation alertes, CTA premium.
   "sg_ma_plage_open","sg_ma_plage_fav_toggle","sg_ma_plage_alerts_toggle",
   "sg_ma_plage_alerts_enable","sg_ma_plage_premium_cta",
+  // PARTENAIRES CONTEXTUELS (2026-09-16) : services transport/shopping APRÈS
+  // verdict + alternatives (slot PartnerContext, config regions/*.json). Ces
+  // events ÉTAIENT émis sous sg_transport_* par MaPlageView mais JETÉS (absents
+  // du set → jamais loggés Supabase). Canonique : sg_partner_view/cta/outbound.
+  "sg_partner_view","sg_partner_cta","sg_partner_outbound",
   // SPRINT 0 — Behavior Intelligence (2026-09-07) : scroll, visibility, dwell, intent
   "sg_beach_scroll_25","sg_beach_scroll_50","sg_beach_scroll_75","sg_beach_scroll_90",
   "sg_section_view","sg_section_consumed","sg_section_ignored",
@@ -4852,6 +4861,18 @@ const [showReport,setShowReport]=useState(false)
             onBeachClick={onBeachClick}
             track={trk}
             status={status}
+          />
+        </Suspense>
+        {/* Services contextuels (transport/shopping) — APRÈS consultation plage +
+            APRÈS alternatives (décision aller/ne-pas-aller). Config régionale
+            (partners.js) : un seul CTA transport, badge « Partenaire », verdict
+            100% ERDDAP, aucun CTA produit remplacé. Kill-switch ?partnerctx=0. */}
+        <Suspense fallback={null}>
+          <PartnerContext
+            regionId={IS_NEW_REGION ? REGION.id : beach.island}
+            beach={beach}
+            lang={lang}
+            track={trk}
           />
         </Suspense>
         {/* Signaler — l'utilisateur sur place corrige le satellite (l'échoué n'est pas vu du ciel).
