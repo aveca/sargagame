@@ -134,4 +134,51 @@
 Pour ajouter une décision : ajouter date + pourquoi + conséquences.
 Ne PAS doublonner, toujours éditer celle existante (a) si déjà mentionnée ailleurs dans le repo.
 
+---
+
+## DEC-2026-09-16 — Partner Commerce : Architecture PARKED, money-path non validé
+
+- **Date/Heure UTC** : 2026-09-16 17:45 UTC
+- **Contexte** : Architecture Partner Commerce complète implémentée en local (catalogue capabilities, client lib, UI components, worker endpoints, tracking funnel, 37/37 tests contract verts). MAIS validation factuelle révèle des dépendances critiques non satisfaites.
+- **Analyse** :
+  - Table `partner_orders` Supabase : **ABSENTE** — code catch silencieux "table may not exist", migration requise
+  - Endpoints `/api/partner/*` : **404 en prod** — routes non déclarées dans Cloudflare dashboard (wrangler.jsonc frozen 2026-09-02, route list frozen, action fondateur requise)
+  - Money-path principal : **NON VALIDÉ** — `POST /api/mollie` non testé via flux partenaire, webhook → grant non vérifié end-to-end
+  - Table `partner_orders` Supabase : non créée
+  - Accès API partenaires : **0/3 confirmés** — Taxis Martinique / RHUMZ / Lovelly : tous accès absents, dépendances externes
+  - Tests contract : 37/37 verts (couvrent allowlist, catalogue, kill-switch, pas de données inventées) — MAIS ne testent PAS flux commerce réel
+- **Décision** : **PARKED** — Architecture complète en local, MAIS ne pas déployer tant que :
+  1. Money-path principal validé (`POST /api/mollie` → Mollie → webhook → grant → paiement réel)
+  2. Routes `/api/partner/*` configurées Cloudflare dashboard (action fondateur)
+  3. Table `partner_orders` créée (migration Supabase)
+  4. Au moins 1 accès API partenaire confirmé
+- **Conséquences** :
+  - Code Partner Commerce reste en local (branche `agent/coding/deploy-verify-678`, worktree)
+  - Pas de déploiement Partner Commerce tant que money-path principal non validé
+  - Priorité absolue inchangée : `sg-payments → /api/mollie → Mollie → webhook → grant → premier paiement réel`
+  - Partner Commerce = chantier PARKED, pas BLOCKED (architecture prête, dépendances externes identifiées)
+- **Rollback** : `git stash` / `git checkout` fichiers Partner Commerce si besoin
+
+---
+
+## DEC-2026-09-16 — Handoff system : NEXT_SESSION.md vs .ai/current_state.md
+
+- **Date/Heure UTC** : 2026-09-16
+- **Contexte** : Deux fichiers de handoff coexistaient avec des responsabilités floues :
+  - `NEXT_SESSION.md` (racine repo) : handoff concis, tête de session courante
+  - `.ai/current_state.md` : historique complet de tous les handoffs détaillés
+- **Analyse** : Selon CLAUDE.md (Index des docs) :
+  - `NEXT_SESSION.md` = "Handoff. Tête = session courante. Tenir à jour à chaque chunk ; archiver les entrées > ~7 j. **Seul état qui survit côté agent web.**"
+  - `.ai/current_state.md` = "État réel + dernier handoff" — "À chaque session"
+  - Note CLAUDE.md : "⚠️ Le dossier `~/.claude/.../memory/` n'existe que sur la machine du fondateur, **absent du container web/mobile**. → `npm run session` retombe sur la tête de `NEXT_SESSION.md` si le dossier mémoire est absent. `NEXT_SESSION.md` = handoff/WIP/décisions, **PAS la source des chiffres**."
+- **Décision** : **Source de vérité canonique pour l'état courant = `NEXT_SESSION.md`** (concise, survit cross-container). `.ai/current_state.md` = **historique détaillé complet** (archive de tous les handoffs, format template, ne survit pas dans le container web).
+- **Responsabilités** :
+  - `NEXT_SESSION.md` : tête de session (1 entrée max), actions fondateurs, next steps immédiats, blocs "Ce qui a changé"
+  - `.ai/current_state.md` : append-only, une entrée par tâche terminée (format `.ai/handoff-template.md`), historique complet pour audit/review
+- **Conséquences** :
+  - Au démarrage session : lire `NEXT_SESSION.md` (tête) + `.ai/current_state.md` (dernière entrée complète) + `npm run session`
+  - À la fin de tâche : mettre à jour **les deux** — `NEXT_SESSION.md` (tête concise) + `.ai/current_state.md` (entrée détaillée template)
+  - `npm run session` continue de dériver MRR/métriques depuis `daily-metrics.json` et retombe sur `NEXT_SESSION.md` si mémoire desktop absente
+  - Pas de suppression de `.ai/current_state.md` — nécessaire pour l'historique complet et les audits
+
 Fin.)

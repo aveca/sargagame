@@ -17,7 +17,7 @@ import {
   useAlertEngine
 } from '../lib/alert-engine.js';
 import { EnhancedAlternativesPanel } from './EnhancedAlternativesPanel.jsx';
-import { _t, COMIC, Veilleur, comicStatusColor } from '../Sargasses_PROD.jsx';
+import { _t, COMIC, Veilleur, comicStatusColor, moodFromStatus } from '../Sargasses_PROD.jsx';
 import { useWeather } from '../Sargasses_PROD.jsx';
 
 export function MaPlageView({ 
@@ -233,7 +233,7 @@ export function MaPlageView({
             background:'radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,rgba(232,148,0,0) 72%)',opacity:.9}} />
           <div style={{position:'absolute',inset:0,background:'linear-gradient(180deg, rgba(11,34,48,.25) 0%, transparent 35%, transparent 50%, rgba(0,0,0,.55) 100%)'}} />
           <div style={{position:'absolute',top:'30%',left:0,right:0,display:'flex',justifyContent:'center',pointerEvents:'none'}}>
-            <Veilleur mood={beach.status === 'clean' ? 'serein' : beach.status === 'moderate' ? 'scan' : 'alerte'} size={118} />
+            <Veilleur mood={moodFromStatus(beach.status)} size={118} />
           </div>
           <div style={{position:'absolute',bottom:20,left:20,right:20,zIndex:1}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:'clamp(28px,8vw,42px)',lineHeight:.92,color:'#fff',textTransform:'uppercase',letterSpacing:'-.3px',textShadow:'0 2px 16px rgba(0,0,0,.5)',wordBreak:'break-word'}}>{beach.name}</div>

@@ -140,3 +140,25 @@ if (sw !== original) {
 } else {
   console.log(`[stamp-sw] dist/sw.js déjà à jour (${stamped}, ${precache.length} assets précachés).`)
 }
+
+// Fix index.html entry point: replace source entry (/src/main.jsx) with built entry
+const indexPath = path.join(root, 'dist', 'index.html')
+if (fs.existsSync(indexPath)) {
+  let html = fs.readFileSync(indexPath, 'utf-8')
+  // Find the built entry point chunk
+  const assetsDir = path.join(root, 'dist', 'assets')
+  let builtEntry = null
+  try {
+    const files = fs.readdirSync(assetsDir)
+    const entryChunk = files.find(f => /^index-[a-zA-Z0-9_-]+\.js$/.test(f))
+    if (entryChunk) builtEntry = `/assets/${entryChunk}`
+  } catch {}
+  if (builtEntry) {
+    const before = html
+    html = html.replace(/src="\/src\/main\.jsx"/, `src="${builtEntry}"`)
+    if (before !== html) {
+      fs.writeFileSync(indexPath, html, 'utf-8')
+      console.log(`[stamp-sw] Fixed index.html entry point: ${builtEntry}`)
+    }
+  }
+}

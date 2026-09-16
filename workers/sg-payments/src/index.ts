@@ -837,6 +837,12 @@ export default {
       return new Response(JSON.stringify({ error: 'method_not_allowed' }), { status: 405, headers: h });
     }
 
+    // ─── Partner Commerce (commerce intégré) ─────────────────────────────
+    // Routes pour le commerce partenaires natif (checkout Sargagame)
+    if (path.startsWith('/api/partner/')) {
+      return handlePartnerCommerce(request, env, ctx, path);
+    }
+
     // ─── SECURITY: generic PHP source-leak guard — MUST BE LAST PHP CHECK (SPECIFIC FIRST → GENERIC LAST)
     // Tous les handlers .php légitimes ci-dessus ont été tentés (mollie, widget-token, track-*, forecast,
     // b2b-prospects/concierge/trial/meeting/create-checkout + b2b-contacts/events/scores/forecast-delivery,
@@ -1050,7 +1056,10 @@ async function handleCollect(request: Request, env: Env, ctx: ExecutionContext):
 async function handleMollie(request: Request, env: Env): Promise<Response> {
   const h = cors(request);
   let body: any;
-  try { body = await request.json(); } catch { return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: h }); }
+  try {
+    const raw = await request.text();
+    body = raw ? JSON.parse(raw) : {};
+  } catch { return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: h }); }
   const action = body.action || '';
   if (!(await rateLimit(env, `mol_${action}`, 100))) return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: h });
 
@@ -1292,4 +1301,193 @@ async function grantOnboardingAuto(env: Env, email: string, meta: Record<string,
     event: 'sg_client_onboarded',
     params: { plan, region, domain, email },
   }).catch(() => {});
+}
+
+// ─── Partner Commerce Handlers ──────────────────────────────────────
+
+async function handlePartnerCommerce(request: Request, env: Env, ctx: ExecutionContext, path: string): Promise<Response> {
+  const h = cors(request);
+  const url = new URL(request.url);
+  const subPath = path.replace('/api/partner/', '');
+
+  // Rate limit
+  if (!(await rateLimit(env, 'partner_commerce', 200))) {
+    return new Response(JSON.stringify({ error: 'rate_limited' }), { status: 429, headers: h });
+  }
+
+  // GET /api/partner/catalog?region=mq&partner=trackingId
+  if (request.method === 'GET' && subPath === 'catalog') {
+    const region = url.searchParams.get('region');
+    const partnerTrackingId = url.searchParams.get('partner');
+    if (!region) return new Response(JSON.stringify({ error: 'region required' }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: true, catalog: [], message: 'Catalog API not yet implemented for this partner' }), { headers: h });
+  }
+
+  // POST /api/partner/quote — demande devis (prix + dispo)
+  if (request.method === 'POST' && subPath === 'quote') {
+    const body = await request.json() as any;
+    const { partner_id, product_id, quantity, variants, beach_context } = body;
+    if (!partner_id || !product_id) return new Response(JSON.stringify({ error: 'partner_id, product_id required' }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: false, error: 'CAPABILITY_MISSING', capability: 'quote', partner: partner_id }), { status: 501, headers: h });
+  }
+
+  // POST /api/partner/availability — vérification dispo
+  if (request.method === 'POST' && subPath === 'availability') {
+    const body = await request.json() as any;
+    const { partner_id, product_id, quantity, variants, dates } = body;
+    if (!partner_id || !product_id) return new Response(JSON.stringify({ error: 'partner_id, product_id required' }), { status: 400, headers: h });
+    return new Response(JSON.stringify({ ok: false, error: 'CAPABILITY_MISSING', capability: 'availability', partner: partner_id }), { status: 501, headers: h });
+  }
+
+  // POST /api/partner/create-order — crée commande chez partenaire + commande Sargagame
+  if (request.method === 'POST' && subPath === 'create-order') {
+    const body = await request.json() as any;
+    const { cart, customer_email, customer_name, region, beach_id, lang = 'fr' } = body;
+    if (!cart || !cart.length || !customer_email || !region) {
+      return new Response(JSON.stringify({ error: 'cart, customer_email, region required' }), { status: 400, headers: h });
+    }
+
+    // Générer order_id SG
+    const orderId = `SG-ORDER-${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+    const total_cents = cart.reduce((sum, item) => sum + (item.price_cents || 0) * (item.quantity || 1), 0);
+    const currency = cart[0]?.currency || 'EUR';
+    const firstItem = cart[0];
+
+    // Enregistrer la commande en base (partner_orders)
+    await supa(env, 'partner_orders', 'POST', {
+      order_id: orderId,
+      partner_id: firstItem.partner_id,
+      partner_name: firstItem.partner_name || firstItem.partner_id,
+      product_id: firstItem.product_id,
+      product_name: firstItem.product_name || firstItem.product_id,
+      quantity: firstItem.quantity || 1,
+      unit_price_cents: firstItem.price_cents || 0,
+      total_cents,
+      currency,
+      customer_email,
+      customer_name: customer_name || '',
+      region_id: region,
+      beach_id: beach_id || null,
+      mollie_payment_id: null,
+      partner_reference: null,
+      status: 'PENDING',
+      gross_amount_cents: total_cents,
+      partner_cost_cents: null,
+      sargagame_margin_cents: null,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }).catch((e: any) => {
+      console.log('partner_orders insert failed (table may not exist):', e?.message);
+    });
+
+    // Créer le paiement Mollie
+    const host = request.headers.get('Host') || 'sargasses-martinique.com';
+    const apiKey = env.MOLLIE_API_KEY;
+    const description = `Commande partenaire ${firstItem.partner_id} — ${cart.length} article(s)`;
+    const redirectUrl = `https://${host}/?partner_order_success=1&order_id=${orderId}`;
+
+    const pd: any = {
+      amount: { value: (total_cents / 100).toFixed(2), currency },
+      description,
+      redirectUrl,
+      webhookUrl: `https://${host}/api/mollie-webhook`,
+      metadata: {
+        source: 'partner_commerce',
+        partner_order_id: orderId,
+        partner_id: firstItem.partner_id,
+        product_id: firstItem.product_id,
+        region,
+        beach_id: beach_id || '',
+        customer_name: customer_name || '',
+        cart: JSON.stringify(cart.map(i => ({
+          partner_id: i.partner_id,
+          product_id: i.product_id,
+          quantity: i.quantity,
+          price_cents: i.price_cents,
+        }))),
+      },
+      locale: lang === 'en' ? 'en_US' : lang === 'es' ? 'es_ES' : 'fr_FR',
+    };
+
+    try {
+      const payment = await mollieReq('POST', 'v2/payments', apiKey, pd);
+      const checkoutUrl = payment._links?.checkout?.href || null;
+      const paymentId = payment.id || null;
+
+      // Mettre à jour la commande avec payment_id
+      await supa(env, 'partner_orders', 'PATCH', {
+        mollie_payment_id: paymentId,
+        status: 'PAYMENT_PENDING',
+        updated_at: new Date().toISOString(),
+      }, `?order_id=eq.${orderId}`).catch(() => {});
+
+      // Track
+      ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
+        event: 'sg_checkout_start',
+        params: { order_id: orderId, partner_id: firstItem.partner_id, total_cents, currency },
+        island: region,
+      }).catch(() => {}));
+
+      return new Response(JSON.stringify({ ok: true, order_id: orderId, payment_id: paymentId, checkout_url: checkoutUrl, total_cents, currency }), { headers: h });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: h });
+    }
+  }
+
+  // POST /api/partner/confirm-order — confirmation après paiement (appelé par webhook ou page retour)
+  if (request.method === 'POST' && subPath === 'confirm-order') {
+    const body = await request.json() as any;
+    const { order_id, payment_id } = body;
+    if (!order_id) return new Response(JSON.stringify({ error: 'order_id required' }), { status: 400, headers: h });
+
+    // Vérifier le paiement si payment_id fourni
+    let paid = false;
+    if (payment_id) {
+      try {
+        const apiKey = env.MOLLIE_API_KEY;
+        const payment = await mollieReq('GET', `v2/payments/${payment_id}`, apiKey);
+        paid = ['paid', 'settled'].includes(payment.status || '');
+      } catch {}
+    }
+
+    const newStatus = paid ? 'PAID' : 'PAYMENT_PENDING';
+    await supa(env, 'partner_orders', 'PATCH', {
+      status: newStatus,
+      mollie_payment_id: payment_id || null,
+      updated_at: new Date().toISOString(),
+    }, `?order_id=eq.${order_id}`).catch(() => {});
+
+    if (paid) {
+      ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
+        event: 'sg_order_paid',
+        params: { order_id, payment_id },
+        island: null,
+      }).catch(() => {}));
+    }
+
+    return new Response(JSON.stringify({ ok: true, order_id, status: newStatus, paid }), { headers: h });
+  }
+
+  // POST /api/partner/cancel-order — annulation commande
+  if (request.method === 'POST' && subPath === 'cancel-order') {
+    const body = await request.json() as any;
+    const { order_id, reason } = body;
+    if (!order_id) return new Response(JSON.stringify({ error: 'order_id required' }), { status: 400, headers: h });
+
+    await supa(env, 'partner_orders', 'PATCH', {
+      status: 'CANCELLED',
+      updated_at: new Date().toISOString(),
+    }, `?order_id=eq.${order_id}`).catch(() => {});
+
+    // Track
+    ctx.waitUntil(supa(env, 'analytics_events', 'POST', {
+      event: 'sg_order_cancelled',
+      params: { order_id, reason },
+      island: null,
+    }).catch(() => {}));
+
+    return new Response(JSON.stringify({ ok: true, order_id, status: 'CANCELLED' }), { headers: h });
+  }
+
+  return new Response(JSON.stringify({ error: 'not_found' }), { status: 404, headers: h });
 }

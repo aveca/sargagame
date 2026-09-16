@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'fs'
 import { resolve, join } from 'path'
 import { createRequire } from 'module'
 import { conditionPages } from './src/lib/conditions-filters.js'
@@ -589,6 +589,17 @@ export default defineConfig({
           // Patch dateModified to today's date in index.html
           let html = readFileSync(indexPath, 'utf-8')
           html = html.replace(/"dateModified":"[^"]*"/, `"dateModified":"${new Date().toISOString().slice(0,10)}"`)
+// Replace source entry point (/src/main.jsx) with built entry point (assets/index-<hash>.js)
+          const assetsDir = resolve(outDir, 'assets')
+          let builtEntry = null
+          try {
+            const files = readdirSync(assetsDir)
+            const entryChunk = files.find(f => /^index-[a-zA-Z0-9_-]+\.js$/.test(f))
+            if (entryChunk) builtEntry = `/assets/${entryChunk}`
+          } catch {}
+          if (builtEntry) {
+            html = html.replace(/src="\/src\/main\.jsx"/, `src="${builtEntry}"`)
+          }
           writeFileSync(indexPath, html)
           // Sub-page template: strip the root SEO noscript (the long block starting
           // with <h1>) because every sub-page (beach, editorial, /plages/, hub, EN, ES,

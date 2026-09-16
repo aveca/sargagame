@@ -73,6 +73,7 @@ export function usePaymentLogic({
   payError,
   setPayError,
   payReadyRef,
+  payMountedRef,
   payRedirecting,
   setPayRedirecting,
   paySuccess,
@@ -302,6 +303,23 @@ export function usePaymentLogic({
       setPayError("")
       try{track("sg_mollie_ready_after_wait",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
       // on garde payBusy true et on continue vers le flux Mollie ci-dessous
+    }
+    // Attendre que les Mollie Components soient montés (cardHolder, cardNumber, expiry, cvc)
+    if(PAY_PROVIDER==="mollie"&&!PAY_CAPTURE_ONLY&&!payMountedRef.current){
+      setPayError(_t(lang,"Le formulaire de paiement se prépare…","Payment form is getting ready…","El formulario de pago se está preparando…"))
+      let waited=0
+      while(!payMountedRef.current && waited<5000){
+        await new Promise(r=>setTimeout(r,120))
+        waited+=120
+      }
+      if(!payMountedRef.current){
+        setPayBusy(false)
+        setPayError(_t(lang,"Le formulaire de paiement met du temps à charger. Réessaie.","Payment form is taking a while. Please retry.","El formulario de pago tarda en cargar. Reintenta."))
+        try{track("sg_mollie_mounted_timeout",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
+        return
+      }
+      setPayError("")
+      try{track("sg_mollie_mounted_after_wait",{plan,pass:passCtxRef.current?.pass,waited})}catch(_){}
     }
     if(PAY_CAPTURE_ONLY){
       setPayBusy(true);setPayError("")

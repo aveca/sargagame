@@ -463,7 +463,6 @@
          èlèment sombre force une barre constante #0d1117 au lieu d'une bande dorèe
          mouvante. Cachè en standalone (PWA). aria-hidden : invisible pour l'a11y/SEO. -->
     <div id="sg-chin" aria-hidden="true"></div>
-    <script type="module" src="/src/main.jsx"></script>
     <script>
     // Version check ÔÇö purge caches + reload auto sur changement de version (zèro action user).
     // Compare v (release user-facing) ET b (hash de build posè par stamp-sw-hash.cjs ÔåÆ change à
@@ -502,6 +501,7 @@
         }).catch(function(){})
       })
     }
-    </script>
-  </body>
+</script>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>

@@ -106,10 +106,18 @@ async function main() {
   const PROD = R('src/Sargasses_PROD.jsx')
   check('SG_FUNNEL_EVENTS += sg_partner_view/cta/outbound',
     PROD.includes('"sg_partner_view"') && PROD.includes('"sg_partner_cta"') && PROD.includes('"sg_partner_outbound"'))
+  check('SG_FUNNEL_EVENTS += sg_product_view/cart_add/cart_open/checkout_start/checkout_payment/order_paid/order_failed/order_confirmed/order_cancelled',
+    PROD.includes('"sg_product_view"') && PROD.includes('"sg_cart_add"') && PROD.includes('"sg_cart_open"') &&
+    PROD.includes('"sg_checkout_start"') && PROD.includes('"sg_checkout_payment"') &&
+    PROD.includes('"sg_order_paid"') && PROD.includes('"sg_order_failed"') && PROD.includes('"sg_order_confirmed"') && PROD.includes('"sg_order_cancelled"'))
   check('FUNNEL_KEYS funnel-from-supabase += partner_*',
     /'partner_view', 'partner_cta', 'partner_outbound'/.test(R('scripts/automation/funnel-from-supabase.cjs')))
+  check('FUNNEL_KEYS funnel-from-supabase += partner commerce',
+    /product_view.*cart_add.*cart_open.*checkout_start.*checkout_payment.*order_paid.*order_failed.*order_confirmed.*order_cancelled/s.test(R('scripts/automation/funnel-from-supabase.cjs')))
   check('FUNNEL_KEYS daily-stats-check += partner_*',
     /'partner_view', 'partner_cta', 'partner_outbound'/.test(R('scripts/automation/daily-stats-check.cjs')))
+  check('FUNNEL_KEYS daily-stats-check += partner commerce',
+    /product_view.*cart_add.*cart_open.*checkout_start.*checkout_payment.*order_paid.*order_failed.*order_confirmed.*order_cancelled/s.test(R('scripts/automation/daily-stats-check.cjs')))
 
   console.log('— câblage surfaces (après verdict + alternatives, jamais dedans) —')
   const CH = R('src/ChasseHome.jsx')
