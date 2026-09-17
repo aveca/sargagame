@@ -1,3 +1,59 @@
+## État d'exécution
+
+> Checklist d'exécution autonome — P0 → P1 → P2, un seul TODO à la fois. Format : `[x] DONE — commit <SHA>; <preuves>` ou `[!] BLOQUÉ — <raison précise>`.
+
+### P0 — Critical
+
+- [ ] TODO — A12 — Rotate ALL secrets in .env (public repo)
+- [ ] TODO — G1 — Migrate lead capture from Apps Script → Supabase
+- [ ] TODO — G2 — Add analytics_events purge job
+- [ ] TODO — G3 — Mirror payment grants to Supabase (not just JSON files)
+- [ ] TODO — G15 — Fix CI gate: smoke exit-1 + budget check in CI
+
+### P1 — High impact, low effort
+
+- [ ] TODO — A1 — Move email capture before CTA on paywall
+- [ ] TODO — A13 — Show J+1 forecast free (the "aha" before paywall)
+- [ ] TODO — A7 — Ensure all paths use simplified PassOffer
+- [ ] TODO — E1 — PassOffer CTA copy specificity
+- [ ] TODO — E2 — Add social proof to WorldPaywall/ComicPaywall
+- [ ] TODO — E4 — Mention duration + no-subscription in CTA subline
+- [ ] TODO — E9 — Show data-quality proof when community=0
+- [ ] TODO — E11 — Add trust row (lock/calendar/no-sub) in PassOffer
+- [ ] TODO — F6 — Personalized change alerts (ML on existing forecast)
+- [ ] TODO — F9 — AI-generated brief summaries
+- [ ] TODO — F3 — Enhanced chat with data-grounded responses
+- [ ] TODO — G10 — Generate PHP allowlists from regions/index.cjs
+- [ ] TODO — G9 — Cloudflare cache rules for /api/copernicus/*
+- [ ] TODO — G5 — Add error tracking (window.onerror → Supabase)
+
+### P2 — Medium impact
+
+- [ ] TODO — A2 — Instrument first-verdict-view event
+- [ ] TODO — A5 — Add B2B onboarding checklist post-trial
+- [ ] TODO — A10 — Win-back email for expired passes
+- [ ] TODO — A14 — Event-driven behavioral emails
+- [ ] TODO — E3 — Seasonal urgency banner (June-Nov)
+- [ ] TODO — E5 — Add "moins qu'un café" price anchor
+- [ ] TODO — E6 — Replace prompt() for "already have pass"
+- [ ] TODO — E7 — Fix error retry (no full page reload)
+- [ ] TODO — E10 — Simplify consent checkbox copy
+- [ ] TODO — E18 — Add season pass option to PassOffer
+- [ ] TODO — F1 — ML-enhanced sargassum forecast
+- [ ] TODO — F2 — Personalized beach recommendations
+- [ ] TODO — F5 — Automated SEO content generation
+- [ ] TODO — F8 — Conversion propensity model
+- [ ] TODO — G4 — Matrix builds (parallel per region)
+- [ ] TODO — G6 — Split email lanes (transactional vs marketing)
+- [ ] TODO — G7 — Analytics rotation + Supabase mirror
+- [ ] TODO — G8 — Cloudflare cache for widget assets
+- [ ] TODO — G10 — Money-path parity test in CI
+- [ ] TODO — G14 — Shorten widget token validity + revocation
+- [ ] TODO — G16 — External uptime monitoring
+- [ ] TODO — G17 — Sentinel-2 auto-activation
+
+---
+
 # MASTER_AUDIT.md — Sargagame Strategic Audit
 
 > **Source of truth** for all improvement initiatives. Synthesizes 7 specialized audits into a single prioritized backlog with cross-references.
