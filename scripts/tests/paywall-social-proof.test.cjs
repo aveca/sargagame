@@ -38,7 +38,8 @@ function checkPaywall(name, src) {
   ok(src.includes('data-testid="paywall-social-proof"'), `${name} : testid paywall-social-proof (E2)`)
   ok(src.includes('data-testid="paywall-data-quality-proof"'), `${name} : testid paywall-data-quality-proof (E9)`)
   ok(src.includes('${community}+'), `${name} : compteur réel interpolé (aucun chiffre inventé)`)
-  ok(src.includes('97%'), `${name} : preuve qualité données 97% (E9)`)
+  ok(src.includes('98%'), `${name} : preuve qualité données 98% (E9)`)
+ok(src.includes('Backtest 99%'), `${name} : backtest 99% J+3→J+6 (E9)`)
 }
 
 function main() {

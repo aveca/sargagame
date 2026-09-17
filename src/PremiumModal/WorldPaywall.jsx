@@ -490,7 +490,7 @@ export function WorldPaywall({
 
         {/* ═══ PREUVE SOCIALE (E2) / PREUVE QUALITÉ DONNÉES (E9) ═══
             Juste avant l'offre : compteur réel d'abonnés-suivi si community>0,
-            sinon preuve qualité données (97% vérifiées, satellite, backtest).
+            sinon preuve qualité données (98% globales, backtest 99% J+3→J+6).
             Rollback ?sgsocial=0 désactive les deux. */}
         {socialOn && community > 0 && (
         <div data-testid="paywall-social-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "rgba(255,199,44,.8)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
@@ -501,7 +501,7 @@ export function WorldPaywall({
         {socialOn && community === 0 && (
         <div data-testid="paywall-data-quality-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12, padding: "10px 12px", background: "rgba(34,197,94,.12)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 10, fontSize: 11.5, fontWeight: 600, color: "rgba(34,197,94,.9)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
-          {t("97% des prévisions vérifiées · Satellite Copernicus · Backtest 99%", "97% of forecasts verified · Copernicus satellite · 99% backtest", "97% de pronósticos verificados · Satélite Copernicus · Backtest 99%")}
+          {t("98% des prévisions vérifiées · Satellite Copernicus · Backtest 99% sur J+3→J+6", "98% of forecasts verified · Copernicus satellite · 99% backtest on day 3–6", "98% de pronósticos verificados · Satélite Copernicus · Backtest 99% en J+3→J+6")}
         </div>
         )}
 
