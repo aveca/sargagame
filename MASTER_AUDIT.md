@@ -6,7 +6,7 @@
 
 - [x] DONE — UX-R2-003 — Modal premium rendu SOUS la fiche plage (paywall invisible + incliquable depuis « Débloquer les prévisions 7 jours » ; z panel 1100→1260, backdrops premium 1005→1250, takeover ComicPaywall 1200→1260 ; checkout Mollie z1300 conservé au-dessus) — commit a1585b563; build OK (exit 0, 5.45s, bundle 38.1 Ko ≤ 210) ; Playwright mobile OK (390×844 : elementFromPoint centre = modal, CTA « Voir mes plages propres » pointable, Fermer cliquable, fermeture réelle vérifiée) ; Playwright desktop OK (idem 1440×900) ; fiche plage préservée après fermeture — preuves repro pré-fix : `.ai/ux-agent/runs/20260916T2245Z-run2-replay/evidence/`
 - [!] BLOQUÉ — A12 — Rotate ALL secrets in .env (public repo) — commit 2535e9e11 (clé Mollie live purgée de l'arbre : 0 hit ; trou secret-scan `.ai/plans` bouché, gate prouvé sur l'ancien blob) ; rotation impossible : révocation dashboard Mollie requise, accès fondateur — clé live toujours valide + présente dans l'historique public (3f07490:render-env.txt)
-- [ ] TODO — G1 — Migrate lead capture from Apps Script → Supabase
+- [x] DONE — G1 — Migrate lead capture from Apps Script → Supabase — commit f23199dc4; build OK (exit 0); tests OK (supabase-leads 22/22 + suite 171/173, 2 échecs préexistants worktrees stale hors scope); Playwright PASS (submitLead réel → POST /api/supabase {b2c_alerts, email, region, domain} + backup Apps Script tenté + rollback ?lead_sb=0 vérifié, 0 erreur, 0 écriture prod); Apps Script conservé en backup parallèle (feed Sheet→drips intact), event sg_email_submit réparé
 - [ ] TODO — G2 — Add analytics_events purge job
 - [ ] TODO — G3 — Mirror payment grants to Supabase (not just JSON files)
 - [ ] TODO — G15 — Fix CI gate: smoke exit-1 + budget check in CI
