@@ -129,7 +129,8 @@ export default function PremiumModal({
     pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
     doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
     onPassBuy,
-    PAY_CUR
+    PAY_CUR,
+    submitLead, // A1 : capture lead pré-CTA (WorldPaywall, jamais bloquant)
   }
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)

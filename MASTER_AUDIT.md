@@ -13,7 +13,7 @@
 
 ### P1 — High impact, low effort
 
-- [ ] TODO — A1 — Move email capture before CTA on paywall
+- [x] DONE — A1 — Move email capture before CTA on paywall — WorldPaywall (variant live unique, Comic dormant non touché) : champ optionnel pré-offre (jamais required, CTA jamais conditionné, décision J0-J30 conservée) + hook preCtaEmail.js (debounce 800ms, dédup, submitLead "paywall_pre" G1) + rollback ?email_pre=0 figé au mount (race replaceState ?paywall=1 documentée) ; test paywall-email-pre.test.cjs ALL PASS (13 audits + 8 units) ; preuve live Playwright 8/8 (CTA cliquable sans email → checkout ; saisie → POST /api/supabase {b2c_alerts} réel avant CTA + sg_email ; rollback ?email_pre=0 via vrai funnel ; contrôle sans flag) ; build OK ; bundle 38.1 Ko ≤ 210 ; j0 65/65 + distro 60/60 verts ; suite 175/178 (2 jolly-yalow gitignorés préexistants + 5 asserts partners-contract causés par modif concurrente regions/mq.json+partners.js mid-session, tous hors scope non touchés)
 - [ ] TODO — A13 — Show J+1 forecast free (the "aha" before paywall)
 - [ ] TODO — A7 — Ensure all paths use simplified PassOffer
 - [ ] TODO — E1 — PassOffer CTA copy specificity

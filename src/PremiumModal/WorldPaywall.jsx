@@ -10,6 +10,7 @@ import PassOffer from "../PassOffer.jsx"
 import ComicIcon from "../components/ComicIcons.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
+import { usePreCtaEmail, emailPreEnabled } from "./preCtaEmail.js"
 import { VeilleurMark } from "./VeilleurMark.jsx"
 
 /**
@@ -151,6 +152,7 @@ export function WorldPaywall({
   walletRedirect,
   onPayEmailInput,
   onPassBuy,
+  submitLead,
   PAY_CUR
 }) {
   const stats = WORLD_STATS[lang] || WORLD_STATS.fr
@@ -165,6 +167,15 @@ export function WorldPaywall({
   // anticipé (modal→CTA chronique ~1,3 %). L'email reste capturé (sg_email →
   // pré-remplit OnsiteCheckout) mais APRÈS le clic d'intention.
   const payOrderOfferFirst = (()=>{try{return !/[?&]sgpayorder=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+
+  // A1 — capture email AVANT le CTA (rollback ?email_pre=0). Champ TOUJOURS
+  // optionnel : le CTA reste cliquable sans email (décision J0-J30 conservée).
+  // Le lead part en debounced via submitLead (G1) dès la saisie d'un email valide.
+  // Flag figé au mount (useState initializer) : le handler deep-link ?paywall=1
+  // nettoie TOUTE la query via replaceState à l'ouverture, ce qui fausserait
+  // une lecture à chaque render.
+  const [emailPre] = useState(emailPreEnabled)
+  const onPreCtaEmail = usePreCtaEmail({ submitLead })
 
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
@@ -441,6 +452,39 @@ export function WorldPaywall({
             </span>
           </div>
         </div>
+
+        {/* ═══ EMAIL PRÉ-CTA (A1, rollback ?email_pre=0) ═══
+            Capture le lead AVANT le clic d'intention (abandonneurs récupérables).
+            TOUJOURS optionnel (jamais required) — le CTA PassOffer ci-dessous
+            reste cliquable sans email. Soumission G1 en debounced via le hook. */}
+        {emailPre && (
+        <div style={{ marginBottom: 14 }}>
+          <label style={{
+            display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
+            marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
+          }}>
+            {t("Ton email pour recevoir ton accès", "Your email to receive your access", "Tu email para recibir tu acceso")}
+          </label>
+          <input
+            type="email"
+            autoComplete="email"
+            data-testid="pre-cta-email"
+            placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
+            defaultValue={emailValue}
+            onChange={(e) => { handleEmailChange(e); onPreCtaEmail(e) }}
+            style={{
+              width: "100%", padding: "13px 14px",
+              background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
+              borderRadius: 12, color: "#fff", fontSize: 15,
+              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+              fontWeight: 600, outline: "none", boxSizing: "border-box",
+              transition: "border-color .15s ease"
+            }}
+            onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
+            onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
+          />
+        </div>
+        )}
 
         {/* Pricing card (PassOffer) — CRO J0-J30 : AVANT l'email par défaut
             (offre d'abord, enregistrement après). ?sgpayorder=0 = ordre historique. */}
