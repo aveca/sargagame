@@ -4,7 +4,7 @@
 
 ### P0 — Critical
 
-- [ ] TODO — A12 — Rotate ALL secrets in .env (public repo)
+- [!] BLOQUÉ — A12 — Rotate ALL secrets in .env (public repo) — commit 2535e9e11 (clé Mollie live purgée de l'arbre : 0 hit ; trou secret-scan `.ai/plans` bouché, gate prouvé sur l'ancien blob) ; rotation impossible : révocation dashboard Mollie requise, accès fondateur — clé live toujours valide + présente dans l'historique public (3f07490:render-env.txt)
 - [ ] TODO — G1 — Migrate lead capture from Apps Script → Supabase
 - [ ] TODO — G2 — Add analytics_events purge job
 - [ ] TODO — G3 — Mirror payment grants to Supabase (not just JSON files)
