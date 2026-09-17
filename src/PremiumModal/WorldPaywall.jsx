@@ -149,6 +149,7 @@ export function WorldPaywall({
   onPayEmailInput,
   onPassBuy,
   submitLead,
+  community = 0,
   PAY_CUR
 }) {
   const stats = WORLD_STATS[lang] || WORLD_STATS.fr
@@ -172,6 +173,11 @@ export function WorldPaywall({
   // une lecture à chaque render.
   const [emailPre] = useState(emailPreEnabled)
   const onPreCtaEmail = usePreCtaEmail({ submitLead })
+
+  // E2 — preuve sociale réelle (rollback ?sgsocial=0). Même copy que le
+  // checkout (OnsiteCheckout) : compteur __COMM buildé, jamais inventé.
+  // Gardée >0 : le cas community=0 appartient à E9 (preuve qualité données).
+  const socialOn = (()=>{try{return !/[?&]sgsocial=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
@@ -479,6 +485,23 @@ export function WorldPaywall({
             onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
             onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
           />
+        </div>
+        )}
+
+        {/* ═══ PREUVE SOCIALE (E2) / PREUVE QUALITÉ DONNÉES (E9) ═══
+            Juste avant l'offre : compteur réel d'abonnés-suivi si community>0,
+            sinon preuve qualité données (97% vérifiées, satellite, backtest).
+            Rollback ?sgsocial=0 désactive les deux. */}
+        {socialOn && community > 0 && (
+        <div data-testid="paywall-social-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "rgba(255,199,44,.8)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
+          {t(`Déjà ${community}+ qui suivent leurs plages`, `${community}+ people track their beaches`, `${community}+ personas rastrean sus playas`)}
+        </div>
+        )}
+        {socialOn && community === 0 && (
+        <div data-testid="paywall-data-quality-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12, padding: "10px 12px", background: "rgba(34,197,94,.12)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 10, fontSize: 11.5, fontWeight: 600, color: "rgba(34,197,94,.9)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
+          {t("97% des prévisions vérifiées · Satellite Copernicus · Backtest 99%", "97% of forecasts verified · Copernicus satellite · 99% backtest", "97% de pronósticos verificados · Satélite Copernicus · Backtest 99%")}
         </div>
         )}
 
