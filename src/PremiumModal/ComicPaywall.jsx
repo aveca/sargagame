@@ -261,7 +261,11 @@ export function ComicPaywall({
     <div ref={containerRef} className="sg-paywall-comic" role="dialog" aria-modal="true"
       aria-label={t("Pass prévisions plages", "Beach forecast pass", "Pase pronóstico playas")}
       style={{
-      position: "fixed", inset: 0, zIndex: 1200,
+      // z 1260 = au-dessus de la fiche plage (.lc-detail z1200) quand le paywall
+      // s'ouvre depuis « Débloquer les prévisions 7 jours » (UX-R2-003 : à 1200,
+      // égalité de z → la fiche recouvrait le takeover sur ce chemin) ; reste sous
+      // l'overlay checkout Mollie (OnsiteCheckout z1300). Rollback : 1200.
+      position: "fixed", inset: 0, zIndex: 1260,
       background: "#0d1117", overflow: "hidden",
       display: "flex", flexDirection: "column"
     }}>
