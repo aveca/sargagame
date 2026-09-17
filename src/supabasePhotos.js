@@ -91,8 +91,17 @@ export function buildB2CLeadRow(email, hostname) {
 
 /**
  * submitLeadToSupabase — sink PRIMAIRE des leads B2C (migration G1
- * Apps Script → Supabase). POST /api/supabase générique du worker
- * supabase-proxy (même contrat que LeadCapture : {table, insert}).
+ * Apps Script → Supabase). ÉCRITURE DIRECTE REST avec la clé anon
+ * (même pattern prouvé que logAnalyticsEvent ci-dessus).
+ *
+ * MAJ 2026-09-17 : le hop worker `POST /api/supabase` répond 404 en prod sur
+ * les 6 domaines (Pages Functions functions/[[path]].js catch-all ; la route
+ * zone `/api/supabase*` vers supabase-proxy n'est pas câblée — action dashboard
+ * fondateur requise, hors Timebox). Conséquence mesurée : 100 % des leads
+ * "Supabase-primary" tombaient en .catch() silencieux (dual-write Apps Script
+ * sauvait les leads, mais le funnel Supabase restait vide).
+ * Probe prod 2026-09-17 : POST /rest/v1/b2c_alerts sans email → 400 "23502
+ * not-null email" = RLS laisse passer l'insert anon (la ligne n'est PAS écrite).
  * Fire-and-forget, ne throw JAMAIS, no-op si ligne invalide.
  * Rollback : ?lead_sb=0 (skip ce leg, Apps Script seul).
  * Renvoie true si la requête a été dispatchée.
@@ -103,11 +112,11 @@ export function submitLeadToSupabase(email) {
     const host = typeof window !== "undefined" ? window.location.hostname : ""
     const row = buildB2CLeadRow(email, host)
     if (!row) return false
-    fetch("/api/supabase", {
+    fetch(`${SUPABASE_URL}/rest/v1/b2c_alerts`, {
       method: "POST",
       keepalive: true,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ table: "b2c_alerts", insert: row }),
+      headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(row),
     }).catch(() => {})
     return true
   } catch (_) { return false }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react"
 import ComicIcon from "./components/ComicIcons.jsx"
 import { _t, track } from "./Sargasses_PROD.jsx"
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabasePhotos.js"
 
 const LEAD_DISMISSED_KEY = "sg_lead_dismissed"
 const LEAD_SESSION_KEY = "sg_lead_session_start"
@@ -85,10 +86,19 @@ export default function LeadCapture() {
     }
 
     try {
-      const res = await fetch("/api/supabase", {
+      // G1 — écriture DIRECTE REST Supabase (clé anon publique, RLS ok vérifié
+      // en prod 2026-09-17). Le hop worker générique (proxy) répond 404 en prod
+      // (catch-all Pages Functions) — les leads banner tombaient dans le .catch.
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table, insert })
+        keepalive: true,
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Prefer: "return=minimal"
+        },
+        body: JSON.stringify(insert)
       })
       if (res.ok) {
         setSubmitted(true)
