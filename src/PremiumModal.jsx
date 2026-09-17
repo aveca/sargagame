@@ -54,7 +54,7 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // PremiumModal — composant principal exporté
 export default function PremiumModal({
   lang, source, onClose, onActivated,
-  sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh, _passUpdatedAt
+  sargData, island, beach, pwVariant, _passUpdatedAt
 }){
   // Refs/états de paiement — créés en interne (le split les avait perdus).
   // Miroir de l'ancien PremiumModal monolithique (ligne ~1739 de l'ancien fichier).
@@ -79,7 +79,6 @@ export default function PremiumModal({
   const [consentOk, setConsentOk] = useState(false)
   const consentFlag = !PAY_CAPTURE_ONLY // consentement requis seulement si paiement réel
   const [pwToast, setPwToast] = useState(null)
-  const pwSocialProof = null
 
   // Hooks extraits
   const { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput } = usePaymentLogic({
@@ -121,12 +120,12 @@ export default function PremiumModal({
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
-    sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh,
+    sargData, island, beach, pwVariant,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,
     elementsRef, stripeRef, setupSecretRef, mollieRef,
-    pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
+    pwStep: payStep, setPayStep, pwToast, setPwToast,
     doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
     onPassBuy,
     PAY_CUR,
