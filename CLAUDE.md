@@ -93,8 +93,9 @@ node -e "require('playwright').chromium.executablePath()" >/dev/null \
 #    suit désormais la surface que voient les utilisateurs.) ATTENTION : ux-smoke.mjs
 #    lance chromium.launch() en ÉMULATION iPhone (390×844, UA Safari, deviceScaleFactor 2,
 #    isMobile, hasTouch) — ce n'est PAS du WebKit réel : une régression Safari/iOS-only
-#    peut passer. Le smoke n'appelle JAMAIS process.exit() (toujours exit 0) :
-#    le gating se fait par grep sur sa sortie, sinon un `&&` valide à tort.
+#    peut passer. Le smoke sort exit 1 si un token du Gate échoue (G15 — plus
+#    de vert silencieux en `&&` ou en étape CI sans grep) ; le gating se fait
+#    par l'exit code ET par grep des 4 tokens sur sa sortie (compat conservée).
 node scripts/ux-smoke.mjs | tee /tmp/smoke.log
 grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log \
   && grep -q 'ERRORS=\[\]' /tmp/smoke.log \
