@@ -1,3 +1,10 @@
+## 2026-09-17 — QA RÉELLE (commits 5ca608afd G1-preuve, f1ea59bf2 bugs QA confirmés)
+
+**Agent** : ux-agent (branche `agent/ux/continuous-explorer`, locale). **Harnais** : `.ai/ux-agent/qa/qa-suite.py` (Playwright, vidéo+traces+console+réseau+hit-tests, probe against 6 viewports/états) + `probe-regions.py` (6 domaines) + `probe-deep.py`.
+**Bilans mesurés** : local 56 checks (2 FAIL = un seul bug), prod-mq 42 checks, sweep 6 régions, Chromium headed desktop. Drift deploy : prod assets `index-DvDTSfse` ≠ local `index-CNCRwgMD` (fixes UX-R2-003/E1/E2/E9/WhatsApp/G1 NON déployés). Prod confirme : modal premium occlus (z 1100) partout → **UX-R2-003 encore live en prod, le déployer le corrigera** (comportement local post-fix : checkout Mollie atteignable depuis la fiche — A/B contrast direct).
+**Nouveaux bugs enregistrés (MASTER_AUDIT P1/P2)** : UX-QA-001 (A13 abolue sur la variante live — J+1 verrouillé sur ChasseDetail), UX-QA-002 (bannière email z1500 au-dessus du paywall+checkout), UX-QA-003 (Refuser cookies intercepté), UX-QA-004 (nav ◉ Carte interceptée), UX-QA-005 (× premium intercepté — à re-tester post-deploy), UX-QA-006 (« Plus tard » inopérant desktop).
+**Preuves durables** : `.ai/ux-agent/runs/20260917-qa/` (screenshots mobile+desktop par journey, vidéos, traces Playwright, checks.json, diagnostics.json, regions.json, summary.json).
+
 ## 2026-09-17 — UX-R2-003 FIXÉ : modal premium au-dessus de la fiche plage (commit a1585b563)
 
 **Agent** : coding-agent (branche `agent/ux/continuous-explorer`). **Cause** : depuis une fiche plage (`.lc-detail` z1200), le paywall s'ouvrait en dessous — panel `.sg-modal-panel` z1100 + backdrop partagé z1005 (même ComicPaywall z1200 en égalité) → offre invisible (probe `elementFromPoint` = `.lc-detail-body`), clics interceptés par la fiche. **Fix (2 fichiers, 3 valeurs, pattern existant, aucune lib)** : `PremiumModal.jsx` panel 1100→1260 + les 2 backdrops premium inline z1250 (`.backdrop` CSS partagée inchangée) ; `ComicPaywall.jsx` takeover 1200→1260 ; **OnsiteCheckout z1300 conservé au-dessus** (aucun chemin paiement touché). **Rollback** : revert a1585b563.

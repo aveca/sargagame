@@ -1,5 +1,24 @@
-## 2026-09-17 · Agent: ux-agent + coding-agent (branche `agent/ux/continuous-explorer`, locale, non poussée)
+## 2026-09-17 · Agent: ux-agent (QA réelle complète, branche `agent/ux/continuous-explorer`)
 
+### Travail effectué
+- **Résumé 1 ligne** : batterie QA observe+prove terminée (local build + prod 6 domaines + headed) — tous les parcours rentrent, 2 bugs produits confirmés (J+1 A13 absent de la variante live ; bannière email au-dessus du paywall), 4 bugs d'empilement préexistants tracés en tâches, le reste passe.
+- **FAIT MARQUANT** : la prod est UN BUILD EN RETARD sur HEAD (`index-DvDTSfse` prod vs `CNCRwgMD` local) — tout ce qui a été corrigé dans la journée (UX-R2-003, E1/E2/E9, WhatsApp, G1 direct) est prêt dans le code mais non déployé.
+- **Preuves durables** : `.ai/ux-agent/runs/20260917-qa/` (screenshots, vidéos webm, traces.zip Playwright, checks/diagnostics/regions/summary JSON).
+
+### Bugs enregistrés (MASTER_AUDIT, exploitables par agent)
+- P1 UX-QA-001 : A13 J+1 « offert » invisible en vrai (variante live ChasseDetail verrouille J+1 ; fix fait dans la variante dormante BeachSheetComic ; flag `?j1_free=0` sans effet live)
+- P1 UX-QA-002 : bannière capture email (z 1500) se superpose au paywall (z 1260) et checkout (z 1300)
+- P1 UX-QA-003 / UX-QA-004 : la même bannière intercepte le bouton « Refuser » des cookies (mobile) et la nav « ◉ Carte » (desktop)
+- P2 UX-QA-005 : × du modal premium intercepté par la fiche (à re-tester après deploy d'a1585b563)
+- P2 UX-QA-006 : « Plus tard » inopérant sur desktop
+
+### Prochaine action recommandée
+1. **Merger/déployer la branche** (livrables du jour en prod) puis rejouer `.ai/ux-agent/qa/qa-suite.py --base https://sargasses-martinique.com/ --label prod --core` (valide: modal z=1260, E2/E9/E1 visibles, WhatsApp). — Rôle : devops/release
+2. Traiter UX-QA-001 (porter `j1_free`/gating A13 dans ChasseDetail). — Rôle : coding-agent
+
+---
+
+## 2026-09-17 · Agent: ux-agent + coding-agent (UX Explorer + fix UX-R2-003)
 ### Travail effectué
 - **Résumé 1 ligne** : Continuous UX Explorer opérationnel (exploration LLM Webwright + skill rejouable + replay déterministe Playwright) + **UX-R2-003 corrigé** : le modal premium s'ouvre désormais AU-DESSUS de la fiche plage.
 - **UX-R2-003 (blocker money-path)** : depuis une fiche plage (`.lc-detail` z1200), « Débloquer les prévisions 7 jours » ouvrait le modal premium EN DESSOUS (panel z1100 / takeover comic z1200 égalité) → offre invisible, clics interceptés. Fix minimal (commit `a1585b563`) : panel 1100→1260, 2 backdrops premium 1005→1250 inline, ComicPaywall 1200→1260 ; checkout Mollie (OnsiteCheckout z1300) conservé au-dessus. Rollback : revert a1585b563.
