@@ -57,6 +57,63 @@ export function logAnalyticsEvent(event, params, island) {
 }
 
 /**
+ * leadDomain / leadRegionCode — vocabulaire région/domaine des leads B2C.
+ * MIROIR EXACT de getDomain/getRegion de LeadCapture.jsx (garder en sync) :
+ * la table `b2c_alerts` et le cron worker comparent déjà ce vocabulaire
+ * (region "mq"/"gp"/..., domain = hostname sans www). Ne PAS diverger
+ * (sinon les leads migrés ne seraient jamais matchés par le cron).
+ */
+export function leadDomain(hostname) {
+  try { return String(hostname || "").replace(/^www\./, "") } catch (_) { return "" }
+}
+
+export function leadRegionCode(hostname) {
+  const d = leadDomain(hostname)
+  if (d.includes("martinique")) return "mq"
+  if (d.includes("guadeloupe")) return "gp"
+  if (d.includes("cancun") || d.includes("tulum")) return "mx"
+  if (d.includes("puntacana")) return "do"
+  if (d.includes("miami")) return "us"
+  return "unknown"
+}
+
+/**
+ * buildB2CLeadRow — ligne `b2c_alerts` pour un email capturé (pure, testée).
+ * Même forme que l'insert LeadCapture.jsx (email lowercase/trim, beaches [],
+ * status 'active'). Renvoie null si email invalide (jamais de ligne vide).
+ */
+export function buildB2CLeadRow(email, hostname) {
+  const em = String(email || "").trim().toLowerCase()
+  if (!em || !em.includes("@") || em.length > 200) return null
+  const domain = leadDomain(hostname)
+  return { email: em, region: leadRegionCode(domain), domain, beaches: [], status: "active" }
+}
+
+/**
+ * submitLeadToSupabase — sink PRIMAIRE des leads B2C (migration G1
+ * Apps Script → Supabase). POST /api/supabase générique du worker
+ * supabase-proxy (même contrat que LeadCapture : {table, insert}).
+ * Fire-and-forget, ne throw JAMAIS, no-op si ligne invalide.
+ * Rollback : ?lead_sb=0 (skip ce leg, Apps Script seul).
+ * Renvoie true si la requête a été dispatchée.
+ */
+export function submitLeadToSupabase(email) {
+  try {
+    if (typeof window !== "undefined" && /[?&]lead_sb=0/.test(window.location.search || "")) return false
+    const host = typeof window !== "undefined" ? window.location.hostname : ""
+    const row = buildB2CLeadRow(email, host)
+    if (!row) return false
+    fetch("/api/supabase", {
+      method: "POST",
+      keepalive: true,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ table: "b2c_alerts", insert: row }),
+    }).catch(() => {})
+    return true
+  } catch (_) { return false }
+}
+
+/**
  * Upload d'une photo (data URL JPEG déjà redimensionnée + EXIF strippée).
  * → Storage bucket public `beach-photos`, puis ligne `photos` en status 'pending'.
  * Renvoie true si OK. Modération ensuite côté dashboard (status → 'approved').
