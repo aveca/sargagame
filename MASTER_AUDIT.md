@@ -4,6 +4,7 @@
 
 ### P0 — Critical
 
+- [x] DONE — UX-R2-003 — Modal premium rendu SOUS la fiche plage (paywall invisible + incliquable depuis « Débloquer les prévisions 7 jours » ; z panel 1100→1260, backdrops premium 1005→1250, takeover ComicPaywall 1200→1260 ; checkout Mollie z1300 conservé au-dessus) — commit a1585b563; build OK (exit 0, 5.45s, bundle 38.1 Ko ≤ 210) ; Playwright mobile OK (390×844 : elementFromPoint centre = modal, CTA « Voir mes plages propres » pointable, Fermer cliquable, fermeture réelle vérifiée) ; Playwright desktop OK (idem 1440×900) ; fiche plage préservée après fermeture — preuves repro pré-fix : `.ai/ux-agent/runs/20260916T2245Z-run2-replay/evidence/`
 - [!] BLOQUÉ — A12 — Rotate ALL secrets in .env (public repo) — commit 2535e9e11 (clé Mollie live purgée de l'arbre : 0 hit ; trou secret-scan `.ai/plans` bouché, gate prouvé sur l'ancien blob) ; rotation impossible : révocation dashboard Mollie requise, accès fondateur — clé live toujours valide + présente dans l'historique public (3f07490:render-env.txt)
 - [ ] TODO — G1 — Migrate lead capture from Apps Script → Supabase
 - [ ] TODO — G2 — Add analytics_events purge job
