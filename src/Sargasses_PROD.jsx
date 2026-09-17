@@ -4624,6 +4624,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
   //    identique à la série premium — même fichier _private/forecast-full.json).
   //    Premium = multi-plages/alertes/historique ; le suivi d'UNE plage reste gratuit.
   const free7=!isPremium&&isMyBeach&&Array.isArray(freeForecast)&&freeForecast.length>=2
+  // A13 — J+1 offert (le "aha" avant paywall, rollback ?j1_free=0). La donnée
+  // J+1 est réelle (série publique J+0/J+1, jamais fabriquée) : seul le cadenas
+  // saute. J+2→J+6 restent verrouillés (complétés neutres si série courte).
+  const j1Free=(()=>{try{return !/[?&]j1_free=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const fcDays=((free7?freeForecast:forecast)||[]).slice(0,7)
   // Gating J+2→J+7 : la prévision publique ne porte que J+0/J+1. Le header annonce
   // « 7 jours » → pour le NON-premium on complète avec des barres CADENAS NEUTRES
@@ -4762,7 +4766,7 @@ const [showReport,setShowReport]=useState(false)
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
         </div>
-        {/* PRÉVISIONS 7 j — wish : aujourd'hui visible, le reste FLOUTÉ/verrouillé pour
+        {/* PRÉVISIONS 7 j — J+0 + J+1 (A13) visibles, J+2→J+6 verrouillés pour
              non-premium — SAUF « Ma plage » (free7 : série réelle 7 j offerte au suivi). */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4785,8 +4789,8 @@ const [showReport,setShowReport]=useState(false)
           ):(
           <>
           <div style={{display:"flex",gap:6,position:"relative"}}>
-            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>0;return(
-              <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
+            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>(j1Free?1:0);return(
+              <div key={i} data-testid="fc-day" data-gated={gated?"1":"0"} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
                 flex:1,
                 textAlign:"center",
                 padding:"6px 4px",
@@ -4809,9 +4813,18 @@ const [showReport,setShowReport]=useState(false)
                     {_t(lang,"Premium","Premium","Premium")}
                   </span>
                 )}
+                {/* A13 — J+1 offert : pastille explicite (même gabarit que le cadenas,
+                    couleur "clean") pour que le gratuit soit VU, pas deviné. */}
+                {j1Free&&!isPremium&&!free7&&i===1&&(
+                  <span style={{position:"absolute",left:"50%",top:20,transform:"translateX(-50%)",display:"inline-flex",alignItems:"center",font:"800 7.5px/1 'Bricolage Grotesque'",color:"#0D0B14",textTransform:"uppercase",letterSpacing:".3px",background:"#22C55E",padding:"3px 6px",borderRadius:5,border:"1.5px solid #0D0B14",whiteSpace:"nowrap",pointerEvents:"none"}}>
+                    {_t(lang,"Inclus","Included","Incluido")}
+                  </span>
+                )}
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
-            {!isPremium&&!free7&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+            {/* A13 : le cadenas invisible démarre à J+2 (29%) quand J+1 est offert,
+                à J+1 (15%) en rollback. Masqué s'il n'y a aucun jour verrouillé. */}
+            {!isPremium&&!free7&&fcDays.length>(j1Free?2:1)&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:(j1Free?"29%":"15%"),border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
             </div>
             {/* Légende forecast : couleur + forme-SVG + mot (jamais couleur seule) */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginTop:8,flexWrap:"wrap"}} aria-label={_t(lang,"Légende prévision","Forecast legend","Leyenda pronóstico")}>

@@ -141,7 +141,7 @@ test.describe("P1-03 — Week Hub / Prévisions 7 jours", () => {
   test("6) fiche complète: lock overlay → paywall + event, aucune Interaction perdue", async ({ page }) => {
     const tracker = setupTrackInterceptor(page)
     await openFullFiche(page)
-    // 7 jours, J0 net, J1+ floutés
+    // 7 jours, J0+J1 nets (A13 : J+1 offert), J2+ verrouillés
     const bars = page.locator(".bsc-bar")
     expect(await bars.count()).toBe(7)
     const lock = page.locator('button[aria-label*="prévisions"], button[aria-label*="Unlock forecast"], button[aria-label*="Desbloquear"]').first()
