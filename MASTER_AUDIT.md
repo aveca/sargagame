@@ -17,9 +17,9 @@
 - [x] DONE — A13 — Show J+1 forecast free (the "aha" before paywall) — fiche BeachSheetComic (donnée J+1 réelle, rien de fabriqué) : gating i>1 (rollback ?j1_free=0), cadenas invisible 29% (15% rollback, masqué sans jour verrouillé), pastille INCLUS J+1, testids fc-day/data-gated ; premium/free7/ChasseHome inchangés, event sg_forecast_lock_click inchangé, commentaire E2E p1-03 MAJ ; test forecast-j1-free.test.cjs ALL PASS (12 checks) ; preuve live Playwright 8/8 vrai funnel (J+1 INCLUS sans cadenas, clic J+1 sans paywall, clic J+3 paywall, rollback J+1 reverrouillé+paywall) ; build OK ; bundle 38.1 Ko ≤ 210 ; suite 176/179 (2 jolly-yalow gitignorés préexistants + 5 asserts partners-contract causés par modif concurrente regions/mq.json+partners.js, tous hors scope non touchés)
 - [x] DONE — A7 — Ensure all paths use simplified PassOffer — vérifié : les 3 sites <PassOffer (World×2, Comic×1) portent onBuy, UNE SEULE écriture passCtxRef (onPassBuy), setPayStep(true) uniquement là, OnsiteCheckout dérive de passCtx sans choix parallèle ; purge des résidus legacy morts pwPass/pwSocial/pwFresh/pwSocialProof (jamais lus, AB map pw_copy/pw_pass_seq laissée à E1) dans PremiumModal.jsx + World/ComicPaywall ; B2BModal hors scope acté ; test passoffer-paths.test.cjs ALL PASS (11 checks) ; preuve live Playwright 4/4 (offre p30 1499 → checkout "pass 30 jours / 14,99 €", 0 pageerror) ; build OK ; bundle 38.1 Ko ≤ 210 ; suite 178/180 (2 jolly-yalow gitignorés préexistants, partners-contract reverdi par la session concurrente elle-même)
 - [x] DONE — E1 — PassOffer CTA copy specificity — hero CTA "Voir mes plages propres →" → "Voir la prévision 7 jours →" (FR/EN/ES, livrable nommé, longueur ≈ identique, sticky prix-spécifique et aria-label E2E intacts, contrat onBuy intact, E4/E11/E2 volontairement hors scope) + rollback ?sgcta=0 (copy historique) ; aucun test pw_copy actif en code (freeze-map zombie, rien ne le lit) ; test passoffer-cta-copy.test.cjs ALL PASS (9 checks) ; preuve live Playwright 6/6 (copy rendu FR, CTA→checkout, 0 pageerror, rollback via vrai funnel — deep-link ?paywall=1 nettoyant la query, limite pré-existante commune à tous les flags, documentée) ; build OK ; bundle 38.1 Ko ≤ 210 ; suite 179/181 (2 jolly-yalow gitignorés préexistants)
-- [ ] TODO — E2 — Add social proof to WorldPaywall/ComicPaywall
-- [ ] TODO — E4 — Mention duration + no-subscription in CTA subline
-- [ ] TODO — E9 — Show data-quality proof when community=0
+- [x] DONE — E2 — Add social proof to WorldPaywall/ComicPaywall — WorldPaywall/ComicPaywall: "Déjà N+ qui suivent leurs plages" (FR/EN/ES) via __COMM build-time, gate community>0, rollback ?sgsocial=0, testid paywall-social-proof ; test paywall-social-proof.test.cjs ALL PASS ; build OK ; bundle 38.1 Ko ≤ 210 ; suite 180/182
+- [x] DONE — E4 — Mention duration + no-subscription in CTA subline — PassOffer: "Pas d'abonnement · 30 jours · Paiement sécurisé" (ligne 151-153), "Mollie · Sans engagement · 2 clics" (sticky), "Paiement sécurisé · Accès immédiat" (sous CTA) ; durée 30j et no-sub déjà présents en 3 endroits ; build OK ; bundle 38.1 Ko ≤ 210
+- [x] DONE — E9 — Show data-quality proof when community=0 — WorldPaywall/ComicPaywall: bloc "97% des prévisions vérifiées · Satellite Copernicus · Backtest 99%" quand community=0 & socialOn=true ; rollback ?sgsocial=0 ; testid paywall-data-quality-proof ; test paywall-social-proof.test.cjs étendu (E2+E9) ALL PASS ; build OK (exit 0, 38.1 Ko) ; smoke PASS ; suite 180/182
 - [ ] TODO — E11 — Add trust row (lock/calendar/no-sub) in PassOffer
 - [ ] TODO — F6 — Personalized change alerts (ML on existing forecast)
 - [ ] TODO — F9 — AI-generated brief summaries
@@ -74,13 +74,13 @@
 - [ ] TODO — G15 — Fix CI gate: smoke exit-1 + budget check in CI
 
 ### P1
-- [ ] TODO — A1 — Move email capture before CTA on paywall
-- [ ] TODO — A13 — Show J+1 forecast free (the "aha" before paywall)
-- [ ] TODO — A7 — Ensure all paths use simplified PassOffer
-- [ ] TODO — E1 — PassOffer CTA copy specificity
-- [ ] TODO — E2 — Add social proof to WorldPaywall/ComicPaywall
-- [ ] TODO — E4 — Mention duration + no-subscription in CTA subline
-- [ ] TODO — E9 — Show data-quality proof when community=0
+- [x] DONE — A1 — Move email capture before CTA on paywall
+- [x] DONE — A13 — Show J+1 forecast free (the "aha" before paywall)
+- [x] DONE — A7 — Ensure all paths use simplified PassOffer
+- [x] DONE — E1 — PassOffer CTA copy specificity
+- [x] DONE — E2 — Add social proof to WorldPaywall/ComicPaywall
+- [x] DONE — E4 — Mention duration + no-subscription in CTA subline
+- [x] DONE — E9 — Show data-quality proof when community=0
 - [ ] TODO — E11 — Add trust row (lock/calendar/no-sub) in PassOffer
 - [ ] TODO — F6 — Personalized change alerts (ML on existing forecast)
 - [ ] TODO — F9 — AI-generated brief summaries
