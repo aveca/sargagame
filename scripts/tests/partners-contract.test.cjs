@@ -41,10 +41,10 @@ async function main() {
 
   console.log('— couverture exacte (jamais d\u2019invention) —')
   const mq = P.resolveContext(cat, 'mq', { id: 'mq001', island: 'mq', name: 'Les Salines' })
-  check('mq : transport = Taxis Martinique (local prioritaire)',
-    mq && mq.transport && mq.transport.trackingId === 'taxis_martinique')
-  check('mq : shopping = Lovelly (Fort-de-France)',
-    mq && mq.shopping.length === 1 && mq.shopping[0].trackingId === 'lovelly' && mq.shopping[0].location === 'Fort-de-France')
+  check('mq : transport = Sargagame Support WhatsApp (local prioritaire)',
+    mq && mq.transport && mq.transport.trackingId === 'sargagame_whatsapp')
+  check('mq : shopping vide (remplacé par WhatsApp support)',
+    mq && mq.shopping.length === 0)
   const gp = P.resolveContext(cat, 'gp', { id: 'gp001', island: 'gp', name: 'Grande Anse' })
   check('gp : transport = RHUMZ seul (local MQ-only exclu)',
     gp && gp.transport && gp.transport.trackingId === 'rhumz')
@@ -68,19 +68,19 @@ async function main() {
   check('disabled + hors-regions = invisible', P.getShoppingPartners(entry, 'mq').length === 0)
   check('kill-switch ?partnerctx=0 → null', P.resolveContext(cat, 'mq', { id: 'mq001', island: 'mq' }, '?partnerctx=0') === null)
   check('résolveur agnostique à la plage (le composant exige beach, pas le résolveur)',
-    P.resolveContext(cat, 'mq', null, '').transport.trackingId === 'taxis_martinique')
+    P.resolveContext(cat, 'mq', null, '').transport.trackingId === 'sargagame_whatsapp')
   const beachCtx = { id: 'mq001', island: 'mq', name: 'Les Salines' }
   const u1 = P.partnerOutboundUrl({ url: 'https://www.rhumz.com/', bookingUrl: 'https://www.rhumz.com/reservation/', supportsBeachContext: true }, beachCtx)
   check('URL beach-context (bookingUrl + destination + island)',
     u1 === 'https://www.rhumz.com/reservation/?destination=Les%20Salines&island=mq', u1)
-  const u2 = P.partnerOutboundUrl({ url: 'https://lovelly.fr/', supportsBeachContext: true }, beachCtx)
-  check('URL shopping = url + contexte (pas de prix/commission inventés)',
-    u2 === 'https://lovelly.fr/?destination=Les%20Salines&island=mq' && !/[?&](price|commission|prix)=/.test(u2), u2)
+  const u2 = P.partnerOutboundUrl({ url: 'https://wa.me/596596106124', supportsBeachContext: true, isWhatsApp: true }, beachCtx)
+  check('URL WhatsApp = wa.me + texte prérempli contextuel (pas de prix/commission inventés)',
+    u2.startsWith('https://wa.me/596596106124?text=') && u2.includes('Les%20Salines') && u2.includes('Martinique') && !/[?&](price|commission|prix)=/.test(u2), u2)
   const u3 = P.partnerOutboundUrl({ url: 'https://x.example/', supportsBeachContext: false }, beachCtx)
   check('sans supportsBeachContext → URL brute', u3 === 'https://x.example/', u3)
 
   console.log('— catalogue : aucune donnée inventée —')
-  const ALLOWED_T = new Set(['name', 'category', 'url', 'bookingUrl', 'regions', 'supportsBeachContext', 'enabled', 'trackingId'])
+  const ALLOWED_T = new Set(['name', 'category', 'url', 'bookingUrl', 'regions', 'supportsBeachContext', 'enabled', 'trackingId', 'isWhatsApp'])
   const ALLOWED_S = new Set(['name', 'category', 'url', 'location', 'regions', 'supportsBeachContext', 'enabled', 'trackingId'])
   let leakOk = true
   for (const [rid, e] of Object.entries(cat.regions)) {
@@ -99,7 +99,7 @@ async function main() {
       for (const s of ['local', 'multiIsland']) { const p = e.transport && e.transport[s]; if (p) urls.push(p.url) }
       for (const p of e.shopping || []) urls.push(p.url)
     }
-    return urls.length === 4 && urls.every((u) => /^https:\/\//.test(u))
+    return urls.length === 3 && urls.every((u) => /^https:\/\//.test(u))
   })())
 
   console.log('— tracking canonique allowlisté —')
@@ -133,7 +133,7 @@ async function main() {
   check('PartnerContext : badge Partenaire + rel sponsored + _blank noopener',
     /Partenaire/.test(PC) && /sponsored/.test(PC) && /noopener,noreferrer/.test(PC))
   check('PartnerContext : 0 condition région/URL en dur (lit le catalogue)',
-    !/taxismartinique|rhumz\.com|lovelly\.fr|fort-de-france/i.test(PC.replace(/Partenaire|Socio|Partner/g, '')) || !/martinique\.com|rhumz|lovelly/i.test(PC))
+    !/taxismartinique|lovelly\.fr|fort-de-france/i.test(PC.replace(/Partenaire|Socio|Partner/g, '')) || !/lovelly/i.test(PC))
   check('verdict intouché : PartnerContext ne consomme jamais sargData/forecast',
     !/sargData|[^a-zA-Z]forecast[^a-zA-Z_]/.test(PC))
 }

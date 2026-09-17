@@ -1,6 +1,6 @@
 {
   "_note": "GÉNÉRÉ par scripts/automation/gen-context-partners.cjs depuis regions/*.json (SOURCE DE VÉRITÉ) — NE PAS éditer à la main (éditer le partners de la région puis régénérer). Affichage = enabled:true ET regions contient la région courante (src/lib/partners.js). Verdict sargasses = 100% data ERDDAP, jamais influencé.",
-  "updatedAt": "2026-09-16",
+  "updatedAt": "2026-09-17",
   "regions": {
     "barbados": {
       "transport": {
@@ -38,15 +38,16 @@
     "mq": {
       "transport": {
         "local": {
-          "name": "Taxis Martinique",
-          "category": "taxi",
-          "url": "https://taxismartinique.com/",
+          "name": "Sargagame Support",
+          "category": "support",
+          "url": "https://wa.me/596596106124",
           "regions": [
             "mq"
           ],
           "supportsBeachContext": true,
           "enabled": true,
-          "trackingId": "taxis_martinique"
+          "trackingId": "sargagame_whatsapp",
+          "isWhatsApp": true
         },
         "multiIsland": {
           "name": "RHUMZ",
@@ -62,20 +63,7 @@
           "trackingId": "rhumz"
         }
       },
-      "shopping": [
-        {
-          "name": "Lovelly",
-          "category": "bijoux / souvenir / shopping local",
-          "url": "https://lovelly.fr/",
-          "location": "Fort-de-France",
-          "regions": [
-            "mq"
-          ],
-          "supportsBeachContext": true,
-          "enabled": true,
-          "trackingId": "lovelly"
-        }
-      ]
+      "shopping": []
     },
     "puntacana": {
       "transport": {

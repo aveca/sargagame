@@ -70,6 +70,7 @@ export function getShoppingPartners(entry, regionId) {
 /**
  * URL sortante : bookingUrl si présente sinon url ; contexte plage
  * (?destination=&island=) ajouté UNIQUEMENT si supportsBeachContext && plage.
+ * Pour WhatsApp (isWhatsApp:true), ajoute le paramètre ?text= avec message prérempli contextuel.
  * Aucun paramètre de commission/prix inventé.
  */
 export function partnerOutboundUrl(p, beach) {
@@ -78,6 +79,16 @@ export function partnerOutboundUrl(p, beach) {
   if (!base) return null;
   try {
     if (p.supportsBeachContext && beach && (beach.name || beach.id)) {
+      // WhatsApp : message prérempli
+      if (p.isWhatsApp) {
+        const beachName = beach.name || beach.id || "cette plage";
+        const regionName = beach.island === "mq" ? "Martinique" : beach.island === "gp" ? "Guadeloupe" : beach.island;
+        const msg = `Bonjour Sargagame, je viens de consulter ${beachName} (${regionName}) et j'aimerais avoir une recommandation.`;
+        const sep = base.includes("?") ? "&" : "?";
+        base += sep + "text=" + encodeURIComponent(msg);
+        return base;
+      }
+      // Standard partners : query params
       const sep = base.includes("?") ? "&" : "?";
       const params = [];
       if (beach.name) params.push("destination=" + encodeURIComponent(beach.name));
