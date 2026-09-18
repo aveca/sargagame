@@ -5569,7 +5569,7 @@
   },
   {
     "date": "2026-09-18",
-    "time": "2026-09-18T04:09:15.250Z",
+    "time": "2026-09-18T11:11:53.104Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 606,
@@ -5577,19 +5577,19 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 154,
+      "sessions": 163,
       "lockClicks": 30,
-      "modalOpens": 99,
+      "modalOpens": 111,
       "modalCloses": null,
       "modalCta": 1,
-      "ctaViews": 66,
-      "altViews": 44,
+      "ctaViews": 75,
+      "altViews": 56,
       "altClicks": 0,
       "groundTruth": 1,
-      "observations": 2,
+      "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 13,
+      "emailSubmits": 14,
       "checkoutRedirects": 0,
       "onsiteCheckoutOpened": 1,
       "payOnsiteBack": 0,
@@ -5598,10 +5598,10 @@
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 19.5,
-        "lock_to_modal": 330,
-        "modal_to_cta": 1,
-        "cta_view_to_click": 1.5,
+        "session_to_lock": 18.4,
+        "lock_to_modal": 370,
+        "modal_to_cta": 0.9,
+        "cta_view_to_click": 1.3,
         "alt_view_to_click": 0,
         "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
@@ -5610,13 +5610,13 @@
       }
     },
     "email": {
-      "sent": 5648,
+      "sent": 5669,
       "delivered": null,
-      "opened": 46,
-      "clicked": 34,
+      "opened": 50,
+      "clicked": 33,
       "bounced": null,
-      "openRate": 0.81,
-      "clickRate": 73.91,
+      "openRate": 0.88,
+      "clickRate": 66,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -5667,7 +5667,7 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-18T04:09:31.595Z"
+      "fetchedAt": "2026-09-18T11:12:12.559Z"
     },
     "ga4": {
       "date": "2026-09-17",
@@ -5677,7 +5677,7 @@
       },
       "gp": {
         "sessions": 0,
-        "users": 457
+        "users": 483
       }
     }
   }
