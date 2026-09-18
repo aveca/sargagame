@@ -1,22 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-08-17T11:50:52.853Z",
-      "dryRun": false,
-      "script": "seo-image-audit",
-      "action": "audit",
-      "sites": 2,
-      "totalIssues": 0
-    },
-    {
-      "timestamp": "2026-08-17T11:50:52.910Z",
-      "dryRun": false,
-      "script": "seo-orphan-healer",
-      "action": "inject",
-      "sites": 2,
-      "totalInjections": 10
-    },
-    {
       "timestamp": "2026-08-17T11:50:57.871Z",
       "dryRun": false,
       "script": "seo-audit",
@@ -1648,6 +1632,65 @@
         "https://sargasses-martinique.com/a-propos/",
         "https://sargasses-martinique.com/offres/"
       ]
+    },
+    {
+      "timestamp": "2026-09-18T15:17:42.515Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 58,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 2,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "gp": {
+          "indexed": 81,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "florida": {
+          "indexed": 18,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        },
+        "puntacana": {
+          "indexed": 6,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 5,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "rivieramaya": {
+          "indexed": 20,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        }
+      }
+    },
+    {
+      "timestamp": "2026-09-18T15:17:45.561Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 33,
+        "critical": 0,
+        "warnings": 33
+      }
     }
   ]
 }
