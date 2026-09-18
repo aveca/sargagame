@@ -1,4 +1,4 @@
-## UI VISUAL RESCUE — [x] done local 2026-09-18 (branche `agent/ui/visual-rescue`, PR à créer vers main)
+## UI VISUAL RESCUE — [x] done + VALIDÉ PROD 2026-09-18 (PR #688 mergée 17:49 UTC, deploy success, QA prod OK)
 - **R1** : cartes XP texte invisible (CR 1.02 → 19.53) — `card` += `color: INK` (Accueil+Plages+Ma Plage).
 - **R2** : skin `.theme-comic button` tuait CTA or + actifs filtres — armure XP_ARMOR doublé-classe (pattern repo, noms sans "cta").
 - **R3** : CTA sticky rogné 22px à 390px — lot 10 app-runtime.css (2 lignes ≤480px), desktop inchangé.

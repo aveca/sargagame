@@ -1,3 +1,10 @@
+## 2026-09-18 · Agent: ui-agent (UI VISUAL RESCUE VALIDÉ PROD — #688 mergé + déployé)
+
+### Travail effectué
+- **Résumé 1 ligne** : CI #688 7/7 vert → squash merge 17:49 UTC → Deploy Live success → QA visuelle prod OK (cartes CR 19.53, filtres actifs, sticky 2 lignes 390px, desktop inchangé). Rescue UI terminé.
+- **Rappel scope** : #688 = sous-ensemble précis (XP cards + armor thème + sticky CTA), PAS une preuve que tout « blanc sur blanc » est résolu — rester vigilant sur les autres surfaces.
+- **NEXT** : G1 Supabase dans une branche neuve depuis ce main — Rôle : coding-agent
+
 ## 2026-09-18 · Agent: coding-agent — SHIP scope partenaires/WhatsApp (branche `agent/coding/partners-whatsapp-ship`, ex-#685)
 
 ### Travail effectué
