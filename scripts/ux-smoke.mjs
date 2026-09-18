@@ -5,7 +5,8 @@
  *  produit — décision fondateur, cf. Sargasses_PROD.jsx « JEU RETIRÉ DU PRODUIT » ;
  *  l'arène est du code dormant ?hero=1, plus une surface utilisateur.)
  * Sort des captures /tmp/j*.png + scan des BOUTONS BLANCS (doit = []) + erreurs JS.
- * Tokens greppables (le Gate greppe la sortie, jamais l'exit code — toujours exit 0) :
+ * Tokens greppables + exit code (G15 — les deux font foi) :
+ *   (même liste ci-dessous ; le Gate CI greppe les littéraux ET échoue si exit ≠ 0)
  *   FUNNEL_REACHED=map+fiche+paywall (les 3 surfaces du funnel atteintes ; il en
  *                                     manque une = le scan a tourné sur la mauvaise
  *                                     surface → gate : grep du littéral complet)
@@ -210,7 +211,7 @@ console.log('ERRORS=' + JSON.stringify(realErrors.slice(0, 12)));
 // encore en cours : elles n'ont pas de fallback statique → violation du plancher.
 // Token = RM_INFINITE=[] (liste vide = conforme).
 // try/catch : un crash de CETTE passe ne doit jamais empêcher les tokens ci-dessus
-// (déjà imprimés) ni faire sortir avec un code ≠ 0 — convention : le Gate greppe.
+// (déjà imprimés). Le token d'erreur fera échouer le Gate (grep + exit code, G15).
 let rmInfinite = [];
 try {
   await p.emulateMedia({ reducedMotion: 'reduce' });
@@ -249,3 +250,17 @@ try {
 }
 console.log('RM_INFINITE=' + JSON.stringify(rmInfinite.slice(0, 12)));
 await b.close();
+
+// G15 — le smoke SORT exit 1 si le Gate échoue (grep seul ne suffit pas : un
+// `&&` ou une étape CI sans grep validait à tort). Tokens imprimés inchangés
+// (compat avec les grep CI existants) ; seul l'exit code est nouveau.
+const gateOk = reached === 'map+fiche+paywall'
+  && realErrors.length === 0
+  && whiteOut.length === 0
+  && rmInfinite.length === 0;
+if (!gateOk) {
+  console.log('SMOKE_GATE=FAIL');
+  process.exitCode = 1;
+} else {
+  console.log('SMOKE_GATE=PASS');
+}

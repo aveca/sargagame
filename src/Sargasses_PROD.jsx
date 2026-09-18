@@ -17,7 +17,7 @@ import { getResortsForBeach } from "./lib/resorts.js"
 import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid, submitLeadToSupabase } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import {beginCheckout, viewPromotion, getPlanMeta, purchase} from "./ga4-ecommerce.js"
 import { getSgAuth, setSgAuth, authSession } from "./lib/auth-client.js"
@@ -2155,22 +2155,33 @@ function flushTrackQueue(){
   }catch{}
 }
 try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
-// Envoi RÉSILIENT d'un lead capturé vers la liste (Apps Script). L'ancien
-// fetch fire-and-forget était silencieusement perdu si la page naviguait pendant
-// la requête (capture = levier #1, on ne peut PAS perdre un email saisi) ou si
-// Apps Script était froid. sendBeacon survit à l'unload ; fallback fetch keepalive.
-// MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
-// pour ne plus dépendre de Apps Script/clasp push pour le funnel.
+// Envoi RÉSILIENT d'un lead capturé.
+// G1 (migration Apps Script → Supabase) : sink PRIMAIRE = Supabase `b2c_alerts`
+// (email inclus) via le worker /api/supabase — même contrat que LeadCapture.
+// BACKUP parallèle = Apps Script (feed Google Sheet → drips, inchangé : la lecture
+// Sheet n'est pas migrée, on ne perd AUCUN lead pendant la transition).
+// Event sg_email_submit (sans PII) = attribution, conservé.
+// Historique : le leg Supabase-event 2026-07 était mort (early-return sendBeacon +
+// `island` hors scope → ReferenceError avalé) — réparé ici (island calculé en tête).
+// Rollback : ?lead_sb=0 (skip le leg Supabase, Apps Script seul) ou revert.
 export function submitLead(email,source){
+  let island="MQ";
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ");
+  }catch(_){}
+  // 1) PRIMAIRE — Supabase (fire-and-forget, jamais bloquant)
+  try{submitLeadToSupabase(email)}catch(_){}
+  // 2) BACKUP — Apps Script (comme avant : beacon, puis fetch keepalive si échec)
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()});
+    let sent=false;
+    if(navigator.sendBeacon){try{sent=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}}
+    if(!sent)fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{});
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // 3) Attribution funnel (sans PII)
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
+try{if(typeof window!=="undefined")window.submitLead=submitLead}catch{}
 // ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas
 //    seulement les clics. Par écran : temps passé, nb d'actions, plus longue inactivité, scroll,
 //    flag `bored` (entré, rien fait, resté / longue inactivité). Émis vers GA4 via track() à
@@ -4613,6 +4624,10 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
   //    identique à la série premium — même fichier _private/forecast-full.json).
   //    Premium = multi-plages/alertes/historique ; le suivi d'UNE plage reste gratuit.
   const free7=!isPremium&&isMyBeach&&Array.isArray(freeForecast)&&freeForecast.length>=2
+  // A13 — J+1 offert (le "aha" avant paywall, rollback ?j1_free=0). La donnée
+  // J+1 est réelle (série publique J+0/J+1, jamais fabriquée) : seul le cadenas
+  // saute. J+2→J+6 restent verrouillés (complétés neutres si série courte).
+  const j1Free=(()=>{try{return !/[?&]j1_free=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const fcDays=((free7?freeForecast:forecast)||[]).slice(0,7)
   // Gating J+2→J+7 : la prévision publique ne porte que J+0/J+1. Le header annonce
   // « 7 jours » → pour le NON-premium on complète avec des barres CADENAS NEUTRES
@@ -4751,7 +4766,7 @@ const [showReport,setShowReport]=useState(false)
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
         </div>
-        {/* PRÉVISIONS 7 j — wish : aujourd'hui visible, le reste FLOUTÉ/verrouillé pour
+        {/* PRÉVISIONS 7 j — J+0 + J+1 (A13) visibles, J+2→J+6 verrouillés pour
              non-premium — SAUF « Ma plage » (free7 : série réelle 7 j offerte au suivi). */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4774,8 +4789,8 @@ const [showReport,setShowReport]=useState(false)
           ):(
           <>
           <div style={{display:"flex",gap:6,position:"relative"}}>
-            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>0;return(
-              <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
+            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>(j1Free?1:0);return(
+              <div key={i} data-testid="fc-day" data-gated={gated?"1":"0"} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
                 flex:1,
                 textAlign:"center",
                 padding:"6px 4px",
@@ -4798,9 +4813,18 @@ const [showReport,setShowReport]=useState(false)
                     {_t(lang,"Premium","Premium","Premium")}
                   </span>
                 )}
+                {/* A13 — J+1 offert : pastille explicite (même gabarit que le cadenas,
+                    couleur "clean") pour que le gratuit soit VU, pas deviné. */}
+                {j1Free&&!isPremium&&!free7&&i===1&&(
+                  <span style={{position:"absolute",left:"50%",top:20,transform:"translateX(-50%)",display:"inline-flex",alignItems:"center",font:"800 7.5px/1 'Bricolage Grotesque'",color:"#0D0B14",textTransform:"uppercase",letterSpacing:".3px",background:"#22C55E",padding:"3px 6px",borderRadius:5,border:"1.5px solid #0D0B14",whiteSpace:"nowrap",pointerEvents:"none"}}>
+                    {_t(lang,"Inclus","Included","Incluido")}
+                  </span>
+                )}
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
               </div>)})}
-            {!isPremium&&!free7&&fcDays.length>1&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
+            {/* A13 : le cadenas invisible démarre à J+2 (29%) quand J+1 est offert,
+                à J+1 (15%) en rollback. Masqué s'il n'y a aucun jour verrouillé. */}
+            {!isPremium&&!free7&&fcDays.length>(j1Free?2:1)&&<button onClick={()=>{trk("sg_forecast_lock_click",{variant:"bsc",beat:0});onCTA()}} style={{position:"absolute",right:0,top:0,bottom:18,left:(j1Free?"29%":"15%"),border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
             </div>
             {/* Légende forecast : couleur + forme-SVG + mot (jamais couleur seule) */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:14,marginTop:8,flexWrap:"wrap"}} aria-label={_t(lang,"Légende prévision","Forecast legend","Leyenda pronóstico")}>

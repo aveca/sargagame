@@ -41,6 +41,7 @@ $action = $input['action'] ?? '';
 
 // ── Rate-limiting (meme garde anti card-testing que create-checkout.php) ──────
 require_once __DIR__ . '/_ratelimit.php';
+require_once __DIR__ . '/pp-supabase-mirror.php'; // G3 : mirror grants PayPal → Supabase payment_grants
 $RL_LIMITS = [
     'create_order'        => 20,
     'capture_order'       => 20,
@@ -191,9 +192,12 @@ function pp_store_sub($email, $subId) {
 }
 function pp_lookup_sub($email) {
     $f = pp_subs_dir() . '/' . sha1(strtolower(trim($email))) . '.json';
-    if (!is_file($f)) return null;
-    $d = json_decode(@file_get_contents($f), true);
-    return $d['sub'] ?? null;
+    if (is_file($f)) {
+        $d = json_decode(@file_get_contents($f), true);
+        if (!empty($d['sub'])) return $d['sub'];
+    }
+    // G3 : fichier perdu au deploy → fallback mapping mirror Supabase.
+    return pp_find_sub_by_email($email);
 }
 
 // ── Action: create_order — PASS one-time. Cree un order CAPTURE, renvoie l'id
@@ -258,6 +262,8 @@ if ($action === 'capture_order') {
     ignore_user_abort(true);
     if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
     pp_forward_fulfillment($cfg, $orderId, $payerEmail, $cents, $currency, $island, $pass, $source);
+    // G3 : mirror durable du pass one-time (le front ne pose qu'un localStorage).
+    pp_mirror_grant(pp_b2c_pass_row($orderId, $pass !== '' ? $pass : 'p30', $payerEmail, $currency, $island, $source, $cents));
     pp_welcome_email($cfg, $payerEmail, $island, true, $lang);
     exit;
 }
@@ -342,6 +348,8 @@ if ($action === 'confirm_subscription') {
     echo json_encode(['active' => $active, 'status' => $status]);
     if ($active) {
         if ($email !== '') pp_store_sub($email, $subId);
+        // G3 : mirror durable de l'abo (le fichier paypal-subs ne survit pas forcément au deploy).
+        if ($email !== '') pp_mirror_grant(pp_sub_row($subId, $planIn, $email, $island));
         ignore_user_abort(true);
         if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
         $cents = $planIn === 'annual' ? 4990 : 499;

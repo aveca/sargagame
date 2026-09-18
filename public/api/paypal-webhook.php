@@ -153,6 +153,32 @@ echo json_encode(['received' => true]);
 ignore_user_abort(true);
 if (function_exists('fastcgi_finish_request')) { @fastcgi_finish_request(); }
 
+// ── 6b. G3 : mirror lifecycle abo → Supabase payment_grants (post-réponse,
+// jamais bloquant — voir pp-supabase-mirror.php) ──────────────────────────
+// ACTIVATED → écrit la ligne (couvre les activations sans confirm front —
+// onglet fermé après approbation ; doublon avec confirm_subscription = 409
+// unique inoffensif, loggé, best-effort).
+// CANCELLED/EXPIRED → expire la ligne (pas de colonne 'status' au schéma).
+// SALE.COMPLETED (facture récurrente) → prolonge 30j.
+// PAYMENT.CAPTURE.* → RIEN (le capture_order synchrone a déjà mirroré avec
+// l'order id ; re-mirrorer ici créerait un doublon avec l'id de capture).
+require_once __DIR__ . '/pp-supabase-mirror.php';
+if (strpos($type, 'BILLING.SUBSCRIPTION.') === 0) {
+    $ppSubId = (string)($res['id'] ?? '');
+    if ($ppSubId !== '') {
+        if ($type === 'BILLING.SUBSCRIPTION.ACTIVATED') {
+            $ppParts = explode('_', (string)$custom);
+            $ppPlan = (($ppParts[1] ?? '') === 'annual') ? 'annual' : 'monthly';
+            if ($email !== '') pp_mirror_grant(pp_sub_row($ppSubId, $ppPlan, $email, $island));
+        } elseif ($type === 'BILLING.SUBSCRIPTION.CANCELLED' || $type === 'BILLING.SUBSCRIPTION.EXPIRED') {
+            pp_expire_sub_mirror($ppSubId);
+        }
+    }
+} elseif ($type === 'PAYMENT.SALE.COMPLETED') {
+    $ppAgreement = (string)($res['billing_agreement_id'] ?? '');
+    if ($ppAgreement !== '') pp_extend_sub_mirror($ppAgreement, 30);
+}
+
 $url = $cfg['appsscript_url'] ?? 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
 $ch = curl_init($url);
 curl_setopt_array($ch, [

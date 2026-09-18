@@ -7,7 +7,7 @@ Dépendances, secrets, permissions, RGPD. Zero trust, least privilege.
 
 ### P0 — Critique
 1. **Secrets rotation** (exposed in git history)
-   - `MOLLIE_API_KEY=live_H6BUh7uxdUkFKAnBQhz3tRVsuerNPs` (commit 3f07490)
+   - `MOLLIE_API_KEY=live_REDACTED` (valeur live purgée de l'arbre — A12 ; présente dans l'historique commit 3f07490 → révocation dashboard Mollie requise, action fondateur)
    - Action: Revoke Mollie Dashboard → Create new → Update Render `sargasse-api`
    - Verify: `MOLLIE_WEBHOOK_SECRET` unique per env (prod/staging/local)
 

@@ -53,7 +53,7 @@ async function dismissOverlays(page: Page) {
 }
 
 test.describe("Partenaires contextuels (services, jamais pubs)", () => {
-  test("fiche MQ : slot après alternatives, 1 CTA transport + shopping, tracking, outbound", async ({ page, context }) => {
+  test("fiche MQ : slot après alternatives, 1 CTA WhatsApp support, tracking, outbound", async ({ page, context }) => {
     const tracker = setupTrackInterceptor(page)
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
     await dismissOverlays(page)
@@ -62,8 +62,7 @@ test.describe("Partenaires contextuels (services, jamais pubs)", () => {
     const plagesTab = page.locator('nav.sg-bottom-nav button:has-text("Plages"), nav.sg-bottom-nav button:has-text("Beaches"), nav.sg-bottom-nav button:has-text("Playas")').first()
     await expect(plagesTab).toBeVisible({ timeout: 15000 })
     await plagesTab.click()
-    // Plage MQ déterministe (Les Salines) via la recherche — le slot est
-    // territorial : Taxis Martinique + Lovelly ne couvrent que mq.
+    // Plage MQ déterministe (Les Salines) via la recherche
     const search = page.locator('[data-testid="xp-plages-search"]').first()
     await expect(search).toBeVisible({ timeout: 20000 })
     await search.fill("Salines")
@@ -74,43 +73,49 @@ test.describe("Partenaires contextuels (services, jamais pubs)", () => {
     const sheet = page.locator(".bsc-sheet").first()
     await expect(sheet).toBeVisible({ timeout: 15000 })
 
-    // Le verdict reste affiché au-dessus (argent ne touche jamais le verdict)
+    // Le verdict reste affiché au-dessus
     await expect(sheet.locator("text=AUJOURD").first()).toBeVisible({ timeout: 8000 }).catch(() => {})
 
-    // Slot contextuel : badge « Partenaire » explicite
-    const badge = sheet.locator("text=Partenaire").first()
+    // Slot contextuel : badge « Support » explicite (WhatsApp)
+    const badge = sheet.locator("text=Support").first()
     await badge.scrollIntoViewIfNeeded().catch(() => {})
     await expect(badge).toBeVisible({ timeout: 15000 })
 
-    // UN SEUL CTA transport principal (local MQ = Taxis Martinique)
-    const ride = sheet.locator("a:has-text(\"Y aller\")").first()
-    await expect(ride).toBeVisible({ timeout: 8000 })
-    expect(await sheet.locator("a:has-text(\"Y aller\")").count()).toBe(1)
-    await expect(sheet.locator("text=Taxis Martinique").first()).toBeVisible()
+    // UN SEUL CTA WhatsApp (remplace Taxis Martinique + Lovelly)
+    const whatsappCta = sheet.locator("a:has-text(\"WhatsApp\")").first()
+    await expect(whatsappCta).toBeVisible({ timeout: 8000 })
+    expect(await sheet.locator("a:has-text(\"WhatsApp\")").count()).toBe(1)
+    await expect(sheet.locator("text=Sargagame Support").first()).toBeVisible()
 
-    // Shopping local (Lovelly, Fort-de-France)
-    await expect(sheet.locator("text=Lovelly").first()).toBeVisible()
-    await expect(sheet.locator("text=Fort-de-France").first()).toBeVisible()
+    // Plus de Taxis Martinique ni Lovelly
+    await expect(sheet.locator("text=Taxis Martinique")).toHaveCount(0)
+    await expect(sheet.locator("text=Lovelly")).toHaveCount(0)
 
     // sg_partner_view émis (IntersectionObserver, seuil 50%)
     await expect.poll(() => tracker.has("sg_partner_view"), { timeout: 10000 }).toBe(true)
 
-    // Clic transport → CTA + outbound trackés + popup vers le partenaire
+    // Clic WhatsApp → CTA + outbound trackés + popup vers wa.me
     const [popup] = await Promise.all([
       context.waitForEvent("page", { timeout: 10000 }).catch(() => null),
-      ride.click(),
+      whatsappCta.click(),
     ])
     expect(await tracker.has("sg_partner_cta")).toBe(true)
     expect(await tracker.has("sg_partner_outbound")).toBe(true)
     if (popup) {
       const url = popup.url()
-      expect(url.startsWith("https://taxismartinique.com/")).toBe(true)
+      // wa.me résout via redirect 301 → api.whatsapp.com/send/?phone=… selon
+      // l'UA headless. Le contrat produit = numéro support + texte prérempli,
+      // pas le domaine d'arrivée (hors produit, comportement WhatsApp).
+      expect(/wa\.me\/596596106124|api\.whatsapp\.com\/send\/?\?phone=596596106124/.test(url)).toBe(true)
+      // Vérifier que le message prérempli contient le nom de la plage
+      expect(url).toContain("text=")
       await popup.close().catch(() => {})
     } else {
       // window.open intercepté par le harnais : vérifier l'URL via l'event
       const evts: Array<{ name: string; data?: any }> = await tracker.events()
       const out = evts.find((e) => e.name === "sg_partner_outbound")
-      expect(out?.data?.url.startsWith("https://taxismartinique.com/")).toBe(true)
+      expect(out?.data?.url.startsWith("https://wa.me/596596106124")).toBe(true)
+      expect(out?.data?.url).toContain("text=")
     }
   })
 
@@ -127,6 +132,7 @@ test.describe("Partenaires contextuels (services, jamais pubs)", () => {
     const sheet = page.locator(".bsc-sheet").first()
     await expect(sheet).toBeVisible({ timeout: 15000 })
     await expect(sheet.locator("text=Partenaire")).toHaveCount(0)
+    await expect(sheet.locator("text=Support")).toHaveCount(0)
     await expect(sheet.locator("text=Taxis Martinique")).toHaveCount(0)
     await expect(sheet.locator("text=Lovelly")).toHaveCount(0)
   })
