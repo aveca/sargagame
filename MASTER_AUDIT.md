@@ -74,6 +74,12 @@
 - [ ] P2 UX-QA-005 — Bouton × du modal premium intercepté par la vague SVG de la fiche plage quand la fiche reste au-dessus — preuve pre-fix : `runs/20260916T2132Z-run1` step_0009 ; à REVÉRIFIER en prod après déploiement de a1585b563 (le panel passe à 1260 — le symptôme devrait disparaître)
 - [ ] P2 UX-QA-006 — « Plus tard » ne ferme pas le modal premium sur desktop (comportement inverse du mobile) — preuve : `runs/20260916T2132Z-run1` desktop, dialog encore visible dans l'ARIA après clic (obs 6→7), × fonctionne
 
+**Session VISUAL RESCUE (2026-09-18, branche `agent/ui/visual-rescue`) — 3 régressions prod reproduites + fixées (visuel seul) :**
+- UX-VR-001 (P0 visuel) → **FIXÉ** : texte cartes XP invisible (CR 1.02) sur Accueil+Plages+Ma Plage — `card` (fond #fff) sans `color` → héritage shell #FFFDF6. Fix `color: INK` → CR 19.53. Composant live = PlagesExplorer (BeachListView dessous, BeachCards.jsx dead code) ; hypothèses opacity/overlay/transition/z-index réfutées par mesure.
+- UX-VR-002 (P1 visuel) → **FIXÉ** : skin `.theme-comic button !important` repeignait CTA or en blanc + actifs filtres/tri indiscernables. Fix armure doublé-classe XP_ARMOR (pattern repo, sans "cta").
+- UX-VR-003 (P2 visuel) → **FIXÉ** : CTA sticky paywall rogné ~22px à 390px. Fix lot 10 app-runtime.css (2 lignes ≤480px), desktop inchangé.
+- Preuves : build 0 · bundle 38.1 · smoke 4/4 · xp-visual-rescue 26/26 · npm test 173/175 (2 jolly-yalow préexistants) · E2E 41/41 · repro prod CR 1.02 identique. Rollbacks : ?newia=0, ?nosticky=0. PR #686 innocentée (paywall-only). UX-QA-002 volontairement non touché (multi-scope).
+
 ---
 
 # MASTER_AUDIT.md — Sargagame Strategic Audit
