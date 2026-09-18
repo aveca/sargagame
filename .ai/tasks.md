@@ -1,4 +1,4 @@
-## F1 STALE CONTRAST — [~] fix local 2026-09-18 (branche `agent/ui/f1-stale-contrast`, scope F1 uniquement, F2 backlog / F3 documenté / F4 clos)
+## F1 STALE CONTRAST — [x] done + VALIDÉ PROD 2026-09-18 (PR #689 mergée 18:57 UTC, deploy success, QA prod badge #8a5a00 / CR 5.93)
 - **Fix** : WorldMapView.jsx:1915 stale `#B87A00` → `#8a5a00` (CR 3.34 → 5.49/5.93 ≥ AA 4.5, fresh intact).
 - **Preuves** : f1-stale-contrast 6/6 · build 0 · bundle 38.1 · smoke 4/4 · E2E 21/21 · computed 5.93.
 - **NEXT** : PR → CI → merge → deploy → QA prod badge.
