@@ -1,3 +1,10 @@
+## UI VISUAL RESCUE — [x] done local 2026-09-18 (branche `agent/ui/visual-rescue`, PR à créer vers main)
+- **R1** : cartes XP texte invisible (CR 1.02 → 19.53) — `card` += `color: INK` (Accueil+Plages+Ma Plage).
+- **R2** : skin `.theme-comic button` tuait CTA or + actifs filtres — armure XP_ARMOR doublé-classe (pattern repo, noms sans "cta").
+- **R3** : CTA sticky rogné 22px à 390px — lot 10 app-runtime.css (2 lignes ≤480px), desktop inchangé.
+- **Preuves** : build 0 · bundle 38.1 · smoke 4/4 exit 0 · xp-visual-rescue 26/26 · npm test 173/175 (2 jolly-yalow préexistants) · E2E 41/41 · prod repro CR 1.02 identique.
+- **NEXT** : PR → merge → deploy auto → vérif prod visuelle (Plages + Ma Plage + sticky 390px).
+
 ## P0 MONEY-PATH — [~] createToken gardé par mounts (PR #682, CI en cours)
 - **Cause/fix** : voir BUG-2026-039. Preuves locales : build · bundle 38.1 · smoke 4/4 · contrat 12/12 · T1/T4/T5 · funnel 13/13 · fast-click → tokenize atteint.
 - **Reste** : CI verte → merge → deploy auto → vérif prod (iframes field sans submit) → mesurer not_mounted vs failed 7j → réconcilier KPI (Phase 2).

@@ -18,6 +18,41 @@
 ### Branche / PR
 - Branche : `agent/coding/partners-whatsapp-ship` (base origin/main @ ef81d8a82)
 
+## 2026-09-18 · Agent: ui-agent (UI VISUAL RESCUE, branche `agent/ui/visual-rescue`)
+
+### Travail effectué
+- **Résumé 1 ligne** : 3 régressions visuelles prod reproduites (local+prod, CR 1.02) + corrigées (CR 19.53, CTA or, sticky 390px) — visuel seul, PR #686 innocentée.
+- **Détails** : voir `.ai/changelog.md` (entrée UI VISUAL RESCUE 2026-09-18). Preuves : visual-audit/before + après (Temp/opencode).
+
+### Fichiers modifiés
+- `src/components/ExperienceReset.jsx` — color:INK + XP_ARMOR + classes actives
+- `src/PassOffer.jsx` — classes sg-sticky-wrap/label/buy
+- `src/app-runtime.css` — lot 10 (sticky 2 lignes ≤480px)
+- `scripts/tests/xp-visual-rescue.test.cjs` — NOUVEAU (26 checks, ALL PASS)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38.1 Ko ≤ 210
+- [x] ux-smoke → 4 tokens + exit 0
+- [x] npm test → 173/175 (2 jolly-yalow préexistants, hors repo)
+- [x] playwright bottomnav+j0+funnel 28/28 + ma-plage+e9 13/13
+- [x] esbuild 2 fichiers → OK
+- [x] git diff --check → OK
+
+### Problèmes restants
+- [ ] UX-QA-002 (bannière lead z1500 au-dessus paywall/checkout) — volontairement NON fixé (multi-scope lead+paywall+checkout → STOP mission) — voir MASTER_AUDIT
+
+### Prochaine action recommandée
+1. CI PR #688 → merge si vert → deploy auto → vérif prod visuelle Plages/Ma Plage/sticky 390px — Rôle : release/qa
+
+### Branche / PR
+- Branche : `agent/ui/visual-rescue`
+- PR : #688 (https://github.com/aveca/sargagame/pull/688)
+- Commit head : rebasé sur origin/main (voir PR)
+
+### INCIDENT CONCURRENCE (résolu, zéro perte)
+- Une session parallèle a basculé le worktree partagé sur `agent/coding/partners-whatsapp-ship` pendant ma session : mon 1er commit a atterri sur sa branche. Récupéré : cherry-pick sur `agent/ui/visual-rescue`, reset partners sur `origin/b729e01ab` (arbre vérifié propre, aucun commit perdu). Rebase rejoué sur `origin/main@fc2167291` (conflits `.ai/*` gardés des 2 côtés).
+
 ---
 
 ## 2026-09-17 ~21:50 · Agent: fix-qa (CORRECTIFS des 6 findings QA, branche `agent/ux/continuous-explorer`)

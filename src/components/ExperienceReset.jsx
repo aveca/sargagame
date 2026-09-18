@@ -37,11 +37,32 @@ function distOf(b, userPos) {
 }
 
 const shell = { maxWidth: 520, margin: '0 auto', padding: '204px 12px calc(96px + env(safe-area-inset-bottom))', fontFamily: "'Bricolage Grotesque',system-ui,sans-serif", color: '#FFFDF6' };
-const card = { background: '#fff', border: `2px solid ${INK}`, borderRadius: 16, boxShadow: '3px 3px 0 ' + INK, padding: 12 };
+// VISUAL RESCUE (2026-09-18) : la carte est BLANCHE (#fff) mais le texte nu héritait
+// le ink-PAPIER du shell (#FFFDF6, prévu pour le fond sombre) → contraste ~1.02,
+// noms/communes/scores INVISIBLES sur Accueil + Plages + Ma Plage (repro Playwright
+// local+prod, CR=1.02). On ancre l'encre ici ; la seule carte sombre (HomeDashboard
+// hero ligne 101) pose déjà son color:#fff explicite. Rollback global : ?newia=0.
+const card = { background: '#fff', color: INK, border: `2px solid ${INK}`, borderRadius: 16, boxShadow: '3px 3px 0 ' + INK, padding: 12 };
 const btnGold = { minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', background: GOLD, color: INK, border: `2.5px solid ${INK}`, borderRadius: 14, boxShadow: `3px 3px 0 ${INK}`, fontWeight: 800, fontSize: 'clamp(15px,4.2vw,17px)', cursor: 'pointer', padding: '12px 16px' };
 const btnGhost = { minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: '#fff', color: INK, border: `2px solid ${INK}`, borderRadius: 12, fontWeight: 700, fontSize: 14, cursor: 'pointer', padding: '10px 12px' };
 const pill = (m) => ({ display: 'inline-flex', alignItems: 'center', gap: 6, background: m.bg, color: m.fg, borderRadius: 999, padding: '4px 10px', fontSize: 12, fontWeight: 800 });
 const h2 = { fontFamily: "'Anton',sans-serif", fontWeight: 400, fontSize: 'clamp(20px,5.6vw,26px)', lineHeight: 1.05, margin: '18px 2px 8px', letterSpacing: '.2px', color: '#FFFDF6' };
+
+/* ── ARMURE THÈME (VISUAL RESCUE 2026-09-18) ──
+   body.theme-comic (100 % du trafic) force `.theme-comic button{background/color/
+   border/box-shadow !important}` (0,1,1) → CTA or repeints en blanc + états actifs
+   des filtres (fond INK / GOLD inline) écrasés → actif indiscernable de l'inactif
+   (repro Playwright : 11/11 chips blancs). Pattern repo : doublé-classe (0,2,0),
+   valeurs = les inline d'origine (zéro redesign), noms SANS "cta" (catch-all
+   .theme-comic [class*="cta"]). Les boutons btnGhost (blanc/encre/bord 2px) sont
+   déjà quasi identiques sous le skin → non armurés (skin conservé).
+   Rollback global : ?newia=0 (tout l'XP off). */
+const XP_ARMOR = `
+.xp-gold.xp-gold{background:#FFC72C!important;color:#0d0b14!important;border:2.5px solid #0d0b14!important;box-shadow:3px 3px 0 #0d0b14!important;border-radius:14px!important;text-shadow:none!important}
+.xp-dark.xp-dark{background:#0d0b14!important;color:#fff!important;border:2.5px solid #0d0b14!important;box-shadow:none!important;border-radius:12px!important;text-shadow:none!important}
+.xp-seg-on.xp-seg-on{background:#0d0b14!important;color:#fff!important}
+.xp-sort-on.xp-sort-on{background:#FFC72C!important;color:#0d0b14!important}
+`;
 
 function ScoreBar({ score }) {
   if (score == null) return null;
@@ -74,7 +95,7 @@ function BeachCard({ b, lang, userPos, isFav, inCompare, onOpen, onFav, onCompar
       {!!b.reason && <div style={{ fontSize: 13, marginTop: 6, opacity: .85 }}>{b.reason}</div>}
       {!!alts.length && <div style={{ fontSize: 12, marginTop: 6 }}>↗ {_t(lang, 'Alternative', 'Alternative', 'Alternativa')} : <b>{alts[0].beach.name}</b> ({alts[0].distanceKm} km)</div>}
       <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-        <button type="button" onClick={() => onOpen?.(b)} style={{ ...btnGold, flex: 1.4 }} data-testid="xp-open">{_t(lang, 'Voir la fiche →', 'Open →', 'Ver ficha →')}</button>
+        <button type="button" onClick={() => onOpen?.(b)} className="xp-gold xp-gold" style={{ ...btnGold, flex: 1.4 }} data-testid="xp-open">{_t(lang, 'Voir la fiche →', 'Open →', 'Ver ficha →')}</button>
         <button type="button" onClick={() => onFav?.(b)} aria-pressed={!!isFav} title="favori" style={{ ...btnGhost, flex: '0 0 48px', minWidth: 48, fontSize: 18 }}>{isFav ? '★' : '☆'}</button>
         <button type="button" onClick={() => onCompare?.(b)} aria-pressed={!!inCompare} title="comparer" style={{ ...btnGhost, flex: '0 0 48px', minWidth: 48 }}>⇄</button>
       </div>
@@ -98,6 +119,7 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
   const favBeaches = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean).slice(0, 3), [favorites, allBeaches]);
   return (
     <div style={shell} data-testid="xp-home">
+      <style>{XP_ARMOR}</style>
       <div style={{ ...card, background: 'linear-gradient(135deg,#0B2230,#123a4d)', color: '#fff', borderColor: INK }}>
         <div style={{ fontSize: 12, fontWeight: 800, opacity: .8 }}>{_t(lang, 'OÙ EN EST-ON AUJOURD\u2019HUI ?', 'TODAY\u2019S SITUATION', 'SITUACIÓN DE HOY')}</div>
         <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 'clamp(24px,7vw,32px)', lineHeight: 1 }}>{islandName || _t(lang, 'La situation du jour', "Today's outlook", 'Situación de hoy')}</div>
@@ -112,12 +134,12 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
             <div style={{ fontSize: 12, fontWeight: 800 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</div>
             <div style={{ fontWeight: 800, fontSize: 'clamp(16px,4.6vw,19px)' }}>{data.best.name}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button type="button" style={{ ...btnGhost, flex: 1, background: INK, color: '#fff', borderColor: INK }} onClick={() => { try { track?.('sg_home_best_open', { beach_id: data.best.id }); } catch {} onOpenBeach?.(data.best); }} data-testid="xp-best-open">{_t(lang, 'J\u2019y vais →', 'Go →', 'Voy →')}</button>
+              <button type="button" className="xp-dark xp-dark" style={{ ...btnGhost, flex: 1, background: INK, color: '#fff', borderColor: INK }} onClick={() => { try { track?.('sg_home_best_open', { beach_id: data.best.id }); } catch {} onOpenBeach?.(data.best); }} data-testid="xp-best-open">{_t(lang, 'J\u2019y vais →', 'Go →', 'Voy →')}</button>
               <button type="button" style={{ ...btnGhost, flex: 1 }} onClick={() => onGo?.('list')} data-testid="xp-best-more">{_t(lang, 'Voir les autres', 'See others', 'Ver otras')}</button>
             </div>
           </div>
         )}
-        <button type="button" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
+        <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
       </div>
 
       <h2 style={h2}>{_t(lang, 'Quelle plage veux-tu découvrir ?', 'Which beach today?', '¿Qué playa quieres descubrir?')}</h2>
@@ -155,13 +177,13 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
             <button key={b.id} type="button" onClick={() => onOpenBeach?.(b)} style={{ ...btnGhost, width: '100%', marginBottom: 6, justifyContent: 'space-between' }}>
               <span>★ {b.name}</span><span style={pill(m)}>{m.label}</span>
             </button>); })}
-          <button type="button" style={{ ...btnGold, marginTop: 4 }} onClick={() => onGo?.('suivi')} data-testid="xp-suivi">📍 {_t(lang, 'Ouvrir Ma Plage →', 'Open My Beaches →', 'Abrir Mis playas →')}</button>
+          <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 4 }} onClick={() => onGo?.('suivi')} data-testid="xp-suivi">📍 {_t(lang, 'Ouvrir Ma Plage →', 'Open My Beaches →', 'Abrir Mis playas →')}</button>
         </>
       )}
       <div style={{ ...card, marginTop: 14, background: '#FFFBEB' }}>
         <div style={{ fontWeight: 800 }}>🔭 {_t(lang, 'Le Veilleur surveille pour toi', 'The Watcher keeps watch', 'El Vigía vigila por ti')}</div>
         <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Alertes quand ta plage change, prévisions 7 jours et comparateur avec le Pass.', 'Alerts when your beach changes, 7-day forecast and compare with Pass.', 'Alertas cuando tu playa cambia, pronóstico 7 días y comparador con el Pass.')}</div>
-        <button type="button" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('home')} data-testid="xp-pass">⭐ {_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>
+        <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('home')} data-testid="xp-pass">⭐ {_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>
       </div>
     </div>
   );
@@ -190,10 +212,12 @@ export function PlagesExplorer({ lang = 'fr', allBeaches = [], favorites = [], c
   }, [allBeaches, q, f, sort, onlyFav, act, favorites, userPos]);
   const seg = (id, label) => (
     <button key={id} type="button" onClick={() => { setF(id); try { track?.('sg_plages_filter', { f: id }); } catch {} }}
+      className={f === id ? 'xp-seg-on xp-seg-on' : undefined}
       style={{ minHeight: 44, padding: '8px 12px', borderRadius: 999, border: `2px solid ${INK}`, background: f === id ? INK : '#fff', color: f === id ? '#fff' : INK, fontWeight: 800, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{label}</button>
   );
   return (
     <div style={shell} data-testid="xp-plages">
+      <style>{XP_ARMOR}</style>
       <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 'clamp(24px,7vw,32px)', color: '#FFFDF6' }}>{_t(lang, 'Plages', 'Beaches', 'Playas')} <span style={{ fontSize: 13, fontFamily: "'Bricolage Grotesque',sans-serif", fontWeight: 700, opacity: .7 }}>· {list.length}</span></div>
       <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={_t(lang, 'Rechercher…', 'Search…', 'Buscar…')}
         style={{ width: '100%', minHeight: 48, borderRadius: 12, border: `2px solid ${INK}`, padding: '10px 12px', fontSize: 16, marginTop: 8 }} data-testid="xp-plages-search" />
@@ -202,11 +226,11 @@ export function PlagesExplorer({ lang = 'fr', allBeaches = [], favorites = [], c
       </div>
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
         {[['score', _t(lang, 'Top score', 'Top score', 'Top')], ['dist', _t(lang, 'Distance', 'Distance', 'Distancia')], ['nom', _t(lang, 'A→Z', 'A→Z', 'A→Z')]].map(([id, l]) => (
-          <button key={id} type="button" onClick={() => setSort(id)} style={{ minHeight: 44, padding: '8px 12px', borderRadius: 12, border: `2px solid ${INK}`, background: sort === id ? GOLD : '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>{l}</button>
+          <button key={id} type="button" onClick={() => setSort(id)} className={sort === id ? 'xp-sort-on xp-sort-on' : undefined} style={{ minHeight: 44, padding: '8px 12px', borderRadius: 12, border: `2px solid ${INK}`, background: sort === id ? GOLD : '#fff', color: INK, fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>{l}</button>
         ))}
-        <button type="button" onClick={() => setOnlyFav(v => !v)} aria-pressed={onlyFav} style={{ minHeight: 44, padding: '8px 12px', borderRadius: 12, border: `2px solid ${INK}`, background: onlyFav ? GOLD : '#fff', fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>★ {_t(lang, 'Suivies', 'Saved', 'Seguidas')}</button>
+        <button type="button" onClick={() => setOnlyFav(v => !v)} aria-pressed={onlyFav} className={onlyFav ? 'xp-sort-on xp-sort-on' : undefined} style={{ minHeight: 44, padding: '8px 12px', borderRadius: 12, border: `2px solid ${INK}`, background: onlyFav ? GOLD : '#fff', color: INK, fontWeight: 800, fontSize: 13, cursor: 'pointer' }}>★ {_t(lang, 'Suivies', 'Saved', 'Seguidas')}</button>
         {[['all', _t(lang, 'Toutes', 'All', 'Todas')], ['kids', 'Kids'], ['snorkel', 'Snorkel'], ['parking', 'Parking']].map(([id, l]) => (
-          <button key={id} type="button" onClick={() => setAct(id)} style={{ minHeight: 44, padding: '8px 10px', borderRadius: 12, border: `2px solid ${INK}`, background: act === id ? INK : '#fff', color: act === id ? '#fff' : INK, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>{l}</button>
+          <button key={id} type="button" onClick={() => setAct(id)} className={act === id ? 'xp-seg-on xp-seg-on' : undefined} style={{ minHeight: 44, padding: '8px 10px', borderRadius: 12, border: `2px solid ${INK}`, background: act === id ? INK : '#fff', color: act === id ? '#fff' : INK, fontWeight: 700, fontSize: 12, cursor: 'pointer' }}>{l}</button>
         ))}
       </div>
       <div style={{ marginTop: 10 }}>
@@ -230,6 +254,7 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
   return (
     <div role="dialog" aria-label="compare" style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={onClose} data-testid="xp-compare">
       <div style={{ width: '100%', maxWidth: 560, maxHeight: '88dvh', overflowY: 'auto', background: '#FFFDF6', border: `2.5px solid ${INK}`, borderBottom: 'none', borderRadius: '22px 22px 0 0', padding: '12px 12px calc(16px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
+        <style>{XP_ARMOR}</style>
         <div style={{ width: 44, height: 5, borderRadius: 99, background: '#ddd', margin: '0 auto 8px' }} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
           <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 'clamp(19px,5.4vw,24px)' }}>⇄ {_t(lang, 'Comparer', 'Compare', 'Comparar')} ({beaches.length}/3)</div>
@@ -251,7 +276,7 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
               </div>
             </div>); })}
         </div>
-        {!!best && <button type="button" style={{ ...btnGold, marginTop: 10 }} onClick={() => onOpenBeach?.(best)}>{_t(lang, `Ouvrir le meilleur : ${best.name} →`, `Open best: ${best.name} →`, `Abrir la mejor: ${best.name} →`)}</button>}
+        {!!best && <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onOpenBeach?.(best)}>{_t(lang, `Ouvrir le meilleur : ${best.name} →`, `Open best: ${best.name} →`, `Abrir la mejor: ${best.name} →`)}</button>}
         <div style={{ fontSize: 12, opacity: .7, marginTop: 6, textAlign: 'center' }}>{_t(lang, 'Scores et statuts = mesure satellite du jour.', 'Scores = today\u2019s satellite reading.', 'Puntuaciones = medición satelital de hoy.')}</div>
       </div>
     </div>
@@ -276,6 +301,7 @@ export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], s
   const visited = useMemo(() => { try { return JSON.parse(localStorage.getItem('sg_last_beaches') || '[]').slice(0, 5); } catch { return []; } }, []);
   return (
     <div style={shell} data-testid="xp-suivi">
+      <style>{XP_ARMOR}</style>
       <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 'clamp(24px,7vw,32px)', color: '#FFFDF6' }}>📍 {_t(lang, 'Ma Plage', 'My Beaches', 'Mis playas')}</div>
       {!!fresh && <div style={{ fontSize: 12, opacity: .75, color: '#FFFDF6' }}>{fresh}</div>}
       {!favs.length && (
@@ -283,7 +309,7 @@ export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], s
           <div style={{ fontSize: 44 }}>🏖</div>
           <div style={{ fontWeight: 800, fontSize: 'clamp(17px,5vw,21px)' }}>{_t(lang, 'Suis ta première plage', 'Follow your first beach', 'Sigue tu primera playa')}</div>
           <div style={{ fontSize: 13, opacity: .8, margin: '4px auto 10px', maxWidth: 300 }}>{_t(lang, 'État du jour, évolution, alertes quand ça change, alternatives quand c\u2019est rouge.', 'Daily status, alerts on change, alternatives when red.', 'Estado diario, alertas y alternativas.')}</div>
-          <button type="button" style={btnGold} onClick={() => onGoPlages?.()} data-testid="xp-suivi-cta">{_t(lang, 'Choisir mes plages →', 'Pick my beaches →', 'Elegir mis playas →')}</button>
+          <button type="button" className="xp-gold xp-gold" style={btnGold} onClick={() => onGoPlages?.()} data-testid="xp-suivi-cta">{_t(lang, 'Choisir mes plages →', 'Pick my beaches →', 'Elegir mis playas →')}</button>
         </div>
       )}
       {favs.map(b => {
@@ -299,7 +325,7 @@ export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], s
             <ScoreBar score={b.score} />
             {!!alts.length && <div style={{ fontSize: 12, marginTop: 6 }}>↗ {_t(lang, 'Si ça tourne mal', 'If it turns', 'Si empeora')} : {alts.map(a => a.beach.name).join(' · ')}</div>}
             <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-              <button type="button" style={{ ...btnGold, flex: 1 }} onClick={() => onOpenBeach?.(b)}>{_t(lang, 'Ouvrir →', 'Open →', 'Abrir →')}</button>
+              <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, flex: 1 }} onClick={() => onOpenBeach?.(b)}>{_t(lang, 'Ouvrir →', 'Open →', 'Abrir →')}</button>
               <button type="button" style={{ ...btnGhost, flex: 1, minWidth: 44 }} onClick={() => { try { track?.('sg_suivi_alert_toggle', { beach_id: b.id }); } catch {} onToggleAlerts?.(); }}>{alertsOn ? '🔔' : '🔕'} {alertsOn ? 'ON' : 'OFF'}</button>
             </div>
           </div>
@@ -317,7 +343,7 @@ export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], s
       <div style={{ ...card, marginTop: 12, background: isPremium ? '#EAFBEF' : '#FFFBEB' }}>
         <div style={{ fontWeight: 800 }}>{isPremium ? '✅ ' + _t(lang, 'Pass actif — surveillance étendue', 'Pass active', 'Pass activo') : '⭐ ' + _t(lang, 'Va plus loin avec le Pass', 'Go further with Pass', 'Ve más lejos con el Pass')}</div>
         <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Alertes multi-plages, 7 jours, comparateur complet, historique.', 'Multi-beach alerts, 7 days, full compare, history.', 'Alertas multi-playa, 7 días, comparador, historial.')}</div>
-        {!isPremium && <button type="button" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('suivi')}>{_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>}
+        {!isPremium && <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('suivi')}>{_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>}
       </div>
     </div>
   );

@@ -152,11 +152,18 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         // seuls ~30 % de la barre étaient cliquables — le reste (texte/badges) était
         // une zone morte qui recouvrait le CTA « Commencer maintenant » sur mobile
         // → taps morts sur le CTA money, modal→CTA plafonné à 12,7 %).
-        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className={"sg-sticky"+((!isComic&&uxLot3)?" sg-sticky-dark":"")} style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: uxCtaV2 ? "12px 14px calc(12px + env(safe-area-inset-bottom,0px))" : "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
-          <span style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
+        <button type="button" onClick={buy} aria-label={_t(lang, "Commencer maintenant", "Start now", "Empezar ahora")} className={"sg-sticky sg-sticky-wrap"+((!isComic&&uxLot3)?" sg-sticky-dark":"")} style={{ position: "sticky", bottom: 0, zIndex: 10, width: "100%", textAlign: "left", background: isComic ? "#FDF6E3" : "linear-gradient(180deg,rgba(10,26,20,.97),rgba(10,26,20,.99))", borderTop: isComic ? "2.5px solid #0D0B14" : "1px solid rgba(255,199,44,.25)", borderLeft: "none", borderRight: "none", borderBottom: "none", padding: uxCtaV2 ? "12px 14px calc(12px + env(safe-area-inset-bottom,0px))" : "10px 14px", display: "flex", alignItems: "center", gap: 10, animation: "sgStickyIn .4s ease-out both", cursor: "pointer", fontFamily: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
+          {/* VISUAL RESCUE 2026-09-18 : ≤480px la barre passe en 2 lignes
+              (.sg-sticky-wrap, app-runtime.css lot 10 : min-width:0 + label/CTA
+              pleine ligne) — avant, le label flex:1 (min-width:auto) poussait le
+              CTA or ~22px hors panel à 390px (mesuré Playwright : CTA x=146+266=412
+              > viewport 390, rogné par overflowX:hidden du panel). Desktop = inline
+              d'origine strict (aucun changement). Zéro info perdue, zéro copy,
+              aucun pricing/tracking touché. Rollback : ?nosticky=0 (barre off). */}
+          <span className="sg-sticky-label" style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
-          <span style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
+          <span className="sg-sticky-buy" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {_t(lang, `Voir mes plages propres · ${money(displayCents, cur, lang)}`, `See clean beaches · ${money(displayCents, cur, lang)}`, `Ver playas limpias · ${money(displayCents, cur, lang)}`)}
           </span>
           <span className={uxLot4?"sg-sticky-badges":undefined} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>

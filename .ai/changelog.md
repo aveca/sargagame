@@ -5,6 +5,19 @@
 **Note scope** : cartes shopping Lovelly / Taxis Martinique retirées de MQ (décision validée dans #685) ; `fb-feed.json` (marketing, « Lovelly bijouterie »), `_todo` gp.json et docs partenaires hors-ligne non touchés (hors scope, informatifs).
 
 
+## 2026-09-18 — UI VISUAL RESCUE (branche `agent/ui/visual-rescue`, PR #688)
+
+**Agent** : ui-agent (mission rescue, main sync @2320ea41e, PR #686 non touchée — innocentée : paywall-only). **Périmètre** : visuel seul (zéro paiement/Mollie/B2B/Supabase/régions/data/E2/A1).
+**Repro** : Playwright local + prod (mobile 390 + desktop 1440), computed styles + screenshots avant/après (C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\visual-audit\\, before/ + après).
+**Composant live prouvé** : PlagesExplorer (ExperienceReset.jsx, overlay fixed z900) — BeachListView monté en dessous, BeachCards.jsx dead code (0 import). Hypothèses A/B/C/F (opacity/overlay/transition/z-index) réfutées par mesure.
+**R1 critique** : texte cartes XP invisible (CR 1.02) — `card` (fond #fff) sans `color` → héritage shell #FFFDF6. Fix : `color: INK` → CR 19.53 (Accueil+Plages+Ma Plage).
+**R2 majeur** : `.theme-comic button !important` repeignait CTA or en blanc + tuait actifs filtres/tri (11/11 blancs). Fix : armure doublé-classe XP_ARMOR (valeurs inline, noms sans cta). `.sg-onink-scope` écarté (unset!important = boutons transparents).
+**R3 mineur** : CTA sticky paywall rogné ~22px à 390px. Fix : lot 10 app-runtime.css (2 lignes ≤480px) ; desktop inchangé mesuré. Rollbacks : ?newia=0 (R1+R2), ?nosticky=0 (R3).
+**Non fixé (documenté)** : bannière lead z1500 = UX-QA-002 déjà tracké (multi-scope → STOP mission).
+**Preuves** : build 0 · bundle 38.1 ≤ 210 · smoke 4 tokens exit 0 · xp-visual-rescue 26/26 · npm test 173/175 (2 jolly-yalow préexistants) · E2E 41/41 · esbuild OK · diff --check OK.
+**Fichiers** : `src/components/ExperienceReset.jsx`, `src/PassOffer.jsx`, `src/app-runtime.css`, `scripts/tests/xp-visual-rescue.test.cjs` (NOUVEAU).
+
+## 2026-09-17 — FIX QA UX-001..006 (suite directe de la session OBSERVE+PROVE)
 
 **Agent** : fix-qa (branche `agent/ux/continuous-explorer`, locale). **Périmètre** : uniquement les 6 findings P1/P2 du bloc QA ; aucune feature, aucun refactor, paiement/Pricing/régions non touchés.
 **Verdicts** : UX-001/UX-005 = TEST ISSUE — reproduit : `waitForSelector('.sg-maplabel')` ne surveille que le 1er élément DOM (mq001), masqué à dessein par le declutter ; 3 labels `isVisible()=true` simultané au timeout 35 s du selector. Fix test `.sg-maplabel:visible` (ma-plage ×11) — produit INTACT (declutter = design fondateur). UX-002 = BUG PRODUIT réel mais cause ≠ E9 (E2/E9 toujours SOUS l'input A1) : le champ email A1 placé avant l'offre rendait first-email à 493 vs offre 734 → A1 fusionné dans le bloc email post-offre, fonctionnalité intacte (jamais required, lead debounced, rollback ?email_pre=0), J0 restaurant « offre AVANT email ». UX-003 = petit fix produit : carte WhatsApp affiche désormais `Sargagame Support · Écris-nous sur WhatsApp` (partenaire nommé comme sur les autres cartes) ; test popup ajusté au redirect wa.me→api.whatsapp.com headless (numéro+texte assertés). UX-004 = testabilité : `?sgcomm=<n>` override display-only de `__COMM` (PremiumModal.readCommOverride) → community=0 déterministe ; tests/e9-paywall.spec.ts réécrit (qs préservée, copy 98%/99% réelle, pw_style freezé world documenté). UX-006 = TEST ISSUE (même racine que UX-001) + helper weekhub qui avalait 30 s puis crashait le contexte. Bonus hors-scope démasqué : ma-plage:43 (fraîcheur héros masquée ≤480px lot 9 → assertion DOM) + ma-plage:155 (collision « MA PLAGE » nav vs carte map → scope `[data-vmui="1"]`).
