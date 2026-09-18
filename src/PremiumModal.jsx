@@ -35,6 +35,16 @@ const {
 } = SG
 
 
+// E9 — testabilité déterministe : ?sgcomm=<n> surcharge le compteur communauté
+// (affichage paywall UNIQUEMENT — aucune écriture, aucune donnée inventée en
+// prod : sans flag, toujours __COMM buildé). community=0 rend E9 testable en CI.
+function readCommOverride() {
+  try {
+    const m = /[?&]sgcomm=(\d+)/.exec(window.location.search || "")
+    return m ? Math.max(0, parseInt(m[1], 10) || 0) : __COMM
+  } catch (_) { return __COMM }
+}
+
 // CompareRow for Gratuit vs Premium table
 const CompareRow=({label,free,pro})=>(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",alignItems:"center",borderTop:"1px solid rgba(255,255,255,.04)",padding:"7px 4px",gap:4}}>
   <div style={{color:"rgba(255,255,255,.5)",fontSize:12}}>{label}</div>
@@ -54,7 +64,7 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // PremiumModal — composant principal exporté
 export default function PremiumModal({
   lang, source, onClose, onActivated,
-  sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh, _passUpdatedAt
+  sargData, island, beach, pwVariant, _passUpdatedAt
 }){
   // Refs/états de paiement — créés en interne (le split les avait perdus).
   // Miroir de l'ancien PremiumModal monolithique (ligne ~1739 de l'ancien fichier).
@@ -79,7 +89,6 @@ export default function PremiumModal({
   const [consentOk, setConsentOk] = useState(false)
   const consentFlag = !PAY_CAPTURE_ONLY // consentement requis seulement si paiement réel
   const [pwToast, setPwToast] = useState(null)
-  const pwSocialProof = null
 
   // Hooks extraits
   const { doSubscribe, payWithWallet, walletRedirect, onPayEmailInput } = usePaymentLogic({
@@ -121,15 +130,20 @@ export default function PremiumModal({
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
-    sargData, island, beach, pwVariant, pwPass, pwSocial, pwFresh,
+    sargData, island, beach, pwVariant,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,
     elementsRef, stripeRef, setupSecretRef, mollieRef,
-    pwStep: payStep, setPayStep, pwToast, setPwToast, pwSocialProof,
+    pwStep: payStep, setPayStep, pwToast, setPwToast,
     doSubscribe, payWithWallet, walletRedirect, onPayEmailInput,
     onPassBuy,
-    PAY_CUR
+    PAY_CUR,
+    submitLead, // A1 : capture lead pré-CTA (WorldPaywall, jamais bloquant)
+    // E2 : preuve sociale réelle (0 = rien affiché, voir E9). __COMM = compteur
+    // réel buildé (jamais inventé). ?sgcomm=<n> = override DISPLAY-ONLY pour les
+    // tests E9 déterministes (community=0 non forçable sinon au build).
+    community: readCommOverride(),
   }
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
@@ -192,9 +206,12 @@ export default function PremiumModal({
     // was invisible but sticky handlers (close X) remained — confusing.
     return (
       <>
-        {/* Minimal backdrop just to dim the map behind — no pin pass-through */}
+        {/* Minimal backdrop just to dim the map behind — no pin pass-through.
+            z1250 inline : au-dessus de la fiche plage (.lc-detail z1200) — UX-R2-003
+            (la classe .backdrop seule = z1005 CSS, partagée ailleurs, inchangée). */}
         <div
           className="backdrop"
+          style={{ zIndex: 1250 }}
           onClick={(e)=>{
             const ts=Math.round((Date.now()-modalOpenedAt.current)/1000)
             try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts})}catch(_){}
@@ -209,9 +226,12 @@ export default function PremiumModal({
 
   return (
     <>
-      {/* Backdrop sombre — click pour fermer */}
+      {/* Backdrop sombre — click pour fermer.
+          z1250 inline : au-dessus de la fiche plage (.lc-detail z1200) — UX-R2-003
+          (la classe .backdrop seule = z1005 CSS, partagée ailleurs, inchangée). */}
       <div
         className="backdrop"
+        style={{ zIndex: 1250 }}
         onClick={(e)=>{
           const ts=Math.round((Date.now()-modalOpenedAt.current)/1000)
           try{track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts})}catch(_){}
@@ -232,7 +252,13 @@ export default function PremiumModal({
         }}
       />
 
-      {/* Panel modale — positionné en bas, scrollable, z-index 1100 */}
+      {/* Panel modale — positionné en bas, scrollable.
+          z-index 1260 : AU-DESSUS de la fiche plage (.lc-detail z1200, ChasseDetail)
+          et de lc-levelup (1250), mais SOUS l'overlay checkout Mollie
+          (OnsiteCheckout z1300) qui doit rester au premier plan pendant le paiement.
+          UX-R2-003 : à z1100 le panel s'ouvrait SOUS la fiche plage (invisible,
+          clics interceptés) quand le paywall venait de « Débloquer les prévisions
+          7 jours » depuis une fiche plage. Rollback : revenir à 1100/1250. */}
       <div
         className="sg-modal-panel"
         ref={panelRef}
@@ -240,7 +266,7 @@ export default function PremiumModal({
         aria-modal="true"
         aria-label={_t(lang,"Prévisions premium","Premium forecast","Pronóstico premium")}
         style={{
-          position:"fixed", bottom:0, left:0, right:0, zIndex:1100,
+          position:"fixed", bottom:0, left:0, right:0, zIndex:1260,
           background:"linear-gradient(145deg,#190c2c,#120821)",
           borderRadius:"24px 24px 0 0", padding:"28px 24px 20px",
           color:"#e6edf3", maxHeight:"85vh", overflowX:"hidden", overflowY:"auto",

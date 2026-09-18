@@ -10,6 +10,7 @@ import PassOffer from "../PassOffer.jsx"
 import ComicIcon from "../components/ComicIcons.jsx"
 import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
+import { usePreCtaEmail, emailPreEnabled } from "./preCtaEmail.js"
 import { VeilleurMark } from "./VeilleurMark.jsx"
 
 /**
@@ -120,9 +121,6 @@ export function WorldPaywall({
   island,
   beach,
   sargData,
-  pwPass,
-  pwSocial,
-  pwFresh,
   payPlanRef,
   payEmailRef,
   payBusy,
@@ -145,12 +143,13 @@ export function WorldPaywall({
   setPayStep,
   pwToast,
   setPwToast,
-  pwSocialProof,
   doSubscribe,
   payWithWallet,
   walletRedirect,
   onPayEmailInput,
   onPassBuy,
+  submitLead,
+  community = 0,
   PAY_CUR
 }) {
   const stats = WORLD_STATS[lang] || WORLD_STATS.fr
@@ -165,6 +164,23 @@ export function WorldPaywall({
   // anticipé (modal→CTA chronique ~1,3 %). L'email reste capturé (sg_email →
   // pré-remplit OnsiteCheckout) mais APRÈS le clic d'intention.
   const payOrderOfferFirst = (()=>{try{return !/[?&]sgpayorder=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+
+  // A1 — capture email optionnelle dans le paywall (rollback ?email_pre=0).
+  // Placement : APRÈS l'offre dans le flux par défaut (contrat J0 « offre
+  // AVANT email », fix UX-002) ; AVANT l'offre sous rollback ?sgpayorder=0.
+  // Champ TOUJOURS optionnel : le CTA reste cliquable sans email (décision
+  // J0-J30 conservée).
+  // Le lead part en debounced via submitLead (G1) dès la saisie d'un email valide.
+  // Flag figé au mount (useState initializer) : le handler deep-link ?paywall=1
+  // nettoie TOUTE la query via replaceState à l'ouverture, ce qui fausserait
+  // une lecture à chaque render.
+  const [emailPre] = useState(emailPreEnabled)
+  const onPreCtaEmail = usePreCtaEmail({ submitLead })
+
+  // E2 — preuve sociale réelle (rollback ?sgsocial=0). Même copy que le
+  // checkout (OnsiteCheckout) : compteur __COMM buildé, jamais inventé.
+  // Gardée >0 : le cas community=0 appartient à E9 (preuve qualité données).
+  const socialOn = (()=>{try{return !/[?&]sgsocial=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
@@ -390,9 +406,10 @@ export function WorldPaywall({
           <input
             type="email"
             autoComplete="email"
+            {...(emailPre ? { "data-testid": "pre-cta-email" } : {})}
             placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
             defaultValue={emailValue}
-            onChange={handleEmailChange}
+            onChange={(e) => { handleEmailChange(e); if (emailPre) onPreCtaEmail(e) }}
             style={{
               width: "100%", padding: "13px 14px",
               background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
@@ -406,7 +423,7 @@ export function WorldPaywall({
           />
         </div>
         )}
-        
+
         {/* ═══ VALEUR AVANT PRIX ═══ — Rapel du bénéfice avant le prix.
             Augmente le taux de conversion CTA→paiement en rappelant ce que
             l'utilisateur obtient. Placées juste avant PassOffer, ces pastilles
@@ -442,6 +459,23 @@ export function WorldPaywall({
           </div>
         </div>
 
+        {/* ═══ PREUVE SOCIALE (E2) / PREUVE QUALITÉ DONNÉES (E9) ═══
+            Juste avant l'offre : compteur réel d'abonnés-suivi si community>0,
+            sinon preuve qualité données (98% globales, backtest 99% J+3→J+6).
+            Rollback ?sgsocial=0 désactive les deux. */}
+        {socialOn && community > 0 && (
+        <div data-testid="paywall-social-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "rgba(255,199,44,.8)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
+          {t(`Déjà ${community}+ qui suivent leurs plages`, `${community}+ people track their beaches`, `${community}+ personas rastrean sus playas`)}
+        </div>
+        )}
+        {socialOn && community === 0 && (
+        <div data-testid="paywall-data-quality-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12, padding: "10px 12px", background: "rgba(34,197,94,.12)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 10, fontSize: 11.5, fontWeight: 600, color: "rgba(34,197,94,.9)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
+          {t("98% des prévisions vérifiées · Satellite Copernicus · Backtest 99% sur J+3→J+6", "98% of forecasts verified · Copernicus satellite · 99% backtest on day 3–6", "98% de pronósticos verificados · Satélite Copernicus · Backtest 99% en J+3→J+6")}
+        </div>
+        )}
+
         {/* Pricing card (PassOffer) — CRO J0-J30 : AVANT l'email par défaut
             (offre d'abord, enregistrement après). ?sgpayorder=0 = ordre historique. */}
         {payOrderOfferFirst && (
@@ -454,7 +488,12 @@ export function WorldPaywall({
         </div>
         )}
 
-        {/* ═══ EMAIL INPUT (fin, ordre offre-d'abord) ═══ */}
+        {/* ═══ EMAIL CAPTURE (A1, après l'offre — ordre J0 « offre AVANT email ») ═══
+            Fix UX-002 : la capture A1 se plaçait AVANT l'offre et cassait le
+            contrat j0 (offerY > emailY). Elle est fusionnée ici avec le bloc
+            email d'après-offre : toujours optionnelle (jamais required), CTA
+            jamais conditionné, lead G1 debounced via le hook (rollback
+            ?email_pre=0 = champ présent, capture désactivée — pas de testid). */}
         {payOrderOfferFirst && (
         <div style={{ marginBottom: 14 }}>
           <label style={{
@@ -466,9 +505,10 @@ export function WorldPaywall({
           <input
             type="email"
             autoComplete="email"
+            {...(emailPre ? { "data-testid": "pre-cta-email" } : {})}
             placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
             defaultValue={emailValue}
-            onChange={handleEmailChange}
+            onChange={(e) => { handleEmailChange(e); if (emailPre) onPreCtaEmail(e) }}
             style={{
               width: "100%", padding: "13px 14px",
               background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
