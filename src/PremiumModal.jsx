@@ -35,6 +35,16 @@ const {
 } = SG
 
 
+// E9 — testabilité déterministe : ?sgcomm=<n> surcharge le compteur communauté
+// (affichage paywall UNIQUEMENT — aucune écriture, aucune donnée inventée en
+// prod : sans flag, toujours __COMM buildé). community=0 rend E9 testable en CI.
+function readCommOverride() {
+  try {
+    const m = /[?&]sgcomm=(\d+)/.exec(window.location.search || "")
+    return m ? Math.max(0, parseInt(m[1], 10) || 0) : __COMM
+  } catch (_) { return __COMM }
+}
+
 // CompareRow for Gratuit vs Premium table
 const CompareRow=({label,free,pro})=>(<div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",alignItems:"center",borderTop:"1px solid rgba(255,255,255,.04)",padding:"7px 4px",gap:4}}>
   <div style={{color:"rgba(255,255,255,.5)",fontSize:12}}>{label}</div>
@@ -130,6 +140,10 @@ export default function PremiumModal({
     onPassBuy,
     PAY_CUR,
     submitLead, // A1 : capture lead pré-CTA (WorldPaywall, jamais bloquant)
+    // E2 : preuve sociale réelle (0 = rien affiché, voir E9). __COMM = compteur
+    // réel buildé (jamais inventé). ?sgcomm=<n> = override DISPLAY-ONLY pour les
+    // tests E9 déterministes (community=0 non forçable sinon au build).
+    community: __COMM,
   }
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
