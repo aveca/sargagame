@@ -80,6 +80,11 @@
 - UX-VR-003 (P2 visuel) → **FIXÉ** : CTA sticky paywall rogné ~22px à 390px. Fix lot 10 app-runtime.css (2 lignes ≤480px), desktop inchangé.
 - Preuves : build 0 · bundle 38.1 · smoke 4/4 · xp-visual-rescue 26/26 · npm test 173/175 (2 jolly-yalow préexistants) · E2E 41/41 · repro prod CR 1.02 identique. Rollbacks : ?newia=0, ?nosticky=0. PR #686 innocentée (paywall-only). UX-QA-002 volontairement non touché (multi-scope).
 
+**Session F1 STALE CONTRAST (2026-09-18, branche `agent/ui/f1-stale-contrast`, scope F1 uniquement) :**
+- F1 (P1) → **FIXÉ** : badge stale « il y a 1 j » `#B87A00` → `#8a5a00` (WorldMapView.jsx:1915, 1 valeur ; CR 3.34 → 5.49/5.93 ≥ AA ; fresh `#00786C` intact ; ni layout, ni copy, ni comportement).
+- F2 → backlog (scrim stable = mini-scope dédié). F3 → documenté P2/a11y (forme+mot portent l'info). F4 → clos (bouton or sain, artefact de lecture).
+- Preuves : f1-stale-contrast 6/6 · build 0 · bundle 38.1 · smoke 4/4 · E2E bottomnav+funnel 21/21 · computed navigateur 5.93 (était 3.61).
+
 ---
 
 # MASTER_AUDIT.md — Sargagame Strategic Audit

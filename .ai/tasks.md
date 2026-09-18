@@ -1,3 +1,8 @@
+## F1 STALE CONTRAST — [~] fix local 2026-09-18 (branche `agent/ui/f1-stale-contrast`, scope F1 uniquement, F2 backlog / F3 documenté / F4 clos)
+- **Fix** : WorldMapView.jsx:1915 stale `#B87A00` → `#8a5a00` (CR 3.34 → 5.49/5.93 ≥ AA 4.5, fresh intact).
+- **Preuves** : f1-stale-contrast 6/6 · build 0 · bundle 38.1 · smoke 4/4 · E2E 21/21 · computed 5.93.
+- **NEXT** : PR → CI → merge → deploy → QA prod badge.
+
 ## UI VISUAL RESCUE — [x] done + VALIDÉ PROD 2026-09-18 (PR #688 mergée 17:49 UTC, deploy success, QA prod OK)
 - **R1** : cartes XP texte invisible (CR 1.02 → 19.53) — `card` += `color: INK` (Accueil+Plages+Ma Plage).
 - **R2** : skin `.theme-comic button` tuait CTA or + actifs filtres — armure XP_ARMOR doublé-classe (pattern repo, noms sans "cta").
