@@ -1,0 +1,87 @@
+/* Phase B Sprint 1 — runtime-only rescue primitives.
+ * Scope: active production UI. Historical design prototypes/docs are intentionally untouched.
+ */
+
+:root {
+  --sg-gold-primary: #FFC72C;
+}
+
+/* P0 typography: remove banned legacy families from active runtime stacks. */
+body,
+#root,
+.sg-root,
+.lc-root,
+.bs-sheet {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif !important;
+}
+
+.theme-comic,
+.theme-comic #root,
+.theme-comic .lc-root,
+.theme-comic .bs-sheet {
+  font-family: "Bricolage Grotesque", system-ui, sans-serif !important;
+}
+
+.theme-comic h1,
+.theme-comic h2,
+.theme-comic h3,
+.theme-comic [class*="-title"] {
+  font-family: "Anton", "Bricolage Grotesque", sans-serif !important;
+}
+
+/* P0-01: gated forecast must remain readable; the gate is communicated by the
+ * existing CTA/premium treatment rather than a blur filter. */
+.bs-sheet [style*="blur(3px)"] {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+/* Keep the premium overlay visually intentional without altering behavior. */
+.bs-sheet [style*="rgba(13,17,23,0.7)"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* P1 CTA hierarchy foundation: gold is a single primary token. */
+.theme-comic .sg-cta,
+.theme-comic [class*="cta"],
+.theme-comic button[type="submit"],
+.bs-gobtn {
+  --sg-cta-gold: var(--sg-gold-primary);
+  background: var(--sg-cta-gold) !important;
+  color: #0d0b14 !important;
+}
+
+/* Preserve outlined/neutral secondary controls. */
+.bs-sheet .bs-secondary-action,
+.bs-sheet button[data-variant="secondary"],
+.bs-sheet button[data-variant="outline"] {
+  background: #fff !important;
+  color: #0d0b14 !important;
+}
+
+/* P0-06: reduced motion hard floor for the active runtime. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .theme-comic *,
+  .theme-comic *::before,
+  .theme-comic *::after,
+  .bs-sheet *,
+  .bs-sheet *::before,
+  .bs-sheet *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .theme-comic .sg-theme-fab.pulse {
+    animation: none !important;
+  }
+}
