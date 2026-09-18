@@ -5,26 +5,34 @@ const BASE_URL = process.env.PREVIEW_URL || 'https://sargasses-martinique.com';
 async function openBeachDetail(page: any) {
   // Navigate to map first
   await page.goto(BASE_URL, { waitUntil: 'domcontentloaded', timeout: 60000 });
-  await page.waitForTimeout(3000);
-  
-  // Wait for map labels
-  await page.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
-  
-  // Click on a beach pin (data-beach attribute on SVG elements)
-  const beachPin = page.locator('[data-beach]').first();
-  const pinCount = await beachPin.count();
-  if (pinCount > 0) {
-    await beachPin.click({ force: true });
-    await page.waitForTimeout(2000);
-  } else {
-    // Fallback: click on a map label
-    const mapLabel = page.locator('.sg-maplabel[role="button"]').first();
-    await mapLabel.click({ force: true });
-    await page.waitForTimeout(2000);
-  }
-  
-  // Wait for beach detail sheet (BeachSheetComic = .bsc-sheet, legacy = .lc-detail, .sheet)
+
+  // Labels carte : le declutter masque VOLONTAIREMENT la majorité des labels
+  // (design produit anti-clutter, BUG-2026-036) → attendre un label VISIBLE,
+  // jamais le 1er du DOM (souvent arbitrement masqué).
+  await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 });
+
+  // Tap un label réellement visible (rôle button). Un label peut être couvert
+  // par un overlay (héros « Meilleur choix ») → on itère sur les labels
+  // visibles jusqu'à ouverture réelle de la fiche.
   const fiche = page.locator('.bsc-sheet, .lc-detail, .sheet, [role="dialog"]').first();
+  const labels = page.locator('.sg-maplabel[role="button"]:visible');
+  const labelCount = await labels.count();
+  for (let i = 0; i < labelCount; i++) {
+    await labels.nth(i).click({ timeout: 4000 }).catch(() => {});
+    if (await fiche.isVisible({ timeout: 1500 }).catch(() => false)) break;
+    await page.waitForTimeout(600);
+  }
+
+  // Fallback : pin SVG [data-beach] (forcé) si aucun label n'a ouvert la fiche.
+  if (!(await fiche.isVisible({ timeout: 1500 }).catch(() => false))) {
+    const beachPin = page.locator('[data-beach]').first();
+    if (await beachPin.count() > 0) {
+      await beachPin.click({ force: true });
+      await page.waitForTimeout(2000);
+    }
+  }
+
+  // Wait for beach detail sheet (BeachSheetComic = .bsc-sheet, legacy = .lc-detail, .sheet)
   await fiche.waitFor({ state: 'visible', timeout: 15000 });
   await page.waitForTimeout(1000);
 

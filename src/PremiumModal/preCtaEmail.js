@@ -2,7 +2,8 @@ import { useRef, useCallback } from "react"
 // ── preCtaEmail.js — capture email AVANT le CTA du paywall (A1) ─────────────
 // Contexte : l'email n'était capturé qu'au paiement (submitLead "onsite_*") ou
 // après l'offre → les abandonneurs du paywall étaient perdus comme leads.
-// A1 ajoute une capture PRÉ-CTA : champ optionnel au-dessus de l'offre.
+// A1 ajoute une capture dans le paywall : champ optionnel, placé APRÈS l'offre
+// dans le flux par défaut (contrat j0 « offre AVANT email », fix UX-002).
 // Garde-fous (décision CRO J0-J30 conservée) :
 //   - champ TOUJOURS optionnel (jamais required) ;
 //   - le CTA (onPassBuy) n'est JAMAIS conditionné à l'email ;

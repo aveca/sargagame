@@ -136,7 +136,10 @@ export function PartnerContext({ regionId, beach, lang = "fr", track }) {
     let mainText, subText;
     if (isWA) {
       mainText = t3(lang, "Besoin d'aide ou d'une recommandation ?", "Need help or a recommendation?", "¿Necesitas ayuda o una recomendación?");
-      subText = t3(lang, "Écris-nous sur WhatsApp", "Message us on WhatsApp", "Escríbenos por WhatsApp");
+      // Nom du partenaire visible comme sur toutes les cartes (badge « Support »
+      // seul était anonyme) : identification transparente, règle « services
+      // contextuels nommés » (fix UX-003).
+      subText = `${p.name} · ${t3(lang, "Écris-nous sur WhatsApp", "Message us on WhatsApp", "Escríbenos por WhatsApp")}`;
     } else if (kind === "transport") {
       mainText = t3(lang, "Besoin d'un trajet vers cette plage ?", "Need a ride to this beach?", "¿Necesitas transporte a esta playa?");
       subText = `${p.name} · ${p.category}`;

@@ -9,8 +9,10 @@
  *
  * Partie A — audits de source :
  *  1. WorldPaywall branche le hook (import + flag emailPre + rollback ?email_pre=0).
- *  2. Le bloc pré-CTA est rendu AVANT la carte PassOffer (ordre source).
- *  3. L'input pré-CTA : type=email, data-testid, JAMAIS required.
+ *  2. Le bloc de capture est rendu APRÈS la carte PassOffer dans le flux par
+ *     défaut (contrat J0 « offre AVANT email » — fix UX-002 : A1 placé avant
+ *     l'offre cassait cet ordre) et AVANT l'offre sous ?sgpayorder=0.
+ *  3. L'input de capture : type=email, data-testid pre-cta-email, JAMAIS required.
  *  4. CTA non conditionné à l'email (onPassBuy sans garde email).
  *  5. submitLead câblé (commonPaywallProps + hook, source "paywall_pre").
  *  6. Gardes J0-J30 intacts (payOrderOfferFirst + PassOffer-avant-email + rollback).
@@ -46,13 +48,18 @@ async function main() {
 
   ok(WP.includes('./preCtaEmail.js') && WP.includes('usePreCtaEmail') && WP.includes('emailPreEnabled'), 'WorldPaywall branche le hook A1')
   ok(/email_pre=0/.test(WP), 'rollback ?email_pre=0 présent')
-  const preIdx = WP.indexOf('EMAIL PRÉ-CTA (A1')
+  const preIdx = WP.indexOf('EMAIL CAPTURE (A1')
   const offerIdx = WP.indexOf('Pricing card (PassOffer)')
-  ok(preIdx !== -1 && offerIdx !== -1 && preIdx < offerIdx, 'bloc pré-CTA rendu AVANT la carte PassOffer')
-  const preBlock = preIdx !== -1 ? WP.slice(preIdx, offerIdx) : ''
-  ok(preBlock.includes('data-testid="pre-cta-email"') && preBlock.includes('type="email"'), 'input pré-CTA typé + testid')
+  const histIdx = WP.indexOf('Ordre historique (rollback ?sgpayorder=0)')
+  // UX-002 (QA 2026-09-17) : le bloc A1 AVANT l'offre cassait le parcours j0
+  // « offre AVANT email » (offerY=734 > emailY=493). A1 fusionné dans le bloc
+  // email d'après-offre → capture conservée, ordre j0 restauré.
+  ok(preIdx !== -1 && offerIdx !== -1 && preIdx > offerIdx, 'bloc capture email rendu APRÈS la carte PassOffer (contrat j0, fix UX-002)')
+  const preBlock = preIdx !== -1 ? WP.slice(preIdx, histIdx !== -1 ? histIdx : preIdx + 2200) : ''
+  ok(/pre-cta-email/.test(preBlock) && preBlock.includes('type="email"'), 'input capture typé + testid')
   const preInputs = [...preBlock.matchAll(/<input\b[^>]*>/g)].map((m) => m[0])
   ok(preInputs.length > 0 && preInputs.every((tag) => !/\brequired\b/.test(tag)), 'input pré-CTA JAMAIS required (attribut)')
+  ok(preBlock.includes('onPreCtaEmail'), 'capture A1 branchée (hook onPreCtaEmail) sur le champ post-offre')
   // CTA non conditionné : onPassBuy ne teste aucun email.
   const onBuy = PM.match(/const onPassBuy[\s\S]*?\n  \},\[/)
   ok(!!onBuy && !/email/i.test(onBuy[0]), 'onPassBuy sans garde email (CTA jamais bloqué)')

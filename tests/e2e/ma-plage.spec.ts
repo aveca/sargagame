@@ -42,7 +42,7 @@ test.use({ serviceWorkers: 'block' })
 test.describe('Ma plage — free tier', () => {
   test('homepage hero: meilleur choix réel + verdict + CTA', async ({ page }) => {
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
 
     // Kicker « Meilleur choix aujourd'hui » visible
     await expect(page.locator('text=/Meilleur choix aujourd/i').first()).toBeVisible({ timeout: 15000 })
@@ -51,7 +51,11 @@ test.describe('Ma plage — free tier', () => {
     const heroCta = page.locator('button:has-text("Voir →")').first()
     await expect(heroCta).toBeVisible()
     const heroText = (await heroCta.innerText()).replace(/\n/g, ' | ')
-    expect(heroText).toMatch(/Données satellite/) // fraîcheur réelle affichée
+    // Fraîcheur réelle : sous ≤480px le lot 9 la masque du héros (display:none,
+    // décision produit compact) — la valeur reste réelle dans le DOM.
+    const freshDom = await page.locator('.sg-hero-fresh').first().textContent().catch(() => null)
+    if (freshDom != null) expect(freshDom).toMatch(/Données satellite/)
+    else expect(heroText).toMatch(/Données satellite/) // fraîcheur réelle affichée
 
     // Tap héros → fiche détail (comic) ouverte avec le strip 7 jours
     await heroCta.click()
@@ -63,7 +67,7 @@ test.describe('Ma plage — free tier', () => {
     await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
 
     // Ouvre la fiche via le héros
     await page.locator('button:has-text("Voir →")').first().click()
@@ -89,7 +93,7 @@ test.describe('Ma plage — free tier', () => {
 
     // 1ère visite : suit une plage (pose sg_my_beach + snapshot du jour)
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await page.locator('button:has-text("Voir →")').first().click()
     const follow = page.locator('button:has-text("Suivre gratuitement cette plage")')
     await expect(follow).toBeVisible({ timeout: 15000 })
@@ -102,7 +106,7 @@ test.describe('Ma plage — free tier', () => {
     await page.locator('.lc-detail-x').click()
     await page.waitForTimeout(600)
     await page.locator('text=/^Carte$/').first().click()
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
 
     // Carte d'accueil : la carte MA PLAGE est visible (snapshot du jour → pas de chip)
     await expect(page.locator('text=/MA PLAGE/').first()).toBeVisible({ timeout: 15000 })
@@ -116,7 +120,7 @@ test.describe('Ma plage — free tier', () => {
       localStorage.setItem('sg_my_snap', JSON.stringify({ id, day: yKey, status: 'avoid' }))
     }, [myId as string])
     await page.reload({ waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await expect(page.locator('text=/Ça a changé/i').first()).toBeVisible({ timeout: 15000 })
   })
 
@@ -131,7 +135,7 @@ test.describe('Ma plage — free tier', () => {
       localStorage.setItem('sg_fc_quota', JSON.stringify({ day: today, beachId: 'zz-test-autre-plage' }))
     })
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await page.locator('button:has-text("Voir →")').first().click()
     await page.waitForSelector('.lc-detail', { timeout: 25000 })
 
@@ -155,7 +159,7 @@ test.describe('Ma plage — free tier', () => {
   test('même plage débloquée LE MÊME JOUR : quota non recompté, accès conservé', async ({ page }) => {
     await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await page.locator('button:has-text("Voir →")').first().click()
     await page.locator('button:has-text("Suivre gratuitement cette plage")').click()
     await expect(page.locator('text=/Ta plage · offerts/i')).toBeVisible({ timeout: 15000 })
@@ -169,8 +173,10 @@ test.describe('Ma plage — free tier', () => {
     await page.locator('.lc-detail-x').click()
     await page.waitForTimeout(500)
     await page.locator('text=/^Carte$/').first().click()
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
-    await page.locator('button:has-text("MA PLAGE")').first().click()
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
+    // Re-ouvre via la carte « MA PLAGE » de la CARTE (chrome [data-vmui]) —
+    // pas l'onglet nav « Ma Plage » (même texte, collision historical find).
+    await page.locator('[data-vmui="1"] button:has-text("MA PLAGE")').first().click()
     await page.waitForSelector('.lc-detail', { timeout: 25000 })
 
     // Re-ouverture : toujours débloquée, 0 cadenas, quota IDENTIQUE (pas re-compté)
@@ -187,7 +193,7 @@ test.describe('Ma plage — free tier', () => {
   test('fiche : MAINTENANT (current) et PRÉVISION sont visuellement séparés', async ({ page }) => {
     await mockFc7(page, id => ({ status: 200, body: { ok: true, id, updatedAt: new Date().toISOString(), forecast: seriesFor(id) } }))
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await page.locator('button:has-text("Voir →")').first().click()
 
     // État actuel LABELLÉ « MAINTENANT » + strip PRÉVISION 7 JOURS distinct
@@ -211,7 +217,7 @@ test.describe('Ma plage — free tier', () => {
     }
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 45000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 45000 })
     await page.waitForTimeout(1500)
     await noOverflow() // home
 
@@ -225,7 +231,7 @@ test.describe('Ma plage — free tier', () => {
     await mockFc7(page, () => ({ status: 404, body: { ok: false, reason: 'unknown_beach' } }))
 
     await page.goto('/', { waitUntil: 'domcontentloaded' })
-    await page.waitForSelector('.sg-maplabel', { timeout: 30000 })
+    await page.waitForSelector('.sg-maplabel:visible', { timeout: 30000 })
     await page.locator('button:has-text("Voir →")').first().click()
     const follow = page.locator('button:has-text("Suivre gratuitement cette plage")')
     await expect(follow).toBeVisible({ timeout: 15000 })

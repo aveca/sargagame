@@ -1,3 +1,36 @@
+## 2026-09-17 ~21:50 · Agent: fix-qa (CORRECTIFS des 6 findings QA, branche `agent/ux/continuous-explorer`)
+
+### Travail effectué
+- **Résumé 1 ligne** : les 6 findings QA P1/P2 traités — 2 bugs produit mineurs corrigés (placement email A1 · nom partenaire WhatsApp), 1 flag de test ajouté (`?sgcomm=N`, display-only), 3× TEST ISSUE prouvées (waitForSelector `.sg-maplabel` = 1er élément seul), zéro régression.
+- **Détails** : voir `.ai/changelog.md` (entrée 2026-09-17 FIX QA) et MASTER_AUDIT.md (bloc « Session FIX QA »).
+
+### ⚠️ INCIDENT CONCURRENCE
+- Une session parallèle a commit `67b495ab1` (PremiumModal.jsx SEUL, état hybride : `readCommOverride()` défini MAIS `community: __COMM` non câblé) et restauré l'état antérieur des autres fichiers (WorldPaywall/PartnerContext/tests/docs ré-appliqués par moi après).
+- **État final à vérifier avant merge** : `git diff` doit montrer `community: readCommOverride()` (pas `__COMM`) dans commonPaywallProps.
+
+### Fichiers modifiés (NON COMMITTÉS — arbitrage merge = fondateur)
+- `src/PremiumModal.jsx` — `community: readCommOverride()` (override `?sgcomm=N`)
+- `src/PremiumModal/WorldPaywall.jsx` — bloc email A1 après l'offre (fix UX-002)
+- `src/PremiumModal/preCtaEmail.js` — commentaire placement
+- `src/components/PartnerContext.jsx` — subText WhatsApp = `${p.name} · Écris-nous sur WhatsApp`
+- `scripts/tests/paywall-email-pre.test.cjs` + `paywall-social-proof.test.cjs` — contrats MAJ
+- `tests/e2e/ma-plage.spec.ts` — `.sg-maplabel:visible` ×11 + fraîcheur DOM + scope `[data-vmui="1"]`
+- `tests/e2e/weekhub-forecast.spec.ts` — helper openBeachDetail
+- `tests/e2e/partners-context.spec.ts` — popup URL (redirect wa.me headless)
+- `tests/e9-paywall.spec.ts` (conservé de ma première passe) — sgcomm=0 + qs préservée
+- `MASTER_AUDIT.md` — UX-001..006 [x] + bloc fix
+- `.ai/changelog.md` + ce fichier
+
+### Tests (1re passe, post-fix, tous verts)
+- j0 7/7 · ma-plage 8/8 · weekhub 5/5 · partners 2/2 · e9 5/5 · funnel 13/13 · around-me 10/10 · bottomnav 8/8 · p1-03 11/11 · smoke PASS · build 0 · bundle 38.1 Ko · 4 unitaires ALL PASS
+- Desktop 1440 : labels ~200 ms (5 arbitrés)
+
+### Prochaine action recommandée
+1. Re-tester la 2e passe (post-réapplication) puis commit/merge — Release Agent
+2. Traiter UX-QA-002 (bannière z1500 > paywall/checkout) — Coding Agent
+
+---
+
 ## 2026-09-17 · Agent: ux-agent (QA réelle complète, branche `agent/ux/continuous-explorer`)
 
 ### Travail effectué

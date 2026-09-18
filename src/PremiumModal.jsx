@@ -143,7 +143,7 @@ export default function PremiumModal({
     // E2 : preuve sociale réelle (0 = rien affiché, voir E9). __COMM = compteur
     // réel buildé (jamais inventé). ?sgcomm=<n> = override DISPLAY-ONLY pour les
     // tests E9 déterministes (community=0 non forçable sinon au build).
-    community: __COMM,
+    community: readCommOverride(),
   }
 
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)

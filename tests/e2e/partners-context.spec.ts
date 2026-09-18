@@ -103,7 +103,10 @@ test.describe("Partenaires contextuels (services, jamais pubs)", () => {
     expect(await tracker.has("sg_partner_outbound")).toBe(true)
     if (popup) {
       const url = popup.url()
-      expect(url.startsWith("https://wa.me/596596106124")).toBe(true)
+      // wa.me résout via redirect 301 → api.whatsapp.com/send/?phone=… selon
+      // l'UA headless. Le contrat produit = numéro support + texte prérempli,
+      // pas le domaine d'arrivée (hors produit, comportement WhatsApp).
+      expect(/wa\.me\/596596106124|api\.whatsapp\.com\/send\/?\?phone=596596106124/.test(url)).toBe(true)
       // Vérifier que le message prérempli contient le nom de la plage
       expect(url).toContain("text=")
       await popup.close().catch(() => {})

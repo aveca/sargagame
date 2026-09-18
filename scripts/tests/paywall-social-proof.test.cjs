@@ -48,7 +48,8 @@ function main() {
   const CP = read('src/PremiumModal/ComicPaywall.jsx')
   const OC = read('src/PremiumModal/OnsiteCheckout.jsx')
 
-  ok(PM.includes('community: __COMM'), 'commonPaywallProps relaie community depuis __COMM')
+  ok(PM.includes('readCommOverride()') && PM.includes('__COMM'), 'commonPaywallProps relaie community depuis __COMM (override ?sgcomm=N test-only)')
+  ok(PM.includes('sgcomm='), 'override test ?sgcomm=N présent (UX-004)')
   checkPaywall('WorldPaywall', WP)
   const preIdx = WP.indexOf('PREUVE SOCIALE (E2')
   const offerIdx = WP.indexOf('Pricing card (PassOffer)')

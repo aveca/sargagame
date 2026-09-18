@@ -165,8 +165,11 @@ export function WorldPaywall({
   // pré-remplit OnsiteCheckout) mais APRÈS le clic d'intention.
   const payOrderOfferFirst = (()=>{try{return !/[?&]sgpayorder=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
-  // A1 — capture email AVANT le CTA (rollback ?email_pre=0). Champ TOUJOURS
-  // optionnel : le CTA reste cliquable sans email (décision J0-J30 conservée).
+  // A1 — capture email optionnelle dans le paywall (rollback ?email_pre=0).
+  // Placement : APRÈS l'offre dans le flux par défaut (contrat J0 « offre
+  // AVANT email », fix UX-002) ; AVANT l'offre sous rollback ?sgpayorder=0.
+  // Champ TOUJOURS optionnel : le CTA reste cliquable sans email (décision
+  // J0-J30 conservée).
   // Le lead part en debounced via submitLead (G1) dès la saisie d'un email valide.
   // Flag figé au mount (useState initializer) : le handler deep-link ?paywall=1
   // nettoie TOUTE la query via replaceState à l'ouverture, ce qui fausserait
@@ -403,9 +406,10 @@ export function WorldPaywall({
           <input
             type="email"
             autoComplete="email"
+            {...(emailPre ? { "data-testid": "pre-cta-email" } : {})}
             placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
             defaultValue={emailValue}
-            onChange={handleEmailChange}
+            onChange={(e) => { handleEmailChange(e); if (emailPre) onPreCtaEmail(e) }}
             style={{
               width: "100%", padding: "13px 14px",
               background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
@@ -419,7 +423,7 @@ export function WorldPaywall({
           />
         </div>
         )}
-        
+
         {/* ═══ VALEUR AVANT PRIX ═══ — Rapel du bénéfice avant le prix.
             Augmente le taux de conversion CTA→paiement en rappelant ce que
             l'utilisateur obtient. Placées juste avant PassOffer, ces pastilles
@@ -455,39 +459,6 @@ export function WorldPaywall({
           </div>
         </div>
 
-        {/* ═══ EMAIL PRÉ-CTA (A1, rollback ?email_pre=0) ═══
-            Capture le lead AVANT le clic d'intention (abandonneurs récupérables).
-            TOUJOURS optionnel (jamais required) — le CTA PassOffer ci-dessous
-            reste cliquable sans email. Soumission G1 en debounced via le hook. */}
-        {emailPre && (
-        <div style={{ marginBottom: 14 }}>
-          <label style={{
-            display: "block", fontSize: 12, color: "rgba(255,255,255,.6)",
-            marginBottom: 6, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".05em"
-          }}>
-            {t("Ton email pour recevoir ton accès", "Your email to receive your access", "Tu email para recibir tu acceso")}
-          </label>
-          <input
-            type="email"
-            autoComplete="email"
-            data-testid="pre-cta-email"
-            placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
-            defaultValue={emailValue}
-            onChange={(e) => { handleEmailChange(e); onPreCtaEmail(e) }}
-            style={{
-              width: "100%", padding: "13px 14px",
-              background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
-              borderRadius: 12, color: "#fff", fontSize: 15,
-              fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
-              fontWeight: 600, outline: "none", boxSizing: "border-box",
-              transition: "border-color .15s ease"
-            }}
-            onFocus={e => e.target.style.borderColor = "rgba(255,199,44,.7)"}
-            onBlur={e => e.target.style.borderColor = "rgba(255,199,44,.4)"}
-          />
-        </div>
-        )}
-
         {/* ═══ PREUVE SOCIALE (E2) / PREUVE QUALITÉ DONNÉES (E9) ═══
             Juste avant l'offre : compteur réel d'abonnés-suivi si community>0,
             sinon preuve qualité données (98% globales, backtest 99% J+3→J+6).
@@ -517,7 +488,12 @@ export function WorldPaywall({
         </div>
         )}
 
-        {/* ═══ EMAIL INPUT (fin, ordre offre-d'abord) ═══ */}
+        {/* ═══ EMAIL CAPTURE (A1, après l'offre — ordre J0 « offre AVANT email ») ═══
+            Fix UX-002 : la capture A1 se plaçait AVANT l'offre et cassait le
+            contrat j0 (offerY > emailY). Elle est fusionnée ici avec le bloc
+            email d'après-offre : toujours optionnelle (jamais required), CTA
+            jamais conditionné, lead G1 debounced via le hook (rollback
+            ?email_pre=0 = champ présent, capture désactivée — pas de testid). */}
         {payOrderOfferFirst && (
         <div style={{ marginBottom: 14 }}>
           <label style={{
@@ -529,9 +505,10 @@ export function WorldPaywall({
           <input
             type="email"
             autoComplete="email"
+            {...(emailPre ? { "data-testid": "pre-cta-email" } : {})}
             placeholder={t("ton@email.com", "your@email.com", "tu@email.com")}
             defaultValue={emailValue}
-            onChange={handleEmailChange}
+            onChange={(e) => { handleEmailChange(e); if (emailPre) onPreCtaEmail(e) }}
             style={{
               width: "100%", padding: "13px 14px",
               background: "rgba(13,17,23,.8)", border: "1.5px solid rgba(255,199,44,.4)",
