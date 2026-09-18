@@ -50,13 +50,14 @@
     "_note": "Partenaires contextuels (services, jamais pubs agressives). SOURCE DE VÉRITÉ régionale : un partenaire ne s'affiche que si enabled:true ET que regions contient la région courante. Résolution par src/lib/partners.js depuis le catalogue généré (gen-context-partners.cjs) — ZÉRO condition codée en dur dans les composants. Commissions/prix : AUCUN confirmé → jamais affichés.",
     "transport": {
       "local": {
-        "name": "Taxis Martinique",
-        "category": "taxi",
-        "url": "https://taxismartinique.com/",
+        "name": "Sargagame Support",
+        "category": "support",
+        "url": "https://wa.me/596596106124",
         "regions": ["mq"],
         "supportsBeachContext": true,
         "enabled": true,
-        "trackingId": "taxis_martinique"
+        "trackingId": "sargagame_whatsapp",
+        "isWhatsApp": true
       },
       "multiIsland": {
         "name": "RHUMZ",
@@ -69,17 +70,6 @@
         "trackingId": "rhumz"
       }
     },
-    "shopping": [
-      {
-        "name": "Lovelly",
-        "category": "bijoux / souvenir / shopping local",
-        "url": "https://lovelly.fr/",
-        "location": "Fort-de-France",
-        "regions": ["mq"],
-        "supportsBeachContext": true,
-        "enabled": true,
-        "trackingId": "lovelly"
-      }
-    ]
+    "shopping": []
   }
 }

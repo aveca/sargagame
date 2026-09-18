@@ -1,3 +1,25 @@
+## 2026-09-18 · Agent: coding-agent — SHIP scope partenaires/WhatsApp (branche `agent/coding/partners-whatsapp-ship`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : scope « partenaires → support WhatsApp » extrait proprement de PR #685 sur main@ef81d8a82 frais (post-#686), 7 fichiers verrouillés, gates verts, modifs concurrentes (PassOffer/app-runtime.css/ExperienceReset/xp-visual-rescue) préservées hors staging.
+- **Détails** : voir `.ai/changelog.md` (entrée 2026-09-18). MQ fiche plage : unique carte « Sargagame Support · Écris-nous sur WhatsApp » (wa.me/596596106124, texte prérempli plage+région), Taxis Martinique + Lovelly retirés. Kill-switch `?partnerctx=0` inchangé. Catalog régénéré par le générateur (jamais édité à la main).
+
+### Fichiers modifiés (staged, 7)
+- `regions/mq.json`, `scripts/automation/gen-context-partners.cjs`, `src/lib/partners.js`, `src/components/PartnerContext.jsx`, `src/lib/partners-catalog.json` (regen), `scripts/tests/partners-contract.test.cjs`, `tests/e2e/partners-context.spec.ts` + docs `.ai`
+
+### Tests réalisés
+- [x] partners-contract 37/37 · assertAllRegionsValid OK · suite 173/175 (baseline préexistante) · build exit 0 · bundle 38,1 Ko ≤ 210 · smoke 4/4 · Playwright funnel 13/13 + j0 7/7 + partners 2/2 (+10/10 avec ma-plage)
+- [!] 1 échec flaky observé en parallélisme lourd : overlays cookie/bannière-email interceptent un clic (UX-QA-002/003 connus en MASTER_AUDIT, hors cause du scope)
+
+### Prochaine action recommandée
+1. Scopes #685 restants, un par PR : **G1** (submitLead Supabase + supabasePhotos.js + LeadCapture + tests), **A13** (j1_free — vérifier UX-QA-001 : variante LIVE ChasseDetail non couverte par le fix #685 BeachSheetComic), **G3** (mirror PayPal), **G2** (purge analytics), **G15** (ci-gate), **E1/A7** (PassOffer copy/paths) — Rôle : coding-agent
+2. UX-QA-002 (bannière email z1500 > paywall/checkout) — Coding Agent
+
+### Branche / PR
+- Branche : `agent/coding/partners-whatsapp-ship` (base origin/main @ ef81d8a82)
+
+---
+
 ## 2026-09-17 ~21:50 · Agent: fix-qa (CORRECTIFS des 6 findings QA, branche `agent/ux/continuous-explorer`)
 
 ### Travail effectué
