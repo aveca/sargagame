@@ -1,3 +1,14 @@
+## 2026-09-18 · Agent: ui-agent (F1 STALE CONTRAST — branche `agent/ui/f1-stale-contrast`)
+
+### Travail effectué
+- **Résumé 1 ligne** : scope F1 uniquement — badge stale « il y a 1 j » 3.34 → 5.49 (AA), 1 valeur, test 6/6, gates verts.
+- **Détails** : voir `.ai/changelog.md` (entrée F1). F2 backlog / F3 documenté / F4 clos (voir `.ai/whiteness-audit.md`, non modifié).
+
+### Branche / PR
+- Branche : `agent/ui/f1-stale-contrast`
+- PR : à créer
+- Rollback : revert 1 ligne (aucun flag nécessaire, visuel pur)
+
 ## 2026-09-18 · Agent: ui-agent (UI VISUAL RESCUE VALIDÉ PROD — #688 mergé + déployé)
 
 ### Travail effectué

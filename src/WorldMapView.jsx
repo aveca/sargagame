@@ -1912,7 +1912,12 @@ export default function WorldMapView({
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&stale?"DONNÉE EN RETARD":_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&stale?"#B87A00":"#00786C",marginLeft:2}}>
+            {/* F1 (whiteness audit 2026-09-18) : le doré stale #B87A00 sur pastille
+                crème #fdf6e3 ne faisait que CR 3.34 (< WCAG AA 4.5). #8a5a00 =
+                encre moderate déjà en palette (statusMeta) → CR 5.49. Visuel
+                seul : ni layout, ni copy, ni comportement. Branche fresh
+                (#00786C, CR 4.99) inchangée. */}
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&stale?"#8a5a00":"#00786C",marginLeft:2}}>
               {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
             </span>
             {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
