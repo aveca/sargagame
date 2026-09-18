@@ -50,6 +50,9 @@
 - PR : #688 (https://github.com/aveca/sargagame/pull/688)
 - Commit head : rebasé sur origin/main (voir PR)
 
+### INCIDENT CONCURRENCE (résolu, zéro perte)
+- Une session parallèle a basculé le worktree partagé sur `agent/coding/partners-whatsapp-ship` pendant ma session : mon 1er commit a atterri sur sa branche. Récupéré : cherry-pick sur `agent/ui/visual-rescue`, reset partners sur `origin/b729e01ab` (arbre vérifié propre, aucun commit perdu). Rebase rejoué sur `origin/main@fc2167291` (conflits `.ai/*` gardés des 2 côtés).
+
 ---
 
 ## 2026-09-17 ~21:50 · Agent: fix-qa (CORRECTIFS des 6 findings QA, branche `agent/ux/continuous-explorer`)
