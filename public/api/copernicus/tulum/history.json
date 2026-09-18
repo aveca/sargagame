@@ -1235,38 +1235,38 @@
       "levels": [
         {
           "id": "tu001",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "tu002",
-          "afai": 0.12,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "tu003",
-          "afai": 0.12,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "tu004",
-          "afai": 0.12,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "tu005",
-          "afai": 0.12,
+          "afai": 0.13,
           "status": "clean"
         },
         {
           "id": "tu006",
-          "afai": 0.12,
+          "afai": 0.14,
           "status": "clean"
         },
         {
           "id": "tu007",
-          "afai": 0.13,
-          "status": "clean"
+          "afai": 0.21,
+          "status": "moderate"
         },
         {
           "id": "tu008",
