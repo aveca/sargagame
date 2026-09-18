@@ -38,15 +38,16 @@
     "mq": {
       "transport": {
         "local": {
-          "name": "Taxis Martinique",
-          "category": "taxi",
-          "url": "https://taxismartinique.com/",
+          "name": "Sargagame Support",
+          "category": "support",
+          "url": "https://wa.me/596596106124",
           "regions": [
             "mq"
           ],
           "supportsBeachContext": true,
           "enabled": true,
-          "trackingId": "taxis_martinique"
+          "trackingId": "sargagame_whatsapp",
+          "isWhatsApp": true
         },
         "multiIsland": {
           "name": "RHUMZ",
@@ -62,20 +63,7 @@
           "trackingId": "rhumz"
         }
       },
-      "shopping": [
-        {
-          "name": "Lovelly",
-          "category": "bijoux / souvenir / shopping local",
-          "url": "https://lovelly.fr/",
-          "location": "Fort-de-France",
-          "regions": [
-            "mq"
-          ],
-          "supportsBeachContext": true,
-          "enabled": true,
-          "trackingId": "lovelly"
-        }
-      ]
+      "shopping": []
     },
     "puntacana": {
       "transport": {

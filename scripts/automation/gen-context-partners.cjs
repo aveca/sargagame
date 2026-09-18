@@ -26,7 +26,7 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const REGIONS_DIR = path.join(ROOT, "regions");
 const OUT = path.join(ROOT, "src", "lib", "partners-catalog.json");
 
-const TRANSPORT_FIELDS = ["name", "category", "url", "bookingUrl", "regions", "supportsBeachContext", "enabled", "trackingId"];
+const TRANSPORT_FIELDS = ["name", "category", "url", "bookingUrl", "regions", "supportsBeachContext", "enabled", "trackingId", "isWhatsApp"];
 const SHOPPING_FIELDS = ["name", "category", "url", "location", "regions", "supportsBeachContext", "enabled", "trackingId"];
 
 function pick(o, fields) {
