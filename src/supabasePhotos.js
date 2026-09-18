@@ -57,6 +57,72 @@ export function logAnalyticsEvent(event, params, island) {
 }
 
 /**
+ * leadDomain / leadRegionCode — vocabulaire région/domaine des leads B2C.
+ * MIROIR EXACT de getDomain/getRegion de LeadCapture.jsx (garder en sync) :
+ * la table `b2c_alerts` et le cron worker comparent déjà ce vocabulaire
+ * (region "mq"/"gp"/..., domain = hostname sans www). Ne PAS diverger
+ * (sinon les leads migrés ne seraient jamais matchés par le cron).
+ */
+export function leadDomain(hostname) {
+  try { return String(hostname || "").replace(/^www\./, "") } catch (_) { return "" }
+}
+
+export function leadRegionCode(hostname) {
+  const d = leadDomain(hostname)
+  if (d.includes("martinique")) return "mq"
+  if (d.includes("guadeloupe")) return "gp"
+  if (d.includes("cancun") || d.includes("tulum")) return "mx"
+  if (d.includes("puntacana")) return "do"
+  if (d.includes("miami")) return "us"
+  return "unknown"
+}
+
+/**
+ * buildB2CLeadRow — ligne `b2c_alerts` pour un email capturé (pure, testée).
+ * Même forme que l'insert LeadCapture.jsx (email lowercase/trim, beaches [],
+ * status 'active'). Renvoie null si email invalide (jamais de ligne vide).
+ */
+export function buildB2CLeadRow(email, hostname) {
+  const em = String(email || "").trim().toLowerCase()
+  if (!em || !em.includes("@") || em.length > 200) return null
+  const domain = leadDomain(hostname)
+  return { email: em, region: leadRegionCode(domain), domain, beaches: [], status: "active" }
+}
+
+/**
+ * submitLeadToSupabase — sink PRIMAIRE des leads B2C (migration G1
+ * Apps Script → Supabase). ÉCRITURE DIRECTE REST avec la clé anon
+ * (même pattern prouvé que logAnalyticsEvent ci-dessus).
+ *
+ * MAJ 2026-09-17 : le hop worker `POST /api/supabase` répond 404 en prod sur
+ * les 6 domaines (Pages Functions functions/[[path]].js catch-all ; la route
+ * zone `/api/supabase*` vers supabase-proxy n'est pas câblée — action dashboard
+ * fondateur requise, hors Timebox). Conséquence mesurée : 100 % des leads
+ * "Supabase-primary" tombaient en .catch() silencieux (dual-write Apps Script
+ * sauvait les leads, mais le funnel Supabase restait vide).
+ * Probe prod 2026-09-17 : POST /rest/v1/b2c_alerts sans email → 400 "23502
+ * not-null email" = RLS laisse passer l'insert anon (la ligne n'est PAS écrite).
+ * Fire-and-forget, ne throw JAMAIS, no-op si ligne invalide.
+ * Rollback : ?lead_sb=0 (skip ce leg, Apps Script seul).
+ * Renvoie true si la requête a été dispatchée.
+ */
+export function submitLeadToSupabase(email) {
+  try {
+    if (typeof window !== "undefined" && /[?&]lead_sb=0/.test(window.location.search || "")) return false
+    const host = typeof window !== "undefined" ? window.location.hostname : ""
+    const row = buildB2CLeadRow(email, host)
+    if (!row) return false
+    fetch(`${SUPABASE_URL}/rest/v1/b2c_alerts`, {
+      method: "POST",
+      keepalive: true,
+      headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
+      body: JSON.stringify(row),
+    }).catch(() => {})
+    return true
+  } catch (_) { return false }
+}
+
+/**
  * Upload d'une photo (data URL JPEG déjà redimensionnée + EXIF strippée).
  * → Storage bucket public `beach-photos`, puis ligne `photos` en status 'pending'.
  * Renvoie true si OK. Modération ensuite côté dashboard (status → 'approved').
