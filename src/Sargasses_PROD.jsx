@@ -17,7 +17,7 @@ import { getResortsForBeach } from "./lib/resorts.js"
 import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid } from "./supabasePhotos.js"
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid, submitLeadToSupabase } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import {beginCheckout, viewPromotion, getPlanMeta, purchase} from "./ga4-ecommerce.js"
 import { getSgAuth, setSgAuth, authSession } from "./lib/auth-client.js"
@@ -2155,22 +2155,33 @@ function flushTrackQueue(){
   }catch{}
 }
 try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
-// Envoi RÉSILIENT d'un lead capturé vers la liste (Apps Script). L'ancien
-// fetch fire-and-forget était silencieusement perdu si la page naviguait pendant
-// la requête (capture = levier #1, on ne peut PAS perdre un email saisi) ou si
-// Apps Script était froid. sendBeacon survit à l'unload ; fallback fetch keepalive.
-// MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
-// pour ne plus dépendre de Apps Script/clasp push pour le funnel.
+// Envoi RÉSILIENT d'un lead capturé.
+// G1 (migration Apps Script → Supabase) : sink PRIMAIRE = Supabase `b2c_alerts`
+// (email inclus) via écriture directe REST — même contrat que LeadCapture.
+// BACKUP parallèle = Apps Script (feed Google Sheet → drips, inchangé : la lecture
+// Sheet n'est pas migrée, on ne perd AUCUN lead pendant la transition).
+// Event sg_email_submit (sans PII) = attribution, conservé.
+// Historique : le leg Supabase-event 2026-07 était mort (early-return sendBeacon +
+// `island` hors scope → ReferenceError avalé) — réparé ici (island calculé en tête).
+// Rollback : ?lead_sb=0 (skip le leg Supabase, Apps Script seul) ou revert.
 export function submitLead(email,source){
+  let island="MQ";
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ");
+  }catch(_){}
+  // 1) PRIMAIRE — Supabase (fire-and-forget, jamais bloquant)
+  try{submitLeadToSupabase(email)}catch(_){}
+  // 2) BACKUP — Apps Script (comme avant : beacon, puis fetch keepalive si échec)
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()});
+    let sent=false;
+    if(navigator.sendBeacon){try{sent=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}}
+    if(!sent)fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{});
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // 3) Attribution funnel (sans PII)
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
+try{if(typeof window!=="undefined")window.submitLead=submitLead}catch{}
 // ── ENGAGEMENT CONTINU — le produit "se voit penser" : on mesure l'ENNUI/le BLOCAGE, pas
 //    seulement les clics. Par écran : temps passé, nb d'actions, plus longue inactivité, scroll,
 //    flag `bored` (entré, rien fait, resté / longue inactivité). Émis vers GA4 via track() à

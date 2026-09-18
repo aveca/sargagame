@@ -1,3 +1,25 @@
+## 2026-09-18 · Agent: coding-agent — SHIP G1 lead capture Supabase (branche `agent/coding/g1-supabase-leads`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : migration G1 reconstruite proprement — Supabase `b2c_alerts` en sink PRIMAIRE (REST direct anon), Apps Script en backup documenté, bannière LeadCapture réparée (elle perdait 100 % des leads B2C/B2B en prod via le hop worker 404 + faux succès UX).
+- **Détails + diagnostic prod + preuves** : `.ai/changelog.md` (entrée 2026-09-18 G1).
+
+### Fichiers modifiés (5, verrouillés)
+- `src/supabasePhotos.js`, `src/Sargasses_PROD.jsx` (hunk G1 uniquement — A13 exclu), `src/LeadCapture.jsx`, `scripts/tests/lead-capture-g1.test.cjs`, `scripts/lib/supabase-leads.test.cjs`
+
+### Tests réalisés
+- [x] lead-capture-g1 8/8 · supabase-leads 21/21 · paywall A1/E2 tests ALL PASS · build exit 0 · bundle 38,1 Ko ≤ 210 · smoke 4/4 · Playwright funnel 13/13 + j0 7/7 · probe réel bannière → POST b2c_alerts (réseau intercepté, 0 écriture prod) · probes prod : /api/supabase 404 + RLS 400 not-null (proofs sans écriture)
+
+### Prochaine action recommandée
+1. Scopes #685 restants : **A13** (porter j1_free sur la variante LIVE ChasseDetail — UX-QA-001), **G3** (mirror PayPal), **G2** (purge analytics), **G15** (ci-gate), **E1/A7** — Rôle : coding-agent
+2. UX-QA-002 : bannière email z1500 > paywall/checkout — Coding Agent
+3. Post-deploy : vérifier création réelle d'une ligne b2c_alerts (signature domain réel, ex. un lead organique du jour) — Data Agent (lecture service côté dashboard)
+
+### Branche / PR
+- Branche : `agent/coding/g1-supabase-leads` · PR : #690 (rebasée post-#689, conflits docs résolus par union)
+
+---
+
 ## 2026-09-18 · Agent: ui-agent (F1 VALIDÉ PROD — #689 mergé + déployé)
 
 ### Travail effectué
@@ -20,7 +42,7 @@
 ### Travail effectué
 - **Résumé 1 ligne** : CI #688 7/7 vert → squash merge 17:49 UTC → Deploy Live success → QA visuelle prod OK (cartes CR 19.53, filtres actifs, sticky 2 lignes 390px, desktop inchangé). Rescue UI terminé.
 - **Rappel scope** : #688 = sous-ensemble précis (XP cards + armor thème + sticky CTA), PAS une preuve que tout « blanc sur blanc » est résolu — rester vigilant sur les autres surfaces.
-- **NEXT** : G1 Supabase dans une branche neuve depuis ce main — Rôle : coding-agent
+- **NEXT** : G1 Supabase dans une branche neuve depuis ce main — Rôle : coding-agent (fait, voir entrée en tête)
 
 ## 2026-09-18 · Agent: coding-agent — SHIP scope partenaires/WhatsApp (branche `agent/coding/partners-whatsapp-ship`, ex-#685)
 
