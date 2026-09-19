@@ -5683,7 +5683,7 @@
   },
   {
     "date": "2026-09-19",
-    "time": "2026-09-19T04:08:35.824Z",
+    "time": "2026-09-19T10:46:46.426Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 607,
@@ -5691,19 +5691,19 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 144,
+      "sessions": 127,
       "lockClicks": 5,
-      "modalOpens": 48,
+      "modalOpens": 41,
       "modalCloses": null,
       "modalCta": 3,
-      "ctaViews": 40,
-      "altViews": 26,
+      "ctaViews": 35,
+      "altViews": 15,
       "altClicks": 0,
       "groundTruth": 1,
       "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 4,
+      "emailSubmits": 3,
       "checkoutRedirects": 0,
       "onsiteCheckoutOpened": 3,
       "payOnsiteBack": 2,
@@ -5712,10 +5712,10 @@
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 3.5,
-        "lock_to_modal": 960,
-        "modal_to_cta": 6.3,
-        "cta_view_to_click": 7.5,
+        "session_to_lock": 3.9,
+        "lock_to_modal": 820,
+        "modal_to_cta": 7.3,
+        "cta_view_to_click": 8.6,
         "alt_view_to_click": 0,
         "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
@@ -5724,13 +5724,13 @@
       }
     },
     "email": {
-      "sent": 5684,
+      "sent": 5712,
       "delivered": null,
-      "opened": 48,
-      "clicked": 32,
+      "opened": 50,
+      "clicked": 31,
       "bounced": null,
-      "openRate": 0.84,
-      "clickRate": 66.67,
+      "openRate": 0.88,
+      "clickRate": 62,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -5781,7 +5781,7 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-19T04:09:02.126Z"
+      "fetchedAt": "2026-09-19T10:46:53.050Z"
     },
     "ga4": {
       "date": "2026-09-18",
@@ -5791,7 +5791,7 @@
       },
       "gp": {
         "sessions": 0,
-        "users": 497
+        "users": 557
       }
     }
   }

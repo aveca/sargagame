@@ -3195,8 +3195,8 @@
         },
         {
           "id": "rm009",
-          "afai": 0.14,
-          "status": "clean"
+          "afai": 0.15,
+          "status": "moderate"
         },
         {
           "id": "rm010",
@@ -3205,7 +3205,7 @@
         },
         {
           "id": "rm011",
-          "afai": 0.24,
+          "afai": 0.23,
           "status": "moderate"
         },
         {

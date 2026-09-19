@@ -1205,8 +1205,8 @@
         },
         {
           "id": "tu007",
-          "afai": 0.21,
-          "status": "moderate"
+          "afai": 0.13,
+          "status": "clean"
         },
         {
           "id": "tu008",
@@ -1937,6 +1937,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.23
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
     }
   ]
 }
