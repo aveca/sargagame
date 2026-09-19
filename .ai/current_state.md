@@ -1,3 +1,27 @@
+## 2026-09-20 · Agent: release/qa-agent (K3 DÉPLOYÉ + QA PROD OK — PR #692 mergée `2070589a`)
+
+### Travail effectué
+- **Résumé 1 ligne** : #691 mergée → #692 rebasée (scope pur 5 fichiers) → CI 7/7 → merge → Deploy Live SUCCESS → QA prod mobile OK (carte respirable + rollback vérifié).
+- **Détails** : voir `.ai/changelog.md` (entrée K3 2026-09-20). Code-scan AI = échec infra (modèle non supporté), non bloquant.
+
+### Fichiers modifiés
+- `.ai/changelog.md`, `.ai/current_state.md` — handoff QA prod (docs seules, 0 produit)
+
+### Tests réalisés
+- [x] Deploy Live → SUCCESS (health 6/6)
+- [x] QA prod 390×844 `/` + `/?mapdeclutter=0` → checklist 11/11 OK, 0 console error
+
+### Problèmes restants
+- [ ] Aucun chantier UX avant prochaine décision fondateur (consigne)
+
+### Prochaine action recommandée
+1. Merge PR docs (celle-ci) puis STOP UX — Rôle : fondateur
+
+### Branche / PR
+- Branche : `agent/qa/k3-prod-qa`
+- PR : à créer
+- Rollback : `?mapdeclutter=0` (produit) ou revert `2070589a`
+
 ## 2026-09-19 · Agent: coding-agent (K3 MAP DECLUTTER — branche `agent/coding/k3-map-declutter`)
 
 ### Travail effectué
