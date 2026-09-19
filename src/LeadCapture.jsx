@@ -143,7 +143,7 @@ export default function LeadCapture() {
         bottom: 0,
         left: 0,
         right: 0,
-        zIndex: 1500,
+        zIndex: 1250,
         background: "white",
         borderTop: "2px solid #0d7f63",
         boxShadow: "0 -4px 20px rgba(0,0,0,0.1)",

@@ -4649,13 +4649,15 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,im
   // grief fondateur 2026-07-02) : il garantit d'abord permission push + nudge install
   // (onEnsureAlerts → ensurePushAlerts, no-op si ?alertpush=0), puis ferme.
   const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach.id,status,premium:!!isPremium});if(isPremium){try{onEnsureAlerts&&onEnsureAlerts()}catch(_){};onClose&&onClose()}else{onPremiumClick&&onPremiumClick("beach_sheet")}}
-  // Desktop : la feuille était full-width (1440px+) → verdict/barres/CTA étirés,
+// Desktop : la feuille était full-width (1440px+) → verdict/barres/CTA étirés,
   // illisible (grief fondateur 2026-07-01). Colonne centrée ≤560px au-delà de 720px,
   // mobile strictement inchangé. Rollback : ?deskfit=0.
   const deskFitOn=(()=>{try{return !/[?&]deskfit=0/.test(window.location.search)}catch(_){return true}})()
-// Rapport plage du jour (HARD ASSET §PDF) : modale preview→download→share.
-// Rollback ?report=0 → bouton + modale désactivés (fiche intacte).
-const REPORT_OFF=(()=>{try{return /[?&]report=0/.test(window.location.search)}catch(_){return false}})()
+  // A13 J+1 free — J+1 (index 1) offert aux non-premium. Rollback : ?j1_free=0.
+  const j1FreeOn=(()=>{try{return !/[?&]j1_free=0/.test(window.location.search)}catch(_){return true}})()
+  // Rapport plage du jour (HARD ASSET §PDF) : modale preview→download→share.
+  // Rollback ?report=0 → bouton + modale désactivés (fiche intacte).
+  const REPORT_OFF=(()=>{try{return /[?&]report=0/.test(window.location.search)}catch(_){return false}})()
 const [showReport,setShowReport]=useState(false)
   return(
     <>
@@ -4767,9 +4769,18 @@ const [showReport,setShowReport]=useState(false)
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
             <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,letterSpacing:".3px"}}>{_t(lang,"PRÉVISION 7 JOURS","7-DAY FORECAST","PRONÓSTICO 7 DÍAS")}</div>
-            {free7
-              ? <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.clean,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}>★ {_t(lang,"MA PLAGE · GRATUIT","MY BEACH · FREE","MI PLAYA · GRATIS")}</span>
-              : !isPremium&&fcDays.length>0&&<span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>}
+            {(() => {
+              if (free7) {
+                return <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.clean,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}>★ {_t(lang,"MA PLAGE · GRATUIT","MY BEACH · FREE","MI PLAYA · GRATIS")}</span>
+              }
+              if (!isPremium && fcDays.length > 0 && j1FreeOn) {
+                return <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.clean,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{color:COMIC.clean}}><path d="M20 6L9 17l-5-5"/></svg>{_t(lang,"J+1 OFFERT","J+1 FREE","J+1 GRATIS")}</span>
+              }
+              if (!isPremium && fcDays.length > 0) {
+                return <span style={{font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.ink,background:COMIC.gold,border:`2px solid ${COMIC.ink}`,borderRadius:999,padding:"4px 8px",display:"inline-flex",alignItems:"center",gap:4}}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>{_t(lang,"PREMIUM","PREMIUM","PREMIUM")}</span>
+              }
+              return null
+            })()}
           </div>
           {/* État honnête : pas de série → « indisponible » explicite, JAMAIS de
               barres fabriquées (moat). Couvre : plage sans couverture forecast,
@@ -4785,7 +4796,7 @@ const [showReport,setShowReport]=useState(false)
           ):(
           <>
           <div style={{display:"flex",gap:6,position:"relative"}}>
-            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>0;return(
+            {fcDays.map((d,i)=>{const gated=!isPremium&&!free7&&i>0&&(!j1FreeOn||i>1);return(
               <div key={i} className={i===0?"forecast-card elevation-2":"forecast-card"} style={{
                 flex:1,
                 textAlign:"center",
@@ -4803,10 +4814,17 @@ const [showReport,setShowReport]=useState(false)
                   animationDelay:(.32+i*.05)+"s",
                   boxShadow: i===0?`0 4px 12px ${comicStatusColor(d.status)}66`:"none",
                 }}/>
-                {gated&&(
+{gated&&(
                   <span style={{position:"absolute",left:"50%",top:20,transform:"translateX(-50%)",display:"inline-flex",alignItems:"center",gap:3,font:"800 7.5px/1 'Bricolage Grotesque'",color:"#FFC72C",textTransform:"uppercase",letterSpacing:".3px",background:"rgba(13,17,23,0.92)",padding:"3px 6px",borderRadius:5,border:"1.5px solid #FFC72C",whiteSpace:"nowrap",pointerEvents:"none"}}>
                     <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
                     {_t(lang,"Premium","Premium","Premium")}
+                  </span>
+                )}
+                {/* A13 J+1 free — badge INCLUS pour J+1 (index 1) quand j1_free actif */}
+                {!isPremium&&!free7&&j1FreeOn&&i===1&&(
+                  <span style={{position:"absolute",left:"50%",top:20,transform:"translateX(-50%)",display:"inline-flex",alignItems:"center",gap:3,font:"800 7.5px/1 'Bricolage Grotesque'",color:COMIC.clean,textTransform:"uppercase",letterSpacing:".3px",background:"rgba(34,197,94,0.15)",padding:"3px 6px",borderRadius:5,border:"1.5px solid " + COMIC.clean,whiteSpace:"nowrap",pointerEvents:"none"}}>
+                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{color:COMIC.clean}}><path d="M20 6L9 17l-5-5"/></svg>
+                    {_t(lang,"INCLUS","INCLUDED","INCLUIDO")}
                   </span>
                 )}
                 <span style={{display:"block",font:"800 9.5px/1 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,textTransform:"uppercase",letterSpacing:".3px"}}>{i===0?_t(lang,"Auj","Now","Hoy"):fcDay(d,lang)}</span>
