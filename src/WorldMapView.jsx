@@ -209,6 +209,14 @@ export default function WorldMapView({
 }){
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // K3 DECLUTTER (2026-09-19) : la carte = surface d'EXPLORATION pure, la décision
+  // vit dans l'onglet Accueil XP (HomeDashboard). Quand actif (défaut), masque le
+  // stack décisionnel du canvas : héros « Où te baigner », carte Ma Plage inline,
+  // sticker email, digest « Cette semaine », chip B2B légende. Conservés : RegionNav,
+  // fraîcheur, recherche, canvas/pins/labels, légende, « près de moi », scrub J0→J5,
+  // BottomNav. Aucune logique supprimée (rendu conditionnel seul), aucun tracking
+  // modifié, aucun z-index touché. Rollback : ?mapdeclutter=0 → chrome actuel complet.
+  const mapDeclutterOff = (()=>{try{return /[?&]mapdeclutter=0/.test(window.location.search)}catch(_){return false}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
   const proMapOff = (()=>{try{return /[?&]promap=0/.test(window.location.search)}catch(_){return false}})()
   // Prévision 7j sur la carte = bénéfice Premium n°1 (le « waouh » qui retire les
@@ -2029,7 +2037,7 @@ export default function WorldMapView({
               « situation changée depuis hier » (comparaison réelle snapshot local).
               Tap → ouvre LA fiche (sa prévision 7 j y est offerte). Rollback ?mapmy=0. ══ */}
           {(()=>{const myOff=(()=>{try{return /[?&]mapmy=0/.test(window.location.search)}catch(_){return false}})()
-            if(myOff||!myBeachInfo||!myBeachInfo.beach||!rootMode||selected)return null
+            if(!mapDeclutterOff||myOff||!myBeachInfo||!myBeachInfo.beach||!rootMode||selected)return null
             const mb=myBeachInfo.beach, ch=myBeachInfo.change
             const stToday=mb.status, colT=STATUS_C[stToday]||"#9aa0a8"
             const tmr=(myBeachInfo.freeForecast&&myBeachInfo.freeForecast[1])||null
@@ -2062,7 +2070,7 @@ export default function WorldMapView({
               (tri score/confidence, drift du weekly public) ; jamais de plage
               recommandée par défaut. Ancien strip TOP3 conservé en forme minimale
               pour les alternatives. Rollback ?maphero=0 → bloc masqué. ══ */}
-          {(()=>{try{if(/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
+          {(()=>{try{if(!mapDeclutterOff||/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
           if(!dataReady||beachList.length<3||selected||emailSent||heroFolded)return null
           const ranked=[...beachList].filter(b=>b.score!=null&&b.days&&b.days[day]!=null)
             .sort((a,b)=>{const sd=(b.score||0)-(a.score||0);if(sd!==0)return sd;return (b.conf?.[day]||0)-(a.conf?.[day]||0)})
@@ -2132,7 +2140,7 @@ return (
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
               Style aligné sur les overlays carte (#fdf6e3 + bord INK + ombre comic). */}
-          {(!mapV2||selected)&&!emailHidden&&!emailSent&&(
+          {(mapDeclutterOff&&(!mapV2||selected))&&!emailHidden&&!emailSent&&(
             <div onPointerDown={e=>{try{e.stopPropagation()}catch(_){}}}
               style={{
                 marginTop:9,display:"flex",alignItems:"center",gap:7,pointerEvents:"auto",
@@ -2235,7 +2243,7 @@ return (
               <div style={{width:10,height:10,borderRadius:"50%",background:c,border:`1.5px solid ${INK}`}}/>{l}
             </div>
           ))}
-          {!proMapOff&&onOpenPro&&(
+          {mapDeclutterOff&&!proMapOff&&onOpenPro&&(
             <button type="button" className="sg-mapchip" onClick={()=>{try{track&&track("sg_b2b_open",{source:"map_legend"})}catch(_){}; onOpenPro()}}
               style={{pointerEvents:"auto",marginTop:6,display:"inline-flex",alignItems:"center",gap:5,
                 cursor:"pointer",textAlign:"left",
@@ -2301,7 +2309,7 @@ return (
               gâcher l'UI + l'info vient à l'utilisateur). UNE ligne : rien ne bouge / N à surveiller
               + bascule. Le détail vit dans le hub (tap). Se cache derrière le hub quand il est ouvert.
               <div role=button> (PAS <button> : le skin .theme-comic button efface la pastille). */}
-          {weekDigest&&!selected&&(()=>{
+          {mapDeclutterOff&&weekDigest&&!selected&&(()=>{
             const lbl = weekDigest.calm
               ? _t(lang,"Cette semaine : rien en vue","This week: nothing in sight","Esta semana: nada a la vista")
               : weekDigest.flips>0

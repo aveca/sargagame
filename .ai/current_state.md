@@ -1,3 +1,38 @@
+## 2026-09-19 · Agent: coding-agent (K3 MAP DECLUTTER — branche `agent/coding/k3-map-declutter`)
+
+### Travail effectué
+- **Résumé 1 ligne** : carte = exploration pure par défaut (`?mapdeclutter` ON, rollback `?mapdeclutter=0`), 5 panneaux décisionnels gardés par rendu conditionnel, gates verts.
+- **Détails** : voir `.ai/changelog.md` (entrée K3 2026-09-19). Incident évité : 1re passe logique inversée (mesure DOM 48 vs 43 inversée) → corrigée avant validation. Contrat `map-declutter.test.cjs` 17/17 (incl. garde anti-interférence paywall/z-index/tracking). ma-plage.spec.ts → path rollback (8 goto).
+- **Rebase post-#691** : branche rejouée `--onto` nouveau main (commit `c5f6de7` exclu — A13/LeadCapture désormais sur main), conflits `.ai/*` résolus par union (entrées G1 conservées + entrée K3 en tête).
+
+### Fichiers modifiés
+- `src/WorldMapView.jsx` — const `mapDeclutterOff` + 5 gardes + commentaire K3
+- `tests/e2e/ma-plage.spec.ts` — 8× `/?mapdeclutter=0` + note rollback
+- `scripts/tests/map-declutter.test.cjs` — NOUVEAU (17 checks)
+- `.ai/changelog.md`, `.ai/current_state.md` — handoff
+
+### Tests réalisés
+- [x] npm run build → exit 0 (389 modules)
+- [x] check-bundle-budget → 38.1 Ko ≤ 210
+- [x] php -l → N/A (0 .php)
+- [x] ux-smoke → 4 tokens OK
+- [x] playwright funnel+bottomnav → 21/21
+- [x] playwright ma-plage (rollback) → 8/8
+- [x] DOM 390px on/off + screenshots + 0 console error
+
+### Problèmes restants
+- [ ] UX-QA-001/002/003/004/006 : voir MASTER_AUDIT (#691 a traité A13 + UX-QA-002 ; reste à vérifier post-deploy)
+- [ ] 3 recherches non unifiées (hors scope, chantier séparé)
+
+### Prochaine action recommandée
+1. CI PR → merge si vert → deploy auto → QA prod : `/` sans héros, `/?mapdeclutter=0` chrome complet — Rôle : release/qa
+
+### Branche / PR
+- Branche : `agent/coding/k3-map-declutter`
+- PR : #692
+- Rollback : `?mapdeclutter=0` (produit) ou revert 1 commit
+
+---
 ## 2026-09-18 · Agent: coding-agent — SHIP G1 lead capture Supabase (branche `agent/coding/g1-supabase-leads`, ex-#685)
 
 ### Travail effectué
