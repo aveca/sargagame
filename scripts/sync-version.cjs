@@ -48,8 +48,6 @@ const gitSha = (process.env.GIT_SHA || '').slice(0, 8)
 
 // ── 1. version.json ────────────────────────────────────────────────────────
 const versionPayload = JSON.stringify({ v: current, date, b: gitSha || undefined }) + '\n'
-// ── 1. version.json ────────────────────────────────────────────────────────
-const versionPayload = JSON.stringify({ v: current, date, b: gitSha || undefined }) + '\n'
 const prevVersion = fs.existsSync(versionPath) ? fs.readFileSync(versionPath, 'utf-8') : ''
 if (prevVersion !== versionPayload) {
   fs.writeFileSync(versionPath, versionPayload, 'utf-8')
