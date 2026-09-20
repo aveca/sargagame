@@ -1,3 +1,9 @@
+## 2026-09-20 — SHIP G15 : CI gate smoke = exit 1 en échec (branche `agent/devops/g15-ci-gate`, ex-#685)
+
+**Agent** : devops-agent (release post-#704). **Périmètre verrouillé** : 3 fichiers — `scripts/ux-smoke.mjs` (existing tokens unchanged + bloc final : `SMOKE_GATE=PASS/FAIL` + `process.exitCode = 1` si gate rouge ; avant : toujours exit 0 → un `&&` ou une étape CI sans grep validait à tort), `scripts/tests/ci-gate.test.cjs` (NOUVEAU, 24 checks), `CLAUDE.md` (1 phrase de doctrine). Bug réparé découvert en séance : ce n'était pas que l'exit code — les workflows CI existants existaient déjà ; G15 = verrouillage du lien exécutable. **NON inclus** (scope distinct) : `secret-scan.yml` (couverture `.ai/plans/*`, = A12 sécurité).
+**Preuves** : ci-gate 24/24 · build exit 0 · budget 38,2 Ko · **smoke réel vert : tokens 4/4 + `SMOKE_GATE=PASS` + exit 0 mesuré** · vérification préalable sur main : ci-tests.yml/ci-funnel.yml/perf-budget.yml contiennent déjà build+budget+smoke+grep jets (rien à réappliquer, le pointage `continue-on-error` de perf-budget est APRÈS le budget → non bloquant OK).
+**Rollback** : revert du commit.
+
 ## 2026-09-20 — F2 LIVEPILL (branche `agent/ui/f2-livepill`, scope F2 uniquement)
 
 **Agent** : ui-agent (A13-hybrid REFUTEE au code : un seul systeme flag-driven par variante ; E11 ecarte : panel + paywall-touch requis). **Cause** : `.sg-live` fond rgba(0,158,142,.12), ancetres transparents jusqu'a BODY -> texte ink dependant de la carte (worst-case CR 1.41). **Fix (1 declaration)** : fond OPAQUE meme teinte `#e6f4f1` -> label 17.28/18.58, age 6.1 ; ni layout, ni href, ni tracking, ni dot/halo.
