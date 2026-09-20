@@ -1,3 +1,21 @@
+## 2026-09-20 · Agent: coding-agent — SHIP G3 mirror PayPal→Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : pass one-time + abos PayPal désormais reflétés dans `payment_grants` Supabase (mirror additif, zéro changement au chemin natif PayPal vérif).
+- **Détails** : `.ai/changelog.md` (entrée 2026-09-20 G3).
+
+### Tests réalisés
+- [x] paypal-grants-mirror ALL PASS (22 audits + 16/16 harness PHP) · php -l ×3 · build 0 · bundle 38,2 Ko · smoke 4/4 · funnel 13/13
+
+### Bilan série #685 — TOUT livré sauf décision A13-port
+- ✅ #686 E2/E9/A1 · #687 partenaires · #690 G1 leads · #691 A13 (concurrent, BSC live) · #695 E1/A7 · #704 G2 purge · #707 G15 CI gate · **8eG3 → à merger**
+- Reste ouverts uniquement : (a) A13 port ChasseDetail (option produit, surface secondaire), (b) A12 rotation secrets (bloqué fondateur), (c) secret-scan `.ai/plans/*` (mini-PR sécurity à part).
+
+### Branche / PR
+- Branche : `agent/security/g3-paypal-mirror` · PR : à créer
+
+---
+
 ## 2026-09-20 · Agent: devops-agent — SHIP G15 CI gate (branche `agent/devops/g15-ci-gate`, ex-#685)
 
 ### Travail effectué
