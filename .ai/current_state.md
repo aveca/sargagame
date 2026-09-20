@@ -9,6 +9,8 @@
 - PR : #701 (https://github.com/aveca/sargagame/pull/701)
 - Rollback : revert 1 déclaration (visuel pur)
 
+---
+
 ## 2026-09-19 · Agent: data-agent — SHIP G2 purge analytics (branche `agent/data/g2-purge-analytics`, ex-#685)
 
 ### Travail effectué
@@ -28,6 +30,19 @@
 
 ### Branche / PR
 - Branche : `agent/data/g2-purge-analytics` · PR : #704 (rebasée post-#696/#701, conflits docs union)
+
+---
+
+## 2026-09-20 · Agent: data-agent + reviewer (B2B SALES ENGINE PHASE 1 — PR #696 MERGÉE)
+
+### Travail effectué
+- **Résumé 1 ligne** : data model B2B sales engine mergé sur main — 11 tables (companies/establishments/contacts/enrichment/segments/prospects/scores/suppressions/consents/data_sources/audit_log) service_role-only + pont `outreach_contacts.prospect_id` ; fix review : test CRLF-safe + machine d'état complète (19 statuts).
+- **AUCUN envoi / appel / ingestion SIRENE / seed** — schéma seul.
+- **⚠️ POST-MERGE** : `apply-supabase-schema.yml` run 35486710257 → **FAILURE 401 Management API (SUPABASE_ACCESS_TOKEN expiré, BUG-2026-027)** → tables NON créées en prod.
+
+### Prochaine action recommandée
+1. **BLOQUANT fondateur** : régénérer `SUPABASE_ACCESS_TOKEN` (GH secret) OU coller le bloc « B2B SALES ENGINE » de `supabase/schema.sql` dans le SQL Editor Supabase — sinon Phase 2 ne peut écrire nulle part
+2. PHASE 2 : ingestion SIRENE Martinique (DRY_RUN) + scoring déterministe — Rôle : data-agent
 
 ---
 
