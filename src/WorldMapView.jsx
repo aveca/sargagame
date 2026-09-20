@@ -2071,7 +2071,7 @@ export default function WorldMapView({
               recommandée par défaut. Ancien strip TOP3 conservé en forme minimale
               pour les alternatives. Rollback ?maphero=0 → bloc masqué. ══ */}
           {(()=>{try{if(!mapDeclutterOff||/[?&]maphero=0/.test(window.location.search))return null}catch(_){/* ignore */}
-          if(!dataReady||beachList.length<3||selected||emailSent||heroFolded)return null
+          if(!dataReady||beachList.length<3||selected||emailSent||(heroFolded&&!mapDeclutterOff))return null
           const ranked=[...beachList].filter(b=>b.score!=null&&b.days&&b.days[day]!=null)
             .sort((a,b)=>{const sd=(b.score||0)-(a.score||0);if(sd!==0)return sd;return (b.conf?.[day]||0)-(a.conf?.[day]||0)})
           if(!ranked.length)return null
@@ -2303,6 +2303,7 @@ return (
             ZÉRO cadenas. C'est LE bénéfice premium visible sur la home (la carte). */}
         <div style={{
           position:"absolute",left:0,right:0,bottom:`calc(${120+navLift}px + env(safe-area-inset-bottom))`,
+          zIndex:1060,
           display:"flex",flexDirection:"column",alignItems:"center",gap:7,pointerEvents:"none",
         }}>
           {/* DÉCISION — pastille « Ta semaine » COMPACTE + PROACTIVE (griefs fondateur : ne pas

@@ -28,6 +28,8 @@ function main() {
 
   // 2. Les 5 panneaux décisionnels sont gardés (ni supprimés ni déplacés).
   ok(/if\(!mapDeclutterOff\|\|\/\[\?&\]maphero=0\//.test(WMV), 'garde héros « Où te baigner » (?maphero=0 préservé)')
+  ok(WMV.includes('zIndex:1060'), 'scrub au-dessus de la BottomNav (z1060 > z1040)')
+  ok(WMV.includes('heroFolded&&!mapDeclutterOff'), 'rollback ?mapdeclutter=0 force le héros même après pliage mémorisé')
   ok(WMV.includes('if(!mapDeclutterOff||myOff||!myBeachInfo'), 'garde carte Ma Plage inline (?mapmy=0 préservé)')
   ok(WMV.includes('(mapDeclutterOff&&(!mapV2||selected))'), 'garde sticker email carte')
   ok(WMV.includes('{mapDeclutterOff&&!proMapOff&&onOpenPro&&('), 'garde chip B2B légende (?promap=0 préservé)')
