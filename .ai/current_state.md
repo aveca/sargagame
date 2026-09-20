@@ -1,3 +1,16 @@
+## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : hero CTA PassOffer = livrable nommé (« Voir la prévision 7 jours → ») derrière rollback `?sgcta=0` + contrats A7/E1 verrouillés par tests (purge pw* déjà livrée via #686).
+- **Détails + preuves** : `.ai/changelog.md` (entrée 2026-09-19 E1/A7).
+- **Attention prochain scope** : A13 = ÉTAT HYBRIDE — `fcDays` lock-shift `i>1` + badge INCLUS présents (variante BSC) MAIS un 2e système local (commit #691 `c5f6de7b`→`f271417c0` rebaptisé, flag `j1FreeOn`, badge « J+1 OFFERT ») coexiste sur les mêmes zones ^ — VÉRIFIER lequel est live en prod, dédupliquer. Fichier `scripts/tests/forecast-j1-free.test.cjs` non encore repris.
+- **Note probe** : port 4173 était occupé par un vieux preview (sert l'ancien build) — toujours asserter le hash de chunk avant tests UI.
+
+### Branche / PR
+- Branche : `agent/coding/e1-cta-specific` (rebasée post-#692, conflits docs union) · PR : #695
+
+---
+
 ## 2026-09-19 · Agent: coding-agent (K3 MAP DECLUTTER — branche `agent/coding/k3-map-declutter`)
 
 ### Travail effectué
@@ -33,6 +46,7 @@
 - Rollback : `?mapdeclutter=0` (produit) ou revert 1 commit
 
 ---
+
 ## 2026-09-18 · Agent: coding-agent — SHIP G1 lead capture Supabase (branche `agent/coding/g1-supabase-leads`, ex-#685)
 
 ### Travail effectué

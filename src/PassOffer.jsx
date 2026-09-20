@@ -39,6 +39,10 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const uxLot3 = (()=>{try{return !/[?&]sguxlot3=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Lot 4 — badges sticky masqués ≤480px, doublon hero + overflow 57px (rollback ?sguxlot4=0).
   const uxLot4 = (()=>{try{return !/[?&]sguxlot4=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // E1 — CTA spécifique (rollback ?sgcta=0) : nomme le livrable (prévision
+  // 7 jours) au lieu du bénéfice vague. Longueur ≈ identique (pas de layout).
+  // Hors scope volontaire : subline durée/no-sub (E4), trust row (E11), preuve sociale (E2).
+  const ctaSpecific = (()=>{try{return !/[?&]sgcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const isComic = pwVariant === "comic"
 
   return (
@@ -98,7 +102,10 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               boxShadow: isComic ? "3px 3px 0 #0D0B14" : "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: isComic ? "2px solid #0D0B14" : "none",
             }}>
-              {_t(lang, "Voir mes plages propres →", "See my clean beaches →", "Ver mis playas limpias →")}
+              {_t(lang,
+                ctaSpecific ? "Voir la prévision 7 jours →" : "Voir mes plages propres →",
+                ctaSpecific ? "See the 7-day forecast →" : "See my clean beaches →",
+                ctaSpecific ? "Ver el pronóstico 7 días →" : "Ver mis playas limpias →")}
             </span>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
