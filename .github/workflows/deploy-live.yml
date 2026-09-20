@@ -59,7 +59,7 @@ jobs:
                 cp "$SRC" "/tmp/region-builds/$RID/api/copernicus/$F"
               fi
             done
-            # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle).
+            # Free tier "Ma plage" : fc7/ public (1 fichier/plage, série 7 j réelle).
             # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse…) + RÉGION (mq###/gp###)
             # — ids disjoints, les deux nécessaires (sentinelles→slug, autres→id direct).
             FCDIR="/tmp/region-builds/$RID/api/copernicus/fc7"
@@ -167,8 +167,9 @@ jobs:
               echo "  ✓ Copied ${{ matrix.region }}/$F"
             fi
           done
-          # Free tier « Ma plage » : fc7/ public (1 fichier/plage, série 7 j réelle).
-          # MQ/GP : fusion ROOT (slugs sentinelles) + RÉGION (mq###/gp###) — ids disjoints.
+          # Free tier "Ma plage" : fc7/ public (1 fichier/plage, série 7 j réelle).
+          # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse…) + RÉGION (mq###/gp###)
+          # — ids disjoints, les deux nécessaires (sentinelles→slug, autres→id direct).
           RID="${{ matrix.region }}"
           FCDIR="dist/api/copernicus/fc7"
           rm -rf "$FCDIR"; mkdir -p "$FCDIR"
@@ -231,91 +232,94 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
-# 4. HEALTH CHECK — verify all endpoints respond AND fingerprint matches
-   health-check:
-     name: Health Check (All 6 Domains)
-     needs: [deploy-pages, deploy-workers]
-     runs-on: ubuntu-latest
-     timeout-minutes: 15
-     strategy:
-       fail-fast: false
-       matrix:
-         domain:
-           - sargasses-martinique.com
-           - sargasses-guadeloupe.com
-           - sargassummiami.com
-           - sargassumpuntacana.com
-           - sargassumcancun.com
-           - sargazotulum.com
-     steps:
-       - name: Health check domain
-         run: |
-           echo "Checking https://${{ matrix.domain }}/..."
-           for i in 1 2 3; do
-             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}/")
-             if [ "$CODE" = "200" ]; then
-               echo "✅ ${{ matrix.domain }} — 200 OK"
-               exit 0
-             fi
-             echo "⚠️ Attempt $i: got $CODE, retrying in 5s..."
-             sleep 5
-           done
-           echo "❌ ${{ matrix.domain }} — failed after 3 attempts"
-           exit 1
+  # 4. HEALTH CHECK — verify all endpoints respond AND fingerprint matches
+  health-check:
+    name: Health Check (All 6 Domains)
+    needs: [deploy-pages, deploy-workers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        domain:
+          - sargasses-martinique.com
+          - sargasses-guadeloupe.com
+          - sargassummiami.com
+          - sargassumpuntacana.com
+          - sargassumcancun.com
+          - sargazotulum.com
+    steps:
+      - name: Health check domain
+        run: |
+          echo "Checking https://${{ matrix.domain }}/..."
+          for i in 1 2 3; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}/")
+            if [ "$CODE" = "200" ]; then
+              echo "✅ ${{ matrix.domain }} — 200 OK"
+              exit 0
+            fi
+            echo "⚠️ Attempt $i: got $CODE, retrying in 5s..."
+            sleep 5
+          done
+          echo "❌ ${{ matrix.domain }} — failed after 3 attempts"
+          exit 1
 
-       - name: Verify deployed fingerprint matches expected SHA
-         run: |
-           EXPECTED_SHA="${{ github.sha }}"
-           echo "Verifying fingerprint for ${{ matrix.domain }}..."
-           echo "Expected SHA: ${EXPECTED_SHA}"
-           
-           for i in 1 2 3; do
-             # Fetch version.json with cache-busting
-             VERSION_JSON=$(curl -s --max-time 10 -H "Cache-Control: no-cache" "https://${{ matrix.domain }}/version.json")
-             if [ -z "$VERSION_JSON" ]; then
-               echo "⚠️ Attempt $i: empty response from version.json, retrying in 5s..."
-               sleep 5
-               continue
-             fi
-             
-             # Extract build hash (b field) from version.json
-             DEPLOYED_HASH=$(echo "$VERSION_JSON" | grep -o '"b":"[^"]*"' | cut -d'"' -f4)
-             if [ -z "$DEPLOYED_HASH" ]; then
-               echo "⚠️ Attempt $i: no 'b' field in version.json, retrying in 5s..."
-               sleep 5
-               continue
-             fi
-             
-             echo "Deployed hash: ${DEPLOYED_HASH}"
-             
-             # Verify match (first 8 chars of SHA)
-             EXPECTED_SHORT="${EXPECTED_SHA:0:8}"
-             if [ "$DEPLOYED_HASH" = "$EXPECTED_SHORT" ]; then
-               echo "✅ ${{ matrix.domain }} — fingerprint MATCH (${DEPLOYED_HASH})"
-               exit 0
-             else
-               echo "❌ ${{ matrix.domain }} — fingerprint MISMATCH: expected ${EXPECTED_SHORT}, got ${DEPLOYED_HASH}"
-             fi
-             
-             echo "⚠️ Attempt $i: fingerprint mismatch, retrying in 10s..."
-             sleep 10
-           done
-           
-           echo "❌ ${{ matrix.domain }} — fingerprint verification failed after 3 attempts"
-           echo "Expected: ${EXPECTED_SHORT}"
-           exit 1
+      - name: Verify deployed fingerprint matches expected SHA
+        run: |
+          EXPECTED_SHA="${{ github.sha }}"
+          echo "Verifying fingerprint for ${{ matrix.domain }}..."
+          echo "Expected SHA: ${EXPECTED_SHA}"
+          
+          for i in 1 2 3; do
+            # Fetch version.json with cache-busting
+            VERSION_JSON=$(curl -s --max-time 10 -H "Cache-Control: no-cache" "https://${{ matrix.domain }}/version.json")
+            if [ -z "$VERSION_JSON" ]; then
+              echo "⚠️ Attempt $i: empty response from version.json, retrying in 5s..."
+              sleep 5
+              continue
+            fi
+            
+            # Extract build hash (b field) from version.json
+            DEPLOYED_HASH=$(echo "$VERSION_JSON" | grep -o '"b":"[^"]*"' | cut -d'"' -f4)
+            if [ -z "$DEPLOYED_HASH" ]; then
+              echo "⚠️ Attempt $i: no 'b' field in version.json, retrying in 5s..."
+              sleep 5
+              continue
+            fi
+            
+            echo "Deployed hash: ${DEPLOYED_HASH}"
+            
+            # Verify match (first 8 chars of SHA)
+            EXPECTED_SHORT="${EXPECTED_SHA:0:8}"
+            if [ "$DEPLOYED_HASH" = "$EXPECTED_SHORT" ]; then
+              echo "✅ ${{ matrix.domain }} — fingerprint MATCH (${DEPLOYED_HASH})"
+              exit 0
+            else
+              echo "❌ ${{ matrix.domain }} — fingerprint MISMATCH: expected ${EXPECTED_SHORT}, got ${DEPLOYED_HASH}"
+            fi
+            
+            echo "⚠️ Attempt $i: fingerprint mismatch, retrying in 10s..."
+            sleep 10
+          done
+          
+          echo "❌ ${{ matrix.domain }} — fingerprint verification failed after 3 attempts"
+          echo "Expected: ${EXPECTED_SHORT}"
+          exit 1
 
-       - name: Health check API endpoints
-         run: |
-           for EP in "/api/mollie-health" "/api/copernicus/forecast?region=martinique&days=1" "/_cron/drip"; do
-             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}${EP}")
-             if [ "$CODE" = "200" ]; then
-               echo "✅ ${{ matrix.domain }}${EP} — 200"
-             else
-               echo "⚠️ ${{ matrix.domain }}${EP} — got $CODE"
-             fi
-           done
+      - name: Health check API endpoints
+        run: |
+          for EP in "/api/mollie-health" "/api/copernicus/forecast?region=martinique&days=1" "/_cron/drip"; do
+            CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}${EP}")
+            if [ "$CODE" = "200" ]; then
+              echo "✅ ${{ matrix.domain }}${EP} — 200"
+            else
+              echo "⚠️ ${{ matrix.domain }}${EP} — got $CODE"
+            fi
+          done
 
   # 5. PURGE CACHE — Cloudflare CDN purge post-deploy (2-4 min target)
   purge-cache:
