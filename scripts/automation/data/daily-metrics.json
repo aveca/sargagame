@@ -5797,7 +5797,7 @@
   },
   {
     "date": "2026-09-20",
-    "time": "2026-09-20T04:28:25.173Z",
+    "time": "2026-09-20T11:10:54.454Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 608,
@@ -5806,18 +5806,18 @@
     "pipelineOk": true,
     "funnel": {
       "sessions": 105,
-      "lockClicks": 6,
-      "modalOpens": 25,
+      "lockClicks": 7,
+      "modalOpens": 24,
       "modalCloses": null,
       "modalCta": 1,
-      "ctaViews": 22,
-      "altViews": 7,
+      "ctaViews": 21,
+      "altViews": 8,
       "altClicks": 0,
       "groundTruth": 1,
       "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 27,
+      "emailSubmits": 31,
       "checkoutRedirects": 0,
       "onsiteCheckoutOpened": 1,
       "payOnsiteBack": 1,
@@ -5826,10 +5826,10 @@
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 5.7,
-        "lock_to_modal": 416.7,
-        "modal_to_cta": 4,
-        "cta_view_to_click": 4.5,
+        "session_to_lock": 6.7,
+        "lock_to_modal": 342.9,
+        "modal_to_cta": 4.2,
+        "cta_view_to_click": 4.8,
         "alt_view_to_click": 0,
         "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
@@ -5838,13 +5838,13 @@
       }
     },
     "email": {
-      "sent": 5714,
+      "sent": 5733,
       "delivered": null,
-      "opened": 51,
-      "clicked": 31,
+      "opened": 52,
+      "clicked": 30,
       "bounced": null,
-      "openRate": 0.89,
-      "clickRate": 60.78,
+      "openRate": 0.91,
+      "clickRate": 57.69,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -5895,17 +5895,17 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-20T04:28:32.678Z"
+      "fetchedAt": "2026-09-20T11:11:02.040Z"
     },
     "ga4": {
       "date": "2026-09-19",
       "mq": {
         "sessions": 10,
-        "users": 42
+        "users": 43
       },
       "gp": {
         "sessions": 0,
-        "users": 668
+        "users": 714
       }
     }
   }

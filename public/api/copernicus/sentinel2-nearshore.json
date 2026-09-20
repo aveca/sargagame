@@ -1,7 +1,7 @@
 {
   "source": "sentinel2-cdse",
   "provisional": true,
-  "updatedAt": "2026-09-20T04:20:34.707Z",
+  "updatedAt": "2026-09-20T11:01:09.277Z",
   "lookbackDays": 12,
   "note": null,
   "beaches": {
