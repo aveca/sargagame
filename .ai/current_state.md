@@ -6,7 +6,7 @@
 
 ### Branche / PR
 - Branche : `agent/ui/f2-livepill`
-- PR : à créer
+- PR : #701 (https://github.com/aveca/sargagame/pull/701)
 - Rollback : revert 1 déclaration (visuel pur)
 
 ## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
