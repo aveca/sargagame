@@ -392,7 +392,12 @@ create table if not exists public.companies (
   siren             text,
   legal_form        text,
   ape_code          text,
+  ape_label          text,
   legal_status      text not null default 'unknown', -- active | inactive | unknown
+  is_micro_enterprise boolean,
+  employee_range     text,            -- code tranche effectifs SIRENE (NN, 00, 01..53)
+  creation_date      date,
+  source_updated_at  timestamptz,     -- date du dernier constat source (import SIRENE)
   country_code      text not null default 'FR',
   source             text,
   source_record_id   text
@@ -421,6 +426,8 @@ create table if not exists public.company_establishments (
   siret                text,
   nic                  text,
   establishment_name   text,
+  siege                 boolean not null default false, -- etablissementSiege SIRENE
+  ape_code              text,                            -- activitePrincipaleEtablissement
   status               text not null default 'unknown', -- active | inactive | unknown
   address_line1        text,
   address_line2        text,
@@ -430,6 +437,7 @@ create table if not exists public.company_establishments (
   country_code          text not null default 'FR',
   latitude              double precision,
   longitude             double precision,
+  source_updated_at     timestamptz,   -- dernier constat SIRENE
   source                text,
   source_record_id      text
 );
@@ -574,25 +582,32 @@ alter table public.prospects enable row level security;
 revoke all on public.prospects from anon, authenticated;
 grant all on public.prospects to service_role;
 
--- 7) Score history (append-only by design).
+-- 7) Score history (append-only by design). Deterministic 6-component model
+--    (scripts/lib/b2b-scoring.cjs, model 'deterministic-v1') — never a single
+--    mutable number, never AI-picked: every component and every reason is
+--    stored to keep scores explainable.
 create table if not exists public.prospect_scores (
   id                    uuid primary key default gen_random_uuid(),
   created_at             timestamptz not null default now(),
   prospect_id            uuid not null references public.prospects(id) on delete cascade,
   score                  integer not null,
-  problem_score          integer not null default 0,
-  frequency_score        integer not null default 0,
-  cost_score             integer not null default 0,
-  willingness_score      integer not null default 0,
+  b2b_relevance          integer not null default 0,   -- 0-25
+  sector_relevance       integer not null default 0,   -- 0-25
+  commercial_potential   integer not null default 0,   -- 0-20
+  contactability         integer not null default 0,   -- 0-15
+  company_quality        integer not null default 0,   -- 0-10
+  data_confidence        integer not null default 0,   -- 0-5
   reasons                jsonb not null default '[]'::jsonb,
   model_version          text not null default 'deterministic-v1',
   computed_at            timestamptz not null default now(),
   constraint prospect_scores_score_chk check (score between 0 and 100),
   constraint prospect_scores_components_chk check (
-    problem_score between 0 and 25 and
-    frequency_score between 0 and 25 and
-    cost_score between 0 and 25 and
-    willingness_score between 0 and 25
+    b2b_relevance between 0 and 25 and
+    sector_relevance between 0 and 25 and
+    commercial_potential between 0 and 20 and
+    contactability between 0 and 15 and
+    company_quality between 0 and 10 and
+    data_confidence between 0 and 5
   )
 );
 
