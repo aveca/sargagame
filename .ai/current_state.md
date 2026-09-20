@@ -1,3 +1,20 @@
+## 2026-09-20 · Agent: devops-agent — SHIP G15 CI gate (branche `agent/devops/g15-ci-gate`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : ux-smoke.mjs sort désormais exit 1 (+`SMOKE_GATE=FAIL`) quand un token Gate échoue — fin du vert silencieux possible ; contrat ci-gate verrouillé.
+- Confirmé au passage : les workflows CI sur main avaient **déjà** build+budget+smoke+grep — pas de réapplication du plan historique, juste le fix.
+- `secret-scan.yml` (`.ai/plans/*` couverture) explicitement laissé à part (= scope A12 sécurité).
+
+### Prochaine action recommandée
+1. **G3** (mirror PayPal→Supabase, sensibilité paiement — DERNIER scope #685) — coding-agent
+2. Option A13 port ChasseDetail — décision fondateur
+3. #10e idée : secret-scan couverture `.ai/plans/*` — security-agent (séparé)
+
+### Branche / PR
+- Branche : `agent/devops/g15-ci-gate` · PR : à créer
+
+---
+
 ## 2026-09-20 · Agent: ui-agent (F2 LIVEPILL — branche `agent/ui/f2-livepill`)
 
 ### Travail effectué
