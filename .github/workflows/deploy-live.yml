@@ -1,10 +1,10 @@
-name: Deploy Live (Every Push → Production)
+name: Deploy Live (Every Push  Production)
 
 on:
   push:
     branches: [main]
-  # Dispatch depuis daily-copernicus.yml (data fraîche, runs non-full 00/12 UTC) —
-  # le commit bot ne re-déclenche pas ce workflow (GITHUB_TOKEN) → appel explicite
+  # Dispatch depuis daily-copernicus.yml (data frache, runs non-full 00/12 UTC) 
+  # le commit bot ne re-dclenche pas ce workflow (GITHUB_TOKEN)  appel explicite
   # via gh workflow run. + trigger manuel de debug.
   workflow_dispatch:
 
@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # 1. BUILD — single build, shared artifacts
+  # 1. BUILD  single build, shared artifacts
   build:
     name: Build & Bundle Check
     runs-on: ubuntu-latest
@@ -59,9 +59,9 @@ jobs:
                 cp "$SRC" "/tmp/region-builds/$RID/api/copernicus/$F"
               fi
             done
-            # Free tier "Ma plage" : fc7/ public (1 fichier/plage, série 7 j réelle).
-            # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse…) + RÉGION (mq###/gp###)
-            # — ids disjoints, les deux nécessaires (sentinelles→slug, autres→id direct).
+            # Free tier "Ma plage" : fc7/ public (1 fichier/plage, srie 7 j relle).
+            # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse) + RGION (mq###/gp###)
+            #  ids disjoints, les deux ncessaires (sentinellesslug, autresid direct).
             FCDIR="/tmp/region-builds/$RID/api/copernicus/fc7"
             rm -rf "$FCDIR"; mkdir -p "$FCDIR"
             if [ "$RID" = "mq" ] || [ "$RID" = "gp" ]; then
@@ -116,7 +116,7 @@ jobs:
           path: /tmp/region-builds/tulum
           retention-days: 1
 
-  # 2. DEPLOY CLOUDFLARE PAGES — 6 regions matrix
+  # 2. DEPLOY CLOUDFLARE PAGES  6 regions matrix
   deploy-pages:
     name: Deploy Cloudflare Pages (6 regions)
     needs: build
@@ -164,12 +164,12 @@ jobs:
             SRC="public/api/copernicus/${{ matrix.region }}/$F"
             if [ -f "$SRC" ]; then
               cp "$SRC" "dist/api/copernicus/$F"
-              echo "  ✓ Copied ${{ matrix.region }}/$F"
+              echo "   Copied ${{ matrix.region }}/$F"
             fi
           done
-          # Free tier "Ma plage" : fc7/ public (1 fichier/plage, série 7 j réelle).
-          # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse…) + RÉGION (mq###/gp###)
-          # — ids disjoints, les deux nécessaires (sentinelles→slug, autres→id direct).
+          # Free tier "Ma plage" : fc7/ public (1 fichier/plage, srie 7 j relle).
+          # MQ/GP : fusion ROOT (slugs sentinelles : grande-anse) + RGION (mq###/gp###)
+          #  ids disjoints, les deux ncessaires (sentinellesslug, autresid direct).
           RID="${{ matrix.region }}"
           FCDIR="dist/api/copernicus/fc7"
           rm -rf "$FCDIR"; mkdir -p "$FCDIR"
@@ -177,7 +177,7 @@ jobs:
             [ -d "public/api/copernicus/fc7" ] && cp -r "public/api/copernicus/fc7/." "$FCDIR/"
           fi
           [ -d "public/api/copernicus/$RID/fc7" ] && cp -r "public/api/copernicus/$RID/fc7/." "$FCDIR/"
-          echo "  ✓ fc7 fusionné: $(ls "$FCDIR" | wc -l) fichiers"
+          echo "   fc7 fusionn: $(ls "$FCDIR" | wc -l) fichiers"
 
       - name: Deploy to Cloudflare Pages
         run: |
@@ -188,7 +188,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
 
-  # 3. DEPLOY WORKERS — all workers in parallel
+  # 3. DEPLOY WORKERS  all workers in parallel
   deploy-workers:
     name: Deploy Workers (sg-payments, supabase-proxy, b2b-api)
     needs: build
@@ -236,7 +236,7 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
 
-  # 4. HEALTH CHECK — verify all endpoints respond AND fingerprint matches
+  # 4. HEALTH CHECK  verify all endpoints respond AND fingerprint matches
   health-check:
     name: Health Check (All 6 Domains)
     needs: [deploy-pages, deploy-workers]
@@ -259,13 +259,13 @@ jobs:
           for i in 1 2 3; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}/")
             if [ "$CODE" = "200" ]; then
-              echo "✅ ${{ matrix.domain }} — 200 OK"
+              echo " ${{ matrix.domain }}  200 OK"
               exit 0
             fi
-            echo "⚠️ Attempt $i: got $CODE, retrying in 5s..."
+            echo " Attempt $i: got $CODE, retrying in 5s..."
             sleep 5
           done
-          echo "❌ ${{ matrix.domain }} — failed after 3 attempts"
+          echo " ${{ matrix.domain }}  failed after 3 attempts"
           exit 1
 
       - name: Verify deployed fingerprint matches expected SHA
@@ -278,7 +278,7 @@ jobs:
             # Fetch version.json with cache-busting
             VERSION_JSON=$(curl -s --max-time 10 -H "Cache-Control: no-cache" "https://${{ matrix.domain }}/version.json")
             if [ -z "$VERSION_JSON" ]; then
-              echo "⚠️ Attempt $i: empty response from version.json, retrying in 5s..."
+              echo " Attempt $i: empty response from version.json, retrying in 5s..."
               sleep 5
               continue
             fi
@@ -286,7 +286,7 @@ jobs:
             # Extract build hash (b field) from version.json
             DEPLOYED_HASH=$(echo "$VERSION_JSON" | grep -o '"b":"[^"]*"' | cut -d'"' -f4)
             if [ -z "$DEPLOYED_HASH" ]; then
-              echo "⚠️ Attempt $i: no 'b' field in version.json, retrying in 5s..."
+              echo " Attempt $i: no 'b' field in version.json, retrying in 5s..."
               sleep 5
               continue
             fi
@@ -296,17 +296,17 @@ jobs:
             # Verify match (first 8 chars of SHA)
             EXPECTED_SHORT="${EXPECTED_SHA:0:8}"
             if [ "$DEPLOYED_HASH" = "$EXPECTED_SHORT" ]; then
-              echo "✅ ${{ matrix.domain }} — fingerprint MATCH (${DEPLOYED_HASH})"
+              echo " ${{ matrix.domain }}  fingerprint MATCH (${DEPLOYED_HASH})"
               exit 0
             else
-              echo "❌ ${{ matrix.domain }} — fingerprint MISMATCH: expected ${EXPECTED_SHORT}, got ${DEPLOYED_HASH}"
+              echo " ${{ matrix.domain }}  fingerprint MISMATCH: expected ${EXPECTED_SHORT}, got ${DEPLOYED_HASH}"
             fi
             
-            echo "⚠️ Attempt $i: fingerprint mismatch, retrying in 10s..."
+            echo " Attempt $i: fingerprint mismatch, retrying in 10s..."
             sleep 10
           done
           
-          echo "❌ ${{ matrix.domain }} — fingerprint verification failed after 3 attempts"
+          echo " ${{ matrix.domain }}  fingerprint verification failed after 3 attempts"
           echo "Expected: ${EXPECTED_SHORT}"
           exit 1
 
@@ -315,13 +315,13 @@ jobs:
           for EP in "/api/mollie-health" "/api/copernicus/forecast?region=martinique&days=1" "/_cron/drip"; do
             CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "https://${{ matrix.domain }}${EP}")
             if [ "$CODE" = "200" ]; then
-              echo "✅ ${{ matrix.domain }}${EP} — 200"
+              echo " ${{ matrix.domain }}${EP}  200"
             else
-              echo "⚠️ ${{ matrix.domain }}${EP} — got $CODE"
+              echo " ${{ matrix.domain }}${EP}  got $CODE"
             fi
           done
 
-  # 5. PURGE CACHE — Cloudflare CDN purge post-deploy (2-4 min target)
+  # 5. PURGE CACHE  Cloudflare CDN purge post-deploy (2-4 min target)
   purge-cache:
     name: Purge Cache (All 6 Zones)
     needs: [deploy-pages, deploy-workers]
@@ -336,10 +336,10 @@ jobs:
             curl -s -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE/purge_cache" \
               -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
               -H "Content-Type: application/json" \
-              -d '{"purge_everything":true}' | grep -q '"success":true' && echo "✅ $ZONE purged" || echo "⚠️ $ZONE purge failed (check token perms)"
+              -d '{"purge_everything":true}' | grep -q '"success":true' && echo " $ZONE purged" || echo " $ZONE purge failed (check token perms)"
           done
 
-  # 6. NOTIFY — success/failure summary
+  # 6. NOTIFY  success/failure summary
   notify:
     name: Notify Deploy Result
     needs: [health-check, purge-cache]
@@ -349,12 +349,12 @@ jobs:
       - name: Deploy status
         run: |
           if [ "${{ needs.health-check.result }}" = "success" ]; then
-            echo "🚀 DEPLOY SUCCESS — all 6 domains live!"
-            echo "📦 Bundle: ${{ needs.build.outputs.bundle_size }} bytes"
-            echo "🏷️ Version: ${{ needs.build.outputs.version }}"
-            echo "✅ All 6 domains healthy"
+            echo " DEPLOY SUCCESS  all 6 domains live!"
+            echo " Bundle: ${{ needs.build.outputs.bundle_size }} bytes"
+            echo " Version: ${{ needs.build.outputs.version }}"
+            echo " All 6 domains healthy"
           else
-            echo "❌ DEPLOY FAILED — check workflow logs"
-            echo "🔍 Failed job: ${{ needs.health-check.result }}"
+            echo " DEPLOY FAILED  check workflow logs"
+            echo " Failed job: ${{ needs.health-check.result }}"
             exit 1
           fi
