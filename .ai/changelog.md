@@ -3,6 +3,13 @@
 **Agent** : ui-agent (A13-hybrid REFUTEE au code : un seul systeme flag-driven par variante ; E11 ecarte : panel + paywall-touch requis). **Cause** : `.sg-live` fond rgba(0,158,142,.12), ancetres transparents jusqu'a BODY -> texte ink dependant de la carte (worst-case CR 1.41). **Fix (1 declaration)** : fond OPAQUE meme teinte `#e6f4f1` -> label 17.28/18.58, age 6.1 ; ni layout, ni href, ni tracking, ni dot/halo.
 **Preuves** : f2-livepill 9/9, build 0, bundle 38.2, smoke 4/4 exit 0, E2E bottomnav+funnel 21/21, computed navigateur fond opaque mobile+desktop.
 **Fichiers** : `src/app-runtime.css` (1 declaration + commentaire), `scripts/tests/f2-livepill.test.cjs` (NOUVEAU). Exclusions : composant, map, paywall, checkout, F3/F4, E11.
+
+## 2026-09-19 — SHIP G2 : purge analytics_events > 90j sans survivants (branche `agent/data/g2-purge-analytics`, ex-#685)
+
+**Agent** : data-agent (release post-#695). **Périmètre verrouillé** : 2 fichiers — `scripts/automation/purge-analytics.cjs` (DELETE **toujours en tête de file `Range: 0-999`** + boucle bornée ; l'ancien offset croissant sautait 1 lot/2 après décalage → des lignes >90j restaient à jamais), `scripts/automation/purge-analytics.test.cjs` (NOUVEAU : mock HTTP PostgREST en process enfant, zéro appel prod). Wiring cron déjà actif sur main (`daily-copernicus.yml:600`), inchangé.
+**Preuves** : purge-analytics 14/14 (2500 périmées purgées intégralement ≥3 DELETE en tête de file, aucune fraîche supprimée, `--dry` 0 DELETE, sans clé 0 hit HTTP, cutoff ≈ 90j) · build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 · Playwright funnel-payment 13/13.
+**Rollback** : revert du commit (le job re-devient partiel — pas de corruption possible, DELETE idempotent).
+
 ## 2026-09-19 — SHIP E1/A7 : CTA PassOffer spécifique + verrouillage chemin unique (branche `agent/coding/e1-cta-specific`)
 
 **Agent** : coding-agent (release post-#690, worktree `sargagame-g1`). **Périmètre verrouillé** : 3 fichiers — `src/PassOffer.jsx` (UNIQUEMENT E1 : hero CTA « Voir la prévision 7 jours → » FR/EN/ES, flag `ctaSpecific` rollback `?sgcta=0`, copy historique conservée ; le sticky ce rescue #688 NON touché — application chirurgicale, pas de copie de fichier #685), `scripts/tests/passoffer-cta-copy.test.cjs` (E1, 9 checks), `scripts/tests/passoffer-paths.test.cjs` (A7, 11 checks). A7 en lui-même (purge pw*) était déjà livré dans #686 ; cette PR verrouille le contrat par test.

@@ -9,6 +9,28 @@
 - PR : #701 (https://github.com/aveca/sargagame/pull/701)
 - Rollback : revert 1 déclaration (visuel pur)
 
+## 2026-09-19 · Agent: data-agent — SHIP G2 purge analytics (branche `agent/data/g2-purge-analytics`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : purge `analytics_events` >90j réparée (DELETE toujours `Range: 0-999` en tête de file, plus de survivants) + test mock PostgREST.
+- **Audit A13 livré la même session** : variante live fiche = **BeachSheetComic** (pas ChasseDetail) — A13 `(J+1 offert)` déjà en prod via #691 (probe prod : J+0 « Auj » + J+1 « INCLUS » + cadenas J+2→J+6). ChasseDetail = surface secondaire (`?mapdetail=1` / bras arena_loop interne), J+1 y reste teaser verrouillé — port possible non décidé (attente fondateur). (Note post-course : une revue code parallèle a conclu un seul système flag-driven, cf. entrée F2.)
+
+### Fichiers modifiés (2 + docs)
+- `scripts/automation/purge-analytics.cjs`, `scripts/automation/purge-analytics.test.cjs`, `.ai/*`
+
+### Tests réalisés
+- [x] purge-analytics 14/14 · build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 · funnel-payment 13/13
+
+### Prochaine action recommandée
+1. **G15** : diff ciblé réel (ci-tests.yml contient DÉJÀ le gate complet — ne pas réappliquer le plan historique) — coding-agent
+2. **G3** (mirror PayPal, sensible paiement) — coding-agent, dernier
+3. Option A13 port ChasseDetail — décision fondateur
+
+### Branche / PR
+- Branche : `agent/data/g2-purge-analytics` · PR : #704 (rebasée post-#696/#701, conflits docs union)
+
+---
+
 ## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
 
 ### Travail effectué
