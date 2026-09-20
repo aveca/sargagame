@@ -180,7 +180,7 @@ jobs:
       - name: Deploy to Cloudflare Pages
         run: |
           echo "Deploying ${{ env.PROJECT }}..."
-          npx wrangler pages deploy dist --project-name=${{ env.PROJECT }} --branch=main
+          npx wrangler pages deploy dist --project-name=${{ env.PROJECT }} --commit-hash=${{ github.sha }} --commit-message="${{ github.event.head_commit.message || github.sha }}"
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
