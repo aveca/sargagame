@@ -1,3 +1,8 @@
+## 2026-09-20 — F2 LIVEPILL (branche `agent/ui/f2-livepill`, scope F2 uniquement)
+
+**Agent** : ui-agent (A13-hybrid REFUTEE au code : un seul systeme flag-driven par variante ; E11 ecarte : panel + paywall-touch requis). **Cause** : `.sg-live` fond rgba(0,158,142,.12), ancetres transparents jusqu'a BODY -> texte ink dependant de la carte (worst-case CR 1.41). **Fix (1 declaration)** : fond OPAQUE meme teinte `#e6f4f1` -> label 17.28/18.58, age 6.1 ; ni layout, ni href, ni tracking, ni dot/halo.
+**Preuves** : f2-livepill 9/9, build 0, bundle 38.2, smoke 4/4 exit 0, E2E bottomnav+funnel 21/21, computed navigateur fond opaque mobile+desktop.
+**Fichiers** : `src/app-runtime.css` (1 declaration + commentaire), `scripts/tests/f2-livepill.test.cjs` (NOUVEAU). Exclusions : composant, map, paywall, checkout, F3/F4, E11.
 ## 2026-09-19 — SHIP E1/A7 : CTA PassOffer spécifique + verrouillage chemin unique (branche `agent/coding/e1-cta-specific`)
 
 **Agent** : coding-agent (release post-#690, worktree `sargagame-g1`). **Périmètre verrouillé** : 3 fichiers — `src/PassOffer.jsx` (UNIQUEMENT E1 : hero CTA « Voir la prévision 7 jours → » FR/EN/ES, flag `ctaSpecific` rollback `?sgcta=0`, copy historique conservée ; le sticky ce rescue #688 NON touché — application chirurgicale, pas de copie de fichier #685), `scripts/tests/passoffer-cta-copy.test.cjs` (E1, 9 checks), `scripts/tests/passoffer-paths.test.cjs` (A7, 11 checks). A7 en lui-même (purge pw*) était déjà livré dans #686 ; cette PR verrouille le contrat par test.
