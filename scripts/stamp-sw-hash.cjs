@@ -48,6 +48,9 @@ if (!fs.existsSync(srcDir)) {
   process.exit(0)
 }
 
+// Récupère le SHA Git depuis la variable d'environnement (8 premiers caractères)
+const gitSha = (process.env.GIT_SHA || '').slice(0, 8)
+
 // Hash récursif et DÉTERMINISTE du contenu de src/ (chemins triés).
 function walk(dir, acc) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -72,9 +75,13 @@ for (const f of files) {
   h.update('\0')
   h.update(fs.readFileSync(f))
 }
-const hash = h.digest('hex').slice(0, 8)
+const sourceHash = h.digest('hex').slice(0, 8)
 
-// Pose le hash de build dans dist/version.json (champ `b`) → la garde de version page-level
+// Le fingerprint de déploiement utilise le SHA Git (pour traçabilité Git),
+// le hash de build (sourceHash) est utilisé pour le CACHE_NAME du SW.
+const deployFingerprint = gitSha || sourceHash
+
+// Pose le fingerprint de déploiement dans dist/version.json (champ `b`) → la garde de version page-level
 // (index.html, fetch /version.json no-store) reload sur CHAQUE deploy de CODE. Sans ça elle ne
 // comparait que `v` (= release-notes `current`, inchangé sur un deploy de code) → ne reloadait
 // JAMAIS sur un fix de code = cause « version grise coincée » (fondateur 18/06). `v` reste pour
@@ -83,10 +90,10 @@ try {
   const vp = path.join(root, 'dist', 'version.json')
   if (fs.existsSync(vp)) {
     const vj = JSON.parse(fs.readFileSync(vp, 'utf-8'))
-    if (vj.b !== hash) {
-      vj.b = hash
+    if (vj.b !== deployFingerprint) {
+      vj.b = deployFingerprint
       fs.writeFileSync(vp, JSON.stringify(vj) + '\n', 'utf-8')
-      console.log(`[stamp-sw] dist/version.json b → ${hash}`)
+      console.log(`[stamp-sw] dist/version.json b → ${deployFingerprint} (gitSha: ${gitSha || 'N/A'}, sourceHash: ${sourceHash})`)
     }
   }
 } catch (e) { console.error('[stamp-sw] version.json (non bloquant):', e.message) }
@@ -94,13 +101,13 @@ try {
 let sw = fs.readFileSync(swPath, 'utf-8')
 const original = sw
 
-// 1) CACHE_NAME ← hash de build. Tolère un suffixe -hash déjà présent (re-stamp).
+// 1) CACHE_NAME ← hash de build (sourceHash). Tolère un suffixe -hash déjà présent (re-stamp).
 const m = sw.match(/const CACHE_NAME = '(sargasses-v\d+)(?:-[a-z0-9]+)?'/)
 if (!m) {
   console.error("[stamp-sw] CACHE_NAME introuvable dans dist/sw.js (format inattendu).")
   process.exit(1)
 }
-const stamped = `${m[1]}-${hash}`
+const stamped = `${m[1]}-${sourceHash}`
 sw = sw.replace(m[0], `const CACHE_NAME = '${stamped}'`)
 
 // 2) PRECACHE_ASSETS ← tout le graphe JS/CSS buildé + data verdict. Précaché par le SW à

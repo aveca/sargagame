@@ -3,7 +3,7 @@
  * sync-version.cjs — UN SEUL point de bump pour toute la flotte.
  *
  * Lit public/release-notes.json (`current`) et synchronise :
- *   1. public/version.json   → { v: current, date }   (ping cache-bust + Journal du Veilleur)
+ *   1. public/version.json   → { v: current, date, b: <git-sha> } (ping cache-bust + fingerprint deploy)
  *   2. public/sw.js          → const CACHE_NAME = 'sargasses-<current>'
  *
  * Pourquoi : avant, le CACHE_NAME du SW était bumpé À LA MAIN et version.json
@@ -15,6 +15,9 @@
  * Lancé en `prebuild` (npm run build) → s'applique à chaque build de chaque région,
  * donc les 5 dossiers FTP partent toujours de la même version. Lançable seul :
  *   node scripts/sync-version.cjs
+ *
+ * Variable d'environnement optionnelle:
+ *   GIT_SHA — hash du commit Git (8 premiers caractères) pour fingerprint de déploiement
  */
 const fs = require('fs')
 const path = require('path')
@@ -40,12 +43,15 @@ if (!Array.isArray(notes.releases) || !notes.releases.length || notes.releases[0
 }
 const date = (notes.releases[0].date) || new Date().toISOString().slice(0, 10)
 
+// Récupère le SHA Git depuis la variable d'environnement (8 premiers caractères)
+const gitSha = (process.env.GIT_SHA || '').slice(0, 8)
+
 // ── 1. version.json ────────────────────────────────────────────────────────
-const versionPayload = JSON.stringify({ v: current, date }) + '\n'
+const versionPayload = JSON.stringify({ v: current, date, b: gitSha || undefined }) + '\n'
 const prevVersion = fs.existsSync(versionPath) ? fs.readFileSync(versionPath, 'utf-8') : ''
 if (prevVersion !== versionPayload) {
   fs.writeFileSync(versionPath, versionPayload, 'utf-8')
-  console.log(`[sync-version] public/version.json → {"v":"${current}","date":"${date}"}`)
+  console.log(`[sync-version] public/version.json → ${JSON.stringify({ v: current, date, b: gitSha || undefined })}`)
 } else {
   console.log(`[sync-version] public/version.json déjà à jour (${current})`)
 }
