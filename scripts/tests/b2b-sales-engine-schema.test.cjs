@@ -9,7 +9,8 @@ const fs = require('fs')
 const path = require('path')
 
 const ROOT = path.resolve(__dirname, '..', '..')
-const schema = fs.readFileSync(path.join(ROOT, 'supabase/schema.sql'), 'utf8')
+// Normalize line endings: working copies on Windows are CRLF (autocrlf), CI is LF.
+const schema = fs.readFileSync(path.join(ROOT, 'supabase/schema.sql'), 'utf8').replace(/\r\n/g, '\n')
 
 let failures = 0
 function ok(cond, label) {
@@ -48,7 +49,7 @@ function main() {
   ok(schema.includes('alter table public.outreach_contacts\n  add column if not exists prospect_id uuid'),
     'existing outreach table reused; no third sender model')
 
-  ok(schema.includes('model_version            text not null default \'deterministic-v1\''),
+  ok(/model_version\s+text\s+not\s+null\s+default\s+'deterministic-v1'/.test(schema),
     'score provenance/model version stored')
   ok(schema.includes('field_name             text not null') &&
      schema.includes('fetched_at             timestamptz not null default now()'),
@@ -56,6 +57,19 @@ function main() {
   ok(schema.includes('legal_basis            text') &&
      schema.includes('purpose               text not null'),
     'legal-basis ledger present')
+
+  // Full target state machine (Phase 6) must be representable WITHOUT a later
+  // constraint migration on a PII table.
+  const chk = schema.match(/constraint prospects_status_chk check \([\s\S]*?\)\s*\)/)
+  ok(!!chk, 'prospects_status_chk present')
+  const required = [
+    'new', 'enriching', 'enriched', 'scored', 'ready', 'contacted', 'replied',
+    'interested', 'not_interested', 'callback_requested', 'qualified', 'converted',
+    'concierge', 'paid', 'lost', 'bounced', 'opted_out', 'suppressed', 'paused',
+  ]
+  for (const s of required) {
+    ok(!!chk && chk[0].includes(`'${s}'`), `prospect status allowed: ${s}`)
+  }
 
   console.log(failures === 0
     ? '\nB2B-SALES-SCHEMA TESTS: ALL PASS'

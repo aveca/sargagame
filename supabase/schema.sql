@@ -550,8 +550,9 @@ create table if not exists public.prospects (
   metadata               jsonb not null default '{}'::jsonb,
   constraint prospects_status_chk check (
     status in (
-      'new','enriched','scored','ready','contacted','replied',
-      'qualified','concierge','paid','lost','suppressed','paused'
+      'new','enriching','enriched','scored','ready','contacted','replied',
+      'interested','not_interested','callback_requested','qualified','converted',
+      'concierge','paid','lost','bounced','opted_out','suppressed','paused'
     )
   )
 );
