@@ -10,6 +10,13 @@
 **Preuves** : purge-analytics 14/14 (2500 périmées purgées intégralement ≥3 DELETE en tête de file, aucune fraîche supprimée, `--dry` 0 DELETE, sans clé 0 hit HTTP, cutoff ≈ 90j) · build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 · Playwright funnel-payment 13/13.
 **Rollback** : revert du commit (le job re-devient partiel — pas de corruption possible, DELETE idempotent).
 
+## 2026-09-20 — B2B SALES ENGINE PHASE 1 : data model (PR #696, branche `agent/data/b2b-sales-engine`)
+
+**Agent** : data-agent (Phase 1) + review/fix (agent QA). **Périmètre** : 3 fichiers — `supabase/schema.sql` (bloc additif idempotent, 11 tables : companies/company_establishments/contacts/company_enrichment/segments/prospects/prospect_scores/suppressions/consents/data_sources/b2b_audit_log + pont `outreach_contacts.prospect_id`, toutes RLS service_role-only, zéro policy anon), `scripts/tests/b2b-sales-engine-schema.test.cjs` (contrat statique, 63 assertions), `docs/B2B_SALES_ENGINE_DATA_MODEL.md`. AUCUN envoi, AUCUN appel, AUCUNE ingestion SIRENE, money-path/funnel B2C/Mollie intouchés. Application prod uniquement via merge → `apply-supabase-schema.yml`.
+**Fix revue (commit 59216f427)** : test rendu CRLF-safe (normalisation \r\n → échec local Windows masqué en CI Linux) + assertion `model_version` en regex (exact-space match fragile) + `prospects_status_chk` élargi à la machine cible Phase 6 (19 statuts : +enriching/interested/not_interested/callback_requested/converted/bounced/opted_out) pour éviter une migration de contrainte ultérieure sur table PII.
+**Preuves** : test schéma 63/63 local · CI #696 7/7 VERT (test-frontend, playwright, funnel, perf, scan, branch-policy, GitGuardian).
+**Rollback** : revert du merge (les tables créées restent vides/inertes, service_role-only) ; aucun flag nécessaire (aucun code actif).
+
 ## 2026-09-19 — SHIP E1/A7 : CTA PassOffer spécifique + verrouillage chemin unique (branche `agent/coding/e1-cta-specific`)
 
 **Agent** : coding-agent (release post-#690, worktree `sargagame-g1`). **Périmètre verrouillé** : 3 fichiers — `src/PassOffer.jsx` (UNIQUEMENT E1 : hero CTA « Voir la prévision 7 jours → » FR/EN/ES, flag `ctaSpecific` rollback `?sgcta=0`, copy historique conservée ; le sticky ce rescue #688 NON touché — application chirurgicale, pas de copie de fichier #685), `scripts/tests/passoffer-cta-copy.test.cjs` (E1, 9 checks), `scripts/tests/passoffer-paths.test.cjs` (A7, 11 checks). A7 en lui-même (purge pw*) était déjà livré dans #686 ; cette PR verrouille le contrat par test.
