@@ -503,6 +503,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   //    free7 → le strip s'affiche comme chez un payant. Premium garde la valeur :
   //    multi-plages, comparaison, alertes, historique. Rollback global : ?freefc=0 côté App. ──
   const free7=!isPremium&&isMyBeach&&Array.isArray(freeForecast)&&freeForecast.length>=2
+  // A13 J+1 PORT (2026-09-20, miroir BeachSheetComic Sargasses_PROD.jsx:4656) :
+  // J+1 (index 1) offert aux non-premium sur la variante live (pins carte).
+  // Rollback : ?j1_free=0 (même flag, même sémantique).
+  const j1FreeOn=(()=>{try{return !/[?&]j1_free=0/.test(window.location.search)}catch(_){return true}})()
   const fcUi=free7?freeForecast:fc7
   const fcTrendKey=useMemo(()=>fc7?fcTrend(fc7):"alert",[fc7])
   const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
@@ -722,12 +726,20 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
                 )
                 const dv=vof(d.status), far=d.type==="horizon"
                 const conf=d.confidence!=null?Math.round(d.confidence):null
-                if(isPremium||free7) return (
-                  /* PREMIUM / « Ma plage » suivi gratuit : jour débloqué — statut réel
-                     coloré (même série que premium), plus de cadenas */
-                  <div key={i} className={`lc-fc-cell s-${dv.st} now${far?" far":""}`} style={d.minR!=null?{position:"relative"}:undefined}>
+                // A13 J+1 PORT : J+1 (i===1) débloqué comme chez un payant quand
+                // j1_free actif (donnée réelle d, jamais sans série — le !d ci-dessus
+                // reste en cadenas). J+2+ (i>1) inchangés → teaser premium.
+                if(isPremium||free7||(j1FreeOn&&i===1)) return (
+                  /* PREMIUM / « Ma plage » suivi gratuit / J+1 offert : jour débloqué —
+                     statut réel coloré (même série que premium), plus de cadenas */
+                  <div key={i} className={`lc-fc-cell s-${dv.st} now${far?" far":""}`} style={d.minR!=null?{position:"relative"}:undefined}
+                    onClick={(!isPremium&&!free7&&j1FreeOn&&i===1)?(e=>{try{e.stopPropagation()}catch(_){}}):undefined}>
                     <span className="lc-fc-day">{fcLetter(d,lang)}</span>
                     <span className="lc-fc-dot">{conf!=null?conf:"•"}</span>
+                    {/* A13 J+1 PORT — badge INCLUS (miroir BeachSheetComic) */}
+                    {!isPremium&&!free7&&j1FreeOn&&i===1&&(
+                      <span className="lc-fc-inclus">{_t({fr:"INCLUS",en:"INCLUDED",es:"INCLUIDO"})}</span>
+                    )}
                   </div>
                 )
                 return (
@@ -2297,6 +2309,9 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-fc-cell.teaser.far{opacity:.62}
 .lc-fc-cell.teaser .lc-fc-dot{font-size:11px;opacity:.78}
 .lc-fc-conf{font:800 8px/1 "Bricolage Grotesque",system-ui,sans-serif;opacity:.72}
+/* A13 J+1 PORT — badge INCLUS (grammaire du pill « Ta plage · offerts » : fond
+   #1EC8B0, encre, uppercase 8px). Marque le J+1 offert, jamais couleur seule. */
+.lc-fc-inclus{font:800 8px/1 "Bricolage Grotesque",system-ui,sans-serif;letter-spacing:.05em;text-transform:uppercase;background:#1EC8B0;color:#0d0b14;border:1.5px solid #0d0b14;border-radius:999;padding:2px 5px;margin-top:2px}
 .lc-fc-legend{font:700 9.5px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);opacity:.62;margin-top:7px;text-align:center}
 .lc-fc-line{font:800 11px/1.3 "Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);margin-top:9px;text-align:center;
   background:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:8px 9px;box-shadow:2px 2px 0 var(--ink)}
