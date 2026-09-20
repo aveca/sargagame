@@ -269,6 +269,77 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
     expect(mapEvents.length).toBeGreaterThan(0)
   })
 
+  test("LeadCapture mobile ne recouvre pas les onglets et reste sous le paywall", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.addInitScript(() => {
+      localStorage.removeItem("sg_lead_dismissed")
+      sessionStorage.clear()
+      localStorage.setItem("sg_cookie_consent", "dismissed")
+    })
+    await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await page.waitForTimeout(1500)
+    await dismissPremiumModal(page)
+
+    // Force the real two-scroll trigger without waiting 15s.
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("scroll"))
+      window.dispatchEvent(new Event("scroll"))
+    })
+    const lead = page.locator('[role="region"][aria-label*="Capture email"]').first()
+    await expect(lead).toBeVisible({ timeout: 5000 })
+
+    const navHitTests = await page.locator("nav.sg-bottom-nav button").evaluateAll((buttons) => buttons.map((el) => {
+      const r = el.getBoundingClientRect()
+      const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+      return !!hit && (hit === el || el.contains(hit))
+    }))
+    expect(navHitTests.length).toBeGreaterThan(0)
+    expect(navHitTests.every(Boolean)).toBe(true)
+
+    // Real user action: navigation remains clickable while the banner is visible.
+    const listTab = page.locator('nav.sg-bottom-nav button:has-text("Plages"), nav.sg-bottom-nav button:has-text("Beaches"), nav.sg-bottom-nav button:has-text("Playas")').first()
+    await listTab.click()
+    await page.waitForTimeout(600)
+    const visibleMapLabels = await page.evaluate((sel) => {
+      const labels = Array.from(document.querySelectorAll(sel))
+      return labels.filter((el) => {
+        const rect = el.getBoundingClientRect()
+        return rect.width > 0 && rect.height > 0 && getComputedStyle(el).visibility !== "hidden" && getComputedStyle(el).opacity !== "0"
+      }).length
+    }, selectors.mapPin)
+    expect(visibleMapLabels).toBe(0)
+
+    // Reload the map and reopen the banner so paywall layering is tested independently.
+    await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
+    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await page.waitForTimeout(1500)
+    await dismissPremiumModal(page)
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event("scroll"))
+      window.dispatchEvent(new Event("scroll"))
+    })
+    const leadAgain = page.locator('[role="region"][aria-label*="Capture email"]').first()
+    await expect(leadAgain).toBeVisible({ timeout: 5000 })
+
+    const premiumTab = page.locator(selectors.bottomNavTabPremium).first()
+    await expect(premiumTab).toBeVisible({ timeout: 5000 })
+    await premiumTab.click()
+    const modal = page.locator(selectors.paywallModal).first()
+    await expect(modal).toBeVisible({ timeout: 8000 })
+
+    const layers = await page.evaluate(() => {
+      const banner = document.querySelector('[role="region"][aria-label*="Capture email"]')
+      const panel = document.querySelector('.sg-modal-panel, [role="dialog"]')
+      return {
+        bannerZ: banner ? Number.parseInt(getComputedStyle(banner).zIndex || "0", 10) : 0,
+        panelZ: panel ? Number.parseInt(getComputedStyle(panel).zIndex || "0", 10) : 0,
+      }
+    })
+    expect(layers.bannerZ).toBe(1250)
+    expect(layers.panelZ).toBeGreaterThan(layers.bannerZ)
+  })
+
   test("rollback ?sgnav=0 cache la BottomNav", async ({ page }) => {
     await page.goto(TEST_URL + "?sgnav=0", { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")

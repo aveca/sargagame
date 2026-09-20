@@ -140,7 +140,7 @@ export default function LeadCapture() {
     <div
       style={{
         position: "fixed",
-        bottom: 0,
+        bottom: isMobile ? "calc(90px + env(safe-area-inset-bottom,0px))" : 0,
         left: 0,
         right: 0,
         zIndex: 1250,
