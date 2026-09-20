@@ -47,7 +47,7 @@ jobs:
           # puntacana: sargagame-puntacana, rivieramaya: sargagame-rivieramaya, tulum: sargagame-tulum
           for RID in mq gp florida puntacana rivieramaya tulum; do
             echo "Building region $RID..."
-            VITE_REGION=$RID npm run build
+            VITE_REGION=$RID GIT_SHA=${{ github.sha }} npm run build
             # Copy dist to region-specific folder
             mkdir -p /tmp/region-builds/$RID
             cp -r dist/* /tmp/region-builds/$RID/
@@ -71,6 +71,7 @@ jobs:
           done
         env:
           DEPLOY_TARGET: cloudflare
+          GIT_SHA: ${{ github.sha }}
 
       - name: Version stamp for MQ
         id: version-mq
