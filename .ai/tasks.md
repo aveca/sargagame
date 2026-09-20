@@ -1,4 +1,8 @@
-## F2 LIVEPILL — [~] fix local 2026-09-20 (branche `agent/ui/f2-livepill`, scope F2 uniquement)
+## E11 TRUST ROW — [~] fix local 2026-09-20 (branche agent/ui/e11-trust-row, baseline 11,2 % gelee)
+- **Fix** : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0).
+- **Preuves** : trust-row 13/13, E2E e11 2/2 + j0 + funnel, build 0, bundle 38.2, smoke 4/4, screenshot 390px.
+- **NEXT** : PR, CI, merge, deploy, QA prod, mesure J+7 vs 11,2 %.
+## F2 LIVEPILL — [x] done + VALIDE PROD 2026-09-20 (PR #701 mergee, QA prod CR 18.58) 2026-09-20 (branche `agent/ui/f2-livepill`, scope F2 uniquement)
 - **Fix** : `.sg-live` fond opaque `#e6f4f1` (worst-case 1.41 → label 17+/18+, age 6.1 ≥ AA).
 - **Preuves** : f2-livepill 9/9 · build 0 · bundle 38.2 · smoke 4/4 · E2E 21/21 · computed opaque.
 - **NEXT** : PR → CI → merge → deploy → QA prod pill.

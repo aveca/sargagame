@@ -41,8 +41,13 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const uxLot4 = (()=>{try{return !/[?&]sguxlot4=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // E1 — CTA spécifique (rollback ?sgcta=0) : nomme le livrable (prévision
   // 7 jours) au lieu du bénéfice vague. Longueur ≈ identique (pas de layout).
-  // Hors scope volontaire : subline durée/no-sub (E4), trust row (E11), preuve sociale (E2).
+  // Hors scope volontaire : subline durée/no-sub (E4), preuve sociale (E2).
+  // E11 trust row shippée ci-dessous (rollback ?trust_row=0).
   const ctaSpecific = (()=>{try{return !/[?&]sgcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // E11 — rangée confiance iconée sous CTA hero (rollback ?trust_row=0).
+  // Recycle UNIQUEMENT des faits déjà claimés (l115/l150-153) : aucun chiffre,
+  // aucun nouveau claim, aucun tracking, aucun layout structurel (+~20px).
+  const trustRow = (()=>{try{return !/[?&]trust_row=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const isComic = pwVariant === "comic"
 
   return (
@@ -107,6 +112,41 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
                 ctaSpecific ? "See the 7-day forecast →" : "See my clean beaches →",
                 ctaSpecific ? "Ver el pronóstico 7 días →" : "Ver mis playas limpias →")}
             </span>
+            {/* E11 — trust row (cadenas / calendrier / sans abonnement), juste sous
+                le CTA hero et au-dessus de la ligne existante (contrat j0 : offre
+                AVANT email, préservé — tout reste dans la carte hero). Rollback
+                ?trust_row=0. */}
+            {trustRow && (
+            <span data-testid="passoffer-trust-row" style={{
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6, flexWrap: "wrap",
+              width: "100%", marginTop: 12, fontSize: 11, fontWeight: 800,
+              color: isComic ? "rgba(13,11,20,.68)" : "rgba(234,247,244,.78)",
+            }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <rect x="4" y="10" width="16" height="10" rx="2" stroke="currentColor" strokeWidth="2.4"/>
+                  <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" strokeWidth="2.4"/>
+                </svg>
+                {_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}
+              </span>
+              <span aria-hidden="true" style={{ opacity: .5 }}>·</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="2.4"/>
+                  <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
+                </svg>
+                {_t(lang, "30 jours", "30 days", "30 días")}
+              </span>
+              <span aria-hidden="true" style={{ opacity: .5 }}>·</span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.4"/>
+                  <path d="M6 6l12 12" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
+                </svg>
+                {_t(lang, "Sans abonnement", "No subscription", "Sin suscripción")}
+              </span>
+            </span>
+            )}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
                 <rect x="4" y="10" width="16" height="10" rx="2" stroke={isComic ? "#22C55E" : "rgba(124,224,176,.85)"} strokeWidth="2"/>
