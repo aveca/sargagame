@@ -1,3 +1,27 @@
+## 2026-09-20 · Agent: release/qa-agent (A13 DÉPLOYÉ + QA PROD OK — PR #694 mergée, main `f0314464`)
+
+### Travail effectué
+- **Résumé 1 ligne** : Deploy Live SUCCESS (health 5/6, Miami = blip TLS transitoire) + QA prod pin→ChasseDetail : J+1 INCLUS sans paywall, rollback OK.
+- **Détails** : voir `.ai/changelog.md` (entrée A13 deploy 2026-09-20). Screenshots `Temp/opencode/k3-proda13-{default,rollback}.png`.
+
+### Fichiers modifiés
+- `.ai/changelog.md`, `.ai/current_state.md` — handoff QA prod (docs seules)
+
+### Tests réalisés
+- [x] Deploy Live run 35483343174 → SUCCESS sauf health Miami transitoire (curl 35, Miami live 200 après)
+- [x] QA prod 390×844 `/` + `/?j1_free=0` → J+1 INCLUS/tap sans paywall + rollback cadenas, 0 console error
+
+### Problèmes restants
+- [ ] Re-jouer le health Miami au besoin (infra, hors code)
+
+### Prochaine action recommandée
+1. Décision fondateur : suite roadmap (routage fiche unique = chantier séparé si voulu)
+
+### Branche / PR
+- Branche : `agent/qa/a13-prod-qa`
+- PR : à créer (docs seules)
+- Rollback : `?j1_free=0` (produit)
+
 ## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
 
 ### Travail effectué
