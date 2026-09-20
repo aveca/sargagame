@@ -1,3 +1,14 @@
+## 2026-09-20 · Agent: ui-agent (F2 LIVEPILL — branche `agent/ui/f2-livepill`)
+
+### Travail effectué
+- **Résumé 1 ligne** : scope F2 uniquement — pill EN DIRECT fond opaque (worst-case 1.41 → label 17+, age 6.1), test 9/9, gates verts.
+- **Détails** : voir `.ai/changelog.md` (entrée F2). A13-hybrid réfutée ; E11 écarté (panel + paywall-touch).
+
+### Branche / PR
+- Branche : `agent/ui/f2-livepill`
+- PR : #701 (https://github.com/aveca/sargagame/pull/701)
+- Rollback : revert 1 déclaration (visuel pur)
+
 ## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
 
 ### Travail effectué
