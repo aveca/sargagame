@@ -129,7 +129,8 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
           <span style={pill({ bg: '#FDE7DF', fg: '#A32E12' })}>● {data.counts.avoid} {_t(lang, 'à éviter', 'to avoid', 'a evitar')}</span>
         </div>
         {!!fresh && <div style={{ fontSize: 12, marginTop: 6, opacity: .85 }}>{fresh} · {_t(lang, 'Mesuré au satellite, pas deviné.', 'Satellite-measured, not guessed.', 'Medido por satélite.')}</div>}
-        {!!data.best && (
+        {data.best ? (
+
           <div style={{ marginTop: 10, background: GOLD, color: INK, borderRadius: 12, padding: 10, border: `2px solid ${INK}` }}>
             <div style={{ fontSize: 12, fontWeight: 800 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</div>
             <div style={{ fontWeight: 800, fontSize: 'clamp(16px,4.6vw,19px)' }}>{data.best.name}</div>
@@ -138,7 +139,14 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
               <button type="button" style={{ ...btnGhost, flex: 1 }} onClick={() => onGo?.('list')} data-testid="xp-best-more">{_t(lang, 'Voir les autres', 'See others', 'Ver otras')}</button>
             </div>
           </div>
-        )}
+
+        ) : (
+          <div data-testid="xp-home-best" style={{ marginTop: 10, background: '#FFF7D6', color: INK, borderRadius: 12, padding: 10, border: `2px solid ${INK}` }}>
+            <div style={{ fontSize: 12, fontWeight: 800 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</div>
+            <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Aucune plage propre confirmée aujourd’hui. Vérifie les plages et choisis ton plan B.', 'No clean beach is confirmed today. Check the beaches and choose your Plan B.', 'Ninguna playa limpia está confirmada hoy. Revisa las playas y elige tu plan B.')}</div>
+            <button type="button" style={{ ...btnGhost, width: '100%', marginTop: 8 }} onClick={() => onGo?.('list')} data-testid="xp-best-more">{_t(lang, 'Voir les plages →', 'See beaches →', 'Ver las playas →')}</button>
+          </div>
+        )}}
         <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
       </div>
 
