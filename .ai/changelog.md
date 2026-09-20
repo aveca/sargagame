@@ -1,3 +1,6 @@
+## 2026-09-20 — UX-QA-004 CLOS : LEADCAPTURE AU-DESSUS NAV (PR #700 mergée `c59cac91a`, deploy + QA prod GREEN)
+
+**Agent** : qa-agent. **CI #700 7/7 SUCCESS → squash merge → Deploy Live SUCCESS** (production `sargagame`, commit-hash `c59cac91a`, 6 pages + 3 workers + purge + health 6/6). **QA prod** : mobile 390 bannière bottom=754 vs nav top=761, 4 tabs OK + clic Plages réel OK, paywall au-dessus (1250<1260), 0 pageerror ; desktop 1440 inchangé (10 labels, 0 error).
 ## 2026-09-19 — SHIP E1/A7 : CTA PassOffer spécifique + verrouillage chemin unique (branche `agent/coding/e1-cta-specific`)
 
 **Agent** : coding-agent (release post-#690, worktree `sargagame-g1`). **Périmètre verrouillé** : 3 fichiers — `src/PassOffer.jsx` (UNIQUEMENT E1 : hero CTA « Voir la prévision 7 jours → » FR/EN/ES, flag `ctaSpecific` rollback `?sgcta=0`, copy historique conservée ; le sticky ce rescue #688 NON touché — application chirurgicale, pas de copie de fichier #685), `scripts/tests/passoffer-cta-copy.test.cjs` (E1, 9 checks), `scripts/tests/passoffer-paths.test.cjs` (A7, 11 checks). A7 en lui-même (purge pw*) était déjà livré dans #686 ; cette PR verrouille le contrat par test.
