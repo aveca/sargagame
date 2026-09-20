@@ -1,3 +1,86 @@
+## 2026-09-20 · Agent: coding-agent — SHIP G3 mirror PayPal→Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : pass one-time + abos PayPal désormais reflétés dans `payment_grants` Supabase (mirror additif, zéro changement au chemin natif PayPal vérif).
+- **Détails** : `.ai/changelog.md` (entrée 2026-09-20 G3).
+
+### Tests réalisés
+- [x] paypal-grants-mirror ALL PASS (22 audits + 16/16 harness PHP) · php -l ×3 · build 0 · bundle 38,2 Ko · smoke 4/4 · funnel 13/13
+
+### Bilan série #685 — TOUT livré sauf décision A13-port
+- ✅ #686 E2/E9/A1 · #687 partenaires · #690 G1 leads · #691 A13 (concurrent, BSC live) · #695 E1/A7 · #704 G2 purge · #707 G15 CI gate · **8eG3 → à merger**
+- Reste ouverts uniquement : (a) A13 port ChasseDetail (option produit, surface secondaire), (b) A12 rotation secrets (bloqué fondateur), (c) secret-scan `.ai/plans/*` (mini-PR sécurity à part).
+
+### Branche / PR
+- Branche : `agent/security/g3-paypal-mirror` · PR : à créer
+
+---
+
+## 2026-09-20 · Agent: devops-agent — SHIP G15 CI gate (branche `agent/devops/g15-ci-gate`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : ux-smoke.mjs sort désormais exit 1 (+`SMOKE_GATE=FAIL`) quand un token Gate échoue — fin du vert silencieux possible ; contrat ci-gate verrouillé.
+- Confirmé au passage : les workflows CI sur main avaient **déjà** build+budget+smoke+grep — pas de réapplication du plan historique, juste le fix.
+- `secret-scan.yml` (`.ai/plans/*` couverture) explicitement laissé à part (= scope A12 sécurité).
+
+### Prochaine action recommandée
+1. **G3** (mirror PayPal→Supabase, sensibilité paiement — DERNIER scope #685) — coding-agent
+2. Option A13 port ChasseDetail — décision fondateur
+3. #10e idée : secret-scan couverture `.ai/plans/*` — security-agent (séparé)
+
+### Branche / PR
+- Branche : `agent/devops/g15-ci-gate` · PR : à créer
+
+---
+
+## 2026-09-20 · Agent: ui-agent (F2 LIVEPILL — branche `agent/ui/f2-livepill`)
+
+### Travail effectué
+- **Résumé 1 ligne** : scope F2 uniquement — pill EN DIRECT fond opaque (worst-case 1.41 → label 17+, age 6.1), test 9/9, gates verts.
+- **Détails** : voir `.ai/changelog.md` (entrée F2). A13-hybrid réfutée ; E11 écarté (panel + paywall-touch).
+
+### Branche / PR
+- Branche : `agent/ui/f2-livepill`
+- PR : #701 (https://github.com/aveca/sargagame/pull/701)
+- Rollback : revert 1 déclaration (visuel pur)
+
+---
+
+## 2026-09-19 · Agent: data-agent — SHIP G2 purge analytics (branche `agent/data/g2-purge-analytics`, ex-#685)
+
+### Travail effectué
+- **Résumé 1 ligne** : purge `analytics_events` >90j réparée (DELETE toujours `Range: 0-999` en tête de file, plus de survivants) + test mock PostgREST.
+- **Audit A13 livré la même session** : variante live fiche = **BeachSheetComic** (pas ChasseDetail) — A13 `(J+1 offert)` déjà en prod via #691 (probe prod : J+0 « Auj » + J+1 « INCLUS » + cadenas J+2→J+6). ChasseDetail = surface secondaire (`?mapdetail=1` / bras arena_loop interne), J+1 y reste teaser verrouillé — port possible non décidé (attente fondateur). (Note post-course : une revue code parallèle a conclu un seul système flag-driven, cf. entrée F2.)
+
+### Fichiers modifiés (2 + docs)
+- `scripts/automation/purge-analytics.cjs`, `scripts/automation/purge-analytics.test.cjs`, `.ai/*`
+
+### Tests réalisés
+- [x] purge-analytics 14/14 · build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 · funnel-payment 13/13
+
+### Prochaine action recommandée
+1. **G15** : diff ciblé réel (ci-tests.yml contient DÉJÀ le gate complet — ne pas réappliquer le plan historique) — coding-agent
+2. **G3** (mirror PayPal, sensible paiement) — coding-agent, dernier
+3. Option A13 port ChasseDetail — décision fondateur
+
+### Branche / PR
+- Branche : `agent/data/g2-purge-analytics` · PR : #704 (rebasée post-#696/#701, conflits docs union)
+
+---
+
+## 2026-09-20 · Agent: data-agent + reviewer (B2B SALES ENGINE PHASE 1 — PR #696 MERGÉE)
+
+### Travail effectué
+- **Résumé 1 ligne** : data model B2B sales engine mergé sur main — 11 tables (companies/establishments/contacts/enrichment/segments/prospects/scores/suppressions/consents/data_sources/audit_log) service_role-only + pont `outreach_contacts.prospect_id` ; fix review : test CRLF-safe + machine d'état complète (19 statuts).
+- **AUCUN envoi / appel / ingestion SIRENE / seed** — schéma seul.
+- **⚠️ POST-MERGE** : `apply-supabase-schema.yml` run 35486710257 → **FAILURE 401 Management API (SUPABASE_ACCESS_TOKEN expiré, BUG-2026-027)** → tables NON créées en prod.
+
+### Prochaine action recommandée
+1. **BLOQUANT fondateur** : régénérer `SUPABASE_ACCESS_TOKEN` (GH secret) OU coller le bloc « B2B SALES ENGINE » de `supabase/schema.sql` dans le SQL Editor Supabase — sinon Phase 2 ne peut écrire nulle part
+2. PHASE 2 : ingestion SIRENE Martinique (DRY_RUN) + scoring déterministe — Rôle : data-agent
+
+---
+
 ## 2026-09-19 · Agent: coding-agent — SHIP E1/A7 PassOffer CTA spécifique (branche `agent/coding/e1-cta-specific`, ex-#685)
 
 ### Travail effectué

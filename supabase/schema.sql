@@ -365,3 +365,375 @@ alter table public.social_posts enable row level security;
 drop policy if exists "social_posts_all" on public.social_posts;
 create policy "social_posts_all" on public.social_posts for all using (true) with check (true);
 create index if not exists social_posts_due_idx on public.social_posts (status, scheduled_at) where status = 'scheduled';
+
+
+-- ============================================================================
+-- B2B SALES ENGINE — PHASE 1 DATA MODEL (2026-09-20)
+-- DRY-RUN / REVIEWABLE: this block is only applied to production when merged to
+-- main; apply-supabase-schema.yml triggers on main pushes touching this file.
+--
+-- Design rules:
+--   * legal entity + establishment are distinct (SIREN != SIRET)
+--   * contact identity is separate from company identity
+--   * every enrichment fact keeps source/confidence/timestamp
+--   * scores are append-only history, not a single mutable number
+--   * suppression / legal basis are first-class records
+--   * all new tables are service_role-only (no anon/authenticated policies)
+--   * existing outreach engine remains the sending layer (no third engine)
+-- ============================================================================
+
+-- 1) Legal entities.
+create table if not exists public.companies (
+  id                uuid primary key default gen_random_uuid(),
+  created_at        timestamptz not null default now(),
+  updated_at        timestamptz not null default now(),
+  legal_name        text not null,
+  trading_name      text,
+  siren             text,
+  legal_form        text,
+  ape_code          text,
+  legal_status      text not null default 'unknown', -- active | inactive | unknown
+  country_code      text not null default 'FR',
+  source             text,
+  source_record_id   text
+);
+
+create unique index if not exists companies_siren_uidx
+  on public.companies (siren)
+  where siren is not null;
+
+create index if not exists companies_name_idx
+  on public.companies (lower(legal_name));
+
+create index if not exists companies_source_idx
+  on public.companies (source, source_record_id);
+
+alter table public.companies enable row level security;
+revoke all on public.companies from anon, authenticated;
+grant all on public.companies to service_role;
+
+-- 2) Physical establishments (SIRET-level).
+create table if not exists public.company_establishments (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now(),
+  company_id           uuid not null references public.companies(id) on delete cascade,
+  siret                text,
+  nic                  text,
+  establishment_name   text,
+  status               text not null default 'unknown', -- active | inactive | unknown
+  address_line1        text,
+  address_line2        text,
+  postal_code          text,
+  city                  text,
+  region_code           text,
+  country_code          text not null default 'FR',
+  latitude              double precision,
+  longitude             double precision,
+  source                text,
+  source_record_id      text
+);
+
+create unique index if not exists company_establishments_siret_uidx
+  on public.company_establishments (siret)
+  where siret is not null;
+
+create index if not exists company_establishments_company_idx
+  on public.company_establishments (company_id);
+
+create index if not exists company_establishments_region_idx
+  on public.company_establishments (region_code, city);
+
+alter table public.company_establishments enable row level security;
+revoke all on public.company_establishments from anon, authenticated;
+grant all on public.company_establishments to service_role;
+
+-- 3) Human contacts, separate from the legal entity.
+create table if not exists public.contacts (
+  id                  uuid primary key default gen_random_uuid(),
+  created_at          timestamptz not null default now(),
+  updated_at          timestamptz not null default now(),
+  company_id           uuid references public.companies(id) on delete set null,
+  establishment_id     uuid references public.company_establishments(id) on delete set null,
+  first_name            text,
+  last_name             text,
+  job_title             text,
+  email                 text,
+  phone                 text,
+  whatsapp_number       text,
+  language              text default 'fr',
+  source                text,
+  source_record_id      text,
+  verified_at           timestamptz
+);
+
+create index if not exists contacts_company_idx
+  on public.contacts (company_id);
+
+create index if not exists contacts_establishment_idx
+  on public.contacts (establishment_id);
+
+create unique index if not exists contacts_email_uidx
+  on public.contacts (lower(trim(email)))
+  where email is not null;
+
+alter table public.contacts enable row level security;
+revoke all on public.contacts from anon, authenticated;
+grant all on public.contacts to service_role;
+
+-- 4) Field-level enrichment provenance.
+create table if not exists public.company_enrichment (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at            timestamptz not null default now(),
+  company_id             uuid not null references public.companies(id) on delete cascade,
+  establishment_id       uuid references public.company_establishments(id) on delete cascade,
+  contact_id             uuid references public.contacts(id) on delete cascade,
+  field_name             text not null,
+  value_json             jsonb not null,
+  source_id              uuid,
+  confidence             numeric(5,4),
+  observed_at            timestamptz,
+  fetched_at             timestamptz not null default now(),
+  current_value          boolean not null default true,
+  constraint company_enrichment_confidence_chk
+    check (confidence is null or (confidence >= 0 and confidence <= 1))
+);
+
+create index if not exists company_enrichment_company_idx
+  on public.company_enrichment (company_id, field_name, fetched_at desc);
+
+create index if not exists company_enrichment_current_idx
+  on public.company_enrichment (company_id, field_name)
+  where current_value;
+
+alter table public.company_enrichment enable row level security;
+revoke all on public.company_enrichment from anon, authenticated;
+grant all on public.company_enrichment to service_role;
+
+-- 5) Configurable segments (rules are data, not hard-coded branches).
+create table if not exists public.segments (
+  id                 uuid primary key default gen_random_uuid(),
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now(),
+  key                text not null,
+  name               text not null,
+  description        text,
+  rules              jsonb not null default '{}'::jsonb,
+  priority            integer not null default 0,
+  active              boolean not null default true
+);
+
+create unique index if not exists segments_key_uidx on public.segments(key);
+create index if not exists segments_active_idx on public.segments(active, priority desc);
+
+alter table public.segments enable row level security;
+revoke all on public.segments from anon, authenticated;
+grant all on public.segments to service_role;
+
+-- 6) Prospect machine state linking company + establishment + contact + segment.
+create table if not exists public.prospects (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at             timestamptz not null default now(),
+  updated_at             timestamptz not null default now(),
+  company_id             uuid not null references public.companies(id) on delete cascade,
+  establishment_id       uuid references public.company_establishments(id) on delete set null,
+  primary_contact_id     uuid references public.contacts(id) on delete set null,
+  segment_id             uuid references public.segments(id) on delete set null,
+  status                 text not null default 'new',
+  priority               integer not null default 0,
+  next_action_at         timestamptz,
+  last_contacted_at      timestamptz,
+  first_replied_at       timestamptz,
+  qualified_at           timestamptz,
+  paid_at                timestamptz,
+  lost_at                timestamptz,
+  metadata               jsonb not null default '{}'::jsonb,
+  constraint prospects_status_chk check (
+    status in (
+      'new','enriching','enriched','scored','ready','contacted','replied',
+      'interested','not_interested','callback_requested','qualified','converted',
+      'concierge','paid','lost','bounced','opted_out','suppressed','paused'
+    )
+  )
+);
+
+create unique index if not exists prospects_establishment_uidx
+  on public.prospects (establishment_id)
+  where establishment_id is not null;
+
+create index if not exists prospects_status_due_idx
+  on public.prospects (status, next_action_at);
+
+create index if not exists prospects_company_idx
+  on public.prospects (company_id);
+
+create index if not exists prospects_segment_idx
+  on public.prospects (segment_id, status);
+
+alter table public.prospects enable row level security;
+revoke all on public.prospects from anon, authenticated;
+grant all on public.prospects to service_role;
+
+-- 7) Score history (append-only by design).
+create table if not exists public.prospect_scores (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at             timestamptz not null default now(),
+  prospect_id            uuid not null references public.prospects(id) on delete cascade,
+  score                  integer not null,
+  problem_score          integer not null default 0,
+  frequency_score        integer not null default 0,
+  cost_score             integer not null default 0,
+  willingness_score      integer not null default 0,
+  reasons                jsonb not null default '[]'::jsonb,
+  model_version          text not null default 'deterministic-v1',
+  computed_at            timestamptz not null default now(),
+  constraint prospect_scores_score_chk check (score between 0 and 100),
+  constraint prospect_scores_components_chk check (
+    problem_score between 0 and 25 and
+    frequency_score between 0 and 25 and
+    cost_score between 0 and 25 and
+    willingness_score between 0 and 25
+  )
+);
+
+create index if not exists prospect_scores_prospect_idx
+  on public.prospect_scores (prospect_id, computed_at desc);
+
+alter table public.prospect_scores enable row level security;
+revoke all on public.prospect_scores from anon, authenticated;
+grant all on public.prospect_scores to service_role;
+
+-- 8) Unified suppression ledger.
+create table if not exists public.suppressions (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at             timestamptz not null default now(),
+  suppression_type      text not null, -- email | phone | company | contact
+  normalized_value      text not null,
+  reason                text not null, -- unsubscribe | bounce | complaint | manual | legal
+  legal_basis            text,
+  source                text,
+  contact_id             uuid references public.contacts(id) on delete set null,
+  company_id             uuid references public.companies(id) on delete set null,
+  suppressed_at          timestamptz not null default now(),
+  expires_at             timestamptz,
+  metadata               jsonb not null default '{}'::jsonb,
+  constraint suppressions_type_chk
+    check (suppression_type in ('email','phone','company','contact'))
+);
+
+create unique index if not exists suppressions_value_uidx
+  on public.suppressions (suppression_type, normalized_value);
+
+create index if not exists suppressions_active_idx
+  on public.suppressions (suppression_type, normalized_value, suppressed_at desc);
+
+alter table public.suppressions enable row level security;
+revoke all on public.suppressions from anon, authenticated;
+grant all on public.suppressions to service_role;
+
+-- 9) Contact/legal-basis ledger. Does not send or grant permission by itself.
+create table if not exists public.consents (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at             timestamptz not null default now(),
+  contact_id             uuid references public.contacts(id) on delete cascade,
+  company_id             uuid references public.companies(id) on delete cascade,
+  purpose               text not null,
+  legal_basis            text not null,
+  status                 text not null default 'active', -- active | withdrawn | expired | unknown
+  captured_at            timestamptz not null default now(),
+  withdrawn_at           timestamptz,
+  source                text,
+  evidence               jsonb not null default '{}'::jsonb,
+  constraint consents_status_chk
+    check (status in ('active','withdrawn','expired','unknown'))
+);
+
+create index if not exists consents_contact_purpose_idx
+  on public.consents (contact_id, purpose, captured_at desc);
+
+create index if not exists consents_company_purpose_idx
+  on public.consents (company_id, purpose, captured_at desc);
+
+alter table public.consents enable row level security;
+revoke all on public.consents from anon, authenticated;
+grant all on public.consents to service_role;
+
+-- 10) Source registry for SIRENE and future enrichers.
+create table if not exists public.data_sources (
+  id                    uuid primary key default gen_random_uuid(),
+  created_at             timestamptz not null default now(),
+  key                   text not null,
+  name                  text not null,
+  provider              text,
+  source_type            text not null, -- registry | website | directory | manual | api
+  version                text,
+  base_url               text,
+  active                 boolean not null default true,
+  metadata               jsonb not null default '{}'::jsonb
+);
+
+create unique index if not exists data_sources_key_uidx on public.data_sources(key);
+
+alter table public.data_sources enable row level security;
+revoke all on public.data_sources from anon, authenticated;
+grant all on public.data_sources to service_role;
+
+-- Attach enrichment source FK after both tables exist.
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'company_enrichment_source_id_fkey'
+  ) then
+    alter table public.company_enrichment
+      add constraint company_enrichment_source_id_fkey
+      foreign key (source_id) references public.data_sources(id) on delete set null;
+  end if;
+end $$;
+
+-- 11) Unified audit trail for decisions/actions across the sales engine.
+create table if not exists public.b2b_audit_log (
+  id                    uuid primary key default gen_random_uuid(),
+  occurred_at            timestamptz not null default now(),
+  actor_type             text not null default 'system', -- system | founder | worker | webhook
+  actor_id               text,
+  action                 text not null,
+  entity_type            text not null,
+  entity_id              uuid,
+  prospect_id            uuid references public.prospects(id) on delete set null,
+  metadata               jsonb not null default '{}'::jsonb
+);
+
+create index if not exists b2b_audit_log_entity_idx
+  on public.b2b_audit_log (entity_type, entity_id, occurred_at desc);
+
+create index if not exists b2b_audit_log_prospect_idx
+  on public.b2b_audit_log (prospect_id, occurred_at desc);
+
+alter table public.b2b_audit_log enable row level security;
+revoke all on public.b2b_audit_log from anon, authenticated;
+grant all on public.b2b_audit_log to service_role;
+
+-- 12) Bridge the new prospect model into the EXISTING outreach worker.
+alter table public.outreach_contacts
+  add column if not exists prospect_id uuid;
+
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conname = 'outreach_contacts_prospect_id_fkey'
+  ) then
+    alter table public.outreach_contacts
+      add constraint outreach_contacts_prospect_id_fkey
+      foreign key (prospect_id) references public.prospects(id) on delete set null;
+  end if;
+end $$;
+
+create index if not exists outreach_contacts_prospect_idx
+  on public.outreach_contacts (prospect_id);
+
+-- Explicitly preserve the existing outreach RLS behavior in this phase.
+-- Tightening that legacy table is a separate security scope, not part of the model.

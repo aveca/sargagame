@@ -1,3 +1,8 @@
+## F2 LIVEPILL — [~] fix local 2026-09-20 (branche `agent/ui/f2-livepill`, scope F2 uniquement)
+- **Fix** : `.sg-live` fond opaque `#e6f4f1` (worst-case 1.41 → label 17+/18+, age 6.1 ≥ AA).
+- **Preuves** : f2-livepill 9/9 · build 0 · bundle 38.2 · smoke 4/4 · E2E 21/21 · computed opaque.
+- **NEXT** : PR → CI → merge → deploy → QA prod pill.
+
 ## F1 STALE CONTRAST — [x] done + VALIDÉ PROD 2026-09-18 (PR #689 mergée 18:57 UTC, deploy success, QA prod badge #8a5a00 / CR 5.93)
 - **Fix** : WorldMapView.jsx:1915 stale `#B87A00` → `#8a5a00` (CR 3.34 → 5.49/5.93 ≥ AA 4.5, fresh intact).
 - **Preuves** : f1-stale-contrast 6/6 · build 0 · bundle 38.1 · smoke 4/4 · E2E 21/21 · computed 5.93.

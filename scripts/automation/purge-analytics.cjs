@@ -59,15 +59,17 @@ async function main() {
     return
   }
 
-  // 2) Supprimer par lots (DELETE REST Supabase = range header)
+  // 2) Supprimer par lots : toujours la tête de file (0-999). Après chaque
+  // DELETE les lignes restantes se décalent → un offset croissant (1000-1999…)
+  // sauterait un lot sur deux et laisserait des lignes >90j survivre à jamais.
   let deleted = 0
-  for (let from = 0; ; from += 1000) {
+  for (let iter = 0; iter < 1000; iter++) {
     const q = `ts=lt.${encodeURIComponent(cutoff)}`
     let res
     try {
       res = await fetch(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
         method: 'DELETE',
-        headers: svcHeaders({ Range: `${from}-${from + 999}`, Prefer: 'return=minimal' }),
+        headers: svcHeaders({ Range: '0-999', Prefer: 'return=minimal' }),
         signal: AbortSignal.timeout(30000),
       })
     } catch (e) {
