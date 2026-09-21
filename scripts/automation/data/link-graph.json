@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-14T17:11:40.022Z",
+  "generatedAt": "2026-09-21T17:12:33.031Z",
   "sites": {
     "mq": {
-      "pageCount": 808,
-      "noIncomingCount": 432,
-      "fewIncomingCount": 66,
+      "pageCount": 807,
+      "noIncomingCount": 433,
+      "fewIncomingCount": 64,
       "phantomCount": 16,
       "noIncoming": [
         {
@@ -272,12 +272,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 38
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 14
+          "out": 20
         },
         {
           "url": "/en/sargassum-health/",
@@ -325,19 +325,9 @@
           "out": 13
         },
         {
-          "url": "/sargasses-aout-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
           "url": "/sargasses-martinique-cette-semaine/",
           "in": 1,
           "out": 12
-        },
-        {
-          "url": "/sargasses-septembre-2026/",
-          "in": 1,
-          "out": 3
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -408,12 +398,22 @@
           "url": "/beach/clearwater-beach/",
           "in": 2,
           "out": 6
+        },
+        {
+          "url": "/beach/key-largo/",
+          "in": 2,
+          "out": 6
+        },
+        {
+          "url": "/beach/l-autre-bord/",
+          "in": 2,
+          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 630,
+          "in": 629,
           "out": 18
         },
         {
@@ -438,7 +438,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 51,
+          "in": 50,
           "out": 8
         },
         {
@@ -453,7 +453,7 @@
         },
         {
           "url": "/plages/grande-anse-d-arlet/",
-          "in": 26,
+          "in": 27,
           "out": 11
         },
         {
@@ -471,17 +471,22 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 38
         },
         {
           "url": "/conditions/baignade-ideale/",
           "in": 6,
-          "out": 29
+          "out": 37
         },
         {
           "url": "/conditions/mer-calme/",
           "in": 6,
-          "out": 29
+          "out": 37
+        },
+        {
+          "url": "/conditions/uv-fort/",
+          "in": 6,
+          "out": 37
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -499,19 +504,14 @@
           "out": 21
         },
         {
+          "url": "/conditions/snorkeling/",
+          "in": 1,
+          "out": 20
+        },
+        {
           "url": "/plages-sans-sargasses/",
           "in": 13,
           "out": 18
-        },
-        {
-          "url": "/",
-          "in": 630,
-          "out": 18
-        },
-        {
-          "url": "/sargasses-la-trinite/",
-          "in": 3,
-          "out": 17
         }
       ],
       "phantom": [
@@ -623,9 +623,9 @@
       ]
     },
     "gp": {
-      "pageCount": 843,
-      "noIncomingCount": 436,
-      "fewIncomingCount": 70,
+      "pageCount": 842,
+      "noIncomingCount": 437,
+      "fewIncomingCount": 68,
       "phantomCount": 73,
       "noIncoming": [
         {
@@ -898,12 +898,12 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 38
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 14
+          "out": 20
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -996,11 +996,6 @@
           "out": 11
         },
         {
-          "url": "/sargasses-aout-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
           "url": "/sargasses-guadeloupe-cette-semaine/",
           "in": 1,
           "out": 12
@@ -1009,11 +1004,6 @@
           "url": "/sargasses-saint-francois/",
           "in": 1,
           "out": 13
-        },
-        {
-          "url": "/sargasses-septembre-2026/",
-          "in": 1,
-          "out": 3
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -1029,12 +1019,22 @@
           "url": "/veilleur-mvp/fort-lauderdale/",
           "in": 1,
           "out": 0
+        },
+        {
+          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "in": 1,
+          "out": 1
+        },
+        {
+          "url": "/veilleur-mvp/les-salines/",
+          "in": 1,
+          "out": 1
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 755,
+          "in": 754,
           "out": 15
         },
         {
@@ -1059,7 +1059,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 51,
+          "in": 50,
           "out": 8
         },
         {
@@ -1092,17 +1092,27 @@
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 38
         },
         {
           "url": "/conditions/baignade-ideale/",
           "in": 6,
-          "out": 29
+          "out": 37
         },
         {
           "url": "/conditions/mer-calme/",
           "in": 6,
-          "out": 29
+          "out": 37
+        },
+        {
+          "url": "/conditions/uv-fort/",
+          "in": 6,
+          "out": 37
+        },
+        {
+          "url": "/conditions/snorkeling/",
+          "in": 1,
+          "out": 20
         },
         {
           "url": "/meilleures-plages-guadeloupe-sargasses/",
@@ -1123,16 +1133,6 @@
           "url": "/sargasses-terre-de-haut-les-saintes/",
           "in": 3,
           "out": 16
-        },
-        {
-          "url": "/sargasses-la-desirade/",
-          "in": 3,
-          "out": 15
-        },
-        {
-          "url": "/",
-          "in": 755,
-          "out": 15
         }
       ],
       "phantom": [
@@ -1239,6 +1239,14 @@
           ]
         },
         {
+          "url": "/plages/petite-anse-d-arlet/",
+          "incomingFrom": [
+            "/conditions/baignade-ideale/",
+            "/conditions/mer-calme/",
+            "/conditions/plages-enfants/"
+          ]
+        },
+        {
           "url": "/plages/anse-turin/",
           "incomingFrom": [
             "/conditions/baignade-ideale/",
@@ -1280,14 +1288,6 @@
         },
         {
           "url": "/plages/anse-ceron/",
-          "incomingFrom": [
-            "/conditions/baignade-ideale/",
-            "/conditions/mer-calme/",
-            "/conditions/plages-enfants/"
-          ]
-        },
-        {
-          "url": "/plages/plage-de-sinai/",
           "incomingFrom": [
             "/conditions/baignade-ideale/",
             "/conditions/mer-calme/",

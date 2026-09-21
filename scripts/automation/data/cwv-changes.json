@@ -1,34 +1,14 @@
 {
-  "generatedAt": "2026-09-14T17:11:27.644Z",
+  "generatedAt": "2026-09-21T17:12:23.649Z",
   "kind": "delta",
   "changes": [
     {
       "site": "mq",
       "formFactor": "combined",
-      "metric": "LCP",
-      "from": 1423,
-      "to": 1650,
-      "delta": 227,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "rivieramaya",
-      "formFactor": "combined",
-      "metric": "TTFB",
-      "from": 502,
-      "to": 609,
-      "delta": 107,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
       "metric": "INP",
-      "from": 503,
-      "to": 419,
-      "delta": -84,
+      "from": 369,
+      "to": 318,
+      "delta": -51,
       "kind": "improvement",
       "crossesThreshold": false
     }

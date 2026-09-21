@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-14T17:11:41.935Z",
+  "generatedAt": "2026-09-21T17:12:35.685Z",
   "sites": {
     "mq": {
-      "pageCount": 808,
-      "medianWords": 140,
-      "thinCount": 654,
-      "richCount": 79,
+      "pageCount": 807,
+      "medianWords": 192,
+      "thinCount": 652,
+      "richCount": 83,
       "thinPages": [
         {
           "url": "/404.html",
@@ -172,10 +172,10 @@
       ]
     },
     "gp": {
-      "pageCount": 843,
-      "medianWords": 140,
-      "thinCount": 652,
-      "richCount": 109,
+      "pageCount": 842,
+      "medianWords": 192,
+      "thinCount": 650,
+      "richCount": 113,
       "thinPages": [
         {
           "url": "/404.html",

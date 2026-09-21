@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-14T17:11:43.171Z",
+  "generatedAt": "2026-09-21T17:12:37.374Z",
   "sites": {
     "mq": {
       "donorCount": 5,
@@ -39,7 +39,7 @@
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 50,
+      "targetCount": 51,
       "injections": [
         {
           "donor": "/",
@@ -65,12 +65,12 @@
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
-        "/previsions/",
+        "/plages-sans-sargasses/",
+        "/saison-sargasses-guadeloupe/",
         "/activity/dive/",
         "/activity/family/",
         "/activity/kids/",
-        "/activity/parking/",
-        "/activity/snorkel/"
+        "/activity/parking/"
       ]
     }
   }

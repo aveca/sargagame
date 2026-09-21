@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-09-14T17:11:40.386Z",
+  "generatedAt": "2026-09-21T17:12:33.508Z",
   "sites": {
     "mq": {
-      "pageCount": 809,
-      "totalLinks": 23919,
-      "checkedLinks": 16766,
+      "pageCount": 808,
+      "totalLinks": 23969,
+      "checkedLinks": 16816,
       "brokenCount": 1299,
       "broken": [
         {
@@ -7804,10 +7804,10 @@
       ]
     },
     "gp": {
-      "pageCount": 844,
-      "totalLinks": 25469,
-      "checkedLinks": 17845,
-      "brokenCount": 1581,
+      "pageCount": 843,
+      "totalLinks": 25519,
+      "checkedLinks": 17895,
+      "brokenCount": 1642,
       "broken": [
         {
           "from": "/404.html",
@@ -13919,6 +13919,12 @@
         },
         {
           "from": "/conditions/baignade-ideale/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/petite-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
           "href": "/plages/anse-turin/",
           "target": "guadeloupe-ftp/plages/anse-turin/index.html",
           "kind": "internal"
@@ -13955,6 +13961,72 @@
         },
         {
           "from": "/conditions/baignade-ideale/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "guadeloupe-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/anse-bonneville/",
+          "target": "guadeloupe-ftp/plages/anse-bonneville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/anse-l-etang/",
+          "target": "guadeloupe-ftp/plages/anse-l-etang/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/les-raisiniers/",
+          "target": "guadeloupe-ftp/plages/les-raisiniers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/l-autre-bord-trinite/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/anse-cosmy/",
+          "target": "guadeloupe-ftp/plages/anse-cosmy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/anse-riviere-trinite/",
+          "target": "guadeloupe-ftp/plages/anse-riviere-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/baie-coco/",
+          "target": "guadeloupe-ftp/plages/baie-coco/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/pointe-faula/",
+          "target": "guadeloupe-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/macabou-nord/",
+          "target": "guadeloupe-ftp/plages/macabou-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
+          "href": "/plages/anse-grosse-roche/",
+          "target": "guadeloupe-ftp/plages/anse-grosse-roche/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/baignade-ideale/",
           "href": "/plages/plage-de-sinai/",
           "target": "guadeloupe-ftp/plages/plage-de-sinai/index.html",
           "kind": "internal"
@@ -13973,38 +14045,14 @@
         },
         {
           "from": "/conditions/baignade-ideale/",
-          "href": "/plages/pointe-du-bout/",
-          "target": "guadeloupe-ftp/plages/pointe-du-bout/index.html",
+          "href": "/plages/bourg-sainte-marie/",
+          "target": "guadeloupe-ftp/plages/bourg-sainte-marie/index.html",
           "kind": "internal"
         },
         {
           "from": "/conditions/baignade-ideale/",
-          "href": "/plages/bourg-de-case-pilote/",
-          "target": "guadeloupe-ftp/plages/bourg-de-case-pilote/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/baignade-ideale/",
-          "href": "/plages/plage-du-vetiver/",
-          "target": "guadeloupe-ftp/plages/plage-du-vetiver/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/baignade-ideale/",
-          "href": "/plages/anse-des-galets/",
-          "target": "guadeloupe-ftp/plages/anse-des-galets/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/baignade-ideale/",
-          "href": "/plages/plage-de-saint-pierre/",
-          "target": "guadeloupe-ftp/plages/plage-de-saint-pierre/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/baignade-ideale/",
-          "href": "/plages/anse-belleville/",
-          "target": "guadeloupe-ftp/plages/anse-belleville/index.html",
+          "href": "/plages/anse-mabouya/",
+          "target": "guadeloupe-ftp/plages/anse-mabouya/index.html",
           "kind": "internal"
         },
         {
@@ -14087,6 +14135,12 @@
         },
         {
           "from": "/conditions/mer-calme/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/petite-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
           "href": "/plages/anse-turin/",
           "target": "guadeloupe-ftp/plages/anse-turin/index.html",
           "kind": "internal"
@@ -14123,6 +14177,72 @@
         },
         {
           "from": "/conditions/mer-calme/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "guadeloupe-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/anse-bonneville/",
+          "target": "guadeloupe-ftp/plages/anse-bonneville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/anse-l-etang/",
+          "target": "guadeloupe-ftp/plages/anse-l-etang/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/les-raisiniers/",
+          "target": "guadeloupe-ftp/plages/les-raisiniers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/l-autre-bord-trinite/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/anse-cosmy/",
+          "target": "guadeloupe-ftp/plages/anse-cosmy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/anse-riviere-trinite/",
+          "target": "guadeloupe-ftp/plages/anse-riviere-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/baie-coco/",
+          "target": "guadeloupe-ftp/plages/baie-coco/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/pointe-faula/",
+          "target": "guadeloupe-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/macabou-nord/",
+          "target": "guadeloupe-ftp/plages/macabou-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
+          "href": "/plages/anse-grosse-roche/",
+          "target": "guadeloupe-ftp/plages/anse-grosse-roche/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/mer-calme/",
           "href": "/plages/plage-de-sinai/",
           "target": "guadeloupe-ftp/plages/plage-de-sinai/index.html",
           "kind": "internal"
@@ -14141,38 +14261,14 @@
         },
         {
           "from": "/conditions/mer-calme/",
-          "href": "/plages/pointe-du-bout/",
-          "target": "guadeloupe-ftp/plages/pointe-du-bout/index.html",
+          "href": "/plages/bourg-sainte-marie/",
+          "target": "guadeloupe-ftp/plages/bourg-sainte-marie/index.html",
           "kind": "internal"
         },
         {
           "from": "/conditions/mer-calme/",
-          "href": "/plages/bourg-de-case-pilote/",
-          "target": "guadeloupe-ftp/plages/bourg-de-case-pilote/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/mer-calme/",
-          "href": "/plages/plage-du-vetiver/",
-          "target": "guadeloupe-ftp/plages/plage-du-vetiver/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/mer-calme/",
-          "href": "/plages/anse-des-galets/",
-          "target": "guadeloupe-ftp/plages/anse-des-galets/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/mer-calme/",
-          "href": "/plages/plage-de-saint-pierre/",
-          "target": "guadeloupe-ftp/plages/plage-de-saint-pierre/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/mer-calme/",
-          "href": "/plages/anse-belleville/",
-          "target": "guadeloupe-ftp/plages/anse-belleville/index.html",
+          "href": "/plages/anse-mabouya/",
+          "target": "guadeloupe-ftp/plages/anse-mabouya/index.html",
           "kind": "internal"
         },
         {
@@ -14231,6 +14327,12 @@
         },
         {
           "from": "/conditions/plages-enfants/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/petite-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
           "href": "/plages/anse-turin/",
           "target": "guadeloupe-ftp/plages/anse-turin/index.html",
           "kind": "internal"
@@ -14267,6 +14369,72 @@
         },
         {
           "from": "/conditions/plages-enfants/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "guadeloupe-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/anse-bonneville/",
+          "target": "guadeloupe-ftp/plages/anse-bonneville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/anse-l-etang/",
+          "target": "guadeloupe-ftp/plages/anse-l-etang/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/les-raisiniers/",
+          "target": "guadeloupe-ftp/plages/les-raisiniers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/l-autre-bord-trinite/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/anse-cosmy/",
+          "target": "guadeloupe-ftp/plages/anse-cosmy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/anse-riviere-trinite/",
+          "target": "guadeloupe-ftp/plages/anse-riviere-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/baie-coco/",
+          "target": "guadeloupe-ftp/plages/baie-coco/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/pointe-faula/",
+          "target": "guadeloupe-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/macabou-nord/",
+          "target": "guadeloupe-ftp/plages/macabou-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
+          "href": "/plages/anse-grosse-roche/",
+          "target": "guadeloupe-ftp/plages/anse-grosse-roche/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/plages-enfants/",
           "href": "/plages/plage-de-sinai/",
           "target": "guadeloupe-ftp/plages/plage-de-sinai/index.html",
           "kind": "internal"
@@ -14285,32 +14453,14 @@
         },
         {
           "from": "/conditions/plages-enfants/",
-          "href": "/plages/pointe-du-bout/",
-          "target": "guadeloupe-ftp/plages/pointe-du-bout/index.html",
+          "href": "/plages/bourg-sainte-marie/",
+          "target": "guadeloupe-ftp/plages/bourg-sainte-marie/index.html",
           "kind": "internal"
         },
         {
           "from": "/conditions/plages-enfants/",
-          "href": "/plages/bourg-de-case-pilote/",
-          "target": "guadeloupe-ftp/plages/bourg-de-case-pilote/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/plages-enfants/",
-          "href": "/plages/plage-du-vetiver/",
-          "target": "guadeloupe-ftp/plages/plage-du-vetiver/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/plages-enfants/",
-          "href": "/plages/anse-des-galets/",
-          "target": "guadeloupe-ftp/plages/anse-des-galets/index.html",
-          "kind": "internal"
-        },
-        {
-          "from": "/conditions/plages-enfants/",
-          "href": "/plages/plage-de-saint-pierre/",
-          "target": "guadeloupe-ftp/plages/plage-de-saint-pierre/index.html",
+          "href": "/plages/anse-mabouya/",
+          "target": "guadeloupe-ftp/plages/anse-mabouya/index.html",
           "kind": "internal"
         },
         {
@@ -14329,6 +14479,12 @@
           "from": "/conditions/snorkeling/",
           "href": "/plages/grande-anse-d-arlet/",
           "target": "guadeloupe-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/petite-anse-d-arlet/index.html",
           "kind": "internal"
         },
         {
@@ -14362,6 +14518,36 @@
           "kind": "internal"
         },
         {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/anse-gros-raisins/",
+          "target": "guadeloupe-ftp/plages/anse-gros-raisins/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/anse-corps-de-garde/",
+          "target": "guadeloupe-ftp/plages/anse-corps-de-garde/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/anse-michel/",
+          "target": "guadeloupe-ftp/plages/anse-michel/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/anse-caritan/",
+          "target": "guadeloupe-ftp/plages/anse-caritan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/snorkeling/",
+          "href": "/plages/anse-meunier/",
+          "target": "guadeloupe-ftp/plages/anse-meunier/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/conditions/uv-fort/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
@@ -14371,6 +14557,186 @@
           "from": "/conditions/uv-fort/",
           "href": "/track-click.php",
           "target": "guadeloupe-ftp/track-click.php",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/plage-de-la-francaise/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-francaise/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/plage-de-sch-lcher/",
+          "target": "guadeloupe-ftp/plages/plage-de-sch-lcher/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-collat/",
+          "target": "guadeloupe-ftp/plages/anse-collat/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-madame/",
+          "target": "guadeloupe-ftp/plages/anse-madame/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-mitan/",
+          "target": "guadeloupe-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-a-l-ane/",
+          "target": "guadeloupe-ftp/plages/anse-a-l-ane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "guadeloupe-ftp/plages/petite-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-turin/",
+          "target": "guadeloupe-ftp/plages/anse-turin/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-noire/",
+          "target": "guadeloupe-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-dufour/",
+          "target": "guadeloupe-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/grande-anse-du-carbet/",
+          "target": "guadeloupe-ftp/plages/grande-anse-du-carbet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-couleuvre/",
+          "target": "guadeloupe-ftp/plages/anse-couleuvre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-ceron/",
+          "target": "guadeloupe-ftp/plages/anse-ceron/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "guadeloupe-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-bonneville/",
+          "target": "guadeloupe-ftp/plages/anse-bonneville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-l-etang/",
+          "target": "guadeloupe-ftp/plages/anse-l-etang/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/les-raisiniers/",
+          "target": "guadeloupe-ftp/plages/les-raisiniers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/l-autre-bord-trinite/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-cosmy/",
+          "target": "guadeloupe-ftp/plages/anse-cosmy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-riviere-trinite/",
+          "target": "guadeloupe-ftp/plages/anse-riviere-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/baie-coco/",
+          "target": "guadeloupe-ftp/plages/baie-coco/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/pointe-faula/",
+          "target": "guadeloupe-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/macabou-nord/",
+          "target": "guadeloupe-ftp/plages/macabou-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-grosse-roche/",
+          "target": "guadeloupe-ftp/plages/anse-grosse-roche/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/plage-de-sinai/",
+          "target": "guadeloupe-ftp/plages/plage-de-sinai/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/plage-de-grand-riviere/",
+          "target": "guadeloupe-ftp/plages/plage-de-grand-riviere/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-charpentier/",
+          "target": "guadeloupe-ftp/plages/anse-charpentier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/bourg-sainte-marie/",
+          "target": "guadeloupe-ftp/plages/bourg-sainte-marie/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/conditions/uv-fort/",
+          "href": "/plages/anse-mabouya/",
+          "target": "guadeloupe-ftp/plages/anse-mabouya/index.html",
           "kind": "internal"
         },
         {

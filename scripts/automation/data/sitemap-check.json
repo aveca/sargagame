@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-14T17:11:42.452Z",
+  "generatedAt": "2026-09-21T17:12:36.454Z",
   "sites": {
     "mq": {
-      "sitemapSize": 165,
-      "ownDomainCount": 165,
+      "sitemapSize": 164,
+      "ownDomainCount": 164,
       "crossDomainCount": 0,
-      "diskCount": 616,
+      "diskCount": 615,
       "sitemapUrls404Count": 0,
       "diskMissingCount": 451,
       "sitemapUrls404": [],
@@ -47,9 +47,9 @@
       "sitemapSize": 0,
       "ownDomainCount": 0,
       "crossDomainCount": 0,
-      "diskCount": 810,
+      "diskCount": 809,
       "sitemapUrls404Count": 0,
-      "diskMissingCount": 810,
+      "diskMissingCount": 809,
       "sitemapUrls404": [],
       "diskMissing": [
         "/a-propos/",
