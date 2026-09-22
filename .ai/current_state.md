@@ -1,3 +1,28 @@
+## 2026-09-22 · Agent: coding (MASTER EXECUTION session) — Trip Planner PROD VERIFIED
+
+### Travail effectué
+- **Blueprint figé** : `SARGAGAME_PRODUCT_BLUEPRINT.md` (promesse « Beach Decision Engine », personas, JTBD, MVP matriciel, non-goals verrouillés, funnels canoniques).
+- **Trip Planner ship** : `src/TripPlanner.jsx` (lazy, `?tripplan=0`) — plan day-by-day « meilleure plage + plan B cross-commune », données 100 % forecast réelles, J+1/J+2 offerts → J+3+ verrouillés → CTA offre. Entrées home ExperienceReset + HeroVerdict. E2E 2/2 + screenshots mobile+desktop (2 iters de fix skin .theme-comic sur les lignes) · PROD VERIFIED (texte réel sur le site live).
+- **Intégration Jev#2 (en amont)** : endpoint `/api/jev-intent` sur worker sg-payments (fallback total sans clé, inerte en prod ; route zone à ajouter fondateur).
+- Consolidation B2B : cohortes MQ+GP (30 prospects, 11 emails vérifiés), pack d'envoi rédigé.
+
+### Fichiers touchés (résumé des PRs #724-#731)
+- `src/TripPlanner.jsx` (N), `tests/e2e/trip-planner.spec.ts` (N), `src/components/ExperienceReset.jsx`, `src/Sargasses_PROD.jsx`, `workers/sg-payments/src/index.ts`, `src/lib/jev-intent.js`, `SARGAGAME_PRODUCT_BLUEPRINT.md` (N), docs conversion/growth (5 livrables), CSVs prospects.
+
+### Tests réalisés
+- [x] build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS · CI vert ×N · deploy prod success ×N
+- [x] E2E trip-planner 2/2 · probe prod (entry + overlay + données réelles) · contrat jev 20/20 · worker-b2b 7/7
+
+### HUMAN ACTION REQUIRED (fondateur, AFK-safe)
+1. 5 paiements réels (protocole `FOUNDER_ACTIONS.md` §1 — prix exacts vérifiés).
+2. `SUPABASE_ACCESS_TOKEN` → apply-supabase-schema (tables B2B).
+3. `TYPESAFE_API_KEY` → `wrangler secret put` + routes `/api/jev-intent*` sur les 6 zones CF.
+
+### Prochaine action recommandée
+1. Dès que 24 h de funnel reviennent avec `sg_trip_*` mesurés → décider investir dans variantes d'entrée/preview.
+2. Fondateur : envoyer les 7 emails B2B du pack MQ (cohorte prête).
+3. Re-baseline bundle si le TripPlanner prend de l'ampleur (lazy OK).
+
 ## 2026-09-22 · Agent: revenue-rescue (branche `agent/coding/revenue-measure`, PR #718 auto-merge)
 
 ### Travail effectué
