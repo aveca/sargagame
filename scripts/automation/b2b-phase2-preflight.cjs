@@ -30,11 +30,23 @@ function check(label, value, ready) {
 function envPresent(name) {
   const fromProc = typeof process.env[name] === 'string' && process.env[name].length > 0
   if (fromProc) return true
-  const envPath = path.join(ROOT, '.env')
-  if (!fs.existsSync(envPath)) return false
-  const raw = fs.readFileSync(envPath, 'utf8')
-  const m = raw.match(new RegExp('^' + name + '=(.*)$', 'm'))
-  return !!m && m[1].trim().length > 0 && !m[1].includes('YOUR_')
+  // Cherche .env dans le worktree courant ET dans le checkout principal
+  // (le fondateur dépose les secrets dans le repo principal ; la détection
+  // depuis un worktree ne doit jamais rapporter un faux absent).
+  const candidates = [path.join(ROOT, '.env')]
+  try {
+    const common = execFileSync('git', ['rev-parse', '--git-common-dir'],
+      { encoding: 'utf8', cwd: ROOT, stdio: ['pipe', 'pipe', 'pipe'] }).trim()
+    const mainRoot = path.dirname(path.resolve(ROOT, common)) // <repo>/.git → <repo>
+    candidates.push(path.join(mainRoot, '.env'))
+  } catch (_) { /* git indisponible → candidate unique */ }
+  for (const envPath of candidates) {
+    if (!fs.existsSync(envPath)) continue
+    const raw = fs.readFileSync(envPath, 'utf8')
+    const m = raw.match(new RegExp('^' + name + '=(.*)$', 'm'))
+    if (m && m[1].trim().length > 0 && !m[1].includes('YOUR_')) return true
+  }
+  return false
 }
 
 console.log('B2B PHASE 2 — PREFLIGHT (read-only)')
