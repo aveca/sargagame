@@ -4518,7 +4518,7 @@ function comicVerdict(status,lang,daypart){
   if(status==="avoid")return{big:_t(lang,"Évite l'eau","Skip the swim","Evita el agua"),when:w,hl:_t(lang,"ALERTE","ALERT","ALERTA")}
   return{big:_t(lang,"Le Veilleur scanne","Scanning","Escaneando"),when:w,hl:"…"}
 }
-function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false,resorts=[]}){
+function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,sargData,userPos,forecast:forecastProp,track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts,isMyBeach=false,onFollowBeach=null,freeForecast=null,fcBlocked=false,resorts=[],onPlanTrip=null}){
   const trk=(n,p)=>{try{(trackProp||track)(n,p)}catch(_){}}
   const weather=useWeather(beach)
   const sheetRef=useRef(null), backdropRef=useRef(null), startY=useRef(0), dragY=useRef(0), closingRef=useRef(false)
@@ -4859,6 +4859,16 @@ const [showReport,setShowReport]=useState(false)
               style={{width:"100%",marginTop:10,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"13px 14px",borderRadius:14,border:"2.5px solid " + COMIC.ink,boxShadow:"3px 3px 0 " + COMIC.ink,background:"#fff",color:COMIC.ink,font:"800 14px/1.15 'Bricolage Grotesque'",cursor:"pointer"}}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 3v2M12 19v2M4.2 5.6 6.3 7.7M17.7 16.3l2.1 2.1M3 12h2M19 12h2M4.2 18.4l2.1-2.1M17.7 7.7l2.1-2.1"/><circle cx="12" cy="12" r="4"/></svg>
               {_t(lang,"Suivre gratuitement cette plage","Follow this beach for free","Seguir esta playa gratis")}
+            </button>
+          )}
+          {/* MASTER TAKEOVER (2026-09-22) : la fiche mène au séjour — « cette plage ce
+              weekend + quoi faire ensuite ». TripPlanner = décision multi-jours déjà
+              live. Additif (secondaire), rollback ?tripplan=0 (l'overlay s'ouvre quand
+              même seulement si l'entrée n'est pas frappée par le flag — cf. TripPlanner). */}
+          {onPlanTrip&&(()=>{try{return !/[?&]tripplan=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()&&(
+            <button type="button" onClick={()=>{trk("sg_trip_open",{source:"beach_sheet",beach_id:beach.id});onPlanTrip()}}
+              style={{width:"100%",marginTop:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"11px 14px",borderRadius:14,border:"1.5px dashed " + COMIC.ink,background:"rgba(255,199,44,.12)",color:COMIC.ink,font:"800 13px/1.2 'Bricolage Grotesque'",cursor:"pointer"}}>
+              🗓 {_t(lang,"Planifier mon séjour — meilleure plage chaque jour →","Plan my stay — best beach each day →","Planificar mi estancia — mejor playa cada día →")}
             </button>
           )}
           {isMyBeach&&!isPremium&&!free7&&freeForecast===undefined&&fcDays.length>0&&(
@@ -11612,7 +11622,13 @@ export default function App(){
     if(saved)return saved
     return"mq"
   })
-  const[view,setView]=useState("map") // map | list | home | suivi (+ learn/premium legacy)
+  const[view,setView]=useState(()=>{
+    // MASTER TAKEOVER 2026-09-22 : par défaut = « décision » (home = situation du
+    // jour + meilleure plage) plutôt que la carte brute (consultation avancée).
+    // Rollback propre : ?homefirst=0 → comportement carte d'avant.
+    try{if(/[?&]homefirst=0(?:&|$)/.test(window.location.search))return"map"}catch(_){}
+    return "home"
+  }) // map | list | home | suivi (+ learn/premium legacy)
   // PRODUCT UX RESET — comparateur (2-3 plages, jamais de donnée inventée).
   const[compareIds,setCompareIds]=useState([])
   const[search,setSearch]=useState("")
@@ -14889,6 +14905,7 @@ useEffect(()=>{
                 sargData={sargData} userPos={userPos} forecast={_fc} track={track}
                 communityReports={communityReports} onRequestGeo={requestGeo}
                 onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}
+                onPlanTrip={()=>setShowTrip(true)}
                 isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
                 onFollowBeach={requestFollow}
                 fcBlocked={fcBlockedId===selectedBeach.id}
