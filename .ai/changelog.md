@@ -11,6 +11,11 @@
 **Preuves** : ci-gate 24/24 · build exit 0 · budget 38,2 Ko · **smoke réel vert : tokens 4/4 + `SMOKE_GATE=PASS` + exit 0 mesuré** · vérification préalable sur main : ci-tests.yml/ci-funnel.yml/perf-budget.yml contiennent déjà build+budget+smoke+grep jets (rien à réappliquer, le pointage `continue-on-error` de perf-budget est APRÈS le budget → non bloquant OK).
 **Rollback** : revert du commit.
 
+## 2026-09-20 — E11 TRUST ROW (branche agent/ui/e11-trust-row, scope E11 uniquement)
+
+**Agent** : ui-agent (baseline 11,2 % gelee, .ai/E11_BASELINE.md). **Cause** : PassOffer sans rangee iconee au point de decision (5 micro-mentions dispersees). **Fix** : trust row sous CTA hero (cadenas/calendrier/sans-abo, copy 100 % recyclee, isComic, i18n, flag ?trust_row=0, testid passoffer-trust-row) ; ni tracking, ni layout structurel, ni checkout.
+**Preuves** : passoffer-trust-row 13/13, E2E e11 2/2 + j0 7/7 (offre AVANT email intact) + funnel 13/13, build 0, bundle 38.2, smoke 4/4, screenshot 390px (2 lignes, 32px, CTA+email intacts).
+**Fichiers** : src/PassOffer.jsx, scripts/tests/passoffer-trust-row.test.cjs (NOUVEAU), tests/e2e/e11-trust-row.spec.ts (NOUVEAU).
 ## 2026-09-20 — F2 LIVEPILL (branche `agent/ui/f2-livepill`, scope F2 uniquement)
 
 **Agent** : ui-agent (A13-hybrid REFUTEE au code : un seul systeme flag-driven par variante ; E11 ecarte : panel + paywall-touch requis). **Cause** : `.sg-live` fond rgba(0,158,142,.12), ancetres transparents jusqu'a BODY -> texte ink dependant de la carte (worst-case CR 1.41). **Fix (1 declaration)** : fond OPAQUE meme teinte `#e6f4f1` -> label 17.28/18.58, age 6.1 ; ni layout, ni href, ni tracking, ni dot/halo.

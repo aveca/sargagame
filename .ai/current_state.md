@@ -32,6 +32,16 @@
 - Branche : `agent/devops/g15-ci-gate` · PR : à créer
 
 ---
+## 2026-09-20 - Agent: ui-agent (E11 TRUST ROW, branche agent/ui/e11-trust-row)
+
+### Travail effectue
+- **Resume 1 ligne** : scope E11 uniquement, trust row sous CTA hero (baseline 11,2 % gelee), tests + gates verts.
+- **Details** : voir .ai/changelog.md (entree E11) + .ai/E11_BASELINE.md.
+
+### Branche / PR
+- Branche : agent/ui/e11-trust-row
+- PR : a creer
+- Rollback : ?trust_row=0 + revert 1 commit
 
 ## 2026-09-20 · Agent: ui-agent (F2 LIVEPILL — branche `agent/ui/f2-livepill`)
 

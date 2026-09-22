@@ -80,6 +80,9 @@
 - UX-VR-003 (P2 visuel) → **FIXÉ** : CTA sticky paywall rogné ~22px à 390px. Fix lot 10 app-runtime.css (2 lignes ≤480px), desktop inchangé.
 - Preuves : build 0 · bundle 38.1 · smoke 4/4 · xp-visual-rescue 26/26 · npm test 173/175 (2 jolly-yalow préexistants) · E2E 41/41 · repro prod CR 1.02 identique. Rollbacks : ?newia=0, ?nosticky=0. PR #686 innocentée (paywall-only). UX-QA-002 volontairement non touché (multi-scope).
 
+**Session E11 TRUST ROW (2026-09-20, branche agent/ui/e11-trust-row, scope E11 uniquement) :**
+- E11 (P1 CRO) en cours : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0) ; ni tracking, ni layout structurel, ni checkout. Baseline 11,2 % gelee (.ai/E11_BASELINE.md).
+
 **Session F2 LIVEPILL (2026-09-20, branche `agent/ui/f2-livepill`, scope F2 uniquement) :**
 - F2 (P2) → **FIXÉ** : pill EN DIRECT fond `rgba(0,158,142,.12)` → `#e6f4f1` opaque (app-runtime.css, 1 déclaration ; worst-case 1.41 → label 17.28/18.58, age 6.10 ≥ AA ; ni layout, ni href, ni tracking, ni dot/halo).
 - Preuves : f2-livepill 9/9 · build 0 · bundle 38.2 · smoke 4/4 · E2E bottomnav+funnel 21/21 · computed navigateur fond opaque mobile+desktop.
