@@ -1,16 +1,16 @@
-name,category,town,coast_zone,website,site_verified,source,why,priority,status,next_action
-Cap Est Lagoon Resort & Spa,hotel_luxe,Le François,atlantique,https://www.cap-est.com,oui,OSM+HTTP200,"Luxe 5* face atlantique — la plage est LE produit",A,prospect,email_J0_fondateur
-Hôtel French Coco,hotel_boutique,La Trinité (Tartane),atlantique,https://www.hotelfrenchcoco.com,oui,OSM+HTTP200,"Boutique hôtel à Tartane, côte sargasses #1",A,prospect,email_J0
-Hôtel Le Manguier,hotel,Le François,atlantique,https://www.lemanguier.fr,oui,OSM+HTTP200,"Face atlantique, clientèle balnéaire",A,prospect,email_J0
-Résidence Océane,hotel,La Trinité (Tartane),atlantique,https://residence-oceane.com,oui,OSM+HTTP301,"Tartane = zone d'impact direct",A,prospect,email_J0
-Hôtel Macabou,hotel,Le Vauclin,atlantique,,non,OSM,"Pointe Macabou = epicentre sargasses sud-atlantique",A,prospect,chercher_contact_annuaire
-Villa Fleurs des Îles,apart_hotel,Le Vauclin,atlantique,https://www.villafleursdesiles.com,oui,OSM+HTTP200,"Locations vacances — clients demandent la plage chaque matin",A,prospect,email_J0
-L'Oeil dans le Bleu,hotel,Le Marin,atlantique,,non,OSM,"Bougainville/Le Marin — bastion voile+plage",B,prospect,chercher_contact_annuaire
-Karibéa Sainte-Luce,hotel_groupe,Sainte-Luce,sud,https://www.karibea.com,oui,OSM+HTTP200,"Groupe hôtelier — décision possible multi-établissements",A,prospect,email_J0
-Hôtel Brise Marine,hotel,Sainte-Luce,sud,https://www.hotel-brisemarine.com,oui,OSM+HTTP200,"Front de mer Sainte-Luce",A,prospect,email_J0
-Pierre & Vacances Sainte-Luce,village_vacances,Sainte-Luce,sud,https://www.pierreetvacances.com/fr-fr/fp_LUL_location-village-sainte-luce,non,OSM,"Volume familles — adoption via siège (long)",B,prospect,email_J0
-La Dunette,hotel,Sainte-Anne,sud,,non,OSM,"Plage village Sainte-Anne — très fréquenté",B,prospect,chercher_contact_annuaire
-Le Panoramic,hotel,Les Trois-Îlets,sud,https://www.lepanoramic.fr,oui,OSM+HTTP200,"Pointe du Bout — hub touristique dense",A,prospect,email_J0
-Hôtel La Pagerie,hotel,Les Trois-Îlets,sud,https://www.hotel-lapagerie.com,oui,OSM+HTTP200,"Marina + plages — clientèle internationale",A,prospect,email_J0
-Hôtel Bambou,hotel,Les Trois-Îlets,sud,https://www.hotelbambou.fr,oui,OSM+HTTP301,"Anse Mitan — plage phare",A,prospect,email_J0
-Le Bakoua,hotel,Les Trois-Îlets,sud,https://www.bakoua.fr,oui,OSM+HTTP200,"Historique 4* — image premium",A,prospect,email_J0
+name,category,town,coast_zone,website,site_verified,source,why,priority,status,next_action,contact_email,contact_page,contact_phone,contact_note,contact_verified_at
+Cap Est Lagoon Resort & Spa,hotel_luxe,Le François,atlantique,https://www.cap-est.com,oui,OSM+HTTP200,"Luxe 5* face atlantique — la plage est LE produit",A,prospect,email_J0_fondateur,c.assencio@bcfrance.com,,+33145000202,email maison-mere (groupe BC France),2026-09-22
+Hôtel French Coco,hotel_boutique,La Trinité (Tartane),atlantique,https://www.hotelfrenchcoco.com,oui,OSM+HTTP200,"Boutique hôtel à Tartane, côte sargasses #1",A,prospect,email_J0,conciergerie@hotelfrenchcoco.com,https://www.hotelfrenchcoco.com/en/contact.html,,,2026-09-22
+Hôtel Le Manguier,hotel,Le François,atlantique,https://www.lemanguier.fr,oui,OSM+HTTP200,"Face atlantique, clientèle balnéaire",A,prospect,email_J0,,https://www.lemanguier.fr/contact/,,,2026-09-22
+Résidence Océane,hotel,La Trinité (Tartane),atlantique,https://residence-oceane.com,oui,OSM+HTTP301,"Tartane = zone d'impact direct",A,prospect,email_J0,residence-oceane@hotmail.com,https://www.residence-oceane.com/contact,+596596587373,,2026-09-22
+Hôtel Macabou,hotel,Le Vauclin,atlantique,,non,OSM,"Pointe Macabou = epicentre sargasses sud-atlantique",A,prospect,chercher_contact_annuaire,,,,,
+Villa Fleurs des Îles,apart_hotel,Le Vauclin,atlantique,https://www.villafleursdesiles.com,oui,OSM+HTTP200,"Locations vacances — clients demandent la plage chaque matin",A,prospect,email_J0,villafleursdesiles@yahoo.fr,https://www.villafleursdesiles.com/contact,,,2026-09-22
+L'Oeil dans le Bleu,hotel,Le Marin,atlantique,,non,OSM,"Bougainville/Le Marin — bastion voile+plage",B,prospect,chercher_contact_annuaire,,,,,
+Karibéa Sainte-Luce,hotel_groupe,Sainte-Luce,sud,https://www.karibea.com,oui,OSM+HTTP200,"Groupe hôtelier — décision possible multi-établissements",A,prospect,email_J0,servicegroupes@karibeahotel.com,https://www.karibea.com/contact/,,,2026-09-22
+Hôtel Brise Marine,hotel,Sainte-Luce,sud,https://www.hotel-brisemarine.com,oui,OSM+HTTP200,"Front de mer Sainte-Luce",A,prospect,email_J0,info@hotel-brisemarine.com,,,,2026-09-22
+Pierre & Vacances Sainte-Luce,village_vacances,Sainte-Luce,sud,https://www.pierreetvacances.com/fr-fr/fp_LUL_location-village-sainte-luce,non,OSM,"Volume familles — adoption via siège (long)",B,prospect,email_J0,,,,,
+La Dunette,hotel,Sainte-Anne,sud,,non,OSM,"Plage village Sainte-Anne — très fréquenté",B,prospect,chercher_contact_annuaire,,,,,
+Le Panoramic,hotel,Les Trois-Îlets,sud,https://www.lepanoramic.fr,oui,OSM+HTTP200,"Pointe du Bout — hub touristique dense",A,prospect,email_J0,,https://www.lepanoramic.fr/fr/contacts.html,,,2026-09-22
+Hôtel La Pagerie,hotel,Les Trois-Îlets,sud,https://www.hotel-lapagerie.com,oui,OSM+HTTP200,"Marina + plages — clientèle internationale",A,prospect,email_J0,resa@hotel-lapagerie.com,https://www.hotel-lapagerie.com/acces-contact,+596596660530,,2026-09-22
+Hôtel Bambou,hotel,Les Trois-Îlets,sud,https://www.hotelbambou.fr,oui,OSM+HTTP301,"Anse Mitan — plage phare",A,prospect,email_J0,,https://www.bambouresort.com/contact,+596(0)696287448,,2026-09-22
+Le Bakoua,hotel,Les Trois-Îlets,sud,https://www.bakoua.fr,oui,OSM+HTTP200,"Historique 4* — image premium",A,prospect,email_J0,,https://www.bakoua.fr/contact/,,,2026-09-22
