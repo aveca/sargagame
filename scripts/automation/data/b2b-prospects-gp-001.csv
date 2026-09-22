@@ -1,0 +1,16 @@
+name,category,town,coast_zone,website,site_verified,source,why,priority,status,next_action,contact_email,contact_page,contact_phone,contact_note,contact_verified_at
+Hôtel Fleur d'Épée,hotel_groupe,Le Gosier,sud,https://www.hotel-fleur-depee.com,oui,OSM+HTTP200,"Front de mer Gosier — bande sargasses fréquente sud-est",A,prospect,email_J0,dh@hotel-fleur-depee.com,,,,,2026-09-22
+Auberge de la Vieille Tour,hotel_premium,Le Gosier,sud,https://www.auberge-vieille-tour.fr,oui,OSM+HTTP301,"Image premium, clients exigeants, plage privative",A,resa@auberge-vieille-tour.fr,,,,,2026-09-22
+La Créole Beach Hôtel & Spa,hotel,Le Gosier,sud,https://www.creolebeach.com,oui,OSM+HTTP200,"Plage de l'hôtel — promesse Cœur de produit",A,prospect,email_J0,reservation@creolebeach.com,,,,,2026-09-22
+Résidence Blue Palm,apart_hotel,Le Gosier,sud,https://www.blue-palm.com,oui,OSM+HTTP302,"On va où à la plage au petit-déj",A,prospect,email_J0,,,,,2026-09-22
+Hôtel Arawak Beach Resort,hotel,Le Gosier,sud,,non,OSM,"Plage hôtel, review wars sur sargasses = enjeu direct",B,prospect,chercher_contact_annuaire,,,,,2026-09-22
+La Toubana Hôtel & Spa,hotel,Sainte-Anne,sud,,non,OSM,"Village vacances + plage Sainte-Anne très exposée",A,prospect,chercher_contact_annuaire,,,,,2026-09-22
+Hôtel Amaudo,hotel,Saint-François,sud,,non,OSM,"Bord de mer, clientèle internationale",B,prospect,chercher_contact_annuaire,,,,,2026-09-22
+Le Village de la Marina,apart_hotel,Saint-François,sud,,non,OSM,"Marina + grandes criques",B,prospect,chercher_contact_annuaire,,,,,2026-09-22
+Villa Blue Lagoon Saint-François,villa,Saint-François,sud,,non,OSM,"Conciergerie villa = chaleur de contact",A,prospect,chercher_contact_annuaire,,,,,2026-09-22
+Club Med La Caravelle,village_vacances,Sainte-Anne,sud,,non,OSM,"Grande marque, cycle long mais gros gisement",C,prospect,canal_siege,,,,,2026-09-22
+Domaine de Lauréal,gite,Le Gosier,sud,https://www.domainedelaureal.com,oui,OSM+HTTP200,"Petit établissement = décision rapide",B,prospect,email_J0,,,,,2026-09-22
+Fleur d'Éden Location,location,Grande-Terre,sud,https://www.fleur-d-eden.com,oui,OSM+HTTP200,"Locations, proximité plages",B,prospect,eden.ms@wanadoo.fr,,,,,2026-09-22
+La Pergola,hotel,Le Gosier,sud,https://lapergolagosier.wordpress.com,non,OSM,"WordPress — petit hôtel local",B,prospect,email_J0,,,,,2026-09-22
+Hôtel du Petit Havre,hotel,Petit-Havre,sud,,non,OSM,"Plage Petit-Havre directe",B,prospect,chercher_contact_annuaire,,,,,2026-09-22
+Hôtel Oasis,hotel,Le Gosier,sud,,non,OSM,"Gosier centre, clientes plage",B,prospect,chercher_contact_annuaire,,,,,2026-09-22
