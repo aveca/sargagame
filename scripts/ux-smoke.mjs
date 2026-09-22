@@ -110,7 +110,16 @@ const whiteButtons = [];
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
+// TAKEOVER 2026-09-22 : le default est désormais HOME (décision du jour, voir
+// commit « feat(default) ») ; la carte reste à 1 tap d'onglet. Le funnel
+// map+fiche+paywall est vérifié APRÈS ce tap — mêmes surfaces, navigation explicite.
 await p.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
+await p.evaluate(() => {
+  const btn = [...document.querySelectorAll('nav.sg-bottom-nav button')]
+    .find(b => /carte|map|mapa/i.test((b.textContent || '')));
+  if (btn) btn.click();
+});
+await p.waitForTimeout(2000);
 // Wait for React app to hydrate and render map labels
 let mapOk = false;
 try {
