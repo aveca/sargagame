@@ -104,7 +104,7 @@ function BeachCard({ b, lang, userPos, isFav, inCompare, onOpen, onFav, onCompar
 }
 
 /* ── ACCUEIL : situation du jour + meilleure + découverte ── */
-export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track }) {
+export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip }) {
   const [q, setQ] = useState('');
   const data = useMemo(() => {
     const list = (allBeaches || []).filter(b => b.status && b.score != null);
@@ -148,6 +148,14 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
           </div>
         )}}
         <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
+        {/* TRIP — « planifier mon séjour » (MASTER 2026-09-22, rollback ?tripplan=0).
+            Entrée intencionnelle home : la promesse « quelles plages ce séjour ». */}
+        {!!onPlanTrip && (() => { try { return !/[?&]tripplan=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })() && (
+          <button type="button" data-testid="trip-open" onClick={() => { try { track?.('sg_trip_open', { source: 'xp_home' }); } catch {} onPlanTrip(); }}
+            style={{ display: 'block', width: '100%', marginTop: 8, background: 'none', border: '1.5px dashed rgba(255,199,44,.55)', borderRadius: 12, padding: '12px 14px', color: '#FFE08A', fontWeight: 800, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>
+            {_t(lang, '🗓 Planifier mon séjour — la meilleure plage chaque jour →', '🗓 Plan my stay — best beach each day →', '🗓 Planificar mi estancia — mejor playa cada día →')}
+          </button>
+        )}
       </div>
 
       <h2 style={h2}>{_t(lang, 'Quelle plage veux-tu découvrir ?', 'Which beach today?', '¿Qué playa quieres descubrir?')}</h2>
