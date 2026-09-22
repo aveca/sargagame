@@ -18,6 +18,32 @@
 - PR : à créer (no merge)
 - Rollback : `?sgcta=0` (produit) ou revert 1 commit
 
+## 2026-09-21 · Agent: coding/qa-agent — MINI-SPRINT A13 PROD VERIFIED + UX-QA-006 CLOS (branche `agent/qa/ux-qa-006-plus-tard`)
+
+### Travail effectué
+- **Résumé 1 ligne** : A13 (#694) vérifié en prod (read-only, mobile+desktop) GREEN ; UX-QA-006 « Plus tard » desktop **clos sans code** — non reproductible car le run1 (2026-09-16) précédait le fix UX-R2-003 (a1585b563, 2026-09-17) ; livrable = spec régression 5 tests + contrat 11/11 + MASTER_AUDIT 005/006 [x].
+- **Détails** : `.ai/changelog.md` entrée 2026-09-21.
+
+### Tests réalisés
+- [x] build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS · esbuild OK · php -l N/A (0 .php)
+- [x] ux-qa-006 spec 5/5 local build frais (preview :4180) **ET** 5/5 PROD (sargasses-martinique.com)
+- [x] A13 prod verify (spec temporaire, supprimée après usage) : J+1 INCLUS réel / rollback ?j1_free=0 / J+2+ teasers / 0 overflow / 0 pageerror — mobile 390×844 + desktop 1440×900
+- [x] contrat ux-qa-006-plus-tard.test.cjs 11/11
+
+### Problèmes restants
+- [ ] Aucun sur ce scope. Attention : `Preview :4173` = serveur potentiellement stale (idget 27124) ; ce chantier a utilisé :4180 fresh.
+
+### Prochaine action recommandée
+1. Merger la PR UX-QA-006 après revue (tests+docs seuls) — Release agent / fondateur
+2. Reliquats UX-QA-001/002/003/004 (= bannière email z1500 multi-effets) : candidates mini-sprint suivante — voir Phase 3 (rapport de session)
+3. #710 / E11 J+7 : hors scope, figés
+
+### Branche / PR
+- Branche : `agent/qa/ux-qa-006-plus-tard` · PR : en création (NE PAS MERGER auto, demande explicite du sprint)
+- Commit head : (à pusher)
+
+---
+
 ## 2026-09-20 · Agent: coding-agent — SHIP G3 mirror PayPal→Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
 
 ### Travail effectué

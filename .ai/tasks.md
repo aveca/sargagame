@@ -1,3 +1,13 @@
+## A13 CHASSEDETAIL — [x] PROD VERIFIED 2026-09-21 (#694 f03144647, zéro modif code)
+- **Mobile 390×844 + desktop 1440×900, prod sargasses-martinique.com** : J+1 débloqué (statut réel + confiance numérique, donnée live), badge INCLUS unique, tap J+1 sans paywall, J+2/J+3 cadenas, CTA premium intact, 0 overflow, 0 pageerror.
+- **Rollback ?j1_free=0** : J+1 reverrouillé, badge absent, reste du paywall intact.
+- **Bundle prod** : `ChasseHome-CVJEVAum.js` contient j1_free/lc-fc-inclus/INCLUS.
+
+## UX-QA-006 — [x] CLOS (non reproductible, fixé par UX-R2-003 a1585b563 postérieur au run1) 2026-09-21
+- **Root cause** : run 20260916T2132Z run1 (2026-09-16) = build PRÉ-fix UX-R2-003 (a1585b563, 2026-09-17). Panel paywall z1100 SOUS fiche z1200 → clic « Plus tard » tombant sur la couche fiche. Depuis le fix z1260 : plus d'interception.
+- **Preuves** : spec `ux-qa-006-plus-tard.spec.ts` 5/5 local build + 5/5 PROD (desktop 1440×900 ×2/×, reopen ; mobile 390×844 Plus tard + ×) · contrat `ux-qa-006-plus-tard.test.cjs` 11/11 · smoke 4/4 · bundle 38.2 · build 0 · 0 pageerror · couvre aussi UX-QA-005 (× mobile preuve prod).
+- **PR** : agent/qa/ux-qa-006-plus-tard — NE PAS MERGER auto (demande sprint).
+
 ## E11 TRUST ROW — [~] fix local 2026-09-20 (branche agent/ui/e11-trust-row, baseline 11,2 % gelee)
 - **Fix** : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0).
 - **Preuves** : trust-row 13/13, E2E e11 2/2 + j0 + funnel, build 0, bundle 38.2, smoke 4/4, screenshot 390px.
