@@ -1,3 +1,40 @@
+
+## 2026-09-22 — REVENUE RESCUE EXÉCUTION : money-path probe 5×5 VERT + funnel mesuré sur events réels (branche `agent/coding/revenue-measure`)
+
+**Agent** : revenue-rescue. **GO fondateur reçu. Ordre respecté : MONEY-PATH → MESURE.**
+
+### MONEY-PATH — vérifié vivant jusqu'au seuil du paiement (zéro paiement déclenché)
+- **Endpoint Mollie** : `POST /api/mollie.php` répond 400 propre sur action inconnue (vivant) ; `payment_status` prouve la **connectivité API Mollie live** (réponse Mollie réelle sur ID fictif).
+- **Webhook** : `POST /api/mollie-webhook.php` → 403 signature valide attendue → **secret webhook configuré, HMAC actif** (pas le 503 « secret absent » — BUG-2026-008 bien mort).
+- **Probe E2E PROD** (`tests/e2e/prod-money-path-probe.spec.ts`, NOUVEAU, tracking coupé pour ne pas polluer le funnel, `PROBE_PROD=1 BASE=...`) : **5/5 domaines × mobile**, 2× desktop — paywall visible → CTA hero cliqué → overlay paiement + input email → **5 iframes Mollie montées** → bouton Payer présent, **0 pageerror**. Le checkout est vivant jusqu'au seuil « payer ». Reste non prouvable sans carte : tokenize → create_payment → paid → webhook → grant → sg_conversion = test fondateur.
+- `.sg-passcard-hero` pay bouton DISABLED avant saisie sur MQ/GP/CUN vs enabled Miami/PuntaCana — garde de validation, non bloquant (à observer pendant le test réel).
+
+### MESURE — funnel déployé Apps Script v22 @44 (clasp push + deploy, URL inchangée)
+- **Cause** : endpoint `action=funnel` lisait `sg_premium_modal_cta` (event retiré du front le 2026-08-18) → taux CTA affiché 0 à vie, décisions sur jauge cassée.
+- **Fix `scripts/appscript/Code.js`** : taux money-path sur le vrai CTA `pass_cta` (`modal_to_cta`, `modal_to_any_action`) + nouveaux compteurs `onsite_checkout_opened` / `payment_failed` / `payment_paid` + nouveaux taux `cta_to_checkout_open` / `checkout_open_to_payment` / `checkout_payment_failed`. Legacy conservé 0-compat.
+- **Vérif live post-deploy** : `pass_cta: 208` (28 j) vs `premium_modal_cta: 0` → `modal_to_cta: 4 %` réel (et non plus 0 fake).
+- **Fix front `src/Sargasses_PROD.jsx`** : ajout de `sg_payment*` + `sg_onsite_checkout_opened` au beacon critique Apps Script — la Sheet ne voyait RIEN entre CTA et caisse (d'où `onsite_checkout_opened: 0` à l'endpoint alors que Supabase en compte 116/30 j).
+- **Reste** : le funnel endpoint Sheet ne verra `onsite_checkout_opened` qu'au déploiement des builds (le beacon est côté front) ; GA4 GP cassé = action fondateur (propriété mal câblée).
+
+**Preuves** : build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4 tokens + SMOKE_GATE=PASS · probe 5/5 domaines mobile + 2 desktop · funnel endpoint relu post-deploy (pass_cta=208, rates nouveaux présents). 0 PHP touché. Pricing intouché.
+**Rollback** : `git revert` du commit (front beacon = additif) · Apps Script : re-deploy d'une version antérieure via clasp.
+**Métriques business associées** : `checkout_open_to_payment` (le KPI €0) et `checkout_payment_failed` deviennent mesurables quotidiennement.
+
+## 2026-09-22 — REVENUE RESCUE AUDIT (zéro code)
+- **Livrable** : `REVENUE_RESCUE_REPORT.md` — diagnostic €0 basé données réelles (Mollie API, Stripe, GA4, daily-metrics 30 j, endpoint funnel).
+- **Constats clés** : 0 paiement Mollie depuis 2026-07-19 (65 j) malgré 116 ouvertures checkout/30 j ; trafic réel GA4 ~12 sess/j MQ (GP cassé) ; endpoint funnel aveugle (lit `sg_premium_modal_cta` supprimé le 2026-08-18) ; B2B à zéro, bloqué par BUG-2026-027 (token Supabase expiré, attente 19 j) ; 5 prix B2C incohérents entre surfaces.
+- **Scénarios** : E (checkout) suspecté P0 + A (trafic) prouvé + G (B2B prioritaire). Prix NON en cause à ce volume.
+- **3 actions P0 proposées (attente GO fondateur)** : 1) paiement test réel 4,99 € sur les 5 domaines ; 2) régénérer SUPABASE_ACCESS_TOKEN + 40 prospects B2B ; 3) publier les verdicts quotidiens déjà générés.
+- **Aucun code touché.** La plus petite modif suivra le verdict du paiement test.
+## 2026-09-21 — MINI-SPRINT A13 PROD VERIFY + UX-QA-006 (branche `agent/qa/ux-qa-006-plus-tard`)
+
+**Agent** : coding/qa-agent. **2 scopes, 0 ligne produit modifiée.**
+- **A13 (#694) PROD VERIFIED** : vérification read-only prod (sargasses-martinique.com) mobile 390×844 + desktop 1440×900 — J+1 débloqué avec donnée réelle (confiance numérique), badge INCLUS unique, tap J+1 sans paywall, J+2/J+3 verrouillés, rollback `?j1_free=0` reverrouille J+1 sans casser le paywall, 0 pageerror, 0 overflow. Bundle prod contient le code (ChasseHome chunk).
+- **UX-QA-006 CLOS sans fix code** : bug « Plus tard » desktop **non reproductible** — le run1 (`20260916T2132Z`) a tourné 1 jour AVANT le fix UX-R2-003 (`a1585b563`, 2026-09-17, panel z1100 → z1260 au-dessus de la fiche z1200 ; avant le fix le clic tombait sur la couche fiche). Vérifié : 5/5 E2E local build frais + 5/5 PROD (desktop « Plus tard »/×/reopen-idempotent, mobile « Plus tard » + × → ce dernier clos aussi UX-QA-005). Contrat 11/11 NOUVEAU (`onClick=onClose` ×2, z1250/1260 conservés).
+**Preuves** : build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4 tokens + SMOKE_GATE=PASS · esbuild OK · 0 pageerror partout.
+**Fichiers** : `tests/e2e/ux-qa-006-plus-tard.spec.ts` (NOUVEAU, 5 tests), `scripts/tests/ux-qa-006-plus-tard.test.cjs` (NOUVEAU, 11 audits), `MASTER_AUDIT.md` (UX-QA-005/006 → [x] clos), `.ai/tasks.md`, `.ai/current_state.md`.
+**Rollback** : rien à rollbacker produit (aucun code modifié) ; retirer la spec = revert du commit.
+
 ## 2026-09-22 — STICKY CTA E1 PARITY (branche `agent/ui/sticky-cta-e1align`)
 
 **Agent** : ui-agent (friction : hero E1 « prévision 7 jours » vs sticky « plages propres » — deux promesses même écran). **Fix (1 libellé × 3 langues, `src/PassOffer.jsx` seul)** : sticky buy réutilise le flag `ctaSpecific` (rollback partagé `?sgcta=0`), prix/aria-label/onBuy intacts, 0 tracking, 0 logique prix.
