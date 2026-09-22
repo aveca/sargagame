@@ -8,6 +8,7 @@
 import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,createContext,useContext,Component,Suspense,lazy}from"react"
 import ComicIcon from"./components/ComicIcons.jsx"
 import {computeScore as _computeBeachScore} from "./lib/score.js"
+import { askJevIntent, jevEnabled } from "./lib/jev-intent.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 // Contrat de prévision PARTAGÉ (source unique : scripts/lib/forecast-contract.cjs —
 // utilisé aussi par les tests node). Import namespace : interop CJS/ESM sûre.
@@ -2012,6 +2013,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_paywall_forecast_shown","sg_paywall_forecast_click",
   "sg_beach_cta_b2b_shown","sg_beach_cta_b2b_click",
   "sg_paywall_3view_cta",
+  // Jev intent router (conversion 2026-09-22) : ask (volume besoin PN naturel),
+  // intent (routage réussi + classe) , fallback (Jev indispo → comportement intact).
+  "sg_jev_intent_ask","sg_jev_intent","sg_jev_intent_fallback",
   // Cross-sell inter-domain
   "sg_region_nav_click","sg_cross_sell_click",
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
@@ -10176,6 +10180,48 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
     </div>
   )
 }
+// JevAsk (REVENUE/CONVERSION 2026-09-22) — quand la recherche landing par nom
+// échoue, le visiteur qualifié écrit en langage naturel et... repartait. Ici :
+// Jev classe l'intention (serveur /api/jev-intent.php), le code route
+// DÉTERMINISTIQUEMENT vers la valeur la plus proche (fiche du jour, B2B…).
+// Jev ne touche JAMAIS prix/money-path. Rollback : ?jev=0 (client) · TYPESAFE_JEV=off (serveur).
+function JevAsk({text,lang,beach,onOpenBeach,onShowMap}){
+  const [st,setSt]=useState("idle") // idle|busy
+  const go=async()=>{
+    if(st!=="idle")return
+    setSt("busy")
+    try{track("sg_jev_intent_ask",{len:String(text||"").length})}catch(_){}
+    const r=await askJevIntent(text,lang,__R&&__R.id)
+    if(!r.ok){
+      // Fallback silencieux : comportement exact d'avant (ouvrir la carte).
+      try{track("sg_jev_intent_fallback",{})}catch(_){}
+      if(onShowMap)onShowMap()
+      return
+    }
+    try{track("sg_jev_intent",{intent:r.intent,confidence:r.confidence})}catch(_){}
+    if(r.intent==="b2b"){
+      if(!IS_NEW_REGION){try{window.location.href="/sargasses-pour-hotels/"}catch(_){};return}
+      if(onShowMap)onShowMap();return
+    }
+    // today_verdict / when_later / which_beach / avoid_seaweed / trip_planning /
+    // off_topic → la meilleure plage du jour (la fiche porte verdict + forecast).
+    // Valeur D'ABORD : pas de paywall injecté à froid sur une intention.
+    if(onOpenBeach&&beach)onOpenBeach(beach)
+  }
+  return(
+    <button onClick={go} data-testid="jev-ask" style={{display:"block",width:"100%",marginBottom:10,cursor:"pointer",textAlign:"left",
+      background:"rgba(255,199,44,.08)",border:"2px solid rgba(255,199,44,.5)",borderRadius:12,padding:"12px 14px",fontFamily:"inherit"}}>
+      <span style={{display:"block",fontWeight:800,fontSize:14,color:"#FFE08A"}}>
+        {_t(lang,"Pas de plage trouvée — demander au Veilleur →","No beach found — ask the Watcher →","Sin resultados — preguntar al Vigía →")}
+      </span>
+      <span style={{display:"block",marginTop:4,fontSize:12.5,fontWeight:600,color:"rgba(255,255,255,.65)"}}>
+        {st==="busy"
+          ? _t(lang,"Le Veilleur réfléchit…","The Watcher is thinking…","El Vigía está pensando…")
+          : _t(lang,"« "+String(text||"").slice(0,80)+" » — il comprend et te guide","“"+String(text||"").slice(0,80)+"” — he understands and guides","“"+String(text||"").slice(0,80)+"” — entiende y te guía")}
+      </span>
+    </button>
+  )
+}
 function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,pickBeaches,exiting}){
   const [pickQ,setPickQ]=useState("")
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
@@ -10446,6 +10492,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
               </div>
               <div style={{maxHeight:312,overflowY:"auto",overflowX:"hidden",display:"flex",flexDirection:"column",gap:6,
                 WebkitOverflowScrolling:"touch",paddingRight:2}}>
+                {/* Conversion : recherche sans résultat → Jev comprend et route (valeur d'abord). Rollback ?jev=0. */}
+                {nq.length>=6&&list.length===0&&jevEnabled()&&(typeof beach!=="undefined"&&beach)&&(
+                  <JevAsk text={pickQ} lang={lang} beach={beach} onOpenBeach={onOpenBeach} onShowMap={onShowMap}/>
+                )}
                 {list.map(b=>(
                   <button key={b.id} onClick={()=>onOpenBeach&&onOpenBeach(b)}
                     style={{display:"flex",alignItems:"center",gap:12,width:"100%",textAlign:"left",

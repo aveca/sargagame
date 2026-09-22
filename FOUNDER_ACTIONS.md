@@ -2,6 +2,8 @@
 
 3 actions humaines, par ordre d'impact. Total : ~45 min. Tout le reste est déjà fait ou automatisé.
 
+> **§0 TypeSafe** : la clé `TYPESAFE_API_KEY` est absente partout (vérifié 2026-09-22). 2 min : créer `public/api/typesafe-config.php` sur le serveur (gabarit `typesafe-config.example.php`). Sans elle, le routeur d'intention Jev reste en mode fallback silencieux (aucun impact produit, aucune donnée perdue — simplement inactif).
+
 ---
 
 ## 1. PAIEMENT TEST RÉEL — 5 domaines (~75 € total, 20 min)
