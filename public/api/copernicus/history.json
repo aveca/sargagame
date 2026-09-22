@@ -3335,17 +3335,17 @@
         },
         {
           "id": "pt-marin",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "sainte-anne",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
           "id": "les-salines",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {
@@ -3400,12 +3400,12 @@
         },
         {
           "id": "gp-moule",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-vieux-fort",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         }
       ]

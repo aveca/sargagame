@@ -1315,17 +1315,17 @@
         },
         {
           "id": "tu002",
-          "afai": 0.16,
+          "afai": 0.15,
           "status": "moderate"
         },
         {
           "id": "tu003",
-          "afai": 0.16,
+          "afai": 0.15,
           "status": "moderate"
         },
         {
           "id": "tu004",
-          "afai": 0.16,
+          "afai": 0.15,
           "status": "moderate"
         },
         {
@@ -2141,21 +2141,21 @@
       "beach": "tu002",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.15
     },
     {
       "date": "2026-09-22",
       "beach": "tu003",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.15
     },
     {
       "date": "2026-09-22",
       "beach": "tu004",
       "from": "clean",
       "to": "moderate",
-      "afai": 0.16
+      "afai": 0.15
     },
     {
       "date": "2026-09-22",

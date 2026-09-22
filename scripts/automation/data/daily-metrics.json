@@ -6025,7 +6025,7 @@
   },
   {
     "date": "2026-09-22",
-    "time": "2026-09-22T01:48:53.837Z",
+    "time": "2026-09-22T04:19:10.558Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 609,
@@ -6033,19 +6033,19 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 83,
-      "lockClicks": 3,
-      "modalOpens": 14,
+      "sessions": 89,
+      "lockClicks": 10,
+      "modalOpens": 25,
       "modalCloses": null,
       "modalCta": 0,
-      "ctaViews": 14,
-      "altViews": 0,
+      "ctaViews": 23,
+      "altViews": 5,
       "altClicks": 0,
       "groundTruth": 0,
       "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 22,
+      "emailSubmits": 55,
       "checkoutRedirects": 0,
       "onsiteCheckoutOpened": 0,
       "payOnsiteBack": 0,
@@ -6054,8 +6054,8 @@
       "paymentsReal": null,
       "revenueReal": null,
       "rates": {
-        "session_to_lock": 3.6,
-        "lock_to_modal": 466.7,
+        "session_to_lock": 11.2,
+        "lock_to_modal": 250,
         "modal_to_cta": 0,
         "cta_view_to_click": 0,
         "alt_view_to_click": 0,
@@ -6068,11 +6068,11 @@
     "email": {
       "sent": 5769,
       "delivered": null,
-      "opened": 59,
-      "clicked": 30,
+      "opened": 58,
+      "clicked": 28,
       "bounced": null,
-      "openRate": 1.02,
-      "clickRate": 50.85,
+      "openRate": 1.01,
+      "clickRate": 48.28,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -6123,17 +6123,17 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-22T01:49:22.083Z"
+      "fetchedAt": "2026-09-22T04:19:33.427Z"
     },
     "ga4": {
       "date": "2026-09-21",
       "mq": {
         "sessions": 13,
-        "users": 44
+        "users": 45
       },
       "gp": {
         "sessions": 0,
-        "users": 435
+        "users": 439
       }
     }
   }
