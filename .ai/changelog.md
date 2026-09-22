@@ -1,3 +1,11 @@
+## 2026-09-22 — TAKEOVER : le nouveau produit est le DEFAULT (home = décision) · PR #733+#734
+
+**CHANGE** : plus de mosaïque d'héritages — le visiteur ouvre sur la **décision du jour** (12 propres / 4 à surveiller / 4 à éviter + meilleur choix) au lieu de la carte. La carte reste à 1 tap (onglet Carte). Rollback propre : `?homefirst=0`.
+**ASSEMBLAGE** : la fiche plage (« BAIGNADE OK · 83/100 · pourquoi · J+1 offert ») propose désormais « 🗓 Planifier mon séjour » → TripPlanner (déjà live). Chaîne : HOME → BEACH → TRIP → PREMIUM sans couture expérimentale.
+**FIX CI** : ux-smoke naviguait directement vers la carte ; adapté pour taper l'onglet Carte d'abord (même journey tenant). Vert local + CI.
+**Preuves** : E2E 5/5 (takeover + trip) · screenshots mobile+desktop du parcours complet · prod vérifié (xp-home par défaut, nav 5 onglets).
+**`.ai/shots-takeover/`** : preuves visuelles (non commitées, trop lourdes — locales).
+
 ## 2026-09-22 — MASTER EXECUTION : Trip Planner « Plan My Stay » live en prod + Blueprint figé
 
 **PROBLEM** : aucun moment d'aha séjour ; l'offre vend des « features » au lieu du résultat « quelles plages ce séjour ».
