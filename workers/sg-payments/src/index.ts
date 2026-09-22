@@ -75,6 +75,7 @@ interface Env {
   RESEND_API_KEY: string;
   GOOGLE_CLIENT_ID?: string;   // client_id OAuth Google (public par design) — absent = Google Sign-In désactivé proprement
   AUTH_SECRET?: string;        // secret de signature des sessions (fallback dérivé ci-dessous)
+  TYPESAFE_API_KEY?: string;   // secret Wrangler (Jev intent router). Absent = /api/jev-intent renvoie fallback (feature-off propre).
   BREVO_API_KEY?: string;
   SENDPULSE_CLIENT_ID?: string;
   SENDPULSE_CLIENT_SECRET?: string;
@@ -552,6 +553,67 @@ async function b2bConcierge(env: Env, request: Request): Promise<Response> {
   return new Response(JSON.stringify({ error: 'method_not_allowed' }), { status: 405, headers: h });
 }
 
+// ─── Jev intent (TypeSafe) — helper handler ────────────────────────────────
+// Règles (cf. TYPESAFE_JEV_ARCHITECTURE.md) : jamais de money-path, timeout 4 s,
+// secret server-side, TOUT échec → fallback:true (produit intact), texte jamais logué.
+const JEV_INTENTS = ['today_verdict', 'when_later', 'trip_planning', 'which_beach', 'avoid_seaweed', 'b2b', 'off_topic'] as const;
+
+async function handleJevIntent(request: Request, env: Env): Promise<Response> {
+  const J = { 'Content-Type': 'application/json' };
+  const fb = () => new Response(JSON.stringify({ ok: false, fallback: true }), { headers: J });
+  const key = (env.TYPESAFE_API_KEY || '').trim();
+  if (!key || key.startsWith('test')) return fb();
+  let body: any = null;
+  try { body = await request.json(); } catch { return fb(); }
+  const text = String(body?.text || '').trim();
+  if (text.length < 6 || text.length > 220) return fb();   // hors bornes = pas d'appel payant
+  const lang = ['fr', 'en', 'es'].includes(body?.lang) ? body.lang : 'fr';
+  const region = String(body?.region || '').replace(/[^a-z_]/gi, '').slice(0, 24);
+  const payload = {
+    model: 'jev-latest',
+    state: {
+      user_text: text,
+      lang,
+      region,
+      context: 'Beach decision app (sargassum/seaweed forecast per beach). The typed text was NOT recognized as a beach name by the deterministic search.',
+    },
+    questions: {
+      intent: {
+        type: 'choice',
+        instructions: 'Classify what this app visitor most wants right now. They could not find a beach by name search.',
+        criteria: {
+          today_verdict: 'Wants to know where to swim / which beach is clean TODAY (implicit location ok)',
+          when_later: 'Asks about tomorrow, the weekend, "when", or a future moment',
+          trip_planning: 'Planning a stay/trip: several days, accommodation, "I am staying…", itinerary',
+          which_beach: 'Undecided between beaches / asks "which beach should I choose" without a day',
+          avoid_seaweed: 'Fears seaweed (sargasses) ruining a plan — wants reassurance or a safe option',
+          b2b: 'Speaks as a business: hotel, villa, tour operator, concierge, agency',
+          off_topic: 'Unrelated to beaches / sargassum / travel decision',
+        },
+      },
+    },
+  };
+  const ctl = new AbortController();
+  const to = setTimeout(() => ctl.abort(), 4000);
+  try {
+    const r = await fetch('https://api.typesafe.ai/v1/systemone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
+      body: JSON.stringify(payload),
+      signal: ctl.signal,
+    });
+    if (!r.ok) return fb();                       // 401/422/429/529 → silence + fallback
+    const j: any = await r.json();
+    const a = j?.answers?.intent;
+    if (!a || a.type !== 'choice' || !a.choice || !(JEV_INTENTS as readonly string[]).includes(a.choice)) return fb();
+    return new Response(JSON.stringify({ ok: true, intent: a.choice, confidence: typeof a.confidence === 'number' ? Math.round(a.confidence * 1000) / 1000 : null }), { headers: J });
+  } catch {
+    return fb();                                  // timeout/réseau → fallback
+  } finally {
+    clearTimeout(to);
+  }
+}
+
 // ─── Route Handler ───────────────────────────────────────────────────
 
 export default {
@@ -567,6 +629,18 @@ export default {
       return new Response(JSON.stringify({ ok: true, cron: 'b2c' }), { headers: { 'Content-Type': 'application/json' } });
     }
     const path = url.pathname;
+
+    // ─── Jev intent router (TypeSafe) — CONVERSION 2026-09-22 ─────────────
+    // Classifie l'intention d'une recherche landing en langage naturel (JAMAIS
+    // de money-path). Secret TYPESAFE_API_KEY (wrangler secret). Sans clé ou en
+    // cas d'échec → { ok:false, fallback:true } : le front garde le comportement
+    // déterministe. Route zone /api/jev-intent* à ajouter au dashboard CF (action
+    // fondateur) — sans route, la Pages Function renvoie 404 (harmless OFF state).
+    if (path === '/api/jev-intent' || path === '/api/jev-intent.php') {
+      if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors(request) });
+      if (request.method !== 'POST') return new Response(JSON.stringify({ error: 'POST only' }), { status: 405, headers: cors(request) });
+      return handleJevIntent(request, env);
+    }
 
     // ─── Mollie API ──────────────────────────────────────
     // Alias `.php` : le front historique appelle /api/mollie.php — sans cet alias,
