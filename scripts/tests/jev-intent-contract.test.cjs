@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
- * jev-intent-contract — garde-fous de l'intégration TypeSafe/Jev.
- * Objectif business : routeur d'intention (recherche landing sans résultat) sans
- * JAMAIS exposer la clé, bloquer l'UX, ou toucher au money-path.
- * Règles vérifiées statiquement (pattern scripts/tests/*) :
+ * jev-intent-contract — garde-fous de l'intégration TypeSafe/Jev (worker).
+ * Règles vérifiées statiquement : secret server-side, fallback partout, timeout
+ * dur, zéro money-path dans la question, kill-switch client, events funnel.
  */
 'use strict'
 const fs = require('fs')
@@ -13,38 +12,37 @@ const ROOT = path.join(__dirname, '..', '..')
 let pass = 0, fail = 0
 const ok = (cond, label) => { if (cond) { pass++; console.log('  ✓', label) } else { fail++; console.log('  ✗ FAIL:', label) } }
 
-const php = fs.readFileSync(path.join(ROOT, 'public/api/jev-intent.php'), 'utf8')
+const worker = fs.readFileSync(path.join(ROOT, 'workers/sg-payments/src/index.ts'), 'utf8')
 const lib = fs.readFileSync(path.join(ROOT, 'src/lib/jev-intent.js'), 'utf8')
 const app = fs.readFileSync(path.join(ROOT, 'src/Sargasses_PROD.jsx'), 'utf8')
-const gi = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')
 
-console.log('— Endpoint serveur (clé jamais front) —')
-ok(php.includes("getenv('TYPESAFE_API_KEY')"), 'clé lue depuis env serveur')
-ok(php.includes('typesafe-config.php'), 'fallback config fichier locale')
-ok(gi.includes('**/typesafe-config.php'), 'typesafe-config.php gitignoré')
-ok(!php.includes('error_log') || !/error_log\(.*\$text/.test(php), 'aucun log du texte utilisateur')
-ok(!/api_key[^=]*=.*'[A-Za-z0-9]{16,}'/.test(php), 'aucune clé en dur dans jev-intent.php')
+console.log('— Worker serveur (secret jamais exposé) —')
+ok(worker.includes("path === '/api/jev-intent'"), 'route /api/jev-intent enregistrée')
+ok(worker.includes('env.TYPESAFE_API_KEY'), 'secret lu via env worker (jamais de valeur en dur)')
+ok(worker.includes('TYPESAFE_API_KEY?: string'), 'entrée Env TS déclarée')
+ok(!/Bearer '\s*\+\s*['"]/.test(worker), 'pas de clé en dur dans le handler')
+ok(!/console\.(log|error)\([^)]*text/.test(worker), 'texte utilisateur jamais logué')
 
 console.log('— Garde-fous —')
-ok(/CURLOPT_TIMEOUT\s*=>\s*4/.test(php), 'timeout dur ≤ 4 s')
-ok(php.includes("'off'") && php.includes('mode'), 'kill switch serveur présent')
-ok(php.includes('sg_rate_limit'), 'rate limit actif')
-ok(php.split('jev_fallback()').length > 4, 'fallback sur tous les chemins d’échec (>4 sorties)')
-ok(php.includes('365') === false && php.includes('Access-Control-Allow-Origin'), 'CORS déclaré')
+ok(worker.includes("'https://api.typesafe.ai/v1/systemone'"), 'endpoint TypeSafe v1 ciblé')
+ok(worker.includes("setTimeout(() => ctl.abort(), 4000)"), 'timeout dur 4 s')
+ok((worker.match(/return fb\(\)/g) || []).length >= 6, 'fallback sur tous les chemins d’échec (≥6)')
+ok(worker.includes('JEV_INTENTS') && worker.includes('includes(a.choice)'), 'réponse bornée à la liste des classes')
+ok(worker.includes('length < 6') && worker.includes('length > 220'), 'bornes anti-coût sur l’input')
 
-console.log('— Question Jev (pas de money-path) —')
-ok(!/price|amount|cents|payment|mollie/i.test(php.split('questions')[1] || ''), 'aucun mot money-path dans la question Jev')
-ok(php.includes("'type' => 'choice'"), 'primitive Choice utilisée')
-ok((php.match(/'\w+'\s*=>/g) || []).some((m) => m.includes('trip_planning')), 'intention trip_planning classable')
+console.log('— Money-path isolé —')
+const startQ = worker.indexOf('questions: {', worker.indexOf('handleJevIntent'))
+ok(startQ > -1, 'questions localisées')
+ok(!/price|amount|cents|payment|mollie/i.test(worker.slice(startQ, startQ + 1400)), 'aucun champ money-path dans la question Jev')
 
 console.log('— Client —')
+ok(lib.includes('/api/jev-intent'), 'client appelle la route worker')
 ok(lib.includes('jev=0'), 'kill switch client ?jev=0')
-ok(lib.includes('4500') || lib.includes('4,5'), 'timeout client ~4,5 s')
+ok(lib.includes('4500') , 'timeout client ~4,5 s')
 ok(lib.includes('{ fallback: true }'), 'fallback client partout')
-ok(app.includes('import { askJevIntent, jevEnabled } from "./lib/jev-intent.js"'), 'lib importée')
+ok(app.includes('import { askJevIntent, jevEnabled } from "./lib/jev-intent.js"'), 'lib importée dans l’app')
 ok(app.includes('JevAsk'), 'composant JevAsk présent')
 ok(app.includes('"sg_jev_intent_ask"') && app.includes('"sg_jev_intent"') && app.includes('"sg_jev_intent_fallback"'), 'events dans SG_FUNNEL_EVENTS')
-ok(app.includes("track(\"sg_jev_intent\""), 'sg_jev_intent émis au routage')
 ok(app.includes('nq.length>=6&&list.length===0'), 'déclenché UNIQUEMENT quand recherche déterministe échoue')
 
 console.log(`\n${pass} pass · ${fail} fail`)

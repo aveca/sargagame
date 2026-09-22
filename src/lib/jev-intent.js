@@ -7,7 +7,7 @@
  *    déterministe (nom de plage) a échoué.
  *  - Kill switch client : ?jev=0 · Kill switch serveur : TYPESAFE_JEV=off
  *  - Timeout 4,5 s + tout échec = { fallback:true } → comportement d'origine.
- *  - La clé API ne quitte jamais le serveur (endpoint /api/jev-intent.php).
+ *  - La clé API ne quitte jamais le serveur (endpoint /api/jev-intent).
  */
 
 export const jevEnabled = () => {
