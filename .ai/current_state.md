@@ -39,8 +39,9 @@
 3. #710 / E11 J+7 : hors scope, figés
 
 ### Branche / PR
-- Branche : `agent/qa/ux-qa-006-plus-tard` · PR : en création (NE PAS MERGER auto, demande explicite du sprint)
-- Commit head : (à pusher)
+- Branche : `agent/qa/ux-qa-006-plus-tard` · PR : #717 (OPEN, NE PAS AUTO-MERGER — demande explicite du sprint mini)
+- Commit head : `74399678d`
+- ⚠️ Conflit chantier évité : #714 (agent parallèle, docs CLOS 005/006 dans MASTER_AUDIT) reste SEULE source de clôture doc — ma branche a retiré sa modif MASTER_AUDIT.md. À rebaser après merge de #714.
 
 ---
 
