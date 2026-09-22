@@ -258,6 +258,19 @@ export function OnsiteCheckout({
       : v.toFixed(2).replace(".",",")+" €"
     return _t(lang, `soit ${s}/jour`, `i.e. ${s}/day`, `o sea ${s}/día`)
   })()
+  // PAYUX #2 — État redirection Mollie (3DS) rendu. friction « loading » :
+  // dès que le serveur répond checkoutUrl, doSubscribe fait setPayRedirecting(true)
+  // puis laisse payBusy=true en attendant la navigation — le bouton affichait
+  // « Activation… » (générique) pendant les ~secondes de bascule vers le checkout
+  // hébergé : à l'instant le plus critique, l'utilisateur ne sait plus si ça
+  // « tourne » ou si ça plante (payRedirecting n'était JAMAIS rendu — état mort).
+  // Ici : bouton verrouillé + libellé explicite « Redirection vers ta banque… ».
+  // État pur (payRedirecting piloté par doSubscribe) — zéro logique paiement.
+  // État pur (payRedirecting piloté par doSubscribe) — zéro logique paiement.
+  // bfcache : le handler pageshow existant déverrouille les deux flags.
+  // Rollback : ?sgpayredirect=0 (comportement historique strict).
+  const redirectUi = (() => { try { return !/[?&]sgpayredirect=0(?:&|$)/.test(window.location.search || "") } catch (_) { return true } })()
+  const redirecting = !!(redirectUi && payRedirecting)
 
   return (
     <div
@@ -645,17 +658,17 @@ export function OnsiteCheckout({
         {/* Bouton PAIEMENT PRINCIPAL — déclenche doSubscribe() (qui lit mollieRef.current.createToken()) */}
         <button
           onClick={() => { try { doSubscribe() } catch (_) {} }}
-          disabled={payBusy}
+          disabled={payBusy || redirecting}
           className={(!isComic&&!/sguxlot3=0/.test(window.location.search||""))?"sg-paybtn":undefined}
-          aria-disabled={consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk ? "true" : undefined}
+          aria-disabled={(consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk) || redirecting ? "true" : undefined}
           style={{
             width: "100%", padding: 15, borderRadius: 14, marginTop: 16,
             border: isComic ? "2.5px solid #0D0B14" : "none",
-            cursor: payBusy ? "wait" : ((consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk) ? "not-allowed" : "pointer"),
+            cursor: (payBusy || redirecting) ? "wait" : ((consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk) ? "not-allowed" : "pointer"),
             fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit",
             fontWeight: 800, fontSize: 15.5, letterSpacing: isComic ? ".02em" : "normal",
             textTransform: isComic ? "uppercase" : "none",
-            opacity: (payBusy || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)) ? .7 : 1,
+            opacity: (payBusy || redirecting || (consentFlag && !PAY_CAPTURE_ONLY && passCtx && !consentOk)) ? .7 : 1,
             display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
             background: isComic
               ? "#FFC72C"
@@ -666,7 +679,9 @@ export function OnsiteCheckout({
               : "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)"
           }}
         >
-          {payBusy
+          {redirecting
+            ? _t(lang, "Redirection vers ta banque…", "Redirecting to your bank…", "Redirigiendo a tu banco…")
+            : payBusy
             ? _t(lang, "Activation…", "Activating…", "Activando…")
             : PAY_CAPTURE_ONLY
             ? _t(lang, "Débloquer gratuitement →", "Unlock free →", "Desbloquear gratis →")
