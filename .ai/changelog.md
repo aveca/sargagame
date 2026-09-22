@@ -1,3 +1,12 @@
+## 2026-09-21 — MINI-SPRINT A13 PROD VERIFY + UX-QA-006 (branche `agent/qa/ux-qa-006-plus-tard`)
+
+**Agent** : coding/qa-agent. **2 scopes, 0 ligne produit modifiée.**
+- **A13 (#694) PROD VERIFIED** : vérification read-only prod (sargasses-martinique.com) mobile 390×844 + desktop 1440×900 — J+1 débloqué avec donnée réelle (confiance numérique), badge INCLUS unique, tap J+1 sans paywall, J+2/J+3 verrouillés, rollback `?j1_free=0` reverrouille J+1 sans casser le paywall, 0 pageerror, 0 overflow. Bundle prod contient le code (ChasseHome chunk).
+- **UX-QA-006 CLOS sans fix code** : bug « Plus tard » desktop **non reproductible** — le run1 (`20260916T2132Z`) a tourné 1 jour AVANT le fix UX-R2-003 (`a1585b563`, 2026-09-17, panel z1100 → z1260 au-dessus de la fiche z1200 ; avant le fix le clic tombait sur la couche fiche). Vérifié : 5/5 E2E local build frais + 5/5 PROD (desktop « Plus tard »/×/reopen-idempotent, mobile « Plus tard » + × → ce dernier clos aussi UX-QA-005). Contrat 11/11 NOUVEAU (`onClick=onClose` ×2, z1250/1260 conservés).
+**Preuves** : build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4 tokens + SMOKE_GATE=PASS · esbuild OK · 0 pageerror partout.
+**Fichiers** : `tests/e2e/ux-qa-006-plus-tard.spec.ts` (NOUVEAU, 5 tests), `scripts/tests/ux-qa-006-plus-tard.test.cjs` (NOUVEAU, 11 audits), `MASTER_AUDIT.md` (UX-QA-005/006 → [x] clos), `.ai/tasks.md`, `.ai/current_state.md`.
+**Rollback** : rien à rollbacker produit (aucun code modifié) ; retirer la spec = revert du commit.
+
 ## 2026-09-22 — STICKY CTA E1 PARITY (branche `agent/ui/sticky-cta-e1align`)
 
 **Agent** : ui-agent (friction : hero E1 « prévision 7 jours » vs sticky « plages propres » — deux promesses même écran). **Fix (1 libellé × 3 langues, `src/PassOffer.jsx` seul)** : sticky buy réutilise le flag `ctaSpecific` (rollback partagé `?sgcta=0`), prix/aria-label/onBuy intacts, 0 tracking, 0 logique prix.
