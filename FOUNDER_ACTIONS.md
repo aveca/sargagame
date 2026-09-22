@@ -4,19 +4,21 @@
 
 ---
 
-## 1. PAIEMENT TEST RÉEL — 5 domaines (~25 €, 20 min)
+## 1. PAIEMENT TEST RÉEL — 5 domaines (~75 € total, 20 min)
 
 **La sonde E2E a déjà prouvé** (2026-09-22, mobile + desktop, 5/5 domaines) : paywall → CTA → overlay → 5 iframes Mollie montées → bouton Payer. **Aucun vrai paiement n'a encore validé la boucle complète depuis le 19/07** (65 jours).
 
-Pour chaque domaine (mobile **et** desktop sur le 1er, mobile seul ensuite) :
+Prix **vérifiés en prod** le 2026-09-22 (recap de commande, sonde read-only) — le CTA hero vend le **Pass 30 jours** :
 
-| # | Domaine | Prix attendu |
+| # | Domaine | Prix affiché attendu (exact) |
 |---|---------|---|
-| 1 | sargasses-martinique.com | 4,99 € (Trip Pass 7 j) |
-| 2 | sargasses-guadeloupe.com | 4,99 € |
-| 3 | sargassummiami.com | $5.99 (trip7 — pas de surcharge season) |
-| 4 | sargassumcancun.com | $5.99 |
-| 5 | sargassumpuntacana.com | $5.99 |
+| 1 | sargasses-martinique.com | **14,99 €** (Pass 30 jours) |
+| 2 | sargasses-guadeloupe.com | **14,99 €** |
+| 3 | sargassummiami.com | **$13.79** (= $11.99 + 15 % surcharge saison juin→nov) |
+| 4 | sargassumcancun.com | **$13.79** |
+| 5 | sargassumpuntacana.com | **$13.79** |
+
+⚠️ Si le recap affiche un AUTRE montant (ex. 4,99 € ou $5.99), ne pas payer : me le signaler = bug pricing, pas le test.
 
 **Parcours** : ouvrir le site → cliquer un jour de prévision verrouillé (ou `?paywall=1`) → CTA « Voir la prévision 7 jours » → email + 4 champs carte → Payer → 3DS éventuel → retour.
 
