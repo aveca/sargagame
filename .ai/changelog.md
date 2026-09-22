@@ -1,3 +1,13 @@
+## 2026-09-22 — MASTER EXECUTION : Trip Planner « Plan My Stay » live en prod + Blueprint figé
+
+**PROBLEM** : aucun moment d'aha séjour ; l'offre vend des « features » au lieu du résultat « quelles plages ce séjour ».
+**EVIDENCE** : modal→CTA 4 %, trafic faible → chaque visiteur qualifié doit voir la valeur séjour.
+**CHANGE** : `TripPlanner.jsx` (nouveau, lazy, flag `?tripplan=0`) — overlay jour par jour : meilleure plage + plan B cross-commune (données réelles uniquement), J+1/J+2 visibles → J+3+ verrouillés → CTA or « Débloquer tout mon séjour » → paywall (money-path intact). Entrées : home ExperienceReset + HeroVerdict. Screenshot mobile+desktop vérifiés (incluant un fix de skin .theme-comic après 2 iters de contraste).
+**METRIC** : `sg_trip_open` / `sg_trip_beach_open` / `sg_trip_premium_cta` (funnel allowlist).
+**Tests** : E2E `trip-planner.spec.ts` 2/2 + vérif prod live (données réelles au retour).
+**Gates** : build 0 · bundle 38,2 Ko · smoke 4/4 PASS · CI verte.
+**Blueprint** : `SARGAGAME_PRODUCT_BLUEPRINT.md` (promesse, personas, JTBD, MVP figé, non-goals, page map, funnels canoniques).
+**PR** : #730 mergée main, Deploy Live success.
 ## 2026-09-22 — ENRICHISSEMENT B2B : cohortes MQ+GP = 30 prospects, 11 emails vérifiés, pack d'envoi prêt
 
 - **MQ (existant)** : CSV enrichi — 7 emails extraits des sites officiels (placeholder boilerplate éliminé, maison-mère Cap Est notée), 4 pages formulaire vérifiées, sources + date.
