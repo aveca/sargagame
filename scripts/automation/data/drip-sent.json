@@ -3277,18 +3277,18 @@
     "daily_count": 2
   },
   "2a369b5a230a6ff34bdab38b34cd6d24": {
-    "daily_last": "2026-09-21",
-    "daily_sig": "Bavaro Beach|clean|63|clean|1|Tuesday",
-    "daily_count": 10,
+    "daily_last": "2026-09-22",
+    "daily_sig": "Uvero Alto|clean|62|moderate|1|Wednesday",
+    "daily_count": 11,
     "j3": "2026-09-15T11:28:41.294Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-09-15",
     "j7": "2026-09-19T10:39:04.920Z"
   },
   "9ca24c1c477fef0535f330dfa936bfe1": {
-    "daily_last": "2026-09-21",
-    "daily_sig": "Bavaro Beach|clean|63|clean|1|Tuesday",
-    "daily_count": 9,
+    "daily_last": "2026-09-22",
+    "daily_sig": "Uvero Alto|clean|62|moderate|1|Wednesday",
+    "daily_count": 10,
     "j3": "2026-09-16T04:15:06.425Z",
     "install_nudge_count": 1,
     "install_nudge_last": "2026-09-16",
@@ -3311,11 +3311,15 @@
   "93a3b3118df57ae280756f0abc5ba67d": {},
   "4e187ed00ae699785925fcf638e35f7b": {},
   "25cdcc7e736075505d77c57a01fbd67b": {
-    "daily_last": "2026-09-21",
-    "daily_sig": "Playa Holbox|clean|71|clean|6|martes",
-    "daily_count": 2
+    "daily_last": "2026-09-22",
+    "daily_sig": "Playa Holbox|clean|71|clean|5|miércoles",
+    "daily_count": 3
   },
-  "eced3ab119246c298410a7bc79ebd0ab": {},
+  "eced3ab119246c298410a7bc79ebd0ab": {
+    "daily_last": "2026-09-22",
+    "daily_sig": "Uvero Alto|clean|62|moderate|1|Wednesday",
+    "daily_count": 1
+  },
   "eecae0c357e2c13ee0f6a787d0749a8f": {},
   "7d6c583ab893160057c226191de2c930": {},
   "828f56ae08663d074ec9eae03550d0d3": {},
