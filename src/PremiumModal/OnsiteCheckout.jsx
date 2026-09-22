@@ -100,6 +100,17 @@ export function OnsiteCheckout({
   const payScrollRef = useRef(null)
   const payContentRef = useRef(null)
   const payStartYRef = useRef(0)
+  // Friction garde-consentement (audit parcours paiement) : le message de garde
+  // (consent manquant, email invalide, mounts…) naissait AU-DESSUS du bouton,
+  // potentiellement hors-écran après un tap — l'utilisateur ne voyait rien.
+  // On amène l'alerte (role=alert) en vue + focus (pattern B2BModal stepTitleRef).
+  // Visuel/comportement paiement inchangés : seul le scroll/focus sur erreur.
+  const payErrorRef = useRef(null)
+  useEffect(() => {
+    if (!payError) return
+    try { payErrorRef.current && payErrorRef.current.scrollIntoView({ block: "nearest" }) } catch (_) {}
+    try { payErrorRef.current && payErrorRef.current.focus({ preventScroll: true }) } catch (_) {}
+  }, [payError])
   // Wallets (Apple/Google Pay) : walletAvail() renvoie une PROMESSE au premier appel
   // — le vieux bail « si promise → return null » ne REVENAIT jamais (aucun re-render)
   // → boutons wallets invisibles à la 1re ouverture (la plupart des utilisateurs).
@@ -537,7 +548,7 @@ export function OnsiteCheckout({
 
         {/* Erreur */}
         {payError && (
-          <div role="alert" style={{
+          <div ref={payErrorRef} tabIndex={-1} role="alert" style={{
             display: "flex", alignItems: "flex-start", gap: 9, marginTop: 12,
             padding: "11px 13px", borderRadius: 12,
             background: isComic ? "rgba(232,82,42,.08)" : "rgba(232,82,42,.12)",
