@@ -121,6 +121,7 @@ const MAPLAGE_OFF=(()=>{try{return /[?&]maplage=0/.test(window.location.search)}
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
 // le toast 5s par un mini-setup (favoris→notif→brief). Lazy → DOIT être sous Suspense.
 const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
+const LazyTripPlanner=lazyWithRetry(()=>import("./TripPlanner.jsx"))
 // Accueil premium VERDICT-FIRST « Le Poste de Veille » (panel 2026-06-30) — remplace le tunnel
 // PaidOnboarding. Rollback ?poste=0 → retombe sur le tunnel linéaire.
 const LazyWelcomePoste=lazyWithRetry(()=>import("./WelcomePoste"))
@@ -2016,6 +2017,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Jev intent router (conversion 2026-09-22) : ask (volume besoin PN naturel),
   // intent (routage réussi + classe) , fallback (Jev indispo → comportement intact).
   "sg_jev_intent_ask","sg_jev_intent","sg_jev_intent_fallback",
+  // Trip planner (Master Execution 2026-09-22) : intention séjour mesurée
+  // (open → beach ouvert → CTA offre).
+  "sg_trip_open","sg_trip_beach_open","sg_trip_premium_cta",
   // Cross-sell inter-domain
   "sg_region_nav_click","sg_cross_sell_click",
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
@@ -10222,8 +10226,9 @@ function JevAsk({text,lang,beach,onOpenBeach,onShowMap}){
     </button>
   )
 }
-function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,pickBeaches,exiting}){
+function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPremium,onOpenBeach,topBeaches,pickBeaches,exiting,onPlanTrip}){
   const [pickQ,setPickQ]=useState("")
+  const tripOn=()=>{try{return !/[?&]tripplan=0(?:&|$)/.test(window.location.search)}catch(_){return true}}
   useEffect(()=>{track("sg_hero_shown",{beach_id:beach.id,status:beach.status,geoloc:!!userPos})},[])
   // Hero média = HeroScene (scène vectorielle, directive user 12/06). L'ancien
   // empilement photo/WebGL/loops DepthFlow est démonté du hero — SceneCanvas et
@@ -10524,6 +10529,14 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             </div>
           )
         })()}
+        {/* TRIP — « Planifier mon séjour » (MASTER 2026-09-22) : entrée discrète
+            post-sélecteur. Rollback : ?tripplan=0. */}
+        {onPlanTrip&&tripOn()&&(
+          <button onClick={()=>{try{track("sg_trip_open",{source:"landing_selector"})}catch(_){};onPlanTrip()}} data-testid="trip-open"
+            style={{display:"block",width:"100%",marginTop:10,background:"none",border:"1.5px dashed rgba(255,199,44,.4)",borderRadius:12,padding:"12px 14px",color:"#FFE08A",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit",textAlign:"center"}}>
+            {_t(lang,"🗓 Planifier mon séjour — la meilleure plage chaque jour →","🗓 Plan my stay — the best beach each day →","🗓 Planificar mi estancia — la mejor playa cada día →")}
+          </button>
+        )}
         <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
           width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
           cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:14}}>
@@ -12438,6 +12451,10 @@ try{return r.json()}catch(e){console.warn("referral_claim: response is not JSON"
   // Rollback : ?bootgate=0 → ancien comportement (rendu immédiat, fallback visible).
   const bootGateOff=(()=>{try{return /[?&]bootgate=0/.test(window.location.search)}catch(_){return false}})()
   const[bootSafety,setBootSafety]=useState(false)
+  // TRIP PLANNER (MASTER 2026-09-22) : overlay « planifier mon séjour » — lazy,
+  // flag ?tripplan=0. Données = forecast réel par plage (mêmes clés que la carte).
+  const[showTrip,setShowTrip]=useState(false)
+  const tripForecastById=useMemo(()=>{const m={};try{for(const b of (allBeaches||[])){if(!(IS_NEW_REGION||b.island===island))continue;const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];if(w&&w.forecast&&w.forecast.length)m[b.id]={forecast:w.forecast}}}catch(_){}return m},[allBeaches,sargData,island])
   useEffect(()=>{ if(bootGateOff)return; const t=setTimeout(()=>setBootSafety(true),5000); return ()=>clearTimeout(t) },[bootGateOff])
   const dataReady = bootGateOff || bootSafety || dataSource!=="loading"
   // Props objets pour la carte — MÉMOÏSÉES (avant : IIFE inline recréées à CHAQUE render
@@ -14447,6 +14464,7 @@ useEffect(()=>{
               track("sg_beach_open",{beach_id:b.id,status:b.status,source:"landing_top3"})
             }}
             onPremium={()=>{dismissHero("premium");openPremium("landing")}}
+            onPlanTrip={()=>{dismissHero("trip");setShowTrip(true)}}
             onShowMap={()=>{
               dismissHero("map")
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
@@ -14810,6 +14828,7 @@ useEffect(()=>{
                 else if(tab==="suivi"){setView("suivi");try{track("sg_ma_plage_open",{src:"home"})}catch(_){}}
                 else setView(tab==="map"?"map":tab==="list"?"list":"map") }}
               onPremium={(src)=>openPremium("xp_home_"+(src||"pass"))}
+              onPlanTrip={()=>setShowTrip(true)}
             /></Suspense></ErrBound>
           </div>
         )}
@@ -14956,6 +14975,15 @@ useEffect(()=>{
         }} lang={lang} source={premiumSource} pwVariant={abVariant("pw_style",["world","comic"])}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
           beach={selectedBeach||null}/></Suspense></ErrBound></div>}
+        {/* TRIP PLANNER (MASTER 2026-09-22) — overlay « planifier mon séjour » (J+1/J+2
+            visibles, suite verrouillée → offre). Rollback : ?tripplan=0. */}
+        {showTrip&&<ErrBound><Suspense fallback={null}><LazyTripPlanner lang={lang}
+          beaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status)}
+          forecastById={tripForecastById} isPremium={isPremium}
+          onClose={()=>setShowTrip(false)}
+          onOpenBeach={(b)=>{try{track("sg_beach_open",{beach_id:b.id,status:b.status,source:"trip_planner"})}catch(_){}setShowTrip(false);setSelectedBeach(b)}}
+          onPremium={(src)=>{setShowTrip(false);openPremium(src||"trip_planner")}}
+          track={track}/></Suspense></ErrBound>}
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
         {/* MON ACCÈS — feuille compte (email lié + alertes) ouverte par l'icône personnage.
