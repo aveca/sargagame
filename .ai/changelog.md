@@ -1,3 +1,8 @@
+## 2026-09-22 — STICKY CTA E1 PARITY (branche `agent/ui/sticky-cta-e1align`)
+
+**Agent** : ui-agent (friction : hero E1 « prévision 7 jours » vs sticky « plages propres » — deux promesses même écran). **Fix (1 libellé × 3 langues, `src/PassOffer.jsx` seul)** : sticky buy réutilise le flag `ctaSpecific` (rollback partagé `?sgcta=0`), prix/aria-label/onBuy intacts, 0 tracking, 0 logique prix.
+**Preuves** : contrat 12/12 (NOUVEAU) · E2E sticky 2/2 (défaut + rollback via funnel) · funnel 13/13 + e11 2/2 · responsive 3/3 · build 0 · bundle 38.2 ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS · desktop 1440 : nouveau libellé + 0 overflow + 0 error.
+**Fichiers** : `src/PassOffer.jsx` (1 span), `scripts/tests/sticky-cta-align.test.cjs` (NOUVEAU), `tests/e2e/sticky-cta-align.spec.ts` (NOUVEAU).
 ## 2026-09-20 — SHIP G3 : mirror grants PayPal → Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
 
 **Agent** : coding-agent (release post-#707, DERNIER scope #685 majeur). **Périmètre verrouillé** : 4 fichiers, zéro front/UX — `public/api/pp-supabase-mirror.php` (NOUVEAU helper : POST `payment_grants` schéma-conforme via creds Supabase existants, skip-sans-clé best-effort), `public/api/paypal.php` (mirror au `capture_order` pass one-time + au `confirm_subscription` abo + `pp_lookup_sub` fallback Supabase ; vérif PayPal LIVE inchangée), `public/api/paypal-webhook.php` (ACTIVATED mirror, CANCELLED/EXPIRED expire, SALE.COMPLETED +30j, CAPTURE ignoré anti-doublon, 200 AVANT mirror), `scripts/tests/paypal-grants-mirror.test.cjs` (22 audits source + harness PHP réel). **Base main stable** (zéro mouvement sur ces fichiers depuis le travail validé) → application 1:1.

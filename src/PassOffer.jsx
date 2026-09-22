@@ -211,7 +211,12 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
           <span className="sg-sticky-buy" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
-            {_t(lang, `Voir mes plages propres · ${money(displayCents, cur, lang)}`, `See clean beaches · ${money(displayCents, cur, lang)}`, `Ver playas limpias · ${money(displayCents, cur, lang)}`)}
+            {/* E1-align : même promesse que le CTA hero (E1), prix inchangé.
+                Rollback partagé : ?sgcta=0 restaure l'ancien libellé. */}
+            {_t(lang,
+              ctaSpecific ? `Voir la prévision 7 jours · ${money(displayCents, cur, lang)}` : `Voir mes plages propres · ${money(displayCents, cur, lang)}`,
+              ctaSpecific ? `See the 7-day forecast · ${money(displayCents, cur, lang)}` : `See clean beaches · ${money(displayCents, cur, lang)}`,
+              ctaSpecific ? `Ver el pronóstico 7 días · ${money(displayCents, cur, lang)}` : `Ver playas limpias · ${money(displayCents, cur, lang)}`)}
           </span>
           <span className={uxLot4?"sg-sticky-badges":undefined} style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", fontSize: 9.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.55)" }}>
             <span style={{display:"inline-flex",alignItems:"center",gap:4}}><ComicIcon name="lock" size={10}/> Mollie</span><span aria-hidden="true">·</span>

@@ -1,3 +1,23 @@
+## 2026-09-22 · Agent: ui-agent (STICKY CTA E1 PARITY — branche `agent/ui/sticky-cta-e1align`)
+
+### Travail effectué
+- **Résumé 1 ligne** : sticky buy = même promesse que le hero E1 (rollback `?sgcta=0` partagé), gates verts.
+- **Détails** : voir `.ai/changelog.md` (entrée 2026-09-22). Contrat 12/12 + E2E 2/2 + funnel/e11/responsive verts. Desktop 1440 vérifié.
+
+### Fichiers modifiés
+- `src/PassOffer.jsx` — 1 span sticky (ctaSpecific ternaire FR/EN/ES)
+- `scripts/tests/sticky-cta-align.test.cjs` — NOUVEAU
+- `tests/e2e/sticky-cta-align.spec.ts` — NOUVEAU
+
+### Tests réalisés
+- [x] contrat 12/12 · build 0 · bundle 38.2 · smoke 4/4 + SMOKE_GATE=PASS
+- [x] E2E sticky 2/2 · funnel 13/13 · e11 2/2 · responsive 3/3 · desktop 1440 OK
+
+### Branche / PR
+- Branche : `agent/ui/sticky-cta-e1align`
+- PR : à créer (no merge)
+- Rollback : `?sgcta=0` (produit) ou revert 1 commit
+
 ## 2026-09-20 · Agent: coding-agent — SHIP G3 mirror PayPal→Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
 
 ### Travail effectué
