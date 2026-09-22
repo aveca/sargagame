@@ -232,6 +232,21 @@ export function OnsiteCheckout({
 
   const passCtx = passCtxRef.current
   const isComic = pwVariant === "comic"
+  // NEXTBUILD-PAYUX — récap commande avant paiement (rollback ?sgrecap=0).
+  // Purement présentiel : relit passCtx (prix/durée déjà choisis dans PassOffer),
+  // reformate via fmtPassPrice+seasonalCents (même source que le bouton "Payer").
+  // Aucun montant/provider/backend touché — affichage seul.
+  const recapOn = (()=>{try{return !/[?&]sgrecap=0(?:&|$)/.test(window.location.search||"")}catch(_){return true}})()
+  const recapCents = passCtx ? seasonalCents(passCtx.cents, passCtx.cur) : null
+  const recapPrice = passCtx ? fmtPassPrice(recapCents, passCtx.cur, lang) : ""
+  const recapPerDay = (()=>{
+    if(!passCtx || !recapCents) return ""
+    const v = recapCents/100/(passCtx.days||30)
+    const s = passCtx.cur==="usd" ? "$"+v.toFixed(2)
+      : lang==="en" ? "€"+v.toFixed(2)
+      : v.toFixed(2).replace(".",",")+" €"
+    return _t(lang, `soit ${s}/jour`, `i.e. ${s}/day`, `o sea ${s}/día`)
+  })()
 
   return (
     <div
@@ -340,6 +355,45 @@ export function OnsiteCheckout({
           }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
             {_t(lang, `Déjà ${__COMM}+ qui suivent leurs plages`, `${__COMM}+ people track their beaches`, `${__COMM}+ personas rastrean sus playas`)}
+          </div>
+        )}
+
+        {/* ═══ NEXTBUILD-PAYUX — Récap commande (résumé avant checkout) ═══
+            Friction visée : au moment de payer, l'utilisateur ne voit qu'une
+            sous-ligne grise 13px "14,99 € · 30 jours · paiement unique" — pas de
+            structure, pas de "sans abonnement / sans renouvellement", pas de
+            rappel du contenu. Ce bloc relit passCtx et l'affiche en 3 lignes
+            scannables (offre / prix+durée / garanties), mêmes chiffres que le
+            bouton "Payer". Rollback ?sgrecap=0. Zéro logique paiement touchée. */}
+        {recapOn && passCtx && (
+          <div
+            data-testid="onsite-order-recap"
+            role="group"
+            aria-label={_t(lang, "Récapitulatif de ta commande", "Order summary", "Resumen de tu pedido")}
+            style={{
+              marginBottom: 14, borderRadius: 14, padding: "12px 14px",
+              background: isComic ? "#fff" : "rgba(255,199,44,.07)",
+              border: isComic ? "2px solid #0D0B14" : "1px solid rgba(255,199,44,.28)",
+              boxShadow: isComic ? "2px 2px 0 #0D0B14" : "none",
+              fontFamily: "inherit",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: isComic ? "#0D0B14" : "#fff", lineHeight: 1.2 }}>
+                {_t(lang, `Pass ${passCtx.days} jours`, `${passCtx.days}-day pass`, `Pase ${passCtx.days} días`)}
+              </span>
+              <span style={{ fontSize: 18, fontWeight: 800, color: isComic ? "#B87A00" : "#FFC72C", whiteSpace: "nowrap" }}>
+                {recapPrice}
+              </span>
+            </div>
+            <div style={{ marginTop: 4, fontSize: 12, fontWeight: 600, lineHeight: 1.45, color: isComic ? "rgba(13,11,20,.68)" : "rgba(255,255,255,.72)" }}>
+              {_t(lang, "Toutes les plages · Prévision 7 jours · Alertes", "All beaches · 7-day forecast · Alerts", "Todas las playas · Pronóstico 7 días · Alertas")}
+              {recapPerDay ? ` — ${recapPerDay}` : ""}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 8, paddingTop: 8, borderTop: isComic ? "1px solid rgba(13,11,20,.12)" : "1px solid rgba(255,255,255,.10)", fontSize: 11.5, fontWeight: 700, lineHeight: 1.4, color: isComic ? "rgba(13,11,20,.6)" : "rgba(255,255,255,.6)" }}>
+              <span aria-hidden="true" style={{ display: "inline-flex", flexShrink: 0 }}><ComicIcon name="lock" size={12} /></span>
+              <span>{_t(lang, "Paiement unique · Sans abonnement · Accès immédiat · Mollie sécurisé", "One-time payment · No subscription · Instant access · Secured by Mollie", "Pago único · Sin suscripción · Acceso inmediato · Pago seguro Mollie")}</span>
+            </div>
           </div>
         )}
 
