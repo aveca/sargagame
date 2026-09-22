@@ -2119,6 +2119,9 @@ export function track(event,params={}){
   // quand la modale reste visible → taux modal→CTA faussé. Additif, zéro flux touché.
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_pass_cta"
+    // REVENUE RESCUE (2026-09-22) : étapes money-path visibles côté funnel Apps Script
+    // (backup Sheet) — sinon le funnel ne voit RIEN entre le CTA et la caisse.
+    ||event.startsWith("sg_payment")||event==="sg_onsite_checkout_opened"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"

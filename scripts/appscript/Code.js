@@ -585,6 +585,9 @@ function doGet(e) {
         pass_cta: 0,   // pass-only (2026-06-25) : le VRAI CTA du storefront (sg_pass_cta). premium_modal_cta = ancien abo, masqué depuis le flip → ne plus piloter dessus.
         sample_start: 0, email_submit: 0,
         checkout_redirect: 0,
+        // REVENUE RESCUE (2026-09-22) : events réellement émis par le front
+        // (SG_FUNNEL_EVENTS) mais jamais comptés ici → funnel aveugle entre CTA et caisse.
+        onsite_checkout_opened: 0, payment_failed: 0, payment_paid: 0,
         conversion: 0, checkout_error: 0
       }
 
@@ -706,13 +709,22 @@ function doGet(e) {
         funnel.revenue_real = Math.round(revenueReal * 100) / 100
       }
 
+      // REVENUE RESCUE (2026-09-22) : les taux money-path utilisent le VRAI CTA
+      // (pass_cta, émis par PremiumModal.onPassBuy) — premium_modal_cta est un
+      // event mort (retiré du front le 2026-08-18) → gardé en compteur pour
+      // historique, mais plus JAMAIS en dénominateur de taux.
       funnel.rates = {
         session_to_lock: funnel.session_start > 0 ? Math.round(funnel.forecast_lock_click / funnel.session_start * 1000) / 10 : 0,
         lock_to_modal: funnel.forecast_lock_click > 0 ? Math.round(funnel.premium_modal_open / funnel.forecast_lock_click * 100) : 0,
-        modal_to_cta: funnel.premium_modal_open > 0 ? Math.round(funnel.premium_modal_cta / funnel.premium_modal_open * 100) : 0,
+        modal_to_cta: funnel.premium_modal_open > 0 ? Math.round(funnel.pass_cta / funnel.premium_modal_open * 100) : 0,
         modal_to_sample: funnel.premium_modal_open > 0 ? Math.round(funnel.sample_start / funnel.premium_modal_open * 100) : 0,
-        modal_to_any_action: funnel.premium_modal_open > 0 ? Math.round((funnel.premium_modal_cta + funnel.sample_start) / funnel.premium_modal_open * 100) : 0,
-        cta_to_redirect: funnel.premium_modal_cta > 0 ? Math.round(funnel.checkout_redirect / funnel.premium_modal_cta * 100) : 0,
+        modal_to_any_action: funnel.premium_modal_open > 0 ? Math.round((funnel.pass_cta + funnel.sample_start) / funnel.premium_modal_open * 100) : 0,
+        // Money path réel : CTA → checkout on-site → paiement (vérité caisse Sheet)
+        cta_to_checkout_open: funnel.pass_cta > 0 ? Math.round(funnel.onsite_checkout_opened / funnel.pass_cta * 1000) / 10 : 0,
+        checkout_open_to_payment: funnel.onsite_checkout_opened > 0 ? Math.round((funnel.payments_real || 0) / funnel.onsite_checkout_opened * 1000) / 10 : 0,
+        checkout_payment_failed: funnel.onsite_checkout_opened > 0 ? Math.round(funnel.payment_failed / funnel.onsite_checkout_opened * 1000) / 10 : 0,
+        // Legacy (events morts — conservés 0-compat pour les consommateurs historiques)
+        cta_to_redirect: funnel.pass_cta > 0 ? Math.round(funnel.checkout_redirect / funnel.pass_cta * 100) : 0,
         redirect_to_payment: funnel.checkout_redirect > 0 ? Math.round((funnel.payments_real || 0) / funnel.checkout_redirect * 100) : 0
       }
 
