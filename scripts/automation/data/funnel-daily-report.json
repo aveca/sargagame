@@ -1,25 +1,25 @@
 {
   "window_hours": 24,
-  "since": "2026-09-21T11:26:40.407Z",
-  "total_events": 1343,
+  "since": "2026-09-21T16:49:59.100Z",
+  "total_events": 1853,
   "funnel": [
     {
       "key": "map_open",
       "label": "Map opened",
       "icon": "🗺️",
-      "count": 8
+      "count": 6
     },
     {
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 133
+      "count": 140
     },
     {
       "key": "verdict_scan_view",
       "label": "Verdict viewed",
       "icon": "📊",
-      "count": 83
+      "count": 92
     },
     {
       "key": "premium_modal_open",
@@ -56,17 +56,17 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 1662.5
+      "rate": 2333.3
     },
     {
       "from": "Beach selected",
       "to": "Verdict viewed",
-      "rate": 62.4
+      "rate": 65.7
     },
     {
       "from": "Verdict viewed",
       "to": "Paywall seen",
-      "rate": 34.9
+      "rate": 31.5
     },
     {
       "from": "Paywall seen",
@@ -91,9 +91,9 @@
   ],
   "global_rate": 0,
   "counts": {
-    "map_open": 8,
-    "beach_open": 133,
-    "verdict_scan_view": 83,
+    "map_open": 6,
+    "beach_open": 140,
+    "verdict_scan_view": 92,
     "premium_modal_open": 29,
     "pass_cta": 0,
     "onsite_checkout_opened": 0,
@@ -111,29 +111,34 @@
   },
   "by_island": {
     "PUNTACANA": {
-      "beach_open": 71,
+      "beach_open": 64,
       "verdict_scan_view": 46,
-      "premium_modal_open": 8
-    },
-    "MQ": {
-      "premium_modal_open": 15,
-      "beach_open": 25,
-      "verdict_scan_view": 15,
-      "map_open": 8
-    },
-    "FLORIDA": {
-      "beach_open": 11,
-      "verdict_scan_view": 7,
-      "premium_modal_open": 3
+      "premium_modal_open": 7
     },
     "GP": {
-      "verdict_scan_view": 13,
-      "beach_open": 22,
+      "beach_open": 31,
+      "verdict_scan_view": 17,
       "premium_modal_open": 3
     },
     "RIVIERAMAYA": {
       "beach_open": 4,
       "verdict_scan_view": 2
+    },
+    "FLORIDA": {
+      "beach_open": 9,
+      "verdict_scan_view": 7,
+      "premium_modal_open": 3
+    },
+    "MQ": {
+      "premium_modal_open": 15,
+      "beach_open": 29,
+      "verdict_scan_view": 17,
+      "map_open": 6
+    },
+    "TULUM": {
+      "beach_open": 3,
+      "verdict_scan_view": 3,
+      "premium_modal_open": 1
     }
   },
   "by_pw_style": {
