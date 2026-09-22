@@ -1,3 +1,11 @@
+## 2026-09-22 — ENRICHISSEMENT B2B : cohortes MQ+GP = 30 prospects, 11 emails vérifiés, pack d'envoi prêt
+
+- **MQ (existant)** : CSV enrichi — 7 emails extraits des sites officiels (placeholder boilerplate éliminé, maison-mère Cap Est notée), 4 pages formulaire vérifiées, sources + date.
+- **GP (nouveau)** : `b2b-prospects-gp-001.csv` — 15 prospects sud/Grande-Terre issus d'OpenStreetMap, 6 sites vérifiés HTTP, 4 emails extraits (Fleur d'Épée, Vieille Tour, Créole Beach, Fleur d'Éden).
+- **Pack d'envoi** : `b2b-outreach-pack-mq-001.md` — 7 emails finalistes, ancres géographiques réelles, offre unique essai 30 j /?pro=1, séquence J0/J+4.
+- **Règles respectées** : aucune donnée inventée (moat), aucun envoi automatique, pages publiques uniquement.
+- **Next autonome** : mesure funnel du jour + prospection follow-up trackée.
+
 ## 2026-09-22 — CONVERSION OVERHAUL slice 1 : router d'intention Jev (landing)
 
 **PROBLEM** : visiteur qualifié qui ne connaît pas le nom exact d'une plage tape en langage naturel → 0 résultat → sortie (hémorragie de l'intention la plus chaude : « où demain ? », « je reste 7 jours »).
