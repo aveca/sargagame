@@ -1,3 +1,9 @@
+## 2026-09-22 — REVENUE RESCUE : 6 paylinks fantômes SUPPRIMÉS (LIVE) + cohorte B2B MQ (15 prospects vérifiés)
+
+- **Purge Mollie LIVE (GO fondateur)** : `trip_eur/trip_usd/sejour_eur/sejour_usd/saison_eur/saison_usd` → DELETE 204 + re-GET 404 pour les 6 (workflow one-shot `prune-ghost-paylinks.yml`, run 35697799088). Retirés du générateur `mollie-paylinks.cjs` (TIERS) + du JSON servi `b2b-paylinks.json` (sinon re-création au prochain run). Pricing in-app et paylinks B2B intacts. ⚠️ Test initial local avec clé *test* (config locale = sandbox) → exécution réelle via CI (MOLLIE_API_KEY live) — d'où le workflow.
+- **Découverte en marge (à décider fondateur)** : inventaire Mollie = 39 liens → 35. Restent live : la 2e vague B2C `mollie-passlinks.json` (pass_p7_eur 7,99 €, pass_saison_eur/usd 19,99 $, pass_p7_usd 5,99 $ — prix abandonnés, fichiers régénérés quotidiennement par `mollie-passlinks.cjs` dans daily-copernicus, AUCUN consommateur repo détecté) + doublons B2B (Pro/Brief/Territoire existent en 2 versions) + ~7 liens étrangers au projet (Tap to Pay, « Pokemon » 200 €…). Action proposée : même purge, sur GO.
+- **Cohorte B2B MQ-001** : `scripts/automation/data/b2b-prospects-mq-001.csv` — 15 hôtels/hébergements RÉELS (OpenStreetMap + probe HTTP) côte atlantique + sud touristique, 11 sites web vérifiés 200/301, statut `prospect`, séquence dans `B2B_PROSPECT_HUNT.md`. Aucun nom inventé.
+
 ## 2026-09-22 — REVENUE RESCUE : scans de cohérence sans code (GO : continuer hors paiement humain)
 
 - **Money-path 5/5** : `POST /api/mollie.php` répond propre sur les 5 domaines ; prix affichés prod = 14,99 € EUR / 13,79 USD (surcharge saison) ; allowlist serveur ↔ affichage cohérents (base 1199 → ×1,15 = 13,79). Aucun code touché.
