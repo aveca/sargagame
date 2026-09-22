@@ -495,8 +495,52 @@
     "melia.com": {
       "date": "2026-09-15T14:49:02.610Z",
       "status": "no-email"
+    },
+    "barcelobavaro.com": {
+      "date": "2026-09-22T14:31:13.238Z",
+      "emailHash": "f2b777c4ad2d90afa09bb5ed9fc62122",
+      "emailDomain": "domain.com",
+      "island": "puntacana",
+      "status": "sent",
+      "error": null
+    },
+    "dreamspuntacana.com": {
+      "date": "2026-09-22T14:31:16.815Z",
+      "status": "no-email"
+    },
+    "lopesan.com": {
+      "date": "2026-09-22T14:31:18.054Z",
+      "emailHash": "25202112fbc84b90dff800d18c039efe",
+      "emailDomain": "lopesan.com",
+      "island": "puntacana",
+      "status": "sent",
+      "error": null
+    },
+    "rius.com": {
+      "date": "2026-09-22T14:31:19.105Z",
+      "status": "no-email"
+    },
+    "excellenceresorts.com": {
+      "date": "2026-09-22T14:31:23.582Z",
+      "emailHash": "598d715dbcad930ac40781fb3cecaf79",
+      "emailDomain": "excellenceresorts.com",
+      "island": "puntacana",
+      "status": "sent",
+      "error": null
+    },
+    "eden-roc.com": {
+      "date": "2026-09-22T14:32:19.585Z",
+      "status": "no-email"
+    },
+    "tortugabayhotel.com": {
+      "date": "2026-09-22T14:32:21.703Z",
+      "status": "no-email"
+    },
+    "thereserveatpuntacana.com": {
+      "date": "2026-09-22T14:32:22.179Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-09-15T14:49:02.610Z",
-  "totalSent": 20
+  "lastRun": "2026-09-22T14:32:22.179Z",
+  "totalSent": 23
 }
