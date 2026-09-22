@@ -1,3 +1,19 @@
+## 2026-09-22 — CONVERSION OVERHAUL slice 1 : router d'intention Jev (landing)
+
+**PROBLEM** : visiteur qualifié qui ne connaît pas le nom exact d'une plage tape en langage naturel → 0 résultat → sortie (hémorragie de l'intention la plus chaude : « où demain ? », « je reste 7 jours »).
+**EVIDENCE** : recherche landing strictement par nom ; aucune capture d'intention.
+**HYPOTHESIS** : classer l'intention (Jev) et router vers la valeur (fiche du jour / B2B) convertit mieux que la page vide déterministe.
+**CHANGE** :
+- `public/api/jev-intent.php` — POST texte → TypeSafe Jev `choice` (7 classes) → `{intent, confidence}`. Clé **server-side only** (env `TYPESAFE_API_KEY` ou `typesafe-config.php` gitignored), timeout 4 s, rate-limit 12/h/IP, kill switch `TYPESAFE_JEV=off`, tout échec → `{fallback:true}`.
+- `src/lib/jev-intent.js` — client : `?jev=0` off, timeout 4,5 s, fallback total.
+- `Sargasses_PROD.jsx` — `JevAsk` visible UNIQUEMENT quand la recherche landing n'a aucun match (≥6 chars) ; routage déterministe ; B2B → `/sargasses-pour-hotels/` (EUR) ; sinon fiche meilleure plage. Jamais de paywall à froid.
+- Events : `sg_jev_intent_ask` / `sg_jev_intent` / `sg_jev_intent_fallback` (allowlist funnel).
+**METRIC** : funnel Supabase — part des recherches sans résultat qui atteignent une fiche. Volume attendu mesurable à 4 semaines.
+**Preuves** : contrat 21/21 · build exit 0 · bundle 38,2 Ko · smoke 4/4 + SMOKE_GATE=PASS · php -l ×2 OK.
+**Clé ABSENTE partout** → endpoint dark-launched inerte ; activation = action fondateur (`FOUNDER_ACTIONS.md` §0).
+**Docs décision** : `TYPESAFE_JEV_ARCHITECTURE.md`, `NEW_FUNNEL.md`, `REVENUE_REDESIGN.md`, `ACQUISITION_ENGINE.md`, `GROWTH_EXPERIMENTS.md`.
+**Rollback** : `?jev=0` (client), `TYPESAFE_JEV=off` (serveur), ou revert PR.
+**PR** : #724.
 ## 2026-09-22 — REVENUE RESCUE : 6 paylinks fantômes SUPPRIMÉS (LIVE) + cohorte B2B MQ (15 prospects vérifiés)
 
 - **Purge Mollie LIVE (GO fondateur)** : `trip_eur/trip_usd/sejour_eur/sejour_usd/saison_eur/saison_usd` → DELETE 204 + re-GET 404 pour les 6 (workflow one-shot `prune-ghost-paylinks.yml`, run 35697799088). Retirés du générateur `mollie-paylinks.cjs` (TIERS) + du JSON servi `b2b-paylinks.json` (sinon re-création au prochain run). Pricing in-app et paylinks B2B intacts. ⚠️ Test initial local avec clé *test* (config locale = sandbox) → exécution réelle via CI (MOLLIE_API_KEY live) — d'où le workflow.
