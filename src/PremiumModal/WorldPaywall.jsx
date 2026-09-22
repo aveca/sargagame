@@ -186,6 +186,28 @@ export function WorldPaywall({
   const [emailValue, setEmailValue] = useState(() => {
     try { return localStorage.getItem("sg_email") || "" } catch (_) { return "" }
   })
+  // PAYUX #1 — Retour paiement Mollie échoué/annulé (?payment_failed=1) :
+  // le handler App écrit sg_payment_retry {email,plan,status,ts} en sessionStorage
+  // MAIS personne ne le lisait → le paywall rouvrait muet, le payeur croyait à un
+  // bug (friction post-paiement la plus proche de la vente : aucun message après
+  // annulation 3DS). Ici : lecture unique au mount, fraîcheur 15 min max, message
+  // honnête mappé par statut (« aucun montant débité » — vrai : annulé/refusé =
+  // pas de capture Mollie), dismiss efface le contexte. Rollback : ?payfailmsg=0.
+  const [retryInfo, setRetryInfo] = useState(() => {
+    try {
+      if (/[?&]payfailmsg=0(?:&|$)/.test(window.location.search || "")) return null
+      const raw = sessionStorage.getItem("sg_payment_retry")
+      if (!raw) return null
+      const ctx = JSON.parse(raw)
+      if (!ctx || typeof ctx.ts !== "number" || Date.now() - ctx.ts > 15 * 60 * 1000) return null
+      const s = ctx.status === "canceled" || ctx.status === "expired" || ctx.status === "failed" ? ctx.status : "failed"
+      return { status: s, email: ctx.email || "", plan: ctx.plan || "" }
+    } catch (_) { return null }
+  })
+  const dismissRetryInfo = () => {
+    try { sessionStorage.removeItem("sg_payment_retry") } catch (_) {}
+    setRetryInfo(null)
+  }
   const handleEmailChange = (e) => {
     setEmailValue(e.target.value)
     // Écriture immédiate : l'overlay OnsiteCheckout (seul détenteur de payEmailRef)
@@ -322,6 +344,41 @@ export function WorldPaywall({
           </div>
         </div>
         
+        {/* ═══ PAYUX #1 — Retour paiement échoué/annulé : message d'échec visible ═══
+            (rollback ?payfailmsg=0, lecture sg_payment_retry, aucun tracking nouveau) */}
+        {retryInfo && (
+          <div
+            data-testid="payment-retry-banner"
+            role="alert"
+            style={{
+              display: "flex", alignItems: "flex-start", gap: 9, marginBottom: 14,
+              padding: "11px 13px", borderRadius: 12,
+              background: "rgba(232,82,42,.10)",
+              border: "1.5px solid rgba(232,82,42,.5)"
+            }}
+          >
+            <span aria-hidden="true" style={{ flexShrink: 0, width: 8, height: 8, borderRadius: "50%", background: "#E8522A", marginTop: 5 }} />
+            <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, lineHeight: 1.45, fontWeight: 600, color: "#FFD9CC", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+              {retryInfo.status === "canceled"
+                ? t("Paiement annulé — aucun montant débité. Tu peux reprendre quand tu veux.", "Payment canceled — no charge. You can retry whenever you like.", "Pago cancelado — sin ningún cargo. Puedes reintentarlo cuando quieras.")
+                : retryInfo.status === "expired"
+                ? t("La session de paiement a expiré — aucun montant débité. Réessaie ici.", "The payment session expired — no charge. Please retry here.", "La sesión de pago expiró — sin ningún cargo. Reintenta aquí.")
+                : t("Le paiement n'a pas abouti — aucun montant débité. Vérifie ta carte ou essaie un autre moyen.", "The payment didn't go through — no charge. Check your card or try another method.", "El pago no se completó — sin ningún cargo. Revisa tu tarjeta o prueba otro medio.")}
+            </span>
+            <button
+              type="button"
+              onClick={dismissRetryInfo}
+              aria-label={t("Masquer ce message", "Dismiss this message", "Ocultar este mensaje")}
+              style={{
+                flexShrink: 0, background: "none", border: "none", cursor: "pointer",
+                color: "rgba(255,255,255,.55)", fontSize: 15, lineHeight: 1,
+                minWidth: 32, minHeight: 32, display: "inline-flex",
+                alignItems: "center", justifyContent: "center", fontFamily: "inherit"
+              }}
+            >×</button>
+          </div>
+        )}
+
         {/* ═══ B1 fix — Beach context mini-cart (funnel stability 2026-08-12) ═══ */}
         {/* Si le paywall est ouvert depuis une fiche plage, rappeler LA plage observée
             au lieu d'un pitch générique "monde à portée de main". Relevance = conversion. */}
