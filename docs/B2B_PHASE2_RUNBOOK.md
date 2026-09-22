@@ -15,6 +15,24 @@
 
 Si un prérequis manque : STOP. Ne jamais contourner (pas de `.env` dérobé, pas de secret en CLI).
 
+**Preflight automatisé (read-only, aucune valeur de secret affichée) :**
+
+```bat
+node scripts/automation/b2b-phase2-preflight.cjs
+```
+
+Exit 0 = `READY` (schéma GREEN + creds présents + 4 suites PASS + #710 DRAFT/OPEN).
+Exit 1 = `NOT READY` avec la ligne exacte qui bloque.
+
+## 0bis. Codes de sortie du CLI
+
+| Code | Signification | Action |
+|---|---|---|
+| 0 | run nominal (dry ou execute) | poursuivre le runbook |
+| 1 | fail-closed : secrets manquants (`--execute`) ou schéma absent (`probeSchema`) ou erreur fatale | STOP — corriger la cause, ne jamais contourner |
+| 2 | `SIRENE_CONSUMER_KEY/SECRET` absents et pas de `--from-file` | STOP — attendre les credentials |
+| 3 | import tronqué (`--max-pages` atteint) | décider : relancer avec plafond plus haut OU rester sur périmètre courant |
+
 ## 1. Vérification schéma (READ-ONLY)
 
 ```bat
@@ -31,13 +49,13 @@ et les colonnes Phase 2 (`ape_label`, `employee_range`, `is_micro_enterprise`, `
 ## 2. Tests Phase 2 (local)
 
 ```bat
-node scripts/tests/b2b-scoring.test.cjs          rem 43 assertions
-node scripts/tests/sirene-import.test.cjs        rem 77 assertions
+node scripts/tests/b2b-scoring.test.cjs          rem 42 assertions
+node scripts/tests/sirene-import.test.cjs        rem 81 assertions
 node scripts/tests/b2b-phase2-guards.test.cjs    rem 33 assertions
-node scripts/tests/b2b-sales-engine-schema.test.cjs  rem 82 assertions
+node scripts/tests/b2b-sales-engine-schema.test.cjs  rem 95 assertions
 ```
 
-Attendu : 235/235 PASS, `exit 0` ×4. Tout échec → STOP, pas de dry-run réel.
+Attendu : 251/251 PASS, `exit 0` ×4. Tout échec → STOP, pas de dry-run réel.
 
 ## 3. Dry-run SIRENE réel (lecture API seule, zéro Supabase)
 

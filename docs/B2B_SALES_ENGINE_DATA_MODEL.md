@@ -53,7 +53,8 @@ Schema alignment for Phase 2 (prod tables still absent → zero migration risk):
 
 ## Tests
 
-- `scripts/tests/b2b-scoring.test.cjs` — bounds, determinism, thresholds, reasons, edge cases (43 assertions).
-- `scripts/tests/sirene-import.test.cjs` — Luhn, status mapping, normalization, dedup, dry-run zero-HTTP, fail-closed execute, in-memory PostgREST upsert idempotence, pagination/backoff, CLI dry-run (77 assertions).
+- `scripts/tests/b2b-scoring.test.cjs` — bounds, determinism, thresholds, reasons, edge cases (42 assertions).
+- `scripts/tests/sirene-import.test.cjs` — Luhn, status mapping, normalization, dedup, dry-run zero-HTTP, fail-closed execute, in-memory PostgREST upsert idempotence, pagination/backoff, CLI dry-run (81 assertions).
 - `scripts/tests/b2b-phase2-guards.test.cjs` — static anti-activation contract: no outreach/email/payment/voice references, scoring purity, no hardcoded secrets, no workflow runs the importer (33 assertions).
+- `scripts/tests/b2b-phase2-runbook.test.cjs` — runbook↔code coherence: CLI surface, exit codes, command lines, live assertion counts (suites run offline, hermetic).
 - `scripts/tests/b2b-sales-engine-schema.test.cjs` — extended to lock the Phase 2 columns and component bounds.
