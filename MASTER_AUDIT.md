@@ -20,7 +20,7 @@
 - [x] DONE — E2 — Add social proof to WorldPaywall/ComicPaywall — WorldPaywall/ComicPaywall: "Déjà N+ qui suivent leurs plages" (FR/EN/ES) via __COMM build-time, gate community>0, rollback ?sgsocial=0, testid paywall-social-proof ; test paywall-social-proof.test.cjs ALL PASS ; build OK ; bundle 38.1 Ko ≤ 210 ; suite 180/182
 - [x] DONE — E4 — Mention duration + no-subscription in CTA subline — PassOffer: "Pas d'abonnement · 30 jours · Paiement sécurisé" (ligne 151-153), "Mollie · Sans engagement · 2 clics" (sticky), "Paiement sécurisé · Accès immédiat" (sous CTA) ; durée 30j et no-sub déjà présents en 3 endroits ; build OK ; bundle 38.1 Ko ≤ 210
 - [x] DONE — E9 — Show data-quality proof when community=0 — WorldPaywall/ComicPaywall: bloc "98% des prévisions vérifiées · Satellite Copernicus · Backtest 99% sur J+3→J+6" quand community=0 & socialOn=true (chiffres alignés sur backtest-results.json: 98% global statusHitRate 30j/3339 paires, 99% J+3→J+6) ; rollback ?sgsocial=0 ; testid paywall-data-quality-proof ; test paywall-social-proof.test.cjs étendu (E2+E9) ALL PASS ; build OK (exit 0, 38.1 Ko ≤ 210) ; smoke PASS ; suite 180/182 ; commit cff1f89be
-- [ ] TODO — E11 — Add trust row (lock/calendar/no-sub) in PassOffer
+- [x] DONE — E11 — Add trust row (lock/calendar/no-sub) in PassOffer (PR #705 — QA prod 2026-09-22 : visible mobile+desktop, rollback ?trust_row=0, 0 pageerror)
 - [ ] TODO — F6 — Personalized change alerts (ML on existing forecast)
 - [ ] TODO — F9 — AI-generated brief summaries
 - [ ] TODO — F3 — Enhanced chat with data-grounded responses
@@ -67,12 +67,12 @@
 - UX-006 → **TEST ISSUE** (même racine que UX-001) + helper : wait mangé 30 s (catch) puis count sur contexte fermé. weekhub 5/5.
 - Bonus hors-scope démasqués par la réparation UX-001 (masquaient la suite) : ma-plage:43 fraîcheur héros masquée ≤480px (design lot 9, assertion basculée sur le DOM réel) et ma-plage:155 collision de sélecteur « MA PLAGE » nav vs carte map (scope : `[data-vmui="1"] button`). Les 2 corrigés côté test.
 - Gate : build OK, bundle 38.1 Ko ≤ 210, smoke 4 tokens + SMOKE_GATE=PASS, funnel 13/13, Around-me 10/10, BottomNav 8/8, p1-03 week-hub 11/11, tests unitaires paywall-email-pre + paywall-social-proof + lead-capture-g1 + passoffer-paths ALL PASS.
-- [ ] P1 UX-QA-001 — A13 invisible pour les vrais utilisateurs : J+1 reste VERROUILLÉ sur la variante live de la fiche plage (ChasseDetail `.lc-detail`, `ChasseHome.jsx:733-739` verrouille dès i=1 et ne lit JAMAIS le flag `j1_free`) ; A13 n'a été implémenté que dans `BeachSheetComic` (`Sargasses_PROD.jsx:4624+`, data-testid fc-day) qui n'est pas la variante servie — preuve : `runs/20260917-qa` local+prod mobile+desktop `C-j1/j1-not-locked FAIL` (cellule `lc-fc-cell teaser s-ok` avec cadenas), screenshots `local/*/screenshots/c1-fc.png` ; le rollback `?j1_free=0` est inopérant sur la variante live
-- [ ] P1 UX-QA-002 — Bannière capture email (LeadCapture, z-index 1500) affichée AU-DESSUS du paywall (z 1260) et du checkout (z 1300) quand elle (ré)apparaît pendant le paiement ; sa fermeture a été interceptée au moins une fois en run QA (overlay concurrent) — preuve : `runs/20260917-qa/local/mobile/screenshots/g0-pay-cta-stuck.png` (bannière visible au premier plan pendant le modal premium)
-- [ ] P1 UX-QA-003 — Consent cookies « Refuser » intercepté par la bannière email (dead tap) tant qu'elle est visible — preuve : `runs/20260916T2132Z-run1` mobile step_0003, Playwright actionability log « region Capture email … intercepts pointer events »
-- [ ] P1 UX-QA-004 — Nav « ◉ Carte » interceptée par la bannière email (desktop) — preuve : `runs/20260916T2132Z-run1` steps 8-9 (2 timeouts), clic OK après fermeture de la bannière
-- [ ] P2 UX-QA-005 — Bouton × du modal premium intercepté par la vague SVG de la fiche plage quand la fiche reste au-dessus — preuve pre-fix : `runs/20260916T2132Z-run1` step_0009 ; à REVÉRIFIER en prod après déploiement de a1585b563 (le panel passe à 1260 — le symptôme devrait disparaître)
-- [ ] P2 UX-QA-006 — « Plus tard » ne ferme pas le modal premium sur desktop (comportement inverse du mobile) — preuve : `runs/20260916T2132Z-run1` desktop, dialog encore visible dans l'ARIA après clic (obs 6→7), × fonctionne
+- [x] P1 UX-QA-001 — A13 invisible pour les vrais utilisateurs → **CORRIGÉ puis RECLASSÉ** : la variante LIVE par défaut est `BeachSheetComic` (`Sargasses_PROD.jsx:13689`, fiche unique depuis 2026-08-12) et A13 y est en prod (probe 2026-09-19 : J+0 libre + J+1 badge « INCLUS » + J+2→J+6 verrouillés). ChasseDetail = surface secondaire (`?mapdetail=1` / bras arena_loop) — couverte à son tour par **#694** (2026-09-20). Clos.
+- [ ] P1 UX-QA-002 — Bannière capture email (LeadCapture) : partiellement résolu — z-index 1500→**1250** (#691) + positionnement ancré au-dessus du dock (mobile, #700) : la bannière n'est plus au-dessus du paywall (1260) ni du checkout (1300). Reste à revérifier : chevauchement avec la bannière cookies (z 1025) sur mobile.*
+- [ ] P1 UX-QA-003 — Consent cookies « Refuser » intercepté par la bannière email (dead tap) tant qu'elle est visible — preuve : `runs/20260916T2132Z-run1` mobile step_0003, Playwright actionability log « region Capture email … intercepts pointer events » — **à RE-PROUVER** post-#700 (offsets mobiles réarrangés par cette PR)*
+- [ ] P1 UX-QA-004 — Nav « ◉ Carte » interceptée par la bannière email (desktop) — preuve : `runs/20260916T2132Z-run1` steps 8-9 (2 timeouts), clic OK après fermeture de la bannière — **mobile corrigé par #700 (banner ancré au-dessus du dock)** ; le cas desktop à re-prouver*
+- [x] P2 UX-QA-005 — × du modal premium intercepté → **CLOS** (2026-09-21, probe définitive desktop 1440) : le panel premium (z 1260) est au-dessus de la fiche depuis le déploiement du fix UX-R2-003 ; × ferme réellement la modal premium, la fiche conserve son état.
+- [x] P2 UX-QA-006 — « Plus tard » inopérant desktop → **NON REPRODUIT puis réfuté par mesure (2026-09-21)** : probe réelle 1440×900 (fiche → « Débloquer les prévisions » → paywall) : l'événement atteint bien le bouton (capture listener proof), le panel premium disparaît (`.sg-modal-panel` invisible), réouverture + × OK. **Cause de l'observation historique** : l'harnais QA comptait `document.querySelector('[role=dialog][aria-modal=true]')` — or la fiche plage `.bsc-sheet` porte aussi ces attributs et RESTE ouverte après fermeture du paywall (comportement attendu) ; « dialog encore visible après clic » était cette fiche, pas le paywall. Aucun défaut produit.
 
 **Session VISUAL RESCUE (2026-09-18, branche `agent/ui/visual-rescue`) — 3 régressions prod reproduites + fixées (visuel seul) :**
 - UX-VR-001 (P0 visuel) → **FIXÉ** : texte cartes XP invisible (CR 1.02) sur Accueil+Plages+Ma Plage — `card` (fond #fff) sans `color` → héritage shell #FFFDF6. Fix `color: INK` → CR 19.53. Composant live = PlagesExplorer (BeachListView dessous, BeachCards.jsx dead code) ; hypothèses opacity/overlay/transition/z-index réfutées par mesure.
@@ -106,11 +106,11 @@
 ## État d'exécution
 
 ### P0
-- [ ] TODO — A12 — Rotate ALL secrets in .env (public repo)
-- [ ] TODO — G1 — Migrate lead capture from Apps Script → Supabase
-- [ ] TODO — G2 — Add analytics_events purge job
-- [ ] TODO — G3 — Mirror payment grants to Supabase (not just JSON files)
-- [ ] TODO — G15 — Fix CI gate: smoke exit-1 + budget check in CI
+- [ ] TODO — A12 — Rotate ALL secrets in .env (public repo) — **bloqué action fondateur (dashboard Mollie)**
+- [x] DONE — G1 — Migrate lead capture from Apps Script → Supabase (PR #690)
+- [x] DONE — G2 — Add analytics_events purge job (PR #704)
+- [x] DONE — G3 — Mirror payment grants to Supabase (not just JSON files) (PR #708)
+- [x] DONE — G15 — Fix CI gate: smoke exit-1 + budget check in CI (PR #707)
 
 ### P1
 - [x] DONE — A1 — Move email capture before CTA on paywall
@@ -120,7 +120,7 @@
 - [x] DONE — E2 — Add social proof to WorldPaywall/ComicPaywall
 - [x] DONE — E4 — Mention duration + no-subscription in CTA subline
 - [x] DONE — E9 — Show data-quality proof when community=0
-- [ ] TODO — E11 — Add trust row (lock/calendar/no-sub) in PassOffer
+- [x] DONE — E11 — Add trust row (lock/calendar/no-sub) in PassOffer (PR #705 — QA prod 2026-09-22 : rangée visible mobile+desktop, rollback ?trust_row=0 prouvé, 0 pageerror)
 - [ ] TODO — F6 — Personalized change alerts (ML on existing forecast)
 - [ ] TODO — F9 — AI-generated brief summaries
 - [ ] TODO — F3 — Enhanced chat with data-grounded responses
