@@ -1,3 +1,38 @@
+## 2026-09-22 · Agent: revenue-rescue (branche `agent/coding/revenue-measure`, PR #718 auto-merge)
+
+### Travail effectué
+- **Résumé 1 ligne** : GO fondateur exécuté — money-path PROUVÉ VIVANT jusqu'au seuil paiement (sonde prod 5/5 domaines mobile, 2× desktop, 0 pageerror, 5 iframes Mollie montées) + mesure funnel réparée (Apps Script @44 : taux sur `pass_cta` réel = 4 %/28 j, nouveaux taux CTA→checkout→paiement) + beacon front money-path étendu.
+- **Vérités serveur** : mollie.php vivant (400 propre, API Mollie jointe), webhook HMAC 403 attendu (secret OK), good.html 200 ×5.
+- **Bloquants fondateur (carton `FOUNDER_ACTIONS.md`)** : (1) paiement test réel 5 domaines ~25 €, (2) SUPABASE_ACCESS_TOKEN 2 min + apply-supabase-schema (BUG-2026-027, 19 j), (3) rituel distribution drafts quotidiens (déjà générés dans scripts/automation/data/verdict-du-jour/).
+
+### Fichiers modifiés
+- `scripts/appscript/Code.js` — funnel rates sur events réels + compteurs onsite_checkout_opened/payment_failed/payment_paid (DEPLOYÉ @44, vérifié live)
+- `src/Sargasses_PROD.jsx` — beacon critique += sg_payment* + sg_onsite_checkout_opened (additif)
+- `tests/e2e/prod-money-path-probe.spec.ts` — NOUVEAU (PROBE_PROD=1, tracking coupé, skip CI)
+- `REVENUE_RESCUE_REPORT.md`, `FOUNDER_ACTIONS.md` — NOUVEAUX
+- `.ai/changelog.md` — 2 entrées 2026-09-22
+
+### Tests réalisés
+- [x] build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS
+- [x] probe prod 5/5 mobile (MQ/GP/MIA/CUN/PUJ) + MQ/MIA desktop : paywall→CTA→email→5 iframes Mollie→bouton payer
+- [x] funnel endpoint relu post-deploy : pass_cta=208, premium_modal_cta=0 (legacy), rates nouveaux présents
+
+### Problèmes restants
+- [ ] Paiement réel JAMAIS validé depuis 2026-07-19 — test fondateur requis (seuil carte non prouvable sans carte)
+- [ ] GA4 GP cassé (0 session/393 users) — propriété à réparer côté GA
+- [ ] Bouton payer DISABLED avant saisie sur MQ/GP/CUN vs enabled MIA/PUJ — garde de validation, à observer pendant le test réel
+- [ ] WIP tiers NON touché : `src/PremiumModal.jsx` E6 « déjà premium » non commité sur `agent/qa/ux-qa-006-plus-tard` (pas à moi, laissé en l'état)
+
+### Prochaine action recommandée
+1. Fondateur : FOUNDER_ACTIONS.md §1 (paiements test) → si échec : STOP tout, fix money-path — coding-agent
+2. Fondateur : FOUNDER_ACTIONS.md §2 (token) → puis Phase 2 B2B (ingestion SIRENE DRY_RUN) — data-agent
+3. Après merge #718 + deploy : vérifier `onsite_checkout_opened` apparaît au funnel endpoint (le beacon front doit être déployé)
+
+### Branche / PR
+- Branche : `agent/coding/revenue-measure` · PR : #718 (auto-merge CI) · Apps Script : v22 @44
+
+---
+
 ## 2026-09-22 · Agent: ui-agent (STICKY CTA E1 PARITY — branche `agent/ui/sticky-cta-e1align`)
 
 ### Travail effectué
