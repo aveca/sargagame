@@ -1,3 +1,11 @@
+## 2026-09-22 — REVENUE RESCUE : scans de cohérence sans code (GO : continuer hors paiement humain)
+
+- **Money-path 5/5** : `POST /api/mollie.php` répond propre sur les 5 domaines ; prix affichés prod = 14,99 € EUR / 13,79 USD (surcharge saison) ; allowlist serveur ↔ affichage cohérents (base 1199 → ×1,15 = 13,79). Aucun code touché.
+- **B2B état prod vérifié** : paylinks Pro/Brief/Territoire EUR+USD live et webhookés dans `b2b-paylinks.json` ; tunnel trial vérifié code ; 6 paylinks B2C fantômes (trip/sejour/saison, prix abandonnés) encore actifs dans Mollie → action désactivation listée dans FOUNDER_ACTIONS.md §2.
+- **B2B runbook** : FOUNDER_ACTIONS.md §2 réécrit — token 2 min → apply-schema, puis prospection humaine (zéro infra), envoi machine différé (secrets OUTREACH_* absents de GH).
+- **Distribution** : drafts quotidiens confirmés auto (`daily-social-reservoir.yml` 13:17 UTC, 6 régions), zéro publication sans valve humaine — rituel §3 inchangé, c'est le bon design.
+- **GA4 GP** : anomalie sessions/users inversée confirmée côté script (properties MQ/GP) — action fondateur dashboard GA (ID propriété à vérifier), pas de fix repo possible sans accès.
+
 
 ## 2026-09-22 — REVENUE RESCUE EXÉCUTION : money-path probe 5×5 VERT + funnel mesuré sur events réels (branche `agent/coding/revenue-measure`)
 

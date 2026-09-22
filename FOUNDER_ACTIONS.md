@@ -29,16 +29,42 @@ Prix **vérifiés en prod** le 2026-09-22 (recap de commande, sonde read-only) �
 
 **Si UN SEUL échoue** : me renvoyer domaine + heure + message affiché (ou « rien ne se passe ») + mobile/desktop. Je corrige ce domaine en priorité absolue, rien d'autre ne bouge entre-temps.
 
-## 2. TOKEN SUPABASE — 2 min (débloque le B2B, bloqué depuis 19 jours)
+## 2. B2B — activation complète (token + GO envoi)
+
+### État vérifié 2026-09-22 (ce qui existe DÉJÀ et fonctionne)
+
+| Composant | État |
+|---|---|
+| Landing B2B `/sargasses-pour-hotels/` (MQ+GP) | ✅ live |
+| Tunnel essai 30 j (email → token → espace) | ✅ vérifié en code (B2BModal → b2b-api worker) |
+| **Paylinks Mollie live** : Pro 690 €/an (EUR) / 790 $ · Brief 290 € / 390 $ · Territoire 1 990 € | ✅ live, webhookés (`b2b-paylinks.json`, vérifié en prod) |
+| Scripts outbound (`b2b-outreach.cjs`, dry-run, preflight) | ✅ existent, jamais activés en envoi réel |
+| Protocole de prospection + critères | ✅ `B2B_PROSPECT_HUNT.md` |
+| Endpoint trial + espace Pro | ✅ live via worker b2b-api |
+
+### ⚠️ Prix B2C « fantômes » encore live dans Mollie (paylinks créés en juillet)
+
+`trip 4,99 €/$ · sejour 12,99 €/9,99 $ · saison 19,99 €/14,99 $` — si un de ces liens traîne dans un vieil email ou une page, on peut recevoir un paiement à un prix abandonné. **À faire** (2 min, dashboard Mollie) : désactiver ces 6 paylinks pour ne garder que Pro/Brief/Territoire + laisser le checkout on-site seul canal B2C. (Je peux le faire via API avec `MOLLIE_API_KEY` sur ton GO — suppression de liens, pas de pricing in-app.)
+
+### Étape 1 — Token Supabase (2 min) — débloque le data model B2B
 
 1. https://supabase.com/dashboard/account/tokens → **Generate new token**
-2. Repo GitHub → Settings → Secrets and variables → Actions → `SUPABASE_ACCESS_TOKEN` → **Update** (coller le token)
-3. Ouvrir https://github.com/aveca/sargagame/actions/workflows/apply-supabase-schema.yml → **Run workflow** → confirmer vert.
+2. GitHub → Settings → Secrets and variables → Actions → `SUPABASE_ACCESS_TOKEN` → Update
+3. https://github.com/aveca/sargagame/actions/workflows/apply-supabase-schema.yml → **Run workflow** → vert attendu (les 11 tables B2B se créent)
 
-**Alternative sans GitHub** : Supabase dashboard → SQL Editor → coller le bloc `B2B SALES ENGINE — PHASE 1` de `supabase/schema.sql` (à partir de la ligne 371) → Run.
+**Alternative sans GitHub** : Supabase dashboard → SQL Editor → coller `supabase/schema.sql` à partir de la ligne `B2B SALES ENGINE — PHASE 1` (~ligne 371) → Run.
 
-Sans ça, les tables B2B (prospects/scoring) n'existent pas en prod et la Phase 2 ne peut rien écrire.
-**En parallèle, possible SANS le token** : la prospection est humaine — protocole et critères déjà prêts dans `B2B_PROSPECT_HUNT.md`, log dans `scripts/automation/data/b2b-outreach-log.json`. 100 hôtels/conciergeries Martinique = la cible du mois.
+### Étape 2 — Premières ventes (ne demande AUCUN token, aujourd'hui)
+
+La prospection humaine ne dépend d'aucune infra :
+1. `B2B_PROSPECT_HUNT.md` → critères + séquence courte prête.
+2. Cible semaine : 15 hôtels/conciergeries **Martinique côte Atlantique** (Le François, Le Vauclin, Sainte-Luce) — ceux qui doivent répondre « quelle plage aujourd'hui ? » à leurs clients.
+3. Message = B2B_EMAIL_TEMPLATE.md adapté (1 contact, pas de séquence agressive). Offre : **essai 30 j** (tunnel live) ; closing : Pro 79 €/mo ou 690 €/an (paylink live).
+4. Log : `scripts/automation/data/b2b-outreach-log.json` (format existant).
+
+### Étape 3 — Automatisation machine (optionnel, APRÈS preuve humaine)
+
+Le pipeline d'envoi massif (worker outreach) demande 2 secrets GH absents (`OUTREACH_WORKER_URL`, `OUTREACH_ADMIN_KEY`) — ne pas activer avant d'avoir 3+ réponses humaines prouvant l'offre. Vérification pré-activation : `npm run outreach:preflight`.
 
 ## 3. DISTRIBUTION QUOTIDIENNE — 10 min/jour (le seul levier trafic immédiat)
 
