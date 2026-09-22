@@ -2,7 +2,11 @@
 
 3 actions humaines, par ordre d'impact. Total : ~45 min. Tout le reste est déjà fait ou automatisé.
 
-> **§0 TypeSafe** : la clé `TYPESAFE_API_KEY` est absente partout (vérifié 2026-09-22). 2 min : créer `public/api/typesafe-config.php` sur le serveur (gabarit `typesafe-config.example.php`). Sans elle, le routeur d'intention Jev reste en mode fallback silencieux (aucun impact produit, aucune donnée perdue — simplement inactif).
+> **§0 TypeSafe/Jev (routeur d'intention landing)** : clé absente de l'environnement local. Activation (5 min, 1 fois) :
+> 1. `wrangler secret put TYPESAFE_API_KEY` dans `workers/sg-payments/` (coller la clé)
+> 2. Dashboard Cloudflare → Workers Routes : ajouter `*/api/jev-intent*` → worker `sg-payments` sur les 6 zones (mq, gp, miami, puntacana, cancun, tulum)
+>
+> Sans ça, tout fonctionne exactement comme aujourd'hui : l'endpoint répond 404 → le client garde la recherche déterministe (vérifié en prod 2026-09-22). Kill switch : retirer la route OU `?jev=0`.
 
 ---
 
