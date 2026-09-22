@@ -1,0 +1,26 @@
+name: Prune ghost B2C paylinks (one-shot)
+
+# REVENUE RESCUE 2026-09-22 — suppression ONE-SHOT, manuelle uniquement, des 6
+# paylinks B2C fantômes (trip/sejour/saison EUR+USD) de Mollie LIVE.
+# Utilise le secret existant MOLLIE_API_KEY. Idempotent (404 = déjà absent = OK).
+# NE PAS mettre de cron : tourne une fois, à la main.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Delete ghost paylinks (Mollie LIVE)
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/prune-ghost-paylinks.cjs

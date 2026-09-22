@@ -45,20 +45,10 @@ const TIERS = [
   // USD (florida/puntacana/rivieramaya) — grille de réf. Pro $790 / Brief $390 (Mollie encaisse l'USD).
   { id: 'brief_annual_usd', value: '390.00', currency: 'USD', label: 'Sargassum Pro — Brief (annual)' },
   { id: 'pro_annual_usd',   value: '790.00', currency: 'USD', label: 'Sargassum Pro — Pro: white-label widget + brief + alerts (annual)' },
-  // B2C PASS ONE-TIME — grille unifiée (EUR + USD) — pricing panel 2026-07-28
-  // Anciennes valeurs gardées en commentaire pour rollback visuel (rollback instantané = décommenter + commenter les nouvelles).
-  // trip_eur    : 499  (inchangé)  // trip_eur    : 499
-  // trip_usd    : 499  (↓ de 599)  // trip_usd    : 599
-  // sejour_eur  : 1299 (↓ de 1499) // sejour_eur  : 1499
-  // sejour_usd  : 999  (↓ de 1199) // sejour_usd  : 1199
-  // saison_eur  : 1999 (↓ de 2499) // saison_eur  : 2499
-  // saison_usd  : 1499 (↓ de 1999) // saison_usd  : 1999
-  { id: 'trip_eur',     value: '4.99',   currency: 'EUR', label: 'Sargasses Pass — Escale 1 jour (EUR)' },
-  { id: 'trip_usd',     value: '4.99',   currency: 'USD', label: 'Sargassum Pass — 1-Day Trip (USD)' },
-  { id: 'sejour_eur',   value: '12.99',  currency: 'EUR', label: 'Sargasses Pass — Séjour 7 jours (EUR)' },
-  { id: 'sejour_usd',   value: '9.99',   currency: 'USD', label: 'Sargassum Pass — 7-Day Stay (USD)' },
-  { id: 'saison_eur',   value: '19.99',  currency: 'EUR', label: 'Sargasses Pass — Saison 30 jours (EUR)' },
-  { id: 'saison_usd',   value: '14.99',  currency: 'USD', label: 'Sargassum Pass — 30-Day Season (USD)' },
+  // B2C pass one-time paylinks RETIRÉS 2026-09-22 (REVENUE RESCUE, GO fondateur) :
+  // trip/sejour/saison EUR+USD = prix abandonnés (offres mortes ; le seul chemin
+  // B2C = checkout on-site). Les 6 liens ont été SUPPRIMÉS côté API Mollie —
+  // ne pas réintroduire ici (ce script re-créerait des liens fantômes).
 ]
 
 function loadKey() {
