@@ -11830,8 +11830,14 @@ export default function App(){
       const failedPlan=params.get("plan")||""
       // Contexte d'échec : l'email est pré-rempli dans le paywall/overlay via sg_email
       // (clé canonique lue par OnsiteCheckout à l'ouverture de payStep).
+      // PAYUX #1 : le statut terminal Mollie (canceled/expired/failed) est désormais
+      // conservé — WorldPaywall le relit pour afficher un message d'échec honnête
+      // (avant : paywall rouvert sans aucun mot = perdant pensait « bug »).
+      // Rollback ?payfailmsg=0 lu ICI (à l'écriture) : l'URL est nettoyée par
+      // replaceState juste après, un check côté paywall ne verrait plus le flag.
       try{
-        sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,ts:Date.now()}))
+        const retryMsgOff=/[?&]payfailmsg=0(?:&|$)/.test(q)
+        if(!retryMsgOff)sessionStorage.setItem("sg_payment_retry",JSON.stringify({email:failedEmail,plan:failedPlan,status:params.get("status")||"",ts:Date.now()}))
         if(failedEmail&&failedEmail.includes("@"))localStorage.setItem("sg_email",failedEmail)
       }catch(_){}
       // Nettoie l'URL puis ouvre le paywall
