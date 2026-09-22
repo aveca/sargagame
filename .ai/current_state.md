@@ -1,3 +1,20 @@
+## 2026-09-20 · Agent: data-agent (B2B SALES ENGINE PHASE 2 — branche `agent/data/b2b-phase2-sirene`, PR DRAFT non mergée)
+
+### Travail effectué
+- **Résumé 1 ligne** : importeur SIRENE Martinique (DRY_RUN défaut, fail-closed, upsert siren/siret idempotent, statuts A/F/unknown) + scoring déterministe 0-100 (6 composantes, seuils configurables, reasons[], model_version) + schéma aligné (6 composantes scoring, colonnes SIRENE natives) — AUCUNE exécution réelle.
+- **Détails + preuves** : `.ai/changelog.md` (entrée 2026-09-20 PHASE 2). Tests : scoring 43/43 · import 77/77 · guards 33/33 · schéma 82/82.
+
+### Prochaine action recommandée
+1. **Fondateur (bloquant prod)** : régénérer `SUPABASE_ACCESS_TOKEN` → relancer `apply-supabase-schema.yml` (attendu : 11 tables, GREEN) — sinon aucune écriture DB possible
+2. Review humaine de la PR draft Phase 2 (scope verrouillé, aucun workflow ne la déclenche)
+3. Phase 3 (enrichissement avec source/confidence/timestamp) uniquement après merge Phase 2 + schéma appliqué
+
+### Branche / PR
+- Branche : `agent/data/b2b-phase2-sirene` (base origin/main post-#706)
+- PR : à créer (DRAFT, titre : Phase 2 B2B — SIRENE import + scoring)
+
+---
+
 ## 2026-09-20 · Agent: coding-agent — SHIP G3 mirror PayPal→Supabase (branche `agent/security/g3-paypal-mirror`, ex-#685)
 
 ### Travail effectué

@@ -71,6 +71,25 @@ function main() {
     ok(!!chk && chk[0].includes(`'${s}'`), `prospect status allowed: ${s}`)
   }
 
+  // Phase 2 — deterministic 6-component scoring model (b2b-scoring.cjs),
+  // plus native SIRENE columns needed by sirene-mq-import.cjs.
+  const scoreCols = [
+    ['b2b_relevance', 25], ['sector_relevance', 25], ['commercial_potential', 20],
+    ['contactability', 15], ['company_quality', 10], ['data_confidence', 5],
+  ]
+  for (const [col, max] of scoreCols) {
+    ok(new RegExp(`${col}\\s+integer not null default 0`).test(schema), `prospect_scores.${col}`)
+    ok(new RegExp(`${col} between 0 and ${max}`).test(schema), `prospect_scores.${col} borné 0..${max}`)
+  }
+  ok(!schema.includes('problem_score'), 'ancien modèle PFCV absent du schéma prod')
+  ok(schema.includes('prospect_scores_components_chk'), 'components constraint kept')
+  for (const col of ['ape_label', 'employee_range', 'is_micro_enterprise', 'creation_date', 'source_updated_at']) {
+    ok(new RegExp(`${col}\\s+`).test(schema), `companies.${col} (SIRENE natif)`)
+  }
+  ok(/siege\s+boolean not null default false/.test(schema), 'establishments.siege')
+  // companies + establishments portent source_updated_at (2 occurrences attendues)
+  ok((schema.match(/source_updated_at/g) || []).length >= 2, 'source_updated_at sur company+establishment')
+
   console.log(failures === 0
     ? '\nB2B-SALES-SCHEMA TESTS: ALL PASS'
     : `\nB2B-SALES-SCHEMA TESTS: ${failures} FAILURE(S)`)

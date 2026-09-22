@@ -1,0 +1,171 @@
+{
+  "header": { "statut": 200, "total": 6, "debut": 0, "nombre": 6 },
+  "etablissements": [
+    {
+      "siren": "972500011",
+      "nic": "00010",
+      "siret": "97250001100010",
+      "statutDiffusionEtablissement": "O",
+      "dateCreationEtablissement": "2015-03-01",
+      "trancheEffectifsEtablissement": "03",
+      "activitePrincipaleRegistreMetiersEtablissement": null,
+      "etablissementSiege": true,
+      "etatAdministratifEtablissement": "A",
+      "activitePrincipaleEtablissement": "55.10Z",
+      "enseigne1Etablissement": "LAGON TEST",
+      "denominationUsuelleEtablissement": null,
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "A",
+        "denominationUniteLegale": "HOTEL EXEMPLE MARTINIQUE SA",
+        "nomUsageUniteLegale": null,
+        "nomUniteLegale": null,
+        "prenom1UniteLegale": null,
+        "sigleUniteLegale": "HEM",
+        "categorieJuridiqueUniteLegale": "5710",
+        "activitePrincipaleUniteLegale": "55.10Z",
+        "trancheEffectifsUniteLegale": "12",
+        "dateCreationUniteLegale": "2010-06-15",
+        "categorieEntreprise": "PME"
+      },
+      "adresseEtablissement": {
+        "numeroVoieEtablissement": "12",
+        "indiceRepetitionEtablissement": null,
+        "typeVoieEtablissement": "RUE",
+        "libelleVoieEtablissement": "DES ALIZES",
+        "complementAdresseEtablissement": null,
+        "codePostalEtablissement": "97290",
+        "libelleCommuneEtablissement": "LE MARIN",
+        "codeCommuneEtablissement": "97217",
+        "codeCedexEtablissement": null
+      }
+    },
+    {
+      "siren": "972500011",
+      "nic": "00028",
+      "siret": "97250001100028",
+      "statutDiffusionEtablissement": "O",
+      "dateCreationEtablissement": "2018-01-10",
+      "trancheEffectifsEtablissement": "01",
+      "etablissementSiege": false,
+      "etatAdministratifEtablissement": "A",
+      "activitePrincipaleEtablissement": "77.34Z",
+      "enseigne1Etablissement": null,
+      "denominationUsuelleEtablissement": "LAGON TEST ANNEXE",
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "A",
+        "denominationUniteLegale": "HOTEL EXEMPLE MARTINIQUE SA",
+        "sigleUniteLegale": "HEM",
+        "categorieJuridiqueUniteLegale": "5710",
+        "activitePrincipaleUniteLegale": "55.10Z",
+        "trancheEffectifsUniteLegale": "12",
+        "dateCreationUniteLegale": "2010-06-15"
+      },
+      "adresseEtablissement": {
+        "numeroVoieEtablissement": null,
+        "typeVoieEtablissement": "QUAI",
+        "libelleVoieEtablissement": "OUEST",
+        "complementAdresseEtablissement": "MARINA",
+        "codePostalEtablissement": "97290",
+        "libelleCommuneEtablissement": "LE MARIN",
+        "codeCommuneEtablissement": "97217"
+      }
+    },
+    {
+      "siren": "972510028",
+      "nic": "00012",
+      "siret": "97251002800012",
+      "statutDiffusionEtablissement": "O",
+      "dateCreationEtablissement": "2021-09-01",
+      "trancheEffectifsEtablissement": "00",
+      "etablissementSiege": true,
+      "etatAdministratifEtablissement": "A",
+      "activitePrincipaleEtablissement": "56.10A",
+      "enseigne1Etablissement": null,
+      "denominationUsuelleEtablissement": null,
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "A",
+        "denominationUniteLegale": null,
+        "nomUniteLegale": "DUPONT",
+        "prenom1UniteLegale": "JEAN",
+        "sigleUniteLegale": null,
+        "categorieJuridiqueUniteLegale": "1000",
+        "activitePrincipaleUniteLegale": "56.10A",
+        "trancheEffectifsUniteLegale": "00",
+        "dateCreationUniteLegale": "2021-09-01"
+      },
+      "adresseEtablissement": {
+        "numeroVoieEtablissement": "5",
+        "typeVoieEtablissement": "RUE",
+        "libelleVoieEtablissement": "DE LA REPUBLIQUE",
+        "complementAdresseEtablissement": null,
+        "codePostalEtablissement": "97200",
+        "libelleCommuneEtablissement": "FORT-DE-FRANCE",
+        "codeCommuneEtablissement": "97209"
+      }
+    },
+    {
+      "siren": "972520035",
+      "nic": "00015",
+      "siret": "97252003500015",
+      "statutDiffusionEtablissement": "O",
+      "dateCreationEtablissement": "2005-02-20",
+      "etablissementSiege": true,
+      "etatAdministratifEtablissement": "F",
+      "activitePrincipaleEtablissement": "47.11F",
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "F",
+        "denominationUniteLegale": "SUPERETTE FERMEE EXEMPLE SARL",
+        "categorieJuridiqueUniteLegale": "5710",
+        "activitePrincipaleUniteLegale": "47.11F",
+        "trancheEffectifsUniteLegale": "00",
+        "dateCreationUniteLegale": "2005-02-20",
+        "dateDebut": null
+      },
+      "adresseEtablissement": {
+        "numeroVoieEtablissement": "3",
+        "typeVoieEtablissement": "AV",
+        "libelleVoieEtablissement": "DU GENERAL DE GAULLE",
+        "codePostalEtablissement": "97231",
+        "libelleCommuneEtablissement": "LE ROBERT",
+        "codeCommuneEtablissement": "97222"
+      }
+    },
+    {
+      "siren": "972500011",
+      "nic": "00011",
+      "siret": "97250001100011",
+      "note_fixture": "SIRET volontairement invalide (Luhn) — doit être rejeté",
+      "etablissementSiege": false,
+      "etatAdministratifEtablissement": "A",
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "A",
+        "denominationUniteLegale": "HOTEL EXEMPLE MARTINIQUE SA"
+      },
+      "adresseEtablissement": {}
+    },
+    {
+      "siren": "972500011",
+      "nic": "00010",
+      "siret": "97250001100010",
+      "note_fixture": "DOUBLON du 1er établissement — doit être dédupliqué",
+      "etablissementSiege": true,
+      "etatAdministratifEtablissement": "A",
+      "uniteLegale": {
+        "etatAdministratifUniteLegale": "A",
+        "denominationUniteLegale": "HOTEL EXEMPLE MARTINIQUE SA",
+        "categorieJuridiqueUniteLegale": "5710",
+        "activitePrincipaleUniteLegale": "55.10Z",
+        "trancheEffectifsUniteLegale": "12",
+        "dateCreationUniteLegale": "2010-06-15"
+      },
+      "adresseEtablissement": {
+        "numeroVoieEtablissement": "12",
+        "typeVoieEtablissement": "RUE",
+        "libelleVoieEtablissement": "DES ALIZES",
+        "codePostalEtablissement": "97290",
+        "libelleCommuneEtablissement": "LE MARIN",
+        "codeCommuneEtablissement": "97217"
+      }
+    }
+  ]
+}
