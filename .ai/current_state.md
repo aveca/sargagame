@@ -21,7 +21,7 @@
 
 ### Branche / PR
 - Branche : `agent/coding/wow-takeover`
-- PR : à créer vers main (2e PR de la branche)
+- PR : #738 vers main (CI : E2E bottomnav attendu rouge pré-existant BUG-2026-038 ; experience.spec 4/4 à valider côté CI)
 
 ## 2026-09-23 · Agent: coding (WOW TAKEOVER slice 1) — Paywall « UNLOCK MY STAY » live-ready
 
