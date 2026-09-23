@@ -27,7 +27,7 @@
 
 ### Branche / PR
 - Branche : `agent/coding/wow-takeover`
-- PR : à créer vers main
+- PR : #737 vers main (CI en cours ; seul E2E bottomnav attendu rouge pré-existant BUG-2026-038)
 
 ## 2026-09-23 · Agent: coding (SESSION RECOVERY post-crash) — Takeover paywall §9 stabilisé
 
