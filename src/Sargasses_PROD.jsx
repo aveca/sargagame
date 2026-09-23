@@ -122,6 +122,7 @@ const MAPLAGE_OFF=(()=>{try{return /[?&]maplage=0/.test(window.location.search)}
 // le toast 5s par un mini-setup (favoris→notif→brief). Lazy → DOIT être sous Suspense.
 const LazyPaidOnboarding=lazyWithRetry(()=>import("./PaidOnboarding"))
 const LazyTripPlanner=lazyWithRetry(()=>import("./TripPlanner.jsx"))
+const LazyBeachExperience=lazyWithRetry(()=>import("./BeachExperience.jsx"))
 // Accueil premium VERDICT-FIRST « Le Poste de Veille » (panel 2026-06-30) — remplace le tunnel
 // PaidOnboarding. Rollback ?poste=0 → retombe sur le tunnel linéaire.
 const LazyWelcomePoste=lazyWithRetry(()=>import("./WelcomePoste"))
@@ -2023,6 +2024,8 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // Trip planner (Master Execution 2026-09-22) : intention séjour mesurée
   // (open → beach ouvert → CTA offre).
   "sg_trip_open","sg_trip_beach_open","sg_trip_premium_cta",
+  // WOW BeachExperience (2026-09-23) : reveals parcours (additif, même pipeline).
+  "sg_tomorrow_reveal","sg_alternative_reveal",
   // Cross-sell inter-domain
   "sg_region_nav_click","sg_cross_sell_click",
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
@@ -12474,6 +12477,12 @@ try{return r.json()}catch(e){console.warn("referral_claim: response is not JSON"
   // flag ?tripplan=0. Données = forecast réel par plage (mêmes clés que la carte).
   const[showTrip,setShowTrip]=useState(false)
   const tripForecastById=useMemo(()=>{const m={};try{for(const b of (allBeaches||[])){if(!(IS_NEW_REGION||b.island===island))continue;const sid=IS_NEW_REGION?b.id:BEACH_TO_SARG[b.id];const w=(sid&&sargData?.weekly?.[sid])||sargData?._enrichedWeekly?.[`_interp_${b.id}`];if(w&&w.forecast&&w.forecast.length)m[b.id]={forecast:w.forecast}}}catch(_){}return m},[allBeaches,sargData,island])
+  // BEACH EXPERIENCE (WOW 2026-09-23) — overlay parcours HOME→BEACH→…→PREMIUM :
+  // remplace les fiches (selectedBeach + comicBeach) quand ?sgexp (défaut ON ;
+  // ?sgexp=0 = fiches legacy). Fonctions appelées AU RENDER uniquement (jamais
+  // dans un hook précoce — comicBeach est déclaré plus bas ; typeof = anti-TDZ).
+  const expOn=()=>{try{return !/[?&]sgexp=0(?:&|$)/.test(window.location.search)}catch(_){return true}}
+  const expBeachOf=()=>{try{return expOn()?((typeof selectedBeach!=="undefined"&&selectedBeach)||(typeof comicBeach!=="undefined"&&comicBeach)||null):null}catch(_){return null}}
   useEffect(()=>{ if(bootGateOff)return; const t=setTimeout(()=>setBootSafety(true),5000); return ()=>clearTimeout(t) },[bootGateOff])
   const dataReady = bootGateOff || bootSafety || dataSource!=="loading"
   // Props objets pour la carte — MÉMOÏSÉES (avant : IIFE inline recréées à CHAQUE render
@@ -14632,7 +14641,7 @@ useEffect(()=>{
           padding:`${(showRecoveryBanner||showPassExpired)?((bannerH||96)+8)+"px":"calc(max(12px, env(safe-area-inset-top)) + "+(showPushPrimer?58:0)+"px)"} 16px 0`,
           pointerEvents:"none",
           transition:"padding-top .25s ease",
-          display:(showPremium||comicBeach)?"none":undefined,
+          display:(showPremium||comicBeach||expBeachOf())?"none":undefined,
         }}>
           {/* Header chrome follows the same pattern as sg-map-chrome:
               wrapper pe:none so the empty band between pill-items passes
@@ -14687,7 +14696,7 @@ useEffect(()=>{
             pendant le paywall comme le header (display:showPremium?"none"). BUG-2026-035 (Sprint 3) :
             aussi masquée pendant .lc-detail (z2001 > dialogue z1200, même recouvrement du ✕).
             Rollback : revert. */}
-        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none',display:(showPremium||comicBeach)?"none":undefined}}>
+        <div style={{position:'fixed',top:'calc(max(12px, env(safe-area-inset-top)) + 44px)',left:0,right:0,zIndex:2001,pointerEvents:'none',display:(showPremium||comicBeach||expBeachOf())?"none":undefined}}>
           <div className="sg-region-nav-inline" style={{pointerEvents:'auto'}}>
             <RegionNav inline={true} />
           </div>
@@ -14810,7 +14819,7 @@ useEffect(()=>{
             existant (BottomNav) + un handler onChangeView qui route les 3 vues proprement.
             Rollback ?sgnav=0. La vue Liste est remontée (économie de rendu levée — la
             clarté du funnel prime sur ~5 Ko de bundle lazy). */}
-        {!SGNAV_OFF&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&(
+        {!SGNAV_OFF&&view!=="premium"&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&!expBeachOf()&&(
           <BottomNav view={view} lang={lang} premiumOpen={showPremium}
             isPremium={isPremium} onChangeView={(id)=>{
               if(id==="home"&&!NEWIA_OFF){setSelectedBeach(null);setComicBeach(null);setView("home");
@@ -14887,7 +14896,7 @@ useEffect(()=>{
             avec le hero Le Veilleur (coucher de soleil néon + comic), pilotée par la
             recherche conversion. ErrBound → ancienne BeachSheet en filet de sécurité,
             on ne montre JAMAIS "rien" sur un clic de plage. */}
-        {selectedBeach&&(()=>{
+        {selectedBeach&&!expBeachOf()&&(()=>{
           const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
           const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
           const _fallback=(
@@ -15222,7 +15231,7 @@ useEffect(()=>{
             in-world (verdict+score+facts+7j+H2S+Plan-B+voisines) au lieu de la fiche
             data. Suspense+ErrBound : si le chunk/rendu échoue → fallback fiche data
             (onBeachClick). onFull = pont explicite vers la fiche data. */}
-        {comicBeach&&(
+        {comicBeach&&!expBeachOf()&&(
           <ErrBound fallback={null} onError={()=>{const b=comicBeach;setComicBeach(null);try{track("sg_comic_detail_fail",{beach_id:b&&b.id})}catch(_){}; if(b)onBeachClick(b)}}>
 <Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,background:"#FDF6E3",zIndex:1200,pointerEvents:"none"}}/>}>
                 <LazyComicDetail
@@ -15239,8 +15248,23 @@ useEffect(()=>{
                   myChange={myBeachId===comicBeach.id?myBeachChange:null}
                   communityReports={communityReports} ReportComp={BeachReport} HeroVideoComp={BeachHeroVideo}/>
                 </Suspense>
-          </ErrBound>
-        )}
+           </ErrBound>
+         )}
+        {/* BEACH EXPERIENCE (WOW 2026-09-23) — parcours HOME→BEACH→DECISION→
+            TOMORROW→BACKUP→TRIP→PREMIUM en une surface (z1240 : au-dessus des
+            fiches, sous paywall 1250/1260, trip 1350, checkout 1300).
+            key=beach.id : changer de plage (backup) remonte l'expérience.
+            Rollback : ?sgexp=0 (fiches legacy ci-dessus). */}
+        {expBeachOf()&&<ErrBound fallback={null}><Suspense fallback={null}><LazyBeachExperience
+          key={expBeachOf().id} lang={lang} beach={expBeachOf()}
+          sargData={sargData} allBeaches={allBeaches} userPos={userPos}
+          BEACH_TO_SARG={BEACH_TO_SARG} IS_NEW_REGION={IS_NEW_REGION}
+          isPremium={isPremium}
+          onClose={()=>{try{setSelectedBeach(null)}catch(_){}try{setComicBeach(null)}catch(_){}}}
+          onOpenBeach={onBeachClick}
+          onPremium={(src)=>openPremium(src||"experience")}
+          onPlanTrip={()=>setShowTrip(true)}
+          track={track}/></Suspense></ErrBound>}
         {/* REFERRAL LANDING BANNER — hidden if Welcome toast is showing to avoid overlap */}
         {showReferralBanner&&!showWelcome&&(
           <div role="button" tabIndex={0} aria-label={_t(lang,"Un ami t'a passé le relais — ouvrir l'offre","A friend passed you the watch — open the offer","Un amigo te pasó el relevo — abrir la oferta")}

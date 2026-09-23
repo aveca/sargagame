@@ -34,7 +34,7 @@ jobs:
           cat /tmp/vite-preview.log
           exit 1
       - name: Run Playwright tests
-        run: npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/bottomnav-redesign.spec.ts
+        run: npx playwright test tests/e2e/funnel-payment.spec.ts tests/e2e/bottomnav-redesign.spec.ts tests/e2e/experience.spec.ts
       - name: Upload test report
         if: always()
         uses: actions/upload-artifact@v4

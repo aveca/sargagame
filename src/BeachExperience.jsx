@@ -1,0 +1,384 @@
+/**
+ * BeachExperience — « PLACE EXPERIENCE » (WOW TAKEOVER 2026-09-23).
+ *
+ * Remplace la fiche froide par un parcours de découverte en REVEALS :
+ *   VISUAL → VERDICT → WHY → TOMORROW → BACKUP → TRIP → SHARE → PREMIUM
+ * 100 % données réelles (mêmes lookups que la fiche : weekly[sid] + _interp,
+ * findAlternatives) — jamais d'invention. Rollback : ?sgexp=0 (fiches legacy).
+ *
+ * Props (valeurs, PAS d'import Sargasses_PROD — pas de cycle) :
+ *   { lang, beach, sargData, allBeaches, userPos, islandId, isNewRegion,
+ *     BEACH_TO_SARG, isPremium, onClose, onOpenBeach, onPremium, onPlanTrip, track }
+ */
+import React, { useMemo, useRef, useState } from "react"
+import { findAlternatives } from "./lib/beach-decision.js"
+import { beachPageUrl } from "./lib/slug-resolver.js"
+import ComicIcon from "./components/ComicIcons.jsx"
+import { VeilleurMark } from "./PremiumModal/VeilleurMark.jsx"
+
+const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
+
+const VERDICT = {
+  clean: { c: "#22C55E", bg: "rgba(34,197,94,.14)", glyph: "✓",
+    go: ["On y va", "Go", "Vamos"], why: ["Baignade sereine aujourd'hui.", "Calm swim today.", "Baño tranquilo hoy."] },
+  moderate: { c: "#B87A00", bg: "rgba(184,122,0,.14)", glyph: "◐",
+    go: ["Prudence", "Caution", "Cuidado"], why: ["À surveiller — vérifie avant d'y aller.", "Worth checking before you go.", "Vigila antes de ir."] },
+  avoid: { c: "#E8522A", bg: "rgba(232,82,42,.13)", glyph: "✕",
+    go: ["On évite", "Avoid", "Evitar"], why: ["Les sargasses sont là — vise le plan B.", "Sargassum is here — go for plan B.", "Hay sargazo — ve al plan B."] },
+}
+const vOf = (s) => VERDICT[s] || VERDICT.moderate
+const DOT = { clean: "#22C55E", moderate: "#B87A00", alert: "#E8522A" }
+const DAYL = ["D", "L", "M", "M", "J", "V", "S"]
+
+// Scène paramétrique par statut : même grammaire golden-hour (ciel/mer/soleil/sable),
+// atmosphère pilotée par le verdict (données → visuel, jamais l'inverse).
+function Scene({ status, island }) {
+  const pal = status === "clean"
+    ? { sky: ["#0B2230", "#155A5A", "#C97E3A", "#F2B05E"], sea: ["#1A5852", "#08251F"], sun: 1, haze: 0 }
+    : status === "avoid"
+    ? { sky: ["#1A1030", "#3A2A4A", "#7A4A3A", "#C97E3A"], sea: ["#14302E", "#0A1F1E"], sun: 0.45, haze: 1 }
+    : { sky: ["#0B2230", "#2A5A55", "#D89E4A", "#F2C05E"], sea: ["#1A5852", "#0A2622"], sun: 0.8, haze: 0.4 }
+  return (
+    <svg viewBox="0 0 400 240" preserveAspectRatio="xMidYMid slice" aria-hidden="true"
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}>
+      <defs>
+        <linearGradient id="bx-sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={pal.sky[0]} /><stop offset=".45" stopColor={pal.sky[1]} />
+          <stop offset=".72" stopColor={pal.sky[2]} /><stop offset=".86" stopColor={pal.sky[3]} />
+        </linearGradient>
+        <linearGradient id="bx-sea" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor={pal.sea[0]} /><stop offset="1" stopColor={pal.sea[1]} />
+        </linearGradient>
+      </defs>
+      <rect width="400" height="208" fill="url(#bx-sky)" />
+      <circle cx="200" cy="150" r="44" fill="#FFD884" opacity={pal.sun} />
+      <circle cx="200" cy="150" r="60" fill="#FFD884" opacity={pal.sun * 0.25} />
+      {pal.haze > 0 && <rect width="400" height="208" fill="#8A6A4A" opacity={pal.haze * 0.25} />}
+      {/* île lointaine (FAR) + palmier (MID) */}
+      <path d="M0 168 Q 80 150 150 166 T 400 162 V208 H0 Z" fill="#1C2A22" opacity=".85" />
+      <g stroke="#0D0B14" strokeWidth="5" strokeLinecap="round" fill="none">
+        <path d="M52 168 Q 56 130 48 108" />
+        <path d="M48 108 Q 30 100 22 108 M48 108 Q 48 92 40 86 M48 108 Q 62 98 70 104 M48 108 Q 58 116 66 114" strokeWidth="4" />
+      </g>
+      <rect y="168" width="400" height="40" fill="url(#bx-sea)" />
+      <path d="M0 180 Q 25 174 50 180 T 100 180 T 150 180 T 200 180 T 250 180 T 300 180 T 350 180 T 400 180"
+        stroke="rgba(255,255,255,.35)" strokeWidth="2" fill="none" />
+      <path d="M0 192 Q 30 186 60 192 T 120 192 T 180 192 T 240 192 T 300 192 T 360 192 T 420 192"
+        stroke="rgba(255,255,255,.18)" strokeWidth="2" fill="none" />
+      {/* sargasses (NEAR) si avoid */}
+      {status === "avoid" && (
+        <g fill="#4A3A1A" opacity=".9">
+          <ellipse cx="90" cy="196" rx="26" ry="6" /><ellipse cx="310" cy="200" rx="32" ry="7" />
+          <ellipse cx="200" cy="190" rx="20" ry="5" />
+        </g>
+      )}
+      <rect y="208" width="400" height="32" fill="#C9A86A" />
+      <rect y="208" width="400" height="5" fill="#FFD884" opacity=".7" />
+    </svg>
+  )
+}
+
+function Reveal({ id, kicker, title, open, onToggle, children, accent }) {
+  return (
+    <section id={id} className="bx-sec">
+      <button type="button" onClick={onToggle} aria-expanded={!!open}
+        className="bx-reveal-btn" style={{ borderColor: open ? accent : undefined }}>
+        <span>
+          <span className="bx-kicker">{kicker}</span>
+          <span className="bx-reveal-name">{title}</span>
+        </span>
+        <span className="bx-chev" aria-hidden="true" style={{ transform: open ? "rotate(180deg)" : undefined }}>↓</span>
+      </button>
+      {open && <div className="bx-reveal-body">{children}</div>}
+    </section>
+  )
+}
+
+export default function BeachExperience({
+  lang = "fr", beach, sargData, allBeaches = [], userPos = null,
+  BEACH_TO_SARG = {}, isNewRegion = false,
+  isPremium = false, onClose, onOpenBeach, onPremium, onPlanTrip, track,
+}) {
+  const [whyOpen, setWhyOpen] = useState(false)
+  const [tmrOpen, setTmrOpen] = useState(false)
+  const [bakOpen, setBakOpen] = useState(false)
+  const [shared, setShared] = useState(false)
+  const rootRef = useRef(null)
+  if (!beach) return null
+  const L = (fr, en, es) => _t(lang, fr, en, es)
+  const v = vOf(beach.status)
+
+  const fc = useMemo(() => {
+    try {
+      const sid = isNewRegion ? beach.id : BEACH_TO_SARG[beach.id]
+      const w = (sid && sargData && sargData.weekly && sargData.weekly[sid])
+        || (sargData && sargData._enrichedWeekly && sargData._enrichedWeekly["_interp_" + beach.id])
+      const f = w && w.forecast
+      return Array.isArray(f) && f.length ? f.slice(0, 7) : []
+    } catch (_) { return [] }
+  }, [beach, sargData])
+
+  const alts = useMemo(() => {
+    try { return findAlternatives(beach, allBeaches || [], { lang, maxAlternatives: 3 }) || [] }
+    catch (_) { return [] }
+  }, [beach, allBeaches])
+  const backup = alts.find(a => (a.beach.status === "clean")) || alts[0] || null
+
+  const tmr = fc[1] || null
+  const tmrMeta = tmr ? (vOf(tmr.status === "alert" ? "avoid" : tmr.status)) : null
+  const conf = fc[0] && fc[0].confidence != null ? fc[0].confidence : null
+
+  const trk = (n, p) => { try { track && track(n, { beach_id: beach.id, ...(p || {}) }) } catch (_) {} }
+  const goTomorrow = () => { setTmrOpen(o => { if (!o) { trk("sg_forecast_view", { via: "experience" }); trk("sg_tomorrow_reveal", {}) } return !o }) }
+  const goBackup = () => { setBakOpen(o => { if (!o) trk("sg_alternative_reveal", {}); return !o }) }
+  const goWhy = () => { setWhyOpen(o => { if (!o) trk("sg_verdict_expand", { via: "experience" }); return !o }) }
+
+  const doShare = async () => {
+    let url = null
+    try { url = beachPageUrl ? beachPageUrl(beach) : null } catch (_) {}
+    const txt = L(
+      `${beach.name} : ${v.go[0]} aujourd'hui (Sargagame — mesuré au satellite, pas deviné).`,
+      `${beach.name}: ${v.go[1]} today (Sargagame — satellite-measured, not guessed).`,
+      `${beach.name}: ${v.go[2]} hoy (Sargagame — medido por satélite).`)
+    try {
+      if (navigator.share) { await navigator.share(url ? { title: beach.name + " — Sargagame", text: txt, url } : { title: beach.name + " — Sargagame", text: txt }); }
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(url ? `${txt} ${url}` : txt); }
+      else return
+      setShared(true); trk("sg_share", { via: "experience" })
+      setTimeout(() => setShared(false), 2600)
+    } catch (_) { /* dismiss = no-op */ }
+  }
+
+  // Parallaxe pointeur (1 ref, zéro setState — pas de jank ; réduit = off).
+  const onPar = (e) => {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+      const el = rootRef.current
+      if (!el) return
+      const r = el.getBoundingClientRect()
+      const x = ((e.clientX - r.left) / Math.max(1, r.width) - 0.5) * 10
+      const y = ((e.clientY - r.top) / Math.max(1, r.height) - 0.5) * 8
+      el.style.setProperty("--bx-px", x.toFixed(2) + "px")
+      el.style.setProperty("--bx-py", y.toFixed(2) + "px")
+    } catch (_) {}
+  }
+
+  return (
+    <div ref={rootRef} className="bx-root" role="dialog" aria-modal="true" aria-label={beach.name} data-testid="bx-experience"
+      onMouseMove={onPar} style={{ "--bx-accent": v.c }}>
+      <style>{`
+        .bx-root{position:fixed;inset:0;z-index:1240;overflow-y:auto;overflow-x:hidden;background:#0B2230;color:#FFFDF6;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-overflow-scrolling:touch}
+        .bx-root button{font-family:'Bricolage Grotesque',system-ui,sans-serif !important;text-shadow:none !important}
+        .bx-root button *{text-shadow:none !important}
+        .bx-hero{position:relative;min-height:88dvh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+        .bx-scene{position:absolute;inset:0;transform:translate(var(--bx-px,0px),var(--bx-py,0px));transition:transform .25s ease-out}
+        .bx-hero-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+        .bx-x{width:44px;height:44px;border-radius:50%;background:rgba(11,34,48,.7);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:18px;cursor:pointer}
+        .bx-live{font-size:10px;font-weight:800;letter-spacing:.08em;color:#fff;background:rgba(11,34,48,.65);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 11px}
+        .bx-hero-card{position:relative;z-index:2;margin:0 14px calc(14px + env(safe-area-inset-bottom));background:#FDF6E3;color:#0D0B14;border:2.5px solid #0D0B14;border-radius:18px;box-shadow:5px 5px 0 rgba(0,0,0,.45);padding:16px}
+        .bx-dest{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,11,20,.55)}
+        .bx-name{font-weight:800;font-size:clamp(26px,7.5vw,34px);line-height:1.02;margin:2px 0 10px}
+        .bx-verdict{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:800;border-radius:999px;padding:8px 16px;border:2.5px solid #0D0B14}
+        .bx-score{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:rgba(13,11,20,.6);margin-top:8px}
+        .bx-actions{display:flex;gap:8px;margin-top:12px}
+        .bx-btn{flex:1;min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;border:2.5px solid #0D0B14}
+        .bx-btn-gold{background:#FFC72C;color:#0D0B14;box-shadow:3px 3px 0 #0D0B14}
+        .bx-btn-ghost{background:#fff;color:#0D0B14}
+        .bx-sec{padding:6px 14px}
+        .bx-reveal-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;color:inherit;cursor:pointer;font-family:inherit;text-align:left;margin-top:10px;text-shadow:none}
+        .bx-kicker{display:block;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#FFC72C;text-shadow:none}
+        .bx-reveal-name{display:block;font-size:17px;font-weight:800;margin-top:2px;text-shadow:none}
+        .bx-chev{font-size:18px;font-weight:800;color:#FFC72C;flex-shrink:0;transition:transform .2s}
+        .bx-reveal-body{padding:12px 2px 4px;font-size:14.5px;line-height:1.55;color:rgba(255,253,246,.88)}
+        .bx-dots{display:flex;gap:7px;margin-top:10px}
+        .bx-dot{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
+        .bx-dot i{width:100%;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:13px;color:#0D0B14}
+        .bx-dot span{font-size:10px;font-weight:700;color:rgba(255,253,246,.6)}
+        .bx-tmr{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.16);border-radius:14px;padding:13px;margin-top:10px}
+        .bx-tmr b{font-size:16px}
+        .bx-card{background:#FDF6E3;color:#0D0B14;border:2.5px solid #0D0B14;border-radius:16px;box-shadow:4px 4px 0 rgba(0,0,0,.45);padding:14px;margin:14px}
+        .bx-card-name{font-weight:800;font-size:19px}
+        .bx-foot{padding:8px 14px calc(110px + env(safe-area-inset-bottom));font-size:11.5px;color:rgba(255,253,246,.5);text-align:center}
+        .bx-sticky{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:5}
+        .bx-sharecard{border-radius:18px;overflow:hidden;border:2.5px solid #0D0B14;box-shadow:4px 4px 0 rgba(0,0,0,.45);margin-top:10px}
+        @media(min-width:1200px){
+          .bx-cols{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,5fr) minmax(0,4fr) minmax(0,4fr);gap:20px;align-items:start;padding:26px 22px 40px}
+          .bx-hero{min-height:auto;height:calc(100dvh - 52px);position:sticky;top:26px;border-radius:20px;border:2px solid rgba(255,255,255,.14)}
+          .bx-mid,.bx-right{min-width:0}
+          .bx-sticky{left:auto;right:26px;width:340px}
+          .bx-foot{grid-column:1/-1}
+        }
+        @media(prefers-reduced-motion:reduce){
+          .bx-root *{animation:none !important;transition:none !important}
+          .bx-scene{transform:none !important}
+        }
+      `}</style>
+
+      <div className="bx-cols">
+        {/* ── COL 1 : LIEU (scene + verdict) ── */}
+        <div className="bx-hero">
+          <div className="bx-scene"><Scene status={beach.status} /></div>
+          <div className="bx-hero-top">
+            <span className="bx-live">{L("Aujourd'hui", "Today", "Hoy")}</span>
+            <button type="button" className="bx-x" onClick={onClose} aria-label={L("Fermer", "Close", "Cerrar")}>✕</button>
+          </div>
+          <div className="bx-hero-card">
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
+              <div className="bx-dest">{L("La décision du jour", "Today's call", "La decisión de hoy")}</div>
+              <span style={{ marginTop: -34, flexShrink: 0, filter: "drop-shadow(2px 3px 0 rgba(0,0,0,.4))" }}>
+                <VeilleurMark size={52} />
+              </span>
+            </div>
+            <div className="bx-name">{beach.name}</div>
+            <span className="bx-verdict" style={{ color: v.c, background: v.bg }}>
+              <span aria-hidden="true">{v.glyph}</span>{v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
+            </span>
+            {beach.score != null && (
+              <div className="bx-score">score {Math.round(beach.score)}/100{conf != null ? ` · ${conf}% ${L("confiance", "confidence", "confianza")}` : ""}</div>
+            )}
+            <div className="bx-actions">
+              <button type="button" className="bx-btn bx-btn-gold" onClick={goWhy}>{L("Pourquoi ? ↓", "Why? ↓", "¿Por qué? ↓")}</button>
+              <button type="button" className="bx-btn bx-btn-ghost" onClick={goTomorrow}>{L("Demain ↓", "Tomorrow ↓", "Mañana ↓")}</button>
+            </div>
+          </div>
+        </div>
+
+        {/* ── COL 2 : COMPRENDRE (why + tomorrow) ── */}
+        <div className="bx-mid">
+          <Reveal id="bx-why" kicker={L("Pourquoi ce verdict", "Why this call", "Por qué")} title={L("L'eau, expliquée", "The water, explained", "El agua, explicada")}
+            open={whyOpen} onToggle={goWhy} accent={v.c}>
+            <div>{beach.reason || v.why[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</div>
+            {beach.commune && <div style={{ marginTop: 8, opacity: .75 }}>{beach.commune}</div>}
+          </Reveal>
+
+          <Reveal id="bx-tomorrow" kicker={L("Anticipation", "What's next", "Anticipación")} title={L("Demain, puis tes 7 jours", "Tomorrow, then your 7 days", "Mañana, luego tus 7 días")}
+            open={tmrOpen} onToggle={goTomorrow} accent="#FFC72C">
+            {tmr && tmrMeta ? (
+              <>
+                <div className="bx-tmr">
+                  <span aria-hidden="true" style={{ fontSize: 22, fontWeight: 800, color: tmrMeta.c }}>{tmrMeta.glyph}</span>
+                  <div>
+                    <b>{L("Demain : ", "Tomorrow: ", "Mañana: ")}{tmrMeta.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</b>
+                    <div style={{ fontSize: 12.5, opacity: .75 }}>
+                      {tmr.day || ""}{tmr.confidence != null ? ` · ${tmr.confidence}%` : ""}
+                    </div>
+                  </div>
+                </div>
+                <div className="bx-dots" role="img" aria-label={L("Prévision 7 jours", "7-day forecast", "Pronóstico 7 días")}>
+                  {fc.map((d, i) => (
+                    <div className="bx-dot" key={i}>
+                      <i style={{ background: DOT[d.status] || "#888", opacity: i === 0 ? 1 : 0.85 }}>{(DOT[d.status] ? (d.status === "clean" ? "✓" : d.status === "moderate" ? "◐" : "✕") : "·")}</i>
+                      <span>{(d.day || "").slice(0, 3) || DAYL[new Date(d.date).getDay()] || "·"}</span>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div>{L("Prévision en cours de calcul — reviens dans un instant.", "Forecast computing — check back shortly.", "Pronóstico calculándose.")}</div>
+            )}
+          </Reveal>
+        </div>
+
+        {/* ── COL 3 : AGIR (backup + trip + share + premium) ── */}
+        <div className="bx-right">
+          <Reveal id="bx-backup" kicker={L("Plan B", "Backup", "Plan B")} title={L("Et si la mer change ?", "If the sea shifts?", "¿Y si cambia el mar?")}
+            open={bakOpen} onToggle={goBackup} accent="#1EC8B0">
+            {backup ? (
+              <div className="bx-card" style={{ margin: 0 }}>
+                <div className="bx-dest">{L("À proximité", "Nearby", "Cerca")}</div>
+                <div className="bx-card-name">{backup.beach.name}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+                  <span className="bx-verdict" style={{ fontSize: 12.5, padding: "5px 12px", color: vOf(backup.beach.status).c, background: vOf(backup.beach.status).bg }}>
+                    <span aria-hidden="true">{vOf(backup.beach.status).glyph}</span>
+                    {vOf(backup.beach.status).go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
+                  </span>
+                  <span style={{ fontSize: 12, color: "rgba(13,11,20,.6)", fontWeight: 700 }}>
+                    {backup.distanceKm != null ? `· ${backup.distanceKm} km` : ""}
+                  </span>
+                </div>
+                <div className="bx-actions">
+                  <button type="button" className="bx-btn bx-btn-gold" style={{ minHeight: 48, fontSize: 14 }}
+                    onClick={() => { trk("sg_trip_beach_open", { via: "experience_backup" }); onOpenBeach && onOpenBeach(backup.beach) }}>
+                    {L("Voir cette plage →", "See this beach →", "Ver esta playa →")}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>{L("Aucune alternative proche confirmée — le Trip Planner couvre ton séjour.", "No nearby backup confirmed — Trip Planner covers your stay.", "Sin alternativa cercana — el Trip Planner cubre tu estancia.")}</div>
+            )}
+          </Reveal>
+
+          {/* Trip — suite naturelle (TripPlanner existant, jamais recodé) */}
+          <section className="bx-sec">
+            <button type="button" className="bx-reveal-btn" style={{ borderStyle: "dashed", borderColor: "rgba(255,199,44,.55)" }}
+              onClick={() => { trk("sg_trip_open", { source: "experience" }); onPlanTrip && onPlanTrip() }}
+              data-testid="exp-trip-open">
+              <span>
+                <span className="bx-kicker">{L("Ton séjour", "Your stay", "Tu estancia")}</span>
+                <span className="bx-reveal-name">{L("La meilleure plage chaque jour →", "Best beach each day →", "Mejor playa cada día →")}</span>
+              </span>
+              <span className="bx-chev" aria-hidden="true">→</span>
+            </button>
+          </section>
+
+          {/* Share — carte de voyage partageable */}
+          <section className="bx-sec">
+            <div className="bx-sharecard">
+              <div style={{ position: "relative", height: 120 }}>
+                <Scene status={beach.status} />
+                <div style={{ position: "absolute", left: 12, bottom: 8, zIndex: 2 }}>
+                  <VeilleurMark size={40} />
+                </div>
+              </div>
+              <div style={{ background: "#FDF6E3", color: "#0D0B14", padding: "10px 12px" }}>
+                <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: ".08em", color: "rgba(13,11,20,.55)" }}>SARGAGAME · {L("AUJOURD'HUI", "TODAY", "HOY")}</div>
+                <div style={{ fontWeight: 800, fontSize: 17 }}>{beach.name}</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4 }}>
+                  <span style={{ fontWeight: 800, fontSize: 13, color: v.c }}>{v.glyph} {v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</span>
+                  {beach.score != null && <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 12, fontWeight: 700 }}>{Math.round(beach.score)}/100</span>}
+                </div>
+                {fc.length > 0 && (
+                  <div style={{ display: "flex", gap: 4, marginTop: 8 }}>
+                    {fc.map((d, i) => (
+                      <span key={i} title={d.status || ""} style={{ width: 18, height: 18, borderRadius: 5, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, background: DOT[d.status] || "#888", color: "#0D0B14" }}>
+                        {d.status === "clean" ? "✓" : d.status === "moderate" ? "◐" : d.status === "alert" ? "✕" : "·"}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <button type="button" className="bx-btn bx-btn-ghost" style={{ width: "100%", marginTop: 10, minHeight: 48, fontSize: 14 }}
+              onClick={doShare} data-testid="exp-share">
+              <ComicIcon name="burst" size={15} />&nbsp;{shared ? L("Partagé ✓", "Shared ✓", "Compartido ✓") : L("Partager cette décision", "Share this call", "Compartir")}
+            </button>
+          </section>
+
+          {/* Premium — conséquence logique */}
+          {!isPremium && (
+            <section className="bx-sec">
+              <button type="button" className="bx-btn bx-btn-gold" style={{ width: "100%", marginTop: 10 }}
+                onClick={() => { onPremium && onPremium("experience") }} data-testid="exp-premium-cta">
+                {L("Débloquer tout mon séjour →", "Unlock my whole stay →", "Desbloquear mi estancia →")}
+              </button>
+            </section>
+          )}
+        </div>
+
+        <div className="bx-foot">
+          {L("Prévision satellite Copernicus — mesuré, pas deviné.", "Copernicus satellite forecast — measured, not guessed.", "Pronóstico satelital Copernicus — medido, no adivinado.")}
+        </div>
+      </div>
+
+      {/* Sticky thumb-zone : l'action qui débloque tout */}
+      {!isPremium && (
+        <div className="bx-sticky">
+          <button type="button" className="bx-btn bx-btn-gold" style={{ width: "100%", boxShadow: "0 8px 28px rgba(0,0,0,.5)" }}
+            onClick={() => { onPremium && onPremium("experience") }}>
+            {L("Débloquer — 7 jours + alertes →", "Unlock — 7 days + alerts →", "Desbloquear — 7 días + alertas →")}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

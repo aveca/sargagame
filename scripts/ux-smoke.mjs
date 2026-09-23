@@ -155,10 +155,10 @@ try {
       .find(el => getComputedStyle(el).visibility !== 'hidden');
     if (l) l.click();
   });
-  await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet', { timeout: 12000 });
+  await p.waitForSelector('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]', { timeout: 12000 });
   await p.waitForTimeout(1500);
   await p.screenshot({ path: '/tmp/j2-fiche.png' });
-  ficheOk = !!(await p.$('.bsc-sheet')) || !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
+  ficheOk = !!(await p.$('.bsc-sheet')) || !!(await p.$('.lc-detail')) || !!(await p.$('.sheet')) || !!(await p.$('[data-testid="bx-experience"]'));
 } catch (e) {
   console.log('FICHE_STEP_ERROR:', e.message);
   await p.screenshot({ path: '/tmp/j2-fiche.png' });
