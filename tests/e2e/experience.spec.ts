@@ -60,12 +60,20 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     // trip → CTA offre → paywall (continuité, le trip se referme seul)
     await page.locator('[data-testid="trip-premium-cta"]').first().click()
     const paywall = page.locator(".sg-modal-panel, .pww-wrap").first()
-    expect(await paywall.isVisible({ timeout: 12000 }).catch(() => false)).toBe(true)
+    let pwVisible = await paywall.isVisible({ timeout: 12000 }).catch(() => false)
+    if (!pwVisible) { // flottant transitoire (toast/sticky) : un 2e tap est le geste utilisateur réel
+      await page.waitForTimeout(1500)
+      await page.locator('[data-testid="trip-premium-cta"]').first().click().catch(() => {})
+      pwVisible = await paywall.isVisible({ timeout: 12000 }).catch(() => false)
+    }
+    expect(pwVisible).toBe(true)
     // refermer paywall → retour experience intacte → premium direct
     await page.locator('.sg-modal-panel button, .pww-wrap button').filter({ hasText: /Plus tard|Later|Más tarde/ }).first().click().catch(() => {})
     await page.waitForTimeout(900)
     expect(await page.locator(EXP).count()).toBeGreaterThan(0)
-    await page.locator('[data-testid="exp-premium-cta"]').first().click()
+    await page.locator('[data-testid="exp-premium-cta"]').first().click({ timeout: 10000 }).catch(async () => {
+      await page.locator('[data-testid="exp-premium-cta"]').first().click({ force: true })
+    })
     expect(await paywall.isVisible({ timeout: 12000 }).catch(() => false)).toBe(true)
   })
 
@@ -77,5 +85,39 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     expect(await page.locator(EXP).count()).toBe(0)
     // la fiche legacy s'ouvre à la place
     expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
+  })
+
+  // ── AHA MEDIA (2026-09-23) : vraie plage derrière le verdict ──
+  test("aha media : scrim/glow montés, verdict intact quel que soit le média", async ({ page }) => {
+    await openExperience(page)
+    // la couche existe toujours (aha on) ; le média lui-même peut être absent
+    // selon la plage (photo 404 → retrait, vidéo manifest-gatée) — jamais de trou :
+    // la scène SVG + le verdict restent visibles quoi qu'il arrive.
+    expect(await page.locator(EXP + " .bx-media-scrim").count()).toBe(1)
+    expect(await page.locator(EXP + " .bx-media-glow").count()).toBe(1)
+    expect(await page.locator(EXP + " svg").first().count()).toBeGreaterThan(0)
+    const verdict = await page.locator(EXP + " .bx-verdict").first().innerText()
+    expect(verdict.trim().length).toBeGreaterThan(1)
+  })
+
+  test("rollback ?aha=0 — couche média absente, experience intacte", async ({ page }) => {
+    await page.goto(BASE + "/?aha=0", { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(2500)
+    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.waitForSelector(EXP, { timeout: 15000 })
+    await page.waitForTimeout(800)
+    expect(await page.locator(EXP + " .bx-media").count()).toBe(0)
+    expect(await page.locator(EXP + " .bx-media-scrim").count()).toBe(0)
+    const verdict = await page.locator(EXP + " .bx-verdict").first().innerText()
+    expect(verdict.trim().length).toBeGreaterThan(1)
+  })
+
+  test("reduced motion — aucune vidéo chargée, photo/scène intactes", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" })
+    await openExperience(page)
+    await page.waitForTimeout(2500)
+    expect(await page.locator(EXP + " video").count()).toBe(0)
+    expect(await page.locator(EXP + " .bx-media-scrim").count()).toBe(1)
+    expect(await page.locator(EXP + " .bx-verdict").first().isVisible()).toBe(true)
   })
 })

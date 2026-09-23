@@ -2029,6 +2029,9 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_trip_open","sg_trip_beach_open","sg_trip_premium_cta",
   // WOW BeachExperience (2026-09-23) : reveals parcours (additif, même pipeline).
   "sg_tomorrow_reveal","sg_alternative_reveal",
+  // AHA media (2026-09-23) : hero-loop réel vu dans l'experience (mesure la couche
+  // vidéo/photo ; émis aussi par BeachHeroVideo sur la fiche legacy — via= fait le tri).
+  "sg_hero_video_view",
   // Cross-sell inter-domain
   "sg_region_nav_click","sg_cross_sell_click",
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les

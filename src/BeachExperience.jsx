@@ -10,7 +10,7 @@
  *   { lang, beach, sargData, allBeaches, userPos, islandId, isNewRegion,
  *     BEACH_TO_SARG, isPremium, onClose, onOpenBeach, onPremium, onPlanTrip, track }
  */
-import React, { useMemo, useRef, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 import { findAlternatives } from "./lib/beach-decision.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
 import ComicIcon from "./components/ComicIcons.jsx"
@@ -75,6 +75,65 @@ function Scene({ status, island }) {
       <rect y="208" width="400" height="32" fill="#C9A86A" />
       <rect y="208" width="400" height="5" fill="#FFD884" opacity=".7" />
     </svg>
+  )
+}
+
+/* ── ExpMedia — AHA LAYER (2026-09-23) : la VRAIE plage derrière la scène.
+   Étages (zéro trou, jamais d'invention) : la scène SVG peint instantanément
+   (et reste la vérité data-driven) → la vraie photo `/beaches/gplace-{id}.jpg`
+   fond en fondu au load, disparaît si 404 → le hero-loop `/videos/hero/{id}.mp4`
+   (garde-fous : reduced-motion, saveData, 2G, rollback ?aha=0 / ?heropv=0,
+   variante `-w` desktop via manifest, 404 → la photo reste).
+   L'atmosphère SUIT le verdict (filtre CSS = données → visuel) ; le verdict
+   lui-même reste DOM. Régions sans média (ex. tulum) = scène SVG seule. */
+function ExpMedia({ beachId, status, trk }) {
+  const [photoOk, setPhotoOk] = useState(true)
+  const [photoOn, setPhotoOn] = useState(false)
+  const [vidSrc, setVidSrc] = useState(null)
+  const [vidOn, setVidOn] = useState(false)
+  const off = useMemo(() => {
+    try { return /[?&](aha|heropv)=0/.test(window.location.search) } catch (_) { return false }
+  }, [])
+  useEffect(() => {
+    if (off) return
+    let allow = true, dead = false
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) allow = false
+      const c = navigator.connection
+      if (c && (c.saveData || /(^|-)2g/.test(c.effectiveType || ""))) allow = false
+    } catch (_) {}
+    if (!allow) return
+    fetch("/videos/hero/manifest.json")
+      .then(r => (r.ok ? r.json() : null))
+      .then(m => {
+        if (dead || !m || !Array.isArray(m.ids) || !m.ids.includes(beachId)) return
+        const wide = !!(window.matchMedia && window.matchMedia("(min-width:900px)").matches
+          && Array.isArray(m.wide) && m.wide.includes(beachId))
+        setVidSrc(`/videos/hero/${beachId}${wide ? "-w" : ""}.mp4`)
+      })
+      .catch(() => {})
+    return () => { dead = true }
+  }, [beachId, off])
+  if (off) return null
+  const filter = status === "avoid" ? "saturate(.55) brightness(.8) contrast(1.05)"
+    : status === "moderate" ? "saturate(.9) brightness(.96)" : "none"
+  return (
+    <>
+      {photoOk && (
+        <img src={`/beaches/gplace-${beachId}.jpg`} alt="" aria-hidden="true" fetchpriority="high"
+          className="bx-media bx-media-img" style={{ filter, opacity: photoOn ? 1 : 0 }}
+          onLoad={() => setPhotoOn(true)} onError={() => setPhotoOk(false)} />
+      )}
+      {vidSrc && (
+        <video src={vidSrc} autoPlay muted loop playsInline preload="none" aria-hidden="true"
+          className="bx-media" style={{ filter, opacity: vidOn ? 1 : 0 }}
+          onPlaying={() => { setVidOn(true); trk && trk("sg_hero_video_view", { via: "experience" }) }}
+          onError={() => setVidSrc(null)} />
+      )}
+      {/* scrim lisibilité (contrôles haut + encart bas) + glow verdict (donnée → lumière) */}
+      <div aria-hidden="true" className="bx-media-scrim" />
+      <div aria-hidden="true" className="bx-media-glow" />
+    </>
   )
 }
 
@@ -172,6 +231,9 @@ export default function BeachExperience({
         .bx-root button *{text-shadow:none !important}
         .bx-hero{position:relative;min-height:88dvh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
         .bx-scene{position:absolute;inset:0;transform:translate(var(--bx-px,0px),var(--bx-py,0px));transition:transform .25s ease-out}
+        .bx-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 45%;pointer-events:none;transition:opacity .9s ease}
+        .bx-media-scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(11,34,48,.38) 0%,rgba(11,34,48,0) 26%,rgba(11,34,48,0) 58%,rgba(11,34,48,.55) 100%)}
+        .bx-media-glow{position:absolute;left:0;right:0;bottom:0;height:38%;pointer-events:none;background:radial-gradient(ellipse at 50% 100%,var(--bx-accent,#FFC72C) 0%,transparent 62%);opacity:.22}
         .bx-hero-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:3}
         .bx-x{width:44px;height:44px;border-radius:50%;background:rgba(11,34,48,.7);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:18px;cursor:pointer}
         .bx-live{font-size:10px;font-weight:800;letter-spacing:.08em;color:#fff;background:rgba(11,34,48,.65);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 11px}
@@ -183,6 +245,11 @@ export default function BeachExperience({
         .bx-actions{display:flex;gap:8px;margin-top:12px}
         .bx-btn{flex:1;min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;border:2.5px solid #0D0B14}
         .bx-btn-gold{background:#FFC72C;color:#0D0B14;box-shadow:3px 3px 0 #0D0B14}
+        /* ARMURE : le skin body.theme-comic force button{bg/card !important} (0,1,1) —
+           triplé-classe (0,3,0) + !important pour garder l'or du CTA (pattern XP_ARMOR).
+           Jamais "cta" dans le nom (le skin cible [class*="cta"]). */
+        .bx-btn.bx-btn-gold.bx-btn-gold{background:#FFC72C !important;color:#0D0B14 !important;box-shadow:3px 3px 0 #0D0B14 !important;border:2.5px solid #0D0B14 !important}
+        .bx-btn.bx-btn-gold.bx-btn-gold:active{box-shadow:1px 1px 0 #0D0B14 !important;transform:translate(2px,2px)}
         .bx-btn-ghost{background:#fff;color:#0D0B14}
         .bx-sec{padding:6px 14px}
         .bx-reveal-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;background:rgba(255,255,255,.05);border:2px solid rgba(255,255,255,.16);border-radius:16px;padding:14px;color:inherit;cursor:pointer;font-family:inherit;text-align:left;margin-top:10px;text-shadow:none}
@@ -217,7 +284,10 @@ export default function BeachExperience({
       <div className="bx-cols">
         {/* ── COL 1 : LIEU (scene + verdict) ── */}
         <div className="bx-hero">
-          <div className="bx-scene"><Scene status={beach.status} /></div>
+          <div className="bx-scene">
+            <Scene status={beach.status} />
+            <ExpMedia beachId={beach.id} status={beach.status} trk={trk} />
+          </div>
           <div className="bx-hero-top">
             <span className="bx-live">{L("Aujourd'hui", "Today", "Hoy")}</span>
             <button type="button" className="bx-x" onClick={onClose} aria-label={L("Fermer", "Close", "Cerrar")}>✕</button>
