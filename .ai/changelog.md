@@ -1,3 +1,17 @@
+## 2026-09-23 — RECOVERY TRUTH : dédup cart-recovery persistée en CI + prix véridiques (BUG-2026-040/041)
+
+**PROBLEM (audit recovery, session K3)** : deux vices réels dans la récupération panier live (daily-copernicus `--send`, cron 4×/j) :
+1. **Bugs dédup** : `cart-recovery-unified.cjs` écrit ses marqueurs dans `scripts/automation/sent_markers/cart-recovery-j{1,3,5}-sent.json`, mais le commit anti-doublon immédiat du workflow ne contenait pas ces fichiers (`git ls-files` vide) → à chaque tick schedule, le checkout repart sans marqueurs → le même abonné pouvait recevoir le même email J+1 jusqu'à 4×/jour pendant toute sa fenêtre 24-48h (réplique exacte de la leçon 2026-06-11 commentée dans le workflow lui-même — « 17× le même J+3 » — qui n'avait jamais été étendue aux nouveaux marqueurs).
+2. **Prix mensongers** : les 3 templates promettaient « 12,99 € / 9,99 $ » (et un faux rabais J+5 « 12,99 € au lieu de 14,99 € ») alors que le débit réel = EUR 14,99 / USD 11,99 (+15 % juin→nov = 13,79 $ en saison) — contrat `src/lib/pass-price.js` ↔ `public/api/mollie.php`. Produit honnêteté-first : cassé à chaque envoi.
+**CHANGE** :
+- `.github/workflows/daily-copernicus.yml` — les 3 marqueurs `sent_markers/cart-recovery-j{1,3,5}-sent.json` ajoutés à la boucle du commit « email state (immédiat, anti-doublon) ».
+- `scripts/automation/cart-recovery-unified.cjs` — helper `passPriceLabel(island)` (miroir du contrat : EUR 14,99 MQ/GP, USD 11,99 / 13,79 saison) ; templates J+1/J+3/J+5 recâblés sur ce prix ; J+5 ne promet plus de rabais (« le montant reste le même » déjà présent, la promesse devenue vraie). Cap 50, unsubscribe, fenêtres, outbox : inchangés.
+- `tests/unit/cart-recovery-truth.test.cjs` (N) — verrou : prix contrat, zéro « 12,99 »/« 9,99 »/« au lieu de » dans les copys, marqueurs dans le workflow — 12/12.
+**Preuves** : build 0 · bundle 38,2 Ko · smoke 4/4 PASS (4 tokens) · npm test 193/195 (2 = filets worktrees jolly-yalow préexistants) · 0 PHP touché. Rollback : revert du commit (comportement antérieur = envois dupliqués + prix faux — revert non souhaitable mais sans risque technique).
+**Non touché** : pricing live, paywall, checkout, Mollie/PHP, B2B, Exp.4, BeachExperience.
+
+
+
 ## 2026-09-23 — WOW FULL EXPERIENCE : BeachExperience (HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM) + chrome masqué + skin catch-all (PR à créer)
 
 **PROBLEM** : produit encore trop proche de l'ancien (fiche froide, 6 interfaces) — mission : une seule expérience explorable.

@@ -1,3 +1,9 @@
+## RECOVERY TRUTH — [x] done 2026-09-23 (session K3 MASTER, branche agent/coding/recovery-truth)
+- **BUG-2026-040** : marqueurs cart-recovery-unified jamais committés → re-envois multiples → ajoutés au commit anti-doublon du workflow.
+- **BUG-2026-041** : emails recovery promettaient 12,99€/9,99$ + faux rabais J+5 vs débit réel 14,99€/11,99$ (13,79$ saison) → prix véridiques via passPriceLabel().
+- **Preuves** : cart-recovery-truth 12/12 · build 0 · bundle 38,2 · smoke 4/4 · npm test 193/195 (2 préexistants).
+- **NEXT** : PR → CI → merge → deploy auto (workflow YAML → actif dès merge ; emails véridiques au prochain tick) → surveiller ERRORS workflow + deliverability.
+
 ## E11 TRUST ROW — [~] fix local 2026-09-20 (branche agent/ui/e11-trust-row, baseline 11,2 % gelee)
 - **Fix** : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0).
 - **Preuves** : trust-row 13/13, E2E e11 2/2 + j0 + funnel, build 0, bundle 38.2, smoke 4/4, screenshot 390px.
