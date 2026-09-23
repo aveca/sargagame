@@ -57,8 +57,13 @@
 1. Merge PR → deploy → QA prod (experience depuis home + fiche) — Rôle : release
 
 ### Branche / PR
-- Branche : `agent/coding/wow-experience`
-- PR : à créer vers main
+- Branche : `agent/coding/recovery-truth` (MERGÉE)
+- PR : #741 (squash-mergée 2026-09-23 ~20:40 UTC)
+- Commit main : `aa88231c9`
+- CI : 6/8 verts — playwright + GitHub Advanced Security rouges PRÉ-EXISTANTS (même pattern sur #740/#739/#737 mergées : bottomnav CI-only + code-scanning standing)
+- Deploy : `deploy-live.yml` run 35917945407 SUCCESS sur aa88231c9 ; version.json prod b=aa88231c ; MQ+FL HTTP 200
+- Effet recovery : actif dès le prochain tick schedule 00:00 UTC (steps cart-recovery gatés `schedule`) — dédup persistée + prix véridiques.
+
 
 ## 2026-09-23 · Agent: coding (WOW TAKEOVER slice 1) — Paywall « UNLOCK MY STAY » live-ready
 
