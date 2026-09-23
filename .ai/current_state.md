@@ -30,8 +30,8 @@
 
 ### Branche / PR
 - Branche : `agent/coding/revenue-measure`
-- PR : à créer vers main
-- Commit head : voir log
+- PR : #736 vers main (MERGEABLE après rebase ; CI 5/6 verts — seul E2E bottomnav rouge pré-existant, cf. BUG-2026-038)
+- Commit head : `6c1e247a4` (rebasé sur origin/main a8efe3ab7)
 
 ## 2026-09-22 · Agent: coding (MASTER EXECUTION session) — Trip Planner PROD VERIFIED
 
