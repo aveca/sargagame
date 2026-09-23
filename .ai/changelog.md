@@ -1,4 +1,4 @@
-## 2026-09-23 — WOW FULL EXPERIENCE : BeachExperience (HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM) + chrome masqué + skin catch-all (PR à créer)
+## 2026-09-23 — WOW FULL EXPERIENCE : BeachExperience (HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM) + chrome masqué + skin catch-all (PR #739 MERGED, DEPLOYED)
 
 **PROBLEM** : produit encore trop proche de l'ancien (fiche froide, 6 interfaces) — mission : une seule expérience explorable.
 **CHANGE** (rollback `?sgexp=0` = fiches legacy, zéro régression) :

@@ -21,7 +21,7 @@
 
 ### Branche / PR
 - Branche : `agent/coding/wow-experience`
-- PR : à créer vers main
+- PR : #739 vers main (MERGED 06:40 UTC → `97004b4b` ; CI 5/6 + E2E = 9 bottomnav pré-existants BUG-2026-038, funnel 13/13 + experience 4/4 verts CI ; Deploy Live SUCCESS ; prod `version.json` = 97004b4b, MQ/GP 200)
 
 ## 2026-09-23 · Agent: coding (WOW TAKEOVER slice 1) — Paywall « UNLOCK MY STAY » live-ready
 
