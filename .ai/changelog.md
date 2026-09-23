@@ -1,3 +1,15 @@
+## 2026-09-23 — WOW FULL EXPERIENCE : BeachExperience (HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM) + chrome masqué + skin catch-all (PR à créer)
+
+**PROBLEM** : produit encore trop proche de l'ancien (fiche froide, 6 interfaces) — mission : une seule expérience explorable.
+**CHANGE** (rollback `?sgexp=0` = fiches legacy, zéro régression) :
+- `src/BeachExperience.jsx` (N, lazy 6,5 Ko gzip) — overlay parcours z1240 : scène SVG paramétrique par statut (clean/amber/avoid + sargasses NEAR) + parallaxe pointeur (zéro setState, reduce off) + VeilleurMark → verdict trio ✓/◐/✕ + score/conf → REVEALS Pourquoi/Demain (J+1 + 7 pastilles réelles)/Plan B (findAlternatives + switch plage = discovery loop) → Trip (existant) → share-card DOM + `navigator.share`/`beachPageUrl` (pattern fiche, `sg_share`) → premium + sticky thumb CTA. Desktop ≥1200px : 3 col (lieu / comprendre / agir). i18n FR/EN/ES, pas de nouvelle dépendance.
+- `src/Sargasses_PROD.jsx` — `expOn/expBeachOf` (anti-TDZ) : Experience remplace les 2 fiches ; header/RegionNav/BottomNav masqués pendant l'expérience (pattern existant) ; lazy import ; `sg_tomorrow_reveal` + `sg_alternative_reveal` ajoutés au set funnel (additif).
+- `scripts/ux-smoke.mjs` — l'experience compte comme « fiche » (funnel map+fiche+paywall vert).
+- `tests/e2e/experience.spec.ts` (N) — 4/4 verts (visual/verdict, reveals+switch, trip+premium+fermeture, rollback).
+**FIXES** : skin `theme-comic [class*="-title"]` écrasait les titres (Anton 800 fantôme) → classes renommées (`bx-reveal-name`, `bx-actions`) ; Veilleur repositionné dans la carte.
+**Preuves** : build 0 · bundle 38,2 Ko · smoke 4/4 PASS · E2E journey 4/4 · screenshots `.ai/shots-wow/exp-*` lus (mobile+desktop, 8 questions OK).
+**Non touché** : prix, TripPlanner, checkout, B2B, Jev/Supabase.
+
 ## 2026-09-23 — WOW TAKEOVER slice 1 : paywall « UNLOCK MY STAY » + home desktop + fix `}` (PR #737 MERGED, DEPLOYED)
 
 **PROBLEM** : paywall dense/sombre/technique centré paiement (UX failure) ; home desktop = colonne mobile 520px dans le vide ; `}` littéral affiché sur la home (bug JSX `)}}` ExperienceReset:149, confirmé par warning esbuild).

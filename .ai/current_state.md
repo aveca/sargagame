@@ -1,3 +1,28 @@
+## 2026-09-23 · Agent: coding (WOW FULL EXPERIENCE) — BeachExperience prête à merger
+
+### Travail effectué
+- **Résumé 1 ligne** : parcours cohésif HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM en une surface (BeachExperience lazy), chrome masqué, skin catch-all fixé, E2E 4/4.
+- **Détails** : scène statut + parallaxe + Veilleur ; reveals why/tomorrow (7 dots)/backup (switch plage vérifié Anse Mitan→Française) ; trip/premium/share/sticky ; desktop 3 col ; header+RegionNav+BottomNav masqués pendant l'expérience ; `?sgexp=0` rollback ; 2 events funnel ajoutés.
+
+### Fichiers modifiés
+- `src/BeachExperience.jsx` (N), `src/Sargasses_PROD.jsx` (wire + events + chrome), `scripts/ux-smoke.mjs` (fiche=experience), `tests/e2e/experience.spec.ts` (N 4/4), `.ai/changelog.md`
+
+### Tests réalisés
+- [x] build 0 · bundle 38,2 Ko · smoke 4/4 PASS · E2E experience 4/4 · 0 pageerror
+- [x] screenshots exp-* mobile+desktop lus (8 questions OK après fix titres)
+- [ ] CI PR → à lancer ; E2E bottomnav rouge pré-existant attendu (BUG-2026-038)
+
+### Problèmes restants
+- [ ] BUG-2026-038 ouvert (inchangé)
+- [ ] Share = DOM card + native share (export canvas : follow-up si demandé)
+
+### Prochaine action recommandée
+1. Merge PR → deploy → QA prod (experience depuis home + fiche) — Rôle : release
+
+### Branche / PR
+- Branche : `agent/coding/wow-takeover`
+- PR : à créer vers main (2e PR de la branche)
+
 ## 2026-09-23 · Agent: coding (WOW TAKEOVER slice 1) — Paywall « UNLOCK MY STAY » live-ready
 
 ### Travail effectué
