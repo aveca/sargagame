@@ -62,6 +62,13 @@ const XP_ARMOR = `
 .xp-dark.xp-dark{background:#0d0b14!important;color:#fff!important;border:2.5px solid #0d0b14!important;box-shadow:none!important;border-radius:12px!important;text-shadow:none!important}
 .xp-seg-on.xp-seg-on{background:#0d0b14!important;color:#fff!important}
 .xp-sort-on.xp-sort-on{background:#FFC72C!important;color:#0d0b14!important}
+@media(min-width:1024px){
+[data-testid="xp-home"]{max-width:1000px !important;display:grid !important;grid-template-columns:1fr 1fr !important;gap:0 18px !important;align-items:start !important}
+[data-testid="xp-home"]>div:first-of-type,[data-testid="xp-home"]>h2,[data-testid="xp-home"]>input,[data-testid="xp-home"]>[data-testid="xp-home-best"]{grid-column:1/-1 !important}
+}
+@media(prefers-reduced-motion:reduce){
+[data-testid="xp-home"] *{animation:none !important;transition:none !important}
+}
 `;
 
 function ScoreBar({ score }) {
@@ -146,7 +153,7 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
             <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Aucune plage propre confirmée aujourd’hui. Vérifie les plages et choisis ton plan B.', 'No clean beach is confirmed today. Check the beaches and choose your Plan B.', 'Ninguna playa limpia está confirmada hoy. Revisa las playas y elige tu plan B.')}</div>
             <button type="button" style={{ ...btnGhost, width: '100%', marginTop: 8 }} onClick={() => onGo?.('list')} data-testid="xp-best-more">{_t(lang, 'Voir les plages →', 'See beaches →', 'Ver las playas →')}</button>
           </div>
-        )}}
+        )}
         <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onGo?.('map')} data-testid="xp-explore">{_t(lang, 'Explorer la carte →', 'Explore the map →', 'Explorar el mapa →')}</button>
         {/* TRIP — « planifier mon séjour » (MASTER 2026-09-22, rollback ?tripplan=0).
             Entrée intencionnelle home : la promesse « quelles plages ce séjour ». */}

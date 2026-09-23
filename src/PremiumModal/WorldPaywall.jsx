@@ -182,6 +182,41 @@ export function WorldPaywall({
   // Gardée >0 : le cas community=0 appartient à E9 (preuve qualité données).
   const socialOn = (()=>{try{return !/[?&]sgsocial=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
 
+  // WOW TAKEOVER 2026-09-23 — « UNLOCK MY STAY » (rollback ?sgpaywow=0).
+  // Le paywall devient destination d'abord : hero golden-hour (plage + verdict
+  // + demain) → offre (PassOffer INCHANGÉ : prix, CTA, tracking, checkout) →
+  // micro-trust. Les blocs stats/preuve passent en secondaire (<details>).
+  // Money-path strictement intact : aucun prix, aucun event, aucun flux modifié.
+  const wowOn = (()=>{try{return !/[?&]sgpaywow=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const wowVerdict = (() => {
+    const s = beach && beach.status
+    if (s === "clean") return { c: "#22C55E", bg: "rgba(34,197,94,.14)", glyph: "✓", label: t("On y va", "Go", "Vamos") }
+    if (s === "avoid") return { c: "#E8522A", bg: "rgba(232,82,42,.12)", glyph: "✕", label: t("On évite", "Avoid", "Evitar") }
+    return { c: "#B87A00", bg: "rgba(184,122,0,.13)", glyph: "◐", label: t("Prudence", "Caution", "Cuidado") }
+  })()
+  // Demain (J+1) depuis la même source que le strip (tripDays = forecast réel,
+  // jamais inventé). Rien si pas de contexte plage.
+  const wowTomorrow = (() => {
+    try {
+      if (!Array.isArray(tripDays) || tripDays.length < 2) return null
+      const st = tripDays[1]
+      if (st !== "clean" && st !== "moderate" && st !== "alert") return null
+      const m = {
+        clean: { c: "#22C55E", glyph: "✓", label: t("Propre", "Clean", "Limpia") },
+        moderate: { c: "#B87A00", glyph: "◐", label: t("À surveiller", "Worth checking", "A vigilar") },
+        alert: { c: "#E8522A", glyph: "✕", label: t("À éviter", "Avoid", "Evitar") },
+      }
+      return m[st]
+    } catch (_) { return null }
+  })()
+  const wowIsland = (() => {
+    try {
+      const id = (island && (island.id || island)) || (beach && beach.island)
+      const l = id && REGION_LABELS[id]
+      return l ? (l[lang] || l.fr) : ""
+    } catch (_) { return "" }
+  })()
+
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
     try { return localStorage.getItem("sg_email") || "" } catch (_) { return "" }
@@ -269,7 +304,7 @@ export function WorldPaywall({
   }))
   
   return (
-    <div className="sg-paywall-world" style={{ position: "relative", width: "100%", maxWidth: 420, margin: "0 auto" }}>
+    <div className={wowOn ? "sg-paywall-world sg-wow" : "sg-paywall-world"} style={{ position: "relative", width: "100%", maxWidth: wowOn ? undefined : 420, margin: "0 auto" }}>
       {/* Background atmosphere */}
       <div style={{
         position: "absolute", inset: 0, borderRadius: 20,
@@ -277,8 +312,74 @@ export function WorldPaywall({
         pointerEvents: "none", zIndex: 0
       }} />
       
-      <div style={{ position: "relative", zIndex: 1, padding: 24 }}>
-        {/* Compact header */}
+      <div style={{ position: "relative", zIndex: 1, padding: 24 }} className={wowOn ? "sg-wow-flow" : undefined}>
+        {wowOn && (
+        <style>{`
+          .sg-paywall-world.sg-wow{max-width:420px}
+          .sg-wow-hero{border-radius:18px;overflow:hidden;border:2px solid #0D0B14;box-shadow:4px 4px 0 rgba(0,0,0,.45);margin-bottom:14px}
+          .sg-wow-scene{position:relative;height:148px;background:linear-gradient(180deg,#0B2230 0%,#155A5A 30%,#C97E3A 62%,#F2B05E 78%,#1A5852 78.5%,#08251F 100%)}
+          .sg-wow-sun{position:absolute;left:50%;top:44%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;background:radial-gradient(circle,#FFE47A 0%,#FFD884 55%,rgba(255,216,132,0) 72%)}
+          .sg-wow-sea{position:absolute;left:0;right:0;bottom:0;height:32px}
+          .sg-wow-veil{position:absolute;left:12px;top:10px;display:flex;align-items:center;gap:8px}
+          .sg-wow-live{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:10px;font-weight:800;letter-spacing:.08em;color:#fff;background:rgba(11,34,48,.65);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 10px}
+          .sg-wow-card{background:#FDF6E3;color:#0D0B14;padding:14px 14px 12px}
+          .sg-wow-dest{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,11,20,.55)}
+          .sg-wow-name{font-family:'Bricolage Grotesque',system-ui,sans-serif;font-weight:800;font-size:22px;line-height:1.05;margin:2px 0 8px;overflow:hidden;text-overflow:ellipsis}
+          .sg-wow-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+          .sg-wow-verdict{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;border-radius:999px;padding:5px 12px;border:2px solid #0D0B14}
+          .sg-wow-tomorrow{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:rgba(13,11,20,.75)}
+          .sg-wow-trip{display:flex;align-items:center;gap:10px;margin:0 0 14px;padding:11px 13px;border-radius:12px;background:rgba(255,199,44,.08);border:1px dashed rgba(255,199,44,.5);font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:12.5px;font-weight:700;color:#FFE08A;line-height:1.4}
+          .sg-wow-why{margin:2px 0 0;border:1px solid rgba(255,255,255,.14);border-radius:12px;overflow:hidden}
+          .sg-wow-why summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:12px;font-weight:800;color:rgba(255,255,255,.75)}
+          .sg-wow-why summary::-webkit-details-marker{display:none}
+          .sg-wow-why summary:focus-visible{outline:2px solid #FFC72C;outline-offset:2px}
+          @media (min-width:1024px){
+            .sg-modal-panel:has(.sg-paywall-world.sg-wow){max-width:980px !important}
+            .sg-paywall-world.sg-wow{max-width:920px}
+            .sg-paywall-world.sg-wow .sg-wow-flow{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:22px;align-items:start}
+            .sg-paywall-world.sg-wow .sg-wow-flow>*{grid-column:2;min-width:0}
+            .sg-paywall-world.sg-wow .sg-wow-flow>.sg-wow-hero{grid-column:1;grid-row:1/span 40;position:sticky;top:0}
+            .sg-wow-scene{height:220px}
+            .sg-wow-sun{width:88px;height:88px;margin:-44px 0 0 -44px}
+          }
+          @media (prefers-reduced-motion:reduce){
+            .sg-paywall-world.sg-wow *{animation:none !important;transition:none !important}
+          }
+        `}</style>
+        )}
+        {/* WOW hero : destination d'abord (rollback ?sgpaywow=0 = header legacy ci-dessous) */}
+        {wowOn ? (
+        <div className="sg-wow-hero">
+          <div className="sg-wow-scene" aria-hidden="true">
+            <div className="sg-wow-sun" />
+            <svg className="sg-wow-sea" viewBox="0 0 400 32" preserveAspectRatio="none">
+              <path d="M0 18 Q 25 10 50 18 T 100 18 T 150 18 T 200 18 T 250 18 T 300 18 T 350 18 T 400 18 V32 H0 Z" fill="rgba(255,255,255,.22)" />
+              <path d="M0 24 Q 30 17 60 24 T 120 24 T 180 24 T 240 24 T 300 24 T 360 24 T 420 24 V32 H0 Z" fill="rgba(255,255,255,.14)" />
+            </svg>
+            <div className="sg-wow-veil">
+              <VeilleurMark />
+              <span className="sg-wow-live">{t("Aujourd'hui", "Today", "Hoy")}</span>
+            </div>
+          </div>
+          <div className="sg-wow-card">
+            <div className="sg-wow-dest">{wowIsland || t("Ta destination", "Your destination", "Tu destino")}</div>
+            <div className="sg-wow-name">{(beach && beach.name) || variantContent.title}</div>
+            <div className="sg-wow-row">
+              <span className="sg-wow-verdict" style={{ color: wowVerdict.c, background: wowVerdict.bg }}>
+                <span aria-hidden="true">{wowVerdict.glyph}</span>{wowVerdict.label}
+              </span>
+              {wowTomorrow && (
+                <span className="sg-wow-tomorrow">
+                  <span aria-hidden="true" style={{ color: wowTomorrow.c, fontWeight: 800 }}>{wowTomorrow.glyph}</span>
+                  {t("Demain :", "Tomorrow:", "Mañana:")} {wowTomorrow.label}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        ) : (
+        <>
+        {/* Compact header (legacy) */}
         <div style={{ textAlign: "center", marginBottom: 16 }}>
           {/* Le Veilleur SVG — mascotte de marque (axe commercial + rétention).
               Source : design/wow-candidates/paywall-golden-pass.html (proto Bible v1).
@@ -321,11 +422,13 @@ export function WorldPaywall({
             </StatBadge>
           </div>
         </div>
-        
+        </>
+        )}
         {/* ═══ B1 fix — Beach context mini-cart (funnel stability 2026-08-12) ═══ */}
         {/* Si le paywall est ouvert depuis une fiche plage, rappeler LA plage observée
-            au lieu d'un pitch générique "monde à portée de main". Relevance = conversion. */}
-        {beach && beach.name && (() => {
+            au lieu d'un pitch générique "monde à portée de main". Relevance = conversion.
+            WOW : fondu dans le hero (masqué, rollback ?sgpaywow=0). */}
+        {!wowOn && beach && beach.name && (() => {
           const verdictByStatus = {
             clean: { color: "#22C55E", label: t("Propre aujourd'hui", "Clean today", "Limpia hoy") },
             moderate: { color: "#F59E0B", label: t("Modérée — prudence", "Moderate — caution", "Moderada — cuidado") },
@@ -365,8 +468,9 @@ export function WorldPaywall({
         {/* ═══ HAVE vs GET — cadrage "ce que j'ai / ce que j'obtiens" (UX conversion).
             Données 100 % réelles (même verdict que la fiche) : le gratuit du jour
             d'abord, le Pass comme sa suite logique. Additif, wording offre/prix
-            inchangé (mesure CTA préservée). Rollback ?mphave=0. ═══ */}
-        {(() => { try { if (/[?&]mphave=0/.test(window.location.search)) return null } catch (_) {}
+            inchangé (mesure CTA préservée). Rollback ?mphave=0.
+            WOW : fondu dans le hero (masqué, rollback ?sgpaywow=0). ═══ */}
+        {!wowOn && (() => { try { if (/[?&]mphave=0/.test(window.location.search)) return null } catch (_) {}
           const haveLbl = (() => {
             const m = { clean: t("Propre aujourd'hui", "Clean today", "Limpia hoy"),
               moderate: t("À surveiller", "Worth checking", "A vigilar"),
@@ -427,7 +531,9 @@ export function WorldPaywall({
         {/* ═══ VALEUR AVANT PRIX ═══ — Rapel du bénéfice avant le prix.
             Augmente le taux de conversion CTA→paiement en rappelant ce que
             l'utilisateur obtient. Placées juste avant PassOffer, ces pastilles
-            renforcent la décision sans ajouter de dépendance. */}
+            renforcent la décision sans ajouter de dépendance.
+            WOW : le hero porte la valeur (masqué, rollback ?sgpaywow=0). */}
+        {!wowOn && (
         <div className={uxLot5?"sg-valeur-box":undefined} style={{
           marginBottom: 14, padding: "12px 14px",
           background: "rgba(13,17,23,.6)", border: "1.5px solid rgba(34,197,94,.3)",
@@ -458,18 +564,20 @@ export function WorldPaywall({
             </span>
           </div>
         </div>
+        )}
 
         {/* ═══ PREUVE SOCIALE (E2) / PREUVE QUALITÉ DONNÉES (E9) ═══
             Juste avant l'offre : compteur réel d'abonnés-suivi si community>0,
             sinon preuve qualité données (98% globales, backtest 99% J+3→J+6).
-            Rollback ?sgsocial=0 désactive les deux. */}
-        {socialOn && community > 0 && (
+            Rollback ?sgsocial=0 désactive les deux.
+            WOW : secondaire (masqué, rollback ?sgpaywow=0 — voir <details> après l'offre). */}
+        {!wowOn && socialOn && community > 0 && (
         <div data-testid="paywall-social-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 12, fontSize: 12, fontWeight: 600, color: "rgba(255,199,44,.8)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
           {t(`Déjà ${community}+ qui suivent leurs plages`, `${community}+ people track their beaches`, `${community}+ personas rastrean sus playas`)}
         </div>
         )}
-        {socialOn && community === 0 && (
+        {!wowOn && socialOn && community === 0 && (
         <div data-testid="paywall-data-quality-proof" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 12, padding: "10px 12px", background: "rgba(34,197,94,.12)", border: "1px solid rgba(34,197,94,.3)", borderRadius: 10, fontSize: 11.5, fontWeight: 600, color: "rgba(34,197,94,.9)", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
           {t("98% des prévisions vérifiées · Satellite Copernicus · Backtest 99% sur J+3→J+6", "98% of forecasts verified · Copernicus satellite · 99% backtest on day 3–6", "98% de pronósticos verificados · Satélite Copernicus · Backtest 99% en J+3→J+6")}
@@ -536,12 +644,62 @@ export function WorldPaywall({
         </div>
         )}
 
-        {/* ═══ BELOW THE FOLD — trust + features ═══ */}
-        
-        {/* FiabiliteProof */}
+        {/* ═══ WOW — ligne séjour (rollback ?sgpaywow=0) ═══
+            Le Pass débloque le Trip Planner (J+3+ verrouillés sans Pass — fait
+            réel, aucune donnée inventée). Continuité découverte → séjour. */}
+        {wowOn && (
+        <div className="sg-wow-trip">
+          <ComicIcon name="compass" size={15} />
+          <span>{t("Séjour débloqué : la meilleure plage chaque jour, plan B inclus.", "Stay unlocked: the best beach each day, backup included.", "Estancia desbloqueada: la mejor playa cada día, plan B incluido.")}</span>
+        </div>
+        )}
+
+        {/* ═══ BELOW THE FOLD — trust + features ═══
+            WOW : preuve secondaire pliée dans <details> (rollback ?sgpaywow=0).
+            La preuve reste accessible (lien /fiabilite/ gardé dans FiabiliteProof)
+            mais ne domine plus la vente. */}
+        {wowOn ? (
+        <details className="sg-wow-why">
+          <summary>
+            <span aria-hidden="true" style={{ color: "#22C55E", fontWeight: 800 }}>✓</span>
+            {t("Pourquoi nous croire →", "Why trust us →", "Por qué creernos →")}
+          </summary>
+          <div style={{ padding: "0 12px 12px" }}>
+            <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(34,197,94,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#22C55E", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+                {BADGE_ICONS.check}
+                <span>{t("97% vérifiées", "97% verified", "97% verificadas")}</span>
+              </span>
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,210,140,.4)", borderRadius: 999, padding: "4px 10px", fontSize: 10, fontWeight: 700, color: "#FFC72C", whiteSpace: "nowrap", fontFamily: "'Bricolage Grotesque', system-ui, sans-serif" }}>
+                {BADGE_ICONS.satellite}
+                <span>Copernicus</span>
+              </span>
+            </div>
+            <div style={{ marginTop: 12 }}>
+              {variantContent.features.map((feat, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", marginBottom: 6, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)", borderRadius: 10 }}>
+                  <span style={{ display: "inline-flex", flexShrink: 0, color: "#FFC72C" }} aria-hidden="true">
+                    <ComicIcon name={feat.icon} size={15} />
+                  </span>
+                  <span style={{ color: "rgba(255,255,255,.8)", fontSize: 12, fontFamily: "'Bricolage Grotesque', system-ui, sans-serif", fontWeight: 500 }}>
+                    {feat.text}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </details>
+        ) : (
+        <>
+        {/* FiabiliteProof (legacy) */}
         <FiabiliteProof lang={lang} REL={window.__REL} regime="high" />
+        </>
+        )}
         
-        {/* Trust signals */}
+        {/* Trust signals (legacy flat — WOW : pliés dans <details> ci-dessus) */}
+        {!wowOn && (
+        <>
         <div style={{
           display: "flex", justifyContent: "center", gap: 12,
           flexWrap: "wrap", marginTop: 12, paddingTop: 12,
@@ -574,18 +732,20 @@ export function WorldPaywall({
               <span style={{ display: "inline-flex", flexShrink: 0, color: "#FFC72C" }} aria-hidden="true">
                 <ComicIcon name={feat.icon} size={15} />
               </span>
-              <span style={{
-                color: "rgba(255,255,255,.8)", fontSize: 12,
-                fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
-                fontWeight: 500
-              }}>
-                {feat.text}
-              </span>
-            </div>
-          ))}
-        </div>
-        
-        {/* Signature B2C « Le Veilleur » — moat identitaire en pied du paywall.
+                <span style={{
+                  color: "rgba(255,255,255,.8)", fontSize: 12,
+                  fontFamily: "'Bricolage Grotesque', system-ui, sans-serif",
+                  fontWeight: 500
+                }}>
+                  {feat.text}
+                </span>
+              </div>
+            ))}
+          </div>
+          </>
+          )}
+
+          {/* Signature B2C « Le Veilleur » — moat identitaire en pied du paywall.
             Pas un CTA, ne vend rien : pose l'honnêteté de marque juste avant le choix.
             i18n via t(), Bricolage 600 12px italic opacity .5 (discret, pas distractant). */}
         <p style={{

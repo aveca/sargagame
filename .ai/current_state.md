@@ -1,3 +1,34 @@
+## 2026-09-23 · Agent: coding (WOW TAKEOVER slice 1) — Paywall « UNLOCK MY STAY » live-ready
+
+### Travail effectué
+- **Résumé 1 ligne** : paywall reconstruit visuellement (destination d'abord, preuve secondaire, grille desktop) + home desktop élargie + bug `}` fixé, money-path intact, gates verts.
+- **Détails** : hero golden-hour CSS (scène + Veilleur + verdict trio + Demain J+1 réel) ; PassOffer/checkout/tracking/prix inchangés ; preuve (FiabiliteProof+badges+features) en `<details>` ; B1/HAVE/valeur/social fondus dans le hero ; desktop ≥1024px 2 col sticky (panel 980px `:has()`) ; home desktop 2 col (1000px) ; rollback `?sgpaywow=0`.
+
+### Fichiers modifiés
+- `src/PremiumModal/WorldPaywall.jsx` (+196/-29 : hero, conditionnels, trip line, details, style scopé)
+- `src/components/ExperienceReset.jsx` (fix `}` + grille desktop)
+- `public/api/b2b-partners.json`, `src/lib/partners-catalog.json` (regen build), `.ai/changelog.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0 (warning esbuild `}` disparu = preuve du fix)
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] Playwright → paywall mobile+desktop 0 pageerror, home/B2B/checkout-entry screenshots lus
+- [ ] CI PR → en attente ; E2E bottomnav rouge pré-existant connu (BUG-2026-038)
+
+### Problèmes restants
+- [ ] BUG-2026-038 toujours ouvert (E2E bottomnav CI-only, inchangé)
+- [ ] Void 204px haut de home + bottom-nav desktop qui chevauche (pré-existant, follow-up slice 2)
+- [ ] Slice 2 candidats : scène/fiche enrichie, micro-interactions, share-card, B2B desktop
+
+### Prochaine action recommandée
+1. Merge PR slice 1 → deploy → QA prod (paywall fiche + desktop) — Rôle : release
+2. Slice 2 : fiche BEACH décision (why/forecast/backup/share) + share-card — Rôle : coding/ui
+
+### Branche / PR
+- Branche : `agent/coding/wow-takeover`
+- PR : à créer vers main
+
 ## 2026-09-23 · Agent: coding (SESSION RECOVERY post-crash) — Takeover paywall §9 stabilisé
 
 ### Travail effectué
