@@ -1,3 +1,12 @@
+## 2026-09-23 — WOW TAKEOVER slice 1 : paywall « UNLOCK MY STAY » + home desktop + fix `}` (PR à créer)
+
+**PROBLEM** : paywall dense/sombre/technique centré paiement (UX failure) ; home desktop = colonne mobile 520px dans le vide ; `}` littéral affiché sur la home (bug JSX `)}}` ExperienceReset:149, confirmé par warning esbuild).
+**CHANGE** (rollback global `?sgpaywow=0`, money-path intact — PassOffer/prix/CTA/tracking/checkout/OnsiteCheckout inchangés) :
+- `WorldPaywall.jsx` — hero destination golden-hour 100 % CSS (scène ciel/mer/soleil + VeilleurMark qui regarde la mer + pastille Aujourd'hui) → carte plage (île + nom + verdict trio ✓/◐/✕ + Demain J+1 réel depuis tripDays) → PassOffer (strip 7 j = forecast preview) → ligne séjour (« Séjour débloqué… », compass SVG) → email (inchangé) → preuve pliée `<details>` (FiabiliteProof + badges + features) → signature + Plus tard. B1/HAVE/valeur/social masqués (fondus dans le hero). Desktop ≥1024px : grille 2 col (hero sticky gauche, offre droite, panel 980px via `:has()`).
+- `ExperienceReset.jsx` — `)}}` → `)}` (brace fantôme) + home desktop ≥1024px en grille 2 col (max 1000px, hero/search pleine largeur).
+**Preuves** : build 0 · bundle 38,2 Ko · smoke 4/4 PASS · Playwright 0 pageerror (mobile+desktop) · screenshots `.ai/shots-wow/` (wow-mobile/desktop-top/bottom, w2-b2b, w2-checkout, w3-home-desktop) lus et validés.
+**Non touché** : prix (PASS_CENTS source unique), TripPlanner (composant), B2B (landing déjà forte, vérifiée), Jev/Supabase (aucun changement, aucune affirmation).
+
 ## 2026-09-23 — SESSION RECOVERY : takeover paywall §9 réparé + contexte plage restauré (fiche→paywall)
 
 **CONTEXTE** : session OpenCode précédente crashée (INTERNAL SERVER ERROR) avec 9 fichiers modifiés non commités (strip « Ta semaine » §9 + E6 « déjà premium » partiels).
