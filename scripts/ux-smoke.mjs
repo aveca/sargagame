@@ -114,12 +114,19 @@ const whiteButtons = [];
 // commit « feat(default) ») ; la carte reste à 1 tap d'onglet. Le funnel
 // map+fiche+paywall est vérifié APRÈS ce tap — mêmes surfaces, navigation explicite.
 await p.goto(BASE + '/', { waitUntil: 'domcontentloaded', timeout: 60000 });
-await p.evaluate(() => {
-  const btn = [...document.querySelectorAll('nav.sg-bottom-nav button')]
-    .find(b => /carte|map|mapa/i.test((b.textContent || '')));
-  if (btn) btn.click();
-});
-await p.waitForTimeout(2000);
+// Attente hydratation nav (CI Linux lent) + tap onglet avec re-essai tant que
+// les labels ne montent pas (3 tentatives).
+await p.waitForSelector('nav.sg-bottom-nav button', { timeout: 20000 }).catch(() => {});
+for (let a = 0; a < 3; a++) {
+  const hasLabels = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
+  if (hasLabels) break;
+  await p.evaluate(() => {
+    const btn = [...document.querySelectorAll('nav.sg-bottom-nav button')]
+      .find(b => /carte|map|mapa/i.test((b.textContent || '')));
+    if (btn) btn.click();
+  });
+  await p.waitForTimeout(2200);
+}
 // Wait for React app to hydrate and render map labels
 let mapOk = false;
 try {

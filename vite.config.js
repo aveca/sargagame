@@ -2711,8 +2711,9 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
     },
   },
   // Production: drop console/debugger from bundle (dev keeps them)
+  // DEBUG : SG_KEEP_CONSOLE=1 garde les consoles en build (diagnostic ErrBound & co).
   esbuild: {
-    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
+    drop: (process.env.NODE_ENV === 'production' && !process.env.SG_KEEP_CONSOLE) ? ['console', 'debugger'] : [],
   },
   // GitHub Pages deploy: /sargagame/ subpath. Production domains use root /
   base: process.env.DEPLOY_TARGET === 'gh-pages' ? '/sargagame/' : '/',

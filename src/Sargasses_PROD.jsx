@@ -163,6 +163,9 @@ class ErrBound extends Component{
   constructor(p){super(p);this.state={err:null}}
   static getDerivedStateFromError(e){return{err:e}}
   componentDidCatch(e){
+    // DEBUG OBSERVABILITÉ (2026-09-22) : sans ce log, un crash enfant (paywall,
+    // fiche…) est CAPTURÉ mais invisible — le dépannage devient devinette.
+    try{console.error("ErrBound:", e && (e.stack || e.message || String(e)).slice(0, 500))}catch(_){}
     try{sgLogError("errbound",e)}catch(_){}
     try{this.props.onError&&this.props.onError(e)}catch(_){}
   }
@@ -14991,7 +14994,11 @@ useEffect(()=>{
           }catch(_){}
         }} lang={lang} source={premiumSource} pwVariant={abVariant("pw_style",["world","comic"])}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
-          beach={selectedBeach||null}/></Suspense></ErrBound></div>}
+          /* RECOVERY 2026-09-23 : la fiche carte-first est ComicDetail (comicBeach),
+             pas selectedBeach — sans ce fallback le paywall perdait le contexte plage
+             (mini-cart B1, libellé HAVE, strip « Ta semaine » §9 : toujours masqués).
+             Données inchangées, jamais inventées ; strip garde son kill-switch ?tripplan=0. */
+          beach={selectedBeach||comicBeach||null}/></Suspense></ErrBound></div>}
         {/* TRIP PLANNER (MASTER 2026-09-22) — overlay « planifier mon séjour » (J+1/J+2
             visibles, suite verrouillée → offre). Rollback : ?tripplan=0. */}
         {showTrip&&<ErrBound><Suspense fallback={null}><LazyTripPlanner lang={lang}

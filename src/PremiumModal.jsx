@@ -66,7 +66,34 @@ export default function PremiumModal({
   lang, source, onClose, onActivated,
   sargData, island, beach, pwVariant, _passUpdatedAt
 }){
-  // Refs/états de paiement — créés en interne (le split les avait perdus).
+  // ⚠️ E6 — Affichage "Vous avez déjà un pass actif" au lieu du paywall
+  // Vérification locale : si sg_premium="1" et pass_end futur, l'utilisateur possède déja un pass
+  const hasActivePass = () => {
+    try {
+      const prem = localStorage.getItem("sg_premium")
+      const passEnd = localStorage.getItem("sg_premium_pass_end")
+      if (prem !== "1") return false
+      if (!passEnd) return false
+      const now = Date.now()
+      const end = parseInt(passEnd, 10)
+      if (end <= now) return false // expiré
+      return true // pass actif → montrer message de "déjà premium"
+    } catch (_) { return false }
+  }
+  const premiumMessage = hasActivePass()
+    ? (
+      <div style={{padding:24, textAlign:"center", color:"#e6edf3"}}>
+        <div style={{fontSize:18, marginBottom:8}}>{_t(lang,"Vous avez déjà un pass actif","You have an active premium pass","Vous avez déjà un pass actif")}</div>
+        <div style={{fontSize:14, opacity:.8}}>{_t(lang,"Vos prévisions 7 jours sont déverrouillées","Your 7-day forecast is unlocked","Vos prévisions 7j sont débloquées")}</div>
+        <button
+          onClick={()=>{onClose(); track("sg_premium_already_closed",{source:source||"unknown"})}}
+          style={{margin:"16px 0 0", padding:"8px 16px", background:"rgba(255,199,44,.3)", border:"1px solid rgba(255,199,44,.5)", color:"#e6edf3", borderRadius:6, cursor:"pointer"}}>
+          {_t(lang,"Fermer","Close","Cerrar")}
+        </button>
+      </div>
+    )
+    : null
+// Refs/états de paiement — créés en interne (le split les avait perdus).
   // Miroir de l'ancien PremiumModal monolithique (ligne ~1739 de l'ancien fichier).
   const passCtxRef = useRef(null) // {pass,cents,days,cur} si achat d'un PASS, sinon null (abo)
   const payPlanRef = useRef("pro") // plan d'abonnement courant (non utilisé par pass one-time)
@@ -127,10 +154,28 @@ export default function PremiumModal({
     setPayStep(true)
   },[source, track, payWithWallet, PAY_CUR])
 
+  // TAKEOVER §9 — preuve de valeur paywall : la semaine de la plage de contexte.
+  // Données réelles uniquement ; null hors MQ/GP ou sans forecast (strip masqué).
+  const tripDays = useMemo(() => {
+    try {
+      if (/[?&]tripplan=0/.test(window.location.search)) return null
+      if (!beach || !sargData) return null
+      const sid = SG.BEACH_TO_SARG[beach.id]
+      const w = (sid && sargData.weekly && sargData.weekly[sid])
+        || (sargData._enrichedWeekly && sargData._enrichedWeekly['_interp_' + beach.id])
+      const fc = w && w.forecast
+      if (!fc || !fc.length) return null
+      const out = fc.slice(0, 7).map(d => (d && d.status) || null)
+      const res = out.some(Boolean) ? out : null
+      try { console.log('[sg][tripdays]', beach && beach.id, 'len', res && res.length) } catch (_) {}
+      return res
+    } catch (e) { try { console.log('[sg][tripdays] err', String(e).slice(0, 80)) } catch (_) {} return null }
+  }, [beach, sargData])
+
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
-    sargData, island, beach, pwVariant,
+    sargData, island, beach, tripDays, pwVariant,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,
@@ -218,11 +263,15 @@ export default function PremiumModal({
             onClose()
           }}
         />
-        {renderPaywall()}
-        <OnsiteCheckout {...onsiteCheckoutProps} />
+        {alreadyPremium ? premiumMessage : renderPaywall()}
+        {!alreadyPremium && <OnsiteCheckout {...onsiteCheckoutProps} />}
       </>
     )
   }
+
+  // ── E6 ── message déjà premium : REMPLACE le paywall (jamais empilé
+  // dessus — sinon l'utilisateur voit l'offre + le message en même temps).
+  const alreadyPremium = premiumMessage !== null
 
   return (
     <>
@@ -285,10 +334,10 @@ export default function PremiumModal({
             display:"flex",alignItems:"center",justifyContent:"center"}}
         >×</button>
 
-        {/* Contenu du paywall */}
-        {renderPaywall()}
+        {/* Contenu du paywall — remplacé par le message si pass déjà actif */}
+        {alreadyPremium ? premiumMessage : renderPaywall()}
       </div>
-      <OnsiteCheckout {...onsiteCheckoutProps} />
+      {!alreadyPremium && <OnsiteCheckout {...onsiteCheckoutProps} />}
     </>
   )
 }

@@ -1,3 +1,17 @@
+## 2026-09-23 — SESSION RECOVERY : takeover paywall §9 réparé + contexte plage restauré (fiche→paywall)
+
+**CONTEXTE** : session OpenCode précédente crashée (INTERNAL SERVER ERROR) avec 9 fichiers modifiés non commités (strip « Ta semaine » §9 + E6 « déjà premium » partiels).
+**CAUSE DU CRASH** (identifiée) : pas un bug produit — (1) preview :4173 obsolète servi pendant les vérifs (fausses conclusions strip), (2) `body.innerText` respecte `text-transform:uppercase` → la sonde cherchait « Ta semaine » alors que le DOM rend « TA SEMAINE » (faux négatif), (3) `beach={selectedBeach||null}` perdait le contexte car la fiche carte-first est `ChasseDetail` (état `comicBeach`, pas `selectedBeach`) → strip/mini-cart/HAVE génériques, jamais de crash.
+**FIXES** :
+- `src/Sargasses_PROD.jsx` — paywall `beach={selectedBeach||comicBeach||null}` (1 ligne + commentaire ; données inchangées, kill-switch `?tripplan=0` conservé).
+- `src/PremiumModal/ComicPaywall.jsx` — `pwVariant="comic"` restauré sur `<PassOffer>` (perdu dans le crash, skin sombre dans takeover).
+- `src/PremiumModal.jsx` — E6 « déjà premium » : le message REMPLACE le paywall (avant : empilé dessus + `OnsiteCheckout` actif) sur les 2 chemins (comic + sheet) ; style `my:16` invalide → `margin`.
+- `scripts/ux-smoke.mjs` — tap onglet Carte avec re-essai (3 tentatives, labels comme preuve d'hydratation).
+- `vite.config.js` — `SG_KEEP_CONSOLE=1` garde les consoles en build (diagnostic uniquement, prod inchangé par défaut) ; `src/Sargasses_PROD.jsx` ErrBound loggue le stack (invisible avant).
+**VÉRIFIÉ** (build final, preview frais) : strip « TA SEMAINE — PLAGE DU DIAMANT » + 7 pastilles réelles (screenshot), mini-cart B1 + HAVE personnalisés, Trip overlay → CTA → paywall sans crash, mobile 390×844 + desktop 1440×900, `ERRORS=[]`, smoke 4/4 `SMOKE_GATE=PASS`, bundle 38,2 Ko ≤ 210.
+**NON TOUCHÉ** (décision) : 40+ fichiers junk racine des sessions précédentes (`.py`/`.log`/`.png`) + `m[1])`-style — laissés en place (règle recovery) ; seul `console.log('ERR'` (artefact de MA sonde) supprimé + 4 scripts `.tmp` de vérif supprimés.
+**Preuves** : `.ai/shots-takeover/final-mobile-*.png`, `final-desktop-*.png` (locales, non commitées).
+
 ## 2026-09-22 — TAKEOVER : le nouveau produit est le DEFAULT (home = décision) · PR #733+#734
 
 **CHANGE** : plus de mosaïque d'héritages — le visiteur ouvre sur la **décision du jour** (12 propres / 4 à surveiller / 4 à éviter + meilleur choix) au lieu de la carte. La carte reste à 1 tap (onglet Carte). Rollback propre : `?homefirst=0`.

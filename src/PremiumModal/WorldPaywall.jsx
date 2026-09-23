@@ -120,7 +120,7 @@ export function WorldPaywall({
   pwVariant = "calm",
   island,
   beach,
-  sargData,
+  sargData, tripDays,
   payPlanRef,
   payEmailRef,
   payBusy,
@@ -484,6 +484,7 @@ export function WorldPaywall({
             lang={lang}
             currency={PAY_CUR}
             onBuy={onPassBuy}
+            tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
           />
         </div>
         )}
@@ -530,6 +531,7 @@ export function WorldPaywall({
             lang={lang}
             currency={PAY_CUR}
             onBuy={onPassBuy}
+            tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
           />
         </div>
         )}

@@ -17,7 +17,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "" }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -64,6 +64,26 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.65)" : "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
           {_t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
         </p>
+
+        {/* TAKEOVER §9 — « FINISH MY TRIP PLAN » (2026-09-22) : le paywall prouve le
+            résultat (semaine de la plage en contexte) avant de demander la carte.
+            Données 100 % réelles (forecast weekly), jamais inventé ; ?tripplan=0 off. */}
+        {Array.isArray(tripDays) && tripDays.length >= 2 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, padding: "10px 12px", borderRadius: 12, background: isComic ? "rgba(13,11,20,.05)" : "rgba(255,255,255,.05)", border: isComic ? "1.5px dashed #0D0B14" : "1px solid rgba(255,255,255,.14)" }}>
+            <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: isComic ? "#B87A00" : "#FFC72C", flexShrink: 0 }}>
+              {_t(lang, "Ta semaine", "Your week", "Tu semana")}{tripBeach ? ` — ${tripBeach}` : ""}
+            </span>
+            <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "flex-end", flexWrap: "wrap" }}>
+              {tripDays.map((st, i) => (
+                <span key={i} title={st || ""} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 6, fontSize: 10, fontWeight: 800,
+                  background: st === "clean" ? "rgba(34,197,94,.18)" : st === "moderate" ? "rgba(245,158,11,.20)" : st === "alert" ? "rgba(239,68,68,.18)" : "rgba(120,120,130,.15)",
+                  color: st === "clean" ? "#16A34A" : st === "moderate" ? "#B45309" : st === "alert" ? "#DC2626" : "#777" }}>
+                  {st === "clean" ? "✓" : st === "moderate" ? "!" : st === "alert" ? "✕" : "·"}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div style={{ margin: "18px 0 0" }}>
           <button onClick={buy} className="sg-passcard-hero" style={{
