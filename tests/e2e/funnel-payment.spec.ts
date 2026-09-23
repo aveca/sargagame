@@ -226,8 +226,9 @@ test.describe("Funnel Principal B2C", () => {
       }
     }
 
-    // Attendre que la fiche soit visible (BeachSheetComic = .bsc-sheet, fallback BeachSheet = .sheet, legacy = .lc-detail)
-    const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
+    // Attendre que la fiche soit visible (BeachExperience = [data-testid="bx-experience"] par défaut ?sgexp ;
+    // BeachSheetComic = .bsc-sheet, fallback BeachSheet = .sheet, legacy = .lc-detail sous ?sgexp=0)
+    const fiche = page.locator('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]').first()
     await fiche.waitFor({ state: "visible", timeout: 15000 })
     const ficheVisible = await fiche.isVisible()
     expect(ficheVisible).toBe(true)
