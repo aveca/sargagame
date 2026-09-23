@@ -1,0 +1,26 @@
+# Sargagame UX explorer — live local-browser environment.
+# Stack: -c base.yaml -c local_browser.yaml -c model_nvidia_kimi.yaml -c sargagame_local_browser.yaml
+#
+# Why local_browser instead of local_workspace: on Windows, local_workspace runs
+# every step through a bash shell (bash.exe /c does not work) — local_browser
+# executes each step as async Python directly, owns the Chromium page, saves a
+# screenshot + per-step code automatically, and captures the console.
+#
+# browser_mode: local_launch => fresh headless Playwright Chromium
+# (browsers live in .ai/ux-agent/.cache/ms-playwright via PLAYWRIGHT_BROWSERS_PATH).
+
+environment:
+  environment_class: local_browser
+  browser_mode: local_launch
+  headless: true
+  slow_mo_ms: 0
+  browser_timeout_ms: 15000
+  browser_navigation_timeout_ms: 45000
+  step_execution_timeout_ms: 40000
+  browser_width: 390
+  browser_height: 844
+
+agent:
+  require_self_reflection_success: false
+  step_limit: 12
+  summary_every_n_steps: 25

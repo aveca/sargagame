@@ -233,7 +233,7 @@ export function OnsiteCheckout({
       expiry.mount(molExpiryRef.current)
       cvc.mount(molCvcRef.current)
       mountedRef.current = true
-      try { track("sg_onsite_checkout_opened", { plan: payPlanRef.current, pass: passCtx?.pass, source: source || "unknown", sg_session_id: sgUid() }) } catch (_) {}
+      try { track("sg_onsite_checkout_opened", { plan: payPlanRef.current, pass: passCtx?.pass, cents: passCtx?.cents, currency: passCtx?.cur, source: source || "unknown", sg_session_id: sgUid() }) } catch (_) {}
     } catch (e) {
       try { console.error("sg_mollie_mount_failed", e) } catch (_) {}
     }

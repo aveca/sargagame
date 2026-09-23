@@ -37,4 +37,12 @@ Hypothèse → changement → métrique → seuil → durée → décision. Mort
 - Copy paywall décision-first A/B (pw remis à plat).
 - Landing « séjour » dédiée (Trip Pass).
 
+## Exp. 4 — Cadrage offre « séjour » séquentiel (REVENUE 2026-09-23, REMPLACE Exp. 2 mise en pause — Jev sans route/clé, 0 event/7j)
+
+- HYPOTHESIS : nommer le livrable « ton séjour planifié » (pas « forecast data ») remonte modal→CTA au-dessus de 2,0 %/7j. Trafic trop faible pour A/B (42 CTA/28j) → séquentiel avant/après, pas de split.
+- CHANGE : aucun code prix (PASS_CENTS intouché) — le paywall WOW + hero « TA SEMAINE » + ligne séjour déjà live depuis ce jour = le bras « après ». Fenêtre avant : 16→23/09 (2,0 %). Fenêtre après : 23/09→07/10.
+- METRIC : modal→CTA, CTA→checkout, checkout→paid, revenue/visiteur qualifié (revenue-report.cjs).
+- THRESHOLD : modal→CTA ≥ 4 % sur ≥200 premium opens cumulés → garder + itérer copy ; sinon hypothèse suivante (file : rappel abandon checkout).
+- DURATION : 14 jours. STOP si checkout→paid reste 0 % avec ≥10 checkouts → le chantier devient paiement (raisons sg_payment_failed via dashboard Mollie, action fondateur).
+
 KPI global : REVENUE / QUALIFIED VISITOR → PAID CUSTOMERS → MRR.

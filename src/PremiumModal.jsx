@@ -64,7 +64,7 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // PremiumModal — composant principal exporté
 export default function PremiumModal({
   lang, source, onClose, onActivated,
-  sargData, island, beach, pwVariant, _passUpdatedAt
+  sargData, island, beach, pwVariant, _passUpdatedAt, beachCount = 0
 }){
   // ⚠️ E6 — Affichage "Vous avez déjà un pass actif" au lieu du paywall
   // Vérification locale : si sg_premium="1" et pass_end futur, l'utilisateur possède déja un pass
@@ -140,7 +140,10 @@ export default function PremiumModal({
   // AVANT le fix : doSubscribe() était appelé direct → mollieRef.current=null → throw
   // silencieux dans catch → bouton "Commencer maintenant" muet sur les 5 domaines.
   const onPassBuy = useCallback((item)=>{
-    try{track("sg_pass_cta",{pass:item.pass, cents:item.c, source:source||"unknown", onsite:1, method:item.method||"card"})}catch(_){}
+    // REVENUE 2026-09-23 : contexte déterministe joint (région/plage/devise) —
+    // additif pur (aucun sens modifié) pour attribuer chaque CTA au revenu.
+    let _rg = null; try { _rg = (island && (island.id || island)) || null } catch (_) {}
+    try{track("sg_pass_cta",{pass:item.pass, cents:item.c, source:source||"unknown", onsite:1, method:item.method||"card", region:_rg, beach_id:(beach&&beach.id)||null, currency:PAY_CUR})}catch(_){}
     passCtxRef.current = {
       pass: item.pass,
       cents: item.c,
@@ -152,7 +155,7 @@ export default function PremiumModal({
       return
     }
     setPayStep(true)
-  },[source, track, payWithWallet, PAY_CUR])
+  },[source, track, payWithWallet, PAY_CUR, island, beach])
 
   // TAKEOVER §9 — preuve de valeur paywall : la semaine de la plage de contexte.
   // Données réelles uniquement ; null hors MQ/GP ou sans forecast (strip masqué).
@@ -175,7 +178,7 @@ export default function PremiumModal({
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
-    sargData, island, beach, tripDays, pwVariant,
+    sargData, island, beach, tripDays, beachCount, pwVariant,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,

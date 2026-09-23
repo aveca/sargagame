@@ -1,0 +1,106 @@
+{
+  "schema": "sargagame/ux-skill@1",
+  "name": "inspect-sargagame-home",
+  "version": "1.0.0",
+  "created": "2026-09-16",
+  "learned_from": {
+    "engine": "webwright local_browser (exploration LLM, NVIDIA moonshotai/kimi-k3)",
+    "runs": ["runs/20260916T2132Z-run1"],
+    "validation": "rejeu deterministe Playwright (RUN 2) — engine de validation"
+  },
+  "target": {
+    "base_url": "https://sargasses-martinique.com/",
+    "locale": "fr-FR",
+    "region": "Martinique"
+  },
+  "mode": "observe-only (JAMAIS de paiement, de saisie d'email/carte, ni de soumission de formulaire)",
+  "viewports": {
+    "mobile": "390x844, iPhone 12 (deviceScaleFactor 2, isMobile, hasTouch, UA Safari)",
+    "desktop": "1440x900"
+  },
+  "journey": [
+    {
+      "step": 1,
+      "name": "home",
+      "goal": "Charger la home et confirmer le rendu initial",
+      "checkpoint": "titre contient 'Plages Martinique' ; heading h1 visible",
+      "screenshot": "01-home.png"
+    },
+    {
+      "step": 2,
+      "name": "clear-overlays",
+      "goal": "Fermer les couches bloquantes connues",
+      "known_overlays": [
+        "dialog de demo 'Le Veilleur' -> button 'Fermer'",
+        "consent banner -> button 'Refuser' (exact) ou texte 'Peut-être plus tard'",
+        "region 'Capture email pour alertes sargasses' -> son button 'Fermer' (peut INTERCEPTER le bouton Refuser et la nav: finding UX-M-001/UX-D-001)",
+        "dialog 'Assistant' ('Le Veilleur') -> button 'Fermer'"
+      ],
+      "screenshot": "02-explored.png"
+    },
+    {
+      "step": 3,
+      "name": "select-beach",
+      "goal": "Ouvrir la fiche d'une plage",
+      "selectors": [
+        "button[data-beach] (premier visible)",
+        "role=button name=/^\\d+\\s/ with texte 'Voir' (liste des plages)",
+        "button:has-text('Voir') (premier visible)"
+      ],
+      "learned": "mobile run1: '83 Anse Madame ... Voir ->' ; desktop run1: 'Plage des Salines' via carte/liste",
+      "checkpoint": "un dialog fiche plage (role=dialog) devient visible",
+      "screenshot": "03-beach-selected.png"
+    },
+    {
+      "step": 4,
+      "name": "verdict",
+      "goal": "Lire le verdict visible de la fiche plage",
+      "checkpoint": "texte de verdict capture (ex: 'MAINTENANT BAIGNADE OK', 'MAINTENANT A SURVEILLER') ou score /100 visible",
+      "screenshot": "04-verdict.png"
+    },
+    {
+      "step": 5,
+      "name": "paywall",
+      "goal": "Atteindre le paywall via la CTA de la fiche",
+      "selectors": ["role=button name=/D.bloquer les pr.visions/"],
+      "checkpoint": "dialog 'Prévisions premium' visible",
+      "screenshot": "05-paywall.png"
+    },
+    {
+      "step": 6,
+      "name": "premium-modal",
+      "goal": "Observer l'offre (PRIX LUS SEULEMENT — aucun clic achat)",
+      "checkpoint": "au moins un prix /\\d+[,.]\\d+\\s*€/ present dans le dialog (DOM)",
+      "diagnostic": "premium_modal_topmost: probe elementFromPoint au centre du dialog — le dialog doit etre AU PREMIER PLAN. RUN 2 (2026-09-16): FALSE mobile+desktop = modal occlus sous la fiche plage (z 1100 < 1200) -> finding UX-R2-003 blocker",
+      "screenshot": "06-premium-modal.png"
+    },
+    {
+      "step": 7,
+      "name": "back",
+      "goal": "Quitter le modal et revenir a la vue carte/home",
+      "close_order": [
+        "button 'Plus tard' (aria-label) dans le dialog premium (fonctionne mobile; INOPERANT desktop run1 -> UX-D-002)",
+        "button 'Fermer' (x) du dialog premium (INOPERANT mobile run1 -> UX-M-002; fonctionne desktop)",
+        "Escape",
+        "fermeture de la fiche plage (button 'Fermer')"
+      ],
+      "checkpoint": "aucun dialog visible (count == 0)",
+      "screenshot": "07-back.png"
+    }
+  ],
+  "stop_criteria": [
+    "les 7 checkpoints sont true",
+    "OU budget etape epuise (consigner les checkpoints false avec preuve screenshot)"
+  ],
+  "expected_artifacts": {
+    "screenshots/": "1 par etape et par viewport (14 au total)",
+    "journey.json": "booleans de checkpoints + verdicts lus + erreurs",
+    "console_log.json": "erreurs console/page par viewport et par etape"
+  },
+  "findings_format": "runs/<ts>/findings.json — schema sargagame/ux-findings@1 (id, severity, viewport, step, url, element, observed, expected, evidence{kind,detail,screenshot}, repro[])",
+  "replay": {
+    "command": ".ai/ux-agent/.venv/Scripts/python.exe .ai/ux-agent/skills/inspect-sargagame-home/run.py --out .ai/ux-agent/runs/<ts>",
+    "deterministic": true,
+    "requires": "PLAYWRIGHT_BROWSERS_PATH=.ai/ux-agent/.cache/ms-playwright (ou chromium installe)"
+  }
+}

@@ -120,7 +120,7 @@ export function WorldPaywall({
   pwVariant = "calm",
   island,
   beach,
-  sargData, tripDays,
+  sargData, tripDays, beachCount = 0,
   payPlanRef,
   payEmailRef,
   payBusy,
@@ -152,7 +152,8 @@ export function WorldPaywall({
   community = 0,
   PAY_CUR
 }) {
-  const stats = WORLD_STATS[lang] || WORLD_STATS.fr
+  // Stats régionales honnêtes (REVENUE 2026-09-23) : `stats` est calculé
+  // après wowIsland (besoin du nom d'île) — voir useMemo ci-dessous.
   const regions = REGION_LABELS
   
   const t = (fr, en, es) => lang === "es" ? es : lang === "en" ? en : fr
@@ -216,6 +217,13 @@ export function WorldPaywall({
       return l ? (l[lang] || l.fr) : ""
     } catch (_) { return "" }
   })()
+  const stats = useMemo(() => {
+    const base = WORLD_STATS[lang] || WORLD_STATS.fr
+    const n = Number(beachCount) || 0
+    if (n > 0 && wowIsland) return { ...base, beaches: String(n), regions: wowIsland, _regional: true }
+    if (n > 0) return { ...base, beaches: String(n) }
+    return base
+  }, [lang, beachCount, wowIsland])
 
   // Restore email from localStorage (clé canonique = sg_email, écrite par tout le funnel)
   const [emailValue, setEmailValue] = useState(() => {
@@ -362,7 +370,7 @@ export function WorldPaywall({
             </div>
           </div>
           <div className="sg-wow-card">
-            <div className="sg-wow-dest">{wowIsland || t("Ta destination", "Your destination", "Tu destino")}</div>
+            <div className="sg-wow-dest">{wowIsland || t("Ta destination", "Your destination", "Tu destino")}{Number(beachCount) > 0 ? ` · ${beachCount} ${t("plages", "beaches", "playas")}` : ""}</div>
             <div className="sg-wow-name">{(beach && beach.name) || variantContent.title}</div>
             <div className="sg-wow-row">
               <span className="sg-wow-verdict" style={{ color: wowVerdict.c, background: wowVerdict.bg }}>
@@ -412,7 +420,7 @@ export function WorldPaywall({
           {/* Compact stats badges — pictos SVG line (Bible v1 remplace emojis OS) */}
           <div style={{ display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap" }}>
             <StatBadge icon={BADGE_ICONS.regions} color="#FFC72C">
-              {stats.regions} {t("régions", "regions", "regiones")}
+              {stats._regional ? stats.regions : (<>{stats.regions} {t("régions", "regions", "regiones")}</>)}
             </StatBadge>
             <StatBadge icon={BADGE_ICONS.beaches} color="#22C55E">
               {stats.beaches} {t("plages", "beaches", "playas")}

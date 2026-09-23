@@ -75,6 +75,34 @@ try {
 }
 // Nouvelle région (≠ mq/gp) → build dédié mono-région (SPA + meta), sans la génération SEO MQ/GP historique.
 const IS_NEW_REGION = !!(REGION && REGION.id !== 'mq' && REGION.id !== 'gp')
+// REGION STATS HONNÊTES (REVENUE 2026-09-23) : mq/gp n'ont pas de beaches[]
+// inline (source = public/data/beaches-list.json filtrée par beachFilter.island).
+// Sans cette hydratation, les générateurs SEO rendaient « 0 plages » (GP) dans
+// les noscript/FAQ/JSON-LD. Les nouvelles régions gardent leur beaches[] inline.
+try {
+  if (REGION && !(REGION.beaches && REGION.beaches.length) && REGION.beachFilter && REGION.beachFilter.island) {
+    const _bl = JSON.parse(readFileSync(resolve(__dirname, 'public/data/beaches-list.json'), 'utf-8'))
+    const _arr = Array.isArray(_bl) ? _bl : (_bl.beaches || [])
+    REGION.beaches = _arr.filter(b => b && b.island === REGION.beachFilter.island)
+    console.log(`[region-stats] ${REGION.id}: ${REGION.beaches.length} plages depuis beaches-list.json (filtre island=${REGION.beachFilter.island})`)
+  }
+} catch (e) {
+  console.warn('vite.config.js: beaches-list non chargé:', e.message)
+}
+// Comptes de plages par île (REVENUE 2026-09-23) : calculés depuis la même
+// source, injectés au runtime via __REGION_BEACH_COUNTS__. Le runtime NE DOIT
+// PAS compter allBeaches (vaut le fallback 20 items tant que le fetch
+// sargassum n'a pas répondu → « 10 plages » fantôme au paywall).
+let REGION_BEACH_COUNTS = null
+try {
+  const _bl2 = JSON.parse(readFileSync(resolve(__dirname, 'public/data/beaches-list.json'), 'utf-8'))
+  const _arr2 = Array.isArray(_bl2) ? _bl2 : (_bl2.beaches || [])
+  REGION_BEACH_COUNTS = {}
+  for (const b of _arr2) { if (b && b.island) REGION_BEACH_COUNTS[b.island] = (REGION_BEACH_COUNTS[b.island] || 0) + 1 }
+  console.log('[region-stats] comptes par île:', JSON.stringify(REGION_BEACH_COUNTS))
+} catch (e) {
+  console.warn('vite.config.js: comptes plages non calculés:', e.message)
+}
 
 // FIABILITÉ HONNÊTE — injectée au runtime via __RELIABILITY__ pour que le badge in-app
 // consomme la MÊME source que /fiabilite/ (backtest-results.json) et ne sur-claime/dérive
@@ -2692,6 +2720,8 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
     __RELIABILITY__: JSON.stringify(RELIABILITY),
     // Taille communauté (plancher honnête leads email) — preuve sociale paywall.
     __COMMUNITY__: JSON.stringify(COMMUNITY),
+    // Comptes de plages par île (source beaches-list.json) — stats paywall honnêtes.
+    __REGION_BEACH_COUNTS__: JSON.stringify(REGION_BEACH_COUNTS),
   },
   build: {
     // Carte Leaflet retirée (2026-06-21) → plus de chunk leaflet ni de filtre de preload.

@@ -1,0 +1,11 @@
+# Tooling local (jamais committer)
+.venv/
+.cache/
+webwright-outputs/
+ws/
+
+# Artifacts de runs (état conservé sur disque, hors git pour le poids)
+runs/
+
+# Rapports texte + skills + configs SONT versionnés.
+!.gitignore

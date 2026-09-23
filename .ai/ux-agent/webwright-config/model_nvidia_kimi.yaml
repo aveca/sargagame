@@ -1,0 +1,15 @@
+# Model modifier — NVIDIA NIM (OpenAI-compatible chat completions) via Webwright's
+# OpenRouter model class. Stack AFTER base.yaml.
+#
+# Required env: OPENROUTER_API_KEY must contain the NVIDIA API key
+# (injected by webwright-run.cjs launcher from opencode auth.json — never printed).
+#
+# Tested 2026-09-16: moonshotai/kimi-k3 accepts response_format json_schema strict.
+model:
+  model_class: openrouter
+  model_name: moonshotai/kimi-k3
+  openrouter_endpoint: https://integrate.api.nvidia.com/v1/chat/completions
+  # Kimi K3 cold-start observed up to ~120 s on NVIDIA NIM.
+  request_timeout_seconds: 180
+  max_output_tokens: 4000
+  provider_require_parameters: false
