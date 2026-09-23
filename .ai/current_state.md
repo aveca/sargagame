@@ -1,4 +1,41 @@
-## 2026-09-23 · Agent: coding (WOW FULL EXPERIENCE) — BeachExperience prête à merger
+## 2026-09-23 · Agent: coding (K3 MASTER RESUME) — Recovery audit repris, 2 vices réels fixés
+
+### Travail effectué
+- **Résumé 1 ligne** : audit recovery complété (était interrompu) — 2 vices réels trouvés et corrigés : dédup cart-recovery non persistée en CI (re-envois jusqu'à 4×/j) + prix mensongers 12,99€/9,99$ vs débit réel 14,99€/11,99$ (13,79$ saison) + faux rabais J+5.
+- **Détails** : BUG-2026-040 (workflow anti-doublon ne commitait pas sent_markers/) + BUG-2026-041 (templates promettaient prix erronés, moat honnêteté cassé). Revenue report vérifié (vérités séparées Mollie vs funnel). Money-path tracé : #682 mergée 09-16 (createToken/mounts) + 611af4a29 08-25 (cardToken) — code complet, execution humaine carte = seule preuve manquante. Mollie : 0 payé depuis 2026-07-19 (vérité dashboard), funnel 7j : 263 modal → 6 CTA (2,3 %) → 6 checkout → 0 payé, 0 failed post-fix.
+- **Baseline inchangée** : Exp.4 « ton séjour planifié » en observation 23/09→07/10, seuil modal→CTA ≥4 % sur ≥200 opens — actuellement 2,3 % (263 opens) — la mesure continue, rien de cassé, pas de nouvelle expérience lancée.
+
+### Fichiers modifiés
+- `.github/workflows/daily-copernicus.yml` — 3 marqueurs sent_markers/cart-recovery-j{1,3,5} ajoutés au commit anti-doublon
+- `scripts/automation/cart-recovery-unified.cjs` — passPriceLabel(island) véridique ; sujets/corps J+1/J+3/J+5 ; faux rabais J+5 supprimé
+- `tests/unit/cart-recovery-truth.test.cjs` (N) — 12 checks contrat prix + dédup CI
+- `.ai/changelog.md`, `.ai/bugs.md` (BUG-2026-040/041), `.ai/tasks.md`, `.ai/current_state.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38,2 Ko ≤ 210
+- [x] php -l → N/A (0 PHP touché)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] npm test → 193/195 (2 = filets worktrees jolly-yalow préexistants)
+- [ ] CI PR → en cours
+
+### Vérités revenu (2026-09-23, pour mémoire)
+- B2C : Mollie 0 payé depuis 2026-07-19 (30j) · Stripe legacy MRR 69,86 € / 14 abos (stable, 0 churn) · funnel 7j : 841 sessions → 263 premium opens → 6 CTA → 6 onsite → 0 payé / 0 failed
+- B2B : 152 contactés → 10 leads → 0 payé (supabase b2b_probe : 2 prospects, 1 contact, 0 paiement) — goulot = activation commerciale, pas le schéma (déjà bâti)
+- Recovery live : cart-recovery J+1/J+3/J+5 --send actif 4×/j (dédup désormais persistée), relance-gap manual-gated, dunning/pass-expiry live
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % post-#682 (n=6 — bruit) ; la SEULE preuve humaine = 1 paiement carte fondateur (HUMAN-ONLY, non fabricable)
+- [ ] BUG-2026-038 historique (E2E bottomnav CI) : fix mergé, suivre CI prochaine
+- [ ] Jev : route worker présente, fallback safe ; vérif prod zone = founder-only (non bloquant revenu)
+- [ ] B2B : queue qualifiée existe (b2b-targets 158+) ; envoi = dépendance humaine/infra (Resend/forwarders préflight)
+
+### Prochaine action recommandée
+1. Merge PR recovery-truth → deploy auto → QA prod (aucun changement visible site ; workflow fortifié) — Rôle : release
+2. POURSUIVRE : audit B2B trial→payment→entitlement + enrichissement queue commerciale qualifiée — Rôle : coding/growth
+3. Mesurer modal→CTA Exp.4 à J+7 (30/09) — Rôle : growth
+
+### Branche / PR 
 
 ### Travail effectué
 - **Résumé 1 ligne** : parcours cohésif HOME→BEACH→TOMORROW→BACKUP→TRIP→PREMIUM en une surface (BeachExperience lazy), chrome masqué, skin catch-all fixé, E2E 4/4.

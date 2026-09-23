@@ -39,6 +39,20 @@
 - **Harnais (même pattern, assertions intactes)** : `selectors` passé en ARG d'`evaluate` (bottomnav ×2, j0 `openFirstBeach`) ; `openPaywallViaNav` clique l'onglet premium PAR TEXTE (nth(2)=Carte en UI 5 onglets) ; repli héros porté dans `openFirstBeach` ; pont comic→data en boucle (~15 s) ; dismissal wall « N PLAGES » partagé + re-vérifié avant vote/rapport ; vote ciblé en match exact ; contrat j0 aligné sur `selectors.*` centralisés (valeur `[data-sg-labels-ready]` vérifiée).
 - **Statut** : [x] FIXÉ — produit (`WorldMapView.jsx`) + harnais E2E absorbés et MERGÉS via #677 (main @d1c6af129) ; alignement contrat + docs : branche `agent/coding/bug-2026-038`, PR à créer vers main
 
+### BUG-2026-040 — [x] FIXÉ 2026-09-23 (session K3 MASTER) Cart-recovery : marqueurs dédup non persistés → re-envois multiples
+- **Date** : présent depuis l'introduction de `cart-recovery-unified.cjs` (workflow daily-copernicus `--send` J+1/J+3/J+5, cron 4×/j).
+- **Sévérité** : P1 — risque spam réputationnel (jusqu'à 4×/jour le même email « panier abandonné » à la même personne pendant sa fenêtre 24-48h/72-96h/120-144h).
+- **Cause exacte** : le script écrit la dédup dans `scripts/automation/sent_markers/cart-recovery-j{day}-sent.json` ; le step « Commit email state (immédiat, anti-doublon) » du workflow ne listait que `data/cart-recovery-sent.json` (script legacy) — les 3 nouveaux marqueurs n'étaient jamais committés (`git ls-files sent_markers` = vide) → chaque run repartait sans mémoire. La leçon 2026-06-11 (« 17× le même J+3 ») commentée dans le workflow n'avait jamais été appliquée à ces fichiers.
+- **Fix** : les 3 chemins `sent_markers/cart-recovery-j{1,3,5}-sent.json` ajoutés à la boucle `for f in ...` du commit anti-doublon (`.github/workflows/daily-copernicus.yml`).
+- **Validation** : tests/unit/cart-recovery-truth.test.cjs 12/12 · build 0 · smoke 4/4.
+- **Statut** : [x] FIXÉ (branche agent/coding/recovery-truth)
+
+### BUG-2026-041 — [x] FIXÉ 2026-09-23 (session K3 MASTER) Cart-recovery : prix de vente mensonger dans les 3 templates
+- **Sévérité** : P1 produit/honnêteté — l'email de récupération promettait « 12,99 € (MQ/GP) · 9,99 $ (USD), même tarif qu'aujourd'hui » alors que le débit réel = 14,99 € / 11,99 $ (+15 % juin→nov = 13,79 $ en saison) ; J+5 ajoutait un faux rabais « 12,99 € au lieu de 14,99 € » sans mécanisme de prix promo réel (CTA → paywall standard à 14,99 €). Contrat prix : `src/lib/pass-price.js` ↔ `public/api/mollie.php` (allowlist anti-tamper, test pass-money-contract 13/13).
+- **Fix** : helper `passPriceLabel(island)` (EUR 14,99 MQ/GP ; USD 11,99 base / 13,79 saison, miroir de PASS_CENTS) ; templates J+1/J+3/J+5 recâblés ; J+5 = « le montant reste le même — 14,99 € » (vrai désormais). Zéro promo inventée.
+- **Validation** : tests/unit/cart-recovery-truth.test.cjs (verrou anti-régression, incl. garde croisée PASS_CENTS).
+- **Statut** : [x] FIXÉ (branche agent/coding/recovery-truth)
+
 ### BUG-2026-039 — [~] EN COURS 2026-09-16 (mission money-path-p0) `sg_payment_failed` : createToken sans Components montés
 - **Date** : 2026-09-16 (branche `agent/coding/money-path-p0`, PR #682).
 - **Sévérité** : P0 revenue reliability — 7× `sg_payment_failed` prod (`provider=mollie`, reason=`Not all required components are mounted, see https...`), séquence pass_cta → onsite_checkout_opened → auth_view → failed, 0 redirect Mollie.

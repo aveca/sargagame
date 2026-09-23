@@ -69,14 +69,26 @@ function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
 }
 
+// ── Prix véridique — contrat strict src/lib/pass-price.js + public/api/mollie.php ──
+// p30 → EUR 14,99 / USD 11,99 · surcharge saison USD +15 % juin→novembre au débit.
+// Moat = honnêteté : le prix annoncé dans l'email DOIT être le prix réellement débité.
+// (2026-09-23 : corrigé — promettait 12,99 €/9,99 $ alors que le débit est 14,99 €/11,99 $)
+function passPriceLabel(island) {
+  const i = String(island || 'mq').toLowerCase()
+  if (i === 'mq' || i === 'gp') return '14,99 €'
+  const m = new Date().getMonth() + 1
+  return (m >= 6 && m <= 11) ? '13,79 $' : '11,99 $'
+}
+
 // ── Templates par jour (depuis RETENTION_ANALYSIS.md) ──────────────────
-function buildEmail(day, email, ctaUrl, domain) {
+function buildEmail(day, email, ctaUrl, domain, island) {
+  const price = passPriceLabel(island)
   const unsubUrl = `https://${domain}/?unsub=1`
   const trackingId = `cart_recovery_j${day}:${new Date().toISOString().slice(0,10).replace(/-/g,'')}:${logId(email)}`
 
   if (day === '1') {
     // J+1 — doux
-    const subject = `Ton pass 30j t'attend — 12,99 €`
+    const subject = `Ton pass 30j t'attend — ${price}`
     const preheader = `Le verdict du jour est prêt. Il suffit de terminer.`
     const html = `
 ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arrivé — il est encore temps de verrouiller la bonne plage.')}
@@ -89,7 +101,7 @@ ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arri
     Ce que tu as commencé à verrouiller reste prêt. Un paiement unique, sans abonnement, et tu reçois chaque matin la meilleure plage en un coup d'œil.
   </p>
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 18px">
-    <strong>Prix : 12,99 €</strong> (MQ/GP) · 9,99 $ (USD) — même tarif qu'aujourd'hui.
+    <strong>Prix : ${price}</strong> — le même tarif qu'à ton passage, sans mauvaise surprise au paiement.
   </p>
   <p style="font-size:14px;color:#555;line-height:1.6;margin:0 0 18px">
     C'est quoi, exactement ? Le verdict plage par plage, l'alerte quand ça bascule, et 7 jours de prévision.
@@ -110,7 +122,7 @@ ${brandHeader('Le Veilleur', 'Ton pass t\'attend', 'Le verdict du matin est arri
 
   if (day === '3') {
     // J+3 — ferme
-    const subject = `Dernier rappel : ton pass 30j à 12,99 € expire`
+    const subject = `Dernier rappel : ton pass 30j à ${price} expire`
     const preheader = `La bonne plage au bon moment, c'est une question de jours.`
     const html = `
 ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à expiration.')}
@@ -126,7 +138,7 @@ ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à
   <div style="text-align:center;margin:24px 0">
     <a href="${ctaUrl}" style="display:inline-block;padding:14px 28px;background:linear-gradient(158deg,#FFE47A,#FFC72C,#E89400);color:#0D0D0D;text-decoration:none;border-radius:12px;font-size:15px;font-weight:800">Activer mon pass (paiement unique)</a>
   </div>
-  <p style="font-size:13px;color:#888;text-align:center;margin:0">12,99 € · 9,99 $ · sans abonnement · immédiat</p>
+  <p style="font-size:13px;color:#888;text-align:center;margin:0">${price} · sans abonnement · immédiat</p>
 </div>
 
 <div style="background:#0D1117;border-radius:0 0 16px 16px;text-align:center;padding:16px;font-size:10px;color:#889">
@@ -136,9 +148,9 @@ ${brandHeader('Le Veilleur', 'Dernier rappel', 'Ta session de paiement arrive à
     return { subject, preheader, html, unsubUrl, trackingId }
   }
 
-  // J+5 — promo -2€
-  const subject = `On garde ton pass 48h — 12,99 € au lieu de 14,99 €`
-  const preheader = `Dernier rappel : le pass t'attend, sans coût ni engagement.`
+  // J+5 — dernière relance, prix véridique (jamais de faux rabais)
+  const subject = `On garde ton pass 48h — ${price}, sans abonnement`
+  const preheader = `Dernier rappel : le pass t'attend, sans coût ni engagement supplémentaire.`
   const html = `
 ${brandHeader('Le Veilleur', 'On garde ta place', 'Ta session approche de son expiration — le montant reste le même.')}
 
@@ -147,7 +159,7 @@ ${brandHeader('Le Veilleur', 'On garde ta place', 'Ta session approche de son ex
     Ta plage est propre ce matin. Le Veilleur le sait depuis cette nuit.
   </p>
   <p style="font-size:15px;color:#333;line-height:1.6;margin:0 0 18px">
-    Ta session de paiement approche de son expiration. Le montant reste le même — <strong>12,99 € au lieu de 14,99 €</strong> —
+    Ta session de paiement approche de son expiration. Le montant reste le même — <strong>${price}</strong> —
     et le pass est à toi immédiatement après le paiement, sans abonnement ni engagement supplémentaire.
   </p>
   <div style="text-align:center;margin:24px 0">
@@ -269,7 +281,7 @@ async function main() {
 
     const domain = domainFor(c.island)
     const ctaUrl = `https://${domain}/?paywall=1&utm_source=email&utm_medium=cart_recovery&utm_campaign=j${DAY}`
-    const email = buildEmail(DAY, c.email, ctaUrl, domain)
+    const email = buildEmail(DAY, c.email, ctaUrl, domain, c.island)
 
     // Outbox entry
     const outboxEntry = {
