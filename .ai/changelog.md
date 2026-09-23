@@ -1,4 +1,4 @@
-## 2026-09-23 — WOW TAKEOVER slice 1 : paywall « UNLOCK MY STAY » + home desktop + fix `}` (PR à créer)
+## 2026-09-23 — WOW TAKEOVER slice 1 : paywall « UNLOCK MY STAY » + home desktop + fix `}` (PR #737 MERGED, DEPLOYED)
 
 **PROBLEM** : paywall dense/sombre/technique centré paiement (UX failure) ; home desktop = colonne mobile 520px dans le vide ; `}` littéral affiché sur la home (bug JSX `)}}` ExperienceReset:149, confirmé par warning esbuild).
 **CHANGE** (rollback global `?sgpaywow=0`, money-path intact — PassOffer/prix/CTA/tracking/checkout/OnsiteCheckout inchangés) :
