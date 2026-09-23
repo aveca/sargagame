@@ -1,0 +1,32 @@
+{
+  // ============================================================================
+  // ROUTING MULTI-MODÈLES — résilience quota provider (2026-09-16)
+  // Chaine : Kimi K3 → DeepSeek V4 (snapshot 0731) → Nemotron 3 Super → Ollama local
+  // Bascule = toucher Tab dans le TUI (les 4 agents sont en mode "primary").
+  // IDs vérifiés LIVE par requêtes minimales (voir .ai/ux-agent/opencode-routing.md).
+  // ============================================================================
+  "$schema": "https://opencode.ai/config.json",
+  "model": "nvidia/moonshotai/kimi-k3",
+  "default_agent": "build",
+  "agent": {
+    "build": {
+      "model": "nvidia/moonshotai/kimi-k3",
+      "description": "PRIMARY: Kimi K3 (NVIDIA) — quota ok au 2026-09-16"
+    },
+    "fb1-deepseek": {
+      "model": "nvidia/deepseek-ai/deepseek-v4-flash-0731",
+      "mode": "primary",
+      "description": "Fallback 1: DeepSeek V4 Flash (NVIDIA). ATTENTION: seule la variante datée 0731 est en ligne; deepseek-v4-pro / -flash (alias) = EOL 410."
+    },
+    "fb2-nemotron": {
+      "model": "nvidia/nvidia/nemotron-3-super-120b-a12b",
+      "mode": "primary",
+      "description": "Fallback 2: Nemotron 3 Super 120B (NVIDIA) — testé OK."
+    },
+    "fb3-local": {
+      "model": "ollama/qwen2.5-coder:14b",
+      "mode": "primary",
+      "description": "Fallback final: Ollama LOCAL qwen2.5-coder:14b (installé, 0 quota, ~40s au 1er appel). NOTE: qwen3.5:8b n'existe PAS dans le registry Ollama."
+    }
+  }
+}

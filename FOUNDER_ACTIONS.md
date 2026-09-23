@@ -52,13 +52,9 @@ Prix **vérifiés en prod** le 2026-09-22 (recap de commande, sonde read-only) �
 
 `trip 4,99 €/$ · sejour 12,99 €/9,99 $ · saison 19,99 €/14,99 $` — si un de ces liens traîne dans un vieil email ou une page, on peut recevoir un paiement à un prix abandonné. **À faire** (2 min, dashboard Mollie) : désactiver ces 6 paylinks pour ne garder que Pro/Brief/Territoire + laisser le checkout on-site seul canal B2C. (Je peux le faire via API avec `MOLLIE_API_KEY` sur ton GO — suppression de liens, pas de pricing in-app.)
 
-### Étape 1 — Token Supabase (2 min) — débloque le data model B2B
+### Étape 1 — Token Supabase — OBSOLÈTE 2026-09-23 (schema live, ne plus demander en priorité)
 
-1. https://supabase.com/dashboard/account/tokens → **Generate new token**
-2. GitHub → Settings → Secrets and variables → Actions → `SUPABASE_ACCESS_TOKEN` → Update
-3. https://github.com/aveca/sargagame/actions/workflows/apply-supabase-schema.yml → **Run workflow** → vert attendu (les 11 tables B2B se créent)
-
-**Alternative sans GitHub** : Supabase dashboard → SQL Editor → coller `supabase/schema.sql` à partir de la ligne `B2B SALES ENGINE — PHASE 1` (~ligne 371) → Run.
+Lecture prod 2026-09-23 : tables B2B peuplées (`b2b_prospects`=2, `b2b_contacts`=1, `b2b_scores`=1, `b2b_concierge`=1, `b2b_events`=13). Le bottleneck B2B est les VENTES (0 trial→paid, 0 `b2b_payments`), pas le schéma. Ne régénérer le token + `apply-supabase-schema.yml` QUE pour une future migration (RLS/policies) — jamais comme prérequis commercial.
 
 ### Étape 2 — Premières ventes (ne demande AUCUN token, aujourd'hui)
 

@@ -190,6 +190,9 @@ const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 export const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
 // Taille communauté (plancher honnête leads email) injectée au build — preuve sociale paywall.
 export const __COMM = (typeof __COMMUNITY__ !== "undefined" && Number(__COMMUNITY__)) || 0
+// Comptes de plages par île injectés au build (cf. vite.config.js
+// __REGION_BEACH_COUNTS__) — stats honnêtes sans course au chargement.
+const __RBC = (typeof __REGION_BEACH_COUNTS__ !== "undefined" && __REGION_BEACH_COUNTS__) || null
 export const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
 export const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
@@ -15007,7 +15010,15 @@ useEffect(()=>{
              pas selectedBeach — sans ce fallback le paywall perdait le contexte plage
              (mini-cart B1, libellé HAVE, strip « Ta semaine » §9 : toujours masqués).
              Données inchangées, jamais inventées ; strip garde son kill-switch ?tripplan=0. */
-          beach={selectedBeach||comicBeach||null}/></Suspense></ErrBound></div>}
+          beach={selectedBeach||comicBeach||null}
+          /* REVENUE 2026-09-23 : nombre réel de plages du build/île (stats
+             paywall honnêtes — jamais le global 136 sur un site régional). */
+          beachCount={(() => { try {
+            if (IS_NEW_REGION && REGION && Array.isArray(REGION.beaches) && REGION.beaches.length) return REGION.beaches.length
+            if (__RBC && island && Number(__RBC[island]) > 0) return Number(__RBC[island])
+            const list = (allBeaches || []).filter(b => b && (!island || b.island === island))
+            return list.length || (allBeaches || []).length
+          } catch (_) { return 0 } })()}/></Suspense></ErrBound></div>}
         {/* TRIP PLANNER (MASTER 2026-09-22) — overlay « planifier mon séjour » (J+1/J+2
             visibles, suite verrouillée → offre). Rollback : ?tripplan=0. */}
         {showTrip&&<ErrBound><Suspense fallback={null}><LazyTripPlanner lang={lang}

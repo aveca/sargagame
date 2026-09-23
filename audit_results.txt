@@ -1,0 +1,29 @@
+Total buttons: 25
+  Button 0: "" visible=True
+  Button 1: "MQ" visible=True
+  Button 2: "GP" visible=True
+  Button 3: "" visible=True
+  Button 4: "" visible=True
+  Button 5: "" visible=True
+  Button 6: "" visible=True
+  Button 7: "EN" visible=True
+  Button 8: "⌂
+Accueil" visible=True
+  Button 9: "≈
+Plages" visible=True
+  Button 10: "◉
+Carte" visible=True
+  Button 11: "★
+Ma Plage" visible=True
+  Button 12: "◆
+Premium" visible=True
+  Button 13: "" visible=True
+  Button 14: "" visible=True
+  Button 15: "Une plage propre près de moi" visible=True
+  Button 16: "" visible=True
+  Button 17: "Auj" visible=True
+  Button 18: "+1j" visible=True
+  Button 19: "+2j" visible=True
+data-beach elements: 20
+Voir elements: 1
+Page title: Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026
