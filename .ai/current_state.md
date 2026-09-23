@@ -1,3 +1,38 @@
+## 2026-09-23 · Agent: coding (SESSION RECOVERY post-crash) — Takeover paywall §9 stabilisé
+
+### Travail effectué
+- **Résumé 1 ligne** : worktree crashé récupéré sans perte (9 fichiers), 4 bugs réparés dont cause racine (contexte plage perdu fiche→paywall), gates verts, screenshots mobile+desktop.
+- **Détails** : `beach={selectedBeach||comicBeach||null}` (Sargasses_PROD) ; `pwVariant="comic"` restauré (ComicPaywall) ; E6 déjà-premium remplace le paywall au lieu de s'empiler (PremiumModal, 2 chemins) ; smoke retry + `SG_KEEP_CONSOLE` + ErrBound log. Strip « TA SEMAINE — <plage> » prouvé au DOM + screenshot (7 pastilles forecast réelles). Trip overlay → CTA → paywall sans crash. Zéro régression money-path (pricing/tracking/checkout intacts).
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — fallback comicBeach (cause racine) + ErrBound console.error
+- `src/PremiumModal.jsx` — tripDays (inchangé, vérifié len 7) + E6 replace + fix style
+- `src/PremiumModal/ComicPaywall.jsx` — pwVariant="comic" restauré
+- `src/PremiumModal/WorldPaywall.jsx`, `src/PassOffer.jsx` — pass-through tripDays (vérifié, inchangé)
+- `scripts/ux-smoke.mjs`, `vite.config.js`, `public/api/b2b-partners.json`, `src/lib/partners-catalog.json` (regen build), `.ai/changelog.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0 (×4 : normal, diagnostic SG_KEEP_CONSOLE, final)
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] php -l → N/A (aucun .php touché)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS (preview frais :4173, ancien process stale tué PID 3184)
+- [x] Playwright → fiche→paywall+strip mobile+desktop, trip→paywall sans crash, ERRORS=[] (9/9 checks)
+
+### Problèmes restants
+- [ ] Donnée pipeline périmée : `sargassum.json` updatedAt 2026-09-22, `stale:true` (41 h) — au `daily-copernicus.yml` de régénérer ; strip reste honnête (données affichées = forecast réel, même âgé)
+- [ ] Comic paywall dormant en prod (`pw_style` gelé sur `world`) — fix pwVariant vérifié en code uniquement
+- [ ] Trip→paywall : strip masqué par design (contexte multi-plages, beach=null) — scope assumé, pas un bug
+
+### Prochaine action recommandée
+1. Merge PR → main → deploy auto daily-copernicus → QA prod (strip sur fiche live) — Rôle : release
+2. Reprendre transformation UX (takeover §10+) sur worktree sain — Rôle : coding/ui
+3. Surveiller `sg_trip_premium_cta` + modal→CTA après deploy — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/revenue-measure`
+- PR : à créer vers main
+- Commit head : voir log
+
 ## 2026-09-22 · Agent: coding (MASTER EXECUTION session) — Trip Planner PROD VERIFIED
 
 ### Travail effectué
