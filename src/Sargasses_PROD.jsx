@@ -13788,7 +13788,7 @@ useEffect(()=>{
   const[nextSuggestion,setNextSuggestion]=useState(null)
   const nextSuggestTimer=useRef(null)
   const lastMapClickRef=useRef(0) // FIX : debounce anti-spam clics rapides carte
-  const onBeachClick=useCallback(b=>{
+  const onBeachClick=useCallback((b,_opts)=>{
     if(!b||!b.id)return
     setComicBeach(null) // FIX : fermer le comic detail si ouvert — mutual exclusion
     setSelectedBeach(null) // FIX : fermer la fiche data si ouverte — mutual exclusion
@@ -13821,9 +13821,15 @@ useEffect(()=>{
     if(nextSuggestTimer.current)clearTimeout(nextSuggestTimer.current)
     // Signal to push auto-loader that user reached a value moment
     try{window.dispatchEvent(new Event("sg:value_moment"))}catch(e){}
-    // Track beach views for PWA install prompt timing
-    const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
-    sessionStorage.setItem("sg_beach_views",String(v))
+    // Track beach views (PWA timing + paywall 3 vues). JOURNEY (2026-09-24) : une
+    // transformation IN-WORLD (chip plan B, ← pile, relais strip) n'est PAS une
+    // nouvelle consultation — le monde reste le même objet, le compteur ne monte
+    // pas (sinon le paywall-3view surgissait en plein parcours A→B→A par-dessus
+    // l'expérience — cassure de continuité reproduite par journey.spec).
+    if(!(_opts&&_opts.inWorld)){
+      const v=parseInt(sessionStorage.getItem("sg_beach_views")||"0")+1
+      sessionStorage.setItem("sg_beach_views",String(v))
+    }
     try{sessionStorage.setItem("sg_seen_beach","1")}catch(_){}   // signal "plus froid" → coupe l'attract idle
     // PRODUCT UX RESET — historique personnel récent (local, jamais de donnée inventée).
     try{const h=JSON.parse(localStorage.getItem("sg_last_beaches")||"[]").filter(x=>x!==b.id);h.unshift(b.id);localStorage.setItem("sg_last_beaches",JSON.stringify(h.slice(0,12)))}catch(_){}
@@ -13961,7 +13967,9 @@ useEffect(()=>{
   },[selectedBeach,comicBeach,JOURNEY_OFF])
 
   // Back navigateur = sortie du monde (natif, instantané ; la carte dessous
-  // n'a jamais bougé — continuité spatiale totale).
+  // n'a jamais bougé — continuité spatiale totale). deps sur les états plage :
+  // le handler doit lire expBeachOf() FRAIS — une closure figée au mount lirait
+  // selectedBeach=null à jamais (bug reproduit par journey.spec : Back sans effet).
   useEffect(()=>{
     if(JOURNEY_OFF)return
     const onPop=()=>{
@@ -13974,7 +13982,7 @@ useEffect(()=>{
     }
     window.addEventListener("popstate",onPop)
     return ()=>window.removeEventListener("popstate",onPop)
-  },[JOURNEY_OFF])
+  },[selectedBeach,comicBeach,JOURNEY_OFF])
 
   // ✕ / geste bord : si notre entry est active → history.back() (même chemin
   // que le Back système, asymétrie zéro) ; sinon fermeture directe + strip.
@@ -13994,12 +14002,14 @@ useEffect(()=>{
   // est dessous) : mémorise la plage quittée — le chip « ← » ramène exactement
   // d'où l'on vient (pile 1 niveau, session only, jamais persisté).
   const expNavOpen=(b,via)=>{
+    let cur=null
     try{
-      const cur=expBeachOf()
+      cur=expBeachOf()
       if(cur&&b&&b.id&&cur.id!==b.id)expPrevRef.current={id:cur.id,name:cur.name||""}
-      if(via)track("sg_exp_chip_tap",{via,beach_id:b.id})
+      if(via&&b&&b.id)track("sg_exp_chip_tap",{via,beach_id:b.id})
     }catch(_){}
-    if(b&&b.id)onBeachClick(b)
+    // inWorld : transformation du même objet → pas de quota paywall-3view.
+    if(b&&b.id)onBeachClick(b,cur?{inWorld:true}:undefined)
   }
   const expJourneyBack=()=>{
     try{
@@ -14009,7 +14019,7 @@ useEffect(()=>{
       const b=(allBeaches||[]).find(x=>x&&x.id===pv.id)
       if(!b)return
       try{const cur=expBeachOf();track("sg_exp_back_tap",{from:cur&&cur.id,to:pv.id})}catch(_){}
-      onBeachClick(b)
+      onBeachClick(b,{inWorld:true})
     }catch(_){}
   }
 
