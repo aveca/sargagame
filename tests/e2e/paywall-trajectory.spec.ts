@@ -95,6 +95,32 @@ test.describe("WOW paywall — LA TRAJECTOIRE (mobile 390px)", () => {
     expect(anims).toBe(0)
   })
 
+  test("transition WOW : checkout animé + écho semaine réelle au moment de payer", async ({ page }) => {
+    await openPaywall(page)
+    // CTA offre → checkout (payStep) — money-path inchangé (createToken hors champ test)
+    const cta = page.locator(PANEL + " .sg-passcard-hero").first()
+    expect(await cta.isVisible({ timeout: 8000 })).toBe(true)
+    await cta.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(400)
+    await cta.click({ timeout: 8000 }).catch(async () => { await cta.click({ force: true }) })
+    // Le checkout (z1300) glisse avec transition (reduced-motion OFF ici)
+    const checkout = page.locator('[role="dialog"][aria-label*="Paiement"], [role="dialog"][aria-label*="checkout"], [role="dialog"][aria-label*="Pago"]').first()
+    expect(await checkout.isVisible({ timeout: 10000 }).catch(() => false)).toBe(true)
+    // Écho « tu débloques la semaine de <plage> » + mini-dots réels du forecast
+    const echo = page.locator('[data-testid="checkout-trajectory"]')
+    const echoVisible = await echo.isVisible({ timeout: 5000 }).catch(() => false)
+    // Sans contexte plage le paywall n'a pas de trajectoire → écho légitimement absent
+    if (await page.locator(TRAJ).count() > 0) {
+      expect(echoVisible).toBe(true)
+      expect((await echo.innerText()).length).toBeGreaterThan(3)
+    }
+    // La trajectoire paywall reste sous la main au retour (money-path rond)
+    const back = checkout.locator('button:has-text("Retour"), button:has-text("Back"), button:has-text("Atrás")').first()
+    if (await back.isVisible({ timeout: 3000 }).catch(() => false)) await back.click()
+    await page.waitForTimeout(600)
+    expect(await page.locator(PANEL + " .sg-passcard-hero").first().isVisible()).toBe(true)
+  })
+
   test("desktop 1440px : trajectoire en colonne droite du paywall, zéro débordement", async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await openPaywall(page)

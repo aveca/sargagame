@@ -35,9 +35,11 @@ test.describe("Takeover — nouveau default", () => {
     const best = page.locator('[data-testid="xp-best-open"], [data-testid="xp-open"]').first()
     await best.click()
     await page.waitForTimeout(1800)
-    const fiche = page.locator(".bsc-sheet, .lc-detail, .sheet").first()
+    // Fiche = takeover BeachExperience (bx-experience, défaut 2026-09-23) ou
+    // variantes fiches legacy (bsc-sheet/lc-detail/sheet) — même définition que ux-smoke.
+    const fiche = page.locator('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]').first()
     await expect(fiche).toBeVisible({ timeout: 10000 })
-    const trip = page.locator('button:has-text("Planifier mon séjour"), button:has-text("Plan my stay"), button:has-text("Planificar mi estancia")').first()
+    const trip = page.locator('button:has-text("Planifier mon séjour"), button:has-text("Plan my stay"), button:has-text("Planificar mi estancia"), [data-testid="exp-trip-open"]').first()
     if (await trip.count()) {
       await trip.scrollIntoViewIfNeeded().catch(() => {})
       await trip.click()

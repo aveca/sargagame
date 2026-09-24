@@ -49,7 +49,7 @@ function main() {
   const goldSpreads = (XP.match(/\.\.\.btnGold/g) || []).length // style={{ ...btnGold, ... }}
   const goldDirect = (XP.match(/style=\{btnGold\}/g) || []).length // style={btnGold}
   const goldArmored = (XP.match(/className="xp-gold xp-gold"/g) || []).length
-  ok(goldSpreads + goldDirect === 8 && goldArmored === 8, `R2 : tous les boutons btnGold armurés (armure ${goldArmored}/8, usages ${goldSpreads + goldDirect}/8)`)
+  ok(goldSpreads + goldDirect > 0 && goldSpreads + goldDirect === goldArmored, `R2 : tous les boutons btnGold armurés (armure ${goldArmored}/N, usages ${goldSpreads + goldDirect} — parité, plus de quota figé)`)
   ok(XP.includes("className=\"xp-dark xp-dark\""), 'R2 : bouton noir J’y vais armuré')
   ok(/sort === id \? 'xp-sort-on xp-sort-on'/.test(XP), 'R2 : tri actif câblé (classe conditionnelle)')
   ok(/onlyFav \? 'xp-sort-on xp-sort-on'/.test(XP), 'R2 : toggle Suivies câblé (classe conditionnelle)')

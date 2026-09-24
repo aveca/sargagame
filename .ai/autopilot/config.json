@@ -1,0 +1,87 @@
+{
+  "$comment": "Configuration de l'usine autonome Sargagame. Éditable par le fondateur. Chaque changement est relu au prochain cycle. Ne JAMAIS mettre de secret ici.",
+  "version": 1,
+
+  "loop": {
+    "maxRunMinutes": 50,
+    "intervalMinutes": 240,
+    "maxRepairAttempts": 3,
+    "observeIfOlderThanMinutes": 180,
+    "researchEveryNRuns": 12
+  },
+
+  "resources": {
+    "maxConcurrentAgents": 1,
+    "minFreeMemoryMB": 1024,
+    "unattendedHeavyStartHour": 21,
+    "unattendedHeavyEndHour": 8,
+    "heavyViewportsWhenUnattended": true
+  },
+
+  "observe": {
+    "regions": ["mq", "florida"],
+    "viewports": [
+      { "name": "390", "width": 390, "height": 844, "isMobile": true, "deviceScaleFactor": 2 },
+      { "name": "768", "width": 768, "height": 1024, "isMobile": true, "deviceScaleFactor": 1 },
+      { "name": "1024", "width": 1024, "height": 768, "isMobile": false },
+      { "name": "1440", "width": 1440, "height": 900, "isMobile": false }
+    ],
+    "lightViewports": ["390"],
+    "maxBeachPagesPerRegion": 2,
+    "maxDeepLinksPerRegion": 2,
+    "maxLinkChecksPerPage": 15,
+    "navigationTimeoutMs": 25000,
+    "settleMs": 2500,
+    "visualDiffThreshold": 0.08
+  },
+
+  "policy": {
+    "maxFilesChanged": 8,
+    "maxDiffLines": 400,
+    "autoMergeEnabled": false,
+    "autoMergeWhitelist": ["docs/**", ".ai/**", "*.md"],
+    "denyGlobs": [
+      "public/api/**",
+      "workers/**",
+      "supabase/**",
+      ".github/**",
+      "regions/**",
+      "dist/**",
+      "scripts/automation/**",
+      "**/.env*",
+      "**/*config.php",
+      "package.json",
+      "package-lock.json",
+      "vite.config.js",
+      "public/sw.js",
+      "src/PremiumModal/**",
+      "**/*mollie*",
+      "**/*paypal*",
+      "**/*stripe*"
+    ],
+    "agentsEnabled": true,
+    "allowAgentImplementation": false,
+    "agentMaxMinutes": 15,
+    "stopFile": ".ai/autopilot/STOP"
+  },
+
+  "git": {
+    "remote": "origin",
+    "baseBranch": "main",
+    "branchPrefix": "agent/autopilot/",
+    "worktreeSibling": "sargagame-autopilot-wt",
+    "prLabels": []
+  },
+
+  "health": {
+    "requiredDomains": ["sargasses-martinique.com"],
+    "warnDomains": [
+      "sargasses-guadeloupe.com",
+      "sargassummiami.com",
+      "sargassumpuntacana.com",
+      "sargassumcancun.com",
+      "sargazotulum.com"
+    ],
+    "timeoutMs": 10000
+  }
+}

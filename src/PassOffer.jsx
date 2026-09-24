@@ -49,6 +49,17 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   // Recycle UNIQUEMENT des faits déjà claimés (l115/l150-153) : aucun chiffre,
   // aucun nouveau claim, aucun tracking, aucun layout structurel (+~20px).
   const trustRow = (()=>{try{return !/[?&]trust_row=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // OPP-2026-001 (autopilot) — strip « Ta semaine » lisible : initiale du jour
+  // sous chaque pastille + aria-label jour+statut (le title= est muet au tactile
+  // et au lecteur d'écran). Jours DÉRIVÉS de fc[0]=aujourd'hui (même hypothèse
+  // que tripDays[1]=« Demain » déjà utilisée par WorldPaywall) — zéro invention.
+  // Affichage pur, zéro data/logique/paiement. Rollback : ?triplabels=0.
+  const tripLabelsOn=(()=>{try{return !/[?&]triplabels=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const DAY1=lang==="en"?["S","M","T","W","T","F","S"]:lang==="es"?["D","L","M","M","J","V","S"]:["D","L","M","M","J","V","S"]
+  const stLabel=(st)=>_t(lang,
+    st==="clean"?"propre":st==="moderate"?"à surveiller":st==="alert"?"à éviter":"inconnu",
+    st==="clean"?"clean":st==="moderate"?"to watch":st==="alert"?"to avoid":"unknown",
+    st==="clean"?"limpia":st==="moderate"?"a vigilar":st==="alert"?"a evitar":"desconocido")
   const isComic = pwVariant === "comic"
 
   // WOW « LA TRAJECTOIRE » (2026-09-24, rollback ?sgtraj=0) : quand le paywall
@@ -94,13 +105,21 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               {_t(lang, "Ta semaine", "Your week", "Tu semana")}{tripBeach ? ` — ${tripBeach}` : ""}
             </span>
             <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              {tripDays.map((st, i) => (
-                <span key={i} title={st || ""} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 6, fontSize: 10, fontWeight: 800,
-                  background: st === "clean" ? "rgba(34,197,94,.18)" : st === "moderate" ? "rgba(245,158,11,.20)" : st === "alert" ? "rgba(239,68,68,.18)" : "rgba(120,120,130,.15)",
-                  color: st === "clean" ? "#16A34A" : st === "moderate" ? "#B45309" : st === "alert" ? "#DC2626" : "#777" }}>
-                  {st === "clean" ? "✓" : st === "moderate" ? "!" : st === "alert" ? "✕" : "·"}
-                </span>
-              ))}
+              {tripDays.map((st, i) => {
+                const dayIdx = (new Date().getDay() + i) % 7
+                const bg = st === "clean" ? "rgba(34,197,94,.18)" : st === "moderate" ? "rgba(245,158,11,.20)" : st === "alert" ? "rgba(239,68,68,.18)" : "rgba(120,120,130,.15)"
+                const fg = st === "clean" ? "#16A34A" : st === "moderate" ? "#B45309" : st === "alert" ? "#DC2626" : "#777"
+                const glyph = st === "clean" ? "✓" : st === "moderate" ? "!" : st === "alert" ? "✕" : "·"
+                return (
+                  <span key={i} title={`${DAY1[dayIdx]} · ${stLabel(st)}`} aria-label={`${DAY1[dayIdx]} · ${stLabel(st)}`}
+                    style={{ display: "inline-flex", flexDirection: tripLabelsOn ? "column" : "row", alignItems: "center", justifyContent: "center",
+                      width: tripLabelsOn ? 24 : 20, minHeight: 20, padding: tripLabelsOn ? "2px 0 3px" : 0, height: tripLabelsOn ? "auto" : 20,
+                      borderRadius: 6, fontSize: 10, fontWeight: 800, background: bg, color: fg }}>
+                    {tripLabelsOn && <span aria-hidden="true" style={{ fontSize: 7.5, fontWeight: 800, lineHeight: 1, opacity: .85, letterSpacing: ".02em" }}>{DAY1[dayIdx]}</span>}
+                    <span aria-hidden="true" style={{ lineHeight: 1.1 }}>{glyph}</span>
+                  </span>
+                )
+              })}
             </div>
           </div>
         )}

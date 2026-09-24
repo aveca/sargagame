@@ -1,0 +1,9 @@
+# Artefacts lourds / locaux — la mémooire exploitable (json/md) reste trackée.
+runs/runner.log
+**/shots/
+*.png
+*.webm
+*.zip
+orchestrator.lock
+STOP
+baselines/**

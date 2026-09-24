@@ -17,6 +17,9 @@
     "verify-ftp": "node scripts/verify-ftp-ready.cjs",
     "session": "node scripts/cursor-session-startup.cjs",
     "gate": "node scripts/gate.cjs",
+    "autopilot": "node scripts/autopilot/run.cjs",
+    "autopilot:observe": "node scripts/autopilot/observe.cjs",
+    "autopilot:status": "node scripts/autopilot/status.cjs",
     "outreach:preflight": "node scripts/automation/outreach-preflight.cjs",
     "outreach:gate": "node scripts/automation/outreach-preflight.cjs -- --gate",
     "outreach:verify-dry-run": "node scripts/automation/outreach-verify-dry-run.cjs"

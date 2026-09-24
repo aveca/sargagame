@@ -1,0 +1,63 @@
+name: Autopilot Daily (Observe + Report)
+
+# Browser QA production quotidien + rapport mémoire.
+# L'implémentation (opencode run) reste sur la machine/orchestrateur local
+# (clé LLM requise) — ce workflow ne fait qu'OBSERVER + COMPARER + RAPPORTER.
+
+on:
+  schedule:
+    - cron: '35 6 * * *'  # 06:35 UTC quotidien (après pipeline data ~00-04h)
+  workflow_dispatch:
+    inputs:
+      domains:
+        description: 'Ex: mq,florida (vide = tous)'
+        required: false
+        default: ''
+      quick:
+        description: 'Sans vérification de liens'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  observe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Observe production
+        run: |
+          DOM="${{ github.event.inputs.domains }}"
+          EXTRA=""
+          [ -n "$DOM" ] && EXTRA="--domains=$DOM"
+          [ "${{ github.event.inputs.quick }}" = "true" ] && EXTRA="$EXTRA --quick"
+          node scripts/autopilot/observe.cjs $EXTRA
+      - name: Baseline compare ou init
+        id: baseline
+        continue-on-error: true
+        run: |
+          OBS=$(node -e "const l=require('./.ai/autopilot/observations/latest.json');console.log('.ai/autopilot/observations/'+l.dir+'/observations.json')")
+          if node -e "process.exit(Object.keys(require('./.ai/autopilot/baselines.json').routes||{}).length?0:1)"; then
+            node scripts/autopilot/baselines.cjs --compare "$OBS" && echo "regressions=0" >> "$GITHUB_OUTPUT" || echo "regressions=1" >> "$GITHUB_OUTPUT"
+          else
+            node scripts/autopilot/baselines.cjs --update "$OBS" && echo "regressions=0" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Daily report
+        run: node scripts/autopilot/report.cjs
+      - name: Commit memory back
+        run: |
+          git config user.name "autopilot-bot"
+          git config user.email "autopilot-bot@users.noreply.github.com"
+          git add .ai/autopilot/
+          git diff --cached --quiet && echo "rien à committer" || \
+            git commit -m "chore(autopilot): observe+report $(date -u +%F) regressions=${{ steps.baseline.outputs.regressions || 'na' }}"
+          git pull --rebase origin main || true
+          git push origin HEAD:main

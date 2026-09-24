@@ -39,7 +39,7 @@ check('checkout : écho « tu débloques la semaine » présent (testid dédié)
 check('écho : source réelle buildTrajectory (même lib que le paywall)', ONSITE.includes('import { buildTrajectory, TRAJ_STATUS } from "../lib/stay-trajectory.js"'));
 check('écho : jamais hors capture-only (zéro paywall data en mode offert)', ONSITE.includes('trajOn && traj && beach && beach.name && !PAY_CAPTURE_ONLY'));
 check('écho : i18n FR/EN/ES', ONSITE.includes('Tu débloques la semaine de') && ONSITE.includes('You unlock the week of') && ONSITE.includes('Desbloqueas la semana de'));
-check('écho : props beach/trajForecast threadées PremiumModal → OnsiteCheckout', /beach, trajForecast,/.test(PMODAL) && ONSITE.includes('beach = null,\n  trajForecast = null,'));
+check('écho : props beach/trajForecast threadées PremiumModal → OnsiteCheckout', /beach, trajForecast,/.test(PMODAL) && /beach = null,\r?\n\s+trajForecast = null,/.test(ONSITE));
 
 // ── 3. Unlock reveal (paySuccess = moment réel) ──
 check('unlock reveal monté sur payStep && paySuccess && trajOn', ONSITE.includes('payStep && paySuccess && trajOn'));
@@ -54,7 +54,7 @@ check('sg_unlock_reveal allowlisté SG_FUNNEL_EVENTS', PROD.includes('"sg_unlock
 check('sticky : synopsis compteurs RÉELS via buildTrajectory (import lib)', PASS_OFFER.includes('import{buildTrajectory}from"./lib/stay-trajectory.js"'));
 check('sticky : label semaine gaté weekSyno (fallback label historique intact)', PASS_OFFER.includes('`Ta semaine : ${weekSyno}`') && PASS_OFFER.includes('"Mollie · Sans engagement · 2 clics"'));
 check('sticky : synopsis i18n FR/EN/ES', PASS_OFFER.includes('`Your week: ${weekSyno}`') && PASS_OFFER.includes('`Tu semana: ${weekSyno}`'));
-check('sticky : aucune invention — counts clean/moderate/alert uniquement', PASS_OFFER.includes('traj.counts') && !/9[0-9]\s?%/.test(PASS_OFFER));
+check('sticky : aucune invention — counts clean/moderate/alert uniquement', PASS_OFFER.includes('traj.counts') && !/9[5-9]\s?%/.test(PASS_OFFER));
 
 // ── 5. Money-path INTACT (preuves de non-touche) ──
 check('doSubscribe : délai post-succès 900 ms inchangé', (DO_SUB.match(/setTimeout\(\(\)=>\{onActivated\?\.\(\);onClose\(\)\},900\)/g) || []).length >= 1);

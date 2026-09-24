@@ -1,0 +1,123 @@
+{
+  "meta": {
+    "at": "2026-09-24T04:55:16.828Z",
+    "quick": true,
+    "full": false,
+    "domains": [
+      "mq"
+    ],
+    "viewports": [
+      "mobile"
+    ],
+    "lighthouse": false
+  },
+  "runs": [
+    {
+      "url": "https://sargasses-martinique.com/",
+      "status": 200,
+      "perf": {
+        "dcl": 3173,
+        "load": 3465,
+        "ttfb": 2844,
+        "lcp": 3100,
+        "transferKB": 345,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://sargasses-martinique.com/api/mollie.php",
+          "status": 400
+        }
+      ],
+      "brokenLinks": [],
+      "shot": "mobile-home.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "home",
+      "kind": "app",
+      "lighthouse": null
+    },
+    {
+      "url": "https://sargasses-martinique.com/?paywall=1",
+      "status": 200,
+      "perf": {
+        "dcl": 112,
+        "load": 122,
+        "ttfb": 74,
+        "lcp": 156,
+        "transferKB": 1,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://sargasses-martinique.com/api/mollie.php",
+          "status": 400
+        }
+      ],
+      "brokenLinks": [],
+      "shot": "mobile-premium.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "premium",
+      "kind": "app",
+      "lighthouse": null
+    },
+    {
+      "url": "https://sargasses-martinique.com/?pro=1",
+      "status": 200,
+      "perf": {
+        "dcl": 109,
+        "load": 111,
+        "ttfb": 67,
+        "lcp": 244,
+        "transferKB": 1,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [
+        "Failed to load resource: the server responded with a status of 400 ()"
+      ],
+      "pageErrors": [],
+      "failedRequests": [
+        {
+          "url": "https://sargasses-martinique.com/api/mollie.php",
+          "status": 400
+        }
+      ],
+      "brokenLinks": [],
+      "shot": "mobile-b2b.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "b2b",
+      "kind": "app",
+      "lighthouse": null
+    }
+  ],
+  "interactions": [
+    {
+      "mapReady": false,
+      "beachSheet": false,
+      "experience": false,
+      "tomorrow": false,
+      "backup": false,
+      "trip": false,
+      "share": false,
+      "premiumModal": false,
+      "checkoutEntry": false,
+      "notes": [
+        "map not ready in 20s"
+      ],
+      "region": "mq"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$doc": "File d'opportunités de l'autopilot. Statuts : new | picked | shipped | rejected | blocked. actionable : auto (recette déterministe) | agent (délégué opencode, gardes strictes) | human (enregistré, jamais tenté). L'orchestrateur n'exécute QUE le statut new. Ne jamais ré-ouvrir un 'rejected' sans preuve nouvelle (cf. decisions/rejected.json).",
+  "opportunities": [
+    {
+      "id": "OPP-2026-09-24-banner-z",
+      "title": "UX-QA-002 : bannières recovery/expired/renew (z 1500) recouvrent paywall (1260) et checkout (1300)",
+      "source": "MASTER_AUDIT P1 + reproduction code 2026-09-24 (src/Sargasses_PROD.jsx ~14260/14291/14320)",
+      "severity": "high",
+      "confidence": "proven",
+      "actionable": "auto",
+      "recipe": "banner-z-below-paywall",
+      "scope": { "files": ["src/Sargasses_PROD.jsx"], "tests": ["tests/unit/autopilot-banner-z.test.cjs"] },
+      "evidence": "Recovery banner rendue sans garde !showPremium, zIndex:1500 > paywall 1260 / checkout 1300 → offre masquée, clics interceptés.",
+      "expectedImpact": "Le visiteur qui abandonne le checkout revient et PEUT payer (paywall au-dessus). Funnel recovery débloqué.",
+      "rollback": "?bannertop=1",
+      "status": "new",
+      "createdAt": "2026-09-24T00:00:00.000Z"
+    }
+  ]
+}
