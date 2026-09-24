@@ -150,12 +150,29 @@ async function dismissPremiumModal(page: Page) {
   } catch (_) {}
 }
 
+// TAKEOVER 2026-09-22 : le default est HOME (carte à 1 tap depuis la BottomNav).
+// Cette spec pré-takeover attendait [data-sg-labels-ready] au boot → timeout 30 s
+// = budget test entier → 9/9 expiraient SANS rien tester (rouge continu depuis
+// avant PR #742). Chemin utilisateur réel : onglet Carte → labels de carte.
+// Les assertions métier par test sont INCHANGÉES.
+async function openMap(page: Page) {
+  const nav = page.locator(selectors.bottomNav).first()
+  const navVisible = await nav.isVisible({ timeout: 8000 }).catch(() => false)
+  // Rollback ?sgnav=0 : NAV cachée (comportement pré-redesign = carte-first,
+  // aucun tap possible/utile) — on attend directement les labels.
+  if (navVisible) {
+    await page.locator(selectors.bottomNavTabMap).first().click({ timeout: 8000 }).catch(() => {})
+  }
+  await page.waitForSelector(selectors.mapReady, { timeout: 20000 }).catch(() => {})
+  await page.waitForTimeout(1200)
+}
+
 test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("BottomNav visible sur la carte par défaut", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     // Must dismiss cookie banner FIRST — it covers the BottomNav
     await dismissCookieBanner(page)
@@ -180,7 +197,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
     await dismissPremiumModal(page)
@@ -196,9 +213,11 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
     // Vérifie que l'event sg_nav_tab a été émis avec {tab:"list"}
     const hasNavEvent = await tracker.hasEvent(selectors.events.navTab)
     expect(hasNavEvent).toBe(true)
+    // TAKEOVER 2026-09-22 : HOME par défaut → le tap Carte du helper openMap
+    // émet un sg_nav_tab tab=map AVANT le tap du test. Assertion : l'onglet
+    // Plages DOIT produire un event tab=list à SON tap (plus « index 0 »).
     const navEvents = await tracker.getEventsByName(selectors.events.navTab)
-    expect(navEvents.length).toBeGreaterThan(0)
-    expect((navEvents as any[])[0].data.tab).toBe("list")
+    expect((navEvents as any[]).map((e) => e?.data?.tab)).toContain("list")
 
     // La carte doit être cachée (le panneau map a opacity:0 quand view="list")
     // On vérifie l'absence de .sg-maplabel visible
@@ -217,7 +236,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("onglet Premium → ouvre paywall + event sg_nav_tab tab=premium", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
     await dismissPremiumModal(page)
@@ -239,7 +258,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
     const tracker = setupTrackInterceptor(page)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 
@@ -277,7 +296,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
       localStorage.setItem("sg_cookie_consent", "dismissed")
     })
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(1500)
     await dismissPremiumModal(page)
 
@@ -312,7 +331,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
 
     // Reload the map and reopen the banner so paywall layering is tested independently.
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(1500)
     await dismissPremiumModal(page)
     await page.evaluate(() => {
@@ -343,7 +362,7 @@ test.describe("BottomNav — Redesign funnel UX (2026-08-11)", () => {
   test("rollback ?sgnav=0 cache la BottomNav", async ({ page }) => {
     await page.goto(TEST_URL + "?sgnav=0", { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
 
     // La BottomNav ne doit PAS être visible
@@ -363,7 +382,7 @@ test.describe("FABs allégés — Redesign funnel UX (2026-08-11)", () => {
     })
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     // Still dismiss any overlays that snuck in
     await dismissPremiumModal(page)
@@ -393,7 +412,7 @@ test.describe("CTA Paywall clarifié — Redesign funnel UX (2026-08-11)", () =>
   test("verdict fiche plage affiche un CTA '7 jours' clair pour non-premium (pas 'Activer mon alerte')", async ({ page }) => {
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 
@@ -404,19 +423,19 @@ test.describe("CTA Paywall clarifié — Redesign funnel UX (2026-08-11)", () =>
       )
       if (label) (label as HTMLElement).click()
     })
-    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 12000 }).catch(() => {})
+    // AHA 2026-09-24 : la fiche plage = BeachExperience [data-testid=bx-experience]
+    // (plus .bsc-sheet/.lc-detail legacy). On accepte les deux formes.
+    await page.waitForSelector('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]', { timeout: 12000 }).catch(() => {})
     await page.waitForTimeout(1500)
 
     // Le verdict doit être visible
-    const verdictVisible = await page.locator(".bsc-sheet, .lc-detail, .sheet").first().isVisible({ timeout: 3000 }).catch(() => false)
-    expect(verdictVisible).toBe(true)
+    await expect(page.locator('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]').first()).toBeVisible({ timeout: 5000 })
 
-    // Two acceptable labels for the "débloquer prévision" CTA :
-    //  - ChasseDetail (comic verdict, default) : "VOIR LES 7 PROCHAINS JOURS →"
-    //  - BeachSheet (fallback)                  : "Débloquer 7 jours"
+    // CTA premium : legacy BeachSheet/ChasseDetail OU AHA experience (exp-premium-cta).
     const unlockCta = page.locator(
       'button:has-text("Débloquer 7 jours"), button:has-text("Unlock 7 days"), button:has-text("Desbloquear 7 días"), ' +
-      'button:has-text("VOIR LES 7 PROCHAINS JOURS"), button:has-text("SEE THE NEXT 7 DAYS"), button:has-text("VER LOS 7 DÍAS")'
+      'button:has-text("VOIR LES 7 PROCHAINS JOURS"), button:has-text("SEE THE NEXT 7 DAYS"), button:has-text("VER LOS 7 DÍAS"), ' +
+      '[data-testid="exp-premium-cta"]'
     ).first()
     const unlockVisible = await unlockCta.isVisible({ timeout: 3000 }).catch(() => false)
 
@@ -436,7 +455,7 @@ test.describe("Smoke essentiel — redesign funnel", () => {
     const tracker = setupTrackInterceptor(page)
     await page.goto(TEST_URL, { waitUntil: "load", timeout: 60000 })
     // waitForSelector("[data-sg-labels-ready]")
-    await page.waitForSelector(selectors.mapReady, { timeout: 30000 }).catch(() => {})
+    await openMap(page)
     await page.waitForTimeout(2000)
     await dismissCookieBanner(page)
 
@@ -452,16 +471,17 @@ test.describe("Smoke essentiel — redesign funnel", () => {
       )
       if (label) (label as HTMLElement).click()
     }, selectors.mapPin)
-    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 12000 }).catch(() => {})
+    await page.waitForSelector('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]', { timeout: 12000 }).catch(() => {})
     await page.waitForTimeout(1500)
-    const ficheVisible = await page.locator(".bsc-sheet, .lc-detail, .sheet").first().isVisible()
+    const ficheVisible = await page.locator('.bsc-sheet, .lc-detail, .sheet, [data-testid="bx-experience"]').first().isVisible()
     expect(ficheVisible).toBe(true)
 
     // PAYWALL atteint : on ouvre via le CTA du verdict (comic : "VOIR LES 7 PROCHAINS JOURS"
-    // ou fallback BeachSheet : "Débloquer 7 jours")
+    // ou fallback BeachSheet : "Débloquer 7 jours" ; AHA experience : [data-testid=exp-premium-cta])
     const unlockCta = page.locator(
       'button:has-text("Débloquer 7 jours"), button:has-text("Unlock 7 days"), button:has-text("Desbloquear 7 días"), ' +
-      'button:has-text("VOIR LES 7 PROCHAINS JOURS"), button:has-text("SEE THE NEXT 7 DAYS"), button:has-text("VER LOS 7 DÍAS")'
+      'button:has-text("VOIR LES 7 PROCHAINS JOURS"), button:has-text("SEE THE NEXT 7 DAYS"), button:has-text("VER LOS 7 DÍAS"), ' +
+      '[data-testid="exp-premium-cta"]'
     ).first()
     const ctaVisible = await unlockCta.isVisible({ timeout: 3000 }).catch(() => false)
     if (ctaVisible) {
