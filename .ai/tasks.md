@@ -1,3 +1,9 @@
+## AUTOPILOT + OPP-2026-001 — [x] done + LIVE 2026-09-24 (PR #742 mergée 06:41 UTC, squash 3427f978, CI+Deploy+Perf+Secret 4/4 verts)
+- **Système** : `.ai/autopilot/` (mémoire) + `scripts/autopilot/` (orchestrateur + browser QA prod 6 régions × 3 viewports + baselines bloquantes + rapport quotidien + 8 agents via opencode run) + workflow `autopilot.yml` 06:35 UTC + npm script `autopilot`.
+- **Baseline prod** : 129 routes · 0 erreur · 0 lien cassé · 0 HTTP≥400 · interactions 9/9 surfaces × 6/6 régions (carte→fiche→xp→tomorrow→backup→trip→share→premium→checkout-entry).
+- **1er loop-test shippé** : OPP-2026-001 strip paywall « Ta semaine » lisible (initiales jour i18n + aria-labels), rollback `?triplabels=0` — preuve prod : chips `J✓V✓S✓D✓L✓M✓M✓` live.
+- **NEXT** : mesurer modal→CTA 7j vs baseline 263→6 · cycler `node scripts/autopilot/run.cjs loop [--ship]` (1 opp/jour/surface) · scheduler local via `scripts/autopilot/install-scheduler.ps1`.
+
 ## SGM MOTION GRAMMAR — [x] done 2026-09-24 (session WOW EVERYWHERE #1, gates verts locaux)
 - **Grammaire** : `src/sg-motion.css` (8 motions : reveal/pop/fill/ring/unlock/dayin/breathe/focus) + canal statut `[data-sgm-status]` (couleur = donnée réelle) + `src/lib/sgMotion.js` (off(), days7(), STATUS_C).
 - **1re transformation** : splash post-paiement = moment UNLOCK (anneau tracé → verrou s'ouvre → semaine réelle en cascade 7j → CTA). Rollback `?sgmotion=0` = splash statique d'avant.
