@@ -1,3 +1,37 @@
+## 2026-09-24 · Agent: autopilot/orchestrator (BUILD + 1er LOOP-TEST OPP-2026-001) — PR #742 mergée, LIVE 6/6
+
+### Travail effectué
+- **Résumé 1 ligne** : autopilote produit livré et testé bout-en-boucle — mémoire `.ai/autopilot/` + orchestrateur `scripts/autopilot/` (observe/baselines/report/run/orchestrator + 8 prompts agents `opencode run`) + workflow quotidien `autopilot.yml` — et 1er loop-test shippé : strip paywall « Ta semaine » lisible (initiales jour + aria-labels).
+- **Détails** : OBSERVE prod = 129 routes (6 régions × 3 viewports, manifest sitemap) : 0 erreur console, 0 échec réseau, 0 lien cassé, 0 HTTP≥400, interactions 9/9 surfaces × 6/6 régions (carte→fiche→experience→tomorrow→backup→trip→share→premium→checkout-entry) → baseline `baselines.json` établie → OPP-2026-001 (fiche WHY/USER/BUSINESS/SEO/WOW/RISK LOW/EFFORT S/EVIDENCE screenshot prod) → PassOffer.jsx (affichage pur, rollback `?triplabels=0`, i18n FR/EN/ES, money-path INTACT) → Gate vert → merge PR #742.
+- **Preuve prod** : version.json b=3427f978 · chips live vérifiées par Playwright sur sargasses-martinique.com : `J✓ V✓ S✓ D✓ L✓ M✓ M✓` + aria `J · propre`… · rollback `?triplabels=0` vérifié en preview (pastilles nues restaurées).
+- **Housekeeping** : checkpoint du travail non poussé des sessions antérieures (commit 125054161 dans la PR).
+
+### Fichiers modifiés
+- `src/PassOffer.jsx` — OPP-2026-001 (strip tripDays lisible + a11y, rollback ?triplabels=0)
+- `scripts/autopilot/` (N) · `.ai/autopilot/` (N) · `.github/workflows/autopilot.yml` (N) · `package.json` (+script autopilot) · `AGENTS.md` · `.gitignore`
+
+### Tests réalisés
+- [x] OBSERVE prod 129 routes · REGRESSIONS=0 (baseline initiale)
+- [x] build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test ALL PASS (autopilot-core, stay-trajectory 40/40, wow-unlock 26/26, seo-graph 35/35)
+- [x] CI post-merge : Tests ✅ · Deploy Live ✅ · Perf Budget ✅ · Secret scan ✅ (Code-scanning AI findings = échec outil GitHub CAPI "model not supported", non bloquant, sans rapport avec le code)
+- [x] PROOF PROD : chips jour visibles live (Playwright contre prod)
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % (n=6 — bruit) ; 1 paiement carte fondateur = seule preuve humaine (HUMAN-ONLY)
+- [ ] Stages agent (research/business/seo/uiux/analyze via `opencode run`) prouvés unitairement, pas encore cyclés en schedulé — `install-scheduler.ps1` dispo sur la machine fondateur
+- [ ] Mesurer modal→CTA 7j vs baseline 263 opens→6 CTA (impact OPP-2026-001) — Rôle : growth
+
+### Prochaine action recommandée
+1. `node scripts/autopilot/run.cjs loop` demain (ou scheduler) → observe+research+analyze+report quotidiens — Rôle : autopilot
+2. Cycler `--ship` 1 opportunité/jour max par surface — Rôle : autopilot
+3. Vérif post-deploy baseline compare — fait via `autopilot.yml` 06:35 UTC
+
+### Branche / PR
+- Branche : `agent/autopilot/opp-2026-001` → **PR #742 MERGED 2026-09-24 06:41 UTC** (squash `3427f978`)
+
+---
+
 ## 2026-09-24 · Agent: coding/ui (WOW EVERYWHERE #1 — SGM MOTION GRAMMAR + UNLOCK) — gates locaux verts
 
 ### Travail effectué
