@@ -1,3 +1,24 @@
+## 2026-09-24 — RECOVERY : KI-2026-09-24A (Trip → Premium → Paywall) réparé + SargaFactory re-pointée + gates 100 % verts
+
+**PROBLEM (KI-2026-09-24A)** : dans le parcours Trip Planner / expérience « un seul monde », chaque transformation in-world (chip plan B, pile ←, relais) passait par `onBeachClick` et incrémentait `sg_beach_views` → au 3e hop, le `Paywall3ViewOverlay` (z1400) surgiSSAIT par-dessus l'expérience et cassait la hiérarchie paywall (bloquant le vrai chemin Premium → OnsiteCheckout). Bonus : le handler `popstate` (Back navigateur) avait une closure figée (deps `[JOURNEY_OFF]`) → « Back sans effet ».
+
+**CHANGE** :
+- `src/Sargasses_PROD.jsx` — `onBeachClick(b, {inWorld})` : les transformations du même objet ne consomment plus le quota 3-vues ; deps popstate `[selectedBeach, comicBeach, JOURNEY_OFF]`.
+- `tests/e2e/journey.spec.ts` — deep-link robuste (pin carte = île du build ; la home WOW mélange MQ/GP par design), tests chips routés via plage couverte weekly (découverte dynamique, zéro donnée inventée).
+- `tests/e2e/paywall-trajectory.spec.ts` — réparation d'une syntaxe corrompue (`() ={>`) de la session avortée + clic checkout déterministe (evaluate query+click, pattern probe vérifié) — assertion money-path inchangée.
+- `src/PremiumModal/StayTrajectory.jsx` — rail 7 jours ne déborde plus à 390 px (flex:1 + overflow:hidden, min-height 56 px) — fix de la session avortée, validé.
+- `src/sg-motion.css` — `.sgm-focus` : animation **finie** (2 pouls puis repos). L'infini sur le CTA principal rendait l'élément « jamais stable » (Playwright) et coûtait CPU/attention en continu — anti-pattern d'accessibilité.
+- `src/components/ExperienceReset.jsx` — WOW Home SGM (work-in-progress de la session avortée) : reveal + canal statut + CTA en sgm-focus (rollback `?sgmotion=0`).
+- `scripts/run-tests.cjs` — exclut `.claude/worktrees/` (40 worktrees d'agents stalles faisaient échouer la suite : 3 faux négatifs).
+- `scripts/tests/xp-visual-rescue.test.cjs` — parité armure comptée par ligne de bouton (une ligne peut porter 2 spread `btnGold` via ternaire) + tolérance classes additionnelles sur le motif `xp-gold xp-gold`.
+- SEO (session avortée, staged) : slice 2 — `/poi/*` + `/region/*` noindex/canonical home, `/activity/*` enrichie plages réelles flaggées (≥2 = indexable, `kids`→canonical `family`) ; slice 3 — « Alternative du jour » sur fiche plage non-clean (rollback `VITE_NO_SEOALT=1`). Verrouillé par `seo-graph-contract` 53/53.
+- Autopilot (session avortée) : experiments/metrics/personalization (15/15 checks).
+- **SargaFactory (KI Phase 3)** : les tâches planifiées pointaient `C:\Users\user\Desktop\Backup\sargagame` (**chemin supprimé** → usine morte en silence). Ré-enregistrées sur le vrai repo Documents\Backup via wrapper `run-hidden.vbs` (fenêtre invisible) ; `install-tasks.ps1` supporte désormais ce wrapper (fallback node direct). VALIDÉ par `--plan` (dry-run, fbAuto=false, 5 régions éligibles). AUCUN run réel lancé.
+
+**PROOF** : build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4 tokens + SMOKE_GATE=PASS · npm test 58/58 fichiers OK (depuis exclusion .claude/worktrees) · E2E journey 5/5 + paywall-trajectory 6/6 (mobile 390px) · regions OK. Money-path : paywall → CTA hero → dialog « Paiement sécurisé · Mollie » monté (probe); aucune preuve de paiement réel — seul vérité = Mollie paid (HUMAN-ONLY, inchangé).
+
+---
+
 ## 2026-09-24 — AUTOPILOTE : boucle d'amélioration produit autonome + 1er loop-test (OPP-2026-001)
 
 **PROBLEM** : chaque itération produit exigeait une instruction humaine ; aucune mémoire des observations prod, aucune détection de régression continue, aucune priorisation systématique.

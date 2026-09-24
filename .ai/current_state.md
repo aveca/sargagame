@@ -1,3 +1,44 @@
+## 2026-09-24 · Agent: recovery (single bounded cycle post-429) — KI-2026-09-24A RÉPARÉ + SargaFactory re-pointée
+
+### Travail effectué
+- **Résumé 1 ligne** : session de récupération bornée — reprise du travail innocemment non commité de la session avortée (429 Kimi), réparation réelle de KI-2026-09-24A (paywall-3view surgissant dans le parcours Trip/in-world), réparation des gates (syntaxe E2E corrompue, runner de tests pollué par 40 worktrees stalles, animation CTA infinie), déblocage SargaFactory (tâches planifiées pointaient un chemin supprimé).
+- **Détails** : cf. `.ai/changelog.md` (entrée « RECOVERY »). Money-path : AUCUNE modification (PremiumModal/PassOffer/OnsiteCheckout/doSubscribe/Mollie intacts). Rollbacks conservés : `?sgjourney=0` `?sgmotion=0` `?sgtraj=0` `?triplabels=0` `VITE_NO_SEOALT=1` `VITE_NO_SEOAREAS=1`.
+
+### Fichiers modifiés (par commit)
+- `fix(journey)` : `src/Sargasses_PROD.jsx`, `tests/e2e/journey.spec.ts`, `tests/unit/journey.test.cjs`, `tests/e2e/paywall-trajectory.spec.ts`
+- `fix(wow)` : `src/sg-motion.css`, `src/PremiumModal/StayTrajectory.jsx`, `src/components/ExperienceReset.jsx`, `scripts/tests/xp-visual-rescue.test.cjs`, `scripts/run-tests.cjs`, `scripts/qa/probe-*.mjs` (3 probes QA)
+- `feat(seo)` : `scripts/lib/dedicated-pages.cjs`, `vite.config.js`, `scripts/tests/seo-graph-contract.test.cjs`
+- `chore(autopilot)` : `scripts/autopilot/*`, `.ai/autopilot/*`, `tests/unit/autopilot-revenue-experiments.test.cjs`, `scripts/qa/wow-*.mjs`
+- `chore(factory)` : `scripts/local-factory/install-tasks.ps1`
+- `docs(handoff)` : `.ai/current_state.md`, `.ai/changelog.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0 (stamp-sw v219, 44 assets)
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall · ERRORS=[] · WHITE_OR_TRANSPARENT_BUTTONS=[] · RM_INFINITE=[] · SMOKE_GATE=PASS
+- [x] npm test → 58/58 fichiers OK
+- [x] Playwright journey 5/5 + paywall-trajectory 6/6 (mobile 390px, workers=2)
+- [x] regions → assertAllRegionsValid OK
+- [x] php -l → N/A (0 PHP touché)
+- [x] factory.cjs --plan → dry-run OK (aucun run réel)
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % (bruit n=6) ; SEULE preuve = 1 paiement carte fondateur (HUMAN-ONLY, non fabricable)
+- [ ] Mesurer modal→CTA 7j (impact OPP-2026-001) — Rôle : growth
+- [ ] Stages autopilot schedulés : `install-scheduler.ps1` non exécuté — DÉCISION fondateur (n'exécuter AUCUNE boucle autonome avant validation humaine post-429)
+- [ ] Worktrees stalles `.claude/worktrees/` (40) — disque uniquement, hors repo (gitignored) ; nettoyage disque optionnel
+
+### Prochaine action recommandée
+1. CI verte → merge → deploy auto → vérif prod (?paywall=1 + version.json) — Rôle : release
+2. QA prod post-deploy : Trip → chip J+3 → paywall ouvre (1 device réel) — Rôle : qa
+3. SargaFactory : observer le premier heartbeat 05:30 demain (factory_heartbeat Supabase) — Rôle : devops
+
+### Branche / PR
+- Branche : `agent/recovery/ki-2026-09-24a`
+- PR : à créer (voir FINAL REPORT)
+
+---
+
 ## 2026-09-24 · Agent: autopilot/orchestrator (BUILD + 1er LOOP-TEST OPP-2026-001) — PR #742 mergée, LIVE 6/6
 
 ### Travail effectué
