@@ -3,6 +3,7 @@
   "opportunities": [
     {
       "id": "OPP-2026-09-24-banner-z",
+      "surface": "checkout-entry",
       "title": "UX-QA-002 : bannières recovery/expired/renew (z 1500) recouvrent paywall (1260) et checkout (1300)",
       "source": "MASTER_AUDIT P1 + reproduction code 2026-09-24 (src/Sargasses_PROD.jsx ~14260/14291/14320)",
       "severity": "high",

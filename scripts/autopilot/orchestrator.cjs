@@ -25,6 +25,8 @@ const C = require('./lib/common.cjs');
 const mem = require('./lib/memory.cjs');
 const policy = require('./lib/policy.cjs');
 const gitops = require('./lib/gitops.cjs');
+const metrics = require('./lib/metrics.cjs');
+const experiments = require('./lib/experiments.cjs');
 const { implementOpportunity } = require('./implement.cjs');
 const { runGate } = require('./verify.cjs');
 const { analyze, findingsFromObservation } = require('./analyze.cjs');
@@ -56,6 +58,84 @@ async function healthCheck() {
     } catch (e) { down.push(`${d} (${e.name === 'AbortError' ? 'timeout' : e.message})`); }
   }
   return down;
+}
+
+/** Surface produit d'une opportunité (1 changement à la fois PAR surface — mission §3). */
+function surfaceOf(opp) {
+  if (opp.surface) return opp.surface;
+  const files = (opp.scope && opp.scope.files) || [];
+  if (files.some(f => f.includes('PremiumModal') || /checkout/i.test(f))) return 'premium';
+  if (files.some(f => f.includes('WorldMapView') || f.includes('ChasseHome') || f.includes('ExperienceReset'))) return 'home';
+  if (files.some(f => f.includes('BeachExperience'))) return 'beach';
+  if (files.some(f => f.includes('Sargasses_PROD'))) return 'checkout-entry'; // bannières/paywall vivent là
+  return 'misc';
+}
+
+/** VÉRITÉ REVENU + VERIFY SHIPPED + MEASURE (mission §2/§11/§12).
+ *  KPI final = MOLLIE PAID. Les clics ne déclarent JAMAIS un gagnant. */
+async function phaseRevenueAndMeasure() {
+  const snap = metrics.snapshot();
+  const s7 = snap.d7;
+  S('REVENUE', `7j : sessions ${s7.sessions} · premium-open ${s7.modalOpens} · CTA ${s7.modalCta} · checkout ${s7.onsite} · PAID ${s7.paid} · paiements ${s7.payments} · rev ${s7.revenue}€ · MRR Stripe ${snap.d7.mrrEur ?? 'n/a'}€ (${snap.d7.stripeActive ?? '?'} actifs)`);
+  const chain = metrics.ahaChain(7);
+  S('REVENUE', `chaîne AHA→revenue : open ${chain.premium_open} → CTA ${chain.cta} → checkout ${chain.checkout_entry} → redirect ${chain.mollie_redirect} → PAID ${chain.paid} (${chain.note})`);
+  const b2b = snap.b2b;
+  S('REVENUE', b2b.available
+    ? `B2B (séparé, jamais mélangé) : ${JSON.stringify(b2b).slice(0, 200)}`
+    : `B2B (séparé) : ${b2b.note}`);
+
+  // 1) VERIFY SHIPPED : PR mergée + fingerprint prod = mergeCommit → expérience démarre
+  const q = mem.loadQueue();
+  let changed = false;
+  for (const o of (q.opportunities || [])) {
+    if (o.status !== 'shipped' || o.verifiedAt || !o.prUrl) continue;
+    const st = gitops.prState(o.prUrl);
+    if (!st || st.state !== 'MERGED') { S('MEASURED', `${o.id} : PR pas encore mergée (${st ? st.state : 'inconnu'})`); continue; }
+    const prod = await gitops.prodFingerprint(cfg.health.requiredDomains[0]);
+    const short = (st.mergeCommit || '').slice(0, 8);
+    if (prod && prod.b && prod.b.startsWith(short)) {
+      o.verifiedAt = C.nowIso(); o.mergeCommit = st.mergeCommit; changed = true;
+      S('MEASURED', `${o.id} VÉRIFIÉ EN PROD (b=${prod.b} = merge ${short})`);
+      try {
+        const exp = experiments.start({
+          id: o.id, surface: o.surface || surfaceOf(o), title: o.title,
+          hypothesis: o.expectedImpact || o.title, rollback: o.rollback,
+          prUrl: o.prUrl, branch: o.branch, commit: o.mergeCommit,
+          baselineSnapshot: snap.d7, verifiedAt: o.verifiedAt,
+        }, cfg);
+        S('MEASURED', `expérience démarrée (${exp.surface}, cohorte A=pré/B=post, fenêtre ${exp.windowDays}j, min ${exp.sampleTarget} visiteurs, métrique = paid)`);
+      } catch (e) {
+        if (e.code === 'SURFACE_BUSY') S('MEASURED', `${o.id} : surface déjà mesurée par ${e.holder.id} — expérience fusionnée à la fenêtre existante`);
+        else throw e;
+      }
+    } else {
+      S('MEASURED', `${o.id} : mergée (${short}) mais prod b=${prod && prod.b} — déploiement pas encore visible, on revérifie au prochain cycle`);
+    }
+  }
+  if (changed) mem.saveQueue(q);
+
+  // 2) MEASURE : expériences à échéance → décision (paid prime, prudence échantillon)
+  for (const e of experiments.due(Date.now(), cfg)) {
+    const after = metrics.windowStats(e.windowDays, undefined);
+    const ctl = e.baselineSnapshot || metrics.windowStats(e.windowDays);
+    const res = metrics.decideExperiment({
+      control: ctl, variant: after,
+      minVisitors: (cfg.experiments && cfg.experiments.minVisitors) || 100,
+      windowDays: e.windowDays, startedAt: e.startedAt,
+    });
+    experiments.markDecision(e.id, res.decision, res.reason, after);
+    S('MEASURED', `${e.id} (${e.surface}) → DÉCISION ${res.decision.toUpperCase()} : ${res.reason} · facteurs ${JSON.stringify(res.factors)}`);
+    if (res.decision === 'loss') {
+      mem.writeRegression(e.id + '-decision', `Expérience perdante (paid). ROLLBACK recommandé : ${e.rollback}.\nFacteurs : ${JSON.stringify(res.factors)}`);
+      S('NEXT', `ROLLBACK ${e.id} (${e.rollback}) — décision loss, réparation prioritaire au prochain cycle`);
+      mem.reject(e.id, 'décision loss (paid) — ne pas retenter sans preuve nouvelle', 30);
+    }
+  }
+  const running = experiments.load().experiments.filter(e => e.status === 'running');
+  for (const e of running) {
+    const days = ((Date.now() - new Date(e.startedAt).getTime()) / 864e5).toFixed(1);
+    S('MEASURED', `${e.id} en cours (${e.surface}, ${days}/${e.windowDays}j, min ${e.sampleTarget} visiteurs)`);
+  }
 }
 
 async function phaseObserve() {
@@ -256,17 +336,31 @@ async function main() {
     if (budgetExceeded()) throw new Error('budget temps dépassé avant OBSERVE');
     const obs = await phaseObserve();
 
+    await phaseRevenueAndMeasure(); // vérité paid + verify-shipped + mesures d'expériences
+
     if (!budgetExceeded()) await phaseResearch();
 
     const res = phaseAnalyze(obs);
 
+    // §3 : UNE expérience active par surface — bloque la sélection si surface occupée
+    let selected = res.selected;
+    if (selected) {
+      const surf = selected.surface || surfaceOf(selected);
+      selected.surface = surf;
+      const busy = experiments.activeForSurface(surf);
+      if (busy) {
+        S('FOUND', `sélection suspendue : surface "${surf}" déjà en mesure par ${busy.id} (${busy.startedAt}) — 1 changement à la fois`);
+        selected = null;
+      }
+    }
+
     if (prOpen || budgetExceeded()) {
       if (budgetExceeded()) S('FAILED', 'budget temps atteint — implémentation reportée au prochain cycle');
-    } else if (res.selected) {
-      const r = await phaseImplementAndShip(res.selected);
+    } else if (selected) {
+      const r = await phaseImplementAndShip(selected);
       if (r && r.prUrl) {
         S('NEXT', `suivre CI de ${r.prUrl} puis merge (convention repo : CI verte)`);
-        S('NEXT', 'mesurer l\'effet à J+7 (experiment file créé)');
+        S('NEXT', 'mesure post-merge gérée par phaseRevenueAndMeasure (verify → experiment → décision à fenêtre, paid prime)');
       }
     }
   } catch (e) {
