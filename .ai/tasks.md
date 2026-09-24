@@ -1,11 +1,15 @@
-## AHA EXPERIENCE — [x] done 2026-09-23 (session AHA SHIP, direct push main c073c1ef4)
-- **ExpMedia** : vraie photo plage (`/beaches/gplace-{id}.jpg`) + hero-loop vidéo (`/videos/hero/{id}.mp4` manifest-gatée, variante `-w` desktop) derrière le verdict.
-- **Garde-fous** : prefers-reduced-motion, saveData, 2G, rollback `?aha=0`/`?heropv=0`, fallback cascade (photo 404→retrait, vidéo error→retrait, SVG scène reste vérité).
-- **Data-driven** : filtres CSS par verdict (avoid/moderate/clean), scrim lisibilité, glow verdict (donnée→lumière).
-- **Armure CTA** : XP_ARMOR triple-classe + !important protège l'or.
-- **Bundle** : 38,2 Ko inchangé (médias runtime, zéro import statique).
-- **Preuves** : unit 29/29 · E2E 7/7 (mobile) · CI Tests + Perf Budget + Deploy Live (6 régions) + Health Checks 6/6 ALL GREEN.
-- **Rollback** : `?aha=0` (couche média absente, experience intacte).
+## AHA EXPERIENCE — [x] done 2026-09-24 (session AHA COMPLETE, direct push main 91ca150c7)
+- **HERO** : gradient card + backdrop-filter, VeilleurMark 52px, photo/vidéo plage full-bleed, titre clamp(28px,8vw,38px)
+- **VERDICT** : pill dominante + animation pop .4s + fill bar .5s (couleur = statut avoid/moderate/clean), wrap layout
+- **WHY** : 3 preuves progressives (état satellite + glyph, confiance modèle %, surface sargasses km²) + commune
+- **TOMORROW** : timeline horizontale scroll-snap J+1→J+7, dots 36px status-colored, labels jour+status+confidence%, entrée décalée 60ms
+- **BACKUP** : from→to transition animée (flèche pulsante 2s), badges verdict des deux côtés, copy "alternative intelligente", CTA full-width
+- **PREMIUM** : preview free (vert ✓ aujourd'hui+verdict) vs premium (or 🔒 7j+alertes+histo) + sticky bar "Aujourd'hui: gratuit → 7 jours: Premium"
+- **Mobile 390** : first-screen optimal, CTA visible, zéro surcharge, scroll fluide
+- **International** : FR/EN/ES partout, paths région-agnostiques, zero hardcoded locale
+- **Rollbacks** : `?sgexp=0` `?aha=0` `?heropv=0` `prefers-reduced-motion` intacts
+- **Bundle** : 38,2 Ko gzip inchangé
+- **Preuves** : unit 29/29 · E2E 7/7 mobile · CI Tests + Perf Budget + Deploy Live 6/6 · Health Checks 6/6 · PROD E2E 7/7
 
 ## RECOVERY TRUTH — [x] done 2026-09-23 (session K3 MASTER, branche agent/coding/recovery-truth)
 - **BUG-2026-040** : marqueurs cart-recovery-unified jamais committés → re-envois multiples → ajoutés au commit anti-doublon du workflow.

@@ -1,3 +1,24 @@
+## 2026-09-24 — AHA EXPERIENCE COMPLETE : cinematic hero, animated verdict, progressive WHY, visual TOMORROW, smart BACKUP, premium clarity (LIVE 6 regions)
+
+**PROBLEM** : la couche média AHA existait (photo/vidéo derrière le verdict) mais l'expérience manquait de storytelling visuel — pas d'AHA moment, verdict pas assez dominant, WHY/TMORROW/BACKUP/PREMIUM trop fonctionnels.
+
+**CHANGE** (rollbacks intacts `?sgexp=0` `?aha=0` `?heropv=0` `prefers-reduced-motion`, bundle 38,2 Ko) :
+- `src/BeachExperience.jsx` — refonte visuelle complète de l'expérience :
+  - **HERO** : card gradient + backdrop-filter, VeilleurMark 52px prominent, nom plage `clamp(28px,8vw,38px)`, media full-bleed
+  - **VERDICT** : pill dominante + `animation:bx-verdict-pop .4s` + `animation:bx-verdict-fill .5s` (couleur = statut réel avoid/moderate/clean), wrap `bx-verdict-wrap` + barre de progression
+  - **WHY** : révélation progressive 3 preuves réelles data-driven — (1) état satellite + glyph, (2) confiance modèle % (`fc[0].confidence`), (3) surface sargasses km² (`beach.sargassumArea`) — icônes colorées par `--proof-accent`, commune en bas
+  - **TOMORROW** : timeline horizontale `scroll-snap` J+1→J+7, dots 36px status-colored, labels jour abrégé + label status i18n (Clair/Surveillé/Sargasses) + confidence %, entrée décalée `animation-delay:calc(var(--i)*60ms)`
+  - **BACKUP** : transition from→to animée — header double (plage actuelle + alternative), flèche pulsante `animation:bx-arrow-pulse 2s`, badges verdict des deux côtés, copy "alternative intelligente — même région, meilleure eau", CTA full-width
+  - **PREMIUM** : preview free vs premium — row GRATUIT (vert ✓ aujourd'hui+verdict) / PREMIUM (or 🔒 7j+alertes+histo) + sticky bar "Aujourd'hui: gratuit → 7 jours: Premium" → CTA unique
+  - **Mobile 390** : first-screen optimisé, CTA thumb-zone visible, scroll fluide, zéro surcharge
+  - **i18n** : FR/EN/ES complet sur tous nouveaux textes, paths région-agnostiques
+- `tests/e2e/experience.spec.ts` — selector fix `.bx-timeline-day` pour test TOMORROW (remplace `.bx-dot`)
+- `tests/unit/aha-media.test.cjs` — 29 checks inchangés (contrat média préservé)
+
+**Preuves** : build 0 · bundle 38,2 ≤ 210 · php -l OK · smoke 4/4 PASS · unit 29/29 · E2E 7/7 (mobile-chromium) · CI Tests SUCCESS · Perf Budget SUCCESS · Deploy Live 6 régions (mq, gp, florida, rivieramaya, tulum, puntacana) SUCCESS · Health Checks 6/6 HTTP 200 · PROD E2E 7/7 passed.
+
+**Non touché** : pricing, Mollie, TripPlanner, B2B, Jev/Supabase, Exp.4, data pipeline, money-path, tracking, callbacks, rollbacks.
+
 ## 2026-09-23 — AHA EXPERIENCE : real beach photo + hero-loop behind verdict (live 6 regions)
 
 **PROBLEM** : l'expérience BeachExperience montrait une scène SVG abstraite — la vraie plage manquait. L'utilisateur ne voyait pas la réalité derrière le verdict.

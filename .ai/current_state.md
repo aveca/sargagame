@@ -1,3 +1,47 @@
+## 2026-09-24 · Agent: coding (AHA EXPERIENCE COMPLETE) — Cinematic hero, animated verdict, progressive WHY, visual TOMORROW, smart BACKUP, premium clarity — LIVE all 6 regions
+
+### Travail effectué
+- **Résumé 1 ligne** : AHA experience transformée — HERO cinématique (gradient card, Veilleur, photo/vidéo plage) → VERDICT dominant avec animation pop+fill bar (couleur = statut) → WHY révélation progressive 3 preuves réelles (état satellite, confiance modèle, surface sargasses) → TOMORROW timeline horizontale scroll-snap J+1→J+7 avec labels status + confidence % + entrée décalée → BACKUP transition from→to animée (flèche pulsante, badges double, copy "alternative intelligente") → PREMIUM preview free vs premium (aujourd'hui gratuit / 7 jours premium) + sticky preview bar → mobile 390px first-screen optimal, CTA visible, zéro surcharge.
+- **Détails** : i18n FR/EN/ES complet ; rollbacks intacts `?sgexp=0` `?aha=0` `?heropv=0` `prefers-reduced-motion` ; bundle 38,2 Ko inchangé ; ExpMedia + garde-fous + fallback cascade inchangés ; XP_ARMOR CTA or protégé ; données 100% réelles (même source que fiche), zéro invention.
+- **Preuves** : build 0 · bundle 38,2 ≤ 210 · php -l OK · smoke 4/4 · unit 29/29 · E2E 7/7 (mobile) · CI Tests SUCCESS · Perf Budget SUCCESS · Deploy Live 6/6 regions · Health Checks 6/6 HTTP 200 · PROD QA E2E 7/7 passed.
+
+### Fichiers modifiés
+- `src/BeachExperience.jsx` — HERO/VERDICT/WHY/TOMORROW/BACKUP/PREMIUM refonte visuelle complète (CSS animations, layouts, i18n)
+- `tests/e2e/experience.spec.ts` — selector fix `.bx-timeline-day` pour TOMORROW
+- `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md` — handoff mis à jour
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] php -l → OK (Sargasses_PROD.jsx + 28 dist/api/*.php)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] Playwright experience.spec.ts → 7/7 PASS (mobile-chromium, local + PROD)
+- [x] CI Tests → SUCCESS (build, budget, unit, smoke, E2E)
+- [x] Perf Budget + Lighthouse → SUCCESS
+- [x] Deploy Live (6 régions) → SUCCESS (mq, gp, florida, rivieramaya, tulum, puntacana)
+- [x] Health Checks (6/6 domaines) → SUCCESS (200 + fingerprint + API)
+
+### Vérités revenu (2026-09-24, pour mémoire)
+- B2C : Mollie 0 payé depuis 2026-07-19 (30j) · Stripe legacy MRR 69,86 € / 14 abos (stable, 0 churn) · funnel 7j : 841 sessions → 263 premium opens → 6 CTA → 6 onsite → 0 payé / 0 failed
+- B2B : 152 contactés → 10 leads → 0 payé (supabase b2b_probe : 2 prospects, 1 contact, 0 paiement) — goulot = activation commerciale, pas le schéma (déjà bâti)
+- Recovery live : cart-recovery J+1/J+3/J+5 --send actif 4×/j (dédup désormais persistée), relance-gap manual-gated, dunning/pass-expiry live
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % post-#682 (n=6 — bruit) ; la SEULE preuve humaine = 1 paiement carte fondateur (HUMAN-ONLY, non fabricable)
+- [ ] BUG-2026-038 historique (E2E bottomnav CI) : fix mergé, suivre CI prochaine
+- [ ] Jev : route worker présente, fallback safe ; vérif prod zone = founder-only (non bloquant revenu)
+- [ ] B2B : queue qualifiée existe (b2b-targets 158+) ; envoi = dépendance humaine/infra (Resend/forwarders préflight)
+
+### Prochaine action recommandée
+1. Mesurer `sg_hero_video_view` + `sg_verdict_expand` + `sg_tomorrow_reveal` + `sg_alternative_reveal` funnel events → valider impact AHA sur modal→CTA — Rôle : growth
+2. POURSUIVRE : audit B2B trial→payment→entitlement + enrichissement queue commerciale qualifiée — Rôle : coding/growth
+3. Mesurer modal→CTA Exp.4 à J+7 (30/09) — Rôle : growth
+
+### Branche / PR 
+- Branche : `main` (HEAD = `91ca150c7`)
+- PR : direct push main (CI auto-merge policy)
+- Deploy : `deploy-live.yml` run 35941284575 SUCCESS sur 91ca150c7 ; version.json prod b=91ca150c7 ; 6/6 domaines HTTP 200
+
 ## 2026-09-23 · Agent: coding (AHA EXPERIENCE SHIP) — Real beach photo + hero-loop live on all 6 regions
 
 ### Travail effectué
