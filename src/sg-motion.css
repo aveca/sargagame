@@ -59,8 +59,11 @@
 .sgm-pop    { animation: sgmPop var(--sgm-mid) var(--sgm-ease) backwards; }
 .sgm-fill   { transform-origin: left center; animation: sgmFill var(--sgm-mid) var(--sgm-ease) backwards; }
 .sgm-dayin  { animation: sgmDayIn .38s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+/* focus = 2 pouls puis repos : une animation infinie sur un CTA tue la stabilité
+   (Playwright « element is not stable », CPU, attention permanente) — le focus
+   doit attirer l'œil APRÈS la révélation puis laisser l'action tranquille. */
 .sgm-breathe{ animation: sgmBreathe 2.6s ease-in-out infinite; }
-.sgm-focus  { animation: sgmFocus 2.4s ease-in-out infinite; }
+.sgm-focus  { animation: sgmFocus 2.4s ease-in-out 2; }
 /* anneau tracé : circle SVG r=42 → dasharray 264 (2π·42 ≈ 264) */
 .sgm-ring   { stroke-dasharray: 264; stroke-dashoffset: 264; animation: sgmRing var(--sgm-slow) var(--sgm-ease) .15s backwards; }
 .sgm-unlock { transform-origin: 50% 0%; animation: sgmUnlock 1.1s var(--sgm-ease) .35s forwards; }

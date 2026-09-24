@@ -61,10 +61,10 @@ export function StayTrajectory({ lang = "fr", beach, forecast, backup = null, cu
         .sg-traj{margin:0 0 14px;padding:14px 13px 13px;border-radius:16px;border:1.5px dashed rgba(255,199,44,.45);background:linear-gradient(180deg,rgba(255,199,44,.07),rgba(255,199,44,.02));font-family:'Bricolage Grotesque',system-ui,sans-serif}
         .sg-traj-kicker{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#FFC72C}
         .sg-traj-title{display:block;font-family:'Anton',system-ui,sans-serif;font-weight:400;font-size:clamp(19px,5vw,23px);letter-spacing:.01em;text-transform:uppercase;color:#fff;margin:4px 0 2px;text-shadow:0 2px 10px rgba(0,0,0,.35)}
-        .sg-traj-rail{position:relative;display:flex;align-items:flex-start;gap:2px;margin-top:12px;padding:4px 0 2px}
+        .sg-traj-rail{position:relative;display:flex;align-items:flex-start;gap:0;margin-top:12px;padding:4px 0 2px;overflow:hidden}
         .sg-traj-line{position:absolute;left:26px;right:26px;top:21px;height:3px;border-radius:2px;background:repeating-linear-gradient(90deg,rgba(255,199,44,.85) 0 7px,rgba(255,199,44,.25) 7px 12px);animation:sg-traj-draw .7s ease-out .1s both;pointer-events:none}
         @keyframes sg-traj-draw{from{transform:scaleX(0);transform-origin:0 50%}to{transform:scaleX(1);transform-origin:0 50%}}
-        .sg-traj-day{position:relative;z-index:1;flex:1;min-width:44px;min-height:56px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:2px 2px 0;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
+        .sg-traj-day{position:relative;z-index:1;flex:1;min-width:0;min-height:56px;display:flex;flex-direction:column;align-items:center;gap:5px;padding:2px 2px 0;cursor:pointer;font-family:inherit;-webkit-tap-highlight-color:transparent}
         /* ARMURE : le skin body.theme-comic force button{background/border !important}
            (0,1,1) → fond/bordure du bouton-jour EFFACÉS sinon (pattern XP_ARMOR) :
            doublé-classe (0,2,0)+!important. Le cercle .sg-traj-dot (span) porte

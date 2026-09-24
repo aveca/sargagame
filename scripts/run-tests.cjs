@@ -8,7 +8,9 @@ const fs = require('fs')
 const path = require('path')
 
 const ROOT = path.resolve(__dirname, '..')
-const SKIP = new Set(['node_modules', 'dist', '.git', 'martinique-ftp', 'guadeloupe-ftp'])
+// .claude : worktrees d'agents (stalles, gitignored) — leurs tests internes
+// référencent des chemins qui n'existent plus → faux échecs du runner.
+const SKIP = new Set(['node_modules', 'dist', '.git', '.claude', 'martinique-ftp', 'guadeloupe-ftp'])
 
 function findTests(dir) {
   let out = []
