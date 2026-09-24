@@ -16,10 +16,11 @@
  * Rendu TOUJOURS MOUNT (caché hors-écran quand payStep=false) — les iframes
  * Mollie ne bootent pas dans un conteneur display:none.
  */
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import ComicIcon from "../components/ComicIcons.jsx"
 import { track } from "../Sargasses_PROD.jsx"
 import { seasonalCents } from "../lib/pass-price.js"
+import { buildTrajectory, TRAJ_STATUS } from "../lib/stay-trajectory.js"
 import { sgUid } from "../supabasePhotos.js"
 import { IdentityStep, trackEmailIdentityStart } from "./IdentityStep.jsx"
 
@@ -50,6 +51,10 @@ export function OnsiteCheckout({
   payWithWallet,
   walletRedirect,
   onPayEmailInput,
+  // WOW « LA TRAJECTOIRE » (2026-09-24) — continuité paywall→checkout :
+  // la semaine réelle vue dans le paywall reste visible au moment de payer.
+  beach = null,
+  trajForecast = null,
   // constants
   PAY_PROVIDER,
   PAY_CAPTURE_ONLY,
@@ -91,6 +96,30 @@ export function OnsiteCheckout({
   payBusyRef.current = payBusy
   // One-shot : event sg_email_identity_start au 1er focus de l'input email.
   const emailIdRef = useRef(false)
+
+  // ═══ WOW « LA TRAJECTOIRE » (2026-09-24, rollback ?sgtraj=0 — même flag
+  // que StayTrajectory) ═══
+  // PRÉSENTIEL SEUL : zéro logique paiement touchée (montant, createToken,
+  // consentement, tracking identiques). Ce qui change : 1) la transition
+  // paywall→checkout est ANIMÉE (slide) au lieu d'un snap hors-écran ; 2) la
+  // semaine réelle promise au paywall reste visible au moment de payer ;
+  // 3) le succès = révélation « ta semaine t'appartient » pendant le 900 ms
+  // avant onActivated/onClose (inchangés, doSubscribe).
+  const trajOn = (() => { try { return !/[?&]sgtraj=0(?:&|$)/.test(window.location.search || "") } catch (_) { return true } })()
+  const reduceMotion = (() => { try { return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) } catch (_) { return false } })()
+  // Lecture de la même source que StayTrajectory (buildTrajectory pur,
+  // forecast RÉEL). null → aucun écho affiché, jamais de donnée inventée.
+  const traj = useMemo(() => {
+    if (!trajOn) return null
+    try { const t = buildTrajectory(trajForecast, beach && beach.status); return t.days.length >= 2 ? t : null } catch (_) { return null }
+  }, [trajOn, trajForecast, beach])
+  // Mesure du moment d'unlock (paySuccess confirmé serveur) — une fois.
+  const unlockTrackedRef = useRef(false)
+  useEffect(() => {
+    if (!paySuccess || unlockTrackedRef.current) return
+    unlockTrackedRef.current = true
+    try { track("sg_unlock_reveal", { plan: payPlanRef.current, pass: passCtxRef.current && passCtxRef.current.pass }) } catch (_) {}
+  }, [paySuccess])
   // Abandon checkout : quitter l'étape paiement SANS avoir payé = abandon mesurable.
   const trackAbandon = useCallback((via) => {
     if (paySuccess) return // succès → pas un abandon
@@ -216,7 +245,9 @@ export function OnsiteCheckout({
   useEffect(() => {
     if (!payStep || PAY_CAPTURE_ONLY || PAY_PROVIDER !== "mollie" || mountedRef.current) return
     if (!mollieRef.current || !molNumberRef.current) return
-    const _molBg = "#241837"
+    // trajOn : champs carte sur encre teal profonde (cohérence golden-hour du
+    // checkout reskinné) ; rollback ?sgtraj=0 → encre violette historique.
+    const _molBg = trajOn ? "#13261F" : "#241837"
     const styles = {
       base: { color: "#eef2f7", backgroundColor: _molBg, fontSize: "16px", fontWeight: "500", "::placeholder": { color: "rgba(255,255,255,.32)" } },
       valid: { color: "#7CE0B0", backgroundColor: _molBg },
@@ -274,11 +305,15 @@ export function OnsiteCheckout({
         position: "fixed", inset: 0, zIndex: 1300,
         background: isComic
           ? "linear-gradient(168deg,#FDF6E3 0%,#F5EDDA 58%,#EDE4CF 100%)"
-          : PAY_CAPTURE_ONLY
-          ? "linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)"
+          : (PAY_CAPTURE_ONLY || trajOn)
+          ? "radial-gradient(120% 90% at 75% -10%, rgba(255,199,44,.16), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)"
           : "linear-gradient(145deg,#190c2c,#120821)",
         display: "flex", flexDirection: "column",
         overflowX: "hidden", overflowY: "auto",
+        // WOW : le checkout GLISSE depuis la gauche (transition) au lieu du
+        // snap hors-écran historique — continue le geste du paywall.
+        // reduced-motion = snap instantané (plancher dur).
+        transition: reduceMotion ? "none" : "transform .42s cubic-bezier(.22,.8,.24,1)",
         transform: payStep ? "none" : "translateX(-200vw)",
         pointerEvents: payStep ? "auto" : "none"
       }}
@@ -322,6 +357,46 @@ export function OnsiteCheckout({
             <span style={{display:"inline-flex",verticalAlign:"-2px"}}><ComicIcon name="lock" size={13}/></span> {PAY_CAPTURE_ONLY ? _t(lang, "Sans carte", "No card", "Sin tarjeta") : _t(lang, "Paiement sécurisé · Mollie", "Secure payment · Mollie", "Pago seguro · Mollie")}
           </span>
         </div>
+
+        {/* ═══ WOW « LA TRAJECTOIRE » — écho au moment de payer (rollback ?sgtraj=0) ═══
+            La semaine réelle que l'utilisateur vient de voir se dessiner dans
+            le paywall reste visible ICI : la décision et l'acte d'achat restent
+            liés. Données = même forecast réel (buildTrajectory), jamais inventé. */}
+        {trajOn && traj && beach && beach.name && !PAY_CAPTURE_ONLY && (
+          <div data-testid="checkout-trajectory" style={{
+            marginBottom: 14, padding: "10px 12px", borderRadius: 12,
+            background: isComic ? "rgba(13,11,20,.05)" : "rgba(255,199,44,.06)",
+            border: isComic ? "1.5px dashed #0D0B14" : "1.5px dashed rgba(255,199,44,.4)",
+            display: "flex", alignItems: "center", gap: 10
+          }}>
+            <div style={{ minWidth: 0, flex: 1 }}>
+              <div style={{
+                fontSize: 10, fontWeight: 800, letterSpacing: ".1em", textTransform: "uppercase",
+                color: isComic ? "#B87A00" : "#FFC72C"
+              }}>
+                {_t(lang, "Tu débloques la semaine de", "You unlock the week of", "Desbloqueas la semana de")}
+              </div>
+              <div style={{
+                fontSize: 14.5, fontWeight: 800, marginTop: 2, overflow: "hidden",
+                textOverflow: "ellipsis", whiteSpace: "nowrap",
+                color: isComic ? "#0D0B14" : "#fff"
+              }}>{beach.name}</div>
+            </div>
+            <div style={{ display: "flex", gap: 3, flexShrink: 0 }} aria-hidden="true">
+              {traj.days.map((d, i) => {
+                const st = TRAJ_STATUS[d.status]
+                return (
+                  <span key={i} style={{
+                    width: 13, height: 13, borderRadius: "50%", display: "inline-flex",
+                    alignItems: "center", justifyContent: "center",
+                    fontSize: 8.5, fontWeight: 800, color: "#0D0B14",
+                    background: st ? st.c : "#8B93A3", opacity: i === 0 ? 1 : .85
+                  }}>{st ? st.glyph : "·"}</span>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Titre */}
         <h3 style={{
@@ -561,10 +636,10 @@ export function OnsiteCheckout({
             boxShadow: isComic ? "3px 3px 0 #0D0B14" : "0 8px 30px rgba(0,0,0,.30)"
           }}>
             <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Nom du titulaire", "Cardholder name", "Nombre del titular")}</label>
-            <div ref={molHolderRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
+            <div ref={molHolderRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : (trajOn ? "#13261F" : MOL_FIELD.background), color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
             <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Numéro de carte", "Card number", "Número de tarjeta")}</label>
             <div style={{ position: "relative" }}>
-              <div ref={molNumberRef} style={{ ...MOL_FIELD, paddingRight: 74, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color }} />
+              <div ref={molNumberRef} style={{ ...MOL_FIELD, paddingRight: 74, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : (trajOn ? "#13261F" : MOL_FIELD.background), color: isComic ? "#0D0B14" : MOL_FIELD.color }} />
               <span aria-hidden="true" style={{
                 position: "absolute", right: 11, top: 15, display: "flex",
                 gap: 5, alignItems: "center", pointerEvents: "none"
@@ -576,11 +651,11 @@ export function OnsiteCheckout({
             <div style={{ display: "flex", gap: 11 }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>{_t(lang, "Expiration", "Expiry", "Caducidad")}</label>
-                <div ref={molExpiryRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
+                <div ref={molExpiryRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : (trajOn ? "#13261F" : MOL_FIELD.background), color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <label style={{...MOL_LABEL, color: isComic ? "#0D0B14" : MOL_LABEL.color }}>CVC</label>
-                <div ref={molCvcRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : MOL_FIELD.background, color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
+                <div ref={molCvcRef} style={{...MOL_FIELD, borderColor: isComic ? "#0D0B14" : MOL_FIELD.borderColor, background: isComic ? "#fff" : (trajOn ? "#13261F" : MOL_FIELD.background), color: isComic ? "#0D0B14" : MOL_FIELD.color}} />
               </div>
             </div>
             <div style={{
@@ -667,7 +742,9 @@ export function OnsiteCheckout({
           }}
         >
           {payBusy
-            ? _t(lang, "Activation…", "Activating…", "Activando…")
+            ? (trajOn && passCtx
+                ? _t(lang, "Ta semaine se débloque…", "Your week is unlocking…", "Tu semana se desbloquea…")
+                : _t(lang, "Activation…", "Activating…", "Activando…"))
             : PAY_CAPTURE_ONLY
             ? _t(lang, "Débloquer gratuitement →", "Unlock free →", "Desbloquear gratis →")
             : passCtx
@@ -721,6 +798,69 @@ export function OnsiteCheckout({
           </button>
         )}
       </div>
+
+      {/* ═══ WOW « UNLOCK REVEAL » — l'instant où le pass devient réel ═══
+          paySuccess = paiement CONFIRMÉ côté serveur (doSubscribe, inchangé).
+          Avant : écran figé 900 ms puis fermeture. Après : la semaine S'OUVRE
+          visuellement (rail réel du paywall, jours qui s'allument) — la
+          révélation promise est tenue ici, PUIS onActivated/onClose enchaînent
+          (délai 900 ms inchangé dans doSubscribe). Rollback ?sgtraj=0. */}
+      {payStep && paySuccess && trajOn && (
+        <div data-testid="unlock-reveal" role="status" aria-live="polite" style={{
+          position: "absolute", inset: 0, zIndex: 5,
+          display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+          textAlign: "center", padding: "28px 24px",
+          background: "radial-gradient(120% 90% at 75% -10%, rgba(255,199,44,.32), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)"
+        }}>
+          <style>{`
+            .sg-unlock-pop{animation:sg-unlock-pop .45s cubic-bezier(.2,.9,.3,1.4) both}
+            @keyframes sg-unlock-pop{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+            .sg-unlock-dot{animation:sg-unlock-pop .3s ease-out both;animation-delay:calc(.25s + var(--i,0)*.07s)}
+            .sg-unlock-line{animation:sg-unlock-draw .55s ease-out .15s both;transform-origin:0 0}
+            @keyframes sg-unlock-draw{from{transform:scaleX(0) translateY(-50%)}to{transform:scaleX(1) translateY(-50%)}}
+            @media (prefers-reduced-motion:reduce){.sg-unlock-pop,.sg-unlock-dot,.sg-unlock-line{animation:none !important}}
+          `}</style>
+          <span className="sg-unlock-pop" aria-hidden="true" style={{
+            width: 66, height: 66, borderRadius: "50%", background: "#FFC72C",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 0 0 8px rgba(255,199,44,.16)"
+          }}>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#0B2230" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+          <div style={{
+            fontFamily: "'Anton',system-ui,sans-serif", fontWeight: 400, textTransform: "uppercase",
+            fontSize: 30, letterSpacing: ".01em", lineHeight: 1.05, color: "#fff",
+            textShadow: "0 2px 0 rgba(0,0,0,.35)", marginTop: 16
+          }}>
+            {_t(lang, "Ta semaine t'appartient", "Your week is yours", "Tu semana es tuya")}
+          </div>
+          {traj && (
+            <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, marginTop: 18 }} aria-hidden="true">
+              <span className="sg-unlock-line" style={{
+                position: "absolute", left: 12, right: 12, top: "50%", height: 2,
+                background: "rgba(255,216,132,.5)"
+              }} />
+              {traj.days.map((d, i) => {
+                const st = TRAJ_STATUS[d.status]
+                return (
+                  <span key={i} className="sg-unlock-dot" style={{
+                    "--i": i, position: "relative", zIndex: 1, width: 24, height: 24,
+                    borderRadius: "50%", display: "inline-flex", alignItems: "center",
+                    justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#0D0B14",
+                    background: st ? st.c : "#FFD884", border: "2px solid rgba(255,255,255,.25)"
+                  }}>{st ? st.glyph : "✓"}</span>
+                )
+              })}
+            </div>
+          )}
+          <div style={{ fontSize: 14, lineHeight: 1.5, color: "rgba(255,255,255,.75)", marginTop: 14, maxWidth: "30ch" }}>
+            {_t(lang,
+              "Prévision 7 jours · alertes · plan B — tout est débloqué.",
+              "7-day forecast · alerts · plan B — all unlocked.",
+              "Pronóstico 7 días · alertas · plan B — todo desbloqueado.")}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

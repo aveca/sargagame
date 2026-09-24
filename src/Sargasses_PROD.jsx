@@ -14,6 +14,9 @@ import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 // utilisé aussi par les tests node). Import namespace : interop CJS/ESM sûre.
 import * as FContract from "../scripts/lib/forecast-contract.cjs"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+// WOW JOURNEY/CONTINUITY (2026-09-24) : une seule source « séjour » partagée
+// experience ↔ trip planner. Rollback layer entier : ?sgjourney=0.
+import { journeyFor, journeyOff } from "./lib/journey.js"
 import { getResortsForBeach } from "./lib/resorts.js"
 import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
 import { useSwipeClose } from "./useSwipeClose.js"
@@ -28,6 +31,8 @@ import "./sg-ux-2026.css"
 import "./sprint20.css"
 import "./sg-brand-tokens.css"
 import "./sg-brand-components.css"
+import "./sg-motion.css"
+import { off as sgmOff, days7 as sgmDays7 } from "./lib/sgMotion.js"
 import { detectExtendedRegion } from "./lib/regions-extended.js"
 import RegionNav from "./components/RegionNav.jsx"
 import LeadCapture from "./LeadCapture.jsx"
@@ -2029,9 +2034,19 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_trip_open","sg_trip_beach_open","sg_trip_premium_cta",
   // WOW BeachExperience (2026-09-23) : reveals parcours (additif, même pipeline).
   "sg_tomorrow_reveal","sg_alternative_reveal",
+  // WOW Journey/continuity (2026-09-24) : deep-link arrival (mesure le share
+  // entrant « live beach decision »), tap rail séjour, retour in-world, geste
+  // edge-swipe. Rollback : ?sgjourney=0 (events alors jamais émis).
+  "sg_exp_deeplink","sg_exp_chip_tap","sg_exp_back_tap","sg_exp_swipeback",
   // AHA media (2026-09-23) : hero-loop réel vu dans l'experience (mesure la couche
   // vidéo/photo ; émis aussi par BeachHeroVideo sur la fiche legacy — via= fait le tri).
   "sg_hero_video_view",
+  // WOW paywall « LA TRAJECTOIRE » (2026-09-24) : tap d'un jour de la semaine
+  // dans le paywall (engagement du moment WOW #2, mesure le hook trajectoire).
+  "sg_traj_tap",
+  // WOW « UNLOCK REVEAL » (2026-09-24, paywall) : voile « ta semaine
+  // t'appartient » montré au paiement confirmé (OnsiteCheckout, ?sgtraj=0).
+  "sg_unlock_reveal",
   // Cross-sell inter-domain
   "sg_region_nav_click","sg_cross_sell_click",
   // Free tier « Ma plage » (sprint 2026-09-02) : sans ces 2 noms dans le gate, les
@@ -11800,6 +11815,10 @@ export default function App(){
   // « ça fait rien » → panique/remboursement. zÉRO logique paiement, réversible ?paidsplash=0.
   const paidSplashOn=useMemo(()=>{try{return !/[?&]paidsplash=0(?:&|$)/.test(window.location.search)}catch(_){return true}},[])
   const[splashDone,setSplashDone]=useState(false)
+  // SGM UNLOCK (2026-09-24) : le retour paiement devient un vrai moment « ça s'ouvre »
+  // (anneau tracé → verrou qui s'ouvre → semaine réelle en cascade). Rollback ?sgmotion=0
+  // + prefers-reduced-motion → splash statique d'avant, pixel près.
+  const sgmSplashOff=useMemo(()=>sgmOff(),[])
   // A/B `pw_onboard` : onboarding guidé payant (favoris→notif→brief) vs toast 5s (control).
   // ACTIVÉ 100% ([0,1]) le 18/06 (feu vert fondateur « lance ») — vu le faible volume de
   // payeurs un A/B serait trop lent à lire ; tout nouveau payeur a le setup guidé. Override
@@ -13889,6 +13908,120 @@ useEffect(()=>{
     setComicBeach(previewBeachObj)
     try{track("sg_b2b_preview_open",{beach_id:previewBeachObj.id})}catch(_){}
   },[previewBeachObj,dataReady])
+  /* ══ WOW JOURNEY / CONTINUITY (2026-09-24) — UN SEUL MONDE ═════════════════
+     Le monde = UN objet numérique persistant. L'experience ET le TripPlanner
+     lisent la même spine (journeyFor — données 100 % réelles). Navigation :
+       · entrer dans le monde (carte/home/trip) → pushState ?exp=<id> (deep link)
+       · transformation A→B (backup/chip/trip)  → replaceState (même « page »)
+       · Back navigateur / geste bord / ✕       → sortir du monde (pop, carte
+         retrouvée EXACTEMENT en l'état — rien ne recharge)
+       · chip « ← » dans le monde               → plage précédente (pile session)
+     Rollback complet : ?sgjourney=0 (produit = état antérieur, aucune trace). */
+  const JOURNEY_OFF=journeyOff()
+  const expPrevRef=useRef(null)      // {id,name} plage précédente (pile in-world)
+  const expLastIdRef=useRef(null)    // id actuellement syncé dans l'URL
+  const expPushedRef=useRef(false)   // une entry history « à nous » est active
+  const expDeepRef=useRef(false)     // deep-link ?exp= consommé (une seule fois)
+
+  // Deep-link entrant : ?exp=<beachId> (lien partagé/signal sauvegardé) ouvre
+  // directement l'expérience — même porte que la carte (onBeachClick), jamais
+  // sur une plage sans données réelles (dataReady) ni hors île du build.
+  useEffect(()=>{
+    if(JOURNEY_OFF||expDeepRef.current)return
+    let id=null;try{id=new URLSearchParams(window.location.search).get("exp")}catch(_){}
+    if(!id||!/^[A-Za-z0-9-]{2,64}$/.test(id))return
+    if(!dataReady)return
+    const b=(allBeaches||[]).find(x=>x&&x.id===id&&(IS_NEW_REGION||x.island===island))
+    if(!b)return
+    expDeepRef.current=true
+    try{track("sg_exp_deeplink",{beach_id:id,island})}catch(_){}
+    onBeachClick(b)
+  },[allBeaches,dataReady,IS_NEW_REGION,island,JOURNEY_OFF,onBeachClick])
+
+  // URL ↔ monde : ouverture → push ; transformation A→B → replace (le lien
+  // copié pointe toujours la plage AFFICHÉE) ; fermeture latérale → strip.
+  useEffect(()=>{
+    if(JOURNEY_OFF)return
+    try{
+      const b=expBeachOf()
+      const id=b&&b.id
+      const p=new URLSearchParams(window.location.search)
+      if(id){
+        p.set("exp",id)
+        const url=getPathname()+"?"+p.toString()
+        if(expLastIdRef.current){window.history.replaceState({sgexp:1},"",url)}
+        else if((p.get("exp")||"")!==id||!expDeepRef.current){window.history.pushState({sgexp:1},"",url);expPushedRef.current=true}
+        else{window.history.replaceState({sgexp:1},"",url)} // deep-link consommé : on réutilise l'entry de boot
+      }else if(expLastIdRef.current&&p.has("exp")){
+        p.delete("exp")
+        window.history.replaceState({},"",getPathname()+(p.toString()?"?"+p.toString():""))
+      }
+      expLastIdRef.current=id||null
+    }catch(_){}
+  },[selectedBeach,comicBeach,JOURNEY_OFF])
+
+  // Back navigateur = sortie du monde (natif, instantané ; la carte dessous
+  // n'a jamais bougé — continuité spatiale totale).
+  useEffect(()=>{
+    if(JOURNEY_OFF)return
+    const onPop=()=>{
+      try{
+        expPushedRef.current=false
+        if(expBeachOf()){setSelectedBeach(null);setComicBeach(null)}
+        const p=new URLSearchParams(window.location.search)
+        if(p.has("exp")){p.delete("exp");window.history.replaceState({},"",getPathname()+(p.toString()?"?"+p.toString():""))}
+      }catch(_){}
+    }
+    window.addEventListener("popstate",onPop)
+    return ()=>window.removeEventListener("popstate",onPop)
+  },[JOURNEY_OFF])
+
+  // ✕ / geste bord : si notre entry est active → history.back() (même chemin
+  // que le Back système, asymétrie zéro) ; sinon fermeture directe + strip.
+  const closeExperience=()=>{
+    if(JOURNEY_OFF){setSelectedBeach(null);try{setComicBeach(null)}catch(_){};return}
+    if(expPushedRef.current){
+      expPushedRef.current=false
+      setSelectedBeach(null);try{setComicBeach(null)}catch(_){}
+      try{window.history.back()}catch(_){}
+      return
+    }
+    setSelectedBeach(null);try{setComicBeach(null)}catch(_){}
+    try{const p=new URLSearchParams(window.location.search);if(p.has("exp")){p.delete("exp");window.history.replaceState({},"",getPathname()+(p.toString()?"?"+p.toString():""))}}catch(_){}
+  }
+
+  // Transformation A→B (puce backup / plan B / jour du trip quand l'experience
+  // est dessous) : mémorise la plage quittée — le chip « ← » ramène exactement
+  // d'où l'on vient (pile 1 niveau, session only, jamais persisté).
+  const expNavOpen=(b,via)=>{
+    try{
+      const cur=expBeachOf()
+      if(cur&&b&&b.id&&cur.id!==b.id)expPrevRef.current={id:cur.id,name:cur.name||""}
+      if(via)track("sg_exp_chip_tap",{via,beach_id:b.id})
+    }catch(_){}
+    if(b&&b.id)onBeachClick(b)
+  }
+  const expJourneyBack=()=>{
+    try{
+      const pv=expPrevRef.current
+      if(!pv)return
+      expPrevRef.current=null
+      const b=(allBeaches||[]).find(x=>x&&x.id===pv.id)
+      if(!b)return
+      try{const cur=expBeachOf();track("sg_exp_back_tap",{from:cur&&cur.id,to:pv.id})}catch(_){}
+      onBeachClick(b)
+    }catch(_){}
+  }
+
+  // La spine du séjour — plage courante du monde, sinon MA plage (entrée
+  // « mon séjour se construit » depuis la home/trip sans fiche ouverte).
+  const journeyStay=useMemo(()=>{
+    if(JOURNEY_OFF)return null
+    const b=expBeachOf()||myBeach||null
+    if(!b)return null
+    return journeyFor({beach:b,forecastById:tripForecastById,allBeaches,lang,isPremium})
+  },[JOURNEY_OFF,selectedBeach,comicBeach,myBeach,tripForecastById,allBeaches,lang,isPremium])
+
   const closeSheet=useCallback(()=>{
     const closing=selectedBeach
     setSelectedBeach(null)
@@ -15014,6 +15147,7 @@ useEffect(()=>{
              (mini-cart B1, libellé HAVE, strip « Ta semaine » §9 : toujours masqués).
              Données inchangées, jamais inventées ; strip garde son kill-switch ?tripplan=0. */
           beach={selectedBeach||comicBeach||null}
+          allBeaches={allBeaches}
           /* REVENUE 2026-09-23 : nombre réel de plages du build/île (stats
              paywall honnêtes — jamais le global 136 sur un site régional). */
           beachCount={(() => { try {
@@ -15027,8 +15161,14 @@ useEffect(()=>{
         {showTrip&&<ErrBound><Suspense fallback={null}><LazyTripPlanner lang={lang}
           beaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status)}
           forecastById={tripForecastById} isPremium={isPremium}
+          /* JOURNEY (2026-09-24) : « mon séjour se construit » — le trip affiche
+             la semaine RÉELLE de la plage courante du monde (ou ma plage) et
+             son plan B. Rollback layer : ?sgjourney=0 (stay=null → strip absent). */
+          stay={journeyStay}
           onClose={()=>setShowTrip(false)}
-          onOpenBeach={(b)=>{try{track("sg_beach_open",{beach_id:b.id,status:b.status,source:"trip_planner"})}catch(_){}setShowTrip(false);setSelectedBeach(b)}}
+          onOpenBeach={(b)=>{try{track("sg_beach_open",{beach_id:b.id,status:b.status,source:"trip_planner"})}catch(_){}
+            try{if(!JOURNEY_OFF){const cur=expBeachOf();if(cur&&b&&cur.id!==b.id)expPrevRef.current={id:cur.id,name:cur.name||""}}}catch(_){}
+            setShowTrip(false);setSelectedBeach(b)}}
           onPremium={(src)=>{setShowTrip(false);openPremium(src||"trip_planner")}}
           track={track}/></Suspense></ErrBound>}
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
@@ -15264,18 +15404,23 @@ useEffect(()=>{
                 </Suspense>
            </ErrBound>
          )}
-        {/* BEACH EXPERIENCE (WOW 2026-09-23) — parcours HOME→BEACH→DECISION→
+         {/* BEACH EXPERIENCE (WOW 2026-09-23) — parcours HOME→BEACH→DECISION→
             TOMORROW→BACKUP→TRIP→PREMIUM en une surface (z1240 : au-dessus des
             fiches, sous paywall 1250/1260, trip 1350, checkout 1300).
-            key=beach.id : changer de plage (backup) remonte l'expérience.
-            Rollback : ?sgexp=0 (fiches legacy ci-dessus). */}
+            key=beach.id : changer de plage (backup) remonte l'expérience —
+            le rail séjour (stay) porte la continuité à travers ce remont.
+            JOURNEY (2026-09-24) : closeExperience = Back natif (history) ;
+            expNavOpen = transformation A→B avec pile « ← » ; stay = spine
+            partagée avec le TripPlanner. Rollbacks : ?sgexp=0 · ?sgjourney=0. */}
         {expBeachOf()&&<ErrBound fallback={null}><Suspense fallback={null}><LazyBeachExperience
           key={expBeachOf().id} lang={lang} beach={expBeachOf()}
           sargData={sargData} allBeaches={allBeaches} userPos={userPos}
           BEACH_TO_SARG={BEACH_TO_SARG} IS_NEW_REGION={IS_NEW_REGION}
           isPremium={isPremium}
-          onClose={()=>{try{setSelectedBeach(null)}catch(_){}try{setComicBeach(null)}catch(_){}}}
-          onOpenBeach={onBeachClick}
+          onClose={closeExperience}
+          onOpenBeach={(b)=>expNavOpen(b)}
+          stay={journeyStay} stayPrev={expPrevRef.current}
+          onStayBack={expJourneyBack}
           onPremium={(src)=>openPremium(src||"experience")}
           onPlanTrip={()=>setShowTrip(true)}
           track={track}/></Suspense></ErrBound>}
@@ -15306,6 +15451,8 @@ useEffect(()=>{
         {/* Onboarding payant guidé (A/B pw_onboard) — remplace le toast. Lazy sous Suspense+ErrBound,
             fallback = fermer (le control toast n'est pas re-render ici, donc échec = pas de "rien" bloquant). */}
         {showWelcome&&paidSplashOn&&!splashDone&&(
+          sgmSplashOff?(
+          /* ROLLBACK ?sgmotion=0 / reduced-motion : splash statique canonique (avant SGM) */
           <div role="status" aria-live="polite" style={{position:"fixed",inset:0,zIndex:1500,
             background:"radial-gradient(120% 90% at 75% -10%, rgba(255,199,44,.28), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)",
             display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px 24px",textAlign:"center"}}>
@@ -15321,6 +15468,48 @@ useEffect(()=>{
               style={{marginTop:26,background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:13,padding:"14px 30px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:"3px 3px 0 rgba(0,0,0,.35)"}}>
               {_t(lang,"Continuer →","Continue →","Continuar →")}</button>
           </div>
+          ):(
+          /* SGM UNLOCK — séquence : anneau tracé → verrou qui s'ouvre → ✓ → semaine réelle
+             en cascade (dates calculées depuis Date, zéro invention) → CTA. Toutes les
+             motions viennent de la grammaire sg-motion.css (transform/opacity only). */
+          <div role="status" aria-live="polite" style={{position:"fixed",inset:0,zIndex:1500,
+            background:"radial-gradient(120% 90% at 75% -10%, rgba(255,199,44,.28), rgba(255,199,44,0) 55%), linear-gradient(168deg,#0B2230 0%,#0D1E1C 58%,#0A1714 100%)",
+            display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",padding:"28px 24px",textAlign:"center"}}>
+            <span aria-hidden="true" style={{position:"relative",width:92,height:92,marginBottom:16,display:"block"}}>
+              <svg viewBox="0 0 92 92" width="92" height="92" style={{position:"absolute",inset:0,transform:"rotate(-90deg)"}}>
+                <circle cx="46" cy="46" r="42" fill="none" stroke="rgba(255,199,44,.22)" strokeWidth="3"/>
+                <circle className="sgm-ring" cx="46" cy="46" r="42" fill="none" stroke="#FFC72C" strokeWidth="3" strokeLinecap="round"/>
+              </svg>
+              <span className="sgm-unlock" style={{position:"absolute",left:"50%",top:"50%",width:58,height:58,marginLeft:-29,marginTop:-29,borderRadius:"50%",background:"#FFC72C",
+                display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 0 8px rgba(255,199,44,.16)"}}>
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#0B2230" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0"/></svg>
+              </span>
+              <span className="sgm-pop" style={{position:"absolute",left:"50%",top:"50%",width:58,height:58,marginLeft:-29,marginTop:-29,borderRadius:"50%",background:"#FFC72C",
+                display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 0 0 8px rgba(255,199,44,.16)",animationDelay:"1.35s"}}>
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#0B2230" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+              </span>
+            </span>
+            <div className="sgm-reveal" style={{fontFamily:"'Anton',sans-serif",fontWeight:400,textTransform:"uppercase",fontSize:34,letterSpacing:".01em",lineHeight:1.05,color:"#fff",textShadow:"0 2px 0 rgba(0,0,0,.35)",animationDelay:"1.2s"}}>
+              {_t(lang,"Premium activé","Premium activated","Premium activado")}</div>
+            <div className="sgm-reveal" style={{fontSize:15,lineHeight:1.5,color:"rgba(255,255,255,.72)",marginTop:12,maxWidth:"30ch",animationDelay:"1.35s"}}>
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts. Tes prévisions 7 jours et tes alertes sont débloquées.","7 days premium on us. Your 7-day forecast and alerts are unlocked.","7 días premium gratis. Tu pronóstico de 7 días y tus alertas están desbloqueados."):_t(lang,"Paiement validé. Tes prévisions 7 jours et tes alertes sont débloquées.","Payment confirmed. Your 7-day forecast and alerts are unlocked.","Pago confirmado. Tu pronóstico de 7 días y tus alertas están desbloqueados.")}</div>
+            <div className="sgm-reveal" style={{marginTop:20,fontSize:11,fontWeight:800,letterSpacing:".1em",textTransform:"uppercase",color:"#FFC72C",animationDelay:"1.5s"}}>
+              {_t(lang,"Ta semaine s'ouvre","Your week opens","Tu semana se abre")}</div>
+            <div aria-hidden="true" style={{display:"flex",gap:6,marginTop:10}}>
+              {sgmDays7(lang).map((d,i)=>(
+                <span key={i} className="sgm-dayin" style={{"--i":20+i,display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <span style={{fontSize:9.5,fontWeight:800,letterSpacing:".06em",color:"rgba(255,255,255,.55)",textTransform:"uppercase"}}>{d.day}</span>
+                  <span style={{width:34,height:34,borderRadius:9,border:"1.6px solid rgba(255,199,44,.65)",background:"rgba(255,199,44,.14)",
+                    display:"flex",alignItems:"center",justifyContent:"center",
+                    fontFamily:"'JetBrains Mono',monospace",fontWeight:700,fontSize:13,color:"#FFC72C"}}>{d.num}</span>
+                </span>
+              ))}
+            </div>
+            <button type="button" className="sgm-reveal" onClick={()=>{try{track("sg_premium_confirm_continue")}catch(_){};setSplashDone(true)}}
+              style={{marginTop:24,background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:13,padding:"14px 30px",fontWeight:800,fontSize:16,cursor:"pointer",fontFamily:"inherit",boxShadow:"3px 3px 0 rgba(0,0,0,.35)",animationDelay:"2.05s",minHeight:44}}>
+              {_t(lang,"Continuer →","Continue →","Continuar →")}</button>
+          </div>
+          )
         )}
         {showWelcome&&(!paidSplashOn||splashDone)&&pwOnboard==="onboard"&&(
           <ErrBound fallback={null}>

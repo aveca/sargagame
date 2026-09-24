@@ -157,12 +157,64 @@ export default function BeachExperience({
   lang = "fr", beach, sargData, allBeaches = [], userPos = null,
   BEACH_TO_SARG = {}, isNewRegion = false,
   isPremium = false, onClose, onOpenBeach, onPremium, onPlanTrip, track,
+  /* WOW JOURNEY (2026-09-24) — spine « séjour » partagée (src/lib/journey.js,
+     calculée par Sargasses_PROD). stay = {days:[{i,label,date,status,
+     confidence,locked}], backup:{...,beach}|null, critDay} ; stayPrev = plage
+     quittée (pile in-world de la session). Tout est OPTIONNEL : absent → le
+     rail et le geste bord ne s'installent même pas (?sgjourney=0 côté parent). */
+  stay = null, stayPrev = null, onStayBack = null,
 }) {
   const [whyOpen, setWhyOpen] = useState(false)
   const [tmrOpen, setTmrOpen] = useState(false)
   const [bakOpen, setBakOpen] = useState(false)
   const [shared, setShared] = useState(false)
   const rootRef = useRef(null)
+  const edgeSwipeRef = useRef(null)
+
+  // Geste/souris : edge-swipe droite (≤ 28 px du bord gauche, ≥ 72 px) =
+  // « retour » natif du monde — plage précédente si pile, sinon sortir.
+  // Jamais de preventDefault : le scroll vertical/horizontal reste intact.
+  const onEdgeStart = (e) => {
+    try {
+      if (!stay) { edgeSwipeRef.current = null; return }
+      const t = e.touches && e.touches[0]
+      if (!t || t.clientX > 28) { edgeSwipeRef.current = null; return }
+      edgeSwipeRef.current = { x: t.clientX, y: t.clientY }
+    } catch (_) { edgeSwipeRef.current = null }
+  }
+  const onEdgeEnd = (e) => {
+    const s = edgeSwipeRef.current
+    edgeSwipeRef.current = null
+    try {
+      if (!s || !stay) return
+      const t = e.changedTouches && e.changedTouches[0]
+      if (!t) return
+      const dx = t.clientX - s.x, dy = t.clientY - s.y
+      if (dx >= 72 && Math.abs(dy) < 48) {
+        try { track && track("sg_exp_swipeback", { beach_id: beach && beach.id, hadPrev: !!stayPrev }) } catch (_) {}
+        if (stayPrev && onStayBack) onStayBack()
+        else if (onClose) onClose()
+      }
+    } catch (_) {}
+  }
+  // Desktop : ← = retour in-world (même geste, clavier). Zéro effet hors journey.
+  useEffect(() => {
+    if (!stay) return
+    const h = (e) => {
+      try {
+        const t = e.target
+        if (t && (/^(input|textarea|select)$/i.test(t.tagName) || t.isContentEditable)) return
+      } catch (_) {}
+      if (e.key === "ArrowLeft" && stayPrev && onStayBack) {
+        try { track && track("sg_exp_back_tap", { via: "kbd", beach_id: beach && beach.id }) } catch (_) {}
+        onStayBack()
+      }
+    }
+    window.addEventListener("keydown", h)
+    return () => window.removeEventListener("keydown", h)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [!!stay, !!stayPrev])
+
   if (!beach) return null
   const L = (fr, en, es) => _t(lang, fr, en, es)
   const v = vOf(beach.status)
@@ -192,13 +244,33 @@ export default function BeachExperience({
   const goBackup = () => { setBakOpen(o => { if (!o) trk("sg_alternative_reveal", {}); return !o }) }
   const goWhy = () => { setWhyOpen(o => { if (!o) trk("sg_verdict_expand", { via: "experience" }); return !o }) }
 
+  // ── JOURNEY RAIL (2026-09-24) — téléportation DANS l'objet, jamais de page.
+  //   chip jour 0   → retour au sommet (= l'identité de l'objet, la plage)
+  //   chip J+n      → ouvre le reveal TOMORROW et s'y téléporte (scroll in-world)
+  //   chip verrouillée → moment premium (J+3+, même règle que le TripPlanner)
+  const _bhv = (() => { try { return (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" } catch (_) { return "smooth" } })()
+  const goTop = () => { try { const el = rootRef.current; if (el) el.scrollTo({ top: 0, behavior: _bhv }) } catch (_) { try { rootRef.current.scrollTop = 0 } catch (_) {} } }
+  const onDayChip = (d) => {
+    trk("sg_exp_chip_tap", { via: "rail_day", day: d.i, locked: !!d.locked })
+    if (d.locked) { onPremium && onPremium("experience_chip"); return }
+    if (d.i === 0) { goTop(); return }
+    if (!tmrOpen) goTomorrow()
+    setTimeout(() => { try { const el = document.getElementById("bx-tomorrow"); el && el.scrollIntoView({ behavior: _bhv, block: "start" }) } catch (_) {} }, 90)
+  }
+
   const doShare = async () => {
     let url = null
     try { url = beachPageUrl ? beachPageUrl(beach) : null } catch (_) {}
+    // WOW JOURNEY (2026-09-24) : « j'envoie une décision de plage VIVANTE » —
+    // le message porte aujourd'hui ET demain (données réelles fc[1], rien si
+    // absent) ; l'URL canonique SEO reste inchangée (jamais de bris de lien).
+    const _tmrBit = (tmr && tmrMeta)
+      ? L(`, demain : ${tmrMeta.go[0].toLowerCase()}`, `, tomorrow: ${tmrMeta.go[1].toLowerCase()}`, `, mañana: ${tmrMeta.go[2].toLowerCase()}`)
+      : ""
     const txt = L(
-      `${beach.name} : ${v.go[0]} aujourd'hui (Sargagame — mesuré au satellite, pas deviné).`,
-      `${beach.name}: ${v.go[1]} today (Sargagame — satellite-measured, not guessed).`,
-      `${beach.name}: ${v.go[2]} hoy (Sargagame — medido por satélite).`)
+      `${beach.name} : ${v.go[0]} aujourd'hui${_tmrBit} (Sargagame — mesuré au satellite, pas deviné).`,
+      `${beach.name}: ${v.go[1]} today${_tmrBit} (Sargagame — satellite-measured, not guessed).`,
+      `${beach.name}: ${v.go[2]} hoy${_tmrBit} (Sargagame — medido por satélite).`)
     try {
       if (navigator.share) { await navigator.share(url ? { title: beach.name + " — Sargagame", text: txt, url } : { title: beach.name + " — Sargagame", text: txt }); }
       else if (navigator.clipboard) { await navigator.clipboard.writeText(url ? `${txt} ${url}` : txt); }
@@ -224,7 +296,7 @@ export default function BeachExperience({
 
   return (
     <div ref={rootRef} className="bx-root" role="dialog" aria-modal="true" aria-label={beach.name} data-testid="bx-experience"
-      onMouseMove={onPar} style={{ "--bx-accent": v.c }}>
+      onMouseMove={onPar} onTouchStart={onEdgeStart} onTouchEnd={onEdgeEnd} style={{ "--bx-accent": v.c }}>
       <style>{`
         .bx-root{position:fixed;inset:0;z-index:1240;overflow-y:auto;overflow-x:hidden;background:#0B2230;color:#FFFDF6;font-family:'Bricolage Grotesque',system-ui,sans-serif;-webkit-overflow-scrolling:touch}
         .bx-root button{font-family:'Bricolage Grotesque',system-ui,sans-serif !important;text-shadow:none !important}
@@ -312,6 +384,20 @@ export default function BeachExperience({
         .bx-backup-reason{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(30,200,176,.12);border:1px solid rgba(30,200,176,.25);border-radius:10px;font-size:12.5px;color:rgba(255,253,246,.85)}
         .bx-backup-icon{font-size:18px}
         .bx-backup-empty{padding:16px;text-align:center;color:rgba(255,253,246,.6)}
+        /* ── WOW JOURNEY RAIL (2026-09-24) : le fil du séjour, persistant.
+           Conteneur pointer-events:none → la barre ne bloque JAMAIS la carte
+           en dessous ; seules les chips sont tactiles. TL/BR paddings dégagent
+           la pill « Aujourd'hui » (gauche) et le ✕ (droite) du hero. */
+        .bx-rail{position:sticky;top:0;z-index:6;display:flex;gap:6px;align-items:center;padding:calc(10px + env(safe-area-inset-top)) 64px 8px 118px;pointer-events:none;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+        .bx-rail::-webkit-scrollbar{display:none}
+        .bx-rail>*{pointer-events:auto}
+        .bx-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:4px 12px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+        .bx-chip i{width:8px;height:8px;border-radius:50%;flex-shrink:0;font-style:normal}
+        .bx-chip.bx-chip.bx-chip{background:rgba(11,34,48,.62) !important;color:#FFFDF6 !important;border:1px solid rgba(255,255,255,.28) !important}
+        .bx-chip--today.bx-chip--today.bx-chip--today{border-color:#FFC72C !important}
+        .bx-chip--lock{opacity:.62}
+        .bx-chip--back.bx-chip--back.bx-chip--back{background:#FFC72C !important;color:#0D0B14 !important;border-color:#0D0B14 !important;font-weight:800 !important}
+        @media(min-width:1200px){.bx-rail{max-width:1180px;margin:0 auto;padding-left:24px;padding-right:24px}}
         .bx-card{background:#FDF6E3;color:#0D0B14;border:2.5px solid #0D0B14;border-radius:16px;box-shadow:4px 4px 0 rgba(0,0,0,.45);padding:14px;margin:14px}
         .bx-card-name{font-weight:800;font-size:19px}
         .bx-foot{padding:8px 14px calc(110px + env(safe-area-inset-bottom));font-size:11.5px;color:rgba(255,253,246,.5);text-align:center}
@@ -329,6 +415,41 @@ export default function BeachExperience({
           .bx-scene{transform:none !important}
         }
       `}</style>
+
+      {/* WOW JOURNEY RAIL (2026-09-24) — le fil du séjour, toujours visible :
+          ← retour in-world · aujourd'hui · J+1…J+6 · plan B. Une plage se
+          transforme dans une autre, le rail reste — le monde ne change jamais
+          de « page ». stay absent (?sgjourney=0) → le rail n'existe pas. */}
+      {stay && (
+        <div className="bx-rail" data-testid="exp-journey-rail" role="navigation" aria-label={L("Fil de ton séjour", "Your stay thread", "Hilo de tu estancia")}>
+          {stayPrev && (
+            <button type="button" className="bx-chip bx-chip--back" data-testid="exp-back-chip"
+              onClick={() => { trk("sg_exp_back_tap", { via: "chip", to: stayPrev.id }); onStayBack && onStayBack() }}
+              aria-label={L(`Revenir à ${stayPrev.name}`, `Back to ${stayPrev.name}`, `Volver a ${stayPrev.name}`)}>
+              ← {stayPrev.name}
+            </button>
+          )}
+          {(stay.days || []).map((d) => (
+            <button type="button" key={d.i}
+              className={"bx-chip" + (d.i === 0 ? " bx-chip--today" : "") + (d.locked ? " bx-chip--lock" : "")}
+              data-testid="exp-day-chip" data-day={d.i}
+              onClick={() => onDayChip(d)}
+              aria-label={(d.i === 0 ? L("Aujourd'hui", "Today", "Hoy") : (d.label || `J+${d.i}`)) + (d.locked ? " · " + L("premium", "premium", "premium") : "")}>
+              {d.locked && <span aria-hidden="true" style={{ fontSize: 11 }}>🔒</span>}
+              {!d.locked && <i aria-hidden="true" style={{ background: DOT[d.status] || "#8A8F98" }} />}
+              <span>{d.i === 0 ? L("Aujourd'hui", "Today", "Hoy") : ((d.label || "").slice(0, 4) || "J+" + d.i)}</span>
+            </button>
+          ))}
+          {stay.backup && (
+            <button type="button" className="bx-chip" data-testid="exp-planb-chip"
+              onClick={() => { trk("sg_exp_chip_tap", { via: "rail_planb", to: stay.backup.id }); onOpenBeach && onOpenBeach(stay.backup.beach) }}
+              aria-label={L(`Plan B : aller à ${stay.backup.name}`, `Plan B: go to ${stay.backup.name}`, `Plan B: ir a ${stay.backup.name}`)}>
+              <i aria-hidden="true" style={{ background: DOT[stay.backup.status] || "#8A8F98" }} />
+              <span>{L("Plan B", "Plan B", "Plan B")} · {stay.backup.name}</span>
+            </button>
+          )}
+        </div>
+      )}
 
       <div className="bx-cols">
         {/* ── COL 1 : LIEU (scene + verdict) ── */}

@@ -1,4 +1,42 @@
-## 2026-09-24 · Agent: coding (AHA EXPERIENCE COMPLETE) — Cinematic hero, animated verdict, progressive WHY, visual TOMORROW, smart BACKUP, premium clarity — LIVE all 6 regions
+## 2026-09-24 · Agent: coding/ui (WOW EVERYWHERE #1 — SGM MOTION GRAMMAR + UNLOCK) — gates locaux verts
+
+### Travail effectué
+- **Résumé 1 ligne** : création de la SGM (Sargagame Motion Grammar) — grammaire d'interaction centralisée statut-pilotée (8 motions nommées, canal [data-sgm-status], courbe maison unique, GPU-only, reduced-motion natif) — et première application : le retour post-paiement devient un vrai moment UNLOCK (anneau tracé → verrou qui s'ouvre → « Ta semaine s'ouvre » + 7 jours RÉELS en cascade → CTA).
+- **Détails** : rollback `?sgmotion=0` + prefers-reduced-motion = splash statique d'avant pixel près ; copy FR/EN/ES ; event `sg_premium_confirm_continue` intact ; zéro touch money-path (Mollie/grant/webhook non modifiés) ; jours calculés depuis Date (zéro invention) ; bundle 38,2 Ko inchangé.
+- **Audit préalable** (mission WOW EVERYWHERE) : parcours cartographié HOME→MAP→LIST→SUIVI→BEACH(Experience)→PremiumModal/OnsiteCheckout→retour paiement→share. 5 cassures identifiées, 1 transformation structurante choisie (la grammaire), post-paiement = 1re application.
+
+### Fichiers modifiés
+- `src/sg-motion.css` (N) — grammaire SGM (8 motions + canal statut + reduced-motion)
+- `src/lib/sgMotion.js` (N) — off() / days7(lang) / STATUS_C
+- `src/Sargasses_PROD.jsx` — import grammaire + mémo sgmSplashOff + splash UNLOCK chorégraphié (branche rollback intacte)
+- `tests/unit/sg-motion-grammar.test.cjs` (N) — 31 checks contrat
+- `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md` — handoff
+
+### Tests réalisés
+- [x] npx esbuild Sargasses_PROD.jsx → 0 erreur syntaxe
+- [x] npm run build → exit 0 (stamp-sw v219 OK)
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] ux-smoke → FUNNEL_REACHED=map+fiche+paywall · ERRORS=[] · WHITE_OR_TRANSPARENT_BUTTONS=[] · RM_INFINITE=[] · SMOKE_GATE=PASS
+- [x] Playwright experience.spec.ts → 7/7 (mobile-chromium)
+- [x] tests/unit/sg-motion-grammar.test.cjs → 31/31
+- [x] php -l → N/A (0 fichier PHP touché ; échantillon mollie.php OK)
+
+### Problèmes restants
+- [ ] Splash UNLOCK non vérifié visuellement en prod (déclenché uniquement par retour paiement réel ; preuve humaine fondateur requise — comme le money-path) — P2
+- [ ] checkout→paid = 0 % post-#682 (n=6 — bruit) ; la SEULE preuve humaine = 1 paiement carte fondateur (HUMAN-ONLY, non fabricable)
+- [ ] BUG-2026-038 historique (E2E bottomnav CI) : fix mergé, suivre CI prochaine
+- [ ] B2B : queue qualifiée existe ; envoi = dépendance humaine/infra
+
+### Prochaine action recommandée
+1. WOW #2 : appliquer la grammaire au HOME — reveal de la situation du jour au premier paint (canal statut = verdict réel de la meilleure plage via findAlternatives) — Rôle : ui/coding
+2. WOW #3 : CHECKOUT SGM — conserver plage/verdict/prix dans OnsiteCheckout (continuité visuelle, jamais de modal froide) — Rôle : ui/coding
+3. Mesurer `sg_premium_confirm_continue` post-UNLOCK + funnel events AHA (`sg_hero_video_view`, `sg_verdict_expand`) — Rôle : growth
+
+### Branche / PR
+- Branche : `main` (direct push policy, à committer par le fondateur/release agent)
+- Commit : à créer (fichiers staged listés ci-dessus)
+
+
 
 ### Travail effectué
 - **Résumé 1 ligne** : AHA experience transformée — HERO cinématique (gradient card, Veilleur, photo/vidéo plage) → VERDICT dominant avec animation pop+fill bar (couleur = statut) → WHY révélation progressive 3 preuves réelles (état satellite, confiance modèle, surface sargasses) → TOMORROW timeline horizontale scroll-snap J+1→J+7 avec labels status + confidence % + entrée décalée → BACKUP transition from→to animée (flèche pulsante, badges double, copy "alternative intelligente") → PREMIUM preview free vs premium (aujourd'hui gratuit / 7 jours premium) + sticky preview bar → mobile 390px first-screen optimal, CTA visible, zéro surcharge.

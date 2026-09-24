@@ -19,8 +19,25 @@ function loadJSON(p, fallback) {
   try { return JSON.parse(fs.readFileSync(p, 'utf-8')) } catch { return fallback }
 }
 
-function pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, alternates, robots, videoMeta }) {
-  const canonical = `https://${domain}${pathname}`;
+// ── Consolidation SEO (audit 2026-09-24) ─────────────────────────────────────
+// Chaque plage avait DEUX URLs live self-canonical sur le même domaine :
+// la fiche primaire riche (/plages|beaches|playas/<slug>/, sitemapée, maillée,
+// hreflang) ET l'alias dédié /beach/<slug>/ + /beach/<id>/ (ce module), plus
+// pauvre et orphelin → duplicate content + cannibalisation sur les 6 domaines.
+// Décision d'indexabilité : l'alias RESTE servi (deep-link SPA `/beach/:slugOrId`
+// supporté dans Sargasses_PROD.jsx:13019) mais canonicalise vers la fiche
+// primaire et passe en noindex,follow (même pattern que les pages resorts).
+// primaryBeachPath = URL canonique de la fiche primaire par région.
+const PRIMARY_BEACH_DIR = { fr: 'plages', en: 'beaches', es: 'playas' };
+function primaryBeachPath(region, beach) {
+  const lang = region.primaryLang || 'fr';
+  const dir = PRIMARY_BEACH_DIR[lang] || 'plages';
+  const slug = beach.slug || slugify(beach.name);
+  return `/${dir}/${slug}/`;
+}
+
+function pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, alternates, robots, videoMeta, canonicalPath }) {
+  const canonical = `https://${domain}${canonicalPath || pathname}`;
   const tplPath = path.join(ROOT, 'dist', 'index.html');
   let html = fs.existsSync(tplPath) ? fs.readFileSync(tplPath, 'utf-8') : fs.readFileSync(path.join(ROOT, 'index.html'), 'utf-8');
   
@@ -375,13 +392,20 @@ document.addEventListener('DOMContentLoaded', function() {
     ]
   }];
 
-  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, alternates });
+  const html = pageShell({
+    title, desc, pathname, domain, lang, noscript, jsonLd, alternates,
+    // Consolidation duplicate (audit 2026-09-24) : la fiche primaire porte le
+    // jus SEO ; cet alias noindex,follow transmet la popularité interne.
+    canonicalPath: primaryBeachPath(region, beach),
+    robots: 'noindex,follow',
+  });
   writePage(distDir, pathname, html);
   // Also write /beach/[id] if id differs from slug (so /beach/mq001 and /beach/anse-charpentier both work)
   if (pathnameById !== pathname) {
     writePage(distDir, pathnameById, html);
   }
-  return { loc: pathname, changefreq: 'daily', priority: '0.7' };
+  // noindex ⇒ HORS sitemap (signal contradictoire sinon). Retourne null.
+  return null;
 }
 
 // Generate POI page — /poi/[slug] + /poi/[id]
@@ -515,12 +539,14 @@ function generateDedicatedPages(region, distDir) {
   const lang = region.primaryLang || 'fr';
   const sitemap = [];
 
-  // 1. Beach pages — /beach/[slug] + /beach/[id]
+  // 1. Beach pages — /beach/[slug] + /beach/[id] (alias noindex → canonical primaire,
+  //    retournent null = jamais dans le sitemap)
   for (const beach of beaches) {
     if (!beach || !beach.id) continue;
     // For new regions, ensure island matches (legacy already filtered above includes both islands for shared build)
     if (region.id !== 'mq' && region.id !== 'gp' && beach.island !== region.id) continue;
-    sitemap.push(generateBeachPage(region, beach, data, lang, distDir, beaches));
+    const entry = generateBeachPage(region, beach, data, lang, distDir, beaches);
+    if (entry) sitemap.push(entry);
   }
   // If legacy mq build, also ensure we counted correctly: we generated for all islands once, not per lang
   // 2. POI pages — /poi/[slug] + /poi/[id]
@@ -579,4 +605,4 @@ function generateDedicatedPages(region, distDir) {
   console.log(`   → Pages dédiées ${region.id} (${lang}) : ${sitemap.length} URLs ajoutées au sitemap (beaches ${beaches.length}, pois ${regionPois.length})`);
 }
 
-module.exports = { generateDedicatedPages };
+module.exports = { generateDedicatedPages, primaryBeachPath };
