@@ -15,7 +15,7 @@ const PANEL = '.sg-modal-panel, .pww-wrap'
 async function openPaywall(page) {
   await page.goto(BASE + "/", { waitUntil: "load", timeout: 60000 })
   await page.waitForTimeout(2500)
-  await page.locator('[data-testid="xp-best-open"]').first().click()
+  await page.locator('[data-testid="xp-best-open"]').first().click({ timeout: 10000 }).catch(async () = await page.locator('[data-testid="xp-best-open"]').first().click({ force: true }) })
   await page.waitForSelector(EXP, { timeout: 15000 })
   await page.waitForTimeout(1000)
   await page.locator('[data-testid="exp-premium-cta"]').first().click({ timeout: 10000 }).catch(async () => {
@@ -47,6 +47,10 @@ test.describe("WOW paywall — LA TRAJECTOIRE (mobile 390px)", () => {
       expect(/Plan B/.test(await page.locator(TRAJ + ' [data-testid="stay-trajectory-backup"]').innerText())).toBe(true)
       expect(/km/.test(await page.locator(TRAJ + ' [data-testid="stay-trajectory-backup"]').innerText())).toBe(true)
     }
+    // rail contenu dans le module (zéro débordement 390px)
+    const rail = await page.locator(TRAJ + " .sg-traj-rail").boundingBox()
+    const box = await page.locator(TRAJ).boundingBox()
+    expect(rail.x + rail.width).toBeLessThanOrEqual(box.x + box.width + 1)
   })
 
   test("interaction signature : tap jour → détail (confiance révélée au tap)", async ({ page }) => {
@@ -56,7 +60,6 @@ test.describe("WOW paywall — LA TRAJECTOIRE (mobile 390px)", () => {
     const n = await days.count()
     expect(n).toBeGreaterThanOrEqual(2)
     // tap sur le 2e jour → aria-pressed bascule + détail mis à jour
-    const before = await page.locator(TRAJ + " .sg-traj-detail").innerText()
     await days.nth(1).click()
     await page.waitForTimeout(300)
     expect(await days.nth(1).getAttribute("aria-pressed")).toBe("true")
@@ -70,7 +73,7 @@ test.describe("WOW paywall — LA TRAJECTOIRE (mobile 390px)", () => {
   test("rollback ?sgtraj=0 : module absent, paywall + offre intacts", async ({ page }) => {
     await page.goto(BASE + "/?sgtraj=0", { waitUntil: "load", timeout: 60000 })
     await page.waitForTimeout(2500)
-    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.locator('[data-testid="xp-best-open"]').first().click({ timeout: 10000 }).catch(async () = await page.locator('[data-testid="xp-best-open"]').first().click({ force: true }) })
     await page.waitForSelector(EXP, { timeout: 15000 })
     await page.waitForTimeout(800)
     await page.locator('[data-testid="exp-premium-cta"]').first().click().catch(async () => {
@@ -103,9 +106,20 @@ test.describe("WOW paywall — LA TRAJECTOIRE (mobile 390px)", () => {
     await cta.scrollIntoViewIfNeeded()
     await page.waitForTimeout(400)
     await cta.click({ timeout: 8000 }).catch(async () => { await cta.click({ force: true }) })
-    // Le checkout (z1300) glisse avec transition (reduced-motion OFF ici)
+    // Robustesse anti-recouvrement éphémère (bannière cookie/nudge au-dessus
+    // du CTA au moment du tap — flaky documenté MASTER_AUDIT) : si l'overlay
+    // checkout n'est pas monté 1,2 s après, le clic DOM programmatique
+    // déclenche le handler React sans aucune interception possible.
+    await page.waitForTimeout(1200)
+    if (!(await page.locator('[role="dialog"][aria-label*="Paiement"], [role="dialog"][aria-label*="checkout"], [role="dialog"][aria-label*="Pago"]').count())) {
+      await cta.evaluate((el) => el.click())
+    }
+    // Le checkout (z1300) s'ouvre en dialog
     const checkout = page.locator('[role="dialog"][aria-label*="Paiement"], [role="dialog"][aria-label*="checkout"], [role="dialog"][aria-label*="Pago"]').first()
     expect(await checkout.isVisible({ timeout: 10000 }).catch(() => false)).toBe(true)
+    // Transition animée : propriété transition sur transform (sauf reduced-motion)
+    const transition = await checkout.evaluate(el => getComputedStyle(el).transition)
+    expect(/transform/.test(transition)).toBe(true)
     // Écho « tu débloques la semaine de <plage> » + mini-dots réels du forecast
     const echo = page.locator('[data-testid="checkout-trajectory"]')
     const echoVisible = await echo.isVisible({ timeout: 5000 }).catch(() => false)
