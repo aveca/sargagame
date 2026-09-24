@@ -21,7 +21,7 @@
 
 ---
 
-### OPP-2026-001 — Strip « Ta semaine » du paywall : ajouter le jour à chaque pastille [~] in_progress score=8.0 — open by autopilot
+### OPP-2026-001 — Strip « Ta semaine » du paywall : ajouter le jour à chaque pastille [x] shipped 2026-09-24 (PR #742, live 6/6, proof prod chips jour) score=8.0 — open by autopilot
 - WHY : la preuve de valeur paywall montre 7 pastilles anonymes (✓ ✓ ✓…) sans aucun jour — impossible de savoir QUEL jour est propre, au moment exact de la décision d'achat. Observé en prod.
 - USER VALUE : lire « sa semaine » en 1 seconde (L M M J V S D sous chaque pastille) ; a11y : aria-label jour+statut (les `title=` sont invisibles au tactile et muets au lecteur d'écran).
 - BUSINESS VALUE : la clarté de la preuve « 7 jours » soutient modal→CTA au checkout entry (paywall = goulot mesuré funnel 7j : 263 opens → 6 CTA).
