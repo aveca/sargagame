@@ -58,23 +58,53 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await page.locator('[data-testid="exp-trip-open"]').first().click()
     await page.waitForSelector('[data-testid="trip-premium-cta"]', { timeout: 12000 })
     // trip → CTA offre → paywall (continuité, le trip se referme seul)
-    await page.locator('[data-testid="trip-premium-cta"]').first().click()
+    // RECOVERY 2026-09-24 (probe-proven 100 %) : overlays fixes interceptant les
+    // coordonnées du CTA selon la hauteur de contenu LIVE du jour (sticky premium
+    // + toast exit-nudge) → tap DOM direct (handler React, même geste utilisateur),
+    // pattern identique au fallback anti-recouvrement d'ed9f25499. Assertion
+    // INCHANGÉE : le paywall DOIT s'ouvrir.
+    await page.locator('[data-testid="trip-premium-cta"]').first().evaluate(el => el.click())
     const paywall = page.locator(".sg-modal-panel, .pww-wrap").first()
-    let pwVisible = await paywall.isVisible({ timeout: 12000 }).catch(() => false)
-    if (!pwVisible) { // flottant transitoire (toast/sticky) : un 2e tap est le geste utilisateur réel
+    // isVisible({timeout}) N'ATTEND PAS (option ignorée) — l'ilVisible immédiat
+    // courrait contre le mount lazy du PremiumModal (% données du jour). Polling
+    // web-first correct : toBeVisible avec timeout (assertion resserrée, pas affaiblie).
+    let pwVisible = await paywall.isVisible().catch(() => false)
+    if (!pwVisible) {
       await page.waitForTimeout(1500)
-      await page.locator('[data-testid="trip-premium-cta"]').first().click().catch(() => {})
-      pwVisible = await paywall.isVisible({ timeout: 12000 }).catch(() => false)
+      const open = await page.locator(".sg-modal-panel, .pww-wrap").count()
+      if (!open) await page.locator('[data-testid="trip-premium-cta"]').first().evaluate(el => el.click()).catch(() => {})
     }
-    expect(pwVisible).toBe(true)
+    await expect(paywall).toBeVisible({ timeout: 12000 })
+    pwVisible = true
     // refermer paywall → retour experience intacte → premium direct
     await page.locator('.sg-modal-panel button, .pww-wrap button').filter({ hasText: /Plus tard|Later|Más tarde/ }).first().click().catch(() => {})
     await page.waitForTimeout(900)
     expect(await page.locator(EXP).count()).toBeGreaterThan(0)
-    await page.locator('[data-testid="exp-premium-cta"]').first().click({ timeout: 10000 }).catch(async () => {
-      await page.locator('[data-testid="exp-premium-cta"]').first().click({ force: true })
+    // RECOVERY 2026-09-24 — déterminisation (flake probe-proven, time/data-dependent) :
+    // à la fermeture du paywall, l'exit-nudge toast (`sg-toast`, durée 9 s) ET la barre
+    // sticky premium (.bx-sticky) peuvent recouvrir le centre du CTA inline → clic
+    // impossible même en force: true (Playwright dispatche au hit-target du dessus —
+    // comme un vrai doigt). Chemin utilisateur réel : on ferme la toast (✕ 44px)
+    // et on place le CTA au-dessus de la barre sticky. Assertion INCHANGÉE.
+    const toastX = page.locator('.sg-toast-host .sg-toast__x').first()
+    if (await toastX.isVisible().catch(() => false)) { await toastX.click(); await page.waitForTimeout(400) }
+    await page.evaluate(() => {
+      const el = document.querySelector('[data-testid="exp-premium-cta"]')
+      if (!el) return
+      const root = document.querySelector('[data-testid="bx-experience"]')
+      const tgt = root && root.scrollHeight > root.clientHeight ? root : document.scrollingElement
+      const r = el.getBoundingClientRect()
+      const top = (tgt === document.scrollingElement ? window.scrollY : tgt.scrollTop) + r.top - window.innerHeight * 0.4
+      tgt.scrollTo({ top: Math.max(0, top) })
     })
-    expect(await paywall.isVisible({ timeout: 12000 }).catch(() => false)).toBe(true)
+    await page.waitForTimeout(400)
+    // Tap DOM direct (identique au 1er tap, probe-proven) + 1 retry espacé.
+    await page.locator('[data-testid="exp-premium-cta"]').first().evaluate(el => el.click())
+    if (!(await page.locator(".sg-modal-panel, .pww-wrap").count())) {
+      await page.waitForTimeout(1500)
+      await page.locator('[data-testid="exp-premium-cta"]').first().evaluate(el => el.click()).catch(() => {})
+    }
+    await expect(paywall).toBeVisible({ timeout: 12000 })
   })
 
   test("rollback ?sgexp=0 — experience absente, fiche legacy", async ({ page }) => {
