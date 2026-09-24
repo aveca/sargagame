@@ -1,0 +1,246 @@
+{
+  "timestamp": "2026-09-24T01:42:10.377Z",
+  "regions": [
+    {
+      "region": "mq",
+      "name": "Martinique",
+      "url": "https://sargasses-martinique.com",
+      "lang": "fr",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\mq-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\mq-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\mq-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\mq-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\mq-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Plage de Sainte-Anne",
+        "verdict": "✓\nOn y va",
+        "score": "score 84/100 · 60% confiance",
+        "media": {
+          "photo": 1,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "fr",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    },
+    {
+      "region": "gp",
+      "name": "Guadeloupe",
+      "url": "https://sargasses-guadeloupe.com",
+      "lang": "fr",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\gp-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\gp-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\gp-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\gp-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\gp-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Anse Madame",
+        "verdict": "✓\nOn y va",
+        "score": "score 84/100 · 60% confiance",
+        "media": {
+          "photo": 1,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "fr",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    },
+    {
+      "region": "florida",
+      "name": "Florida",
+      "url": "https://sargassummiami.com",
+      "lang": "en",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\florida-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\florida-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\florida-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\florida-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\florida-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Key West (Smathers)",
+        "verdict": "✓\nGo",
+        "score": "score 84/100 · 60% confidence",
+        "media": {
+          "photo": 1,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "en",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    },
+    {
+      "region": "rivieramaya",
+      "name": "Riviera Maya",
+      "url": "https://sargassumcancun.com",
+      "lang": "es",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\rivieramaya-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\rivieramaya-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\rivieramaya-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\rivieramaya-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\rivieramaya-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Playa Holbox",
+        "verdict": "✓\nVamos",
+        "score": "score 83/100 · 60% confianza",
+        "media": {
+          "photo": 1,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "es",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    },
+    {
+      "region": "puntacana",
+      "name": "Punta Cana",
+      "url": "https://sargassumpuntacana.com",
+      "lang": "en",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\puntacana-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\puntacana-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\puntacana-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\puntacana-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\puntacana-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Bavaro Beach",
+        "verdict": "✓\nGo",
+        "score": "score 88/100 · 60% confidence",
+        "media": {
+          "photo": 1,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "en",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    },
+    {
+      "region": "tulum",
+      "name": "Tulum",
+      "url": "https://sargazotulum.com",
+      "lang": "es",
+      "screenshots": {
+        "home": ".ai\\ui-audit\\shots-aha-prod\\tulum-home-2026-09-24T01-42-10-300Z.png",
+        "experience": ".ai\\ui-audit\\shots-aha-prod\\tulum-exp-2026-09-24T01-42-10-300Z.png",
+        "why": ".ai\\ui-audit\\shots-aha-prod\\tulum-why-2026-09-24T01-42-10-300Z.png",
+        "tomorrow": ".ai\\ui-audit\\shots-aha-prod\\tulum-tomorrow-2026-09-24T01-42-10-300Z.png",
+        "backup": ".ai\\ui-audit\\shots-aha-prod\\tulum-backup-2026-09-24T01-42-10-300Z.png"
+      },
+      "checks": {
+        "beachName": "Playa Amansala",
+        "verdict": "✓\nVamos",
+        "score": "score 78/100 · 60% confianza",
+        "media": {
+          "photo": 0,
+          "video": 0,
+          "scrim": 1,
+          "glow": 1
+        },
+        "whyProofs": 2,
+        "tomorrowDays": 7,
+        "backupPresent": true,
+        "premiumPreview": true,
+        "sticky": true,
+        "stickyPreview": true,
+        "htmlLang": "es",
+        "languageDetected": {
+          "fr": true,
+          "en": true,
+          "es": true
+        },
+        "currencyFound": "NOT FOUND",
+        "mediaErrors": [],
+        "consoleErrors": []
+      },
+      "errors": []
+    }
+  ],
+  "defects": []
+}
