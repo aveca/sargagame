@@ -25,7 +25,7 @@ function ok(cond, label) {
   if (!cond) failures++
 }
 
-const { primaryBeachPath } = require(path.join(ROOT, 'scripts/lib/dedicated-pages.cjs'))
+const { primaryBeachPath, activityBeaches, ACTIVITY_FLAG } = require(path.join(ROOT, 'scripts/lib/dedicated-pages.cjs'))
 const { __test } = require(path.join(ROOT, 'scripts/lib/region-seo-pages.cjs'))
 const { computeAreas, findAlternativeToday, haversineKm, areaSlugify, areaCrossLink, AREAS_DIR } = __test
 
@@ -104,6 +104,35 @@ function main() {
   ok(rs.includes('aria-label="breadcrumb"'), 'B4 breadcrumb visible (nav HTML)')
   ok(/alternates: altsForArea\(a\)/.test(rs), 'B4 cluster hreflang /areas↔/zonas')
   ok(rs.includes("VITE_NO_SEOAREAS"), 'B4 flag rollback présent dans le générateur')
+
+  // ── C. SLICE 2 : décision /poi/ /region/ /activity/ (audit coquilles) ────
+  ok(dp.includes("const ACTIVITY_FLAG = {"), 'C1 mapping activité→flag réel présent')
+  ok(activityBeaches('surf', [{ surf: true }, { kids: true }]).length === 0,
+    'C1 surf sans flag source → [] (noindex, jamais enrichi)')
+  ok(activityBeaches('kids', [{ kids: true }, { snorkel: true }, { kids: true }]).length === 2,
+    'C1 kids = flag kids réel (2)')
+  ok(activityBeaches('family', [{ kids: true }, {}, null]).length === 1, 'C1 family = même flag kids, null-safe')
+  ok(dp.includes("const canonicalOverride = activity === 'kids' ? '/activity/family/' : undefined"),
+    'C2 /activity/kids/ canonicalise vers /family/ (pas de dupe)')
+  ok(dp.includes('isIndexable = flagged.length >= 2'), 'C2 activity indexable seulement si ≥2 plages réelles')
+  ok(dp.includes("robots: isIndexable && !canonicalOverride ? undefined : 'noindex,follow'"),
+    'C2 noindex,follow sur activity thin ou doublon')
+  ok(dp.includes('href="${primaryBeachPath(region, b)}"'), 'C2 listes activity → fiches PRIMAIRES (jamais alias /beach/)')
+  ok(/generatePOIPage[\s\S]{200,2000}robots: 'noindex,follow'/.test(dp),
+    'C3 /poi/* = noindex,follow (coquille conservée, hors index)')
+  ok(dp.includes("canonicalPath: '/', robots: 'noindex,follow'"), 'C3 /region/* canonical → home + noindex')
+  ok(!/sitemap\.push\(generatePOIPage|sitemap\.push\(generateRegionPage|sitemap\.push\(generateActivityPage/.test(dp),
+    'C3 orchestrateur : aucun push sitemap non gardé')
+  ok(dp.includes('href="${primaryBeachPath(region, b.beach)}"'), 'C4 fiche alias : nearby → fiches primaires')
+
+  // ── D. SLICE 3 : alternative du jour sur fiches FR /plages/<slug>/ ───────
+  const vc = require('fs').readFileSync(path.join(ROOT, 'vite.config.js'), 'utf8')
+  ok(vc.includes('VITE_NO_SEOALT'), 'D1 flag rollback présent (vite.config.js)')
+  ok(vc.includes('${condBaignade}${altSection}${activitySection}'), 'D1 altSection branchée dans extraSections')
+  ok(/o\.id === b\.id \|\| o\.island !== b\.island/.test(vc), 'D1 alternative = même île (jamais cross-island)')
+  ok(/_rankAlt\(_st\) >= _curAlt/.test(vc), 'D1 alternative strictement meilleure (sinon rien)')
+  ok(vc.includes("b.status && b.status !== 'clean'"), 'D1 plage clean → aucun bloc forcé')
+  ok(/href="\/plages\/\$\{_bestAlt\.o\.slug/.test(vc), 'D1 lien alternative → fiche primaire /plages/')
 
   console.log(`\n${failures ? '✗ FAIL' : '✓ ALL PASS'} (${checks - failures}/${checks})`)
   process.exit(failures ? 1 : 0)
