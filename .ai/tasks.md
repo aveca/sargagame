@@ -1,3 +1,9 @@
+## SGM MOTION GRAMMAR — [x] done 2026-09-24 (session WOW EVERYWHERE #1, gates verts locaux)
+- **Grammaire** : `src/sg-motion.css` (8 motions : reveal/pop/fill/ring/unlock/dayin/breathe/focus) + canal statut `[data-sgm-status]` (couleur = donnée réelle) + `src/lib/sgMotion.js` (off(), days7(), STATUS_C).
+- **1re transformation** : splash post-paiement = moment UNLOCK (anneau tracé → verrou s'ouvre → semaine réelle en cascade 7j → CTA). Rollback `?sgmotion=0` = splash statique d'avant.
+- **Preuves** : build 0 · bundle 38,2 Ko · smoke 4/4 PASS · E2E experience 7/7 · unit sg-motion-grammar 31/31 · 0 PHP touché · money-path intact.
+- **NEXT** : appliquer la grammaire à HOME (reveal de la situation du jour au premier paint, canal statut = verdict de la meilleure plage).
+
 ## AHA EXPERIENCE — [x] done 2026-09-24 (session AHA COMPLETE, direct push main 91ca150c7)
 - **HERO** : gradient card + backdrop-filter, VeilleurMark 52px, photo/vidéo plage full-bleed, titre clamp(28px,8vw,38px)
 - **VERDICT** : pill dominante + animation pop .4s + fill bar .5s (couleur = statut avoid/moderate/clean), wrap layout

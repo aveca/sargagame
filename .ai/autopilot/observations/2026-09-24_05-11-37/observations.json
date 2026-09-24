@@ -1,0 +1,77 @@
+{
+  "meta": {
+    "at": "2026-09-24T05:11:48.499Z",
+    "quick": true,
+    "full": false,
+    "domains": [
+      "mq"
+    ],
+    "viewports": [
+      "mobile"
+    ],
+    "lighthouse": false
+  },
+  "runs": [
+    {
+      "url": "https://sargasses-martinique.com/",
+      "status": 200,
+      "perf": {
+        "dcl": 419,
+        "load": 768,
+        "ttfb": 180,
+        "lcp": 676,
+        "transferKB": 345,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "brokenLinks": [],
+      "shot": "mobile-home.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "home",
+      "kind": "app",
+      "lighthouse": null
+    },
+    {
+      "url": "https://sargasses-martinique.com/?paywall=1",
+      "status": 200,
+      "perf": {
+        "dcl": 117,
+        "load": 131,
+        "ttfb": 72,
+        "lcp": 140,
+        "transferKB": 1,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "brokenLinks": [],
+      "shot": "mobile-premium.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "premium",
+      "kind": "app",
+      "lighthouse": null
+    }
+  ],
+  "interactions": [
+    {
+      "mapReady": true,
+      "beachSheet": true,
+      "experience": true,
+      "tomorrow": true,
+      "backup": true,
+      "trip": true,
+      "share": true,
+      "premiumModal": true,
+      "checkoutEntry": true,
+      "notes": [],
+      "region": "mq"
+    }
+  ]
+}

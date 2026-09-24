@@ -4,7 +4,7 @@
  * 100 % data réelle (allBeaches + sargData). Zéro invention.
  * Rollback global : ?newia=0 (géré par l'appelant).
  */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { haversineKm, findAlternatives } from '../lib/beach-decision.js';
 
 export const GOLD = '#FFC72C';
@@ -110,6 +110,176 @@ function BeachCard({ b, lang, userPos, isFav, inCompare, onOpen, onFav, onCompar
   );
 }
 
+/* ── HOME WOW — « LE POULS DE LA MER » (2026-09-24) ──────────────────────────
+   Workstream HOME/DISCOVERY uniquement. L'interaction signature de Sargagame :
+   LA LIGNE DE BALISES — chaque bouée = 1 plage réelle, posée ouest→est
+   (longitude réelle, jamais inventée), trio couleur+forme+mot = statut satellite.
+   On GLISSE la mer (drag/scroll-snap) : la bouée centrée gonfle et révèle son
+   score ; la carte en dessous expose l'ÉTAT LIVE (fraîcheur réelle, confiance,
+   raison réelle) ; l'ACTION = ouvrir la fiche. Données 100 % existantes
+   (status/score/confidence/commune/lat/lng/reason) — zéro invention, zéro dep.
+   Rollback produit : ?sgwow=0 → ancien HomeDashboard (conservé, non retouché). */
+const WOW_ARMOR = `
+.wow-live-dot{width:9px;height:9px;border-radius:99px;background:#22C55E;display:inline-block;animation:wowpulse 4.2s ease-in-out infinite;box-shadow:0 0 8px rgba(34,197,94,.8)}
+@keyframes wowpulse{0%,100%{opacity:1}50%{opacity:.3}}
+.wow-rail{display:flex;overflow-x:auto;scroll-snap-type:x proximity;padding:8px calc(50% - 30px) 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;cursor:grab;touch-action:pan-x pan-y}
+.wow-rail::-webkit-scrollbar{display:none}
+.wow-rail.wow-grabbing{cursor:grabbing}
+.wow-buoy.wow-buoy{background:none!important;border:none!important;box-shadow:none!important;text-shadow:none!important;padding:2px 6px!important;min-height:0!important;min-width:56px!important;width:56px;display:flex;flex-direction:column;align-items:center;gap:3px;scroll-snap-align:center;cursor:pointer;flex:0 0 auto}
+.wow-buoy .wow-dot{transition:transform .22s ease,filter .22s ease;display:block}
+.wow-buoy[data-on="1"] .wow-dot{transform:scale(1.26);filter:drop-shadow(0 0 7px rgba(255,199,44,.55))}
+.wow-buoy .wow-num{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,monospace;font-size:10px;font-weight:800;color:rgba(255,253,246,.45);transition:color .22s ease,font-size .22s ease}
+.wow-buoy[data-on="1"] .wow-num{font-size:13px;color:#FFC72C}
+.wow-chip.wow-chip{border:2px solid rgba(13,11,20,.85)!important;box-shadow:2px 2px 0 rgba(13,11,20,.85)!important;text-shadow:none!important;border-radius:999px!important;padding:8px 12px!important;margin:0!important;font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:7px;cursor:pointer;min-height:44px}
+.wow-chip-clean.wow-chip-clean{background:#00B086!important;color:#05281c!important}
+.wow-chip-mod.wow-chip-mod{background:#E8A800!important;color:#231a00!important}
+.wow-chip-avoid.wow-chip-avoid{background:#E8512A!important;color:#fff!important}
+.wow-focus-in{animation:wowpop .24s ease}
+@keyframes wowpop{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
+.wow-sea-link.wow-sea-link{background:rgba(255,199,44,.1)!important;color:#FFE08A!important;border:1.5px dashed rgba(255,199,44,.55)!important;box-shadow:none!important;border-radius:12px!important;text-shadow:none!important;padding:12px 14px!important;font-weight:800;font-size:14px;min-height:48px;cursor:pointer;width:100%}
+@media(min-width:640px){[data-testid="xp-home"]{--wow-top:calc(150px + env(safe-area-inset-top))}}
+@media(min-width:1024px){
+ [data-testid="xp-home"]{--wow-top:calc(118px + env(safe-area-inset-top))}
+ .wow-home.wow-home{display:grid!important;grid-template-columns:1fr 1fr!important;gap:0 20px!important;align-items:start!important;max-width:1000px!important}
+ .wow-home .wow-live{grid-column:1/-1}
+ .wow-home .wow-railwrap{grid-column:1/-1}
+ .wow-home .wow-focuswrap{grid-column:1}
+ .wow-home .wow-tripwrap{grid-column:2}
+}
+`;
+/* Le haut du home doit dégager la RegionNav FIXE par-dessus (z2001) :
+   ≤640px ≈ barre + 3 lignes de chips (lot 6) ; la valeur 204px existante est
+   conservée en mobile. Le vide 204px sur tablette/desktop était un bug connu. */
+const wowShell = { ...shell, padding: 'var(--wow-top, calc(204px + env(safe-area-inset-top))) 12px calc(96px + env(safe-area-inset-bottom))' };
+
+function BuoyGlyph({ status, on }) {
+  const fill = status === 'clean' ? '#00B086' : status === 'moderate' ? '#E8A800' : status === 'avoid' ? '#E8512A' : '#8b97a0';
+  const inkS = { stroke: '#0d0b14', strokeWidth: 2.6, strokeLinecap: 'round', fill: 'none' };
+  return (
+    <svg className="wow-dot" width="34" height="40" viewBox="0 0 34 40" aria-hidden="true">
+      <path d="M17 4 V1.5" stroke="#FDFCF7" strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx="17" cy="17" r="13" fill={fill} stroke={on ? '#FFC72C' : '#FDFCF7'} strokeWidth={on ? 3 : 2.5} />
+      {status === 'clean' && <g transform="translate(17,17)"><path d="M-6 .5 l4 5 l8.5 -11" {...inkS} /></g>}
+      {status === 'moderate' && <g transform="translate(17,17)"><circle r="8.5" fill="none" stroke="#0d0b14" strokeWidth="2.4" /><path d="M0 -8.5 A8.5 8.5 0 0 1 0 8.5 Z" fill="#0d0b14" /></g>}
+      {status === 'avoid' && <g transform="translate(17,17)"><path d="M-5.5 -5.5 L5.5 5.5 M5.5 -5.5 L-5.5 5.5" {...inkS} /></g>}
+      {status !== 'clean' && status !== 'moderate' && status !== 'avoid' && <g transform="translate(17,17)"><circle r="2.6" fill="#0d0b14" /></g>}
+      <ellipse cx="17" cy="36.5" rx="9" ry="2" fill="rgba(255,216,132,.22)" />
+    </svg>
+  );
+}
+
+/* Petite icône de FORME dans les pills (trio couleur+forme+mot, jamais couleur seule) */
+function StatusShape({ status, size = 12 }) {
+  const c = 'currentColor';
+  if (status === 'clean') return <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 6.5 l3 3 l6 -7" fill="none" stroke={c} strokeWidth="2.4" strokeLinecap="round" /></svg>;
+  if (status === 'moderate') return <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="4.6" fill="none" stroke={c} strokeWidth="1.8" /><path d="M6 1.4 A4.6 4.6 0 0 1 6 10.6 Z" fill={c} /></svg>;
+  if (status === 'avoid') return <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 2.5 L9.5 9.5 M9.5 2.5 L2.5 9.5" stroke={c} strokeWidth="2.4" strokeLinecap="round" fill="none" /></svg>;
+  return <svg width={size} height={size} viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="6" r="2.2" fill={c} /></svg>;
+}
+
+const _prefersReduced = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
+
+/* LA LIGNE DE BALISES — rail horizontal draggable, snap au centre, la bouée
+   centrée devient la plage « en focus ». Desktop : drag souris + molette. */
+function SeaRail({ rail, activeIdx, onFocus, onOpen, lang, track, ctrlRef }) {
+  const ref = useRef(null);
+  const rafRef = useRef(0);
+  const dragRef = useRef(null);
+  const suppressUntil = useRef(0);
+  const activeRef = useRef(activeIdx);
+  activeRef.current = activeIdx;
+  const onFocusRef = useRef(onFocus);
+  onFocusRef.current = onFocus;
+
+  const scrollToIdx = (i, smooth) => {
+    const el = ref.current; if (!el) return;
+    const c = el.children[i]; if (!c) return;
+    el.scrollTo({ left: c.offsetLeft + c.offsetWidth / 2 - el.clientWidth / 2, behavior: (_prefersReduced() || !smooth) ? 'auto' : 'smooth' });
+    onFocusRef.current(i);
+  };
+  /* Contrôleur impératif pour le parent (chips "seek") */
+  useEffect(() => { if (ctrlRef) { ctrlRef.current = { scrollToIdx }; return () => { ctrlRef.current = null; }; } });
+
+  /* Centre détecté au scroll (throttle rAF, setState seulement si l'index change) */
+  const onScroll = () => {
+    cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(() => {
+      const el = ref.current; if (!el) return;
+      const mid = el.scrollLeft + el.clientWidth / 2;
+      let best = 0, bd = Infinity;
+      for (let i = 0; i < el.children.length; i++) {
+        const c = el.children[i];
+        const d = Math.abs(c.offsetLeft + c.offsetWidth / 2 - mid);
+        if (d < bd) { bd = d; best = i; }
+      }
+      if (best !== activeRef.current) onFocusRef.current(best);
+    });
+  };
+
+  /* Drag souris desktop (le tactile est natif) + molette horizontale */
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const onWheel = (e) => { if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) { e.preventDefault(); el.scrollLeft += e.deltaY; } };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => { el.removeEventListener('wheel', onWheel); cancelAnimationFrame(rafRef.current); };
+  }, []);
+
+  /* Position initiale = meilleure plage (scroll instantané, sans anim). Fige la
+     1re valeur de focus au mount ; les focus suivants viennent du geste. */
+  useEffect(() => { if (rail.length) scrollToIdx(activeRef.current, false); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [rail.length === 0]);
+
+  const onPointerDown = (e) => {
+    if (e.pointerType !== 'mouse') return;
+    const el = ref.current; if (!el) return;
+    dragRef.current = { x: e.clientX, sl: el.scrollLeft, moved: false };
+    try { el.setPointerCapture(e.pointerId); } catch (_) {}
+  };
+  const onPointerMove = (e) => {
+    const dr = dragRef.current; const el = ref.current;
+    if (!dr || !el) return;
+    const dx = e.clientX - dr.x;
+    if (Math.abs(dx) > 5) dr.moved = true;
+    el.scrollLeft = dr.sl - dx;
+    if (dr.moved) el.classList.add('wow-grabbing');
+  };
+  const endDrag = () => {
+    if (dragRef.current && dragRef.current.moved) {
+      suppressUntil.current = Date.now() + 120;
+      try { track?.('sg_home_rail_drag', { n: rail.length }); } catch (_) {}
+    }
+    dragRef.current = null;
+    ref.current?.classList.remove('wow-grabbing');
+  };
+
+  return (
+    <div className="wow-railwrap" style={{ margin: '10px -12px 0', borderBottom: '2px dashed rgba(255,216,132,.35)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 14px 2px', fontSize: 10, fontWeight: 800, letterSpacing: '.14em', color: 'rgba(255,216,132,.55)' }} aria-hidden="true">
+        <span>{_t(lang, 'OUEST', 'WEST', 'OESTE')}</span><span>{_t(lang, 'EST', 'EAST', 'ESTE')}</span>
+      </div>
+      <div ref={ref} className="wow-rail" data-testid="wow-rail" role="group"
+        aria-label={_t(lang, 'Ligne des balises — glisser pour explorer les plages', 'Buoy line — drag to explore beaches', 'Línea de boyas — desliza para explorar')}
+        onScroll={onScroll} onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+        onPointerUp={endDrag} onPointerCancel={endDrag}
+        onKeyDown={(e) => { if (e.key === 'ArrowRight') scrollToIdx(Math.min(rail.length - 1, activeRef.current + 1), true); if (e.key === 'ArrowLeft') scrollToIdx(Math.max(0, activeRef.current - 1), true); }}
+        tabIndex={0}>
+        {rail.map((b, i) => (
+          <button key={b.id} type="button" data-buoy-i={i} data-beach={b.id} data-testid="wow-buoy"
+            className="wow-buoy wow-buoy" data-on={i === activeIdx ? '1' : undefined}
+            aria-label={`${b.name} — ${statusMeta(b.status, lang).label}`}
+            onClickCapture={(e) => { if (Date.now() < suppressUntil.current) { e.preventDefault(); e.stopPropagation(); } }}
+            onClick={() => { if (i === activeRef.current) { try { track?.('sg_home_rail_open', { beach_id: b.id }); } catch (_) {} onOpen?.(b); } else scrollToIdx(i, true); }}>
+            <BuoyGlyph status={b.status} on={i === activeIdx} />
+            <span className="wow-num">{b.score != null ? Math.round(b.score) : '·'}</span>
+          </button>
+        ))}
+      </div>
+      <div style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,253,246,.55)', padding: '4px 16px 6px' }}>
+        {_t(lang, 'Glisse la mer — chaque bouée = une plage mesurée aujourd’hui', 'Drag the sea — each buoy = a beach measured today', 'Desliza el mar — cada boya = una playa medida hoy')}
+      </div>
+    </div>
+  );
+}
+
 /* ── ACCUEIL : situation du jour + meilleure + découverte ── */
 export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip }) {
   const [q, setQ] = useState('');
@@ -123,7 +293,6 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
     return { list, clean, avoid, best, worst, res, counts: { clean: clean.length, mod: list.filter(b => b.status === 'moderate').length, avoid: avoid.length, total: list.length } };
   }, [allBeaches, q]);
   const fresh = freshness(sargData?.erddapTimestamp || sargData?.updatedAt, lang);
-  const favBeaches = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean).slice(0, 3), [favorites, allBeaches]);
   return (
     <div style={shell} data-testid="xp-home">
       <style>{XP_ARMOR}</style>
@@ -165,6 +334,19 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
         )}
       </div>
 
+      <HomeLower lang={lang} q={q} setQ={setQ} data={data} allBeaches={allBeaches} userPos={userPos}
+        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} />
+    </div>
+  );
+}
+
+/* ── Bas du home PARTAGÉ (wow + ancien) : recherche / À explorer / pire /
+      favoris / Pass. Extrait 2026-09-24 — rendu identique à l'original,
+      le rollback ?sgwow=0 garde l'ancien home au pixel près. ── */
+function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpenBeach, onGo, onPremium }) {
+  const favBeaches = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean).slice(0, 3), [favorites, allBeaches]);
+  return (
+    <>
       <h2 style={h2}>{_t(lang, 'Quelle plage veux-tu découvrir ?', 'Which beach today?', '¿Qué playa quieres descubrir?')}</h2>
       <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={_t(lang, 'Rechercher une plage, une commune…', 'Search a beach…', 'Buscar una playa…')} aria-label="search"
         style={{ width: '100%', minHeight: 48, borderRadius: 12, border: `2px solid ${INK}`, padding: '10px 12px', fontSize: 16 }} data-testid="xp-search" />
@@ -208,6 +390,145 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
         <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Alertes quand ta plage change, prévisions 7 jours et comparateur avec le Pass.', 'Alerts when your beach changes, 7-day forecast and compare with Pass.', 'Alertas cuando tu playa cambia, pronóstico 7 días y comparador con el Pass.')}</div>
         <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('home')} data-testid="xp-pass">⭐ {_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>
       </div>
+    </>
+  );
+}
+
+/* ── HOME WOW : LIVE STATE (strip + chips seek) → DISCOVERY (ligne de balises)
+      → REVEAL (carte focus croisée au drag) → ACTION (fiche / trip / carte). ── */
+export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip }) {
+  const [q, setQ] = useState('');
+  const [focusIdx, setFocusIdx] = useState(null);   // null = pas encore touché → bestIdx
+  const lastTracked = useRef(null);
+  const railCtrl = useRef(null);
+  const data = useMemo(() => {
+    const list = (allBeaches || []).filter(b => b.status && b.score != null);
+    const clean = list.filter(b => b.status === 'clean').sort((a, b2) => (b2.score || 0) - (a.score || 0));
+    const avoid = list.filter(b => b.status === 'avoid').sort((a, b2) => (b2.score || 0) - (a.score || 0));
+    const best = clean[0] || null;
+    const worst = avoid[avoid.length - 1] || avoid[0] || null;
+    const res = q.trim().length >= 2 ? list.filter(b => (b.name + ' ' + (b.commune || '')).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 5) : [];
+    return { list, clean, avoid, best, worst, res, counts: { clean: clean.length, mod: list.filter(b => b.status === 'moderate').length, avoid: avoid.length, total: list.length } };
+  }, [allBeaches, q]);
+  /* Ordre réel : ouest → est (longitude), plages sans coords à la fin par score */
+  const rail = useMemo(() => [...data.list].sort((a, b) =>
+    ((a.lng == null ? 1e9 : a.lng) - (b.lng == null ? 1e9 : b.lng)) || ((b.score || 0) - (a.score || 0))), [data.list]);
+  const bestIdx = useMemo(() => (data.best ? rail.findIndex(b => b.id === data.best.id) : 0), [rail, data.best]);
+  const activeIdx = Math.max(0, Math.min(focusIdx ?? bestIdx, rail.length - 1));
+  const active = rail.length ? rail[activeIdx] : null;
+  const fresh = freshness(sargData?.erddapTimestamp || sargData?.updatedAt, lang);
+
+  if (!data.list.length) return <HomeDashboard lang={lang} allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos} islandName={islandName} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} track={track} onPlanTrip={onPlanTrip} />;
+
+  /* Focus : d'où qu'il vienne (drag / clic / seek). Le 1er focus (positionnement
+     initial sur le top pick) n'est PAS tracké — pas un geste de découverte. */
+  const focus = (i) => {
+    setFocusIdx(i);
+    const b = rail[i];
+    if (!b) return;
+    if (lastTracked.current == null) { lastTracked.current = b.id; return; }
+    if (lastTracked.current !== b.id) {
+      lastTracked.current = b.id;
+      try { track?.('sg_home_rail_focus', { beach_id: b.id, status: b.status, i }); } catch (_) {}
+    }
+  };
+  const seek = (status) => {
+    const i = rail.findIndex(b => b.status === status);
+    if (i >= 0) { try { track?.('sg_home_rail_seek', { status }); } catch (_) {} railCtrl.current?.scrollToIdx?.(i, true); }
+  };
+
+  const aM = active ? statusMeta(active.status, lang) : null;
+  const aD = active ? distOf(active, userPos) : null;
+  const aTop = !!(active && data.best && active.id === data.best.id);
+  const aAlt = active && active.status === 'avoid' ? findAlternatives(active, rail, { lang, maxAlternatives: 1 })[0] : null;
+  const aFav = active && (favorites || []).includes(active.id);
+  const tripAllowed = (() => { try { return !/[?&]tripplan=0(?:&|$)/.test(window.location.search); } catch (_) { return true; } })();
+
+  return (
+    <div style={wowShell} className="wow-home" data-testid="xp-home">
+      <style>{XP_ARMOR}{WOW_ARMOR}</style>
+
+      {/* 1 · LIVE STATE — la mer est mesurée, maintenant */}
+      <section className="wow-live" style={{ ...card, background: 'linear-gradient(135deg,#0B2230,#123a4d)', color: '#fff', borderColor: INK }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: '.12em' }}>
+            <span className="wow-live-dot" />{_t(lang, 'EN DIRECT', 'LIVE', 'EN VIVO')}
+          </span>
+          {!!fresh && <span style={{ fontSize: 12, opacity: .8 }}>{fresh}</span>}
+        </div>
+        <div style={{ fontFamily: "'Anton',sans-serif", fontWeight: 400, fontSize: 'clamp(26px,7.4vw,34px)', lineHeight: 1.02, letterSpacing: '.2px', marginTop: 8 }}>
+          {_t(lang, 'LE POULS DE LA MER', 'THE SEA\u2019S PULSE', 'EL PULSO DEL MAR')}
+        </div>
+        <div style={{ fontSize: 13, opacity: .85, marginTop: 2 }}>
+          {(islandName || '') + ' · '}{_t(lang, 'Mesuré au satellite, pas deviné.', 'Satellite-measured, not guessed.', 'Medido por satélite.')}
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+          <button type="button" className="wow-chip wow-chip wow-chip-clean wow-chip-clean" onClick={() => seek('clean')} data-testid="wow-seek-clean">
+            <StatusShape status="clean" />{data.counts.clean} {_t(lang, 'propres', 'clean', 'limpias')}
+          </button>
+          <button type="button" className="wow-chip wow-chip wow-chip-mod wow-chip-mod" onClick={() => seek('moderate')} data-testid="wow-seek-mod">
+            <StatusShape status="moderate" />{data.counts.mod} {_t(lang, 'à surveiller', 'to watch', 'a vigilar')}
+          </button>
+          <button type="button" className="wow-chip wow-chip wow-chip-avoid wow-chip-avoid" onClick={() => seek('avoid')} data-testid="wow-seek-avoid">
+            <StatusShape status="avoid" />{data.counts.avoid} {_t(lang, 'à éviter', 'to avoid', 'a evitar')}
+          </button>
+        </div>
+      </section>
+
+      {/* 2 · DISCOVERY — la ligne de balises (drag) */}
+      <SeaRail rail={rail} activeIdx={activeIdx} onFocus={focus} onOpen={onOpenBeach} lang={lang} track={track} ctrlRef={railCtrl} />
+
+      {/* 3 · REVEAL + 4 · ACTION — la carte de la bouée centrée */}
+      <div className="wow-focuswrap">
+        {active ? (
+          <section key={active.id} className="wow-focus-in" style={{ ...card, marginBottom: 10 }} aria-live="polite" data-testid="wow-focus" data-beach={active.id}>
+            {aTop && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: GOLD, color: INK, border: `2px solid ${INK}`, borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800, marginBottom: 6 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</span>}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontWeight: 800, fontSize: 'clamp(17px,4.8vw,20px)', lineHeight: 1.15 }}>{active.name}</div>
+                <div style={{ fontSize: 12, opacity: .7, marginTop: 1 }}>{active.commune || ''}{aD != null ? ` · ${aD < 1 ? '<1' : aD.toFixed(1)} km` : ''}</div>
+              </div>
+              <span style={pill(aM)}><StatusShape status={active.status} />{aM.label}</span>
+            </div>
+            <ScoreBar score={active.score} />
+            <div style={{ display: 'flex', gap: 10, fontSize: 12, marginTop: 6, opacity: .8, flexWrap: 'wrap' }}>
+              <span>{_t(lang, 'Confiance', 'Confidence', 'Confianza')} <b>{active.confidence ?? '—'}</b></span>
+            </div>
+            {!!active.reason && <div style={{ fontSize: 13, marginTop: 4, opacity: .85 }}>{active.reason}</div>}
+            {!!aAlt && <div style={{ fontSize: 12, marginTop: 6 }}>↗ {_t(lang, 'Alternative', 'Alternative', 'Alternativa')} : <b>{aAlt.beach.name}</b> ({aAlt.distanceKm} km)</div>}
+            <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+              <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, flex: 1.4 }} data-testid="xp-best-open"
+                onClick={() => { try { track?.('sg_home_best_open', { beach_id: active.id, src: 'wow_focus', top: aTop }); } catch (_) {} onOpenBeach?.(active); }}>
+                {_t(lang, 'J\u2019y vais →', 'Go →', 'Voy →')}
+              </button>
+              <button type="button" onClick={() => onGo?.('fav', active)} aria-pressed={!!aFav} title="favori" style={{ ...btnGhost, flex: '0 0 48px', minWidth: 48, fontSize: 18 }}>{aFav ? '★' : '☆'}</button>
+              <button type="button" onClick={() => onGo?.('compare', active)} title="comparer" style={{ ...btnGhost, flex: '0 0 48px', minWidth: 48 }}>⇄</button>
+            </div>
+          </section>
+        ) : (
+          <div data-testid="xp-home-best" style={{ ...card, marginBottom: 10, background: '#FFF7D6' }}>
+            <div style={{ fontSize: 12, fontWeight: 800 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</div>
+            <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Aucune plage propre confirmée aujourd’hui. Vérifie les plages et choisis ton plan B.', 'No clean beach is confirmed today. Check the beaches and choose your Plan B.', 'Ninguna playa limpia está confirmada hoy. Revisa las playas y elige tu plan B.')}</div>
+            <button type="button" style={{ ...btnGhost, width: '100%', marginTop: 8 }} onClick={() => onGo?.('list')} data-testid="xp-best-more">{_t(lang, 'Voir les plages →', 'See beaches →', 'Ver las playas →')}</button>
+          </div>
+        )}
+      </div>
+
+      {/* TRIP + CARTE (colonne droite desktop) */}
+      <div className="wow-tripwrap" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
+        {!!onPlanTrip && tripAllowed && (
+          <button type="button" data-testid="trip-open" onClick={() => { try { track?.('sg_trip_open', { source: 'xp_home' }); } catch (_) {} onPlanTrip(); }}
+            className="wow-sea-link wow-sea-link" style={{ fontFamily: 'inherit' }}>
+            {_t(lang, '🗓 Planifier mon séjour — la meilleure plage chaque jour →', '🗓 Plan my stay — best beach each day →', '🗓 Planificar mi estancia — mejor playa cada día →')}
+          </button>
+        )}
+        <button type="button" data-testid="xp-explore" className="wow-sea-link wow-sea-link" onClick={() => onGo?.('map')} style={{ fontFamily: 'inherit' }}>
+          {_t(lang, '🗺 Explorer la carte →', '🗺 Explore the map →', '🗺 Explorar el mapa →')}
+        </button>
+      </div>
+
+      <HomeLower lang={lang} q={q} setQ={setQ} data={data} allBeaches={allBeaches} userPos={userPos}
+        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} />
     </div>
   );
 }
@@ -316,7 +637,10 @@ export default function XpRouter(props) {
     if (!sel.length) return null;
     return <CompareSheet {...rest} beaches={sel} onClose={onCloseCompare} />;
   }
-  return <HomeDashboard {...rest} allBeaches={allBeaches} />;
+  /* HOME = WOW « Pouls de la mer » par défaut ; rollback produit ?sgwow=0 →
+     ancien dashboard (conservé). Même data-testid xp-home sur les 2 chemins. */
+  const wowOff = (() => { try { return /[?&]sgwow=0(?:&|$)/.test(window.location.search); } catch (_) { return false; } })();
+  return wowOff ? <HomeDashboard {...rest} allBeaches={allBeaches} /> : <HomeWow {...rest} allBeaches={allBeaches} />;
 }
 export function SuiviDashboard({ lang = 'fr', allBeaches = [], favorites = [], sargData, alertsOn, onToggleAlerts, onOpenBeach, onGoPlages, onPremium, isPremium, track }) {
   const favs = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean), [favorites, allBeaches]);

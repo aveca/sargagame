@@ -12,6 +12,7 @@ import { SeqDots } from "../SeqPrimitives.jsx"
 import { FiabiliteProof } from "./FiabiliteProof.jsx"
 import { usePreCtaEmail, emailPreEnabled } from "./preCtaEmail.js"
 import { VeilleurMark } from "./VeilleurMark.jsx"
+import { StayTrajectory } from "./StayTrajectory.jsx"
 
 /**
  * (Removed inline def — VeilleurMark now imported from ./VeilleurMark.jsx)
@@ -121,6 +122,7 @@ export function WorldPaywall({
   island,
   beach,
   sargData, tripDays, beachCount = 0,
+  trajForecast = null, trajBackup = null,
   payPlanRef,
   payEmailRef,
   payBusy,
@@ -150,7 +152,8 @@ export function WorldPaywall({
   onPassBuy,
   submitLead,
   community = 0,
-  PAY_CUR
+  PAY_CUR,
+  track
 }) {
   // Stats régionales honnêtes (REVENUE 2026-09-23) : `stats` est calculé
   // après wowIsland (besoin du nom d'île) — voir useMemo ci-dessous.
@@ -592,6 +595,16 @@ export function WorldPaywall({
         </div>
         )}
 
+        {/* ═══ WOW v2 « LA TRAJECTOIRE » (2026-09-24, rollback ?sgtraj=0) ═══
+            Deuxième moment WOW : GRATUIT = un point (aujourd'hui, tu sais) →
+            PREMIUM = la trajectoire de ton séjour (statuts + confiance réels,
+            plan B réel au jour critique, prix réel en destination de la ligne).
+            Calculée dans PremiumModal (même source que tripDays). Money-path
+            intact : PassOffer/CTA/prix/tracking AUCUN changement. */}
+        {wowOn && trajForecast && (
+        <StayTrajectory lang={lang} beach={beach} forecast={trajForecast} backup={trajBackup} currency={PAY_CUR} onTrack={track} />
+        )}
+
         {/* Pricing card (PassOffer) — CRO J0-J30 : AVANT l'email par défaut
             (offre d'abord, enregistrement après). ?sgpayorder=0 = ordre historique. */}
         {payOrderOfferFirst && (
@@ -601,6 +614,7 @@ export function WorldPaywall({
             currency={PAY_CUR}
             onBuy={onPassBuy}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
+            trajForecast={trajForecast}
           />
         </div>
         )}
@@ -648,6 +662,7 @@ export function WorldPaywall({
             currency={PAY_CUR}
             onBuy={onPassBuy}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
+            trajForecast={trajForecast}
           />
         </div>
         )}

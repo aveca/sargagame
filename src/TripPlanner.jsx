@@ -51,10 +51,22 @@ function planDays(beaches, forecastById) {
   return days
 }
 
-export default function TripPlanner({ lang, beaches, forecastById, isPremium, onClose, onOpenBeach, onPremium, track }) {
+export default function TripPlanner({ lang, beaches, forecastById, isPremium, onClose, onOpenBeach, onPremium, track,
+  /* WOW JOURNEY (2026-09-24) : stay = spine partagée avec l'experience (même
+     objet numérique, calculée une fois par le parent via src/lib/journey.js).
+     « Mon séjour se construit » : la semaine RÉELLE de la plage courante
+     (ou ma plage) + son plan B, au-dessus du plan jour par jour. Absent
+     (rollback ?sgjourney=0) → le strip n'existe pas. */
+  stay = null }) {
   const _t = (fr, en, es) => (lang === "en" ? en : lang === "es" ? es : fr)
   const days = useMemo(() => planDays(beaches || [], forecastById || {}), [beaches, forecastById])
-  const visibleDays = isPremium ? days.length : Math.min(2, days.length)
+  const visibleDays = isPremium ? Math.max(0, days.length) : Math.min(2, days.length)
+  const _sbhv = (() => { try { return (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" } catch (_) { return "smooth" } })()
+  const chipTap = (d) => {
+    try { track && track("sg_exp_chip_tap", { via: "trip_day", day: d.i, locked: !!d.locked }) } catch (_) {}
+    if (d.locked) { onPremium && onPremium("trip_stay_chip"); return }
+    try { const el = document.getElementById("tp-day-" + d.i); el && el.scrollIntoView({ behavior: _sbhv, block: "center" }) } catch (_) {}
+  }
 
   return (
     <div role="dialog" aria-modal="true" aria-label={_t("Planifier mon séjour", "Plan my stay", "Planificar mi estancia")}
@@ -73,8 +85,50 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
               "La mejor playa cada día y un plan B si el mar cambia.")}
         </div>
 
+        {/* WOW JOURNEY (2026-09-24) — le fil du séjour : semaine réelle de la
+            plage courante du monde (ou ma plage) + plan B réel. Même données
+            que l'experience (spine partagée) — « mon séjour se construit ». */}
+        {stay && (stay.days.length > 0 || stay.backup) && (
+          <section data-testid="trip-stay-strip"
+            aria-label={_t(`Ton séjour s'appuie sur ${stay.beachName}`, `Your stay leans on ${stay.beachName}`, `Tu estancia se apoya en ${stay.beachName}`)}
+            style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px dashed rgba(255,199,44,.45)", background: "rgba(255,199,44,.06)" }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", marginBottom: 8 }}>
+              {_t("Ton séjour s'appuie sur", "Your stay leans on", "Tu estancia se apoya en")} <span style={{ color: "#fff" }}>{stay.beachName}</span>
+            </div>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+              {stay.days.map((d) => {
+                const c = (ST[d.status] || ST._x).c
+                return (
+                  <div key={d.i} tabIndex={0} data-testid="trip-stay-chip" data-day={d.i}
+                    onClick={() => chipTap(d)}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); chipTap(d) } }}
+                    style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: d.i === 0 ? "rgba(255,199,44,.18)" : "rgba(255,255,255,.07)", border: `1px solid ${d.i === 0 ? "rgba(255,199,44,.6)" : "rgba(255,255,255,.16)"}`, opacity: d.locked ? 0.6 : 1 }}>
+                    {d.locked
+                      ? <span style={{ fontSize: 11 }} aria-hidden="true">🔒</span>
+                      : <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />}
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>
+                      {d.i === 0 ? _t("Aujourd'hui", "Today", "Hoy") : ((d.label || "").slice(0, 4) || `J+${d.i}`)}
+                    </span>
+                    {!!(!d.locked && d.confidence != null) && <span style={{ fontSize: 10, fontWeight: 700, color: c }}>{d.confidence}%</span>}
+                  </div>
+                )
+              })}
+              {stay.backup && (
+                <div tabIndex={0} data-testid="trip-planb-chip"
+                  onClick={() => { try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) }}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) } }}
+                  aria-label={_t(`Plan B : aller à ${stay.backup.name}`, `Plan B: go to ${stay.backup.name}`, `Plan B: ir a ${stay.backup.name}`)}
+                  style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(30,200,176,.12)", border: "1px solid rgba(30,200,176,.4)" }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 4, background: (ST[stay.backup.status] || ST._x).c, flexShrink: 0 }} aria-hidden="true" />
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#1EC8B0" }}>→ {_t("Plan B", "Plan B", "Plan B")} · {stay.backup.name}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
         {days.map((d, i) => (
-          <DayRow key={i} day={d} idx={i} locked={!isPremium && i >= visibleDays} lang={lang} _t={_t}
+          <DayRow key={i} day={d} idx={i} rowId={"tp-day-" + i} locked={!isPremium && i >= visibleDays} lang={lang} _t={_t}
             onOpen={() => { try { track("sg_trip_beach_open", { day: i, beach_id: d && d.best && d.best.b.id }) } catch (_) {} onOpenBeach(d.best.b) }} />
         ))}
 
@@ -94,7 +148,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
   )
 }
 
-function DayRow({ day, idx, locked, lang, _t, onOpen }) {
+function DayRow({ day, idx, rowId, locked, lang, _t, onOpen }) {
   // NB : <div onClick> VOLONTAIRE (pas de <button> ni role="button") — le skin
   // .theme-comic force fond blanc + bordure ink sur button ET [role=button]
   // (lisibilité cassée 2× au screenshot 2026-09-22). tabIndex conservé pour
@@ -103,7 +157,7 @@ function DayRow({ day, idx, locked, lang, _t, onOpen }) {
   const dot = (s) => (ST[s] || ST._x).c
   const word = (s) => { const v = ST[s] || ST._x; return lang === "en" ? v.en : lang === "es" ? v.es : v.fr }
   return (
-    <div style={{ marginBottom: 8, borderRadius: 14, border: "1px solid rgba(255,255,255,.1)", background: locked ? "rgba(255,255,255,.03)" : "#12362D", overflow: "hidden" }}>
+    <div id={rowId} style={{ marginBottom: 8, borderRadius: 14, border: "1px solid rgba(255,255,255,.1)", background: locked ? "rgba(255,255,255,.03)" : "#12362D", overflow: "hidden" }}>
       {locked ? (
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", filter: "blur(0.6px)", opacity: 0.75 }}>
           <span style={{ fontWeight: 800, fontSize: 13, color: "rgba(255,255,255,.8)", minWidth: 44 }}>{day.label}</span>

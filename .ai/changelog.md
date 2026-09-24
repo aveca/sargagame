@@ -1,3 +1,17 @@
+## 2026-09-24 — SGM MOTION GRAMMAR : grammaire d'interaction centralisée + moment UNLOCK post-paiement
+
+**PROBLEM** : 100+ @keyframes dispersés dans 15 fichiers (chaque écran sa micro-animation), zéro langage commun ; le retour après paiement (étape la plus chargée émotionnellement) était un splash statique « ✓ Premium activé » — l'utilisateur ne VOYAIT pas sa semaine s'ouvrir.
+
+**CHANGE** (rollback `?sgmotion=0` + prefers-reduced-motion = splash statique d'avant, pixel près ; bundle 38,2 Ko inchangé) :
+- `src/sg-motion.css` (N) — grammaire SGM : 8 motions nommées (reveal, pop, fill, ring, unlock, dayin, breathe, focus), courbe maison unique `cubic-bezier(.2,.8,.2,1)`, canal statut `[data-sgm-status="clean|moderate|avoid"]` (couleur pilotée par la donnée réelle, palette = STC/VERDICT), GPU-only (transform/opacity), version calme reduced-motion.
+- `src/lib/sgMotion.js` (N) — `off()` (rollback ?sgmotion=0 + reduced-motion), `days7(lang)` (7 jours RÉELS depuis Date, zéro invention), `STATUS_C`.
+- `src/Sargasses_PROD.jsx` — splash post-paiement (« Premium activé ») rebranché sur la grammaire : séquence anneau tracé (sgm-ring) → verrou qui s'ouvre (sgm-unlock) → ✓ éclot (sgm-pop) → « Ta semaine s'ouvre » + 7 jours réels en cascade (sgm-dayin) → CTA (sgm-reveal). i18n FR/EN/ES, aria-live intact, event `sg_premium_confirm_continue` intact, money-path zéro touché.
+- `tests/unit/sg-motion-grammar.test.cjs` (N) — 31 checks contrat (8 motions, canal statut, GPU-only, reduced-motion, rollback, données réelles, branchement, UNLOCK).
+
+**PROOF** : esbuild syntax 0 erreur · npm run build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 + SMOKE_GATE=PASS · E2E experience 7/7 (mobile-chromium) · unit 31/31 · 0 fichier PHP touché.
+
+---
+
 ## 2026-09-24 — AHA EXPERIENCE COMPLETE : cinematic hero, animated verdict, progressive WHY, visual TOMORROW, smart BACKUP, premium clarity (LIVE 6 regions)
 
 **PROBLEM** : la couche média AHA existait (photo/vidéo derrière le verdict) mais l'expérience manquait de storytelling visuel — pas d'AHA moment, verdict pas assez dominant, WHY/TMORROW/BACKUP/PREMIUM trop fonctionnels.

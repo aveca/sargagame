@@ -196,6 +196,68 @@ function forecastLine(weekly, beachId, lang) {
   }).join(' · ')
 }
 
+// ── AREA HUBS (couche REGION → ZONE/VILLE → PLAGE, audit SEO 2026-09-24) ──────
+// Graphe demandé : chaque plage doit exposer des liens contextuels (zone, area,
+// alternative, forecast) — pas seulement un footer. Un hub AREA par commune/zone
+// RÉELLE (champ beach.commune) avec ≥2 plages et < total région (sinon doublon
+// du listing régional — Tulum 8/8 est skippé pour cette raison). Espace d'URL
+// dédié (/areas/, /zonas/) → zéro collision avec les pages ville éditorialisées
+// (extraPages « sargazo-cancun-hoy », « sargassum-bavaro-beach-today »…), vers
+// lesquelles le hub LIÉ quand le slug de la zone apparaît dans un slug extraPage
+// (matching déterministe). Contenu 100 % data-driven (statuts/scores live,
+// distance haversine réelle). Rollback build : VITE_NO_SEOAREAS=1.
+const AREAS_DIR = { en: 'areas', es: 'zonas' }
+const areaSlugify = s => String(s || '').toLowerCase().normalize('NFD')
+  .replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+function computeAreas(beaches, opts = {}) {
+  if (opts.disabled) return []
+  const byArea = new Map()
+  for (const b of beaches || []) {
+    const commune = (b.commune || '').trim()
+    if (!commune) continue
+    const key = areaSlugify(commune)
+    if (!key) continue
+    if (!byArea.has(key)) byArea.set(key, { name: commune, slug: key, beaches: [] })
+    byArea.get(key).beaches.push(b)
+  }
+  const total = (beaches || []).length
+  return [...byArea.values()]
+    .filter(a => a.beaches.length >= 2 && a.beaches.length < total)
+    .sort((a, b2) => b2.beaches.length - a.beaches.length)
+}
+// Page ville éditorialisée correspondante (extraPages), si elle existe.
+function areaCrossLink(area, extraPages) {
+  for (const e of extraPages || []) {
+    if (e && e.slug && e.slug.includes(area.slug)) return e
+  }
+  return null
+}
+// Haversine réel (km) — distance affichée dans l'alternative du jour.
+function haversineKm(a, b) {
+  if ([a.lat, a.lng, b.lat, b.lng].some(v => typeof v !== 'number' || isNaN(v))) return Infinity
+  const R = 6371, dLa = (b.lat - a.lat) * Math.PI / 180, dLo = (b.lng - a.lng) * Math.PI / 180
+  const h = Math.sin(dLa / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLo / 2) ** 2
+  return 2 * R * Math.asin(Math.sqrt(h))
+}
+// Alternative du jour : plage la plus proche dont l'état LIVE est STRICTEMENT
+// meilleur que celui de la plage courante (clean > moderate > avoid). Si la
+// plage est déjà clean, ou si rien de meilleur n'existe autour → pas de bloc
+// (jamais de contenu fabriqué).
+function findAlternativeToday(beach, beaches) {
+  if (!beach || !beach.lv || !beach.lv.status || beach.lv.status === 'clean') return null
+  const rank = s => s === 'clean' ? 0 : s === 'moderate' ? 1 : 2
+  const cur = rank(beach.lv.status)
+  let best = null
+  for (const x of beaches || []) {
+    if (!x || x.id === beach.id || !x.lv || !x.lv.status) continue
+    if (rank(x.lv.status) >= cur) continue
+    const km = haversineKm(beach, x)
+    if (!isFinite(km)) continue
+    if (!best || km < best.km) best = { beach: x, km }
+  }
+  return best
+}
+
 // ── B2B RESORT BRIEF — page HTML STANDALONE (sans React) par hôtel : l'outlook
 // 7j de SA plage, propre et ENVOYABLE à un duty manager + capture d'intention
 // (mailto). noindex (actif commercial, pas SEO). Le lead-magnet du pilote B2B
@@ -478,6 +540,7 @@ function buildSlugMap(region, lang, content, primary) {
     prefix: isPrimary ? '' : `/${lang}`,
     beachesDir: T[lang].beachesDir,
     resortsDir: T[lang].resortsDir,
+    areasDir: AREAS_DIR[lang] || 'areas',
     forecast: p.forecast && p.forecast.slug,
     today: p.today && p.today.slug,
     map: p.map && p.map.slug,
@@ -516,6 +579,16 @@ function emitLangPages(ctx) {
   pushUrl(`${prefix}/`, { daily: true, priority: prefix === '' ? '1.0' : '0.9' })
 
   const beachLink = b => `<a href="${prefix}/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
+
+  // ── Couche AREA (audit SEO 2026-09-24) : hubs ville/zone + liens contextuels ──
+  const areas = computeAreas(beaches, { disabled: process.env.VITE_NO_SEOAREAS === '1' })
+  const areasIdxPath = `${prefix}/${slugIndex[lang].areasDir}/`
+  const areaOf = b => areas.find(a => a.beaches.some(x => x.id === b.id)) || null
+  const areaLink = a => `<a href="${prefix}/${slugIndex[lang].areasDir}/${a.slug}/">${esc(a.name)}</a>`
+  const areasLabel = lang === 'es' ? 'Playas por zona' : 'Beaches by area'
+  const altsForArea = a => useLangs.map(l => ({ lang: l, href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].areasDir}/${a.slug}/`, xDefault: l === primary }))
+  const areaCross = a => areaCrossLink(a, (content.extraPages || []).filter(e => !e.lang || e.lang === lang))
+
   const hubLinks = (except) => {
     const p = content.pages
     const items = [
@@ -538,6 +611,9 @@ function emitLangPages(ctx) {
       if ((e.lang && e.lang !== lang) || !e.slug || e.inNav === false) continue
       items.push([`extra:${e.slug}`, `${prefix}/${e.slug}/`, e.navLabel || smartTrim(e.h1 || e.title, 48)])
     }
+    // Index des zones (couche région → zone → plage) : sans ce lien, les hubs
+    // AREA seraient orphelins (reliés seulement par sitemap + fiches plages).
+    if (areas.length) items.push(['areas', areasIdxPath, areasLabel])
     return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
   }
 
@@ -743,6 +819,26 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
       .map(x => ({ x, d: (x.lat - b.lat) ** 2 + (x.lng - b.lng) ** 2 }))
       .sort((a, b2) => a.d - b2.d).slice(0, 4).map(({ x }) => x)
     const beachResorts = resortsByBeach[b.id] || []
+      // ── Liens contextuels (audit SEO 2026-09-24) : zone AREA + alternative ──
+      // du jour STRICTEMENT meilleure, données live uniquement. Aucun bloc
+      // n'est émis quand la donnée ne le permet pas (jamais de thin content).
+    const area = areaOf(b)
+    const alt = findAlternativeToday(b, beaches)
+    const crumbNav = `<nav aria-label="breadcrumb" style="font-size:13px"><a href="${prefix}/">${esc(t.home)}</a>${area ? ` › ${areaLink(area)}` : ''} › <span>${esc(b.name)}</span></nav>`
+    const areaLine = area
+      ? `<p>${lang === 'es'
+          ? `Zona: ${areaLink(area)} — ${area.beaches.length} playas monitoreadas por satélite en esta zona.`
+          : `Area: ${areaLink(area)} — ${area.beaches.length} beaches satellite-monitored in this area.`}</p>`
+      : ''
+    const distTxt = a => (a.km < 1 ? `${Math.round(a.km * 1000)} m` : `${Math.round(a.km)} km`)
+    const altHtml = alt
+      ? `<h2>${lang === 'es'
+          ? `${esc(b.name)} está ${sw(b.lv.status)} hoy — mejor opción cerca`
+          : `${esc(b.name)} is ${sw(b.lv.status)} today — a better option nearby`}</h2>
+<p>${lang === 'es'
+          ? `Según el último pase satelital, ${beachLink(alt.beach)} está <strong>${sw(alt.beach.lv.status)}</strong> (${t.score} ${alt.beach.lv.score ?? '—'}/100) a ${distTxt(alt)}.`
+          : `On the latest satellite pass, ${beachLink(alt.beach)} reads <strong>${sw(alt.beach.lv.status)}</strong> (${t.score} ${alt.beach.lv.score ?? '—'}/100), ${distTxt(alt)} away.`}</p>`
+      : ''
     const photo = photos[b.id] ? `<img src="/beaches/${photos[b.id]}" alt="${esc(b.name)}" width="800" height="450" loading="lazy" />` : ''
     // freshTitles (flag region.seo) : title daté statut+date courte, nom trimé
     // AVANT l'append (UNE seule date par page). Fallback : template historique.
@@ -787,10 +883,12 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
       beachFaqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qa.map(x => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }
       beachFaqHtml = `<section><h2>FAQ</h2>${qa.map(x => `<h3>${esc(x.q)}</h3><p>${esc(x.a)}</p>`).join('')}</section>`
     }
-    const articleHtml = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
+    const articleHtml = `<article>${crumbNav}<h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
 <p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
+${areaLine}
 <p>${esc(blurb)}</p>
 <h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
+${altHtml}
 ${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li><a href="${prefix}/${t.resortsDir}/${r.slug}/">${esc(r.name)}</a></li>`).join('')}</ul>` : ''}
 <h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
 ${beachFaqHtml}
@@ -837,7 +935,11 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
       title, desc, pathname, domain, lang, noscript, videoMeta,
       alternates: altsForBeach(b),
       jsonLd: [
-        breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: pathname }]),
+        breadcrumb(domain, [
+          { name: t.home, path: `${prefix}/` },
+          ...(area ? [{ name: area.name, path: `${prefix}/${slugIndex[lang].areasDir}/${area.slug}/` }] : []),
+          { name: b.name, path: pathname },
+        ]),
         { '@context': 'https://schema.org', '@type': 'Beach', name: b.name, address: { '@type': 'PostalAddress', addressLocality: b.commune || region.name, addressCountry: region.countryCode || '' }, geo: { '@type': 'GeoCoordinates', latitude: b.lat, longitude: b.lng }, url: `https://${domain}${pathname}`, ...(photos[b.id] ? { image: `https://${domain}/beaches/${photos[b.id]}` } : {}) },
         // dateModified réel du pipeline (flag region.seo) — PAS de datePublished
         // en plus (published+updated ensemble = -22% CTR documenté).
@@ -848,6 +950,71 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
       ],
     }))
     pushUrl(pathname, { daily: true, priority: '0.7' })
+  }
+
+  // ── 2b. Pages AREA (couche région → zone/ville → plage, audit 2026-09-24) ──
+  // Un hub par zone réelle (≥2 plages, < total région — voir computeAreas) :
+  // liste des plages de la zone avec statut/score live, lien vers la page ville
+  // éditorialisée quand elle existe, zones sœurs, hubs. Indexable + sitemapée.
+  for (const a of areas) {
+    const pathname = `${prefix}/${slugIndex[lang].areasDir}/${a.slug}/`
+    const rank = s => (s === 'clean' ? 0 : s === 'moderate' ? 1 : 2)
+    const ranked = [...a.beaches].sort((x, y) => (rank(x.lv.status) - rank(y.lv.status)) || ((y.lv.score || 0) - (x.lv.score || 0)))
+    const cleanN = a.beaches.filter(x => (x.lv.status || 'clean') === 'clean').length
+    const cityPage = areaCross(a)
+    const aTitle = smartTrim(lang === 'es'
+      ? `Playas de ${a.name} hoy — estado del sargazo (${dateShort})`
+      : `${a.name} beaches today — live sargassum status (${dateShort})`, 68)
+    const aDesc = trimDesc(lang === 'es'
+      ? `${a.beaches.length} playas en ${a.name} verificadas por satélite: ${cleanN} limpias ahora. Estado y Beach Score por playa, actualizado 4 veces al día.`
+      : `${a.beaches.length} beaches in ${a.name} checked by satellite: ${cleanN} clean right now. Per-beach status and Beach Score, updated 4× a day.`)
+    const siblings = areas.filter(x => x.slug !== a.slug)
+    const noscript = `<article><nav aria-label="breadcrumb" style="font-size:13px"><a href="${prefix}/">${esc(t.home)}</a> › <a href="${areasIdxPath}">${esc(areasLabel)}</a> › <span>${esc(a.name)}</span></nav>
+<h1>${esc(a.name)} — ${t.status}</h1><p><em>${t.updated(today)}</em></p>
+<p>${lang === 'es'
+      ? `${a.beaches.length} playas en ${a.name}, ${cleanN} limpia${cleanN > 1 ? 's' : ''} ahora mismo según el satélite. Toca una playa para su pronóstico de 7 días.`
+      : `${a.beaches.length} beaches in ${a.name}, ${cleanN} clean right now per satellite. Open a beach for its 7-day forecast.`}</p>
+<ul>${ranked.map(x => `<li><strong>${beachLink(x)}</strong> — ${sw(x.lv.status)}, ${t.score} ${x.lv.score ?? '—'}/100</li>`).join('')}</ul>
+${cityPage ? `<p>${lang === 'es' ? 'Más sobre esta zona:' : 'More about this area:'} <a href="${prefix}/${cityPage.slug}/">${esc(cityPage.navLabel || smartTrim(cityPage.h1 || cityPage.title, 60))}</a></p>` : ''}
+${siblings.length ? `<h2>${lang === 'es' ? 'Otras zonas en' : 'Other areas in'} ${esc(region.name)}</h2><p>${siblings.map(s => areaLink(s)).join(' · ')}</p>` : ''}
+${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+    writePage(distDir, pathname, pageShell(tpl, {
+      title: aTitle, desc: aDesc, pathname, domain, lang, noscript,
+      alternates: altsForArea(a),
+      jsonLd: [
+        breadcrumb(domain, [
+          { name: t.home, path: `${prefix}/` },
+          { name: areasLabel, path: areasIdxPath },
+          { name: a.name, path: pathname },
+        ]),
+        { '@context': 'https://schema.org', '@type': 'CollectionPage', name: aTitle, description: aDesc, url: `https://${domain}${pathname}`, dateModified: isoToday },
+        { '@context': 'https://schema.org', '@type': 'ItemList', numberOfItems: a.beaches.length,
+          itemListElement: ranked.map((x, i) => ({ '@type': 'ListItem', position: i + 1, name: x.name, url: `https://${domain}${prefix}/${t.beachesDir}/${x.slug}/` })) },
+      ],
+    }))
+    pushUrl(pathname, { daily: true, priority: '0.8' })
+  }
+  // Index des zones (hub REGION → AREAS) : maillé depuis hubLinks.
+  if (areas.length) {
+    const idxTitle = smartTrim(lang === 'es'
+      ? `Playas por zona en ${region.name} — estado del sargazo hoy`
+      : `Beaches by area in ${region.name} — live sargassum status`, 68)
+    // Noms de zones RÉELS (jamais codés en dur — jamais « Cancún » sur une
+    // région qui ne l'a pas).
+    const areaNames = areas.slice(0, 2).map(a => a.name).join(', ')
+    const idxDesc = trimDesc(lang === 'es'
+      ? `${areas.length} zonas monitoreadas en ${region.name} (${areaNames}${areas.length > 2 ? ' y más' : ''}) — estado del sargazo playa por playa, actualizado 4 veces al día.`
+      : `${areas.length} monitored areas in ${region.name} (${areaNames}${areas.length > 2 ? ' and more' : ''}) — per-beach sargassum status, updated 4× a day from satellite data.`)
+    const idxNoscript = `<article><nav aria-label="breadcrumb" style="font-size:13px"><a href="${prefix}/">${esc(t.home)}</a> › <span>${esc(areasLabel)}</span></nav>
+<h1>${areasLabel} — ${esc(region.name)}</h1><p><em>${t.updated(today)}</em></p>
+<ul>${areas.map(a => `<li><strong>${areaLink(a)}</strong> — ${a.beaches.length} ${lang === 'es' ? 'playas' : 'beaches'}</li>`).join('')}</ul>
+${hubLinks('areas')}${networkFooter(region, t, lang)}</article>`
+    writePage(distDir, areasIdxPath, pageShell(tpl, {
+      title: idxTitle, desc: idxDesc, pathname: areasIdxPath, domain, lang, noscript: idxNoscript,
+      alternates: useLangs.map(l => ({ lang: l, href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].areasDir}/`, xDefault: l === primary })),
+      jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: areasLabel, path: areasIdxPath }])],
+    }))
+    pushUrl(areasIdxPath, { daily: true, priority: '0.7' })
   }
 
   // ── 3. Pages resorts (long-tail "sargassum at <resort>") ──
@@ -965,4 +1132,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages }
+module.exports = { generateRegionSeoPages, __test: { computeAreas, findAlternativeToday, haversineKm, areaSlugify, areaCrossLink, AREAS_DIR } }

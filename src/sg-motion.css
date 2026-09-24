@@ -1,0 +1,75 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SGM — SARGAGAME MOTION GRAMMAR (2026-09-24)
+   Une seule grammaire d'interaction pour TOUT le produit. Chaque motion a une
+   raison narrative ; la couleur/énergie viennent du STATUT RÉEL de la plage
+   (données → visuel, jamais l'inverse). Aucune animation décorative.
+
+   Les 8 motions :
+     reveal    — l'info apparaît (découverte)
+     pop       — un verdict/événement éclot (décision)
+     fill      — une preuve se matérialise (confiance)
+     ring      — un sceau se trace (authenticité)
+     unlock    — un verrou s'ouvre (transformation free→premium)
+     dayin     — le temps se dévoile en cascade (prévision)
+     breathe   — l'interface respire au rythme du statut (ambiance discrète)
+     focus     — l'attention converge (call-to-action)
+
+   Canal statut : [data-sgm-status="clean|moderate|avoid"] sur un parent →
+   --sgm-c (couleur pilotée par la donnée réelle). Même palette que STC/VERDICT.
+
+   Garde-fous :
+     · prefers-reduced-motion → TOUT est instantané (version calme, pas cassée)
+     · rollback runtime ?sgmotion=0 géré côté JS (sgMotion.off()) : le contenu
+       reste, la chorégraphie disparaît (classes jamais injectées).
+   Budget : transform + opacity uniquement (GPU), zéro layout thrash.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --sgm-ease: cubic-bezier(.2, .8, .2, 1);   /* courbe maison (= BeachExperience) */
+  --sgm-fast: .3s;
+  --sgm-mid: .5s;
+  --sgm-slow: .9s;
+  --sgm-c: #FFC72C;                           /* défaut : or Veilleur */
+}
+
+/* ── Canal statut (données réelles → couleur) ── */
+[data-sgm-status="clean"]    { --sgm-c: #22C55E; }
+[data-sgm-status="moderate"] { --sgm-c: #B87A00; }
+[data-sgm-status="avoid"]    { --sgm-c: #E8522A; }
+
+/* ── keyframes canoniques ── */
+@keyframes sgmReveal { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes sgmPop    { from { opacity: 0; transform: scale(.55); } 60% { transform: scale(1.06); } to { opacity: 1; transform: scale(1); } }
+@keyframes sgmFill   { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes sgmRing   { from { stroke-dashoffset: 264; } to { stroke-dashoffset: 0; } }
+@keyframes sgmUnlock {
+  0%   { transform: rotate(0); }
+  18%  { transform: rotate(-9deg); }
+  34%  { transform: rotate(7deg); }
+  50%  { transform: rotate(-4deg); }
+  64%  { transform: rotate(0); }
+  100% { transform: translateY(-14px) rotate(0); opacity: 0; }
+}
+@keyframes sgmDayIn  { from { opacity: 0; transform: translateY(10px) scale(.8); } to { opacity: 1; transform: none; } }
+@keyframes sgmBreathe { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sgm-c) 38%, transparent); } 50% { box-shadow: 0 0 0 10px transparent; } }
+@keyframes sgmFocus  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+
+/* ── classes utilitaires (à poser sur l'élément animé) ── */
+.sgm-reveal { animation: sgmReveal var(--sgm-mid) var(--sgm-ease) backwards; }
+.sgm-pop    { animation: sgmPop var(--sgm-mid) var(--sgm-ease) backwards; }
+.sgm-fill   { transform-origin: left center; animation: sgmFill var(--sgm-mid) var(--sgm-ease) backwards; }
+.sgm-dayin  { animation: sgmDayIn .38s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.sgm-breathe{ animation: sgmBreathe 2.6s ease-in-out infinite; }
+.sgm-focus  { animation: sgmFocus 2.4s ease-in-out infinite; }
+/* anneau tracé : circle SVG r=42 → dasharray 264 (2π·42 ≈ 264) */
+.sgm-ring   { stroke-dasharray: 264; stroke-dashoffset: 264; animation: sgmRing var(--sgm-slow) var(--sgm-ease) .15s backwards; }
+.sgm-unlock { transform-origin: 50% 0%; animation: sgmUnlock 1.1s var(--sgm-ease) .35s forwards; }
+
+/* ── version calme : tout instantané, jamais cassé ── */
+@media (prefers-reduced-motion: reduce) {
+  .sgm-reveal, .sgm-pop, .sgm-fill, .sgm-dayin, .sgm-ring,
+  .sgm-breathe, .sgm-focus, .sgm-unlock { animation: none !important; }
+  .sgm-ring   { stroke-dashoffset: 0; }
+  .sgm-unlock { opacity: 0; transform: translateY(-14px); }
+  .sgm-dayin  { opacity: 1; transform: none; }
+}

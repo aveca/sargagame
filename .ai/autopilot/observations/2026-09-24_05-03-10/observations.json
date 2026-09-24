@@ -1,0 +1,100 @@
+{
+  "meta": {
+    "at": "2026-09-24T05:03:19.550Z",
+    "quick": true,
+    "full": false,
+    "domains": [
+      "mq"
+    ],
+    "viewports": [
+      "mobile"
+    ],
+    "lighthouse": false
+  },
+  "runs": [
+    {
+      "url": "https://sargasses-martinique.com/",
+      "status": 200,
+      "perf": {
+        "dcl": 381,
+        "load": 693,
+        "ttfb": 148,
+        "lcp": 568,
+        "transferKB": 345,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "brokenLinks": [],
+      "shot": "mobile-home.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "home",
+      "kind": "app",
+      "lighthouse": null
+    },
+    {
+      "url": "https://sargasses-martinique.com/?paywall=1",
+      "status": 200,
+      "perf": {
+        "dcl": 108,
+        "load": 116,
+        "ttfb": 74,
+        "lcp": 144,
+        "transferKB": 1,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "brokenLinks": [],
+      "shot": "mobile-premium.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "premium",
+      "kind": "app",
+      "lighthouse": null
+    },
+    {
+      "url": "https://sargasses-martinique.com/?pro=1",
+      "status": 200,
+      "perf": {
+        "dcl": 104,
+        "load": 106,
+        "ttfb": 70,
+        "lcp": 232,
+        "transferKB": 1,
+        "title": "Plages Martinique aujourd'hui — Score 0-100 (sargasses, mer, soleil) 2026"
+      },
+      "consoleErrors": [],
+      "pageErrors": [],
+      "failedRequests": [],
+      "brokenLinks": [],
+      "shot": "mobile-b2b.png",
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "route": "b2b",
+      "kind": "app",
+      "lighthouse": null
+    }
+  ],
+  "interactions": [
+    {
+      "mapReady": false,
+      "beachSheet": true,
+      "experience": true,
+      "tomorrow": false,
+      "backup": false,
+      "trip": true,
+      "share": true,
+      "premiumModal": true,
+      "checkoutEntry": true,
+      "notes": [],
+      "region": "mq"
+    }
+  ]
+}

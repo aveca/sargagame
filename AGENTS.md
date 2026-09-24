@@ -83,6 +83,9 @@ NEXT_SESSION.md        ← handoff/WIP (seul état qui survit entre sessions)
   ├── roles/           ← 7 fiches de rôles (product, architect, coding, qa, ui, security, devops, data, growth)
   └── prompts/         ← prompts spécialisés (start, audit, feature, bug, security, growth, release)
 .ai/personas/          ← personas adverses (panel de review)
+.ai/autopilot/         ← mémoire du loop autonome (observations, opportunités scorées,
+                         expériences, baselines, régressions, patterns, rapports quotidiens)
+                         — orchestrateur : scripts/autopilot/run.cjs (cf. .ai/autopilot/README.md)
 .cursor/rules/         ← règles Cursor (architecture, frontend, money, deploy)
 tests/                 ← stratégie Playwright (e2e/, integration/, unit/)
 scripts/agent-handoff.cjs  ← script handoff automatisé

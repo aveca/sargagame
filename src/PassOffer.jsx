@@ -3,6 +3,7 @@ import ComicIcon from"./components/ComicIcons.jsx"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
 import{PASS_CENTS,seasonalCents}from"./lib/pass-price.js"
+import{buildTrajectory}from"./lib/stay-trajectory.js"
 
 // Ré-export pour les consommateurs existants (OnsiteCheckout) — source = lib/pass-price.js
 export{seasonalCents}
@@ -17,7 +18,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "" }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -48,7 +49,37 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   // Recycle UNIQUEMENT des faits déjà claimés (l115/l150-153) : aucun chiffre,
   // aucun nouveau claim, aucun tracking, aucun layout structurel (+~20px).
   const trustRow = (()=>{try{return !/[?&]trust_row=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  // OPP-2026-001 (autopilot) — strip « Ta semaine » lisible : initiale du jour
+  // sous chaque pastille + aria-label jour+statut (le title= est muet au tactile
+  // et au lecteur d'écran). Jours DÉRIVÉS de fc[0]=aujourd'hui (même hypothèse
+  // que tripDays[1]=« Demain » déjà utilisée par WorldPaywall) — zéro invention.
+  // Affichage pur, zéro data/logique/paiement. Rollback : ?triplabels=0.
+  const tripLabelsOn=(()=>{try{return !/[?&]triplabels=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const DAY1=lang==="en"?["S","M","T","W","T","F","S"]:lang==="es"?["D","L","M","M","J","V","S"]:["D","L","M","M","J","V","S"]
+  const stLabel=(st)=>_t(lang,
+    st==="clean"?"propre":st==="moderate"?"à surveiller":st==="alert"?"à éviter":"inconnu",
+    st==="clean"?"clean":st==="moderate"?"to watch":st==="alert"?"to avoid":"unknown",
+    st==="clean"?"limpia":st==="moderate"?"a vigilar":st==="alert"?"a evitar":"desconocido")
   const isComic = pwVariant === "comic"
+
+  // WOW « LA TRAJECTOIRE » (2026-09-24, rollback ?sgtraj=0) : quand le paywall
+  // montre déjà la trajectoire de la semaine (StayTrajectory), le strip
+  // tripDays interne ferait DOUBLON → masqué ; et le label sticky porte le
+  // SYNOPSIS RÉEL de la semaine (jours propres / à éviter, comptés depuis le
+  // forecast réel via buildTrajectory — jamais de chiffre marketing).
+  const trajOn=(()=>{try{return !/[?&]sgtraj=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const traj=(()=>{ if(!trajOn) return null; try{const t=buildTrajectory(trajForecast,null);return t.days.length>=2?t:null}catch(_){return null} })()
+  const weekSyno=(()=>{
+    if(!traj) return null
+    const c=traj.counts
+    if(c.clean+c.moderate+c.alert<=0) return null
+    // Vérité stricte : clean / moderate / alert comptés sur les jours réels.
+    const parts=[]
+    if(c.clean>0) parts.push(_t(lang,`${c.clean} j propre${c.clean>1?"s":""}`,`${c.clean} clean day${c.clean>1?"s":""}`,`${c.clean} d limpia${c.clean>1?"s":""}`))
+    if(c.moderate>0) parts.push(_t(lang,`${c.moderate} à surveiller`,`${c.moderate} to watch`,`${c.moderate} a vigilar`))
+    if(c.alert>0) parts.push(_t(lang,`${c.alert} à éviter`,`${c.alert} to avoid`,`${c.alert} a evitar`))
+    return parts.join(" · ")
+  })()
 
   return (
     <div className={v2Enabled?"sg-v2-pass-offer":undefined} data-cur={cur} data-display-cents={displayCents} style={{ position: "relative", color: isComic ? "#0D0B14" : "#EAF7F4", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif", background: isComic ? "#FDF6E3" : "transparent", borderRadius: isComic ? 18 : 0, padding: isComic ? "20px 16px 8px" : 0 }}>
@@ -68,19 +99,27 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         {/* TAKEOVER §9 — « FINISH MY TRIP PLAN » (2026-09-22) : le paywall prouve le
             résultat (semaine de la plage en contexte) avant de demander la carte.
             Données 100 % réelles (forecast weekly), jamais inventé ; ?tripplan=0 off. */}
-        {Array.isArray(tripDays) && tripDays.length >= 2 && (
+        {Array.isArray(tripDays) && tripDays.length >= 2 && !traj && (
           <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, padding: "10px 12px", borderRadius: 12, background: isComic ? "rgba(13,11,20,.05)" : "rgba(255,255,255,.05)", border: isComic ? "1.5px dashed #0D0B14" : "1px solid rgba(255,255,255,.14)" }}>
             <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", color: isComic ? "#B87A00" : "#FFC72C", flexShrink: 0 }}>
               {_t(lang, "Ta semaine", "Your week", "Tu semana")}{tripBeach ? ` — ${tripBeach}` : ""}
             </span>
             <div style={{ display: "flex", gap: 4, flex: 1, justifyContent: "flex-end", flexWrap: "wrap" }}>
-              {tripDays.map((st, i) => (
-                <span key={i} title={st || ""} style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 20, height: 20, borderRadius: 6, fontSize: 10, fontWeight: 800,
-                  background: st === "clean" ? "rgba(34,197,94,.18)" : st === "moderate" ? "rgba(245,158,11,.20)" : st === "alert" ? "rgba(239,68,68,.18)" : "rgba(120,120,130,.15)",
-                  color: st === "clean" ? "#16A34A" : st === "moderate" ? "#B45309" : st === "alert" ? "#DC2626" : "#777" }}>
-                  {st === "clean" ? "✓" : st === "moderate" ? "!" : st === "alert" ? "✕" : "·"}
-                </span>
-              ))}
+              {tripDays.map((st, i) => {
+                const dayIdx = (new Date().getDay() + i) % 7
+                const bg = st === "clean" ? "rgba(34,197,94,.18)" : st === "moderate" ? "rgba(245,158,11,.20)" : st === "alert" ? "rgba(239,68,68,.18)" : "rgba(120,120,130,.15)"
+                const fg = st === "clean" ? "#16A34A" : st === "moderate" ? "#B45309" : st === "alert" ? "#DC2626" : "#777"
+                const glyph = st === "clean" ? "✓" : st === "moderate" ? "!" : st === "alert" ? "✕" : "·"
+                return (
+                  <span key={i} title={`${DAY1[dayIdx]} · ${stLabel(st)}`} aria-label={`${DAY1[dayIdx]} · ${stLabel(st)}`}
+                    style={{ display: "inline-flex", flexDirection: tripLabelsOn ? "column" : "row", alignItems: "center", justifyContent: "center",
+                      width: tripLabelsOn ? 24 : 20, minHeight: 20, padding: tripLabelsOn ? "2px 0 3px" : 0, height: tripLabelsOn ? "auto" : 20,
+                      borderRadius: 6, fontSize: 10, fontWeight: 800, background: bg, color: fg }}>
+                    {tripLabelsOn && <span aria-hidden="true" style={{ fontSize: 7.5, fontWeight: 800, lineHeight: 1, opacity: .85, letterSpacing: ".02em" }}>{DAY1[dayIdx]}</span>}
+                    <span aria-hidden="true" style={{ lineHeight: 1.1 }}>{glyph}</span>
+                  </span>
+                )
+              })}
             </div>
           </div>
         )}
@@ -228,7 +267,11 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               d'origine strict (aucun changement). Zéro info perdue, zéro copy,
               aucun pricing/tracking touché. Rollback : ?nosticky=0 (barre off). */}
           <span className="sg-sticky-label" style={{ flex: 1, fontSize: 11.5, fontWeight: 700, color: isComic ? "#0D0B14" : "#EAF7F4", lineHeight: 1.3 }}>
-            {_t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
+            {weekSyno
+              // WOW : le sticky porte TA semaine réelle (comptage forecast),
+              // pas la copie technique. Rollback ?sgtraj=0 = label historique.
+              ? _t(lang, `Ta semaine : ${weekSyno}`, `Your week: ${weekSyno}`, `Tu semana: ${weekSyno}`)
+              : _t(lang, "Mollie · Sans engagement · 2 clics", "Mollie · No commitment · 2 clicks", "Mollie · Sin compromiso · 2 clics")}
           </span>
           <span className="sg-sticky-buy" style={{ flex: "0 0 auto", display: "inline-flex", alignItems: "center", justifyContent: "center", minHeight: uxCtaV2 ? 48 : undefined, padding: uxCtaV2 ? "12px 20px" : "9px 18px", borderRadius: 12, background: "#FFC72C", color: "#0D0B14", fontWeight: 800, fontSize: uxCtaV2 ? 14 : 12.5, fontFamily: isComic ? "'Anton',system-ui,sans-serif" : "inherit", boxShadow: isComic ? "2px 2px 0 #0D0B14" : "0 2px 0 0 rgba(0,0,0,.20)" }}>
             {/* E1-align : même promesse que le CTA hero (E1), prix inchangé.

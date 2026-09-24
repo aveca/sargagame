@@ -15,6 +15,7 @@ import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "./ga4-ecomme
 
 // Import des modules extraits
 import { usePaymentLogic, _relHref } from "./PremiumModal/doSubscribe.jsx"
+import { findAlternatives } from "./lib/beach-decision.js"
 import { WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
 import { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 import { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
@@ -64,7 +65,8 @@ const PremiumModalSkeleton=()=>(<div style={{display:"flex",flexDirection:"colum
 // PremiumModal — composant principal exporté
 export default function PremiumModal({
   lang, source, onClose, onActivated,
-  sargData, island, beach, pwVariant, _passUpdatedAt, beachCount = 0
+  sargData, island, beach, pwVariant, _passUpdatedAt, beachCount = 0,
+  allBeaches = []
 }){
   // ⚠️ E6 — Affichage "Vous avez déjà un pass actif" au lieu du paywall
   // Vérification locale : si sg_premium="1" et pass_end futur, l'utilisateur possède déja un pass
@@ -175,10 +177,37 @@ export default function PremiumModal({
     } catch (e) { try { console.log('[sg][tripdays] err', String(e).slice(0, 80)) } catch (_) {} return null }
   }, [beach, sargData])
 
+  // WOW PAYWALL « LA TRAJECTOIRE » (2026-09-24, rollback ?sgtraj=0 côté UI) :
+  // objets forecast COMPLETS (jour/date/statut/confiance réels — même source que
+  // tripDays) + plan B RÉEL (findAlternatives) pour la mise en scène de la
+  // semaine dans WorldPaywall. Données uniquement, jamais d'invention ;
+  // null hors contexte plage ou forecast absent → module masqué.
+  const trajForecast = useMemo(() => {
+    try {
+      if (!beach || !sargData) return null
+      const sid = SG.BEACH_TO_SARG[beach.id]
+      const w = (sid && sargData.weekly && sargData.weekly[sid])
+        || (sargData._enrichedWeekly && sargData._enrichedWeekly['_interp_' + beach.id])
+      const fc = w && w.forecast
+      if (!fc || !fc.length) return null
+      const out = fc.slice(0, 7).filter(d => d && (d.day || d.status))
+      return out.length >= 2 ? out : null
+    } catch (_) { return null }
+  }, [beach, sargData])
+
+  const trajBackup = useMemo(() => {
+    try {
+      if (!beach || !Array.isArray(allBeaches) || !allBeaches.length) return null
+      const alts = findAlternatives(beach, allBeaches, { lang, maxAlternatives: 3 }) || []
+      return alts.find(a => a && a.beach && a.beach.status === "clean") || alts[0] || null
+    } catch (_) { return null }
+  }, [beach, allBeaches, lang])
+
   // Common props passed to all paywall variants
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
     sargData, island, beach, tripDays, beachCount, pwVariant,
+    trajForecast, trajBackup,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,
     paySuccess, setPaySuccess, consentFlag, consentOk, setConsentOk,
@@ -197,6 +226,9 @@ export default function PremiumModal({
   // Props pour <OnsiteCheckout> overlay paiement Mollie on-site (z 1300)
   const onsiteCheckoutProps = {
     lang, source, pwVariant,
+    // WOW « LA TRAJECTOIRE » (2026-09-24) : echo de la semaine réelle dans le
+    // checkout (composant null-safe : sans ces props, l'écho reste masqué).
+    beach, trajForecast,
     payStep, setPayStep,
     passCtxRef, payPlanRef, payEmailRef,
     payBusy, setPayBusy, payError, setPayError,
