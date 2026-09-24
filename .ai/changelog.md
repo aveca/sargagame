@@ -1,3 +1,18 @@
+## 2026-09-24 — AUTOPILOTE : boucle d'amélioration produit autonome + 1er loop-test (OPP-2026-001)
+
+**PROBLEM** : chaque itération produit exigeait une instruction humaine ; aucune mémoire des observations prod, aucune détection de régression continue, aucune priorisation systématique.
+
+**CHANGE** :
+- `.ai/autopilot/` (N) — mémoire persistante : observations (browser QA prod JSON + screenshots), baselines.json (129 routes), regressions.md (compare bloquante), opportunities.md (fiches WHY/USER/BUSINESS/SEO/WOW/RISK/EFFORT/EVIDENCE obligatoires), experiments, patterns, decisions, reports/ quotidiens.
+- `scripts/autopilot/` (N) — orchestrateur (run/observe/baselines/report/orchestrator/runner/implement/analyze/verify/status + lib policy/lock/gitops/memory + 8 prompts agents + personas + recipes + scheduler PS1). Agents spécialisés via `opencode run` non-interactif. Merge auto UNIQUEMENT si Gate vert + REGRESSIONS=0 + fiche complète + RISK≠HIGH + money-path intact.
+- `.github/workflows/autopilot.yml` (N) — observe+compare+report quotidien 06:35 UTC. `package.json` script `autopilot`. AGENTS.md : entrée `.ai/autopilot/`.
+- 1er loop-test : OPP-2026-001 — strip paywall « Ta semaine » : pastilles anonymes → initiales de jour + aria-labels (i18n), rollback `?triplabels=0`. Affichage pur.
+- Housekeeping : checkpoint sessions antérieures non poussées (SGM motion, stay-trajectory, journey, wow-home, SEO universe, QA prod) — commit 125054161.
+
+**PROOF** : OBSERVE prod 129 routes — 0 erreur / 0 lien cassé / 0 HTTP≥400 / interactions 9/9 × 6/6 · build 0 · bundle 38,2 ≤ 210 · smoke 4/4 · unit ALL PASS · CI post-merge 4/4 ✅ · PROOF PROD chips jour live (Playwright, mq) · rollback ?triplabels=0 vérifié.
+
+---
+
 ## 2026-09-24 — SGM MOTION GRAMMAR : grammaire d'interaction centralisée + moment UNLOCK post-paiement
 
 **PROBLEM** : 100+ @keyframes dispersés dans 15 fichiers (chaque écran sa micro-animation), zéro langage commun ; le retour après paiement (étape la plus chargée émotionnellement) était un splash statique « ✓ Premium activé » — l'utilisateur ne VOYAIT pas sa semaine s'ouvrir.
