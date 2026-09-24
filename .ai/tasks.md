@@ -1,3 +1,12 @@
+## AHA EXPERIENCE — [x] done 2026-09-23 (session AHA SHIP, direct push main c073c1ef4)
+- **ExpMedia** : vraie photo plage (`/beaches/gplace-{id}.jpg`) + hero-loop vidéo (`/videos/hero/{id}.mp4` manifest-gatée, variante `-w` desktop) derrière le verdict.
+- **Garde-fous** : prefers-reduced-motion, saveData, 2G, rollback `?aha=0`/`?heropv=0`, fallback cascade (photo 404→retrait, vidéo error→retrait, SVG scène reste vérité).
+- **Data-driven** : filtres CSS par verdict (avoid/moderate/clean), scrim lisibilité, glow verdict (donnée→lumière).
+- **Armure CTA** : XP_ARMOR triple-classe + !important protège l'or.
+- **Bundle** : 38,2 Ko inchangé (médias runtime, zéro import statique).
+- **Preuves** : unit 29/29 · E2E 7/7 (mobile) · CI Tests + Perf Budget + Deploy Live (6 régions) + Health Checks 6/6 ALL GREEN.
+- **Rollback** : `?aha=0` (couche média absente, experience intacte).
+
 ## RECOVERY TRUTH — [x] done 2026-09-23 (session K3 MASTER, branche agent/coding/recovery-truth)
 - **BUG-2026-040** : marqueurs cart-recovery-unified jamais committés → re-envois multiples → ajoutés au commit anti-doublon du workflow.
 - **BUG-2026-041** : emails recovery promettaient 12,99€/9,99$ + faux rabais J+5 vs débit réel 14,99€/11,99$ (13,79$ saison) → prix véridiques via passPriceLabel().

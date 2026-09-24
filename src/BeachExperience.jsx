@@ -237,10 +237,16 @@ export default function BeachExperience({
         .bx-hero-top{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;z-index:3}
         .bx-x{width:44px;height:44px;border-radius:50%;background:rgba(11,34,48,.7);border:1.5px solid rgba(255,255,255,.4);color:#fff;font-size:18px;cursor:pointer}
         .bx-live{font-size:10px;font-weight:800;letter-spacing:.08em;color:#fff;background:rgba(11,34,48,.65);border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:5px 11px}
-        .bx-hero-card{position:relative;z-index:2;margin:0 14px calc(14px + env(safe-area-inset-bottom));background:#FDF6E3;color:#0D0B14;border:2.5px solid #0D0B14;border-radius:18px;box-shadow:5px 5px 0 rgba(0,0,0,.45);padding:16px}
-        .bx-dest{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:rgba(13,11,20,.55)}
-        .bx-name{font-weight:800;font-size:clamp(26px,7.5vw,34px);line-height:1.02;margin:2px 0 10px}
-        .bx-verdict{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:800;border-radius:999px;padding:8px 16px;border:2.5px solid #0D0B14}
+        .bx-hero-card{position:relative;z-index:2;margin:0 12px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(253,246,227,.98) 0%,rgba(253,246,227,.92) 100%);color:#0D0B14;border:2.5px solid #0D0B14;border-radius:20px;box-shadow:0 12px 40px rgba(0,0,0,.35),5px 5px 0 rgba(0,0,0,.45);padding:20px 18px 18px;backdrop-filter:blur(8px)}
+        .bx-dest{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:rgba(13,11,20,.5)}
+        .bx-name{font-weight:800;font-size:clamp(28px,8vw,38px);line-height:1.02;margin:4px 0 12px;text-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .bx-verdict-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-bottom:4px}
+        .bx-verdict{display:inline-flex;align-items:center;gap:10px;font-size:clamp(15px,4vw,18px);font-weight:800;border-radius:999px;padding:10px 20px;border:2.5px solid #0D0B14;box-shadow:0 4px 20px rgba(0,0,0,.25);transform-origin:center}
+        .bx-verdict-glyph{display:inline-block;animation:bx-verdict-pop .4s cubic-bezier(.2,.8,.2,1) backwards}
+        .bx-verdict-text{white-space:nowrap}
+        .bx-verdict-bar{height:3px;border-radius:2px;margin-top:8px;animation:bx-verdict-fill .5s cubic-bezier(.2,.8,.2,1) backwards}
+        @keyframes bx-verdict-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+        @keyframes bx-verdict-fill{from{width:0}to{width:100%}}
         .bx-score{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:rgba(13,11,20,.6);margin-top:8px}
         .bx-actions{display:flex;gap:8px;margin-top:12px}
         .bx-btn{flex:1;min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;border:2.5px solid #0D0B14}
@@ -257,12 +263,55 @@ export default function BeachExperience({
         .bx-reveal-name{display:block;font-size:17px;font-weight:800;margin-top:2px;text-shadow:none}
         .bx-chev{font-size:18px;font-weight:800;color:#FFC72C;flex-shrink:0;transition:transform .2s}
         .bx-reveal-body{padding:12px 2px 4px;font-size:14.5px;line-height:1.55;color:rgba(255,253,246,.88)}
-        .bx-dots{display:flex;gap:7px;margin-top:10px}
+        .bx-why-proofs{display:flex;flex-direction:column;gap:10px}
+        .bx-proof{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;transition:transform .2s, border-color .2s}
+        .bx-proof:active{transform:translateX(2px)}
+        .bx-proof-icon{font-size:22px;flex-shrink:0;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--proof-accent),color-mix(in srgb, var(--proof-accent) 70%, white));border-radius:12px;color:#0D0B14;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+        .bx-proof-content{flex:1;min-width:0}
+        .bx-proof-content strong{display:block;font-size:13.5px;font-weight:800;color:#FFFDF6;line-height:1.3;margin-bottom:2px}
+        .bx-proof-content span{display:block;font-size:13px;color:rgba(255,253,246,.7);line-height:1.4}
+        .bx-proof-location{margin-top:8px;padding:10px 12px;background:rgba(255,199,44,.12);border:1px solid rgba(255,199,44,.3);border-radius:10px;font-size:12.5px;font-weight:600;color:#FFC72C;text-align:center}
+.bx-dots{display:flex;gap:7px;margin-top:10px}
         .bx-dot{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px}
         .bx-dot i{width:100%;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:13px;color:#0D0B14}
         .bx-dot span{font-size:10px;font-weight:700;color:rgba(255,253,246,.6)}
         .bx-tmr{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.16);border-radius:14px;padding:13px;margin-top:10px}
         .bx-tmr b{font-size:16px}
+        .bx-timeline{display:flex;gap:8px;margin-top:12px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+        .bx-timeline-day{flex:0 0 auto;width:48px;display:flex;flex-direction:column;align-items:center;gap:6px;scroll-snap-align:start;animation:bx-timeline-in .4s cubic-bezier(.2,.8,.2,1) backwards;animation-delay:calc(var(--i, 0) * 60ms)}
+        .bx-timeline-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#0D0B14;box-shadow:0 2px 10px rgba(0,0,0,.2);background:var(--day-color);opacity:var(--day-opacity);transition:transform .2s}
+        .bx-timeline-day:active .bx-timeline-dot{transform:scale(1.1)}
+        .bx-timeline-label{display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
+        .bx-timeline-dayname{font-size:10.5px;font-weight:800;color:#FFFDF6;text-transform:uppercase;letter-spacing:.04em}
+        .bx-timeline-status{font-size:9.5px;color:rgba(255,253,246,.55);white-space:nowrap}
+        .bx-timeline-conf{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--day-color);opacity:var(--day-opacity)}
+        @keyframes bx-timeline-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+        .bx-backup-card{background:linear-gradient(180deg,rgba(30,200,176,.08) 0%,rgba(255,255,255,.03) 100%);border:2px solid rgba(30,200,176,.3);border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(0,0,0,.2)}
+        .bx-backup-header{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+        .bx-backup-from,.bx-backup-to{flex:1;display:flex;flex-direction:column;gap:6px}
+        .bx-backup-label{font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,253,246,.45)}
+        .bx-backup-beach-name{font-weight:800;font-size:16px;color:#FFFDF6}
+        .bx-backup-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;border:2px solid}
+        .bx-backup-arrow{font-size:24px;font-weight:800;color:#1EC8B0;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3));animation:bx-arrow-pulse 2s ease-in-out infinite}
+        @keyframes bx-arrow-pulse{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+        .bx-premium-section{margin-top:8px}
+        .bx-premium-preview{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+        .bx-premium-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08)}
+        .bx-premium-item.free{border-color:rgba(34,197,94,.3);background:rgba(34,197,94,.06)}
+        .bx-premium-item.premium{border-color:rgba(255,199,44,.3);background:rgba(255,199,44,.08)}
+        .bx-premium-badge{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:999px;color:#0D0B14}
+        .bx-premium-item.free .bx-premium-badge{background:#22C55E;color:#0D0B14}
+        .bx-premium-item.premium .bx-premium-badge{background:#FFC72C;color:#0D0B14}
+        .bx-premium-label{flex:1;font-size:13.5px;font-weight:600;color:#FFFDF6}
+        .bx-premium-check{font-size:18px;color:#22C55E}
+        .bx-premium-lock{font-size:18px}
+        .bx-sticky-preview{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;padding:8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px}
+        .bx-sticky-free{font-size:11.5px;font-weight:700;color:#22C55E}
+        .bx-sticky-arrow{font-size:14px;font-weight:800;color:#FFC72C}
+        .bx-sticky-premium{font-size:11.5px;font-weight:700;color:#FFC72C}
+        .bx-backup-reason{display:flex;align-items:center;gap:10px;padding:12px 14px;background:rgba(30,200,176,.12);border:1px solid rgba(30,200,176,.25);border-radius:10px;font-size:12.5px;color:rgba(255,253,246,.85)}
+        .bx-backup-icon{font-size:18px}
+        .bx-backup-empty{padding:16px;text-align:center;color:rgba(255,253,246,.6)}
         .bx-card{background:#FDF6E3;color:#0D0B14;border:2.5px solid #0D0B14;border-radius:16px;box-shadow:4px 4px 0 rgba(0,0,0,.45);padding:14px;margin:14px}
         .bx-card-name{font-weight:800;font-size:19px}
         .bx-foot{padding:8px 14px calc(110px + env(safe-area-inset-bottom));font-size:11.5px;color:rgba(255,253,246,.5);text-align:center}
@@ -300,15 +349,19 @@ export default function BeachExperience({
               </span>
             </div>
             <div className="bx-name">{beach.name}</div>
-            <span className="bx-verdict" style={{ color: v.c, background: v.bg }}>
-              <span aria-hidden="true">{v.glyph}</span>{v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
-            </span>
+            <div className="bx-verdict-wrap">
+              <span className="bx-verdict" style={{ color: v.c, background: v.bg, borderColor: v.c }}>
+                <span className="bx-verdict-glyph" aria-hidden="true">{v.glyph}</span>
+                <span className="bx-verdict-text">{v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</span>
+              </span>
+              <div className="bx-verdict-bar" style={{ background: v.c }} />
+            </div>
             {beach.score != null && (
               <div className="bx-score">score {Math.round(beach.score)}/100{conf != null ? ` · ${conf}% ${L("confiance", "confidence", "confianza")}` : ""}</div>
             )}
             <div className="bx-actions">
-              <button type="button" className="bx-btn bx-btn-gold" onClick={goWhy}>{L("Pourquoi ? ↓", "Why? ↓", "¿Por qué? ↓")}</button>
-              <button type="button" className="bx-btn bx-btn-ghost" onClick={goTomorrow}>{L("Demain ↓", "Tomorrow ↓", "Mañana ↓")}</button>
+              <button type="button" className="bx-btn bx-btn-gold" onClick={goWhy}>{L("Pourquoi ?", "Why?", "¿Por qué?")}</button>
+              <button type="button" className="bx-btn bx-btn-ghost" onClick={goTomorrow}>{L("Demain →", "Tomorrow →", "Mañana →")}</button>
             </div>
           </div>
         </div>
@@ -317,8 +370,34 @@ export default function BeachExperience({
         <div className="bx-mid">
           <Reveal id="bx-why" kicker={L("Pourquoi ce verdict", "Why this call", "Por qué")} title={L("L'eau, expliquée", "The water, explained", "El agua, explicada")}
             open={whyOpen} onToggle={goWhy} accent={v.c}>
-            <div>{beach.reason || v.why[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</div>
-            {beach.commune && <div style={{ marginTop: 8, opacity: .75 }}>{beach.commune}</div>}
+            <div className="bx-why-proofs">
+              <div className="bx-proof" style={{ "--proof-accent": v.c }}>
+                <span className="bx-proof-icon">{v.glyph}</span>
+                <div className="bx-proof-content">
+                  <strong>{L("État satellite", "Satellite state", "Estado satelital")}</strong>
+                  <span>{beach.reason || v.why[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</span>
+                </div>
+              </div>
+              {fc[0] && fc[0].confidence != null && (
+                <div className="bx-proof" style={{ "--proof-accent": "#FFC72C" }}>
+                  <span className="bx-proof-icon">📊</span>
+                  <div className="bx-proof-content">
+                    <strong>{L("Confiance du modèle", "Model confidence", "Confianza del modelo")}</strong>
+                    <span>{L("{c}% sur la prévision d'aujourd'hui", "{c}% on today's forecast", "{c}% en el pronóstico de hoy").replace("{c}", fc[0].confidence)}</span>
+                  </div>
+                </div>
+              )}
+              {beach.sargassumArea != null && (
+                <div className="bx-proof" style={{ "--proof-accent": "#1EC8B0" }}>
+                  <span className="bx-proof-icon">📍</span>
+                  <div className="bx-proof-content">
+                    <strong>{L("Surface sargasses détectée", "Sargassum area detected", "Área de sargazo detectada")}</strong>
+                    <span>{L("~{a} km² dans la zone côtière", "~{a} km² in coastal zone", "~{a} km² en zona costera").replace("{a}", beach.sargassumArea.toFixed(1))}</span>
+                  </div>
+                </div>
+              )}
+              {beach.commune && <div className="bx-proof-location">{beach.commune}</div>}
+            </div>
           </Reveal>
 
           <Reveal id="bx-tomorrow" kicker={L("Anticipation", "What's next", "Anticipación")} title={L("Demain, puis tes 7 jours", "Tomorrow, then your 7 days", "Mañana, luego tus 7 días")}
@@ -334,11 +413,17 @@ export default function BeachExperience({
                     </div>
                   </div>
                 </div>
-                <div className="bx-dots" role="img" aria-label={L("Prévision 7 jours", "7-day forecast", "Pronóstico 7 días")}>
+                <div className="bx-timeline" role="img" aria-label={L("Prévision 7 jours", "7-day forecast", "Pronóstico 7 días")}>
                   {fc.map((d, i) => (
-                    <div className="bx-dot" key={i}>
-                      <i style={{ background: DOT[d.status] || "#888", opacity: i === 0 ? 1 : 0.85 }}>{(DOT[d.status] ? (d.status === "clean" ? "✓" : d.status === "moderate" ? "◐" : "✕") : "·")}</i>
-                      <span>{(d.day || "").slice(0, 3) || DAYL[new Date(d.date).getDay()] || "·"}</span>
+                    <div className="bx-timeline-day" key={i} style={{ "--day-color": DOT[d.status] || "#888", "--day-opacity": i === 0 ? 1 : i === 1 ? 0.9 : 0.7, "--i": i }}>
+                      <div className="bx-timeline-dot" style={{ background: DOT[d.status] || "#888" }}>
+                        {(DOT[d.status] ? (d.status === "clean" ? "✓" : d.status === "moderate" ? "◐" : "✕") : "·")}
+                      </div>
+                      <div className="bx-timeline-label">
+                        <span className="bx-timeline-dayname">{(d.day || "").slice(0, 3) || DAYL[new Date(d.date).getDay()] || "·"}</span>
+                        <span className="bx-timeline-status">{d.status === "clean" ? L("Clair", "Clear", "Claro") : d.status === "moderate" ? L("Surveillé", "Watched", "Vigilado") : d.status === "alert" ? L("Sargasses", "Sargassum", "Sargazo") : "—"}</span>
+                      </div>
+                      {d.confidence != null && <div className="bx-timeline-conf">{d.confidence}%</div>}
                     </div>
                   ))}
                 </div>
@@ -354,27 +439,40 @@ export default function BeachExperience({
           <Reveal id="bx-backup" kicker={L("Plan B", "Backup", "Plan B")} title={L("Et si la mer change ?", "If the sea shifts?", "¿Y si cambia el mar?")}
             open={bakOpen} onToggle={goBackup} accent="#1EC8B0">
             {backup ? (
-              <div className="bx-card" style={{ margin: 0 }}>
-                <div className="bx-dest">{L("À proximité", "Nearby", "Cerca")}</div>
-                <div className="bx-card-name">{backup.beach.name}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-                  <span className="bx-verdict" style={{ fontSize: 12.5, padding: "5px 12px", color: vOf(backup.beach.status).c, background: vOf(backup.beach.status).bg }}>
-                    <span aria-hidden="true">{vOf(backup.beach.status).glyph}</span>
-                    {vOf(backup.beach.status).go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
-                  </span>
-                  <span style={{ fontSize: 12, color: "rgba(13,11,20,.6)", fontWeight: 700 }}>
-                    {backup.distanceKm != null ? `· ${backup.distanceKm} km` : ""}
-                  </span>
+              <div className="bx-backup-card" style={{ margin: 0 }}>
+                <div className="bx-backup-header">
+                  <div className="bx-backup-from">
+                    <span className="bx-backup-label">{L("Au lieu de", "Instead of", "En vez de")}</span>
+                    <div className="bx-backup-beach-name">{beach.name}</div>
+                    <span className="bx-backup-status" style={{ color: v.c, background: v.bg, borderColor: v.c }}>
+                      {v.glyph} {v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
+                    </span>
+                  </div>
+                  <div className="bx-backup-arrow" aria-hidden="true">→</div>
+                  <div className="bx-backup-to">
+                    <span className="bx-backup-label">{L("Vers", "Toward", "Hacia")}</span>
+                    <div className="bx-backup-beach-name">{backup.beach.name}</div>
+                    <span className="bx-backup-status" style={{ color: vOf(backup.beach.status).c, background: vOf(backup.beach.status).bg, borderColor: vOf(backup.beach.status).c }}>
+                      {vOf(backup.beach.status).glyph} {vOf(backup.beach.status).go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}
+                    </span>
+                    <span style={{ fontSize: 11, color: "rgba(13,11,20,.55)", fontWeight: 700, marginTop: 4, display: "block" }}>
+                      {backup.distanceKm != null ? `${backup.distanceKm} km` : ""}
+                    </span>
+                  </div>
+                </div>
+                <div className="bx-backup-reason">
+                  <span className="bx-backup-icon">🧭</span>
+                  <span>{L("Alternative intelligente — même région, meilleure eau", "Smart alternative — same region, better water", "Alternativa inteligente — misma región, mejor agua")}</span>
                 </div>
                 <div className="bx-actions">
-                  <button type="button" className="bx-btn bx-btn-gold" style={{ minHeight: 48, fontSize: 14 }}
+                  <button type="button" className="bx-btn bx-btn-gold" style={{ minHeight: 48, fontSize: 14, width: "100%" }}
                     onClick={() => { trk("sg_trip_beach_open", { via: "experience_backup" }); onOpenBeach && onOpenBeach(backup.beach) }}>
                     {L("Voir cette plage →", "See this beach →", "Ver esta playa →")}
                   </button>
                 </div>
               </div>
             ) : (
-              <div>{L("Aucune alternative proche confirmée — le Trip Planner couvre ton séjour.", "No nearby backup confirmed — Trip Planner covers your stay.", "Sin alternativa cercana — el Trip Planner cubre tu estancia.")}</div>
+              <div className="bx-backup-empty">{L("Aucune alternative proche confirmée — le Trip Planner couvre ton séjour.", "No nearby backup confirmed — Trip Planner covers your stay.", "Sin alternativa cercana — el Trip Planner cubre tu estancia.")}</div>
             )}
           </Reveal>
 
@@ -426,7 +524,19 @@ export default function BeachExperience({
 
           {/* Premium — conséquence logique */}
           {!isPremium && (
-            <section className="bx-sec">
+            <section className="bx-sec bx-premium-section">
+              <div className="bx-premium-preview">
+                <div className="bx-premium-item free">
+                  <span className="bx-premium-badge">{L("GRATUIT", "FREE", "GRATIS")}</span>
+                  <span className="bx-premium-label">{L("Aujourd'hui + verdict", "Today + verdict", "Hoy + veredicto")}</span>
+                  <span className="bx-premium-check">✓</span>
+                </div>
+                <div className="bx-premium-item premium">
+                  <span className="bx-premium-badge">{L("PREMIUM", "PREMIUM", "PREMIUM")}</span>
+                  <span className="bx-premium-label">{L("7 jours + alertes + historique", "7 days + alerts + history", "7 días + alertas + histórico")}</span>
+                  <span className="bx-premium-lock">🔒</span>
+                </div>
+              </div>
               <button type="button" className="bx-btn bx-btn-gold" style={{ width: "100%", marginTop: 10 }}
                 onClick={() => { onPremium && onPremium("experience") }} data-testid="exp-premium-cta">
                 {L("Débloquer tout mon séjour →", "Unlock my whole stay →", "Desbloquear mi estancia →")}
@@ -443,6 +553,11 @@ export default function BeachExperience({
       {/* Sticky thumb-zone : l'action qui débloque tout */}
       {!isPremium && (
         <div className="bx-sticky">
+          <div className="bx-sticky-preview">
+            <span className="bx-sticky-free">{L("Aujourd'hui : gratuit", "Today: free", "Hoy: gratis")}</span>
+            <span className="bx-sticky-arrow">→</span>
+            <span className="bx-sticky-premium">{L("7 jours + alertes : Premium", "7 days + alerts: Premium", "7 días + alertas: Premium")}</span>
+          </div>
           <button type="button" className="bx-btn bx-btn-gold" style={{ width: "100%", boxShadow: "0 8px 28px rgba(0,0,0,.5)" }}
             onClick={() => { onPremium && onPremium("experience") }}>
             {L("Débloquer — 7 jours + alertes →", "Unlock — 7 days + alerts →", "Desbloquear — 7 días + alertas →")}

@@ -36,8 +36,8 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await page.waitForTimeout(600)
     await page.locator("#bx-tomorrow button").first().click()
     await page.waitForTimeout(600)
-    // 7 pastilles forecast réelles
-    expect(await page.locator(EXP + " .bx-dot").count()).toBeGreaterThanOrEqual(2)
+    // 7 pastilles forecast réelles (timeline)
+    expect(await page.locator(EXP + " .bx-timeline-day").count()).toBeGreaterThanOrEqual(2)
     await page.locator("#bx-backup button").first().click()
     await page.waitForTimeout(800)
     const card = page.locator("#bx-backup .bx-card-name").first()

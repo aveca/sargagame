@@ -1,3 +1,48 @@
+## 2026-09-23 · Agent: coding (AHA EXPERIENCE SHIP) — Real beach photo + hero-loop live on all 6 regions
+
+### Travail effectué
+- **Résumé 1 ligne** : AHA media layer (ExpMedia) déployé — vraie photo plage (`/beaches/gplace-{id}.jpg`) en fondu + hero-loop vidéo (`/videos/hero/{id}.mp4` manifest-gatée, variante `-w` desktop) derrière le verdict, garde-fous perf/a11y, rollback `?aha=0`, fallback cascade sans trou (SVG scène reste vérité).
+- **Détails** : composant ExpMedia monté APRÈS Scene (étages) dans bx-scene ; filtres CSS data-driven par verdict (avoid/moderate/clean) ; scrim lisibilité + glow verdict (donnée→lumière) ; vidéo préload=none muted playsInline ; respects prefers-reduced-motion, saveData, 2G ; rollback flags `?aha=0` / `?heropv=0` (même regex rail prouvé) ; XP_ARMOR triplé-classe + !important protège CTA or ; zéro import statique média (bundle 38,2 Ko inchangé) ; paths région-agnostiques ; sg_hero_video_view tracké funnel ; unit tests 29 checks + E2E 7 specs (mobile 390px) all pass ; CI Tests + Perf Budget + Deploy Live (6 régions) + Health Checks (6/6) ALL GREEN.
+
+### Fichiers modifiés
+- `src/BeachExperience.jsx` — +ExpMedia, monté dans scène, CSS bx-media/scrim/glow + armure CTA
+- `src/Sargasses_PROD.jsx` — +sg_hero_video_view dans SG_FUNNEL_EVENTS
+- `tests/e2e/experience.spec.ts` — +3 tests AHA (scrim/glow, rollback ?aha=0, reduced-motion)
+- `tests/unit/aha-media.test.cjs` (N) — 29 checks contrat AHA media layer
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko
+- [x] php -l → OK (Sargasses_PROD.jsx + 28 dist/api/*.php)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] Playwright experience.spec.ts → 7/7 PASS (mobile-chromium)
+- [x] CI Tests → SUCCESS (build, budget, unit, smoke, E2E)
+- [x] Perf Budget + Lighthouse → SUCCESS
+- [x] Deploy Live (6 régions) → SUCCESS (mq, gp, florida, rivieramaya, tulum, puntacana)
+- [x] Health Checks (6/6 domaines) → SUCCESS (200 + fingerprint + API)
+
+### Vérités revenu (2026-09-23, pour mémoire)
+- B2C : Mollie 0 payé depuis 2026-07-19 (30j) · Stripe legacy MRR 69,86 € / 14 abos (stable, 0 churn) · funnel 7j : 841 sessions → 263 premium opens → 6 CTA → 6 onsite → 0 payé / 0 failed
+- B2B : 152 contactés → 10 leads → 0 payé (supabase b2b_probe : 2 prospects, 1 contact, 0 paiement) — goulot = activation commerciale, pas le schéma (déjà bâti)
+- Recovery live : cart-recovery J+1/J+3/J+5 --send actif 4×/j (dédup désormais persistée), relance-gap manual-gated, dunning/pass-expiry live
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % post-#682 (n=6 — bruit) ; la SEULE preuve humaine = 1 paiement carte fondateur (HUMAN-ONLY, non fabricable)
+- [ ] BUG-2026-038 historique (E2E bottomnav CI) : fix mergé, suivre CI prochaine
+- [ ] Jev : route worker présente, fallback safe ; vérif prod zone = founder-only (non bloquant revenu)
+- [ ] B2B : queue qualifiée existe (b2b-targets 158+) ; envoi = dépendance humaine/infra (Resend/forwarders préflight)
+
+### Prochaine action recommandée
+1. QA PROD : vérifier AHA sur mq (Plage Favorite), florida (South Beach), rivieramaya (Playa Delfines) — mobile 390px + desktop — Rôle : qa/growth
+2. Mesurer `sg_hero_video_view` funnel event → valider impact AHA sur modal→CTA — Rôle : growth
+3. POURSUIVRE : audit B2B trial→payment→entitlement + enrichissement queue commerciale qualifiée — Rôle : coding/growth
+4. Mesurer modal→CTA Exp.4 à J+7 (30/09) — Rôle : growth
+
+### Branche / PR 
+- Branche : `main` (HEAD = `c073c1ef4`)
+- PR : direct push main (CI auto-merge policy)
+- Deploy : `deploy-live.yml` run 35935231948 SUCCESS sur c073c1ef4 ; version.json prod b=c073c1ef ; 6/6 domaines HTTP 200
+
 ## 2026-09-23 · Agent: coding (K3 MASTER RESUME) — Recovery audit repris, 2 vices réels fixés
 
 ### Travail effectué

@@ -1,3 +1,17 @@
+## 2026-09-23 — AHA EXPERIENCE : real beach photo + hero-loop behind verdict (live 6 regions)
+
+**PROBLEM** : l'expérience BeachExperience montrait une scène SVG abstraite — la vraie plage manquait. L'utilisateur ne voyait pas la réalité derrière le verdict.
+
+**CHANGE** (rollback `?aha=0` = couche média absente, experience intacte ; `?heropv=0` même garde-fou rail prouvé) :
+- `src/BeachExperience.jsx` — **ExpMedia** (N) : photo `/beaches/gplace-{id}.jpg` (fetchpriority=high, fondu onLoad) → vidéo `/videos/hero/{id}.mp4` (manifest-gatée `ids`, variante `-w` desktop via `manifest.wide` + `min-width:900px`) ; garde-fous AVANT load : `prefers-reduced-motion:reduce`, `navigator.connection.saveData`, `effectiveType 2G` ; fallback cascade : photo 404 → retrait, vidéo error → retrait, **SVG scène + verdict TOUJOURS visibles** (zéro trou) ; filtres CSS data-driven par verdict (avoid `saturate(.55) brightness(.8) contrast(1.05)`, moderate `saturate(.9) brightness(.96)`, clean `none`) ; scrim lisibilité (gradient haut/bas) + glow verdict (radial `--bx-accent` data→lumière) ; `pointer-events:none` médias ; `sg_hero_video_view` tracké (via experience) ; **XP_ARMOR** CTA or : triple-classe `.bx-btn.bx-btn-gold.bx-btn-gold` + `!important` contre skin `.theme-comic button{!important}` ; paths région-agnostiques, zéro import statique (bundle 38,2 Ko inchangé).
+- `src/Sargasses_PROD.jsx` — `sg_hero_video_view` ajouté à `SG_FUNNEL_EVENTS`.
+- `tests/e2e/experience.spec.ts` — +3 tests : scrim/glow montés + verdict intact ; rollback `?aha=0` média absent + verdict intact ; reduced-motion = 0 vidéo + photo/scène intactes.
+- `tests/unit/aha-media.test.cjs` (N) — 29 checks contrat complet (structure, rollback, garde-fous, fallbacks, interaction, international, bundle, mesurabilité, i18n, armure).
+
+**Preuves** : build 0 · bundle 38,2 Ko ≤ 210 · php -l OK · smoke 4/4 PASS · Playwright 7/7 (mobile-chromium) · CI Tests SUCCESS · Perf Budget SUCCESS · Deploy Live 6 régions (mq, gp, florida, rivieramaya, tulum, puntacana) SUCCESS · Health Checks 6/6 domaines 200 + fingerprint + API.
+
+**Non touché** : pricing, Mollie, TripPlanner, B2B, Jev/Supabase, Exp.4 (observation 23/09→07/10).
+
 ## 2026-09-23 — RECOVERY TRUTH : dédup cart-recovery persistée en CI + prix véridiques (BUG-2026-040/041)
 
 **PROBLEM (audit recovery, session K3)** : deux vices réels dans la récupération panier live (daily-copernicus `--send`, cron 4×/j) :
