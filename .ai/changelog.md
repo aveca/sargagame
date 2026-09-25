@@ -1,3 +1,18 @@
+## 2026-09-25C — ACQUISITION → DÉCISION → PLAN → ACHAT
+
+**PROBLEM** : les pages jour SEO (/aujourdhui/, /today/, /hoy/) informaient mais n'ouvraient pas le tunnel produit ; le paywall vendait encore « des prévisions » ; PlanCard n'avait pas de lecture d'une semaine réelle.
+
+**CHANGE** (tous rollbacks préservés) :
+- Pages jour (`scripts/lib/today-pages.cjs`) : bloc décision — « Voir mon meilleur plan → » (`/?trip=1`, planificateur au boot) + « Ouvrir la plage du jour → » (`/?exp=<bestId>` réel). FR/EN/ES. Page NON générée si pas de données live (déjà en place).
+- App : deep-link `?trip=1` → `setShowTrip(true)` au boot (dataReady, ?tripplan=0 respecté, 1×), event `sg_trip_deeplink` allowlisté.
+- PlanCard : strip semaine (statuts réels par jour + verrous premium ± J+3).
+- PassOffer : bullets « séjour » sous ?sgcopy=0 (même flag que 2026-09-24B) ; achat inchangé.
+- pas de nouvelle intention sans donnée ; primitives inchangées (intents/beach-media/journey réutilisés).
+
+**PROOF** : build exit 0 · /aujourdhui/ contient les 2 CTAs réels (mq011 vérifié dans dist) · bundle 38,2 Ko ≤ 210 · smoke 4/4 PASS · npm test 60/60 (perfect-trip + acquisition-plan verts) · E2E 45/45 (suites existantes + perfect-trip) · probe-trip-deeplink → TRIP_OPEN YES.
+
+---
+
 ## 2026-09-24B — PERFECT BEACH TRIP #1 : Home émotionnelle (intentions réelles + Plan du jour) + média registry + paywall « séjour »
 
 **PROBLEM** : l'app vendait une prévision satellite ; la mission = devenir « intelligence de séjour » sans reconstruire le moteur ni toucher le money-path.

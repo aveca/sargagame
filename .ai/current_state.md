@@ -1,3 +1,35 @@
+## 2026-09-25C · Agent: coding (ACQUISITION → DÉCISION → PLAN) — tunnel SEO jour s'ouvre sur le séjour
+
+### Travail effectué
+- **Résumé 1 ligne** : pages jour SEO → CTA « Voir mon meilleur plan / Ouvrir la plage du jour » (deep-links réels /?trip=1 et ?exp=<id>) + PlanCard semaine réelle + bullets paywall « séjour » (rollback ?sgcopy=0). Aucune donnée inventée, aucune nouvelle page clonée, money intact.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25C). Rollbacks actifs : `?sgintent=0`, `?sgplan=0`, `?sgcopy=0`, `?tripplan=0`, `?sgjourney=0`.
+
+### Fichiers modifiés
+- (N) `tests/unit/acquisition-plan.test.cjs` (16 checks), `scripts/qa/probe-trip-deeplink.mjs`, `scripts/qa/check-today-cta.cjs`, `scripts/qa/probe-perfect-trip-prod.mjs`
+- (M) `scripts/lib/today-pages.cjs` · `src/Sargasses_PROD.jsx` (deep-link ?trip=1 + allowlist) · `src/components/PlanCard.jsx` (plan-week) · `src/PassOffer.jsx` (bullets séjour) · `src/components/ExperienceReset.jsx` (isPremium prop forward)
+
+### Tests réalisés
+- [x] npm run build → exit 0 ; dist/aujourdhui contient les deux CTAs + deep-link réel (mq011 preuve)
+- [x] bundle 38,2 Ko ≤ 210
+- [x] smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test → 60/60
+- [x] E2E 45/45 (journey 5, paywall-trajectory 6, experience 7, funnel-payment, bottomnav 9, perfect-trip 5 + restes existants)
+- [x] probe-trip-deeplink → TRIP_OPEN YES (/?trip=1 ouvre TripPlanner)
+
+### Problèmes restants
+- [ ] 400 sur /api/mollie.php au load = pré-existant, hors cycle (health-check sans action)
+- [ ] futur media pass HD/AVIF toujours à faire (documenté dans beach-media.js)
+- [ ] intentions romance/sauvage/pêche/voile = STOPPÉES faute de données — gap documenté ici, à ouvrir seulement avec une source réelle
+
+### Prochaine action recommandée
+1. QA prod post-deploy : /aujourdhui/ → CTA plan → trip réel → paywall — Rôle : qa
+2. Mesurer sg_trip_deeplink + sg_perfect_trip_* en 7j — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/acquisition-plan` → PR à créer
+
+---
+
 ## 2026-09-24B · Agent: coding (PERFECT BEACH TRIP #1) — Home émotionnelle + Plan du jour + registry média
 
 ### Travail effectué
