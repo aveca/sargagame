@@ -6367,7 +6367,7 @@
   },
   {
     "date": "2026-09-25",
-    "time": "2026-09-25T13:28:42.875Z",
+    "time": "2026-09-25T22:30:54.122Z",
     "payments": 22,
     "revenue": 142.78,
     "emails": 613,
@@ -6375,22 +6375,22 @@
     "avgRating": 4,
     "pipelineOk": true,
     "funnel": {
-      "sessions": 107,
+      "sessions": 92,
       "lockClicks": 0,
-      "modalOpens": 7,
+      "modalOpens": 17,
       "modalCloses": null,
-      "modalCta": 0,
-      "ctaViews": 7,
+      "modalCta": 1,
+      "ctaViews": 14,
       "altViews": 0,
       "altClicks": 0,
       "groundTruth": 0,
       "observations": 0,
       "widgetPreviews": 0,
       "sampleStarts": null,
-      "emailSubmits": 7,
+      "emailSubmits": 16,
       "checkoutRedirects": 0,
-      "onsiteCheckoutOpened": 0,
-      "payOnsiteBack": 0,
+      "onsiteCheckoutOpened": 1,
+      "payOnsiteBack": 1,
       "mollieCheckoutRedirects": 0,
       "conversions": 0,
       "paymentsReal": null,
@@ -6398,10 +6398,10 @@
       "rates": {
         "session_to_lock": 0,
         "lock_to_modal": 0,
-        "modal_to_cta": 0,
-        "cta_view_to_click": 0,
+        "modal_to_cta": 5.9,
+        "cta_view_to_click": 7.1,
         "alt_view_to_click": 0,
-        "cta_to_onsite": 0,
+        "cta_to_onsite": 100,
         "onsite_to_mollie": 0,
         "cta_to_redirect": 0,
         "cta_to_conversion": 0
@@ -6410,11 +6410,11 @@
     "email": {
       "sent": 5882,
       "delivered": null,
-      "opened": 55,
-      "clicked": 22,
+      "opened": 51,
+      "clicked": 20,
       "bounced": null,
-      "openRate": 0.94,
-      "clickRate": 40,
+      "openRate": 0.87,
+      "clickRate": 39.22,
       "tracking": "pixel_first_party"
     },
     "stripe": {
@@ -6465,17 +6465,17 @@
       "b2b": 0,
       "payers": [],
       "lastPaidAt": "2026-07-19T03:46:26+00:00",
-      "fetchedAt": "2026-09-25T13:28:52.326Z"
+      "fetchedAt": "2026-09-25T22:31:16.475Z"
     },
     "ga4": {
       "date": "2026-09-24",
       "mq": {
-        "sessions": 10,
-        "users": 121
+        "sessions": 2,
+        "users": 18
       },
       "gp": {
         "sessions": 0,
-        "users": 268
+        "users": 293
       }
     }
   }
