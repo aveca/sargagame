@@ -16,17 +16,19 @@
 const LEEWARD_LNG_MAX = { mq: -61.1, gp: -61.6 }
 
 export const INTENTS = [
-  { id: "top",    icon: "⛱",  fr: "Top du jour",   en: "Today's best", es: "Lo mejor hoy",
+  { id: "top",    icon: "sun",     fr: "Top du jour",   en: "Today's best", es: "Lo mejor hoy",
     match: b => b && b.status === "clean" },
-  { id: "snorkel", icon: "🤿", fr: "Snorkeling",    en: "Snorkeling",   es: "Snorkel",
+  { id: "snorkel", icon: "snorkel", fr: "Snorkeling",    en: "Snorkeling",   es: "Snorkel",
     match: b => !!(b && b.snorkel) },
-  { id: "family", icon: "🧒", fr: "Famille",        en: "Family",       es: "Familia",
+  { id: "family", icon: "family",  fr: "Famille",        en: "Family",       es: "Familia",
     match: b => !!(b && b.kids) },
-  { id: "sunset", icon: "🌅", fr: "Sunset",         en: "Sunset",       es: "Atardecer",
+  { id: "sunset", icon: "sunset",  fr: "Sunset",         en: "Sunset",       es: "Atardecer",
     match: (b, ctx) => !!(b && isLeeward(b, ctx && ctx.islandBeaches)) },
-  { id: "easy",   icon: "🚗", fr: "Accès simple",   en: "Easy access",  es: "Acceso fácil",
+  { id: "easy",   icon: "parking", fr: "Accès simple",   en: "Easy access",  es: "Acceso fácil",
     match: b => !!(b && b.parking) },
 ]
+// `icon` = nom de glyph du système SVG propriétaire (sg-icons.jsx) — JAMAIS
+// d'emoji sur les couches premium (rendu identique iOS/Android/desktop).
 
 export function intentById(id) {
   return INTENTS.find(i => i.id === id) || null

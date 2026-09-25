@@ -54,6 +54,17 @@
 @keyframes sgmBreathe { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--sgm-c) 38%, transparent); } 50% { box-shadow: 0 0 0 10px transparent; } }
 @keyframes sgmFocus  { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
 
+/* ── 2026-09-25E (VISUAL OVERHAUL) : 4 motions narratives en plus ──
+   planin  — le plan du jour se génère (assemblage, pas apparition brute)
+   swap    — l'alternative remplace (glissement latéral, continuité A→B)
+   gallery — la galerie/proximité défile en cascade (découverte)
+   tripday — les jours du séjour se construisent en cascade (planification)
+   Mêmes garde-fous : GPU-only, finies, interruptibles, jamais infinies. */
+@keyframes sgmPlanIn { from { opacity: 0; transform: translateY(18px) scale(.985); } to { opacity: 1; transform: none; } }
+@keyframes sgmSwap   { from { opacity: 0; transform: translateX(26px); } to { opacity: 1; transform: none; } }
+@keyframes sgmGallery{ from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes sgmTripDay{ from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
 /* ── classes utilitaires (à poser sur l'élément animé) ── */
 .sgm-reveal { animation: sgmReveal var(--sgm-mid) var(--sgm-ease) backwards; }
 .sgm-pop    { animation: sgmPop var(--sgm-mid) var(--sgm-ease) backwards; }
@@ -64,6 +75,11 @@
    doit attirer l'œil APRÈS la révélation puis laisser l'action tranquille. */
 .sgm-breathe{ animation: sgmBreathe 2.6s ease-in-out infinite; }
 .sgm-focus  { animation: sgmFocus 2.4s ease-in-out 2; }
+/* Entrées E (stagger via --i, comme sgm-dayin) */
+.sgm-planin  { animation: sgmPlanIn .55s var(--sgm-ease) backwards; }
+.sgm-swap    { animation: sgmSwap .38s var(--sgm-ease) backwards; }
+.sgm-gallery { animation: sgmGallery .42s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
+.sgm-tripday { animation: sgmTripDay .4s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
 /* anneau tracé : circle SVG r=42 → dasharray 264 (2π·42 ≈ 264) */
 .sgm-ring   { stroke-dasharray: 264; stroke-dashoffset: 264; animation: sgmRing var(--sgm-slow) var(--sgm-ease) .15s backwards; }
 .sgm-unlock { transform-origin: 50% 0%; animation: sgmUnlock 1.1s var(--sgm-ease) .35s forwards; }
@@ -71,7 +87,8 @@
 /* ── version calme : tout instantané, jamais cassé ── */
 @media (prefers-reduced-motion: reduce) {
   .sgm-reveal, .sgm-pop, .sgm-fill, .sgm-dayin, .sgm-ring,
-  .sgm-breathe, .sgm-focus, .sgm-unlock { animation: none !important; }
+  .sgm-breathe, .sgm-focus, .sgm-unlock,
+  .sgm-planin, .sgm-swap, .sgm-gallery, .sgm-tripday { animation: none !important; }
   .sgm-ring   { stroke-dashoffset: 0; }
   .sgm-unlock { opacity: 0; transform: translateY(-14px); }
   .sgm-dayin  { opacity: 1; transform: none; }

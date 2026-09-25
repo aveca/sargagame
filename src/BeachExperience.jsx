@@ -13,6 +13,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { findAlternatives } from "./lib/beach-decision.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
+import { nearestBeaches, beachFacts, dataAgeHours, visOff } from "./lib/sg-visual.js"
+import { off as sgmOff } from "./lib/sgMotion.js"
+import { Icon } from "./lib/sg-icons.jsx"
 import ComicIcon from "./components/ComicIcons.jsx"
 import { VeilleurMark } from "./PremiumModal/VeilleurMark.jsx"
 
@@ -157,6 +160,9 @@ export default function BeachExperience({
   lang = "fr", beach, sargData, allBeaches = [], userPos = null,
   BEACH_TO_SARG = {}, isNewRegion = false,
   isPremium = false, onClose, onOpenBeach, onPremium, onPlanTrip, track,
+  /* 2026-09-25E : imageMap optionnel (catalogue réel) pour les cartes
+     proximité. Absent → cartes texte (jamais de stock). */
+  imageMap = null,
   /* WOW JOURNEY (2026-09-24) — spine « séjour » partagée (src/lib/journey.js,
      calculée par Sargasses_PROD). stay = {days:[{i,label,date,status,
      confidence,locked}], backup:{...,beach}|null, critDay} ; stayPrev = plage
@@ -167,6 +173,9 @@ export default function BeachExperience({
   const [whyOpen, setWhyOpen] = useState(false)
   const [tmrOpen, setTmrOpen] = useState(false)
   const [bakOpen, setBakOpen] = useState(false)
+  const [savOpen, setSavOpen] = useState(false)
+  const [proxOpen, setProxOpen] = useState(false)
+  const [faqOpen, setFaqOpen] = useState(false)
   const [shared, setShared] = useState(false)
   const rootRef = useRef(null)
   const edgeSwipeRef = useRef(null)
@@ -243,6 +252,9 @@ export default function BeachExperience({
   const goTomorrow = () => { setTmrOpen(o => { if (!o) { trk("sg_forecast_view", { via: "experience" }); trk("sg_tomorrow_reveal", {}) } return !o }) }
   const goBackup = () => { setBakOpen(o => { if (!o) trk("sg_alternative_reveal", {}); return !o }) }
   const goWhy = () => { setWhyOpen(o => { if (!o) trk("sg_verdict_expand", { via: "experience" }); return !o }) }
+  const goSav = () => { setSavOpen(o => { if (!o) trk("sg_verdict_expand", { via: "savoir" }); return !o }) }
+  const goProx = () => { setProxOpen(o => { if (!o) trk("sg_alternative_reveal", { via: "proximity" }); return !o }) }
+  const goFaq = () => { setFaqOpen(o => { if (!o) trk("sg_verdict_expand", { via: "faq" }); return !o }) }
 
   // ── JOURNEY RAIL (2026-09-24) — téléportation DANS l'objet, jamais de page.
   //   chip jour 0   → retour au sommet (= l'identité de l'objet, la plage)
@@ -560,7 +572,7 @@ export default function BeachExperience({
           <Reveal id="bx-backup" kicker={L("Plan B", "Backup", "Plan B")} title={L("Et si la mer change ?", "If the sea shifts?", "¿Y si cambia el mar?")}
             open={bakOpen} onToggle={goBackup} accent="#1EC8B0">
             {backup ? (
-              <div className="bx-backup-card" style={{ margin: 0 }}>
+              <div key={backup.beach.id} className={sgmOff() ? "bx-backup-card" : "bx-backup-card sgm-swap"} style={{ margin: 0 }}>
                 <div className="bx-backup-header">
                   <div className="bx-backup-from">
                     <span className="bx-backup-label">{L("Au lieu de", "Instead of", "En vez de")}</span>
@@ -596,6 +608,85 @@ export default function BeachExperience({
               <div className="bx-backup-empty">{L("Aucune alternative proche confirmée — le Trip Planner couvre ton séjour.", "No nearby backup confirmed — Trip Planner covers your stay.", "Sin alternativa cercana — el Trip Planner cubre tu estancia.")}</div>
             )}
           </Reveal>
+
+          {/* ── MINI-GUIDE 2026-09-25E (?sgvis=0 = off) : la fiche devient
+              explorable 30-90 s. Que du RÉEL — sections sans données = masquées,
+              jamais remplies. ── */}
+          {!visOff() && (() => {
+            const facts = beachFacts(beach, allBeaches, lang)
+            const near = nearestBeaches(beach, allBeaches, 3)
+            const ageH = dataAgeHours(sargData)
+            const ageTxt = ageH == null ? null
+              : ageH < 12 ? L(`Satellite il y a ${Math.max(1, Math.round(ageH))} h`, `Satellite ${Math.max(1, Math.round(ageH))}h ago`, `Satélite hace ${Math.max(1, Math.round(ageH))} h`)
+              : ageH < 48 ? L(`Mis à jour il y a ${Math.round(ageH)} h`, `Updated ${Math.round(ageH)}h ago`, `Actualizado hace ${Math.round(ageH)} h`)
+              : L(`Données de ${Math.round(ageH / 24)} j — restez prudent`, `Data ${Math.round(ageH / 24)}d old`, `Datos de hace ${Math.round(ageH / 24)} d`)
+            const faq = []
+            faq.push({ q: L("D'où vient ce verdict ?", "Where does this call come from?", "¿De dónde viene este veredicto?"),
+              a: L("Mesuré au satellite (Copernicus/ERDDAP), jamais deviné.", "Satellite-measured (Copernicus/ERDDAP), never guessed.", "Medido por satélite (Copernicus/ERDDAP).") + (ageTxt ? " " + ageTxt + "." : "") })
+            if (fc[0] && fc[0].confidence != null)
+              faq.push({ q: L("Quelle confiance ?", "How confident?", "¿Qué confianza?"),
+                a: L(`${fc[0].confidence} % sur la prévision d'aujourd'hui.`, `${fc[0].confidence}% on today's forecast.`, `${fc[0].confidence} % en el pronóstico de hoy.`) })
+            faq.push({ q: L("Et si les conditions changent ?", "What if conditions shift?", "¿Y si cambian las condiciones?"),
+              a: backup
+                ? L(`Le plan B du jour : ${backup.beach.name}${backup.distanceKm != null ? ` (${backup.distanceKm} km)` : ""} — eau ${backup.beach.status === "clean" ? "propre" : "à vérifier"}.`, `Today's plan B: ${backup.beach.name}${backup.distanceKm != null ? ` (${backup.distanceKm} km)` : ""}.`, `El plan B de hoy: ${backup.beach.name}${backup.distanceKm != null ? ` (${backup.distanceKm} km)` : ""}.`)
+                : L("Le Trip Planner couvre ton séjour, jour par jour.", "Trip Planner covers your stay, day by day.", "El Trip Planner cubre tu estancia, día a día.") })
+            return (
+              <>
+                {!!facts.length && (
+                  <Reveal id="bx-savoir" kicker={L("Bon à savoir", "Good to know", "Bueno saber")} title={L("La plage, en pratique", "The beach, practically", "La playa, en práctica")}
+                    open={savOpen} onToggle={goSav} accent="#FFC72C">
+                    <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
+                      {facts.map((f, i) => (
+                        <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, background: "rgba(255,255,255,.04)", border: "1.5px solid rgba(255,255,255,.08)", borderRadius: 12, padding: "10px 12px" }}>
+                          <span style={{ color: "#FFC72C", flexShrink: 0, display: "inline-flex" }}><Icon name={f.icon} size={16} /></span>
+                          <span>{f.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </Reveal>
+                )}
+                {!!near.length && (
+                  <Reveal id="bx-prox" kicker={L("À proximité", "Nearby", "Cerca")} title={L("Tu aimeras peut-être aussi", "You may also like", "También te gustará")}
+                    open={proxOpen} onToggle={goProx} accent="#1EC8B0">
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {near.map((n, i) => {
+                        const nm = vOf(n.beach.status)
+                        const url = imageMap && imageMap[n.beach.id] ? "/beaches/" + imageMap[n.beach.id] : null
+                        return (
+                          <div key={n.beach.id} className={sgmOff() ? undefined : "sgm-gallery"} style={{ "--i": i, display: "flex", gap: 10, alignItems: "center", background: "rgba(255,255,255,.04)", border: "1.5px solid rgba(255,255,255,.1)", borderRadius: 14, padding: 10 }}>
+                            {!!url && (
+                              <img src={url} alt={n.beach.name} loading="lazy" width="400" height="300"
+                                style={{ width: 72, height: 72, borderRadius: 10, objectFit: "cover", flexShrink: 0 }}
+                                onError={e => { e.currentTarget.style.display = "none" }} />
+                            )}
+                            <div style={{ minWidth: 0, flex: 1 }}>
+                              <div style={{ fontWeight: 800, fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.beach.name}</div>
+                              <div style={{ fontSize: 11.5, opacity: .7 }}>{n.beach.commune || ""}{n.distanceKm != null ? ` · ${n.distanceKm} km` : ""}</div>
+                              <div style={{ fontSize: 12, fontWeight: 800, color: nm.c, marginTop: 2 }}>{nm.glyph} {nm.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]}</div>
+                            </div>
+                            <button type="button" className="bx-btn bx-btn-ghost" style={{ flexShrink: 0, minWidth: 48, minHeight: 48, padding: "8px 12px", fontSize: 14 }}
+                              onClick={() => { trk("sg_recommendation_open", { beach_id: n.beach.id, source: "bx_proximity" }); onOpenBeach && onOpenBeach(n.beach) }}
+                              aria-label={`${L("Voir", "See", "Ver")} ${n.beach.name}`}>→</button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </Reveal>
+                )}
+                <Reveal id="bx-faq" kicker={L("Comprendre", "Understand", "Entender")} title={L("Questions utiles", "Useful questions", "Preguntas útiles")}
+                  open={faqOpen} onToggle={goFaq} accent="#8A8F98">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {faq.map((f, i) => (
+                      <details key={i} data-testid="bx-faq-item" style={{ background: "rgba(255,255,255,.04)", border: "1.5px solid rgba(255,255,255,.08)", borderRadius: 12, padding: "10px 12px", fontSize: 13.5 }}>
+                        <summary style={{ fontWeight: 800, cursor: "pointer", minHeight: 32, display: "flex", alignItems: "center" }}>{f.q}</summary>
+                        <div style={{ marginTop: 6, opacity: .85, lineHeight: 1.5 }}>{f.a}</div>
+                      </details>
+                    ))}
+                  </div>
+                </Reveal>
+              </>
+            )
+          })()}
 
           {/* Trip — suite naturelle (TripPlanner existant, jamais recodé) */}
           <section className="bx-sec">

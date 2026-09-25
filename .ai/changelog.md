@@ -1,3 +1,23 @@
+## 2026-09-25E — VISUAL / UX OVERHAUL : BeachCard photos + mini-guide plage + motion ×12 + SVG maison
+
+**PROBLEM** : #746 techniquement verte mais produit perçu « prototype/dashboard » — cartes 100 % texte, fiche trop courte, trip sans images, motion à 8, emojis OS sur les chips.
+
+**CHANGE** (rollback unique `?sgvis=0`, money-path ZÉRO touché) :
+- `src/lib/sg-visual.js` (N) : visOff + nearestBeaches (haversine réel, même-île puis clean puis distance) + beachFacts (flags kids/snorkel/parking/drive/côte, jamais d'invention) + dataAgeHours.
+- `src/lib/sg-icons.jsx` (N, début de cycle) : 13 glyphes organiques viewBox 24 ; chips intention emoji → SVG.
+- BeachCard : photo réelle 120px en tête (catalogue only, onError-hide) ; imageMap plombé home + liste Plages + Trip + Experience (Sargasses_PROD +5 lignes).
+- PlanCard : `<details>` « Pourquoi ce choix ? » (2-4 raisons réelles, event existant sg_verdict_expand) + entrée sgm-planin + swap alternative.
+- BeachExperience : 3 sections mini-guide (Bon à savoir / Tu aimeras aussi ×3 avec photos+km / FAQ source-fraîcheur-confiance-planB), masquées sans données, états savOpen/proxOpen/faqOpen.
+- TripPlanner : vignettes réelles 84px/jour (imageMap optionnel) + cascade sgm-tripday.
+- `src/sg-motion.css` : 8 → 12 motions (planin/swap/gallery/tripday, stagger --i, finies, reduced-motion off).
+- `scripts/qa/media-audit.cjs` (N) : audit réel — 457 JPG (A93/B295/C19/D50), 80 vidéos hero, 3 C affichées à remplacer.
+- `scripts/lib/today-pages.cjs` : hero photo réelle du meilleur spot (build).
+- Rapport : `.ai/ui-audit/VISUAL-OVERHAUL-2026-09-25E.md` (21 points : before/after, audit, niches, manquants).
+
+**PROOF** : build 0 · bundle 38,2 Ko ≤ 210 (sg-icons lazy 1,07 Ko) · smoke 4/4 PASS (build frais, stale preview tué) · npm test 61/61 (visual-premium 45/45) · E2E perfect-trip 5/5 + experience 8/8 + journey 5/5 + funnel-payment 13/13 · regions OK · php N/A · shots 24 AB + 8 deep lus (390/768/1440) · money 0 diff · régressions KI-2026-09-24A/BUG-2026-038 vertes.
+
+---
+
 ## 2026-09-25D — VISUAL PREMIUM + PERFECT DAY : media contract v1 + reco concierge + preuve reelle paywall
 
 **PROBLEM** : le produit devenait utile, mais pas encore « désirable » — pas de photo/vidéo hiérarchisée, pas de preuve tangible de son champ réel, registry media superficiel.

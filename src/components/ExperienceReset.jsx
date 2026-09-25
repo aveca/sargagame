@@ -11,6 +11,7 @@ import { INTENTS, intentBeaches, intentById } from '../lib/intents.js';
 import { journeyFor } from '../lib/journey.js';
 import { beachImageUrl, beachMedia } from '../lib/beach-media.js';
 import { PlanCard, planOff } from './PlanCard.jsx';
+import { Icon } from '../lib/sg-icons.jsx';
 
 export const GOLD = '#FFC72C';
 const INK = '#0d0b14';
@@ -90,12 +91,19 @@ function ScoreBar({ score }) {
   );
 }
 
-function BeachCard({ b, lang, userPos, isFav, inCompare, onOpen, onFav, onCompare, showAlt }) {
+function BeachCard({ b, lang, userPos, isFav, inCompare, onOpen, onFav, onCompare, showAlt, img = null }) {
   const m = statusMeta(b.status, lang);
   const d = distOf(b, userPos);
   const alts = showAlt ? findAlternatives(b, showAlt, { lang, maxAlternatives: 1 }) : [];
   return (
-    <article style={{ ...card, marginBottom: 10 }} data-testid="xp-beach-card" data-beach={b.id}>
+    <article style={{ ...card, marginBottom: 10, overflow: 'hidden' }} data-testid="xp-beach-card" data-beach={b.id}>
+      {/* Photo RÉELLE du lieu (2026-09-25E) : catalogue uniquement, jamais de
+          stock. Sans asset → la carte reste texte (état D). */}
+      {!!img && (
+        <img src={img} alt={`${b.name} — ${b.commune || ''}`} loading="lazy" width="800" height="450"
+          style={{ display: 'block', width: 'calc(100% + 24px)', height: 120, objectFit: 'cover', margin: '-12px -12px 10px', borderBottom: `2px solid ${INK}` }}
+          onError={e => { e.currentTarget.style.display = 'none' }} />
+      )}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 'clamp(15px,4.4vw,17px)', lineHeight: 1.2, overflow: 'hidden', textOverflow: 'ellipsis' }}>{b.name}</div>
@@ -351,7 +359,7 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
 /* ── Bas du home PARTAGÉ (wow + ancien) : recherche / À explorer / pire /
       favoris / Pass. Extrait 2026-09-24 — rendu identique à l'original,
       le rollback ?sgwow=0 garde l'ancien home au pixel près. ── */
-function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpenBeach, onGo, onPremium, track }) {
+function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpenBeach, onGo, onPremium, track, imageMap = null }) {
   const favBeaches = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean).slice(0, 3), [favorites, allBeaches]);
   return (
     <>
@@ -367,6 +375,7 @@ function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpen
       <h2 style={h2}>{_t(lang, 'À explorer', 'To explore', 'Para explorar')}</h2>
       {data.clean.slice(0, 3).map(b => (
         <BeachCard key={b.id} b={b} lang={lang} userPos={userPos} showAlt={allBeaches}
+          img={beachImageUrl(b.id, imageMap)}
           isFav={(favorites || []).includes(b.id)} onOpen={onOpenBeach} onFav={(x) => onGo?.('fav', x)} onCompare={(x) => onGo?.('compare', x)} />
       ))}
       {!!data.worst && (
@@ -523,7 +532,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
                     setFocusIdx(null);
                     try { track?.('sg_intent_select', { intent: it.id, on: next ? 1 : 0, beaches: n }); } catch (_) {}
                   }}>
-                  {it.icon} {_t(lang, it.fr, it.en, it.es)} <span style={{ opacity: .65, fontWeight: 800 }}>{n}</span>
+                  <Icon name={it.icon} size={14} /> {_t(lang, it.fr, it.en, it.es)} <span style={{ opacity: .65, fontWeight: 800 }}>{n}</span>
                 </button>
               );
             })}
@@ -563,6 +572,9 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
       <div className="wow-focuswrap">
         {active ? (
           <section key={active.id} className="wow-focus-in" style={{ ...card, marginBottom: 10, borderTop: '3px solid var(--sgm-c)' }} aria-live="polite" data-testid="wow-focus" data-beach={active.id} data-sgm-status={active.status}>
+            {/* PHOTO RÉELLE du lieu (registry beach-media : photo only si
+                cataloguée ; jamais de stock) — appele la décision avant le texte. */}
+            {(() => { const url = beachImageUrl(active.id, imageMap); return url ? <img src={url} alt={`${active.name} — ${active.commune || ''}`} loading="lazy" width="800" height="450" style={{ display: 'block', width: '100%', height: 148, objectFit: 'cover', borderRadius: 10, border: `2px solid ${INK}`, marginBottom: 10 }} onError={e => { e.currentTarget.style.display = 'none' }} /> : null })()}
             {aTop && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: GOLD, color: INK, border: `2px solid ${INK}`, borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800, marginBottom: 6 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</span>}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
               <div style={{ minWidth: 0 }}>
@@ -618,13 +630,13 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
       </div>
 
       <HomeLower lang={lang} q={q} setQ={setQ} data={data} allBeaches={allBeaches} userPos={userPos}
-        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} />
+        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} track={track} imageMap={imageMap} />
     </div>
   );
 }
 
 /* ── PLAGES : vrai produit (recherche / filtres / tri / favoris / comparer) ── */
-export function PlagesExplorer({ lang = 'fr', allBeaches = [], favorites = [], compareIds = [], userPos, onOpenBeach, onToggleFav, onToggleCompare, track }) {
+export function PlagesExplorer({ lang = 'fr', allBeaches = [], favorites = [], compareIds = [], userPos, onOpenBeach, onToggleFav, onToggleCompare, track, imageMap = null }) {
   const [q, setQ] = useState('');
   const [f, setF] = useState('all');
   const [sort, setSort] = useState('score');
@@ -671,6 +683,7 @@ export function PlagesExplorer({ lang = 'fr', allBeaches = [], favorites = [], c
         {!list.length && <div style={{ ...card, textAlign: 'center' }}>{_t(lang, 'Aucune plage avec ces filtres. Élargis la recherche.', 'No beach matches. Widen filters.', 'Ninguna playa coincide.')}</div>}
         {list.slice(0, 40).map(b => (
           <BeachCard key={b.id} b={b} lang={lang} userPos={userPos} showAlt={allBeaches}
+            img={beachImageUrl(b.id, imageMap)}
             isFav={(favorites || []).includes(b.id)} inCompare={(compareIds || []).includes(b.id)}
             onOpen={onOpenBeach} onFav={onToggleFav} onCompare={onToggleCompare} />
         ))}
