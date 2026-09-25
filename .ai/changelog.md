@@ -1,3 +1,18 @@
+## 2026-09-25D — VISUAL PREMIUM + PERFECT DAY : media contract v1 + reco concierge + preuve reelle paywall
+
+**PROBLEM** : le produit devenait utile, mais pas encore « désirable » — pas de photo/vidéo hiérarchisée, pas de preuve tangible de son champ réel, registry media superficiel.
+
+**CHANGE** :
+- `src/lib/beach-media.js` → contrat `beachMedia()` v1 : hero/card/portrait/gallery/sunset/activity/video/quality ; ports UNIQUEMENT les assets réels (photos 172, vidéos hero 80) ; absences documentées (`missing: []`).
+- `scripts/gen-media-manifest.cjs` (dans `npm run build`) → `public/data/media-manifest.json` : assets réels uniquement (compteurs provés).
+- PlanCard joue la vidéo hero réelle (poster=photo réelle, preload=metadata, saveData respecté) ou la photo réelle (lazy, onError-hide).
+- Home : nouvelle strip « Meilleur spot <intent> » avec photo réelle + statut live (recommandation concierge) quand une intention est choisie ; tracking sg_recommendation_open.
+- PassOffer : ligne de preuve réelle (x plages · satellite 4×/jour) sous les bénéfices — flag partagé `?sgcopy=0`. Prices/buy chain/onPassBuy/prix inchangés, contrats verts.
+
+**PROOF** : build exit 0 (manifest regen 172+80) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 61/61 (visual-premium 23/23) · E2E 45/45 (incl. perfect-trip 5/5) · discarded : pas de nouvel event ajouté (réutilisation existants), reduced-motion intact.
+
+---
+
 ## 2026-09-25C — ACQUISITION → DÉCISION → PLAN → ACHAT
 
 **PROBLEM** : les pages jour SEO (/aujourdhui/, /today/, /hoy/) informaient mais n'ouvraient pas le tunnel produit ; le paywall vendait encore « des prévisions » ; PlanCard n'avait pas de lecture d'une semaine réelle.
