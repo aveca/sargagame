@@ -1,3 +1,41 @@
+## 2026-09-24B · Agent: coding (PERFECT BEACH TRIP #1) — Home émotionnelle + Plan du jour + registry média
+
+### Travail effectué
+- **Résumé 1 ligne** : la Home comprend désormais l'intention du visiteur (5 intentions adossées à des données réelles) et vend LE SÉJOUR — PlanCard « Plan du jour » générique réutilisable B2B/B2G, paywall recadré « séjour idéal », 7 events funnel SG_FUNNEL_EVENTS. Money-path intact ; moteur forecast non touché.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-24B). Retraits honnêtes : romance/sauvage/pêche/voile (aucune source). UNDO flags : `?sgintent=0`, `?sgplan=0`, `?sgcopy=0`.
+
+### Fichiers modifiés
+- (N) `src/lib/intents.js` — registry intentions + isLeeward/coastSentence (coords réels)
+- (N) `src/components/PlanCard.jsx` — Plan du jour générique (~2.1 Ko gzip eager)
+- (N) `src/lib/beach-media.js` — registry média (catalogue existant, aucun générique)
+- (N) `tests/unit/perfect-trip.test.cjs` (47 checks) + `tests/e2e/perfect-trip.spec.ts` (5 tests) + `scripts/qa/probe-perfect-trip-shots.mjs`
+- (M) `src/components/ExperienceReset.jsx` — chips intention + PlanCard + armures ; `src/Sargasses_PROD.jsx` — props home (forecastById/imageMap/isPremium) + 7 events ; `src/PassOffer.jsx` — headline « séjour » (rollback) ; `src/TripPlanner.jsx` — +sg_perfect_trip_cta
+- Handoff : `.ai/current_state.md`, `.ai/changelog.md`
+
+### Tests réalisés
+- [x] esbuild syntaxe 7 fichiers → 0 erreur
+- [x] npm run build → exit 0
+- [x] bundle → 38,2 Ko ≤ 210 (inchangé, nouveau code ~2,1 Ko)
+- [x] ux-smoke → 4 tokens + SMOKE_GATE=PASS
+- [x] npm test → 59/59 fichiers (perfect-trip 47/47)
+- [x] E2E : perfect-trip 5/5 + journey 5/5 + paywall-trajectory 6/6 + experience 7/7 + funnel-payment + bottomnav-redesign 9/9 (40/40 suites existantes)
+- [x] reduced-motion : 0 animation infinie (test dédié)
+- [x] screenshots QA (chips + count réels + état ON)
+
+### Problèmes restants
+- [ ] checkout→paid = 0 % mesure MAJ post-paywall copy — suivre sg_pass_cta/sg_conversion 7 j (growth)
+- [ ] futur media pass : AVIF/srcset/posters 9:16 (documenté dans beach-media.js)
+- [ ] ROMANCE/SAUVAGE/PÊCHE/VOILE = intentions à adosser à des données réelles AVANT d'être exposées (data pass, pas du copywriting)
+
+### Prochaine action recommandée
+1. QA prod post-deploy : homepage → chips → plan → premium (un device réel) — Rôle : qa
+2. Mesurer sg_intent_select → plan_add → premium 7j vs baseline — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/perfect-trip` → PR à créer (final report)
+
+---
+
 ## 2026-09-24 · Agent: recovery (single bounded cycle post-429) — KI-2026-09-24A RÉPARÉ + SargaFactory re-pointée
 
 ### Travail effectué

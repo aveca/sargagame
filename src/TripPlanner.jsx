@@ -133,7 +133,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
         ))}
 
         {!isPremium && days.length > visibleDays && (
-          <div tabIndex={0} onClick={() => { try { track("sg_trip_premium_cta", {}) } catch (_) {} onPremium("trip_planner") }}
+          <div tabIndex={0} onClick={() => { try { track("sg_trip_premium_cta", {}) } catch (_) {} try { track("sg_perfect_trip_cta", { source: "trip_stay_unlock" }) } catch (_) {} onPremium("trip_planner") }}
             onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track("sg_trip_premium_cta", { via: "kbd" }) } catch (_) {} onPremium("trip_planner") } }}
             data-testid="trip-premium-cta"
             style={{ width: "100%", marginTop: 10, background: "linear-gradient(135deg,#FFE08A,#FFC72C)", color: "#120821", borderRadius: 14, padding: "14px 16px", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "3px 3px 0 rgba(0,0,0,.4)", textAlign: "center", boxSizing: "border-box" }}>

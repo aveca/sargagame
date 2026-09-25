@@ -1,3 +1,21 @@
+## 2026-09-24B — PERFECT BEACH TRIP #1 : Home émotionnelle (intentions réelles + Plan du jour) + média registry + paywall « séjour »
+
+**PROBLEM** : l'app vendait une prévision satellite ; la mission = devenir « intelligence de séjour » sans reconstruire le moteur ni toucher le money-path.
+
+**CHANGE** (tous rollbacks flagués) :
+- `src/lib/intents.js` (N) — 5 intentions adossées à une donnée RÉELLE : Top du jour (statut clean live), Snorkeling (flag snorkel), Famille (flag kids), Sunset (géométrie coords — côte sous le vent MQ/GP, quartile ouest ailleurs), Accès simple (flag parking). ROMANCE/SAUVAGE/PÊCHE/VOILE retirés : aucune source → aucune invention. Rollback `?sgintent=0`.
+- `src/components/PlanCard.jsx` (N) — « ☀️ PLAN DU JOUR » générique (réutilisable B2B/B2G) : plage+statut live, fenêtre réelle de la semaine (journeyFor partagé), alternative réelle (journey.backup), 1-3 faits factuels (orientation coords / drive / flags / confiance), photo réelle du lieu (catalogue existant). Rollback `?sgplan=0`. Zéro promesse (« meilleure option selon les données actuelles »).
+- `src/lib/beach-media.js` (N) — registry minimal : photo par id via /data/beaches-images.json ; jamais de générique. Assets manquants documentés dans l'en-tête (futur media pass HD/AVIF).
+- Home (ExperienceReset.jsx) : section « Quel genre de journée veux-tu ? » (chips armurées thème, compteurs réels), rail filtré par intention, PlanCard injectée depuis la meilleure option dans l'intention, props forecastById/imageMap/isPremium wires depuis PROD.
+- PassOffer : headline → « Ton séjour idéal commence ici. » + sous-texte proof-satellite (rollback `?sgcopy=0`, chaîne buy/CTA/aria inchangée)
+- TripPlanner : + sg_perfect_trip_cta sur le CTA « Débloquer tout mon séjour ».
+- Tracking : +7 events dans SG_FUNNEL_EVENTS = sg_intent_select / sg_recommendation_open / sg_plan_generate / sg_plan_add / sg_alternative_open / sg_perfect_trip_paywall_open / sg_perfect_trip_cta.
+- WOW_ARMOR : intent chips doublé-classe + `wow-live-dot` gelée sous reduced-motion (anti-infinite héritée).
+
+**PROOF** : build exit 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 SMOKE_GATE=PASS · npm test 59/59 (perfect-trip 47/47) · E2E journey 5/5 + paywall-trajectory 6/6 + experience 7/7 + funnel-payment + bottomnav 9/9 + perfect-trip 5/5 (dont reduced-motion 0 anim infinie) · screenshots QA (chips armurées, compteurs réels). Money-path : touché À LA COPY SEULEMENT (titre/sous-titre) — chaine buy→onBuy onpassbuy inspectée inchangée (contrats passoffer-cta-copy/paths/trust-row verts).
+
+---
+
 ## 2026-09-24 — RECOVERY : KI-2026-09-24A (Trip → Premium → Paywall) réparé + SargaFactory re-pointée + gates 100 % verts
 
 **PROBLEM (KI-2026-09-24A)** : dans le parcours Trip Planner / expérience « un seul monde », chaque transformation in-world (chip plan B, pile ←, relais) passait par `onBeachClick` et incrémentait `sg_beach_views` → au 3e hop, le `Paywall3ViewOverlay` (z1400) surgiSSAIT par-dessus l'expérience et cassait la hiérarchie paywall (bloquant le vrai chemin Premium → OnsiteCheckout). Bonus : le handler `popstate` (Back navigateur) avait une closure figée (deps `[JOURNEY_OFF]`) → « Back sans effet ».

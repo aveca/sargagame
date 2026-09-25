@@ -7,6 +7,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { haversineKm, findAlternatives } from '../lib/beach-decision.js';
 import { off as sgmOff } from '../lib/sgMotion.js';
+import { INTENTS, intentBeaches, intentById } from '../lib/intents.js';
+import { journeyFor } from '../lib/journey.js';
+import { beachImageUrl } from '../lib/beach-media.js';
+import { PlanCard, planOff } from './PlanCard.jsx';
 
 export const GOLD = '#FFC72C';
 const INK = '#0d0b14';
@@ -138,6 +142,9 @@ const WOW_ARMOR = `
 .wow-focus-in{animation:wowpop .24s ease}
 @keyframes wowpop{from{opacity:.3;transform:translateY(6px)}to{opacity:1;transform:none}}
 .wow-sea-link.wow-sea-link{background:rgba(255,199,44,.1)!important;color:#FFE08A!important;border:1.5px dashed rgba(255,199,44,.55)!important;box-shadow:none!important;border-radius:12px!important;text-shadow:none!important;padding:12px 14px!important;font-weight:800;font-size:14px;min-height:48px;cursor:pointer;width:100%}
+.wow-intent.wow-intent{background:#fff!important;color:#0d0b14!important;border:2px solid #0d0b14!important;box-shadow:2px 2px 0 #0d0b14!important;text-shadow:none!important;border-radius:999px!important;padding:8px 13px!important;margin:0!important;font-weight:800;font-size:13px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;min-height:44px}
+.wow-intent-on.wow-intent-on{background:#0d0b14!important;color:#FFC72C!important;border-color:#0d0b14!important}
+@media (prefers-reduced-motion: reduce){.wow-live-dot{animation:none!important}}
 @media(min-width:640px){[data-testid="xp-home"]{--wow-top:calc(150px + env(safe-area-inset-top))}}
 @media(min-width:1024px){
  [data-testid="xp-home"]{--wow-top:calc(118px + env(safe-area-inset-top))}
@@ -336,7 +343,7 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
       </div>
 
       <HomeLower lang={lang} q={q} setQ={setQ} data={data} allBeaches={allBeaches} userPos={userPos}
-        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} />
+        favorites={favorites} onOpenBeach={onOpenBeach} onGo={onGo} onPremium={onPremium} track={track} />
     </div>
   );
 }
@@ -344,7 +351,7 @@ export function HomeDashboard({ lang = 'fr', allBeaches = [], sargData, favorite
 /* ── Bas du home PARTAGÉ (wow + ancien) : recherche / À explorer / pire /
       favoris / Pass. Extrait 2026-09-24 — rendu identique à l'original,
       le rollback ?sgwow=0 garde l'ancien home au pixel près. ── */
-function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpenBeach, onGo, onPremium }) {
+function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpenBeach, onGo, onPremium, track }) {
   const favBeaches = useMemo(() => (favorites || []).map(id => allBeaches.find(b => b.id === id)).filter(Boolean).slice(0, 3), [favorites, allBeaches]);
   return (
     <>
@@ -389,7 +396,7 @@ function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpen
       <div style={{ ...card, marginTop: 14, background: '#FFFBEB' }}>
         <div style={{ fontWeight: 800 }}>🔭 {_t(lang, 'Le Veilleur surveille pour toi', 'The Watcher keeps watch', 'El Vigía vigila por ti')}</div>
         <div style={{ fontSize: 13, marginTop: 4 }}>{_t(lang, 'Alertes quand ta plage change, prévisions 7 jours et comparateur avec le Pass.', 'Alerts when your beach changes, 7-day forecast and compare with Pass.', 'Alertas cuando tu playa cambia, pronóstico 7 días y comparador con el Pass.')}</div>
-        <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 8 }} onClick={() => onPremium?.('home')} data-testid="xp-pass">⭐ {_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>
+        <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 8 }} onClick={() => { try { track?.('sg_perfect_trip_paywall_open', { source: 'home_veilleur_card' }); } catch (_) {} onPremium?.('home'); }} data-testid="xp-pass">⭐ {_t(lang, 'Voir le Pass →', 'See Pass →', 'Ver el Pass →')}</button>
       </div>
     </>
   );
@@ -397,9 +404,14 @@ function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpen
 
 /* ── HOME WOW : LIVE STATE (strip + chips seek) → DISCOVERY (ligne de balises)
       → REVEAL (carte focus croisée au drag) → ACTION (fiche / trip / carte). ── */
-export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip }) {
+export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip, forecastById = null, imageMap = null, isPremium = false }) {
   const [q, setQ] = useState('');
   const [focusIdx, setFocusIdx] = useState(null);   // null = pas encore touché → bestIdx
+  /* PERFECT BEACH TRIP (2026-09-24B) — intentions utilisateur → plages RÉELLES.
+     Rollback : ?sgintent=0 (chips absentes). Aucune intention inventée : chaque
+     intent se résout via intents.js (flags plage / statut live / coords réels). */
+  const [intent, setIntent] = useState(null);
+  const intentOff = (() => { try { return /[?&]sgintent=0(?:&|$)/.test(window.location.search); } catch (_) { return false; } })();
   const lastTracked = useRef(null);
   const railCtrl = useRef(null);
   const data = useMemo(() => {
@@ -411,10 +423,19 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
     const res = q.trim().length >= 2 ? list.filter(b => (b.name + ' ' + (b.commune || '')).toLowerCase().includes(q.trim().toLowerCase())).slice(0, 5) : [];
     return { list, clean, avoid, best, worst, res, counts: { clean: clean.length, mod: list.filter(b => b.status === 'moderate').length, avoid: avoid.length, total: list.length } };
   }, [allBeaches, q]);
+  /* Rail sous intention : filtré par donnée réelle ; sans intention → tout. */
+  const intentList = useMemo(() => (intent ? intentBeaches(intent, data.list, { islandBeaches: data.list }) : data.list), [intent, data.list]);
+  const intentBest = useMemo(() => (intentList.filter(b => b.status === 'clean').sort((a, b) => (b.score || 0) - (a.score || 0))[0] || intentList[0] || null), [intentList]);
+  /* « Plan du jour » = meilleure plage dans l'intention courante (ou globale) —
+     semaine + alternative via journeyFor (même moteur que rail/trip/spine). */
+  const planJourney = useMemo(() => {
+    if (planOff() || !intentBest || !forecastById) return null;
+    try { return journeyFor({ beach: intentBest, forecastById, allBeaches, lang, isPremium }); } catch (_) { return null; }
+  }, [intentBest, forecastById, allBeaches, lang, isPremium]);
   /* Ordre réel : ouest → est (longitude), plages sans coords à la fin par score */
-  const rail = useMemo(() => [...data.list].sort((a, b) =>
-    ((a.lng == null ? 1e9 : a.lng) - (b.lng == null ? 1e9 : b.lng)) || ((b.score || 0) - (a.score || 0))), [data.list]);
-  const bestIdx = useMemo(() => (data.best ? rail.findIndex(b => b.id === data.best.id) : 0), [rail, data.best]);
+  const rail = useMemo(() => [...intentList].sort((a, b) =>
+    ((a.lng == null ? 1e9 : a.lng) - (b.lng == null ? 1e9 : b.lng)) || ((b.score || 0) - (a.score || 0))), [intentList]);
+  const bestIdx = useMemo(() => { const ref = intent ? intentBest : data.best; return ref ? Math.max(0, rail.findIndex(b => b.id === ref.id)) : 0 }, [rail, intent, intentBest, data.best]);
   const activeIdx = Math.max(0, Math.min(focusIdx ?? bestIdx, rail.length - 1));
   const active = rail.length ? rail[activeIdx] : null;
   const fresh = freshness(sargData?.erddapTimestamp || sargData?.updatedAt, lang);
@@ -481,6 +502,40 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
         </div>
       </section>
 
+      {/* 1.5 · INTENT — « Quel genre de journée veux-tu ? » : filtre le rail
+          par demande utilisateur (données réelles uniquement, cf. intents.js). */}
+      {!intentOff && (
+        <section data-testid="intent-row" aria-label={_t(lang, 'Quel genre de journée veux-tu ?', 'What kind of day do you want?', '¿Qué tipo de día quieres?')}
+          style={{ ...card, background: '#fff', marginTop: 10, padding: '12px 12px 10px' }}>
+          <div style={{ fontSize: 12, fontWeight: 800, letterSpacing: '.06em', textTransform: 'uppercase', opacity: .7, marginBottom: 8 }}>
+            {_t(lang, 'Quel genre de journée veux-tu ?', 'What kind of day do you want?', '¿Qué tipo de día quieres?')}
+          </div>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {INTENTS.map(it => {
+              const n = intentBeaches(it.id, data.list, { islandBeaches: data.list }).length;
+              const on = intent === it.id;
+              return (
+                <button key={it.id} type="button" data-testid={`intent-${it.id}`} aria-pressed={on}
+                  className={on ? 'wow-intent-on wow-intent wow-intent-on' : 'wow-intent wow-intent'}
+                  onClick={() => {
+                    const next = on ? null : it.id;
+                    setIntent(next);
+                    setFocusIdx(null);
+                    try { track?.('sg_intent_select', { intent: it.id, on: next ? 1 : 0, beaches: n }); } catch (_) {}
+                  }}>
+                  {it.icon} {_t(lang, it.fr, it.en, it.es)} <span style={{ opacity: .65, fontWeight: 800 }}>{n}</span>
+                </button>
+              );
+            })}
+          </div>
+          {intent && !intentList.length && (
+            <div style={{ fontSize: 12, marginTop: 8, color: '#8a5a00' }}>
+              {_t(lang, 'Aucune plage ne remonte avec les données actuelles pour ce critère — vérifie demain.', 'No beach matches this criterion with current data — check tomorrow.', 'Ninguna playa coincide con este criterio hoy.')}
+            </div>
+          )}
+        </section>
+      )}
+
       {/* 2 · DISCOVERY — la ligne de balises (drag) */}
       <SeaRail rail={rail} activeIdx={activeIdx} onFocus={focus} onOpen={onOpenBeach} lang={lang} track={track} ctrlRef={railCtrl} />
 
@@ -520,10 +575,19 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
         )}
       </div>
 
+      {/* 3.5 · PLAN DU JOUR — résultat émotionnel : plage + semaine réelle +
+          alternative réelle + bons-à-savoir factuels (photo réelle si le
+          catalogue en a une). Rollback ?sgplan=0 (PlanCard.planOff). */}
+      {intentBest && !planOff() && (
+        <PlanCard lang={lang} beach={intentBest} journey={planJourney}
+          imageUrl={beachImageUrl(intentBest.id, imageMap)} fresh={fresh}
+          onOpenBeach={onOpenBeach} onOpenAlt={onOpenBeach} track={track} />
+      )}
+
       {/* TRIP + CARTE (colonne droite desktop) */}
       <div className="wow-tripwrap" style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 10 }}>
         {!!onPlanTrip && tripAllowed && (
-          <button type="button" data-testid="trip-open" onClick={() => { try { track?.('sg_trip_open', { source: 'xp_home' }); } catch (_) {} onPlanTrip(); }}
+          <button type="button" data-testid="trip-open" onClick={() => { try { track?.('sg_trip_open', { source: 'xp_home' }); if (intentBest && !planOff()) track?.('sg_plan_add', { beach_id: intentBest.id, intent: intent || null }); } catch (_) {} onPlanTrip(); }}
             className="wow-sea-link wow-sea-link" style={{ fontFamily: 'inherit' }}>
             {_t(lang, '🗓 Planifier mon séjour — la meilleure plage chaque jour →', '🗓 Plan my stay — best beach each day →', '🗓 Planificar mi estancia — mejor playa cada día →')}
           </button>

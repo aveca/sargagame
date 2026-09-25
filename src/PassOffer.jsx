@@ -89,11 +89,22 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
           {_t(lang, "Le Veilleur", "The Watchman", "El Vigía")}
         </div>
+        {/* PERFECT BEACH TRIP (2026-09-24B) : le titre vend le RÉSULTAT (le
+            séjour), le moteur forecast reste la preuve dans le sous-texte.
+            Rollback ?sgcopy=0 → copy historique. */}
+        {(() => { let copyOn = true; try { copyOn = !/[?&]sgcopy=0/.test(window.location.search) } catch (_) {} return copyOn })() ? (
+        <h2 className="anton" style={{ fontSize: "clamp(24px,7vw,34px)", lineHeight: 1.0, color: isComic ? "#0D0B14" : "#fff", margin: "12px 0 0", letterSpacing: "-.01em", maxWidth: "90%" }}>
+          {_t(lang, <>Ton séjour idéal <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>commence ici</span>.</>, <>Your perfect beach trip <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>starts here</span>.</>, <>Tu estancia ideal en la playa <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>empieza aquí</span>.</>)}
+        </h2>
+        ) : (
         <h2 className="anton" style={{ fontSize: "clamp(24px,7vw,34px)", lineHeight: 1.0, color: isComic ? "#0D0B14" : "#fff", margin: "12px 0 0", letterSpacing: "-.01em", maxWidth: "90%" }}>
           {_t(lang, <>Sache où sera la mer <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: isComic ? "#B87A00" : "#FFC72C" }}>mañana</span>.</>)}
         </h2>
+        )}
         <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.65)" : "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
-          {_t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
+          {(() => { let copyOn = true; try { copyOn = !/[?&]sgcopy=0/.test(window.location.search) } catch (_) {} return copyOn })()
+            ? _t(lang, "Tes meilleures plages, tes plans jour par jour, une alternative réelle si la mer change. Le satellite fait la preuve, pas la promesse.", "Your best beaches, day-by-day plans, a real alternative if the sea changes. Satellite proof, not promises.", "Tus mejores playas, planes día a día y una alternativa real si el mar cambia. Prueba satelital, no promesas.")
+            : _t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
         </p>
 
         {/* TAKEOVER §9 — « FINISH MY TRIP PLAN » (2026-09-22) : le paywall prouve le

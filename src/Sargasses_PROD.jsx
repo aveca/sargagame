@@ -1992,6 +1992,10 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 // Funnel complet : map_open → beach_open → verdict → paywall → cta → checkout → conversion
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
+  // PERFECT BEACH TRIP (2026-09-24B) : intention → recommandation → plan →
+  // séjour → premium. 7 events max (volume maîtrisé), jamais de doublon avec
+  // la chaîne money (sg_pass_cta / sg_premium_modal_open restent la source).
+  "sg_intent_select","sg_recommendation_open","sg_plan_generate","sg_plan_add","sg_alternative_open","sg_perfect_trip_paywall_open","sg_perfect_trip_cta",
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   // ⚠️ sg_premium_modal_cta et sg_checkout_redirect RETIRÉS (2026-08-18) :
   // jamais émis par le frontend → compteur toujours 0. Le CTA réel = sg_pass_cta.
@@ -14998,6 +15002,7 @@ useEffect(()=>{
           <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
             <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="home"
               allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos}
+              forecastById={tripForecastById} imageMap={imageMap} isPremium={isPremium}
               islandName={IS_NEW_REGION?REGION.name:(island==="gp"?"Guadeloupe":"Martinique")}
               onOpenBeach={onBeachClick} track={track}
               onGo={(tab,b)=>{ if(tab==="compare"&&b){setCompareIds(p=>p.includes(b.id)?p:(p.length>=3?p:[...p,b.id]));try{track("sg_compare_add",{beach_id:b.id,src:"home"})}catch(_){}}
