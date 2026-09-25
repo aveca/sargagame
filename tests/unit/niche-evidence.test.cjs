@@ -88,7 +88,7 @@ console.log("NICHE EVIDENCE — contrats")
   // gp027 remappée (H) : gplace-gp027.jpg (THUMB) → Plage_de_Clugny.jpg (CARD,
   // même lieu prouvé : nom exact + dHash 2). gp083/Gosier : pas de meilleur
   // asset même-lieu → conservées + bannies des slots HERO (classes).
-  check("photos C : mappings au vrai lieu (gp027 remappée H, pas de substitution)", imgMap.gp027 === "Plage_de_Clugny.jpg" && imgMap.gp012 === "Gosier_plage.jpg" && imgMap.gp083 === "gplace-gp083.jpg")
+  check("photos C : mappings au vrai lieu (gp027 → Wikimedia HERO wk-gp027-clugny.jpg)", imgMap.gp027 === "wk-gp027-clugny.jpg" && imgMap.gp012 === "Gosier_plage.jpg" && imgMap.gp083 === "gplace-gp083.jpg")
   check("photos C : Îlet_du_Gosier (102 Ko) NON mappée à gp012 (lieu différent, pas de mensonge)", imgMap.gp012 !== "Îlet_du_Gosier.jpg")
 
   // ── Money-path intact ──

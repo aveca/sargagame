@@ -1,0 +1,194 @@
+{
+ "v": 3,
+ "generated": "2026-09-25T20:52:34.506Z",
+ "top30": [
+  "gplace-gp024.jpg",
+  "gplace-mq012.jpg",
+  "Plage_la_caravelle.jpg",
+  "wk-gp027-clugny.jpg",
+  "gplace-fl011.jpg",
+  "gplace-fl012.jpg",
+  "gplace-mq028.jpg",
+  "Plage_des_Rouleaux.jpg",
+  "photo-mq024.jpg",
+  "Plage_Anse_à_Jacques.jpg",
+  "Plage_de_l'Anse_Tabarin.jpg",
+  "Beach_Paradise.jpg",
+  "gplace-fl003.jpg",
+  "gplace-gp029.jpg",
+  "gplace-gp088.jpg",
+  "Plage_de_la_Feuillère.jpg",
+  "gplace-gp116.jpg",
+  "gplace-mq026.jpg",
+  "gplace-rm004.jpg",
+  "Plage_De_Sainte-Anne.jpg",
+  "Pointe_Tarare_-_Nudist_Beach.jpg",
+  "Anse-Bertrand.jpg",
+  "gplace-fl002.jpg",
+  "gplace-gp043.jpg",
+  "gplace-mq007.jpg",
+  "gplace-mq057.jpg",
+  "gplace-mq067.jpg",
+  "Plage_de_clugny_ouest.jpg",
+  "Plage_de_Grand_Bourg.jpg",
+  "Plage_de_la_Pointe_des_Pies.jpg"
+ ],
+ "duplicates": [
+  {
+   "a": "Capesterre-de-Marie-Galante.jpg",
+   "b": "Marie-Galante.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp003.jpg",
+   "b": "Plage_de_la_Datcha.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp008.jpg",
+   "b": "plage_de_Bois_Jolan.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp009.jpg",
+   "b": "The_beach_of_Caravelle.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp010.jpg",
+   "b": "Plage_De_Sainte-Anne.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp017.jpg",
+   "b": "Plage_Du_Souffleur.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp019.jpg",
+   "b": "gplace-gp118.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp022.jpg",
+   "b": "gplace-gp082.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp024.jpg",
+   "b": "gplace-gp119.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-gp027.jpg",
+   "b": "Plage_de_Clugny.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp031.jpg",
+   "b": "Plage_de_Malendure.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp035.jpg",
+   "b": "gplace-gp087.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp039.jpg",
+   "b": "gplace-gp084.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-gp039.jpg",
+   "b": "gplace-gp086.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp041.jpg",
+   "b": "Plage_de_Grand_Bourg.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp060.jpg",
+   "b": "Plage_de_la_Perle.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp074.jpg",
+   "b": "Plage_de_l'Anse_du_Figuier.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp084.jpg",
+   "b": "gplace-gp086.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-mq009.jpg",
+   "b": "gplace-mq070.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-mq011.jpg",
+   "b": "gplace-mq064.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-mq035.jpg",
+   "b": "gplace-mq038.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-pc003.jpg",
+   "b": "gplace-pc011.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq002.jpg",
+   "b": "photo-mq004.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq019.jpg",
+   "b": "photo-mq020.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq025.jpg",
+   "b": "photo-mq026.jpg",
+   "dist": 0
+  },
+  {
+   "a": "Plage_de_St_Claire.jpg",
+   "b": "Plage_de_ST_Claire_1.jpg",
+   "dist": 0
+  },
+  {
+   "a": "sat-gp003.jpg",
+   "b": "sat-gp012.jpg",
+   "dist": 1
+  },
+  {
+   "a": "sat-gp031.jpg",
+   "b": "sat-gp033.jpg",
+   "dist": 2
+  },
+  {
+   "a": "sat-mq014.jpg",
+   "b": "sat-mq015.jpg",
+   "dist": 0
+  },
+  {
+   "a": "sat-mq016.jpg",
+   "b": "sat-mq018.jpg",
+   "dist": 0
+  }
+ ],
+ "stats": {
+  "total": 458,
+  "min": 46,
+  "max": 100,
+  "avg": 78
+ }
+}

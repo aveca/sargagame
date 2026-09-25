@@ -1,3 +1,43 @@
+## 2026-09-25K · Agent: coding (MEDIA PASS / HD PHOTO + VIDEO + ART DIRECTION) — Quality V3 + Discovery + Atmospheric + Art Direction v3
+
+### Travail effectué
+- **Résumé 1 ligne** : pipeline média complet livré — sources documentées + licensing vérifié + discovery engine (Wikimedia live) + Quality V3 (TECH+VISU+PLACE) + top30 audit + contact sheets + atmospheric video library structure + video optimization pipeline + responsive variants ready + hero art direction v3 + visual QA passed. Aucune photo fausse, aucun upscale, Google ToS respecté.
+- **Détails** : cf. `.ai/design/FINAL-REPORT-2026-09-25K.md` + `.ai/design/MEDIA-SOURCES.md` + `.ai/design/TOP30-MEDIA-AUDIT.md` + `public/data/contact-sheets/`. Traçabilité : gp027 upgrade HERO (wk-gp027-clugny, CC BY 4.0, 2560px) ; quarantaine gp118/gp119 maintenue ; acquisition Pexels/Openverse bloquée honnêtement (clés absentes). Rollback : `?flag=0` pour media-art-direction + atmospheric slot.
+
+### Fichiers modifiés
+- (N) `scripts/score-photo-quality-v3.cjs` · `scripts/media/discover-assets.cjs` · `scripts/media/derive-variants.cjs` · `scripts/media/optimize-video.cjs` · `scripts/media/generate-contact-sheets.cjs` · `.ai/design/MEDIA-SOURCES.md` · `.ai/design/TOP30-MEDIA-AUDIT.md` · `.ai/design/FINAL-REPORT-2026-09-25K.md` · `public/media/atmosphere/manifest.json` · `public/data/photo-quality-v3.json` · `public/data/photo-classes-v3.json` · `public/data/contact-sheets/TOP30_{HERO,REJECT,ATMOSPHERE}.html` · `public/data/discovery/*.json` (30 beaches)
+- (M) `src/lib/media-art-direction.js` (slots + provenance + atmosphere strict) · `.ai/changelog.md` · `.ai/tasks.md` · `.ai/current_state.md`
+
+### Tests réalisés
+- [x] npm run build → exit 0 (408 modules)
+- [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko
+- [x] php -l → OK (mollie, paypal, webhook)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] npm test → **65/65**
+- [x] E2E funnel-payment → 13/13 passed
+- [x] regions assertAllRegionsValid → OK
+- [x] Visual QA 390/768/1440 → 21 screenshots, ERRORS=[], RM_INFINITE=[]
+- [x] Discovery top30 Wikimedia live → 6 VERIFIED_PLACE (gp009, mq012)
+
+### Problèmes restants
+- [ ] Clé Pexels API → atmospheric videos (5-10 loops) — FONDATEUR
+- [ ] Migration Google Places New API (4800px + attributions ToS) — FONDATEUR
+- [ ] Re-shoot gp083 (aucun asset même-lieu supérieur) — FONDATEUR
+- [ ] Validation humaine 11 paires duplicates (contact sheet) — FONDATEUR (10 min)
+- [ ] Clé Openverse OAuth (optionnel, Wikimedia suffit pour PLACE)
+
+### Prochaine action recommandée
+1. PR → CI 7/7 → auto-merge → deploy → probes prod — Rôle : release
+2. Fondateur : provisionner PEXELS_API_KEY + décider migration Google New API — Rôle : founder
+3. Mesurer impact photo quality sur modal→CTA 7j post-deploy — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/media-pass-k` (à créer)
+- PR : à créer
+- Commit head : `<hash>`
+
+---
+
 ## 2026-09-25J · Agent: coding (VISUAL OS / ASSET LAB / AHA) — skills + Embla + fullscreen + preuve rail
 
 ### Travail effectué

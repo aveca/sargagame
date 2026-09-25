@@ -94,6 +94,17 @@ function Scene({ status, island }) {
    lui-même reste DOM. Régions sans média (ex. tulum) = scène SVG seule. */
 /* Cache module des classes photo (1 fetch/session, comme le manifest hero). */
 let _photoClasses = null
+/* Attributions CC (1 fetch/session, affiché sur le hero si présent). */
+let _photoAttr = null
+async function photoAttrFor(beachId) {
+  try {
+    if (!_photoAttr) {
+      const r = await fetch("/data/photo-attributions.json")
+      _photoAttr = r.ok ? await r.json() : {}
+    }
+    return (_photoAttr && _photoAttr[beachId]) || null
+  } catch (_) { return null }
+}
 
 function ExpMedia({ beachId, status, trk }) {
   const [photoOk, setPhotoOk] = useState(true)
@@ -201,6 +212,14 @@ export default function BeachExperience({
   const [merOpen, setMerOpen] = useState(false)
   const [marine, setMarine] = useState(null)
   const [marineLoading, setMarineLoading] = useState(false)
+  /* Attribution CC du hero (2026-09-25K) : affichée si le registre
+     photo-attributions.json en porte une (licence oblige). */
+  const [credit, setCredit] = useState(null)
+  useEffect(() => {
+    let dead = false
+    photoAttrFor(beach && beach.id).then(a => { if (!dead && a) setCredit(a) })
+    return () => { dead = true }
+  }, [beach && beach.id])
   const [shared, setShared] = useState(false)
   const rootRef = useRef(null)
   const edgeSwipeRef = useRef(null)
@@ -596,6 +615,11 @@ export default function BeachExperience({
               <button type="button" className="bx-btn bx-btn-gold" onClick={goWhy}>{L("Pourquoi ?", "Why?", "¿Por qué?")}</button>
               <button type="button" className="bx-btn bx-btn-ghost" onClick={goTomorrow}>{L("Demain →", "Tomorrow →", "Mañana →")}</button>
             </div>
+            {!!credit && (
+              <div style={{ fontSize: 10.5, opacity: .6, marginTop: 8 }}>
+                {L("Photo : ", "Photo: ", "Foto: ")}{credit.author} (<a href={credit.license_url || credit.source_url || "#"} target="_blank" rel="noopener" style={{ color: "inherit" }}>{credit.license || ""}</a>, {credit.source === "wikimedia" ? "Wikimedia Commons" : credit.source || ""})
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,0 +1,12 @@
+{
+ "beach": "mq063",
+ "name": "Plage du Vétiver",
+ "commune": "Case-Pilote",
+ "at": "2026-09-25T19:18:54.170Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}

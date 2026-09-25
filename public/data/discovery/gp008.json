@@ -1,0 +1,12 @@
+{
+ "beach": "gp008",
+ "name": "Plage Bois Jolan",
+ "commune": "Sainte-Anne",
+ "at": "2026-09-25T19:19:05.983Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}

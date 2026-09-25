@@ -220,7 +220,13 @@ function renderTodayPage({ lang, domain, siteName, slug, title, desc, model }) {
       const entry = typeof c === 'string' ? { class: c } : (c || {})
       if (entry.excluded) return ''
       if ((rank[entry.class] || 0) < 2) return ''
-      return `<img src="/beaches/${esc(file)}" alt="${esc(best.beach.name)} — ${esc(best.beach.commune || '')}" width="800" height="450" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;border:2px solid #0D0D0D;margin:0 0 14px;object-fit:cover" />`
+      let credit = ''
+      try {
+        const attr = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'data', 'photo-attributions.json'), 'utf-8'))
+        const a = attr[best.beach.id]
+        if (a && a.author) credit = `<div style="font-size:11px;color:#686868;margin:-8px 0 14px">Photo : ${esc(a.author)} (<a href="${esc(a.license_url || a.source_url || '#')}" style="color:#686868">${esc(a.license || '')}</a>, ${esc(a.source === 'wikimedia' ? 'Wikimedia Commons' : a.source || '')})</div>`
+      } catch { /* pas d'attribution = pas de ligne */ }
+      return `<img src="/beaches/${esc(file)}" alt="${esc(best.beach.name)} — ${esc(best.beach.commune || '')}" width="800" height="450" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;border:2px solid #0D0D0D;margin:0 0 14px;object-fit:cover" />${credit}`
     } catch { return '' }
   })()
   // ACQUISITION → DÉCISION → PLAN (2026-09-25C) : CTA du vrai tunnel produit.

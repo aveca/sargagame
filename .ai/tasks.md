@@ -1,3 +1,9 @@
+## MEDIA PASS / HD PHOTO + VIDEO + ART DIRECTION 2026-09-25K — [x] done + LOCAL GATES VERTS
+- **Livré** : Quality V3 (TECH+VISU+PLACE) + Discovery engine (Wikimedia live, 4 états) + Derive variants (AVIF/WebP/JPEG, gain>15%) + Optimize video (VP9/H.264, CRF, poster) + Contact sheets (TOP30 HERO/REJECT/ATMOSPHERE) + Media art direction v3 ({asset,slot,reason,provenance}) + Atmospheric library structure (manifest vide honnête, Pexels key absente) + gp027 upgrade HERO (2560px CC BY 4.0) + 121 HERO / 31 CARD / 2 excluded.
+- **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 63/65 (2 v2 pré-existants) · E2E funnel-payment 13/13 · regions OK · php -l OK · ux-smoke 4/4 · contact sheets + discovery top30 live.
+- **Rapport** : `.ai/design/FINAL-REPORT-2026-09-25K.md` + `.ai/design/MEDIA-SOURCES.md` + `.ai/design/TOP30-MEDIA-AUDIT.md` + `public/data/contact-sheets/`.
+- **NEXT** : PR → CI 7/7 → auto-merge → deploy → probes prod → marquer [x] done.
+
 ## VISUAL OS / ASSET LAB / AHA 2026-09-25J — [x] done + LIVE 2026-09-25 (PR #751 MERGED squash 8a4c21fd, CI 7/7, deploy prod b=8a4c21fd, 5/5 HTTP 200)
 - **Livré** : 5 skills + REFERENCES + Embla lazy + Visual OS + media-art-direction + AHA fullscreen + shared transition + compare swipe + motion finies + preuve rail live + money 0 diff.
 - **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 64/64 (travel-30 62/62) · E2E 30/30 · regions OK · shots + probe rail lus.

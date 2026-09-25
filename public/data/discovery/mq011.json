@@ -1,0 +1,12 @@
+{
+ "beach": "mq011",
+ "name": "Anse Mitan",
+ "commune": "Les Trois-Îlets",
+ "at": "2026-09-25T19:18:49.460Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}

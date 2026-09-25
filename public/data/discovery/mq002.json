@@ -1,0 +1,12 @@
+{
+ "beach": "mq002",
+ "name": "Anse Caritan",
+ "commune": "Sainte-Anne",
+ "at": "2026-09-25T19:18:47.107Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}
