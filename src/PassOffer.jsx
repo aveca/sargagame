@@ -18,7 +18,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null, beachCount = 0 }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -173,6 +173,12 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
                   <span>{t}</span>
                 </span>
               ))}
+              {/* PREUVE réelle (2026-09-25C) : la science reste la preuve — nombre
+                  RÉEL de plages du build, texte neutre, rollback ?sgcopy=0. */}
+              {Number(beachCount) > 0 && (() => { let copyOn = true; try { copyOn = !/[?&]sgcopy=0/.test(window.location.search) } catch (_) {} return copyOn })() && (
+                <span data-testid="passoffer-proof" style={{ display: "block", marginTop: 2, fontSize: 11, fontWeight: 700, letterSpacing: ".02em", opacity: .7 }}>
+                  {_t(lang, `Basé sur les données réelles de ${Number(beachCount)} plages — mesurées 4×/jour par satellite.`, `Based on real data from ${Number(beachCount)} beaches — measured 4× a day by satellite.`, `Basado en datos reales de ${Number(beachCount)} playas — medidas 4× al día por satélite.`)}
+                </span>)}
             </span>
             <span style={{
               display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginTop: 16, borderRadius: 14, padding: "16px",

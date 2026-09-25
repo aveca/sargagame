@@ -36,7 +36,7 @@ export const planOff = () => {
 
 const DOT = { clean: "#22C55E", moderate: "#E8A800", avoid: "#E8512A", alert: "#E8512A" }
 
-export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, fresh = null, onOpenBeach, onOpenAlt, track, isPremium = false }) {
+export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, media = null, fresh = null, onOpenBeach, onOpenAlt, track, isPremium = false }) {
   const fired = useRef(null)
   useEffect(() => {
     if (!beach || !beach.id || fired.current === beach.id) return
@@ -72,11 +72,29 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, fresh =
         <span style={{ width: 7, height: 7, borderRadius: "50%", background: DOT[beach.status] || "#999" }} aria-hidden="true" />
         {_t(lang, "☀️ PLAN DU JOUR", "☀️ TODAY'S PLAN", "☀️ PLAN DE HOY")}{fresh ? ` · ${fresh}` : ""}
       </div>
-      {imageUrl && (
-        <img src={imageUrl} alt={`${beach.name} — ${beach.commune || ""}`} loading="lazy" width="800" height="450"
-          style={{ display: "block", width: "100%", height: 120, objectFit: "cover", borderRadius: 10, border: `2px solid ${INK}`, marginTop: 8 }}
-          onError={e => { e.currentTarget.style.display = "none" }} />
-      )}
+      {/* Media contract (beach-media.js v1) : vidéo hero réelle (poster photo,
+          pas d'autoplay lourd sur mobile — playsInline + muted + loop uniquement
+          si l'utilisateur n'est pas en saveData) sinon photo réelle lazy. Jamais
+          de placeholder générique : sans asset réel → rien n'est rendu. */}
+      {(() => {
+        let videoEl = null
+        let saveData = false
+        try { saveData = navigator.connection && navigator.connection.saveData === true } catch (_) {}
+        if (media && media.video && !saveData) {
+          videoEl = (
+            <video src={media.video.src} poster={media.video.poster || undefined} muted loop playsInline
+              preload="metadata" autoPlay={false}
+              style={{ display: "block", width: "100%", height: 140, objectFit: "cover", borderRadius: 10, border: `2px solid ${INK}`, marginTop: 8 }}
+              onError={e => { e.currentTarget.style.display = "none" }} />
+          )
+        }
+        const showPhoto = !videoEl && imageUrl
+        return videoEl || (showPhoto ? (
+          <img src={imageUrl} alt={`${beach.name} — ${beach.commune || ""}`} loading="lazy" width="800" height="450"
+            style={{ display: "block", width: "100%", height: 120, objectFit: "cover", borderRadius: 10, border: `2px solid ${INK}`, marginTop: 8 }}
+            onError={e => { e.currentTarget.style.display = "none" }} />
+        ) : null)
+      })()}
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginTop: imageUrl ? 8 : 6 }}>
         <div style={{ minWidth: 0 }}>
           <div style={{ fontWeight: 800, fontSize: 17 }}>{beach.name}</div>

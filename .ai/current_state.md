@@ -1,3 +1,36 @@
+## 2026-09-25D · Agent: coding (VISUAL PREMIUM + PERFECT DAY) — media contract v1 + reco concierge
+
+### Travail effectué
+- **Résumé 1 ligne** : media registry devient un contrat v1 (assets réels UNIQUEMENT), PlanCard joue la vidéo hero réelle quand l'asset existe (poster=photo réelle), home intent gagne un strip concierge avec photo réelle + statut live, paywall ajoute une ligne de preuve réelle. Aucun fake asset, money inchangé.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25D). Rollbacks : `?sgcopy=0` (preuve), `?sgplan=0`, `?sgintent=0`, `?sgmotion=0`. Missing assets documentés (portrait/gallery/sunset/activity) dans beach-media.js.
+
+### Fichiers modifiés
+- (N) `scripts/gen-media-manifest.cjs` (build chain) + `public/data/media-manifest.json`
+- (N) `tests/unit/visual-premium.test.cjs` (23 checks) + `scripts/qa/probe-intent-reco-shots.mjs`
+- (M) `src/lib/beach-media.js` · `src/components/PlanCard.jsx` · `src/components/ExperienceReset.jsx` · `src/PassOffer.jsx` · `src/PremiumModal/{WorldPaywall,ComicPaywall}.jsx` · `src/Sargasses_PROD.jsx` (heroVids prop) · `package.json`
+
+### Tests réalisés
+- [x] npm run build → exit 0 + manifest regen
+- [x] bundle 38,2 Ko ≤ 210
+- [x] smoke 4/4 PASS
+- [x] npm test → 61/61 (visual-premium 23/23)
+- [x] E2E 45/45 existants
+- [x] atomique : reco strip DOM présent, PlanCard photo live
+- [x] screenshots QA
+
+### Problèmes restants
+- [ ] media-manifest.json manque les folder public/beaches/*.avif (à ajouter sous un futur media pass)
+- [ ] intents futurs (romance/sauvage/pêche/voile) toujours STOPPED faute de données
+
+### Prochaine action recommandée
+1. QA prod : hero video visible sur PlanCard si la meilleure option a un asset hero — Rôle : qa
+2. Mesurer sg_recommendation_open intent_strip vs baseline (7j) — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/visual-premium` → PR à créer
+
+---
+
 ## 2026-09-25C · Agent: coding (ACQUISITION → DÉCISION → PLAN) — tunnel SEO jour s'ouvre sur le séjour
 
 ### Travail effectué

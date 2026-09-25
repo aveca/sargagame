@@ -615,6 +615,7 @@ export function WorldPaywall({
             onBuy={onPassBuy}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
             trajForecast={trajForecast}
+            beachCount={beachCount}
           />
         </div>
         )}
@@ -663,6 +664,7 @@ export function WorldPaywall({
             onBuy={onPassBuy}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
             trajForecast={trajForecast}
+            beachCount={beachCount}
           />
         </div>
         )}

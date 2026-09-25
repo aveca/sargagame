@@ -9,7 +9,7 @@ import { haversineKm, findAlternatives } from '../lib/beach-decision.js';
 import { off as sgmOff } from '../lib/sgMotion.js';
 import { INTENTS, intentBeaches, intentById } from '../lib/intents.js';
 import { journeyFor } from '../lib/journey.js';
-import { beachImageUrl } from '../lib/beach-media.js';
+import { beachImageUrl, beachMedia } from '../lib/beach-media.js';
 import { PlanCard, planOff } from './PlanCard.jsx';
 
 export const GOLD = '#FFC72C';
@@ -404,7 +404,7 @@ function HomeLower({ lang, q, setQ, data, allBeaches, userPos, favorites, onOpen
 
 /* ── HOME WOW : LIVE STATE (strip + chips seek) → DISCOVERY (ligne de balises)
       → REVEAL (carte focus croisée au drag) → ACTION (fiche / trip / carte). ── */
-export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip, forecastById = null, imageMap = null, isPremium = false }) {
+export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = [], userPos, islandName, onOpenBeach, onGo, onPremium, track, onPlanTrip, forecastById = null, imageMap = null, heroVids = null, isPremium = false }) {
   const [q, setQ] = useState('');
   const [focusIdx, setFocusIdx] = useState(null);   // null = pas encore touché → bestIdx
   /* PERFECT BEACH TRIP (2026-09-24B) — intentions utilisateur → plages RÉELLES.
@@ -533,6 +533,26 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
               {_t(lang, 'Aucune plage ne remonte avec les données actuelles pour ce critère — vérifie demain.', 'No beach matches this criterion with current data — check tomorrow.', 'Ninguna playa coincide con este criterio hoy.')}
             </div>
           )}
+          {/* RECOMMANDATION concierge — toujours la VRAIE meilleure plage de
+              l'intention (photo réelle du lieu si cataloguée), jamais de stock. */}
+          {intent && !!intentBest && (() => {
+            const it = intentById(intent)
+            const img = beachImageUrl(intentBest.id, imageMap)
+            return (
+              <div data-testid="intent-reco" style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', background: '#FFF8E1', border: `2px solid ${INK}`, borderRadius: 12, padding: 10 }}>
+                {img && <img src={img} alt={intentBest.name} loading="lazy" width="800" height="450" style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover', border: `2px solid ${INK}`, flex: '0 0 auto' }} onError={e => { e.currentTarget.style.display = 'none' }} />}
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#8a5a00' }}>{_t(lang, `Meilleur spot ${it ? it.fr : ''}`, `Best ${it ? it.en : ''} spot`, `Mejor spot ${it ? it.es : ''}`)}</div>
+                  <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.15 }}>{intentBest.name}</div>
+                  <div style={{ fontSize: 11.5, opacity: .7 }}>{intentBest.commune || ''}{intentBest.status ? ` · ${statusMeta(intentBest.status, lang).label}` : ''}</div>
+                </div>
+                <button type="button" data-testid="intent-reco-open" className="xp-gold xp-gold" style={{ ...btnGold, flex: '0 0 auto', width: 'auto', minHeight: 44, padding: '9px 16px', fontSize: 13 }}
+                  onClick={() => { try { track?.('sg_recommendation_open', { beach_id: intentBest.id, intent, source: 'intent_strip' }) } catch (_) {} onOpenBeach?.(intentBest) }}>
+                  {_t(lang, 'Voir →', 'Open →', 'Ver →')}
+                </button>
+              </div>
+            )
+          })()}
         </section>
       )}
 
@@ -580,7 +600,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
           catalogue en a une). Rollback ?sgplan=0 (PlanCard.planOff). */}
       {intentBest && !planOff() && (
         <PlanCard lang={lang} beach={intentBest} journey={planJourney} isPremium={isPremium}
-          imageUrl={beachImageUrl(intentBest.id, imageMap)} fresh={fresh}
+          imageUrl={beachImageUrl(intentBest.id, imageMap)} media={beachMedia(intentBest.id, { imageMap, heroVids })} fresh={fresh}
           onOpenBeach={onOpenBeach} onOpenAlt={onOpenBeach} track={track} />
       )}
 
