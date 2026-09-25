@@ -37,9 +37,14 @@ console.log("VISUAL PREMIUM — contrat")
   check("media : slots portrait/gallery/sunset/activity = documentés manquants (jamais fabriqués)", (() => { const m = media.beachMedia("gp001", {}); return m.portrait === null && m.gallery.length === 0 && m.sunset === null && m.activity.length === 0 && m.missing.length >= 4 })())
   check("media : id absent → missing photo+video documentés", (() => { const m = media.beachMedia("noSuchBeach", {}); return m.hero === null && m.missing.includes("photo") && m.missing.includes("video") })())
 
-  // ── Manifest (assets réels SEULEMENT) ──
+  // ── Manifest (assets réels SEULEMENT) : le générateur doit produire EXACTEMENT
+  // les catalogues sources (les compteurs du fichier dépendent de la date de build,
+  // mais la régénération doit être idempotente sur le contenu) ──
+  const { execFileSync } = require("child_process")
+  execFileSync(process.execPath, [path.join(ROOT, "scripts", "gen-media-manifest.cjs")], { cwd: ROOT })
   const mf = JSON.parse(read("public/data/media-manifest.json"))
-  check("manifest : compteurs réels (catalogues sources)", mf.counts && mf.counts.beachesWithPhoto === Object.keys(JSON.parse(read("public/data/beaches-images.json"))).length && mf.counts.beachesWithVideo === JSON.parse(read("public/videos/hero/manifest.json")).ids.length)
+  check("manifest : compteurs générés == catalogues sources",
+    mf.counts && mf.counts.beachesWithPhoto === Object.keys(JSON.parse(read("public/data/beaches-images.json"))).length && mf.counts.beachesWithVideo === JSON.parse(read("public/videos/hero/manifest.json")).ids.length)
   check("manifest : règle d'honnêteté explicitée", /assets réels uniquement/.test(mf.rule))
   check("build : media-manifest généré par le build (avant vite)", PKG.scripts.build.includes("gen-media-manifest.cjs"))
 
