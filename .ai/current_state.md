@@ -28,8 +28,7 @@
 2. Mesurer sg_home_rail_* 7j post-deploy — Rôle : growth/data
 
 ### Branche / PR
-- Branche : `agent/coding/visual-os-aha`
-- PR : à créer vers main
+- Branche : `agent/coding/visual-os-aha` — **PR #751 MERGED** (squash `8a4c21fd`, 2026-09-25) — CI **7/7 verte** — Deploy Live success — prod version.json b=8a4c21fd · 5/5 HTTP 200 (MQ/GP/MIA/CUN/PUJ).
 
 ---
 

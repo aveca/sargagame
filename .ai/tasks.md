@@ -1,4 +1,4 @@
-## VISUAL OS / ASSET LAB / AHA 2026-09-25J — [~] branche agent/coding/visual-os-aha (PR à créer)
+## VISUAL OS / ASSET LAB / AHA 2026-09-25J — [x] done + LIVE 2026-09-25 (PR #751 MERGED squash 8a4c21fd, CI 7/7, deploy prod b=8a4c21fd, 5/5 HTTP 200)
 - **Livré** : 5 skills + REFERENCES + Embla lazy + Visual OS + media-art-direction + AHA fullscreen + shared transition + compare swipe + motion finies + preuve rail live + money 0 diff.
 - **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 64/64 (travel-30 62/62) · E2E 30/30 · regions OK · shots + probe rail lus.
 - **Rapport** : `.ai/ui-audit/VISUAL-OS-ASSET-LAB-AHA-2026-09-25J.md`.
