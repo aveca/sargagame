@@ -33,6 +33,7 @@ import "./sg-brand-tokens.css"
 import "./sg-brand-components.css"
 import "./sg-motion.css"
 import "./sg-travel-3.0.css"
+import "./coastal-lab.css"
 import { off as sgmOff, days7 as sgmDays7 } from "./lib/sgMotion.js"
 import { detectExtendedRegion } from "./lib/regions-extended.js"
 import RegionNav from "./components/RegionNav.jsx"
@@ -159,6 +160,10 @@ const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({defa
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const SargaChatB2B=lazyWithRetry(()=>import("./SargaChatB2B.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
+// COASTAL LAB — Littoral Decision Lab (2026-09-25) : expérience interactive 5 couches
+// MONITOR → UNDERSTAND → DECIDE → RECOVER → VALORIZE. Lazy → 0 octet eager.
+// Rollback ?coastallab=0.
+const LazyCoastalLab=lazyWithRetry(()=>import("./CoastalLab.jsx"))
 // Rapport plage du jour (HARD ASSET REQUIREMENT §PDF, 2026-09-07) : objet PREVIEW →
 // OPEN → DOWNLOAD → SHARE, 100 % data réelle. Lazy → 0 octet eager. Rollback ?report=0.
 // Rapport plage du jour (HARD ASSET REQUIREMENT §PDF, 2026-09-07) : objet PREVIEW →
@@ -12688,6 +12693,17 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
     setTimeout(() => { setShowConditions(false); setConditionsExiting(false) }, 300)
     try { track("sg_conditions_dismiss", { action }) } catch (_) {}
   }, [])
+  // COASTAL LAB — /coastal-lab/ pathname-gated feature
+  const isCoastalLabPath = (() => {
+    try { return /^\/coastal-lab\/?$/.test(getPathname()) } catch { return false }
+  })()
+  const [showCoastalLab, setShowCoastalLab] = useState(() => {
+    try {
+      if (!isCoastalLabPath) return false
+      if (/[?&]coastallab=0/.test(window.location.search)) return false
+      return true
+    } catch { return false }
+  })
   // Cohort world : ouvre l'Archipel par defaut quand la landing se pose (hero+mapintro
   // dismisses, beaches pretes), UNE fois. Escapable (la croix renvoie a la carte control).
   // useLayoutEffect (pas useEffect) : le setShowArchipel(true) est flushé AVANT le paint →
@@ -12696,7 +12712,7 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
   // landings (hero/prev/clean/alertes/station : early-return comme avant).
   useLayoutEffect(()=>{
     if(!navWorld||archAutoRef.current)return
-    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showArchipel||showStation)return
+    if(showHero||showMapIntro||showPrevLanding||showCleanList||showAlertHub||selectedBeach||showPremium||showArchipel||showStation||showCoastalLab)return
     if(view!=="map"||!(allBeaches&&allBeaches.length>=3))return
     archAutoRef.current=true;setShowArchipel(true);try{track("sg_archipel_open",{from:"nav_world_default"})}catch(_){}
   },[navWorld,showHero,showMapIntro,showPrevLanding,showCleanList,showAlertHub,view,allBeaches,selectedBeach,showPremium,showArchipel,showStation])
@@ -12705,9 +12721,9 @@ const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clea
   // (où ça bloque, où ça s'ennuie), à chaque étape. Voir engInit/engScreen/engFlush.
   useEffect(()=>{
     engInit();sgCollectInit()
-    const screen=showStation?("station_"+stationSlug):showPremium?"premium":selectedBeach?"beach":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showConditions?"conditions":showAlertHub?"alertes":showHero?"hero":("map_"+(view||"map"))
+    const screen=showStation?("station_"+stationSlug):showCoastalLab?"coastal_lab":showPremium?"premium":selectedBeach?"beach":showArchipel?"world":showMapIntro?"mapintro":showPrevLanding?"previsions":showCleanList?"clean_list":showConditions?"conditions":showAlertHub?"alertes":showHero?"hero":("map_"+(view||"map"))
     engScreen(screen)
-  },[showStation,stationSlug,showPremium,selectedBeach,showArchipel,showMapIntro,showPrevLanding,showCleanList,showConditions,showAlertHub,showHero,view])
+  },[showStation,stationSlug,showCoastalLab,showPremium,selectedBeach,showArchipel,showMapIntro,showPrevLanding,showCleanList,showConditions,showAlertHub,showHero,view])
 // Bras A/B du landing : control = HeroVerdict (éprouvé), game = GameFunnel
 // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
 // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
@@ -15326,10 +15342,27 @@ useEffect(()=>{
             onCTA={()=>{
               track("sg_station_cta",{slug:stationSlug})
               setShowStation(false)
-              // TODO map_world: flyTo(nearestCleanBeach)
               if(stationSlug.includes("h2s")){ openPremium("station_h2s") }
               else { setView("map") }
             }}/></Suspense></ErrBound>
+        )}
+        {/* COASTAL LAB — /coastal-lab/ Littoral Decision Lab */}
+        {showCoastalLab && isCoastalLabPath && (
+          <ErrBound fallback={null}><Suspense fallback={<div style={{position:"fixed",inset:0,background:"var(--sg-bg,#F5F0E8)",zIndex:1100}}/>}>
+            <LazyCoastalLab
+              lang={lang}
+              beach={selectedBeach || allBeaches?.[0] || null}
+              sargData={sargData}
+              allBeaches={allBeaches}
+              imageMap={imageMap}
+              isNewRegion={IS_NEW_REGION}
+              BEACH_TO_SARG={BEACH_TO_SARG}
+              onClose={() => setShowCoastalLab(false)}
+              onExplore={() => { setShowCoastalLab(false); setView("map"); track("sg_lab_cta", { action: "explore" }) }}
+              onPlan={() => { setShowCoastalLab(false); setShowTrip(true); track("sg_lab_cta", { action: "plan" }) }}
+              onMonitor={() => { setShowCoastalLab(false); track("sg_lab_cta", { action: "monitor" }) }}
+            />
+          </Suspense></ErrBound>
         )}
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showArchipel&&!selectedBeach&&view==="map"&&(
