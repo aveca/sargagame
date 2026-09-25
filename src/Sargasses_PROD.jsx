@@ -1995,7 +1995,7 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // PERFECT BEACH TRIP (2026-09-24B) : intention → recommandation → plan →
   // séjour → premium. 7 events max (volume maîtrisé), jamais de doublon avec
   // la chaîne money (sg_pass_cta / sg_premium_modal_open restent la source).
-  "sg_intent_select","sg_recommendation_open","sg_plan_generate","sg_plan_add","sg_alternative_open","sg_perfect_trip_paywall_open","sg_perfect_trip_cta",
+  "sg_intent_select","sg_recommendation_open","sg_plan_generate","sg_plan_add","sg_alternative_open","sg_perfect_trip_paywall_open","sg_perfect_trip_cta","sg_trip_deeplink",
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   // ⚠️ sg_premium_modal_cta et sg_checkout_redirect RETIRÉS (2026-08-18) :
   // jamais émis par le frontend → compteur toujours 0. Le CTA réel = sg_pass_cta.
@@ -13947,6 +13947,22 @@ useEffect(()=>{
     try{track("sg_exp_deeplink",{beach_id:id,island})}catch(_){}
     onBeachClick(b)
   },[allBeaches,dataReady,IS_NEW_REGION,island,JOURNEY_OFF,onBeachClick])
+
+  /* Deep-link acquisition (2026-09-25C) : ?trip=1 → le TripPlanner s'ouvre au
+     boot (liés depuis les pages SEO jour « Construis ton plan »). Consommé une
+     seule fois, attend dataReady, respecte ?tripplan=0. RIEN d'inventé : le trip
+     reste le moteur journeyFor existant. */
+  const tripDeepRef=useRef(false)
+  useEffect(()=>{
+    if(tripDeepRef.current)return
+    let on=null;try{on=/[?&]trip=1(?:&|$)/.test(window.location.search)}catch(_){}
+    if(!on)return
+    if(!dataReady)return
+    try{if(/[?&]tripplan=0(?:&|$)/.test(window.location.search))return}catch(_){}
+    tripDeepRef.current=true
+    try{track("sg_trip_deeplink",{source:"seo_today"})}catch(_){}
+    setShowTrip(true)
+  },[dataReady])
 
   // URL ↔ monde : ouverture → push ; transformation A→B → replace (le lien
   // copié pointe toujours la plage AFFICHÉE) ; fermeture latérale → strip.

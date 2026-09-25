@@ -579,7 +579,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
           alternative réelle + bons-à-savoir factuels (photo réelle si le
           catalogue en a une). Rollback ?sgplan=0 (PlanCard.planOff). */}
       {intentBest && !planOff() && (
-        <PlanCard lang={lang} beach={intentBest} journey={planJourney}
+        <PlanCard lang={lang} beach={intentBest} journey={planJourney} isPremium={isPremium}
           imageUrl={beachImageUrl(intentBest.id, imageMap)} fresh={fresh}
           onOpenBeach={onOpenBeach} onOpenAlt={onOpenBeach} track={track} />
       )}
