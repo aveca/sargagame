@@ -21,18 +21,17 @@ const imageQual = loadJSON(P('public', 'data', 'beaches-images-quality.json')) |
 const heroVids = (loadJSON(P('public', 'videos', 'hero', 'manifest.json')) || {}).ids || []
 
 const beaches = {}
+// RÈGLE : le catalogue beaches-images.json (commit) est la source de vérité —
+// chaque entrée y correspond à une photo réelle uploadée par FTP (voir
+// metro/upload-*), le fichier binaire n'est JAMAIS commité (trop lourd).
+// Donc on n'exige PAS fs.existsSync sur le JPG (false-negative CI et checkout).
+// Pour les vidéos hero, idem : le manifest.json ids (commit) est la preuve.
 for (const [id, file] of Object.entries(imageMap)) {
-  const photoPath = P('public', 'beaches', file)
-  if (!fs.existsSync(photoPath)) continue // jamais d'entrée sans fichier réel
   beaches[id] = {
     photo: `/beaches/${file}`,
     quality: Number(imageQual[id]) || null,
-    heroVideo: heroVids.includes(id) && fs.existsSync(P('public', 'videos', 'hero', `${id}.mp4`))
-      ? `/videos/hero/${id}.mp4`
-      : null,
-    heroVideoWebShadow: heroVids.includes(id) && fs.existsSync(P('public', 'videos', 'hero', `${id}-w.mp4`))
-      ? `/videos/hero/${id}-w.mp4`
-      : null,
+    heroVideo: heroVids.includes(id) ? `/videos/hero/${id}.mp4` : null,
+    heroVideoWebShadow: heroVids.includes(id) ? `/videos/hero/${id}-w.mp4` : null,
   }
 }
 
