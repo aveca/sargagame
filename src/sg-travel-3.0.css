@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   SARGAGAME TRAVEL 3.0 — design tokens + cinematic layer (2026-09-25I)
+   Couche VISUELLE additive : ne remplace rien, ne redéfinit aucun token
+   existant (--sg-*, .lc-, comic). Tout est préfixé .t3- / --t3-.
+   Rollback produit : ?sgcine=0 (les blocs qui l'utilisent ne se montent pas).
+   Doctrine : grandes images bord-à-bord, overlays + gradients contrôlés,
+   cartes moins boxed (bordures 1px teal/10, ombres douces — jamais de hard
+   offset noir), rythme par alternance, tactile ≥44px, GPU-only.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* — palette voyage — */
+  --t3-ocean: #06222E;      /* deep ocean (fonds) */
+  --t3-sea: #0E4A5A;        /* mer */
+  --t3-tropical: #00B086;   /* lagon / clean */
+  --t3-sand: #F4E7C8;       /* sable (surfaces claires) */
+  --t3-sunset: #FF9E5E;     /* sunset / accent chaud */
+  --t3-ink: #0d0b14;        /* encre (texte clair) */
+  --t3-paper: #FFFDF6;      /* blanc chaud */
+  --t3-gold: #FFC72C;       /* or Veilleur (pont avec l'existant) */
+  --t3-line: rgba(255, 253, 246, .14);  /* filets sur sombre */
+  --t3-inkline: rgba(13, 11, 20, .12);  /* filets sur clair */
+
+  /* — type — */
+  --t3-display: 'Anton', sans-serif;
+  --t3-body: 'Bricolage Grotesque', system-ui, sans-serif;
+  --t3-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --t3-display-size: clamp(34px, 9.4vw, 54px);
+  --t3-h-size: clamp(20px, 5.4vw, 26px);
+  --t3-body-size: 14.5px;
+  --t3-meta-size: 11.5px;
+
+  /* — radius — */
+  --t3-r-hero: 22px;
+  --t3-r-card: 18px;
+  --t3-r-pill: 999px;
+  --t3-r-sheet: 22px;
+
+  /* — élévation douce (jamais de hard offset) — */
+  --t3-shadow-1: 0 2px 10px rgba(4, 20, 28, .18);
+  --t3-shadow-2: 0 12px 34px rgba(4, 20, 28, .32);
+  --t3-shadow-card: 0 6px 22px rgba(4, 20, 28, .22);
+
+  /* — espace — */
+  --t3-s1: 6px; --t3-s2: 10px; --t3-s3: 14px; --t3-s4: 20px; --t3-s5: 28px;
+}
+
+/* ── hero cinématique : image bord-à-bord + overlays ── */
+.t3-hero {
+  position: relative; margin: 0 -12px; border-radius: 0 0 var(--t3-r-hero) var(--t3-r-hero);
+  overflow: hidden; min-height: 52dvh; display: flex; flex-direction: column; justify-content: flex-end;
+  background: linear-gradient(160deg, var(--t3-ocean), var(--t3-sea));
+  box-shadow: var(--t3-shadow-2);
+}
+.t3-hero-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 42%; }
+.t3-hero-shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(6, 34, 46, .42) 0%, rgba(6, 34, 46, 0) 30%, rgba(6, 34, 46, 0) 52%, rgba(6, 34, 46, .78) 100%);
+}
+.t3-hero-body { position: relative; z-index: 2; padding: var(--t3-s4) var(--t3-s3) calc(var(--t3-s3) + env(safe-area-inset-bottom, 0px)); color: var(--t3-paper); }
+.t3-hero-kicker { display: inline-flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #FFE08A; }
+.t3-hero-title { font-family: var(--t3-display); font-weight: 400; font-size: var(--t3-display-size); line-height: 1.0; letter-spacing: .2px; margin: 8px 0 0; text-wrap: balance; }
+.t3-hero-sub { font-size: var(--t3-body-size); line-height: 1.5; opacity: .92; margin: 8px 0 0; max-width: 34ch; }
+.t3-hero-cta {
+  margin-top: 14px; min-height: 52px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--t3-gold); color: var(--t3-ink); border: none; border-radius: 16px;
+  font-weight: 800; font-size: 16px; cursor: pointer; box-shadow: var(--t3-shadow-1);
+}
+.t3-hero-ghost {
+  margin-top: 8px; min-height: 44px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+  background: rgba(255, 253, 246, .12); color: var(--t3-paper);
+  border: 1.5px solid rgba(255, 253, 246, .35); border-radius: 14px;
+  font-weight: 700; font-size: 14px; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── verre contrôlé ( overlays tactiles ) ── */
+.t3-glass { background: rgba(6, 34, 46, .55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 253, 246, .18); }
+
+/* ── cartes 3.0 : claires, douces, rythmées ── */
+.t3-card { background: var(--t3-paper); color: var(--t3-ink); border-radius: var(--t3-r-card); box-shadow: var(--t3-shadow-card); border: 1px solid var(--t3-inkline); overflow: hidden; }
+.t3-card-dark { background: linear-gradient(150deg, #0B2A38, #0E4A5A); color: var(--t3-paper); border-radius: var(--t3-r-card); border: 1px solid rgba(255, 253, 246, .12); box-shadow: var(--t3-shadow-card); overflow: hidden; }
+.t3-kicker { display: block; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .62; }
+.t3-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid var(--t3-inkline); font-size: 13.5px; }
+.t3-row:first-of-type { border-top: none; }
+.t3-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.t3-bar { flex: 1; height: 8px; border-radius: 99px; background: rgba(13, 11, 20, .1); overflow: hidden; }
+.t3-bar > i { display: block; height: 100%; border-radius: 99px; }
+
+/* ── timeline verticale (Perfect Day) ── */
+.t3-timeline { position: relative; margin: 0; padding: 0 0 0 22px; list-style: none; }
+.t3-timeline::before { content: ""; position: absolute; left: 7px; top: 10px; bottom: 10px; width: 2px; border-radius: 2px; background: linear-gradient(180deg, var(--t3-tropical), var(--t3-sunset)); opacity: .7; }
+.t3-timeline > li { position: relative; padding: 0 0 14px; }
+.t3-timeline > li:last-child { padding-bottom: 2px; }
+.t3-timeline > li::before { content: ""; position: absolute; left: -19px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--t3-paper); border: 2.5px solid var(--t3-tropical); }
+
+/* ── desktop : le cinématique respire ── */
+@media (min-width: 1024px) {
+  .t3-hero { min-height: 58dvh; border-radius: var(--t3-r-hero); margin: 0; }
+  .t3-hero-body { padding: var(--t3-s5); }
+  .t3-hero-cta, .t3-hero-ghost { width: auto; padding-left: 26px; padding-right: 26px; }
+  .t3-hero-actions { display: flex; gap: 10px; }
+  .t3-hero-actions .t3-hero-cta, .t3-hero-actions .t3-hero-ghost { flex: 0 0 auto; margin-top: 14px; }
+}
+
+/* ── version calme ── */
+@media (prefers-reduced-motion: reduce) {
+  .t3-hero *, .t3-card, .t3-card-dark { animation: none !important; transition: none !important; }
+}

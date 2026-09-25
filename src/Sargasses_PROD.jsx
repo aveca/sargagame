@@ -32,6 +32,7 @@ import "./sprint20.css"
 import "./sg-brand-tokens.css"
 import "./sg-brand-components.css"
 import "./sg-motion.css"
+import "./sg-travel-3.0.css"
 import { off as sgmOff, days7 as sgmDays7 } from "./lib/sgMotion.js"
 import { detectExtendedRegion } from "./lib/regions-extended.js"
 import RegionNav from "./components/RegionNav.jsx"
@@ -2105,7 +2106,12 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   "sg_pdf_preview","sg_pdf_open","sg_pdf_download","sg_pdf_share",
   // PRODUCT UX RESET (2026-09-15) : navigation 5 onglets + comparateur + exploration.
   "sg_nav_tab","sg_compare_add","sg_compare_open","sg_plages_filter","sg_home_best_open",
-  "sg_suivi_alert_toggle"])
+  "sg_suivi_alert_toggle",
+  // WOW Home SeaRail (2026-09-24, drag/seek/open/focus) : ces events ÉTAIENT
+  // émis par SeaRail mais JETÉS (absents du set → jamais loggés Supabase,
+  // 0 sg_home_rail_* en 30 j constaté 2026-09-25I). Même pattern que les
+  // fixes 2026-09-04/05/11/14. Volume maîtrisé (focus = 1/geste changé).
+  "sg_home_rail_focus","sg_home_rail_seek","sg_home_rail_open","sg_home_rail_drag"])
 export function track(event,params={}){
   // Delegate to window.track if it's been wrapped (e.g., by E2E tests)
   // This allows tests to intercept internal track() calls
@@ -15065,8 +15071,9 @@ useEffect(()=>{
           </div>
         )}
         {!NEWIA_OFF&&compareIds.length>0&&!showPremium&&(
-          <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="compare"
+            <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="compare"
             allBeaches={allBeaches} compareIds={compareIds} favorites={favorites} userPos={userPos}
+            imageMap={imageMap}
             onOpenBeach={(b)=>{setCompareIds([]);onBeachClick(b)}} track={track}
             onToggleFav={(b)=>toggleFav(b.id)}
             onCloseCompare={()=>setCompareIds([])}

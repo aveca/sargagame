@@ -148,6 +148,38 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, media =
           ))}
         </div>
       )}
+      {/* SÉQUENCE DU JOUR (2026-09-25I) — timeline verticale SANS horaires
+          inventés : aujourd'hui (satellite) → demain (forecast J+1 réel) →
+          plan B (alternative réelle). Étapes sans données = absentes. */}
+      {(() => {
+        let cine = true
+        try { cine = !/[?&]sgcine=0(?:&|$)/.test(window.location.search) } catch (_) {}
+        if (!cine) return null
+        const tmr = days.find(d => d.i === 1) || null
+        const steps = []
+        steps.push({ k: "now", t: _t(lang, "Maintenant", "Now", "Ahora"), name: beach.name, st: beach.status })
+        if (tmr && tmr.status) steps.push({ k: "tmr", t: tmr.label || _t(lang, "Demain", "Tomorrow", "Mañana"), name: beach.name, st: tmr.status })
+        if (backup) steps.push({ k: "alt", t: _t(lang, "Si ça change", "If it shifts", "Si cambia"), name: backup.name, st: backup.status || (backup.beach && backup.beach.status) || null })
+        if (steps.length < 2) return null
+        return (
+          <div data-testid="plan-sequence" style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".08em", textTransform: "uppercase", opacity: 0.7, marginBottom: 6 }}>
+              {_t(lang, "☀️ La séquence", "☀️ The sequence", "☀️ La secuencia")}
+            </div>
+            <ul className="t3-timeline">
+              {steps.map(s => (
+                <li key={s.k}>
+                  <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: .65 }}>{s.t}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginTop: 2 }}>
+                    <i aria-hidden="true" style={{ width: 12, height: 12, borderRadius: "50%", background: DOT[s.st] || "#8A8F98", flexShrink: 0 }} />
+                    <span style={{ fontSize: 13.5, fontWeight: 800 }}>{s.name}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )
+      })()}
       {backup && (
         <button type="button" data-testid="plan-alt" key={backup.id} className={sgmOff() ? undefined : "sgm-swap"}
           onClick={() => { try { track?.("sg_alternative_open", { from: beach.id, to: backup.id, distance_km: backup.distanceKm }) } catch (_) {} onOpenAlt?.(backup.beach || backup) }}

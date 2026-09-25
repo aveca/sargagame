@@ -1,3 +1,25 @@
+## 2026-09-25I — APP 3.0 CINEMATIC : hero plein-bleed + verdict vivant + compare réparé + rail analytics
+
+**PROBLEM** : produit perçu « dashboard/comic empilé » ; rail WOW invisible côté Supabase (0 events 30 j) ; multi-compare inatteignable (✕ vidait la sélection).
+
+**CHANGE** (couche additive `?sgcine=0`, money-path ZÉRO touché, design existant conservé) :
+- `src/sg-travel-3.0.css` (N) : tokens voyage (7 couleurs, type, radius, ombres douces, spacing) + hero bord-à-bord + verre + cartes + timeline + desktop + reduced-motion.
+- Home : hero cinématique (photo réelle best spot, EN DIRECT + fraîcheur, copy invitation + compteurs réels, CTA unique sg_home_best_open existant + ghost carte, fetchpriority LCP).
+- BeachExperience : facteurs vivants (Sargasses/AFAI, Exposition coords MQ/GP, Snorkeling, Accès, Confiance barre, comparaison backup réelle) — rien sans donnée.
+- CompareSheet : photos par colonne + synthèse écart réel + **dismiss non-destructif** (✕ masque, « Effacer » vide) — le 2-3 plages était impossible.
+- PlanCard : séquence verticale sans horaires (Maintenant → Demain J+1 → Plan B).
+- TripPlanner : J1..Jn + sheet transition ; CompareSheet : sheet transition.
+- `sg-motion.css` : sgm-sheet/.3s + sgm-zoom/.5s + sgm-fadeup/.32s (finies, gatées, RM off).
+- `sg-icons.jsx` : +5 glyphes (fish/boat/compass/route/satellite).
+- **Analytics** : sg_home_rail_{focus,seek,open,drag} ajoutés à SG_FUNNEL_EVENTS + FUNNEL_KEYS ×2 (émis mais jetés — cause du 0-en-30j). Zéro nouvel event.
+- Photo pipeline : legacy INCHANGÉ (ToS, garde testée). Premium/WorldPaywall : non touchés.
+- Tests `tests/unit/travel-30.test.cjs` (53 checks) + probe `scripts/qa/probe-cine-i.mjs`.
+- Rapport : `.ai/ui-audit/APP-30-CINEMATIC-2026-09-25I.md` (22 points).
+
+**PROOF** : build 0 (405 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 64/64 (travel-30 53/53) · E2E 30/30 · regions OK · php N/A · shots 390/1440 (hero ciné, compare 2/3 + synthèse réelle, facteurs AFAI 0.06/60 %) · money 0 diff.
+
+---
+
 ## 2026-09-25H — GOOGLE PHOTO QUALITY V2 : score tech+visuel + quarantaine + HERO gating
 
 **PROBLEM** : catalogue photos[0]/1600px legacy sans comparaison, score v1 sans netteté, paires même-photo sur lieux distants, aucune conformité ToS évaluée.
