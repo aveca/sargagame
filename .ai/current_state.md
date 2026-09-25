@@ -13,7 +13,7 @@
 - [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko
 - [x] php -l → OK (mollie, paypal, webhook)
 - [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
-- [x] npm test → 63/65 (2 échecs v2 pré-existants gp027/gp083)
+- [x] npm test → **65/65**
 - [x] E2E funnel-payment → 13/13 passed
 - [x] regions assertAllRegionsValid → OK
 - [x] Visual QA 390/768/1440 → 21 screenshots, ERRORS=[], RM_INFINITE=[]

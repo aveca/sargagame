@@ -1,7 +1,11 @@
 {
  "v": 3,
- "generated": "2026-09-25T19:17:46.451Z",
+ "generated": "2026-09-25T20:52:34.506Z",
  "top30": [
+  "gplace-gp024.jpg",
+  "gplace-mq012.jpg",
+  "Plage_la_caravelle.jpg",
+  "wk-gp027-clugny.jpg",
   "gplace-fl011.jpg",
   "gplace-fl012.jpg",
   "gplace-mq028.jpg",
@@ -23,15 +27,11 @@
   "gplace-fl002.jpg",
   "gplace-gp043.jpg",
   "gplace-mq007.jpg",
-  "gplace-mq012.jpg",
   "gplace-mq057.jpg",
   "gplace-mq067.jpg",
   "Plage_de_clugny_ouest.jpg",
   "Plage_de_Grand_Bourg.jpg",
-  "Plage_de_la_Pointe_des_Pies.jpg",
-  "Îlet_à_Cochons.jpg",
-  "gplace-gp013.jpg",
-  "gplace-gp023.jpg"
+  "Plage_de_la_Pointe_des_Pies.jpg"
  ],
  "duplicates": [
   {
@@ -188,7 +188,7 @@
  "stats": {
   "total": 458,
   "min": 46,
-  "max": 96,
+  "max": 100,
   "avg": 78
  }
 }

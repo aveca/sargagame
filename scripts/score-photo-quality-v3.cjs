@@ -93,24 +93,31 @@ function scoreVisual(a) {
 }
 const round1 = (x) => Math.round(x * 10) / 10
 
-function classify(a, score) {
+function classify(a, score, placeState, placeConfidence) {
   const large = Math.max(a.w, a.h)
-  if (score >= 70 && large >= 1280 && a.kb >= 100) return "HERO"
+  // HERO hard rule: VERIFIED_PLACE + placeConfidence >= 80 + tech+visu >= 70 + dim >= 1280 + kb >= 100
+  const isVerifiedPlace = placeState === "VERIFIED_PLACE"
+  const hasPlaceConfidence = placeConfidence >= 80
+  const hasQuality = score >= 70 && large >= 1280 && a.kb >= 100
+  if (isVerifiedPlace && hasPlaceConfidence && hasQuality) return "HERO"
   if (score >= 50 && large >= 800 && a.kb >= 45) return "CARD"
   if (score >= 28 && large >= 400 && a.kb >= 12) return "THUMB"
   return "REJECT"
 }
 
 // place_confidence à partir des données de découverte
-function placeConfidence(beachId, file) {
+function placeConfidence(beachId) {
   const d = discoveryCache[beachId]
-  if (!d || !d.candidates?.length) return 0
-  // Trouve le candidat qui correspond à ce fichier
-  const cand = d.candidates.find(c => c.image_url && c.image_url.includes(file.replace(/\.(jpe?g)$/i, "")))
-  if (!cand) return 0
-  if (cand.place?.state === "VERIFIED_PLACE") return Math.min(100, 80 + (cand.place.score || 0) / 10)
-  if (cand.place?.state === "LIKELY_PLACE") return Math.min(79, 50 + (cand.place.score || 0) / 10)
-  return 0
+  if (!d || !d.candidates?.length) return { confidence: 0, state: null }
+  // Prend le meilleur candidat VERIFIED_PLACE pour ce beachId
+  const verified = d.candidates.filter(c => c.place?.state === "VERIFIED_PLACE" && c.license_ok)
+  if (!verified.length) {
+    const likely = d.candidates.filter(c => c.place?.state === "LIKELY_PLACE" && c.license_ok)
+    if (likely.length) return { confidence: Math.min(79, 50 + (likely[0].place?.score || 0) / 10), state: "LIKELY_PLACE" }
+    return { confidence: 0, state: null }
+  }
+  const best = verified.reduce((a, b) => (b.place?.score || 0) > (a.place?.score || 0) ? b : a)
+  return { confidence: Math.min(100, 80 + (best.place?.score || 0) / 10), state: "VERIFIED_PLACE" }
 }
 
 async function main() {
@@ -124,9 +131,10 @@ async function main() {
       const baseScore = Math.round(Math.min(100, t.total + v.total))
       // Inverse MAP : file → beachId
       const beachId = Object.keys(MAP).find(id => MAP[id] === f) || null
-      const pconf = beachId ? placeConfidence(beachId, f) : 0
-      const finalScore = Math.round(Math.min(100, baseScore + pconf / 2))
-      rows.push({ file: f, beachId, ...a, kb: Math.round(a.kb), sharpness: round1(a.sharpness), lum: round1(a.lum), contrast: round1(a.contrast), sat: round1(a.sat), ratio: round1(a.ratio), tech: t.total, visu: v.total, baseScore, placeConfidence: pconf, score: finalScore, class: classify(a, finalScore) })
+      const pc = beachId ? placeConfidence(beachId) : { confidence: 0, state: null }
+      const finalScore = Math.round(Math.min(100, baseScore + pc.confidence / 2))
+      const cls = classify(a, finalScore, pc.state, pc.confidence)
+      rows.push({ file: f, beachId, ...a, kb: Math.round(a.kb), sharpness: round1(a.sharpness), lum: round1(a.lum), contrast: round1(a.contrast), sat: round1(a.sat), ratio: round1(a.ratio), tech: t.total, visu: v.total, baseScore, placeConfidence: pc.confidence, placeState: pc.state, score: finalScore, class: cls })
     } catch (e) { rows.push({ file: f, error: String(e.message).slice(0, 80) }) }
   }
   if (CALIB) {
@@ -150,14 +158,14 @@ async function main() {
   const classes = {}
   for (const r of rows) {
     if (r.error) { details[r.file] = { error: r.error, class: "REJECT" }; continue }
-    details[r.file] = { score: r.score, baseScore: r.baseScore, placeConfidence: r.placeConfidence, class: r.class, w: r.w, h: r.h, kb: r.kb, tech: r.tech, visu: r.visu }
+    details[r.file] = { score: r.score, baseScore: r.baseScore, placeConfidence: r.placeConfidence, placeState: r.placeState, class: r.class, w: r.w, h: r.h, kb: r.kb, tech: r.tech, visu: r.visu }
   }
   try {
     const ov = JSON.parse(fs.readFileSync(path.join(__dirname, "data/photo-quality-overrides.json"), "utf8"))
     for (const [id, o] of Object.entries(ov)) {
       if (id.startsWith("_") || typeof (o && o.score) !== "number") continue
       const file = MAP[id]
-      if (file && details[file]) { details[file].score = o.score; details[file].override = true; details[file].class = classify({ w: details[file].w, h: details[file].h, kb: details[file].kb }, o.score) }
+      if (file && details[file]) { details[file].score = o.score; details[file].override = true; details[file].class = classify({ w: details[file].w, h: details[file].h, kb: details[file].kb }, o.score, details[file].placeState, details[file].placeConfidence) }
     }
   } catch (_) {}
   for (const [id, file] of Object.entries(MAP)) {

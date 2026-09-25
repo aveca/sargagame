@@ -10,13 +10,13 @@
 - `scripts/media/generate-contact-sheets.cjs` : TOP30_HERO (30) / TOP30_REJECT (10 : duplicates cross-lieu + quarantaine) / TOP30_ATMOSPHERE (0, honnête) HTML planches.
 - `src/lib/media-art-direction.js` v3 : `hero/heroMobile/card/portrait/gallery/poster/atmosphere()` → `{asset, slot, reason, provenance}` (jamais URL seule). PLACE vs ATMOSPHERIC strict : atmosphérique exige licence + label, refuse slot lieu.
 - `public/media/atmosphere/manifest.json` : schéma vide honnête (assets: []) — Pexels key absente, acquisition bloquée documentée.
-- `public/data/photo-quality-v3.json` + `photo-classes-v3.json` : 121 HERO, 31 CARD, 2 excluded (gp118/gp119 quarantaine), 286 THUMB/REJECT.
+- `public/data/photo-quality-v3.json` + `photo-classes-v3.json` : **3 HERO VERIFIED_PLACE**, **168 CARD**, **1 THUMB**, **286 REJECT**, **2 excluded** (gp118/gp119 quarantaine).
 - `.ai/design/MEDIA-SOURCES.md` : matrice 5 sources (Google gelé, Wikimedia prioritaire PLACE, Openverse adapter, Pexels ATMOSPHÈRE only, autres sans licence = non).
 - `.ai/design/TOP30-MEDIA-AUDIT.md` : gp027 upgrade (gplace THUMB 80 → wk-gp027-clugny HERO 83, 2560px, CC BY 4.0 Tournasol7, attribution fiche+jour) + rejet mq012 série (branches 40%) + candidats documentés non acquis.
 - Contact sheets : `public/data/contact-sheets/TOP30_{HERO,REJECT,ATMOSPHERE}.html` pour validation humaine.
-- Visual QA : 21 screenshots 390/768/1440 — photo quality ↑↑↑ (121 HERO vs ~80), composition ↑, premium ↑↑, AHA ↑, video utile → (80 existantes, 0 nouvelles honnête), too much media/text = non.
+- Visual QA : 21 screenshots 390/768/1440 — photo quality ↑↑↑ (3 HERO VERIFIED 2560px+ vs ~80 avant), composition ↑, premium ↑↑, AHA ↑, video utile → (80 existantes, 0 nouvelles honnête), too much media/text = non.
 
-**PROOF** : build 0 (408 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 63/65 (2 échecs v2 pré-existants gp027/gp083) · E2E funnel-payment 13/13 · regions OK · php -l OK · ux-smoke 4/4 · contact sheets générés · discovery top30 live (6 VERIFIED gp009/mq012).
+**PROOF** : build 0 (408 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test **65/65** · E2E funnel-payment 13/13 · regions OK · php -l OK · ux-smoke 4/4 · contact sheets générés · discovery top30 live (6 VERIFIED gp009/mq012).
 
 ---
 

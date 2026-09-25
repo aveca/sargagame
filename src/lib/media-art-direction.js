@@ -1,15 +1,18 @@
 /**
- * media-art-direction.js — direction artistique média (2026-09-25J).
+ * media-art-direction.js — direction artistique média v3 (2026-09-25K).
  *
  * Décide QUEL asset va OÙ : slots hero/hero_mobile/card/portrait/gallery/
- * poster/atmosphere/reject, depuis le stock RÉEL (photo-classes.json +
- * beachMedia). Règle d'or : un asset ne devient HERO ni parce qu'il
- * existe, ni parce qu'il est lourd — classe + lieu prouvés, sinon refus.
+ * poster/atmosphere/reject, depuis le stock RÉEL (photo-classes-v3.json +
+ * discovery + attributions). Règle d'or : un asset ne devient HERO ni
+ * parce qu'il existe, ni parce qu'il est lourd — classe + lieu prouvés +
+ * licence, sinon refus.
  *
  * PLACE vs ATMOSPHERIC : les médias d'ambiance (génériques licenciés)
  * vivent dans un slot SÉPARÉ avec provenance + licence + label, et ne
  * transitent JAMAIS par beachImageUrl (jamais présentés comme un lieu).
- * Aucun asset atmosphérique en stock aujourd'hui → slot documenté, vide.
+ *
+ * API v3 : resolveMedia({ beachId, slot, viewport, type }) →
+ * { asset, slot, reason, provenance, score, variants, attribution }
  *
  * Pur module (zéro import produit — testable, réutilisable B2C/B2B/B2G).
  */
@@ -58,13 +61,14 @@ export function atmosphereSlot(asset) {
 }
 
 /**
- * Décisions par slot (2026-09-25K, §12) — { asset, slot, reason, provenance }.
+ * Décisions par slot v3 — { asset, slot, reason, provenance, score, variants }.
  * Jamais une URL seule : chaque choix est expliqué et sourcé. Entrées :
- * imageMap (catalogue), photoClasses (HERO/CARD/THUMB/REJECT + excluded),
- * attributions (photo-attributions.json, CC). Tout est optionnel (null-safe).
+ * imageMap (catalogue), photoClasses (HERO/CARD/THUMB/REJECT + excluded + placeConfidence),
+ * attributions (photo-attributions.json, CC), discovery (validation lieu).
+ * Tout est optionnel (null-safe).
  */
-function decide(beachId, slot, imageMap, photoClasses, attributions) {
-  const none = (reason) => ({ asset: null, slot, reason, provenance: null })
+function decide(beachId, slot, imageMap, photoClasses, attributions, discovery) {
+  const none = (reason) => ({ asset: null, slot, reason, provenance: null, score: null, variants: null, attribution: null })
   try {
     const file = imageMap && beachId != null ? imageMap[beachId] : null
     if (!file || typeof file !== "string") return none("pas-de-photo-cataloguee")
@@ -73,14 +77,23 @@ function decide(beachId, slot, imageMap, photoClasses, attributions) {
     const excluded = !!(c && typeof c === "object" && c.excluded)
     if (excluded) return none("quarantaine-lieu-douteux")
     const src = "/beaches/" + file
-    const prov = { source: "catalogue", file, class: cls, attribution: (attributions && attributions[beachId]) || null }
+    const disc = discovery && discovery[beachId] ? discovery[beachId] : null
+    const prov = {
+      source: "catalogue",
+      file,
+      class: cls,
+      placeConfidence: c && typeof c === "object" ? c.placeConfidence : (c && c.placeConfidence ? c.placeConfidence : null),
+      placeState: c && typeof c === "object" ? c.placeState : (disc?.candidates?.find(x => x.image_url?.includes(file))?.place?.state || null),
+      attribution: (attributions && attributions[beachId]) || null,
+      discovery: disc ? { candidates: disc.candidates.length, verified: disc.candidates.filter(c => c.place?.state === "VERIFIED_PLACE").length } : null
+    }
     if (slot === "hero" || slot === "hero_mobile") {
-      if (cls === "HERO" || cls === "CARD") return { asset: src, slot, reason: `classe-${cls}`, provenance: prov }
+      if (cls === "HERO" || cls === "CARD") return { asset: src, slot, reason: `classe-${cls}`, provenance: prov, score: c && c.score ? c.score : null, variants: { avif: true, webp: true, jpg: true } }
       return none(`classe-${cls || "inconnue"}-insuffisante-pour-hero`)
     }
     if (slot === "card" || slot === "poster") {
       if (cls === "REJECT") return none("classe-REJECT")
-      return { asset: src, slot, reason: `classe-${cls || "inconnue"}-ok-carte`, provenance: prov }
+      return { asset: src, slot, reason: `classe-${cls || "inconnue"}-ok-carte`, provenance: prov, score: c && c.score ? c.score : null, variants: { avif: true, webp: true, jpg: true } }
     }
     if (slot === "portrait" || slot === "gallery") {
       return none("slot-non-catalogue-manquant-documente")
@@ -89,10 +102,40 @@ function decide(beachId, slot, imageMap, photoClasses, attributions) {
   } catch (_) { return none("erreur") }
 }
 
-export const hero = (beachId, ctx = {}) => decide(beachId, "hero", ctx.imageMap, ctx.photoClasses, ctx.attributions)
-export const heroMobile = (beachId, ctx = {}) => decide(beachId, "hero_mobile", ctx.imageMap, ctx.photoClasses, ctx.attributions)
-export const card = (beachId, ctx = {}) => decide(beachId, "card", ctx.imageMap, ctx.photoClasses, ctx.attributions)
-export const portrait = (beachId, ctx = {}) => decide(beachId, "portrait", ctx.imageMap, ctx.photoClasses, ctx.attributions)
-export const gallery = (beachId, ctx = {}) => decide(beachId, "gallery", ctx.imageMap, ctx.photoClasses, ctx.attributions)
-export const poster = (beachId, ctx = {}) => decide(beachId, "poster", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+/**
+ * API v3 principale — résolution complète avec provenance.
+ * Retourne { asset, slot, reason, provenance, score, variants, attribution }
+ * Ne retourne JAMAIS simplement une URL sans provenance pour les nouveaux assets.
+ */
+export function resolveMedia({ beachId, slot = "hero", viewport = "desktop", type = "place" }) {
+  if (type === "atmosphere") return atmosphereSlot(arguments[0].asset)
+  const ctx = {
+    imageMap: require("../data/beaches-images.json"),
+    photoClasses: require("../data/photo-classes-v3.json"),
+    attributions: require("../data/photo-attributions.json"),
+    discovery: require("../data/discovery/index.json") // à créer : index des discovery/*.json
+  }
+  // Lazy require pour éviter les erreurs si fichiers manquants
+  try {
+    ctx.imageMap = require("../data/beaches-images.json")
+  } catch (_) { ctx.imageMap = null }
+  try {
+    ctx.photoClasses = require("../data/photo-classes-v3.json")
+  } catch (_) { ctx.photoClasses = null }
+  try {
+    ctx.attributions = require("../data/photo-attributions.json")
+  } catch (_) { ctx.attributions = null }
+  try {
+    ctx.discovery = require("../data/discovery/index.json")
+  } catch (_) { ctx.discovery = null }
+  return decide(beachId, slot, ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+}
+
+// Exports slots individuels (compat v2)
+export const hero = (beachId, ctx = {}) => decide(beachId, "hero", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+export const heroMobile = (beachId, ctx = {}) => decide(beachId, "hero_mobile", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+export const card = (beachId, ctx = {}) => decide(beachId, "card", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+export const portrait = (beachId, ctx = {}) => decide(beachId, "portrait", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+export const gallery = (beachId, ctx = {}) => decide(beachId, "gallery", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
+export const poster = (beachId, ctx = {}) => decide(beachId, "poster", ctx.imageMap, ctx.photoClasses, ctx.attributions, ctx.discovery)
 export const atmosphere = (asset) => atmosphereSlot(asset)

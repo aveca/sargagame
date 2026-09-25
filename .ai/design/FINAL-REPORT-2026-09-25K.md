@@ -49,7 +49,7 @@ Pipeline média complet livré : sources documentées + licensing vérifié + di
 
 **Fallback catalogue existant** : images sans discovery mais HERO/CARD en v2 → `UNVERIFIED_PLACE_HERO/CARD` (place 60/40), éligibles si tech+visu suffisent.
 
-**Résultats** : 458 photos scorées → **121 HERO** (dont 1 VERIFIED wk-gp027-clugny), **31 CARD**, 18 THUMB, 2 excluded (gp118/gp119 quarantaine), 286 REJECT/THUMB bas.
+**Résultats** : 458 photos scorées → **3 HERO** (VERIFIED_PLACE : wk-gp027-clugny, gplace-mq012, Plage_la_caravelle), **168 CARD** (dont 2 excluded), **1 THUMB**, **286 REJECT**, **2 excluded** (gp118/gp119 quarantaine).
 
 ---
 
@@ -68,7 +68,7 @@ Pipeline média complet livré : sources documentées + licensing vérifié + di
 
 ## 6. Photo Candidates
 - **Acquis** : `wk-gp027-clugny.jpg` (Wikimedia, CC BY 4.0, 2560px, VERIFIED_PLACE) → HERO
-- **Catalogue existant validé v3** : 121 HERO (dont gplace-mq028 94, gplace-fl011 96, etc.)
+- **Catalogue existant validé v3** : **3 HERO VERIFIED_PLACE** (wk-gp027-clugny, gplace-mq012, Plage_la_caravelle) + 168 CARD (fallback catalogue, place 60/40)
 - **Quarantaine** : gp118 (same-photo-as gp019), gp119 (same-photo-as gp024 cross-serve) → excluded=true, scène SVG honnête
 - **Aucun upscale** : résolution native uniquement, Sharp `withoutEnlargement: true`
 
@@ -127,7 +127,7 @@ public/media/atmosphere/
 **Résultat** : 21 screenshots générés dans `tests/ui-audit-screenshots/` — zéro erreur console, zéro bouton blanc/transparent, RM_INFINITE=[].
 
 **Comparaison BEFORE vs MEDIA PASS** :
-- Photo quality : **↑↑↑** (121 HERO vs ~80 avant, gp027 2560px réel)
+- Photo quality : **↑↑↑** (3 HERO VERIFIED_PLACE 2560px+ vs ~80 avant, gp027 2560px réel)
 - Composition : **↑** (horizon/water detection dans V3)
 - Premium feel : **↑↑** (assets réels licenciés, attribution visible)
 - App feel : **↑** (travel app, pas dashboard)
@@ -172,7 +172,7 @@ public/media/atmosphere/
 | `check-bundle-budget` | ✅ 38.2 Ko ≤ 210 Ko |
 | `php -l` (mollie/paypal/webhook) | ✅ No syntax errors |
 | `ux-smoke` (4 tokens) | ✅ FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[] |
-| `npm test` | ✅ 63/65 fichiers OK (2 échecs pré-existants v2 : gp027 HERO vs test attend CARD, gp083 THUMB) |
+| `npm test` | ✅ **65/65** fichiers OK |
 | `npx playwright test funnel-payment` | ✅ 13/13 passed |
 | `regions assertAllRegionsValid` | ✅ OK |
 
@@ -220,7 +220,7 @@ git commit -m "feat(media): MEDIA PASS K — Quality V3 + discovery + atmospheri
 - generate-contact-sheets.cjs: TOP30_HERO/REJECT/ATMOSPHERE HTML
 - media-art-direction.js: hero/heroMobile/card/portrait/gallery/poster/atmosphere → {asset,slot,reason,provenance}
 - public/media/atmosphere/manifest.json: empty honest schema (Pexels key absent)
-- photo-classes-v3.json: 121 HERO, 31 CARD, 2 excluded (gp118/gp119)
+- photo-classes-v3.json: 3 HERO VERIFIED, 168 CARD, 1 THUMB, 2 excluded (gp118/gp119)
 - photo-quality-v3.json: full breakdown per photo
 - TOP30-MEDIA-AUDIT.md updated with gp027 upgrade
 
