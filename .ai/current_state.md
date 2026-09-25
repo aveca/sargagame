@@ -29,8 +29,7 @@
 2. Fondateur : contact sheet + décision migration New API — humain
 
 ### Branche / PR
-- Branche : `agent/coding/photo-quality-v2`
-- PR : à créer vers main
+- Branche : `agent/coding/photo-quality-v2` — **PR #749 MERGED** (squash `472ec72f`, 2026-09-25) — CI **7/7 verte** — Deploy Live success — prod version.json b=472ec72f · 5/5 HTTP 200 (MQ/GP/MIA/CUN/PUJ).
 
 ---
 

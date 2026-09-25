@@ -1,4 +1,4 @@
-## PHOTO QUALITY V2 2026-09-25H — [~] branche agent/coding/photo-quality-v2 (PR à créer)
+## PHOTO QUALITY V2 2026-09-25H — [x] done + LIVE 2026-09-25 (PR #749 MERGED squash 472ec72f, CI 7/7, deploy prod b=472ec72f, 5/5 HTTP 200)
 - **Livré** : score v2 tech+visuel + classes · media:audit + contact sheet · 4 paires confirmées · gp118/gp119 quarantinés · gp027→Clugny · HERO gating (ExpMedia/today/imageMap) · migration statique STOPPÉE (ToS) · money 0 diff.
 - **Gates locaux** : media:audit vert · build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 63/63 (v2 26/26) · E2E 30/30 · regions OK · shots lus.
 - **Rapport** : `.ai/ui-audit/PHOTO-QUALITY-V2-2026-09-25H.md`.
