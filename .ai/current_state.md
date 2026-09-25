@@ -27,8 +27,7 @@
 2. Mesurer sg_home_rail_* 7j (validation du fix allowlist) — Rôle : growth/data
 
 ### Branche / PR
-- Branche : `agent/coding/app-30-cinematic`
-- PR : à créer vers main
+- Branche : `agent/coding/app-30-cinematic` — **PR #750 MERGED** (squash `edc1ffed`, 2026-09-25) — CI **7/7 verte** — Deploy Live success — prod version.json b=edc1ffed · 5/5 HTTP 200 (MQ/GP/MIA/CUN/PUJ).
 
 ---
 
