@@ -65,6 +65,15 @@
 @keyframes sgmGallery{ from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes sgmTripDay{ from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
+/* ── 2026-09-25I (TRAVEL 3.0) : transitions cinématiques courtes (180-500ms),
+   finies, GPU-only. AUCUNE infinie, AUCUNE bloquant un CTA, AUCUN rAF. ──
+   sheet   — feuille plein écran qui se lève (trip, compare)
+   zoom    — l'image hero se pose (settle 1.04 → 1, une fois)
+   fadeup  — montée douce générique (sections) */
+@keyframes sgmSheet { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: none; } }
+@keyframes sgmZoom  { from { opacity: .4; transform: scale(1.045); } to { opacity: 1; transform: scale(1); } }
+@keyframes sgmFadeUp{ from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
 /* ── classes utilitaires (à poser sur l'élément animé) ── */
 .sgm-reveal { animation: sgmReveal var(--sgm-mid) var(--sgm-ease) backwards; }
 .sgm-pop    { animation: sgmPop var(--sgm-mid) var(--sgm-ease) backwards; }
@@ -80,6 +89,9 @@
 .sgm-swap    { animation: sgmSwap .38s var(--sgm-ease) backwards; }
 .sgm-gallery { animation: sgmGallery .42s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 80ms); }
 .sgm-tripday { animation: sgmTripDay .4s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 70ms); }
+.sgm-sheet  { animation: sgmSheet .3s var(--sgm-ease) backwards; }
+.sgm-zoom   { animation: sgmZoom .5s var(--sgm-ease) backwards; }
+.sgm-fadeup { animation: sgmFadeUp .32s var(--sgm-ease) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
 /* anneau tracé : circle SVG r=42 → dasharray 264 (2π·42 ≈ 264) */
 .sgm-ring   { stroke-dasharray: 264; stroke-dashoffset: 264; animation: sgmRing var(--sgm-slow) var(--sgm-ease) .15s backwards; }
 .sgm-unlock { transform-origin: 50% 0%; animation: sgmUnlock 1.1s var(--sgm-ease) .35s forwards; }
@@ -88,7 +100,8 @@
 @media (prefers-reduced-motion: reduce) {
   .sgm-reveal, .sgm-pop, .sgm-fill, .sgm-dayin, .sgm-ring,
   .sgm-breathe, .sgm-focus, .sgm-unlock,
-  .sgm-planin, .sgm-swap, .sgm-gallery, .sgm-tripday { animation: none !important; }
+  .sgm-planin, .sgm-swap, .sgm-gallery, .sgm-tripday,
+  .sgm-sheet, .sgm-zoom, .sgm-fadeup { animation: none !important; }
   .sgm-ring   { stroke-dashoffset: 0; }
   .sgm-unlock { opacity: 0; transform: translateY(-14px); }
   .sgm-dayin  { opacity: 1; transform: none; }

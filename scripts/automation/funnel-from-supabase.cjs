@@ -45,6 +45,9 @@ const FUNNEL_KEYS = ['session_start', 'forecast_lock_click', 'premium_modal_open
   'order_paid', 'order_failed', 'order_confirmed', 'order_cancelled',
   // PRODUCT UX RESET (2026-09-15) — navigation + comparateur + exploration
   'nav_tab', 'compare_add', 'compare_open', 'plages_filter', 'home_best_open', 'suivi_alert_toggle',
+  // WOW Home SeaRail (2026-09-25I) — émis mais jetés jusqu'ici (0 en 30 j) —
+  // miroir de SG_FUNNEL_EVENTS.
+  'home_rail_focus', 'home_rail_seek', 'home_rail_open', 'home_rail_drag',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS (Sargasses_PROD.jsx)
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated', 'b2b_share',
   'b2b_paylink_click', 'b2b_tier_select', 'b2b_space_open',

@@ -62,6 +62,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
      (rollback ?sgjourney=0) → le strip n'existe pas. */
   stay = null }) {
   const _t = (fr, en, es) => (lang === "en" ? en : lang === "es" ? es : fr)
+  const SGM_ALL = (() => { try { return !/[?&]sgmotion=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })()
   const days = useMemo(() => planDays(beaches || [], forecastById || {}), [beaches, forecastById])
   const visibleDays = isPremium ? Math.max(0, days.length) : Math.min(2, days.length)
   const _sbhv = (() => { try { return (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" } catch (_) { return "smooth" } })()
@@ -73,6 +74,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
 
   return (
     <div role="dialog" aria-modal="true" aria-label={_t("Planifier mon séjour", "Plan my stay", "Planificar mi estancia")}
+      className={SGM_ALL ? "sgm-sheet" : undefined}
       style={{ position: "fixed", inset: 0, zIndex: 1350, background: "rgba(11,7,22,.66)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onClose}>
       <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "88dvh", overflowY: "auto", background: "#0F2A23", borderRadius: "20px 20px 0 0", padding: "18px 16px calc(18px + env(safe-area-inset-bottom,0px))", border: "1px solid rgba(255,199,44,.25)", WebkitOverflowScrolling: "touch" }}>
@@ -178,6 +180,7 @@ function DayRow({ day, idx, rowId, locked, lang, _t, onOpen, img = null }) {
           )}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontWeight: 800, fontSize: 13, color: "rgba(255,255,255,.75)", minWidth: 44 }}>{day.label}</span>
+            <span data-testid="tp-day-num" style={{ fontFamily: "'Anton',sans-serif", fontSize: 12, letterSpacing: ".06em", color: "#FFC72C", border: "1px solid rgba(255,199,44,.5)", borderRadius: 8, padding: "2px 7px", flexShrink: 0 }}>J{idx + 1}</span>
             <span style={{ width: 10, height: 10, borderRadius: 5, background: dot(day.best.day.status), flexShrink: 0 }} />
             <span style={{ fontWeight: 800, fontSize: 14.5, color: "#fff", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{day.best.b.name}</span>
             <span style={{ fontSize: 11, fontWeight: 700, color: dot(day.best.day.status) }}>{word(day.best.day.status)}</span>

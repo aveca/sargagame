@@ -1,3 +1,37 @@
+## 2026-09-25I · Agent: coding (APP 3.0 CINEMATIC) — hero plein-bleed + verdict vivant + rail analytics
+
+### Travail effectué
+- **Résumé 1 ligne** : couche voyage 3.0 additive — hero cinématique Home, facteurs réels en fiche, compare visuel + multi-compare réparé, séquence Perfect Day sans horaires, J1..Jn, 3 motions finies, 5 SVG, fix allowlist rail (0-en-30j). Money intact, ToS photo réaffirmée.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25I) + `.ai/ui-audit/APP-30-CINEMATIC-2026-09-25I.md` (22 points). Rollback : `?sgcine=0` (couche) ou revert. Photo pipeline legacy inchangé (garde testée).
+
+### Fichiers modifiés
+- (N) `src/sg-travel-3.0.css` · `tests/unit/travel-30.test.cjs` · `scripts/qa/probe-cine-i.mjs` · `.ai/ui-audit/APP-30-CINEMATIC-2026-09-25I.md`
+- (M) `src/Sargasses_PROD.jsx` (tokens import + 4 rail events allowlist) · `src/components/ExperienceReset.jsx` (cine hero + compare photos/synthèse/dismiss) · `src/BeachExperience.jsx` (facteurs + Icon) · `src/components/PlanCard.jsx` (séquence) · `src/TripPlanner.jsx` (J-num + sheet) · `src/lib/sg-icons.jsx` (+5 glyphes) · `src/sg-motion.css` (sheet/zoom/fadeup) · `scripts/automation/funnel-from-supabase.cjs` + `daily-stats-check.cjs` (FUNNEL_KEYS rail)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (405 modules)
+- [x] bundle 38,2 Ko ≤ 210 (zéro JS eager ajouté)
+- [x] smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test → 64/64 (travel-30 53/53)
+- [x] E2E 30/30 ; regions OK ; php -l N/A (0 PHP touché)
+- [x] screenshots 390/1440 (hero ciné, compare 2/3 + synthèse, facteurs) lus, ERRORS=[]
+- [x] money-path 0 diff ; WorldPaywall non touché
+
+### Problèmes restants
+- [ ] Vérifier rail events côté Supabase au prochain tick quotidien — data/agent
+- [ ] Bottom-nav : structure inchangée (conforme aux routes) — pas de chantier
+- [ ] Migration photo New API + responsive variants — chantiers H (fondateur)
+
+### Prochaine action recommandée
+1. Merge PR → CI 7/7 → deploy → probes prod (hero ciné + facteurs + compare) — Rôle : release
+2. Mesurer sg_home_rail_* 7j (validation du fix allowlist) — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/app-30-cinematic`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-25H · Agent: coding (GOOGLE PHOTO QUALITY V2) — score v2 + quarantaine + HERO gating
 
 ### Travail effectué

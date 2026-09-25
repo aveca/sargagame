@@ -274,6 +274,8 @@ export default function BeachExperience({
   const conf = fc[0] && fc[0].confidence != null ? fc[0].confidence : null
 
   const trk = (n, p) => { try { track && track(n, { beach_id: beach.id, ...(p || {}) }) } catch (_) {} }
+  /* Couche 3.0 (2026-09-25I) : ?sgcine=0 = off (layout antérieur intact). */
+  const cineOff = () => { try { return /[?&]sgcine=0(?:&|$)/.test(window.location.search) } catch (_) { return false } }
   const goTomorrow = () => { setTmrOpen(o => { if (!o) { trk("sg_forecast_view", { via: "experience" }); trk("sg_tomorrow_reveal", {}) } return !o }) }
   const goBackup = () => { setBakOpen(o => { if (!o) trk("sg_alternative_reveal", {}); return !o }) }
   const goWhy = () => { setWhyOpen(o => { if (!o) trk("sg_verdict_expand", { via: "experience" }); return !o }) }
@@ -528,6 +530,68 @@ export default function BeachExperience({
             {beach.score != null && (
               <div className="bx-score">score {Math.round(beach.score)}/100{conf != null ? ` · ${conf}% ${L("confiance", "confidence", "confianza")}` : ""}</div>
             )}
+            {/* VERDICT VIVANT (2026-09-25I) — les facteurs, pas juste le verdict.
+                Chaque ligne = donnée réelle existante (statut/AFAI, exposition
+                coords, flag snorkel, accès, confiance). Rien sans donnée. */}
+            {!cineOff() && (() => {
+              const rows = []
+              if (beach.status) rows.push({
+                icon: "satellite", label: L("Sargasses", "Sargassum", "Sargazo"),
+                text: beach.afai != null
+                  ? `${v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0]} · AFAI ${beach.afai.toFixed(2)}`
+                  : v.go[lang === "en" ? 1 : lang === "es" ? 2 : 0],
+                color: v.c,
+              })
+              if (beach.lng != null) {
+                const lee = beach.island === "mq" ? beach.lng < -61.1 : beach.island === "gp" ? beach.lng < -61.6 : null
+                if (lee !== null) rows.push({
+                  icon: "compass", label: L("Exposition", "Exposure", "Exposición"),
+                  text: lee ? L("Côte abritée (ouest)", "Sheltered coast (west)", "Costa protegida (oeste)") : L("Côte exposée (est)", "Exposed coast (east)", "Costa expuesta (este)"),
+                  color: "#0E4A5A",
+                })
+              }
+              if (beach.snorkel) rows.push({
+                icon: "snorkel", label: "Snorkeling",
+                text: beach.status === "clean"
+                  ? L("Spot compatible, eau propre", "Matching spot, clean water", "Spot compatible, agua limpia")
+                  : L("Spot compatible — vérifier l'eau", "Matching spot — check the water", "Spot compatible — verifica el agua"),
+                color: beach.status === "clean" ? "#22C55E" : "#B87A00",
+              })
+              if (beach.parking || (Number.isFinite(beach.drive) && beach.drive > 0)) rows.push({
+                icon: "pin", label: L("Accès", "Access", "Acceso"),
+                text: [beach.parking ? L("parking", "parking", "estacionamiento") : null, Number.isFinite(beach.drive) && beach.drive > 0 ? `${beach.drive} min` : null].filter(Boolean).join(" · ") || "—",
+                color: "#0E4A5A",
+              })
+              if (conf != null) rows.push({ icon: "sun", label: L("Confiance", "Confidence", "Confianza"), bar: conf, color: v.c })
+              if (!rows.length) return null
+              const worseBackup = backup && backup.beach && (
+                (beach.status === "clean" && backup.beach.status !== "clean") ||
+                (beach.status === "moderate" && backup.beach.status === "avoid"))
+              return (
+                <div data-testid="bx-factors" style={{ marginTop: 10, background: "rgba(255,255,255,.65)", border: "1px solid rgba(13,11,20,.12)", borderRadius: 14, padding: "10px 12px" }}>
+                  <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", opacity: .6, marginBottom: 2 }}>
+                    {L("Pourquoi elle ressort", "Why it stands out", "Por qué destaca")}
+                  </div>
+                  {rows.map((r, i) => (
+                    <div key={i} className="t3-row" style={{ padding: "7px 0" }}>
+                      <span style={{ color: r.color, display: "inline-flex" }}><Icon name={r.icon} size={15} /></span>
+                      <span style={{ fontWeight: 800, fontSize: 12.5, flexShrink: 0 }}>{r.label}</span>
+                      {r.bar != null ? (
+                        <span className="t3-bar" role="img" aria-label={`${r.label} ${r.bar}%`}><i style={{ width: `${Math.max(0, Math.min(100, r.bar))}%`, background: r.color }} /></span>
+                      ) : (
+                        <span style={{ fontSize: 12.5, color: r.color, fontWeight: 700 }}>{r.text}</span>
+                      )}
+                      {r.bar != null && <b style={{ fontSize: 12 }}>{r.bar}%</b>}
+                    </div>
+                  ))}
+                  {!!worseBackup && (
+                    <div style={{ fontSize: 12, marginTop: 4, opacity: .75 }}>
+                      {L(`À ${backup.distanceKm != null ? backup.distanceKm + " km" : "proximité"}, ${backup.beach.name} est moins intéressante aujourd'hui.`, `${backup.beach.name} is less appealing today${backup.distanceKm != null ? ` (${backup.distanceKm} km away)` : ""}.`, `${backup.beach.name} es menos interesante hoy.`)}
+                    </div>
+                  )}
+                </div>
+              )
+            })()}
             <div className="bx-actions">
               <button type="button" className="bx-btn bx-btn-gold" onClick={goWhy}>{L("Pourquoi ?", "Why?", "¿Por qué?")}</button>
               <button type="button" className="bx-btn bx-btn-ghost" onClick={goTomorrow}>{L("Demain →", "Tomorrow →", "Mañana →")}</button>

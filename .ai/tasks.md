@@ -1,3 +1,9 @@
+## APP 3.0 CINEMATIC 2026-09-25I — [~] branche agent/coding/app-30-cinematic (PR à créer)
+- **Livré** : tokens 3.0 · hero ciné (?sgcine=0) · facteurs réels · compare photos+synthèse+dismiss · séquence sans horaires · J1..Jn · 3 motions · 5 SVG · fix allowlist rail · money 0 diff · photo legacy inchangé.
+- **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 64/64 (travel-30 53/53) · E2E 30/30 · regions OK · shots lus.
+- **Rapport** : `.ai/ui-audit/APP-30-CINEMATIC-2026-09-25I.md`.
+- **NEXT** : CI 7/7 → squash merge → deploy → probes prod → marquer [x] done.
+
 ## PHOTO QUALITY V2 2026-09-25H — [x] done + LIVE 2026-09-25 (PR #749 MERGED squash 472ec72f, CI 7/7, deploy prod b=472ec72f, 5/5 HTTP 200)
 - **Livré** : score v2 tech+visuel + classes · media:audit + contact sheet · 4 paires confirmées · gp118/gp119 quarantinés · gp027→Clugny · HERO gating (ExpMedia/today/imageMap) · migration statique STOPPÉE (ToS) · money 0 diff.
 - **Gates locaux** : media:audit vert · build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 63/63 (v2 26/26) · E2E 30/30 · regions OK · shots lus.
