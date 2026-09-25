@@ -26,7 +26,7 @@
 2. Mesurer sg_trip_deeplink + sg_perfect_trip_* en 7j — Rôle : growth
 
 ### Branche / PR
-- Branche : `agent/coding/acquisition-plan` → PR à créer
+- Branche : `agent/coding/acquisition-plan` — **PR #745 MERGED** (squash `c73d5ddf8`, 2026-09-25) — CI 7/7 verte (playwright inclus) — Deploy Live success — prod 5/5 HTTP 200 · version.json b=c73d5ddf · page /aujourdhui/ live montre les 2 CTAs (« Voir mon meilleur plan » → /?trip=1 · « Ouvrir la plage du jour » → /?exp=mq011).
 
 ---
 
