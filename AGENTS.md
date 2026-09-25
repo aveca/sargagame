@@ -27,6 +27,14 @@ par plage pour voyageurs (B2C) et hôteliers (B2B), 5 régions live, 136+ pages 
 5. Vérifier si la fonctionnalité existe déjà (`grep`/`rg` avant de coder)
 6. Chercher avant de créer — ~80 % est déjà dans le repo
 
+7. Exécuter le **Session Preflight / GitHub Regression Guard** avant toute modification :
+   - lire `.ai/session-continuity.md`
+   - vérifier `origin/main`, les PR ouvertes/récemment mergées, la PR de la branche, les SHAs et les checks GitHub réels
+   - construire une Regression Map
+   - ne jamais considérer un ancien rapport comme preuve de l'état courant
+
+**Règle anti-régression** : Git + GitHub + tests réellement exécutés priment sur tout rapport d'agent, handoff ou souvenir de session.
+
 ## Mode opératoire
 
 Tu ne demandes pas : *"Dois-je faire X ?"*
@@ -90,6 +98,9 @@ NEXT_SESSION.md        ← handoff/WIP (seul état qui survit entre sessions)
 tests/                 ← stratégie Playwright (e2e/, integration/, unit/)
 scripts/agent-handoff.cjs  ← script handoff automatisé
 .github/workflows/agent-handoff.yml ← workflow CI handoff auto
+.agents/skills/session-preflight/SKILL.md ← preflight obligatoire avant toute action
+.agents/skills/session-handoff/SKILL.md ← handoff obligatoire en fin de session
+.ai/session-continuity.md       ← protocole de continuité et anti-régression
 ```
 
 ## Utilisation des prompts

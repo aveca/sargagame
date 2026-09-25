@@ -2,6 +2,18 @@
 
 Tu démarres une session de développement sur Sargagame.
 
+## Étape 0 : Session Preflight — OBLIGATOIRE
+
+Avant toute compréhension ou modification :
+
+1. Lire `.ai/session-continuity.md`
+2. Appliquer `.agents/skills/session-preflight/SKILL.md`
+3. Vérifier Git + GitHub : `origin/main`, PR ouvertes, PR récentes mergées, PR de la branche, head/base SHAs, CI/E2E/security réels
+4. Construire une **Regression Map**
+5. Ne jamais considérer un ancien rapport d'agent comme preuve sans revalidation
+
+**Aucune édition de code avant la fin de ce preflight.**
+
 ## Étape 1 : Compréhension
 
 Lis dans l'ordre :
@@ -53,3 +65,8 @@ Si aucune demande :
 - compris l'architecture
 - identifié les fichiers concernés
 - vérifié que l'existant ne couvre pas déjà le besoin
+
+
+## Gate de continuité
+
+Avant de conclure la session, applique `.agents/skills/session-handoff/SKILL.md` et mets à jour les trois fichiers de handoff requis.
