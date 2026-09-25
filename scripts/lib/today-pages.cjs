@@ -71,6 +71,11 @@ const I18N = {
     proof: 'Voir nos erreurs publiées',
     nav: 'Carte en temps réel · Prévisions 7 jours · Toutes les plages',
     statusWord: { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter' },
+    // ACQUISITION → DÉCISION (2026-09-25C) : les pages jour ouvrent le séjour.
+    // Les CTAs renvoient vers les vraies profondeurs de l'app (deep-link réel).
+    planCta: 'Voir mon meilleur plan →',
+    planCtaSub: 'Le plan jour par jour des plages les plus sûres toute la semaine — gratuit.',
+    beachCta: 'Ouvrir la plage du jour →',
     km: km => km < 1 ? `${Math.round(km * 1000)} m` : `~${Math.round(km)} km`,
     score: s => `score ${s}/100`,
   },
@@ -91,6 +96,9 @@ const I18N = {
     proof: 'See our published error rate',
     nav: 'Live map · 7-day forecast · All beaches',
     statusWord: { clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid' },
+    planCta: 'See my best plan →',
+    planCtaSub: 'Day-by-day plan of the safest beaches all week — free.',
+    beachCta: 'Open today\u2019s beach →',
     km: km => km < 1 ? `${Math.round(km * 1000)} m` : `~${Math.round(km)} km`,
     score: s => `score ${s}/100`,
   },
@@ -111,6 +119,9 @@ const I18N = {
     proof: 'Ver nuestra tasa de error publicada',
     nav: 'Mapa en vivo · Pronóstico 7 días · Todas las playas',
     statusWord: { clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar' },
+    planCta: 'Ver mi mejor plan →',
+    planCtaSub: 'Plan día a día de las playas más seguras toda la semana — gratis.',
+    beachCta: 'Abrir la playa de hoy →',
     km: km => km < 1 ? `${Math.round(km * 1000)} m` : `~${Math.round(km)} km`,
     score: s => `puntaje ${s}/100`,
   },
@@ -193,11 +204,17 @@ function renderTodayPage({ lang, domain, siteName, slug, title, desc, model }) {
     return `<li style="padding:9px 0;border-bottom:1px solid #eee"><span style="display:flex;align-items:center;gap:10px">${dot}<span><a href="${x.url}" style="color:#0D0D0D;font-weight:600">${esc(x.beach.name)}</a> — ${t.statusWord.avoid}</span></span>${altLine}</li>`
   }
   const bestCard = best ? `<section style="margin:1.2em 0;padding:14px 16px;border-radius:12px;background:#f0fdf4;border:2px solid #16A34A"><div style="font:800 11px/1 system-ui;letter-spacing:.08em;color:#16A34A;margin-bottom:6px">${t.best.toUpperCase()}</div><div style="font-size:20px;font-weight:800"><a href="${best.url}" style="color:#0D0D0D">${esc(best.beach.name)}</a></div><div style="color:#333;margin-top:4px">${t.statusWord.clean}${best.score != null ? ` · ${t.score(best.score)}` : ''}</div></section>` : ''
+  // ACQUISITION → DÉCISION → PLAN (2026-09-25C) : CTA du vrai tunnel produit.
+  // - « Voir mon meilleur plan » → ?trip=1 (le TripPlanner s'ouvre au boot)
+  // - « Ouvrir la plage du jour » → ?exp=<best.id> (deep-link journey, même île)
+  // L'app client hydrate la même route : le visiteur SEO tombe directement dans
+  // le décisionnel, pas sur une page d'information figée.
+  const decisionBlock = best ? `<section style="margin:0 0 1.2em;padding:14px 16px;border-radius:12px;background:#fffbeb;border:2px solid #FFC72C"><div style="color:#92400e;font-size:13px;margin-bottom:10px">${esc(t.planCtaSub)}</div><a href="/?trip=1" style="display:block;text-align:center;background:#FFC72C;color:#0D0B14;font-weight:800;padding:12px;border-radius:999px;text-decoration:none">${esc(t.planCta)}</a><a href="/?exp=${encodeURIComponent(best.beach.id)}" style="display:block;text-align:center;margin-top:8px;color:#0D0B14;font-weight:600">${esc(t.beachCta)} (${esc(best.beach.name)})</a></section>` : ''
   const staleBanner = stale ? `<p style="background:#fef3c7;border:1px solid #D97706;border-radius:10px;padding:10px 14px;color:#92400e">${t.stale}</p>` : `<p style="color:#686868;font-size:13px">${t.fresh(fmtTimeUTC(updatedAt))} · ${dateLong}</p>`
   const canonical = `https://${domain}/${slug}/`
   const tplPath = path.join(ROOT, 'dist', 'index.html')
   let html = fs.existsSync(tplPath) ? fs.readFileSync(tplPath, 'utf-8') : fs.readFileSync(path.join(ROOT, 'index.html'), 'utf-8')
-  const noscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a></nav><h1 style="font-size:26px;margin-bottom:8px">${esc(t.h1(regionLabel))}</h1><p style="color:#444;margin-bottom:12px">${esc(t.lead(live.length, regionLabel, dateLong))}</p>${staleBanner}${bestCard}<h2 style="font-size:18px;margin:22px 0 8px">${t.top} (${clean.length})</h2>${clean.length ? `<ul style="list-style:none;padding:0;margin:0">${clean.slice(0, 8).map(li).join('')}</ul>` : ''}${moderate.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.watch} (${moderate.length})</h2><ul style="list-style:none;padding:0;margin:0">${moderate.map(li).join('')}</ul>` : ''}${avoid.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.bad} (${avoid.length})</h2><ul style="list-style:none;padding:0;margin:0">${avoid.map(avoidLi).join('')}</ul>` : ''}<h2 style="font-size:18px;margin:22px 0 8px">${t.method}</h2><p style="color:#444">${t.methodTxt}</p><p style="color:#686868;font-size:13px">${t.sources} <a href="/${relSlug}/">${t.proof}</a></p><nav style="margin-top:28px;padding-top:16px;border-top:1px solid #eee"><a href="/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte</a><a href="/previsions/" style="color:#E8A800;font-weight:600;margin-right:16px">Prévisions</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes</a></nav></article>`
+  const noscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a></nav><h1 style="font-size:26px;margin-bottom:8px">${esc(t.h1(regionLabel))}</h1><p style="color:#444;margin-bottom:12px">${esc(t.lead(live.length, regionLabel, dateLong))}</p>${staleBanner}${bestCard}${decisionBlock}<h2 style="font-size:18px;margin:22px 0 8px">${t.top} (${clean.length})</h2>${clean.length ? `<ul style="list-style:none;padding:0;margin:0">${clean.slice(0, 8).map(li).join('')}</ul>` : ''}${moderate.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.watch} (${moderate.length})</h2><ul style="list-style:none;padding:0;margin:0">${moderate.map(li).join('')}</ul>` : ''}${avoid.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.bad} (${avoid.length})</h2><ul style="list-style:none;padding:0;margin:0">${avoid.map(avoidLi).join('')}</ul>` : ''}<h2 style="font-size:18px;margin:22px 0 8px">${t.method}</h2><p style="color:#444">${t.methodTxt}</p><p style="color:#686868;font-size:13px">${t.sources} <a href="/${relSlug}/">${t.proof}</a></p><nav style="margin-top:28px;padding-top:16px;border-top:1px solid #eee"><a href="/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte</a><a href="/previsions/" style="color:#E8A800;font-weight:600;margin-right:16px">Prévisions</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes</a></nav></article>`
   const jsonLd = [
     { '@context': 'https://schema.org', '@type': 'WebPage', name: title, description: desc, url: canonical, dateModified: today, inLanguage: lang, isPartOf: { '@type': 'WebApplication', name: siteName, url: `https://${domain}/` } },
     {

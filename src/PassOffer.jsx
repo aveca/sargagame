@@ -157,7 +157,13 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               </span>
             </span>
             <span style={{ display: "flex", flexDirection: "column", gap: 7, margin: "14px 0 0" }}>
-              {[
+              {/* PERFECT TRIP 2026-09-25C : les bénéfices vendent LE SÉJOUR.
+                  Rollback ?sgcopy=0 → bullets « technologie » historiques. */}
+              {(() => { let copyOn = true; try { copyOn = !/[?&]sgcopy=0/.test(window.location.search) } catch (_) {} return copyOn })() ? [
+                _t(lang, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>Tes meilleures plages</b> chaque matin, 7h</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>Your best beaches</b> every morning, 7am</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>Tus mejores playas</b> cada mañana, 7h</>),
+                _t(lang, <>Tes <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>plans jour par jour</b> · toutes les plages</>, <>Your <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>day-by-day plans</b> · all beaches</>, <>Tus <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>planes día a día</b> · todas las playas</>),
+                _t(lang, <>Alternative réelle quand <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>la mer change</b></>, <>A real alternative when <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>the sea changes</b></>, <>Alternativa real cuando <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>el mar cambia</b></>),
+              ] : [
                 _t(lang, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>LA plage propre</b> chaque matin, 7h</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>THE clean beach</b> every morning, 7am</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>LA playa limpia</b> cada mañana, 7h</>),
                 _t(lang, <>Prévision <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7 jours</b> · toutes les plages</>, <><b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7-day</b> forecast · all beaches</>, <>Pronóstico <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>7 días</b> · todas las playas</>),
                 _t(lang, <>Alerte le jour où <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>ça bascule</b></>, <>Alert the day <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>it flips</b></>, <>Alerta el día que <b style={{ color: isComic ? "#0D0B14" : "#fff", fontWeight: 800 }}>cambia</b></>),

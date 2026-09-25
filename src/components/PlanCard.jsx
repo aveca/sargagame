@@ -36,7 +36,7 @@ export const planOff = () => {
 
 const DOT = { clean: "#22C55E", moderate: "#E8A800", avoid: "#E8512A", alert: "#E8512A" }
 
-export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, fresh = null, onOpenBeach, onOpenAlt, track }) {
+export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, fresh = null, onOpenBeach, onOpenAlt, track, isPremium = false }) {
   const fired = useRef(null)
   useEffect(() => {
     if (!beach || !beach.id || fired.current === beach.id) return
@@ -90,6 +90,25 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, fresh =
           : _t(lang, "Meilleure option aujourd'hui selon les données satellite actuelles.", "Best option today based on current satellite data.", "Mejor opción hoy según los datos satelitales actuales.")}
         {conf != null ? ` ${_t(lang, `Confiance ${conf} %`, `Confidence ${conf} %`, `Confianza ${conf} %`)}` : ""}
       </div>
+      {/* Semaine RÉELLE (forecast satellite, même source que Journey/Trip) —
+          points visuels des jours, verrous J+3+ marqués si non-premium (réel,
+          pas de promesse). Uniquement si le forecast existe (days réels). */}
+      {!!days.length && (
+        <div data-testid="plan-week" role="group" aria-label={_t(lang, "Semaine en un coup d'œil", "Week at a glance", "Semana de un vistazo")}
+          style={{ display: "flex", gap: 4, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: ".06em", textTransform: "uppercase", opacity: .7, marginRight: 4 }}>
+            {_t(lang, "Cette semaine", "This week", "Esta semana")}
+          </span>
+          {days.map(d => (
+            <span key={d.i} title={`${d.label || "J+" + d.i} · ${d.status || "?"}${d.confidence != null ? ` · ${d.confidence}%` : ""}`}
+              aria-label={`${d.label || "J+" + d.i} · ${d.status || "?"}${d.confidence != null ? ` · ${d.confidence}%` : ""}`}
+              style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, flex: "0 0 auto" }}>
+              <i aria-hidden="true" style={{ display: "block", width: 14, height: 14, borderRadius: "50%", border: `2px solid ${INK}`, background: DOT[d.status] || "#8A8F98" }} />
+              <span style={{ fontSize: 8.5, fontWeight: 800, opacity: .7 }}>{(d.label || "").slice(0, 3) || `J+${d.i}`}{d.locked && !isPremium ? " 🔒" : ""}</span>
+            </span>
+          ))}
+        </div>
+      )}
       {backup && (
         <button type="button" data-testid="plan-alt"
           onClick={() => { try { track?.("sg_alternative_open", { from: beach.id, to: backup.id, distance_km: backup.distanceKm }) } catch (_) {} onOpenAlt?.(backup.beach || backup) }}
