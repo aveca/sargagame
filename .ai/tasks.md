@@ -1,3 +1,9 @@
+## PHOTO QUALITY V2 2026-09-25H — [~] branche agent/coding/photo-quality-v2 (PR à créer)
+- **Livré** : score v2 tech+visuel + classes · media:audit + contact sheet · 4 paires confirmées · gp118/gp119 quarantinés · gp027→Clugny · HERO gating (ExpMedia/today/imageMap) · migration statique STOPPÉE (ToS) · money 0 diff.
+- **Gates locaux** : media:audit vert · build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 63/63 (v2 26/26) · E2E 30/30 · regions OK · shots lus.
+- **Rapport** : `.ai/ui-audit/PHOTO-QUALITY-V2-2026-09-25H.md`.
+- **NEXT** : CI 7/7 → squash merge → deploy → probes prod → marquer [x] done.
+
 ## DATA INTELLIGENCE 2026-09-25F — [x] done + LIVE 2026-09-25 (PR #748 MERGED squash e6d8677d, CI 7/7, deploy prod b=e6d8677d, 5/5 HTTP 200)
 - **Livré** : intent-evidence.js (5 live + 5 blocked, score déterministe, tips sourcés) · marine.js (Open-Meteo, seuils métier) · MER live en fiche · reco-why home · facts.source · photos C documentées · 0 page SEO · money 0 diff.
 - **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 62/62 (niche 42/42) · E2E 30/30 · regions OK · shots 390 lus.

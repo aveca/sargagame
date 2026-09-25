@@ -1,3 +1,39 @@
+## 2026-09-25H · Agent: coding (GOOGLE PHOTO QUALITY V2) — score v2 + quarantaine + HERO gating
+
+### Travail effectué
+- **Résumé 1 ligne** : qualité traitée à la source — score technique+visuel, 4 paires même-photo confirmées, 2 quarantaines (gp118/gp119), 1 upgrade même-lieu (gp027→Clugny), HERO gating UI, migration statique STOPPÉE (ToS non conforme). Money intact.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25H) + `.ai/ui-audit/PHOTO-QUALITY-V2-2026-09-25H.md` (15 points). Rollback : revert 1 commit. Contact sheet pour validation humaine des paires restantes.
+
+### Fichiers modifiés
+- (N) `scripts/score-photo-quality.cjs` · `scripts/media-audit.cjs` · `scripts/data/photo-quarantine.json` · `tests/unit/photo-quality-v2.test.cjs` · `scripts/qa/probe-photo-h.mjs` · `scripts/qa/probe-photo-h2.mjs` · `.ai/ui-audit/PHOTO-QUALITY-V2-2026-09-25H.md`
+- (N-déployés) `public/data/photo-quality-v2.json` · `public/data/photo-classes.json` · `public/data/media-quality-report.json` · `public/data/contact-sheet.html`
+- (M) `src/lib/beach-media.js` (photoClass/photoAllowed) · `src/BeachExperience.jsx` (ExpMedia gate) · `src/Sargasses_PROD.jsx` (imageMap filtré) · `scripts/lib/today-pages.cjs` (hero gaté) · `public/data/beaches-images.json` (gp027 remap) · `package.json` (media:audit) · `tests/unit/niche-evidence.test.cjs` (assertion gp027)
+
+### Tests réalisés
+- [x] npm run media:audit → vert (457, top30bad 0, trio distinct, 0 collision proche)
+- [x] npm run build → exit 0
+- [x] bundle 38,2 Ko ≤ 210 (zéro eager ajouté)
+- [x] smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test → 63/63 (photo-quality-v2 26/26)
+- [x] E2E 30/30 ; regions OK ; php -l N/A (0 PHP touché)
+- [x] screenshots 390 (Deshaies hero OK, today hero présent, home/premium stables) + quarantaine vérifiée au niveau logique (gp118/119 refusés, gp024/gp027 autorisés)
+- [x] money-path 0 diff
+
+### Problèmes restants
+- [ ] Validation humaine paires mq035/mq038 + gp019/gp118 via contact sheet (fondateur, 10 min)
+- [ ] Re-shoot gp083 (aucun asset même-lieu supérieur)
+- [ ] Migration Places New conforme (clé + proxy ≤30j + attributions) — décision/chiffrage fondateur
+
+### Prochaine action recommandée
+1. Merge PR → CI 7/7 → deploy → probes prod (gp027 hero, gp119 scene) — Rôle : release
+2. Fondateur : contact sheet + décision migration New API — humain
+
+### Branche / PR
+- Branche : `agent/coding/photo-quality-v2`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-25F · Agent: coding (DATA INTELLIGENCE + NICHE EVIDENCE) — contrats + mer live
 
 ### Travail effectué

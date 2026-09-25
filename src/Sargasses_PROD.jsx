@@ -13371,7 +13371,20 @@ const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=
       fetch("/data/beaches-images.json",{signal})
         .then(r=>r.ok?r.json():null)
         .then(data=>{
-          if(!cancelled&&data&&typeof data==="object")setImageMap(data)
+          if(!cancelled&&data&&typeof data==="object"){
+            // Quarantaine lieu-douteux (2026-09-25H) : les ids exclus de
+            // photo-classes.json ne rejoignent jamais imageMap → aucun
+            // affichage nulle part (scène SVG honnête à la place).
+            fetch("/data/photo-classes.json",{signal}).then(r=>r.ok?r.json():null).then(cls=>{
+              let map=data
+              try{
+                if(cls&&typeof cls==="object"){
+                  map={};for(const[k,v]of Object.entries(data)){const c=cls[k];if(!(c&&typeof c==="object"&&c.excluded))map[k]=v}
+                }
+              }catch(_){}
+              if(!cancelled)setImageMap(map)
+            }).catch(()=>{if(!cancelled)setImageMap(data)})
+          }
         })
         .catch(()=>{})
       // Score qualité photo (compute-photo-quality.cjs) — optionnel : le hero

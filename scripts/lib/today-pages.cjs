@@ -204,14 +204,22 @@ function renderTodayPage({ lang, domain, siteName, slug, title, desc, model }) {
     return `<li style="padding:9px 0;border-bottom:1px solid #eee"><span style="display:flex;align-items:center;gap:10px">${dot}<span><a href="${x.url}" style="color:#0D0D0D;font-weight:600">${esc(x.beach.name)}</a> — ${t.statusWord.avoid}</span></span>${altLine}</li>`
   }
   const bestCard = best ? `<section style="margin:1.2em 0;padding:14px 16px;border-radius:12px;background:#f0fdf4;border:2px solid #16A34A"><div style="font:800 11px/1 system-ui;letter-spacing:.08em;color:#16A34A;margin-bottom:6px">${t.best.toUpperCase()}</div><div style="font-size:20px;font-weight:800"><a href="${best.url}" style="color:#0D0D0D">${esc(best.beach.name)}</a></div><div style="color:#333;margin-top:4px">${t.statusWord.clean}${best.score != null ? ` · ${t.score(best.score)}` : ''}</div></section>` : ''
-  // Hero visuel (2026-09-25E) : photo RÉELLE du meilleur spot, catalogue
-  // beaches-images.json uniquement (/beaches/<file> déployé FTP). Pas d'image sinon.
+  // Hero visuel (2026-09-25E, gaté HERO 2026-09-25H) : photo RÉELLE du
+  // meilleur spot, catalogue beaches-images.json uniquement — ET classe
+  // HERO/CARD de photo-classes.json (THUMB/REJECT/exclu → pas de hero,
+  // jamais de photo faible en grand). Pas d'image sinon.
   const heroImg = (() => {
     if (!best) return ''
     try {
       const imgMap = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'data', 'beaches-images.json'), 'utf-8'))
       const file = imgMap[best.beach.id]
       if (!file || typeof file !== 'string') return ''
+      const cls = JSON.parse(fs.readFileSync(path.join(ROOT, 'public', 'data', 'photo-classes.json'), 'utf-8'))
+      const c = cls[best.beach.id]
+      const rank = { REJECT: 0, THUMB: 1, CARD: 2, HERO: 3 }
+      const entry = typeof c === 'string' ? { class: c } : (c || {})
+      if (entry.excluded) return ''
+      if ((rank[entry.class] || 0) < 2) return ''
       return `<img src="/beaches/${esc(file)}" alt="${esc(best.beach.name)} — ${esc(best.beach.commune || '')}" width="800" height="450" loading="lazy" decoding="async" style="display:block;width:100%;height:auto;aspect-ratio:16/9;border-radius:12px;border:2px solid #0D0D0D;margin:0 0 14px;object-fit:cover" />`
     } catch { return '' }
   })()

@@ -1,3 +1,25 @@
+## 2026-09-25H — GOOGLE PHOTO QUALITY V2 : score tech+visuel + quarantaine + HERO gating
+
+**PROBLEM** : catalogue photos[0]/1600px legacy sans comparaison, score v1 sans netteté, paires même-photo sur lieux distants, aucune conformité ToS évaluée.
+
+**AUDIT (§1, avant toute modif)** : download = Legacy nearbysearch 300m → textsearch + photos[0] + maxwidth 1600, sans attribution ni métadonnées ; 457 fichiers (q78 ≤1280px) ; v1 = lum/sat/res ; registry 172 + hero 80 ; JPEG seul.
+
+**CHANGE** (money-path ZÉRO touché, design non touché pour masquer) :
+- ToS vérifiée (docs officielles) : New API 4800px + authorAttributions obligatoires ; static permanent = NON conforme (no rehost/caching, photos non listées) → **migration statique STOPPÉE**, script legacy gelé, architecture conforme proposée (proxy ≤30j + attributions).
+- `scripts/score-photo-quality.cjs` (N, sharp local) : TECHNICAL 50 + VISUAL 50 (Laplacien/histo/contraste/sat) + classes HERO/CARD/THUMB/REJECT → `photo-quality-v2.json` + `photo-classes.json`.
+- `scripts/media-audit.cjs` + `npm run media:audit` (N) : TOP50/WORST/LOW/DUPLICATES(30)/place-check/top30/contact-sheet.html (grandes images + paires côte à côte).
+- CONFIRMÉ : gp019~gp118 (44 km), gp024~gp119 (76 km inter-îles), mq035~mq038, pc003~pc011 (même baie OK) ; trio + proches : 0 collision.
+- `scripts/data/photo-quarantine.json` (N) : gp118/gp119 exclus (requête faible, scène honnête) ; jumeaux conservés.
+- UPGRADE : gp027 → Plage_de_Clugny.jpg (CARD, nom exact + dHash 2) ; Gosier/gp083 conservées (pas de meilleur même-lieu) ; Îlet_du_Gosier non substituée (lieu différent).
+- Gating : ExpMedia plein-bleed + vidéo exigent HERO/CARD (fail-open) ; imageMap filtré à la source ; today hero build gaté.
+- `src/lib/beach-media.js` : photoClass/photoAllowed(classes, id, slot).
+- Tests `tests/unit/photo-quality-v2.test.cjs` (26 checks).
+- Rapport : `.ai/ui-audit/PHOTO-QUALITY-V2-2026-09-25H.md` (15 points).
+
+**PROOF** : media:audit vert (457, top30bad 0) · build 0 · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 63/63 (v2 26/26) · E2E 30/30 · regions OK · shots 390 (Deshaies hero OK, today hero présent, home/premium stables) · money 0 diff.
+
+---
+
 ## 2026-09-25F — DATA INTELLIGENCE + NICHE EVIDENCE : contrats + mer temps réel + tips sourcés
 
 **PROBLEM** : #747 a amélioré la présentation ; restait la profondeur — recommandations non expliquées, pas de donnée marine en fiche, niches sans registre de sources.
