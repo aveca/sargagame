@@ -1,0 +1,12 @@
+{
+ "beach": "gp001",
+ "name": "Plage de Saint-François",
+ "commune": "Saint-François",
+ "at": "2026-09-25T18:13:03.055Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}

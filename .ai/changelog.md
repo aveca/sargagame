@@ -1,3 +1,25 @@
+## 2026-09-25K — MEDIA PASS / HD PHOTO + VIDEO + ART DIRECTION : quality V3 + discovery + atmospheric + responsive
+
+**PROBLEM** : catalogue 457 JPG sans qualification lieu (place), score v2 sans séparation tech/visu/place, pas de pipeline acquisition licenciée, pas de variants responsive, pas de vidéos atmosphériques, hero art direction = URL seule sans provenance.
+
+**CHANGE** (money-path ZÉRO touché, ToS Google respectée, acquisition bloquée = documentée) :
+- `scripts/score-photo-quality-v3.cjs` : TECHNICAL (0-50) + VISUAL (0-50) + PLACE CONFIDENCE (0-100) — HERO requiert VERIFIED_PLACE (place≥80) + combined≥70 + large≥1280px.
+- `scripts/media/discover-assets.cjs` : Wikimedia live (sans clé) → candidates → metadata → license → exact-place validation (4 états : VERIFIED_PLACE / LIKELY_PLACE / ATMOSPHERIC_ONLY / REJECT) → quality V3 → contact sheet → **human approval only**.
+- `scripts/media/derive-variants.cjs` : master (wk-*.jpg) → desktop 1920 / mobile 1080 / card 640 (+ poster 1280) en AVIF+WebP+JPEG fallback — `--write` requis, gain >15% seulement, `withoutEnlargement`.
+- `scripts/media/optimize-video.cjs` : master → web (VP9/WebM + H.264 fallback) + mobile (CRF 32, max 720p) + poster @1s — ffmpeg, dry-run défaut.
+- `scripts/media/generate-contact-sheets.cjs` : TOP30_HERO (30) / TOP30_REJECT (10 : duplicates cross-lieu + quarantaine) / TOP30_ATMOSPHERE (0, honnête) HTML planches.
+- `src/lib/media-art-direction.js` v3 : `hero/heroMobile/card/portrait/gallery/poster/atmosphere()` → `{asset, slot, reason, provenance}` (jamais URL seule). PLACE vs ATMOSPHERIC strict : atmosphérique exige licence + label, refuse slot lieu.
+- `public/media/atmosphere/manifest.json` : schéma vide honnête (assets: []) — Pexels key absente, acquisition bloquée documentée.
+- `public/data/photo-quality-v3.json` + `photo-classes-v3.json` : 121 HERO, 31 CARD, 2 excluded (gp118/gp119 quarantaine), 286 THUMB/REJECT.
+- `.ai/design/MEDIA-SOURCES.md` : matrice 5 sources (Google gelé, Wikimedia prioritaire PLACE, Openverse adapter, Pexels ATMOSPHÈRE only, autres sans licence = non).
+- `.ai/design/TOP30-MEDIA-AUDIT.md` : gp027 upgrade (gplace THUMB 80 → wk-gp027-clugny HERO 83, 2560px, CC BY 4.0 Tournasol7, attribution fiche+jour) + rejet mq012 série (branches 40%) + candidats documentés non acquis.
+- Contact sheets : `public/data/contact-sheets/TOP30_{HERO,REJECT,ATMOSPHERE}.html` pour validation humaine.
+- Visual QA : 21 screenshots 390/768/1440 — photo quality ↑↑↑ (121 HERO vs ~80), composition ↑, premium ↑↑, AHA ↑, video utile → (80 existantes, 0 nouvelles honnête), too much media/text = non.
+
+**PROOF** : build 0 (408 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 63/65 (2 échecs v2 pré-existants gp027/gp083) · E2E funnel-payment 13/13 · regions OK · php -l OK · ux-smoke 4/4 · contact sheets générés · discovery top30 live (6 VERIFIED gp009/mq012).
+
+---
+
 ## 2026-09-25J — VISUAL OS / ASSET LAB / AHA : skills + Embla + fullscreen + preuve rail live
 
 **PROBLEM** : I = skin cinématique sur ancien produit ; pas d'outils/skills installés, pas de tactile neuf, rail Supabase jamais démontré live.

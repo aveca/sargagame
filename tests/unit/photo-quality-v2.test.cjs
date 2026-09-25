@@ -41,7 +41,7 @@ console.log("PHOTO QUALITY V2 — contrats")
 
   // ── Classes : top30 sans THUMB/REJECT ──
   check("classes : top30 visibilité sans THUMB/REJECT", RPT.top30bad.length === 0 && RPT.top30.length === 30)
-  check("classes : gp027 remappée CARD (upgrade même-lieu H)", CLASSES.gp027 === "CARD")
+  check("classes : gp027 remappée HERO (Wikimedia upgrade même-lieu, 2560px CC BY 4.0)", CLASSES.gp027 === "HERO")
 
   // ── Quarantaine : même-photo sur lieux distants ──
   for (const id of ["gp118", "gp119"]) {
@@ -72,7 +72,7 @@ console.log("PHOTO QUALITY V2 — contrats")
 
   // ── Quarantaine fonctionnelle (pas seulement déclarative) ──
   check("quarantaine : photoAllowed refuse gp118/gp119 en HERO", BM_ESM.photoAllowed(CLASSES, "gp118", "HERO") === false && BM_ESM.photoAllowed(CLASSES, "gp119", "HERO") === false)
-  check("quarantaine : gp024/gp027 restent autorisés (HERO/CARD)", BM_ESM.photoAllowed(CLASSES, "gp024", "HERO") === true && BM_ESM.photoAllowed(CLASSES, "gp027", "CARD") === true)
+  check("quarantaine : gp024/gp027 restent autorisés (HERO/CARD)", BM_ESM.photoAllowed(CLASSES, "gp024", "HERO") === true && BM_ESM.photoAllowed(CLASSES, "gp027", "HERO") === true)
   check("quarantaine : inconnu → HERO refusé (défaut sûr), CARD permis", BM_ESM.photoAllowed(CLASSES, "xx999", "HERO") === false && BM_ESM.photoAllowed(CLASSES, "xx999", "CARD") === true)
 
   // ── Money-path intact ──

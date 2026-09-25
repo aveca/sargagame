@@ -1,6 +1,6 @@
 {
  "v": 2,
- "generated": "2026-09-25T15:02:36.509Z",
+ "generated": "2026-09-25T17:45:36.680Z",
  "photos": {
   "Anse-Bertrand.jpg": {
    "score": 90,
@@ -4063,6 +4063,15 @@
    "kb": 122,
    "tech": 37,
    "visu": 39.3
+  },
+  "wk-gp027-clugny.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 2560,
+   "h": 957,
+   "kb": 304,
+   "tech": 42,
+   "visu": 40.5
   },
   "Îles_des_Saintes.jpg": {
    "score": 79,

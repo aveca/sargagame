@@ -1,0 +1,91 @@
+{
+ "beach": "gp083",
+ "name": "Anse à la Barque (VH)",
+ "commune": "Vieux-Habitants",
+ "at": "2026-09-25T17:42:33.207Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": [
+  {
+   "source": "wikimedia",
+   "title": "File:Catalogue des tableaux de la collection du comte de Moltke (IA cataloguedestabl00molt).pdf",
+   "page_url": "https://commons.wikimedia.org/wiki/File%3ACatalogue_des_tableaux_de_la_collection_du_comte_de_Moltke_(IA_cataloguedestabl00molt).pdf",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Catalogue_des_tableaux_de_la_collection_du_comte_de_Moltke_%28IA_cataloguedestabl00molt%29.pdf?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "thumb_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7b/Catalogue_des_tableaux_de_la_collection_du_comte_de_Moltke_%28IA_cataloguedestabl00molt%29.pdf/page1-500px-Catalogue_des_tableaux_de_la_collection_du_comte_de_Moltke_%28IA_cataloguedestabl00molt%29.pdf.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "width": 666,
+   "height": 1020,
+   "mime": null,
+   "author": "Moltke slot",
+   "license": "Public domain",
+   "license_url": null,
+   "description": "Cover title: Musée de tableaux du compte de Moltke Library's copy bound with: Kortfattet fortegnelse over kunstvaerkerne i den Kgl. Maleri- og Skulptursamling. Kjøbenhavn : Thieles Bogtrykkeri, 1900. (87-B1053) Subjects: Moltke, Adam Gottleb de Greve",
+   "categories": null,
+   "geo": null,
+   "license_ok": true,
+   "license_reason": null,
+   "attribution_required": false,
+   "place": {
+    "state": "ATMOSPHERIC_ONLY",
+    "confidence": "low",
+    "score": 10
+   },
+   "hero_eligible": false,
+   "card_eligible": false
+  },
+  {
+   "source": "wikimedia",
+   "title": "File:La nouvelle Amérique (IA lnouvelleamriq00dixorich).pdf",
+   "page_url": "https://commons.wikimedia.org/wiki/File%3ALa_nouvelle_Am%C3%A9rique_(IA_lnouvelleamriq00dixorich).pdf",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/57/La_nouvelle_Am%C3%A9rique_%28IA_lnouvelleamriq00dixorich%29.pdf?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "thumb_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/57/La_nouvelle_Am%C3%A9rique_%28IA_lnouvelleamriq00dixorich%29.pdf/page1-500px-La_nouvelle_Am%C3%A9rique_%28IA_lnouvelleamriq00dixorich%29.pdf.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "width": 814,
+   "height": 1306,
+   "mime": null,
+   "author": "Dixon, William Hepworth, 1821-1879 Chasles, Philarète, 1798-1873",
+   "license": "Public domain",
+   "license_url": null,
+   "description": "Subjects: United States -- Social life and customs 19th century; United States -- Religion 19th century",
+   "categories": null,
+   "geo": null,
+   "license_ok": true,
+   "license_reason": null,
+   "attribution_required": false,
+   "place": {
+    "state": "ATMOSPHERIC_ONLY",
+    "confidence": "low",
+    "score": 0
+   },
+   "hero_eligible": false,
+   "card_eligible": false
+  },
+  {
+   "source": "wikimedia",
+   "title": "File:Bellah (IA bellahfe00feuiuoft).pdf",
+   "page_url": "https://commons.wikimedia.org/wiki/File%3ABellah_(IA_bellahfe00feuiuoft).pdf",
+   "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/29/Bellah_%28IA_bellahfe00feuiuoft%29.pdf?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=original",
+   "thumb_url": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/29/Bellah_%28IA_bellahfe00feuiuoft%29.pdf/page1-500px-Bellah_%28IA_bellahfe00feuiuoft%29.pdf.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+   "width": 660,
+   "height": 1083,
+   "mime": null,
+   "author": "Feuillet, Octave, 1821-1890",
+   "license": "Public domain",
+   "license_url": null,
+   "description": "26 Subjects:",
+   "categories": null,
+   "geo": null,
+   "license_ok": true,
+   "license_reason": null,
+   "attribution_required": false,
+   "place": {
+    "state": "ATMOSPHERIC_ONLY",
+    "confidence": "low",
+    "score": 0
+   },
+   "hero_eligible": false,
+   "card_eligible": false
+  }
+ ]
+}

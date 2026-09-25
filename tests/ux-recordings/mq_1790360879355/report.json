@@ -1,0 +1,69 @@
+{
+  "region": "mq",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-09-25T18:28:54.822Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "ERROR",
+      "msg": "Step \"homepage_load\" failed",
+      "details": {
+        "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:8799/\", waiting until \"domcontentloaded\"\u001b[22m\n"
+      },
+      "ts": 1790360917091
+    },
+    {
+      "severity": "WARN",
+      "msg": "Bottom nav not found",
+      "details": {},
+      "ts": 1790360934047
+    },
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "module is not defined",
+        "stack": "ReferenceError: module is not defined\n    at http://localhost:8799/scripts/lib/forecast-contract.cjs?import:109:1"
+      },
+      "ts": 1790360934717
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 0,
+    "load": 0,
+    "lcp": null,
+    "resourceCount": 16
+  },
+  "consoleErrors": [],
+  "networkErrors": [],
+  "summary": {
+    "total": 3,
+    "critical": 1,
+    "warnings": 1,
+    "medium": 0,
+    "errors": 1
+  }
+}

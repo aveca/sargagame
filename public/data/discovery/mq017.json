@@ -1,0 +1,12 @@
+{
+ "beach": "mq017",
+ "name": "Anse Cafard",
+ "commune": "Le Diamant",
+ "at": "2026-09-25T18:12:58.348Z",
+ "sources": {
+  "wikimedia": "live",
+  "openverse": "OPENVERSE_API_KEY absente (quotas anonymes insuffisants pour du bulk)",
+  "pexels": "PEXELS_API_KEY absente (usage ATMOSPHÈRE uniquement de toute façon)"
+ },
+ "candidates": []
+}

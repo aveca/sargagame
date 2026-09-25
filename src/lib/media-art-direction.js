@@ -56,3 +56,43 @@ export function atmosphereSlot(asset) {
   if (!asset || !asset.src || !asset.license) return { slot: "reject", reason: "atmosphere-sans-licence" }
   return { slot: "atmosphere", reason: String(asset.license) }
 }
+
+/**
+ * Décisions par slot (2026-09-25K, §12) — { asset, slot, reason, provenance }.
+ * Jamais une URL seule : chaque choix est expliqué et sourcé. Entrées :
+ * imageMap (catalogue), photoClasses (HERO/CARD/THUMB/REJECT + excluded),
+ * attributions (photo-attributions.json, CC). Tout est optionnel (null-safe).
+ */
+function decide(beachId, slot, imageMap, photoClasses, attributions) {
+  const none = (reason) => ({ asset: null, slot, reason, provenance: null })
+  try {
+    const file = imageMap && beachId != null ? imageMap[beachId] : null
+    if (!file || typeof file !== "string") return none("pas-de-photo-cataloguee")
+    const c = photoClasses ? photoClasses[beachId] : null
+    const cls = typeof c === "string" ? c : (c && c.class) || null
+    const excluded = !!(c && typeof c === "object" && c.excluded)
+    if (excluded) return none("quarantaine-lieu-douteux")
+    const src = "/beaches/" + file
+    const prov = { source: "catalogue", file, class: cls, attribution: (attributions && attributions[beachId]) || null }
+    if (slot === "hero" || slot === "hero_mobile") {
+      if (cls === "HERO" || cls === "CARD") return { asset: src, slot, reason: `classe-${cls}`, provenance: prov }
+      return none(`classe-${cls || "inconnue"}-insuffisante-pour-hero`)
+    }
+    if (slot === "card" || slot === "poster") {
+      if (cls === "REJECT") return none("classe-REJECT")
+      return { asset: src, slot, reason: `classe-${cls || "inconnue"}-ok-carte`, provenance: prov }
+    }
+    if (slot === "portrait" || slot === "gallery") {
+      return none("slot-non-catalogue-manquant-documente")
+    }
+    return none("slot-inconnu")
+  } catch (_) { return none("erreur") }
+}
+
+export const hero = (beachId, ctx = {}) => decide(beachId, "hero", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const heroMobile = (beachId, ctx = {}) => decide(beachId, "hero_mobile", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const card = (beachId, ctx = {}) => decide(beachId, "card", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const portrait = (beachId, ctx = {}) => decide(beachId, "portrait", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const gallery = (beachId, ctx = {}) => decide(beachId, "gallery", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const poster = (beachId, ctx = {}) => decide(beachId, "poster", ctx.imageMap, ctx.photoClasses, ctx.attributions)
+export const atmosphere = (asset) => atmosphereSlot(asset)

@@ -1,0 +1,5 @@
+{
+  "_comment": "ATMOSPHERIC MEDIA library (2026-09-25K, §9) — boucles d'ambiance GÉNÉRIQUES (vagues, sunset, palmiers), JAMAIS présentées comme un lieu. Vide aujourd'hui : acquisition bloquée honnêtement (Pexels = clé requise, absente). Schéma du manifest : {id, src, poster, source, author, license, source_url, label, duration, width, height}. Quand des assets arriveront : label obligatoire type 'Ambiance Caraïbes — illustration' + attribution si requise + 5-10 loops max, 1 seule active à l'écran.",
+  "v": 1,
+  "assets": []
+}
