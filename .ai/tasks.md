@@ -1,3 +1,9 @@
+## VISUAL OS / ASSET LAB / AHA 2026-09-25J — [~] branche agent/coding/visual-os-aha (PR à créer)
+- **Livré** : 5 skills + REFERENCES + Embla lazy + Visual OS + media-art-direction + AHA fullscreen + shared transition + compare swipe + motion finies + preuve rail live + money 0 diff.
+- **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 64/64 (travel-30 62/62) · E2E 30/30 · regions OK · shots + probe rail lus.
+- **Rapport** : `.ai/ui-audit/VISUAL-OS-ASSET-LAB-AHA-2026-09-25J.md`.
+- **NEXT** : CI 7/7 → squash merge → deploy → probes prod → marquer [x] done.
+
 ## APP 3.0 CINEMATIC 2026-09-25I — [x] done + LIVE 2026-09-25 (PR #750 MERGED squash edc1ffed, CI 7/7, deploy prod b=edc1ffed, 5/5 HTTP 200)
 - **Livré** : tokens 3.0 · hero ciné (?sgcine=0) · facteurs réels · compare photos+synthèse+dismiss · séquence sans horaires · J1..Jn · 3 motions · 5 SVG · fix allowlist rail · money 0 diff · photo legacy inchangé.
 - **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 64/64 (travel-30 53/53) · E2E 30/30 · regions OK · shots lus.

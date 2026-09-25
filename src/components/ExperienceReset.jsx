@@ -13,6 +13,7 @@ import { beachImageUrl, beachMedia } from '../lib/beach-media.js';
 import { evidenceFor, sourceShort } from '../lib/intent-evidence.js';
 import { PlanCard, planOff } from './PlanCard.jsx';
 import { Icon } from '../lib/sg-icons.jsx';
+import useEmblaCarousel from 'embla-carousel-react';
 
 export const GOLD = '#FFC72C';
 const INK = '#0d0b14';
@@ -495,10 +496,41 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
         const heroImg = heroBeach ? beachImageUrl(heroBeach.id, imageMap) : null
         if (!heroBeach || !heroImg) return null
         const hm = statusMeta(heroBeach.status, lang)
+        /* AHA (2026-09-25J) : 3 raisons RÉELLES (evidenceFor, jamais d'absolu)
+           + plan B réel (journey). L'utilisateur comprend en <5 s pourquoi
+           CETTE plage. */
+        const ev = evidenceFor(intent || 'top', heroBeach, lang)
+        const reasons = !ev.blocked ? ev.evidence.slice(0, 3) : []
+        const planB = planJourney && planJourney.backup ? planJourney.backup : null
+        const reduceMotion = (() => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches || sgmOff() } catch (_) { return false } })()
+        /* Shared-transition (skill motion) : l'image s'étend (WAAPI 220 ms)
+           PUIS la fiche s'ouvre. Garde-fou : jamais de piège (timeout 400),
+           reduced-motion = ouverture directe, focus géré par le dialog. */
+        const openCine = (e) => {
+          try { track?.('sg_home_best_open', { beach_id: heroBeach.id, src: 'cine_hero' }); } catch (_) {}
+          const go = () => onOpenBeach?.(heroBeach)
+          if (reduceMotion) return go()
+          try {
+            const img = e?.currentTarget?.closest?.('[data-testid="cine-hero"]')?.querySelector('.t3-hero-media')
+            const anim = img?.animate?.(
+              [{ transform: 'scale(1)', opacity: 1 }, { transform: 'scale(1.07)', opacity: .55 }],
+              { duration: 220, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards' })
+            if (!anim || !anim.onfinish) return go()
+            let done = false
+            anim.onfinish = () => { if (!done) { done = true; go() } }
+            setTimeout(() => { if (!done) { done = true; go() } }, 400)
+          } catch (_) { go() }
+        }
+        const scrollPlan = () => {
+          try {
+            const el = document.querySelector('[data-testid="plan-card"]')
+            if (el) el.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+          } catch (_) {}
+        }
         return (
           <section data-testid="cine-hero" data-beach={heroBeach.id} className={SGM ? 'sgm-reveal' : undefined}
             style={{ marginBottom: 10 }} aria-label={_t(lang, 'Meilleur spot du jour', "Today's top pick", 'Mejor spot de hoy')}>
-            <div className="t3-hero">
+            <div className="t3-hero t3-hero-full">
               <img src={heroImg} alt={`${heroBeach.name} — ${heroBeach.commune || ''}`} className={`t3-hero-media${SGM ? ' sgm-zoom' : ''}`}
                 fetchpriority="high" decoding="async" width="800" height="500"
                 onError={e => { e.currentTarget.style.display = 'none' }} />
@@ -510,16 +542,27 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
                   {data.list.length ? _t(lang, `${data.list.length} plages observées. Voici celle qui ressort maintenant : `, `${data.list.length} beaches watched. This one stands out now: `, `${data.list.length} playas observadas. Esta destaca ahora: `) : ''}
                   <b>{heroBeach.name}</b>{heroBeach.status ? ` · ${hm.label}` : ''}
                 </p>
+                {!!reasons.length && (
+                  <ul className="t3-reasons" data-testid="cine-reasons">
+                    {reasons.map((r, i) => (
+                      <li key={i}><span aria-hidden="true" style={{ color: '#7CF5D3', fontWeight: 800 }}>✓</span><span>{r.text} <b>({sourceShort(r.source, lang)})</b></span></li>
+                    ))}
+                  </ul>
+                )}
+                {!!planB && (
+                  <p className="t3-planb-line" data-testid="cine-planb">
+                    {_t(lang, `Plan B : ${planB.name}${planB.distanceKm != null ? ` (${planB.distanceKm} km)` : ''}`, `Plan B: ${planB.name}`, `Plan B: ${planB.name}`)}
+                  </p>
+                )}
                 <div className="t3-hero-actions">
-                  <button type="button" data-testid="cine-open" className="t3-hero-cta"
-                    onClick={() => { try { track?.('sg_home_best_open', { beach_id: heroBeach.id, src: 'cine_hero' }); } catch (_) {} onOpenBeach?.(heroBeach); }}>
+                  <button type="button" data-testid="cine-open" className="t3-hero-cta" onClick={openCine}>
                     {_t(lang, 'Voir mon meilleur spot →', 'See my top pick →', 'Ver mi mejor spot →')}
                   </button>
-                  <button type="button" data-testid="cine-map" className="t3-hero-ghost"
-                    onClick={() => onGo?.('map')}>
-                    {_t(lang, 'Explorer la carte', 'Explore the map', 'Explorar el mapa')}
+                  <button type="button" data-testid="cine-plan" className="t3-hero-ghost" onClick={scrollPlan}>
+                    {_t(lang, 'Voir le plan ↓', 'See the plan ↓', 'Ver el plan ↓')}
                   </button>
                 </div>
+                <div className="t3-scroll-cue" aria-hidden="true">↓</div>
               </div>
             </div>
           </section>
@@ -749,6 +792,9 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
      return (règle React). */
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => { setDismissed(false) }, [beaches.length]);
+  /* SWIPE A↔B : hook AVANT tout return (règle React). */
+  const cineSwipe = (() => { try { return !/[?&]sgcine=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })();
+  const [emblaRef] = useEmblaCarousel({ align: 'start', containScroll: 'trimSnaps' });
   if (!beaches.length || dismissed) return null;
   const best = [...beaches].sort((a, b) => (b.score || 0) - (a.score || 0))[0];
   /* Synthèse honnête (2026-09-25I) : écart de score réel + statuts réels.
@@ -757,6 +803,22 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
   const synth = ranked.length >= 2 && ranked[0].score != null && ranked[1].score != null
     ? { first: ranked[0], second: ranked[1], gap: Math.round(ranked[0].score - ranked[1].score) } : null;
   const row = { display: 'flex', justifyContent: 'space-between', gap: 8, padding: '7px 0', borderTop: '1px solid #eee', fontSize: 13 };
+  const slide = (b, m, d, img) => (
+    <div key={b.id} className="t3-compare-slide" style={{ ...card, padding: 10, borderColor: b.id === best?.id ? INK : '#999', background: b.id === best?.id ? '#FFF6D6' : '#fff', flex: cineSwipe ? '0 0 78%' : undefined, minWidth: 0 }}>
+      {!!img && <img src={img} alt={b.name} loading="lazy" width="400" height="300" style={{ display: 'block', width: 'calc(100% + 20px)', height: 84, objectFit: 'cover', margin: '-10px -10px 8px', borderRadius: '14px 14px 0 0' }} onError={e => { e.currentTarget.style.display = 'none' }} />}
+      <div style={{ fontWeight: 800, fontSize: 13, lineHeight: 1.2, minHeight: 32, overflow: 'hidden' }}>{b.id === best?.id ? '★ ' : ''}{b.name}</div>
+      <div><span style={pill(m)}>{m.label}</span></div>
+      <div style={row}><span>Score</span><b>{b.score ?? '—'}</b></div>
+      <div style={row}><span>{_t(lang, 'Confiance', 'Confidence', 'Confianza')}</span><b>{b.confidence ?? '—'}</b></div>
+      <div style={row}><span>km</span><b>{d != null ? d.toFixed(1) : '—'}</b></div>
+      <div style={row}><span>Kids</span><b>{b.kids ? '✓' : '—'}</b></div>
+      <div style={row}><span>Snorkel</span><b>{b.snorkel ? '✓' : '—'}</b></div>
+      <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+        <button type="button" style={{ ...btnGhost, flex: 1, minWidth: 44 }} onClick={() => onOpenBeach?.(b)}>→</button>
+        <button type="button" style={{ ...btnGhost, flex: 1, minWidth: 44 }} onClick={() => onToggleFav?.(b)}>{(favorites || []).includes(b.id) ? '★' : '☆'}</button>
+      </div>
+    </div>
+  );
   return (
     <div role="dialog" aria-label="compare" style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }} onClick={() => setDismissed(true)} data-testid="xp-compare">
       <div className={sgmOff() ? undefined : 'sgm-sheet'} style={{ width: '100%', maxWidth: 560, maxHeight: '88dvh', overflowY: 'auto', background: '#FFFDF6', border: `2.5px solid ${INK}`, borderBottom: 'none', borderRadius: '22px 22px 0 0', padding: '12px 12px calc(16px + env(safe-area-inset-bottom))' }} onClick={e => e.stopPropagation()}>
@@ -769,23 +831,18 @@ export function CompareSheet({ lang = 'fr', beaches = [], userPos, onClose, onOp
             <button type="button" onClick={() => setDismissed(true)} style={{ ...btnGhost, minWidth: 44 }} aria-label="close">✕</button>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: `repeat(${beaches.length},1fr)`, gap: 8, marginTop: 8 }}>
-          {beaches.map(b => { const m = statusMeta(b.status, lang); const d = distOf(b, userPos); const img = beachImageUrl(b.id, imageMap); return (
-            <div key={b.id} style={{ ...card, padding: 10, borderColor: b.id === best?.id ? INK : '#999', background: b.id === best?.id ? '#FFF6D6' : '#fff' }}>
-              {!!img && <img src={img} alt={b.name} loading="lazy" width="400" height="300" style={{ display: 'block', width: 'calc(100% + 20px)', height: 84, objectFit: 'cover', margin: '-10px -10px 8px', borderRadius: '14px 14px 0 0' }} onError={e => { e.currentTarget.style.display = 'none' }} />}
-              <div style={{ fontWeight: 800, fontSize: 13, lineHeight: 1.2, minHeight: 32, overflow: 'hidden' }}>{b.id === best?.id ? '★ ' : ''}{b.name}</div>
-              <div><span style={pill(m)}>{m.label}</span></div>
-              <div style={row}><span>Score</span><b>{b.score ?? '—'}</b></div>
-              <div style={row}><span>{_t(lang, 'Confiance', 'Confidence', 'Confianza')}</span><b>{b.confidence ?? '—'}</b></div>
-              <div style={row}><span>km</span><b>{d != null ? d.toFixed(1) : '—'}</b></div>
-              <div style={row}><span>Kids</span><b>{b.kids ? '✓' : '—'}</b></div>
-              <div style={row}><span>Snorkel</span><b>{b.snorkel ? '✓' : '—'}</b></div>
-              <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
-                <button type="button" style={{ ...btnGhost, flex: 1, minWidth: 44 }} onClick={() => onOpenBeach?.(b)}>→</button>
-                <button type="button" style={{ ...btnGhost, flex: 1, minWidth: 44 }} onClick={() => onToggleFav?.(b)}>{(favorites || []).includes(b.id) ? '★' : '☆'}</button>
-              </div>
-            </div>); })}
-        </div>
+        {cineSwipe ? (
+          <div ref={emblaRef} data-testid="xp-compare-rail" style={{ overflow: 'hidden', margin: '8px -12px 0', padding: '0 12px 4px' }}
+            aria-label={_t(lang, 'Balayer pour comparer', 'Swipe to compare', 'Desliza para comparar')}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {beaches.map(b => { const m = statusMeta(b.status, lang); return slide(b, m, distOf(b, userPos), beachImageUrl(b.id, imageMap)) })}
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${beaches.length},1fr)`, gap: 8, marginTop: 8 }}>
+            {beaches.map(b => { const m = statusMeta(b.status, lang); return slide(b, m, distOf(b, userPos), beachImageUrl(b.id, imageMap)) })}
+          </div>
+        )}
         {!!best && <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, marginTop: 10 }} onClick={() => onOpenBeach?.(best)}>{_t(lang, `Ouvrir le meilleur : ${best.name} →`, `Open best: ${best.name} →`, `Abrir la mejor: ${best.name} →`)}</button>}
         {!!synth && (
           <div data-testid="xp-compare-synth" style={{ fontSize: 13, marginTop: 8, background: '#FFF6D6', border: `2px solid ${INK}`, borderRadius: 12, padding: '9px 12px' }}>
