@@ -1,0 +1,5 @@
+{
+  "_comment": "Quarantaine lieu-douteux (2026-09-25H). Paires même-photo (dHash ≤ 1) sur des lieux DISTANTS : une seule des deux plages peut être le vrai lieu. Le twin à la requête POI la plus faible est exclu de tout affichage (scène SVG honnête à la place) en attendant une validation humaine via contact-sheet.html. Les fichiers restent sur disque (pas de suppression). NE PAS remapper sans ground truth (lieu voisin interdit).",
+  "gp118": { "reason": "same-photo-as gp019 (dHash 0, 44 km, même île) — requête 'Plage de La Désirade Sud' plus faible que 'Plage de La Désirade'", "pair": "gp019", "km": 44.0 },
+  "gp119": { "reason": "same-photo-as gp024 (dHash 1, 76 km, îles différentes — impossible que les deux soient vraies) — POI Désirade obscur vs Deshaies célèbre (cross-serve probable)", "pair": "gp024", "km": 76.2 }
+}

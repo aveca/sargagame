@@ -14,6 +14,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { findAlternatives } from "./lib/beach-decision.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
 import { nearestBeaches, dataAgeHours, visOff } from "./lib/sg-visual.js"
+import { photoAllowed } from "./lib/beach-media.js"
 import { tipsFor, sourceShort } from "./lib/intent-evidence.js"
 import { fetchMarine, marineState, snorkelSea, marineSourceLabel } from "./lib/marine.js"
 import { off as sgmOff } from "./lib/sgMotion.js"
@@ -91,14 +92,30 @@ function Scene({ status, island }) {
    variante `-w` desktop via manifest, 404 → la photo reste).
    L'atmosphère SUIT le verdict (filtre CSS = données → visuel) ; le verdict
    lui-même reste DOM. Régions sans média (ex. tulum) = scène SVG seule. */
+/* Cache module des classes photo (1 fetch/session, comme le manifest hero). */
+let _photoClasses = null
+
 function ExpMedia({ beachId, status, trk }) {
   const [photoOk, setPhotoOk] = useState(true)
   const [photoOn, setPhotoOn] = useState(false)
   const [vidSrc, setVidSrc] = useState(null)
   const [vidOn, setVidOn] = useState(false)
+  /* Gating HERO v2 (2026-09-25H) : le plein-bleed exige classe HERO/CARD
+     (photo-classes.json, cache module) — THUMB/REJECT/exclu → scène SVG
+     seule (honnête, jamais de photo faible en grand). */
+  const [heroOk, setHeroOk] = useState(null)
   const off = useMemo(() => {
     try { return /[?&](aha|heropv)=0/.test(window.location.search) } catch (_) { return false }
   }, [])
+  useEffect(() => {
+    let dead = false
+    if (_photoClasses) { setHeroOk(photoAllowed(_photoClasses, beachId, "HERO")); return }
+    fetch("/data/photo-classes.json")
+      .then(r => (r.ok ? r.json() : null))
+      .then(cls => { if (cls) _photoClasses = cls; if (!dead) setHeroOk(photoAllowed(cls, beachId, "HERO")) })
+      .catch(() => { if (!dead) setHeroOk(true) })
+    return () => { dead = true }
+  }, [beachId])
   useEffect(() => {
     if (off) return
     let allow = true, dead = false
@@ -107,7 +124,7 @@ function ExpMedia({ beachId, status, trk }) {
       const c = navigator.connection
       if (c && (c.saveData || /(^|-)2g/.test(c.effectiveType || ""))) allow = false
     } catch (_) {}
-    if (!allow) return
+    if (!allow || heroOk === false) return
     fetch("/videos/hero/manifest.json")
       .then(r => (r.ok ? r.json() : null))
       .then(m => {
@@ -118,13 +135,13 @@ function ExpMedia({ beachId, status, trk }) {
       })
       .catch(() => {})
     return () => { dead = true }
-  }, [beachId, off])
+  }, [beachId, off, heroOk])
   if (off) return null
   const filter = status === "avoid" ? "saturate(.55) brightness(.8) contrast(1.05)"
     : status === "moderate" ? "saturate(.9) brightness(.96)" : "none"
   return (
     <>
-      {photoOk && (
+      {photoOk && heroOk === true && (
         <img src={`/beaches/gplace-${beachId}.jpg`} alt="" aria-hidden="true" fetchpriority="high"
           className="bx-media bx-media-img" style={{ filter, opacity: photoOn ? 1 : 0 }}
           onLoad={() => setPhotoOn(true)} onError={() => setPhotoOk(false)} />

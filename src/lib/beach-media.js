@@ -61,3 +61,34 @@ export function mediaKeyForIntent(intentId) {
   // reste celui de la plage recommandée (photo réelle du lieu, jamais de stock).
   return "intent:" + String(intentId || "")
 }
+
+/**
+ * Classes qualité v2 (2026-09-25H) — `public/data/photo-classes.json`.
+ * Format : string simple ("HERO") si affichable, objet {class, excluded:true}
+ * si quarantaine lieu-douteux. Jamais de throw (données optionnelles).
+ */
+export function photoClass(classes, beachId) {
+  try {
+    const c = classes && beachId != null ? classes[beachId] : null
+    if (!c) return { class: null, excluded: false }
+    if (typeof c === "string") return { class: c, excluded: false }
+    return { class: c.class || null, excluded: !!c.excluded }
+  } catch (_) { return { class: null, excluded: false } }
+}
+
+const CLASS_RANK = { REJECT: 0, THUMB: 1, CARD: 2, HERO: 3 }
+
+/**
+ * La photo peut-elle occuper un slot donné ? Slots HERO (plein-bleed,
+ * today 16/9) exigent HERO/CARD ; slots CARD (≤160px) acceptent THUMB.
+ * Exclu ou inconnu (pas de classes chargées) → règle sûre : les grands
+ * slots exigent une classe connue, les petits restent permissifs.
+ */
+export function photoAllowed(classes, beachId, slot = "CARD") {
+  try {
+    const { class: c, excluded } = photoClass(classes, beachId)
+    if (excluded) return false
+    if (!c) return slot !== "HERO"
+    return (CLASS_RANK[c] || 0) >= (slot === "HERO" ? 2 : 1)
+  } catch (_) { return slot !== "HERO" }
+}

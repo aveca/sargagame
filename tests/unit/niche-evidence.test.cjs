@@ -84,8 +84,11 @@ console.log("NICHE EVIDENCE — contrats")
   }
   check("media binding : snorkel hero vidéo si id manifest (jamais de stock)", heroIds.length === 80)
 
-  // ── Photos C (Phase 12) : mêmes lieux, tailles d'affichage bornées ──
-  check("photos C : gp012/gp027/gp083 mappées à leur vrai lieu (pas de substitution)", imgMap.gp012 === "Gosier_plage.jpg" && imgMap.gp027 === "gplace-gp027.jpg" && imgMap.gp083 === "gplace-gp083.jpg")
+  // ── Photos C (Phase 12, cycle H) : mêmes lieux, tailles d'affichage bornées ──
+  // gp027 remappée (H) : gplace-gp027.jpg (THUMB) → Plage_de_Clugny.jpg (CARD,
+  // même lieu prouvé : nom exact + dHash 2). gp083/Gosier : pas de meilleur
+  // asset même-lieu → conservées + bannies des slots HERO (classes).
+  check("photos C : mappings au vrai lieu (gp027 remappée H, pas de substitution)", imgMap.gp027 === "Plage_de_Clugny.jpg" && imgMap.gp012 === "Gosier_plage.jpg" && imgMap.gp083 === "gplace-gp083.jpg")
   check("photos C : Îlet_du_Gosier (102 Ko) NON mappée à gp012 (lieu différent, pas de mensonge)", imgMap.gp012 !== "Îlet_du_Gosier.jpg")
 
   // ── Money-path intact ──

@@ -1,0 +1,4131 @@
+{
+ "v": 2,
+ "generated": "2026-09-25T15:02:36.509Z",
+ "photos": {
+  "Anse-Bertrand.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 217,
+   "tech": 50,
+   "visu": 39.5
+  },
+  "Anse_a_Saint.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 185,
+   "tech": 37,
+   "visu": 45.1
+  },
+  "Anse_Cannot.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 82,
+   "tech": 37,
+   "visu": 38.3
+  },
+  "Anse_Canot.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 676,
+   "kb": 89,
+   "tech": 37,
+   "visu": 40.4
+  },
+  "Anse_Castalia.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 147,
+   "tech": 37,
+   "visu": 44.9
+  },
+  "Anse_Champagne.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 94,
+   "tech": 37,
+   "visu": 40.7
+  },
+  "Anse_des_Iles.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 115,
+   "tech": 37,
+   "visu": 44
+  },
+  "Anse_des_Rochers.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 83,
+   "tech": 37,
+   "visu": 34.7
+  },
+  "Anse_des_Rochers__Domaine_du_Lagon_GUADELOUPE.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 136,
+   "tech": 37,
+   "visu": 40.2
+  },
+  "Anse_de_la_Perle.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1280,
+   "h": 606,
+   "kb": 69,
+   "tech": 40,
+   "visu": 35.4
+  },
+  "Anse_de_Mays.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 134,
+   "tech": 37,
+   "visu": 42
+  },
+  "Anse_du_Vieux_Fort.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 140,
+   "tech": 50,
+   "visu": 37.7
+  },
+  "Anse_Feuillard.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 67,
+   "tech": 37,
+   "visu": 36.4
+  },
+  "Anse_Laborde.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 94,
+   "tech": 37,
+   "visu": 36.8
+  },
+  "Anse_Maurice.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 797,
+   "kb": 149,
+   "tech": 37,
+   "visu": 39.9
+  },
+  "Anse_Patate.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 91,
+   "tech": 37,
+   "visu": 38.1
+  },
+  "Anse_Piton.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 129,
+   "tech": 37,
+   "visu": 45
+  },
+  "Anse_Rifflet.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1200,
+   "kb": 145,
+   "tech": 37,
+   "visu": 36.9
+  },
+  "Anse_Salee.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 92,
+   "tech": 37,
+   "visu": 35.1
+  },
+  "Anse_Tabarin.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1280,
+   "h": 854,
+   "kb": 63,
+   "tech": 45,
+   "visu": 32.8
+  },
+  "Anse_à_la_Gourde.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 686,
+   "kb": 79,
+   "tech": 37,
+   "visu": 37.7
+  },
+  "ARAWAK_BEACH_RESORT.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 127,
+   "tech": 37,
+   "visu": 38.4
+  },
+  "Basse-Terre_Island.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1068,
+   "kb": 210,
+   "tech": 37,
+   "visu": 43.9
+  },
+  "Beach_of_Petit-Havre.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 105,
+   "tech": 37,
+   "visu": 37.8
+  },
+  "Beach_Paradise.jpg": {
+   "score": 92,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 350,
+   "tech": 50,
+   "visu": 42.4
+  },
+  "Bord_de_plage.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 101,
+   "tech": 37,
+   "visu": 34.3
+  },
+  "Canella_Beach.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 124,
+   "tech": 37,
+   "visu": 41.8
+  },
+  "Capesterre-de-Marie-Galante.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 734,
+   "kb": 163,
+   "tech": 37,
+   "visu": 43
+  },
+  "CHEZ_HENRI.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 94,
+   "tech": 37,
+   "visu": 40
+  },
+  "Clear_Blue_Caraibes.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1280,
+   "h": 576,
+   "kb": 98,
+   "tech": 40,
+   "visu": 42.1
+  },
+  "Club_Med_La_Caravelle.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1200,
+   "h": 801,
+   "kb": 117,
+   "tech": 37,
+   "visu": 45.6
+  },
+  "Coco_Beach_Resort.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 104,
+   "tech": 37,
+   "visu": 34.5
+  },
+  "Commune_de_Terre-de-Bas.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 162,
+   "tech": 37,
+   "visu": 43.7
+  },
+  "COTE_PLAGE_Le_Balaou.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1200,
+   "kb": 195,
+   "tech": 37,
+   "visu": 44
+  },
+  "Crystal_Beach_Beachfront.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 132,
+   "tech": 50,
+   "visu": 36.4
+  },
+  "DANTANA_BEACH.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 130,
+   "tech": 37,
+   "visu": 38.6
+  },
+  "Englishman's_Head.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 104,
+   "tech": 50,
+   "visu": 38.4
+  },
+  "Fort_Delgrès.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 100,
+   "tech": 37,
+   "visu": 38.7
+  },
+  "Fort_Napoléon_des_Saintes.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1280,
+   "h": 234,
+   "kb": 47,
+   "tech": 37,
+   "visu": 39.2
+  },
+  "Gosier_plage.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 56,
+   "tech": 45,
+   "visu": 33.4
+  },
+  "gplace-fl001.jpg": {
+   "score": 80,
+   "class": "HERO",
+   "w": 1280,
+   "h": 850,
+   "kb": 188,
+   "tech": 45,
+   "visu": 46.2,
+   "override": true
+  },
+  "gplace-fl002.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 109,
+   "tech": 45,
+   "visu": 42.4,
+   "override": true
+  },
+  "gplace-fl003.jpg": {
+   "score": 92,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 170,
+   "tech": 45,
+   "visu": 38.2,
+   "override": true
+  },
+  "gplace-fl004.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 160,
+   "tech": 45,
+   "visu": 48.7,
+   "override": true
+  },
+  "gplace-fl005.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 982,
+   "kb": 100,
+   "tech": 45,
+   "visu": 32.7,
+   "override": true
+  },
+  "gplace-fl006.jpg": {
+   "score": 70,
+   "class": "HERO",
+   "w": 1280,
+   "h": 854,
+   "kb": 182,
+   "tech": 45,
+   "visu": 43.3,
+   "override": true
+  },
+  "gplace-fl007.jpg": {
+   "score": 76,
+   "class": "HERO",
+   "w": 1280,
+   "h": 1327,
+   "kb": 187,
+   "tech": 45,
+   "visu": 39.9,
+   "override": true
+  },
+  "gplace-fl008.jpg": {
+   "score": 55,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 234,
+   "tech": 45,
+   "visu": 43.5,
+   "override": true
+  },
+  "gplace-fl009.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 139,
+   "tech": 45,
+   "visu": 38.5,
+   "override": true
+  },
+  "gplace-fl010.jpg": {
+   "score": 85,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 69,
+   "tech": 45,
+   "visu": 35,
+   "override": true
+  },
+  "gplace-fl011.jpg": {
+   "score": 96,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 113,
+   "tech": 45,
+   "visu": 39.7,
+   "override": true
+  },
+  "gplace-fl012.jpg": {
+   "score": 94,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 128,
+   "tech": 45,
+   "visu": 36.5,
+   "override": true
+  },
+  "gplace-gp001.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 800,
+   "h": 1067,
+   "kb": 72,
+   "tech": 37,
+   "visu": 37.7
+  },
+  "gplace-gp002.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 63,
+   "tech": 37,
+   "visu": 41.1
+  },
+  "gplace-gp003.jpg": {
+   "score": 71,
+   "class": "THUMB",
+   "w": 800,
+   "h": 600,
+   "kb": 40,
+   "tech": 37,
+   "visu": 34
+  },
+  "gplace-gp004.jpg": {
+   "score": 74,
+   "class": "THUMB",
+   "w": 800,
+   "h": 534,
+   "kb": 30,
+   "tech": 37,
+   "visu": 36.9
+  },
+  "gplace-gp005.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 163,
+   "tech": 45,
+   "visu": 37.3
+  },
+  "gplace-gp006.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 86,
+   "tech": 37,
+   "visu": 43.7
+  },
+  "gplace-gp007.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 89,
+   "tech": 37,
+   "visu": 41.5
+  },
+  "gplace-gp008.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 60,
+   "tech": 37,
+   "visu": 39.4
+  },
+  "gplace-gp009.jpg": {
+   "score": 75,
+   "class": "THUMB",
+   "w": 800,
+   "h": 600,
+   "kb": 42,
+   "tech": 37,
+   "visu": 37.9
+  },
+  "gplace-gp010.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 800,
+   "h": 1067,
+   "kb": 116,
+   "tech": 37,
+   "visu": 42.4
+  },
+  "gplace-gp011.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 148,
+   "tech": 45,
+   "visu": 36
+  },
+  "gplace-gp012.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 52,
+   "tech": 37,
+   "visu": 38.8
+  },
+  "gplace-gp013.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 216,
+   "tech": 45,
+   "visu": 43.7
+  },
+  "gplace-gp014.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 800,
+   "h": 800,
+   "kb": 91,
+   "tech": 37,
+   "visu": 37.2
+  },
+  "gplace-gp015.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 151,
+   "tech": 45,
+   "visu": 39.1
+  },
+  "gplace-gp016.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 155,
+   "tech": 45,
+   "visu": 36.8
+  },
+  "gplace-gp017.jpg": {
+   "score": 72,
+   "class": "THUMB",
+   "w": 800,
+   "h": 600,
+   "kb": 41,
+   "tech": 37,
+   "visu": 34.8
+  },
+  "gplace-gp018.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 78,
+   "tech": 45,
+   "visu": 35.1
+  },
+  "gplace-gp019.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 166,
+   "tech": 45,
+   "visu": 39.4
+  },
+  "gplace-gp020.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 144,
+   "tech": 45,
+   "visu": 39.1
+  },
+  "gplace-gp021.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 800,
+   "h": 389,
+   "kb": 61,
+   "tech": 32,
+   "visu": 39.2
+  },
+  "gplace-gp022.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 800,
+   "h": 599,
+   "kb": 69,
+   "tech": 37,
+   "visu": 40.5
+  },
+  "gplace-gp023.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1199,
+   "h": 1600,
+   "kb": 280,
+   "tech": 50,
+   "visu": 38.8
+  },
+  "gplace-gp024.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 81,
+   "tech": 45,
+   "visu": 34.7
+  },
+  "gplace-gp025.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 800,
+   "h": 473,
+   "kb": 52,
+   "tech": 37,
+   "visu": 35.4
+  },
+  "gplace-gp026.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 135,
+   "tech": 45,
+   "visu": 40.3
+  },
+  "gplace-gp027.jpg": {
+   "score": 80,
+   "class": "THUMB",
+   "w": 1280,
+   "h": 720,
+   "kb": 42,
+   "tech": 45,
+   "visu": 35.3
+  },
+  "gplace-gp028.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 901,
+   "h": 1600,
+   "kb": 110,
+   "tech": 50,
+   "visu": 35.3
+  },
+  "gplace-gp029.jpg": {
+   "score": 92,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 184,
+   "tech": 45,
+   "visu": 46.7
+  },
+  "gplace-gp031.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 67,
+   "tech": 37,
+   "visu": 41.6
+  },
+  "gplace-gp032.jpg": {
+   "score": 77,
+   "class": "HERO",
+   "w": 739,
+   "h": 1600,
+   "kb": 121,
+   "tech": 45,
+   "visu": 32.1
+  },
+  "gplace-gp033.jpg": {
+   "score": 65,
+   "class": "CARD",
+   "w": 800,
+   "h": 914,
+   "kb": 47,
+   "tech": 37,
+   "visu": 27.5
+  },
+  "gplace-gp035.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 800,
+   "h": 533,
+   "kb": 63,
+   "tech": 37,
+   "visu": 40.4
+  },
+  "gplace-gp036.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 207,
+   "tech": 45,
+   "visu": 44.1
+  },
+  "gplace-gp038.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 160,
+   "tech": 45,
+   "visu": 39.3
+  },
+  "gplace-gp039.jpg": {
+   "score": 70,
+   "class": "THUMB",
+   "w": 800,
+   "h": 600,
+   "kb": 43,
+   "tech": 37,
+   "visu": 32.8
+  },
+  "gplace-gp040.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 152,
+   "tech": 45,
+   "visu": 40.1
+  },
+  "gplace-gp041.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 212,
+   "tech": 50,
+   "visu": 39.1
+  },
+  "gplace-gp042.jpg": {
+   "score": 78,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 102,
+   "tech": 45,
+   "visu": 33.4
+  },
+  "gplace-gp043.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 132,
+   "tech": 45,
+   "visu": 44.8
+  },
+  "gplace-gp044.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 106,
+   "tech": 37,
+   "visu": 43.5
+  },
+  "gplace-gp045.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 800,
+   "h": 1067,
+   "kb": 177,
+   "tech": 37,
+   "visu": 41.8
+  },
+  "gplace-gp046.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 965,
+   "kb": 176,
+   "tech": 45,
+   "visu": 41
+  },
+  "gplace-gp047.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 121,
+   "tech": 45,
+   "visu": 36.8
+  },
+  "gplace-gp048.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 148,
+   "tech": 45,
+   "visu": 42
+  },
+  "gplace-gp049.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 120,
+   "tech": 45,
+   "visu": 42.3
+  },
+  "gplace-gp050.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 1148,
+   "kb": 70,
+   "tech": 45,
+   "visu": 35.2
+  },
+  "gplace-gp051.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 722,
+   "kb": 118,
+   "tech": 45,
+   "visu": 38.8
+  },
+  "gplace-gp052.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 246,
+   "tech": 45,
+   "visu": 44
+  },
+  "gplace-gp054.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 92,
+   "tech": 45,
+   "visu": 34.7
+  },
+  "gplace-gp057.jpg": {
+   "score": 80,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 111,
+   "tech": 45,
+   "visu": 35
+  },
+  "gplace-gp058.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 88,
+   "tech": 37,
+   "visu": 44.6
+  },
+  "gplace-gp059.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1199,
+   "h": 1600,
+   "kb": 238,
+   "tech": 50,
+   "visu": 38.6
+  },
+  "gplace-gp060.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 91,
+   "tech": 45,
+   "visu": 35.6
+  },
+  "gplace-gp061.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 107,
+   "tech": 45,
+   "visu": 37.3
+  },
+  "gplace-gp062.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 88,
+   "tech": 45,
+   "visu": 34.1
+  },
+  "gplace-gp064.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 191,
+   "tech": 50,
+   "visu": 36.6
+  },
+  "gplace-gp066.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 187,
+   "tech": 45,
+   "visu": 38
+  },
+  "gplace-gp068.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 139,
+   "tech": 50,
+   "visu": 37.6
+  },
+  "gplace-gp069.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 92,
+   "tech": 45,
+   "visu": 35.9
+  },
+  "gplace-gp071.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 165,
+   "tech": 45,
+   "visu": 36.2
+  },
+  "gplace-gp072.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 722,
+   "kb": 84,
+   "tech": 45,
+   "visu": 36.1
+  },
+  "gplace-gp073.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 147,
+   "tech": 45,
+   "visu": 40
+  },
+  "gplace-gp074.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 136,
+   "tech": 45,
+   "visu": 40.1
+  },
+  "gplace-gp078.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1199,
+   "h": 1600,
+   "kb": 145,
+   "tech": 50,
+   "visu": 35
+  },
+  "gplace-gp080.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 179,
+   "tech": 45,
+   "visu": 37.4
+  },
+  "gplace-gp081.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 83,
+   "tech": 45,
+   "visu": 33.5
+  },
+  "gplace-gp082.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 800,
+   "h": 599,
+   "kb": 69,
+   "tech": 37,
+   "visu": 40.5
+  },
+  "gplace-gp083.jpg": {
+   "score": 70,
+   "class": "THUMB",
+   "w": 1280,
+   "h": 592,
+   "kb": 38,
+   "tech": 40,
+   "visu": 29.9
+  },
+  "gplace-gp084.jpg": {
+   "score": 78,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 114,
+   "tech": 45,
+   "visu": 32.7
+  },
+  "gplace-gp086.jpg": {
+   "score": 70,
+   "class": "THUMB",
+   "w": 800,
+   "h": 600,
+   "kb": 43,
+   "tech": 37,
+   "visu": 32.8
+  },
+  "gplace-gp087.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 854,
+   "kb": 129,
+   "tech": 45,
+   "visu": 38.5
+  },
+  "gplace-gp088.jpg": {
+   "score": 92,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 144,
+   "tech": 45,
+   "visu": 47.3
+  },
+  "gplace-gp093.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 86,
+   "tech": 45,
+   "visu": 36
+  },
+  "gplace-gp094.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 118,
+   "tech": 45,
+   "visu": 36.3
+  },
+  "gplace-gp096.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 76,
+   "tech": 45,
+   "visu": 36.5
+  },
+  "gplace-gp097.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 192,
+   "tech": 50,
+   "visu": 38.6
+  },
+  "gplace-gp099.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 777,
+   "h": 1600,
+   "kb": 240,
+   "tech": 45,
+   "visu": 37.3
+  },
+  "gplace-gp100.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 123,
+   "tech": 45,
+   "visu": 37
+  },
+  "gplace-gp101.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 722,
+   "kb": 133,
+   "tech": 45,
+   "visu": 41
+  },
+  "gplace-gp103.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 75,
+   "tech": 45,
+   "visu": 32.2
+  },
+  "gplace-gp104.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 134,
+   "tech": 45,
+   "visu": 44.2
+  },
+  "gplace-gp108.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 965,
+   "kb": 198,
+   "tech": 45,
+   "visu": 40.1
+  },
+  "gplace-gp110.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 125,
+   "tech": 45,
+   "visu": 37.3
+  },
+  "gplace-gp113.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 133,
+   "tech": 45,
+   "visu": 38.2
+  },
+  "gplace-gp115.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 121,
+   "tech": 45,
+   "visu": 38.7
+  },
+  "gplace-gp116.jpg": {
+   "score": 91,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 220,
+   "tech": 45,
+   "visu": 46
+  },
+  "gplace-gp118.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 166,
+   "tech": 45,
+   "visu": 39.4
+  },
+  "gplace-gp119.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 82,
+   "tech": 45,
+   "visu": 34.7
+  },
+  "gplace-gp120.jpg": {
+   "score": 80,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 125,
+   "tech": 45,
+   "visu": 35.3
+  },
+  "gplace-mq001.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 106,
+   "tech": 45,
+   "visu": 39.2
+  },
+  "gplace-mq002.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 722,
+   "kb": 166,
+   "tech": 45,
+   "visu": 42.3
+  },
+  "gplace-mq003.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 106,
+   "tech": 45,
+   "visu": 36.6
+  },
+  "gplace-mq004.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 127,
+   "tech": 45,
+   "visu": 38.1
+  },
+  "gplace-mq005.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 137,
+   "tech": 45,
+   "visu": 37.6
+  },
+  "gplace-mq006.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 131,
+   "tech": 45,
+   "visu": 36.2
+  },
+  "gplace-mq007.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1280,
+   "h": 722,
+   "kb": 156,
+   "tech": 45,
+   "visu": 45.4
+  },
+  "gplace-mq008.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 104,
+   "tech": 45,
+   "visu": 38.1
+  },
+  "gplace-mq009.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 183,
+   "tech": 45,
+   "visu": 39.4
+  },
+  "gplace-mq010.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 1280,
+   "kb": 156,
+   "tech": 45,
+   "visu": 37.9
+  },
+  "gplace-mq011.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 135,
+   "tech": 45,
+   "visu": 42.4
+  },
+  "gplace-mq012.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 281,
+   "tech": 45,
+   "visu": 44.7
+  },
+  "gplace-mq013.jpg": {
+   "score": 78,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 123,
+   "tech": 45,
+   "visu": 32.6
+  },
+  "gplace-mq014.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 102,
+   "tech": 45,
+   "visu": 38
+  },
+  "gplace-mq015.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 965,
+   "kb": 114,
+   "tech": 45,
+   "visu": 38.1
+  },
+  "gplace-mq016.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 122,
+   "tech": 45,
+   "visu": 37.1
+  },
+  "gplace-mq017.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 721,
+   "h": 1600,
+   "kb": 163,
+   "tech": 45,
+   "visu": 40.8
+  },
+  "gplace-mq018.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 800,
+   "h": 531,
+   "kb": 74,
+   "tech": 37,
+   "visu": 44.4
+  },
+  "gplace-mq019.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 97,
+   "tech": 45,
+   "visu": 38.1
+  },
+  "gplace-mq020.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 118,
+   "tech": 45,
+   "visu": 39.8
+  },
+  "gplace-mq021.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 722,
+   "kb": 77,
+   "tech": 45,
+   "visu": 36.3
+  },
+  "gplace-mq022.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 105,
+   "tech": 45,
+   "visu": 42
+  },
+  "gplace-mq023.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 161,
+   "tech": 45,
+   "visu": 38.9
+  },
+  "gplace-mq024.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1201,
+   "h": 1600,
+   "kb": 148,
+   "tech": 50,
+   "visu": 34.4
+  },
+  "gplace-mq025.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 140,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "gplace-mq026.jpg": {
+   "score": 91,
+   "class": "HERO",
+   "w": 1280,
+   "h": 833,
+   "kb": 197,
+   "tech": 45,
+   "visu": 45.6
+  },
+  "gplace-mq027.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 87,
+   "tech": 45,
+   "visu": 28.7
+  },
+  "gplace-mq028.jpg": {
+   "score": 94,
+   "class": "HERO",
+   "w": 1199,
+   "h": 1600,
+   "kb": 388,
+   "tech": 50,
+   "visu": 44.2
+  },
+  "gplace-mq029.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 117,
+   "tech": 45,
+   "visu": 38.4
+  },
+  "gplace-mq030.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 201,
+   "tech": 45,
+   "visu": 43.2
+  },
+  "gplace-mq032.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 766,
+   "kb": 128,
+   "tech": 45,
+   "visu": 38.6
+  },
+  "gplace-mq033.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 747,
+   "h": 1600,
+   "kb": 193,
+   "tech": 45,
+   "visu": 38
+  },
+  "gplace-mq034.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 148,
+   "tech": 45,
+   "visu": 43.2
+  },
+  "gplace-mq035.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 958,
+   "kb": 150,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "gplace-mq036.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 182,
+   "tech": 45,
+   "visu": 37.4
+  },
+  "gplace-mq037.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 168,
+   "tech": 45,
+   "visu": 42.8
+  },
+  "gplace-mq038.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 958,
+   "kb": 150,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "gplace-mq039.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 79,
+   "tech": 45,
+   "visu": 35.2
+  },
+  "gplace-mq041.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1280,
+   "h": 851,
+   "kb": 95,
+   "tech": 45,
+   "visu": 37.5
+  },
+  "gplace-mq042.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 72,
+   "tech": 45,
+   "visu": 31.7
+  },
+  "gplace-mq044.jpg": {
+   "score": 86,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 97,
+   "tech": 45,
+   "visu": 40.7
+  },
+  "gplace-mq046.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 190,
+   "tech": 45,
+   "visu": 39.1
+  },
+  "gplace-mq047.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 114,
+   "tech": 45,
+   "visu": 35.6
+  },
+  "gplace-mq049.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 189,
+   "tech": 45,
+   "visu": 43.7
+  },
+  "gplace-mq050.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 853,
+   "kb": 152,
+   "tech": 45,
+   "visu": 40
+  },
+  "gplace-mq051.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 210,
+   "tech": 45,
+   "visu": 39
+  },
+  "gplace-mq053.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1205,
+   "h": 1600,
+   "kb": 127,
+   "tech": 50,
+   "visu": 33.6
+  },
+  "gplace-mq055.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 188,
+   "tech": 45,
+   "visu": 42.9
+  },
+  "gplace-mq057.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 203,
+   "tech": 45,
+   "visu": 44.9
+  },
+  "gplace-mq060.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 141,
+   "tech": 45,
+   "visu": 37.1
+  },
+  "gplace-mq062.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 132,
+   "tech": 45,
+   "visu": 39.4
+  },
+  "gplace-mq063.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 834,
+   "kb": 143,
+   "tech": 45,
+   "visu": 42.1
+  },
+  "gplace-mq064.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 800,
+   "h": 450,
+   "kb": 53,
+   "tech": 37,
+   "visu": 42.9
+  },
+  "gplace-mq066.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 178,
+   "tech": 45,
+   "visu": 38
+  },
+  "gplace-mq067.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 328,
+   "tech": 50,
+   "visu": 39.6
+  },
+  "gplace-mq070.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 800,
+   "h": 600,
+   "kb": 67,
+   "tech": 37,
+   "visu": 39.8
+  },
+  "gplace-pc001.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 115,
+   "tech": 45,
+   "visu": 37.9
+  },
+  "gplace-pc002.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 161,
+   "tech": 45,
+   "visu": 41.2
+  },
+  "gplace-pc003.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 721,
+   "kb": 88,
+   "tech": 45,
+   "visu": 35.4
+  },
+  "gplace-pc004.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 135,
+   "tech": 45,
+   "visu": 38.8
+  },
+  "gplace-pc005.jpg": {
+   "score": 81,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 109,
+   "tech": 45,
+   "visu": 36.3
+  },
+  "gplace-pc006.jpg": {
+   "score": 84,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 88,
+   "tech": 45,
+   "visu": 39.1
+  },
+  "gplace-pc007.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 721,
+   "kb": 151,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "gplace-pc008.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 1280,
+   "kb": 271,
+   "tech": 45,
+   "visu": 39.5
+  },
+  "gplace-pc009.jpg": {
+   "score": 79,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 143,
+   "tech": 45,
+   "visu": 34.3
+  },
+  "gplace-pc010.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 172,
+   "tech": 45,
+   "visu": 41.4
+  },
+  "gplace-pc011.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 721,
+   "kb": 88,
+   "tech": 45,
+   "visu": 35.4
+  },
+  "gplace-pc012.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 143,
+   "tech": 45,
+   "visu": 42.5
+  },
+  "gplace-rm001.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 152,
+   "tech": 45,
+   "visu": 43.1
+  },
+  "gplace-rm002.jpg": {
+   "score": 85,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 91,
+   "tech": 45,
+   "visu": 40.3
+  },
+  "gplace-rm003.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 205,
+   "tech": 45,
+   "visu": 40
+  },
+  "gplace-rm004.jpg": {
+   "score": 91,
+   "class": "HERO",
+   "w": 1280,
+   "h": 1280,
+   "kb": 215,
+   "tech": 45,
+   "visu": 46
+  },
+  "gplace-rm005.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 173,
+   "tech": 45,
+   "visu": 43.2
+  },
+  "gplace-rm006.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 259,
+   "tech": 45,
+   "visu": 38.5
+  },
+  "gplace-rm007.jpg": {
+   "score": 79,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 105,
+   "tech": 45,
+   "visu": 33.9
+  },
+  "gplace-rm008.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1269,
+   "h": 1600,
+   "kb": 171,
+   "tech": 50,
+   "visu": 38.8
+  },
+  "gplace-rm009.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 104,
+   "tech": 45,
+   "visu": 39.3
+  },
+  "gplace-rm010.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 120,
+   "tech": 45,
+   "visu": 42.4
+  },
+  "gplace-rm011.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 82,
+   "tech": 45,
+   "visu": 35.4
+  },
+  "gplace-rm012.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 214,
+   "tech": 45,
+   "visu": 43.7
+  },
+  "Grand-Ilet.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 100,
+   "tech": 37,
+   "visu": 37.8
+  },
+  "Grande-Terre.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 854,
+   "kb": 106,
+   "tech": 45,
+   "visu": 38.1
+  },
+  "Grande_Anse.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 96,
+   "tech": 45,
+   "visu": 35.9
+  },
+  "Grande_terre.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 678,
+   "kb": 74,
+   "tech": 37,
+   "visu": 37.6
+  },
+  "Grand_Anse.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 801,
+   "kb": 104,
+   "tech": 37,
+   "visu": 40.4
+  },
+  "Gueule_Grand_Gouffre.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 678,
+   "kb": 120,
+   "tech": 37,
+   "visu": 36.8
+  },
+  "House_Capesterre_Guadeloupe_-_Au_Jardin_de_Beausejour.jpg": {
+   "score": 73,
+   "class": "THUMB",
+   "w": 605,
+   "h": 465,
+   "kb": 51,
+   "tech": 31,
+   "visu": 41.5
+  },
+  "Hôtel_Bois_Joli_-_Restaurant_&_Plage.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 131,
+   "tech": 37,
+   "visu": 41.4
+  },
+  "Hôtel_Canella_Beach.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 758,
+   "kb": 150,
+   "tech": 37,
+   "visu": 43.4
+  },
+  "Ilet_a_Cabrit.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 117,
+   "tech": 37,
+   "visu": 44.9
+  },
+  "Ilet_a_Kahouanne.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 62,
+   "tech": 45,
+   "visu": 35.6
+  },
+  "Ilet_Caret.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 97,
+   "tech": 45,
+   "visu": 38
+  },
+  "Ilet_Duberran.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 87,
+   "tech": 45,
+   "visu": 34
+  },
+  "Ilet_Fortune.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 635,
+   "kb": 92,
+   "tech": 37,
+   "visu": 40.4
+  },
+  "Ilet_Macou.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 122,
+   "tech": 37,
+   "visu": 40.3
+  },
+  "Ja'ri_Beach.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 879,
+   "kb": 87,
+   "tech": 37,
+   "visu": 37.7
+  },
+  "Kabane_tropicale_du_Helleux__plage_et_surf_à_200m.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 183,
+   "tech": 37,
+   "visu": 45.2
+  },
+  "Karacoli_Beach_&_Spa.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1200,
+   "kb": 314,
+   "tech": 37,
+   "visu": 45.4
+  },
+  "Karibea_Beach_Resort_Gosier_-_Clipper.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 172,
+   "tech": 37,
+   "visu": 42.9
+  },
+  "Kombava_Beach_Club.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1418,
+   "kb": 163,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "Labord’_Beach.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 541,
+   "kb": 81,
+   "tech": 32,
+   "visu": 41.6
+  },
+  "La_Biche.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 795,
+   "kb": 121,
+   "tech": 37,
+   "visu": 40.1
+  },
+  "La_Cible.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 92,
+   "tech": 45,
+   "visu": 35
+  },
+  "La_Creole_Beach_Hotel_&_Spa.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 799,
+   "kb": 121,
+   "tech": 37,
+   "visu": 44.4
+  },
+  "La_Désirade.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 134,
+   "tech": 50,
+   "visu": 35.7
+  },
+  "La_Plage_Crystal_Beach.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 83,
+   "tech": 37,
+   "visu": 39.2
+  },
+  "La_Playa_restaurant.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1280,
+   "h": 720,
+   "kb": 63,
+   "tech": 45,
+   "visu": 38.3
+  },
+  "La_Route_des_Épices_-_La_Créole_Beach_Hotel_&_Spa.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 81,
+   "tech": 37,
+   "visu": 37.2
+  },
+  "LA_TOUBANA_HÔTEL_&_SPA.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 86,
+   "tech": 37,
+   "visu": 37.4
+  },
+  "Les_Gîtes_de_l'Anse.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 157,
+   "tech": 37,
+   "visu": 42.2
+  },
+  "Les_Gîtes_Tit'anse_et_Spa___Gîtes_avec_piscine__sauna_et_spa__séjour_bien-être__proche_plage__à_Marie-Galante_en_Guadeloupe.jpg": {
+   "score": 76,
+   "class": "THUMB",
+   "w": 750,
+   "h": 499,
+   "kb": 71,
+   "tech": 31,
+   "visu": 44.7
+  },
+  "Les_Pieds_dans_l'Eau.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 600,
+   "kb": 91,
+   "tech": 37,
+   "visu": 41.3
+  },
+  "Les_Saintes_(Terre-de-Haut).jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 177,
+   "tech": 37,
+   "visu": 45.7
+  },
+  "Les_saintes_location.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 156,
+   "tech": 37,
+   "visu": 46.2
+  },
+  "Le_Touloulou.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 104,
+   "tech": 37,
+   "visu": 41.2
+  },
+  "Le_Zawag_-_La_Créole_Beach_Hotel_&_Spa.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 97,
+   "tech": 37,
+   "visu": 38.1
+  },
+  "Loisirs_aux_Saintes.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 106,
+   "tech": 37,
+   "visu": 35.7
+  },
+  "Loulouz_beach.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 555,
+   "kb": 110,
+   "tech": 32,
+   "visu": 42.5
+  },
+  "Marie-Galante.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 734,
+   "kb": 163,
+   "tech": 37,
+   "visu": 43
+  },
+  "NOMILOU_BEACH.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 121,
+   "tech": 37,
+   "visu": 38.9
+  },
+  "Orient_Beach.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 72,
+   "tech": 45,
+   "visu": 31.6
+  },
+  "Pain_de_sucre.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 801,
+   "kb": 130,
+   "tech": 37,
+   "visu": 41.5
+  },
+  "Parc_Place_Sainte-Rose.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 107,
+   "tech": 50,
+   "visu": 39.1
+  },
+  "Petite_Plage_Malendure.jpg": {
+   "score": 82,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 151,
+   "tech": 45,
+   "visu": 37
+  },
+  "photo-mq001.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 137,
+   "tech": 37,
+   "visu": 41.2
+  },
+  "photo-mq002.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 119,
+   "tech": 37,
+   "visu": 43.9
+  },
+  "photo-mq003.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 960,
+   "h": 540,
+   "kb": 77,
+   "tech": 37,
+   "visu": 37
+  },
+  "photo-mq004.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 119,
+   "tech": 37,
+   "visu": 43.9
+  },
+  "photo-mq005.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 960,
+   "h": 635,
+   "kb": 84,
+   "tech": 37,
+   "visu": 38.5
+  },
+  "photo-mq006.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 960,
+   "h": 480,
+   "kb": 85,
+   "tech": 37,
+   "visu": 42.3
+  },
+  "photo-mq007.jpg": {
+   "score": 68,
+   "class": "CARD",
+   "w": 960,
+   "h": 230,
+   "kb": 57,
+   "tech": 24,
+   "visu": 44.3
+  },
+  "photo-mq008.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 960,
+   "h": 640,
+   "kb": 86,
+   "tech": 37,
+   "visu": 39.1
+  },
+  "photo-mq009.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 107,
+   "tech": 37,
+   "visu": 43.5
+  },
+  "photo-mq010.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 71,
+   "tech": 37,
+   "visu": 33.5
+  },
+  "photo-mq011.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 960,
+   "h": 643,
+   "kb": 70,
+   "tech": 37,
+   "visu": 39.1
+  },
+  "photo-mq012.jpg": {
+   "score": 84,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 145,
+   "tech": 37,
+   "visu": 46.5
+  },
+  "photo-mq013.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 153,
+   "tech": 37,
+   "visu": 44.4
+  },
+  "photo-mq014.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 86,
+   "tech": 37,
+   "visu": 36.4
+  },
+  "photo-mq015.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 78,
+   "tech": 37,
+   "visu": 37.3
+  },
+  "photo-mq016.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 54,
+   "tech": 37,
+   "visu": 34.2
+  },
+  "photo-mq017.jpg": {
+   "score": 79,
+   "class": "HERO",
+   "w": 960,
+   "h": 1280,
+   "kb": 160,
+   "tech": 45,
+   "visu": 34
+  },
+  "photo-mq018.jpg": {
+   "score": 68,
+   "class": "CARD",
+   "w": 960,
+   "h": 717,
+   "kb": 70,
+   "tech": 37,
+   "visu": 31.1
+  },
+  "photo-mq019.jpg": {
+   "score": 68,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 78,
+   "tech": 37,
+   "visu": 30.7
+  },
+  "photo-mq020.jpg": {
+   "score": 68,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 78,
+   "tech": 37,
+   "visu": 30.7
+  },
+  "photo-mq021.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 122,
+   "tech": 37,
+   "visu": 43.9
+  },
+  "photo-mq022.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 960,
+   "h": 539,
+   "kb": 137,
+   "tech": 32,
+   "visu": 44.9
+  },
+  "photo-mq023.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 76,
+   "tech": 37,
+   "visu": 35.3
+  },
+  "photo-mq024.jpg": {
+   "score": 93,
+   "class": "HERO",
+   "w": 960,
+   "h": 1682,
+   "kb": 108,
+   "tech": 50,
+   "visu": 42.8
+  },
+  "photo-mq025.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 960,
+   "h": 540,
+   "kb": 71,
+   "tech": 37,
+   "visu": 38.5
+  },
+  "photo-mq026.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 960,
+   "h": 540,
+   "kb": 71,
+   "tech": 37,
+   "visu": 38.5
+  },
+  "photo-mq027.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 960,
+   "h": 1280,
+   "kb": 214,
+   "tech": 45,
+   "visu": 43.6
+  },
+  "photo-mq028.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 960,
+   "h": 630,
+   "kb": 125,
+   "tech": 37,
+   "visu": 45.2
+  },
+  "photo-mq029.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 960,
+   "h": 720,
+   "kb": 71,
+   "tech": 37,
+   "visu": 35
+  },
+  "photo-mq030.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 960,
+   "h": 640,
+   "kb": 108,
+   "tech": 37,
+   "visu": 41.4
+  },
+  "Plage.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 88,
+   "tech": 37,
+   "visu": 37.3
+  },
+  "Plage_Anse_Bambou.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 904,
+   "kb": 207,
+   "tech": 37,
+   "visu": 44.9
+  },
+  "Plage_anse_Champagne.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 554,
+   "kb": 94,
+   "tech": 32,
+   "visu": 41.6
+  },
+  "Plage_anse_du_Mancenillier.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 76,
+   "tech": 37,
+   "visu": 34.5
+  },
+  "Plage_Anse_à_Jacques.jpg": {
+   "score": 93,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 269,
+   "tech": 50,
+   "visu": 43.1
+  },
+  "Plage_Anse_à_Sable.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 117,
+   "tech": 37,
+   "visu": 35.6
+  },
+  "Plage_Auremi.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 331,
+   "tech": 50,
+   "visu": 37.2
+  },
+  "Plage_Caraïbe.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 152,
+   "tech": 37,
+   "visu": 44.9
+  },
+  "Plage_d'Anse_du_Coq.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 91,
+   "tech": 37,
+   "visu": 40.5
+  },
+  "Plage_d'anse_feuillard.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 108,
+   "tech": 37,
+   "visu": 45.2
+  },
+  "Plage_d'Anse_Laborde.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 138,
+   "tech": 37,
+   "visu": 39.3
+  },
+  "Plage_d'Anse_à_la_Gourde.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 92,
+   "tech": 45,
+   "visu": 37
+  },
+  "Plage_des_Alizés.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 132,
+   "tech": 37,
+   "visu": 39.2
+  },
+  "Plage_des_Amandiers.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 554,
+   "kb": 89,
+   "tech": 32,
+   "visu": 41.1
+  },
+  "Plage_des_bébés.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 676,
+   "kb": 109,
+   "tech": 37,
+   "visu": 39.4
+  },
+  "Plage_des_dauphins.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 154,
+   "tech": 37,
+   "visu": 39.9
+  },
+  "Plage_des_Raisins_Clairs.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 147,
+   "tech": 45,
+   "visu": 43.5
+  },
+  "Plage_des_Roches_Percés.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 130,
+   "tech": 37,
+   "visu": 38.8
+  },
+  "Plage_des_Rouleaux.jpg": {
+   "score": 94,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 316,
+   "tech": 50,
+   "visu": 43.5
+  },
+  "Plage_de_Anse_CONCHOU.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 86,
+   "tech": 37,
+   "visu": 39
+  },
+  "Plage_de_anse_mire.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 126,
+   "tech": 37,
+   "visu": 37.9
+  },
+  "Plage_de_Anse_Saint_Denis.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 111,
+   "tech": 37,
+   "visu": 43.3
+  },
+  "Plage_de_Babin.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 122,
+   "tech": 37,
+   "visu": 39.9
+  },
+  "Plage_de_Bananier.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 94,
+   "tech": 37,
+   "visu": 39.1
+  },
+  "Plage_de_Bas_du_Fort.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 145,
+   "tech": 45,
+   "visu": 39
+  },
+  "plage_de_Bois_Jolan.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 154,
+   "tech": 45,
+   "visu": 39
+  },
+  "Plage_de_Bois_Jolan_1.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 133,
+   "tech": 45,
+   "visu": 40.2
+  },
+  "Plage_de_Clugny.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 719,
+   "kb": 55,
+   "tech": 45,
+   "visu": 35.5
+  },
+  "Plage_de_Clugny_Nord.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 130,
+   "tech": 37,
+   "visu": 38
+  },
+  "Plage_de_clugny_ouest.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 720,
+   "h": 1600,
+   "kb": 167,
+   "tech": 45,
+   "visu": 45.4
+  },
+  "Plage_de_Cluny.jpg": {
+   "score": 84,
+   "class": "CARD",
+   "w": 1280,
+   "h": 854,
+   "kb": 93,
+   "tech": 45,
+   "visu": 39.1
+  },
+  "Plage_de_Grande_Anse.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 99,
+   "tech": 45,
+   "visu": 36
+  },
+  "Plage_de_Grand_Bourg.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 202,
+   "tech": 50,
+   "visu": 39.7
+  },
+  "Plage_de_Gros_Sable.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 153,
+   "tech": 37,
+   "visu": 40.7
+  },
+  "Plage_de_l'ANSE.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 152,
+   "tech": 37,
+   "visu": 42.3
+  },
+  "Plage_de_L'Anse_Bertrand.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1280,
+   "h": 959,
+   "kb": 99,
+   "tech": 45,
+   "visu": 36.4
+  },
+  "Plage_de_l'Anse_Crawen.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 181,
+   "tech": 37,
+   "visu": 44.2
+  },
+  "Plage_de_l'Anse_des_Îles.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 152,
+   "tech": 37,
+   "visu": 42.9
+  },
+  "Plage_de_l'anse_de_Nogent.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 269,
+   "tech": 50,
+   "visu": 37.1
+  },
+  "Plage_de_l'Anse_du_Bourg.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 68,
+   "tech": 37,
+   "visu": 40.3
+  },
+  "Plage_de_l'Anse_du_Figuier.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 130,
+   "tech": 37,
+   "visu": 40.6
+  },
+  "Plage_de_l'Anse_du_Font_Curé.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 163,
+   "tech": 37,
+   "visu": 42.4
+  },
+  "Plage_de_L'ANSE_LOQUET.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 554,
+   "kb": 93,
+   "tech": 32,
+   "visu": 43.6
+  },
+  "Plage_de_l'Anse_Rodrigue.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 111,
+   "tech": 37,
+   "visu": 41.4
+  },
+  "Plage_De_L'anse_Sainte_Marguerite.jpg": {
+   "score": 88,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 158,
+   "tech": 50,
+   "visu": 37.5
+  },
+  "Plage_de_l'Anse_Tabarin.jpg": {
+   "score": 93,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 247,
+   "tech": 50,
+   "visu": 42.8
+  },
+  "Plage_de_l'Anse_Vinaigri.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 554,
+   "kb": 85,
+   "tech": 32,
+   "visu": 41.8
+  },
+  "Plage_de_l'Autre_Bord.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 155,
+   "tech": 37,
+   "visu": 45.1
+  },
+  "Plage_De_L'Autre_Bord_2.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1280,
+   "h": 730,
+   "kb": 90,
+   "tech": 45,
+   "visu": 36.8
+  },
+  "Plage_De_L'ilet_Du_Gosier.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 104,
+   "tech": 37,
+   "visu": 38.5
+  },
+  "Plage_de_l'étang_buisson.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1493,
+   "kb": 93,
+   "tech": 45,
+   "visu": 36.7
+  },
+  "Plage_De_L'Îlet_Du_Gosier.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 291,
+   "tech": 50,
+   "visu": 38.5
+  },
+  "Plage_de_la_Baie_du_Marigot.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 155,
+   "tech": 37,
+   "visu": 35.7
+  },
+  "Plage_de_la_chapelle.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 230,
+   "tech": 50,
+   "visu": 37.4
+  },
+  "Plage_de_la_Datcha.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 86,
+   "tech": 45,
+   "visu": 33.1
+  },
+  "Plage_de_la_Feuillère.jpg": {
+   "score": 92,
+   "class": "HERO",
+   "w": 902,
+   "h": 1600,
+   "kb": 180,
+   "tech": 50,
+   "visu": 41.7
+  },
+  "Plage_de_la_Jetée_de_Saint-Louis.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 78,
+   "tech": 37,
+   "visu": 34.6
+  },
+  "Plage_de_la_Perle.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 81,
+   "tech": 37,
+   "visu": 36.6
+  },
+  "Plage_de_la_Pointe_des_Pies.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 264,
+   "tech": 50,
+   "visu": 39.9
+  },
+  "Plage_de_Leroux.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 134,
+   "tech": 37,
+   "visu": 44.4
+  },
+  "Plage_de_Malendure.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 162,
+   "tech": 45,
+   "visu": 40.8
+  },
+  "Plage_de_Moustique.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 85,
+   "tech": 37,
+   "visu": 35.9
+  },
+  "Plage_de_Petite_Anse.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 147,
+   "tech": 37,
+   "visu": 40.3
+  },
+  "Plage_De_Petite_Terre.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 94,
+   "tech": 37,
+   "visu": 39.1
+  },
+  "Plage_de_Pompierre.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 202,
+   "tech": 45,
+   "visu": 41.7
+  },
+  "Plage_de_Rivière-Sens.jpg": {
+   "score": 81,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 143,
+   "tech": 37,
+   "visu": 43.9
+  },
+  "Plage_de_Roseau.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 152,
+   "tech": 37,
+   "visu": 39.3
+  },
+  "Plage_de_Saint-Félix.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 84,
+   "tech": 37,
+   "visu": 38.2
+  },
+  "Plage_De_Sainte-Anne.jpg": {
+   "score": 91,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 231,
+   "tech": 50,
+   "visu": 41.2
+  },
+  "Plage_de_Sainte-Anne_2.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1280,
+   "h": 577,
+   "kb": 97,
+   "tech": 40,
+   "visu": 37.4
+  },
+  "Plage_De_Sainte-Anne_Nord.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 194,
+   "tech": 50,
+   "visu": 37.2
+  },
+  "Plage_de_St_Claire.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 180,
+   "tech": 37,
+   "visu": 44.6
+  },
+  "Plage_de_ST_Claire_1.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 180,
+   "tech": 37,
+   "visu": 44.6
+  },
+  "Plage_de_Viard.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 198,
+   "tech": 50,
+   "visu": 34.9
+  },
+  "Plage_du_bourg.jpg": {
+   "score": 78,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 120,
+   "tech": 37,
+   "visu": 40.8
+  },
+  "Plage_du_Lagon.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 125,
+   "tech": 37,
+   "visu": 38.8
+  },
+  "Plage_du_Pain_de_Sucre.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 151,
+   "tech": 45,
+   "visu": 38.8
+  },
+  "Plage_Du_Souffleur.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1280,
+   "h": 960,
+   "kb": 81,
+   "tech": 45,
+   "visu": 34.2
+  },
+  "Plage_du_Souffleur_2.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 103,
+   "tech": 37,
+   "visu": 39.9
+  },
+  "Plage_du_Vieux_Fort.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1200,
+   "h": 676,
+   "kb": 158,
+   "tech": 37,
+   "visu": 44.7
+  },
+  "Plage_grande_anse_des_salines.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1226,
+   "kb": 128,
+   "tech": 37,
+   "visu": 36.7
+  },
+  "Plage_l'Anse_Jlo.jpg": {
+   "score": 84,
+   "class": "HERO",
+   "w": 900,
+   "h": 1600,
+   "kb": 109,
+   "tech": 50,
+   "visu": 34.1
+  },
+  "Plage_la_caravelle.jpg": {
+   "score": 89,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 161,
+   "tech": 45,
+   "visu": 44.3
+  },
+  "Plage_la_Ramee.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 898,
+   "kb": 141,
+   "tech": 37,
+   "visu": 42.1
+  },
+  "Plage_Les_Galbas.jpg": {
+   "score": 82,
+   "class": "CARD",
+   "w": 1280,
+   "h": 714,
+   "kb": 85,
+   "tech": 45,
+   "visu": 37.4
+  },
+  "Plage_Mambia.jpg": {
+   "score": 73,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 92,
+   "tech": 37,
+   "visu": 35.6
+  },
+  "Plage_Manbia.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 800,
+   "kb": 83,
+   "tech": 37,
+   "visu": 36.9
+  },
+  "Plage_Naturiste.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 76,
+   "tech": 37,
+   "visu": 36.8
+  },
+  "Plage_Naturiste_de_la_Pointe_du_Vieux_Fort.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 676,
+   "kb": 88,
+   "tech": 37,
+   "visu": 37.4
+  },
+  "Plage_Saint-Francois.jpg": {
+   "score": 85,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 141,
+   "tech": 45,
+   "visu": 39.7
+  },
+  "Plage_Saint-François_-_Arinella_San_Francescu.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 110,
+   "tech": 37,
+   "visu": 39.3
+  },
+  "Pointe_Allègre.jpg": {
+   "score": 77,
+   "class": "CARD",
+   "w": 1200,
+   "h": 676,
+   "kb": 113,
+   "tech": 37,
+   "visu": 40.4
+  },
+  "Pointe_Tarare_-_Nudist_Beach.jpg": {
+   "score": 91,
+   "class": "HERO",
+   "w": 1280,
+   "h": 960,
+   "kb": 236,
+   "tech": 45,
+   "visu": 45.7
+  },
+  "Pointe_Tarare_-_Plage_Naturiste.jpg": {
+   "score": 80,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 171,
+   "tech": 37,
+   "visu": 43.3
+  },
+  "Port_de_Sainte_Rose.jpg": {
+   "score": 86,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 160,
+   "tech": 50,
+   "visu": 35.7
+  },
+  "Raisins_Clairs.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 104,
+   "tech": 37,
+   "visu": 41.9
+  },
+  "Relais_Beach.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 135,
+   "tech": 37,
+   "visu": 38
+  },
+  "sat-gp001.jpg": {
+   "score": 60,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 18,
+   "tech": 25,
+   "visu": 34.5
+  },
+  "sat-gp002.jpg": {
+   "score": 58,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 17,
+   "tech": 25,
+   "visu": 33.3
+  },
+  "sat-gp003.jpg": {
+   "score": 59,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 17,
+   "tech": 25,
+   "visu": 33.7
+  },
+  "sat-gp004.jpg": {
+   "score": 58,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 15,
+   "tech": 25,
+   "visu": 33.2
+  },
+  "sat-gp005.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 10,
+   "tech": 25,
+   "visu": 28.6
+  },
+  "sat-gp006.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 31.7
+  },
+  "sat-gp008.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 28.6
+  },
+  "sat-gp009.jpg": {
+   "score": 55,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 29.9
+  },
+  "sat-gp010.jpg": {
+   "score": 59,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 15,
+   "tech": 25,
+   "visu": 33.7
+  },
+  "sat-gp012.jpg": {
+   "score": 60,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 18,
+   "tech": 25,
+   "visu": 35.2
+  },
+  "sat-gp014.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 31.5
+  },
+  "sat-gp015.jpg": {
+   "score": 53,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28
+  },
+  "sat-gp017.jpg": {
+   "score": 59,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 14,
+   "tech": 25,
+   "visu": 33.8
+  },
+  "sat-gp021.jpg": {
+   "score": 53,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 28.2
+  },
+  "sat-gp024.jpg": {
+   "score": 56,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 15,
+   "tech": 25,
+   "visu": 30.9
+  },
+  "sat-gp025.jpg": {
+   "score": 56,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 31.2
+  },
+  "sat-gp031.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 14,
+   "tech": 25,
+   "visu": 32
+  },
+  "sat-gp033.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 14,
+   "tech": 25,
+   "visu": 31.8
+  },
+  "sat-gp044.jpg": {
+   "score": 55,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 29.8
+  },
+  "sat-gp045.jpg": {
+   "score": 50,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 24.8
+  },
+  "sat-mq001.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 29.2
+  },
+  "sat-mq002.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 10,
+   "tech": 25,
+   "visu": 31.6
+  },
+  "sat-mq003.jpg": {
+   "score": 52,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 27.3
+  },
+  "sat-mq004.jpg": {
+   "score": 58,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 32.6
+  },
+  "sat-mq005.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28.7
+  },
+  "sat-mq006.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28.7
+  },
+  "sat-mq007.jpg": {
+   "score": 55,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 15,
+   "tech": 25,
+   "visu": 30.2
+  },
+  "sat-mq008.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 29.4
+  },
+  "sat-mq009.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 32
+  },
+  "sat-mq010.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 28.7
+  },
+  "sat-mq011.jpg": {
+   "score": 55,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 29.5
+  },
+  "sat-mq012.jpg": {
+   "score": 52,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 26.6
+  },
+  "sat-mq013.jpg": {
+   "score": 53,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 28.1
+  },
+  "sat-mq014.jpg": {
+   "score": 53,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28.2
+  },
+  "sat-mq015.jpg": {
+   "score": 53,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28.2
+  },
+  "sat-mq016.jpg": {
+   "score": 61,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 16,
+   "tech": 25,
+   "visu": 35.8
+  },
+  "sat-mq017.jpg": {
+   "score": 59,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 15,
+   "tech": 25,
+   "visu": 33.9
+  },
+  "sat-mq018.jpg": {
+   "score": 61,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 16,
+   "tech": 25,
+   "visu": 35.8
+  },
+  "sat-mq019.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 32.4
+  },
+  "sat-mq020.jpg": {
+   "score": 55,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 13,
+   "tech": 25,
+   "visu": 29.6
+  },
+  "sat-mq021.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 28.6
+  },
+  "sat-mq022.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 29.1
+  },
+  "sat-mq023.jpg": {
+   "score": 57,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 14,
+   "tech": 25,
+   "visu": 32.1
+  },
+  "sat-mq024.jpg": {
+   "score": 59,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 18,
+   "tech": 25,
+   "visu": 34.4
+  },
+  "sat-mq025.jpg": {
+   "score": 58,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 17,
+   "tech": 25,
+   "visu": 32.6
+  },
+  "sat-mq026.jpg": {
+   "score": 60,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 18,
+   "tech": 25,
+   "visu": 34.6
+  },
+  "sat-mq027.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 11,
+   "tech": 25,
+   "visu": 28.5
+  },
+  "sat-mq028.jpg": {
+   "score": 50,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 24.6
+  },
+  "sat-mq029.jpg": {
+   "score": 54,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 12,
+   "tech": 25,
+   "visu": 29.1
+  },
+  "sat-mq030.jpg": {
+   "score": 46,
+   "class": "REJECT",
+   "w": 280,
+   "h": 280,
+   "kb": 9,
+   "tech": 25,
+   "visu": 21.2
+  },
+  "St_François_Beach.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1280,
+   "h": 598,
+   "kb": 97,
+   "tech": 40,
+   "visu": 35.4
+  },
+  "Sun_7_beach.jpg": {
+   "score": 87,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 215,
+   "tech": 50,
+   "visu": 37.1
+  },
+  "Sur_l’Anse.jpg": {
+   "score": 83,
+   "class": "CARD",
+   "w": 1021,
+   "h": 769,
+   "kb": 140,
+   "tech": 37,
+   "visu": 45.5
+  },
+  "Terre-de-Haut.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 1200,
+   "h": 1200,
+   "kb": 123,
+   "tech": 37,
+   "visu": 34
+  },
+  "The_beach_of_Caravelle.jpg": {
+   "score": 75,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 81,
+   "tech": 37,
+   "visu": 37.6
+  },
+  "Ti'bulles.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 675,
+   "kb": 80,
+   "tech": 37,
+   "visu": 39
+  },
+  "Village_Touloukaera_plage_Kawan_beach.jpg": {
+   "score": 76,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 122,
+   "tech": 37,
+   "visu": 39.3
+  },
+  "Îles_des_Saintes.jpg": {
+   "score": 79,
+   "class": "CARD",
+   "w": 1080,
+   "h": 810,
+   "kb": 143,
+   "tech": 37,
+   "visu": 42.3
+  },
+  "îlets_Pigeon.jpg": {
+   "score": 72,
+   "class": "CARD",
+   "w": 1200,
+   "h": 584,
+   "kb": 107,
+   "tech": 32,
+   "visu": 40.4
+  },
+  "Îlet_Boissard.jpg": {
+   "score": 71,
+   "class": "CARD",
+   "w": 1200,
+   "h": 567,
+   "kb": 83,
+   "tech": 32,
+   "visu": 38.7
+  },
+  "Îlet_du_Gosier.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1280,
+   "h": 720,
+   "kb": 102,
+   "tech": 45,
+   "visu": 37.8
+  },
+  "Îlet_à_Christophe.jpg": {
+   "score": 74,
+   "class": "CARD",
+   "w": 1200,
+   "h": 900,
+   "kb": 113,
+   "tech": 37,
+   "visu": 37
+  },
+  "Îlet_à_Cochons.jpg": {
+   "score": 90,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 249,
+   "tech": 50,
+   "visu": 39.9
+  },
+  "îlet_à_Fajou.jpg": {
+   "score": 83,
+   "class": "HERO",
+   "w": 1200,
+   "h": 1600,
+   "kb": 144,
+   "tech": 50,
+   "visu": 32.8
+  }
+ }
+}

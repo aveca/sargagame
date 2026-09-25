@@ -1,0 +1,851 @@
+{
+ "v": 1,
+ "generated": "2026-09-25T15:02:40Z",
+ "files": 457,
+ "mapped": 172,
+ "top50": [
+  {
+   "id": "fl011",
+   "file": "gplace-fl011.jpg",
+   "score": 96,
+   "class": "HERO"
+  },
+  {
+   "id": "mq028",
+   "file": "gplace-mq028.jpg",
+   "score": 94,
+   "class": "HERO"
+  },
+  {
+   "id": "fl012",
+   "file": "gplace-fl012.jpg",
+   "score": 94,
+   "class": "HERO"
+  },
+  {
+   "id": "gp029",
+   "file": "gplace-gp029.jpg",
+   "score": 92,
+   "class": "HERO"
+  },
+  {
+   "id": "gp088",
+   "file": "gplace-gp088.jpg",
+   "score": 92,
+   "class": "HERO"
+  },
+  {
+   "id": "fl003",
+   "file": "gplace-fl003.jpg",
+   "score": 92,
+   "class": "HERO"
+  },
+  {
+   "id": "gp006",
+   "file": "Pointe_Tarare_-_Nudist_Beach.jpg",
+   "score": 91,
+   "class": "HERO"
+  },
+  {
+   "id": "gp010",
+   "file": "Plage_De_Sainte-Anne.jpg",
+   "score": 91,
+   "class": "HERO"
+  },
+  {
+   "id": "gp116",
+   "file": "gplace-gp116.jpg",
+   "score": 91,
+   "class": "HERO"
+  },
+  {
+   "id": "mq026",
+   "file": "gplace-mq026.jpg",
+   "score": 91,
+   "class": "HERO"
+  },
+  {
+   "id": "rm004",
+   "file": "gplace-rm004.jpg",
+   "score": 91,
+   "class": "HERO"
+  },
+  {
+   "id": "gp043",
+   "file": "gplace-gp043.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "mq007",
+   "file": "gplace-mq007.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "mq012",
+   "file": "gplace-mq012.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "mq057",
+   "file": "gplace-mq057.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "mq067",
+   "file": "gplace-mq067.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "fl002",
+   "file": "gplace-fl002.jpg",
+   "score": 90,
+   "class": "HERO"
+  },
+  {
+   "id": "gp002",
+   "file": "Plage_des_Raisins_Clairs.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp009",
+   "file": "Plage_la_caravelle.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp013",
+   "file": "gplace-gp013.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp023",
+   "file": "gplace-gp023.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp036",
+   "file": "gplace-gp036.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp041",
+   "file": "gplace-gp041.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp052",
+   "file": "gplace-gp052.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp059",
+   "file": "gplace-gp059.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp097",
+   "file": "gplace-gp097.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp104",
+   "file": "gplace-gp104.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "mq049",
+   "file": "gplace-mq049.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "rm008",
+   "file": "gplace-rm008.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "rm012",
+   "file": "gplace-rm012.jpg",
+   "score": 89,
+   "class": "HERO"
+  },
+  {
+   "id": "gp068",
+   "file": "gplace-gp068.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "mq030",
+   "file": "gplace-mq030.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "mq034",
+   "file": "gplace-mq034.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "mq037",
+   "file": "gplace-mq037.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "mq055",
+   "file": "gplace-mq055.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "fl005",
+   "file": "gplace-fl005.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "pc012",
+   "file": "gplace-pc012.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "rm001",
+   "file": "gplace-rm001.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "rm005",
+   "file": "gplace-rm005.jpg",
+   "score": 88,
+   "class": "HERO"
+  },
+  {
+   "id": "gp044",
+   "file": "Plage_de_Pompierre.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "gp048",
+   "file": "gplace-gp048.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "gp049",
+   "file": "gplace-gp049.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "gp064",
+   "file": "gplace-gp064.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "mq002",
+   "file": "gplace-mq002.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "mq011",
+   "file": "gplace-mq011.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "mq022",
+   "file": "gplace-mq022.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "mq063",
+   "file": "gplace-mq063.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "rm010",
+   "file": "gplace-rm010.jpg",
+   "score": 87,
+   "class": "HERO"
+  },
+  {
+   "id": "gp031",
+   "file": "Plage_de_Malendure.jpg",
+   "score": 86,
+   "class": "HERO"
+  },
+  {
+   "id": "gp046",
+   "file": "gplace-gp046.jpg",
+   "score": 86,
+   "class": "HERO"
+  }
+ ],
+ "worst20": [
+  {
+   "id": "fl008",
+   "file": "gplace-fl008.jpg",
+   "score": 55,
+   "class": "CARD"
+  },
+  {
+   "id": "gp083",
+   "file": "gplace-gp083.jpg",
+   "score": 70,
+   "class": "THUMB"
+  },
+  {
+   "id": "fl006",
+   "file": "gplace-fl006.jpg",
+   "score": 70,
+   "class": "HERO"
+  },
+  {
+   "id": "mq027",
+   "file": "gplace-mq027.jpg",
+   "score": 74,
+   "class": "CARD"
+  },
+  {
+   "id": "fl007",
+   "file": "gplace-fl007.jpg",
+   "score": 76,
+   "class": "HERO"
+  },
+  {
+   "id": "gp032",
+   "file": "gplace-gp032.jpg",
+   "score": 77,
+   "class": "HERO"
+  },
+  {
+   "id": "gp103",
+   "file": "gplace-gp103.jpg",
+   "score": 77,
+   "class": "CARD"
+  },
+  {
+   "id": "mq042",
+   "file": "gplace-mq042.jpg",
+   "score": 77,
+   "class": "CARD"
+  },
+  {
+   "id": "gp003",
+   "file": "Plage_de_la_Datcha.jpg",
+   "score": 78,
+   "class": "CARD"
+  },
+  {
+   "id": "gp012",
+   "file": "Gosier_plage.jpg",
+   "score": 78,
+   "class": "CARD"
+  },
+  {
+   "id": "gp042",
+   "file": "gplace-gp042.jpg",
+   "score": 78,
+   "class": "HERO"
+  },
+  {
+   "id": "gp084",
+   "file": "gplace-gp084.jpg",
+   "score": 78,
+   "class": "HERO"
+  },
+  {
+   "id": "mq013",
+   "file": "gplace-mq013.jpg",
+   "score": 78,
+   "class": "HERO"
+  },
+  {
+   "id": "gp017",
+   "file": "Plage_Du_Souffleur.jpg",
+   "score": 79,
+   "class": "CARD"
+  },
+  {
+   "id": "gp062",
+   "file": "gplace-gp062.jpg",
+   "score": 79,
+   "class": "CARD"
+  },
+  {
+   "id": "gp081",
+   "file": "gplace-gp081.jpg",
+   "score": 79,
+   "class": "CARD"
+  },
+  {
+   "id": "pc009",
+   "file": "gplace-pc009.jpg",
+   "score": 79,
+   "class": "HERO"
+  },
+  {
+   "id": "rm007",
+   "file": "gplace-rm007.jpg",
+   "score": 79,
+   "class": "HERO"
+  },
+  {
+   "id": "gp018",
+   "file": "gplace-gp018.jpg",
+   "score": 80,
+   "class": "CARD"
+  },
+  {
+   "id": "gp024",
+   "file": "gplace-gp024.jpg",
+   "score": 80,
+   "class": "CARD"
+  }
+ ],
+ "low": [
+  {
+   "id": "gp083",
+   "file": "gplace-gp083.jpg",
+   "score": 70,
+   "class": "THUMB"
+  }
+ ],
+ "duplicates": [
+  {
+   "a": "Capesterre-de-Marie-Galante.jpg",
+   "b": "Marie-Galante.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp003.jpg",
+   "b": "Plage_de_la_Datcha.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp008.jpg",
+   "b": "plage_de_Bois_Jolan.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp009.jpg",
+   "b": "The_beach_of_Caravelle.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp010.jpg",
+   "b": "Plage_De_Sainte-Anne.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp017.jpg",
+   "b": "Plage_Du_Souffleur.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp019.jpg",
+   "b": "gplace-gp118.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp022.jpg",
+   "b": "gplace-gp082.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp024.jpg",
+   "b": "gplace-gp119.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-gp027.jpg",
+   "b": "Plage_de_Clugny.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp031.jpg",
+   "b": "Plage_de_Malendure.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp035.jpg",
+   "b": "gplace-gp087.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp039.jpg",
+   "b": "gplace-gp084.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-gp039.jpg",
+   "b": "gplace-gp086.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp041.jpg",
+   "b": "Plage_de_Grand_Bourg.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-gp060.jpg",
+   "b": "Plage_de_la_Perle.jpg",
+   "dist": 2
+  },
+  {
+   "a": "gplace-gp074.jpg",
+   "b": "Plage_de_l'Anse_du_Figuier.jpg",
+   "dist": 4
+  },
+  {
+   "a": "gplace-gp084.jpg",
+   "b": "gplace-gp086.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-mq009.jpg",
+   "b": "gplace-mq070.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-mq011.jpg",
+   "b": "gplace-mq064.jpg",
+   "dist": 1
+  },
+  {
+   "a": "gplace-mq035.jpg",
+   "b": "gplace-mq038.jpg",
+   "dist": 0
+  },
+  {
+   "a": "gplace-pc003.jpg",
+   "b": "gplace-pc011.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq002.jpg",
+   "b": "photo-mq004.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq019.jpg",
+   "b": "photo-mq020.jpg",
+   "dist": 0
+  },
+  {
+   "a": "photo-mq025.jpg",
+   "b": "photo-mq026.jpg",
+   "dist": 0
+  },
+  {
+   "a": "Plage_de_St_Claire.jpg",
+   "b": "Plage_de_ST_Claire_1.jpg",
+   "dist": 0
+  },
+  {
+   "a": "sat-gp003.jpg",
+   "b": "sat-gp012.jpg",
+   "dist": 1
+  },
+  {
+   "a": "sat-gp031.jpg",
+   "b": "sat-gp033.jpg",
+   "dist": 2
+  },
+  {
+   "a": "sat-mq014.jpg",
+   "b": "sat-mq015.jpg",
+   "dist": 0
+  },
+  {
+   "a": "sat-mq016.jpg",
+   "b": "sat-mq018.jpg",
+   "dist": 0
+  }
+ ],
+ "sharedFile": [],
+ "closePairsSameFile": [],
+ "closePairsChecked": 71,
+ "trio": [
+  {
+   "id": "mq024",
+   "file": "gplace-mq024.jpg"
+  },
+  {
+   "id": "mq025",
+   "file": "gplace-mq025.jpg"
+  },
+  {
+   "id": "mq026",
+   "file": "gplace-mq026.jpg"
+  }
+ ],
+ "missing": [],
+ "mappingCandidates": [
+  {
+   "beach": "gp004",
+   "name": "Anse à la Gourde",
+   "current": "Plage_d'Anse_à_la_Gourde.jpg",
+   "currentClass": "CARD",
+   "candidate": "Anse_à_la_Gourde.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp010",
+   "name": "Plage de Sainte-Anne",
+   "current": "Plage_De_Sainte-Anne.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Sainte-Anne_2.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp010",
+   "name": "Plage de Sainte-Anne",
+   "current": "Plage_De_Sainte-Anne.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_De_Sainte-Anne_Nord.jpg",
+   "candidateClass": "HERO"
+  },
+  {
+   "beach": "gp016",
+   "name": "Anse Laborde",
+   "current": "gplace-gp016.jpg",
+   "currentClass": "HERO",
+   "candidate": "Anse_Laborde.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp016",
+   "name": "Anse Laborde",
+   "current": "gplace-gp016.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_d'Anse_Laborde.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp017",
+   "name": "Plage du Souffleur",
+   "current": "Plage_Du_Souffleur.jpg",
+   "currentClass": "CARD",
+   "candidate": "Plage_du_Souffleur_2.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp027",
+   "name": "Plage de Clugny",
+   "current": "Plage_de_Clugny.jpg",
+   "currentClass": "CARD",
+   "candidate": "Plage_de_Clugny_Nord.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp027",
+   "name": "Plage de Clugny",
+   "current": "Plage_de_Clugny.jpg",
+   "currentClass": "CARD",
+   "candidate": "Plage_de_clugny_ouest.jpg",
+   "candidateClass": "HERO"
+  },
+  {
+   "beach": "gp032",
+   "name": "Anse à Sable",
+   "current": "gplace-gp032.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_Anse_à_Sable.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp036",
+   "name": "Plage des Amandiers",
+   "current": "gplace-gp036.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_des_Amandiers.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp041",
+   "name": "Plage de Grand-Bourg",
+   "current": "gplace-gp041.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Grand_Bourg.jpg",
+   "candidateClass": "HERO"
+  },
+  {
+   "beach": "gp042",
+   "name": "Plage du Vieux-Fort",
+   "current": "gplace-gp042.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_du_Vieux_Fort.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp043",
+   "name": "Anse Piton",
+   "current": "gplace-gp043.jpg",
+   "currentClass": "HERO",
+   "candidate": "Anse_Piton.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp046",
+   "name": "Anse Rodrigue",
+   "current": "gplace-gp046.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_l'Anse_Rodrigue.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp047",
+   "name": "Anse Mire",
+   "current": "gplace-gp047.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_anse_mire.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp051",
+   "name": "Saint-Félix",
+   "current": "gplace-gp051.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Saint-Félix.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp052",
+   "name": "Anse Champagne",
+   "current": "gplace-gp052.jpg",
+   "currentClass": "HERO",
+   "candidate": "Anse_Champagne.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp052",
+   "name": "Anse Champagne",
+   "current": "gplace-gp052.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_anse_Champagne.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp059",
+   "name": "Anse du Mancenillier",
+   "current": "gplace-gp059.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_anse_du_Mancenillier.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp060",
+   "name": "Plage de la Perle",
+   "current": "gplace-gp060.jpg",
+   "currentClass": "CARD",
+   "candidate": "Plage_de_la_Perle.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp071",
+   "name": "Anse Sainte-Marguerite",
+   "current": "gplace-gp071.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_De_L'anse_Sainte_Marguerite.jpg",
+   "candidateClass": "HERO"
+  },
+  {
+   "beach": "gp081",
+   "name": "Anse Crawen",
+   "current": "gplace-gp081.jpg",
+   "currentClass": "CARD",
+   "candidate": "Plage_de_l'Anse_Crawen.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp084",
+   "name": "Plage de Bananier",
+   "current": "gplace-gp084.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Bananier.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp100",
+   "name": "Plage de Moustique",
+   "current": "gplace-gp100.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Moustique.jpg",
+   "candidateClass": "CARD"
+  },
+  {
+   "beach": "gp104",
+   "name": "La Feuillère",
+   "current": "gplace-gp104.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_la_Feuillère.jpg",
+   "candidateClass": "HERO"
+  },
+  {
+   "beach": "gp116",
+   "name": "Plage de Babin",
+   "current": "gplace-gp116.jpg",
+   "currentClass": "HERO",
+   "candidate": "Plage_de_Babin.jpg",
+   "candidateClass": "CARD"
+  }
+ ],
+ "top30": [
+  "fl011",
+  "fl012",
+  "fl003",
+  "gp006",
+  "mq026",
+  "rm004",
+  "mq007",
+  "mq012",
+  "fl002",
+  "gp009",
+  "gp023",
+  "gp041",
+  "gp097",
+  "gp104",
+  "mq037",
+  "fl005",
+  "rm001",
+  "rm005",
+  "mq002",
+  "mq011",
+  "mq022",
+  "mq063",
+  "rm010",
+  "gp031",
+  "mq017",
+  "mq044",
+  "fl009",
+  "pc002",
+  "gp001",
+  "gp008"
+ ],
+ "top30bad": []
+}
