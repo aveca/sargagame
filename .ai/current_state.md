@@ -1,3 +1,38 @@
+## 2026-09-25F · Agent: coding (DATA INTELLIGENCE + NICHE EVIDENCE) — contrats + mer live
+
+### Travail effectué
+- **Résumé 1 ligne** : recommandations désormais explicables (evidence sourcée), mer temps réel en fiche (Open-Meteo marine), tips avec provenance, 5 niches bloquées avec raisons exactes. Money-path intact, 0 page SEO créée.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25F) + `.ai/ui-audit/DATA-INTELLIGENCE-2026-09-25F.md` (20 points). Rollback : `?sgvis=0`. Source vent (weather API) = future voile documentée, pas câblée.
+
+### Fichiers modifiés
+- (N) `src/lib/intent-evidence.js` · `src/lib/marine.js` · `tests/unit/niche-evidence.test.cjs` · `scripts/qa/probe-niche-f.mjs` · `.ai/ui-audit/DATA-INTELLIGENCE-2026-09-25F.md`
+- (M) `src/BeachExperience.jsx` (MER + savoir-tips) · `src/components/ExperienceReset.jsx` (reco-why) · `src/lib/sg-visual.js` (facts.source)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (404 modules)
+- [x] bundle 38,2 Ko ≤ 210 (zéro eager ajouté)
+- [x] smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test → 62/62 (niche-evidence 42/42)
+- [x] E2E perfect-trip 5/5 + experience 8/8 + journey 5/5 + funnel-payment 13/13
+- [x] regions OK ; php -l N/A (0 PHP touché)
+- [x] screenshots 390 lus (reco-why, MER live, savoir), ERRORS=[]
+- [x] money-path 0 diff
+
+### Problèmes restants
+- [ ] Vent bulk ×196 (job quotidien) pour future evidence voile — data/agent
+- [ ] Flags pêche/port/mouillage/isolement/profondeur — ingestion à cadrer
+- [ ] 3 photos C conservées (règle ≤160px) — à re-shooter un jour
+
+### Prochaine action recommandée
+1. Merge PR → CI 7/7 → deploy → probes prod (MER live + reco-why) — Rôle : release
+2. Mesurer sg_verdict_expand (via marine) + reco-why 7j — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/niche-evidence-f`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-25E · Agent: coding (VISUAL / UX OVERHAUL) — BeachCard photos + mini-guide + motion ×12
 
 ### Travail effectué

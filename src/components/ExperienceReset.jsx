@@ -10,6 +10,7 @@ import { off as sgmOff } from '../lib/sgMotion.js';
 import { INTENTS, intentBeaches, intentById } from '../lib/intents.js';
 import { journeyFor } from '../lib/journey.js';
 import { beachImageUrl, beachMedia } from '../lib/beach-media.js';
+import { evidenceFor, sourceShort } from '../lib/intent-evidence.js';
 import { PlanCard, planOff } from './PlanCard.jsx';
 import { Icon } from '../lib/sg-icons.jsx';
 
@@ -547,6 +548,10 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
           {intent && !!intentBest && (() => {
             const it = intentById(intent)
             const img = beachImageUrl(intentBest.id, imageMap)
+            /* Preuve explicable (2026-09-25F) : 1re raison réelle + source.
+               Jamais de score affiché comme verdict (le verdict = statut). */
+            const ev = evidenceFor(intent, intentBest, lang)
+            const why = !ev.blocked && ev.evidence.length > 1 ? ev.evidence[1] : (!ev.blocked && ev.evidence.length ? ev.evidence[0] : null)
             return (
               <div data-testid="intent-reco" style={{ marginTop: 10, display: 'flex', gap: 10, alignItems: 'center', background: '#FFF8E1', border: `2px solid ${INK}`, borderRadius: 12, padding: 10 }}>
                 {img && <img src={img} alt={intentBest.name} loading="lazy" width="800" height="450" style={{ width: 64, height: 64, borderRadius: 10, objectFit: 'cover', border: `2px solid ${INK}`, flex: '0 0 auto' }} onError={e => { e.currentTarget.style.display = 'none' }} />}
@@ -554,6 +559,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
                   <div style={{ fontSize: 11, fontWeight: 800, letterSpacing: '.08em', textTransform: 'uppercase', color: '#8a5a00' }}>{_t(lang, `Meilleur spot ${it ? it.fr : ''}`, `Best ${it ? it.en : ''} spot`, `Mejor spot ${it ? it.es : ''}`)}</div>
                   <div style={{ fontWeight: 800, fontSize: 15, lineHeight: 1.15 }}>{intentBest.name}</div>
                   <div style={{ fontSize: 11.5, opacity: .7 }}>{intentBest.commune || ''}{intentBest.status ? ` · ${statusMeta(intentBest.status, lang).label}` : ''}</div>
+                  {!!why && <div data-testid="intent-reco-why" style={{ fontSize: 11.5, opacity: .8, marginTop: 2, fontStyle: 'italic' }}>✓ {why.text} <span style={{ opacity: .65, fontStyle: 'normal' }}>({sourceShort(why.source, lang)})</span></div>}
                 </div>
                 <button type="button" data-testid="intent-reco-open" className="xp-gold xp-gold" style={{ ...btnGold, flex: '0 0 auto', width: 'auto', minHeight: 44, padding: '9px 16px', fontSize: 13 }}
                   onClick={() => { try { track?.('sg_recommendation_open', { beach_id: intentBest.id, intent, source: 'intent_strip' }) } catch (_) {} onOpenBeach?.(intentBest) }}>

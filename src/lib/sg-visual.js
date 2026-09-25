@@ -66,7 +66,8 @@ export function nearestBeaches(beach, allBeaches, n = 3) {
 
 /**
  * Faits « bon à savoir » — flags plage RÉELS uniquement.
- * → [{ icon (sg-icons), text }] — [] si rien de connu (la section se masque).
+ * → [{ icon (sg-icons), text, source }] — [] si rien de connu (la section se
+ * masque). `source` = provenance courte (satellite/flag/coords/drive).
  */
 export function beachFacts(beach, allBeaches, lang = "fr") {
   try {
@@ -74,12 +75,12 @@ export function beachFacts(beach, allBeaches, lang = "fr") {
     const T = (fr, en, es) => (lang === "es" ? es : lang === "en" ? en : fr)
     const out = []
     const lee = isLeewardLocal(beach, allBeaches || [])
-    if (lee === true) out.push({ icon: "sunset", text: T("Côte sous le vent (ouest) — versant abrité de l'île.", "Leeward coast (west) — the sheltered side.", "Costa de sotavento (oeste) — lado protegido.") })
-    else if (lee === false && beach.lng != null && beach.island != null) out.push({ icon: "wave", text: T("Côte au vent (est) — versant exposé de l'île.", "Windward coast (east) — more exposed side.", "Costa de barlovento (este) — lado más expuesto.") })
-    if (Number.isFinite(beach.drive) && beach.drive > 0) out.push({ icon: "pin", text: T(`${beach.drive} min en voiture depuis la ville principale`, `${beach.drive} min drive from the main town`, `${beach.drive} min en coche desde la ciudad principal`) })
-    if (beach.kids) out.push({ icon: "family", text: T("Adaptée aux enfants (flag plage)", "Suitable for children (beach flag)", "Apta para niños (flag)") })
-    if (beach.snorkel) out.push({ icon: "snorkel", text: T("Spot snorkeling (flag plage)", "Snorkeling spot (beach flag)", "Spot snorkel (flag)") })
-    if (beach.parking) out.push({ icon: "parking", text: T("Parking dédié (flag plage)", "Dedicated parking (beach flag)", "Estacionamiento dedicado (flag)") })
+    if (lee === true) out.push({ icon: "sunset", source: "coords", text: T("Côte sous le vent (ouest) — versant abrité de l'île.", "Leeward coast (west) — the sheltered side.", "Costa de sotavento (oeste) — lado protegido.") })
+    else if (lee === false && beach.lng != null && beach.island != null) out.push({ icon: "wave", source: "coords", text: T("Côte au vent (est) — versant exposé de l'île.", "Windward coast (east) — more exposed side.", "Costa de barlovento (este) — lado más expuesto.") })
+    if (Number.isFinite(beach.drive) && beach.drive > 0) out.push({ icon: "pin", source: "drive", text: T(`${beach.drive} min en voiture depuis la ville principale`, `${beach.drive} min drive from the main town`, `${beach.drive} min en coche desde la ciudad principal`) })
+    if (beach.kids) out.push({ icon: "family", source: "flag", text: T("Adaptée aux enfants (flag plage)", "Suitable for children (beach flag)", "Apta para niños (flag)") })
+    if (beach.snorkel) out.push({ icon: "snorkel", source: "flag", text: T("Spot snorkeling (flag plage)", "Snorkeling spot (beach flag)", "Spot snorkel (flag)") })
+    if (beach.parking) out.push({ icon: "parking", source: "flag", text: T("Parking dédié (flag plage)", "Dedicated parking (beach flag)", "Estacionamiento dedicado (flag)") })
     return out.slice(0, 5)
   } catch (_) { return [] }
 }

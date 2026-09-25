@@ -13,7 +13,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { findAlternatives } from "./lib/beach-decision.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { nearestBeaches, beachFacts, dataAgeHours, visOff } from "./lib/sg-visual.js"
+import { nearestBeaches, dataAgeHours, visOff } from "./lib/sg-visual.js"
+import { tipsFor, sourceShort } from "./lib/intent-evidence.js"
+import { fetchMarine, marineState, snorkelSea, marineSourceLabel } from "./lib/marine.js"
 import { off as sgmOff } from "./lib/sgMotion.js"
 import { Icon } from "./lib/sg-icons.jsx"
 import ComicIcon from "./components/ComicIcons.jsx"
@@ -176,6 +178,12 @@ export default function BeachExperience({
   const [savOpen, setSavOpen] = useState(false)
   const [proxOpen, setProxOpen] = useState(false)
   const [faqOpen, setFaqOpen] = useState(false)
+  /* MER TEMPS RÉEL (2026-09-25F) : fetch paresseux à l'ouverture (1 plage =
+     1 appel Open-Meteo marine, cache 30 min). Jamais au mount (saveData par
+     défaut respecté : seul le geste utilisateur déclenche). */
+  const [merOpen, setMerOpen] = useState(false)
+  const [marine, setMarine] = useState(null)
+  const [marineLoading, setMarineLoading] = useState(false)
   const [shared, setShared] = useState(false)
   const rootRef = useRef(null)
   const edgeSwipeRef = useRef(null)
@@ -255,6 +263,17 @@ export default function BeachExperience({
   const goSav = () => { setSavOpen(o => { if (!o) trk("sg_verdict_expand", { via: "savoir" }); return !o }) }
   const goProx = () => { setProxOpen(o => { if (!o) trk("sg_alternative_reveal", { via: "proximity" }); return !o }) }
   const goFaq = () => { setFaqOpen(o => { if (!o) trk("sg_verdict_expand", { via: "faq" }); return !o }) }
+  const merFetchedRef = useRef(false)
+  const goMer = () => {
+    const next = !merOpen
+    setMerOpen(next)
+    if (!next) return
+    trk("sg_verdict_expand", { via: "marine" })
+    if (merFetchedRef.current || marine || !beach || beach.lat == null) return
+    merFetchedRef.current = true
+    setMarineLoading(true)
+    fetchMarine(beach).then(m => { setMarine(m); setMarineLoading(false) })
+  }
 
   // ── JOURNEY RAIL (2026-09-24) — téléportation DANS l'objet, jamais de page.
   //   chip jour 0   → retour au sommet (= l'identité de l'objet, la plage)
@@ -565,6 +584,58 @@ export default function BeachExperience({
               <div>{L("Prévision en cours de calcul — reviens dans un instant.", "Forecast computing — check back shortly.", "Pronóstico calculándose.")}</div>
             )}
           </Reveal>
+
+          {/* ── MER TEMPS RÉEL (2026-09-25F, ?sgvis=0 = off) : vagues/houle
+              Open-Meteo marine par coords (fetch paresseux au 1er tap, cache
+              30 min) + verdict snorkeling mer calme (mêmes seuils que
+              conditions-filters.js). Sans mesure → honnêteté, jamais de chiffre. */}
+          {!visOff() && (
+          <Reveal id="bx-mer" kicker={L("Conditions", "Conditions", "Condiciones")} title={L("La mer en direct", "Live sea state", "El mar en vivo")}
+            open={merOpen} onToggle={goMer} accent="#5FD3C9">
+            {marineLoading ? (
+              <div style={{ fontSize: 13.5, opacity: .75 }}>{L("Mesure en cours…", "Measuring…", "Midiendo…")}</div>
+            ) : !marine ? (
+              <div style={{ fontSize: 13.5, opacity: .8 }}>
+                {L("Conditions marines indisponibles pour l'instant — la décision satellite ci-dessus reste valable.", "Marine conditions unavailable right now — the satellite call above still stands.", "Condiciones marinas no disponibles — la decisión satelital sigue válida.")}
+                <div style={{ marginTop: 8, fontSize: 12, opacity: .65 }}>{marineSourceLabel(lang)}</div>
+              </div>
+            ) : (() => {
+              const st = marineState(marine)
+              const sn = snorkelSea(beach, marine)
+              const chip = st === "calm"
+                ? { t: L("Mer calme", "Calm sea", "Mar calma"), c: "#22C55E" }
+                : st === "rough"
+                ? { t: L("Mer agitée", "Rough sea", "Mar agitada"), c: "#E8522A" }
+                : { t: L("Mer modérée", "Moderate sea", "Mar moderada"), c: "#B87A00" }
+              return (
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 800, color: chip.c }}>
+                      <span style={{ width: 9, height: 9, borderRadius: 99, background: chip.c }} />{chip.t}
+                    </span>
+                    <span style={{ fontFamily: "'JetBrains Mono',monospace", fontSize: 13, fontWeight: 700 }}>
+                      {marine.waveHeight != null ? `${String(marine.waveHeight).replace(".", ",")} m` : "—"}
+                    </span>
+                    {marine.swellHeight != null && (
+                      <span style={{ fontSize: 12, opacity: .7 }}>{L(`houle ${String(marine.swellHeight).replace(".", ",")} m`, `swell ${marine.swellHeight} m`, `oleaje ${marine.swellHeight} m`)}</span>
+                    )}
+                  </div>
+                  {beach.snorkel && sn.ok === true && (
+                    <div style={{ marginTop: 8, fontSize: 13, background: "rgba(34,197,94,.1)", border: "1.5px solid rgba(34,197,94,.35)", borderRadius: 10, padding: "9px 11px" }}>
+                      🤿 {L("Bonne visibilité probable — masque recommandé.", "Good visibility likely — bring your mask.", "Buena visibilidad probable — trae tu máscara.")}
+                    </div>
+                  )}
+                  {beach.snorkel && sn.ok === false && sn.reason === "waves" && (
+                    <div style={{ marginTop: 8, fontSize: 13, background: "rgba(184,122,0,.1)", border: "1.5px solid rgba(184,122,0,.35)", borderRadius: 10, padding: "9px 11px" }}>
+                      {L("Mer trop brassée pour le snorkeling aujourd'hui.", "Too choppy for snorkeling today.", "Demasiado movido para snorkel hoy.")}
+                    </div>
+                  )}
+                  <div style={{ marginTop: 8, fontSize: 11.5, opacity: .6 }}>{marineSourceLabel(lang)} · {L("seuils : calme < 0,8 m · agitée ≥ 1,5 m", "thresholds: calm < 0.8 m · rough ≥ 1.5 m", "umbrales: calma < 0,8 m · agitada ≥ 1,5 m")}</div>
+                </div>
+              )
+            })()}
+          </Reveal>
+          )}
         </div>
 
         {/* ── COL 3 : AGIR (backup + trip + share + premium) ── */}
@@ -613,7 +684,10 @@ export default function BeachExperience({
               explorable 30-90 s. Que du RÉEL — sections sans données = masquées,
               jamais remplies. ── */}
           {!visOff() && (() => {
-            const facts = beachFacts(beach, allBeaches, lang)
+            /* Bons plans AVEC PROVENANCE (2026-09-25F) : tipsFor() — chaque
+               conseil cite sa source (satellite/flag/coords/donnée plage).
+               Rien sans source, jamais rempli artificiellement. */
+            const tips = tipsFor(beach, lang)
             const near = nearestBeaches(beach, allBeaches, 3)
             const ageH = dataAgeHours(sargData)
             const ageTxt = ageH == null ? null
@@ -632,14 +706,20 @@ export default function BeachExperience({
                 : L("Le Trip Planner couvre ton séjour, jour par jour.", "Trip Planner covers your stay, day by day.", "El Trip Planner cubre tu estancia, día a día.") })
             return (
               <>
-                {!!facts.length && (
+                {!!tips.length && (
                   <Reveal id="bx-savoir" kicker={L("Bon à savoir", "Good to know", "Bueno saber")} title={L("La plage, en pratique", "The beach, practically", "La playa, en práctica")}
                     open={savOpen} onToggle={goSav} accent="#FFC72C">
                     <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 8 }}>
-                      {facts.map((f, i) => (
-                        <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, background: "rgba(255,255,255,.04)", border: "1.5px solid rgba(255,255,255,.08)", borderRadius: 12, padding: "10px 12px" }}>
-                          <span style={{ color: "#FFC72C", flexShrink: 0, display: "inline-flex" }}><Icon name={f.icon} size={16} /></span>
-                          <span>{f.text}</span>
+                      {tips.map((f, i) => (
+                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13.5, background: f.kind === "warning" ? "rgba(232,82,42,.08)" : "rgba(255,255,255,.04)", border: f.kind === "warning" ? "1.5px solid rgba(232,82,42,.4)" : "1.5px solid rgba(255,255,255,.08)", borderRadius: 12, padding: "10px 12px" }}>
+                          <span style={{ color: f.kind === "warning" ? "#E8522A" : "#FFC72C", flexShrink: 0, display: "inline-flex", marginTop: 1 }}>
+                            <Icon name={f.kind === "warning" ? "alert" : f.kind === "tip" ? "sun" : "pin"} size={16} />
+                          </span>
+                          <span>{f.text}
+                            <span style={{ display: "block", fontSize: 11, opacity: .6, marginTop: 2 }}>
+                              {L("Source : ", "Source: ", "Fuente: ")}{sourceShort(f.source, lang)}{f.confidence === "medium" ? L(" · confiance moyenne", " · medium confidence", " · confianza media") : ""}
+                            </span>
+                          </span>
                         </li>
                       ))}
                     </ul>

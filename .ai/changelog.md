@@ -1,3 +1,22 @@
+## 2026-09-25F — DATA INTELLIGENCE + NICHE EVIDENCE : contrats + mer temps réel + tips sourcés
+
+**PROBLEM** : #747 a amélioré la présentation ; restait la profondeur — recommandations non expliquées, pas de donnée marine en fiche, niches sans registre de sources.
+
+**CHANGE** (rollback `?sgvis=0`, money-path ZÉRO touché) :
+- `src/lib/intent-evidence.js` (N, pur B2C/B2B/B2G) : registre 5 live + 5 blocked (diving/fishing/sailing/romantic/wild, raisons exactes) ; `evidenceFor()` score déterministe 10-100 + raisons sourcées ; `tipsFor()` kind+source+confidence (règles VisitPlan : H2S afai≥0.40, masque snorkel+clean+afai<0.3).
+- `src/lib/marine.js` (N) : Open-Meteo Marine (gratuit sans clé, par coords) — seuils = conditions-filters.js (0.8/1.0/1.5), cache 30 min, timeout 8 s, jamais de throw.
+- BeachExperience : section MER « La mer en direct » (fetch paresseux au tap, vagues/houle live + verdict snorkeling + source + seuils) + savoir = tips avec « Source : X ».
+- Home reco : raison + source (`intent-reco-why`, event existant).
+- `src/lib/sg-visual.js` : `beachFacts[].source` (provenance).
+- Photos C : conservées (même lieu, ≤160px) — Îlet_du_Gosier (102 Ko) NON substituée à gp012 (lieu différent).
+- SEO : 0 page créée (landings utiles existantes : /conditions/, /aujourdhui/, 136 plages).
+- Tests `tests/unit/niche-evidence.test.cjs` (42 checks) + probe `scripts/qa/probe-niche-f.mjs`.
+- Rapport : `.ai/ui-audit/DATA-INTELLIGENCE-2026-09-25F.md` (20 points).
+
+**PROOF** : build 0 (404 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 PASS · npm test 62/62 (niche-evidence 42/42) · E2E 30/30 · regions OK · php N/A · shots 390 (reco-why + MER live 0,58 m) lus, ERRORS=[] · money 0 diff.
+
+---
+
 ## 2026-09-25E — VISUAL / UX OVERHAUL : BeachCard photos + mini-guide plage + motion ×12 + SVG maison
 
 **PROBLEM** : #746 techniquement verte mais produit perçu « prototype/dashboard » — cartes 100 % texte, fiche trop courte, trip sans images, motion à 8, emojis OS sur les chips.
