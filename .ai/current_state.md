@@ -27,7 +27,7 @@
 2. Mesurer sg_recommendation_open intent_strip vs baseline (7j) — Rôle : growth
 
 ### Branche / PR
-- Branche : `agent/coding/visual-premium` → PR à créer
+- Branche : `agent/coding/visual-premium` — **PR #746 MERGED** (squash `bbda5b81f`, 2026-09-25) — CI **7/7 verte** (playwright inclus) — Deploy Live success (SHA bbda5b81) — prod 5/5 HTTP 200 · version.json b=bbda5b81 · probe prod : plan-card montre la vidéo hero réelle (poster=photo) quand l'asset existe.
 
 ---
 
