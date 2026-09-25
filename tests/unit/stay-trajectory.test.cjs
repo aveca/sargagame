@@ -68,20 +68,20 @@ function check(name, cond) { assert.ok(cond, name); passed++; console.log('  ✓
 
   // ── Câblage UI ──
   check('StayTrajectory monté dans WorldPaywall', WORLD.includes('<StayTrajectory lang={lang} beach={beach} forecast={trajForecast}'));
-  check('module gaté par wowOn (cohérent ?sgpaywow=0)', /wowOn && trajForecast && \(\s*\n?\s*<StayTrajectory/.test(WORLD));
+  check('module gaté par wowOn (cohérent ?sgpaywow=0)', /wowOn && trajForecast && \(\s*\n?\s*<StayTrajectory/.test(WORLD.replace(/\r/g, '')));
   check('rollback ?sgtraj=0 (regex rail prouvée)', TRAJ_UI.includes('sgtraj=0'));
   check('données calculées dans PremiumModal (trajForecast + trajBackup)', PMODAL.includes('const trajForecast = useMemo') && PMODAL.includes('const trajBackup = useMemo'));
   check('backup = findAlternatives réel (jamais inventé)', PMODAL.includes('findAlternatives(beach, allBeaches'));
-  check('allBeaches propagé Sargasses_PROD → PremiumModal', /beach=\{selectedBeach\|\|comicBeach\|\|null\}\s*\n\s*allBeaches=\{allBeaches\}/.test(PROD));
+  check('allBeaches propagé Sargasses_PROD → PremiumModal', /beach=\{selectedBeach\|\|comicBeach\|\|null\}\r?\n\s*allBeaches=\{allBeaches\}/.test(PROD));
   check('props traj propagées dans commonPaywallProps', PMODAL.includes('trajForecast, trajBackup,'));
 
   // ── Prix réel, source unique (panel adverse : jamais de littéral) ──
   check('prix importé de lib/pass-price.js (PASS_CENTS + seasonalCents)', TRAJ_UI.includes('from "../lib/pass-price.js"') && TRAJ_UI.includes('seasonalCents(PASS_CENTS[cur], cur)'));
   check('AUCUN prix littéral hardcodé (pas de 14,99 / 13,79 / 1499 en dur dans le composant)', !/14[,.]99|13[,.]79|1499|1379/.test(TRAJ_UI));
   check('pass-price.js : contrat eur 1499 / usd 1199 intact', PRICESRC.includes('eur: 1499') && PRICESRC.includes('usd: 1199'));
+
   // PassOffer (money surface) : l'intégration traj est ADDITIVE — prix/CTA/tracking
-  // intacts ; le strip interne est dédupliqué quand la trajectoire est visible
-  // (anti-doublon) et le porte le rollback ?sgtraj=0.
+  // strictement inchangés ; seules additions = dedup strip + label sticky semaine.
   check('PassOffer : prix source unique intact (PASS.cents + seasonalCents)', PASS_OFFER.includes('PASS.cents[cur]') && PASS_OFFER.includes('seasonalCents(cents, cur)'));
   check('PassOffer : buy()/tracking intacts (sg_pass_cta délégué Modal, buy appelle onBuy)', PASS_OFFER.includes('if(onBuy)onBuy(') && PASS_OFFER.includes('sg_pass_cta'));
   check('PassOffer : intégration traj gatee (dedup strip + rollback ?sgtraj=0)', PASS_OFFER.includes('trajForecast') && PASS_OFFER.includes('sgtraj=0') && PASS_OFFER.includes('!traj && ('));
@@ -92,12 +92,16 @@ function check(name, cond) { assert.ok(cond, name); passed++; console.log('  ✓
   check('zéro chiffre marketing (pas de 97/98/99 % en dur dans le composant)', !/9[789]\s?%/.test(TRAJ_UI));
 
   // ── A11y + mobile 390px + reduced-motion ──
-  check('tap nodes ≥44px (min-width:44px)', TRAJ_UI.includes('min-width:44px'));
+  // Cible tactile : min-height 56px sur chaque jour ; la largeur est ~38-44px à
+  // 390px via flex:1 (rail viewport-contrainte, overflow:hidden) — un min-width
+  // forcé à 44px DÉBORDAIT le panel (7×44+gaps > 266px dispo, mesuré Playwright).
+  check('tap nodes : min-height 56px (≥44) + flex:1 organisation 7 jours', TRAJ_UI.includes('min-height:56px') && TRAJ_UI.includes('flex:1'));
+  check('rail viewport-contrainte (overflow:hidden, zéro débordement 390px)', TRAJ_UI.includes('.sg-traj-rail{position:relative;display:flex;align-items:flex-start;gap:0') && TRAJ_UI.includes('overflow:hidden'));
   check('aria-pressed sur les jours + role=status sur le détail', TRAJ_UI.includes('aria-pressed') && TRAJ_UI.includes('role="status"') && TRAJ_UI.includes('aria-live="polite"'));
   check('reduced-motion = tout statique', /@media \(prefers-reduced-motion:reduce\)/.test(TRAJ_UI) && TRAJ_UI.includes('animation:none !important'));
   check('testid paywall dédié', TRAJ_UI.includes('stay-trajectory'));
 
-  // ── Funel : event tap allowlisté ──
+  // ── Funnel : event tap allowlisté ──
   check('sg_traj_tap émis au tap jour', TRAJ_UI.includes('onTrack("sg_traj_tap"'));
   check('sg_traj_tap allowlisté SG_FUNNEL_EVENTS', PROD.includes('"sg_traj_tap"'));
 

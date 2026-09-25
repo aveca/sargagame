@@ -36,6 +36,12 @@ check('deep link ?exp=<beachId> au boot (dataReady + île du build)', /URLSearch
 check('ouverture monde → pushState (entry dédiée)', /window\.history\.pushState\(\{sgexp:1\}/.test(PROD));
 check('transformation A→B → replaceState (même « page », lien suit la plage)', /window\.history\.replaceState\(\{sgexp:1\}/.test(PROD));
 check('Back navigateur = sortir du monde (popstate)', /window\.addEventListener\("popstate",onPop\)/.test(PROD));
+check('popstate anti-stale-closure : deps incluent les états plage (fix E2E « Back sans effet »)',
+  /\},\s*\[selectedBeach,comicBeach,JOURNEY_OFF\]\)/.test(PROD));
+check('transformation in-world ne consomme PAS le quota paywall-3view (fix overlay z1400)',
+  /onBeachClick\(b,cur\?\{inWorld:true\}:undefined\)/.test(PROD)
+  && /!\(_opts&&_opts\.inWorld\)/.test(PROD)
+  && /onBeachClick=useCallback\(\(b,_opts\)/.test(PROD));
 check('✕ = chemin Back natif quand entry à nous (closeExperience → history.back)', /history\.back\(\)/.test(PROD));
 check('pile in-world : plage quittée mémorisée (expPrevRef)', /expPrevRef\.current=\{id:cur\.id/.test(PROD));
 check('strip param à la fermeture latérale (URL jamais sale)', /p\.delete\("exp"\)/.test(PROD));

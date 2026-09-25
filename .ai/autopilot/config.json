@@ -57,12 +57,31 @@
       "src/PremiumModal/**",
       "**/*mollie*",
       "**/*paypal*",
-      "**/*stripe*"
+      "**/*stripe*",
+      "src/PremiumModal.jsx",
+      "src/lib/pass-price.js",
+      "scripts/autopilot/**",
+      ".ai/autopilot/config.json"
     ],
     "agentsEnabled": true,
     "allowAgentImplementation": false,
     "agentMaxMinutes": 15,
     "stopFile": ".ai/autopilot/STOP"
+  },
+
+  "experiments": {
+    "$comment": "Expérimentation prudente (mission §3/§5). Métrique décisoire = paid (Mollie) ; clics = signal secondaire. 1 expérience active par surface max.",
+    "windowDays": 7,
+    "minVisitors": 100,
+    "sampleTarget": 100,
+    "surfaces": ["home", "beach", "premium", "checkout-entry", "b2b"],
+    "surfacePriority": ["checkout-entry", "premium", "home", "beach"]
+  },
+
+  "personalization": {
+    "$comment": "V1 = règles déterministes mesurées, zéro ML. Signaux autorisés (non sensibles, déjà dispo) : region, langue, plage, intention, source, étape funnel, interactions session (premium_open/cta/checkout/retour). Spec : .ai/autopilot/personalization.md",
+    "enabled": false,
+    "doc": ".ai/autopilot/personalization.md"
   },
 
   "git": {

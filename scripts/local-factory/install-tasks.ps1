@@ -13,16 +13,34 @@ $factory = Join-Path $PSScriptRoot 'factory.cjs'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 if (-not (Test-Path $factory)) { throw "factory.cjs introuvable: $factory" }
 
+# Fenêtre invisible : si le wrapper run-hidden.vbs (local-tools, non versionné)
+# est présent, on l'utilise — sinon action node directe (console visible).
+# Le wrapper attend la fin du process → sémantique "pas d'instance parallèle".
+$wscript = Join-Path $env:SystemRoot 'System32\wscript.exe'
+$vbs = 'C:\Users\user\local-tools\run-hidden.vbs'
+$hidden = (Test-Path $wscript) -and (Test-Path $vbs)
+function New-FactoryAction([string]$extraArgs) {
+  if ($hidden) {
+    $argv = "`"$vbs`" `"$repoRoot`" `"$node`" `"$factory`""
+    if ($extraArgs) { $argv += " $extraArgs" }
+    return New-ScheduledTaskAction -Execute $wscript -Argument $argv -WorkingDirectory $repoRoot
+  }
+  $argv = "`"$factory`""
+  if ($extraArgs) { $argv += " $extraArgs" }
+  return New-ScheduledTaskAction -Execute $node -Argument $argv -WorkingDirectory $repoRoot
+}
+
 Write-Host "node   : $node"
 Write-Host "factory: $factory"
 Write-Host "repo   : $repoRoot"
+Write-Host "window : $(if ($hidden) { 'hidden (run-hidden.vbs)' } else { 'console directe' })"
 
 # Nettoyage d'anciennes versions (Boot/Daily separees) si presentes.
 foreach ($old in 'SargaFactory-Boot', 'SargaFactory-Daily') {
   if (Get-ScheduledTask -TaskName $old -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $old -Confirm:$false }
 }
 
-$action = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`"" -WorkingDirectory $repoRoot
+$action = New-FactoryAction ''
 $daily = New-ScheduledTaskTrigger -Daily -At '05:30'
 # StartWhenAvailable = rattrapage si l'heure a ete ratee. PAS de RunOnlyIfNetworkAvailable :
 # hors-ligne l'usine saute le git pull et rend quand meme.
@@ -47,7 +65,7 @@ try {
 }
 
 # 3) Timer de drain de la file a la demande (toutes les 30 min) — admin-free, interval-only.
-$serveAction = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`" --serve" -WorkingDirectory $repoRoot
+$serveAction = New-FactoryAction '--serve'
 $serveTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date '2020-01-01T06:00:00') -RepetitionInterval (New-TimeSpan -Minutes 30)
 Register-ScheduledTask -TaskName 'SargaFactory-Serve' -Action $serveAction -Trigger $serveTrigger -Settings $settings `
   -Description 'Usine locale: draine la file de jobs a la demande toutes les 30 min (git pull + --serve). Zero LLM.' -RunLevel Limited -Force | Out-Null

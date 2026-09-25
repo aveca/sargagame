@@ -138,8 +138,31 @@ function cleanupWorktree(cfg, log = console.log) {
   try { git(['worktree', 'prune']); } catch (_) {}
 }
 
+/** État d'une PR (vérification post-ship) : {state, mergeCommit, mergedAt} ou null. */
+function prState(prUrl) {
+  try {
+    const out = run(`gh pr view "${prUrl}" --json state,mergeCommit,mergedAt`, ROOT, { timeoutMs: 60000 });
+    const j = JSON.parse(out);
+    return { state: j.state, mergeCommit: (j.mergeCommit && j.mergeCommit.oid) || null, mergedAt: j.mergedAt || null };
+  } catch (_) { return null; }
+}
+
+/** Fingerprint de prod (version.json) d'un domaine — preuve de déploiement. */
+async function prodFingerprint(domain, timeoutMs = 10000) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    const r = await fetch(`https://${domain}/version.json`, { signal: ctrl.signal, headers: { 'User-Agent': 'sargagame-autopilot-verify' } });
+    clearTimeout(t);
+    if (!r.ok) return null;
+    const j = await r.json();
+    return { b: j.b || null, v: j.v || null };
+  } catch (_) { return null; }
+}
+
 module.exports = {
   worktreePath, founderTreeState, prepareWorktree, diffStats,
   commitAll, pushBranch, createPR, openAutopilotPR, enableAutoMerge, cleanupWorktree,
+  prState, prodFingerprint,
   git, gitSafe, run,
 };

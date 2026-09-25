@@ -6,6 +6,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { haversineKm, findAlternatives } from '../lib/beach-decision.js';
+import { off as sgmOff } from '../lib/sgMotion.js';
 
 export const GOLD = '#FFC72C';
 const INK = '#0d0b14';
@@ -443,13 +444,18 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
   const aAlt = active && active.status === 'avoid' ? findAlternatives(active, rail, { lang, maxAlternatives: 1 })[0] : null;
   const aFav = active && (favorites || []).includes(active.id);
   const tripAllowed = (() => { try { return !/[?&]tripplan=0(?:&|$)/.test(window.location.search); } catch (_) { return true; } })();
+  /* SGM (2026-09-24) : la home parle la grammaire de motion centralisée —
+     reveal du pouls au 1er paint, canal statut = verdict RÉEL de la bouée
+     centrée (couleur = donnée), CTA en sgm-focus APRÈS la révélation.
+     Rollback ?sgmotion=0 / reduced-motion : contenu identique, motion off. */
+  const SGM = !sgmOff();
 
   return (
     <div style={wowShell} className="wow-home" data-testid="xp-home">
       <style>{XP_ARMOR}{WOW_ARMOR}</style>
 
       {/* 1 · LIVE STATE — la mer est mesurée, maintenant */}
-      <section className="wow-live" style={{ ...card, background: 'linear-gradient(135deg,#0B2230,#123a4d)', color: '#fff', borderColor: INK }}>
+      <section className={`wow-live${SGM ? ' sgm-reveal' : ''}`} style={{ ...card, background: 'linear-gradient(135deg,#0B2230,#123a4d)', color: '#fff', borderColor: INK }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: '.12em' }}>
             <span className="wow-live-dot" />{_t(lang, 'EN DIRECT', 'LIVE', 'EN VIVO')}
@@ -481,7 +487,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
       {/* 3 · REVEAL + 4 · ACTION — la carte de la bouée centrée */}
       <div className="wow-focuswrap">
         {active ? (
-          <section key={active.id} className="wow-focus-in" style={{ ...card, marginBottom: 10 }} aria-live="polite" data-testid="wow-focus" data-beach={active.id}>
+          <section key={active.id} className="wow-focus-in" style={{ ...card, marginBottom: 10, borderTop: '3px solid var(--sgm-c)' }} aria-live="polite" data-testid="wow-focus" data-beach={active.id} data-sgm-status={active.status}>
             {aTop && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: GOLD, color: INK, border: `2px solid ${INK}`, borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800, marginBottom: 6 }}>★ {_t(lang, 'MEILLEUR CHOIX DU JOUR', 'TOP PICK TODAY', 'MEJOR OPCIÓN DE HOY')}</span>}
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
               <div style={{ minWidth: 0 }}>
@@ -497,7 +503,7 @@ export function HomeWow({ lang = 'fr', allBeaches = [], sargData, favorites = []
             {!!active.reason && <div style={{ fontSize: 13, marginTop: 4, opacity: .85 }}>{active.reason}</div>}
             {!!aAlt && <div style={{ fontSize: 12, marginTop: 6 }}>↗ {_t(lang, 'Alternative', 'Alternative', 'Alternativa')} : <b>{aAlt.beach.name}</b> ({aAlt.distanceKm} km)</div>}
             <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-              <button type="button" className="xp-gold xp-gold" style={{ ...btnGold, flex: 1.4 }} data-testid="xp-best-open"
+              <button type="button" className={`xp-gold xp-gold${SGM ? ' sgm-focus' : ''}`} style={SGM ? { ...btnGold, flex: 1.4, animationDelay: '.45s' } : { ...btnGold, flex: 1.4 }} data-testid="xp-best-open"
                 onClick={() => { try { track?.('sg_home_best_open', { beach_id: active.id, src: 'wow_focus', top: aTop }); } catch (_) {} onOpenBeach?.(active); }}>
                 {_t(lang, 'J\u2019y vais →', 'Go →', 'Voy →')}
               </button>

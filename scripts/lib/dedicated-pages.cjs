@@ -187,6 +187,17 @@ function sectionTitle(lang, fr, en, es) {
   return lang === 'es' ? es : lang === 'en' ? en : fr;
 }
 
+// Flags plage → page /activity/<slug>/ (slice 2, audit SEO 2026-09-24).
+// Mapping strict : que ce que le flag prouve. 'kids' est canonisé vers 'family'
+// (même flag source → pas deux pages quasi identiques). 'surf'/'dive' n'ont
+// AUCUN flag source sous-jacent → ces pages restent noindex (anti-thin).
+const ACTIVITY_FLAG = { snorkel: 'snorkel', family: 'kids', parking: 'parking', kids: 'kids' };
+function activityBeaches(activity, beaches) {
+  const flag = ACTIVITY_FLAG[activity];
+  if (!flag) return [];
+  return (beaches || []).filter(b => b && b[flag]);
+}
+
 // Generate beach detail page — NEW: /beach/[slug] + /beach/[id] (dedicated Sprint #23)
 function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) {
   const t = getT(lang);
@@ -221,7 +232,7 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
       </h3>
       <ul style="list-style:none;padding:0;margin:0">${nearby.map(b=>
         `<li style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-radius:10px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;margin-bottom:6px;cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='#667eea';this.style.boxShadow='2px 2px 0 #667eea'" onmouseout="this.style.borderColor='#e8eaff';this.style.boxShadow='1px 1px 0 #667eea'">
-          <a href="/beach/${b.beach.slug || slugify(b.beach.name)}/" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;flex:1">
+          <a href="${primaryBeachPath(region, b.beach)}" style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:8px;flex:1">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none"><circle cx="12" cy="12" r="9"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.2 16.2l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.2 7.8l2.8-2.8"/></svg>
             <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px">${esc(b.beach.name)}</span>
           </a>
@@ -287,11 +298,17 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
         if(!catActs.length) return '';
         return `<div style="display:flex;flex-direction:column;gap:4px">
           <div style="font:700 10px/1 'Bricolage Grotesque';color:#6B6B6B;text-transform:uppercase;letter-spacing:0.5px">${cat.label[lang]||cat.label.fr}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:6px">${catActs.map(a=>`<button style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;cursor:pointer;font:700 11px/1 'Bricolage Grotesque';color:#0D0D0D;text-align:left;transition:all 0.15s" onmouseover="this.style.borderColor='#667eea';this.style.boxShadow='2px 2px 0 #667eea'" onmouseout="this.style.borderColor='#e8eaff';this.style.boxShadow='1px 1px 0 #667eea'">
+          <div style="display:flex;flex-wrap:wrap;gap:6px">${catActs.map(a=>{
+             // Slice 2 : chip → VRAI lien /activity/<slug>/ si ≥2 plages réelles
+             // flaggées (kids→family canonisé), sinon span inerte (pas de bouton mort).
+             const actSlug = a.slug === 'kids' ? 'family' : a.slug;
+             const tag = activityBeaches(actSlug, allBeaches).length >= 2 ? `<a href="/activity/${actSlug}/"` : '<span';
+             const tagEnd = tag.startsWith('<a') ? '</a>' : '</span>';
+             return `${tag} style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;border:2px solid #e8eaff;background:#fff;box-shadow:1px 1px 0 #667eea;cursor:pointer;font:700 11px/1 'Bricolage Grotesque';color:#0D0D0D;text-align:left;transition:all 0.15s" onmouseover="this.style.borderColor='#667eea';this.style.boxShadow='2px 2px 0 #667eea'" onmouseout="this.style.borderColor='#e8eaff';this.style.boxShadow='1px 1px 0 #667eea'">
             <span style="display:flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:6px;background:#e8eaff;color:#667eea;flex:none">${cat.key==='snorkeling'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=\"M12 22v-4\"/><path d=\"M18 18a6 6 0 0 0-12 0\"/><path d=\"M6 14a8 8 0 0 1 12 0\"/><circle cx=\"12\" cy=\"10\" r=\"2\"/></svg>':cat.key==='family'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>':cat.key==='parking'?'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#667eea" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 17v-5"/><path d="M15 17v-5"/></svg>':''}</span>
             <span style="font:700 11px/1 \'Bricolage Grotesque\';color:#0D0D0D;flex:1">${esc(cat.label[lang]||cat.label.fr)}</span>
-            <span style="color:#6B6B6B;font:700 11px/1 \'Bricolage Grotesque\'">→</span>
-          </button>`).join('')}</div></div>`;
+             <span style="color:#6B6B6B;font:700 11px/1 \'Bricolage Grotesque\'">→</span>
+           ${tagEnd}`}).join('')}</div></div>`;
       }).join('')}</div></section>`;
   }
 
@@ -409,6 +426,8 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 // Generate POI page — /poi/[slug] + /poi/[id]
+// Slice 2 (audit SEO 2026-09-24) : coquille fine (type + coords, 1-2 POI/région,
+// hors sitemap prod) → noindex,follow. Page conservée pour les liens existants.
 function generatePOIPage(region, poi, lang, distDir) {
   const t = getT(lang);
   const domain = region.domain;
@@ -433,13 +452,15 @@ function generatePOIPage(region, poi, lang, distDir) {
     additionalType: poi.type
   }];
   
-  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd });
+  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, robots: 'noindex,follow' });
   writePage(distDir, pathname, html);
   if (pathnameById !== pathname) writePage(distDir, pathnameById, html);
-  return { loc: pathname, changefreq: 'weekly', priority: '0.4' };
+  return null;
 }
 
 // Generate region page
+// Slice 2 (audit SEO 2026-09-24) : la home du domaine EST le hub régional →
+// cette page duplique l'intention home. Canonical → / + noindex,follow.
 function generateRegionPage(region, lang, distDir) {
   const t = getT(lang);
   const domain = region.domain;
@@ -461,13 +482,18 @@ function generateRegionPage(region, lang, distDir) {
     containedInPlace: { '@type': 'Country', name: region.country || '' }
   }];
   
-  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd });
+  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, canonicalPath: '/', robots: 'noindex,follow' });
   writePage(distDir, pathname, html);
-  return { loc: pathname, changefreq: 'daily', priority: '0.8' };
+  return null;
 }
 
 // Generate activity page
-function generateActivityPage(activity, region, lang, distDir) {
+// Slice 2 (audit SEO 2026-09-24) : ENRICHIE avec les plages RÉELLES flaggées
+// (kids/snorkel/parking → beaches-list.json / regions/<id>.json) + statut live,
+// liens vers les fiches PRIMAIRES (jamais l'alias /beach/). Règles anti-thin :
+//  - activité sans flag source (surf/dive) ou <2 plages réelles → noindex,follow
+//  - 'kids' = doublon exact de 'family' (même flag) → canonical family + noindex
+function generateActivityPage(activity, region, lang, distDir, beaches = [], data = {}) {
   const t = getT(lang);
   const domain = region.domain;
   const activities = {
@@ -481,14 +507,54 @@ function generateActivityPage(activity, region, lang, distDir) {
   const label = activities[activity]?.[lang] || activity;
   const slug = slugify(activity);
   const pathname = `/activity/${slug}/`;
-  const title = `${label} à ${region.name} — Plages et spots recommandés`;
-  const desc = `Où pratiquer ${label.toLowerCase()} en ${region.name} sans sargasses ? Plages propres, prévisions, spots recommandés.`;
-  
-  const noscript = `<article><h1>${esc(label)} en ${esc(region.name)}</h1>
+
+  const STATUS_TXT = lang === 'es' ? STATUS_LABEL_ES : (lang === 'en' ? STATUS_LABEL_EN : STATUS_LABEL);
+  const flagged = activityBeaches(activity, beaches); // réel : flag plage source
+  const levelsById = Object.fromEntries((data.levels || []).map(l => [l.id, l]));
+  const isIndexable = flagged.length >= 2;
+  const rank = s => (s === 'clean' ? 0 : s === 'moderate' ? 1 : 2);
+  const listed = [...flagged].sort((a, b2) => (rank((levelsById[a.id] || {}).status || 'clean') - rank((levelsById[b2.id] || {}).status || 'clean'))
+    || ((levelsById[b2.id] || {}).score || 0) - ((levelsById[a.id] || {}).score || 0));
+  const cleanN = flagged.filter(b => ((levelsById[b.id] || {}).status || 'clean') === 'clean').length;
+
+  const title = isIndexable
+    ? sectionTitle(lang,
+        `Plages ${label.toLowerCase()} en ${region.name} — état sargasses du jour`,
+        `${label} beaches in ${region.name} — sargassum status today`,
+        `Playas ${label.toLowerCase()} en ${region.name} — estado del sargazo hoy`)
+    : `${label} à ${region.name} — Plages et spots recommandés`;
+  const desc = isIndexable
+    ? sectionTitle(lang,
+        `${flagged.length} plages ${label.toLowerCase()} en ${region.name}, ${cleanN} propre${cleanN > 1 ? 's' : ''} aujourd'hui. État satellite par plage, mis à jour 4×/jour.`,
+        `${flagged.length} ${label.toLowerCase()} beaches in ${region.name}, ${cleanN} clean right now. Per-beach satellite status, updated 4× a day.`,
+        `${flagged.length} playas en ${region.name}, ${cleanN} limpias ahora. Estado satelital por playa, 4 veces al día.`)
+    : `Où pratiquer ${label.toLowerCase()} en ${region.name} sans sargasses ? Plages propres, prévisions, spots recommandés.`;
+
+  const listHtml = isIndexable
+    ? `<h2>${sectionTitle(lang, `Plages ${label} — état du jour`, `${label} beaches — status today`, `Playas — estado hoy`)}</h2><ul>${listed.map(b => {
+        const lv = levelsById[b.id] || {};
+        const st = lv.status || 'clean';
+        return `<li><a href="${primaryBeachPath(region, b)}">${esc(b.name)}</a> — ${STATUS_TXT[st] || st}${lv.score != null ? ` (${lv.score}/100)` : ''}${b.commune ? ` · ${esc(b.commune)}` : ''}</li>`;
+      }).join('')}</ul>`
+    : '';
+
+  const noscript = `<article><h1>${esc(label)} ${lang === 'es' ? 'en' : lang === 'en' ? 'in' : 'en'} ${esc(region.name)}</h1>
 <p>${esc(desc)}</p>
+${listHtml}
 <p><a href="/">${t.home}</a> · <a href="/${t.beachesDir}/">${t.allBeaches}</a></p></article>`;
-  
-  const jsonLd = [{
+
+  // 'kids' = doublon strict de 'family' → canonicalise (transmet le jus, pas de dupe).
+  const canonicalOverride = activity === 'kids' ? '/activity/family/' : undefined;
+
+  const jsonLd = isIndexable ? [{
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: `${label} en ${region.name}`,
+    description: desc,
+    url: `https://${domain}${pathname}`,
+    numberOfItems: flagged.length,
+    itemListElement: listed.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, url: `https://${domain}${primaryBeachPath(region, b)}` })),
+  }] : [{
     '@context': 'https://schema.org',
     '@type': 'TouristAttraction',
     name: `${label} en ${region.name}`,
@@ -496,10 +562,10 @@ function generateActivityPage(activity, region, lang, distDir) {
     url: `https://${domain}${pathname}`,
     containedInPlace: { '@type': 'AdministrativeArea', name: region.name }
   }];
-  
-  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd });
+
+  const html = pageShell({ title, desc, pathname, domain, lang, noscript, jsonLd, canonicalPath: canonicalOverride, robots: isIndexable && !canonicalOverride ? undefined : 'noindex,follow' });
   writePage(distDir, pathname, html);
-  return { loc: pathname, changefreq: 'weekly', priority: '0.5' };
+  return isIndexable && !canonicalOverride ? { loc: pathname, changefreq: 'weekly', priority: '0.5' } : null;
 }
 
 function generateDedicatedPages(region, distDir) {
@@ -549,12 +615,16 @@ function generateDedicatedPages(region, distDir) {
     if (entry) sitemap.push(entry);
   }
   // If legacy mq build, also ensure we counted correctly: we generated for all islands once, not per lang
-  // 2. POI pages — /poi/[slug] + /poi/[id]
+  // 2. POI pages — /poi/[slug] + /poi/[id] (noindex slice 2 → null, hors sitemap)
   for (const poi of regionPois) {
-    sitemap.push(generatePOIPage(region, poi, lang, distDir));
+    const entry = generatePOIPage(region, poi, lang, distDir);
+    if (entry) sitemap.push(entry);
   }
-  // 3. Region page — /region/[slug] (region itself)
-  sitemap.push(generateRegionPage(region, lang, distDir));
+  // 3. Region page — /region/[slug] (canonical → / + noindex slice 2 → null)
+  {
+    const entry = generateRegionPage(region, lang, distDir);
+    if (entry) sitemap.push(entry);
+  }
   // Also generate sub-region pages if region has subRegions (not yet, but placeholder)
   if (Array.isArray(region.subRegions)) {
     for (const sub of region.subRegions) {
@@ -564,16 +634,17 @@ function generateDedicatedPages(region, distDir) {
       const subDesc = `État des sargasses à ${sub.name} (${region.name}). Carte et prévisions.`;
       const subNs = `<article><h1>${esc(sub.name)} — ${esc(region.name)}</h1><p>${esc(subDesc)}</p><p><a href="/">${esc(lang==='es'?'Mapa en vivo':lang==='en'?'Live map':'Carte en direct')}</a></p></article>`;
       const subJsonLd = [{ '@context':'https://schema.org','@type':'Place', name: sub.name, description: subDesc, url: `https://${region.domain}${subPath}` }];
-      const html = pageShell({ title: subTitle, desc: subDesc, pathname: subPath, domain: region.domain, lang, noscript: subNs, jsonLd: subJsonLd });
+      const html = pageShell({ title: subTitle, desc: subDesc, pathname: subPath, domain: region.domain, lang, noscript: subNs, jsonLd: subJsonLd, canonicalPath: '/', robots: 'noindex,follow' });
       writePage(distDir, subPath, html);
-      sitemap.push({ loc: subPath, changefreq: 'weekly', priority: '0.6' });
     }
   }
-  // 4. Activity pages — /activity/[type]
+  // 4. Activity pages — /activity/[type] enrichies (plages réelles flaggées) ;
+  //    indexables seulement si ≥2 plages réelles et non doublon ('kids'→family).
   for (const activity of ['snorkel', 'surf', 'family', 'parking', 'dive', 'kids', 'snorkeling']) {
     // dedupe snorkel/snorkeling
     if (activity === 'snorkeling') continue;
-    sitemap.push(generateActivityPage(activity, region, lang, distDir));
+    const entry = generateActivityPage(activity, region, lang, distDir, beaches, data);
+    if (entry) sitemap.push(entry);
   }
   // Also ensure generic activity types from beachesList (collect unique activities that exist)
   // (handled above with fixed list — enough for Sprint #25)
@@ -605,4 +676,4 @@ function generateDedicatedPages(region, distDir) {
   console.log(`   → Pages dédiées ${region.id} (${lang}) : ${sitemap.length} URLs ajoutées au sitemap (beaches ${beaches.length}, pois ${regionPois.length})`);
 }
 
-module.exports = { generateDedicatedPages, primaryBeachPath };
+module.exports = { generateDedicatedPages, primaryBeachPath, activityBeaches, ACTIVITY_FLAG };

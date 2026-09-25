@@ -46,10 +46,15 @@ function main() {
   ok(XP.includes('.xp-dark.xp-dark') && XP.includes('background:#0d0b14!important'), 'R2 : armure .xp-dark (bouton J’y vais)')
   ok(XP.includes('.xp-seg-on.xp-seg-on'), 'R2 : armure .xp-seg-on (filtres actifs INK)')
   ok(XP.includes('.xp-sort-on.xp-sort-on'), 'R2 : armure .xp-sort-on (tri actif GOLD)')
-  const goldSpreads = (XP.match(/\.\.\.btnGold/g) || []).length // style={{ ...btnGold, ... }}
-  const goldDirect = (XP.match(/style=\{btnGold\}/g) || []).length // style={btnGold}
-  const goldArmored = (XP.match(/className="xp-gold xp-gold"/g) || []).length
-  ok(goldSpreads + goldDirect > 0 && goldSpreads + goldDirect === goldArmored, `R2 : tous les boutons btnGold armurés (armure ${goldArmored}/N, usages ${goldSpreads + goldDirect} — parité, plus de quota figé)`)
+  // Comptage PAR LIGNE de bouton (une ligne peut contenir deux spread btnGold
+  // via un ternaire de style — c'est UN seul bouton, donc une seule armure).
+  const goldSpreads = new Set()
+  XP.split('\n').forEach((line, idx) => { if (/\.\.\.btnGold|style=\{btnGold\}/.test(line)) goldSpreads.add(idx) })
+  const goldDirect = 0
+  // Armure doublé-classe tolère des classes en plus (ex. focus motion ?sgmotion=0)
+  // — le pattern `xp-gold xp-gold` reste présent, seul le littéral change (template).
+  const goldArmored = (XP.match(/className=("xp-gold xp-gold"|\{`xp-gold xp-gold)/g) || []).length
+  ok(goldSpreads.size + goldDirect > 0 && goldSpreads.size + goldDirect === goldArmored, `R2 : tous les boutons btnGold armurés (armure ${goldArmored}/N, usages ${goldSpreads.size + goldDirect} — parité, plus de quota figé)`)
   ok(XP.includes("className=\"xp-dark xp-dark\""), 'R2 : bouton noir J’y vais armuré')
   ok(/sort === id \? 'xp-sort-on xp-sort-on'/.test(XP), 'R2 : tri actif câblé (classe conditionnelle)')
   ok(/onlyFav \? 'xp-sort-on xp-sort-on'/.test(XP), 'R2 : toggle Suivies câblé (classe conditionnelle)')

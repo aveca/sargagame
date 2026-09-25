@@ -36,7 +36,7 @@ function matchesAny(file, globs) {
   return (globs || []).some(g => globToRe(g).test(f));
 }
 
-const KEYWORD_DENY = /mollie|paypal|stripe|payment|checkout|secret|credential|token\.php/i;
+const KEYWORD_DENY = /mollie|paypal|stripe|payment|checkout|secret|credential|token\.php|pass-price/i;
 
 /** {allowed, denied[], reasons[]} — évalue une liste de fichiers (chemins relatifs repo). */
 function evaluateFiles(files, cfg) {

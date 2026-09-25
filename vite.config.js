@@ -2024,6 +2024,34 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
             // Build noscript with nearby beaches (same commune first, then same island), nav links
             // Extra SEO sections appended to ALL beaches (enriched or not)
             const condBaignade = b.status === 'clean' ? `<h2>Conditions</h2><p>Peu ou pas de sargasses détectées par satellite (Copernicus AFAI) au large de ${b.name} — mesuré, pas deviné. La côte est complexe baie par baie et l'état peut basculer en quelques heures avec le vent : vérifiez toujours sur place avant de vous baigner.</p>` : b.status === 'moderate' ? `<h2>Conditions</h2><p>Présence modérée de sargasses détectée par satellite au large de ${b.name}. Vérifiez l'état de la plage sur place.</p>` : `<h2>Conditions</h2><p>Forte concentration de sargasses détectée par satellite au large de ${b.name}. Échouages probables. Si des sargasses sont en décomposition sur place, éloignez-vous (risque H₂S — source HCSP). Consultez les <a href="/">plages propres à proximité</a>.</p>`
+            // ── Alternative du jour (audit SEO 2026-09-24, slice 3) : même règle
+            //    que la couche AREA — plage la plus proche STRICTEMENT meilleure
+            //    (même île, statut live réel, distance haversine). Jamais forcée :
+            //    plage propre ou rien de mieux autour → aucun bloc. Rollback build :
+            //    VITE_NO_SEOALT=1. Canonical primaire /plages/<slug>/ inchangé.
+            let altSection = ''
+            if (process.env.VITE_NO_SEOALT !== '1' && b.status && b.status !== 'clean') {
+              const _rankAlt = s => s === 'clean' ? 0 : s === 'moderate' ? 1 : 2
+              const _curAlt = _rankAlt(b.status)
+              let _bestAlt = null
+              for (const o of beaches) {
+                if (!o || o.id === b.id || o.island !== b.island) continue
+                const _st = ((heroLv(o) || {}).status) || o.status
+                if (!_st || _rankAlt(_st) >= _curAlt) continue
+                const _toRad = x => x * Math.PI / 180
+                const _dLa = _toRad(o.lat - b.lat), _dLo = _toRad(o.lng - b.lng)
+                const _A = Math.sin(_dLa / 2) ** 2 + Math.cos(_toRad(b.lat)) * Math.cos(_toRad(o.lat)) * Math.sin(_dLo / 2) ** 2
+                const _km = 2 * 6371 * Math.asin(Math.sqrt(_A))
+                if (!isFinite(_km)) continue
+                if (!_bestAlt || _km < _bestAlt.km) _bestAlt = { o, km: _km, st: _st }
+              }
+              if (_bestAlt) {
+                const _stFR = _bestAlt.st === 'clean' ? 'propre' : 'modérée'
+                const _dist = _bestAlt.km < 1 ? `${Math.round(_bestAlt.km * 1000)} m` : `${Math.round(_bestAlt.km)} km`
+                const _curFR = b.status === 'moderate' ? 'modérée' : 'à éviter'
+                altSection = `<h2>${b.name} ${_curFR} aujourd'hui — la meilleure option à proximité</h2><p>Selon le dernier passage satellite, <a href="/plages/${_bestAlt.o.slug || slugify(_bestAlt.o.name)}/">${_bestAlt.o.name}</a> (${_bestAlt.o.commune}) est <strong>${_stFR}</strong> à ${_dist}. État mesuré ce jour, revérifié 4 fois par jour.</p>`
+              }
+            }
             const accessSection = `<h2>Comment s'y rendre</h2><p>${b.name} se trouve à ${b.commune}, ${island}. Accessible en ${b.drive} minutes en voiture depuis ${mainCity}.</p>`
             const tagsList = []
             if (b.kids) tagsList.push('Adaptée aux enfants')
@@ -2081,7 +2109,7 @@ console.log('   → BreadcrumbList ajouté à /carte-sargasses/, /previsions/ et
                 todayConditions = `<h2>Conditions du jour à ${b.name} (${today})</h2><p>${pieces.join(', ')}. ${condLabel}. Données Open-Meteo Marine rafraîchies quotidiennement, complémentaires à la surveillance sargasses Sentinel-3.</p>`
               }
             }
-            const extraSections = `${todayConditions}${accessSection}${driveContext}${orientationSection}${condBaignade}${activitySection}${seasonSection}${tagsHtml}`
+            const extraSections = `${todayConditions}${accessSection}${driveContext}${orientationSection}${condBaignade}${altSection}${activitySection}${seasonSection}${tagsHtml}`
             // Beach photo for noscript (Google Images indexing)
             const beachImgTag = _beachImages[b.id]
               ? `<img src="/beaches/${_beachImages[b.id]}" alt="${b.name} — plage ${b.commune}, ${island}" width="800" height="450" loading="lazy" />`
