@@ -1,3 +1,41 @@
+## 2026-09-25E · Agent: coding (VISUAL / UX OVERHAUL) — BeachCard photos + mini-guide + motion ×12
+
+### Travail effectué
+- **Résumé 1 ligne** : refonte d'expérience visuelle réelle (pas de placeholders) — photos catalogue sur cartes/jours/proximité, fiche plage mini-guide (savoir/proximité/FAQ), « Pourquoi ce choix ? », 4 motions narratives, SVG maison, audit mesuré 457 JPG. Money-path intact.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25E) + `.ai/ui-audit/VISUAL-OVERHAUL-2026-09-25E.md` (rapport 21 points). Rollback unique : `?sgvis=0` (+ `?sgmotion=0` motion, flags D conservés). Missing documentés : 3 photos C affichées, header photo paywall, portrait/gallery/sunset/activity/AVIF, 50 D non mappées, flags niche.
+
+### Fichiers modifiés
+- (N) `src/lib/sg-visual.js` · `src/lib/sg-icons.jsx` · `scripts/qa/media-audit.cjs` · `scripts/qa/probe-visual-ab.mjs` · `scripts/qa/probe-visual-deep.mjs` · `.ai/ui-audit/VISUAL-OVERHAUL-2026-09-25E.md`
+- (N-tôt) `scripts/qa/media-dims.cjs`
+- (M) `src/BeachExperience.jsx` (mini-guide + imageMap) · `src/Sargasses_PROD.jsx` (imageMap ×4 vues) · `src/TripPlanner.jsx` (vignettes) · `src/components/ExperienceReset.jsx` (BeachCard photo + plumbing) · `src/components/PlanCard.jsx` (pourquoi + planin/swap) · `src/lib/intents.js` (icônes SVG) · `src/sg-motion.css` (12 motions) · `scripts/lib/today-pages.cjs` (hero photo) · `tests/unit/visual-premium.test.cjs` (45 checks)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] bundle 38,2 Ko ≤ 210 (sg-icons lazy 1,07 Ko, zéro eager ajouté)
+- [x] smoke 4/4 + SMOKE_GATE=PASS (preview frais 4173)
+- [x] npm test → 61/61 (visual-premium 45/45)
+- [x] E2E perfect-trip 5/5 + experience 8/8 + journey 5/5 + funnel-payment 13/13
+- [x] regions assertAllRegionsValid OK ; php -l N/A (0 PHP touché)
+- [x] screenshots AVANT/APRÈS lus (24 AB + 8 deep, 390/768/1440, home/today/beach/trip/premium/plages)
+- [x] money-path 0 diff ; KI-2026-09-24A / BUG-2026-038 verts
+
+### Problèmes restants
+- [ ] 3 photos C affichées à remplacer (gplace-gp083, gplace-gp027, Gosier_plage) — P2
+- [ ] header photo paywall (imageMap → PremiumModal) — volontairement hors cycle (distance money-path)
+- [ ] media pass : portrait/gallery/sunset/activity/AVIF-srcset + purge 50 D — data/agent
+- [ ] niches fishing/sailing/diving/romantic/wild : flags sources manquants (modèle §13 du rapport)
+
+### Prochaine action recommandée
+1. Merge PR → CI 7/7 → deploy → probes prod (photos cartes + sections fiche + trip) — Rôle : release
+2. Mesurer sg_verdict_expand (via plan/savoir/faq) + sg_recommendation_open (bx_proximity) 7j — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/visual-overhaul-e`
+- PR : à créer vers main
+- Commit head : à créer
+
+---
+
 ## 2026-09-25D · Agent: coding (VISUAL PREMIUM + PERFECT DAY) — media contract v1 + reco concierge
 
 ### Travail effectué

@@ -66,7 +66,7 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, media =
   if (facts.length > 3) facts.length = 3
 
   return (
-    <section className={sgmOff() ? "plan-card" : "sgm-reveal plan-card"} data-testid="plan-card" data-beach={beach.id} data-sgm-status={beach.status || "unknown"}
+    <section className={sgmOff() ? "plan-card" : "sgm-planin plan-card"} data-testid="plan-card" data-beach={beach.id} data-sgm-status={beach.status || "unknown"}
       style={{ background: "#fff", color: INK, border: `2px solid ${INK}`, borderRadius: 16, boxShadow: `3px 3px 0 ${INK}`, padding: 12, marginBottom: 12 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".12em", color: "#8a5a00" }}>
         <span style={{ width: 7, height: 7, borderRadius: "50%", background: DOT[beach.status] || "#999" }} aria-hidden="true" />
@@ -108,9 +108,30 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, media =
           : _t(lang, "Meilleure option aujourd'hui selon les données satellite actuelles.", "Best option today based on current satellite data.", "Mejor opción hoy según los datos satelitales actuales.")}
         {conf != null ? ` ${_t(lang, `Confiance ${conf} %`, `Confidence ${conf} %`, `Confianza ${conf} %`)}` : ""}
       </div>
-      {/* Semaine RÉELLE (forecast satellite, même source que Journey/Trip) —
-          points visuels des jours, verrous J+3+ marqués si non-premium (réel,
-          pas de promesse). Uniquement si le forecast existe (days réels). */}
+      {/* POURQUOI CE CHOIX (2026-09-25E) — la data devient une histoire :
+          2-4 raisons RÉELLES (statut satellite, score, confiance, fenêtre).
+          <details> natif : zéro JS, a11y gratuite, reduced-motion safe. */}
+      {(() => {
+        const reasons = []
+        reasons.push(beach.status === "clean"
+          ? _t(lang, `Eau propre mesurée aujourd'hui (satellite)${beach.score != null ? ` — score ${Math.round(beach.score)}/100` : ""}.`, `Clean water measured today (satellite)${beach.score != null ? ` — score ${Math.round(beach.score)}/100` : ""}.`, `Agua limpia medida hoy (satélite)${beach.score != null ? ` — puntuación ${Math.round(beach.score)}/100` : ""}.`)
+          : _t(lang, `Statut du jour : ${m.label.toLowerCase()} (mesure satellite).`, `Today's status: ${m.label.toLowerCase()} (satellite reading).`, `Estado de hoy: ${m.label.toLowerCase()} (medición satelital).`))
+        if (better) reasons.push(_t(lang, `Meilleure fenêtre : ${better.label || "J+" + better.i} (prévision satellite).`, `Best window: ${better.label || "J+" + better.i} (satellite forecast).`, `Mejor ventana: ${better.label || "J+" + better.i} (pronóstico satelital).`))
+        else if (beach.status === "clean") reasons.push(_t(lang, "Meilleur score du jour sur l'île.", "Top score on the island today.", "Mejor puntuación de la isla hoy."))
+        if (conf != null) reasons.push(_t(lang, `Confiance ${conf} % sur la prévision du jour.`, `Confidence ${conf}% on today's forecast.`, `Confianza ${conf} % en el pronóstico de hoy.`))
+        if (!reasons.length) return null
+        return (
+          <details data-testid="plan-why" style={{ marginTop: 8, background: "#FFFBEB", border: `1.5px dashed ${INK}`, borderRadius: 10, padding: "8px 10px", fontSize: 12.5 }}
+            onToggle={e => { if (e.target.open) { try { track?.("sg_verdict_expand", { beach_id: beach.id, via: "plan" }) } catch (_) {} } }}>
+            <summary style={{ fontWeight: 800, cursor: "pointer", minHeight: 32, display: "flex", alignItems: "center" }}>
+              {_t(lang, "Pourquoi ce choix ? →", "Why this pick? →", "¿Por qué esta elección? →")}
+            </summary>
+            <ul style={{ margin: "6px 0 2px", padding: "0 0 0 16px" }}>
+              {reasons.map((r, i) => <li key={i} style={{ padding: "2px 0" }}>{r}</li>)}
+            </ul>
+          </details>
+        )
+      })()}
       {!!days.length && (
         <div data-testid="plan-week" role="group" aria-label={_t(lang, "Semaine en un coup d'œil", "Week at a glance", "Semana de un vistazo")}
           style={{ display: "flex", gap: 4, marginTop: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -128,7 +149,7 @@ export function PlanCard({ lang = "fr", beach, journey, imageUrl = null, media =
         </div>
       )}
       {backup && (
-        <button type="button" data-testid="plan-alt"
+        <button type="button" data-testid="plan-alt" key={backup.id} className={sgmOff() ? undefined : "sgm-swap"}
           onClick={() => { try { track?.("sg_alternative_open", { from: beach.id, to: backup.id, distance_km: backup.distanceKm }) } catch (_) {} onOpenAlt?.(backup.beach || backup) }}
           style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, width: "100%", background: "#FFF3D6", color: "#8a5a00", border: `2px solid ${INK}`, borderRadius: 12, fontWeight: 700, fontSize: 13, cursor: "pointer", padding: "9px 12px", textAlign: "left" }}>
           ↗ {_t(lang, "Alternative réelle", "Real alternative", "Alternativa real")} : <b>{backup.name}</b>{backup.distanceKm != null ? ` · ${backup.distanceKm} km` : ""}

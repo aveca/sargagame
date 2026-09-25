@@ -15045,6 +15045,7 @@ useEffect(()=>{
           <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
             <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="plages"
               allBeaches={allBeaches} sargData={sargData} favorites={favorites} compareIds={compareIds} userPos={userPos}
+              imageMap={imageMap}
               onOpenBeach={onBeachClick} onToggleFav={(b)=>toggleFav(b.id)} track={track}
               onToggleCompare={(b)=>{setCompareIds(p=>p.includes(b.id)?p.filter(x=>x!==b.id):(p.length>=3?p:[...p,b.id]));try{track("sg_compare_add",{beach_id:b.id,src:"plages"})}catch(_){}}}
             /></Suspense></ErrBound>
@@ -15191,7 +15192,7 @@ useEffect(()=>{
             visibles, suite verrouillée → offre). Rollback : ?tripplan=0. */}
         {showTrip&&<ErrBound><Suspense fallback={null}><LazyTripPlanner lang={lang}
           beaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status)}
-          forecastById={tripForecastById} isPremium={isPremium}
+          forecastById={tripForecastById} isPremium={isPremium} imageMap={imageMap}
           /* JOURNEY (2026-09-24) : « mon séjour se construit » — le trip affiche
              la semaine RÉELLE de la plage courante du monde (ou ma plage) et
              son plan B. Rollback layer : ?sgjourney=0 (stay=null → strip absent). */
@@ -15445,7 +15446,7 @@ useEffect(()=>{
             partagée avec le TripPlanner. Rollbacks : ?sgexp=0 · ?sgjourney=0. */}
         {expBeachOf()&&<ErrBound fallback={null}><Suspense fallback={null}><LazyBeachExperience
           key={expBeachOf().id} lang={lang} beach={expBeachOf()}
-          sargData={sargData} allBeaches={allBeaches} userPos={userPos}
+          sargData={sargData} allBeaches={allBeaches} userPos={userPos} imageMap={imageMap}
           BEACH_TO_SARG={BEACH_TO_SARG} IS_NEW_REGION={IS_NEW_REGION}
           isPremium={isPremium}
           onClose={closeExperience}

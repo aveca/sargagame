@@ -52,6 +52,9 @@ function planDays(beaches, forecastById) {
 }
 
 export default function TripPlanner({ lang, beaches, forecastById, isPremium, onClose, onOpenBeach, onPremium, track,
+  /* 2026-09-25E : imageMap optionnel (catalogue réel) — vignette du lieu par
+     jour. Absent → lignes texte (état D). */
+  imageMap = null,
   /* WOW JOURNEY (2026-09-24) : stay = spine partagée avec l'experience (même
      objet numérique, calculée une fois par le parent via src/lib/journey.js).
      « Mon séjour se construit » : la semaine RÉELLE de la plage courante
@@ -129,6 +132,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
 
         {days.map((d, i) => (
           <DayRow key={i} day={d} idx={i} rowId={"tp-day-" + i} locked={!isPremium && i >= visibleDays} lang={lang} _t={_t}
+            img={d && d.best && d.best.b && imageMap && imageMap[d.best.b.id] ? "/beaches/" + imageMap[d.best.b.id] : null}
             onOpen={() => { try { track("sg_trip_beach_open", { day: i, beach_id: d && d.best && d.best.b.id }) } catch (_) {} onOpenBeach(d.best.b) }} />
         ))}
 
@@ -148,7 +152,7 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
   )
 }
 
-function DayRow({ day, idx, rowId, locked, lang, _t, onOpen }) {
+function DayRow({ day, idx, rowId, locked, lang, _t, onOpen, img = null }) {
   // NB : <div onClick> VOLONTAIRE (pas de <button> ni role="button") — le skin
   // .theme-comic force fond blanc + bordure ink sur button ET [role=button]
   // (lisibilité cassée 2× au screenshot 2026-09-22). tabIndex conservé pour
@@ -156,8 +160,9 @@ function DayRow({ day, idx, rowId, locked, lang, _t, onOpen }) {
   if (!day) return null
   const dot = (s) => (ST[s] || ST._x).c
   const word = (s) => { const v = ST[s] || ST._x; return lang === "en" ? v.en : lang === "es" ? v.es : v.fr }
+  const SGM = (() => { try { return !/[?&]sgmotion=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })()
   return (
-    <div id={rowId} style={{ marginBottom: 8, borderRadius: 14, border: "1px solid rgba(255,255,255,.1)", background: locked ? "rgba(255,255,255,.03)" : "#12362D", overflow: "hidden" }}>
+    <div id={rowId} className={SGM ? "sgm-tripday" : undefined} style={{ "--i": idx, marginBottom: 8, borderRadius: 14, border: "1px solid rgba(255,255,255,.1)", background: locked ? "rgba(255,255,255,.03)" : "#12362D", overflow: "hidden" }}>
       {locked ? (
         <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", filter: "blur(0.6px)", opacity: 0.75 }}>
           <span style={{ fontWeight: 800, fontSize: 13, color: "rgba(255,255,255,.8)", minWidth: 44 }}>{day.label}</span>
@@ -166,6 +171,11 @@ function DayRow({ day, idx, rowId, locked, lang, _t, onOpen }) {
       ) : (
         <div tabIndex={0} onClick={onOpen} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen() } }}
           style={{ display: "block", width: "100%", textAlign: "left", cursor: "pointer", padding: "12px 14px", boxSizing: "border-box" }}>
+          {!!img && (
+            <img src={img} alt={day.best.b.name} loading="lazy" width="800" height="450"
+              style={{ display: "block", width: "100%", height: 84, objectFit: "cover", borderRadius: 10, marginBottom: 8 }}
+              onError={e => { e.currentTarget.style.display = "none" }} />
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontWeight: 800, fontSize: 13, color: "rgba(255,255,255,.75)", minWidth: 44 }}>{day.label}</span>
             <span style={{ width: 10, height: 10, borderRadius: 5, background: dot(day.best.day.status), flexShrink: 0 }} />

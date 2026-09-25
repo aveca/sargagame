@@ -1,3 +1,9 @@
+## VISUAL / UX OVERHAUL 2026-09-25E — [~] PR #747 (branche agent/coding/visual-overhaul-e, CI en cours)
+- **Livré** : BeachCard photos réelles (home + liste) · fiche mini-guide (savoir/proximité/FAQ) · Pourquoi-ce-choix PlanCard · vignettes Trip · 13 glyphes SVG · 12 motions · audit mesuré 457 JPG (A93/B295/C19/D50) · hero photo today-pages. Rollback `?sgvis=0`. Money-path 0 diff.
+- **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 61/61 (visual-premium 45/45) · E2E 30/30 (perfect-trip 5 + experience 8 + journey 5 + funnel-payment 13, 1 suite = 30 tests… voir rapport) · regions OK · shots AB+deep lus 390/768/1440.
+- **Rapport** : `.ai/ui-audit/VISUAL-OVERHAUL-2026-09-25E.md` (21 points).
+- **NEXT** : CI 7/7 → squash merge → Deploy Live → probes prod → marquer [x] done.
+
 ## AUTOPILOT + OPP-2026-001 — [x] done + LIVE 2026-09-24 (PR #742 mergée 06:41 UTC, squash 3427f978, CI+Deploy+Perf+Secret 4/4 verts)
 - **Système** : `.ai/autopilot/` (mémoire) + `scripts/autopilot/` (orchestrateur + browser QA prod 6 régions × 3 viewports + baselines bloquantes + rapport quotidien + 8 agents via opencode run) + workflow `autopilot.yml` 06:35 UTC + npm script `autopilot`.
 - **Baseline prod** : 129 routes · 0 erreur · 0 lien cassé · 0 HTTP≥400 · interactions 9/9 surfaces × 6/6 régions (carte→fiche→xp→tomorrow→backup→trip→share→premium→checkout-entry).

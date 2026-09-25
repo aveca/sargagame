@@ -74,5 +74,47 @@ console.log("VISUAL PREMIUM — contrat")
   check("sgm : sgm-focus reste FINI (pas de régression 2026-09-24A)", !/\.sgm-focus\s*\{[^}]*infinite/.test(SGM))
   check("SG : saveData respecté (pas d'autoplay lourd)", /saveData/.test(PLAN))
 
+  // ── sg-icons : système propriétaire (2026-09-25E) ── (fichier JSX : on teste
+  // le contenu par lecture fichier, pas d'import ESM direct en Node commonjs)
+  const ICONS_SRC = read("src/lib/sg-icons.jsx")
+  const names = ["wave","sun","sunset","beach","sail","snorkel","family","parking","pin","plan","alternative","alert","sargassum"]
+  check("sg-icons : 13 glyphes organiques (viewBox 24)", names.every(n => new RegExp(`^  ${n}: "M`).test(ICONS_SRC.replace(/\r/gm," ") || "")) || names.every(n => ICONS_SRC.includes(`  ${n}: "M`)))
+  check("sg-icons : Icon oweIcon (svg fill=none + currentColor)", ICONS_SRC.includes('fill="none"') && ICONS_SRC.includes("currentColor"))
+  check("sg-icons : nom inconnu → chemin null (jamais d'icône inventée)", ICONS_SRC.includes("return ICONS[name] || null"))
+  check("Home : chips intention = sg-icons (plus d'emoji)", HOME.includes("<Icon name={it.icon}") && HOME.includes("import { Icon }"))
+
+  // ── Photo produit à la maison + today-pages ──
+  check("Home : focus WOW = photo réelle du beach centré (media contract)", HOME.includes("beachImageUrl(active.id"))
+  const TODAY = read("scripts/lib/today-pages.cjs")
+  check("today-pages : hero image réelle du meilleur spot (catalogue uniquement)", TODAY.includes("beaches-images.json") && TODAY.includes("/beaches/"))
+
+  // ── 2026-09-25E (VISUAL OVERHAUL) : densité + mini-guide + motion ──
+  const VIS = read("src/lib/sg-visual.js")
+  const BX = read("src/BeachExperience.jsx")
+  const TRIP = read("src/TripPlanner.jsx")
+  check("sg-visual : kill-switch ?sgvis=0 (rollback unique E)", VIS.includes("sgvis=0") && VIS.includes("visOff"))
+  check("sg-visual : nearestBeaches = coords réelles, jamais sans lat/lng", VIS.includes("lat == null || beach.lng == null") && VIS.includes("haversineKm"))
+  check("sg-visual : beachFacts = flags réels uniquement (kids/snorkel/parking/drive)", VIS.includes("beach.kids") && VIS.includes("beach.snorkel") && VIS.includes("beach.parking") && !VIS.includes("romantic"))
+  const vis = await import("../../src/lib/sg-visual.js")
+  check("sg-visual : plage sans coords → proximité vide (jamais d'invention)", vis.nearestBeaches({ id: "x" }, [{ id: "y", lat: 1, lng: 2 }]).length === 0)
+  check("sg-visual : proximité trie même-île puis clean puis distance", (() => {
+    const me = { id: "me", lat: 14.6, lng: -61.1, island: "mq", status: "clean" }
+    const far = { id: "far", lat: 14.7, lng: -61.0, island: "mq", status: "clean" }
+    const near = { id: "near", lat: 14.61, lng: -61.09, island: "mq", status: "clean" }
+    const r = vis.nearestBeaches(me, [far, near], 2)
+    return r.length === 2 && r[0].beach.id === "near" && typeof r[0].distanceKm === "number"
+  })())
+  check("sg-visual : facts vides sans flags (section se masque)", vis.beachFacts({ id: "x" }, [], "fr").length === 0)
+  check("BeachCard : photo réelle en tête (prop img, onError-hide)", HOME.includes("img={beachImageUrl(b.id, imageMap)}") && HOME.includes("height: 120"))
+  check("Plages : imageMap plombé (vue liste + router rest)", HOME.includes("imageMap = null") && PROD.includes('view="plages"') && /view="plages"[\s\S]{0,400}imageMap=\{imageMap\}/.test(PROD))
+  check("PlanCard : <details> Pourquoi (raisons réelles, event existant)", PLAN.includes('data-testid="plan-why"') && PLAN.includes("sg_verdict_expand") && PLAN.includes("<details"))
+  check("PlanCard : entrée sgm-planin + swap alternative (finies)", PLAN.includes("sgm-planin") && PLAN.includes("sgm-swap"))
+  check("BeachExperience : 3 sections mini-guide (savoir/prox/faq, masquées sans data)", BX.includes('id="bx-savoir"') && BX.includes('id="bx-prox"') && BX.includes('id="bx-faq"') && BX.includes("!visOff()"))
+  check("BeachExperience : proximité ouvre la plage (pas de cul-de-sac)", BX.includes("sg_recommendation_open") && BX.includes('source: "bx_proximity"'))
+  check("TripPlanner : vignette réelle par jour (imageMap optionnel)", TRIP.includes("imageMap = null") && TRIP.includes("/beaches/") && PROD.includes("LazyTripPlanner") && /LazyTripPlanner[\s\S]{0,500}imageMap=\{imageMap\}/.test(PROD))
+  check("Motion E : 4 motions finies (planin/swap/gallery/tripday), reduced-motion off", SGM.includes("sgmPlanIn") && SGM.includes("sgmSwap") && SGM.includes("sgmGallery") && SGM.includes("sgmTripDay") && !/\.sgm-(planin|swap|gallery|tripday)\s*\{[^}]*infinite/.test(SGM))
+  check("Motion E : stagger --i + pas d'infinite sur CTA", SGM.includes("--i, 0") && !/\.sgm-focus\s*\{[^}]*infinite/.test(SGM))
+  check("Premium : money-path intact (prix/entitlements/Mollie non touchés ce cycle)", /key:\s*"p30"/.test(PO) && !/sgvis/.test(PO))
+
   console.log(`\n✅ VISUAL PREMIUM — ${passed} checks ALL PASS`)
 })().catch(e => { console.error("✗ " + e.message); process.exit(1) })
