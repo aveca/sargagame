@@ -210,6 +210,16 @@
   - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 
+## TASK-P1-COASTAL-LAB — Sargassum Coastal Lab / Littoral Decision Lab
+- **Priorité** : P1
+- **Rôle** : coding_agent + ui-ux_agent
+- **Description** : Construire une nouvelle expérience interactive premium — SARGASSUM COASTAL LAB (Littoral Decision Lab) — expliquant le problème littoral du sargasse et la transformation DATA → UNDERSTANDING → DECISION → INTERVENTION → RECOVERY → POTENTIAL VALORIZATION. 5 couches interactives (MONITOR, UNDERSTAND, DECIDE, RECOVER, VALORIZE) + Interactive Beach Explorer + The Hard Problem + Beach as Digital Object + Tourism Connection + Ecosystem View. Réutiliser Beach Object, media-art-direction, Visual OS, motion system, existing routes. Zero invented data. Route: `/coastal-lab/`.
+- **Spécification** : `.ai/plans/COASTAL-LAB.md`
+- **Fichiers attendus** : composants CoastalLab, route, tests, analytics events (sg_lab_*), documentation handoff
+- **Contraintes** : EAGER GZIP ≤ 210 KB, no new heavy deps, lazy-load media, reduced-motion, mobile-first (390×844), accessibility, no regression on map/BeachExperience/paywall/Mollie/TripPlanner/SeaRail/AHA/media pipeline
+- **Gates** : npm test · npm run build · bundle budget · ux-smoke · funnel-payment E2E · regions validation · visual QA (390×844, 768×1024, 1280×900)
+- **Statut** : [~] in_progress by coding_agent
+
 ## P1 PAGES PLAGES — data-driven enrichment [x] done (2026-09-10)
 - **Root cause**: existing `/poi/`, `/activity/`, resort data not visible on beach pages — no enrichment sections, no proximity, no facts, no activities from beach flags; pages were SCORE→TEXT→CTA only
 - **Data available**: `/poi/` (regions: martinique 2, guadeloupe 1, cancun 1, tulum 1, miami 1, puntacana 1, haiti 2, sainte-lucie 2, barbade 2), `/activity/` (generated per beach flags: snorkel/kids/parking), resorts (florida 35, puntacana 35, rivieramaya 35 by beachId), beach flags (kids/snorkel/parking), media assets existing
