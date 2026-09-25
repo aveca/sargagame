@@ -371,13 +371,14 @@
 
 ---
 
-### BUG-2026-038 — [ ] OUVERT 2026-09-23 (CI uniquement, famille BUG-2026-036) E2E `bottomnav-redesign.spec.ts` 9/9 timeouts map en CI Linux
-- **Date** : 2026-09-23 (reproduit à l'identique runs 35785018024 [pré-fix] et 35817917562 [post-fix] — pas une régression du takeover §9).
-- **Sévérité** : P2 — CI-only ; localement le parcours passe (smoke 4/4 + Playwright local 9/9, map labels OK).
-- **Symptôme** : les 9 tests meurent sur `await page.waitForTimeout(2000)` avec « Test timeout of 30000ms exceeded » juste après `waitForSelector(mapReady, 30s).catch(()=>{})` — le budget test est déjà consommé car `[data-sg-labels-ready]` ne monte jamais en CI.
-- **Cause suspectée** : declutter jamais prêt sous CI Linux (fonts/géométrie/ cover différent → 0 label visible → `data-sg-labels-ready` non publié) ; les 13 autres tests (dont tout `funnel-payment.spec.ts`) passent.
-- **Action** : QA — rendre le spec résilient (skip si 0 label visible, ou length-aware comme le smoke local qui re-tape l'onglet Carte) ; ne pas bloquer les merges money-path vérifiés par ailleurs (précédent : #734/#735 mergées avec le même rouge).
-- **Statut** : [ ] OUVERT (assigné : qa_agent)
+### BUG-2026-038 — [x] FIXÉ 2026-09-24 (PR #743) E2E `bottomnav-redesign.spec.ts` 9/9 timeouts map
+- **Vraie cause** (probes recovery 2026-09-24) : pas CI-specific — la spec attendait `[data-sg-labels-ready]` au boot avec timeout 30 s ≠ budget test 30 s ; or le default est HOME depuis le TAKEOVER 2026-09-22 → labels jamais publiés → les 9 tests expiraient sans tester. Même cause de fond que KI-2026-09-24A : la couche HOME a changé l'état initial, specs non ré-alignées.
+- **Fix** : helper `openMap()` (chemin utilisateur réel : onglet Carte → labels ; garde ?sgnav=0) + assertion sg_nav_tab filtrée sur l'event du tap du test + sélecteurs post-AHA (bx-experience / exp-premium-cta). 9/9 local + CI verte (run 36075040669).
+- Bonus découvert et fixé dans la même passe : `experience.spec.ts` « fermeture propre » — `isVisible({timeout})` n'attend PAS (option ignorée) → course contre le mount lazy du PremiumModal (le paywall ÉTAIT ouvert sur les vidéos d'échec) → `toBeVisible({timeout:12000})`.
+
+### KI-2026-09-24A — [x] FIXÉ 2026-09-24 (PR #743) Trip → Premium → Paywall intermittent
+- **Cause** : chaque hop in-world (plan B chip, pile ←, relais strip) incrémentait `sg_beach_views` → au 3e hop le `Paywall3ViewOverlay` (z1400) surgiSSAIT par-dessus l'expérience et cassait la hiérarchie paywall. Bonus : handler popstate avec closure figée (deps sans états plage) → Back sans effet.
+- **Fix** : `onBeachClick(b, {inWorld:true})` ne consomme plus le quota 3-vues ; deps popstate `[selectedBeach, comicBeach, JOURNEY_OFF]`. Rollback : `?sgjourney=0`.
 
 ---
 

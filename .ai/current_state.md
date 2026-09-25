@@ -34,8 +34,7 @@
 3. SargaFactory : observer le premier heartbeat 05:30 demain (factory_heartbeat Supabase) — Rôle : devops
 
 ### Branche / PR
-- Branche : `agent/recovery/ki-2026-09-24a`
-- PR : à créer (voir FINAL REPORT)
+- Branche : `agent/recovery/ki-2026-09-24a` — **PR #743 MERGED** (squash `2452d412f`, 2026-09-24) — CI 7/7 vert (playwright inclus, inédit depuis #742) — Deploy Live success — prod 5/5 HTTP 200, version.json b=2452d412.
 
 ---
 
