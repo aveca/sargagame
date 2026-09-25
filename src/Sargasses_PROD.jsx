@@ -15018,7 +15018,7 @@ useEffect(()=>{
           <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
             <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="home"
               allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos}
-              forecastById={tripForecastById} imageMap={imageMap} isPremium={isPremium}
+              forecastById={tripForecastById} imageMap={imageMap} heroVids={heroVids} isPremium={isPremium}
               islandName={IS_NEW_REGION?REGION.name:(island==="gp"?"Guadeloupe":"Martinique")}
               onOpenBeach={onBeachClick} track={track}
               onGo={(tab,b)=>{ if(tab==="compare"&&b){setCompareIds(p=>p.includes(b.id)?p:(p.length>=3?p:[...p,b.id]));try{track("sg_compare_add",{beach_id:b.id,src:"home"})}catch(_){}}

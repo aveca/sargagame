@@ -141,6 +141,7 @@ export function ComicPaywall({
   pwVariant = "calm",
   island,
   beach,
+  beachCount = 0,
   sargData, tripDays,
   payPlanRef,
   payEmailRef,
@@ -375,6 +376,7 @@ export function ComicPaywall({
               currency={PAY_CUR}
               onBuy={onPassBuy}
               pwVariant="comic"
+              beachCount={beachCount}
               tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
             />
           </div>
