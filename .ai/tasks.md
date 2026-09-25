@@ -1,3 +1,9 @@
+## DATA INTELLIGENCE 2026-09-25F — [~] branche agent/coding/niche-evidence-f (PR à créer)
+- **Livré** : intent-evidence.js (5 live + 5 blocked, score déterministe, tips sourcés) · marine.js (Open-Meteo, seuils métier) · MER live en fiche · reco-why home · facts.source · photos C documentées · 0 page SEO · money 0 diff.
+- **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 62/62 (niche 42/42) · E2E 30/30 · regions OK · shots 390 lus.
+- **Rapport** : `.ai/ui-audit/DATA-INTELLIGENCE-2026-09-25F.md`.
+- **NEXT** : CI 7/7 → squash merge → deploy → probes prod → marquer [x] done.
+
 ## VISUAL / UX OVERHAUL 2026-09-25E — [x] done + LIVE 2026-09-25 (PR #747 MERGED squash e9946a10, CI 7/7, deploy prod b=e9946a10, 5/5 HTTP 200)
 - **Livré** : BeachCard photos réelles (home + liste) · fiche mini-guide (savoir/proximité/FAQ) · Pourquoi-ce-choix PlanCard · vignettes Trip · 13 glyphes SVG · 12 motions · audit mesuré 457 JPG (A93/B295/C19/D50) · hero photo today-pages. Rollback `?sgvis=0`. Money-path 0 diff.
 - **Gates locaux** : build 0 · bundle 38,2 Ko · smoke 4/4 · npm test 61/61 (visual-premium 45/45) · E2E 30/30 (perfect-trip 5 + experience 8 + journey 5 + funnel-payment 13, 1 suite = 30 tests… voir rapport) · regions OK · shots AB+deep lus 390/768/1440.
