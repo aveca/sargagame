@@ -1,3 +1,38 @@
+## 2026-09-25J · Agent: coding (VISUAL OS / ASSET LAB / AHA) — skills + Embla + fullscreen + preuve rail
+
+### Travail effectué
+- **Résumé 1 ligne** : outillage installé (5 skills, Embla lazy, refs/licences) + AHA fullscreen avec raisons + shared-transition + compare swipe + motion finies + preuve live rail (4 POST Supabase, prod incluse). Money intact, ToS réaffirmée.
+- **Détails** : cf. `.ai/changelog.md` (entrée 2026-09-25J) + `.ai/ui-audit/VISUAL-OS-ASSET-LAB-AHA-2026-09-25J.md` (20 points). Traçabilité : fix allowlist rail = livré en I (#750) ; J = preuve + gardes. Rollback : `?sgcine=0` ou revert.
+
+### Fichiers modifiés
+- (N) `.agents/skills/{frontend-design,motion-design,media-art-direction,mobile-app-ux,visual-qa}/SKILL.md` · `.ai/design/REFERENCES.md` · `.ai/design/SARGAGAME-VISUAL-OS.md` · `src/lib/media-art-direction.js` · `scripts/qa/probe-rail-prod.mjs` · `.ai/ui-audit/VISUAL-OS-ASSET-LAB-AHA-2026-09-25J.md`
+- (M) `package.json` + `package-lock.json` (embla 8.6.0 pinned) · `src/sg-travel-3.0.css` (AHA/slides/cue) · `src/components/ExperienceReset.jsx` (AHA, transition, Embla, dismiss) · `tests/unit/travel-30.test.cjs` (62 checks)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (408 modules)
+- [x] bundle 38,2 Ko ≤ 210 (Embla lazy ~11 Ko, zéro eager)
+- [x] smoke 4/4 + SMOKE_GATE=PASS
+- [x] npm test → 64/64 (travel-30 62/62)
+- [x] E2E 30/30 ; regions OK ; php -l N/A (0 PHP touché)
+- [x] screenshots 390/1440 (AHA, compare 2/3, facteurs) lus, ERRORS=[]
+- [x] probe rail prod : RAIL_TRACKING_OK local + prod (synthetic, consenté)
+- [x] money-path 0 diff ; WorldPaywall non touché
+
+### Problèmes restants
+- [ ] Rows rail en daily-stats au prochain tick (clé service, hors portée) — data/agent
+- [ ] Chantiers H : paires duplicates, re-shoot gp083, migration New API — fondateur
+- [ ] Responsive variants / niche flags — documentés, non démarrés
+
+### Prochaine action recommandée
+1. Merge PR → CI 7/7 → deploy → probes prod (AHA + compare swipe + rail) — Rôle : release
+2. Mesurer sg_home_rail_* 7j post-deploy — Rôle : growth/data
+
+### Branche / PR
+- Branche : `agent/coding/visual-os-aha`
+- PR : à créer vers main
+
+---
+
 ## 2026-09-25I · Agent: coding (APP 3.0 CINEMATIC) — hero plein-bleed + verdict vivant + rail analytics
 
 ### Travail effectué

@@ -37,12 +37,15 @@ console.log("TRAVEL 3.0 — contrats")
   check("tokens : reduced-motion calme", T3.includes("prefers-reduced-motion"))
 
   // ── Hero cinématique Home ──
-  check("cine : testids cine-hero/cine-open/cine-map", HOME.includes('data-testid="cine-hero"') && HOME.includes('data-testid="cine-open"') && HOME.includes('data-testid="cine-map"'))
+  check("cine : testids cine-hero/cine-open/cine-plan", HOME.includes('data-testid="cine-hero"') && HOME.includes('data-testid="cine-open"') && HOME.includes('data-testid="cine-plan"'))
   check("cine : rollback ?sgcine=0 (layout D intact)", HOME.includes("sgcine=0"))
   check("cine : photo RÉELLE catalogue (jamais de stock)", HOME.includes("beachImageUrl(heroBeach.id, imageMap)") && HOME.includes("if (!heroBeach || !heroImg) return null"))
   check("cine : UNE action primaire + event existant (pas de nouvel event)", HOME.includes("sg_home_best_open") && HOME.includes("src: 'cine_hero'"))
   check("cine : copy invitation + compteurs réels", HOME.includes("Trouve ton moment") && HOME.includes("plages observées"))
   check("cine : fetchpriority hero (LCP) + onError-hide", HOME.includes('fetchpriority="high"') && HOME.includes("t3-hero-media"))
+  check("cine : plein écran AHA (t3-hero-full + scroll cue finie)", HOME.includes("t3-hero-full") && T3.includes("92dvh") && /t3cue[^}]*3;/.test(T3))
+  check("cine : 3 raisons réelles evidenceFor + plan B journey", HOME.includes('data-testid="cine-reasons"') && HOME.includes("evidenceFor(intent || 'top'") && HOME.includes('data-testid="cine-planb"'))
+  check("cine : shared-transition WAAPI + garde-fou (jamais de piège, RM direct)", HOME.includes("animate?.(") && HOME.includes("setTimeout") && HOME.includes("400") && HOME.includes("reduceMotion"))
 
   // ── Verdict vivant (facteurs réels) ──
   check("facteurs : bloc bx-factors sous ?sgcine=0", BX.includes('data-testid="bx-factors"') && BX.includes("cineOff()"))
@@ -57,6 +60,9 @@ console.log("TRAVEL 3.0 — contrats")
   check("compare : synthèse écart réel (testid + gap pts)", HOME.includes('data-testid="xp-compare-synth"') && HOME.includes("pts d'écart"))
   check("compare : imageMap plombé (vue compare PROD)", /view="compare"[\s\S]{0,400}imageMap=\{imageMap\}/.test(PROD))
   check("compare : dismiss non-destructif (✕ masque, Effacer vide via onClose)", HOME.includes("xp-compare-clear") && HOME.includes("setDismissed(true)") && HOME.includes("useEffect(() => { setDismissed(false) }, [beaches.length])"))
+  check("compare : swipe Embla (lazy, rollback grille ?sgcine=0)", HOME.includes("useEmblaCarousel") && HOME.includes("embla-carousel-react") && HOME.includes('data-testid="xp-compare-rail"'))
+  check("compare : slides 78% mobile → 1fr desktop (t3-compare-slide)", T3.includes("t3-compare-slide"))
+  check("compare : hooks avant return (pas de hook conditionnel)", /const \[emblaRef\] = useEmblaCarousel[\s\S]{0,300}if \(!beaches\.length/.test(HOME))
 
   // ── Perfect Day séquence (sans horaires inventés) ──
   check("sequence : testid plan-sequence + rollback cine", PLAN.includes('data-testid="plan-sequence"') && PLAN.includes("sgcine=0"))
@@ -76,9 +82,10 @@ console.log("TRAVEL 3.0 — contrats")
   // ── SVG : 5 glyphes (style 24, 2 traits) ──
   for (const n of ["fish", "boat", "compass", "route", "satellite"]) check(`svg : glyphe ${n}`, ICONS.includes(`  ${n}: "M`))
 
-  // ── Analytics rail : émis → collectés (fix 0-en-30j) ──
+  // ── Analytics rail : allowlist (fix livré en I, gardé ici en non-régression ;
+  // preuve live = probe-rail-prod.mjs RAIL_TRACKING_OK sur prod) ──
   for (const e of ["sg_home_rail_focus", "sg_home_rail_seek", "sg_home_rail_open", "sg_home_rail_drag"])
-    check(`rail : ${e} dans SG_FUNNEL_EVENTS`, PROD.includes(`"${e}"`))
+    check(`rail : ${e} dans SG_FUNNEL_EVENTS (garde non-régression)`, PROD.includes(`"${e}"`))
   const F1 = read("scripts/automation/funnel-from-supabase.cjs")
   const F2 = read("scripts/automation/daily-stats-check.cjs")
   check("rail : FUNNEL_KEYS funnel-from-supabase", ["home_rail_focus", "home_rail_seek", "home_rail_open", "home_rail_drag"].every(k => F1.includes(`'${k}'`)))
@@ -88,6 +95,12 @@ console.log("TRAVEL 3.0 — contrats")
   const DL = read("scripts/download-google-photos.cjs")
   check("photos : downloader legacy inchangé (pas de bulk New-API)", DL.includes("maxwidth=1600") && DL.includes("photos[0]"))
   check("photos : aucun step 4800px/static dans le build", !JSON.parse(read("package.json")).scripts.build.includes("places-new"))
+
+  // ── Dépendances : 1 tactile lazy, pas de forêt ──
+  const PKG = JSON.parse(read("package.json"))
+  check("deps : embla-carousel-react installé (pinned)", !!(PKG.dependencies || {})["embla-carousel-react"])
+  check("deps : ni rive ni motion installés (décisions documentées)", !((PKG.dependencies || {}).rive || (PKG.dependencies || {})["@rive-app/canvas"] || (PKG.dependencies || {})["framer-motion"] || (PKG.dependencies || {}).motion))
+  check("deps : embla dans chunk lazy uniquement (jamais eager PROD)", !/from ["']embla-carousel/.test(PROD))
 
   // ── Money-path intact ──
   const PO = read("src/PassOffer.jsx")

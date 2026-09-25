@@ -1,3 +1,24 @@
+## 2026-09-25J — VISUAL OS / ASSET LAB / AHA : skills + Embla + fullscreen + preuve rail live
+
+**PROBLEM** : I = skin cinématique sur ancien produit ; pas d'outils/skills installés, pas de tactile neuf, rail Supabase jamais démontré live.
+
+**CHANGE** (couche additive `?sgcine=0`, money-path ZÉRO touché, photo legacy gelée) :
+- `.agents/skills/` ×5 (frontend-design, motion-design, media-art-direction, mobile-app-ux, visual-qa) + `.ai/design/REFERENCES.md` (licences, 1 dep installée, 4 non-choix documentés).
+- `embla-carousel-react@8.6.0` pinned (~11 Ko gzip, lazy compare uniquement) ; motion/rive/three-nouveau/maplibre refusés (raisons + bundle).
+- `.ai/design/SARGAGAME-VISUAL-OS.md` (traitements explicites, anti-slop).
+- `src/lib/media-art-direction.js` (slots hero→reject, PLACE vs ATMOSPHERIC + licence, manquants dits).
+- AHA fullscreen (92dvh, 3 raisons evidenceFor + sources, plan B journey, CTA + scroll plan, cue finie).
+- Shared-transition WAAPI 220 ms + garde-fou 400 ms (RM = direct).
+- Compare swipe Embla (peek mobile, grille desktop/rollback) + **dismiss non-destructif** (multi-compare réparé).
+- Motion : sgm-sheet/zoom/fadeup (finies, gatées, RM off). SVG +5 (déjà en I, wirés).
+- **Analytics** : fix allowlist = livré en I (#750) — J apporte la PREUVE live (`probe-rail-prod.mjs` : 4 POST sg_home_rail_focus synthetic sur local ET prod) + gardes travel-30.
+- Premium/WorldPaywall : non touchés. Photo pipeline : legacy inchangé (garde).
+- Rapport : `.ai/ui-audit/VISUAL-OS-ASSET-LAB-AHA-2026-09-25J.md` (20 points).
+
+**PROOF** : build 0 (408 modules) · bundle 38,2 Ko ≤ 210 · smoke 4/4 · npm test 64/64 (travel-30 62/62) · E2E 30/30 · regions OK · php N/A · shots 390/1440 (AHA, compare 2/3, facteurs) · probe rail RAIL_TRACKING_OK · money 0 diff.
+
+---
+
 ## 2026-09-25I — APP 3.0 CINEMATIC : hero plein-bleed + verdict vivant + compare réparé + rail analytics
 
 **PROBLEM** : produit perçu « dashboard/comic empilé » ; rail WOW invisible côté Supabase (0 events 30 j) ; multi-compare inatteignable (✕ vidait la sélection).

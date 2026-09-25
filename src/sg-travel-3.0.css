@@ -73,6 +73,14 @@
   border: 1.5px solid rgba(255, 253, 246, .35); border-radius: 14px;
   font-weight: 700; font-size: 14px; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
 }
+/* ── AHA plein écran (best-pick) : le 1er écran = la réponse ── */
+.t3-hero-full { min-height: 92dvh; }
+.t3-reasons { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.t3-reasons li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; line-height: 1.4; background: rgba(6, 34, 46, .5); border: 1px solid rgba(255, 253, 246, .16); border-radius: 12px; padding: 8px 10px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.t3-reasons li b { color: #FFE08A; }
+.t3-planb-line { margin: 8px 0 0; font-size: 12.5px; opacity: .88; }
+.t3-scroll-cue { display: flex; justify-content: center; padding: 2px 0 0; color: rgba(255, 253, 246, .75); font-size: 20px; animation: t3cue 2.2s ease-in-out 3; }
+@keyframes t3cue { 0%, 100% { transform: translateY(0); opacity: .75; } 50% { transform: translateY(6px); opacity: 1; } }
 
 /* ── verre contrôlé ( overlays tactiles ) ── */
 .t3-glass { background: rgba(6, 34, 46, .55); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 253, 246, .18); }
@@ -94,13 +102,17 @@
 .t3-timeline > li:last-child { padding-bottom: 2px; }
 .t3-timeline > li::before { content: ""; position: absolute; left: -19px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--t3-paper); border: 2.5px solid var(--t3-tropical); }
 
-/* ── desktop : le cinématique respire ── */
-@media (min-width: 1024px) {
+/* ── desktop : le cinématique respire ── */@media (min-width: 1024px) {
   .t3-hero { min-height: 58dvh; border-radius: var(--t3-r-hero); margin: 0; }
   .t3-hero-body { padding: var(--t3-s5); }
   .t3-hero-cta, .t3-hero-ghost { width: auto; padding-left: 26px; padding-right: 26px; }
   .t3-hero-actions { display: flex; gap: 10px; }
   .t3-hero-actions .t3-hero-cta, .t3-hero-actions .t3-hero-ghost { flex: 0 0 auto; margin-top: 14px; }
+}
+
+/* ── compare swipe : peek mobile, grille desktop ── */
+@media (min-width: 640px) {
+  .t3-compare-slide.t3-compare-slide { flex: 1 0 0 !important; }
 }
 
 /* ── version calme ── */
