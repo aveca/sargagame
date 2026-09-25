@@ -1,51 +1,51 @@
 {
-  "generatedAt": "2026-09-21T16:45:12.796Z",
+  "generatedAt": "2026-09-25T15:44:48.608Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
-      "indexedCount": 58,
+      "indexedCount": 57,
       "totalUrls": 74,
       "findings": {
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [
           {
-            "page": "https://sargasses-martinique.com/meteo-sargasses-guadeloupe/",
-            "avgPosition": 9,
-            "actualCtr": 1.61,
+            "page": "https://sargasses-martinique.com/conditions/uv-fort/",
+            "avgPosition": 8,
+            "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 124,
-            "clicks": 2,
+            "impressions": 22,
+            "clicks": 0,
             "topQueries": [
               {
-                "query": "meteo sargasse guadeloupe",
-                "impressions": 21,
+                "query": "indice uv martinique",
+                "impressions": 8,
                 "clicks": 0,
-                "position": 7.333333333333333
+                "position": 6.5
               },
               {
-                "query": "meteo sargasse guadeloupe",
-                "impressions": 14,
+                "query": "indice uv martinique",
+                "impressions": 5,
                 "clicks": 0,
-                "position": 7.928571428571429
+                "position": 9.2
               },
               {
-                "query": "meteo sargasse guadeloupe",
-                "impressions": 7,
-                "clicks": 0,
-                "position": 9.714285714285714
-              },
-              {
-                "query": "meteo sargasse guadeloupe",
-                "impressions": 6,
+                "query": "indice uv martinique aujourd'hui",
+                "impressions": 4,
                 "clicks": 0,
                 "position": 8.5
               },
               {
-                "query": "météo des sargasses guadeloupe",
-                "impressions": 6,
+                "query": "indice uv fort de france",
+                "impressions": 1,
                 "clicks": 0,
-                "position": 17
+                "position": 8
+              },
+              {
+                "query": "indice uv fort de france",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 6
               }
             ]
           }
@@ -54,7 +54,7 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 318,
+            "value": 291,
             "threshold": 200
           }
         ],
@@ -63,7 +63,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 12
+            "count": 10
           },
           {
             "event": "clarity_rage_click",
@@ -113,13 +113,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 80
+            "count": 86
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 33
+            "count": 26
           },
           {
             "event": "clarity_dead_click",
@@ -135,25 +135,19 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 4
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/sargasses-les-anses-d-arlet/",
             "target": "",
             "count": 4
           },
           {
             "event": "clarity_dead_click",
-            "page": "/en/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/plages-sans-sargasses/",
-            "target": "",
-            "count": 3
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/plages/anse-michel/",
             "target": "",
             "count": 3
           },
@@ -172,12 +166,6 @@
           {
             "event": "clarity_dead_click",
             "page": "/sargagame/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-sainte-luce/",
             "target": "",
             "count": 2
           },
@@ -207,7 +195,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/plages/bourg-sainte-marie/",
+            "page": "/plages/anse-michel/",
             "target": "",
             "count": 1
           },
@@ -237,7 +225,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargasses-sainte-marie/",
+            "page": "/sargasses-le-diamant/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargasses-sainte-luce/",
             "target": "",
             "count": 1
           }
@@ -246,10 +240,10 @@
       },
       "crux": {
         "formFactor": "ALL",
-        "lcp": 1682,
-        "inp": 318,
+        "lcp": 1524,
+        "inp": 291,
         "cls": 0.01,
-        "ttfb": 524
+        "ttfb": 478
       },
       "sitemapStatus": [
         {
@@ -264,7 +258,7 @@
     },
     "gp": {
       "domain": "sargasses-guadeloupe.com",
-      "indexedCount": 79,
+      "indexedCount": 78,
       "totalUrls": 100,
       "findings": {
         "notIndexed": [],
@@ -274,7 +268,7 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 411,
+            "value": 395,
             "threshold": 200
           }
         ],
@@ -289,12 +283,6 @@
         "deadClicks": [
           {
             "event": "clarity_dead_click",
-            "page": "/",
-            "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
             "count": 1
@@ -304,10 +292,10 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 1577,
-        "inp": 411,
+        "lcp": 1553,
+        "inp": 395,
         "cls": 0.01,
-        "ttfb": 418
+        "ttfb": 414
       },
       "sitemapStatus": [
         {
@@ -322,7 +310,7 @@
     },
     "florida": {
       "domain": "sargassummiami.com",
-      "indexedCount": 18,
+      "indexedCount": 17,
       "totalUrls": 24,
       "findings": {
         "notIndexed": [],
@@ -335,19 +323,19 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 8
+            "count": 7
           },
           {
             "event": "clarity_rage_click",
             "page": "/es/",
             "target": "",
-            "count": 7
+            "count": 5
           },
           {
             "event": "clarity_rage_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 6
+            "count": 3
           },
           {
             "event": "clarity_rage_click",
@@ -363,19 +351,7 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/beaches-without-sargassum-today/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
             "page": "/beaches/miami-beach/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/es/playas-sin-sargazo-hoy/",
             "target": "",
             "count": 1
           },
@@ -401,25 +377,25 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/",
+            "page": "/seaweed-map/",
             "target": "",
-            "count": 24
+            "count": 22
           },
           {
             "event": "clarity_dead_click",
-            "page": "/seaweed-map/",
+            "page": "/es/",
             "target": "",
-            "count": 18
+            "count": 21
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/mapa-sargazo/",
             "target": "",
-            "count": 13
+            "count": 5
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sunny-isles-beach-sargassum-today/",
+            "page": "/sargassum-season-florida/",
             "target": "",
             "count": 3
           },
@@ -437,7 +413,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargassum-season-florida/",
+            "page": "/naples-sargassum-today/",
             "target": "",
             "count": 2
           },
@@ -467,12 +443,6 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/playas/sunny-isles-beach/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/es/temporada-sargazo-florida/",
             "target": "",
             "count": 1
@@ -485,7 +455,7 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/is-there-sargassum-in-miami-today/",
+            "page": "/sunny-isles-beach-sargassum-today/",
             "target": "",
             "count": 1
           }
@@ -494,7 +464,7 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 1260,
+        "lcp": 1255,
         "inp": null,
         "cls": 0.01,
         "ttfb": null
@@ -519,122 +489,42 @@
         "softErrors": [],
         "lowCtrPages": [
           {
-            "page": "https://sargassumpuntacana.com/es/playas/macao-beach/",
-            "avgPosition": 6,
-            "actualCtr": 1.43,
-            "expectedCtr": 5,
-            "impressions": 70,
-            "clicks": 1,
-            "topQueries": [
-              {
-                "query": "playa macao tiene sargazo hoy",
-                "impressions": 17,
-                "clicks": 0,
-                "position": 6.0588235294117645
-              },
-              {
-                "query": "playa macao sargazo hoy",
-                "impressions": 13,
-                "clicks": 1,
-                "position": 5.6923076923076925
-              },
-              {
-                "query": "playa macao hoy sargazo",
-                "impressions": 8,
-                "clicks": 0,
-                "position": 4.875
-              },
-              {
-                "query": "playa macao sargazo hoy",
-                "impressions": 4,
-                "clicks": 0,
-                "position": 5.75
-              },
-              {
-                "query": "playa macao tiene sargazo",
-                "impressions": 4,
-                "clicks": 0,
-                "position": 1
-              }
-            ]
-          },
-          {
-            "page": "https://sargassumpuntacana.com/es/temporada-sargazo-punta-cana/",
-            "avgPosition": 5,
-            "actualCtr": 0,
-            "expectedCtr": 6,
-            "impressions": 21,
-            "clicks": 0,
-            "topQueries": [
-              {
-                "query": "epoca de sargazo en punta cana 2026",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 7.333333333333333
-              },
-              {
-                "query": "epoca de sargazo en punta cana 2026",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 7
-              },
-              {
-                "query": "cuando es la temporada de sargazo en punta cana",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 4.5
-              },
-              {
-                "query": "5 de septiembre",
-                "impressions": 1,
-                "clicks": 0,
-                "position": 1
-              },
-              {
-                "query": "clima punta cana octubre 2026",
-                "impressions": 1,
-                "clicks": 0,
-                "position": 3
-              }
-            ]
-          },
-          {
             "page": "https://sargassumpuntacana.com/barbade",
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 86,
+            "impressions": 116,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 33,
+                "impressions": 38,
                 "clicks": 0,
-                "position": 7.151515151515151
+                "position": 7.2631578947368425
               },
               {
                 "query": "sargassum punta cana today",
-                "impressions": 13,
+                "impressions": 16,
                 "clicks": 0,
-                "position": 8.76923076923077
+                "position": 8.875
               },
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 5,
+                "impressions": 8,
                 "clicks": 0,
-                "position": 8
+                "position": 8.75
+              },
+              {
+                "query": "sargassum in punta cana right now",
+                "impressions": 6,
+                "clicks": 0,
+                "position": 11
               },
               {
                 "query": "punta cana beaches right now",
-                "impressions": 4,
+                "impressions": 5,
                 "clicks": 0,
-                "position": 9.75
-              },
-              {
-                "query": "punta cana beach conditions today",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 8.333333333333332
+                "position": 10
               }
             ]
           },
@@ -643,38 +533,38 @@
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 86,
+            "impressions": 116,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 33,
+                "impressions": 38,
                 "clicks": 0,
-                "position": 7.151515151515151
+                "position": 7.2631578947368425
               },
               {
                 "query": "sargassum punta cana today",
-                "impressions": 13,
+                "impressions": 16,
                 "clicks": 0,
-                "position": 8.76923076923077
+                "position": 8.875
               },
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 5,
+                "impressions": 8,
                 "clicks": 0,
-                "position": 8
+                "position": 8.75
+              },
+              {
+                "query": "sargassum in punta cana right now",
+                "impressions": 6,
+                "clicks": 0,
+                "position": 11
               },
               {
                 "query": "punta cana beaches right now",
-                "impressions": 4,
+                "impressions": 5,
                 "clicks": 0,
-                "position": 9.75
-              },
-              {
-                "query": "punta cana beach conditions today",
-                "impressions": 3,
-                "clicks": 0,
-                "position": 8.333333333333332
+                "position": 10
               }
             ]
           },
@@ -683,78 +573,152 @@
             "avgPosition": 9,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 86,
+            "impressions": 116,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 33,
+                "impressions": 38,
                 "clicks": 0,
-                "position": 7.151515151515151
+                "position": 7.2631578947368425
               },
               {
                 "query": "sargassum punta cana today",
-                "impressions": 13,
+                "impressions": 16,
                 "clicks": 0,
-                "position": 8.76923076923077
+                "position": 8.875
               },
               {
                 "query": "punta cana seaweed today live",
-                "impressions": 5,
+                "impressions": 8,
                 "clicks": 0,
-                "position": 8
+                "position": 8.75
+              },
+              {
+                "query": "sargassum in punta cana right now",
+                "impressions": 6,
+                "clicks": 0,
+                "position": 11
               },
               {
                 "query": "punta cana beaches right now",
-                "impressions": 4,
+                "impressions": 5,
                 "clicks": 0,
-                "position": 9.75
+                "position": 10
+              }
+            ]
+          },
+          {
+            "page": "https://sargassumpuntacana.com/sargassum-season-punta-cana/",
+            "avgPosition": 7,
+            "actualCtr": 0,
+            "expectedCtr": 4,
+            "impressions": 25,
+            "clicks": 0,
+            "topQueries": [
+              {
+                "query": "punta cana sargassum",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 11
               },
               {
-                "query": "punta cana beach conditions today",
+                "query": "sargasse a punta cana 2026",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 11
+              },
+              {
+                "query": "sargassum season punta cana 2026",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 5.5
+              },
+              {
+                "query": "el sargazo",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 2
+              },
+              {
+                "query": "em outubro",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 16
+              }
+            ]
+          },
+          {
+            "page": "https://sargassumpuntacana.com/es/playas/macao-beach/",
+            "avgPosition": 6,
+            "actualCtr": 0,
+            "expectedCtr": 5,
+            "impressions": 45,
+            "clicks": 0,
+            "topQueries": [
+              {
+                "query": "playa macao tiene sargazo hoy",
+                "impressions": 13,
+                "clicks": 0,
+                "position": 6.6923076923076925
+              },
+              {
+                "query": "playa macao sargazo hoy",
+                "impressions": 10,
+                "clicks": 0,
+                "position": 5.8
+              },
+              {
+                "query": "playa macao hoy sargazo",
+                "impressions": 5,
+                "clicks": 0,
+                "position": 4.4
+              },
+              {
+                "query": "playa macao sargazo hoy",
                 "impressions": 3,
                 "clicks": 0,
-                "position": 8.333333333333332
+                "position": 6
+              },
+              {
+                "query": "playa macao hoy",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 9.5
               }
             ]
           }
         ],
         "highBouncePages": [],
-        "cwvIssues": [
-          {
-            "metric": "INP",
-            "value": 214,
-            "threshold": 200
-          }
-        ],
+        "cwvIssues": [],
         "rageClicks": [
           {
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 11
+            "count": 12
           },
           {
             "event": "clarity_rage_click",
             "page": "/es/semaforo-del-sargazo/",
             "target": "",
-            "count": 9
+            "count": 8
           },
           {
             "event": "clarity_rage_click",
             "page": "/press/",
             "target": "",
-            "count": 7
+            "count": 5
           },
           {
             "event": "clarity_rage_click",
-            "page": "/es/",
+            "page": "/es/como-saber-si-hay-sargazo-en-punta-cana/",
             "target": "",
             "count": 3
           },
           {
             "event": "clarity_rage_click",
-            "page": "/beaches/bavaro-beach/",
+            "page": "/es/",
             "target": "",
             "count": 1
           },
@@ -767,6 +731,12 @@
           {
             "event": "clarity_rage_click",
             "page": "/es/playas/punta-cana-beach/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/es/sargazo-bavaro-hoy/",
             "target": "",
             "count": 1
           },
@@ -794,47 +764,47 @@
             "event": "clarity_dead_click",
             "page": "/es/semaforo-del-sargazo/",
             "target": "",
-            "count": 26
+            "count": 27
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 15
+            "count": 19
           },
           {
             "event": "clarity_dead_click",
             "page": "/press/",
             "target": "",
-            "count": 14
+            "count": 11
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/es/sargazo-bavaro-hoy/",
+            "target": "",
+            "count": 7
           },
           {
             "event": "clarity_dead_click",
             "page": "/sargassum-forecast/",
             "target": "",
-            "count": 8
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/playas-sin-sargazo-en-punta-cana/",
             "target": "",
-            "count": 5
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/playas/uvero-alto/",
-            "target": "",
-            "count": 5
+            "count": 4
           },
           {
             "event": "clarity_dead_click",
             "page": "/beaches/bavaro-beach/",
             "target": "",
-            "count": 4
+            "count": 3
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/sargazo-bavaro-hoy/",
+            "page": "/es/pronostico-sargazo/",
             "target": "",
             "count": 3
           },
@@ -858,12 +828,6 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/beaches-without-sargassum-today/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/best-time-to-visit-punta-cana-avoid-sargassum/",
             "target": "",
             "count": 1
@@ -876,13 +840,19 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/playas/playa-cortecito-sur/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/es/playas/punta-cana-beach/",
             "target": "",
             "count": 1
           },
           {
             "event": "clarity_dead_click",
-            "page": "/es/pronostico-sargazo/",
+            "page": "/es/playas/uvero-alto/",
             "target": "",
             "count": 1
           },
@@ -916,15 +886,15 @@
       "crux": {
         "formFactor": "PHONE",
         "lcp": 1394,
-        "inp": 214,
-        "cls": 0.01,
-        "ttfb": 454
+        "inp": 200,
+        "cls": 0.02,
+        "ttfb": 500
       },
       "sitemapStatus": [
         {
           "path": "https://sargassumpuntacana.com/sitemap.xml",
           "lastSubmitted": "2026-07-01T12:24:20.671Z",
-          "lastDownloaded": "2026-09-18T06:03:39.465Z",
+          "lastDownloaded": "2026-09-23T10:57:59.144Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"
@@ -933,49 +903,89 @@
     },
     "rivieramaya": {
       "domain": "sargassumcancun.com",
-      "indexedCount": 20,
+      "indexedCount": 17,
       "totalUrls": 24,
       "findings": {
         "notIndexed": [],
         "softErrors": [],
         "lowCtrPages": [
           {
+            "page": "https://sargassumcancun.com/sargazo-salud-riesgos/",
+            "avgPosition": 10,
+            "actualCtr": 0,
+            "expectedCtr": 2,
+            "impressions": 34,
+            "clicks": 0,
+            "topQueries": [
+              {
+                "query": "sargazo es peligroso",
+                "impressions": 13,
+                "clicks": 0,
+                "position": 10.692307692307692
+              },
+              {
+                "query": "a que huele el sargazo",
+                "impressions": 7,
+                "clicks": 0,
+                "position": 8.714285714285715
+              },
+              {
+                "query": "el sargazo es malo",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 19
+              },
+              {
+                "query": "sargazo es peligroso",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 10
+              },
+              {
+                "query": "a que huele el sargazo",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 7
+              }
+            ]
+          },
+          {
             "page": "https://sargassumcancun.com/temporada-sargazo-rivieramaya/",
-            "avgPosition": 9,
+            "avgPosition": 8,
             "actualCtr": 0,
             "expectedCtr": 3,
-            "impressions": 136,
+            "impressions": 113,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "temporada de sargazo en riviera maya",
-                "impressions": 17,
+                "impressions": 11,
                 "clicks": 0,
-                "position": 6.176470588235294
+                "position": 6.636363636363637
               },
               {
                 "query": "cuando hay sargazo en riviera maya",
-                "impressions": 7,
-                "clicks": 0,
-                "position": 7.428571428571429
-              },
-              {
-                "query": "temporada de sargazo en riviera maya",
-                "impressions": 7,
-                "clicks": 0,
-                "position": 5.142857142857143
-              },
-              {
-                "query": "sargazo riviera maya 2026",
                 "impressions": 6,
                 "clicks": 0,
-                "position": 10.833333333333334
+                "position": 7.5
               },
               {
                 "query": "temporada de sargazo en riviera maya",
                 "impressions": 6,
                 "clicks": 0,
-                "position": 6.333333333333333
+                "position": 5.5
+              },
+              {
+                "query": "sargazo en riviera maya 2026",
+                "impressions": 5,
+                "clicks": 0,
+                "position": 8.8
+              },
+              {
+                "query": "sargazo riviera maya 2021",
+                "impressions": 5,
+                "clicks": 0,
+                "position": 19.2
               }
             ]
           }
@@ -1000,24 +1010,6 @@
             "page": "/en/beaches/playa-maroma/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/en/cancun-seaweed-map-2026/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/en/sargassum-season-cancun/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/pronostico-sargazo/",
-            "target": "",
-            "count": 1
           }
         ],
         "deadClicks": [
@@ -1025,7 +1017,7 @@
             "event": "clarity_dead_click",
             "page": "/mapa-sargazo/",
             "target": "",
-            "count": 10
+            "count": 8
           },
           {
             "event": "clarity_dead_click",
@@ -1065,25 +1057,19 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/pronostico-sargazo/",
+            "page": "/en/tulum-sargassum-today/",
             "target": "",
             "count": 1
           }
         ],
         "quickBounces": []
       },
-      "crux": {
-        "formFactor": "ALL",
-        "lcp": null,
-        "inp": null,
-        "cls": 0.01,
-        "ttfb": 654
-      },
+      "crux": null,
       "sitemapStatus": [
         {
           "path": "https://sargassumcancun.com/sitemap.xml",
           "lastSubmitted": "2026-07-01T12:24:26.285Z",
-          "lastDownloaded": "2026-09-16T20:30:43.729Z",
+          "lastDownloaded": "2026-09-21T19:11:30.156Z",
           "isPending": false,
           "warnings": "0",
           "errors": "0"
