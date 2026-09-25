@@ -1,4 +1,20 @@
-## 2026-09-25K — MEDIA PASS / HD PHOTO + VIDEO + ART DIRECTION : quality V3 + discovery + atmospheric + responsive
+## 2026-09-25L — COASTAL LAB : SARGASSUM COASTAL LAB / Littoral Decision Lab (5 couches interactives)
+
+**PROBLEM** : aucun espace produit n'explique le système littoral sargasse — données → compréhension → décision → récupération → valorisation. Besoin d'un lab premium qui connecte OCEAN → DATA → BEACH → TOURISM → ECOSYSTEM → DECISION → ACTION → RECOVERY → VALORIZATION sans inventer de données.
+
+**CHANGE** (money-path ZÉRO touché, route `/coastal-lab/`, lazy 10.7 KB gzip, rollback `?coastallab=0`) :
+- `src/CoastalLab.jsx` (N, 603 lignes) : 5 couches MONITOR/UNDERSTAND/DECIDE/RECOVER/VALORIZE + BeachObjectCard + LayerNav + HardProblem + TourismConnection + EcosystemView. Centre = Beach Object (PHOTO+STATE+DATA+FORECAST+RELIABILITY+USE+IMPACT+DECISION+ALTERNATIVE) réutilisé B2C/B2B/B2G.
+- `src/coastal-lab.css` (N, 568 lignes) : tokens --cl-accent (status-driven), sg-motion classes (sgm-fadeup/dayin/reveal), reduced-motion natif, mobile-first 390/768/1280+, focus-visible, high-contrast.
+- `src/Sargasses_PROD.jsx` : `isCoastalLabPath` (`/coastal-lab/`), `showCoastalLab` state, `LazyCoastalLab` import, render dans JSX avec props Beach Object + callbacks Explore/Plan/Monitor.
+- Analytics : `sg_lab_open`, `sg_lab_step_view`, `sg_lab_beach_select`, `sg_lab_decision_view`, `sg_lab_cta` (track via `window.track`).
+- Réutilise existant : `resolveMedia` (media-art-direction v3), `nearestBeaches`/`dataAgeHours` (sg-visual), `Icon` (sg-icons), `sg-motion` grammar, `_t`/`track` (Sargasses_PROD).
+- Zéro donnée inventée : contraintes honnêtes (logistiques/env/sanitaires/éco/opé), maturité taguée (Pilote/Démonstration/Recherche/Expérimental/À documenter), "À documenter/À valider" quand données manquantes.
+- Tests : `tests/unit/coastal-lab.test.cjs` (91 checks : 5 couches, réutilisation systèmes, analytics, rollback, route, CSS tokens/motion/RM/a11y, hard constraints 13, tourism 6, recovery 6, valorization 5, decisions 7, ecosystem 4, honesty, CTAs, taille).
+- Spécification persistante : `.ai/plans/COASTAL-LAB.md` (23 sections complètes), task `TASK-P1-COASTAL-LAB` dans `.ai/tasks.md`.
+
+**PROOF** : build 0 (411 modules) · bundle eager 38.2 Ko ≤ 210 Ko (CoastalLab lazy 10.7 KB gzip) · smoke 4/4 · npm test **66/66** (nouveau coastal-lab 91/91) · E2E funnel-payment 13/13 · regions OK · php -l OK · ux-smoke 4/4.
+
+---
 
 **PROBLEM** : catalogue 457 JPG sans qualification lieu (place), score v2 sans séparation tech/visu/place, pas de pipeline acquisition licenciée, pas de variants responsive, pas de vidéos atmosphériques, hero art direction = URL seule sans provenance.
 

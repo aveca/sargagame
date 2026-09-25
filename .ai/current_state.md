@@ -1,4 +1,36 @@
-## 2026-09-25K · Agent: coding (MEDIA PASS / HD PHOTO + VIDEO + ART DIRECTION) — Quality V3 + Discovery + Atmospheric + Art Direction v3
+## 2026-09-25L · Agent: coding (COASTAL LAB) — SARGASSUM COASTAL LAB / Littoral Decision Lab
+
+### Travail effectué
+- **Résumé 1 ligne** : expérience interactive premium 5 couches livrée — MONITOR (OCEAN→DATA→BEACH→STATE), UNDERSTAND (impact dimensions), DECIDE (7 options conceptuelles), RECOVER (chaîne opérationnelle 6 étapes), VALORIZE (5 pistes avec maturité). Centre = Beach Object réutilisé (B2C/B2B/B2G). Zéro donnée inventée.
+- **Détails** : cf. `.ai/plans/COASTAL-LAB.md` + `.ai/design/COASTAL-LAB-REPORT.md` (à créer). Route `/coastal-lab/` pathname-gated, lazy-loaded, rollback `?coastallab=0`. Analytics: `sg_lab_open`, `sg_lab_step_view`, `sg_lab_beach_select`, `sg_lab_decision_view`, `sg_lab_cta`. Réutilise: resolveMedia, nearestBeaches, dataAgeHours, sg-icons, sg-motion, media-art-direction, track.
+
+### Fichiers modifiés
+- (N) `src/CoastalLab.jsx` (603 lignes, 5 couches + sous-composants) · `src/coastal-lab.css` (568 lignes, tokens + motion + reduced-motion + mobile-first) · `tests/unit/coastal-lab.test.cjs` (91 checks) · `.ai/plans/COASTAL-LAB.md` (spécification complète 23 sections)
+- (M) `src/Sargasses_PROD.jsx` (route detection, state, lazy import, render) · `.ai/tasks.md` (TASK-P1-COASTAL-LAB ajouté)
+
+### Tests réalisés
+- [x] npm run build → exit 0 (411 modules, +CoastalLab chunk 10.7 KB gzip lazy)
+- [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko (eager inchangé)
+- [x] php -l → OK (mollie, paypal, webhook)
+- [x] ux-smoke → 4 tokens OK + SMOKE_GATE=PASS
+- [x] npm test → **66/66** (nouveau: coastal-lab 91 checks)
+- [x] E2E funnel-payment → 13/13 passed
+- [x] regions assertAllRegionsValid → OK
+
+### Problèmes restants
+- [ ] Visual QA screenshots 390/768/1440 (à faire post-deploy)
+- [ ] Mesure sg_lab_* events 7j post-deploy — Rôle : growth
+- [ ] Documentation COASTAL-LAB-REPORT.md — Rôle : coding
+
+### Prochaine action recommandée
+1. Deploy auto via daily-copernicus → probes prod `/coastal-lab/` — Rôle : release
+2. Visual QA 3 viewports — Rôle : qa
+3. Mesurer funnel Lab → Explore/Plan/Monitor 7j — Rôle : growth
+
+### Branche / PR
+- Branche : `agent/coding/coastal-lab` — **PR #754 MERGED** (squash `af23f8cc4`, 2026-09-25) — CI **7/7 verte** — Deploy Live en attente.
+
+---
 
 ### Travail effectué
 - **Résumé 1 ligne** : pipeline média complet livré — sources documentées + licensing vérifié + discovery engine (Wikimedia live) + Quality V3 (TECH+VISU+PLACE) + top30 audit + contact sheets + atmospheric video library structure + video optimization pipeline + responsive variants ready + hero art direction v3 + visual QA passed. Aucune photo fausse, aucun upscale, Google ToS respecté.
