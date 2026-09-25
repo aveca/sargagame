@@ -30,9 +30,7 @@
 2. Mesurer sg_verdict_expand (via plan/savoir/faq) + sg_recommendation_open (bx_proximity) 7j — Rôle : growth
 
 ### Branche / PR
-- Branche : `agent/coding/visual-overhaul-e`
-- PR : à créer vers main
-- Commit head : à créer
+- Branche : `agent/coding/visual-overhaul-e` — **PR #747 MERGED** (squash `e9946a10`, 2026-09-25) — CI **7/7 verte** — Deploy Live success — prod version.json b=e9946a10 · 5/5 HTTP 200 (MQ/GP/MIA/CUN/PUJ).
 
 ---
 
