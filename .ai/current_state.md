@@ -28,8 +28,7 @@
 2. Mesurer sg_verdict_expand (via marine) + reco-why 7j — Rôle : growth
 
 ### Branche / PR
-- Branche : `agent/coding/niche-evidence-f`
-- PR : à créer vers main
+- Branche : `agent/coding/niche-evidence-f` — **PR #748 MERGED** (squash `e6d8677d`, 2026-09-25) — CI **7/7 verte** — Deploy Live success — prod version.json b=e6d8677d · 5/5 HTTP 200 (MQ/GP/MIA/CUN/PUJ).
 
 ---
 
