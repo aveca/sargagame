@@ -32,7 +32,7 @@
 2. Mesurer sg_intent_select → plan_add → premium 7j vs baseline — Rôle : growth
 
 ### Branche / PR
-- Branche : `agent/coding/perfect-trip` → PR à créer (final report)
+- Branche : `agent/coding/perfect-trip` — **PR #744 MERGED** (squash `a15260b5a`, 2026-09-24) — CI 7/7 vert — Deploy Live success — prod 5/5 HTTP 200 · version.json b=a15260b5 · QA prod Playwright : 5 chips intention + plan-card live (photo réelle). Note : 400 sur /api/mollie.php au load = pré-existant (endpoint sans `action`), hors cycle.
 
 ---
 
