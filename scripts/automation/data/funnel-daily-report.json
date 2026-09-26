@@ -1,7 +1,7 @@
 {
   "window_hours": 24,
-  "since": "2026-09-24T22:31:28.858Z",
-  "total_events": 1728,
+  "since": "2026-09-25T05:33:08.674Z",
+  "total_events": 1679,
   "funnel": [
     {
       "key": "map_open",
@@ -13,7 +13,7 @@
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 100
+      "count": 103
     },
     {
       "key": "verdict_scan_view",
@@ -92,7 +92,7 @@
   "global_rate": 0,
   "counts": {
     "map_open": 0,
-    "beach_open": 100,
+    "beach_open": 103,
     "verdict_scan_view": 0,
     "premium_modal_open": 17,
     "pass_cta": 1,
@@ -104,32 +104,31 @@
   "cta_total": 1,
   "engagement": {
     "verdict_expand": 42,
-    "forecast_view": 33,
+    "forecast_view": 35,
     "paywall_view": 17,
     "payment_failed": 0,
     "premium_feature_click": 0
   },
   "by_island": {
-    "MQ": {
-      "beach_open": 6,
-      "premium_modal_open": 1
+    "PUNTACANA": {
+      "beach_open": 44,
+      "premium_modal_open": 9
+    },
+    "RIVIERAMAYA": {
+      "beach_open": 3
     },
     "FLORIDA": {
-      "beach_open": 23,
-      "premium_modal_open": 5,
+      "beach_open": 34,
+      "premium_modal_open": 6,
       "pass_cta": 1,
       "onsite_checkout_opened": 1
     },
-    "PUNTACANA": {
-      "beach_open": 51,
-      "premium_modal_open": 9
-    },
     "GP": {
-      "beach_open": 19,
+      "beach_open": 18,
       "premium_modal_open": 2
     },
-    "RIVIERAMAYA": {
-      "beach_open": 1
+    "MQ": {
+      "beach_open": 4
     }
   },
   "by_pw_style": {
