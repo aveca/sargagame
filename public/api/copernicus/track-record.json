@@ -1,23 +1,23 @@
 {
   "_note": "Palmarès PUBLIC et auditable des prévisions sargasses. Source : forecast-archive.json (snapshots figés à la date d'émission, append-only) comparés aux observations satellite (history.json). Aucun chiffre n'est rétro-ajustable.",
-  "generatedAt": "2026-09-26T22:25:54.980Z",
+  "generatedAt": "2026-09-27T06:03:01.071Z",
   "window": {
-    "from": "2026-08-28",
-    "to": "2026-09-26",
+    "from": "2026-08-29",
+    "to": "2026-09-27",
     "days": 30,
     "rollingDays": 30
   },
   "lifetime": {
     "from": "2026-07-27",
-    "to": "2026-09-26",
-    "days": 62,
+    "to": "2026-09-27",
+    "days": 63,
     "sampleSize": 3906,
     "statusHitRatePct": 99
   },
   "freshness": {
-    "computedAt": "2026-09-26T22:25:54.868Z",
+    "computedAt": "2026-09-27T06:03:00.954Z",
     "backtestAgeHours": 0,
-    "observationLagDays": 0,
+    "observationLagDays": -1,
     "stale": false
   },
   "sampleSize": 3339,
@@ -82,9 +82,9 @@
     }
   },
   "headline": {
-    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-08-28 → 2026-09-26) se sont vérifiées (sur 3187) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
-    "en": "100% of our \"clean water\" forecasts (calm season, 2026-08-28 → 2026-09-26) proved correct (over 3187); the rare alerts stay flagged low-confidence until the data confirms them.",
-    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-08-28 → 2026-09-26) resultaron correctos (sobre 3187); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
+    "fr": "100% de nos prévisions « mer propre » (saison calme, 2026-08-29 → 2026-09-27) se sont vérifiées (sur 3187) ; les rares alertes restent signalées à faible confiance tant que la donnée ne les confirme pas.",
+    "en": "100% of our \"clean water\" forecasts (calm season, 2026-08-29 → 2026-09-27) proved correct (over 3187); the rare alerts stay flagged low-confidence until the data confirms them.",
+    "es": "El 100% de nuestros pronósticos de \"agua limpia\" (temporada tranquila, 2026-08-29 → 2026-09-27) resultaron correctos (sobre 3187); las raras alertas se marcan con baja confianza hasta que el dato las confirma."
   },
   "byBeach": [
     {
@@ -125,7 +125,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 96,
-      "afaiMAE": 0.02
+      "afaiMAE": 0.019
     },
     {
       "id": "gp-moule",
@@ -157,7 +157,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.016
+      "afaiMAE": 0.015
     },
     {
       "id": "gp-sainte-anne",
@@ -173,7 +173,7 @@
       "island": "gp",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.007
+      "afaiMAE": 0.006
     },
     {
       "id": "anse-madame",
@@ -181,7 +181,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.014
+      "afaiMAE": 0.015
     },
     {
       "id": "anse-mitan",
@@ -213,7 +213,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 95,
-      "afaiMAE": 0.022
+      "afaiMAE": 0.023
     },
     {
       "id": "vauclin",
@@ -229,7 +229,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.01
+      "afaiMAE": 0.011
     },
     {
       "id": "pt-marin",
@@ -237,7 +237,7 @@
       "island": "mq",
       "samples": 159,
       "hitRatePct": 100,
-      "afaiMAE": 0.012
+      "afaiMAE": 0.013
     },
     {
       "id": "sainte-anne",
