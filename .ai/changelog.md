@@ -1,3 +1,18 @@
+## 2026-09-27 — B2C OFFER LAB : Monetization / Offer Architecture (lab, zéro débit modifié)
+
+**PROBLEM** : modèle B2C = one-time travel pass uniquement, pricing dispersé en sources contradictoires (serveur vs docs vs emails vs GA4), aucune architecture récurrente B2C, Coastal Lab sans pont monétisation.
+
+**CHANGE** (money-path ZÉRO touché — aucun .php, aucun montant serveur modifié) :
+- `.ai/plans/B2C-OFFER-RESEARCH.md` (N) : benchmark 8 acteurs — Sargassum Report $19 one-shot (450+ clients), Surfline $15.99/mo·$119.99/yr, Windy ~$25-35/yr, AllTrails $35.99/yr, Komoot weekly €4.99 (price point trip + avertissement anti-forçage), Flighty weekly $4.99·lifetime $299·"free on first flight", SargaTrack/FanGass gratuits.
+- `.ai/plans/B2C-OFFER-ARCHITECTURE.md` (N) : pricing truth (serveur = seule autorité : p30 14.99/11.99, trip7 4.99, season 19.99), conflits (CLAUDE.md 7.99/24.99 stale, clé fantôme `p7`, mismatch `saison`/`season`, mail saison USD), audit money-path (B2B recurring OK, B2C recurring = GAP), modèles A–F sans ranking, matrice features, billing, UX A–D, experiments, analytics min, flags, next build exact.
+- `src/lib/offers.js` (N) : catalogue canonique B2C — free/trip7/p30/season live (miroir PASS_CENTS + serveur), watch_monthly/watch_annual/mon_stay planned (prix null, jamais chargeables), `isChargeable()`, kill-switch `?offerlab=0`.
+- `tests/unit/offers-contract.test.cjs` (N, 36 checks) : parse l'allowlist `mollie.php` et verrouille le miroir ; anti-`p7`, anti-`saison`, planned non chargeables.
+- `.ai/tasks.md` : TASK-P1-B2C-OFFER-LAB [x] done.
+
+**PROOF** : esbuild OK · npm test **67/67** (nouveau offers-contract 36/36) · build exit 0 (411 modules) · bundle 38.2 Ko ≤ 210 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l N/A (0 PHP touché).
+
+---
+
 ## 2026-09-25L — COASTAL LAB : SARGASSUM COASTAL LAB / Littoral Decision Lab (5 couches interactives)
 
 **PROBLEM** : aucun espace produit n'explique le système littoral sargasse — données → compréhension → décision → récupération → valorisation. Besoin d'un lab premium qui connecte OCEAN → DATA → BEACH → TOURISM → ECOSYSTEM → DECISION → ACTION → RECOVERY → VALORIZATION sans inventer de données.
