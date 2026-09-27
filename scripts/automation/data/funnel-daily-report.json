@@ -1,7 +1,7 @@
 {
   "window_hours": 24,
-  "since": "2026-09-26T06:09:41.713Z",
-  "total_events": 3796,
+  "since": "2026-09-26T22:40:03.003Z",
+  "total_events": 3249,
   "funnel": [
     {
       "key": "map_open",
@@ -13,7 +13,7 @@
       "key": "beach_open",
       "label": "Beach selected",
       "icon": "🏖️",
-      "count": 137
+      "count": 149
     },
     {
       "key": "verdict_scan_view",
@@ -25,7 +25,7 @@
       "key": "premium_modal_open",
       "label": "Paywall seen",
       "icon": "🔒",
-      "count": 11
+      "count": 7
     },
     {
       "key": "cta",
@@ -56,7 +56,7 @@
     {
       "from": "Map opened",
       "to": "Beach selected",
-      "rate": 2283.3
+      "rate": 2483.3
     },
     {
       "from": "Beach selected",
@@ -92,9 +92,9 @@
   "global_rate": 0,
   "counts": {
     "map_open": 6,
-    "beach_open": 137,
+    "beach_open": 149,
     "verdict_scan_view": 0,
-    "premium_modal_open": 11,
+    "premium_modal_open": 7,
     "pass_cta": 0,
     "onsite_checkout_opened": 0,
     "mollie_checkout_redirect": 0,
@@ -103,38 +103,37 @@
   },
   "cta_total": 0,
   "engagement": {
-    "verdict_expand": 40,
-    "forecast_view": 27,
-    "paywall_view": 11,
+    "verdict_expand": 41,
+    "forecast_view": 28,
+    "paywall_view": 7,
     "payment_failed": 0,
     "premium_feature_click": 0
   },
   "by_island": {
-    "PUNTACANA": {
-      "beach_open": 35
-    },
-    "RIVIERAMAYA": {
-      "beach_open": 10,
+    "FLORIDA": {
+      "beach_open": 39,
       "premium_modal_open": 1
     },
-    "MQ": {
-      "beach_open": 21,
-      "premium_modal_open": 7,
-      "map_open": 6
+    "PUNTACANA": {
+      "beach_open": 45,
+      "premium_modal_open": 1
     },
     "GP": {
-      "beach_open": 22,
-      "premium_modal_open": 1
+      "beach_open": 48,
+      "premium_modal_open": 5
     },
-    "FLORIDA": {
-      "beach_open": 49,
-      "premium_modal_open": 2
+    "RIVIERAMAYA": {
+      "beach_open": 3
+    },
+    "MQ": {
+      "beach_open": 14,
+      "map_open": 6
     }
   },
   "by_pw_style": {
     "world": {
-      "modal_open": 11,
-      "paywall_view": 11,
+      "modal_open": 7,
+      "paywall_view": 7,
       "cta": "NOT_MEASURABLE",
       "conversion": "NOT_MEASURABLE"
     }
