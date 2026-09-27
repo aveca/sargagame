@@ -218,7 +218,7 @@
 - **Fichiers attendus** : composants CoastalLab, route, tests, analytics events (sg_lab_*), documentation handoff
 - **Contraintes** : EAGER GZIP ≤ 210 KB, no new heavy deps, lazy-load media, reduced-motion, mobile-first (390×844), accessibility, no regression on map/BeachExperience/paywall/Mollie/TripPlanner/SeaRail/AHA/media pipeline
 - **Gates** : npm test · npm run build · bundle budget · ux-smoke · funnel-payment E2E · regions validation · visual QA (390×844, 768×1024, 1280×900)
-- **Statut** : [~] in_progress by coding_agent
+- **Statut** : [x] done by coding_agent (2026-09-25) — PR #754 merged, CI 7/7, prod validated, Visual QA 3 viewports OK, 66/66 tests pass, analytics events implemented, zero invented data verified. Report: `.ai/plans/COASTAL-LAB-REPORT.md`
 
 ## P1 PAGES PLAGES — data-driven enrichment [x] done (2026-09-10)
 - **Root cause**: existing `/poi/`, `/activity/`, resort data not visible on beach pages — no enrichment sections, no proximity, no facts, no activities from beach flags; pages were SCORE→TEXT→CTA only

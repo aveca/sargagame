@@ -1,12 +1,12 @@
 ## 2026-09-25L · Agent: coding (COASTAL LAB) — SARGASSUM COASTAL LAB / Littoral Decision Lab
 
 ### Travail effectué
-- **Résumé 1 ligne** : expérience interactive premium 5 couches livrée — MONITOR (OCEAN→DATA→BEACH→STATE), UNDERSTAND (impact dimensions), DECIDE (7 options conceptuelles), RECOVER (chaîne opérationnelle 6 étapes), VALORIZE (5 pistes avec maturité). Centre = Beach Object réutilisé (B2C/B2B/B2G). Zéro donnée inventée.
-- **Détails** : cf. `.ai/plans/COASTAL-LAB.md` + `.ai/design/COASTAL-LAB-REPORT.md` (à créer). Route `/coastal-lab/` pathname-gated, lazy-loaded, rollback `?coastallab=0`. Analytics: `sg_lab_open`, `sg_lab_step_view`, `sg_lab_beach_select`, `sg_lab_decision_view`, `sg_lab_cta`. Réutilise: resolveMedia, nearestBeaches, dataAgeHours, sg-icons, sg-motion, media-art-direction, track.
+- **Résumé 1 ligne** : expérience interactive premium 5 couches livrée + validée prod — MONITOR (OCEAN→DATA→BEACH→STATE), UNDERSTAND (impact dimensions), DECIDE (7 options conceptuelles), RECOVER (chaîne opérationnelle 6 étapes), VALORIZE (5 pistes avec maturité). Centre = Beach Object réutilisé (B2C/B2B/B2G). Zéro donnée inventée. Visual QA 3 viewports OK, 66/66 tests pass, analytics events implémentés.
+- **Détails** : cf. `.ai/plans/COASTAL-LAB.md` + `.ai/plans/COASTAL-LAB-REPORT.md`. Route `/coastal-lab/` pathname-gated, lazy-loaded, rollback `?coastallab=0`. Analytics: `sg_lab_open`, `sg_lab_step_view`, `sg_lab_beach_select`, `sg_lab_decision_view`, `sg_lab_cta`. Réutilise: resolveMedia, nearestBeaches, dataAgeHours, sg-icons, sg-motion, media-art-direction, track.
 
 ### Fichiers modifiés
-- (N) `src/CoastalLab.jsx` (603 lignes, 5 couches + sous-composants) · `src/coastal-lab.css` (568 lignes, tokens + motion + reduced-motion + mobile-first) · `tests/unit/coastal-lab.test.cjs` (91 checks) · `.ai/plans/COASTAL-LAB.md` (spécification complète 23 sections)
-- (M) `src/Sargasses_PROD.jsx` (route detection, state, lazy import, render) · `.ai/tasks.md` (TASK-P1-COASTAL-LAB ajouté)
+- (N) `src/CoastalLab.jsx` (603 lignes, 5 couches + sous-composants) · `src/coastal-lab.css` (568 lignes, tokens + motion + reduced-motion + mobile-first) · `tests/unit/coastal-lab.test.cjs` (91 checks) · `.ai/plans/COASTAL-LAB.md` (spécification 23 sections) · `.ai/plans/COASTAL-LAB-REPORT.md` (validation report)
+- (M) `src/Sargasses_PROD.jsx` (route detection, state, lazy import, render) · `tests/e2e/coastal-lab-qa.spec.ts` (fix layer click, scroll, CTA expectations) · `.ai/tasks.md` (TASK-P1-COASTAL-LAB)
 
 ### Tests réalisés
 - [x] npm run build → exit 0 (411 modules, +CoastalLab chunk 10.7 KB gzip lazy)
@@ -16,19 +16,19 @@
 - [x] npm test → **66/66** (nouveau: coastal-lab 91 checks)
 - [x] E2E funnel-payment → 13/13 passed
 - [x] regions assertAllRegionsValid → OK
+- [x] Visual QA prod 390/768/1280 → 8/8 Playwright tests pass
+- [x] Zero invented data verified (91 contract checks)
 
 ### Problèmes restants
-- [ ] Visual QA screenshots 390/768/1440 (à faire post-deploy)
 - [ ] Mesure sg_lab_* events 7j post-deploy — Rôle : growth
-- [ ] Documentation COASTAL-LAB-REPORT.md — Rôle : coding
+- [ ] Lead banner z-index overlap footer (mineur, mobile) — Rôle : coding
 
 ### Prochaine action recommandée
-1. Deploy auto via daily-copernicus → probes prod `/coastal-lab/` — Rôle : release
-2. Visual QA 3 viewports — Rôle : qa
-3. Mesurer funnel Lab → Explore/Plan/Monitor 7j — Rôle : growth
+1. Mesurer funnel Lab → Explore/Plan/Monitor 7j — Rôle : growth
+2. Lead banner z-index fix si jugé nécessaire — Rôle : coding
 
 ### Branche / PR
-- Branche : `agent/coding/coastal-lab` — **PR #754 MERGED** (squash `af23f8cc4`, 2026-09-25) — CI **7/7 verte** — Deploy Live en attente.
+- Branche : `agent/coding/coastal-lab` — **PR #754 MERGED** (squash `af23f8cc4`, 2026-09-25) — CI **7/7 verte** — Deploy Live auto via daily-copernicus → prod `84195b773` · HTTP 200 `/coastal-lab/` · 8/8 Playwright tests pass.
 
 ---
 
