@@ -210,6 +210,16 @@
   - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 
+## TASK-P1-B2C-OFFER-LAB — B2C Monetization / Offer Architecture Lab
+- **Priorité** : P1
+- **Rôle** : product_agent + coding_agent
+- **Description** : Lab pricing/offres B2C : benchmark (Sargassum Report $19, Surfline, Windy, AllTrails, Komoot weekly €4.99, Flighty), audit pricing complet (serveur allowlist p30/trip7/season vs docs stale 7.99/24.99, clé fantôme p7, mismatch saison/season), audit money-path (subscriptions B2B OK, B2C recurring = GAP), modèles A–F sans ranking, catalogue canonique `src/lib/offers.js` + contrat test. AUCUN montant débité modifié.
+- **Spécification** : `.ai/plans/B2C-OFFER-ARCHITECTURE.md` + `.ai/plans/B2C-OFFER-RESEARCH.md`
+- **Fichiers** : `src/lib/offers.js` (N) · `tests/unit/offers-contract.test.cjs` (N, 36 checks) · `.ai/plans/B2C-OFFER-*.md` (N)
+- **Contraintes** : money-path ZÉRO touché (aucun .php, aucun montant serveur) · bundle ≤ 210 Ko · rollback `?offerlab=0`
+- **Gates** : esbuild OK · npm test 67/67 · build exit 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l N/A (0 PHP touché)
+- **Statut** : [x] done by coding_agent (2026-09-27) — PR à créer vers main
+
 ## TASK-P1-COASTAL-LAB — Sargassum Coastal Lab / Littoral Decision Lab
 - **Priorité** : P1
 - **Rôle** : coding_agent + ui-ux_agent

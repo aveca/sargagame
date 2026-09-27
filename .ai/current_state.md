@@ -1,3 +1,49 @@
+## 2026-09-27 · Agent: coding (B2C OFFER LAB) — Monetization / Offer Architecture Lab
+
+### Travail effectué
+- **Résumé 1 ligne** : lab pricing/offres B2C livré — benchmark 8 acteurs, audit pricing complet (serveur p30/trip7/season vs docs stale), audit money-path (B2C recurring = GAP documenté), modèles A–F sans ranking, catalogue canonique `src/lib/offers.js` + contrat 36 checks. ZÉRO montant débité modifié.
+- **Détails** :
+  - Benchmark : Sargassum Report $19 one-shot, Surfline $15.99/mo·$119.99/yr, Windy ~$25-35/yr, AllTrails $35.99/yr, Komoot weekly €4.99 (price point trip), Flighty weekly $4.99·lifetime $299·"free on first flight", SargaTrack/FanGass gratuits → `.ai/plans/B2C-OFFER-RESEARCH.md`
+  - Pricing truth : serveur `mollie.php` = seule autorité (p30 14.99/11.99, trip7 4.99, season 19.99) ; conflits trouvés : CLAUDE.md 7.99/24.99 stale, clé fantôme `p7` (GA4+blast, non chargeable), mismatch latent `saison`/`season` (PremiumModal vs serveur), mail saison USD 19.99 vs +15% débitée
+  - Money-path : subscriptions B2B (4 plans, webhook created/paid/revoke) OK ; B2C recurring = GAP total (aucun plan, aucun grant, charge_failed log-only) → Watch/MonStay = planned, jamais câblés au débit
+  - Modèles A–F + matrice features + billing + UX/paywall A–D + experiments + analytics min + flags `?offerlab=0` → `.ai/plans/B2C-OFFER-ARCHITECTURE.md` (FACTS/HYPOTHÈSES/BLOCKERS/NEXT BUILD)
+  - Implémentation safe : `src/lib/offers.js` (catalogue live/planned, `isChargeable()`, kill-switch) + `tests/unit/offers-contract.test.cjs` (36 checks, parse l'allowlist serveur)
+
+### Fichiers modifiés
+- `.ai/plans/B2C-OFFER-RESEARCH.md` — benchmark 8 acteurs + patterns + zones prix + sources
+- `.ai/plans/B2C-OFFER-ARCHITECTURE.md` — truth pricing, conflits, modèles A–F, matrice, billing, Mollie gaps, UX, experiments, next build
+- `src/lib/offers.js` — catalogue canonique B2C (live/planned, kill-switch ?offerlab=0)
+- `tests/unit/offers-contract.test.cjs` — 36 garde-fous (miroir serveur, anti p7/saison, planned non chargeables)
+- `.ai/tasks.md` — TASK-P1-B2C-OFFER-LAB [x] done
+
+### Tests réalisés
+- [x] `npx esbuild src/lib/offers.js` → OK
+- [x] `npm test` → 67/67 fichiers (nouveau offers-contract 36/36)
+- [x] `npm run build` → exit 0 (411 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → N/A (0 PHP touché — money-path intact)
+- [x] `node scripts/ux-smoke.mjs` → 4 tokens OK
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13
+- [x] `assertAllRegionsValid` → OK
+
+### Problèmes restants / Blockers
+- [ ] DOC-STALE-001 : CLAUDE.md §16 (7,99/24,99) vs serveur (4,99/19,99) — éditorial, pas money-path
+- [ ] DOC-STALE-002 : clé `p7` (GA4 PLAN_META + blast-mollie-offer) non chargeable — purger à l'occasion
+- [ ] GAP-B2C-REC : aucun plan/grant/webhook B2C recurring — Watch Monthly/Annual = spec, JAMAIS câbler sans CTO + plans Mollie + tests contrat
+- [ ] EVT : `sg_offer_*` proposés mais non câblés (volontaire — pas d'analytics à moitié branchée)
+
+### Prochaine action recommandée
+1. Corriger docs stale (CLAUDE.md §16, blast p7) — Rôle suggéré : coding_agent (éditorial, 15 min)
+2. Exposer trip7/season dans PassOffer derrière `?offer=` (next build §11 rapport) — Rôle suggéré : coding_agent
+3. Mesurer Watch : trial-concierge manuel avant tout code recurring — Rôle suggéré : growth_agent
+
+### Branche / PR
+- Branche : `agent/product/b2c-offer-architecture`
+- PR : #à créer
+- Commit head : `à remplir`
+
+---
+
 ## 2026-09-25L · Agent: coding (COASTAL LAB) — SARGASSUM COASTAL LAB / Littoral Decision Lab
 
 ### Travail effectué
