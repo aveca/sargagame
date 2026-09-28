@@ -291,10 +291,13 @@ function generateTodayPages(region, distDir) {
         const sargId = BEACH_TO_SARG[b.id]
         if (sargId && levelsBySarg[sargId]) levelsById[b.id] = levelsBySarg[sargId]
       }
-      // Generate for all emitted languages (FR primary + EN/ES secondary for MQ/GP)
-      const RL = require('./region-langs.cjs')
-      const emitted = RL.emittedLangs({ id: island, primaryLang: 'fr', secondaryLangs: ['en', 'es'] })
-      for (const lang of emitted) {
+      // FR + EN + ES explicites pour MQ/GP.
+      // NOTE 2026-09-28 (fix régression PR #762) : RL.emittedLangs() est
+      // inutilisable ici — normLang() ne connaît que en/es ('fr' → 'en') et
+      // le module est documenté "USD uniquement, MQ/GP n'utilisent jamais ce
+      // code". L'appel précédent ne retournait que ['en'] : les pages FR
+      // /aujourdhui/ n'étaient plus générées (liens internes cassés).
+      for (const lang of ['fr', 'en', 'es']) {
         const model = buildModel({
           lang, regionLabel, beaches, levelsById,
           beachUrlOf: b => `/plages/${b.slug}/`, updatedAt, relSlug: 'fiabilite',
