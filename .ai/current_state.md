@@ -1,3 +1,50 @@
+## 2026-09-28 · Agent: coding (B2C OFFER EXPOSURE) — expose trip7+season behind ?offer=
+
+### Travail effectué
+- **Résumé 1 ligne** : `?offer=trip7`/`?offer=season` exposés dans le paywall avec fallback p30 déterministe — résolution unique offers.js, threading PremiumModal→paywalls→PassOffer (3 sites), deep-link préservé, récap checkout honnête, 10 gardes buy-chain évolués. Money-path ZÉRO touché.
+- **Détails** :
+  - `src/lib/offers.js` (+) : `resolveOffer()` (?offer= → {key,requested}, trim+lowercase, allowlist trip7/season/p30, kill-switch ?offerlab=0, pas de mutation), `offerBaseCents()` (base serveur), `offerDisplayCents()` (miroir EXACT +15 % USD sauf trip7), USD display 5.99/19.99 attestés repo
+  - `src/PassOffer.jsx` : prop `offerKey` (défaut p30), titre/durée/prix dynamiques, buy() même forme `{c,pass,days,segment}`, view track +offer/+offer_requested (model oneprice préservé)
+  - `src/PremiumModal.jsx` : résolution unique (useMemo) + threading via commonPaywallProps ; fallback jours :152 intact
+  - `WorldPaywall.jsx` (2 sites) + `ComicPaywall.jsx` (1 site) : relais offerKey/offerRequested
+  - `src/Sargasses_PROD.jsx` : deep-link `?paywall=1` reconduit `?offer=` valide (sinon wipe)
+  - `src/PremiumModal/OnsiteCheckout.jsx` : récap/bouton/wallet affichent offerDisplayCents (fix honnêteté trip7-USD-saison), fallback seasonalCents, zéro logique paiement
+  - Instrumentation : pas de nouvel event (limite harnais lazy-chunk documentée j0) — preuve comportementale E2E (CTA→checkout récap exact)
+
+### Fichiers modifiés
+- `src/lib/offers.js`, `src/PassOffer.jsx`, `src/PremiumModal.jsx`, `src/PremiumModal/WorldPaywall.jsx`, `src/PremiumModal/ComicPaywall.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/Sargasses_PROD.jsx`
+- `tests/unit/offers-contract.test.cjs` (93 checks), `tests/e2e/offer-exposure.spec.ts` (N, 12 tests)
+- 10 gardes buy-chain évolués (cta-copy, paths, trust-row, sticky, niche, perfect, photo-v2, travel-30, visual, wow-unlock)
+
+### Tests réalisés
+- [x] `node tests/unit/offers-contract.test.cjs` → 93/93
+- [x] `npm test` → 67/67 fichiers (worktree isolé)
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → N/A (0 PHP touché)
+- [x] `ux-smoke` (SMOKE_BASE=4174) → 4 tokens OK
+- [x] `funnel-payment` E2E → 13/13
+- [x] `offer-exposure` E2E → 12/12 (default/trip7/season × 3 viewports + fallback + CTA récap + refresh)
+- [x] `assertAllRegionsValid` → OK
+- [x] CI PR #757 → 7/7 verte (après évolution des 10 gardes ; 1er run : test-frontend rouge légitime)
+
+### Problèmes restants / Blockers
+- [ ] COLLISION-CHECKOUT : checkout principal partagé avec session SEO parallèle active (switch branches, stash, revert de fichiers non commités constatés mid-turn ; PR #756 simultanée ; dist/ écrasé 2×). Travail isolé via worktree dédié `offer-wt`, rien de la session SEO touché. Reste : surveiller que `agent/offer/expose-trip7-season` (commit SEO b0149531a dessus) ne soit pas mergée avec ce scope — PR #757 vient de `...-season2` (historique propre).
+- [ ] DOC-STALE-001/002 (CLAUDE.md §16, clé p7) : toujours ouverts, éditorial hors scope
+- [ ] GAP-B2C-REC : Watch/MonStay toujours planned (garde CTO active)
+
+### Prochaine action recommandée
+1. Vérifier deploy auto post-merge (daily-copernicus vert + curl prod `?offer=trip7`) — Rôle suggéré : release_agent
+2. Corriger docs stale (CLAUDE.md §16, blast p7) — Rôle suggéré : coding_agent (éditorial)
+3. Décider exposition sans param (paywall multi-offres) ou garder ?offer= comme rampe — Rôle suggéré : product_agent + panel adverse
+
+### Branche / PR
+- Branche : `agent/offer/expose-trip7-season2` (la branche `agent/offer/expose-trip7-season` étant occupée par un commit SEO parallèle)
+- PR : #757 MERGED (squash `ec3f68db2`, 2026-09-28T04:25:36Z) — CI 7/7 verte sur HEAD `482973018`
+- Commit head : `ec3f68db2`
+
+---
+
 ## 2026-09-27 · Agent: coding (B2C OFFER LAB) — Monetization / Offer Architecture Lab
 
 ### Travail effectué

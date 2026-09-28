@@ -1,3 +1,21 @@
+## 2026-09-28 — B2C OFFER EXPOSURE : ?offer=trip7/season dans le paywall (fallback p30, money-path intact)
+
+**PROBLEM** : offres serveur trip7/season chargeables mais inaccessibles (seul p30 servi) — aucune rampe contrôlée pour les exposer.
+
+**CHANGE** (money-path ZÉRO touché — aucun .php/worker/grant/subscription modifié, aucun prix changé) :
+- `src/lib/offers.js` (+) : `resolveOffer()` déterministe + `offerBaseCents()`/`offerDisplayCents()` (miroir serveur exact, trip7 exclu de la surcharge USD) + kill-switch `?offerlab=0`
+- `src/PassOffer.jsx` : `offerKey` (défaut p30), titre/durée/prix dynamiques, buy() même forme `{c,pass,days,segment}`, view track +offer/+offer_requested
+- `src/PremiumModal.jsx` + `WorldPaywall.jsx` (2 sites) + `ComicPaywall.jsx` (1 site) : threading offre
+- `src/Sargasses_PROD.jsx` : deep-link `?paywall=1` préserve `?offer=` valide
+- `src/PremiumModal/OnsiteCheckout.jsx` : récap/bouton/wallet via offerDisplayCents (fix affichage trip7-USD-saison), fallback historique
+- Tests : `offers-contract` 93 checks + `offer-exposure.spec.ts` 12 tests E2E (3 viewports) + 10 gardes buy-chain évolués vers la forme canonique
+
+**PROOF** : npm test 67/67 · build exit 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · offer-exposure 12/12 · regions OK · CI PR #757 7/7 verte · merge squash `ec3f68db2`.
+
+**NOTE COLLISION** : checkout principal partagé avec session SEO parallèle (branche switchée, fichiers revert mid-turn, dist/ écrasé) — travail isolé en worktree dédié, PR depuis `agent/offer/expose-trip7-season2` (la branche `...-season` portant un commit SEO). Rien de la session SEO modifié.
+
+---
+
 ## 2026-09-27 — B2C OFFER LAB : Monetization / Offer Architecture (lab, zéro débit modifié)
 
 **PROBLEM** : modèle B2C = one-time travel pass uniquement, pricing dispersé en sources contradictoires (serveur vs docs vs emails vs GA4), aucune architecture récurrente B2C, Coastal Lab sans pont monétisation.

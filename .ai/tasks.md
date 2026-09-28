@@ -210,6 +210,12 @@
   - Dépendencies : daily-copernicus.yml, backtest-results.json
   - Critère succès : MQ build unchanged, 97% global hit-rate préservée
 
+## TASK-P1-OFFER-EXPOSURE — Expose trip7+season behind ?offer= [x] done (2026-09-28)
+- **Livré** : résolution déterministe `?offer=` (trip7/season, fallback p30), threading paywall (3 sites), deep-link préservé, récap checkout honnête, 93 checks contrat + 12 tests E2E (3 viewports), 10 gardes buy-chain évolués. Money-path ZÉRO touché.
+- **Preuves** : npm test 67/67 · build 0 · bundle 38.2 Ko · smoke 4/4 · funnel 13/13 · offer-exposure 12/12 · CI PR #757 7/7 verte · merge squash `ec3f68db2`
+- **Rollback** : retirer `?offer=` (défaut p30) · `?offerlab=0` · revert 1 commit
+- **Reste** : DOC-STALE-001/002 (éditorial) · GAP-B2C-REC (garde CTO)
+
 ## TASK-P1-B2C-OFFER-LAB — B2C Monetization / Offer Architecture Lab
 - **Priorité** : P1
 - **Rôle** : product_agent + coding_agent
