@@ -42,8 +42,8 @@
 
 ### Branche / PR
 - Branche : `agent/growth/seo-multisite`
-- PR : à créer
-- Commit head : `da71f7a1` (build v219)
+- PR : #756
+- Commit head : `177ee6fdd`
 
 ---
 
