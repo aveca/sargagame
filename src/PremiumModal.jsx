@@ -151,6 +151,27 @@ export default function PremiumModal({
     try{ return resolveOffer(typeof window!=="undefined"?window.location.search:"") }
     catch(_){ return { key: "p30", requested: null } }
   },[])
+  // CRO — choix trip7 secondaire : l'offre affichée devient un ÉTAT (init =
+  // résolution URL) pour switcher in-place sans reload (le paywall reste
+  // ouvert, le contexte plage est conservé). L'URL est synchronisée en
+  // replaceState (pas d'entrée historique → pas de piège retour). Aucun
+  // impact paiement : onPassBuy/passCtx/Mollie inchangés, seule la prop
+  // d'affichage change (même buy chain, mêmes montants serveur).
+  const [offerKeyState, setOfferKeyState] = useState(offerResolved.key)
+  const selectOffer = useCallback((key)=>{
+    try{
+      const r = resolveOffer("?offer=" + String(key || ""))
+      if (r.key === "p30" && String(key || "").trim().toLowerCase() !== "p30") return
+      setOfferKeyState(r.key)
+      const params = new URLSearchParams(typeof window !== "undefined" ? window.location.search : "")
+      if (r.key === "p30") params.delete("offer")
+      else params.set("offer", r.key)
+      const qs = params.toString()
+      const path = typeof window !== "undefined" ? window.location.pathname : "/"
+      window.history.replaceState({}, "", path + (qs ? "?" + qs : ""))
+      try{track("sg_pass_offer_view",{offer:r.key,offer_requested:offerResolved.requested,via:"trip_choice"})}catch(_){}
+    }catch(_){}
+  },[offerResolved.requested])
   const onPassBuy = useCallback((item)=>{
     // REVENUE 2026-09-23 : contexte déterministe joint (région/plage/devise) —
     // additif pur (aucun sens modifié) pour attribuer chaque CTA au revenu.
@@ -217,7 +238,7 @@ export default function PremiumModal({
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
     sargData, island, beach, tripDays, beachCount, pwVariant,
-    offerKey: offerResolved.key, offerRequested: offerResolved.requested,
+    offerKey: offerKeyState, offerRequested: offerResolved.requested, onSelectOffer: selectOffer,
     trajForecast, trajBackup,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,

@@ -19,7 +19,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null, beachCount = 0, offerKey = "p30", offerRequested = null }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null, beachCount = 0, offerKey = "p30", offerRequested = null, onSelectOffer = null }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -63,6 +63,14 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   // 7 jours) au lieu du bénéfice vague. Longueur ≈ identique (pas de layout).
   // Hors scope volontaire : subline durée/no-sub (E4), preuve sociale (E2).
   // E11 trust row shippée ci-dessous (rollback ?trust_row=0).
+  // CRO — choix trip7 secondaire (rollback ?tripchoice=0, défaut ON) : sous
+  // la carte hero p30 (inchangée), une rangée compacte propose le Pass 7 jours
+  // (4,99 €, chargeable serveur) pour l'intention "juste ce séjour". Clic →
+  // onSelectOffer("trip7") (switch in-place, même buy chain). Masquée quand
+  // l'offre affichée n'est pas p30 (pas d'auto-référence) ou sans callback.
+  const tripChoiceOn=(()=>{try{return !/[?&]tripchoice=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const showTripChoice = tripChoiceOn && OFFER.key==="p30" && typeof onSelectOffer==="function"
+  const trip7Cents = offerDisplayCents("trip7", cur) ?? 499
   const ctaSpecific = (()=>{try{return !/[?&]sgcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // E11 — rangée confiance iconée sous CTA hero (rollback ?trust_row=0).
   // Recycle UNIQUEMENT des faits déjà claimés (l115/l150-153) : aucun chiffre,
@@ -257,6 +265,21 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             </div>
           </button>
         </div>
+
+        {showTripChoice && (
+          <button type="button" data-testid="passoffer-trip-choice" onClick={() => { try { onSelectOffer("trip7") } catch (_) {} }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, width: "100%", marginTop: 10, padding: "12px 14px", borderRadius: 14, cursor: "pointer", fontFamily: "inherit", textAlign: "left", background: isComic ? "#fff" : "rgba(255,255,255,.04)", border: isComic ? "2px solid #0D0B14" : "1px solid rgba(255,255,255,.14)", color: "inherit", touchAction: "manipulation", WebkitTapHighlightColor: "transparent" }}>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 13, fontWeight: 800, color: isComic ? "#0D0B14" : "#fff" }}>
+                {_t(lang, "Juste pour ce séjour ?", "Only here for this trip?", "¿Solo por esta estancia?")}
+              </span>
+              <span style={{ display: "block", fontSize: 11, fontWeight: 600, color: isComic ? "rgba(13,11,20,.55)" : "rgba(234,247,244,.6)", marginTop: 2 }}>
+                {_t(lang, `Pass 7 jours · ${money(trip7Cents, cur, lang)} · sans abonnement`, `7-day pass · ${money(trip7Cents, cur, lang)} · no subscription`, `Pase 7 días · ${money(trip7Cents, cur, lang)} · sin suscripción`)}
+              </span>
+            </span>
+            <span aria-hidden="true" style={{ flexShrink: 0, fontSize: 16, fontWeight: 800, color: isComic ? "#B87A00" : "#FFC72C" }}>→</span>
+          </button>
+        )}
 
         {(community > 0 || freshTs) && (
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 14px", margin: "14px 0 0", fontSize: 11.5, fontWeight: 600, color: isComic ? "rgba(13,11,20,.55)" : "rgba(234,247,244,.62)" }}>
