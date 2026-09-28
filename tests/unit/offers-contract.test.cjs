@@ -133,8 +133,10 @@ ok("PassOffer sans logique paiement (pas de create_payment/tokenize/grant/subscr
   !/doSubscribe|createToken|create_payment|create_subscription|mollieRef|webhook|grantOnce|payment_status|b2b_pro/i.test(passOfferSrc))
 ok("PremiumModal résout UNE fois via resolveOffer (source unique)",
   premiumModalSrc.includes("resolveOffer") && premiumModalSrc.includes("offerResolved"))
-ok("PremiumModal thread offerKey/offerRequested via commonPaywallProps",
-  premiumModalSrc.includes("offerKey: offerResolved.key"))
+ok("PremiumModal thread offerKey (état) + offerRequested + onSelectOffer via commonPaywallProps",
+  premiumModalSrc.includes("offerKey: offerKeyState")
+  && premiumModalSrc.includes("offerRequested: offerResolved.requested")
+  && premiumModalSrc.includes("onSelectOffer: selectOffer"))
 ok("WorldPaywall relaie offerKey aux 2 PassOffer",
   (worldSrc.match(/offerKey=\{offerKey\}/g) || []).length >= 2)
 ok("ComicPaywall relaie offerKey à PassOffer",
@@ -143,12 +145,38 @@ ok("PremiumModal.jsx:152 fallback jours conservé (filet, mapping saison→210 i
   premiumModalSrc.includes('item.pass === "saison" ? 210'))
 ok("Sargasses_PROD deep-link préserve ?offer= valide (pas de wipe)",
   prodSrc.includes("resolveOffer") && prodSrc.includes("?offer="))
+ok("Sargasses_PROD deep-link préserve ?tripchoice=0 (rollback testable via deep-link)",
+  prodSrc.includes("tripchoice"))
 ok("OnsiteCheckout récap affiche offerDisplayCents (honnêteté trip7 USD)",
   (checkoutSrc.match(/offerDisplayCents\(passCtx/g) || []).length >= 3)
 ok("OnsiteCheckout garde le fallback seasonalCents historique",
   checkoutSrc.includes("?? seasonalCents"))
 ok("OnsiteCheckout : zéro logique paiement touchée (doSubscribe/createToken intacts)",
   checkoutSrc.includes("createToken") && checkoutSrc.includes("doSubscribe"))
+
+// 11b. Choix trip7 secondaire (CRO, rollback ?tripchoice=0).
+//      Rangée additive sous la carte hero p30 (inchangée) : switch in-place
+//      via onSelectOffer, mêmes montants serveur, même buy chain.
+ok("PassOffer expose onSelectOffer (défaut null = rangée absente sans câblage)",
+  passOfferSrc.includes("onSelectOffer = null"))
+ok("Rangée trip-choice testid + rollback ?tripchoice=0 (défaut ON)",
+  passOfferSrc.includes('data-testid="passoffer-trip-choice"')
+  && passOfferSrc.includes("[?&]tripchoice=0"))
+ok("Rangée masquée hors p30 (pas d'auto-référence)",
+  passOfferSrc.includes('OFFER.key==="p30"'))
+ok("Rangée : prix via offerDisplayCents trip7 (jamais inventé)",
+  passOfferSrc.includes('offerDisplayCents("trip7", cur)'))
+ok("Rangée : clic délègue onSelectOffer (pas de logique paiement inline)",
+  passOfferSrc.includes('onSelectOffer("trip7")'))
+ok("PremiumModal : état offre + selectOffer unique (URL replaceState, pas de reload)",
+  premiumModalSrc.includes("offerKeyState") && premiumModalSrc.includes("selectOffer")
+  && premiumModalSrc.includes("replaceState"))
+ok("PremiumModal : selectOffer ne touche ni grant ni Mollie",
+  (() => { const i = premiumModalSrc.indexOf("const selectOffer"); const block = i >= 0 ? premiumModalSrc.slice(i, i + 1200) : ""; return !/grant|mollie|Mollie|createToken|doSubscribe/i.test(block) })())
+ok("WorldPaywall relaie onSelectOffer aux PassOffer",
+  (worldSrc.match(/onSelectOffer=\{onSelectOffer\}/g) || []).length >= 2)
+ok("ComicPaywall relaie onSelectOffer à PassOffer",
+  comicSrc.includes("onSelectOffer={onSelectOffer}"))
 
 // 12. Comportement runtime resolveOffer / montants (import réel du module).
 //    Cas exigés mission §12 : default, trip7, season, unknown, empty,

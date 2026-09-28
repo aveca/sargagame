@@ -14235,11 +14235,14 @@ useEffect(()=>{
         const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
         const canceled=p.get("paywall")==="cancel"
         const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");
-        // B2C OFFER LAB (?offer=) : le deep-link nettoie la query — on y
-        // reconduit l'offre valide (sinon ?offer=trip7&paywall=1 perdrait
-        // l'offre avant le rendu du paywall). Défaut/invalide → URL nue
-        // (comportement historique exact). Résolution unique via offers.js.
-        try{const _off=resolveOffer("?"+p.toString());window.history.replaceState({}, "", getPathname()+(_off.key!=="p30"?("?offer="+_off.key):""))}catch(_){try{window.history.replaceState({},"",getPathname())}catch(_){}}}
+        // B2C OFFER LAB (?offer=) + CRO (?tripchoice=0) : le deep-link
+        // nettoie la query — on y reconduit l'offre valide et le rollback
+        // tripchoice (sinon ?offer=trip7&paywall=1 perdrait l'offre, et
+        // ?tripchoice=0&paywall=1 perdrait le rollback, avant le rendu du
+        // paywall). Défaut/invalide → URL nue (comportement historique exact).
+        // Résolution unique via offers.js. Les autres flags gardent le
+        // comportement historique (nettoyés).
+        try{const _q="?"+p.toString();const _off=resolveOffer(_q);const _keep=new URLSearchParams();if(_off.key!=="p30")_keep.set("offer",_off.key);if(/[?&]tripchoice=0(?:&|$)/.test(_q))_keep.set("tripchoice","0");const _qs=_keep.toString();window.history.replaceState({}, "", getPathname()+(_qs?"?"+_qs:""))}catch(_){try{window.history.replaceState({},"",getPathname())}catch(_){}}}
       else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
         try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
         try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}
