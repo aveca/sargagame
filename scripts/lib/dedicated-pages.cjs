@@ -216,9 +216,17 @@ function generateBeachPage(region, beach, data, lang, distDir, allBeaches = []) 
   const title = `${beach.name} (${region.name}) — ${label}, ${t.score} ${score}/100`;
   const desc = `${label} aujourd'hui à ${beach.name}, ${region.name}. ${t.score} ${score}/100. ${t.forecast} mis à jour 4×/jour par satellite Copernicus.`;
 
-  const alternates = [
-    { lang: lang, href: `https://${domain}${pathname}`, xDefault: true },
-  ];
+  const alternates = [];
+  // Determine all languages for this region
+  const regionLangs = region.id === 'mq' || region.id === 'gp' ? ['fr', 'en', 'es'] : (region.primaryLang === 'es' ? ['es', 'en'] : ['en', 'es']);
+  for (const altLang of regionLangs) {
+    let altPathname = pathname;
+    // For secondary languages, prefix with /<lang>/
+    if (altLang !== (region.primaryLang || 'fr')) {
+      altPathname = `/${altLang}${pathname}`;
+    }
+    alternates.push({ lang: altLang, href: `https://${domain}${altPathname}`, xDefault: altLang === regionLangs[0] });
+  }
 
   // ── Enrichissement data-driven (P1) Phase 4 : que du réel, zéro invention ──
   // Proximité : plages voisines (même région, haversine), max 3 à 5 km
