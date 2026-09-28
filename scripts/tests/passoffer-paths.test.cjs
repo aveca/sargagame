@@ -52,7 +52,7 @@ function main() {
   ok(sites.every((s) => /onBuy=/.test(s.tag)), 'chaque site porte onBuy')
   // 4. Contrat one-price.
   const PO = all['src/PassOffer.jsx']
-  ok(/onBuy\(\{c:cents,pass:PASS\.key,days:PASS\.days,segment:seg\}\)/.test(PO), 'PassOffer.buy = contrat {c,pass,days,segment} one-price')
+  ok(/onBuy\(\{c:cents,pass:OFFER\.key,days:offerDays,segment:seg\}\)/.test(PO), 'PassOffer.buy = contrat {c,pass,days,segment} one-price (?offer= : OFFER.key, défaut p30)')
   ok(/key:\s*"p30"/.test(PO), 'PASS.key = p30 (offre unique)')
   // 5. Zéro résidu legacy.
   for (const f of ['src/PremiumModal.jsx', 'src/PremiumModal/WorldPaywall.jsx', 'src/PremiumModal/ComicPaywall.jsx']) {

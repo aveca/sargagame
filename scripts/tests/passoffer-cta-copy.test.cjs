@@ -39,7 +39,7 @@ function main() {
   ok(/ctaSpecific \? "Voir la prévision 7 jours/.test(PO), 'hero branché sur le flag')
   ok(PO.includes('Voir mes plages propres · ${money(displayCents'), 'sticky prix-spécifique inchangé')
   ok(PO.includes('aria-label={_t(lang, "Commencer maintenant"'), 'aria-label stable (sélecteurs E2E)')
-  ok(/onBuy\(\{c:cents,pass:PASS\.key,days:PASS\.days,segment:seg\}\)/.test(PO), 'contrat onBuy intact')
+  ok(/onBuy\(\{c:cents,pass:OFFER\.key,days:offerDays,segment:seg\}\)/.test(PO), 'contrat onBuy intact (?offer= : OFFER.key, défaut p30)')
 
   console.log(failures === 0 ? '\nPASSOFFER-CTA-COPY TESTS: ALL PASS' : `\nPASSOFFER-CTA-COPY TESTS: ${failures} ÉCHEC(S)`)
   process.exit(failures ? 1 : 0)

@@ -35,7 +35,7 @@ function main() {
   // 3. Prix, accessibilité et chaîne d'achat intacts.
   ok(PO.includes('money(displayCents, cur, lang)'), 'prix affiché inchangé (money/displayCents)')
   ok(PO.includes('aria-label={_t(lang, "Commencer maintenant"'), 'aria-label sticky intact')
-  ok(PO.includes('if(onBuy)onBuy({c:cents,pass:PASS.key'), 'chaîne buy→onBuy intacte')
+  ok(PO.includes('if(onBuy)onBuy({c:cents,pass:OFFER.key'), 'chaîne buy→onBuy intacte (?offer= : OFFER.key, défaut p30)')
 
   // 4. Garde-fous : pas de tracking ajouté, pas de logique financière.
   const stickyBlock = (PO.match(/sg-sticky-buy[\s\S]{0,2000}/) || [''])[0]
