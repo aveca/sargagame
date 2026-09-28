@@ -77,7 +77,7 @@ console.log("PHOTO QUALITY V2 — contrats")
 
   // ── Money-path intact ──
   const PO = read("src/PassOffer.jsx")
-  check("money intact : PASS p30 + buy chain (0 touch H)", /key:\s*"p30"/.test(PO) && /onBuy\(\{c:cents,pass:PASS\.key/.test(PO))
+  check("money intact : PASS p30 + buy chain (0 touch H)", /key:\s*"p30"/.test(PO) && /onBuy\(\{c:cents,pass:OFFER\.key/.test(PO))
 
   console.log(`\n✅ PHOTO QUALITY V2 — ${passed} checks ALL PASS`)
 })().catch(e => { console.error("✗ " + e.message); process.exit(1) })

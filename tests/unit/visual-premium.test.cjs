@@ -59,14 +59,14 @@ console.log("VISUAL PREMIUM — contrat")
   check("Home : AUCUN repose sur des assets absents (onError-hide photo)", HOME.includes("onError={e => { e.currentTarget.style.display = 'none' }}") || HOME.includes('onError={e => { e.currentTarget.style.display = "none" }}'))
 
   // ── PassOffer : preuve réelle (beachCount) sous bullets ──
-  check("PassOffer : beachCount prop ajoutée (0 par défaut)", /beachCount = 0\W*}/.test(PO))
+  check("PassOffer : beachCount prop ajoutée (0 par défaut)", /beachCount = 0(,|})/.test(PO))
   check("PassOffer : preuve UNIQUEMENT si beachCount>0 + rollback ?sgcopy=0", PO.includes("Number(beachCount) > 0 &&") && PO.includes('passoffer-proof'))
   const worldSites = (WORLD.match(/beachCount=\{beachCount\}/g) || []).length
   check("WorldPaywall : beachCount passé aux 2 sites PassOffer", worldSites === 2)
   check("ComicPaywall : beachCount passé", /beachCount=\{beachCount\}/.test(COMIC))
 
   // ── Money-path inchangé ──
-  check("PassOffer : buy chain INCHANGÉE", /const buy=\(\)=>\{/.test(PO) && /onBuy\(\{c:cents,pass:PASS\.key,days:PASS\.days,segment:seg\}\)/.test(PO))
+  check("PassOffer : buy chain INCHANGÉE (forme {c,pass,days,segment}, ?offer= : OFFER.key, défaut p30)", /const buy=\(\)=>\{/.test(PO) && /onBuy\(\{c:cents,pass:OFFER\.key,days:offerDays,segment:seg\}\)/.test(PO))
   check("PassOffer : aucune référence prix/amount altérée (PASS.key intact)", /key:\s*"p30"/.test(PO))
 
   // ── Motion : aucune animation infinie introduite ──

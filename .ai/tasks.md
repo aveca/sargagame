@@ -164,6 +164,180 @@
   - **Estimation** : 15 min (code + commit + déploiement)
   - **Statut** : [x] done by coding_agent (2026-09-09) — Fix appliqué localement, commit `fix(kv): batch rateLimit KV puts every 10th request (10x reduction)`, en attente déploiement Cloudflare (token revoked). Post-déploiement : rateLimit fonctionnel avec 10× moins de puts KV, free tier soutenue sans upgrade $5/mois.
 
+## Priorité #2
+- **TASK-SEO-HREFLANG**: Audit et correction hreflang/canonical sur les 6 régions
+  - Responsable : data_agent
+  - Dépendances : output production des region-seo-pages.cjs
+  - Critère succès : hreflang tags cohérents, canonical pointant vers bonne région
+
+## Priorité #3
+- **TASK-PAYLINKS**: Ajouter paymentLinks config dans region JSON pour rivieramaya + tulum
+  - Responsable : coding_agent
+  - Dépendances : schema region JSON, stripe price IDs existants
+  - Critère succès : paymentLinks présent avec monthly/yearly/tripPass pour USD régions
+
+## Priorité #4
+- **TASK-RM-INFINITE**: Vérifier RM_INFINITE=[] en émulation reduced-motion live
+  - Responsable : qa_agent
+  - Dépendances : emulateMedia sur chaque domaine régional
+  - Critère succès : aucune animation infinie visible quand prefers-reduced-motion:reduce
+
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+
+## TASK-P1-OFFER-EXPOSURE — Expose trip7+season behind ?offer= [x] done (2026-09-28)
+- **Livré** : résolution déterministe `?offer=` (trip7/season, fallback p30), threading paywall (3 sites), deep-link préservé, récap checkout honnête, 93 checks contrat + 12 tests E2E (3 viewports), 10 gardes buy-chain évolués. Money-path ZÉRO touché.
+- **Preuves** : npm test 67/67 · build 0 · bundle 38.2 Ko · smoke 4/4 · funnel 13/13 · offer-exposure 12/12 · CI PR #757 7/7 verte · merge squash `ec3f68db2`
+- **Rollback** : retirer `?offer=` (défaut p30) · `?offerlab=0` · revert 1 commit
+- **Reste** : DOC-STALE-001/002 (éditorial) · GAP-B2C-REC (garde CTO)
+
+## TASK-P1-FUNNEL-OBSERVE — Post-deploy funnel p30/trip7/season + checkout diagnostic [x] done (2026-09-28, observation)
+- **Fenêtre** : merge #759 06:03Z → relevé 07:05Z (~1h) ; AUCUNE donnée post-deploy dans les agrégats (pipeline quotidienne)
+- **Résultats** : baseline 14j consolidée (1604→458→35→35→0→0) ; snapshot 7j (close 51%, back 17%) ; tripchoice INSUFFICIENT DATA ; checkout INSTRUMENTATION REQUIRED (requêtes SQL fournies)
+- **Limites** : split par pass absent des agrégats ; échecs validation email/consent sans event ; périodes non mélangées
+- **Prochaine action** : 2026-10-05 relever 7j post-deploy (growth+data) → verdict CONTINUE/INSUFFICIENT ; ne rien changer au checkout avant raisons chiffrées
+- **Fichiers** : `.ai/current_state.md`, `.ai/changelog.md` — observation uniquement, ZÉRO code produit
+
+## TASK-P1-CRO-TRIPCHOICE — B2C Revenue/CRO sprint : trip7 secondaire (?tripchoice=) [x] done (2026-09-28)
+- **Livré** : baseline 14j (modal→CTA 7.6%, checkout→redirect 0%) + rangée trip7 sous hero p30 (défaut ON, rollback ?tripchoice=0) + switch in-place + deep-link préservé + 103 checks contrat + 8 tests E2E (3 viewports) + 10 gardes évolués. Money-path/pricing/grants/subscriptions ZÉRO touchés.
+- **Preuves** : npm test 67/67 · build 0 · bundle 38.2 Ko · smoke 4/4 · funnel 13/13 · offer 12/12 · trip-choice 8/8 · CI PR #759 7/7 verte · merge squash `42ab1024b`
+- **Expérience** : hypothèse/modal→CTA global+par pass/7j min/rollback `?tripchoice=0`/revert 1 commit. Prochaine mesure : funnel 7j post-deploy (growth)
+- **Reste** : checkout→redirect 0% cause racine non identifiée (à instrumenter avant toute modif checkout)
+
+## TASK-P1-B2C-OFFER-LAB — B2C Monetization / Offer Architecture Lab
+- **Priorité** : P1
+- **Rôle** : product_agent + coding_agent
+- **Description** : Lab pricing/offres B2C : benchmark (Sargassum Report $19, Surfline, Windy, AllTrails, Komoot weekly €4.99, Flighty), audit pricing complet (serveur allowlist p30/trip7/season vs docs stale 7.99/24.99, clé fantôme p7, mismatch saison/season), audit money-path (subscriptions B2B OK, B2C recurring = GAP), modèles A–F sans ranking, catalogue canonique `src/lib/offers.js` + contrat test. AUCUN montant débité modifié.
+- **Spécification** : `.ai/plans/B2C-OFFER-ARCHITECTURE.md` + `.ai/plans/B2C-OFFER-RESEARCH.md`
+- **Fichiers** : `src/lib/offers.js` (N) · `tests/unit/offers-contract.test.cjs` (N, 36 checks) · `.ai/plans/B2C-OFFER-*.md` (N)
+- **Contraintes** : money-path ZÉRO touché (aucun .php, aucun montant serveur) · bundle ≤ 210 Ko · rollback `?offerlab=0`
+- **Gates** : esbuild OK · npm test 67/67 · build exit 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l N/A (0 PHP touché)
+- **Statut** : [x] done by coding_agent (2026-09-27) — PR à créer vers main
+
+## TASK-P1-COASTAL-LAB — Sargassum Coastal Lab / Littoral Decision Lab
+- **Priorité** : P1
+- **Rôle** : coding_agent + ui-ux_agent
+- **Description** : Construire une nouvelle expérience interactive premium — SARGASSUM COASTAL LAB (Littoral Decision Lab) — expliquant le problème littoral du sargasse et la transformation DATA → UNDERSTANDING → DECISION → INTERVENTION → RECOVERY → POTENTIAL VALORIZATION. 5 couches interactives (MONITOR, UNDERSTAND, DECIDE, RECOVER, VALORIZE) + Interactive Beach Explorer + The Hard Problem + Beach as Digital Object + Tourism Connection + Ecosystem View. Réutiliser Beach Object, media-art-direction, Visual OS, motion system, existing routes. Zero invented data. Route: `/coastal-lab/`.
+- **Spécification** : `.ai/plans/COASTAL-LAB.md`
+- **Fichiers attendus** : composants CoastalLab, route, tests, analytics events (sg_lab_*), documentation handoff
+- **Contraintes** : EAGER GZIP ≤ 210 KB, no new heavy deps, lazy-load media, reduced-motion, mobile-first (390×844), accessibility, no regression on map/BeachExperience/paywall/Mollie/TripPlanner/SeaRail/AHA/media pipeline
+- **Gates** : npm test · npm run build · bundle budget · ux-smoke · funnel-payment E2E · regions validation · visual QA (390×844, 768×1024, 1280×900)
+- **Statut** : [x] done by coding_agent (2026-09-25) — PR #754 merged, CI 7/7, prod validated, Visual QA 3 viewports OK, 66/66 tests pass, analytics events implemented, zero invented data verified. Report: `.ai/plans/COASTAL-LAB-REPORT.md`
+
+## P1 PAGES PLAGES — data-driven enrichment [x] done (2026-09-10)
+- **Root cause**: existing `/poi/`, `/activity/`, resort data not visible on beach pages — no enrichment sections, no proximity, no facts, no activities from beach flags; pages were SCORE→TEXT→CTA only
+- **Data available**: `/poi/` (regions: martinique 2, guadeloupe 1, cancun 1, tulum 1, miami 1, puntacana 1, haiti 2, sainte-lucie 2, barbade 2), `/activity/` (generated per beach flags: snorkel/kids/parking), resorts (florida 35, puntacana 35, rivieramaya 35 by beachId), beach flags (kids/snorkel/parking), media assets existing
+- **P1 Fixed**: added data-driven enrichment to `scripts/lib/dedicated-pages.cjs` — `generateBeachPage` now emits 4 optional sections after forecast: nearby beaches (haversine ≤5km, same region), resort nearby (from `regions/resorts/<regionId>.json`), beach facts (kids/snorkel/parking labels), activities (snorkel→snorkel, kids→kids/family/parking). Each section only renders if its data exists. Zero invention.
+- **UX Improvements**: each beach page now shows contextual enrichments (nearby, resorts, facts, activities) instead of bare score+forecast; UX exploration > simple list
+- **Territorial Guards**: `BEACH_REGION === CONTENT_REGION` — each page uses only its region's data; no cross-region content; tested via `sitemap-prune` and `territory-routing` 27/27
+- **Files Changed**: `scripts/lib/dedicated-pages.cjs` (haversineKm, nearestBeaches, beachFacts, beachActivities, sectionTitle, generateBeachPage enrichment)
+- **Commits**: new enrichment in dedicated-pages.cjs (single commit on main)
+- **Deploy**: PASS — build 37.9 Ko ≤ 210 Ko; ux-smoke 4/4; E2E funnel 13/13
+- **Live**: PASS — 6/6 domains OK; beach pages enriched with real data only
+- **Tests**: sitemap-prune 12/12; territory-routing 27/27; build 375 modules OK; PHP lint N/A
+
+TERRITORIAL_GUARDS:
+<tests>sitemap-prune 12/12 + territory-routing 27/27</tests>
+
+DATA_GAPS_REAL:
+- HT/Sainte-Lucie : zéro config/donnée nulle part (fallback SPA honnête, labels PC)
+- Barbade : 12 vraies plages configurées mais `live:false`, hors matrice deploy, domaine non-live
+- Aucune donnée inventée — tout tracé par region.id
+
+BUSINESS_MEASUREMENT:
+PENDING — insufficient post-deployment sample for CTA→conversion lift, but enrichment adds UX value independent of metrics.
+
+NEXT_CONCRETE_ACTION:
+- Monitor post-deploy beach page enrichment metrics (CTA rate, time on page) across 6 regions via daily-metrics.json ; if confirmed available, mark BUSINESS_MEASUREMENT AVAILABLE
+- Extend pilot to remaining regions (PC/Tulum enriched; MQ/GP if resort data added later)
+- Continue maintaining bundle ≤ 210 Ko; no new dependencies
+- **TASK-SPRINT5-DECISION**: Décider l'axe d'investissement Sprint 5 avec preuves — un seul axe de A-E
+  - **Rôle** : product_agent + ui-ux_agent (décision unique, preuves obligatoires)
+  - **Description** : Sprint 5 commence par phase de décision fondée sur preuves disponibles.
+    Sélectionner exactement UN axe parmi A-E et produire rapport SPRINT5-DECISION-REPORT.md.
+    Ne pas implémenter le changement — déterminer uniquement où investir ensuite.
+  - **Preuves requises** : Classifier chaque constat en OBSERVED/MEASURED/INFERRED/UNKNOWN;
+    classifier chaque bottleneck en severity/frequency/business impact/technical risk/evidence quality.
+    Justifier le choix par la preuve (ne pas choisir automatiquement CRO ou B2B).
+  - **Contraintes** : NE PAS toucher regions/, territorial mapping, Copernicus/ERDDAP, pricing,
+    Mollie, paiement, data pipeline, SEO scaffold. Préserver bundle ≤ 210 KB gzip,
+    RM_INFINITE=[], ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], territorial=PASS,
+    payment=PASS, data=PASS.
+  - **Sortie obligatoire** : Format SPRINT_5_DECISION avec AXIS, BOTTLENECK, EVIDENCE, BASELINE,
+    HYPOTHESIS, PROPOSED_CHANGE, SUCCESS_METRIC, RISK, NEXT_ACTION (UNE seule action).
+  - **Estimation** : 1 session (courte) — lecture état + classification + choix + rédaction rapport.
+  - **Statut** : [x] done — décision AXIS A Revenue/CRO B2C prise, rapport `.ai/ui-audit/SPRINT5-DECISION-REPORT.md` créé.
+- **TASK-SPRINT5-COMIC-FIX**: Correction Sprint 5 — comic paywall CTA tracking
+  - **Rôle** : coding_agent
+  - **Description** : Ajout tracking `sg_pass_cta` au bouton "Commencer l'aventure →" du ComicPaywall
+    (`.ai/ui-audit/SPRINT5-COMIC-PAYWALL-REPORT.md`). Preuve: 7j monitoring 0/16 comic CTA vs 80/96 world CTA.
+    Root cause: événement non déclenché dans variante comic — le bouton "Plus tard" était muet
+    (documenté 2026-09-04 CRO commit). Fix: ajout tracking CTA click dans onClick du bouton
+    "Commencer l'aventure →". Validation: build OK, bundle 37.8 Ko ≤ 210 Ko, smoke 4/4, E2E 13/13 pass.
+  - **Fichiers** : `src/PremiumModal/ComicPaywall.jsx` — ligne 456 (onClick du bouton "Commencer l'aventure →")
+  - **Statut** : [x] done **local-only, jamais committé, jamais déployé** — `M src/PremiumModal/ComicPaywall.jsx` non commité. ComicPaywall non servi en prod (pw_style hors AB_FREEZE_MAP). Sprint 6 revert effectué.
+- **TASK-SPRINT5-MONITORING**: Surveillance 7 jours post-fix — collecte données CTA→conversion
+  - **Rôle** : growth_agent + data_agent
+  - **Description** : Après exécutions de daily-copernicus.yml, récupérer données funnel-daily-report.json,
+    daily-metrics.json, analytics-snapshot.json. Séparer COMIC vs WORLD. Produire tableau VARIANT/MODALS/CTA/CTA_RATE/CHECKOUT/CHECKOUT_RATE/MOLLIE/MOLLIE_RATE/PAID/PAYMENT_RATE.
+    Comparer PRE-FIX vs POST-FIX. Interpréter selon 4 cas (A/B/C/D). Note volume petit N, ne pas conclure causalité sans significativité statistique. Remplir SPRINT5-OUTPUT.md.
+  - **Dépendencies** : funnel-daily-report.json, daily-metrics.json, analytics-snapshot.json, daily-copernicus.yml
+  - **Sortie** : SPRINT5-OUTPUT.md comblé, interprétation, recommandation
+  - **Statut** : [x] done — rapport `.ai/ui-audit/SPRINT5-OUTPUT.md` créé avec analyse data quality reconciliation, fenêtre 2026-09-08 24h, comic CTA 1.4% (1/70) VALIDÉ, world CTA=0 pour petit volume, classification A/B (OBSERVABILITY_CONFIRMED + DATA_NOT_COMPARABLE), limitations documentées.
+- **TASK-DEBT-HARVEST**: Inventaire dette — audit uniquement, classification + backlog
+  - **Rôle** : auditor_agent (cet agent)
+  - **Description** : Audit dettes techniques/UX/a11y/observability/performance/design-system/multi-région/SEO.
+    Classifier avec DT-ID format PROVEN/LIKELY/UNKNOWN. Produire scoring 1-5 Business/Frequency/Technical Risk/Effort/Evidence quality.
+    Produire TOP 10 DEBTS et TOP 3 ROI OPPORTUNITIES. SCOPE_CHANGES = NONE.
+    Ne aucune modification produit. Audit + classification + backlog uniquement.
+  - **Dépendencies** : .ai/current_state.md, .ai/tasks.md, .ai/bugs.md, .ai/changelog.md, .ai/ui-audit/
+  - **Sortie** : `.ai/ui-audit/DEBT-HARVEST-REPORT.md` comblé
+  - **Statut** : [x] done — rapport créé, classification effectuée, backlog prioritaire produit
+- **TASK-SPRINT6-DECISION**: Sprint 6 — Décision réconciliation pw_variant (comic dead path / fix local-only / attribution impossible)
+  - **Rôle** : product_agent + ui-ux_agent (décision unique, preuves obligatoires)
+  - **Description** : `pw_style` absent de AB_FREEZE_MAP → ComicPaywall mort en prod depuis purge A/B 2026-08-05. Fix Sprint 5 local-only non déployé. Attribution funnel CTA/variante impossible (commentaire sans implémentation). Sprint 5 monitoring = world-only. Décider : freeze explicite "pw_style":"world" (no-op runtime, documente réalité) + disposition diff local ComicPaywall.jsx (revert recommandé) OU réactivation comic contrôlée AVANT attribution réparée.
+  - **Preuves** : PROVEN ×5 — AB_FREEZE_MAP sans pw_style (Sargasses_PROD.jsx:1920-1942), funnel-daily-report.cjs:155-156 (attribution commentée), funnel-daily-report.json by_pw_style={world:70}, pw-verdict.json, git diff local-only ComicPaywall.jsx.
+  - **Contraintes** : NE PAS toucher regions/, pricing, Mollie, paiement, data pipeline. Préserver bundle ≤ 210 KB gzip, RM_INFINITE=[], smoke 4/4. Zéro modification ComicPaywall hors disposition diff existant. Ne pas réactiver comic sans attribution CTA/variante réparée AVANT.
+  - **Sortie** : SPRINT6-DECISION-REPORT.md + disposition diff local + AB_FREEZE_MAP explicite.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — implémentation Sprint 6 complète : revert diff local ComicPaywall.jsx, freeze explicite `pw_style:"world"` dans AB_FREEZE_MAP, attribution funnel honnête (NOT_MEASURABLE), erratum Sprint 5 propagé.
+- **TASK-SPRINT7-SEO**: SEO Foundation — H1 unique + /fiabilite/ dedup (6 domaines)
+  - **Rôle** : coding_agent + seo_agent
+  - **Description** : Corriger H1 unique sur 18 pages ciblées (6 domaines × 3 pages : /plages-sans-sargasses/, /previsions/, /fiabilite/) + corriger geo.region/geo.placename pour GP (previsions, plages-sans-sargasses, miroirs _gp) + valider déduplication /fiabilite/.
+  - **Preuves requises** : 18/18 pages H1_COUNT=1, geo.region=GP sur GP, 0 duplication accidentelle /fiabilite/, gates build/bundle/smoke/E2E verts.
+  - **Contraintes** : NE PAS toucher regions/, pricing, Mollie, paiement, data pipeline. Préserver bundle ≤ 210 KB gzip, RM_INFINITE=[], ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], territorial=PASS, payment=PASS, data=PASS.
+  - **Sortie obligatoire** : `.ai/ui-audit/SPRINT7-SEO-REPORT.md` (format handoff exact), MAJ `.ai/current_state.md`, `.ai/tasks.md`, `.ai/changelog.md`.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — 18/18 H1 OK, GP geo.region fixés, /fiabilite/ déduplication validée, rapport `.ai/ui-audit/SPRINT7-SEO-REPORT.md` créé.
+- **TASK-SPRINT8-SSR**: SEO SSR / Indexability Decision Gate — Audit only
+  - **Rôle** : coding_agent (audit) + product_agent (decision)
+  - **Description** : Analyser raw HTML initial vs DOM hydraté sur 6 régions × 3 pages (/, /plages-sans-sargasses/, /previsions/) pour déterminer si SSR est nécessaire. H1 présents dans <noscript> pour les 18 comparaisons. Titres/meta MQ-centriques sur domaine GP. Decision: SSR_NOT_REQUIRED — éléments SEO présents en HTML statique, résiduels P2 documentés (geo.region=MQ sur GP, titres Martinique-centric sur GP).
+  - **Contraintes** : ZERO PRODUCT CHANGES. Audit + decision + documentation uniquement. Ne pas implémenter SSR, ne pas corriger les P2 GP dans ce sprint.
+  - **Sortie obligatoire** : `.ai/ui-audit/SPRINT8-SSR-DECISION.md` (format handoff exact), MAJ `.ai/current_state.md`, `.ai/tasks.md`, `.ai/changelog.md`.
+  - **Estimation** : 1 session.
+  - **Statut** : [x] done — Decision: SSR_NOT_REQUIRED, rapport `.ai/ui-audit/SPRINT8-SSR-DECISION.md` créé, P2 résiduels documentés (GP geo.region=MQ, GP titres Martinique-centric), zéro code produit modifié.
+
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+
+## Priorité #5
+- **TASK-MQ-BASELINE**: Maintenir baseline MQ non-régression
+  - Responsable : devops_agent
+  - Dépendencies : daily-copernicus.yml, backtest-results.json
+  - Critère succès : MQ build unchanged, 97% global hit-rate préservée
+﻿# .ai/tasks.md — Backlog priorisé
+
+> Lu par tous les agents pour choisir leur prochaine tâche.
+> Priorité : P0 = critique, P1 = haute, P2 = moyenne, P3 = basse.
+> 1 agent = 1 tâche à la fois. Toujours choisir la priorité la plus haute disponible.
+
+- [x] **CLOUDFLARE OBSERVABILITY + AGENT KPI LAYER** (@coding_agent, 2026-09-07, TERMINÉ) — Intégration layer Cloudflare observability + agent KPI pour Sargagame : Workers observability (logs+traces config sur 4 workers), KPI contract JSON standard (scripts/lib/kpi-contract.cjs), cross-system correlation Cloudflare↔Supabase↔Mollie (scripts/lib/correlate.cjs), daily product intelligence format (scripts/lib/daily-intel.cjs). Gate de ship VALIDE (build+budget+smoke+E2E 26/26). Fichiers : 4 wrangler configs + 3 nouveaux scripts lib. Aucune route utilisateur modifiée. Bundle budget ≤210 Ko inchangé (37.4 Ko). Moniteur honnête NOT_AVAILABLE quand données indisponibles.
 ---
 
 ## Récemment complété

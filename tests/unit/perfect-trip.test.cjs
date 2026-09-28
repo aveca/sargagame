@@ -90,7 +90,7 @@ console.log("PERFECT BEACH TRIP — contrat")
   check("PassOffer : nouveau headline « séjour idéal »", PO.includes("commence ici"))
   check("PassOffer : rollback ?sgcopy=0 pose l'ancien copy", PO.includes("sgcopy=0") && PO.includes("commence ici") && PO.includes("demain"))
   check("PassOffer : CTA hero BYTES inchangés (contrat existant)", PO.includes("Voir la prévision 7 jours →") && PO.includes("aria-label={_t(lang, \"Commencer maintenant\""))
-  check("PassOffer : chaîne buy intacte (zéro touch money-path)", /const buy=\(\)=>\{/.test(PO) && /onBuy\(\{c:cents,pass:PASS\.key,days:PASS\.days,segment:seg\}\)/.test(PO))
+  check("PassOffer : chaîne buy intacte (zéro touch money-path)", /const buy=\(\)=>\{/.test(PO) && /onBuy\(\{c:cents,pass:OFFER\.key,days:offerDays,segment:seg\}\)/.test(PO))
 
   // ── Money-path côté app ──
   check("PROD : forecastById/imageMap/isPremium passés à la home", PROD.includes("forecastById={tripForecastById}") && PROD.includes("imageMap={imageMap}") && PROD.includes("isPremium={isPremium}"))

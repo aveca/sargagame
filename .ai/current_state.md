@@ -47,6 +47,133 @@
 
 ---
 
+## 2026-09-28 · Agent: data (FUNNEL OBSERVE) — Post-deploy funnel p30/trip7/season + checkout diagnostic (zéro changement produit)
+
+### Travail effectué
+- **Résumé 1 ligne** : observation post-deploy PR #759 : fenêtre trop courte pour mesurer trip7/season (deploy 06:03Z, metrics quotidiennes), baseline 14j + snapshot 7j consolidés, diagnostic checkout→redirect 0% (events existants vs gaps), verdicts INSUFFICIENT DATA + INSTRUMENTATION REQUIRED.
+- **Détails** :
+  - Fenêtre post-deploy : merge #759 06:03Z → premier relevé 07:05Z (~1h) ; daily-metrics dernière entrée 09-27, funnel-daily-report since 09-26 → AUCUNE donnée post-deploy dans les rapports agrégés
+  - Baseline 09-14→09-27 : 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6%) → 35 checkout (100%) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19 ; ère 100% p30 (trip7/season live depuis ~09-28)
+  - Snapshot 7j (09-20→) : modal_close 54/105 (51%), pay_onsite_back 1/6, modal_to_cta 5.7%, cta_to_onsite 100%, onsite_to_mollie 0%
+  - Tripchoice : visibilité/clic/switch/CTA mesurables via sg_pass_offer_view.offer + sg_pass_cta.pass EXISTANTS — mais split par pass ABSENT des rapports agrégés (requêtes SQL fournies, service key requise)
+  - Checkout diagnostic : email/consent gates = messages visibles (pas de silent fail) ; mounts/timeouts trackés ; tokenize/submit/request/response/failure trackés avec pass ; abandon esc/swipe/btn tracké (sg_checkout_abandon) ; MANQUE : échecs validation email/consent (aucun event), détail par étape côté agrégats
+
+### Fichiers modifiés
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — observation uniquement, ZÉRO code produit
+
+### Tests réalisés
+- [x] Lecture daily-metrics.json (63 entrées, dernière 09-27), funnel-daily-report.json, funnel-snapshot.json
+- [x] Audit code doSubscribe/OnsiteCheckout (events existants vs gaps) — lecture seule
+- [ ] Mesure 7j post-deploy : IMPOSSIBLE avant ~2026-10-05 (pipeline quotidienne)
+
+### Problèmes restants / Blockers
+- [ ] INSUFFICIENT DATA : effet trip7/season/tripchoice non mesurable avant ~7j de trafic post-deploy — Rôle : growth_agent (relever 2026-10-05)
+- [ ] INSTRUMENTATION REQUIRED : split par pass + étapes checkout dans les agrégats (requêtes SQL prêtes, service key requise) — Rôle : data_agent
+- [ ] Validation email/consent sans event (gap mineur, spéculatif — ne pas implémenter sans preuve du volume) — Rôle : coding_agent
+
+### Prochaine action recommandée
+1. 2026-10-05 : requête Supabase fournie → tableau p30/trip7/season + étapes checkout → verdict CONTINUE/INSUFFICIENT — Rôle : growth_agent + data_agent
+2. Si modal→CTA inchangé à 7j : tester wording/position tripchoice ou retirer — Rôle : product_agent
+3. Ne rien changer au checkout avant d'avoir les raisons d'abandon chiffrées — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/data/funnel-observe` (observation + docs, aucun code produit)
+- PR : #à créer
+- Commit head : `à remplir`
+
+---
+
+## 2026-09-28 · Agent: cro (B2C REVENUE SPRINT) — trip7 secondary choice in paywall (?tripchoice=)
+
+### Travail effectué
+- **Résumé 1 ligne** : baseline funnel 14j (modal→CTA 7.6%, checkout→redirect 0%) → expérience trip7 secondaire sous la carte hero p30 (inchangée) avec switch in-place, rollback `?tripchoice=0`. Money-path/pricing/grants/subscriptions ZÉRO touchés.
+- **Détails** :
+  - Baseline 09-14→09-27 : 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6% modal) → 35 checkout (100% CTA) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19 ; PR #682 mergée mais cliff persistant ; checkout guards (email/consent/mounts) avec messages visibles — pas de silent fail
+  - Expérience : hypothèse = trip7 €4.99 visible sous p30 augmente modal→CTA ; primaire = modal→CTA global + par pass (sg_pass_cta.pass) ; secondaires = CTA→checkout, checkout→redirect, mix p30/trip7 ; 7j min, petits N bruts
+  - Implémentation : rangée `passoffer-trip-choice` (défaut ON, masquée hors p30), `onSelectOffer` → état + replaceState (pas de reload, pas de piège retour), prix via offerDisplayCents, deep-link préserve aussi `?tripchoice=0`
+  - Analytics : zéro nouvel event (sg_pass_cta.pass + sg_pass_offer_view.offer existants suffisent)
+
+### Fichiers modifiés
+- `src/PassOffer.jsx`, `src/PremiumModal.jsx`, `src/PremiumModal/WorldPaywall.jsx`, `src/PremiumModal/ComicPaywall.jsx`, `src/Sargasses_PROD.jsx` (deep-link tripchoice)
+- `tests/unit/offers-contract.test.cjs` (103 checks), `tests/e2e/trip-choice.spec.ts` (N, 8 tests)
+- 10 gardes buy-chain évolués vers la forme canonique (intention préservée)
+
+### Tests réalisés
+- [x] `node tests/unit/offers-contract.test.cjs` → 103/103
+- [x] `npm test` → 67/67 fichiers (worktree isolé)
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → N/A (0 PHP touché)
+- [x] `ux-smoke` → 4 tokens OK
+- [x] `funnel-payment` E2E → 13/13 · `offer-exposure` E2E → 12/12 · `trip-choice` E2E → 8/8 (3 viewports)
+- [x] `assertAllRegionsValid` → OK
+- [x] CI PR #759 → 7/7 verte (1er run : test-frontend rouge légitime sur 10 gardes texte exact → gardes évolués, pas contournés)
+
+### Problèmes restants / Blockers
+- [ ] Mesurer modal→CTA par pass à 7j (growth) — baseline p30-only disponible, trip7/season live depuis ~09-28
+- [ ] Checkout→redirect 0% : cause racine non identifiée (ni mounts silencieux ni consent/email muets — messages visibles) ; hypothèses restantes : friction formulaire mobile, iframes bloqués, choc prix — instrumenter avant de toucher
+- [ ] DOC-STALE-001/002, GAP-B2C-REC : inchangés (hors scope sprint)
+- [ ] Collision checkout partagé (session SEO parallèle) : travail isolé en worktrees dédiés, rien d'autrui modifié
+
+### Prochaine action recommandée
+1. Relever funnel 7j post-deploy (modal→CTA global + split pass) — Rôle suggéré : growth_agent
+2. Si trip-choice sans effet à 7j : tester wording/position OU retirer (`?tripchoice=0` permanent) — Rôle suggéré : product_agent + panel adverse
+3. Investiguer checkout→redirect 0% (montée en charge des raisons `sg_payment_failed`) AVANT toute modif checkout — Rôle suggéré : coding_agent + data_agent
+
+### Branche / PR
+- Branche : `agent/cro/b2c-revenue-sprint`
+- PR : #759 MERGED (squash `42ab1024b`, 2026-09-28T06:03:02Z) — CI 7/7 verte
+- Commit head : `42ab1024b`
+
+---
+
+## 2026-09-28 · Agent: coding (B2C OFFER EXPOSURE) — expose trip7+season behind ?offer=
+
+### Travail effectué
+- **Résumé 1 ligne** : `?offer=trip7`/`?offer=season` exposés dans le paywall avec fallback p30 déterministe — résolution unique offers.js, threading PremiumModal→paywalls→PassOffer (3 sites), deep-link préservé, récap checkout honnête, 10 gardes buy-chain évolués. Money-path ZÉRO touché.
+- **Détails** :
+  - `src/lib/offers.js` (+) : `resolveOffer()` (?offer= → {key,requested}, trim+lowercase, allowlist trip7/season/p30, kill-switch ?offerlab=0, pas de mutation), `offerBaseCents()` (base serveur), `offerDisplayCents()` (miroir EXACT +15 % USD sauf trip7), USD display 5.99/19.99 attestés repo
+  - `src/PassOffer.jsx` : prop `offerKey` (défaut p30), titre/durée/prix dynamiques, buy() même forme `{c,pass,days,segment}`, view track +offer/+offer_requested (model oneprice préservé)
+  - `src/PremiumModal.jsx` : résolution unique (useMemo) + threading via commonPaywallProps ; fallback jours :152 intact
+  - `WorldPaywall.jsx` (2 sites) + `ComicPaywall.jsx` (1 site) : relais offerKey/offerRequested
+  - `src/Sargasses_PROD.jsx` : deep-link `?paywall=1` reconduit `?offer=` valide (sinon wipe)
+  - `src/PremiumModal/OnsiteCheckout.jsx` : récap/bouton/wallet affichent offerDisplayCents (fix honnêteté trip7-USD-saison), fallback seasonalCents, zéro logique paiement
+  - Instrumentation : pas de nouvel event (limite harnais lazy-chunk documentée j0) — preuve comportementale E2E (CTA→checkout récap exact)
+
+### Fichiers modifiés
+- `src/lib/offers.js`, `src/PassOffer.jsx`, `src/PremiumModal.jsx`, `src/PremiumModal/WorldPaywall.jsx`, `src/PremiumModal/ComicPaywall.jsx`, `src/PremiumModal/OnsiteCheckout.jsx`, `src/Sargasses_PROD.jsx`
+- `tests/unit/offers-contract.test.cjs` (93 checks), `tests/e2e/offer-exposure.spec.ts` (N, 12 tests)
+- 10 gardes buy-chain évolués (cta-copy, paths, trust-row, sticky, niche, perfect, photo-v2, travel-30, visual, wow-unlock)
+
+### Tests réalisés
+- [x] `node tests/unit/offers-contract.test.cjs` → 93/93
+- [x] `npm test` → 67/67 fichiers (worktree isolé)
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → N/A (0 PHP touché)
+- [x] `ux-smoke` (SMOKE_BASE=4174) → 4 tokens OK
+- [x] `funnel-payment` E2E → 13/13
+- [x] `offer-exposure` E2E → 12/12 (default/trip7/season × 3 viewports + fallback + CTA récap + refresh)
+- [x] `assertAllRegionsValid` → OK
+- [x] CI PR #757 → 7/7 verte (après évolution des 10 gardes ; 1er run : test-frontend rouge légitime)
+
+### Problèmes restants / Blockers
+- [ ] COLLISION-CHECKOUT : checkout principal partagé avec session SEO parallèle active (switch branches, stash, revert de fichiers non commités constatés mid-turn ; PR #756 simultanée ; dist/ écrasé 2×). Travail isolé via worktree dédié `offer-wt`, rien de la session SEO touché. Reste : surveiller que `agent/offer/expose-trip7-season` (commit SEO b0149531a dessus) ne soit pas mergée avec ce scope — PR #757 vient de `...-season2` (historique propre).
+- [ ] DOC-STALE-001/002 (CLAUDE.md §16, clé p7) : toujours ouverts, éditorial hors scope
+- [ ] GAP-B2C-REC : Watch/MonStay toujours planned (garde CTO active)
+
+### Prochaine action recommandée
+1. Vérifier deploy auto post-merge (daily-copernicus vert + curl prod `?offer=trip7`) — Rôle suggéré : release_agent
+2. Corriger docs stale (CLAUDE.md §16, blast p7) — Rôle suggéré : coding_agent (éditorial)
+3. Décider exposition sans param (paywall multi-offres) ou garder ?offer= comme rampe — Rôle suggéré : product_agent + panel adverse
+
+### Branche / PR
+- Branche : `agent/offer/expose-trip7-season2` (la branche `agent/offer/expose-trip7-season` étant occupée par un commit SEO parallèle)
+- PR : #757 MERGED (squash `ec3f68db2`, 2026-09-28T04:25:36Z) — CI 7/7 verte sur HEAD `482973018`
+- Commit head : `ec3f68db2`
+
+---
+
 ## 2026-09-27 · Agent: coding (B2C OFFER LAB) — Monetization / Offer Architecture Lab
 
 ### Travail effectué

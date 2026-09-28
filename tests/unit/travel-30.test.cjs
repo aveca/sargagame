@@ -104,7 +104,7 @@ console.log("TRAVEL 3.0 — contrats")
 
   // ── Money-path intact ──
   const PO = read("src/PassOffer.jsx")
-  check("money intact : PASS p30 + buy chain (0 touch I)", /key:\s*"p30"/.test(PO) && /onBuy\(\{c:cents,pass:PASS\.key/.test(PO))
+  check("money intact : PASS p30 + buy chain (0 touch I)", /key:\s*"p30"/.test(PO) && /onBuy\(\{c:cents,pass:OFFER\.key/.test(PO))
   check("premium : WorldPaywall non touché ce cycle (trajectoire existante)", !/sgcine/.test(read("src/PremiumModal/WorldPaywall.jsx")))
 
   console.log(`\n✅ TRAVEL 3.0 — ${passed} checks ALL PASS`)
