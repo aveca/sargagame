@@ -1,3 +1,52 @@
+## 2026-09-28 · Agent: growth (SEO MULTISITE) — SEO Technical Foundation + Multi-Site Architecture
+
+### Travail effectué
+- **Résumé 1 ligne** : fondations techniques SEO multi-sites livrées — GP sitemap réparé (813 URLs), 2,316 broken links `/track-click.php` corrigés, sitemap filtering par domaine, architecture cross-domain linking définie, documentation complète SEO-OPPORTUNITY-MAP + SEO-MULTISITE-GROWTH. Zéro modification money-path/pricing.
+- **Détails** :
+  - **GP Sitemap** : `prepare-ftp.cjs` génère maintenant `sitemap-guadeloupe.xml` depuis les pages GP sur disque (813 URLs indexables) — `seo-sitemap-check` passe (0 404s).
+  - **Broken track-click.php** : Remplacé 2,316 liens cassés vers `/track-click.php` par liens directs `/carte-sargasses/` dans `index.html` (CTA floating + boot) — `seo-broken-links` passe (track-click.php = 0).
+  - **Sitemap filtering** : `prepare-ftp.cjs` filtre `sitemap.xml` combiné par domaine (MQ → `sitemap-martinique.xml` 164 URLs, GP → `sitemap-guadeloupe.xml` 813 URLs).
+  - **Cross-domain linking architecture** : Définie matrice MQ↔GP bidir, PC↔RM bidir, FL→PC/RM unidir — implémentation via `getAllowedCrossLinks()` prête.
+  - **Documentation** : `.ai/plans/SEO-OPPORTUNITY-MAP.md` (FACTS/HYPOTHESES/ISSUES/IMPLEMENTED/NEXT) + `.ai/plans/SEO-MULTISITE-GROWTH.md` (architecture complète 22 sections).
+  - **Tasks** : 15 tâches SEO créées dans `.ai/tasks.md` (P0-P3, priorisées).
+
+### Fichiers modifiés
+- `scripts/prepare-ftp.cjs` — GP sitemap generation + sitemap filtering par domaine
+- `index.html` — track-click.php → /carte-sargasses/ (2 CTA)
+- `.ai/plans/SEO-OPPORTUNITY-MAP.md` — Audit complet avec faits chiffrés
+- `.ai/plans/SEO-MULTISITE-GROWTH.md` — Architecture multi-sites 22 sections
+- `.ai/tasks.md` — 15 tâches SEO (TASK-SEO-GP-SITEMAP, TASK-SEO-BROKEN-TRACKCLICK, etc.)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → OK (mollie.php, mollie-webhook.php, paypal.php, paypal-webhook.php)
+- [x] `node scripts/ux-smoke.mjs` → 4 tokens OK + SMOKE_GATE=PASS
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → OK
+- [x] `node scripts/prepare-ftp.cjs` → GP sitemap 813 URLs, MQ 164 URLs
+- [x] `node scripts/automation/seo-sitemap-check.cjs` → GP 0 404s, MQ 0 404s
+- [x] `node scripts/automation/seo-broken-links.cjs` → track-click.php = 0 (was 2,316)
+
+### Problèmes restants
+- [ ] 342 pages sans canonical (majorité widget/veilleur pages legacy) — P1
+- [ ] 8 hreflang target missing (sargasses-aujourdhui, sargasses-pres-de-moi EN/ES) — P1
+- [ ] 2,362 broken links cross-domain (résidu architectural) — P2
+- [ ] USD domains GSC non provisionnés (action fondateur) — P1
+- [ ] Cannibalization home vs /carte-sargasses/ (9 queries MQ + 8 GP) — P1
+
+### Prochaine action recommandée
+1. Provision GSC pour 3 domaines USD (script `provision-gsc.cjs` prêt) — Rôle : growth_agent + founder
+2. Corriger hreflang targets missing (4 pages × 2 langues) — Rôle : coding_agent
+3. Implémenter `getAllowedCrossLinks()` dans `networkFooter` — Rôle : coding_agent
+4. Lancer `seo-opportunity-engine.cjs` pour prioriser longue traîne — Rôle : growth_agent
+
+### Branche / PR
+- Branche : `agent/growth/seo-phase2`
+- PR : #762
+- Commit head : `fa4071236`
+
+---
+
 ## 2026-09-28 · Agent: data (FUNNEL OBSERVE) — Post-deploy funnel p30/trip7/season + checkout diagnostic (zéro changement produit)
 
 ### Travail effectué

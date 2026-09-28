@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T17:12:36.454Z",
+  "generatedAt": "2026-09-28T01:21:01.729Z",
   "sites": {
     "mq": {
       "sitemapSize": 164,
@@ -44,44 +44,22 @@
       "crossDomainSample": []
     },
     "gp": {
-      "sitemapSize": 0,
-      "ownDomainCount": 0,
+      "sitemapSize": 813,
+      "ownDomainCount": 813,
       "crossDomainCount": 0,
       "diskCount": 809,
       "sitemapUrls404Count": 0,
-      "diskMissingCount": 809,
+      "diskMissingCount": 8,
       "sitemapUrls404": [],
       "diskMissing": [
-        "/a-propos/",
-        "/activity/dive/",
-        "/activity/family/",
-        "/activity/kids/",
-        "/activity/parking/",
-        "/activity/snorkel/",
-        "/activity/surf/",
-        "/agir/",
-        "/alertes/",
-        "/algues-guadeloupe/",
-        "/articles/alerte-saison-2026-gp-2026-04-09/",
-        "/articles/point-semaine-avril-2026-mq-2026-04-09/",
-        "/aujourdhui/",
-        "/b2b/",
-        "/beach/akumal-bay/",
-        "/beach/anse-a-l-ane/",
-        "/beach/anse-a-l-eau/",
-        "/beach/anse-a-la-barque-ste-anne/",
-        "/beach/anse-a-la-barque-vh/",
-        "/beach/anse-a-la-gourde/",
-        "/beach/anse-a-sable/",
-        "/beach/anse-belleville/",
-        "/beach/anse-bertrand-nord/",
-        "/beach/anse-bonneville/",
-        "/beach/anse-cafard/",
-        "/beach/anse-canot-marie-galante/",
-        "/beach/anse-caritan/",
-        "/beach/anse-ceron/",
-        "/beach/anse-champagne/",
-        "/beach/anse-charpentier/"
+        "/cgv.html",
+        "/confidentialite.html",
+        "/google22dbf19e7b743f5a.html",
+        "/googlead132357ff9b38c4.html",
+        "/mentions-legales.html",
+        "/remboursement.html",
+        "/sarg_carte_satellite_app.html",
+        "/weekend.html"
       ],
       "crossDomainSample": []
     }

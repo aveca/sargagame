@@ -291,19 +291,37 @@ function generateTodayPages(region, distDir) {
         const sargId = BEACH_TO_SARG[b.id]
         if (sargId && levelsBySarg[sargId]) levelsById[b.id] = levelsBySarg[sargId]
       }
-      const model = buildModel({
-        lang: 'fr', regionLabel, beaches, levelsById,
-        beachUrlOf: b => `/plages/${b.slug}/`, updatedAt, relSlug: 'fiabilite',
-      })
-      if (!model) { console.log(`   → aujourd\u2019hui ${island} : aucune donnée live, page ignorée`); continue }
-      const n = model.clean.length
-      const title = `Sargasses ${regionLabel} aujourd\u2019hui — ${n} plage${n > 1 ? 's' : ''} propre${n > 1 ? 's' : ''}, où se baigner ?`
-      const desc = `Où se baigner en ${regionLabel} aujourd\u2019hui (${fmtLongDate('fr')}) ? ${n} plages propres par satellite Copernicus, alternatives à proximité, prévision 7 jours. Mesuré, pas deviné.`
-      const html = renderTodayPage({ lang: 'fr', domain, siteName: `Sargasses ${regionLabel}`, slug: 'aujourdhui', title, desc, model })
-      const outDir = isMQ ? distDir : path.join(distDir, '_gp')
-      writePage(outDir, 'aujourdhui', html)
-      const sm = appendToSitemap(path.join(distDir, isMQ ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'), domain, 'aujourdhui')
-      made.push(`/${isMQ ? '' : '_gp/'}aujourdhui/ (${island}${sm ? ' +sitemap' : ''})`)
+      // Generate for all emitted languages (FR primary + EN/ES secondary for MQ/GP)
+      const RL = require('./region-langs.cjs')
+      const emitted = RL.emittedLangs({ id: island, primaryLang: 'fr', secondaryLangs: ['en', 'es'] })
+      for (const lang of emitted) {
+        const model = buildModel({
+          lang, regionLabel, beaches, levelsById,
+          beachUrlOf: b => `/plages/${b.slug}/`, updatedAt, relSlug: 'fiabilite',
+        })
+        if (!model) { console.log(`   → aujourd\u2019hui ${island} (${lang}) : aucune donnée live, page ignorée`); continue }
+        const n = model.clean.length
+        const t = I18N[lang]
+        const title = lang === 'es'
+          ? `Sargazo en ${regionLabel} hoy — ${n} playas limpias, ¿dónde bañarse?`
+          : lang === 'en'
+            ? `Sargassum in ${regionLabel} today — ${n} clean beaches, where to swim?`
+            : `Sargasses ${regionLabel} aujourd\u2019hui — ${n} plage${n > 1 ? 's' : ''} propre${n > 1 ? 's' : ''}, où se baigner ?`
+        const desc = lang === 'es'
+          ? `¿Dónde bañarse en ${regionLabel} hoy (${fmtLongDate('es')})? ${n} playas limpias por satélite Copernicus, alternativas cercanas, pronóstico 7 días.`
+          : lang === 'en'
+            ? `Where to swim in ${regionLabel} today (${fmtLongDate('en')})? ${n} clean beaches by Copernicus satellite, nearby alternatives, 7-day forecast.`
+            : `Où se baigner en ${regionLabel} aujourd\u2019hui (${fmtLongDate('fr')}) ? ${n} plages propres par satellite Copernicus, alternatives à proximité, prévision 7 jours. Mesuré, pas deviné.`
+        const slug = lang === 'es' ? 'hoy' : lang === 'en' ? 'sargassum-today' : 'aujourdhui'
+        const html = renderTodayPage({ lang, domain, siteName: `Sargasses ${regionLabel}`, slug, title, desc, model })
+        const prefix = lang === 'fr' ? '' : `${lang}/`
+        const outDir = isMQ ? distDir : path.join(distDir, '_gp')
+        writePage(outDir, prefix + slug, html)
+        // Sitemap: use the correct sitemap file
+        const sitemapFile = isMQ ? 'sitemap-martinique.xml' : 'sitemap-guadeloupe.xml'
+        const sm = appendToSitemap(path.join(distDir, sitemapFile), domain, prefix + slug)
+        made.push(`/${isMQ ? '' : '_gp/'}${prefix}${slug}/ (${island}-${lang}${sm ? ' +sitemap' : ''})`)
+      }
     }
     console.log(`   → pages aujourd\u2019hui MQ/GP : ${made.join(' · ') || 'aucune'}`)
     return
