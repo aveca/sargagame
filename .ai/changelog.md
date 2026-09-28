@@ -1,3 +1,19 @@
+## 2026-09-28 — B2C REVENUE/CRO SPRINT : trip7 secondaire dans le paywall (?tripchoice=)
+
+**PROBLEM** : baseline 14j — 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6%) → 35 checkout (100%) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19. Levier mesurable sans toucher prix/paiement : proposer trip7 (€4.99, déjà chargeable) sous l'offre p30.
+
+**CHANGE** (money-path/pricing/grants/subscriptions ZÉRO touchés) :
+- `src/PassOffer.jsx` : rangée `passoffer-trip-choice` sous la carte hero (inchangée), défaut ON, rollback `?tripchoice=0`, masquée hors p30, prix via offerDisplayCents, clic → `onSelectOffer`
+- `src/PremiumModal.jsx` : état offre + `selectOffer` (replaceState, pas de reload, pas de piège retour)
+- `WorldPaywall.jsx` (2 sites) + `ComicPaywall.jsx` (1 site) : relais `onSelectOffer`
+- `src/Sargasses_PROD.jsx` : deep-link préserve aussi `?tripchoice=0`
+- Expérience : hypothèse/modal→CTA global+par pass/secondaires/7j min/rollback documenté. Analytics : zéro nouvel event (sg_pass_cta.pass + sg_pass_offer_view.offer existants)
+- Tests : `offers-contract` 103 checks + `trip-choice.spec.ts` 8 tests E2E (3 viewports) + 10 gardes buy-chain évolués (forme canonique, intention préservée)
+
+**PROOF** : npm test 67/67 · build exit 0 · bundle 38.2 Ko · smoke 4/4 · funnel 13/13 · offer-exposure 12/12 · trip-choice 8/8 · regions OK · CI PR #759 7/7 verte · merge squash `42ab1024b`.
+
+---
+
 ## 2026-09-28 — B2C OFFER EXPOSURE : ?offer=trip7/season dans le paywall (fallback p30, money-path intact)
 
 **PROBLEM** : offres serveur trip7/season chargeables mais inaccessibles (seul p30 servi) — aucune rampe contrôlée pour les exposer.

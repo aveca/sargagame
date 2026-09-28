@@ -216,6 +216,12 @@
 - **Rollback** : retirer `?offer=` (défaut p30) · `?offerlab=0` · revert 1 commit
 - **Reste** : DOC-STALE-001/002 (éditorial) · GAP-B2C-REC (garde CTO)
 
+## TASK-P1-CRO-TRIPCHOICE — B2C Revenue/CRO sprint : trip7 secondaire (?tripchoice=) [x] done (2026-09-28)
+- **Livré** : baseline 14j (modal→CTA 7.6%, checkout→redirect 0%) + rangée trip7 sous hero p30 (défaut ON, rollback ?tripchoice=0) + switch in-place + deep-link préservé + 103 checks contrat + 8 tests E2E (3 viewports) + 10 gardes évolués. Money-path/pricing/grants/subscriptions ZÉRO touchés.
+- **Preuves** : npm test 67/67 · build 0 · bundle 38.2 Ko · smoke 4/4 · funnel 13/13 · offer 12/12 · trip-choice 8/8 · CI PR #759 7/7 verte · merge squash `42ab1024b`
+- **Expérience** : hypothèse/modal→CTA global+par pass/7j min/rollback `?tripchoice=0`/revert 1 commit. Prochaine mesure : funnel 7j post-deploy (growth)
+- **Reste** : checkout→redirect 0% cause racine non identifiée (à instrumenter avant toute modif checkout)
+
 ## TASK-P1-B2C-OFFER-LAB — B2C Monetization / Offer Architecture Lab
 - **Priorité** : P1
 - **Rôle** : product_agent + coding_agent
