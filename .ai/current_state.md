@@ -41,9 +41,9 @@
 4. Lancer `seo-opportunity-engine.cjs` pour prioriser longue traîne — Rôle : growth_agent
 
 ### Branche / PR
-- Branche : `agent/growth/seo-multisite`
-- PR : #756
-- Commit head : `177ee6fdd`
+- Branche : `agent/growth/seo-phase2`
+- PR : #762
+- Commit head : `fa4071236`
 
 ---
 
