@@ -1364,9 +1364,22 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
           writeFileSync(resolve(outDir, 'sitemap-guadeloupe.xml'), sitemapGP)
-          // Primary region (MQ) gets sitemap.xml for Cloudflare Pages deployment
-          writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapMQ)
+          // Each region build gets its own sitemap.xml for Cloudflare Pages deployment
+          const sitemapPrimary = REGION && REGION.id === 'gp' ? sitemapGP : sitemapMQ
+          writeFileSync(resolve(outDir, 'sitemap.xml'), sitemapPrimary)
           console.log('   → Sitemaps générés avec lastmod:', today)
+
+          // robots.txt région-spécifique pour Cloudflare Pages
+          const robotsDomain = REGION && REGION.id === 'gp' ? 'sargasses-guadeloupe.com' : 'sargasses-martinique.com'
+          const sitemapUrl = `https://${robotsDomain}/sitemap.xml`
+          const robotsTxt = `User-agent: *
+Allow: /
+Disallow: /neptunes_fury.html
+
+Sitemap: ${sitemapUrl}
+`
+          writeFileSync(resolve(outDir, 'robots.txt'), robotsTxt)
+          console.log('   → robots.txt généré pour', robotsDomain)
 
           // ── Garde d'intégrité sitemap (build-time) : toute URL publiée DOIT exister
           // physiquement dans dist/ (sinon 404 = crawl budget gaspillé — le bug
