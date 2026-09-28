@@ -17,6 +17,7 @@ import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 // WOW JOURNEY/CONTINUITY (2026-09-24) : une seule source « séjour » partagée
 // experience ↔ trip planner. Rollback layer entier : ?sgjourney=0.
 import { journeyFor, journeyOff } from "./lib/journey.js"
+import { resolveOffer } from "./lib/offers.js"
 import { getResortsForBeach } from "./lib/resorts.js"
 import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
 import { useSwipeClose } from "./useSwipeClose.js"
@@ -14233,7 +14234,12 @@ useEffect(()=>{
       if(p.get("paywall")==="1"||p.get("paywall")==="cancel"){
         const dp=p.get("plan");if(dp==="monthly"||dp==="annual"){try{sessionStorage.setItem("sg_deep_plan",dp)}catch(_){}}
         const canceled=p.get("paywall")==="cancel"
-        const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");window.history.replaceState({},"",getPathname())}
+        const u=p.get("utm_source");openPremium(canceled?"payment_cancel":u?("deeplink_"+u).slice(0,40):"deeplink");
+        // B2C OFFER LAB (?offer=) : le deep-link nettoie la query — on y
+        // reconduit l'offre valide (sinon ?offer=trip7&paywall=1 perdrait
+        // l'offre avant le rendu du paywall). Défaut/invalide → URL nue
+        // (comportement historique exact). Résolution unique via offers.js.
+        try{const _off=resolveOffer("?"+p.toString());window.history.replaceState({}, "", getPathname()+(_off.key!=="p30"?("?offer="+_off.key):""))}catch(_){try{window.history.replaceState({},"",getPathname())}catch(_){}}}
       else if(p.get("pro")==="1"){setShowProB2B(true);proB2BSrc.current="deeplink_pro"
         try{sessionStorage.setItem("sg_b2b_qs",window.location.search)}catch(_){}
         try{track("sg_b2b_open",{source:"deeplink_pro"})}catch(_){}

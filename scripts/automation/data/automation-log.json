@@ -1,133 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-08-24T11:48:40.190Z",
-      "dryRun": false,
-      "script": "seo-orphan-healer",
-      "action": "inject",
-      "sites": 2,
-      "totalInjections": 10
-    },
-    {
-      "timestamp": "2026-08-24T11:49:29.372Z",
-      "dryRun": false,
-      "script": "seo-submit-urls",
-      "action": "urls-submitted",
-      "urlsSubmitted": 0,
-      "errors": 200,
-      "urls": [
-        "https://sargasses-martinique.com/comprendre-sargasses/",
-        "https://sargasses-martinique.com/previsions-methode/",
-        "https://sargasses-martinique.com/nettoyer-sargasses/",
-        "https://sargasses-martinique.com/plages/plage-du-marin/",
-        "https://sargasses-martinique.com/plages/macabou-nord/",
-        "https://sargasses-martinique.com/plages/anse-des-galets/",
-        "https://sargasses-guadeloupe.com/plages/anse-tarare/",
-        "https://sargasses-guadeloupe.com/plages/anse-piton/",
-        "https://sargasses-guadeloupe.com/plages/plage-de-tillet/",
-        "https://sargasses-martinique.com/carte-sargasses/",
-        "https://sargasses-martinique.com/previsions/",
-        "https://sargasses-martinique.com/alertes/",
-        "https://sargasses-martinique.com/en/satellite-sargassum-detection/",
-        "https://sargasses-martinique.com/en/understanding-sargassum/",
-        "https://sargasses-martinique.com/saison-sargasses-martinique/",
-        "https://sargasses-martinique.com/plages-sans-sargasses/",
-        "https://sargasses-martinique.com/danger-sargasses-h2s/",
-        "https://sargasses-martinique.com/bilan-sargasses-2025/",
-        "https://sargasses-martinique.com/detection-satellite-sargasses/",
-        "https://sargasses-martinique.com/sargasses-record-2026/",
-        "https://sargasses-guadeloupe.com/carte-sargasses/",
-        "https://sargasses-guadeloupe.com/previsions/",
-        "https://sargasses-guadeloupe.com/alertes/",
-        "https://sargasses-guadeloupe.com/en/satellite-sargassum-detection/",
-        "https://sargasses-guadeloupe.com/en/understanding-sargassum/",
-        "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
-        "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
-        "https://sargasses-guadeloupe.com/danger-sargasses-h2s/",
-        "https://sargasses-guadeloupe.com/comprendre-sargasses/",
-        "https://sargasses-guadeloupe.com/bilan-sargasses-2025/",
-        "https://sargasses-guadeloupe.com/detection-satellite-sargasses/",
-        "https://sargasses-guadeloupe.com/previsions-methode/",
-        "https://sargasses-guadeloupe.com/nettoyer-sargasses/",
-        "https://sargasses-guadeloupe.com/sargasses-record-2026/",
-        "https://sargasses-martinique.com/",
-        "https://sargasses-martinique.com/fiabilite/",
-        "https://sargasses-martinique.com/pro/",
-        "https://sargasses-martinique.com/pro/hotels/",
-        "https://sargasses-martinique.com/sargasses-pour-hotels/",
-        "https://sargasses-martinique.com/pro/widget-sargasses-hotel/",
-        "https://sargasses-martinique.com/pro/collectivites/",
-        "https://sargasses-martinique.com/pro/cout-sargasses-hotel/",
-        "https://sargasses-martinique.com/pro/preparer-saison-sargasses/",
-        "https://sargasses-martinique.com/pro/barrieres-vs-prevision/",
-        "https://sargasses-martinique.com/pro/plan-sargasses-collectivite/",
-        "https://sargasses-martinique.com/pro/en/",
-        "https://sargasses-martinique.com/pro/en/hotels/",
-        "https://sargasses-martinique.com/pro/en/pricing/",
-        "https://sargasses-martinique.com/pro/en/collectivites/",
-        "https://sargasses-martinique.com/pro/en/cost-of-sargassum-hotels/"
-      ]
-    },
-    {
-      "timestamp": "2026-08-28T21:46:14.566Z",
-      "dryRun": false,
-      "script": "seo-audit",
-      "action": "data-collection",
-      "results": {
-        "mq": {
-          "indexed": 69,
-          "total": 74,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 1
-        },
-        "gp": {
-          "indexed": 88,
-          "total": 100,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 1
-        },
-        "florida": {
-          "indexed": 17,
-          "total": 24,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 0,
-          "cwvIssues": 1
-        },
-        "puntacana": {
-          "indexed": 8,
-          "total": 16,
-          "notIndexed": 0,
-          "lowCtr": 0,
-          "highBounce": 0,
-          "cwvIssues": 1
-        },
-        "rivieramaya": {
-          "indexed": 22,
-          "total": 24,
-          "notIndexed": 0,
-          "lowCtr": 1,
-          "highBounce": 0,
-          "cwvIssues": 1
-        }
-      }
-    },
-    {
-      "timestamp": "2026-08-28T21:46:17.370Z",
-      "dryRun": false,
-      "script": "ux-audit",
-      "action": "report-generated",
-      "issues": {
-        "totalIssues": 38,
-        "critical": 0,
-        "warnings": 38
-      }
-    },
-    {
       "timestamp": "2026-08-31T18:15:30.955Z",
       "dryRun": false,
       "script": "seo-audit",
@@ -1648,6 +1521,40 @@
         "critical": 0,
         "warnings": 26
       }
+    },
+    {
+      "timestamp": "2026-09-28T00:10:06.398Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 1260
+    },
+    {
+      "timestamp": "2026-09-28T00:16:08.130Z",
+      "dryRun": false,
+      "script": "seo-sitemap-check",
+      "action": "check",
+      "sites": 2,
+      "total404": 0,
+      "totalMissing": 459
+    },
+    {
+      "timestamp": "2026-09-28T00:16:16.366Z",
+      "dryRun": false,
+      "script": "seo-canonical-hreflang",
+      "action": "validate",
+      "sites": 2,
+      "totalIssues": 354
+    },
+    {
+      "timestamp": "2026-09-28T00:16:45.006Z",
+      "dryRun": false,
+      "script": "seo-broken-links",
+      "action": "check",
+      "sites": 2,
+      "totalBroken": 2362
     }
   ]
 }

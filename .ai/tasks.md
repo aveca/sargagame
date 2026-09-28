@@ -973,3 +973,103 @@ NEXT_CONCRETE_ACTION:
 - [ ] **P1-03**: Show calibration proof at paywall decision point (movement /fiabilite/ into modal)
 - [ ] **P2-01**: 78 Google Fonts @import → migrate to self-hosted fonts (entire /public/)
 - [ ] **P2-02**: "Tableau de bord" for pipeline freshness visible on homepage (the "updated X hours ago" to all visitors too)
+
+---
+
+## SEO MULTI-SITE GROWTH — 2026-09-27
+
+### P0 — Technical Foundation (Cette semaine)
+- [x] **TASK-SEO-GP-SITEMAP**: Fix GP sitemap absent — 809 pages non soumises
+  - **Priorité**: P0 | **Rôle**: coding_agent | **Fichiers**: `scripts/prepare-ftp.cjs` ou `scripts/automation/seo-sitemap-check.cjs`
+  - **Description**: `seo-sitemap-check.cjs` ne trouve pas `sitemap-guadeloupe.xml` dans `guadeloupe-ftp/` — le build génère `sitemap.xml` sans suffixe régional. Fix: renommer `sitemap.xml` → `sitemap-guadeloupe.xml` pour GP dans prepare-ftp, OU modifier seo-sitemap-check pour chercher `sitemap.xml`.
+  - **Critère succès**: GP sitemap >150 URLs, seo-sitemap-check green.
+  - **Statut**: [x] done by growth_agent (2026-09-28) — `prepare-ftp.cjs` régénère sitemap-guadeloupe.xml depuis disque (813 URLs), seo-sitemap-check passe (0 404s).
+
+- [x] **TASK-SEO-BROKEN-TRACKCLICK**: Fix 2,316 broken links vers `/track-click.php`
+  - **Priorité**: P0 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs`, `scripts/lib/region-seo-pages.cjs`
+  - **Description**: `seo-broken-links.cjs` rapporte 1,124 (MQ) + 1,192 (GP) liens cassés vers `/track-click.php` — endpoint PHP cassé sur Pages. Remplacer par endpoint Worker `/api/track-click` fonctionnel, ou retirer les liens.
+  - **Critère succès**: broken-links check <100 total.
+  - **Statut**: [x] done by growth_agent (2026-09-28) — `index.html` CTA floating + boot: `/track-click.php` → `/carte-sargasses/`, seo-broken-links track-click.php = 0 (was 2,316).
+
+- [ ] **TASK-SEO-MISSING-CANONICAL**: Add canonical to 342 pages (171 MQ + 171 GP)
+  - **Priorité**: P0 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs`, `scripts/lib/region-seo-pages.cjs`
+  - **Description**: `seo-canonical-hreflang.cjs` détecte 342 pages sans canonical. Toutes les pages générées doivent avoir `canonicalPath` dans `pageShell()`.
+  - **Critère succès**: missing-canonical = 0 sur MQ + GP.
+
+- [ ] **TASK-SEO-HREFLANG-TARGETS**: Fix 8 hreflang target missing (4 MQ + 4 GP)
+  - **Priorité**: P0 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/region-seo-pages.cjs`, `scripts/lib/dedicated-pages.cjs`
+  - **Description**: 4 liens hreflang par domaine pointent vers pages inexistantes sur disque. Identifier les URLs manquantes dans `canonical-hreflang.json` et corriger target ou retirer hreflang.
+  - **Critère succès**: hreflang-target-missing = 0.
+
+- [ ] **TASK-SEO-USD-AUDIT-COVERAGE**: Extend audit scripts to USD regions (FL, PC, RM)
+  - **Priorité**: P0 | **Rôle**: coding_agent | **Fichiers**: `scripts/automation/seo-canonical-hreflang.cjs`, `scripts/automation/seo-sitemap-check.cjs`, `scripts/automation/seo-link-graph.cjs`, `scripts/automation/seo-orphan-detector.cjs`
+  - **Description**: Les scripts n'audite que MQ/GP (array `SITES` limité). Étendre à florida, puntacana, rivieramaya, tulum.
+  - **Critère succès**: Audits couvrent 5+ domaines.
+
+### P1 — Content & Cannibalization (Semaine 2)
+- [ ] **TASK-SEO-DUPLICATE-TITLES**: Deduplicate 856 pages with duplicate titles/descriptions
+  - **Priorité**: P1 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs`
+  - **Description**: Alias `/beach/<slug>/` ont mêmes titres que fiche primaire `/plages|beaches|playas/<slug>/`. Différencier ou accepter (noindex suffit). Préférence: garder titres identiques car noindex,follow transmet le jus, mais documenter.
+  - **Critère succès**: duplicate title groups <100.
+
+- [ ] **TASK-SEO-THIN-CONTENT**: Enrich 1,300 thin pages (<300 mots)
+  - **Priorité**: P1 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs`, `scripts/lib/region-seo-pages.cjs`
+  - **Description**: Pages activity/poi/region/aliases manquent forecast, nearby, facts, activities. Enrichir là où données réelles existent.
+  - **Critère succès**: thin pages <500.
+
+- [ ] **TASK-SEO-SCHEMA-DATEPUBLISHED**: Fix 36 schema Article errors (missing datePublished)
+  - **Priorité**: P1 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/region-seo-pages.cjs`, `scripts/lib/dedicated-pages.cjs`
+  - **Description**: Ajouter `datePublished` + `dateModified` (ISO date du build) aux JSON-LD `@type: Article`.
+  - **Critère succès**: schema errors = 0.
+
+- [ ] **TASK-SEO-CANNIBALIZATION-HOME-CARTE**: Consolidate home vs /carte-sargasses/ for head queries
+  - **Priorité**: P1 | **Rôle**: coding_agent + growth_agent | **Fichiers**: `vite.config.js` (seo-pages plugin), `scripts/lib/region-seo-pages.cjs`
+  - **Description**: 9 queries MQ + 8 GP avec home + carte-sargasses en compétition. Consolidation: une page cible par query head, l'autre noindex ou intent différent (home = brand + overview, carte = tool).
+  - **Critère succès**: cannibalized queries <10.
+
+- [ ] **TASK-SEO-GP-PAGE-DROP**: Fix GP `/plages/plage-de-sainte-anne/` drop -11.7 positions
+  - **Priorité**: P1 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs`
+  - **Description**: Position tracker montre drop 7.7 → 19.4. Vérifier canonical + hreflang + liens entrants + contenu.
+  - **Critère succès**: Position récupérée <15.
+
+### P2 — Indexation & GSC (Semaine 2-3)
+- [ ] **TASK-SEO-GSC-USD-PROVISION**: Provision GSC for 3 USD domains (action fondateur)
+  - **Priorité**: P1 | **Rôle**: growth_agent + founder | **Script**: `scripts/automation/provision-gsc.cjs`
+  - **Description**: Exécuter `node scripts/automation/provision-gsc.cjs florida puntacana rivieramaya` avec secrets GH + FTP creds.
+  - **Critère succès**: 3 domaines verified dans GSC + sitemaps soumis.
+
+- [ ] **TASK-SEO-ACTIVATE-ES-FL-PC**: Activate /es/ on Florida + Punta Cana
+  - **Priorité**: P2 | **Rôle**: coding_agent | **Fichiers**: `regions/seo-content/florida.es.json`, `puntacana.es.json` (existent ✅)
+  - **Description**: Content ES existe, `region-langs.cjs` l'émet automatiquement au build. Vérifier build + indexation.
+  - **Critère succès**: /es/ pages générées + indexées.
+
+- [ ] **TASK-SEO-COMMUNE-PAGES-USD**: Create commune/city pages for USD regions
+  - **Priorité**: P2 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/region-seo-pages.cjs` (computeAreas) ou `scripts/lib/commune-seo-pages.cjs`
+  - **Description**: Miami Beach, Fort Lauderdale, Key West, Cancún Hotel Zone, Playa del Carmen, Tulum, Bávaro, Cap Cana, Macao — hubs zone avec ≥2 plages.
+  - **Critère succès**: 5-10 pages/région USD indexables.
+
+- [ ] **TASK-SEO-BEACH-FAQ**: Build FAQ pages per beach (Schema FAQPage)
+  - **Priorité**: P2 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/dedicated-pages.cjs` ou nouveau generator
+  - **Description**: `/faq/<beach-slug>/` avec questions: "Is there sargassum at X today?", "When is next arrival?", "Is it dangerous?" — réponses data-driven (status, score, forecast, reliability).
+  - **Critère succès**: N plages × 1 FAQ page indexable.
+
+### P3 — Authority & Conversion (Mois 2)
+- [ ] **TASK-SEO-CROSSDOMAIN-LINKS**: Implement controlled cross-domain linking
+  - **Priorité**: P3 | **Rôle**: coding_agent | **Fichiers**: `scripts/lib/region-seo-pages.cjs`, `scripts/lib/dedicated-pages.cjs` (networkFooter)
+  - **Description**: Implémenter `getAllowedCrossLinks(regionId)` — MQ↔GP bidirectionnel, PC↔RM bidirectionnel, FL→PC/RM unidirectionnel. Rollback `?xdomain=0`.
+  - **Critère succès**: Liens contextuels présents, pas de footer spam.
+
+- [ ] **TASK-SEO-OPPORTUNITY-ENGINE**: Build seo-opportunity-engine.cjs
+  - **Priorité**: P3 | **Rôle**: coding_agent + growth_agent | **Fichiers**: Nouveau `scripts/automation/seo-opportunity-engine.cjs`
+  - **Description**: Input: position-history + cannibalization + ctr-diagnostic → Output: QUERY → IMPRESSIONS → POSITION → PAGE → GAP → ACTION (HIGH/MEDIUM/LOW/NOT_SUPPORTED).
+  - **Critère succès**: opportunity-map.json généré hebdo.
+
+- [ ] **TASK-SEO-ORGANIC-CONVERSION**: Track organic → PASS conversion
+  - **Priorité**: P3 | **Rôle**: growth_agent + coding_agent | **Fichiers**: `src/Sargasses_PROD.jsx` (SG_FUNNEL_EVENTS), `scripts/automation/funnel-from-supabase.cjs`
+  - **Description**: Ajouter `sg_organic_landing` event avec source=organic + landing page. Attribution cross-page via sessionStorage.
+  - **Critère succès**: Dashboard organic conversion par landing page.
+
+- [ ] **TASK-SEO-FINDKEYWORDGAPS**: Implement findKeywordGaps() in generate-seo-pages.cjs
+  - **Priorité**: P3 | **Rôle**: coding_agent | **Fichiers**: `scripts/automation/generate-seo-pages.cjs`
+  - **Description**: Stub vide actuellement. Lire vrais gaps GSC (queries sans page dédiée, queries avec mauvaises pages) → générer pages programmatiques ciblées.
+  - **Critère succès**: Nouvelles pages créées depuis gaps réels.

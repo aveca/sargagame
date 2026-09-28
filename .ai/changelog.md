@@ -1,3 +1,32 @@
+## 2026-09-28 — SEO MULTISITE GROWTH : Technical Foundation + Multi-Site Architecture (TRAFFIC ONLY)
+
+**PROBLEM** : GP sitemap absent (0 URLs → 809 pages non indexées), 2,316 broken links `/track-click.php` (endpoint PHP cassé sur Cloudflare Pages), sitemap combiné MQ+GP non filtré par domaine, architecture cross-domain linking non définie, USD domains GSC non provisionnés.
+
+**CHANGE** (TRAFFIC ONLY — ZÉRO modification money-path/pricing/paywall/Mollie) :
+- `scripts/prepare-ftp.cjs` : GP sitemap régénéré depuis disque (813 URLs indexables), filtrage `sitemap.xml` combiné par domaine (MQ → `sitemap-martinique.xml` 164 URLs, GP → `sitemap-guadeloupe.xml` 813 URLs).
+- `index.html` : 2 CTA `/track-click.php` → `/carte-sargasses/` (floating + boot) — tracking client-side via `shareWithUTM` + GA4 events.
+- `scripts/prepare-ftp.cjs` : filtrage sitemap par domaine pendant prepare-ftp, régénération GP sitemap depuis pages sur disque.
+- `.ai/plans/SEO-OPPORTUNITY-MAP.md` (N) : audit complet FACTS/HYPOTHESES/ISSUES/IMPLEMENTED/NEXT avec 354 issues canonical/hreflang, 4,678 broken links, 30 cannibalized queries, position drops Riviera Maya.
+- `.ai/plans/SEO-MULTISITE-GROWTH.md` (N) : architecture multi-sites 22 sections (domaines, hreflang, canonical, sitemap, content differentiation, programmatic clusters, internal linking, cross-domain, GSC provisioning, automation pipeline).
+- `.ai/tasks.md` : 15 tâches SEO P0-P3 créées (TASK-SEO-GP-SITEMAP, TASK-SEO-BROKEN-TRACKCLICK, TASK-SEO-MISSING-CANONICAL, TASK-SEO-HREFLANG-TARGETS, TASK-SEO-USD-AUDIT-COVERAGE, TASK-SEO-DUPLICATE-TITLES, TASK-SEO-THIN-CONTENT, TASK-SEO-SCHEMA-DATEPUBLISHED, TASK-SEO-CANNIBALIZATION-HOME-CARTE, TASK-SEO-GP-PAGE-DROP, TASK-SEO-GSC-USD-PROVISION, TASK-SEO-ACTIVATE-ES-FL-PC, TASK-SEO-COMMUNE-PAGES-USD, TASK-SEO-BEACH-FAQ, TASK-SEO-CROSSDOMAIN-LINKS, TASK-SEO-OPPORTUNITY-ENGINE, TASK-SEO-ORGANIC-CONVERSION, TASK-SEO-FINDKEYWORDGAPS).
+
+**MONEY-PATH** : ZÉRO modification (aucun .php, aucun montant, aucun webhook, aucun pricing, aucun paywall, aucune subscription touchée).
+
+**PROOF** : 
+- `npm run build` → exit 0 (412 modules)
+- `check-bundle-budget` → 38.2 Ko ≤ 210 Ko
+- `php -l` → OK (mollie.php, mollie-webhook.php, paypal.php, paypal-webhook.php)
+- `ux-smoke` → 4 tokens OK + SMOKE_GATE=PASS
+- `regions assertAllRegionsValid` → OK
+- `prepare-ftp` → GP sitemap 813 URLs, MQ 164 URLs
+- `seo-sitemap-check` → GP 0 404s (was 0 URLs), MQ 0 404s
+- `seo-broken-links` → track-click.php = 0 (was 2,316)
+- `seo-canonical-hreflang` → 354 issues cataloguées (171 missing canonical ×2, 4 hreflang target missing ×2)
+
+**ROLLBACK** : `?xdomain=0` pour cross-domain links (non encore câblé), flags existants préservés.
+
+---
+
 ## 2026-09-27 — B2C OFFER LAB : Monetization / Offer Architecture (lab, zéro débit modifié)
 
 **PROBLEM** : modèle B2C = one-time travel pass uniquement, pricing dispersé en sources contradictoires (serveur vs docs vs emails vs GA4), aucune architecture récurrente B2C, Coastal Lab sans pont monétisation.

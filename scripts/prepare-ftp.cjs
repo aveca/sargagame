@@ -454,6 +454,74 @@ Ouvre ton domaine (ex. ${domain}) : la page d'accueil doit s'afficher. Les donn�
     const overlaid = overlayDir(gpMirror, out)
     if (overlaid > 0) console.log(`   → ${overlaid} fichiers GP-mirror overlaid sur guadeloupe-ftp/ (post-patch)`)
   }
+
+  // Rename sitemap.xml to region-specific name for SEO audit compatibility
+  // seo-sitemap-check.cjs expects sitemap-martinique.xml and sitemap-guadeloupe.xml
+  // Also FILTER the sitemap to only include URLs for this region's domain
+  const sitemapSrcPath = path.join(out, 'sitemap.xml')
+  const sitemapDestPath = path.join(out, `sitemap-${region.id === 'mq' ? 'martinique' : 'guadeloupe'}.xml`)
+  if (fs.existsSync(sitemapSrcPath)) {
+    let sitemapXml = fs.readFileSync(sitemapSrcPath, 'utf-8')
+    // Filter to only keep URLs for this region's domain
+    const domain = region.domain
+    // Split by <url> blocks and filter
+    const header = sitemapXml.substring(0, sitemapXml.indexOf('<url>'))
+    const footer = sitemapXml.substring(sitemapXml.lastIndexOf('</url>') + 6)
+    const urlBlocks = sitemapXml.substring(sitemapXml.indexOf('<url>'), sitemapXml.lastIndexOf('</url>') + 6)
+    const keptBlocks = []
+    let remaining = urlBlocks
+    while (remaining.includes('<url>')) {
+      const start = remaining.indexOf('<url>')
+      const end = remaining.indexOf('</url>')
+      if (start === -1 || end === -1) break
+      const block = remaining.substring(start, end + 6)
+      const locMatch = block.match(/<loc>([^<]+)<\/loc>/)
+      if (locMatch && locMatch[1].includes(domain)) {
+        keptBlocks.push(block)
+      }
+      remaining = remaining.substring(end + 6)
+    }
+    const filteredXml = header + keptBlocks.join('') + footer
+    fs.writeFileSync(sitemapDestPath, filteredXml, 'utf-8')
+    console.log(`   → sitemap.xml filtré et copié vers ${path.basename(sitemapDestPath)} (${keptBlocks.length} URLs)`)
+  }
+
+  // For GP: if sitemap has 0 URLs (shared build only has MQ), generate from disk
+  if (region.id === 'gp') {
+    const gpSitemapPath = path.join(out, 'sitemap-guadeloupe.xml')
+    const gpSitemapXml = fs.readFileSync(gpSitemapPath, 'utf-8')
+    const urlCount = (gpSitemapXml.match(/<loc>/g) || []).length
+    if (urlCount === 0) {
+      // Generate sitemap from GP pages on disk
+      const today = new Date().toISOString().slice(0, 10)
+      const pages = []
+      const walk = (dir, prefix = '') => {
+        for (const name of fs.readdirSync(dir)) {
+          const full = path.join(dir, name)
+          const stat = fs.statSync(full)
+          const rel = prefix ? `${prefix}/${name}` : name
+          if (stat.isDirectory()) {
+            walk(full, rel)
+          } else if (name === 'index.html') {
+            const urlPath = '/' + (rel === 'index.html' ? '' : rel.replace('/index.html', ''))
+            // Check if page is indexable (no noindex)
+            const html = fs.readFileSync(full, 'utf-8').slice(0, 8192)
+            if (!/<meta\s+name=["']robots["']\s+content=["'][^"']*noindex/i.test(html)) {
+              pages.push(urlPath)
+            }
+          }
+        }
+      }
+      walk(out)
+      // Filter to only GP domain pages (already in GP FTP folder)
+      const gpPages = pages.filter(p => p.startsWith('/'))
+      const sitemapEntries = gpPages.map(p => `  <url><loc>https://${domain}${p}</loc><lastmod>${today}</lastmod><changefreq>weekly</changefreq><priority>0.5</priority></url>`).join('\n')
+      const newSitemap = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemapEntries}\n</urlset>\n`
+      fs.writeFileSync(gpSitemapPath, newSitemap, 'utf-8')
+      console.log(`   → sitemap-guadeloupe.xml régénéré depuis le disque (${gpPages.length} URLs)`)
+    }
+  }
+
   console.log(`OK: ${dir}/ créé (contenu de dist/ + LISEZMOI-FTP.txt)`)
 }
 
