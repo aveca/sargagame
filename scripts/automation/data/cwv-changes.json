@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2026-09-21T17:12:23.649Z",
+  "generatedAt": "2026-09-28T18:49:21.798Z",
   "kind": "delta",
   "changes": [
     {
-      "site": "mq",
+      "site": "florida",
       "formFactor": "combined",
-      "metric": "INP",
-      "from": 369,
-      "to": 318,
-      "delta": -51,
-      "kind": "improvement",
+      "metric": "LCP",
+      "from": 1260,
+      "to": 1466,
+      "delta": 206,
+      "kind": "regression",
       "crossesThreshold": false
     }
   ]

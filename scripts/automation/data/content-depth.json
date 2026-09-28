@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-21T17:12:35.685Z",
+  "generatedAt": "2026-09-28T18:49:36.031Z",
   "sites": {
     "mq": {
-      "pageCount": 807,
+      "pageCount": 809,
       "medianWords": 192,
-      "thinCount": 652,
-      "richCount": 83,
+      "thinCount": 656,
+      "richCount": 79,
       "thinPages": [
         {
           "url": "/404.html",
@@ -89,43 +89,43 @@
         },
         {
           "url": "/widget/embed/saint-felix/",
-          "words": 8
+          "words": 7
         },
         {
           "url": "/widget/embed/anse-a-l-ane/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-a-l-eau/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-a-sable/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-belleville/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-bertrand-nord/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-bonneville/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-cafard/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-caritan/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-champagne/",
-          "words": 9
+          "words": 8
         }
       ],
       "topPages": [
@@ -142,40 +142,40 @@
           "words": 1900
         },
         {
+          "url": "/plages/plage-du-bourg-sainte-anne/",
+          "words": 1895
+        },
+        {
           "url": "/themes-lab/arena-app.html",
           "words": 1894
         },
         {
+          "url": "/plages/plage-du-diamant/",
+          "words": 1856
+        },
+        {
+          "url": "/plages/plage-des-salines/",
+          "words": 1852
+        },
+        {
           "url": "/plages/grande-anse-d-arlet/",
-          "words": 1847
+          "words": 1846
         },
         {
           "url": "/plages/plage-du-marin/",
-          "words": 1839
-        },
-        {
-          "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1834
+          "words": 1838
         },
         {
           "url": "/plages/anse-corps-de-garde/",
-          "words": 1823
-        },
-        {
-          "url": "/plages/anse-mitan/",
           "words": 1822
-        },
-        {
-          "url": "/plages/grande-anse-du-carbet/",
-          "words": 1817
         }
       ]
     },
     "gp": {
-      "pageCount": 842,
+      "pageCount": 844,
       "medianWords": 192,
-      "thinCount": 650,
-      "richCount": 113,
+      "thinCount": 654,
+      "richCount": 109,
       "thinPages": [
         {
           "url": "/404.html",
@@ -259,43 +259,43 @@
         },
         {
           "url": "/widget/embed/saint-felix/",
-          "words": 8
+          "words": 7
         },
         {
           "url": "/widget/embed/anse-a-l-ane/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-a-l-eau/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-a-sable/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-belleville/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-bertrand-nord/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-bonneville/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-cafard/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-caritan/",
-          "words": 9
+          "words": 8
         },
         {
           "url": "/widget/embed/anse-champagne/",
-          "words": 9
+          "words": 8
         }
       ],
       "topPages": [
@@ -317,26 +317,26 @@
         },
         {
           "url": "/plages/plage-de-grande-anse/",
-          "words": 1886
+          "words": 1887
         },
         {
           "url": "/plages/plage-de-la-caravelle/",
-          "words": 1876
+          "words": 1875
+        },
+        {
+          "url": "/plages/ile-de-la-petite-terre/",
+          "words": 1865
         },
         {
           "url": "/plages/plage-de-deshaies/",
-          "words": 1853
+          "words": 1852
         },
         {
           "url": "/plages/plage-de-malendure/",
-          "words": 1847
+          "words": 1844
         },
         {
           "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1840
-        },
-        {
-          "url": "/plages/plage-du-gosier/",
           "words": 1839
         }
       ]

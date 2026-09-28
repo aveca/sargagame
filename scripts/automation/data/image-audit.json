@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-09-21T17:12:36.993Z",
+  "generatedAt": "2026-09-28T18:49:37.313Z",
   "sites": {
     "mq": {
-      "pageCount": 807,
+      "pageCount": 809,
       "pagesSkippedNoindex": 22,
-      "totalImages": 54,
+      "totalImages": 57,
       "issueCount": 0,
       "byKind": {},
       "issues": []
     },
     "gp": {
-      "pageCount": 842,
+      "pageCount": 844,
       "pagesSkippedNoindex": 22,
-      "totalImages": 84,
+      "totalImages": 87,
       "issueCount": 0,
       "byKind": {},
       "issues": []

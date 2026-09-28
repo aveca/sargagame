@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-28T01:22:46.612Z",
+  "generatedAt": "2026-09-28T18:49:35.642Z",
   "sites": {
     "mq": {
-      "pageCount": 807,
+      "pageCount": 809,
       "pagesSkippedNoindex": 460,
-      "pagesWithCanonical": 176,
-      "pagesWithHreflang": 160,
-      "issueCount": 177,
+      "pagesWithCanonical": 178,
+      "pagesWithHreflang": 162,
+      "issueCount": 182,
       "byKind": {
         "missing-canonical": 171,
         "canonical-invalid-url": 1,
-        "hreflang-target-missing": 4,
-        "canonical-mismatch": 1
+        "canonical-mismatch": 3,
+        "hreflang-target-missing": 7
       },
       "issues": [
         {
@@ -22,6 +22,42 @@
           "file": "b2b/index.html",
           "kind": "canonical-invalid-url",
           "canonical": "/pro/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/sargassum-today/",
+          "pageUrl": "/en/sargassum-today/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-martinique.com/sargassum-today/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "x-default",
+          "href": "https://sargasses-martinique.com/sargassum-today/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/hoy/",
+          "pageUrl": "/es/hoy/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-martinique.com/hoy/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "x-default",
+          "href": "https://sargasses-martinique.com/hoy/"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -36,10 +72,10 @@
           "kind": "missing-canonical"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-martinique.com/en/sargassum-today/"
+          "file": "sarg_carte_satellite_app.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/carte-sargasses/",
+          "pageUrl": "/sarg_carte_satellite_app.html"
         },
         {
           "file": "sargasses-aujourdhui/index.html",
@@ -60,12 +96,6 @@
           "href": "https://sargasses-martinique.com/es/sargazo-cerca-de-mi/"
         },
         {
-          "file": "sarg_carte_satellite_app.html",
-          "kind": "canonical-mismatch",
-          "canonical": "/carte-sargasses/",
-          "pageUrl": "/sarg_carte_satellite_app.html"
-        },
-        {
           "file": "veilleur/index.html",
           "kind": "missing-canonical"
         },
@@ -204,40 +234,20 @@
         {
           "file": "widget/embed/anse-de-la-baie-olive/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 842,
+      "pageCount": 844,
       "pagesSkippedNoindex": 460,
-      "pagesWithCanonical": 211,
-      "pagesWithHreflang": 195,
-      "issueCount": 177,
+      "pagesWithCanonical": 213,
+      "pagesWithHreflang": 197,
+      "issueCount": 182,
       "byKind": {
         "missing-canonical": 171,
         "canonical-invalid-url": 1,
-        "hreflang-target-missing": 4,
-        "canonical-mismatch": 1
+        "canonical-mismatch": 3,
+        "hreflang-target-missing": 7
       },
       "issues": [
         {
@@ -248,6 +258,42 @@
           "file": "b2b/index.html",
           "kind": "canonical-invalid-url",
           "canonical": "/pro/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/sargassum-today/",
+          "pageUrl": "/en/sargassum-today/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "en",
+          "href": "https://sargasses-guadeloupe.com/sargassum-today/"
+        },
+        {
+          "file": "en/sargassum-today/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "x-default",
+          "href": "https://sargasses-guadeloupe.com/sargassum-today/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/hoy/",
+          "pageUrl": "/es/hoy/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "es",
+          "href": "https://sargasses-guadeloupe.com/hoy/"
+        },
+        {
+          "file": "es/hoy/index.html",
+          "kind": "hreflang-target-missing",
+          "lang": "x-default",
+          "href": "https://sargasses-guadeloupe.com/hoy/"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -262,10 +308,10 @@
           "kind": "missing-canonical"
         },
         {
-          "file": "sargasses-aujourdhui/index.html",
-          "kind": "hreflang-target-missing",
-          "lang": "en",
-          "href": "https://sargasses-guadeloupe.com/en/sargassum-today/"
+          "file": "sarg_carte_satellite_app.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/carte-sargasses/",
+          "pageUrl": "/sarg_carte_satellite_app.html"
         },
         {
           "file": "sargasses-aujourdhui/index.html",
@@ -286,12 +332,6 @@
           "href": "https://sargasses-guadeloupe.com/es/sargazo-cerca-de-mi/"
         },
         {
-          "file": "sarg_carte_satellite_app.html",
-          "kind": "canonical-mismatch",
-          "canonical": "/carte-sargasses/",
-          "pageUrl": "/sarg_carte_satellite_app.html"
-        },
-        {
           "file": "veilleur/index.html",
           "kind": "missing-canonical"
         },
@@ -429,26 +469,6 @@
         },
         {
           "file": "widget/embed/anse-de-la-baie-olive/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
           "kind": "missing-canonical"
         }
       ]

@@ -981,6 +981,94 @@
           }
         }
       }
+    },
+    {
+      "date": "2026-09-28",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 1553,
+              "good": null
+            },
+            "INP": {
+              "p75": 291,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 473,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 1688,
+              "good": null
+            },
+            "INP": {
+              "p75": 393,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 439,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 1466,
+              "good": null
+            },
+            "INP": {
+              "p75": 179,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 475,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 1433,
+              "good": null
+            },
+            "INP": {
+              "p75": 189,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.02,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 538,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
     }
   ]
 }

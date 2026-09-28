@@ -1,59 +1,91 @@
 {
-  "generatedAt": "2026-09-21T17:12:23.400Z",
-  "comparedTo": "2026-09-14",
+  "generatedAt": "2026-09-28T18:49:21.576Z",
+  "comparedTo": "2026-09-21",
   "alerts": {
     "drops": [
       {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+        "prevPos": 7.7,
+        "currPos": 19.1,
+        "delta": 11.4,
+        "impressions": 79
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/",
+        "prevPos": 24.2,
+        "currPos": 28.7,
+        "delta": 4.5,
+        "impressions": 163
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/sargassum-forecast/",
+        "prevPos": 68.6,
+        "currPos": 76.6,
+        "delta": 8,
+        "impressions": 88
+      },
+      {
         "site": "rivieramaya",
         "page": "https://sargassumcancun.com/en/",
-        "prevPos": 48.5,
-        "currPos": 54.3,
-        "delta": 5.8,
-        "impressions": 196
+        "prevPos": 54.3,
+        "currPos": 58.2,
+        "delta": 3.9,
+        "impressions": 167
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+        "prevPos": 13.1,
+        "currPos": 16.4,
+        "delta": 3.3,
+        "impressions": 78
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/",
+        "prevPos": 4.3,
+        "currPos": 9.1,
+        "delta": 4.8,
+        "impressions": 44
       }
     ],
     "gains": [
       {
-        "site": "florida",
-        "page": "https://sargassummiami.com/seaweed-map/",
-        "prevPos": 19.1,
-        "currPos": 12.7,
-        "delta": -6.4,
-        "impressions": 159
-      },
-      {
         "site": "rivieramaya",
         "page": "https://sargassumcancun.com/en/seaweed-map/",
-        "prevPos": 64.1,
-        "currPos": 58.2,
-        "delta": -5.9,
-        "impressions": 39
+        "prevPos": 58.2,
+        "currPos": 45.5,
+        "delta": -12.7,
+        "impressions": 70
       }
     ],
     "appeared": [
       {
         "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
-        "avgPos": 13.1,
-        "clicks": 2,
-        "impressions": 117
-      }
-    ],
-    "vanished": [],
-    "queryDrops": [
-      {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/que-es-el-sargazo/",
-        "query": "sargazo",
-        "prevPos": 25.1,
-        "currPos": 26.7,
-        "delta": 1.6,
-        "prevImpressions": 56,
-        "impressions": 59,
+        "page": "https://sargasses-guadeloupe.com/plages/petit-havre-gosier/",
+        "avgPos": 15.5,
         "clicks": 0,
-        "prevClicks": 0
+        "impressions": 42
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/es/playas-sin-sargazo-hoy/",
+        "avgPos": 10.3,
+        "clicks": 3,
+        "impressions": 104
       }
     ],
+    "vanished": [
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
+        "prevImpressions": 41
+      }
+    ],
+    "queryDrops": [],
     "queryGains": []
   }
 }

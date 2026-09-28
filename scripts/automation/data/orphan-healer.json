@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-21T17:12:37.374Z",
+  "generatedAt": "2026-09-28T18:49:37.675Z",
   "sites": {
     "mq": {
       "donorCount": 5,
@@ -30,11 +30,11 @@
         "/alertes/",
         "/danger-sargasses-h2s/",
         "/activity/dive/",
-        "/activity/family/",
         "/activity/kids/",
-        "/activity/parking/",
-        "/activity/snorkel/",
-        "/activity/surf/"
+        "/activity/surf/",
+        "/agir/",
+        "/b2b/",
+        "/beach/akumal-bay/"
       ]
     },
     "gp": {
@@ -68,9 +68,9 @@
         "/plages-sans-sargasses/",
         "/saison-sargasses-guadeloupe/",
         "/activity/dive/",
-        "/activity/family/",
         "/activity/kids/",
-        "/activity/parking/"
+        "/activity/surf/",
+        "/agir/"
       ]
     }
   }
