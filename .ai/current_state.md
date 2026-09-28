@@ -1,3 +1,39 @@
+## 2026-09-28 · Agent: data (FUNNEL OBSERVE) — Post-deploy funnel p30/trip7/season + checkout diagnostic (zéro changement produit)
+
+### Travail effectué
+- **Résumé 1 ligne** : observation post-deploy PR #759 : fenêtre trop courte pour mesurer trip7/season (deploy 06:03Z, metrics quotidiennes), baseline 14j + snapshot 7j consolidés, diagnostic checkout→redirect 0% (events existants vs gaps), verdicts INSUFFICIENT DATA + INSTRUMENTATION REQUIRED.
+- **Détails** :
+  - Fenêtre post-deploy : merge #759 06:03Z → premier relevé 07:05Z (~1h) ; daily-metrics dernière entrée 09-27, funnel-daily-report since 09-26 → AUCUNE donnée post-deploy dans les rapports agrégés
+  - Baseline 09-14→09-27 : 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6%) → 35 checkout (100%) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19 ; ère 100% p30 (trip7/season live depuis ~09-28)
+  - Snapshot 7j (09-20→) : modal_close 54/105 (51%), pay_onsite_back 1/6, modal_to_cta 5.7%, cta_to_onsite 100%, onsite_to_mollie 0%
+  - Tripchoice : visibilité/clic/switch/CTA mesurables via sg_pass_offer_view.offer + sg_pass_cta.pass EXISTANTS — mais split par pass ABSENT des rapports agrégés (requêtes SQL fournies, service key requise)
+  - Checkout diagnostic : email/consent gates = messages visibles (pas de silent fail) ; mounts/timeouts trackés ; tokenize/submit/request/response/failure trackés avec pass ; abandon esc/swipe/btn tracké (sg_checkout_abandon) ; MANQUE : échecs validation email/consent (aucun event), détail par étape côté agrégats
+
+### Fichiers modifiés
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — observation uniquement, ZÉRO code produit
+
+### Tests réalisés
+- [x] Lecture daily-metrics.json (63 entrées, dernière 09-27), funnel-daily-report.json, funnel-snapshot.json
+- [x] Audit code doSubscribe/OnsiteCheckout (events existants vs gaps) — lecture seule
+- [ ] Mesure 7j post-deploy : IMPOSSIBLE avant ~2026-10-05 (pipeline quotidienne)
+
+### Problèmes restants / Blockers
+- [ ] INSUFFICIENT DATA : effet trip7/season/tripchoice non mesurable avant ~7j de trafic post-deploy — Rôle : growth_agent (relever 2026-10-05)
+- [ ] INSTRUMENTATION REQUIRED : split par pass + étapes checkout dans les agrégats (requêtes SQL prêtes, service key requise) — Rôle : data_agent
+- [ ] Validation email/consent sans event (gap mineur, spéculatif — ne pas implémenter sans preuve du volume) — Rôle : coding_agent
+
+### Prochaine action recommandée
+1. 2026-10-05 : requête Supabase fournie → tableau p30/trip7/season + étapes checkout → verdict CONTINUE/INSUFFICIENT — Rôle : growth_agent + data_agent
+2. Si modal→CTA inchangé à 7j : tester wording/position tripchoice ou retirer — Rôle : product_agent
+3. Ne rien changer au checkout avant d'avoir les raisons d'abandon chiffrées — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/data/funnel-observe` (observation + docs, aucun code produit)
+- PR : #à créer
+- Commit head : `à remplir`
+
+---
+
 ## 2026-09-28 · Agent: cro (B2C REVENUE SPRINT) — trip7 secondary choice in paywall (?tripchoice=)
 
 ### Travail effectué

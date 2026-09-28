@@ -1,3 +1,55 @@
+## 2026-09-28 — FUNNEL OBSERVE : post-deploy p30/trip7/season + checkout diagnostic (zéro changement produit)
+
+**FENÊTRE** : merge #759 06:03Z → relevé 07:05Z (~1h) ; daily-metrics dernière entrée 09-27, funnel-daily-report since 09-26 → AUCUNE donnée post-deploy dans les agrégats. Périodes non mélangées.
+
+**POST-DEPLOY FUNNEL** (observed, N brut) :
+| Étape | N | Taux | Période |
+|-------|---|------|---------|
+| sessions | — | — | post-deploy : NOT AVAILABLE (pipeline quotidienne) |
+| modal opens | — | — | NOT AVAILABLE |
+| offer displayed (p30/trip7/season) | — | — | NOT AVAILABLE (split par pass absent des agrégats) |
+| CTA (p30/trip7/season) | — | — | NOT AVAILABLE |
+| checkout / redirect / paid | — | — | NOT AVAILABLE |
+
+**BASELINE pré-deploy rappelée (09-14→09-27, ère 100% p30)** : 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6%) → 35 checkout (100%) → 0 redirect → 0 paid. Snapshot 7j : modal_close 51%, pay_onsite_back 17%, modal_to_cta 5.7%.
+
+**TRIPCHOICE** : visibilité/clic/switch/CTA mesurables via `sg_pass_offer_view.offer` + `sg_pass_cta.pass` existants — INSUFFICIENT DATA (0 jour plein post-deploy).
+
+**CHECKOUT DIAGNOSTIC — checkout 6/7j > 0 mais redirect = 0** :
+- Symptôme : onsite_checkout_opened=6 (7j) → mollie_checkout_redirect=0, conversion=0
+- Preuve : funnel-snapshot.json rates (cta_to_onsite=100, onsite_to_mollie=0) + daily-metrics 14j (onsite=35, mredir=0)
+- Cause connue : AUCUNE cause racine identifiée — les guards ont des messages visibles (email/consent/mounts), les timeouts et échecs sont trackés
+- Cause inconnue : À QUELLE étape meurent les checkouts (validation ? tokenize ? create_payment ? abandon silencieux ?)
+- Donnée manquante : comptes par étape avec split pass depuis Supabase (requêtes ci-dessous, service key requise) ; échecs validation email/consent sans event (gap spéculatif)
+
+Requêtes service key (lecture seule, sans PII — params non-nominatifs par design) :
+```sql
+-- CTA + vues par offre depuis le deploy
+select params->>'pass' as pass,
+  count(*) filter (where event='sg_pass_cta') as cta,
+  count(*) filter (where event='sg_pass_offer_view') as views
+from analytics_events
+where event in ('sg_pass_cta','sg_pass_offer_view') and ts >= '2026-09-28T06:00:00Z'
+group by 1;
+-- chaîne checkout→redirect avec pass
+select event, params->>'pass' as pass, count(*)
+from analytics_events
+where event in ('sg_onsite_checkout_opened','sg_card_tokenize_attempt','sg_card_tokenize_success','sg_payment_submit','sg_create_payment_request','sg_create_payment_response','sg_mollie_checkout_redirect','sg_payment_failed','sg_checkout_abandon')
+  and ts >= '2026-09-28T06:00:00Z'
+group by 1, 2 order by 1, 2;
+-- raisons d'échec + abandons
+select params->>'reason' as reason, count(*) from analytics_events
+where event='sg_payment_failed' and ts >= '2026-09-28T06:00:00Z' group by 1;
+select params->>'via' as via, count(*) from analytics_events
+where event='sg_checkout_abandon' and ts >= '2026-09-28T06:00:00Z' group by 1;
+```
+
+**REVENUE TRUTH** : dernier paid Mollie 2026-07-19 (70j) ; Stripe legacy 14 actifs stables ; CTA/checkout/redirect ≠ revenu.
+
+**VERDICTS** : Trip choice → **INSUFFICIENT DATA** (relever 2026-10-05) · Checkout → **INSTRUMENTATION REQUIRED** (pas de cause identifiable sans les comptes par étape).
+
+---
+
 ## 2026-09-28 — B2C REVENUE/CRO SPRINT : trip7 secondaire dans le paywall (?tripchoice=)
 
 **PROBLEM** : baseline 14j — 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6%) → 35 checkout (100%) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19. Levier mesurable sans toucher prix/paiement : proposer trip7 (€4.99, déjà chargeable) sous l'offre p30.
