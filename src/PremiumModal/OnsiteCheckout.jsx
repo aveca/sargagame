@@ -20,6 +20,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from "react"
 import ComicIcon from "../components/ComicIcons.jsx"
 import { track } from "../Sargasses_PROD.jsx"
 import { seasonalCents } from "../lib/pass-price.js"
+import { offerDisplayCents } from "../lib/offers.js"
 import { buildTrajectory, TRAJ_STATUS } from "../lib/stay-trajectory.js"
 import { sgUid } from "../supabasePhotos.js"
 import { IdentityStep, trackEmailIdentityStart } from "./IdentityStep.jsx"
@@ -426,9 +427,9 @@ export function OnsiteCheckout({
                 "Pagos en mantenimiento unos días. Mientras, tu acceso premium 7 días es GRATIS — tu email y listo.")
             : passCtx
             ? _t(lang,
-                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")} · ${passCtx.days} jours d'accès complet · paiement unique`,
-                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")} · ${passCtx.days} days full access · one-time`,
-                `${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")} · ${passCtx.days} días · pago único`)
+                `${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")} · ${passCtx.days} jours d'accès complet · paiement unique`,
+                `${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")} · ${passCtx.days} days full access · one-time`,
+                `${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")} · ${passCtx.days} días · pago único`)
             : null}
         </div>
 
@@ -568,7 +569,7 @@ export function OnsiteCheckout({
           const w = walletState
           if (!w.apple && !w.google) return null
           if (!(!PAY_CAPTURE_ONLY && PAY_PROVIDER === "mollie")) return null
-          const cents = seasonalCents(passCtx?.cents ?? 499, passCtx?.cur || PAY_CUR)
+          const cents = offerDisplayCents(passCtx?.pass, passCtx?.cur || PAY_CUR) ?? seasonalCents(passCtx?.cents ?? 499, passCtx?.cur || PAY_CUR)
           const amountStr2 = (cents / 100).toFixed(2) + (PAY_CUR === "usd" ? " $" : " €")
           const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
           const isAndroid = /Android/.test(navigator.userAgent)
@@ -748,7 +749,7 @@ export function OnsiteCheckout({
             : PAY_CAPTURE_ONLY
             ? _t(lang, "Débloquer gratuitement →", "Unlock free →", "Desbloquear gratis →")
             : passCtx
-            ? _t(lang, `Payer ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")}`, `Pay ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")}`, `Pagar ${fmtPassPrice(seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")}`)
+            ? _t(lang, `Payer ${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "fr")}`, `Pay ${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "en")}`, `Pagar ${fmtPassPrice(offerDisplayCents(passCtx.pass, passCtx.cur) ?? seasonalCents(passCtx.cents, passCtx.cur), passCtx.cur, "es")}`)
             : NO_TRIAL
             ? (payPlanRef.current === "annual"
               ? _t(lang, `Payer ${PRICE_YR} — activer maintenant`, `Pay ${PRICE_YR} — activate now`, `Pagar ${PRICE_YR} — activar ya`)

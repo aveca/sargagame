@@ -3,6 +3,7 @@ import ComicIcon from"./components/ComicIcons.jsx"
 import{getSegment}from"./lib/segment.js"
 import{track}from"./Sargasses_PROD.jsx"
 import{PASS_CENTS,seasonalCents}from"./lib/pass-price.js"
+import{getOffer,isChargeable,offerBaseCents,offerDisplayCents}from"./lib/offers.js"
 import{buildTrajectory}from"./lib/stay-trajectory.js"
 
 // Ré-export pour les consommateurs existants (OnsiteCheckout) — source = lib/pass-price.js
@@ -18,21 +19,39 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null, beachCount = 0 }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, pwVariant, tripDays = null, tripBeach = "", trajForecast = null, beachCount = 0, offerKey = "p30", offerRequested = null }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
-  const cents = PASS.cents[cur] // prix de BASE envoyé au serveur (validation anti-tamper)
-  const displayCents = seasonalCents(cents, cur) // prix réellement débité (surcharge saison USD)
-  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
+  // OFFRE EXPOSÉE (?offer=, B2C Offer Lab) — résolution via le catalogue
+  // canonique offers.js ; fallback p30 (comportement historique exact).
+  // Le front n'est jamais une autorité transactionnelle : `cents` = montant
+  // de BASE envoyé au serveur (validation anti-tamper serveur), jamais inventé.
+  const OFFER = (()=>{
+    try{
+      const k=(typeof offerKey==="string"&&isChargeable(offerKey))?offerKey:"p30"
+      const o=getOffer(k)
+      return (o&&o.status==="live"&&o.kind!=="free")?o:getOffer("p30")
+    }catch(_){return getOffer("p30")}
+  })()
+  const cents = offerBaseCents(OFFER.key, cur) ?? PASS.cents[cur] // prix de BASE envoyé au serveur
+  const displayCents = offerDisplayCents(OFFER.key, cur) ?? seasonalCents(cents, cur) // prix réellement débité (miroir serveur)
+  const offerDays = OFFER.days || PASS.days
+  const offerTitle = OFFER.key==="trip7"
+    ? _t(lang,"Pass 7 jours","7-day pass","Pase 7 días")
+    : OFFER.key==="season"
+    ? _t(lang,"Pass Saison","Season pass","Pase de temporada")
+    : _t(lang,"Pass 30 jours","30-day pass","Pase 30 días")
+  const offerDaysLabel = _t(lang,`${offerDays} jours`,`${offerDays} days`,`${offerDays} días`)
+  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",offer:OFFER.key,...(offerRequested?{offer_requested:offerRequested}:{})})}catch(_){}},[])
   const buy=()=>{
-    sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
+    sbeacon({stage:"cta",segment:seg,pass:OFFER.key,cents})
     // NB : sg_pass_cta est tracké UNE seule fois par PremiumModal.onPassBuy (payload plus riche).
     localStorage.setItem('sg_checkout_started_at', Date.now())
-    if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
+    if(onBuy)onBuy({c:cents,pass:OFFER.key,days:offerDays,segment:seg})
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
-  const pd = perDay(displayCents, PASS.days, cur, lang)
+  const pd = perDay(displayCents, offerDays, cur, lang)
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
   // UI mobile CRO — CTA thumb reach (rollback ?sguxcta=0). Ne touche ni pricing ni tracking.
   const uxCtaV2 = (()=>{try{return !/[?&]sguxcta=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
@@ -145,7 +164,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             <span style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: isComic ? "#0D0B14" : "#fff", lineHeight: 1.05 }}>
-                  {_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}
+                  {offerTitle}
                 </span>
                 <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: isComic ? "rgba(13,11,20,.5)" : "rgba(234,247,244,.6)", marginTop: 4 }}>
                   {_t(lang, "Toutes les plages · Prévision 7 j", "All beaches · 7-day forecast", "Todas las playas · Pronóstico 7 d")}
@@ -217,7 +236,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
                   <rect x="3" y="5" width="18" height="16" rx="2.5" stroke="currentColor" strokeWidth="2.4"/>
                   <path d="M3 10h18M8 3v4M16 3v4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"/>
                 </svg>
-                {_t(lang, "30 jours", "30 days", "30 días")}
+                {offerDaysLabel}
               </span>
               <span aria-hidden="true" style={{ opacity: .5 }}>·</span>
               <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -271,7 +290,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: isComic ? "rgba(13,11,20,.38)" : "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Pas d'abonnement", "No subscription", "Sin suscripción")}</span><span aria-hidden="true">·</span>
-          <span>{_t(lang, "30 jours", "30 days", "30 días")}</span><span aria-hidden="true">·</span>
+          <span>{offerDaysLabel}</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}</span>
         </div>
       </div>

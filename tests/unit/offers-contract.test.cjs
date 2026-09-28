@@ -108,6 +108,134 @@ ok("catalogue < 15 Ko", Buffer.byteLength(offers, "utf8") < 15 * 1024)
 ok("import unique autorisé : ./pass-price.js (même dossier)",
   offers.includes('from "./pass-price.js"') && !/from "\.\.\//.test(offers))
 
-console.log(`\n${pass} passed, ${fail} failed`)
-if (fail > 0) process.exit(1)
-console.log("✅ OFFERS-CONTRACT — ALL GUARDS PASS")
+// 11. Câblage UI : PassOffer / PremiumModal / paywalls / deep-link / checkout.
+//     Garde-fous statiques (le chunk lazy PremiumModal rend l'interception
+//     window.track inopérante en E2E — limite documentée j0-sprint).
+const passOfferSrc = read("src/PassOffer.jsx")
+const premiumModalSrc = read("src/PremiumModal.jsx")
+const worldSrc = read("src/PremiumModal/WorldPaywall.jsx")
+const comicSrc = read("src/PremiumModal/ComicPaywall.jsx")
+const prodSrc = read("src/Sargasses_PROD.jsx")
+const checkoutSrc = read("src/PremiumModal/OnsiteCheckout.jsx")
+
+ok("PassOffer accepte offerKey (défaut p30)",
+  passOfferSrc.includes('offerKey = "p30"'))
+ok("PassOffer résout via le catalogue (getOffer, pas de mapping dupliqué)",
+  passOfferSrc.includes("getOffer(") && passOfferSrc.includes("./lib/offers.js"))
+ok("PassOffer buy() envoie pass:OFFER.key + days dynamiques (même forme qu'avant)",
+  passOfferSrc.includes("pass:OFFER.key") && passOfferSrc.includes("days:offerDays"))
+ok("PassOffer titre dynamique (trip7/season/p30)",
+  passOfferSrc.includes("offerTitle"))
+ok("PassOffer view track sg_pass_offer_view avec offer (+offer_requested), model préservé",
+  passOfferSrc.includes('track("sg_pass_offer_view"') && passOfferSrc.includes("offer:OFFER.key")
+  && passOfferSrc.includes("offer_requested") && passOfferSrc.includes('model:"oneprice"'))
+ok("PassOffer sans logique paiement (pas de create_payment/tokenize/grant/subscription)",
+  !/doSubscribe|createToken|create_payment|create_subscription|mollieRef|webhook|grantOnce|payment_status|b2b_pro/i.test(passOfferSrc))
+ok("PremiumModal résout UNE fois via resolveOffer (source unique)",
+  premiumModalSrc.includes("resolveOffer") && premiumModalSrc.includes("offerResolved"))
+ok("PremiumModal thread offerKey/offerRequested via commonPaywallProps",
+  premiumModalSrc.includes("offerKey: offerResolved.key"))
+ok("WorldPaywall relaie offerKey aux 2 PassOffer",
+  (worldSrc.match(/offerKey=\{offerKey\}/g) || []).length >= 2)
+ok("ComicPaywall relaie offerKey à PassOffer",
+  comicSrc.includes("offerKey={offerKey}"))
+ok("PremiumModal.jsx:152 fallback jours conservé (filet, mapping saison→210 intact)",
+  premiumModalSrc.includes('item.pass === "saison" ? 210'))
+ok("Sargasses_PROD deep-link préserve ?offer= valide (pas de wipe)",
+  prodSrc.includes("resolveOffer") && prodSrc.includes("?offer="))
+ok("OnsiteCheckout récap affiche offerDisplayCents (honnêteté trip7 USD)",
+  (checkoutSrc.match(/offerDisplayCents\(passCtx/g) || []).length >= 3)
+ok("OnsiteCheckout garde le fallback seasonalCents historique",
+  checkoutSrc.includes("?? seasonalCents"))
+ok("OnsiteCheckout : zéro logique paiement touchée (doSubscribe/createToken intacts)",
+  checkoutSrc.includes("createToken") && checkoutSrc.includes("doSubscribe"))
+
+// 12. Comportement runtime resolveOffer / montants (import réel du module).
+//    Cas exigés mission §12 : default, trip7, season, unknown, empty,
+//    malformed, case handling, aucune mutation du default.
+async function behavioral() {
+  const mod = await import("../../src/lib/offers.js")
+  const eq = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+  const t = (desc, cond) => ok("[runtime] " + desc, !!cond)
+
+  // 1. default : absent → p30
+  t("default : search vide → p30", eq(mod.resolveOffer(""), { key: "p30", requested: null }))
+  t("default : sans ?offer= → p30", eq(mod.resolveOffer("?paywall=1"), { key: "p30", requested: null }))
+  t("default : search non-string → p30", eq(mod.resolveOffer(null), { key: "p30", requested: null }))
+
+  // 2-3. trip7 / season
+  t("trip7 résolu", eq(mod.resolveOffer("?offer=trip7"), { key: "trip7", requested: "trip7" }))
+  t("season résolu", eq(mod.resolveOffer("?offer=season"), { key: "season", requested: "season" }))
+  t("trip7 avec autres params (?a=1&offer=trip7&b=2)",
+    mod.resolveOffer("?a=1&offer=trip7&b=2").key === "trip7")
+  t("p30 explicite accepté", mod.resolveOffer("?offer=p30").key === "p30")
+
+  // 4-6. unknown / empty / malformed → fallback sûr p30
+  t("unknown ?offer=foo → p30 (requested conservé pour mesure)",
+    eq(mod.resolveOffer("?offer=foo"), { key: "p30", requested: "foo" }))
+  t("empty ?offer= → p30", mod.resolveOffer("?offer=").key === "p30")
+  t("malformed ?offer=% → p30 (decodeURIComponent throw)",
+    mod.resolveOffer("?offer=%").key === "p30")
+  t("malformed ?offer=<script> → p30", mod.resolveOffer("?offer=<script>alert(1)</script>").key === "p30")
+  t("trop long (100 chars) → p30", mod.resolveOffer("?offer=" + "x".repeat(100)).key === "p30")
+
+  // 7. case handling : trim + lowercase déterministes
+  t("case ?offer=Trip7 → trip7", mod.resolveOffer("?offer=Trip7").key === "trip7")
+  t("case ?offer= SEASON  → season", mod.resolveOffer("?offer=%20SEASON%20").key === "season")
+
+  // 8. aucune mutation du default / du catalogue
+  const before = JSON.stringify(mod.OFFERS)
+  const beforeP30 = JSON.stringify(mod.OFFERS.p30)
+  ;["", "?offer=trip7", "?offer=foo", "?offer=%", "?offer=watch_monthly", "?offer=trip7&offerlab=0"].forEach((q) => mod.resolveOffer(q))
+  t("aucune mutation OFFERS après résolutions", JSON.stringify(mod.OFFERS) === before)
+  t("p30 intact après résolutions", JSON.stringify(mod.OFFERS.p30) === beforeP30)
+
+  // Clés non exposables → p30 (p7 fantôme, saison FR, planned, free)
+  t("p7 (métadonnée morte) → p30", mod.resolveOffer("?offer=p7").key === "p30")
+  t("saison (FR) → p30 (canonique = season)", mod.resolveOffer("?offer=saison").key === "p30")
+  t("watch_monthly (planned) → p30", mod.resolveOffer("?offer=watch_monthly").key === "p30")
+  t("mon_stay (planned) → p30", mod.resolveOffer("?offer=mon_stay").key === "p30")
+  t("free → p30 (jamais exposé comme offre payante)", mod.resolveOffer("?offer=free").key === "p30")
+
+  // Kill-switch ?offerlab=0
+  t("?offerlab=0 tue même ?offer=trip7 valide",
+    mod.resolveOffer("?offer=trip7&offerlab=0").key === "p30")
+  t("offerLabOff('?offerlab=0') === true", mod.offerLabOff("?offerlab=0") === true)
+  t("offerLabOff('?offer=trip7') === false", mod.offerLabOff("?offer=trip7") === false)
+
+  // Montants de base (cents int, jamais inventés : miroir serveur/front)
+  t("base trip7/eur = 499", mod.offerBaseCents("trip7", "eur") === 499)
+  t("base trip7/usd = 599", mod.offerBaseCents("trip7", "usd") === 599)
+  t("base p30/eur = 1499", mod.offerBaseCents("p30", "eur") === 1499)
+  t("base p30/usd = 1199", mod.offerBaseCents("p30", "usd") === 1199)
+  t("base season/eur = 1999", mod.offerBaseCents("season", "eur") === 1999)
+  t("base season/usd = 1999", mod.offerBaseCents("season", "usd") === 1999)
+  t("base unknown → null", mod.offerBaseCents("foo", "eur") === null)
+  t("base free → null", mod.offerBaseCents("free", "eur") === null)
+  t("base planned → null", mod.offerBaseCents("watch_monthly", "eur") === null)
+
+  // Affichage = miroir serveur EXACT (mois injecté, pas de dépendance date)
+  t("display p30/eur = 1499 (jamais de surcharge EUR)", mod.offerDisplayCents("p30", "eur", 7) === 1499)
+  t("display p30/usd juillet = 1379 (+15 %)", mod.offerDisplayCents("p30", "usd", 7) === 1379)
+  t("display p30/usd janvier = 1199 (hors saison)", mod.offerDisplayCents("p30", "usd", 1) === 1199)
+  t("display trip7/usd juillet = 599 (SANS surcharge — règle serveur)",
+    mod.offerDisplayCents("trip7", "usd", 7) === 599)
+  t("display season/usd juillet = 2299 (+15 %)", mod.offerDisplayCents("season", "usd", 7) === 2299)
+  t("display season/usd janvier = 1999", mod.offerDisplayCents("season", "usd", 1) === 1999)
+  t("display trip7/eur = 499", mod.offerDisplayCents("trip7", "eur", 7) === 499)
+
+  // isChargeable : garde anti-checkout planned
+  t("isChargeable trip7/season/p30", mod.isChargeable("trip7") && mod.isChargeable("season") && mod.isChargeable("p30"))
+  t("!isChargeable watch/mon_stay/free/foo",
+    !mod.isChargeable("watch_monthly") && !mod.isChargeable("watch_annual")
+    && !mod.isChargeable("mon_stay") && !mod.isChargeable("free") && !mod.isChargeable("foo"))
+}
+
+behavioral().then(() => {
+  console.log(`\n${pass} passed, ${fail} failed`)
+  if (fail > 0) process.exit(1)
+  console.log("✅ OFFERS-CONTRACT — ALL GUARDS PASS")
+}).catch((e) => {
+  console.error("behavioral section crashed:", e && e.message)
+  process.exit(1)
+})

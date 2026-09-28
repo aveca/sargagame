@@ -122,6 +122,7 @@ export function WorldPaywall({
   island,
   beach,
   sargData, tripDays, beachCount = 0,
+  offerKey = "p30", offerRequested = null,
   trajForecast = null, trajBackup = null,
   payPlanRef,
   payEmailRef,
@@ -613,6 +614,8 @@ export function WorldPaywall({
             lang={lang}
             currency={PAY_CUR}
             onBuy={onPassBuy}
+            offerKey={offerKey}
+            offerRequested={offerRequested}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
             trajForecast={trajForecast}
             beachCount={beachCount}
@@ -662,6 +665,8 @@ export function WorldPaywall({
             lang={lang}
             currency={PAY_CUR}
             onBuy={onPassBuy}
+            offerKey={offerKey}
+            offerRequested={offerRequested}
             tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
             trajForecast={trajForecast}
             beachCount={beachCount}
