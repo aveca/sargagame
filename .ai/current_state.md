@@ -1,3 +1,47 @@
+## 2026-09-28 · Agent: cro (B2C REVENUE SPRINT) — trip7 secondary choice in paywall (?tripchoice=)
+
+### Travail effectué
+- **Résumé 1 ligne** : baseline funnel 14j (modal→CTA 7.6%, checkout→redirect 0%) → expérience trip7 secondaire sous la carte hero p30 (inchangée) avec switch in-place, rollback `?tripchoice=0`. Money-path/pricing/grants/subscriptions ZÉRO touchés.
+- **Détails** :
+  - Baseline 09-14→09-27 : 1604 sessions → 458 modal (28.6%) → 35 CTA (7.6% modal) → 35 checkout (100% CTA) → 0 redirect → 0 paid ; dernier paid Mollie 2026-07-19 ; PR #682 mergée mais cliff persistant ; checkout guards (email/consent/mounts) avec messages visibles — pas de silent fail
+  - Expérience : hypothèse = trip7 €4.99 visible sous p30 augmente modal→CTA ; primaire = modal→CTA global + par pass (sg_pass_cta.pass) ; secondaires = CTA→checkout, checkout→redirect, mix p30/trip7 ; 7j min, petits N bruts
+  - Implémentation : rangée `passoffer-trip-choice` (défaut ON, masquée hors p30), `onSelectOffer` → état + replaceState (pas de reload, pas de piège retour), prix via offerDisplayCents, deep-link préserve aussi `?tripchoice=0`
+  - Analytics : zéro nouvel event (sg_pass_cta.pass + sg_pass_offer_view.offer existants suffisent)
+
+### Fichiers modifiés
+- `src/PassOffer.jsx`, `src/PremiumModal.jsx`, `src/PremiumModal/WorldPaywall.jsx`, `src/PremiumModal/ComicPaywall.jsx`, `src/Sargasses_PROD.jsx` (deep-link tripchoice)
+- `tests/unit/offers-contract.test.cjs` (103 checks), `tests/e2e/trip-choice.spec.ts` (N, 8 tests)
+- 10 gardes buy-chain évolués vers la forme canonique (intention préservée)
+
+### Tests réalisés
+- [x] `node tests/unit/offers-contract.test.cjs` → 103/103
+- [x] `npm test` → 67/67 fichiers (worktree isolé)
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → N/A (0 PHP touché)
+- [x] `ux-smoke` → 4 tokens OK
+- [x] `funnel-payment` E2E → 13/13 · `offer-exposure` E2E → 12/12 · `trip-choice` E2E → 8/8 (3 viewports)
+- [x] `assertAllRegionsValid` → OK
+- [x] CI PR #759 → 7/7 verte (1er run : test-frontend rouge légitime sur 10 gardes texte exact → gardes évolués, pas contournés)
+
+### Problèmes restants / Blockers
+- [ ] Mesurer modal→CTA par pass à 7j (growth) — baseline p30-only disponible, trip7/season live depuis ~09-28
+- [ ] Checkout→redirect 0% : cause racine non identifiée (ni mounts silencieux ni consent/email muets — messages visibles) ; hypothèses restantes : friction formulaire mobile, iframes bloqués, choc prix — instrumenter avant de toucher
+- [ ] DOC-STALE-001/002, GAP-B2C-REC : inchangés (hors scope sprint)
+- [ ] Collision checkout partagé (session SEO parallèle) : travail isolé en worktrees dédiés, rien d'autrui modifié
+
+### Prochaine action recommandée
+1. Relever funnel 7j post-deploy (modal→CTA global + split pass) — Rôle suggéré : growth_agent
+2. Si trip-choice sans effet à 7j : tester wording/position OU retirer (`?tripchoice=0` permanent) — Rôle suggéré : product_agent + panel adverse
+3. Investiguer checkout→redirect 0% (montée en charge des raisons `sg_payment_failed`) AVANT toute modif checkout — Rôle suggéré : coding_agent + data_agent
+
+### Branche / PR
+- Branche : `agent/cro/b2c-revenue-sprint`
+- PR : #759 MERGED (squash `42ab1024b`, 2026-09-28T06:03:02Z) — CI 7/7 verte
+- Commit head : `42ab1024b`
+
+---
+
 ## 2026-09-28 · Agent: coding (B2C OFFER EXPOSURE) — expose trip7+season behind ?offer=
 
 ### Travail effectué
