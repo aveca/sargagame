@@ -38,11 +38,14 @@ function main() {
   // 3. Copy 100 % recyclée FR/EN/ES (faits déjà claimés l115/l150-153).
   for (const [fr, en, es] of [
     ['Paiement sécurisé', 'Secure payment', 'Pago seguro'],
-    ['30 jours', '30 days', '30 días'],
     ['Sans abonnement', 'No subscription', 'Sin suscripción'],
   ]) {
     ok(PO.includes(`"${fr}"`) && PO.includes(`"${en}"`) && PO.includes(`"${es}"`), `copy recyclée : ${fr} / ${en} / ${es}`)
   }
+  // Durée (?offer=) : la copy "30 jours" est devenue le label dynamique
+  // offerDaysLabel (défaut p30 = 30, trip7 = 7, season = 210 — voir offers.js).
+  ok(PO.includes('offerDaysLabel'), 'durée dynamique via offerDaysLabel (?offer=)')
+  ok(PO.includes('const offerDays = OFFER.days || PASS.days'), 'durée = OFFER.days, fallback PASS.days')
 
   // 4. Aucune instrumentation nouvelle, aucun z-index, chaîne buy intacte.
   const tracks = [...PO.matchAll(/track\("([^"]+)"/g)].map(m => m[1])

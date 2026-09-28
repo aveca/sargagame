@@ -16,6 +16,7 @@ import {beginCheckout, addPaymentInfo, purchase, getPlanMeta} from "./ga4-ecomme
 // Import des modules extraits
 import { usePaymentLogic, _relHref } from "./PremiumModal/doSubscribe.jsx"
 import { findAlternatives } from "./lib/beach-decision.js"
+import { resolveOffer } from "./lib/offers.js"
 import { WalletButtons } from "./PremiumModal/PayGatewayHandler.jsx"
 import { B2BModal, TerritoireMeeting } from "./PremiumModal/B2BModal.jsx"
 import { ErrorModal, ErrorInline, ToastError } from "./PremiumModal/ErrorModal.jsx"
@@ -141,6 +142,15 @@ export default function PremiumModal({
   //    doSubscribe() lit mollieRef.current.createToken() — refs DÉSORMONT remplies.
   // AVANT le fix : doSubscribe() était appelé direct → mollieRef.current=null → throw
   // silencieux dans catch → bouton "Commencer maintenant" muet sur les 5 domaines.
+  // B2C OFFER LAB (?offer=) — résolution DÉTERMINISTE de l'offre exposée,
+  // calculée UNE fois ici (source unique offers.js, jamais deux mappings).
+  // N'influence QUE l'affichage : prix débité / plan serveur / grant /
+  // entitlement / Mollie restent intacts (le front n'est pas une autorité
+  // transactionnelle). Défaut p30 = comportement historique exact.
+  const offerResolved = useMemo(()=>{
+    try{ return resolveOffer(typeof window!=="undefined"?window.location.search:"") }
+    catch(_){ return { key: "p30", requested: null } }
+  },[])
   const onPassBuy = useCallback((item)=>{
     // REVENUE 2026-09-23 : contexte déterministe joint (région/plage/devise) —
     // additif pur (aucun sens modifié) pour attribuer chaque CTA au revenu.
@@ -207,6 +217,7 @@ export default function PremiumModal({
   const commonPaywallProps = {
     lang, source, onClose, onActivated, track,
     sargData, island, beach, tripDays, beachCount, pwVariant,
+    offerKey: offerResolved.key, offerRequested: offerResolved.requested,
     trajForecast, trajBackup,
     payPlanRef, payEmailRef, payBusy, setPayBusy,
     payError, setPayError, payReadyRef, payRedirecting, setPayRedirecting,

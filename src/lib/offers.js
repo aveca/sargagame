@@ -45,8 +45,12 @@ export const OFFERS = {
     key: "trip7",
     kind: "one-time",
     billing: "one-time",
-    status: OFFER_STATUS.LIVE, // chargeable serveur, PAS encore servi par le front (seul p30 l'est)
-    price: { EUR: 4.99, USD: null },
+    status: OFFER_STATUS.LIVE, // chargeable serveur, exposé via ?offer=trip7 uniquement
+    price: { EUR: 4.99, USD: 5.99 },
+    // USD 5.99 = valeur d'affichage/payload attestée repo (ga4-ecommerce.js
+    // trip7_usd) ; le serveur valide par plausibilité (0.50–50), SANS surcharge
+    // saison (contrairement à p30/season).
+    usdPeakSurcharge: false, // miroir serveur : $pass !== 'trip7' → pas de +15 %
     days: 7,
     entitlement: "pass",
     features: ["forecast_full", "alternatives_full", "trip_planner", "confidence"],
@@ -56,8 +60,9 @@ export const OFFERS = {
     key: "p30",
     kind: "one-time",
     billing: "one-time",
-    status: OFFER_STATUS.LIVE, // seul produit servi aujourd'hui (PassOffer.jsx)
+    status: OFFER_STATUS.LIVE, // seul produit servi par défaut (PassOffer.jsx)
     price: { EUR: PASS_CENTS.eur / 100, USD: PASS_CENTS.usd / 100 },
+    usdPeakSurcharge: true, // miroir serveur : +15 % USD juin→nov
     days: 30,
     entitlement: "pass",
     features: ["forecast_full", "alternatives_full", "trip_planner", "confidence"],
@@ -67,8 +72,12 @@ export const OFFERS = {
     key: "season",
     kind: "one-time",
     billing: "one-time",
-    status: OFFER_STATUS.LIVE, // chargeable serveur (210j), PAS encore servi par le front
-    price: { EUR: 19.99, USD: null },
+    status: OFFER_STATUS.LIVE, // chargeable serveur (210j), exposé via ?offer=season uniquement
+    price: { EUR: 19.99, USD: 19.99 },
+    // USD 19.99 = valeur d'affichage/payload attestée repo (blast-mollie-offer
+    // `saison` USD) ; le serveur valide par plausibilité PUIS applique +15 %
+    // en saison (juin→nov) — comme p30.
+    usdPeakSurcharge: true, // miroir serveur : +15 % USD juin→nov
     days: 210,
     entitlement: "pass",
     features: ["forecast_full", "alternatives_full", "trip_planner", "confidence"],
@@ -140,4 +149,71 @@ export function offerLabOff(search) {
 // Miroir serveur exposé pour les tests (pas pour l'UI).
 export function serverMirror() {
   return SERVER_MIRROR
+}
+
+// Clés exposables via ?offer= : one-time, live, chargeables serveur.
+// p30 reste le défaut (comportement historique) ; watch/mon_stay/planned
+// ne sont JAMAIS résolus ici (garde CTO active).
+const EXPOSABLE_KEYS = new Set(["p30", "trip7", "season"])
+
+// Montant de BASE (cents int) envoyé au serveur — jamais le montant surchargé.
+// Le serveur valide la base puis applique sa propre surcharge USD.
+export function offerBaseCents(key, cur) {
+  try {
+    const o = getOffer(key)
+    if (!o || o.status !== OFFER_STATUS.LIVE || o.kind === "free") return null
+    const v = o.price[cur === "usd" ? "USD" : "EUR"]
+    if (typeof v !== "number" || !(v > 0)) return null
+    return Math.round(v * 100)
+  } catch (_) {
+    return null
+  }
+}
+
+// Montant AFFICHÉ (cents int) — miroir EXACT de la règle serveur :
+// +15 % USD juin→nov SAUF trip7 (mollie.php : $pass !== 'trip7').
+// month (1-12) injectable pour les tests ; défaut = mois courant.
+export function offerDisplayCents(key, cur, month) {
+  try {
+    const base = offerBaseCents(key, cur)
+    if (base == null) return null
+    if (cur !== "usd") return base
+    const o = getOffer(key)
+    if (!o || o.usdPeakSurcharge === false) return base
+    const m = month || (new Date().getMonth() + 1)
+    return m >= 6 && m <= 11 ? Math.round(base * 1.15) : base
+  } catch (_) {
+    return null
+  }
+}
+
+// Résolution déterministe ?offer= → { key, requested }.
+// - absent/vide/inconnu/malformé/planned/free → { key: "p30" } (défaut sûr)
+// - ?offerlab=0 → { key: "p30" } même avec une valeur valide (kill-switch)
+// - normalisation : trim + lowercase (?offer=Trip7 → trip7)
+// - ne mute JAMAIS OFFERS (retourne des primitives).
+export function resolveOffer(search) {
+  const fallback = { key: "p30", requested: null }
+  try {
+    const q = typeof search === "string" ? search : (typeof window !== "undefined" ? window.location.search : "")
+    if (offerLabOff(q)) return fallback
+    const m = q.match(/[?&]offer=([^&]*)/)
+    if (!m) return fallback
+    let raw = ""
+    try {
+      raw = decodeURIComponent(m[1] || "")
+    } catch (_) {
+      return { key: "p30", requested: m[1] || null }
+    }
+    const norm = raw.trim().toLowerCase().slice(0, 32)
+    if (!norm) return { key: "p30", requested: raw || null }
+    if (!EXPOSABLE_KEYS.has(norm)) return { key: "p30", requested: raw }
+    const o = getOffer(norm)
+    if (!o || o.status !== OFFER_STATUS.LIVE || !isChargeable(norm)) {
+      return { key: "p30", requested: raw }
+    }
+    return { key: norm, requested: raw }
+  } catch (_) {
+    return fallback
+  }
 }

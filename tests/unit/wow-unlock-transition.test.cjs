@@ -59,7 +59,7 @@ check('sticky : aucune invention — counts clean/moderate/alert uniquement', PA
 // ── 5. Money-path INTACT (preuves de non-touche) ──
 check('doSubscribe : délai post-succès 900 ms inchangé', (DO_SUB.match(/setTimeout\(\(\)=>\{onActivated\?\.\(\);onClose\(\)\},900\)/g) || []).length >= 1);
 check('OnsiteCheckout : createToken / mounts / consent intacts (0 modif)', ONSITE.includes('createComponent("cardNumber"') && ONSITE.includes('mountedRef.current = true') && ONSITE.includes('sg_onsite_checkout_opened'));
-check('PassOffer : CTA buy + prix money/displayCents intacts', PASS_OFFER.includes('if(onBuy)onBuy({c:cents,pass:PASS.key') && PASS_OFFER.includes('money(displayCents, cur, lang)'));
+check('PassOffer : CTA buy + prix money/displayCents intacts', PASS_OFFER.includes('if(onBuy)onBuy({c:cents,pass:OFFER.key') && PASS_OFFER.includes('money(displayCents, cur, lang)'));
 check('WorldPaywall : trajForecast propagé aux 2 instances PassOffer', (WORLD.match(/trajForecast=\{trajForecast\}/g) || []).length === 2);
 
 // ── 6. Pas de dépendance lourde ajoutée ──

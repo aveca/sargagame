@@ -142,6 +142,7 @@ export function ComicPaywall({
   island,
   beach,
   beachCount = 0,
+  offerKey = "p30", offerRequested = null,
   sargData, tripDays,
   payPlanRef,
   payEmailRef,
@@ -375,6 +376,8 @@ export function ComicPaywall({
               lang={lang}
               currency={PAY_CUR}
               onBuy={onPassBuy}
+              offerKey={offerKey}
+              offerRequested={offerRequested}
               pwVariant="comic"
               beachCount={beachCount}
               tripDays={tripDays} tripBeach={beach && beach.name ? beach.name : ""}
