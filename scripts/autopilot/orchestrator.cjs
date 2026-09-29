@@ -20,7 +20,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, spawn } = require('child_process');
 const C = require('./lib/common.cjs');
 const mem = require('./lib/memory.cjs');
 const policy = require('./lib/policy.cjs');
@@ -33,11 +33,17 @@ const { analyze, findingsFromObservation } = require('./analyze.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
+const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
 
 const t0 = Date.now();
-let cfg, report, log;
+let cfg, report, log, lastProgress = Date.now();
 
 function elapsedMin() { return (Date.now() - t0) / 60000; }
+function progress(msg) {
+  lastProgress = Date.now();
+  if (LIVE) log(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
+  else log(msg);
+}
 function S(section, msg) { report.sections[section].push(msg); log(`[${section}] ${msg}`); }
 function stop(reason) {
   report.stopped = true; report.stopReason = reason;
@@ -45,6 +51,18 @@ function stop(reason) {
   S('FAILED', `STOP — ${reason}`);
 }
 function budgetExceeded() { return elapsedMin() > cfg.loop.maxRunMinutes; }
+
+/** Watchdog — surveille l'absence de progression > 120s */
+function startWatchdog() {
+  if (!LIVE) return null;
+  return setInterval(() => {
+    const idle = Date.now() - lastProgress;
+    if (idle > 120000) {
+      log(`[WATCHDOG] No progress for ${Math.round(idle/1000)}s`);
+      log(`[WATCHDOG] Investigating current process...`);
+    }
+  }, 30000);
+}
 
 async function healthCheck() {
   const down = [];
@@ -79,6 +97,7 @@ async function phaseRevenueAndMeasure() {
   S('REVENUE', `7j : sessions ${s7.sessions} · premium-open ${s7.modalOpens} · CTA ${s7.modalCta} · checkout ${s7.onsite} · PAID ${s7.paid} · paiements ${s7.payments} · rev ${s7.revenue}€ · MRR Stripe ${snap.d7.mrrEur ?? 'n/a'}€ (${snap.d7.stripeActive ?? '?'} actifs)`);
   const chain = metrics.ahaChain(7);
   S('REVENUE', `chaîne AHA→revenue : open ${chain.premium_open} → CTA ${chain.cta} → checkout ${chain.checkout_entry} → redirect ${chain.mollie_redirect} → PAID ${chain.paid} (${chain.note})`);
+  if (LIVE) progress(`REVENUE     paid=${s7.paid} CTA=${s7.modalCta} checkout=${s7.onsite}`);
   const b2b = snap.b2b;
   S('REVENUE', b2b.available
     ? `B2B (séparé, jamais mélangé) : ${JSON.stringify(b2b).slice(0, 200)}`
@@ -145,6 +164,7 @@ async function phaseObserve() {
     S('OBSERVED', `observation récente réutilisée (${latest.id}, âge ${ageMin.toFixed(0)} min)`);
     return latest;
   }
+  if (LIVE) progress('OBSERVE     starting Playwright probe...');
   S('OBSERVED', 'sonde Playwright prod lancée…');
   const cp = execFileSync(process.execPath, [path.join(__dirname, 'observe.cjs'), '--run-id', report.id], {
     cwd: C.ROOT, encoding: 'utf8', timeout: 15 * 60000, stdio: ['ignore', 'pipe', 'pipe'],
@@ -154,6 +174,7 @@ async function phaseObserve() {
   if (!obs) throw new Error('sonde observation sans résultat');
   const t = obs.totals;
   S('OBSERVED', `${t.pages} pages sondées (${obs.heavy ? 'heavy' : 'light'}) · err console ${t.consoleErrors} · pageerrors ${t.pageErrors} · 1st-party fail ${t.firstPartyFailures} · liens cassés ${t.brokenLinks} · visual-flags ${t.visualFlagged} · ${obs.durationSec}s`);
+  if (LIVE) progress(`OBSERVE     ${t.pages} pages · ${t.consoleErrors} err · ${t.firstPartyFailures} 1st-fail · ${t.visualFlagged} visual`);
   return obs;
 }
 
@@ -210,14 +231,16 @@ async function phaseImplementAndShip(opp) {
     return { dry: true };
   }
 
+  progress('WORKTREE    created');
   mem.updateOpportunity(opp.id, { status: 'picked', pickedAt: C.nowIso() });
 
   // ── IMPLEMENT (avec self-repair ≤3) ──────────────────────────────────────
-  const wt = gitops.prepareWorktree(cfg, branch, m => log('[worktree] ' + m));
+  const wt = gitops.prepareWorktree(cfg, branch, m => { if (LIVE) progress('WORKTREE    ' + m); else log('[worktree] ' + m); });
   let attempt = 0, gate = null, impl = null;
   while (attempt <= cfg.loop.maxRepairAttempts) {
     attempt++;
-    impl = await implementOpportunity(opp, wt, cfg, m => log('[implement] ' + m), gate ? gate.detail : null);
+    if (LIVE) progress(`OPENCODE    starting attempt ${attempt}/${cfg.loop.maxRepairAttempts}`);
+    impl = await implementOpportunity(opp, wt, cfg, m => { if (LIVE) progress('IMPLEMENT   ' + m); else log('[implement] ' + m); }, gate ? gate.detail : null);
     if (!impl.ok) {
       if (impl.blocked) { stop(`opportunité non exécutable : ${impl.blocked}`); return { blocked: impl.blocked }; }
       if (attempt > cfg.loop.maxRepairAttempts || impl.via === 'recipe') break; // recette = déterministe : échec = stop sec
@@ -247,18 +270,21 @@ async function phaseImplementAndShip(opp) {
     }
 
     // ── TEST / QA (Gate de ship complet dans le worktree) ──────────────────
+    if (LIVE) progress('GATE        running...');
     gate = await runGate({
       wt,
       files: diff.files,
       tests: diff.files.filter(f => f.startsWith('tests/') && f.endsWith('.cjs')),
-      log: m => log('[verify] ' + m),
+      log: m => { if (LIVE) progress('VERIFY      ' + m); else log('[verify] ' + m); },
     });
     if (gate.ok) {
       S('TESTED', gate.steps.join(' · '));
       S('FIXED', attempt > 1 ? `réparé après ${attempt} tentative(s)` : 'vert du premier coup');
+      if (LIVE) progress('GATE        PASS');
       break;
     }
     S('FAILED', `gate rouge (${gate.failedStep}) tentative ${attempt}/${cfg.loop.maxRepairAttempts}`);
+    if (LIVE) progress('GATE        FAILED - ' + gate.failedStep);
     if (impl.via === 'recipe') break; // recette déterministe : réparer à l'aveugle n'a pas de sens
   }
 
@@ -271,10 +297,12 @@ async function phaseImplementAndShip(opp) {
   }
 
   // ── PR ────────────────────────────────────────────────────────────────────
+  if (LIVE) progress('COMMIT      committing changes...');
   const diff = gitops.diffStats(wt);
   const commitSha = gitops.commitAll(wt,
     `fix(autopilot): ${opp.title.slice(0, 90)}\n\nOpportunité ${opp.id}\nPreuve : ${(opp.evidence || '').slice(0, 200)}\nRollback : ${opp.rollback || 'revert'}\n\nCycle autopilot ${report.id}`,
     diff.files);
+  if (LIVE) progress('PUSH        pushing branch...');
   gitops.pushBranch(wt, branch, cfg);
   const body = [
     `## 🤖 Cycle autopilot ${report.id}`, '',
@@ -290,9 +318,11 @@ async function phaseImplementAndShip(opp) {
     `- denylist money/secrets/api/régions : reposée sur le diff réel`,
     `- auto-merge : ${policy.canAutoMerge(diff.files, cfg) ? 'whitelisté' : 'NON (revue/merge fondateur ou convention CI-greens)'}`,
   ].join('\n');
+  if (LIVE) progress('PR          creating...');
   const pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
   report.prUrl = pr.url;
   S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
+  if (LIVE) progress('PR          ' + pr.url);
 
   if (policy.canAutoMerge(diff.files, cfg)) {
     try { gitops.enableAutoMerge(wt, pr.url); S('PR', 'auto-merge activé (catégorie whitelistée)'); }
@@ -314,16 +344,24 @@ async function main() {
   const lg = C.makeLogger(C.paths.runs);
   log = (m) => lg.log('orchestrator', m);
 
-  log(`cycle ${report.id} démarré (${DRY ? 'DRY-RUN' : 'actif'})`);
+  if (LIVE) {
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('SARGAGAME AUTOPILOT LIVE');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  }
+  log(`cycle ${report.id} démarré (${DRY ? 'DRY-RUN' : 'actif'}${LIVE ? ' · LIVE' : ''})`);
+
+  const watchdog = startWatchdog();
 
   // ── STOP CONDITIONS pré-vol ───────────────────────────────────────────────
-  if (fs.existsSync(C.paths.stopFile)) { stop('fichier STOP présent'); return finish(2); }
+  if (fs.existsSync(C.paths.stopFile)) { stop('fichier STOP présent'); if (watchdog) clearInterval(watchdog); return finish(2); }
   const prOpen = gitops.openAutopilotPR();
+  progress('STATE       START');
   const health = await healthCheck();
   const fatalDown = health.filter(h => cfg.health.requiredDomains.some(d => h.startsWith(d)));
-  if (fatalDown.length) { stop('production outage : ' + fatalDown.join(', ')); return finish(2); }
+  if (fatalDown.length) { stop('production outage : ' + fatalDown.join(', ')); if (watchdog) clearInterval(watchdog); return finish(2); }
   if (health.length) S('OBSERVED', `⚠ domaines dégradés (non bloquants) : ${health.join(', ')}`);
-  else S('OBSERVED', `health OK (${[cfg.health.requiredDomains, cfg.health.warnDomains].flat().length} domaines 2xx)`);
+  else { S('OBSERVED', `health OK (${[cfg.health.requiredDomains, cfg.health.warnDomains].flat().length} domaines 2xx)`); progress('PROD        6/6 healthy'); }
   if (prOpen) {
     S('PR', `PR précédente encore ouverte : #${prOpen.number} ${prOpen.title} — cycle = observation seule`);
     S('NEXT', `merger #${prOpen.number} pour débloquer l'implémentation au prochain cycle`);
@@ -357,16 +395,21 @@ async function main() {
     if (prOpen || budgetExceeded()) {
       if (budgetExceeded()) S('FAILED', 'budget temps atteint — implémentation reportée au prochain cycle');
     } else if (selected) {
+      progress(`SELECT      ${selected.id}`);
       const r = await phaseImplementAndShip(selected);
       if (r && r.prUrl) {
         S('NEXT', `suivre CI de ${r.prUrl} puis merge (convention repo : CI verte)`);
         S('NEXT', 'mesure post-merge gérée par phaseRevenueAndMeasure (verify → experiment → décision à fenêtre, paid prime)');
       }
+    } else {
+      progress('QUEUE       0 executable');
     }
   } catch (e) {
     stop('crash orchestrateur : ' + (e.message || e));
     log(e.stack || '');
     return finish(1);
+  } finally {
+    if (watchdog) clearInterval(watchdog);
   }
   finish(0);
 }

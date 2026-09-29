@@ -20,6 +20,12 @@ const path = require('path');
 const { execSync, spawn } = require('child_process');
 const C = require('./lib/common.cjs');
 
+const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
+
+function log(msg) {
+  if (LIVE) console.log(`[${new Date().toISOString().slice(11, 19)}] VERIFY    ${msg}`);
+}
+
 function sh(cmd, cwd, opts = {}) {
   return execSync(cmd, { cwd, encoding: 'utf8', timeout: (opts.timeoutMin || 3) * 60000, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...(opts.env || {}) } });
 }
@@ -54,42 +60,53 @@ async function runGate({ wt, files = [], tests = [], log = console.log }) {
   // 0. syntaxe
   const jsFiles = files.filter(f => /\.(jsx?|mjs|cjs)$/.test(f) && fs.existsSync(path.join(wt, f)));
   for (const f of jsFiles) {
+    if (LIVE) log(`esbuild ${f}...`);
     const r = shSafe(`npx --no-install esbuild "${f}" --bundle=false --log-level=error --outfile=NUL`, wt);
     steps.push(`esbuild ${f}: ${r.ok ? 'OK' : 'FAIL'}`);
     if (!r.ok) return fail('esbuild:' + f, r.out);
   }
   const phpFiles = files.filter(f => f.endsWith('.php'));
   for (const f of phpFiles) {
+    if (LIVE) log(`php -l ${f}...`);
     const r = shSafe(`php -l "${f}"`, wt);
     steps.push(`php -l ${f}: ${r.ok ? 'OK' : 'FAIL'}`);
     if (!r.ok) return fail('php-l:' + f, r.out);
   }
 
   // 1. build
+  if (LIVE) log('npm run build...');
   log('verify: npm run build…');
   const b = shSafe('npm run build', wt, { timeoutMin: 8 });
   steps.push(`build: ${b.ok ? 'exit 0' : 'FAIL'}`);
   if (!b.ok) return fail('build', b.out);
+  if (LIVE) log('build PASS');
 
   // 2. budget bundle
+  if (LIVE) log('check-bundle-budget...');
   const budget = shSafe('node scripts/check-bundle-budget.cjs', wt);
   steps.push(`bundle-budget: ${budget.ok ? 'OK' : 'FAIL'}`);
   if (!budget.ok) return fail('bundle-budget', budget.out);
+  if (LIVE) log('bundle PASS');
 
   // 3. invariant régions
+  if (LIVE) log('regions invariant...');
   const reg = shSafe('node -e "require(\'./regions/index.cjs\').assertAllRegionsValid()"', wt);
   steps.push(`regions-invariant: ${reg.ok ? 'OK' : 'FAIL'}`);
   if (!reg.ok) return fail('regions', reg.out);
+  if (LIVE) log('regions PASS');
 
   // 4. tests de contrat
   for (const t of tests) {
     if (!fs.existsSync(path.join(wt, t))) { steps.push(`test ${t}: SKIP (absent)`); continue; }
+    if (LIVE) log(`test ${t}...`);
     const r = shSafe(`node "${t}"`, wt, { timeoutMin: 3 });
     steps.push(`test ${t}: ${r.ok ? 'OK' : 'FAIL'}`);
     if (!r.ok) return fail('test:' + t, r.out);
+    if (LIVE) log(`test ${t} PASS`);
   }
 
   // 5. preview + smoke
+  if (LIVE) log('vite preview + ux-smoke...');
   log('verify: vite preview :4183 + ux-smoke…');
   const isWin = process.platform === 'win32';
   const preview = spawn(isWin ? 'npx.cmd' : 'npx',
@@ -103,6 +120,7 @@ async function runGate({ wt, files = [], tests = [], log = console.log }) {
     const missing = tokens.filter(t => !(smoke.out || '').includes(t));
     steps.push(`ux-smoke: ${smoke.ok && !missing.length ? '4 tokens OK' : 'FAIL'}`);
     if (!smoke.ok || missing.length) return fail('ux-smoke', `tokens manquants: ${missing.join(' | ')}\n${smoke.out}`);
+    if (LIVE) log('ux-smoke PASS');
   } finally {
     killTree(preview, log);
   }

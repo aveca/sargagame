@@ -61,16 +61,36 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     ].join('\n');
 
     const router = path.join(C.ROOT, '.ai', 'ux-agent', 'opencode-auto.cjs');
-    log(`agent opencode lancé (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min)…`);
+    const liveMode = process.env.SARGA_AUTOPILOT_LIVE === '1';
+    
+    if (liveMode) {
+      log(`[LIVE] agent opencode starting (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min)…`);
+      log(`[LIVE] prompt length: ${prompt.length} chars`);
+    } else {
+      log(`agent opencode lancé (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min)…`);
+    }
+    
     const child = spawn(process.execPath, [router, 'run', prompt], {
-      cwd: wt, stdio: ['ignore', 'pipe', 'pipe'],
+      cwd: wt, 
+      stdio: liveMode ? ['ignore', 'inherit', 'inherit'] : ['ignore', 'pipe', 'pipe'],
     });
+    
     let out = '', err = '';
-    child.stdout.on('data', d => { out += d; });
-    child.stderr.on('data', d => { err += d; });
+    if (!liveMode) {
+      child.stdout.on('data', d => { out += d; });
+      child.stderr.on('data', d => { err += d; });
+    } else if (liveMode) {
+      // In live mode, we still capture a truncated copy for diagnostics
+      child.stdout.on('data', d => { out += d; if (out.length > 10000) out = out.slice(-8000); });
+      child.stderr.on('data', d => { err += d; if (err.length > 5000) err = err.slice(-4000); });
+    }
+    
     const kill = setTimeout(() => { try { child.kill('SIGKILL'); } catch (_) {} }, cfg.policy.agentMaxMinutes * 60000);
     child.on('exit', code => {
       clearTimeout(kill);
+      if (liveMode) {
+        log(`[LIVE] agent exited with code ${code}`);
+      }
       resolve({ ok: code === 0, code, out: out.slice(-4000), err: err.slice(-2000) });
     });
     child.on('error', e => { clearTimeout(kill); resolve({ ok: false, code: -1, err: e.message }); });
