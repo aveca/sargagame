@@ -7711,6 +7711,7 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
           transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))"}}/>
         {["mq","gp"].map(id=>(
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}}
+            aria-label={id==="mq"?"Martinique":"Guadeloupe"}
             style={{color:island===id?"#0d0b14":"var(--sg-mid,#5A5A5A)"}}>{id==="mq"?"MQ":"GP"}</button>
         ))}
       </div>)}
