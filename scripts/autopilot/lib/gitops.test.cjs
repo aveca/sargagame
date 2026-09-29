@@ -10,6 +10,9 @@ assert.strictEqual(quiet, '', 'git(pipeOut=false) must return an empty string, n
 const captured = git(['rev-parse', '--show-toplevel']);
 assert.ok(captured.length > 0, 'default git() must still capture stdout');
 
-assert.strictEqual(gitSafe(['rev-parse', '--definitely-invalid-option']), null);
+// NOTE : `git rev-parse --<option-inconnue>` ne convient PAS comme sonde
+// d'échec — rev-parse répercute les opérandes inconnus sur stdout avec exit 0.
+// `--verify` sur une ref inexistante échoue réellement (exit != 0, stdout vide).
+assert.strictEqual(gitSafe(['rev-parse', '--verify', 'refs/heads/definitely-not-a-branch-xyz']), null);
 
 console.log('GITOPS null-stdout contract: PASS');

@@ -51,7 +51,7 @@ function runAgent(opp, wt, cfg, log, failureContext) {
         acceptance: opp.task.acceptance || [],
         constraints: opp.task.constraints || [],
         stopCondition: opp.task.stopCondition || '',
-      }) : 'aucun',
+      }) : 'aucun'),
       `Rollback OBLIGATOIRE si conversion/UI : flag query ?xxx=0 (pattern /[?&]xxx=0/.test(window.location.search)).`,
       'Interdictions : paiement/checkout/mollie/paypal/stripe, public/api, workers, regions,',
       'workflows, secrets, nouvelles dépendances, dist/, traductions absentes (i18n _t obligatoire).',
