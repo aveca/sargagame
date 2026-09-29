@@ -81,12 +81,6 @@ export function BeachDecisionPage({
   journey,
   forecastById
 }) {
-  // Track beach view
-  useEffect(() => {
-    if (beach?.id) {
-      track?.("sg_beach_view", { beach_id: beach.id, status: beach.status })
-    }
-  }, [beach?.id, track])
 
   // Early exit - loading/empty
   if (!beach) {
@@ -210,6 +204,7 @@ export function BeachDecisionPage({
 
   // Render
   return React.createElement("div", {
+    "data-testid": "beach-decision-page",
     style: {
       position: "fixed", inset: 0, background: "#0d1117", color: "#fff",
       overflow: "auto", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif"

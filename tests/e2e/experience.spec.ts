@@ -107,40 +107,37 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await expect(paywall).toBeVisible({ timeout: 12000 })
   })
 
-  test.skip("rollback ?sgjourney=0 — BeachDecisionPage désactivé, BeachSheetComic legacy — DISABLED: product bug where JOURNEY_OFF flag not respected", async ({ page }) => {
+  test("rollback ?sgjourney=0 — BeachDecisionPage désactivé, BeachSheetComic legacy", async ({ page }) => {
     // ?sgjourney=0 désactive le nouveau BeachDecisionPage et affiche BeachSheetComic (.bsc-sheet)
     await page.goto(BASE + "/?sgjourney=0", { waitUntil: "load", timeout: 60000 })
-    await page.waitForTimeout(3000)
-    // Check what the journeyOff function sees
-    const journeyOffValue = await page.evaluate(() => {
+    await page.waitForTimeout(2000)
+    // Check initial URL and journeyOff
+    console.log("Initial URL:", page.url())
+    const journeyOffInitial = await page.evaluate(() => {
       try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
     })
-    console.log("journeyOff() value:", journeyOffValue)
-    console.log("window.location.search:", await page.evaluate(() => window.location.search))
+    console.log("journeyOff() initial:", journeyOffInitial)
     await page.locator('[data-testid="xp-best-open"]').first().click()
     await page.waitForTimeout(3000)
-    const journeyOffValueAfter = await page.evaluate(() => {
+    // Check URL after click
+    console.log("URL after click:", page.url())
+    const journeyOffAfter = await page.evaluate(() => {
       try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
     })
-    console.log("journeyOff() value after click:", journeyOffValueAfter)
-    console.log("window.location.search after click:", await page.evaluate(() => window.location.search))
+    console.log("journeyOff() after click:", journeyOffAfter)
     // Debug: check what's on the page
     const bodyText = await page.locator('body').innerText()
-    console.log("Body text sample:", bodyText.slice(0, 500))
-    // Check for selectedBeach in React devtools or check if any beach sheet is rendered
+    console.log("Body text sample:", bodyText.slice(0, 1000))
+    // Check for any dialog/sheet
     const allDialogs = await page.locator('[role="dialog"]').count()
     console.log("Dialogs count:", allDialogs)
-    // Check for any element with beach-related content
-    const beachElements = await page.locator('text=/plage|beach/i').count()
-    console.log("Beach text elements:", beachElements)
+    const sheetClasses = await page.locator(".bsc-sheet, .lc-detail, .sheet, [data-testid='bsc-sheet'], [data-testid='beach-decision-page']").count()
+    console.log("All sheet-related elements:", sheetClasses)
     // BeachDecisionPage (data-testid="beach-decision-page") ne doit PAS être présent
     expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
     // BeachSheetComic legacy (.bsc-sheet) doit s'ouvrir à la place
-    const sheetCount = await page.locator(".bsc-sheet").count()
-    console.log("bsc-sheet count:", sheetCount)
-    // Also check for other possible sheet classes
-    const sheetClasses = await page.locator(".bsc-sheet, .lc-detail, .sheet, [data-testid='bsc-sheet']").count()
-    console.log("all sheets count:", sheetClasses)
+    const sheetCount = await page.locator(".bsc-sheet, .lc-detail, .sheet").count()
+    console.log("Legacy sheet count:", sheetCount)
     expect(sheetCount).toBeGreaterThan(0)
   })
 

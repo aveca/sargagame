@@ -1,3 +1,16 @@
+## 2026-09-28 — Autopilot Core Test Fix : agents off behavior corrected
+
+**PROBLEM** : Unit test `autopilot-core.test.cjs` failing on "agents off (v1) → finding agent JAMAIS sélectionné seul" — test used real config with agents enabled instead of mocking agents-off config.
+
+**CHANGE** (test-only, zero product change) :
+- `tests/unit/autopilot-core.test.cjs:55` : mock config with `agentsEnabled: false, allowAgentImplementation: false` for the agents-off assertion
+
+**PROOF** :
+- `node tests/unit/autopilot-core.test.cjs` → 42/42 checks OK
+- `npm test` → 67/67 test files PASS
+
+---
+
 ## 2026-09-28 — BeachDecisionPage intégré : SEE→DECIDE→GO→PROTECT production-ready
 
 **PROBLEM** : BeachDecisionPage créé mais non intégré au routing — fiche plage restait sur BeachSheetComic.

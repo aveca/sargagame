@@ -1,0 +1,2171 @@
+
+> sargagame@0.0.0 test
+> node scripts/run-tests.cjs
+
+
+▶ regions\regions.test.cjs
+  ✓ assertAllRegionsValid passe sur les régions réelles
+  ✓ getAllRegions contient les 5 régions attendues, chacune avec id+domain
+  ✓ une région NON-CORE cassée est isolée — MQ/GP préservées
+  ✓ une région CORE cassée fait fail-loud (throw)
+  ✓ aucune région core chargée → throw
+
+regions.test.cjs : 5 test(s)
+
+▶ scripts\automation\fb-gate.test.cjs
+✓ Anse Mitan (clean)  [gate=tracked]
+✓ Grande Anse d'Arlet  [gate=tracked]
+✓ Le Gosier (gp)  [gate=tracked]
+✓ Sainte-Anne (mq)  [gate=tracked]
+✓ Sainte-Anne (gp)  [gate=tracked]
+✓ Malendure  [gate=tracked]
+✓ Vieux-Fort (gp exact)  [gate=tracked]
+✓ Tartane  [gate=tracked]
+✓ Les Salines  [gate=tracked]
+✓ Anse Noire  [gate=tracked]
+✓ Le Marin (commune)  [gate=untracked-honest]
+✓ La Marina du Marin  [gate=untracked-honest]
+✓ plongée sous-marine  [gate=untracked-honest]
+✓ la marina  [gate=untracked-honest]
+✓ Petite Anse d'Arlet  [gate=untracked-honest]
+✓ Petit-Havre (Gosier)  [gate=untracked-honest]
+✓ Petite Plage Malendure  [gate=untracked-honest]
+✓ Bas-du-Fort Sud  [gate=untracked-honest]
+✓ Vieux-Fort (Sainte-Rose)  [gate=untracked-honest]
+✓ Anse de Vieux-Fort (MG)  [gate=untracked-honest]
+✓ La Grande Anse (Deshaies)  [gate=untracked-honest]
+✓ Plage Gosierville  [gate=untracked-honest]
+✓ Diamantine Beach Bar  [gate=untracked-honest]
+✓ Le Vauclinois  [gate=untracked-honest]
+✓ Tartane Surf Camp  [gate=untracked-honest]
+✓ Pointe des Salines  [gate=untracked-honest]
+✓ Cap Salines  [gate=untracked-honest]
+✓ Plage du Bourg (Sainte-Anne)  [gate=untracked-honest]
+✓ free-text madame  [gate=untracked-honest]
+✓ Anse Madame Lurel  [gate=untracked-honest]
+✓ Anse Figuier  [gate=untracked-honest]
+✓ Petite Terre islet  [gate=untracked-honest]
+✓ Anse Mitan + avoid report  [gate=tracked-arrival-honest]
+✓ Anse Mitan + alert report  [gate=tracked-arrival-honest]
+✓ Anse Mitan + moderate report  [gate=tracked-arrival-honest]
+✓ Anse Mitan our=moderate, op=clean → tracked modéré  [gate=tracked]
+✓ Anse Mitan our=moderate, op=avoid → tracked (no contradiction)  [gate=tracked]
+✓ exhaustive sweep: 544 drafts scanned, 0 status-word leak(s) on honest/arrival paths
+
+38 pass / 0 fail
+
+▶ scripts\automation\fb-review-gate.test.cjs
+✓ EN full modal (observed PC group)  [detected=true :: Participation review Group rules from the admins 1. Be respe]
+✓ EN title only  [detected=true :: Participation review]
+✓ EN agree-to-rules  [detected=true :: Pending posts I agree to the group rules]
+✓ EN answer-question-to-post  [detected=true :: Answer the following question to post in this group]
+✓ FR examen participation  [detected=true :: Examen de la participation J'accepte les règles du groupe Qu]
+✓ ES revisión participación  [detected=true :: Revisión de participación Acepto las reglas del grupo ¿Cuánd]
+✓ secondary heuristic (textbox + membership question)  [detected=true :: Please answer this membership question before your post is s]
+✓ gate hidden behind a benign first dialog  [detected=true :: Participation review I agree to the group rules When are you]
+✓ empty (no dialogs = composer closed clean)  [detected=false]
+✓ null guard  [detected=false]
+✓ clean composer still open  [detected=false]
+✓ moderated PENDING approval (post WAS submitted)  [detected=false]
+✓ pending — "will be reviewed by the admins"  [detected=false]
+✓ group name contains "questions"  [detected=false]
+✓ group name in composer textbox dialog  [detected=false]
+✓ sidebar "Group rules" heading, no textbox/no-admins  [detected=false]
+
+16 pass / 0 fail
+
+▶ scripts\automation\purge-analytics.test.cjs
+Cas 1 : purge réelle 2500 périmées + 10 fraîches
+  ✓ exit 0 (got 0)
+  ✓ 10 fraîches restantes (got 10)
+  ✓ aucune ligne fraîche supprimée
+  ✓ ≥3 DELETE par lots (got 3)
+  ✓ tous les DELETE en tête de file 0-999 (got ["0-999"])
+  ✓ cutoff ≈ now-90j
+  ✓ stdout confirme la suppression
+Cas 2 : --dry
+  ✓ exit 0 (got 0)
+  ✓ 0 suppression (got 0 supprimées)
+  ✓ aucun DELETE émis en --dry
+  ✓ stdout mentionne --dry
+Cas 3 : sans SUPABASE_SERVICE_KEY
+  ✓ exit 0 (got 0)
+  ✓ 0 hit HTTP (got 0)
+  ✓ lignes intactes
+
+PURGE-ANALYTICS TESTS: ALL PASS
+
+▶ scripts\lib\fast-deploy-zip-exclude.test.cjs
+  ✓ stripe-config.php reste exclu (secret legacy)
+  ✓ _deploy-secret.php reste exclu (deploy token)
+  ✓ _deploy.zip reste exclu (auto-référence)
+  ✓ mollie-config.php N'EST PAS exclu (BUG-2026-007 deadlock)
+  ✓ ZIP_EXCLUDE est bien un Set (pas un Array)
+
+fast-deploy-zip-exclude: 5 test(s) exécuté(s)
+
+▶ scripts\lib\fc7-alignment.test.cjs
+  ✓ (root) : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ (root) : fc7 === série privée, zéro divergence (0)
+  ✓ (root) : aucun fc7 orphelin (0)
+  ✓ barbados : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ barbados : fc7 === série privée, zéro divergence (0)
+  ✓ barbados : aucun fc7 orphelin (0)
+  ✓ florida : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ florida : fc7 === série privée, zéro divergence (0)
+  ✓ florida : aucun fc7 orphelin (0)
+  ✓ gp : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ gp : fc7 === série privée, zéro divergence (0)
+  ✓ gp : aucun fc7 orphelin (0)
+  ✓ mq : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ mq : fc7 === série privée, zéro divergence (0)
+  ✓ mq : aucun fc7 orphelin (0)
+  ✓ puntacana : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ puntacana : fc7 === série privée, zéro divergence (0)
+  ✓ puntacana : aucun fc7 orphelin (0)
+  ✓ rivieramaya : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ rivieramaya : fc7 === série privée, zéro divergence (0)
+  ✓ rivieramaya : aucun fc7 orphelin (0)
+  ✓ tulum : toutes les séries privées ont leur fc7 public (0 manquant)
+  ✓ tulum : fc7 === série privée, zéro divergence (0)
+  ✓ tulum : aucun fc7 orphelin (0)
+  ✓ couverture globale : 229 plages avec série 7 j gratuite (>150 attendu)
+
+▶ scripts\lib\forecast-contract.test.cjs
+forecast-contract — normalisation
+  ✓ jour null → null
+  ✓ jour sans status → null
+  ✓ status inconnu → null
+  ✓ jour valide conservé
+  ✓ confidence clampée 0-100, afai négatif → null
+  ✓ date non ISO → null (pas de valeur par défaut)
+forecast-contract — série
+  ✓ entrée non-tableau → []
+  ✓ série 100% invalide → []
+  ✓ jour manquant → null positionnel (honest gap)
+  ✓ hasDays respecte les trous
+  ✓ tronqué à 7 jours
+  ✓ série vide → [] (rendu "prévision indisponible", pas de fabrication)
+forecast-contract — tendance
+  ✓ pas de série → pas de tendance
+  ✓ 1 seul jour → null
+  ✓ bascule clean→avoid à J+2 → dir=up
+  ✓ amélioration → dir=down
+  ✓ même statut mais afai ↑fort → up (signal réel)
+  ✓ afai stable → flat
+forecast-contract — boucle quotidienne
+  ✓ localDayKey format ISO local
+  ✓ pas de snapshot → null
+  ✓ hier=auj → changed false
+  ✓ situation changée depuis hier détectée
+  ✓ même jour → pas de changement
+  ✓ statut invalide → null
+
+▶ scripts\lib\orientation.test.cjs
+  ✓ gate refuse une série en zigzag (bruit)
+  ✓ gate accepte une montée monotone franche → hausse
+  ✓ gate accepte une baisse monotone franche → baisse
+  ✓ série trop courte → pas de tendance (null)
+  ✓ les 5 régions live renvoient direction=null aujourd'hui (historique court/bruité)
+  ✓ plage abritée en pleine saison → risque-faible ; exposée → risque-eleve
+  ✓ plage sans donnée d'exposition → pas d'orientation plage (null, on n'invente pas)
+  ✓ hors-saison : plage exposée → risque-faible, plage abritée → epargnee
+  ✓ beachSeasonRepere : clean en pleine saison → tone reassure
+  ✓ beachSeasonRepere : avoid en pleine saison → tone check (jamais alarme)
+  ✓ beachSeasonRepere : hors-saison → tone calm quel que soit le statut
+  ✓ beachSeasonRepere : statut absent → null (on n'invente pas)
+  ✓ beachSeasonRepere : porte la source climatologie (preuve : sourcé, pas inventé)
+  ✓ phaseForRegion renvoie une phase ordinale + une source non vide
+
+14 assertions orientation OK
+
+▶ scripts\lib\supabase-leads.test.cjs
+supabase-leads — vocabulaire (miroir LeadCapture.jsx)
+  ✓ domaine : www strippé
+  ✓ domaine : inchangé sinon
+  ✓ domaine : vide → vide (comme LeadCapture)
+  ✓ région : martinique → mq
+  ✓ région : guadeloupe → gp
+  ✓ région : cancun → mx
+  ✓ région : tulum → mx
+  ✓ région : puntacana → do
+  ✓ région : miami → us
+  ✓ région : barbados → unknown (parité LeadCapture)
+  ✓ région : inconnu → unknown
+supabase-leads — buildB2CLeadRow
+  ✓ email trim + lowercase
+  ✓ region/domain du hostname
+  ✓ forme LeadCapture (beaches [], status active)
+  ✓ aucune colonne hors contrat b2c_alerts
+  ✓ email vide → null (jamais de ligne vide)
+  ✓ sans @ → null
+  ✓ null → null
+  ✓ GP de bout en bout
+supabase-leads — submitLeadToSupabase (sans réseau : no-op node)
+  ✓ invalide → false, rien dispatché
+  ✓ vide → false
+  ✓ valide → true (dispatch tenté, fire-and-forget)
+
+supabase-leads : OK
+
+▶ scripts\tests\b2b-sales-engine-schema.test.cjs
+  ✓ table companies declared
+  ✓ RLS enabled: companies
+  ✓ anon/auth revoked: companies
+  ✓ service_role grant: companies
+  ✓ table company_establishments declared
+  ✓ RLS enabled: company_establishments
+  ✓ anon/auth revoked: company_establishments
+  ✓ service_role grant: company_establishments
+  ✓ table contacts declared
+  ✓ RLS enabled: contacts
+  ✓ anon/auth revoked: contacts
+  ✓ service_role grant: contacts
+  ✓ table company_enrichment declared
+  ✓ RLS enabled: company_enrichment
+  ✓ anon/auth revoked: company_enrichment
+  ✓ service_role grant: company_enrichment
+  ✓ table segments declared
+  ✓ RLS enabled: segments
+  ✓ anon/auth revoked: segments
+  ✓ service_role grant: segments
+  ✓ table prospects declared
+  ✓ RLS enabled: prospects
+  ✓ anon/auth revoked: prospects
+  ✓ service_role grant: prospects
+  ✓ table prospect_scores declared
+  ✓ RLS enabled: prospect_scores
+  ✓ anon/auth revoked: prospect_scores
+  ✓ service_role grant: prospect_scores
+  ✓ table suppressions declared
+  ✓ RLS enabled: suppressions
+  ✓ anon/auth revoked: suppressions
+  ✓ service_role grant: suppressions
+  ✓ table consents declared
+  ✓ RLS enabled: consents
+  ✓ anon/auth revoked: consents
+  ✓ service_role grant: consents
+  ✓ table data_sources declared
+  ✓ RLS enabled: data_sources
+  ✓ anon/auth revoked: data_sources
+  ✓ service_role grant: data_sources
+  ✓ table b2b_audit_log declared
+  ✓ RLS enabled: b2b_audit_log
+  ✓ anon/auth revoked: b2b_audit_log
+  ✓ service_role grant: b2b_audit_log
+  ✓ SIREN uniqueness
+  ✓ SIRET uniqueness
+  ✓ enrichment confidence bounded 0..1
+  ✓ prospect score bounded 0..100
+  ✓ suppression type allowlist
+  ✓ existing outreach bridge -> prospect
+  ✓ existing outreach table reused; no third sender model
+  ✓ score provenance/model version stored
+  ✓ field-level enrichment provenance stored
+  ✓ legal-basis ledger present
+  ✓ prospects_status_chk present
+  ✓ prospect status allowed: new
+  ✓ prospect status allowed: enriching
+  ✓ prospect status allowed: enriched
+  ✓ prospect status allowed: scored
+  ✓ prospect status allowed: ready
+  ✓ prospect status allowed: contacted
+  ✓ prospect status allowed: replied
+  ✓ prospect status allowed: interested
+  ✓ prospect status allowed: not_interested
+  ✓ prospect status allowed: callback_requested
+  ✓ prospect status allowed: qualified
+  ✓ prospect status allowed: converted
+  ✓ prospect status allowed: concierge
+  ✓ prospect status allowed: paid
+  ✓ prospect status allowed: lost
+  ✓ prospect status allowed: bounced
+  ✓ prospect status allowed: opted_out
+  ✓ prospect status allowed: suppressed
+  ✓ prospect status allowed: paused
+
+B2B-SALES-SCHEMA TESTS: ALL PASS
+
+▶ scripts\tests\chasse-j1-free.test.cjs
+  ✓ const j1FreeOn présent (ChasseDetail)
+  ✓ rollback ?j1_free=0 lu (ChasseDetail)
+  ✓ défaut ON sauf ?j1_free=0 (miroir BSC)
+  ✓ branche débloquée étendue à J+1 sous j1_free
+  ✓ branche teaser conservée (J+2+ verrouillés)
+  ✓ !d → cadenas conservé (pas de J+1 sans donnée)
+  ✓ classe badge lc-fc-inclus présente (JSX + CSS)
+  ✓ badge INCLUS trilingue (miroir BSC)
+  ✓ badge scopé : non-premium, non-free7, j1_free, i===1
+  ✓ stopPropagation présent sur la cellule J+1 libre
+  ✓ premium+free7 passent toujours par la branche débloquée
+  ✓ mur quota intact
+  ✓ bandeau suivi intact
+  ✓ sg_forecast_lock_click{fcstrip} intact
+  ✓ sg_chasse_detail_premium intact
+  ✓ sg_chasse_share intact
+  ✓ sg_follow_beach{via:chasse_detail} intact
+  ✓ sg_chasse fav/unfav intact
+  ✓ A13 BeachSheetComic intact (aucune modification BSC)
+  ✓ badge INCLUS BSC intact
+
+CHASSE-J1-FREE TESTS: ALL PASS
+
+▶ scripts\tests\ci-gate.test.cjs
+G15 : smoke exit code
+  ✓ ux-smoke.mjs pose exitCode 1 en échec
+  ✓ gate : reached littéral complet exigé
+  ✓ gate : décision sur les 4 tokens (errors/blancs/RM)
+  ✓ token imprimé (grep-compat) : FUNNEL_REACHED=…
+  ✓ token imprimé (grep-compat) : WHITE_OR_TRANSPARENT_BUTTONS=…
+  ✓ token imprimé (grep-compat) : ERRORS=…
+  ✓ token imprimé (grep-compat) : RM_INFINITE=…
+G15 : budget check
+  ✓ check-bundle-budget.cjs sort exit 1 en dépassement
+G15 : wiring CI
+  ✓ ci-tests.yml exécute le budget
+  ✓ ci-funnel.yml exécute le budget
+  ✓ perf-budget.yml exécute le budget
+  ✓ perf-budget.yml : budget bloquant
+  ✓ ci-tests.yml exécute le smoke
+  ✓ ci-tests.yml grep le token FUNNEL_REACHED=map+fiche+paywall
+  ✓ ci-tests.yml grep le token ERRORS=[]
+  ✓ ci-tests.yml grep le token WHITE_OR_TRANSPARENT_BUTTONS=[]
+  ✓ ci-tests.yml grep le token RM_INFINITE=[]
+  ✓ ci-funnel.yml exécute le smoke
+  ✓ ci-funnel.yml grep le token FUNNEL_REACHED=map+fiche+paywall
+  ✓ ci-funnel.yml grep le token ERRORS=[]
+  ✓ ci-funnel.yml grep le token WHITE_OR_TRANSPARENT_BUTTONS=[]
+  ✓ ci-funnel.yml grep le token RM_INFINITE=[]
+  ✓ ci-funnel.yml : run smoke toujours accompagné des 4 grep
+  ✓ ci-tests.yml : run smoke toujours accompagné des 4 grep
+
+CI-GATE TESTS: ALL PASS
+
+▶ scripts\tests\deploy-fingerprint-check.test.cjs
+=== Deploy Fingerprint Check Tests ===
+
+Test: extract build hash from version.json
+  ✓ with b field
+  ✓ without b field
+  ✓ empty string
+  ✓ malformed JSON
+
+Test: short SHA match
+  ✓ short SHA extraction
+  ✓ hash match
+  ✓ hash mismatch detected
+
+Test: version.json structure
+  ✓ with b field
+  ✓ without b field
+
+✅ All tests passed!
+
+▶ scripts\tests\distro-contract.test.cjs
+— P0 /aujourdhui/ —
+  ok  lib today-pages existe + exporte generateTodayPages/todaySlugFor
+  ok  hook build core (vite.config, après month-pages)
+  ok  hook build régions (après dedicated)
+  ok  anti-doublon natif seo-content
+  ok  aucune donnée météo/vent/odeur chiffrée inventée (page rendue)
+  ok  bandeau stale honnête
+  ok  JSON-LD ItemList + WebPage + Breadcrumb
+  ok  sitemap changefreq daily priorité 0.9
+  ok  module chargeable
+  ok  dist/aujourdhui/index.html générée
+  ok  dist/aujourdhui/index.html canonical own-domain
+  ok  dist/aujourdhui/index.html titre intention
+  ok  dist/aujourdhui/index.html liens fiches
+  ok  dist/_gp/aujourdhui/index.html générée
+  ok  dist/_gp/aujourdhui/index.html canonical own-domain
+  ok  dist/_gp/aujourdhui/index.html titre intention
+  ok  dist/_gp/aujourdhui/index.html liens fiches
+  ok  sitemap MQ liste /aujourdhui/
+  ok  page _gp canonical GP (garantie inter-builds)
+  ok  sitemap GP présent (regarnit au build GP)
+— P0 maillage /aujourdhui/ —
+  ok  plages-sans-sargasses → /aujourdhui/
+  ok  carte-sargasses footer → /aujourdhui/
+— P0 distribution drafts —
+  ok  générateur drafts existe
+  ok  jamais d’envoi auto (écrit .md uniquement)
+  ok  liens UTM draft
+  ok  liens vers today natif (anti-404)
+  ok  prune 7 jours anti-bloat
+  WARN drafts du jour présents (6 régions) — 0/6 (générés par workflow reservoir)
+  ok  workflow reservoir branche les drafts
+— P0 partage UTM —
+  ok  helper _shareUrl central
+  ok  UTM préservées si présentes
+  ok  ctxShare tagué menu
+  ok  share card taguée card
+  ok  share funnel tagué funnel
+  ok  session_start porte UTM landing
+  ok  rapport shareHref whatsapp/report
+— P0 email réactivation —
+  ok  script existe, dry-run par défaut
+  ok  réutilise builders weekend
+  ok  exclusion B2B + unsub + cap
+  ok  barbados exclu
+— P1 B2B Concierge 29€ —
+  ok  toggle Concierge/Pro présent
+  ok  clés brief_* existantes serveur utilisées
+  ok  USD verrouillé Pro (pas de brief USD serveur)
+  ok  deep-link ?offre=concierge
+  ok  tracking tier dynamique (pas de pro_monthly en dur)
+  ok  outreach C0 → ?offre=concierge (FR)
+  ok  outreach mentionne 29€ (FR)
+  ok  caps/dédup outreach intacts
+  ok  hunt doc 100 prospects
+— P1 presse + soutien —
+  ok  lib civic-pages (presse+soutenir)
+  ok  graphiques calculés (history+backtest)
+  ok  pas de reçu fiscal (soutien)
+  ok  pas de mélange premium
+  ok  verdict intouchable
+  ok  dist/presse/index.html générée
+  ok  dist/_gp/presse/index.html générée
+  ok  dist/soutenir/index.html générée
+  ok  dist/_gp/soutenir/index.html générée
+  ok  hook civic core (vite.config)
+— Gardes —
+  ok  aucun three.js ajouté par le sprint (diff)
+  ok  money-path PHP : seuls mollie-lib.php + mollie-webhook.php (mission B2B monthly 2026-09-15, additif, couvert par worker-auth.contract)
+
+60 ok, 0 échecs
+
+▶ scripts\tests\f1-stale-contrast.test.cjs
+  ✓ ternaire stale/fresh du span date intact (comportement inchangé)
+  ✓ stale #8a5a00 sur #fdf6e3 : CR 5.49 ≥ 4.5 (était 3.34)
+  ✓ ancien doré #B87A00 purgé de la branche stale
+  ✓ pastille #fdf6e3 intacte (pairing du calcul)
+  ✓ branche fresh #00786C intacte (hors scope F1)
+  ✓ fresh #00786C sur #fdf6e3 : CR 4.99 ≥ 4.5 (inchangé)
+
+F1-STALE-CONTRAST TESTS: ALL PASS
+
+▶ scripts\tests\f2-livepill.test.cjs
+  ✓ règle .sg-live avec background présent
+  ✓ fond pill opaque (hex, sans alpha) : #e6f4f1
+  ✓ aucune translucidité résiduelle dans la règle
+  ✓ label ink #000000 sur #e6f4f1 : CR 18.58 ≥ 4.5
+  ✓ label fallback #0d0b14 sur #e6f4f1 : CR 17.28 ≥ 4.5
+  ✓ age #5A5A5A sur #e6f4f1 : CR 6.10 ≥ 4.5
+  ✓ pastille dot intacte
+  ✓ règle label intacte
+  ✓ règle age intacte
+
+F2-LIVEPILL TESTS: ALL PASS
+
+▶ scripts\tests\funnel-checkout-contract.test.cjs
+  ok 1 — Cas 1 — sg_mollie_checkout_redirect → mollie_checkout_redirect compté (canonique)
+  ok 2 — Cas 2 — sg_checkout_redirect legacy → alias mollie_checkout_redirect (fenêtre historique)
+  ok 3 — Cas 3 — sg_onsite_checkout_opened → onsite_checkout_opened compté + rate cta→onsite
+  ok 4 — Cas 4 — 0 pass_cta → taux 0, pas de division par zéro
+  ok 5 — Cas 5 — 5 pass_cta, 3 onsite, 2 mollie → mêmes taux dans les 3 modules
+  ok 6 — Cas 6 — by_island: checkout_redirect legacy → île comptée sous mollie
+
+✓ funnel-checkout-contract 6/6 passed
+
+▶ scripts\tests\j0-sprint-contract.test.cjs
+— OBJ1 CRO paywall —
+  ok  payOrderOfferFirst flag + rollback sgpayorder=0
+  ok  PassOffer rendu AVANT email (flag on)
+  ok  PassOffer rendu UNE SEULE fois par branche
+  ok  email input sans required bloquant
+  ok  sg_pass_cta en backup critique
+  ok  chaîne buy→onPassBuy→sg_pass_cta intacte
+— OBJ2 Où aller plutôt —
+  ok  nearestCleanAlt même île (territorialité)
+  ok  planB ≤60km top-3 clean
+  ok  planB view trackée (sg_planb_view)
+  ok  planB pick tracké (sg_planb_pick)
+  ok  repli honnête si aucune alternative
+  ok  planB déclenché pour avoid ET moderate (pas clean)
+— OBJ3 Rapport / partage —
+  ok  bouton rapport fiche (sg_pdf_preview)
+  ok  BeachDayReport share natif+clipboard
+  ok  bouton WhatsApp explicite wa.me
+  ok  tracking whatsapp via sg_pdf_share interaction
+  ok  texte partagé factuel (état+date, zéro promesse)
+— OBJ4 B2B self-serve —
+  ok  trial endpoint existe
+  ok  espace appelle b2b-trial.php
+  ok  espace vérifie token (widget-token.php)
+  ok  espace snippet iframe avec ?k= token
+  ok  espace abo mensuel create_subscription (additif, inchangé)
+  ok  espace paylink annuel (b2b-paylinks.json)
+  ok  paylinks pro_annual 690€ live
+  ok  espace télémétrie trial_activated (zéro PII)
+  ok  espace télémétrie paylink_click
+  ok  espace télémétrie space_open + widget_preview
+  ok  money-path intact (aucun montant modifié)
+— OBJ5 Ground truth —
+  ok  vote 1-tap 3 niveaux existe (BeachReport)
+  ok  submit sg_beach_report + offline queue
+  ok  modération via submit-report (pas de publi directe)
+  ok  verdict jamais influencé (terrain affiché à part)
+  ok  seuil consensus ≥3 (pas de petit N publié)
+— OBJ6 Analytics allowlists —
+  ok  sg_planb_view dans SG_FUNNEL_EVENTS
+  ok  planb_view dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_planb_pick dans SG_FUNNEL_EVENTS
+  ok  planb_pick dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_beach_report dans SG_FUNNEL_EVENTS
+  ok  beach_report dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_observation dans SG_FUNNEL_EVENTS
+  ok  observation dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_beach_event dans SG_FUNNEL_EVENTS
+  ok  beach_event dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_obs_smell dans SG_FUNNEL_EVENTS
+  ok  obs_smell dans funnel-from-supabase FUNNEL_KEYS
+  ok  sg_b2b_widget_preview dans SG_FUNNEL_EVENTS
+  ok  b2b_widget_preview dans funnel-from-supabase FUNNEL_KEYS
+  ok  pass_offer_view dans FUNNEL_KEYS (2 scripts)
+  ok  daily-stats ctaViews + altViews + rates
+— OBJ4b B2B monthly front (mission 2026-09-15) —
+  ok  espace toggle Concierge actif en USD (plus de masquage)
+  ok  espace deep-link ?tier= + ?email=
+  ok  B2BModal pont mensuel → espace (monthly_bridge)
+  ok  espace télémétrie lead_success (zéro PII)
+  ok  plans USD mensuels PHP (89/39)
+  ok  grant mensuel 30j inclut USD (pas 365)
+  ok  webhook PHP grants USD + subscription_created + trial_to_paid
+  ok  worker B2B_PLANS USD + grants USD + analytics
+  ok  clés funnel b2b_lead_success + subscription_created
+  ok  espace inline scripts parsables (P0 2026-09-15 : un `)` manquant tuait TOUT le JS espace)
+— BUG-2026-036 readiness carte (mission fermeture #672) —
+  ok  declutter publie data-sg-labels-ready (arbitrage achevé, els>0)
+  ok  héros repliable sg-hero-dismiss (44px, session, ?maphero=0 intact)
+  ok  prologues E2E attendent la readiness (pas 1er label visible)
+— OBJ7 gardes —
+  ok  aucun runtime 3D introduit par le sprint (diff git)
+  ok  rollback flags présents
+
+64 ok, 1 échecs
+
+▶ scripts\tests\jev-intent-contract.test.cjs
+— Worker serveur (secret jamais exposé) —
+  ✓ route /api/jev-intent enregistrée
+  ✓ secret lu via env worker (jamais de valeur en dur)
+  ✓ entrée Env TS déclarée
+  ✓ pas de clé en dur dans le handler
+  ✓ texte utilisateur jamais logué
+— Garde-fous —
+  ✓ endpoint TypeSafe v1 ciblé
+  ✓ timeout dur 4 s
+  ✓ fallback sur tous les chemins d’échec (≥6)
+  ✓ réponse bornée à la liste des classes
+  ✓ bornes anti-coût sur l’input
+— Money-path isolé —
+  ✓ questions localisées
+  ✓ aucun champ money-path dans la question Jev
+— Client —
+  ✓ client appelle la route worker
+  ✓ kill switch client ?jev=0
+  ✓ timeout client ~4,5 s
+  ✓ fallback client partout
+  ✓ lib importée dans l’app
+  ✓ composant JevAsk présent
+  ✓ events dans SG_FUNNEL_EVENTS
+  ✓ déclenché UNIQUEMENT quand recherche déterministe échoue
+
+20 pass · 0 fail
+
+▶ scripts\tests\lead-capture-g1.test.cjs
+ok 1 — row b2c_alerts canonique (trim + lowercase + domain sans www + region mq)
+ok 2 — mapping region miroir de LeadCapture (gp/mx/do/us + unknown)
+ok 3 — emails invalides → null (jamais de ligne vide)
+ok 4 — submitLeadToSupabase écrit en DIRECT REST Supabase (pas le hop worker 404)
+ok 5 — rollback ?lead_sb=0 → aucun dispatch
+ok 6 — email invalide → aucun dispatch
+ok 7 — submitLead() appelle le leg Supabase en primaire + attribution sg_email_submit
+ok 8 — LeadCapture.jsx → insert direct REST /rest/v1/{b2c_alerts|b2b_leads} (aucun /api/supabase)
+
+✓ lead-capture-g1 : 8 checks OK
+
+▶ scripts\tests\lead-capture-nav.test.cjs
+ok 1 — banniere mobile remontee au-dessus du dock
+ok 2 — z-index LeadCapture conserve 1250
+ok 3 — paywall reste au-dessus de LeadCapture
+ok 4 — tracking LeadCapture conserve
+ok 5 — rollback b2c=0 conserve
+
+✓ lead-capture-nav : 5 checks OK
+
+▶ scripts\tests\map-declutter.test.cjs
+  ✓ flag ?mapdeclutter=0 défini (WorldMapView)
+  ✓ const mapDeclutterOff présent
+  ✓ garde héros « Où te baigner » (?maphero=0 préservé)
+  ✓ scrub au-dessus de la BottomNav (z1060 > z1040)
+  ✓ rollback ?mapdeclutter=0 force le héros même après pliage mémorisé
+  ✓ garde carte Ma Plage inline (?mapmy=0 préservé)
+  ✓ garde sticker email carte
+  ✓ garde chip B2B légende (?promap=0 préservé)
+  ✓ garde digest « Cette semaine »
+  ✓ recherche carte intacte
+  ✓ jauge « plages propres » intacte
+  ✓ CTA « près de moi » intact
+  ✓ scrub J0→J5 intact
+  ✓ readiness labels intacte (E2E)
+  ✓ aucune interférence paywall/checkout/z-index/tracking
+  ✓ tracking héros préservé (rollback path)
+  ✓ tracking B2B préservé (rollback path)
+  ✓ tracking digest préservé (rollback path)
+  ✓ ma-plage.spec.ts couvre le path rollback
+
+MAP-DECLUTTER TESTS: ALL PASS
+
+▶ scripts\tests\media-kit.test.cjs
+
+media-kit
+  ✓ MEDIA_EVENTS porte sg_svg_view
+  ✓ MEDIA_EVENTS porte sg_gif_view
+  ✓ MEDIA_EVENTS porte sg_pdf_preview
+  ✓ MEDIA_EVENTS porte sg_pdf_open
+  ✓ MEDIA_EVENTS porte sg_pdf_download
+  ✓ MEDIA_EVENTS porte sg_pdf_share
+  ✓ MEDIA_EVENTS porte sg_video_view
+  ✓ PROVENANCE.OWNER_GENERATED
+  ✓ PROVENANCE.USER_GENERATED
+  ✓ PROVENANCE.COMMUNITY
+  ✓ PROVENANCE.SATELLITE
+  ✓ PROVENANCE.PARTNER
+  ✓ PROVENANCE.THIRD_PARTY
+  ✓ naming drift: beach-mq027-drift.gif
+  ✓ naming slugifié déterministe
+  ✓ naming idempotent
+  ✓ gratuit : J0–J1 réels uniquement (2)
+  ✓ gratuit : que du réel
+  ✓ gratuit : gated signalé
+  ✓ premium : 3 jours réels, placeholder exclu (3)
+  ✓ premium : aucun placeholder coloré
+  ✓ vide : 0 ligne, pas de gated mensonger
+  ✓ _loading seul : 0 ligne (jamais de couleur inventée)
+  ✓ params utiles conservés
+  ✓ PII strippée (email/name/phone absents)
+  ✓ allowlist Sargasses_PROD.jsx : sg_svg_view
+  ✓ allowlist Sargasses_PROD.jsx : sg_gif_view
+  ✓ allowlist Sargasses_PROD.jsx : sg_pdf_preview
+  ✓ allowlist Sargasses_PROD.jsx : sg_pdf_open
+  ✓ allowlist Sargasses_PROD.jsx : sg_pdf_download
+  ✓ allowlist Sargasses_PROD.jsx : sg_pdf_share
+  ✓ BeachDayReport lazy (0 octet eager)
+  ✓ bouton Rapport dans BeachSheetComic
+  ✓ rollback ?report=0 câblé
+  ✓ download = impression/PDF système
+  ✓ share = Web Share API (+ presse-papiers)
+  ✓ events download/share émis
+  ✓ reduced-motion fallback
+  ✓ zéro génération procédurale (moat)
+  ✓ état honnête sans donnée
+
+media-kit : OK
+
+▶ scripts\tests\mollie-mount-guard.test.cjs
+— flag partagé payMountedRef —
+  ok  PremiumModal crée payMountedRef (useRef)
+  ok  payMountedRef passé à usePaymentLogic
+  ok  payMountedRef passé à OnsiteCheckout (onsiteCheckoutProps)
+— writer : OnsiteCheckout pose le flag au succès des 4 mounts —
+  ok  OnsiteCheckout lit la prop payMountedRef (pas de double source)
+  ok  flag posé après les 4 mount()
+— reader : doSubscribe attend les mounts avant createToken —
+  ok  doSubscribe reçoit payMountedRef
+  ok  attente mounts (poll) AVANT createToken
+  ok  aucun tokenize sans mounts : timeout → return avant createToken
+  ok  retry couvre "not all required components are mounted" (transitoire)
+— zéro texte vendeur brut —
+  ok  message vendeur jamais affiché tel quel (mapping friendly)
+  ok  reason analytics = taxonomy stable (components_not_mounted)
+— mesure fiable : trafic synthétique tagué —
+  ok  track() tague synthetic quand navigator.webdriver (E2E/probes)
+
+12 ok, 0 échecs
+
+▶ scripts\tests\mollie-paid-contract.test.cjs
+  ok 1 — Cas 1 — un paiement paid dans la fenêtre → paid {USD:{count:1,total:5.99}}
+  ok 2 — Cas 2 — zéro paid (fenêtre vide) → paid {} mais lastPaidAt = vente hors fenêtre
+  ok 3 — Cas 3 — open/pending/expired/canceled/failed → jamais dans paid/refunds/payers
+  ok 4 — Cas 4 — 3 pages agrégées (paid répartis + refunds/chargebacks multi-pages)
+  ok 5 — Cas 5 — boundary : createdAt < since exclu, createdAt === since inclu (comportement historique <)
+  ok 6 — Bonus — devises agrégées séparément, sommes arrondies à 2 décimales
+  ok 7 — Bonus — détection paylink B2B : description « Sargasses Pro » sans email + metadata plan
+
+mollie-paid-contract: 7/7 GREEN
+
+▶ scripts\tests\outreach-preflight.test.cjs
+  ✓ preflight: tout vert → PASS
+  ✓ preflight: Resend CONFIGURED détecté
+  ✓ preflight: Meta NOT CONFIGURED détecté
+  ✓ preflight: worker down → FAIL
+  ✓ preflight: 401 admin → FAIL
+  ✓ gate: Resend absent → REFUSÉ
+  ✓ gate: 0 dry-run → REFUSÉ
+  ✓ gate: prérequis démontrés → PASS (activation manuelle autorisée)
+  ✓ verify: dry_runs>0, 0 envoi → DRY RUN VERIFIED
+  ✓ verify: sent>0 → NON PROUVÉ (leak ou envoi réel)
+  ✓ preflight+verify: clé absente de toute sortie
+  ✓ preflight: env vide → FAIL propre
+
+outreach-preflight: 12 pass / 0 fail
+
+▶ scripts\tests\outreach-queue.test.cjs
+  ✓ worker bundle OK (fetch + scheduled)
+  ✓ dequeue: ready → sent
+  ✓ dequeue: exactement 1 appel Resend
+  ✓ dequeue: prochaine relance planifiée
+  ✓ dequeue: event sent (non dry-run)
+  ✓ idempotence: 2 runs → 1 seul envoi (déjà sent)
+  ✓ retry: 500 → queued + backoff
+  ✓ retry: event retry loggé
+  ✓ retry: au-delà MAX → failed (pas de boucle infinie)
+  ✓ bounce: 422 → bounced, 1 seul appel
+  ✓ stop: status=unsubscribed → 0 envoi
+  ✓ stop: status=sent → 0 envoi
+  ✓ stop: status=bounced → 0 envoi
+  ✓ quota: daily atteint → 0 envoi
+  ✓ quota: skip loggé
+  ✓ batch: 15 dus, MAX 10 → 10 envois
+  ✓ timezone: fenêtre impossible → skipped (outside_window)
+  ✓ fb: scheduled dû → published + id
+  ✓ fb: 2 runs → 1 seule publication (pas de doublon)
+  ✓ kill switch: 0 appel externe
+  ✓ kill switch: contact intact
+  ✓ dry-run: 0 appel Resend
+  ✓ dry-run: statut non avancé
+  ✓ dry-run: sélection loggée avec contexte
+  ✓ admin: 200 avec clé
+  ✓ admin: aucun email en clair
+  ✓ admin: aucun secret exposé
+  ✓ admin: 401 sans clé
+  ✓ admin: 401 si secret non provisionné (fail-closed, pas de bypass vide)
+  ✓ unsubscribe: mauvais code → 403
+  ✓ unsubscribe: bon code → 200
+  ✓ unsubscribe: statut opt-out persisté
+  ✓ webhook: sans clé → 401
+  ✓ webhook: bounce → statut bounced
+  ✓ reply: outcome persisté (stoppe la séquence)
+  ✓ reply: prospect répondu → plus aucun envoi
+
+outreach-queue: 36 pass / 0 fail
+
+▶ scripts\tests\partners-contract.test.cjs
+  ok  partners.js charge (ESM pur, sans JSX)
+— catalogue synchronisé avec regions/*.json —
+  ok  catalogue couvre toutes les régions
+  ok  catalogue = miroir exact des sections partners (régénérer sinon)
+  ok  hook build gen-context-partners.cjs (avant vite build)
+— couverture exacte (jamais d’invention) —
+  ok  mq : transport = Sargagame Support WhatsApp (local prioritaire)
+  ok  mq : shopping vide (remplacé par WhatsApp support)
+  ok  gp : transport = RHUMZ seul (local MQ-only exclu)
+  ok  gp : shopping vide (Lovelly MQ-only exclue)
+  ok  florida : AUCUN partenaire (pas de couverture confirmée)
+  ok  puntacana : AUCUN partenaire (pas de couverture confirmée)
+  ok  rivieramaya : AUCUN partenaire (pas de couverture confirmée)
+  ok  tulum : AUCUN partenaire (pas de couverture confirmée)
+  ok  barbados : AUCUN partenaire (pas de couverture confirmée)
+  ok  région inconnue → null
+— règles de résolution —
+  ok  UN SEUL CTA transport : local > multi-îles
+  ok  repli multi-îles quand local absent
+  ok  disabled + hors-regions = invisible
+  ok  kill-switch ?partnerctx=0 → null
+  ok  résolveur agnostique à la plage (le composant exige beach, pas le résolveur)
+  ok  URL beach-context (bookingUrl + destination + island)
+  ok  URL WhatsApp = wa.me + texte prérempli contextuel (pas de prix/commission inventés)
+  ok  sans supportsBeachContext → URL brute
+— catalogue : aucune donnée inventée —
+  ok  catalogue = champs whitelistés uniquement (ni prix, ni commission)
+  ok  URLs catalogue toutes https
+— tracking canonique allowlisté —
+  ok  SG_FUNNEL_EVENTS += sg_partner_view/cta/outbound
+  ok  SG_FUNNEL_EVENTS += sg_product_view/cart_add/cart_open/checkout_start/checkout_payment/order_paid/order_failed/order_confirmed/order_cancelled
+  ok  FUNNEL_KEYS funnel-from-supabase += partner_*
+  ok  FUNNEL_KEYS funnel-from-supabase += partner commerce
+  ok  FUNNEL_KEYS daily-stats-check += partner_*
+  ok  FUNNEL_KEYS daily-stats-check += partner commerce
+— câblage surfaces (après verdict + alternatives, jamais dedans) —
+  ok  ChasseDetail : PartnerContext APRÈS planB/voisines, AVANT SeasonRepere
+  ok  BeachSheetComic : PartnerContext APRÈS EnhancedAlternativesPanel, AVANT BeachReport
+  ok  MaPlageView : slot bespoke supprimé (plus d’émission sg_transport_*)
+  ok  MaPlageView : PartnerContext sur beach.island (prop region=null sur build partagé)
+  ok  PartnerContext : badge Partenaire + rel sponsored + _blank noopener
+  ok  PartnerContext : 0 condition région/URL en dur (lit le catalogue)
+  ok  verdict intouché : PartnerContext ne consomme jamais sargData/forecast
+
+37 ok, 0 échecs
+
+▶ scripts\tests\pass-money-contract.test.cjs
+
+pass-money-contract
+  ✓ PASS_CENTS.eur = 1499 (14,99 €)
+  ✓ PASS_CENTS.usd = 1199 (11,99 $)
+  ✓ surcharge juillet : 1199 → 1379
+  ✓ hors saison (janvier) : 1199 inchangé
+  ✓ juin (borne basse) : surcharge active
+  ✓ novembre (borne haute) : surcharge active
+  ✓ décembre : inchangé
+  ✓ EUR jamais surchargé (août inclus)
+  ✓ mollie.php allowlist p30 = EUR 14.99 / USD 11.99
+  ✓ mollie.php surcharge USD ×1.15 présente
+  ✓ mollie.php fenêtre juin→nov présente
+  ✓ PassOffer onBuy envoie cents de BASE (pas displayCents)
+  ✓ PassOffer n'envoie pas le prix surchargé
+
+✅ contrat prix front↔serveur verrouillé
+
+
+▶ scripts\tests\passoffer-cta-copy.test.cjs
+  ✓ CTA FR spécifique (livrable nommé)
+  ✓ CTA EN spécifique
+  ✓ CTA ES spécifique
+  ✓ copy historique conservé (rollback)
+  ✓ flag ?sgcta=0 câblé (défaut ON)
+  ✓ hero branché sur le flag
+  ✓ sticky prix-spécifique inchangé
+  ✓ aria-label stable (sélecteurs E2E)
+  ✓ contrat onBuy intact (?offer= : OFFER.key, défaut p30)
+
+PASSOFFER-CTA-COPY TESTS: ALL PASS
+
+▶ scripts\tests\passoffer-paths.test.cjs
+  ✓ UNE SEULE écriture passCtxRef.current (onPassBuy)
+  ✓ setPayStep(true) uniquement via onPassBuy (trouvé: src/PremiumModal.jsx)
+  ✓ 3 sites <PassOffer (World×2 + Comic×1, trouvés: 3)
+  ✓ chaque site porte onBuy
+  ✓ PassOffer.buy = contrat {c,pass,days,segment} one-price (?offer= : OFFER.key, défaut p30)
+  ✓ PASS.key = p30 (offre unique)
+  ✓ zéro résidu variant dans PremiumModal.jsx
+  ✓ zéro résidu variant dans WorldPaywall.jsx
+  ✓ zéro résidu variant dans ComicPaywall.jsx
+  ✓ OnsiteCheckout dérive de passCtx, ne re-route jamais
+  ✓ B2BModal sans PassOffer/onPassBuy (produit distinct, hors scope)
+
+PASSOFFER-PATHS TESTS: ALL PASS
+
+▶ scripts\tests\passoffer-trust-row.test.cjs
+  ✓ flag trustRow + rollback ?trust_row=0 (défaut ON)
+  ✓ rendu conditionné à trustRow seul
+  ✓ testid passoffer-trust-row
+  ✓ rangée APRÈS le CTA hero
+  ✓ rangée AVANT la ligne existante (carte hero)
+  ✓ rangée AVANT le sticky (pas de duplication)
+  ✓ copy recyclée : Paiement sécurisé / Secure payment / Pago seguro
+  ✓ copy recyclée : Sans abonnement / No subscription / Sin suscripción
+  ✓ durée dynamique via offerDaysLabel (?offer=)
+  ✓ durée = OFFER.days, fallback PASS.days
+  ✓ aucun event ajouté (seul sg_pass_offer_view, trouvé : sg_pass_offer_view)
+  ✓ aucun z-index dans la rangée
+  ✓ chaîne buy→onBuy intacte
+  ✓ ni Mollie ni checkout ni buy dans la rangée
+
+PASSOFFER-TRUST-ROW TESTS: ALL PASS
+
+▶ scripts\tests\pay-error-visibility.test.cjs
+  ✓ ref payErrorRef déclarée
+  ✓ scrollIntoView nearest à chaque payError
+  ✓ focus preventScroll à chaque payError
+  ✓ alerte focusable (tabIndex -1, role=alert conservé)
+  ✓ message garde consentement inchangé
+  ✓ condition garde consentement inchangée
+  ✓ disabled={payBusy} seul (comportement bouton inchangé)
+  ✓ onClick → doSubscribe inchangé
+  ✓ bloc fix sans montant ni appel paiement
+
+PAY-ERROR-VISIBILITY TESTS: ALL PASS
+
+▶ scripts\tests\paypal-grants-mirror.test.cjs
+Partie A : audits de source
+  ✓ paypal.php require le helper G3
+  ✓ capture_order mirror le pass one-time
+  ✓ confirm_subscription mirror abo actif
+  ✓ pp_lookup_sub fallback Supabase
+  ✓ verify_subscription garde le check PayPal LIVE
+  ✓ forward Apps Script intact (capture + confirm)
+  ✓ webhook require le helper G3
+  ✓ webhook ACTIVATED mirror
+  ✓ webhook CANCELLED/EXPIRED expire la ligne
+  ✓ webhook SALE.COMPLETED prolonge 30j
+  ✓ webhook CAPTURE.* explicitement ignoré (anti-doublon)
+  ✓ webhook répond 200 AVANT tout mirror
+  ✓ schéma payment_grants parsé
+  ✓ pp_b2c_pass_row colonnes schéma uniquement
+  ✓ pp_sub_row colonnes schéma uniquement
+  ✓ helper POST la table payment_grants
+  ✓ pp_mirror_grant garde skip-sans-clé AVANT curl
+  ✓ pp_find_sub_by_email garde skip-sans-clé AVANT curl
+  ✓ pp_expire_sub_mirror garde skip-sans-clé AVANT curl
+  ✓ pp_extend_sub_mirror garde skip-sans-clé AVANT curl
+  ✓ helper réutilise les creds Supabase existants (zéro nouveau secret)
+Partie B : runtime PHP réel (sans curl, sans secrets)
+  ✓ pp_pass_days p30=30
+    ✓ pp_pass_days trip7=7
+    ✓ pp_pass_days season=210
+    ✓ pp_pass_days inconnu=30
+    ✓ one-time payment_id pp_ préfixé
+    ✓ one-time type/pass
+    ✓ one-time email/currency upper
+    ✓ one-time expires +7j
+    ✓ one-time granted_at
+    ✓ one-time metadata provider/island
+    ✓ one-time SANS island/status top-level
+    ✓ sub monthly plan/id
+    ✓ sub monthly +30j
+    ✓ sub annual +365j
+    ✓ pp_supabase_cfg forme {url,key}
+    ✓ pp_supabase_cfg url https
+  PHP-HARNESS ALL PASS
+  ✓ harness PHP exit 0
+
+PAYPAL-GRANTS-MIRROR TESTS: ALL PASS
+
+▶ scripts\tests\paywall-email-pre.test.cjs
+Partie A : audits de source
+  ✓ WorldPaywall branche le hook A1
+  ✓ rollback ?email_pre=0 présent
+  ✓ bloc capture email rendu APRÈS la carte PassOffer (contrat j0, fix UX-002)
+  ✓ input capture typé + testid
+  ✓ input pré-CTA JAMAIS required (attribut)
+  ✓ capture A1 branchée (hook onPreCtaEmail) sur le champ post-offre
+  ✓ onPassBuy sans garde email (CTA jamais bloqué)
+  ✓ submitLead dans commonPaywallProps
+  ✓ source lead = "paywall_pre"
+  ✓ hook soumet le lead via submitLead
+  ✓ flag payOrderOfferFirst + rollback intacts
+  ✓ pattern PassOffer-avant-email intact (contrat j0)
+  ✓ aucun email required côté World (contrat j0)
+  ✓ ComicPaywall (dormant) non touché
+Partie B : unit réel du helper
+  ✓ isValidEmail accepte valides
+  ✓ isValidEmail rejette invalides
+  ✓ shouldSubmitEmail soumet 1re fois
+  ✓ shouldSubmitEmail dédup anti-doublon
+  ✓ shouldSubmitEmail rejette invalide
+  ✓ shouldSubmitEmail trim
+  ✓ emailPreEnabled ON par défaut
+  ✓ emailPreEnabled OFF avec ?email_pre=0
+
+PAYWALL-EMAIL-PRE TESTS: ALL PASS
+
+▶ scripts\tests\paywall-social-proof.test.cjs
+  ✓ commonPaywallProps relaie community depuis __COMM (override ?sgcomm=N test-only)
+  ✓ override test ?sgcomm=N présent (UX-004)
+  ✓ WorldPaywall : prop community=0
+  ✓ WorldPaywall : gate socialOn && community > 0 (E2)
+  ✓ WorldPaywall : gate socialOn && community === 0 (E9)
+  ✓ WorldPaywall : rollback ?sgsocial=0
+  ✓ WorldPaywall : testid paywall-social-proof (E2)
+  ✓ WorldPaywall : testid paywall-data-quality-proof (E9)
+  ✓ WorldPaywall : compteur réel interpolé (aucun chiffre inventé)
+  ✓ WorldPaywall : preuve qualité données 98% (E9)
+  ✓ WorldPaywall : backtest 99% J+3→J+6 (E9)
+  ✓ WorldPaywall : preuve AVANT la carte PassOffer
+  ✓ ComicPaywall : prop community=0
+  ✓ ComicPaywall : gate socialOn && community > 0 (E2)
+  ✓ ComicPaywall : gate socialOn && community === 0 (E9)
+  ✓ ComicPaywall : rollback ?sgsocial=0
+  ✓ ComicPaywall : testid paywall-social-proof (E2)
+  ✓ ComicPaywall : testid paywall-data-quality-proof (E9)
+  ✓ ComicPaywall : compteur réel interpolé (aucun chiffre inventé)
+  ✓ ComicPaywall : preuve qualité données 98% (E9)
+  ✓ ComicPaywall : backtest 99% J+3→J+6 (E9)
+  ✓ OnsiteCheckout (preuve pré-existante) intacte
+
+PAYWALL-SOCIAL-PROOF TESTS: ALL PASS
+
+▶ scripts\tests\secret-scan-scope.test.cjs
+  ✓ gate : exclusion '.ai/plans/*' retirée
+  ✓ gate : exclusion *-config.example.php conservée
+  ✓ gate : exclusion NEXT_SESSION.md conservée
+  ✓ gate : exclusion src/*.jsx conservée
+  ✓ gate : garde pk_live/pk_test (clés publisables) conservé
+  ✓ gate : pattern sk_live_ conservé
+  ✓ gate : pattern live_* conservé
+  ✓ .ai/plans/security/plan.md : zéro motif live_* (hors pk_ publisables)
+  ✓ gate rejoué en local : 0 hit
+
+SECRET-SCAN-SCOPE TESTS: ALL PASS
+
+▶ scripts\tests\seo-graph-contract.test.cjs
+  ✓ A1 mq/gp (fr) → /plages/<slug>/
+  ✓ A1 florida (en) → /beaches/<slug>/
+  ✓ A1 tulum (es) → /playas/<slug>/
+  ✓ A1 fallback slugify(name) déterministe
+  ✓ A2 alias /beach/* en noindex,follow
+  ✓ A2 canonical alias = fiche primaire
+  ✓ A2 generateBeachPage retourne null + caller ne pousse que les entrées non-null (hors sitemap)
+  ✓ B1 rivieramaya : zone cancun = 8 plages réelles
+  ✓ B1 rivieramaya : playa-del-carmen (2)
+  ✓ B1 rivieramaya : tulum (2 plages < 20 région)
+  ✓ B1 puntacana : bavaro (6)
+  ✓ B1 puntacana : cap-cana (2)
+  ✓ B1 florida : seule miami-beach (3/20) — communes singletons = thin, rejetées
+  ✓ B1 tulum : 8/8 plages = une seule zone = doublon du listing régional → skippé
+  ✓ B1 rollback VITE_NO_SEOAREAS=1 → aucune area
+  ✓ B1 aucun slug area dupliqué
+  ✓ B2 espaces /areas/ + /zonas/
+  ✓ B2 florida/miami-beach : pas de collision extraPages
+  ✓ B2 rivieramaya/cancun : pas de collision extraPages
+  ✓ B2 rivieramaya/playa-del-carmen : pas de collision extraPages
+  ✓ B2 rivieramaya/tulum : pas de collision extraPages
+  ✓ B2 puntacana/bavaro : pas de collision extraPages
+  ✓ B2 puntacana/punta-cana : pas de collision extraPages
+  ✓ B2 puntacana/cap-cana : pas de collision extraPages
+  ✓ B2 areaCrossLink retrouve la page ville éditorialisée
+  ✓ B2 areaCrossLink = null si aucune page ville correspondante
+  ✓ B3 plage clean → pas de bloc alternative
+  ✓ B3 avoid → clean la plus proche (~2.2 km)
+  ✓ B3 avoid sans clean → moderate la plus proche (honnête)
+  ✓ B3 moderate entourée de moderate/avoid → null (strictement meilleur requis)
+  ✓ B3 haversine rejette les coords NaN
+  ✓ B4 hubLinks → index des zones (anti-orphelin)
+  ✓ B4 breadcrumb visible (nav HTML)
+  ✓ B4 cluster hreflang /areas↔/zonas
+  ✓ B4 flag rollback présent dans le générateur
+  ✓ C1 mapping activité→flag réel présent
+  ✓ C1 surf sans flag source → [] (noindex, jamais enrichi)
+  ✓ C1 kids = flag kids réel (2)
+  ✓ C1 family = même flag kids, null-safe
+  ✓ C2 /activity/kids/ canonicalise vers /family/ (pas de dupe)
+  ✓ C2 activity indexable seulement si ≥2 plages réelles
+  ✓ C2 noindex,follow sur activity thin ou doublon
+  ✓ C2 listes activity → fiches PRIMAIRES (jamais alias /beach/)
+  ✓ C3 /poi/* = noindex,follow (coquille conservée, hors index)
+  ✓ C3 /region/* canonical → home + noindex
+  ✓ C3 orchestrateur : aucun push sitemap non gardé
+  ✓ C4 fiche alias : nearby → fiches primaires
+  ✓ D1 flag rollback présent (vite.config.js)
+  ✓ D1 altSection branchée dans extraSections
+  ✓ D1 alternative = même île (jamais cross-island)
+  ✓ D1 alternative strictement meilleure (sinon rien)
+  ✓ D1 plage clean → aucun bloc forcé
+  ✓ D1 lien alternative → fiche primaire /plages/
+
+✓ ALL PASS (53/53)
+
+▶ scripts\tests\sticky-cta-align.test.cjs
+  ✓ sticky FR suit ctaSpecific (E1)
+  ✓ sticky EN suit ctaSpecific (E1)
+  ✓ sticky ES suit ctaSpecific (E1)
+  ✓ rollback FR intact sous ?sgcta=0
+  ✓ rollback EN intact sous ?sgcta=0
+  ✓ rollback ES intact sous ?sgcta=0
+  ✓ prix affiché inchangé (money/displayCents)
+  ✓ aria-label sticky intact
+  ✓ chaîne buy→onBuy intacte (?offer= : OFFER.key, défaut p30)
+  ✓ aucun tracking ajouté au sticky buy
+  ✓ aucune logique prix dans le sticky buy
+  ✓ hero E1 intact (référence)
+
+STICKY-CTA-ALIGN TESTS: ALL PASS
+
+▶ scripts\tests\worker-auth.contract.test.cjs
+  ✓ worker bundle OK (export fetch)
+
+— Guard route .php + KV tolérance —
+KV get KO: kv_quota
+  ✓ verify_subscription survit à un KV totalement KO (fail-open, + alias .php)
+  ✓ verify_subscription : active=false pour inconnu
+
+— auth_email (parcours email sans compte) —
+  ✓ auth_email rejette un email invalide
+  ✓ auth_email crée un user_id stable
+  ✓ auth_email ne délivre PAS de session token (identité non vérifiée)
+  ✓ auth_email idempotent : même user_id au 2e appel
+  ✓ auth_email normalise la casse (pas de doublon)
+
+— auth_google (OIDC vérifié) —
+  ✓ auth_google → 501 propre si client_id absent
+  ✓ auth_google rejette un credential malformé
+  ✓ auth_google rejette aud ≠ client_id
+  ✓ auth_google rejette un token expiré
+  ✓ auth_google : token valide → session signée
+  ✓ auth_google → user_id
+  ✓ Google avec email connu se LINK au user existant (pas de doublon)
+  ✓ auth_session : session valide → identité restaurée
+  ✓ auth_session rejette un token falsifié
+
+— create_payment → user_id propagé au grant (webhook) —
+  ✓ create_payment répond avec le user_id
+  ✓ create_payment n'a pas crashé (route .php + KV OK)
+  ✓ webhook payment.paid accepté (HMAC OK)
+  ✓ grant payment_grants écrit par le webhook
+  ✓ grant rattaché au user_id (source de vérité)
+  ✓ auth_session après paiement → premium actif (cross-device)
+
+— B2B monthly : create_subscription + webhook grant + analytics —
+  ✓ create_subscription rejette un plan inconnu (allowlist)
+  ✓ plan inconnu → ZÉRO appel Mollie (aucun objet créé)
+  ✓ create_subscription exige customerId ou email
+  ✓ sans email → ZÉRO appel Mollie
+  ✓ create_subscription pro_monthly (EUR) → subscriptionId + checkoutUrl
+  ✓ create_subscription brief_monthly (EUR) → subscriptionId + checkoutUrl
+  ✓ create_subscription pro_monthly_usd (USD) → subscriptionId + checkoutUrl
+  ✓ create_subscription brief_monthly_usd (USD) → subscriptionId + checkoutUrl
+  ✓ webhook subscription.created accepté (HMAC OK)
+  ✓ grant USD écrit avec le bon plan
+  ✓ grant USD = ~30 j (pas 365) — mesuré 30.0 j
+  ✓ event subscription_created émis au webhook
+  ✓ webhook subscription.paid accepté
+  ✓ event b2b_trial_to_paid émis au webhook paid
+
+37 OK / 0 échecs
+
+▶ scripts\tests\worker-b2b-passthrough.test.cjs
+  ✓ worker bundle OK (export fetch)
+  ✓ GET b2b-paylinks.json → 200 (passthrough)
+  ✓ GET b2b-paylinks.json → corps origine intact
+  ✓ GET b2b-paylinks.json → sous-requête origine émise
+  ✓ POST b2b-paylinks.json → 404 dispatch (pas de passthrough)
+  ✓ POST b2b-paylinks.json → aucune sous-requête origine
+  ✓ GET /api/b2b-nope → 404 (dispatch inchangé)
+
+worker-b2b-passthrough: 7 pass / 0 fail
+
+▶ scripts\tests\worker-payments-passthrough.test.cjs
+  ✓ worker bundle OK (export fetch)
+  ✓ GET b2b-paylinks.json → 200 (passthrough)
+  ✓ GET b2b-paylinks.json → corps origine intact
+  ✓ GET b2b-paylinks.json → sous-requête origine émise
+  ✓ POST b2b-paylinks.json → 404 dispatch (pas de passthrough)
+  ✓ POST b2b-paylinks.json → aucune sous-requête origine
+  ✓ GET /api/unknown-xyz-123 → 404 (fallthrough inchangé)
+
+worker-payments-passthrough: 7 pass / 0 fail
+
+▶ scripts\tests\xp-visual-rescue.test.cjs
+  ✓ R1 : `card` ancre color:INK (texte lisible sur fond #fff)
+  ✓ R1 : exception carte sombre documentée (hero HomeDashboard)
+  ✓ R2 : bloc XP_ARMOR présent
+  ✓ R2 : armure .xp-gold (fond or exact inline)
+  ✓ R2 : armure .xp-dark (bouton J’y vais)
+  ✓ R2 : armure .xp-seg-on (filtres actifs INK)
+  ✓ R2 : armure .xp-sort-on (tri actif GOLD)
+  ✓ R2 : tous les boutons btnGold armurés (armure 10/N, usages 10 — parité, plus de quota figé)
+  ✓ R2 : bouton noir J’y vais armuré
+  ✓ R2 : tri actif câblé (classe conditionnelle)
+  ✓ R2 : toggle Suivies câblé (classe conditionnelle)
+  ✓ R2 : filtre statut actif câblé (classe conditionnelle)
+  ✓ R2 : filtre activité actif câblé (classe conditionnelle)
+  ✓ R2 : boutons tri ont color:INK explicite
+  ✓ R2 : bouton Suivies a color:INK explicite
+  ✓ R2 : aucune classe armure ne contient "cta"
+  ✓ R2 : armure montée sur les 4 racines XP (home/plages/suivi/compare) — trouvé 4
+  ✓ G : Sargasses_PROD monte ExperienceReset view="plages" (live)
+  ✓ G : BeachCards.jsx non importé (dead code — ne pas corriger)
+  ✓ R3 : label sticky inline d’origine (desktop strict, wrap via lot 10 ≤480px)
+  ✓ R3 : classes wrap/label/cta posées (2 lignes ≤480px)
+  ✓ R3 : lot 10 wrap ≤480px (triple-classe)
+  ✓ R3 : lot 10 label pleine ligne
+  ✓ R3 : lot 10 CTA pleine largeur
+  ✓ R3 : aucune classe sticky ne contient "cta" (catch-all theme)
+  ✓ R3 : rollback ?nosticky=0 documenté
+
+XP-VISUAL-RESCUE TESTS: ALL PASS
+
+▶ tests\unit\acquisition-plan.test.cjs
+ACQUISITION PLAN — contrat
+  ✓ today-pages : CTA « Voir mon meilleur plan » → deep-link /?trip=1 (app)
+  ✓ today-pages : deep-link /?exp=<best.id> réel (jamais d'id inventé)
+  ✓ today-pages : i18n FR (plan) + EN + ES présents
+  ✓ today-pages : sous-texte honnête (« plan gratuit » dans les 3 langues)
+  ✓ today-pages : décision apparaît juste APRÈS bestCard (tunnel lisible)
+  ✓ today-pages : AUCUNE alt CTA lorsque best absent (logique honnête conservée)
+  ✓ PROD : ?trip=1 → setShowTrip(true) au boot (1×)
+  ✓ PROD : trip deep-link respecte ?tripplan=0
+  ✓ PROD : sg_trip_deeplink allowlisté SG_FUNNEL_EVENTS
+  ✓ PlanCard : strip semaine UNIQUEMENT si forecast réel (days)
+  ✓ PlanCard : statuts = mêmes couleurs réelles que plan (DOT)
+  ✓ PlanCard : verrous premium = champ locked existant (journeyFor), isPremium arrive
+  ✓ PlanCard : conf % titré avec le vrai chiffre, pas de promesse
+  ✓ PassOffer : bullets « séjour » présentes (copyOn) + anciennes gardées (?sgcopy=0)
+  ✓ PassOffer : CTA hero bytes inchangés (contrat achat)
+  ✓ E2E perfect-trip : couvre intent → plan-card → expérience → paywall (réel)
+
+✅ ACQUISITION PLAN — 16 checks ALL PASS
+
+▶ tests\unit\aha-media.test.cjs
+AHA MEDIA — couche réelle BeachExperience
+
+  ✓ ExpMedia composant défini
+  ✓ ExpMedia monté dans la scène, après <Scene/>
+  ✓ scrim lisibilité + glow verdict présents
+  ✓ rollback ?aha=0
+  ✓ respecte ?heropv=0 (même regex que le rail prouvé)
+  ✓ gabarit off → ExpMedia retourne null
+  ✓ garde prefers-reduced-motion avant vidéo
+  ✓ garde saveData avant vidéo
+  ✓ garde 2G avant vidéo
+  ✓ vidéo manifest-gatée (ids réels uniquement)
+  ✓ variante -w desktop (manifest.wide)
+  ✓ vidéo preload=none + muted + playsInline
+  ✓ photo : onError → retrait (scène SVG reste)
+  ✓ vidéo : onError → retrait (photo/scène reste)
+  ✓ photo affichée seulement après load (fondu)
+  ✓ vidéo affichée seulement après playing (fondu)
+  ✓ médias pointer-events:none (classe CSS dédiée)
+  ✓ atmosphère data-driven : filtre avoid présent
+  ✓ atmosphère data-driven : filtre moderate présent
+  ✓ verdict reste DOM (classes bx-verdict intactes)
+  ✓ AHA forecast-driven présent
+  ✓ AHA utilise le forecast réel J+1
+  ✓ AHA respecte reduced-motion
+  ✓ photo path par beachId (région-agnostique)
+  ✓ vidéo path par beachId (région-agnostique)
+  ✓ aucune région hardcodée dans ExpMedia
+  ✓ aucun import statique de média lourd (bundle intact)
+  ✓ sg_hero_video_view émis depuis l'experience
+  ✓ sg_hero_video_view dans SG_FUNNEL_EVENTS
+  ✓ reveals WHY/TOMORROW/BACKUP intacts
+  ✓ reduced-motion global du composant conservé
+  ✓ armure CTA or (triplé-classe + !important, pattern XP_ARMOR)
+
+32 checks OK
+
+▶ tests\unit\autopilot-core.test.cjs
+AUTOPILOT CORE — contrats
+— policy (denylist dure)
+  ✓ DENY public/api/mollie.php
+  ✓ DENY workers/sg-payments/src/index.ts
+  ✓ DENY src/PremiumModal/PremiumModal.jsx
+  ✓ DENY scripts/automation/mollie-paylinks.cjs
+  ✓ DENY regions/mq.json
+  ✓ DENY .github/workflows/ci.yml
+  ✓ DENY package.json
+  ✓ DENY dist/index.html
+  ✓ ALLOW src/Sargasses_PROD.jsx
+  ✓ ALLOW src/ChasseHome.jsx
+  ✓ ALLOW docs/X.md
+  ✓ ALLOW tests/unit/x.test.cjs
+— policy (budgets / automerge / secrets)
+  ✓ budget diff : 9 fichiers > max 8 refusé
+  ✓ budget diff : 2 fichiers / 50 lignes accepté
+  ✓ auto-merge OFF pour code même si whitelist vide de sens
+  ✓ scanSecrets attrape sk_live
+  ✓ scanSecrets ignore le prose normal
+— analyze (findings → candidats, anti-répétition, sélection)
+  ✓ pageerror → finding high
+  ✓ page 500 → finding critical
+  ✓ lien cassé → finding medium
+  ✓ fingerprint stable
+  ✓ candidats bruts rétrogradés agent (jamais auto sans recette)
+  ✓ auto en queue sélectionné avant agent-finding
+  ✓ agents off (v1) → finding agent JAMAIS sélectionné seul
+  ✓ fingerprint rejeté → skippé, pas de candidat
+— lock (pid vivant/mort, acquire/release)
+  ✓ pidAlive(self)
+  ✓ pidAlive(999999) === false (pid inexistant)
+  ✓ acquire OK quand libre
+  ✓ acquire REFUSÉ quand détenu vivant
+  ✓ acquire OK après release
+  ✓ lock stale (pid mort) récupéré
+— structure mémoire requise par la mission
+  ✓ .ai/autopilot/observations/ existe
+  ✓ .ai/autopilot/research/ existe
+  ✓ .ai/autopilot/opportunities/ existe
+  ✓ .ai/autopilot/experiments/ existe
+  ✓ .ai/autopilot/baselines/ existe
+  ✓ .ai/autopilot/regressions/ existe
+  ✓ .ai/autopilot/runs/ existe
+  ✓ .ai/autopilot/decisions/ existe
+  ✓ queue.json lisible
+  ✓ config boucle : maxRepairAttempts = 3
+  ✓ kill-switch documenté
+
+42 checks OK
+
+▶ tests\unit\autopilot-revenue-experiments.test.cjs
+AUTOPILOT REVENUE & EXPERIMENTS — contrats
+— decideExperiment (paid-only win, prudence)
+  ✓ paid 2→5 sur fenêtre = WIN
+  ✓ facteurs visibles (paid, visitors, jours)
+  ✓ paid égal sur fenêtre = jamais win ("no-harm-keep")
+  ✓ 30 visiteurs < 100 → inconclusive (petit échantillon, même si paid ↑)
+  ✓ fenêtre 2j < 7j → inconclusive
+  ✓ paid/qualifié ↓ avec volume → LOSS (rollback recommandé)
+  ✓ chaîne AHA expose paid sans inventer les étapes amont absentes
+  ✓ B2B jamais mélangé : snapshot séparé, dispo ou note explicite
+— experiments (registry isolé)
+  ✓ start crée une expérience running avec cohortes explicites
+  ✓ fiche md écrite (reconstructible)
+  ✓ 2e expérience même surface → REFUSÉE (SURFACE_BUSY)
+  ✓ surface différente autorisée
+  ✓ décision loss → statut rollback-recommended
+  ✓ baseline conservée dans le registre
+  ✓ windowStats(7) : compteurs numériques réels
+
+15 checks OK
+
+▶ tests\unit\cart-recovery-truth.test.cjs
+CART-RECOVERY TRUTH — prix réel + dédup persistée
+
+  ✓ contrat prix intact côté src (PASS_CENTS eur 1499 / usd 1199)
+  ✓ helper passPriceLabel présent dans cart-recovery-unified
+  ✓ helper contient le tarif EUR réel 14,99 €
+  ✓ helper contient le tarif USD réel 11,99 $ (base) et 13,79 $ (saison)
+  ✓ aucune promesse '12,99 €' hors commentaire de correction
+  ✓ aucune promesse '9,99 $' hors commentaire de correction
+  ✓ aucune fausse remise 'au lieu de'
+  ✓ workflow commit cart-recovery-j1-sent.json
+  ✓ workflow commit cart-recovery-j3-sent.json
+  ✓ workflow commit cart-recovery-j5-sent.json
+  ✓ cap par défaut présent (--cap=50)
+  ✓ lien unsubscribe dans chaque template (unsubUrl)
+
+12 checks OK
+
+▶ tests\unit\coastal-lab.test.cjs
+COASTAL LAB — contrats
+  ✓ Component file exists
+  ✓ CSS file exists
+  ✓ Layer MONITOR component defined
+  ✓ Layer UNDERSTAND component defined
+  ✓ Layer DECIDE component defined
+  ✓ Layer RECOVER component defined
+  ✓ Layer VALORIZE component defined
+  ✓ LayerNav component
+  ✓ BeachObjectCard component
+  ✓ HardProblem section
+  ✓ TourismConnection component
+  ✓ EcosystemView component
+  ✓ Uses resolveMedia from media-art-direction
+  ✓ Uses nearestBeaches from sg-visual
+  ✓ Uses dataAgeHours from sg-visual
+  ✓ Uses Icon from sg-icons
+  ✓ Uses _t from Sargasses_PROD
+  ✓ Uses track from Sargasses_PROD
+  ✓ Analytics event sg_lab_open tracked
+  ✓ Analytics event sg_lab_step_view tracked
+  ✓ Analytics event sg_lab_beach_select tracked
+  ✓ Analytics event sg_lab_decision_view tracked
+  ✓ Analytics event sg_lab_cta tracked
+  ✓ Rollback ?coastallab=0 supported
+  ✓ isCoastalLabPath route detection
+  ✓ showCoastalLab state
+  ✓ LazyCoastalLab import
+  ✓ CoastalLab render in JSX
+  ✓ CSS uses --cl-accent (status-driven)
+  ✓ CSS uses sg-motion classes
+  ✓ CSS has reduced-motion media query
+  ✓ CSS uses var(--sg-*) tokens
+  ✓ No invented data pattern: chiffre inventé
+  ✓ No invented data pattern: fake
+  ✓ No invented data pattern: mock
+  ✓ No invented data pattern: 97%
+  ✓ No invented data pattern: 98%
+  ✓ No invented data pattern: 99%
+  ✓ Mobile-first media queries
+  ✓ Focus-visible styles
+  ✓ High contrast support
+  ✓ Semantic HTML (role, aria)
+  ✓ Hard constraint PREDICTION
+  ✓ Hard constraint DATA
+  ✓ Hard constraint WEATHER
+  ✓ Hard constraint OCEAN
+  ✓ Hard constraint BEACH
+  ✓ Hard constraint TOURISM
+  ✓ Hard constraint LOGISTICS
+  ✓ Hard constraint COLLECTION
+  ✓ Hard constraint STORAGE
+  ✓ Hard constraint TREATMENT
+  ✓ Hard constraint ENVIRONMENT
+  ✓ Hard constraint ECONOMICS
+  ✓ Hard constraint REGULATION
+  ✓ Tourism step DREAM
+  ✓ Tourism step CHOOSE
+  ✓ Tourism step PLAN
+  ✓ Tourism step MONITOR
+  ✓ Tourism step ADAPT
+  ✓ Tourism step ENJOY
+  ✓ Recovery step COLLECTE
+  ✓ Recovery step TRI
+  ✓ Recovery step TRANSPORT
+  ✓ Recovery step STOCKAGE
+  ✓ Recovery step TRAITEMENT
+  ✓ Recovery step SÉCURISATION
+  ✓ Valorization MATÉRIAUX
+  ✓ Valorization ÉNERGIE
+  ✓ Valorization EXTRACTION
+  ✓ Valorization AGRICULTURE
+  ✓ Valorization AUTRES
+  ✓ Decision SURVEILLER
+  ✓ Decision INFORMER
+  ✓ Decision ADAPTER
+  ✓ Decision NETTOYER
+  ✓ Decision PROTÉGER
+  ✓ Decision ORIENTER
+  ✓ Decision SUIVRE
+  ✓ Ecosystem dim TOURISME
+  ✓ Ecosystem dim ENVIRONNEMENT
+  ✓ Ecosystem dim OPÉRATIONS
+  ✓ Ecosystem dim ÉCONOMIE
+  ✓ No magic button claim
+  ✓ Collect ≠ solved claim
+  ✓ When data missing: À documenter / À valider
+  ✓ CTA explore beaches
+  ✓ CTA plan stay
+  ✓ CTA monitor beaches
+  ✓ Component size reasonable (<100KB)
+  ✓ Component has JSDoc documentation
+
+91 passed, 0 failed
+✅ COASTAL LAB — ALL CONTRACTS PASS
+
+▶ tests\unit\journey.test.cjs
+WOW JOURNEY / CONTINUITY — contrat layer « un seul monde »
+
+  ✓ journey.js existe et exporte journeyFor + journeyOff
+  ✓ rollback global ?sgjourney=0
+  ✓ plan B réel : findAlternatives réutilisé (jamais inventé)
+  ✓ plan B préfère une alternative CLEAN (destination réelle)
+  ✓ verrou J+3+ côté spine (locked = !isPremium && i >= 2)
+  ✓ aucune donnée inventée si forecast absent (days=[])
+  ✓ critDay = 1er jour alert réel (null sinon — pas de fausse alerte)
+  ✓ import journeyFor/journeyOff dans le parent
+  ✓ deep link ?exp=<beachId> au boot (dataReady + île du build)
+  ✓ ouverture monde → pushState (entry dédiée)
+  ✓ transformation A→B → replaceState (même « page », lien suit la plage)
+  ✓ Back navigateur = sortir du monde (popstate)
+  ✓ popstate anti-stale-closure : deps incluent les états plage (fix E2E « Back sans effet »)
+  ✓ transformation in-world ne consomme PAS le quota paywall-3view (fix overlay z1400)
+  ✓ ✕ = chemin Back natif quand entry à nous (closeExperience → history.back)
+  ✓ pile in-world : plage quittée mémorisée (expPrevRef)
+  ✓ strip param à la fermeture latérale (URL jamais sale)
+  ✓ spine stay partagée calculée une fois (journeyStay, experience OU ma plage)
+  ✓ spine passée à l'experience (stay/stayPrev/onStayBack)
+  ✓ spine passée au TripPlanner
+  ✓ ✕ experience = closeExperience (plus de setSelectedBeach nu)
+  ✓ event sg_exp_deeplink allowlisté (SG_FUNNEL_EVENTS)
+  ✓ event sg_exp_chip_tap allowlisté (SG_FUNNEL_EVENTS)
+  ✓ event sg_exp_back_tap allowlisté (SG_FUNNEL_EVENTS)
+  ✓ event sg_exp_swipeback allowlisté (SG_FUNNEL_EVENTS)
+  ✓ rail séjour monté si et seulement si stay (rollback-safe)
+  ✓ chip ← retour in-world (stayPrev + onStayBack)
+  ✓ chips jours verrouillées → premium (locked cohérent trip)
+  ✓ chip plan B → transformation vers la plage réelle
+  ✓ edge-swipe → gauche >= 72px, départ <= 28px du bord
+  ✓ geste jamais sans journey (stay null → handlers inertes)
+  ✓ flèche clavier ← desktop = retour in-world
+  ✓ share = décision vivante (demain réel ajouté si fc[1])
+  ✓ armure anti-skin triplé-classe sur les chips
+  ✓ rail pointer-events chirurgicaux (conteneur none, enfants auto)
+  ✓ strip stay présent (trip-stay-strip)
+  ✓ chips semaine réelles (trip-stay-chip + confidence)
+  ✓ plan B chip trip → retour au monde (onOpenBeach)
+  ✓ chip verrouillée trip → premium (trip_stay_chip)
+  ✓ DayRow id tp-day-N (téléportation chip → ligne)
+  ✓ i18n strip FR/EN/ES
+  ✓ zéro changement pricing (aucun montant ajouté au journey)
+  ✓ experience : visuals core intacts (hero/verdict/WHY/TOMORROW/BACKUP classes)
+  ✓ premium CTA experience intact (exp-premium-cta)
+  ✓ TripPlanner CTA premium intact (trip-premium-cta)
+  ✓ rollback experience ?sgexp=0 intact
+
+46 checks OK
+
+▶ tests\unit\media-pass.test.cjs
+MEDIA PASS — contrats
+  ✓ sources : MEDIA-SOURCES.md (5 sources + règles)
+  ✓ sources : Google gelé (legacy + photos[0] inchangés)
+  ✓ sources : aucun step New-API-statique au build
+  ✓ place : nom+commune → VERIFIED_PLACE
+  ✓ place : vague → ATMOSPHERIC_ONLY (jamais hero)
+  ✓ licence : CC BY 4.0 OK + attribution requise
+  ✓ licence : CC0 OK sans attribution
+  ✓ licence : BY-NC / inconnue → REJECT
+  ✓ V3 : discovery réel gp027 (5 VERIFIED, provenance)
+  ✓ V3 : hero_eligible = licence + VERIFIED + ≥2000px
+  ✓ V3 : sources tracées (wikimedia live, adapters skipped)
+  ✓ slots : hero() gp027 → asset + provenance attribution
+  ✓ slots : heroMobile/card/poster cohérents
+  ✓ slots : portrait/gallery = manquants documentés (pas de fake)
+  ✓ slots : quarantaine gp119 → asset null (jamais de photo douteuse)
+  ✓ slots : sans photo → null + raison
+  ✓ atmosphere : sans licence → reject
+  ✓ atmosphere : manifest schéma vide honnête (0 asset, pas de fake)
+  ✓ atmosphere : jamais via beachImageUrl
+  ✓ attributions : gp027 auteur + licence + URLs (CC BY 4.0)
+  ✓ attributions : affichées fiche (hero) + page jour
+  ✓ responsive : --write requis (défaut dry-run)
+  ✓ responsive : AVIF+WebP+JPEG + withoutEnlargement
+  ✓ acquis : wk-gp027-clugny.jpg présent (2560px, non-upscalé)
+  ✓ acquis : master scoré HERO (v2, pas de faux upscale)
+  ✓ acquis : staging nettoyé (pas de binaires temporaires)
+  ✓ svg : wave + sun + sargassum présents (audit, 0 ajout)
+  ✓ analytics : 0 nouvel event media ce cycle (forêt interdite)
+  ✓ money intact : PASS p30 + buy chain (0 touch K)
+
+✅ MEDIA PASS — 29 checks ALL PASS
+
+▶ tests\unit\mollie-verify-subscription.test.cjs
+BUG-2026-010 — mollie.php verify_subscription handler audit
+
+  ✓ handler verify_subscription présent
+  ✓ email validé (non-vide + format)
+  ✓ utilise SUPABASE_URL getenv
+  ✓ fallback SUPABASE_URL hardcodé
+  ✓ utilise SUPABASE_SERVICE_KEY getenv
+  ✓ filtre type=eq.b2c_pass
+  ✓ filtre expires_at=gt.now()
+  ✓ sélect colonnes pass,expires_at,payment_id
+  ✓ retour actif: active=true + kind=pass
+  ✓ retour passEnd en ms (* 1000)
+  ✓ retour inactif: reason=no_pass_grant
+  ✓ échec Supabase -> reason=lookup_failed
+  ✓ échec Supabase -> exit; (pas exit(1))
+  ✓ unique occurrence de active => true (pas de fail-open ailleurs)
+  ✓ Authorization Bearer service_key
+  ✓ apikey header service_key
+  ✓ handler create_payment toujours présent
+  ✓ handler create_subscription toujours présent
+  ✓ handler get_customer toujours présent
+  ✓ handler get_mandate toujours présent
+  ✓ handler payment_status toujours présent
+  ✓ handler claim_referral_credit toujours présent
+  ✓ handler applepay_session toujours présent
+  ✓ handler positionné AVANT claim_referral_credit
+  ✓ handler positionné APRÈS payment_status
+  ✓ rate limiting global mol_* présent
+
+✅ 26 asserts passés — handler verify_subscription conforme.
+   BUG-2026-010 : déblocage cross-device pass Mollie one-time validé au niveau source.
+
+▶ tests\unit\mollie-webhook.test.cjs
+BUG-2026-011 — mollie-webhook & mollie-lib audit
+
+  ✓ payment.failed handled in payment branch
+  ✓ payment.failed calls mol_b2c_pass_revoke
+  ✓ payment.paid returns 200 after successful grant
+  ✓ mirror failure returns 500 with retry
+  ✓ payment.failed removed from subscription branch
+  ✓ subscription.paid checks mirror_ok
+  ✓ subscription mirror failure returns 500
+  ✓ subscription.created/updated checks mirror_ok
+  ✓ mol_supabase_mirror returns boolean
+  ✓ mol_supabase_mirror returns false on cURL error
+  ✓ mol_supabase_mirror returns false on HTTP >= 400
+  ✓ mol_supabase_mirror returns true on success
+  ✓ mol_b2b_grant_once returns mirror_ok
+  ✓ mol_b2b_grant_once returns mirror_ok=false on mirror failure
+  ✓ mol_b2c_pass_grant returns mirror_ok
+  ✓ mol_b2c_pass_grant returns mirror_ok=false on mirror failure
+  ✓ payment.failed calls mol_b2c_pass_revoke with paymentId
+  ✓ webhook returns 500 with retry flag on mirror failure
+  ✓ payment handler still present
+  ✓ subscription handler still present
+  ✓ customer handler still present
+  ✓ mandate handler still present
+
+✅ 22 asserts passed — webhook & lib conformes.
+   BUG-2026-011 : webhook payment.failed + mirror retry validé au niveau source.
+
+▶ tests\unit\niche-evidence.test.cjs
+NICHE EVIDENCE — contrats
+  ✓ registre : top LIVE (couverture réelle)
+  ✓ registre : snorkel LIVE (couverture réelle)
+  ✓ registre : family LIVE (couverture réelle)
+  ✓ registre : sunset LIVE (couverture réelle)
+  ✓ registre : easy LIVE (couverture réelle)
+  ✓ registre : diving BLOQUÉ (no-depth-data)
+  ✓ registre : fishing BLOQUÉ (no-fishing-source)
+  ✓ registre : sailing BLOQUÉ (no-sailing-source)
+  ✓ registre : romantic BLOQUÉ (no-honest-proxy)
+  ✓ registre : wild BLOQUÉ (drive-plus-parking-unproven)
+  ✓ registre : intent inconnu → blocked (jamais d'invention)
+  ✓ evidence : déterministe (score+raisons identiques, hors horodatage)
+  ✓ evidence : score borné 10-100 + confidence
+  ✓ evidence : raisons citées avec source
+  ✓ evidence : snorkel cite le flag + le satellite
+  ✓ evidence : statut absent → blocked no-status
+  ✓ evidence : intent bloqué → blocked + missing (diving)
+  ✓ evidence : flag snorkel ≠ preuve plongée (diving reste bloqué même avec flag)
+  ✓ evidence : i18n FR/EN/ES
+  ✓ tips : chaque conseil a kind+source+confidence
+  ✓ tips : masque si snorkel+clean+afai bas (règle VisitPlan)
+  ✓ tips : warning H2S si avoid+afai≥0.40 (source satellite)
+  ✓ tips : [] sans données (jamais rempli)
+  ✓ marine : seuils identiques au métier (0.8/1.0/1.5)
+  ✓ marine : marineState pur (calm/moderate/rough/null)
+  ✓ marine : snorkelSea exige flag+clean+vagues (même règle métier)
+  ✓ marine : provider documenté (marine-api.open-meteo.com, sans clé, limites)
+  ✓ marine : cache 30 min + timeout 8s + jamais de throw
+  ✓ BeachExperience : section MER (fetch paresseux, source citée)
+  ✓ BeachExperience : MER sous ?sgvis=0 + event existant
+  ✓ BeachExperience : savoir = tips avec source affichée
+  ✓ Home : reco affiche raison + source (intent-reco-why)
+  ✓ sg-visual : beachFacts porte source (provenance)
+  ✓ media binding : intent top → 121/121 reco avec photo réelle
+  ✓ media binding : intent snorkel → 27/27 reco avec photo réelle
+  ✓ media binding : intent family → 124/124 reco avec photo réelle
+  ✓ media binding : intent sunset → 35/35 reco avec photo réelle
+  ✓ media binding : intent easy → 37/37 reco avec photo réelle
+  ✓ media binding : snorkel hero vidéo si id manifest (jamais de stock)
+  ✓ photos C : mappings au vrai lieu (gp027 → Wikimedia HERO wk-gp027-clugny.jpg)
+  ✓ photos C : Îlet_du_Gosier (102 Ko) NON mappée à gp012 (lieu différent, pas de mensonge)
+  ✓ money intact : PASS p30 + buy chain (0 touch F)
+
+✅ NICHE EVIDENCE — 42 checks ALL PASS
+
+▶ tests\unit\offers-contract.test.cjs
+OFFERS-CONTRACT — garde-fous catalogue B2C
+  ✓ src/lib/offers.js existe
+  ✓ référence B2C-OFFER-ARCHITECTURE.md
+  ✓ pass-price.js PASS_CENTS eur=1499
+  ✓ pass-price.js PASS_CENTS usd=1199
+  ✓ catalogue p30 = PASS_CENTS (miroir, pas de chiffre en dur divergent)
+  ✓ serveur allowlist p30 = 14.99/11.99
+  ✓ serveur allowlist trip7 = 4.99/USD-variable
+  ✓ serveur allowlist season = 19.99/USD-variable
+  ✓ catalogue SERVER_MIRROR p30 = 14.99/11.99
+  ✓ catalogue SERVER_MIRROR trip7 = 4.99/null
+  ✓ catalogue SERVER_MIRROR season = 19.99/null
+  ✓ pas de clé 'p7' dans le catalogue (métadonnée morte GA4, non chargeable)
+  ✓ pas de clé 'saison' dans le catalogue (canonique = 'season')
+  ✓ le piège 'saison' est documenté dans le catalogue
+  ✓ offre watch_monthly déclarée
+  ✓ offre watch_monthly status planned
+  ✓ offre watch_annual déclarée
+  ✓ offre watch_annual status planned
+  ✓ offre mon_stay déclarée
+  ✓ offre mon_stay status planned
+  ✓ planned = prix null (aucune hypothèse ne devient un débit)
+  ✓ isChargeable() exclut planned + free
+  ✓ entitlement b2c_watch réservé aux planned (pas de grant existant)
+  ✓ entitlement report réservé à mon_stay
+  ✓ offre live free déclarée
+  ✓ offre live trip7 déclarée
+  ✓ offre live p30 déclarée
+  ✓ offre live season déclarée
+  ✓ seul p30 est servi par le front aujourd'hui (commentaire PassOffer)
+  ✓ offerLabOff() lit ?offerlab=0
+  ✓ regex rollback standard (pattern repo)
+  ✓ aucune référence webhook subscription B2C dans le catalogue (gap documenté, pas câblé)
+  ✓ pass-price.js expose seasonalCents (symétrie affiché=débité)
+  ✓ mollie.php applique la surcharge USD au débit (miroir serveur)
+  ✓ catalogue < 15 Ko
+  ✓ import unique autorisé : ./pass-price.js (même dossier)
+  ✓ PassOffer accepte offerKey (défaut p30)
+  ✓ PassOffer résout via le catalogue (getOffer, pas de mapping dupliqué)
+  ✓ PassOffer buy() envoie pass:OFFER.key + days dynamiques (même forme qu'avant)
+  ✓ PassOffer titre dynamique (trip7/season/p30)
+  ✓ PassOffer view track sg_pass_offer_view avec offer (+offer_requested), model préservé
+  ✓ PassOffer sans logique paiement (pas de create_payment/tokenize/grant/subscription)
+  ✓ PremiumModal résout UNE fois via resolveOffer (source unique)
+  ✓ PremiumModal thread offerKey (état) + offerRequested + onSelectOffer via commonPaywallProps
+  ✓ WorldPaywall relaie offerKey aux 2 PassOffer
+  ✓ ComicPaywall relaie offerKey à PassOffer
+  ✓ PremiumModal.jsx:152 fallback jours conservé (filet, mapping saison→210 intact)
+  ✓ Sargasses_PROD deep-link préserve ?offer= valide (pas de wipe)
+  ✓ Sargasses_PROD deep-link préserve ?tripchoice=0 (rollback testable via deep-link)
+  ✓ OnsiteCheckout récap affiche offerDisplayCents (honnêteté trip7 USD)
+  ✓ OnsiteCheckout garde le fallback seasonalCents historique
+  ✓ OnsiteCheckout : zéro logique paiement touchée (doSubscribe/createToken intacts)
+  ✓ PassOffer expose onSelectOffer (défaut null = rangée absente sans câblage)
+  ✓ Rangée trip-choice testid + rollback ?tripchoice=0 (défaut ON)
+  ✓ Rangée masquée hors p30 (pas d'auto-référence)
+  ✓ Rangée : prix via offerDisplayCents trip7 (jamais inventé)
+  ✓ Rangée : clic délègue onSelectOffer (pas de logique paiement inline)
+  ✓ PremiumModal : état offre + selectOffer unique (URL replaceState, pas de reload)
+  ✓ PremiumModal : selectOffer ne touche ni grant ni Mollie
+  ✓ WorldPaywall relaie onSelectOffer aux PassOffer
+  ✓ ComicPaywall relaie onSelectOffer à PassOffer
+  ✓ [runtime] default : search vide → p30
+  ✓ [runtime] default : sans ?offer= → p30
+  ✓ [runtime] default : search non-string → p30
+  ✓ [runtime] trip7 résolu
+  ✓ [runtime] season résolu
+  ✓ [runtime] trip7 avec autres params (?a=1&offer=trip7&b=2)
+  ✓ [runtime] p30 explicite accepté
+  ✓ [runtime] unknown ?offer=foo → p30 (requested conservé pour mesure)
+  ✓ [runtime] empty ?offer= → p30
+  ✓ [runtime] malformed ?offer=% → p30 (decodeURIComponent throw)
+  ✓ [runtime] malformed ?offer=<script> → p30
+  ✓ [runtime] trop long (100 chars) → p30
+  ✓ [runtime] case ?offer=Trip7 → trip7
+  ✓ [runtime] case ?offer= SEASON  → season
+  ✓ [runtime] aucune mutation OFFERS après résolutions
+  ✓ [runtime] p30 intact après résolutions
+  ✓ [runtime] p7 (métadonnée morte) → p30
+  ✓ [runtime] saison (FR) → p30 (canonique = season)
+  ✓ [runtime] watch_monthly (planned) → p30
+  ✓ [runtime] mon_stay (planned) → p30
+  ✓ [runtime] free → p30 (jamais exposé comme offre payante)
+  ✓ [runtime] ?offerlab=0 tue même ?offer=trip7 valide
+  ✓ [runtime] offerLabOff('?offerlab=0') === true
+  ✓ [runtime] offerLabOff('?offer=trip7') === false
+  ✓ [runtime] base trip7/eur = 499
+  ✓ [runtime] base trip7/usd = 599
+  ✓ [runtime] base p30/eur = 1499
+  ✓ [runtime] base p30/usd = 1199
+  ✓ [runtime] base season/eur = 1999
+  ✓ [runtime] base season/usd = 1999
+  ✓ [runtime] base unknown → null
+  ✓ [runtime] base free → null
+  ✓ [runtime] base planned → null
+  ✓ [runtime] display p30/eur = 1499 (jamais de surcharge EUR)
+  ✓ [runtime] display p30/usd juillet = 1379 (+15 %)
+  ✓ [runtime] display p30/usd janvier = 1199 (hors saison)
+  ✓ [runtime] display trip7/usd juillet = 599 (SANS surcharge — règle serveur)
+  ✓ [runtime] display season/usd juillet = 2299 (+15 %)
+  ✓ [runtime] display season/usd janvier = 1999
+  ✓ [runtime] display trip7/eur = 499
+  ✓ [runtime] isChargeable trip7/season/p30
+  ✓ [runtime] !isChargeable watch/mon_stay/free/foo
+
+103 passed, 0 failed
+✅ OFFERS-CONTRACT — ALL GUARDS PASS
+
+▶ tests\unit\payment-return-pages-xss.test.cjs
+Paiement — retours HTML sans XSS réfléchi
+
+  ✓ good.html n’utilise pas innerHTML
+  ✓ good.html affiche email et plan avec textContent
+  ✓ error.html n’utilise pas innerHTML
+  ✓ error.html affiche code, raison et email avec textContent
+
+✅ 4 assertions passées — paramètres URL affichés comme texte.
+
+▶ tests\unit\perfect-trip.test.cjs
+PERFECT BEACH TRIP — contrat
+  ✓ intents.js : 5 intentions SEULEMENT (aucune sans donnée source)
+  ✓ top = clean uniquement
+  ✓ snorkel = flag réel (tri clean d'abord)
+  ✓ family = flag kids réel (tri clean d'abord)
+  ✓ sunset MQ = côte sous le vent (lng < -61.1) — w1+w2 seulement
+  ✓ sunset tri clean d'abord
+  ✓ easy = flag parking réel
+  ✓ intent inconnu → [] (jamais de résultat fabriqué)
+  ✓ aucune entrée → []
+  ✓ sans coords → sunset jamais vrai
+  ✓ coastSentence MQ ouest/est factuelle
+  ✓ coastSentence i18n EN
+  ✓ hors MQ/GP : sunset = quartile ouest (2/8 les plus à l'ouest)
+  ✓ media : photo réseau UNIQUEMENT si mappée par id
+  ✓ media : id absent → null (jamais de générique)
+  ✓ media : header documente les assets manquants (media pass futur)
+  ✓ PlanCard : rollback ?sgplan=0
+  ✓ PlanCard : AUCUN import ExperienceReset (anti-cycle)
+  ✓ PlanCard : facts ≤ 3
+  ✓ PlanCard : alternative via journey.backup (jamais inventée)
+  ✓ PlanCard : jamais « parfait » garanti dans les strings UI (honnêteté)
+  ✓ PlanCard : sg_plan_generate au mount (1×/plage)
+  ✓ PlanCard : sg_alternative_open au tap alt
+  ✓ PlanCard : testids plan-card / plan-open / plan-alt
+  ✓ PlanCard : image lazy + onError fallback (zéro 404 visuel)
+  ✓ HomeWow : chips intention data-testid intent-<id>
+  ✓ HomeWow : rollback ?sgintent=0
+  ✓ HomeWow : rail filtré via intentList
+  ✓ HomeWow : PlanCard montée sur intentBest + planJourney (journeyFor partagé)
+  ✓ HomeWow : sg_intent_select au tap
+  ✓ HomeWow : sg_plan_add quand plan visible + trip
+  ✓ HomeWow : sg_perfect_trip_paywall_open sur la carte Pass
+  ✓ HomeWow : armure chips sous thème (wow-intent doublé-classe)
+  ✓ WOW Home : zéro animation infinie sur CTA (sgm-focus fini conservé)
+  ✓ event sg_intent_select allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_recommendation_open allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_plan_generate allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_plan_add allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_alternative_open allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_perfect_trip_paywall_open allowlisté SG_FUNNEL_EVENTS
+  ✓ event sg_perfect_trip_cta allowlisté SG_FUNNEL_EVENTS
+  ✓ TripPlanner : sg_perfect_trip_cta sur CTA séjour
+  ✓ PassOffer : nouveau headline « séjour idéal »
+  ✓ PassOffer : rollback ?sgcopy=0 pose l'ancien copy
+  ✓ PassOffer : CTA hero BYTES inchangés (contrat existant)
+  ✓ PassOffer : chaîne buy intacte (zéro touch money-path)
+  ✓ PROD : forecastById/imageMap/isPremium passés à la home
+
+✅ PERFECT TRIP — 47 checks ALL PASS
+
+▶ tests\unit\photo-quality-v2.test.cjs
+PHOTO QUALITY V2 — contrats
+  ✓ v2 : 400+ photos scorées avec tech+visu
+  ✓ v2 : score = tech + visu (borné 0-100)
+  ✓ v2 : aucun HERO au visuel faible ou petit (1600px mauvaise ≠ HERO)
+  ✓ v2 : 1600px mauvaise reste bloquée (gp083 THUMB, pas HERO)
+  ✓ classes : top30 visibilité sans THUMB/REJECT
+  ✓ classes : gp027 remappée HERO (Wikimedia upgrade même-lieu, 2560px CC BY 4.0)
+  ✓ quarantaine : gp118 exclu (raison documentée)
+  ✓ quarantaine : gp119 exclu (raison documentée)
+  ✓ quarantaine : fichier + pair + motif (pas de devinette)
+  ✓ quarantaine : jumeaux conservés affichables (gp019 HERO, gp024 CARD)
+  ✓ ExpMedia : photo plein-bleed gatée HERO (scène sinon)
+  ✓ ExpMedia : vidéo suit le même gate (pas de loop lieu-douteux)
+  ✓ ExpMedia : fail-open si classes indisponibles (pas de régression réseau)
+  ✓ PROD : exclus filtrés d'imageMap à la source (tous les slots)
+  ✓ today-pages : hero build gaté HERO/CARD + exclu
+  ✓ beach-media : photoAllowed(classes, id, slot) exporté
+  ✓ trio mq024/25/26 : 3 fichiers distincts
+  ✓ paires proches : 0 même-fichier (report)
+  ✓ download : legacy maxwidth=1600 + photos[0] INCHANGÉS (pas de bulk silencieux)
+  ✓ build : aucun step New-API-statique ajouté
+  ✓ media:audit : commande documentée (score + audit + contact sheet)
+  ✓ contact sheet : TOP50 + WORST + LOW + DUPLICATES (grandes images)
+  ✓ quarantaine : photoAllowed refuse gp118/gp119 en HERO
+  ✓ quarantaine : gp024/gp027 restent autorisés (HERO/CARD)
+  ✓ quarantaine : inconnu → HERO refusé (défaut sûr), CARD permis
+  ✓ money intact : PASS p30 + buy chain (0 touch H)
+
+✅ PHOTO QUALITY V2 — 26 checks ALL PASS
+
+▶ tests\unit\routing-catchall.test.cjs
+  ✓ catch-all exporte onRequest
+  ✓ sitemap.xml servi en XML (pas de SPA)
+  ✓ robots.txt servi en texte (pas de SPA)
+  ✓ racine toujours SPA fallback
+  ✓ page SEO toujours SPA fallback
+  ✓ page statique existante servie (pas la coquille)
+  ✓ chemin api/*.json délégué à ASSETS (pas de 404 handler)
+  ✓ _routes.json exclut *.xml et *.txt des Functions
+
+routing-catchall: 8 pass / 0 fail
+
+▶ tests\unit\sg-motion-grammar.test.cjs
+SGM — grammaire de motion centralisée
+
+  ✓ @keyframes sgmReveal
+  ✓ @keyframes sgmPop
+  ✓ @keyframes sgmFill
+  ✓ @keyframes sgmRing
+  ✓ @keyframes sgmUnlock
+  ✓ @keyframes sgmDayIn
+  ✓ @keyframes sgmBreathe
+  ✓ @keyframes sgmFocus
+  ✓ classe .sgm-reveal
+  ✓ classe .sgm-pop
+  ✓ classe .sgm-fill
+  ✓ classe .sgm-ring
+  ✓ classe .sgm-unlock
+  ✓ classe .sgm-dayin
+  ✓ classe .sgm-breathe
+  ✓ classe .sgm-focus
+  ✓ canal statut clean #22C55E
+  ✓ canal statut moderate #B87A00
+  ✓ canal statut avoid #E8522A
+  ✓ courbe maison cubic-bezier(.2,.8,.2,1)
+  ✓ GPU-only : aucune animation de width/height/top/left
+  ✓ media prefers-reduced-motion présente
+  ✓ reduced-motion neutralise les 8 classes
+  ✓ helper off() exporté
+  ✓ rollback ?sgmotion=0
+  ✓ off() respecte prefers-reduced-motion
+  ✓ days7() calculé depuis Date (zéro invention)
+  ✓ days7() i18n fr/en/es
+  ✓ sg-motion.css importé
+  ✓ sgMotion importé
+  ✓ mémo sgmSplashOff présent
+  ✓ branche rollback splash intacte (splash statique conservé)
+  ✓ UNLOCK : anneau tracé (sgm-ring)
+  ✓ UNLOCK : verrou qui s'ouvre (sgm-unlock)
+  ✓ UNLOCK : ✓ qui éclot (sgm-pop)
+  ✓ UNLOCK : semaine réelle en cascade (sgm-dayin)
+  ✓ UNLOCK : 7 jours RÉELS via sgmDays7
+  ✓ copy « Ta semaine s'ouvre » i18n 3 langues
+  ✓ aria conservé (role=status + aria-live + aria-hidden déco)
+  ✓ event sg_premium_confirm_continue intact
+  ✓ copy « Premium activé » intacte (tests existants)
+
+41 checks OK — grammaire SGM conforme.
+
+▶ tests\unit\sitemap-prune.test.cjs
+  ✓ deadDomains lit seoIndex:false (défaut = indexé)
+  ✓ prune retire 2 mortes, garde 2 vivantes (got 2/2)
+  ✓ aucune URL morte restante
+  ✓ sitemap toujours valide (2 loc)
+  ✓ enveloppe XML intacte
+  ✓ idempotent : re-run = 0 suppression
+  ✓ seul barbados exclu en prod (got ["sargassumbarbados.com"])
+  ✓ prune étranger retire 2, garde 2 (got 2/2)
+  ✓ aucune URL étrangère restante
+  ✓ sitemap toujours valide (2 loc)
+  ✓ idempotent : re-run = 0 suppression
+  ✓ domaine vide = no-op de sécurité
+
+sitemap-prune: 12 pass / 0 fail
+
+▶ tests\unit\stay-trajectory.test.cjs
+STAY TRAJECTORY — contrat WOW paywall #2
+
+  ✓ trajectoire complète : 7 jours conservés
+  ✓ moment critique = 1er jour À ÉVITER (J+3)
+  ✓ jour par défaut = jour critique (pré-sélectionné)
+  ✓ compteurs réels dérivés (alert=1, moderate=1)
+  ✓ confiance dernier jour réelle (41, décroissance honnête)
+  ✓ confiance arrondie entière
+  ✓ today=avoid → everAlert vrai même sans alert dans la semaine
+  ✓ normStatus(avoid)=alert
+  ✓ semaine 7/7 clean : pas de critique, default = dernier jour
+  ✓ semaine 7/7 clean detectée (verde strict OK)
+  ✓ prudence sans alerte : changeIndex=J+2, critique reste -1
+  ✓ forecast incomplet (3 jours) : 3 jours, pas de crash
+  ✓ statuts absents → unknown, compteurs honnêts
+  ✓ forecast vide → 0 jour (module masqué côté UI)
+  ✓ forecast undefined → 0 jour
+  ✓ TRAJ_STATUS : 3 statuts réels uniquement
+  ✓ StayTrajectory monté dans WorldPaywall
+  ✓ module gaté par wowOn (cohérent ?sgpaywow=0)
+  ✓ rollback ?sgtraj=0 (regex rail prouvée)
+  ✓ données calculées dans PremiumModal (trajForecast + trajBackup)
+  ✓ backup = findAlternatives réel (jamais inventé)
+  ✓ allBeaches propagé Sargasses_PROD → PremiumModal
+  ✓ props traj propagées dans commonPaywallProps
+  ✓ prix importé de lib/pass-price.js (PASS_CENTS + seasonalCents)
+  ✓ AUCUN prix littéral hardcodé (pas de 14,99 / 13,79 / 1499 en dur dans le composant)
+  ✓ pass-price.js : contrat eur 1499 / usd 1199 intact
+  ✓ PassOffer : prix source unique intact (PASS.cents + seasonalCents)
+  ✓ PassOffer : buy()/tracking intacts (sg_pass_cta délégué Modal, buy appelle onBuy)
+  ✓ PassOffer : intégration traj gatee (dedup strip + rollback ?sgtraj=0)
+  ✓ sem cleanup : « Semaine au vert » STRICTEMENT conditionnel (7/7 clean)
+  ✓ confiance révélée AU TAP seulement (pas de % sur les nœuds)
+  ✓ zéro chiffre marketing (pas de 97/98/99 % en dur dans le composant)
+  ✓ tap nodes : min-height 56px (≥44) + flex:1 organisation 7 jours
+  ✓ rail viewport-contrainte (overflow:hidden, zéro débordement 390px)
+  ✓ aria-pressed sur les jours + role=status sur le détail
+  ✓ reduced-motion = tout statique
+  ✓ testid paywall dédié
+  ✓ sg_traj_tap émis au tap jour
+  ✓ sg_traj_tap allowlisté SG_FUNNEL_EVENTS
+  ✓ i18n kicker + titre FR/EN/ES
+  ✓ i18n label prix FR/EN/ES
+
+✅ STAY TRAJECTORY — 41 checks ALL PASS
+
+▶ tests\unit\territory-routing.test.cjs
+  ✓ mq : domaine configuré (sargasses-martinique.com)
+  ✓ mq : domaine unique (pas de doublon avec personne)
+  ✓ gp : domaine configuré (sargasses-guadeloupe.com)
+  ✓ gp : domaine unique (pas de doublon avec personne)
+  ✓ florida : domaine configuré (sargassummiami.com)
+  ✓ florida : domaine unique (pas de doublon avec personne)
+  ✓ puntacana : domaine configuré (sargassumpuntacana.com)
+  ✓ puntacana : domaine unique (pas de doublon avec personne)
+  ✓ rivieramaya : domaine configuré (sargassumcancun.com)
+  ✓ rivieramaya : domaine unique (pas de doublon avec personne)
+  ✓ tulum : domaine configuré (sargazotulum.com)
+  ✓ tulum : domaine unique (pas de doublon avec personne)
+  ✓ deploy-live.yml : matrice region lisible
+  ✓ matrice deploy == régions buildées [mq, gp, florida, puntacana, rivieramaya, tulum]
+  ✓ mq : projet Cloudflare sargagame == attendu (sargagame)
+  ✓ gp : projet Cloudflare sargagame-gp == attendu (sargagame-gp)
+  ✓ florida : projet Cloudflare sargagame-florida == attendu (sargagame-florida)
+  ✓ puntacana : projet Cloudflare sargagame-puntacana == attendu (sargagame-puntacana)
+  ✓ rivieramaya : projet Cloudflare sargagame-rivieramaya == attendu (sargagame-rivieramaya)
+  ✓ tulum : projet Cloudflare sargagame-tulum == attendu (sargagame-tulum)
+  · mq : plages externes (pipeline dédié), island check non applicable
+  · gp : plages externes (pipeline dédié), island check non applicable
+  ✓ florida : 20 plages inline, island+préfixe cohérents
+  ✓ puntacana : 12 plages inline, island+préfixe cohérents
+  ✓ rivieramaya : 20 plages inline, island+préfixe cohérents
+  ✓ tulum : 8 plages inline, island+préfixe cohérents
+  ✓ barbados : 12 plages inline, island+préfixe cohérents
+  ✓ haiti / sainte-lucie : AUCUNE config région (DATA_GAP_REAL documenté — interdiction de fabriquer, chemins /haiti /sainte-lucie = fallback SPA assumé)
+  ✓ barbados : configuré (12 plages) mais NON buildé/non-live (hors matrice deploy)
+
+territory-routing: 27 pass / 0 fail
+
+▶ tests\unit\travel-30.test.cjs
+TRAVEL 3.0 — contrats
+  ✓ tokens : --t3-ocean défini
+  ✓ tokens : --t3-sea défini
+  ✓ tokens : --t3-tropical défini
+  ✓ tokens : --t3-sand défini
+  ✓ tokens : --t3-sunset défini
+  ✓ tokens : --t3-ink défini
+  ✓ tokens : --t3-paper défini
+  ✓ tokens : type display/heading/body/meta/mono + radius hero/cards/pills/sheets
+  ✓ tokens : ombres douces (jamais de hard offset noir)
+  ✓ tokens : importé eager (Sargasses_PROD)
+  ✓ tokens : reduced-motion calme
+  ✓ cine : testids cine-hero/cine-open/cine-plan
+  ✓ cine : rollback ?sgcine=0 (layout D intact)
+  ✓ cine : photo RÉELLE catalogue (jamais de stock)
+  ✓ cine : UNE action primaire + event existant (pas de nouvel event)
+  ✓ cine : copy invitation + compteurs réels
+  ✓ cine : fetchpriority hero (LCP) + onError-hide
+  ✓ cine : plein écran AHA (t3-hero-full + scroll cue finie)
+  ✓ cine : 3 raisons réelles evidenceFor + plan B journey
+  ✓ cine : shared-transition WAAPI + garde-fou (jamais de piège, RM direct)
+  ✓ facteurs : bloc bx-factors sous ?sgcine=0
+  ✓ facteurs : AFAI réel si présent (satellite)
+  ✓ facteurs : exposition coords (seuils MQ/GP, jamais d'invention)
+  ✓ facteurs : snorkel/accès conditionnés aux flags
+  ✓ facteurs : confiance = barre % réelle
+  ✓ facteurs : comparaison backup réelle (statut pire, pas de km inventés)
+  ✓ compare : photos réelles par colonne
+  ✓ compare : synthèse écart réel (testid + gap pts)
+  ✓ compare : imageMap plombé (vue compare PROD)
+  ✓ compare : dismiss non-destructif (✕ masque, Effacer vide via onClose)
+  ✓ compare : swipe Embla (lazy, rollback grille ?sgcine=0)
+  ✓ compare : slides 78% mobile → 1fr desktop (t3-compare-slide)
+  ✓ compare : hooks avant return (pas de hook conditionnel)
+  ✓ sequence : testid plan-sequence + rollback cine
+  ✓ sequence : étapes réelles (today/J+1/backup, jamais d'heures)
+  ✓ sequence : timeline CSS 3.0 (t3-timeline)
+  ✓ trip : numéros J1..Jn réels (ordre, testid)
+  ✓ trip : sheet transition (sgm-sheet gaté)
+  ✓ motion : keyframes sgmSheet
+  ✓ motion : keyframes sgmZoom
+  ✓ motion : keyframes sgmFadeUp
+  ✓ motion : classes sheet/zoom/fadeup (délais stagger, pas d'infinite)
+  ✓ motion : durées 180-500ms (.3s/.5s/.32s)
+  ✓ motion : reduced-motion neutralise les 3
+  ✓ svg : glyphe fish
+  ✓ svg : glyphe boat
+  ✓ svg : glyphe compass
+  ✓ svg : glyphe route
+  ✓ svg : glyphe satellite
+  ✓ rail : sg_home_rail_focus dans SG_FUNNEL_EVENTS (garde non-régression)
+  ✓ rail : sg_home_rail_seek dans SG_FUNNEL_EVENTS (garde non-régression)
+  ✓ rail : sg_home_rail_open dans SG_FUNNEL_EVENTS (garde non-régression)
+  ✓ rail : sg_home_rail_drag dans SG_FUNNEL_EVENTS (garde non-régression)
+  ✓ rail : FUNNEL_KEYS funnel-from-supabase
+  ✓ rail : FUNNEL_KEYS daily-stats-check
+  ✓ photos : downloader legacy inchangé (pas de bulk New-API)
+  ✓ photos : aucun step 4800px/static dans le build
+  ✓ deps : embla-carousel-react installé (pinned)
+  ✓ deps : ni rive ni motion installés (décisions documentées)
+  ✓ deps : embla dans chunk lazy uniquement (jamais eager PROD)
+  ✓ money intact : PASS p30 + buy chain (0 touch I)
+  ✓ premium : WorldPaywall non touché ce cycle (trajectoire existante)
+
+✅ TRAVEL 3.0 — 62 checks ALL PASS
+
+▶ tests\unit\visual-premium.test.cjs
+VISUAL PREMIUM — contrat
+  ✓ media : photo réelle mappée (gp001) présente
+  ✓ media : qualité réelle lue
+  ✓ media : vidéo hero UNIQUEMENT si id dans manifest réel
+  ✓ media : poster = photo réelle (sinon null)
+  ✓ media : slots portrait/gallery/sunset/activity = documentés manquants (jamais fabriqués)
+  ✓ media : id absent → missing photo+video documentés
+  ✓ manifest : compteurs générés == catalogues sources
+  ✓ manifest : règle d'honnêteté explicitée
+  ✓ build : media-manifest généré par le build (avant vite)
+  ✓ PlanCard : vidéo hero avec poster=photo réelle, saveData → photo seule
+  ✓ PlanCard : photo reste lazy + onError-hide
+  ✓ Home : intent-reco strip UNIQUEMENT si intention + meilleure plage
+  ✓ Home : photo intent-reco via media contract (image réelle)
+  ✓ Home : sg_recommendation_open sur le strip (source intent_strip)
+  ✓ Home : AUCUN repose sur des assets absents (onError-hide photo)
+  ✓ PassOffer : beachCount prop ajoutée (0 par défaut)
+  ✓ PassOffer : preuve UNIQUEMENT si beachCount>0 + rollback ?sgcopy=0
+  ✓ WorldPaywall : beachCount passé aux 2 sites PassOffer
+  ✓ ComicPaywall : beachCount passé
+  ✓ PassOffer : buy chain INCHANGÉE (forme {c,pass,days,segment}, ?offer= : OFFER.key, défaut p30)
+  ✓ PassOffer : aucune référence prix/amount altérée (PASS.key intact)
+  ✓ sgm : sgm-focus reste FINI (pas de régression 2026-09-24A)
+  ✓ SG : saveData respecté (pas d'autoplay lourd)
+  ✓ sg-icons : 13 glyphes organiques (viewBox 24)
+  ✓ sg-icons : Icon oweIcon (svg fill=none + currentColor)
+  ✓ sg-icons : nom inconnu → chemin null (jamais d'icône inventée)
+  ✓ Home : chips intention = sg-icons (plus d'emoji)
+  ✓ Home : focus WOW = photo réelle du beach centré (media contract)
+  ✓ today-pages : hero image réelle du meilleur spot (catalogue uniquement)
+  ✓ sg-visual : kill-switch ?sgvis=0 (rollback unique E)
+  ✓ sg-visual : nearestBeaches = coords réelles, jamais sans lat/lng
+  ✓ sg-visual : beachFacts = flags réels uniquement (kids/snorkel/parking/drive)
+  ✓ sg-visual : plage sans coords → proximité vide (jamais d'invention)
+  ✓ sg-visual : proximité trie même-île puis clean puis distance
+  ✓ sg-visual : facts vides sans flags (section se masque)
+  ✓ BeachCard : photo réelle en tête (prop img, onError-hide)
+  ✓ Plages : imageMap plombé (vue liste + router rest)
+  ✓ PlanCard : <details> Pourquoi (raisons réelles, event existant)
+  ✓ PlanCard : entrée sgm-planin + swap alternative (finies)
+  ✓ BeachExperience : 3 sections mini-guide (savoir/prox/faq, masquées sans data)
+  ✓ BeachExperience : proximité ouvre la plage (pas de cul-de-sac)
+  ✓ TripPlanner : vignette réelle par jour (imageMap optionnel)
+  ✓ Motion E : 4 motions finies (planin/swap/gallery/tripday), reduced-motion off
+  ✓ Motion E : stagger --i + pas d'infinite sur CTA
+  ✓ Premium : money-path intact (prix/entitlements/Mollie non touchés ce cycle)
+
+✅ VISUAL PREMIUM — 45 checks ALL PASS
+
+▶ tests\unit\wow-home.test.cjs
+HOME WOW — ligne de balises (workstream home/discovery)
+
+  ✓ HomeWow composant défini et exporté
+  ✓ SeaRail (ligne de balises) défini
+  ✓ XpRouter : HomeWow = HOME par défaut
+  ✓ Body/armure marine : WOW_ARMOR défini
+  ✓ rollback ?sgwow=0 (regex prouvée, ancres ?&/$)
+  ✓ ancien HomeDashboard conservé (chemin rollback)
+  ✓ même testid xp-home sur les 2 chemins
+  ✓ snap scroll + détection du centre (rAF)
+  ✓ drag souris desktop (pointerdown/move + scrollLeft)
+  ✓ molette horizontale (wheel non passif)
+  ✓ clavier ← → sur la ligne
+  ✓ chips statut = seek impératif (ctrlRef.scrollToIdx)
+  ✓ tri ouest→est = longitude réelle (lng, jamais inventée)
+  ✓ fraîcheur réelle (erddapTimestamp / updatedAt)
+  ✓ statut/score/confiance réels sur la carte focus
+  ✓ raison réelle affichée (b.reason)
+  ✓ alternative réelle quand À ÉVITER (findAlternatives)
+  ✓ titre i18n FR/EN/ES
+  ✓ hint drag i18n 3 langues
+  ✓ pill EN DIRECT/LIVE/EN VIVO
+  ✓ data-testid xp-home préservé
+  ✓ data-testid xp-best-open préservé
+  ✓ data-testid xp-open préservé
+  ✓ data-testid xp-beach-card préservé
+  ✓ data-testid trip-open préservé
+  ✓ data-testid xp-search préservé
+  ✓ data-testid xp-all préservé
+  ✓ data-testid xp-best-more préservé
+  ✓ data-testid xp-suivi préservé
+  ✓ data-testid xp-pass préservé
+  ✓ data-testid xp-map préservé
+  ✓ data-testid xp-explore préservé
+  ✓ garde ?tripplan=0 conservée sur entrée trip
+  ✓ formes SVG par statut (✓ / ◐ / ✕)
+  ✓ buoy armuré contre le skin forcé (doublé-classe !important)
+  ✓ chips armurés (3 statuts)
+  ✓ XP_ARMOR réutilisé (CTA or protégé)
+  ✓ pulse lente (4.2s, doctrine calme — pas de pulse rapide)
+  ✓ reduced-motion : scroll instantané (_prefersReduced)
+  ✓ event sg_home_rail_focus émis
+  ✓ event sg_home_rail_seek émis
+  ✓ event sg_home_rail_open émis
+  ✓ event sg_home_rail_drag émis
+  ✓ event sg_home_best_open émis
+  ✓ 1er focus (init top pick) non tracké — pas un geste
+  ✓ HomeLower partagé (ancien home au pixel près au rollback)
+  ✓ fallback zéro trou : liste vide → ancien HomeDashboard
+  ✓ aucun import externe ajouté (zéro dépendance)
+
+48 checks OK
+
+▶ tests\unit\wow-unlock-transition.test.cjs
+WOW UNLOCK TRANSITION — contrat free → premium
+
+  ✓ checkout : transition slide animée sur transform
+  ✓ checkout : reduced-motion = snap instantané (plancher dur)
+  ✓ checkout : reskin golden-hour (encre teal profonde) gaté trajOn
+  ✓ checkout : champs carte Mollie reskinnés sous trajOn (#13261F)
+  ✓ checkout : rollback violet pirate conservé sous ?sgtraj=0
+  ✓ checkout : écho « tu débloques la semaine » présent (testid dédié)
+  ✓ écho : source réelle buildTrajectory (même lib que le paywall)
+  ✓ écho : jamais hors capture-only (zéro paywall data en mode offert)
+  ✓ écho : i18n FR/EN/ES
+  ✓ écho : props beach/trajForecast threadées PremiumModal → OnsiteCheckout
+  ✓ unlock reveal monté sur payStep && paySuccess && trajOn
+  ✓ unlock reveal : testid + role=status + aria-live
+  ✓ unlock reveal : i18n FR/EN/ES (« ta semaine t'appartient »)
+  ✓ unlock reveal : RM = animations gelées
+  ✓ busy label WOW gaté (passCtx présent) + label historique conservé
+  ✓ event sg_unlock_reveal émis UNE fois au succès confirmé
+  ✓ sg_unlock_reveal allowlisté SG_FUNNEL_EVENTS
+  ✓ sticky : synopsis compteurs RÉELS via buildTrajectory (import lib)
+  ✓ sticky : label semaine gaté weekSyno (fallback label historique intact)
+  ✓ sticky : synopsis i18n FR/EN/ES
+  ✓ sticky : aucune invention — counts clean/moderate/alert uniquement
+  ✓ doSubscribe : délai post-succès 900 ms inchangé
+  ✓ OnsiteCheckout : createToken / mounts / consent intacts (0 modif)
+  ✓ PassOffer : CTA buy + prix money/displayCents intacts
+  ✓ WorldPaywall : trajForecast propagé aux 2 instances PassOffer
+  ✓ zéro nouvel import externe (pas de lib animation ajoutée)
+
+✅ WOW UNLOCK TRANSITION — 26 checks ALL PASS
+
+66/67 fichier(s) de test OK

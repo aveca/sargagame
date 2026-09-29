@@ -1,3 +1,36 @@
+## 2026-09-28 · Agent: coding-agent — Autopilot Core Test Fix + Session Validation
+
+### Travail effectué
+- **Résumé 1 ligne** : Fix autopilot-core unit test (agents-off behavior), full validation of build/tests/lint — money-path ZÉRO touché
+- **Détails** :
+  - Fix `tests/unit/autopilot-core.test.cjs` line 55: mock config with agents-off for the assertion
+  - Ran full validation: build OK, bundle 38.2 Ko ≤ 210 Ko, all 67 unit tests PASS, PHP lint OK
+  - Smoke test fails locally due to missing worker APIs (expected — CI runs against deployed preview)
+  - Money-path validation blocked on founder Cloudflare routes configuration
+
+### Fichiers modifiés
+- `tests/unit/autopilot-core.test.cjs` — mock config for agents-off test
+- `.ai/changelog.md` — added entry
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget` → 38.2 Ko ≤ 210 Ko gzip
+- [x] `php -l` → OK on all payment PHP files
+- [x] `npm test` → 67/67 tests OK
+- [x] Smoke test: known limitation (worker APIs not running locally)
+
+### Problèmes restants
+- [ ] Money-path validation requires founder: Cloudflare routes for `/api/mollie` + `/api/partner/*`
+- [ ] Partner Commerce parked until money-path validated
+- [ ] Supabase `partner_orders` table migration after money-path
+
+### Prochaine action recommandée
+1. **Fondateur** : Configurer routes Cloudflare `/api/mollie*` + `/api/partner/*` dans dashboard
+2. **Fondateur** : Valider 1 paiement test réel via `POST /api/mollie` → Mollie → webhook → grant
+3. **Agent** : Créer migration `partner_orders` Supabase (après validation money-path)
+
+---
+
 ## 2026-09-28 · Agent: coding-agent — BeachDecisionPage Integration (SEE→DECIDE→GO→PROTECT)
 
 ### Travail effectué

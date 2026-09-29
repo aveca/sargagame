@@ -2000,7 +2000,7 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 // par scripts/automation/funnel-from-supabase.cjs. Allowlist volontaire (pas TOUT
 // track() → volume maîtrisé). Noms exacts émis par le front (cf. PremiumModal).
 // Funnel complet : map_open → beach_open → verdict → paywall → cta → checkout → conversion
-const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
+const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_beach_view","sg_beach_go_click","sg_alternative_click","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
   // PERFECT BEACH TRIP (2026-09-24B) : intention → recommandation → plan →
   // séjour → premium. 7 events max (volume maîtrisé), jamais de doublon avec
   // la chaîne money (sg_pass_cta / sg_premium_modal_open restent la source).
