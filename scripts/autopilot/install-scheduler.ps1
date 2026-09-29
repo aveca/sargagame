@@ -8,7 +8,7 @@
 #   ... -IntervalHours 2            # plus frequent
 # Desinstallation : uninstall-scheduler.ps1
 param(
-  [int]$IntervalHours = 4,
+  [int]$IntervalHours = 1,
   [string]$TaskName = "SargagameAutopilot"
 )
 
