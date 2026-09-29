@@ -33,7 +33,7 @@ const CONTINUOUS = process.env.SARGA_AUTOPILOT_CONTINUOUS === '1';
 const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
 const WAIT_INTERVAL_MS = (process.env.SARGA_AUTOPILOT_WAIT_MS || '60000') | 0;
 
-function main() {
+async function main() {
   C.ensureDirs();
   const cfg = C.loadConfig();
 
@@ -154,4 +154,8 @@ function main() {
   process.exit(0);
 }
 
-main();
+main().catch(e => {
+  rlog('runner crash: ' + e.message);
+  lock.release();
+  process.exit(1);
+});
