@@ -18,7 +18,7 @@ const { ROOT } = require('./common.cjs');
 function git(args, cwd, opts = {}) {
   return execFileSync('git', args, {
     cwd: cwd || ROOT, encoding: 'utf8',
-    stdio: ['ignore', opts.pipeErr ? 'pipe' : 'ignore', 'pipe'],
+    stdio: ['ignore', 'pipe', 'pipe'],
     timeout: opts.timeoutMs || 120000,
   }).trim();
 }
