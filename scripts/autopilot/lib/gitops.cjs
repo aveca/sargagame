@@ -16,11 +16,15 @@ const { execFileSync, execSync } = require('child_process');
 const { ROOT } = require('./common.cjs');
 
 function git(args, cwd, opts = {}) {
-  return execFileSync('git', args, {
+  const stdio = opts.pipeOut === false
+    ? ['ignore', 'ignore', opts.pipeErr ? 'pipe' : 'ignore']
+    : ['ignore', 'pipe', opts.pipeErr ? 'pipe' : 'pipe'];
+  const out = execFileSync('git', args, {
     cwd: cwd || ROOT, encoding: 'utf8',
-    stdio: ['ignore', opts.pipeErr ? 'pipe' : 'ignore', 'pipe'],
+    stdio,
     timeout: opts.timeoutMs || 120000,
-  }).trim();
+  });
+  return (out ?? '').trim();
 }
 function gitSafe(args, cwd) { try { return git(args, cwd); } catch (_) { return null; } }
 function run(cmd, cwd, opts = {}) {
