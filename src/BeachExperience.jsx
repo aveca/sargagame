@@ -389,6 +389,18 @@ export default function BeachExperience({
         @keyframes bx-verdict-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
         @keyframes bx-verdict-fill{from{width:0}to{width:100%}}
         .bx-score{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:rgba(13,11,20,.6);margin-top:8px}
+        .bx-aha{width:100%;display:grid;grid-template-columns:42px 1fr 24px;align-items:center;gap:10px;margin-top:13px;padding:11px 12px;text-align:left;border:1.5px solid rgba(255,199,44,.65);border-radius:14px;background:linear-gradient(135deg,rgba(255,199,44,.18),rgba(255,255,255,.58));color:#0D0B14;box-shadow:0 6px 18px rgba(13,11,20,.12);cursor:pointer;font:inherit;animation:bx-aha-in .5s cubic-bezier(.2,.8,.2,1) both}
+        .bx-aha-orbit{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#FFC72C;border:2px solid #0D0B14;box-shadow:2px 2px 0 #0D0B14}
+        .bx-aha-spark{font-size:18px;line-height:1;animation:bx-aha-pulse 1.8s ease-in-out infinite}
+        .bx-aha-copy{min-width:0;display:flex;flex-direction:column;gap:2px}
+        .bx-aha-kicker{font-size:9px;font-weight:900;letter-spacing:.1em;color:rgba(13,11,20,.58)}
+        .bx-aha-copy strong{font-size:13.5px;line-height:1.2}
+        .bx-aha-copy>span:last-child{font-size:10.5px;font-weight:800;color:#765600}
+        .bx-aha-arrow{font-size:20px;font-weight:900;justify-self:end}
+        @keyframes bx-aha-in{from{opacity:0;transform:translateY(7px) scale(.98)}to{opacity:1;transform:none}}
+        @keyframes bx-aha-pulse{0%,100%{transform:scale(1) rotate(0deg)}50%{transform:scale(1.16) rotate(8deg)}}
+        @media (prefers-reduced-motion:reduce){.bx-aha,.bx-aha-spark{animation:none!important}}
+
         .bx-actions{display:flex;gap:8px;margin-top:12px}
         .bx-btn{flex:1;min-height:52px;display:flex;align-items:center;justify-content:center;border-radius:14px;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;border:2.5px solid #0D0B14}
         .bx-btn-gold{background:#FFC72C;color:#0D0B14;box-shadow:3px 3px 0 #0D0B14}
@@ -549,6 +561,19 @@ export default function BeachExperience({
             {beach.score != null && (
               <div className="bx-score">score {Math.round(beach.score)}/100{conf != null ? ` · ${conf}% ${L("confiance", "confidence", "confianza")}` : ""}</div>
             )}
+            {tmr && (
+              <button type="button" className="bx-aha" onClick={goTomorrow}
+                aria-label={L("Voir la tendance de demain", "See tomorrow's trend", "Ver la tendencia de mañana")}>
+                <span className="bx-aha-orbit" aria-hidden="true"><span className="bx-aha-spark">✦</span></span>
+                <span className="bx-aha-copy">
+                  <span className="bx-aha-kicker">{L("LE SIGNAL À SURVEILLER", "THE SIGNAL TO WATCH", "LA SEÑAL A VIGILAR")}</span>
+                  <strong>{tmrMeta ? L("Demain : " + tmrMeta.go[0].toLowerCase(), "Tomorrow: " + tmrMeta.go[1].toLowerCase(), "Mañana: " + tmrMeta.go[2].toLowerCase()) : L("Regarde demain avant de partir", "Check tomorrow before you go", "Mira mañana antes de salir")}</strong>
+                  <span>{L("Une révélation →", "Reveal →", "Una revelación →")}</span>
+                </span>
+                <span className="bx-aha-arrow" aria-hidden="true">↗</span>
+              </button>
+            )}
+
             {/* VERDICT VIVANT (2026-09-25I) — les facteurs, pas juste le verdict.
                 Chaque ligne = donnée réelle existante (statut/AFAI, exposition
                 coords, flag snorkel, accès, confiance). Rien sans donnée. */}
