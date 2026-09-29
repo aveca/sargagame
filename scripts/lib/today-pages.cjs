@@ -186,7 +186,7 @@ function buildModel({ lang, regionLabel, beaches, levelsById, beachUrlOf, update
   return { t, live, clean, moderate, avoid, best, altFor, stale: !(ageH >= 0 && ageH < 36), updatedAt, regionLabel, relSlug }
 }
 
-function renderTodayPage({ lang, domain, siteName, slug, title, desc, model }) {
+function renderTodayPage({ lang, domain, siteName, slug, title, desc, model, urlPath }) {
   const { t, live, clean, moderate, avoid, best, altFor, stale, updatedAt, regionLabel, relSlug } = model
   const today = new Date().toISOString().slice(0, 10)
   const dateLong = fmtLongDate(lang)
@@ -236,7 +236,12 @@ function renderTodayPage({ lang, domain, siteName, slug, title, desc, model }) {
   // le décisionnel, pas sur une page d'information figée.
   const decisionBlock = best ? `<section style="margin:0 0 1.2em;padding:14px 16px;border-radius:12px;background:#fffbeb;border:2px solid #FFC72C"><div style="color:#92400e;font-size:13px;margin-bottom:10px">${esc(t.planCtaSub)}</div><a href="/?trip=1" style="display:block;text-align:center;background:#FFC72C;color:#0D0B14;font-weight:800;padding:12px;border-radius:999px;text-decoration:none">${esc(t.planCta)}</a><a href="/?exp=${encodeURIComponent(best.beach.id)}" style="display:block;text-align:center;margin-top:8px;color:#0D0B14;font-weight:600">${esc(t.beachCta)} (${esc(best.beach.name)})</a></section>` : ''
   const staleBanner = stale ? `<p style="background:#fef3c7;border:1px solid #D97706;border-radius:10px;padding:10px 14px;color:#92400e">${t.stale}</p>` : `<p style="color:#686868;font-size:13px">${t.fresh(fmtTimeUTC(updatedAt))} · ${dateLong}</p>`
-  const canonical = `https://${domain}/${slug}/`
+  // FIX 2026-09-29 (hreflang-target-missing + canonical-mismatch) : le canonical
+  // DOIT être l'URL réelle de la page, préfixe de langue inclus (/en/, /es/).
+  // Avant, /en/sargassum-today/ canonicalisait vers /sargassum-today/ (inexistant)
+  // et ses hreflang self/x-default pointaient dans le vide. urlPath = chemin réel
+  // (préfixe inclus) ; slug seul = legacy régions mono-langue (inchangé).
+  const canonical = `https://${domain}/${urlPath || slug}/`
   const tplPath = path.join(ROOT, 'dist', 'index.html')
   let html = fs.existsSync(tplPath) ? fs.readFileSync(tplPath, 'utf-8') : fs.readFileSync(path.join(ROOT, 'index.html'), 'utf-8')
   const noscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a></nav><h1 style="font-size:26px;margin-bottom:8px">${esc(t.h1(regionLabel))}</h1><p style="color:#444;margin-bottom:12px">${esc(t.lead(live.length, regionLabel, dateLong))}</p>${heroImg}${staleBanner}${bestCard}${decisionBlock}<h2 style="font-size:18px;margin:22px 0 8px">${t.top} (${clean.length})</h2>${clean.length ? `<ul style="list-style:none;padding:0;margin:0">${clean.slice(0, 8).map(li).join('')}</ul>` : ''}${moderate.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.watch} (${moderate.length})</h2><ul style="list-style:none;padding:0;margin:0">${moderate.map(li).join('')}</ul>` : ''}${avoid.length ? `<h2 style="font-size:18px;margin:22px 0 8px">${t.bad} (${avoid.length})</h2><ul style="list-style:none;padding:0;margin:0">${avoid.map(avoidLi).join('')}</ul>` : ''}<h2 style="font-size:18px;margin:22px 0 8px">${t.method}</h2><p style="color:#444">${t.methodTxt}</p><p style="color:#686868;font-size:13px">${t.sources} <a href="/${relSlug}/">${t.proof}</a></p><nav style="margin-top:28px;padding-top:16px;border-top:1px solid #eee"><a href="/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte</a><a href="/previsions/" style="color:#E8A800;font-weight:600;margin-right:16px">Prévisions</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes</a></nav></article>`
@@ -316,8 +321,8 @@ function generateTodayPages(region, distDir) {
             ? `Where to swim in ${regionLabel} today (${fmtLongDate('en')})? ${n} clean beaches by Copernicus satellite, nearby alternatives, 7-day forecast.`
             : `Où se baigner en ${regionLabel} aujourd\u2019hui (${fmtLongDate('fr')}) ? ${n} plages propres par satellite Copernicus, alternatives à proximité, prévision 7 jours. Mesuré, pas deviné.`
         const slug = lang === 'es' ? 'hoy' : lang === 'en' ? 'sargassum-today' : 'aujourdhui'
-        const html = renderTodayPage({ lang, domain, siteName: `Sargasses ${regionLabel}`, slug, title, desc, model })
         const prefix = lang === 'fr' ? '' : `${lang}/`
+        const html = renderTodayPage({ lang, domain, siteName: `Sargasses ${regionLabel}`, slug, urlPath: prefix + slug, title, desc, model })
         const outDir = isMQ ? distDir : path.join(distDir, '_gp')
         writePage(outDir, prefix + slug, html)
         // Sitemap: use the correct sitemap file
