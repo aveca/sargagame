@@ -539,8 +539,48 @@
     "thereserveatpuntacana.com": {
       "date": "2026-09-22T14:32:22.179Z",
       "status": "no-email"
+    },
+    "zoetrypuntacana.com": {
+      "date": "2026-09-29T16:30:35.770Z",
+      "status": "no-email"
+    },
+    "cataloniahotels.com": {
+      "date": "2026-09-29T16:31:00.204Z",
+      "status": "no-email"
+    },
+    "bavarobeachresort.com": {
+      "date": "2026-09-29T16:31:56.206Z",
+      "status": "no-email"
+    },
+    "godominicanrepublic.com": {
+      "date": "2026-09-29T16:31:59.105Z",
+      "emailHash": "b07acb382512acdfa70522fe93e57140",
+      "emailDomain": "otrepubliquedominicaine.com",
+      "island": "puntacana",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "asonahores.com": {
+      "date": "2026-09-29T16:32:06.822Z",
+      "emailHash": "c86531b66d8d46719ff0c65e8326f3b7",
+      "emailDomain": "asonahores.com",
+      "island": "puntacana",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "puntacanavillage.com": {
+      "date": "2026-09-29T16:32:08.024Z",
+      "status": "no-email"
+    },
+    "bavaroprincess.com": {
+      "date": "2026-09-29T16:32:08.639Z",
+      "status": "no-email"
+    },
+    "serenade-punta-cana.com": {
+      "date": "2026-09-29T16:32:09.112Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-09-22T14:32:22.179Z",
+  "lastRun": "2026-09-29T16:32:09.112Z",
   "totalSent": 23
 }
