@@ -30,6 +30,10 @@ const experiments = require('./lib/experiments.cjs');
 const { implementOpportunity } = require('./implement.cjs');
 const { runGate } = require('./verify.cjs');
 const { analyze, findingsFromObservation } = require('./analyze.cjs');
+const { runDiscovery } = require('./discover.cjs');
+const { runBrowserRecon } = require('./browser-recon.cjs');
+const { runVisualQA } = require('./visual-qa.cjs');
+const { hypothesisFromOpportunity, validateHypothesis, UXHypothesis } = require('./ux-hypothesis.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -403,6 +407,73 @@ async function main() {
       }
     } else {
       progress('QUEUE       0 executable');
+      
+      // AUTONOMOUS DISCOVERY PHASE
+      if (!DRY && LIVE) {
+        progress('DISCOVER    autonomous discovery starting...');
+        const snap = metrics.snapshot();
+        const discovered = await runDiscovery(cfg, report, obs, snap);
+        
+        if (discovered.length > 0) {
+          // Filter for executable (non-human) opportunities
+          const executable = discovered.filter(o => o.actionable !== 'human' && !o.blocked);
+          if (executable.length > 0) {
+            // Take the highest scored
+            selected = executable[0];
+            progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
+            
+            // Create UX hypothesis
+            const hypothesis = hypothesisFromOpportunity(selected);
+            const validation = validateHypothesis(hypothesis);
+            if (!validation.valid) {
+              progress(`UX-HYP      validation failed: ${validation.errors.join(', ')}`);
+              mem.updateOpportunity(selected.id, { status: 'blocked', blockReason: validation.errors.join('; ') });
+              selected = null;
+            } else {
+              hypothesis.save();
+              progress(`UX-HYP      ${hypothesis.id} saved`);
+              progress(`UX-HYP      AHA: ${hypothesis.aha.slice(0, 80)}...`);
+              progress(`UX-HYP      METRIC: ${hypothesis.metric}`);
+              
+              // Browser recon for UX opportunities
+              if (['ux-ui', 'browser-interaction', 'aha-wow', 'svg-assets-a11y'].some(t => selected.type.includes(t))) {
+                progress('BROWSER     headed recon starting...');
+                const recon = await runBrowserRecon(cfg);
+                progress(`BROWSER     ${recon.issues.length} issues found`);
+                if (recon.issues.length > 0) {
+                  for (const issue of recon.issues.slice(0, 5)) {
+                    progress(`BROWSER     ${issue.type} on ${issue.route} (${issue.severity})`);
+                  }
+                }
+              }
+              
+              // Implement with full pipeline
+              const r = await phaseImplementAndShip(selected);
+              if (r && r.prUrl) {
+                // Visual QA after implementation
+                if (LIVE) {
+                  progress('VISUAL-QA   running before/after comparison...');
+                  const visualQA = await runVisualQA(r.branch ? 'wt' : '.', ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop']);
+                  progress(`VISUAL-QA   ${visualQA.summary.passed}/${visualQA.summary.total} passed`);
+                  if (!visualQA.passed) {
+                    progress('VISUAL-QA   REGRESSION DETECTED - blocking');
+                    mem.updateOpportunity(selected.id, { status: 'blocked', blockReason: 'visual regression' });
+                  }
+                }
+                
+                S('NEXT', `suivre CI de ${r.prUrl} puis merge (convention repo : CI verte)`);
+                S('NEXT', 'mesure post-merge gérée par phaseRevenueAndMeasure (verify → experiment → décision à fenêtre, paid prime)');
+              }
+            }
+          } else {
+            progress('DISCOVER    no executable opportunities (all human-gate or blocked)');
+          }
+        } else {
+          progress('DISCOVER    no qualifying opportunities found');
+        }
+      } else {
+        progress('WAITING     next cycle (no discovery in non-live mode)');
+      }
     }
   } catch (e) {
     stop('crash orchestrateur : ' + (e.message || e));
