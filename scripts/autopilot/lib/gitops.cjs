@@ -46,24 +46,30 @@ function founderTreeState() {
 /**
  * Prépare le worktree de cycle : fetch origin, worktree add/refresh sur branche neuve.
  * Idempotent : un worktree sale d'un cycle crashé est réarmé (reset --hard + clean).
+ * Toujours force-remove si existant pour éviter les collisions.
  */
 function prepareWorktree(cfg, branchName, log = console.log) {
   const wt = worktreePath(cfg);
+  const wtNormalized = wt.replace(/\\/g, '/');
   git(['fetch', 'origin', cfg.git.baseBranch, '--quiet']);
 
+  // Vérification robuste : liste les worktrees et cherche le chemin exact (normalisé)
   const existing = gitSafe(['worktree', 'list', '--porcelain']) || '';
-  const has = existing.split('\n').some(l => l.startsWith('worktree ') && l.slice(9) === wt);
+  const has = existing.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
 
-  if (has && fs.existsSync(path.join(wt, 'package.json'))) {
-    log(`worktree existant réarmé : ${wt}`);
-    git(['reset', '--hard', 'origin/' + cfg.git.baseBranch], wt);
-    git(['clean', '-fd', '-e', 'node_modules'], wt);
-    git(['checkout', '-B', branchName, 'origin/' + cfg.git.baseBranch], wt);
-  } else {
-    if (has) { try { git(['worktree', 'remove', '--force', wt]); } catch (_) {} }
-    git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
-    log(`worktree créé : ${wt} (${branchName})`);
+  // Force remove si existant (propre ou crashé)
+  if (has) {
+    log(`worktree existant détecté, suppression forcée : ${wt}`);
+    try { git(['worktree', 'remove', '--force', wt]); } catch (e) {
+      log(`worktree remove warning: ${e.message.split('\n')[0]}`);
+      // Tentative de nettoyage manuel si git worktree remove échoue
+      try { fs.rmSync(wt, { recursive: true, force: true }); } catch (_) {}
+    }
   }
+
+  // Créer worktree frais depuis origin/main
+  git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+  log(`worktree créé : ${wt} (${branchName})`);
 
   // node_modules : npm ci seulement si absent ou lock plus récent
   const nm = path.join(wt, 'node_modules');
@@ -80,10 +86,26 @@ function prepareWorktree(cfg, branchName, log = console.log) {
   return wt;
 }
 
+/** Parse une ligne git status --porcelain=v1 de façon robuste.
+ * Format attendu: XY<space>PATH où X=index status, Y=worktree status.
+ * Mais quand Y=' ' (unchanged), git peut omettre le séparateur -> X<space>PATH.
+ * On détecte : si ligne[2] est espace -> path commence à 3, sinon à 2.
+ */
+function parsePorcelainLine(l) {
+  if (l.length < 3) return l.trim();
+  // Cas standard: XY<space>PATH (ligne[2] === ' ')
+  if (l[2] === ' ') return l.slice(3).trim().replace(/^"|"$/g, '');
+  // Cas compact: X<space>PATH (Y=' ' omis, ligne[1] === ' ', ligne[2] !== ' ')
+  if (l[1] === ' ') return l.slice(2).trim().replace(/^"|"$/g, '');
+  // Fallback: split sur premier espace après position 2
+  const i = l.indexOf(' ', 2);
+  return i >= 0 ? l.slice(i + 1).trim().replace(/^"|"$/g, '') : l.slice(3).trim().replace(/^"|"$/g, '');
+}
+
 /** Analyse du diff de travail (avant commit) : fichiers + statistiques. */
 function diffStats(wt) {
-  const nameOut = gitSafe(['status', '--porcelain'], wt) || '';
-  const files = nameOut.split('\n').filter(Boolean).map(l => l.slice(3).trim().replace(/^"|"$/g, ''));
+  const nameOut = gitSafe(['status', '--porcelain=v1'], wt) || '';
+  const files = nameOut.split('\n').filter(Boolean).map(parsePorcelainLine);
   const numstat = gitSafe(['diff', '--numstat', 'HEAD'], wt) || '';
   let ins = 0, del = 0;
   for (const l of numstat.split('\n').filter(Boolean)) {
@@ -93,7 +115,7 @@ function diffStats(wt) {
   const statusLines = nameOut.split('\n').filter(Boolean);
   const untracked = statusLines
     .filter(l => l.startsWith('?? '))
-    .map(l => l.slice(3).trim().replace(/^"|"$/g, ''));
+    .map(parsePorcelainLine);
   let untrackedText = '';
   for (const f of untracked.slice(0, 20)) {
     try {
