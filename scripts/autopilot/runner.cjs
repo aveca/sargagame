@@ -20,6 +20,7 @@ const path = require('path');
 const { spawn, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const lock = require('./lib/lock.cjs');
+const bridge = require('./bridge.cjs');
 
 function rlog(msg) {
   const line = `${new Date().toISOString()} [runner] ${msg}`;
@@ -41,6 +42,15 @@ function main() {
 
   const acq = lock.acquire({ staleAfterMs: (cfg.loop.maxRunMinutes + 30) * 60000 });
   if (!acq.ok) { rlog('skip : ' + acq.reason); process.exit(3); }
+
+  // Pont GitHub → queue locale. Un échec du pont ne doit jamais bloquer
+  // les opportunités déjà présentes dans la queue locale.
+  try {
+    const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
+    rlog('bridge : ' + bridgeResult.imported + ' tâche(s) importée(s) · ' + bridgeResult.ignored + ' ignorée(s)');
+  } catch (e) {
+    rlog('bridge indisponible — cycle local poursuivi : ' + e.message);
+  }
 
   // Priorité douce — jamais 100 % CPU aux dépens du fondateur
   if (process.platform === 'win32') {

@@ -13,16 +13,20 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync, execSync } = require('child_process');
+const os = require('os');
 const { ROOT } = require('./common.cjs');
 
 function git(args, cwd, opts = {}) {
-  return execFileSync('git', args, {
-    cwd: cwd || ROOT, encoding: 'utf8',
-    stdio: ['ignore', opts.pipeErr ? 'pipe' : 'ignore', 'pipe'],
+  const pipeOut = opts.pipeOut !== false;
+  const out = execFileSync('git', args, {
+    cwd: cwd || ROOT,
+    encoding: 'utf8',
+    stdio: ['ignore', pipeOut ? 'pipe' : 'ignore', opts.pipeErr ? 'pipe' : 'pipe'],
     timeout: opts.timeoutMs || 120000,
-  }).trim();
+  });
+  return (out ?? '').trim();
 }
-function gitSafe(args, cwd) { try { return git(args, cwd); } catch (_) { return null; } }
+function gitSafe(args, cwd, opts = {}) { try { return git(args, cwd, opts); } catch (_) { return null; } }
 function run(cmd, cwd, opts = {}) {
   return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000 });
 }
@@ -86,13 +90,21 @@ function diffStats(wt) {
     const [a, d] = l.split('\t');
     ins += parseInt(a, 10) || 0; del += parseInt(d, 10) || 0;
   }
-  const diffText = gitSafe(['diff', 'HEAD'], wt) || '';
-  // Les fichiers non-trackés ne sont pas dans `git diff` — lire leur contenu pour le scan secrets.
-  const untracked = files.filter((f, i) => nameOut.split('\n').filter(Boolean)[i]?.startsWith('??'));
+  const statusLines = nameOut.split('\n').filter(Boolean);
+  const untracked = statusLines
+    .filter(l => l.startsWith('?? '))
+    .map(l => l.slice(3).trim().replace(/^"|"$/g, ''));
   let untrackedText = '';
   for (const f of untracked.slice(0, 20)) {
-    try { untrackedText += '\n' + fs.readFileSync(path.join(wt, f), 'utf8').slice(0, 50000); } catch (_) {}
+    try {
+      const buf = fs.readFileSync(path.join(wt, f));
+      // Les untracked files sont hors git diff : compter leur contenu dans le budget
+      // afin qu'un binaire volumineux ne contourne jamais maxDiffLines.
+      ins += Math.max(1, Math.ceil(buf.length / 80));
+      if (buf.length <= 50000) untrackedText += '\n' + buf.toString('utf8');
+    } catch (_) {}
   }
+  const diffText = gitSafe(['diff', 'HEAD'], wt) || '';
   return { files, insertions: ins, deletions: del, diffText: diffText + untrackedText };
 }
 
@@ -119,15 +131,21 @@ function createPR(wt, { title, body, base }) {
 /** PR autopilot déjà ouverte ? (sérialisation : une seule à la fois) */
 function openAutopilotPR() {
   try {
-    const out = run('gh pr list --state open --limit 20 --json number,title,headRefName', ROOT, { timeoutMs: 60000 });
-    const prs = JSON.parse(out);
+    const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
+    const out = execFileSync(bin, ['pr', 'list', '--state', 'open', '--limit', '20', '--json', 'number,title,headRefName'], {
+      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
+    }).trim();
+    const prs = JSON.parse(out || '[]');
     return prs.filter(p => (p.headRefName || '').startsWith('agent/autopilot/'))[0] || null;
   } catch (_) { return null; }
 }
 
 /** Active l'auto-merge squash sur la PR (uniquement si policy.canAutoMerge). */
 function enableAutoMerge(wt, prUrl) {
-  run(`gh pr merge "${prUrl}" --auto --squash`, wt, { timeoutMs: 60000 });
+  const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
+  execFileSync(bin, ['pr', 'merge', prUrl, '--auto', '--squash'], {
+    cwd: wt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
+  });
 }
 
 /** Retire le worktree (fin de cycle ou échec définitif). */
@@ -141,8 +159,11 @@ function cleanupWorktree(cfg, log = console.log) {
 /** État d'une PR (vérification post-ship) : {state, mergeCommit, mergedAt} ou null. */
 function prState(prUrl) {
   try {
-    const out = run(`gh pr view "${prUrl}" --json state,mergeCommit,mergedAt`, ROOT, { timeoutMs: 60000 });
-    const j = JSON.parse(out);
+    const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
+    const out = execFileSync(bin, ['pr', 'view', prUrl, '--json', 'state,mergeCommit,mergedAt'], {
+      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
+    }).trim();
+    const j = JSON.parse(out || '{}');
     return { state: j.state, mergeCommit: (j.mergeCommit && j.mergeCommit.oid) || null, mergedAt: j.mergedAt || null };
   } catch (_) { return null; }
 }
