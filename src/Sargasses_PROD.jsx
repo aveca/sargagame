@@ -15060,7 +15060,7 @@ useEffect(()=>{
             Carte = vue map existante. Jamais par-dessus fiche/paywall/hero.
             FIXED (jamais absolute) : #root est effondré (~19px, .theme-comic) → un
             absolute inset:0 donne un scroller de 19px aux clics morts (hit-test BODY). */}
-        {!NEWIA_OFF&&!selectedBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&view==="home"&&(
+        {!NEWIA_OFF&&!selectedBeach&&!comicBeach&&!showPremium&&!showCaptureGate&&!showHero&&!showPrevLanding&&view==="home"&&(
           <div style={{position:"fixed",inset:0,overflowY:"auto",background:"#0B2230",zIndex:900}}>
             <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="home"
               allBeaches={allBeaches} sargData={sargData} favorites={favorites} userPos={userPos}
