@@ -1726,3 +1726,4 @@ Verified fix: JS content-type application/javascript ✅ (not text/html), deploy
 "**CONCLUSION**: OBSERVABILITY_CONFIRMED for comic CTA tracking fix; DATA_NOT_COMPARABLE for CRO claims between windows"  
 ""  
 "**NEXT_ACTION**: Await next daily-copernicus.yml run for larger volume monitoring; do not claim CRO uplift on single 24h window" 
+"# Deploy trigger $(date -u +%Y-%m-%dT%H:%M:%SZ)"  
