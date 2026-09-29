@@ -11474,7 +11474,7 @@ const pv = false
   const lectureTapOn=(()=>{try{return !/[?&]lecturetap=0/.test(window.location.search)}catch(_){return true}})()
   const markConsulted=id=>{if(id&&!consultedRef.current.has(id)){consultedRef.current.add(id);try{localStorage.setItem("sg_consulted",JSON.stringify([...consultedRef.current].slice(-400)))}catch(_){};setFogTick(v=>v+1)}}
   return(
-    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
+    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap} data-sg-live="1"
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
       {/* LA MARÉE : couche de plongée — la BeachScene de la plage tapée se fond
           plein écran (opacity 0→1) PENDANT que la caméra dolly-in, sur le même
