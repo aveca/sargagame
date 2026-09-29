@@ -14464,7 +14464,7 @@ useEffect(()=>{
       <div style={{position:"relative",width:"100%",height:"100%",overflow:"hidden",contentVisibility:showAttract?"hidden":"visible"}}>
         {/* CHECKOUT RECOVERY BANNER */}
         {showRecoveryBanner&&(
-          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:(/[?&]bannertop=1/.test(window.location.search)?1500:1240),
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
@@ -14495,7 +14495,7 @@ useEffect(()=>{
         )}
         {/* PASS 7J EXPIRÉ — relance capture (un seul affichage, après les overlays prioritaires) */}
         {showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(
-          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:(/[?&]bannertop=1/.test(window.location.search)?1500:1240),
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
@@ -14524,7 +14524,7 @@ useEffect(()=>{
         )}
         {/* PASS ACTIF ~3J DE LA FIN — nudge renouvellement (positif, un seul affichage) */}
         {showPassRenew&&!showPassExpired&&!showRecoveryBanner&&!showHero&&!showPremium&&!showCaptureGate&&!showWelcome&&!selectedBeach&&(()=>{const _d=_passRenewDays();return _d>0&&(
-          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:1500,
+          <div ref={el=>setBannerH(el?el.offsetHeight:0)} style={{position:"fixed",top:0,left:0,right:0,zIndex:(/[?&]bannertop=1/.test(window.location.search)?1500:1240),
             background:"linear-gradient(90deg,#120821 0%,#1a2f28 100%)",
             borderBottom:"1px solid rgba(232,168,0,.3)",
             padding:"10px max(12px,env(safe-area-inset-right)) 10px max(12px,env(safe-area-inset-left))",
