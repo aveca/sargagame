@@ -34,6 +34,8 @@ const { runDiscovery } = require('./discover.cjs');
 const { runBrowserRecon } = require('./browser-recon.cjs');
 const { runVisualQA } = require('./visual-qa.cjs');
 const { hypothesisFromOpportunity, validateHypothesis, UXHypothesis } = require('./ux-hypothesis.cjs');
+const { deployAndValidatePreview } = require('./preview-deploy.cjs');
+const { runOnlineQA } = require('./online-qa.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -328,6 +330,48 @@ async function phaseImplementAndShip(opp) {
   S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
   if (LIVE) progress('PR          ' + pr.url);
 
+  // ── PREVIEW DEPLOY ────────────────────────────────────────────────────────
+  let previewResult = null;
+  if (!DRY && LIVE) {
+    // Extract PR number from URL
+    const prNumber = pr.url.split('/').pop();
+    progress('CI WAIT     waiting for CI green...');
+    try {
+      await deployAndValidatePreview(pr.url, prNumber, branch, commitSha, cfg);
+      progress('PREVIEW     deployed & fingerprint verified');
+    } catch (e) {
+      progress('PREVIEW     FAILED: ' + e.message);
+      mem.writeRegression(opp.id + '-preview', `Preview deploy failed: ${e.message}`);
+      // Continue anyway - CI green but preview failed
+    }
+
+    // ── ONLINE QA ───────────────────────────────────────────────────────────
+    if (previewResult) {
+      progress('ONLINE BROWSER  starting...');
+      try {
+        const onlineQA = await runOnlineQA(previewResult.url, 
+          ['/', '/?paywall=1', '/carte-sargasses/', '/?exp=', '/?trip=1', '/alertes/', '/sargasses-pour-hotels/'],
+          ['mobile', 'desktop']);
+        progress(`ONLINE VISUAL   ${onlineQA.visual?.length || 0} screenshots`);
+        progress(`ONLINE FUNNEL   ${onlineQA.funnel?.filter(f => f.ok).length || 0}/${onlineQA.funnel?.length || 0} checks`);
+        progress(`ONLINE PERF     ${onlineQA.perf?.map(p => p.metric + '=' + p.value + p.unit).join(', ') || 'n/a'}`);
+        progress(`ONLINE SEO      ${onlineQA.seo?.length || 0} checks`);
+        progress(`ONLINE A11Y     ${onlineQA.a11y?.length || 0} checks`);
+        if (onlineQA.errors && onlineQA.errors.length > 0) {
+          progress('ONLINE QA       REGRESSIONS: ' + onlineQA.errors.filter(e => e.severity === 'high' || e.severity === 'critical').length + ' high/critical');
+          if (onlineQA.errors.some(e => e.severity === 'high' || e.severity === 'critical')) {
+            mem.updateOpportunity(opp.id, { status: 'blocked', blockReason: 'online QA regression' });
+          }
+        }
+      } catch (e) {
+        progress('ONLINE QA     FAILED: ' + e.message);
+        mem.writeRegression(opp.id + '-online-qa', `Online QA failed: ${e.message}`);
+      }
+    }
+  } else if (LIVE) {
+    progress('PREVIEW/ONLINE  SKIPPED (DRY-RUN or non-live)');
+  }
+
   if (policy.canAutoMerge(diff.files, cfg)) {
     try { gitops.enableAutoMerge(wt, pr.url); S('PR', 'auto-merge activé (catégorie whitelistée)'); }
     catch (e) { S('PR', `auto-merge non activé : ${e.message.split('\n')[0]}`); }
@@ -337,7 +381,7 @@ async function phaseImplementAndShip(opp) {
   fs.mkdirSync(C.paths.experiments, { recursive: true });
   fs.writeFileSync(path.join(C.paths.experiments, opp.id + '.md'),
     `# Expérience ${opp.id}\n\n- PR : ${pr.url}\n- branche : ${branch} · commit ${commitSha}\n- rollback : ${opp.rollback || 'revert'}\n- mesure attendue : ${opp.expectedImpact || 'n/a'}\n- livrée le ${C.nowIso()} — mesurer à J+7 (funnel events / dead-clicks stats.php).\n`, 'utf8');
-  return { prUrl: pr.url, commitSha, branch };
+  return { prUrl: pr.url, commitSha, branch, previewUrl: previewResult?.url };
 }
 
 async function main() {
