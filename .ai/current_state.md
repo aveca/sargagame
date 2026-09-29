@@ -1,3 +1,34 @@
+## 2026-09-29 · Agent: coding (AUTOPILOT QUEUE TRIAGE) — Banner-z fix verified shipped + Slow LCP blocked (server) + Visual shifts rejected
+
+### Travail effectué
+- **Résumé 1 ligne** : tri autopilot queue — OPP-2026-09-24-banner-z déjà shippé (commit 2387bcaea) validé par tests ; OPP-slow-lcp-mq-home-home bloqué (TTFB 2868ms = server/CDN cold start, optimisations client déjà en place) ; 2 visual-shifts rejetés (score négatif, font-swap/hydration, non-régression).
+- **Détails** :
+  - **Banner-z (UX-QA-002)** : fix déjà en prod (zIndex 1240 < paywall 1260 < checkout 1300, rollback `?bannertop=1`), test unitaire 5/5 OK, queue mis à jour `shipped`.
+  - **Slow LCP (mq/home)** : observation prod LCP 5332ms, TTFB 2868ms — cause = Cloudflare Pages cold start, hors portée client. Preloads, inline CSS, boot skeleton, font-display:swap déjà en place. Queue mis à jour `blocked` avec raison.
+  - **Visual shifts (mq/home, mq/deep-2)** : pctHot ~0.307 identiques → shift systématique probable font-swap (Bricolage Grotesque swap) ou React hydration remplaçant boot skeleton. Scores négatifs (-3), bonus éco négatifs (-8) → rejetés comme non-régression acceptable.
+
+### Fichiers modifiés
+- `.ai/autopilot/queue.json` — statuts mis à jour (shipped/blocked/rejected avec raisons documentées)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → OK (mollie.php, mollie-webhook.php, paypal.php, paypal-webhook.php)
+- [x] `node scripts/ux-smoke.mjs` → 4 tokens OK + SMOKE_GATE=PASS
+- [x] `npm test` → 71/71 fichiers OK (tous tests passent)
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
+- [x] `node tests/unit/autopilot-banner-z.test.cjs` → 5/5 checks OK
+
+### Prochaine action recommandée
+1. Surveiller prochaine observation autopilot pour nouvelles opportunités actionnables — Rôle : autopilot/agent
+2. Si slow-lcp persiste : investigation infra Cloudflare Pages (cold start, edge cache) — Rôle : devops/fondateur
+
+### Branche / PR
+- Branche : `main` (direct, pas de branche feature)
+- Commit head : `28ad9afa` (build stamp)
+
+---
+
 ## 2026-09-28 · Agent: growth (SEO MULTISITE) — SEO Technical Foundation + Multi-Site Architecture
 
 ### Travail effectué

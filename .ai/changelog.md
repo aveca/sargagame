@@ -1,3 +1,27 @@
+## 2026-09-29 — AUTOPILOT QUEUE TRIAGE : Banner-z verified shipped + Slow LCP blocked + Visual shifts rejected
+
+**PROBLEM** : Autopilot queue contenait 4 opportunités en statut `picked` : banner-z (déjà fixé en prod), slow-lcp (prod), visual-shift ×2 (prod).
+
+**CHANGE** :
+- **OPP-2026-09-24-banner-z** : Validé `shipped` — fix déjà en prod (commit 2387bcaea), zIndex bannières 1240 < paywall 1260 < checkout 1300, test unitaire 5/5 OK, rollback `?bannertop=1` documenté.
+- **OPP-slow-lcp-mq-home-home** : Mis en `blocked` — TTFB 2868ms = Cloudflare Pages cold start (server/CDN), optimisations client déjà maximales (preloads critiques, CSS inline, boot skeleton LCP, font-display:swap). Hors portée agent coding.
+- **OPP-visual-shift-mq-home-home** + **OPP-visual-shift-mq-deep-2-deep-2** : Rejetés (`rejected`) — score -3, bonus éco -8, pctHot 0.307 identiques = shift systématique font-swap (Bricolage Grotesque) ou React hydration. Non-régression, trade-off acceptable pour font-display:swap non-bloquant.
+
+**MONEY-PATH** : ZÉRO modification.
+
+**PROOF** :
+- `npm run build` → exit 0 (412 modules)
+- `check-bundle-budget` → 38.2 Ko ≤ 210 Ko
+- `php -l` → OK (4 fichiers)
+- `ux-smoke` → 4 tokens OK + SMOKE_GATE=PASS
+- `npm test` → 71/71 fichiers OK
+- `playwright funnel-payment` → 13/13 passed
+- `autopilot-banner-z` test → 5/5 checks OK
+
+**ROLLBACK** : `?bannertop=1` pour banner-z (existant).
+
+---
+
 ## 2026-09-28 — SEO MULTISITE GROWTH : Technical Foundation + Multi-Site Architecture (TRAFFIC ONLY, PR #762)
 
 **PROBLEM** : GP sitemap absent (0 URLs → 809 pages non indexées), 2,316 broken links `/track-click.php` (endpoint PHP cassé sur Cloudflare Pages), sitemap combiné MQ+GP non filtré par domaine, architecture cross-domain linking non définie, USD domains GSC non provisionnés.
