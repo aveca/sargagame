@@ -53,10 +53,10 @@ test.describe('Carte-Sargasses Dead Click Investigation (Task #563)', () => {
     await page.goto('/carte-sargasses/', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(3000);
 
-    // Verify ArchipelView wrapper has data-sg-live="1"
-    const archipelWrapper = page.locator('[data-sg-live="1"]');
-    await expect(archipelWrapper).toHaveCount(1);
-    console.log('✓ ArchipelView wrapper has data-sg-live="1"');
+    // Verify data-sg-live="1" exists on the page (ArchipelView + WorldMapView = 2)
+    const sgLiveElements = page.locator('[data-sg-live="1"]');
+    await expect(sgLiveElements).toHaveCount(2);
+    console.log('✓ Two elements have data-sg-live="1" (WorldMapView + ArchipelView)');
 
     // Check for map labels (pins)
     const labels = await page.$$('.sg-maplabel');
