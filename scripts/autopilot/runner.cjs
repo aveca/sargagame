@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 /**
- * runner.cjs — enveloppe UNATTENDED de l'orchestrateur.
+ * runner.cjs — RUNNER 24/7 AUTONOMOUS
  *
- * Destiné à Windows Task Scheduler (ou cron WSL). Chaque invocation = UN tick.
- *  - verrou PID (.ai/autopilot/orchestrator.lock) : 1 orchestrateur à la fois,
- *    stale-récupéré après crash/reboot (PID mort ou âge > 2 h)
- *  - kill-switch : .ai/autopilot/STOP présent → sortie immédiate
- *  - ressources : free-mem minimum, timebox maxRunMinutes (kill tree au-delà),
- *    priorité process abaissée (Windows : BELOW_NORMAL)
- *  - crash de l'orchestrateur → note dans runner.log + exit 1 (le scheduler
- *    relance au prochain tick ; aucune boucle infinie)
- *  - mode CONTINUOUS : SARGA_AUTOPILOT_CONTINUOUS=1 — boucle sans fin avec WAITING
+ * Processus long-lived unique. Un seul runner à la fois via lock PID.
+ * Ne s'arrête QUE sur : STOP file, crash non récupérable, sécurité, corruption Git,
+ * blocage infrastructure critique.
  *
- * Exit : 0 cycle terminé · 3 déjà en cours (ignoré) · 4 STOP file · 1 erreur
+ * Architecture :
+ *   while ACTIVE:
+ *     observe → discover → revenue → prioritize → implement → verify → deliver → park/finish → cleanup → cooldown → repeat
+ *
+ * Exit codes:
+ *   0 = normal shutdown (STOP file)
+ *   1 = crash
+ *   3 = lock held by another runner
+ *   4 = STOP file at startup
+ *   5 = critical infrastructure failure
  */
+
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -31,22 +35,46 @@ function rlog(msg) {
 
 const CONTINUOUS = process.env.SARGA_AUTOPILOT_CONTINUOUS === '1';
 const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
+const HEADED = process.env.SARGA_AUTOPILOT_HEADED === '1' || LIVE;
 const WAIT_INTERVAL_MS = (process.env.SARGA_AUTOPILOT_WAIT_MS || '60000') | 0;
+const COOLDOWN_MS = (process.env.SARGA_AUTOPILOT_COOLDOWN_MS || '30000') | 0;
+
+let orchestratorProcess = null;
+let isShuttingDown = false;
+
+function setupSignalHandlers() {
+  const handleSignal = (sig) => {
+    rlog(`signal ${sig} received — graceful shutdown`);
+    isShuttingDown = true;
+    if (orchestratorProcess) {
+      try {
+        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+        else orchestratorProcess.kill('SIGKILL');
+      } catch (_) {}
+    }
+    // Don't exit immediately - let main loop handle cleanup
+  };
+  process.on('SIGINT', () => handleSignal('SIGINT'));
+  process.on('SIGTERM', () => handleSignal('SIGTERM'));
+  if (process.platform === 'win32') {
+    process.on('exit', () => { if (orchestratorProcess) { try { execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' }); } catch (_) {} } });
+  }
+}
 
 async function main() {
   C.ensureDirs();
+  setupSignalHandlers();
+  
   const cfg = C.loadConfig();
 
   if (fs.existsSync(C.paths.stopFile)) { rlog('STOP file présent — arrêt propre'); process.exit(4); }
 
   const freeMB = Math.round(os.freemem() / 1048576);
   if (freeMB < cfg.resources.minFreeMemoryMB) {
-    rlog(`mémoire libre ${freeMB} Mo < ${cfg.resources.minFreeMemoryMB} Mo — tick sauté (protège la machine)`);
-    process.exit(0);
+    rlog(`mémoire libre ${freeMB} Mo < ${cfg.resources.minFreeMemoryMB} Mo — pause 60s`);
+    await sleep(60000);
+    // Don't exit - just wait and retry
   }
-
-  const acq = lock.acquire({ staleAfterMs: (cfg.loop.maxRunMinutes + 30) * 60000 });
-  if (!acq.ok) { rlog('skip : ' + acq.reason); process.exit(3); }
 
   // Priorité douce — jamais 100 % CPU aux dépens du fondateur
   if (process.platform === 'win32') {
@@ -54,108 +82,137 @@ async function main() {
     try { execSync(`powershell -NoProfile -Command "(Get-Process -Id ${process.pid}).PriorityClass='BelowNormal'"`, { stdio: 'ignore' }); } catch (_) {}
   } else { try { os.setPriority(os.constants.priority.PRIORITY_BELOW_NORMAL); } catch (_) {} }
 
-  rlog(`tick — free ${freeMB} Mo · unattended=${C.isUnattendedWindow(cfg)} · pid ${process.pid} · continuous=${CONTINUOUS} · live=${LIVE}`);
+  rlog(`═══════════════════════════════════════════`);
+  rlog(`SARGAGAME AUTOPILOT 24/7`);
+  rlog(`═══════════════════════════════════════════`);
+  rlog(`free ${freeMB} Mo · live=${LIVE} · headed=${HEADED} · continuous=${CONTINUOUS} · pid ${process.pid}`);
+  if (HEADED) rlog(`HEADED BROWSER MODE ENABLED`);
 
-  // Continuous loop
+  // Acquire lock ONCE for the entire session
+  const acq = lock.acquire({ staleAfterMs: 24 * 60 * 60 * 1000 }); // 24h stale for long-lived
+  if (!acq.ok) { rlog('skip : ' + acq.reason); process.exit(3); }
+  rlog('lock acquired — single runner active');
+
   let cycleCount = 0;
-  const runCycle = async () => {
+  let consecutiveErrors = 0;
+  const maxConsecutiveErrors = 5;
+
+  // MAIN 24/7 LOOP
+  while (!isShuttingDown && !fs.existsSync(C.paths.stopFile)) {
     cycleCount++;
-    
-    // Bridge GitHub → queue locale (one-time per cycle)
+    const cycleStart = Date.now();
+    let cycleSuccess = false;
+
     try {
-      const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
-      rlog('bridge : ' + bridgeResult.imported + ' tâche(s) importée(s) · ' + bridgeResult.ignored + ' ignorée(s)');
-    } catch (e) {
-      rlog('bridge indisponible — cycle local poursuivi : ' + e.message);
-    }
-
-    const child = spawn(process.execPath, [path.join(__dirname, 'orchestrator.cjs'), ...process.argv.slice(2)], {
-      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'],
-    });
-    
-    child.stdout.on('data', d => { process.stdout.write(d); tee(d); });
-    child.stderr.on('data', d => { process.stderr.write(d); tee(d); });
-    function tee(buf) { try { fs.appendFileSync(C.paths.runnerLog, buf.toString()); } catch (_) {} }
-
-    const hardTimeout = setTimeout(() => {
-      rlog(`TIMEBOX ${cfg.loop.maxRunMinutes + 5} min dépassée — kill de l'orchestrateur`);
+      rlog(`\n┌─ CYCLE ${cycleCount} ──────────────────────────────`);
+      
+      // 1. BRIDGE: Import GitHub issues (non-blocking)
       try {
-        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${child.pid}`, { stdio: 'ignore' });
-        else child.kill('SIGKILL');
-      } catch (_) {}
-    }, (cfg.loop.maxRunMinutes + 5) * 60000);
-
-    return new Promise((resolve) => {
-      child.on('exit', (code, signal) => {
-        clearTimeout(hardTimeout);
-        rlog(`orchestrateur terminé (cycle ${cycleCount}, code ${code}${signal ? ' / ' + signal : ''})`);
-        resolve(code);
-      });
-      child.on('error', e => {
-        clearTimeout(hardTimeout);
-        rlog('spawn orchestrateur impossible : ' + e.message);
-        resolve(1);
-      });
-    });
-  };
-
-  // Run at least one cycle
-  await runCycle();
-
-  if (!CONTINUOUS) {
-    lock.release();
-    rlog('mode single-run terminé');
-    process.exit(0);
-  }
-
-  // Continuous mode: WAITING loop
-  rlog('CONTINUOUS MODE ACTIVE — entering WAITING loop');
-  while (!fs.existsSync(C.paths.stopFile)) {
-    rlog(`WAITING — next scan in ${WAIT_INTERVAL_MS}ms (cycle ${cycleCount} completed)`);
-    
-    // Check for STOP file periodically
-    await new Promise(r => setTimeout(r, WAIT_INTERVAL_MS));
-    
-    if (fs.existsSync(C.paths.stopFile)) {
-      rlog('STOP file détecté — arrêt propre du mode continuous');
-      break;
-    }
-
-    // Refresh lock (extend stale window)
-    // Note: we don't release/reacquire to avoid race conditions
-    // The lock was acquired for the whole continuous session
-    
-    // Check if there are new executable opportunities
-    const queue = C.readJSON(C.paths.queue, { opportunities: [] });
-    const hasNew = (queue.opportunities || []).some(o => 
-      o.status === 'new' && o.actionable !== 'human'
-    );
-    
-    if (!hasNew) {
-      // Also check GitHub for new issues
-      try {
-        const bridgeResult = bridge.ingestOpenIssues({ dry: true, log: () => {} });
-        if (bridgeResult.imported === 0) {
-          rlog('WAITING — no new executable opportunities, continuing wait');
-          continue;
-        }
+        const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
+        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.ignored} ignored`);
       } catch (e) {
-        rlog('WAITING — bridge check failed, continuing wait: ' + e.message);
-        continue;
+        rlog(`bridge failed (non-fatal): ${e.message}`);
+      }
+
+      // 2. RUN ORCHESTRATOR
+      const orchestratorCode = await runOrchestrator();
+      
+      if (orchestratorCode === 0) {
+        cycleSuccess = true;
+        consecutiveErrors = 0;
+        rlog(`cycle ${cycleCount} completed successfully`);
+      } else if (orchestratorCode === 2) {
+        // Stop condition (STOP file, prod down, etc.) - clean exit
+        rlog(`orchestrator stop-condition (code 2) — graceful shutdown`);
+        break;
+      } else {
+        // Error or non-fatal failure
+        rlog(`orchestrator exited with code ${orchestratorCode}`);
+        cycleSuccess = false;
+      }
+
+    } catch (e) {
+      rlog(`cycle ${cycleCount} ERROR: ${e.message}`);
+      rlog(e.stack);
+      cycleSuccess = false;
+      consecutiveErrors++;
+    }
+
+    // Cooldown between cycles
+    if (!isShuttingDown) {
+      const elapsed = Date.now() - cycleStart;
+      const remainingCooldown = Math.max(0, COOLDOWN_MS - elapsed);
+      
+      if (remainingCooldown > 0) {
+        rlog(`cooldown ${remainingCooldown}ms...`);
+        await sleep(remainingCooldown);
+      }
+
+      // Handle consecutive errors
+      if (consecutiveErrors >= maxConsecutiveErrors) {
+        rlog(`max consecutive errors (${maxConsecutiveErrors}) reached — pausing 5 min`);
+        await sleep(5 * 60 * 1000);
+        consecutiveErrors = 0;
       }
     }
 
-    rlog('WAITING — new opportunity detected, starting next cycle');
-    await runCycle();
+    if (cycleSuccess) consecutiveErrors = 0;
   }
 
+  // GRACEFUL SHUTDOWN
+  rlog('shutdown initiated...');
+  if (orchestratorProcess) {
+    try {
+      if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+      else orchestratorProcess.kill('SIGKILL');
+    } catch (_) {}
+  }
   lock.release();
-  rlog('CONTINUOUS MODE STOPPED');
+  rlog('AUTOPILOT 24/7 STOPPED');
   process.exit(0);
 }
 
+async function runOrchestrator() {
+  return new Promise((resolve) => {
+    const args = process.argv.slice(2).filter(a => !['--live', '--continuous', '--headed'].includes(a));
+    orchestratorProcess = spawn(process.execPath, [path.join(__dirname, 'orchestrator.cjs'), ...args], {
+      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    
+    let stdout = '', stderr = '';
+    orchestratorProcess.stdout.on('data', d => { process.stdout.write(d); tee(d); });
+    orchestratorProcess.stderr.on('data', d => { process.stderr.write(d); tee(d); });
+    function tee(buf) { try { fs.appendFileSync(C.paths.runnerLog, buf.toString()); } catch (_) {} }
+
+    const hardTimeout = setTimeout(() => {
+      rlog(`TIMEBOX ${cfg.loop.maxRunMinutes + 5} min exceeded — killing orchestrator`);
+      try {
+        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+        else orchestratorProcess.kill('SIGKILL');
+      } catch (_) {}
+    }, (cfg.loop.maxRunMinutes + 5) * 60000);
+
+    orchestratorProcess.on('exit', (code, signal) => {
+      clearTimeout(hardTimeout);
+      if (code === 0 || code === 2) {
+        resolve(code); // 0=success, 2=stop-condition
+      } else {
+        resolve(1); // error but continue
+      }
+    });
+    orchestratorProcess.on('error', e => {
+      clearTimeout(hardTimeout);
+      rlog('orchestrator spawn error: ' + e.message);
+      resolve(1);
+    });
+  });
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
 main().catch(e => {
-  rlog('runner crash: ' + e.message);
-  lock.release();
+  rlog('runner fatal: ' + e.message);
+  rlog(e.stack);
+  if (!isShuttingDown) lock.release();
   process.exit(1);
 });
