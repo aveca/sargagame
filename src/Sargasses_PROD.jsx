@@ -11474,7 +11474,7 @@ const pv = false
   const lectureTapOn=(()=>{try{return !/[?&]lecturetap=0/.test(window.location.search)}catch(_){return true}})()
   const markConsulted=id=>{if(id&&!consultedRef.current.has(id)){consultedRef.current.add(id);try{localStorage.setItem("sg_consulted",JSON.stringify([...consultedRef.current].slice(-400)))}catch(_){};setFogTick(v=>v+1)}}
   return(
-    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
+    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap} data-sg-live="1"
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
       {/* LA MARÉE : couche de plongée — la BeachScene de la plage tapée se fond
           plein écran (opacity 0→1) PENDANT que la caméra dolly-in, sur le même
@@ -13972,8 +13972,9 @@ useEffect(()=>{
   // Deep-link entrant : ?exp=<beachId> (lien partagé/signal sauvegardé) ouvre
   // directement l'expérience — même porte que la carte (onBeachClick), jamais
   // sur une plage sans données réelles (dataReady) ni hors île du build.
+  // JOURNEY_OFF ne bloque PAS le deep-link : onBeachClick gère le legacy (BeachSheetComic).
   useEffect(()=>{
-    if(JOURNEY_OFF||expDeepRef.current)return
+    if(expDeepRef.current)return
     let id=null;try{id=new URLSearchParams(window.location.search).get("exp")}catch(_){}
     if(!id||!/^[A-Za-z0-9-]{2,64}$/.test(id))return
     if(!dataReady)return
@@ -13982,7 +13983,7 @@ useEffect(()=>{
     expDeepRef.current=true
     try{track("sg_exp_deeplink",{beach_id:id,island})}catch(_){}
     onBeachClick(b)
-  },[allBeaches,dataReady,IS_NEW_REGION,island,JOURNEY_OFF,onBeachClick])
+  },[allBeaches,dataReady,IS_NEW_REGION,island,onBeachClick])
 
   /* Deep-link acquisition (2026-09-25C) : ?trip=1 → le TripPlanner s'ouvre au
      boot (liés depuis les pages SEO jour « Construis ton plan »). Consommé une
@@ -15095,7 +15096,7 @@ useEffect(()=>{
             /></Suspense></ErrBound>
           </div>
         )}
-        {!NEWIA_OFF&&compareIds.length>0&&!showPremium&&(
+        {!NEWIA_OFF&&compareIds.length>0&&!comicBeach&&!showPremium&&(
             <ErrBound><Suspense fallback={null}><LazyExperienceReset lang={lang} view="compare"
             allBeaches={allBeaches} compareIds={compareIds} favorites={favorites} userPos={userPos}
             imageMap={imageMap}
@@ -15112,8 +15113,9 @@ useEffect(()=>{
             avec le hero Le Veilleur (coucher de soleil néon + comic), pilotée par la
             recherche conversion. ErrBound → ancienne BeachSheet en filet de sécurité,
             on ne montre JAMAIS "rien" sur un clic de plage. */}
-        {selectedBeach&&!expBeachOf()&&(()=>{
-          const _sid=IS_NEW_REGION?selectedBeach.id:BEACH_TO_SARG[selectedBeach.id]
+        {(selectedBeach||comicBeach)&&!expBeachOf()&&(()=>{
+          const activeBeach=comicBeach||selectedBeach
+          const _sid=IS_NEW_REGION?activeBeach.id:BEACH_TO_SARG[activeBeach.id]
           const _fc=(_sid&&sargData?.weekly?.[_sid]?.forecast)||sargData?._enrichedWeekly?.[`_interp_${selectedBeach.id}`]?.forecast||null
           const _fallback=(
             <BeachSheet beach={selectedBeach} onClose={closeSheet}
