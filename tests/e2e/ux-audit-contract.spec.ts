@@ -63,6 +63,9 @@ test.describe('UX Audit — AHA/GO/PROTECT Contracts', () => {
                document.querySelector('[data-sg-labels-ready]') !== null;
       }, { timeout: 30000 });
 
+      // Additional wait like funnel test - let app settle
+      await page.waitForTimeout(2000);
+
       // ====================================================================
       // STEP 2: BEACH — Click a tappable beach pin (with hero alt handling)
       // ====================================================================
