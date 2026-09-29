@@ -7706,12 +7706,13 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
       </button>}
       {/* Island toggle MQ/GP — SEULE surface or pleine (or RARE). Bricolage 800 (Anton retiré).
           Masqué pour les nouvelles régions (build mono-région). */}
-      {!IS_NEW_REGION && (<div className="sg-seg sg-iso" role="group" aria-label={_t(lang,"Région","Region","Región")}>
+      {!IS_NEW_REGION && (<div className="sg-seg sg-iso" role="group" aria-label={_t(lang,"Région","Region","Región")} style={{cursor:"default"}}>
         <span aria-hidden className="sg-iso-knob" style={{
-          transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))"}}/>
+          transform:island==="mq"?"translateX(3px)":"translateX(calc(100% + 3px))", cursor:"default"}}/>
         {["mq","gp"].map(id=>(
           <button key={id} onClick={()=>{onIslandChange(id);track("sg_island_switch",{to:id})}}
-            style={{color:island===id?"#0d0b14":"var(--sg-mid,#5A5A5A)"}}>{id==="mq"?"MQ":"GP"}</button>
+            style={{color:island===id?"#0d0b14":"var(--sg-mid,#5A5A5A)", flex:1, minWidth:0, justifyContent:"center"}}>
+            {id==="mq"?"MQ":"GP"}</button>
         ))}
       </div>)}
       {/* Pill EN DIRECT — composant canonique .sg-live : teal #009E8E (plus le corail qui
@@ -11476,7 +11477,7 @@ const pv = false
   const lectureTapOn=(()=>{try{return !/[?&]lecturetap=0/.test(window.location.search)}catch(_){return true}})()
   const markConsulted=id=>{if(id&&!consultedRef.current.has(id)){consultedRef.current.add(id);try{localStorage.setItem("sg_consulted",JSON.stringify([...consultedRef.current].slice(-400)))}catch(_){};setFogTick(v=>v+1)}}
   return(
-    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap}
+    <div ref={wrapRef} role="region" aria-label={_t(lang,"Archipel du Veilleur","The Watcher's Archipelago","Archipiélago del Vigía")} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onClick={onTap} data-sg-live="1"
       style={{position:"fixed",inset:0,zIndex:1006,background:"#04090B",touchAction:"none",overflow:"hidden",cursor:satGrab?"grabbing":"grab"}}>
       {/* LA MARÉE : couche de plongée — la BeachScene de la plage tapée se fond
           plein écran (opacity 0→1) PENDANT que la caméra dolly-in, sur le même
@@ -13969,19 +13970,21 @@ useEffect(()=>{
   const expPrevRef=useRef(null)      // {id,name} plage précédente (pile in-world)
   const expLastIdRef=useRef(null)    // id actuellement syncé dans l'URL
   const expPushedRef=useRef(false)   // une entry history « à nous » est active
-  const expDeepRef=useRef(false)     // deep-link ?exp= consommé (une seule fois)
+  const expDeepKeyRef=useRef(null)   // deep-link ?exp= consommé (clé: beachId|JOURNEY_OFF)
 
   // Deep-link entrant : ?exp=<beachId> (lien partagé/signal sauvegardé) ouvre
   // directement l'expérience — même porte que la carte (onBeachClick), jamais
   // sur une plage sans données réelles (dataReady) ni hors île du build.
+  // Se ré-exécute si beachId ou JOURNEY_OFF change (ex: ajout ?sgjourney=0).
   useEffect(()=>{
-    if(JOURNEY_OFF||expDeepRef.current)return
     let id=null;try{id=new URLSearchParams(window.location.search).get("exp")}catch(_){}
     if(!id||!/^[A-Za-z0-9-]{2,64}$/.test(id))return
+    const key=id+"|"+JOURNEY_OFF
+    if(expDeepKeyRef.current===key)return
     if(!dataReady)return
     const b=(allBeaches||[]).find(x=>x&&x.id===id&&(IS_NEW_REGION||x.island===island))
     if(!b)return
-    expDeepRef.current=true
+    expDeepKeyRef.current=key
     try{track("sg_exp_deeplink",{beach_id:id,island})}catch(_){}
     onBeachClick(b)
   },[allBeaches,dataReady,IS_NEW_REGION,island,JOURNEY_OFF,onBeachClick])
