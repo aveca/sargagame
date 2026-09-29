@@ -48,6 +48,10 @@ check('médias pointer-events:none (classe CSS dédiée)', /\.bx-media\{[^}]*poi
 check('atmosphère data-driven : filtre avoid présent', src.includes('saturate(.55)'))
 check('atmosphère data-driven : filtre moderate présent', src.includes('saturate(.9)'));
 check('verdict reste DOM (classes bx-verdict intactes)', src.includes('bx-verdict'));
+check('AHA forecast-driven présent', src.includes('bx-aha') && src.includes('sg_tomorrow_reveal'));
+check('AHA utilise le forecast réel J+1', src.includes('tmrMeta') && src.includes('tmr &&'));
+check('AHA respecte reduced-motion', src.includes('.bx-aha-spark') && src.includes('prefers-reduced-motion'));
+
 
 // — International & territoire : chemins par beach.id, aucune région en dur
 check('photo path par beachId (région-agnostique)', src.includes('`/beaches/gplace-${beachId}.jpg`'));
