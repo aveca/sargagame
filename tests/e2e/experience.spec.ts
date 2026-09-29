@@ -5,9 +5,29 @@ import { test, expect } from "@playwright/test"
  * Parcours : home (J'y vais) → experience (visual + verdict) → WHY →
  * TOMORROW → BACKUP → switch plage (discovery loop) → TRIP → PREMIUM.
  * Rollback : ?sgexp=0 (fiches legacy, experience absente).
+ * Rollback : ?sgjourney=0 (nouvelle experience désactivée, fiche legacy).
  */
 const BASE = process.env.PREVIEW_URL || "http://localhost:4173"
 const EXP = '[data-testid="bx-experience"]'
+
+/* Trouve une plage avec forecast weekly RÉEL (même logique que journey.spec.ts) */
+async function findCoveredBeachId(request) {
+  const SARG_SID = [
+    "mq016", "mq011", "mq012", "mq004", "mq001",
+    "mq024", "mq034", "mq008", "mq033", "mq044"
+  ].map(id => [id, {
+    mq016: "diamant", mq011: "anse-mitan", mq012: "anse-noire",
+    mq004: "sainte-anne", mq001: "les-salines", mq024: "anse-madame",
+    mq034: "tartane", mq008: "pt-marin", mq033: "precheur", mq044: "vauclin"
+  }[id]])
+  const res = await request.get(BASE + "/api/copernicus/sargassum.json")
+  const j = await res.json()
+  for (const [id, sid] of SARG_SID) {
+    const w = j.weekly && j.weekly[sid]
+    if (w && Array.isArray(w.forecast) && w.forecast.length >= 2) return id
+  }
+  throw new Error("aucune plage couverte par le forecast weekly — build data cassé")
+}
 
 async function openExperience(page) {
   await page.goto(BASE + "/", { waitUntil: "load", timeout: 60000 })
@@ -107,35 +127,58 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await expect(paywall).toBeVisible({ timeout: 12000 })
   })
 
-  test("rollback ?sgjourney=0 — BeachDecisionPage désactivé, BeachSheetComic legacy", async ({ page }) => {
-    // ?sgjourney=0 désactive le nouveau BeachDecisionPage et affiche BeachSheetComic (.bsc-sheet)
-    await page.goto(BASE + "/?sgjourney=0", { waitUntil: "load", timeout: 60000 })
+  test("rollback ?sgjourney=0 — nouvelle experience désactivée, fiche legacy affichée", async ({ page, request }) => {
+    // 1. Trouver une plage avec forecast weekly RÉEL
+    const beachId = await findCoveredBeachId(request)
+    console.log("Test rollback with beach:", beachId)
+
+    // 2. Ouvrir la plage SANS flag via deep link → nouvelle expérience
+    await page.goto(BASE + "/?exp=" + beachId, { waitUntil: "load", timeout: 60000 })
+    await page.waitForSelector('[data-testid="bx-experience"], [data-testid="beach-decision-page"], .bsc-sheet', { timeout: 20000 })
+    await page.waitForTimeout(1500)
+
+    // Vérifier que la NOUVELLE expérience est présente (sans flag)
+    const newExpPresent = await page.locator('[data-testid="bx-experience"], [data-testid="beach-decision-page"]').count()
+    console.log("New experience present:", newExpPresent)
+    expect(newExpPresent).toBeGreaterThan(0)
+
+    // 3. Recharger avec ?sgjourney=0 → doit afficher la fiche legacy
+    await page.goto(BASE + "/?exp=" + beachId + "&sgjourney=0", { waitUntil: "load", timeout: 60000 })
     await page.waitForTimeout(2000)
-    // Check initial URL and journeyOff
-    console.log("Initial URL:", page.url())
-    const journeyOffInitial = await page.evaluate(() => {
-      try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
-    })
-    console.log("journeyOff() initial:", journeyOffInitial)
-    await page.locator('[data-testid="xp-best-open"]').first().click()
-    await page.waitForTimeout(3000)
-    // Check URL after click
-    console.log("URL after click:", page.url())
+
+    // Vérifier l'URL et journeyOff
+    console.log("URL after reload:", page.url())
     const journeyOffAfter = await page.evaluate(() => {
       try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
     })
-    console.log("journeyOff() after click:", journeyOffAfter)
+    console.log("journeyOff() after reload:", journeyOffAfter)
+    expect(journeyOffAfter).toBe(true)
+
+    // Attendre le rendu de la fiche
+    await page.waitForTimeout(2000)
+
     // Debug: check what's on the page
     const bodyText = await page.locator('body').innerText()
-    console.log("Body text sample:", bodyText.slice(0, 1000))
-    // Check for any dialog/sheet
+    console.log("Body text sample:", bodyText.slice(0, 2000))
     const allDialogs = await page.locator('[role="dialog"]').count()
     console.log("Dialogs count:", allDialogs)
-    const sheetClasses = await page.locator(".bsc-sheet, .lc-detail, .sheet, [data-testid='bsc-sheet'], [data-testid='beach-decision-page']").count()
-    console.log("All sheet-related elements:", sheetClasses)
-    // BeachDecisionPage (data-testid="beach-decision-page") ne doit PAS être présent
-    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
-    // BeachSheetComic legacy (.bsc-sheet) doit s'ouvrir à la place
+    const allSheets = await page.locator('.bsc-sheet, .bsc-fiche, .lc-detail, .sheet, [class*="bsc"]').count()
+    console.log("All sheet-related elements:", allSheets)
+    const comicBeach = await page.evaluate(() => {
+      try { return window.__REACT_DEVTOOLS_GLOBAL_HOOK__?.renderers } catch (_) { return null }
+    })
+    
+    // Vérifier : BeachDecisionPage (data-testid="beach-decision-page") ABSENTE
+    const newExpCount = await page.locator('[data-testid="beach-decision-page"]').count()
+    console.log("BeachDecisionPage count:", newExpCount)
+    expect(newExpCount).toBe(0)
+
+    // Vérifier : ExperienceReset (nouvelle UI) ABSENTE quand sgjourney=0
+    const expResetCount = await page.locator('[data-testid="bx-experience"]').count()
+    console.log("ExperienceReset count:", expResetCount)
+    expect(expResetCount).toBe(0)
+
+    // Vérifier : BeachSheetComic legacy (.bsc-sheet) PRÉSENTE
     const sheetCount = await page.locator(".bsc-sheet, .lc-detail, .sheet").count()
     console.log("Legacy sheet count:", sheetCount)
     expect(sheetCount).toBeGreaterThan(0)
