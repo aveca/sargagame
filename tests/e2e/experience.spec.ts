@@ -107,14 +107,38 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await expect(paywall).toBeVisible({ timeout: 12000 })
   })
 
-  test("rollback ?sgexp=0 — experience absente, fiche legacy", async ({ page }) => {
-    await page.goto(BASE + "/?sgexp=0", { waitUntil: "load", timeout: 60000 })
-    await page.waitForTimeout(2500)
-    await page.locator('[data-testid="xp-best-open"]').first().click()
+  test("rollback ?sgjourney=0 — BeachDecisionPage désactivé, BeachSheetComic legacy", async ({ page }) => {
+    // ?sgjourney=0 désactive le nouveau BeachDecisionPage et affiche BeachSheetComic (.bsc-sheet)
+    await page.goto(BASE + "/?sgjourney=0", { waitUntil: "load", timeout: 60000 })
     await page.waitForTimeout(2000)
-    expect(await page.locator(EXP).count()).toBe(0)
-    // la fiche legacy s'ouvre à la place
-    expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
+    // Check initial URL and journeyOff
+    console.log("Initial URL:", page.url())
+    const journeyOffInitial = await page.evaluate(() => {
+      try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
+    })
+    console.log("journeyOff() initial:", journeyOffInitial)
+    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.waitForTimeout(3000)
+    // Check URL after click
+    console.log("URL after click:", page.url())
+    const journeyOffAfter = await page.evaluate(() => {
+      try { return /[?&]sgjourney=0(?:&|$)/.test(window.location.search) } catch (_) { return false }
+    })
+    console.log("journeyOff() after click:", journeyOffAfter)
+    // Debug: check what's on the page
+    const bodyText = await page.locator('body').innerText()
+    console.log("Body text sample:", bodyText.slice(0, 1000))
+    // Check for any dialog/sheet
+    const allDialogs = await page.locator('[role="dialog"]').count()
+    console.log("Dialogs count:", allDialogs)
+    const sheetClasses = await page.locator(".bsc-sheet, .lc-detail, .sheet, [data-testid='bsc-sheet'], [data-testid='beach-decision-page']").count()
+    console.log("All sheet-related elements:", sheetClasses)
+    // BeachDecisionPage (data-testid="beach-decision-page") ne doit PAS être présent
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
+    // BeachSheetComic legacy (.bsc-sheet) doit s'ouvrir à la place
+    const sheetCount = await page.locator(".bsc-sheet, .lc-detail, .sheet").count()
+    console.log("Legacy sheet count:", sheetCount)
+    expect(sheetCount).toBeGreaterThan(0)
   })
 
   // ── AHA MEDIA (2026-09-23) : vraie plage derrière le verdict ──

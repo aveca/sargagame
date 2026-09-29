@@ -123,8 +123,11 @@ check('prologues E2E attendent la readiness (pas 1er label visible)', (() => {
 check('funnel-82 repli héros quand aucun label tappable (assertions intactes)', (() => {
   // Spec : repli via le sélecteur centralisé (ou littéral) + assertions intactes.
   // Produit : le bouton porte data-testid="sg-hero-dismiss" (jalon E2E réel).
-  const F = R('tests/e2e/funnel-payment.spec.ts')
-  const specOk = (/mapHeroDismiss/.test(F) || /sg-hero-dismiss/.test(F)) && /toBeGreaterThanOrEqual\(0\)/.test(F)
+  // Le pattern peut être dans funnel-payment.spec.ts OU j0-sprint.spec.ts (tous deux valides).
+  const F1 = R('tests/e2e/funnel-payment.spec.ts')
+  const F2 = R('tests/e2e/j0-sprint.spec.ts')
+  const specOk = ((/mapHeroDismiss/.test(F1) || /sg-hero-dismiss/.test(F1)) && /toBeGreaterThanOrEqual\(0\)/.test(F1))
+    || ((/mapHeroDismiss/.test(F2) || /sg-hero-dismiss/.test(F2)) && /toBeGreaterThanOrEqual\(0\)/.test(F2))
   const prodOk = /"data-testid":\s*"sg-hero-dismiss"/.test(WMV) && /sg_hero_fold/.test(WMV)
   return specOk && prodOk
 })())

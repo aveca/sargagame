@@ -815,6 +815,9 @@ export default function WorldMapView({
   // apparition → plus de "noms qui popent 90ms après les pins" (glitch de chargement).
   // Lot 7 — emailSent ajouté aux deps : quand le héros se démonte (email soumis), les
   // labels qu'il couvrait doivent réapparaître sans attendre un geste.
+  // Mount: garantir que le déclutter tourne au 1er paint (labels révélés)
+  useEffect(()=>{ declutter() },[])
+  // MàJ déclutter sur changements réels
   useLayoutEffect(()=>{ declutter() },[day,labeledIds,selected,emailSent,declutter])
   // Lot 7 — les webfonts (Anton/Bricolage) élargissent les labels APRÈS l'arbitrage →
   // chevauchements résiduels. Un seul ré-arbitrage au chargement des polices (idempotent,
@@ -2097,7 +2100,7 @@ const dismissBtn = React.createElement("button", {
               style: DISMISS_BTN_STYLE
             }, "✕")
 return (
-          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,pointerEvents:"auto",maxWidth:360}}>
+          <div className={uxLot9?"sg-hero-compact":undefined} style={{marginTop:9,display:"flex",flexDirection:"column",gap:6,maxWidth:360}}>
             {/* LA PROMESSE posée en tête (sprint UX 2026-09-03) : réponse en <5 s. */}
             <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
               <span style={{font:"800 10px/1.1 'Anton',sans-serif",letterSpacing:".12em",textTransform:"uppercase",color:"#ffd23f",textShadow:`0 2px 0 ${INK},0 2px 10px rgba(0,0,0,.5)`}}>
