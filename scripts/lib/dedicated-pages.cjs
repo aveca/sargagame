@@ -95,7 +95,8 @@ function shareWithUTM(platform) {
         document.body.removeChild(input);
         alert('Lien copié !');
       }
-    };
+    }
+  };
   
   if (platform === 'copy') {
     urls.copy();
