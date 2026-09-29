@@ -107,13 +107,63 @@ test.describe("Beach Experience (PLACE EXPERIENCE)", () => {
     await expect(paywall).toBeVisible({ timeout: 12000 })
   })
 
-  test("rollback ?sgexp=0 — experience absente, fiche legacy", async ({ page }) => {
+  test("rollback ?sgexp=0 — experience absente, BeachDecisionPage (Journey ON)", async ({ page }) => {
     await page.goto(BASE + "/?sgexp=0", { waitUntil: "load", timeout: 60000 })
     await page.waitForTimeout(2500)
     await page.locator('[data-testid="xp-best-open"]').first().click()
-    await page.waitForTimeout(2000)
+    await page.waitForSelector('[data-testid="beach-decision-page"]', { timeout: 20000 })
+    await page.waitForTimeout(1000)
     expect(await page.locator(EXP).count()).toBe(0)
-    // la fiche legacy s'ouvre à la place
+    // BeachDecisionPage remplace la fiche comic quand Journey est ON
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBeGreaterThan(0)
+  })
+
+  // ── JOURNEY ROLLBACK (?sgjourney=0) — recovery SESSION D ──
+  // Contrat kill-switch : fiches legacy/comic visibles, overlay Experience
+  // (LazyBeachExperience gaté) et BeachDecisionPage absents.
+  test("A. ?sgjourney=0 + clic — fiche legacy, Journey absente", async ({ page }) => {
+    await page.goto(BASE + "/?sgjourney=0", { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(2500)
+    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 20000 })
+    await page.waitForTimeout(1000)
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
+    expect(await page.locator(EXP).count()).toBe(0)
+    expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
+  })
+
+  test("B. deep-link ?exp=X&sgjourney=0 — BeachSheetComic, Experience absente", async ({ page, request }) => {
+    // Plage adossée au forecast weekly RÉEL (même logique que journey.spec.ts)
+    const pairs = [
+      ["mq016", "diamant"], ["mq011", "anse-mitan"], ["mq012", "anse-noire"],
+      ["mq004", "sainte-anne"], ["mq001", "les-salines"], ["mq024", "anse-madame"],
+      ["mq034", "tartane"], ["mq008", "pt-marin"], ["mq033", "precheur"], ["mq044", "vauclin"]
+    ]
+    const res = await request.get(BASE + "/api/copernicus/sargassum.json")
+    const j = await res.json()
+    let beachId = null
+    for (const [id, sid] of pairs) {
+      const w = j.weekly && j.weekly[sid]
+      if (w && Array.isArray(w.forecast) && w.forecast.length >= 2) { beachId = id; break }
+    }
+    expect(beachId, "aucune plage couverte par le forecast weekly — build data cassé").toBeTruthy()
+    // Deep-link legacy : même porte que la carte → fiche legacy, pas d'overlay
+    await page.goto(BASE + "/?exp=" + beachId + "&sgjourney=0", { waitUntil: "load", timeout: 60000 })
+    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 25000 })
+    await page.waitForTimeout(1000)
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
+    expect(await page.locator(EXP).count()).toBe(0)
+    expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
+  })
+
+  test("C2. ?sgexp=0&sgjourney=0 — fiche legacy pure, Journey absente", async ({ page }) => {
+    await page.goto(BASE + "/?sgexp=0&sgjourney=0", { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(2500)
+    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 20000 })
+    await page.waitForTimeout(1000)
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
+    expect(await page.locator(EXP).count()).toBe(0)
     expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
   })
 
