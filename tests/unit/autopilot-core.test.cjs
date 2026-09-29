@@ -52,7 +52,9 @@ const queueAuto = { opportunities: [
 const res1 = analyze.analyze({ findings, queue: queueAuto, isRejectedFn: () => null, cfg });
 check('candidats bruts rétrogradés agent (jamais auto sans recette)', res1.candidates.every(c => c.actionable === 'agent'));
 check('auto en queue sélectionné avant agent-finding', res1.selected && res1.selected.id === 'OPP-A');
-check('agents off (v1) → finding agent JAMAIS sélectionné seul', analyze.analyze({ findings, queue: { opportunities: [] }, isRejectedFn: () => null, cfg }).selected === null);
+// Test agents off: mock config with agentsEnabled=false
+const cfgAgentsOff = { ...cfg, policy: { ...cfg.policy, agentsEnabled: false, allowAgentImplementation: false } };
+check('agents off (v1) → finding agent JAMAIS sélectionné seul', analyze.analyze({ findings, queue: { opportunities: [] }, isRejectedFn: () => null, cfg: cfgAgentsOff }).selected === null);
 const rejectedFp = analyze.fingerprint(findings.find(f => f.type === 'broken-link'));
 const res2 = analyze.analyze({ findings: findings.filter(f => f.type === 'broken-link'), queue: { opportunities: [] }, isRejectedFn: fp => fp === rejectedFp ? { reason: 'non' } : null, cfg });
 check('fingerprint rejeté → skippé, pas de candidat', res2.candidates.length === 0 && res2.skipped.length === 1);
