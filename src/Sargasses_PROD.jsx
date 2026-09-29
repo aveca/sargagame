@@ -20,6 +20,8 @@ import { journeyFor, journeyOff } from "./lib/journey.js"
 import { resolveOffer } from "./lib/offers.js"
 import { getResortsForBeach } from "./lib/resorts.js"
 import BeachSheetEnrichment from "./components/BeachSheetEnrichment.jsx"
+// BeachDecisionPage is dynamically imported to ensure inclusion in build
+const BeachDecisionPage = React.lazy(() => import("./components/BeachDecisionPage.jsx"))
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, sgUid, submitLeadToSupabase } from "./supabasePhotos.js"
@@ -15124,21 +15126,46 @@ useEffect(()=>{
               dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}
               onRequestGeo={requestGeo} forecast={_fc}/>
           )
-          return(
+          // BeachDecisionPage — SEE → DECIDE → GO → PROTECT (roll back with ?sgjourney=0)
+          const BeachDetailComponent = JOURNEY_OFF ? null : BeachDecisionPage
+          const beachDetailProps = {
+            beach: selectedBeach,
+            onClose: closeSheet,
+            lang,
+            allBeaches,
+            userPos,
+            isPremium,
+            sargData,
+            imageMap,
+            onOpenBeach: onBeachClick,
+            onPremium: openPremium,
+            onPlanTrip: () => setShowTrip(true),
+            track,
+            favorites,
+            journey: journeyFor({ beach: selectedBeach, forecastById: sargData?.weekly, allBeaches, lang, isPremium }),
+            forecastById: sargData?.weekly
+          }
+          return (
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
-              <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
-                favorites={favorites} onToggleFav={toggleFav} lang={lang}
-                allBeaches={allBeaches} onBeachClick={onBeachClick}
-                onPremiumClick={openPremium} isPremium={isPremium}
-                sargData={sargData} userPos={userPos} forecast={_fc} track={track}
-                communityReports={communityReports} onRequestGeo={requestGeo}
-                onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}
-                onPlanTrip={()=>setShowTrip(true)}
-                isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
-                onFollowBeach={requestFollow}
-                fcBlocked={fcBlockedId===selectedBeach.id}
-                freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}
-                resorts={getResortsForBeach(IS_NEW_REGION?REGION.id:selectedBeach.island, selectedBeach.id)}/>
+              {JOURNEY_OFF ? (
+                <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
+                  favorites={favorites} onToggleFav={toggleFav} lang={lang}
+                  allBeaches={allBeaches} onBeachClick={onBeachClick}
+                  onPremiumClick={openPremium} isPremium={isPremium}
+                  sargData={sargData} userPos={userPos} forecast={_fc} track={track}
+                  communityReports={communityReports} onRequestGeo={requestGeo}
+                  onEnsureAlerts={()=>ensurePushAlerts("beach_sheet")}
+                  onPlanTrip={()=>setShowTrip(true)}
+                  isMyBeach={!!myBeachId&&myBeachId===selectedBeach.id}
+                  onFollowBeach={requestFollow}
+                  fcBlocked={fcBlockedId===selectedBeach.id}
+                  freeForecast={myBeachId===selectedBeach.id?myBeachFc:null}
+                  resorts={getResortsForBeach(IS_NEW_REGION?REGION.id:selectedBeach.island, selectedBeach.id)}/>
+              ) : (
+                <Suspense fallback={null}>
+                  <BeachDecisionPage {...beachDetailProps} />
+                </Suspense>
+              )}
             </ErrBound>
           )
         })()}

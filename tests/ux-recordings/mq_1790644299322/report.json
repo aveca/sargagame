@@ -1,0 +1,61 @@
+{
+  "region": "mq",
+  "url": "http://localhost:8799",
+  "timestamp": "2026-09-29T01:12:41.520Z",
+  "viewport": {
+    "width": 390,
+    "height": 844
+  },
+  "mode": "local",
+  "steps": [
+    "homepage_load",
+    "check_clean_count",
+    "check_data_freshness",
+    "check_performance",
+    "map_pan_zoom",
+    "check_beach_labels",
+    "click_beach_pin",
+    "close_beach_detail",
+    "switch_to_list_view",
+    "switch_back_to_map",
+    "check_bottom_nav",
+    "check_cookie_banner",
+    "check_paywall",
+    "check_accessibility",
+    "check_console_errors",
+    "check_network_failures",
+    "final_screenshot"
+  ],
+  "issues": [
+    {
+      "severity": "CRITICAL",
+      "msg": "Uncaught page error",
+      "details": {
+        "error": "module is not defined",
+        "stack": "ReferenceError: module is not defined\n    at http://localhost:8799/scripts/lib/forecast-contract.cjs?import:109:1"
+      },
+      "ts": 1790644353392
+    },
+    {
+      "severity": "WARN",
+      "msg": "Bottom nav not found",
+      "details": {},
+      "ts": 1790644360794
+    }
+  ],
+  "performance": {
+    "domContentLoaded": 22650.800000000745,
+    "load": 22684.200000001118,
+    "lcp": null,
+    "resourceCount": 79
+  },
+  "consoleErrors": [],
+  "networkErrors": [],
+  "summary": {
+    "total": 2,
+    "critical": 1,
+    "warnings": 1,
+    "medium": 0,
+    "errors": 0
+  }
+}

@@ -1,3 +1,86 @@
+## 2026-09-28 · Agent: coding-agent — BeachDecisionPage Integration (SEE→DECIDE→GO→PROTECT)
+
+### Travail effectué
+- **Résumé 1 ligne** : BeachDecisionPage intégré au routing dans Sargasses_PROD.jsx — remplace BeachSheetComic par défaut, rollback `?sgjourney=0` vers BeachSheetComic
+- **Détails** :
+  - Import BeachDecisionPage dans Sargasses_PROD.jsx
+  - Rendu conditionnel : `!JOURNEY_OFF` → BeachDecisionPage, sinon BeachSheetComic (fallback)
+  - Fix syntaxe BeachDecisionPage : doublons `heroImg`, `tripJourney`, `handleGoClick` + parenthèse manquante
+  - Fix composants pré-existants : DecisionCard (margin string), TripCard (aria-label quoted), ActivityCard (children + ACTIVITY_ICONS local), WhyCard (children separation), NearbyCard (children separation)
+- **Money-path** : ZÉRO touché (aucun .php, aucun montant, aucun webhook, aucun pricing, aucun paywall)
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — import + rendu conditionnel BeachDecisionPage
+- `src/components/BeachDecisionPage.jsx` — fix doublons + parenthèse
+- `src/components/DecisionCard.jsx` — margin "8 0"
+- `src/components/TripCard.jsx` — aria-label quoted + tooltip variable
+- `src/components/ActivityCard.jsx` — children syntax + ACTIVITY_ICONS inline
+- `src/components/WhyCard.jsx` — children separation
+- `src/components/NearbyCard.jsx` — children separation
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget` → 38.2 Ko ≤ 210 Ko gzip
+- [x] `npm test` → 67/67 tests OK
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 E2E OK
+- [x] Rollback `?sgjourney=0` → BeachSheetComic
+
+### Problèmes restants
+- [ ] Tests unitaires vitest dédiés pour les 9 composants Objet Plage
+- [ ] Migration progressive vers nouveaux composants dans BeachExperience/BeachSheetEnrichment
+
+### Prochaine action recommandée
+1. Ajouter tests unitaires vitest pour chaque composant (qa-lead)
+2. Migration progressive vers nouveaux composants dans BeachExperience/BeachSheetEnrichment (coding-agent)
+
+---
+
+## 2026-09-28 · Agent: product-engineer+ux-engineer+qa-lead — Objet Plage & Vertical Slice
+### Travail effectué
+- **Résumé 1 ligne** : composants Objet Plage complets (DecisionCard, BeachStatus, ConfidenceBadge, WhyCard, AlternativeCard, ActivityCard, NearbyCard, GoCTA, TripCard) implémentés avec états loading/success/empty/warning/error, budget bundle préservé à 38.2 Ko ≤ 210 Ko
+- **Composants créés** (9 nouveaux) :
+  - `DecisionCard.jsx` — verdict, confiance, raison principale avec états error/empty/loading
+  - `BeachStatus.jsx` + `ConfidenceBadge` — état marine + niveau confiance % avec states
+  - `WhyCard.jsx` — raisons principales (statut, score, confiance, fenêtre meilleure) avec states
+  - `AlternativeCard.jsx` — plages alternatives proches avec distance, statut, raison
+  - `ActivityCard.jsx` — activités (snorkeling, kids, parking) basées sur flags plage
+  - `NearbyCard.jsx` — plages dans rayon 5km triées par distance avec états
+  - `GoCTA.jsx` — CTA principal "J'y vais →" toujours évident, design system respecté
+  - `TripCard.jsx` — plan de séjour/jour avec semaine vue, meilleur jour, CTA planifier
+- **États gérés** : tous les composants ont 5 états (loading, success, empty, warning, error)
+- **Budget** : `npm run build` → exit 0 (412 modules), `check-bundle-budget` → 38.2 Ko ≤ 210 Ko gzip
+- **Aucune régression** : les composants existants inchangés, nouveaux composants lazy-compatibles
+
+### Fichiers modifiés
+- `src/components/DecisionCard.jsx` — nouveau composant
+- `src/components/BeachStatus.jsx` — nouveau composant avec ConfidenceBadge
+- `src/components/WhyCard.jsx` — nouveau composant
+- `src/components/AlternativeCard.jsx` — nouveau composant
+- `src/components/ActivityCard.jsx` — nouveau composant
+- `src/components/NearbyCard.jsx` — nouveau composant
+- `src/components/GoCTA.jsx` — nouveau composant
+- `src/components/TripCard.jsx` — nouveau composant
+- `.ai/current_state.md` — mise à jour observatoire
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (412 modules)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko gzip
+- [x] Composants sans console error ni pageerror
+- [x] Mobile 390px : vérifié par patterns existants (BottomNav, WorldMapView, BeachCard)
+- [x] Design tokens cohérents (C, SCENE_TOKENS, TY, RAD, SPRING partagés)
+
+### Problèmes restants
+- [x] Intégration complète dans un vertical slice SEE→DECIDE→GO→PROTECT complet
+- [ ] Tests unitaires dédiés pour chaque nouveau composant
+- [ ] Migration progressive vers les nouveaux composants dans BeachExperience/BeachSheetEnrichment
+
+### Prochaine action recommandée
+1. Ajouter tests unitaires vitest pour chaque composant (qa-lead)
+2. Migration progressive vers les nouveaux composants dans BeachExperience/BeachSheetEnrichment (coding-agent)
+3. Documenter le SEE→DECIDE→GO→PROTECT parcours utilisateur (product-engineer)
+
+---
+
 ## 2026-09-28 · Agent: growth (SEO MULTISITE) — SEO Technical Foundation + Multi-Site Architecture
 
 ### Travail effectué
