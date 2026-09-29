@@ -23,6 +23,31 @@ const SEV = { critical: 50, high: 30, medium: 15, low: 5 };
 const CONF = { proven: 20, observed: 10, inferred: 0 };
 const EFFORT_PENALTY = { auto: 0, agent: 10, human: 999 };
 
+// Économie de priorité : à sévérité égale, privilégier ce qui touche directement
+// acquisition/activation/conversion/revenu. Ce n'est pas une prédiction de CA :
+// c'est un biais de sélection pour consacrer le temps agent aux surfaces business.
+// Les opportunités explicites peuvent fournir expectedImpact/effort pour affiner.
+const REVENUE_BONUS = [
+  [/premium|paywall|checkout|pricing|conversion|payment|mollie|cta/i, 35],
+  [/trip|plan|decision|go|protect|beach/i, 15],
+  [/seo|sitemap|canonical|index|robots|404|broken-link/i, 12],
+  [/lcp|performance|bundle|slow/i, 8],
+];
+const LOW_VALUE_PENALTY = [/visual-shift|animation|cosmetic|spacing|color/i];
+
+function economicBonus(c) {
+  const text = [c.title, c.evidence, c.expectedImpact, c.route, c.target].filter(Boolean).join(' ');
+  let bonus = 0;
+  for (const [re, points] of REVENUE_BONUS) if (re.test(text)) { bonus += points; break; }
+  if (LOW_VALUE_PENALTY.some(re => re.test(text))) bonus -= 8;
+  if (c.expectedImpact && /€|revenue|paid|payment|conversion|checkout/i.test(c.expectedImpact)) bonus += 10;
+  if (c.effortMinutes != null) {
+    const effort = Math.max(5, Number(c.effortMinutes) || 5);
+    bonus += Math.max(-15, 20 - Math.min(35, effort / 3));
+  }
+  return bonus;
+}
+
 // Échecs first-party ATTENDUS en prod (pas des bugs) — gardés dans l'observation
 // brute mais jamais transformés en findings :
 //  - /api/mollie.php 400 : sonde payment_status sans session (pré-auth) = nominal
@@ -84,7 +109,10 @@ function fingerprint(f) {
 }
 
 function score(c) {
-  return (SEV[c.severity] || 0) + (CONF[c.confidence] || 0) - (EFFORT_PENALTY[c.actionable] ?? 999);
+  return (SEV[c.severity] || 0)
+    + (CONF[c.confidence] || 0)
+    + economicBonus(c)
+    - (EFFORT_PENALTY[c.actionable] ?? 999);
 }
 
 /**
@@ -108,7 +136,7 @@ function analyze({ findings, queue, isRejectedFn, cfg }) {
       source: 'observation ' + (findings.obsId || 'prod'),
       severity: f.severity, confidence: f.confidence,
       actionable: 'agent', // un finding brut n'est jamais auto sans recette éprouvée
-      evidence: f.evidence, rollback: 'revert du commit',
+      evidence: f.evidence, rollback: 'revert du commit', expectedImpact: '',
       status: 'new', createdAt: C.nowIso(),
     });
   }
@@ -124,6 +152,9 @@ function analyze({ findings, queue, isRejectedFn, cfg }) {
     o._score = score(o);
   }
   pool.sort((a, b) => (b._score - a._score) || a.id.localeCompare(b.id));
+  // Exposer pourquoi une opportunité passe devant une autre : indispensable pour
+  // auditer les choix de l'agent et éviter une optimisation opaque.
+  for (const o of pool) o._economicBonus = economicBonus(o);
 
   const allowAgent = !!cfg.policy.agentsEnabled && !!cfg.policy.allowAgentImplementation;
   const selected = pool.find(o => o.actionable === 'auto') || (allowAgent ? pool.find(o => o.actionable === 'agent') : null) || null;
