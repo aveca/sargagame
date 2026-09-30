@@ -9,15 +9,47 @@ const path = require('path');
 const { AP_DIR, paths, readJSON, writeJSON, runId, nowIso } = require('./common.cjs');
 
 // ── Queue ────────────────────────────────────────────────────────────────────
+const VALID_STATES = ['new', 'picked', 'in_progress', 'blocked', 'validation', 'ready-to-merge', 'done', 'rejected'];
+
+function log(msg) { console.log(`[memory] ${msg}`); }
+
 function loadQueue() {
   return readJSON(paths.queue, { opportunities: [] });
 }
 function saveQueue(q) { writeJSON(paths.queue, q); }
 
+function validateState(state) {
+  return VALID_STATES.includes(state);
+}
+
 function updateOpportunity(id, patch) {
   const q = loadQueue();
   const o = (q.opportunities || []).find(x => x.id === id);
   if (!o) return null;
+  
+  // Validate state transitions
+  if (patch.status && !validateState(patch.status)) {
+    throw new Error(`Invalid state: ${patch.status}. Valid states: ${VALID_STATES.join(', ')}`);
+  }
+  
+  // Enforce state transition rules
+  if (patch.status && o.status) {
+    const validTransitions = {
+      'new': ['picked', 'blocked', 'rejected'],
+      'picked': ['in_progress', 'blocked', 'rejected'],
+      'in_progress': ['validation', 'blocked', 'picked'], // can go back to picked for retry
+      'validation': ['ready-to-merge', 'blocked', 'in_progress'], // can go back for repair
+      'ready-to-merge': ['done', 'blocked'],
+      'done': [], // terminal
+      'blocked': ['picked', 'rejected'], // can be unblocked
+      'rejected': ['new'], // can be revisited after revisitAfter
+    };
+    const allowed = validTransitions[o.status] || [];
+    if (!allowed.includes(patch.status)) {
+      log(`[WARN] State transition ${o.status} → ${patch.status} may be invalid for ${id}`);
+    }
+  }
+  
   Object.assign(o, patch, { updatedAt: nowIso() });
   saveQueue(q);
   return o;

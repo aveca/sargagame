@@ -443,8 +443,10 @@ try {
         exit;
     }
 
-    if ($action === 'applepay_session') {
-        $validationUrl = $data['validationUrl'] ?? '';
+    // Alias front historique : doSubscribe.jsx envoie `applepay_merchant_session`
+    // avec champ `validationURL` (capitaux) — on accepte les deux, allowlist inchangée.
+    if ($action === 'applepay_session' || $action === 'applepay_merchant_session') {
+        $validationUrl = $data['validationUrl'] ?? $data['validationURL'] ?? '';
         if (!$validationUrl) throw new Exception('validationUrl requis');
         // Mollie exige que validationURL provienne d'Apple (apple.com domain).
         // Whitelist stricte pour éviter qu'un client forge une URL et fasse valider

@@ -303,6 +303,34 @@ async function main() {
     globalThis.fetch = mollieGet2
   }
 
+  console.log('\n— claim_referral_credit (boot ping viral, verrouillé days:0) —')
+  {
+    // Payload exact observé en prod sur chaque chargement de page (Sargasses_PROD
+    // referral reward, throttle 12h) : avant le fix → 400 action_inconnue sur
+    // sg-payments (le handler n'existait que dans mollie.php + b2b-api).
+    const r = await post('claim_referral_credit', { code: 'REF-ABC123' })
+    const d = await r.json()
+    ok(r.status === 200, 'claim_referral_credit code valide → 200 (plus de 400 action_inconnue)')
+    ok(d.days === 0 && d.enabled === false && d.code === 'REF-ABC123', 'claim_referral_credit verrouillé : days:0, enabled:false, code écho')
+    const bad = await (await post('claim_referral_credit', { code: 'NOPE' })).json()
+    ok(bad.error === 'Code de parrainage invalide', 'claim_referral_credit rejette un code malformé (garde anti-abus intacte)')
+    const empty = await (await post('claim_referral_credit', {})).json()
+    ok(empty.error === 'Code de parrainage invalide', 'claim_referral_credit sans code → 400 garde (jamais 500)')
+  }
+
+  console.log('\n— applepay_merchant_session (alias front doSubscribe.jsx) —')
+  {
+    // Le front envoie action:"applepay_merchant_session" + champ validationURL
+    // (capitaux). Avant le fix → 400 action_inconnue sur sg-payments + mollie.php.
+    const badUrl = await (await post('applepay_merchant_session', { validationURL: 'https://evil.example.com/' })).json()
+    ok(/apple\.com/.test(badUrl.error || ''), 'applepay_merchant_session atteint le handler (allowlist apple.com appliquée, pas action_inconnue)')
+    const missing = await (await post('applepay_merchant_session', {})).json()
+    ok(missing.error === 'validationUrl requis', 'applepay_merchant_session sans URL → 400 validationUrl requis (pas action_inconnue)')
+    // Forme canonique + champ lowercase toujours acceptées (non-régression)
+    const canon = await (await post('applepay_session', { validationUrl: 'https://evil.example.com/' })).json()
+    ok(/apple\.com/.test(canon.error || ''), 'applepay_session canonique toujours routée (non-régression)')
+  }
+
   globalThis.fetch = realFetch
   try { fs.unlinkSync(out) } catch (_) {}
 
