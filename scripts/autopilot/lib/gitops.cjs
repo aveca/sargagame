@@ -265,8 +265,9 @@ async function prodFingerprint(domain, timeoutMs = 10000) {
 /**
  * Tente de réparer automatiquement un PR en conflit (mergeable=CONFLICTING).
  * Stratégie : rebase sur origin/main + résolution déterministe sûre.
- * Retourne {ok: true, rebased: true, commitSha} ou {ok: false, reason, unsafe: boolean}.
+ * Retourne {ok: true, rebased: true, commitSha, method} ou {ok: false, reason, unsafe: boolean}.
  * Ne JAMAIS écraser main. Abort propre si conflit ambigu/dangereux.
+ * Idempotent : already-up-to-date = success (method: 'already-up-to-date').
  */
 async function repairPRConflict(prNumber, cfg, log = console.log) {
   log(`REPAIR_PR   attempting auto-rebase for PR #${prNumber}`);
@@ -333,47 +334,83 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
     }
     log(`REPAIR_PR   on PR branch ${branch}, ready for rebase`);
     
-    // 6. Rebase onto origin/main
-    log('REPAIR_PR   rebasing onto origin/' + cfg.git.baseBranch + '...');
-    const rebaseResult = gitSafe(['rebase', 'origin/' + cfg.git.baseBranch], wt);
-    
-    if (rebaseResult !== null) {
-      // Rebase succeeded without conflicts
-      log('REPAIR_PR   rebase successful (no conflicts)');
+    // 6. Check if branch is already based on origin/main (fast-forward check)
+    // If HEAD is already an ancestor of origin/main, no rebase needed
+    const mergeBase = gitSafe(['merge-base', 'HEAD', 'origin/' + cfg.git.baseBranch], wt);
+    const headSha = gitSafe(['rev-parse', 'HEAD'], wt);
+    if (mergeBase && mergeBase.trim() === headSha && mergeBase.trim()) {
+      log('REPAIR_PR   branch already up to date with origin/' + cfg.git.baseBranch);
+      // Still push to ensure remote is in sync (force-push in case of remote divergence)
       const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
       git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
-      log('REPAIR_PR   force-pushed rebased branch');
-      return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
+      log('REPAIR_PR   force-pushed (already up to date)');
+      return { ok: true, rebased: false, commitSha, method: 'already-up-to-date' };
     }
     
-    // 7. Check if there are conflicts
+    // 7. Rebase onto origin/main with explicit output capture
+    log('REPAIR_PR   rebasing onto origin/' + cfg.git.baseBranch + '...');
+    const rebaseResult = runRebaseWithOutput(wt, cfg.git.baseBranch, log);
+    
+    if (rebaseResult.success) {
+      // Rebase succeeded (either with commits or already up to date)
+      if (rebaseResult.alreadyUpToDate) {
+        log('REPAIR_PR   rebase: already up to date');
+        const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
+        git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+        return { ok: true, rebased: false, commitSha, method: 'already-up-to-date' };
+      } else {
+        log('REPAIR_PR   rebase successful (commits replayed)');
+        const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
+        git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+        log('REPAIR_PR   force-pushed rebased branch');
+        return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
+      }
+    }
+    
+    // 8. Rebase failed - check if it's a conflict
     const status = gitSafe(['status', '--porcelain'], wt) || '';
     const conflictedFiles = status.split('\n').filter(l => l.startsWith('UU') || l.startsWith('AA') || l.startsWith('DD')).map(parsePorcelainLine);
     
+    // Only abort if rebase is actually in progress
+    const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) || 
+                             fs.existsSync(path.join(wt, '.git', 'rebase-apply'));
+    
     if (conflictedFiles.length === 0) {
       // No conflicts but rebase failed for other reason
-      git(['rebase', '--abort'], wt);
-      return { ok: false, reason: 'rebase failed without conflicts', unsafe: true };
+      if (rebaseInProgress) {
+        git(['rebase', '--abort'], wt);
+      }
+      return { ok: false, reason: rebaseResult.output || 'rebase failed without conflicts', unsafe: true };
     }
     
     log(`REPAIR_PR   conflicts detected in: ${conflictedFiles.join(', ')}`);
     
-    // 8. Attempt safe deterministic resolution
+    // 9. Attempt safe deterministic resolution
     const resolution = attemptSafeConflictResolution(conflictedFiles, wt, log);
     
     if (!resolution.ok) {
-      git(['rebase', '--abort'], wt);
+      if (rebaseInProgress) {
+        git(['rebase', '--abort'], wt);
+      }
       return { ok: false, reason: resolution.reason, unsafe: resolution.unsafe };
     }
     
-    // 9. Continue rebase
-    git(['rebase', '--continue'], wt);
+    // 10. Continue rebase
+    const continueResult = runGitWithOutput(['rebase', '--continue'], wt);
+    if (!continueResult.success) {
+      if (rebaseInProgress) {
+        git(['rebase', '--abort'], wt);
+      }
+      return { ok: false, reason: continueResult.output || 'rebase --continue failed', unsafe: true };
+    }
     log('REPAIR_PR   rebase continued after conflict resolution');
     
-    // 10. Verify rebase completed
+    // 11. Verify rebase completed
     const finalStatus = gitSafe(['status', '--porcelain'], wt) || '';
     if (finalStatus.trim()) {
-      git(['rebase', '--abort'], wt);
+      if (rebaseInProgress) {
+        git(['rebase', '--abort'], wt);
+      }
       return { ok: false, reason: 'rebase left uncommitted changes', unsafe: true };
     }
     
@@ -386,8 +423,50 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
   } catch (e) {
     log(`REPAIR_PR   error: ${e.message}`);
     // Try to abort any in-progress rebase
-    try { gitSafe(['rebase', '--abort'], worktreePath(cfg)); } catch (_) {}
+    try { 
+      const wt = worktreePath(cfg);
+      const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) || 
+                               fs.existsSync(path.join(wt, '.git', 'rebase-apply'));
+      if (rebaseInProgress) {
+        gitSafe(['rebase', '--abort'], wt);
+      }
+    } catch (_) {}
     return { ok: false, reason: e.message, unsafe: true };
+  }
+}
+
+/**
+ * Exécute git rebase avec capture de sortie pour distinguer les cas.
+ * Retourne {success: boolean, alreadyUpToDate: boolean, output: string}.
+ */
+function runRebaseWithOutput(wt, baseBranch, log) {
+  try {
+    const out = run(`git rebase origin/${baseBranch}`, wt, { timeoutMs: 180000 });
+    const output = out.trim();
+    log(`REPAIR_PR   rebase output: ${output.slice(0, 200)}`);
+    
+    // Check for "already up to date" message
+    if (/already up to date|Current branch .+ is up to date/i.test(output)) {
+      return { success: true, alreadyUpToDate: true, output };
+    }
+    // Any other successful output (commits replayed, etc.)
+    return { success: true, alreadyUpToDate: false, output };
+  } catch (e) {
+    // Rebase failed - could be conflicts or other error
+    return { success: false, alreadyUpToDate: false, output: (e.stdout || '') + '\n' + (e.stderr || '') + '\n' + e.message };
+  }
+}
+
+/**
+ * Exécute une commande git et capture stdout/stderr sans lever d'exception.
+ * Retourne {success: boolean, output: string}.
+ */
+function runGitWithOutput(args, wt) {
+  try {
+    const out = run('git ' + args.join(' '), wt, { timeoutMs: 120000 });
+    return { success: true, output: out.trim() };
+  } catch (e) {
+    return { success: false, output: (e.stdout || '') + '\n' + (e.stderr || '') + '\n' + e.message };
   }
 }
 
