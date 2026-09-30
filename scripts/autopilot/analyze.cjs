@@ -132,6 +132,9 @@ function analyze({ findings, queue, isRejectedFn, cfg }) {
     candidates.push({
       id: 'OPP-' + fp.replace(/[^a-z0-9]+/gi, '-').slice(0, 60),
       fingerprint: fp,
+      // Contrat opportunité : type/region/route requis par processOpportunity
+      // (orchestrator.cjs) — le fingerprint seul ne suffit pas.
+      type: f.type, region: f.region, route: f.route, target: f.target,
       title: `${f.type} sur ${f.region}/${f.route} — ${String(f.target || '').slice(0, 60)}`,
       source: 'observation ' + (findings.obsId || 'prod'),
       severity: f.severity, confidence: f.confidence,

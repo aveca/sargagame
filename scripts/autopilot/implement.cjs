@@ -76,13 +76,19 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     });
     
     let out = '', err = '';
-    if (!liveMode) {
-      child.stdout.on('data', d => { out += d; });
-      child.stderr.on('data', d => { err += d; });
-    } else if (liveMode) {
-      // In live mode, we still capture a truncated copy for diagnostics
-      child.stdout.on('data', d => { out += d; if (out.length > 10000) out = out.slice(-8000); });
-      child.stderr.on('data', d => { err += d; if (err.length > 5000) err = err.slice(-4000); });
+    // En mode LIVE, stdio = inherit ⇒ child.stdout/stderr sont null :
+    // ne jamais brancher de handlers sans vérifier (crash `.on` of null).
+    if (child.stdout) {
+      child.stdout.on('data', d => {
+        out += d;
+        if (liveMode && out.length > 10000) out = out.slice(-8000);
+      });
+    }
+    if (child.stderr) {
+      child.stderr.on('data', d => {
+        err += d;
+        if (liveMode && err.length > 5000) err = err.slice(-4000);
+      });
     }
     
     const kill = setTimeout(() => { try { child.kill('SIGKILL'); } catch (_) {} }, cfg.policy.agentMaxMinutes * 60000);

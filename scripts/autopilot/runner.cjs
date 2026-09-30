@@ -88,10 +88,11 @@ async function main() {
   rlog(`free ${freeMB} Mo · live=${LIVE} · headed=${HEADED} · continuous=${CONTINUOUS} · pid ${process.pid}`);
   if (HEADED) rlog(`HEADED BROWSER MODE ENABLED`);
 
-  // Acquire lock ONCE for the entire session
+  // Acquire lock ONCE for the entire session (atomique : un seul runner gagne ;
+  // le perdant sort en code 3 — jamais deux runners actifs sur le même repo).
   const acq = lock.acquire({ staleAfterMs: 24 * 60 * 60 * 1000 }); // 24h stale for long-lived
-  if (!acq.ok) { rlog('skip : ' + acq.reason); process.exit(3); }
-  rlog('lock acquired — single runner active');
+  if (!acq.ok) { rlog(`REFUSÉ second runner — ${acq.reason} (code ${acq.code || 'LOCKED'}) — arrêt propre`); process.exit(3); }
+  rlog(`lock acquired — single runner active (pid ${process.pid}, token ${acq.entry.token.slice(0, 6)}…)`);
 
   let cycleCount = 0;
   let consecutiveErrors = 0;
@@ -105,6 +106,14 @@ async function main() {
 
     try {
       rlog(`\n┌─ CYCLE ${cycleCount} ──────────────────────────────`);
+
+      // Heartbeat : prouve « encore utilisé » (un lock sans heartbeat frais +
+      // pid mort = stale récupérable ; pid vivant = jamais préempté).
+      const hb = lock.heartbeat();
+      if (!hb.ok) {
+        rlog(`lock perdu (${hb.reason}) — un autre runner a pris le relais ? arrêt propre`);
+        break;
+      }
       
       // 1. BRIDGE: Import GitHub issues (non-blocking)
       try {

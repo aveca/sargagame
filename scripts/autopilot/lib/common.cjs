@@ -37,10 +37,34 @@ function loadConfig() {
   return cfg;
 }
 
+let _runSeq = 0;
 function runId(d = new Date()) {
-  // YYYY-MM-DD-HHMM (UTC) — triable, collision-safe à la minute près (le lock
-  // garantit 1 cycle à la fois, suffisant).
-  return d.toISOString().slice(0, 16).replace('T', '-').replace(':', '');
+  // Identifiant de cycle RÉELLEMENT unique (triable) :
+  //   YYYY-MM-DD-HHMMSS + pid base36 + aléatoire.
+  // Le format minute seul (YYYY-MM-DD-HHMM) a causé la collision 1608 :
+  // 2 cycles dans la même minute ⇒ même nom de branche/worktree
+  // ⇒ `git worktree add -b` → "already exists" → exit 1.
+  // Le pid sépare les processus concurrents, l'aléatoire couvre les
+  // redémarrages rapides / horloges douteuses. Charset [0-9a-z-] = git-ref sûr.
+  const t = d instanceof Date ? d : new Date(d);
+  // YYYY-MM-DD-HHMMSSmmm (UTC) : préfixe lisible, triable, compatible avec
+  // l'ancien format minute (runIdMinute). Les millisecondes rendent les cycles
+  // séquentiels uniques de façon déterministe ; pid + aléatoire couvrent les
+  // processus concurrents et les horloges douteuses.
+  const base = t.toISOString().slice(0, 23).replace('T', '-').replace(/[:.]/g, '');
+  const pid = process.pid.toString(36);
+  // Compteur monotonique par processus : unicité stricte même si l'horloge
+  // ne progresse pas (granularité Windows ~15 ms). pid + aléatoire couvrent
+  // les processus concurrents et les redémarrages.
+  const seq = (++_runSeq).toString(36);
+  const rnd = Math.random().toString(36).slice(2, 6);
+  return `${base}-p${pid}-${seq}${rnd}`;
+}
+
+/** Préfixe minute d'un runId (regroupement/affichage, ex: 2026-09-30-1608). */
+function runIdMinute(id) {
+  const m = String(id || '').match(/^(\d{4}-\d{2}-\d{2}-\d{4})/);
+  return m ? m[1] : String(id || '');
 }
 
 function nowIso() { return new Date().toISOString(); }
@@ -70,7 +94,7 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 module.exports = {
   ROOT, AP_DIR, DIRS, ensureDirs, readJSON, writeJSON, loadConfig,
-  runId, nowIso, makeLogger, isUnattendedWindow, sleep,
+  runId, runIdMinute, nowIso, makeLogger, isUnattendedWindow, sleep,
   paths: {
     queue: path.join(AP_DIR, 'queue.json'),
     latestMd: path.join(AP_DIR, 'latest.md'),
