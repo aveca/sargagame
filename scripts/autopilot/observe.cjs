@@ -29,6 +29,8 @@ const ARG = (name, def) => {
   return i >= 0 ? (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true) : def;
 };
 
+const HEADED = args.includes('--headed');
+
 const THIRD_PARTY_NOISE = [
   'googletagmanager.com', 'google-analytics.com', 'clarity.ms', 'onesignal.com',
   'js.mollie.com', 'gstatic.com', 'google.com/recaptcha', 'facebook',
@@ -204,7 +206,11 @@ async function main() {
   const started = Date.now();
   const result = { id, at: C.nowIso(), heavy, regions: {}, totals: { pages: 0, consoleErrors: 0, pageErrors: 0, firstPartyFailures: 0, brokenLinks: 0, visualFlagged: 0 } };
 
-  const browser = await chromium.launch({ args: ['--disable-gpu'] });
+  const browser = await chromium.launch({ 
+    args: ['--disable-gpu'],
+    headless: !HEADED 
+  });
+  if (HEADED) log('Browser launched in HEADED mode');
   try {
     for (const reg of regions) {
       const routes = await discoverRoutes(cfg, reg.id, reg.domain);

@@ -28,9 +28,27 @@ const policy = require('./lib/policy.cjs');
 
 const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
 
+const DISCOVERY_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 function log(msg) {
   if (LIVE) console.log(`[${new Date().toISOString().slice(11, 19)}] DISCOVER  ${msg}`);
   else console.log(`[DISCOVER] ${msg}`);
+}
+
+/** Simple in-memory cache for discovery results */
+const discoveryCache = new Map();
+
+function getCachedDiscovery(key) {
+  const cached = discoveryCache.get(key);
+  if (cached && Date.now() - cached.timestamp < DISCOVERY_CACHE_TTL_MS) {
+    log(`CACHE HIT: ${key}`);
+    return cached.data;
+  }
+  return null;
+}
+
+function setCachedDiscovery(key, data) {
+  discoveryCache.set(key, { data, timestamp: Date.now() });
 }
 
 const DISCOVERY_SOURCES = [
@@ -53,6 +71,16 @@ async function runDiscovery(cfg, report, obs, revenueSnap) {
   const opportunities = [];
   const queue = mem.loadQueue();
   const existingFingerprints = new Set((queue.opportunities || []).map(o => o.fingerprint || o.id));
+  
+  // Cache key based on observation + revenue snapshot
+  const cacheKey = `discovery:${report.id}:${obs?.id || 'no-obs'}:${revenueSnap?.at || 'no-revenue'}`;
+
+  // Check cache first
+  const cached = getCachedDiscovery(cacheKey);
+  if (cached) {
+    log(`Using cached discovery results`);
+    return cached;
+  }
 
   // 1. PRODUCTION HEALTH
   const healthOpps = await discoverProdHealth(cfg, obs);
@@ -122,6 +150,9 @@ async function runDiscovery(cfg, report, obs, revenueSnap) {
   for (const o of filtered.slice(0, 5)) {
     log(`  ${o._score} ${o.id} (${o.severity}/${o.actionable}) ${o.title.slice(0, 80)}`);
   }
+
+  // Cache results
+  setCachedDiscovery(cacheKey, filtered);
 
   return filtered;
 }

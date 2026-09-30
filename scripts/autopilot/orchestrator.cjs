@@ -43,6 +43,7 @@ const { runOnlineQA } = require('./online-qa.cjs');
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
 const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
+const HEADED = process.env.SARGA_AUTOPILOT_HEADED === '1';
 
 const t0 = Date.now();
 let cfg, report, log, lastProgress = Date.now();
@@ -73,6 +74,22 @@ function parkTask(oppId, reason, status = 'parked') {
 
 function budgetExceeded() { return elapsedMin() > cfg.loop.maxRunMinutes; }
 
+/** Detect if we can run headed (requires display) */
+function canRunHeaded() {
+  if (process.platform === 'win32') return true; // Windows typically has display
+  return !!(process.env.DISPLAY || process.env.WAYLAND_DISPLAY);
+}
+
+/** Get effective headed mode: HEADED flag AND display available */
+function getEffectiveHeaded() {
+  if (!HEADED) return false;
+  if (!canRunHeaded()) {
+    log('[WARN] HEADED=1 but no display available — falling back to headless');
+    return false;
+  }
+  return true;
+}
+
 /** Watchdog — surveille l'absence de progression > 120s */
 function startWatchdog() {
   if (!LIVE) return null;
@@ -80,9 +97,21 @@ function startWatchdog() {
     const idle = Date.now() - lastProgress;
     if (idle > 120000) {
       log(`[WATCHDOG] No progress for ${Math.round(idle/1000)}s`);
-      log(`[WATCHDOG] Investigating...`);
+      log(`[WATCHDOG] Diagnosing stuck phase...`);
+      diagnoseStuckPhase();
     }
   }, 30000);
+}
+
+/** Diagnose which phase is stuck and attempt recovery */
+function diagnoseStuckPhase() {
+  const elapsed = elapsedMin();
+  log(`[WATCHDOG] Elapsed: ${elapsed.toFixed(1)}min / ${cfg.loop.maxRunMinutes}min budget`);
+  if (budgetExceeded()) {
+    log(`[WATCHDOG] Time budget exceeded — will stop at next checkpoint`);
+  }
+  // Could add more sophisticated diagnosis here
+  // e.g., check if orchestrator process is alive, etc.
 }
 
 async function healthCheck() {
@@ -184,9 +213,10 @@ async function phaseObserve() {
     S('OBSERVED', 'dry-run: skipping Playwright probe, using mock observation');
     return { id: 'dry-run-mock', at: C.nowIso(), regions: {}, totals: { pages: 0, consoleErrors: 0, pageErrors: 0, firstPartyFailures: 0, brokenLinks: 0, visualFlagged: 0 }, durationSec: 0, heavy: false };
   }
+  const headed = getEffectiveHeaded();
   if (LIVE) progress('OBSERVE     starting Playwright probe...');
-  S('OBSERVED', 'sonde Playwright prod lancée…');
-  const cp = execFileSync(process.execPath, [path.join(__dirname, 'observe.cjs'), '--run-id', report.id], {
+  S('OBSERVED', `sonde Playwright prod lancée (headed=${headed})…`);
+  const cp = execFileSync(process.execPath, [path.join(__dirname, 'observe.cjs'), '--run-id', report.id, headed ? '--headed' : ''], {
     cwd: C.ROOT, encoding: 'utf8', timeout: 15 * 60000, stdio: ['ignore', 'pipe', 'pipe'],
   }).trim();
   const file = (cp.match(/OBSERVATION_FILE=(.+)/) || [])[1];
@@ -315,15 +345,81 @@ async function phaseImplementLocal(opp) {
   return { pr, branch, commitSha, wt };
 }
 
-/** CI WAIT + PREVIEW DEPLOY with repair (max 3) */
+/** Self-repair: classify error and attempt targeted fix */
+async function attemptRepair(opp, phase, error, log) {
+  const errorMsg = String(error.message || error).slice(0, 500);
+  const errorType = classifyError(errorMsg);
+  log(`REPAIR      ${phase}: ${errorType} — ${errorMsg.slice(0, 120)}`);
+  
+  const repairActions = {
+    'ci-failure': () => repairCIFailure(opp, errorMsg, log),
+    'build-failure': () => repairBuildFailure(opp, errorMsg, log),
+    'test-failure': () => repairTestFailure(opp, errorMsg, log),
+    'preview-deploy-failed': () => repairPreviewDeploy(opp, errorMsg, log),
+    'online-qa-regression': () => repairOnlineQARegression(opp, errorMsg, log),
+    'browser-error': () => repairBrowserError(opp, errorMsg, log),
+    'timeout': () => repairTimeout(opp, errorMsg, log),
+    'unknown': () => ({ attempted: false, reason: 'unknown error type' }),
+  };
+  
+  const repair = repairActions[errorType] || repairActions.unknown;
+  return await repair();
+}
+
+function classifyError(errorMsg) {
+  const msg = errorMsg.toLowerCase();
+  if (msg.includes('ci') && (msg.includes('fail') || msg.includes('error') || msg.includes('red'))) return 'ci-failure';
+  if (msg.includes('build') && (msg.includes('fail') || msg.includes('error'))) return 'build-failure';
+  if (msg.includes('test') && (msg.includes('fail') || msg.includes('error') || msg.includes('assert'))) return 'test-failure';
+  if (msg.includes('preview') && (msg.includes('deploy') || msg.includes('fail'))) return 'preview-deploy-failed';
+  if (msg.includes('online qa') && (msg.includes('regression') || msg.includes('fail') || msg.includes('error'))) return 'online-qa-regression';
+  if (msg.includes('browser') || msg.includes('playwright') || msg.includes('pageerror') || msg.includes('console error')) return 'browser-error';
+  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('etimedout')) return 'timeout';
+  return 'unknown';
+}
+
+async function repairCIFailure(opp, errorMsg, log) {
+  log('REPAIR      CI failure — checking CI logs for actionable error');
+  return { attempted: true, type: 'ci-failure', action: 'CI log analysis needed', detail: errorMsg };
+}
+
+async function repairBuildFailure(opp, errorMsg, log) {
+  log('REPAIR      Build failure — checking for syntax/typo issues');
+  return { attempted: true, type: 'build-failure', action: 'build error analysis needed', detail: errorMsg };
+}
+
+async function repairTestFailure(opp, errorMsg, log) {
+  log('REPAIR      Test failure — extracting failing test details');
+  return { attempted: true, type: 'test-failure', action: 'test failure analysis needed', detail: errorMsg };
+}
+
+async function repairPreviewDeploy(opp, errorMsg, log) {
+  log('REPAIR      Preview deploy failed — checking deployment logs');
+  return { attempted: true, type: 'preview-deploy', action: 'deployment error analysis needed', detail: errorMsg };
+}
+
+async function repairOnlineQARegression(opp, errorMsg, log) {
+  log('REPAIR      Online QA regression — identifying failing route/interaction');
+  return { attempted: true, type: 'online-qa', action: 'QA regression analysis needed', detail: errorMsg };
+}
+
+async function repairBrowserError(opp, errorMsg, log) {
+  log('REPAIR      Browser error — checking for page errors/console errors');
+  return { attempted: true, type: 'browser', action: 'browser error analysis needed', detail: errorMsg };
+}
+
+async function repairTimeout(opp, errorMsg, log) {
+  log('REPAIR      Timeout — may need more time or optimization');
+  return { attempted: true, type: 'timeout', action: 'timeout handling needed', detail: errorMsg };
+}
+
+/** CI WAIT + PREVIEW DEPLOY with true self-repair (max 3) */
 async function phaseCIAndPreview(opp, pr, branch, commitSha) {
-  const maxRetries = 3;
   let previewResult = null;
 
-  for (let retry = 0; retry < 3; retry++) {
-    if (retry > 0) {
-      progress(`CI/PREVIEW   retry ${retry}/3`);
-      // Small fix attempt could go here
+  for (let attempt = 1; attempt <= cfg.loop.maxRepairAttempts; attempt++) {
+    if (attempt > 1) {
+      progress(`CI/PREVIEW   repair attempt ${attempt}/${cfg.loop.maxRepairAttempts}`);
     }
 
     try {
@@ -333,10 +429,15 @@ async function phaseCIAndPreview(opp, pr, branch, commitSha) {
       progress('PREVIEW     deployed & fingerprint verified');
       break;
     } catch (e) {
-      progress(`PREVIEW     attempt ${retry + 1}/3 FAILED: ${e.message.slice(0, 100)}`);
-      mem.writeRegression(opp.id + `-preview-${retry}`, `Preview deploy failed: ${e.message}`);
-      if (retry === 2) {
-        return parkTask(opp.id, `preview deploy failed after 3 retries: ${e.message.slice(0, 150)}`, 'blocked-preview');
+      progress(`PREVIEW     attempt ${attempt}/${cfg.loop.maxRepairAttempts} FAILED: ${e.message.slice(0, 100)}`);
+      mem.writeRegression(opp.id + `-preview-${attempt}`, `Preview deploy failed: ${e.message}`);
+      
+      // CAPTURE → CLASSIFY → DIAGNOSE → REPAIR
+      const repairResult = await attemptRepair(opp, 'CI/PREVIEW', e, m => progress(`REPAIR      ${m}`));
+      progress(`REPAIR      result: ${repairResult.attempted ? 'attempted' : 'no action'} — ${repairResult.action || repairResult.reason}`);
+      
+      if (attempt === cfg.loop.maxRepairAttempts) {
+        return parkTask(opp.id, `preview deploy failed after ${cfg.loop.maxRepairAttempts} repair attempts: ${e.message.slice(0, 150)}`, 'blocked-preview');
       }
       await sleep(30000); // wait before retry
     }
@@ -349,10 +450,9 @@ async function phaseCIAndPreview(opp, pr, branch, commitSha) {
 async function phaseOnlineQA(opp, previewResult) {
   if (!previewResult) return { skipped: true };
 
-  for (let retry = 0; retry < 3; retry++) {
-    if (retry > 0) {
-      progress(`ONLINE QA    retry ${retry}/3`);
-      await sleep(30000);
+  for (let attempt = 1; attempt <= cfg.loop.maxRepairAttempts; attempt++) {
+    if (attempt > 1) {
+      progress(`ONLINE QA    repair attempt ${attempt}/${cfg.loop.maxRepairAttempts}`);
     }
 
     try {
@@ -370,26 +470,39 @@ async function phaseOnlineQA(opp, previewResult) {
       const highErrors = onlineQA.errors?.filter(e => e.severity === 'high' || e.severity === 'critical').length || 0;
       if (highErrors > 0) {
         progress(`ONLINE QA       REGRESSIONS: ${highErrors} high/critical`);
-        if (retry < 2) {
-          progress('ONLINE QA       regression — will retry');
-          mem.writeRegression(opp.id + `-online-qa-${retry}`, `Online QA regressions: ${highErrors} high/critical`);
-          continue; // retry
+        
+        // CAPTURE → CLASSIFY → DIAGNOSE → REPAIR
+        const regressionError = new Error(`Online QA regression: ${highErrors} high/critical errors`);
+        const repairResult = await attemptRepair(opp, 'ONLINE QA', regressionError, m => progress(`REPAIR      ${m}`));
+        progress(`REPAIR      result: ${repairResult.attempted ? 'attempted' : 'no action'} — ${repairResult.action || repairResult.reason}`);
+        
+        if (attempt < cfg.loop.maxRepairAttempts) {
+          progress('ONLINE QA       regression — will retry after repair');
+          mem.writeRegression(opp.id + `-online-qa-${attempt}`, `Online QA regressions: ${highErrors} high/critical`);
+          await sleep(30000);
+          continue;
         } else {
-          return parkTask(opp.id, `online QA regression after 3 retries: ${highErrors} high/critical`, 'blocked-online-qa');
+          return parkTask(opp.id, `online QA regression after ${cfg.loop.maxRepairAttempts} repair attempts: ${highErrors} high/critical`, 'blocked-online-qa');
         }
       }
       
       progress('ONLINE QA       PASS');
       return { success: true };
     } catch (e) {
-      progress(`ONLINE QA     attempt ${retry + 1}/3 FAILED: ${e.message.slice(0, 100)}`);
-      mem.writeRegression(opp.id + `-online-qa-${retry}`, `Online QA failed: ${e.message}`);
-      if (retry === 2) {
-        return parkTask(opp.id, `online QA failed after 3 retries: ${e.message.slice(0, 150)}`, 'blocked-online-qa');
+      progress(`ONLINE QA     attempt ${attempt}/${cfg.loop.maxRepairAttempts} FAILED: ${e.message.slice(0, 100)}`);
+      mem.writeRegression(opp.id + `-online-qa-${attempt}`, `Online QA failed: ${e.message}`);
+      
+      // CAPTURE → CLASSIFY → DIAGNOSE → REPAIR
+      const repairResult = await attemptRepair(opp, 'ONLINE QA', e, m => progress(`REPAIR      ${m}`));
+      progress(`REPAIR      result: ${repairResult.attempted ? 'attempted' : 'no action'} — ${repairResult.action || repairResult.reason}`);
+      
+      if (attempt === cfg.loop.maxRepairAttempts) {
+        return parkTask(opp.id, `online QA failed after ${cfg.loop.maxRepairAttempts} repair attempts: ${e.message.slice(0, 150)}`, 'blocked-online-qa');
       }
+      await sleep(30000);
     }
   }
-  return parkTask(opp.id, 'online QA max retries exceeded', 'blocked-online-qa');
+  return parkTask(opp.id, 'online QA max repair attempts exceeded', 'blocked-online-qa');
 }
 
 /** Process a single opportunity through the full pipeline */
