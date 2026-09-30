@@ -1,3 +1,38 @@
+## 2026-09-30 · Agent: ui-ux (E11 MESURE J+7) — trust row NEUTRE, prolongation J+14 2026-10-06
+
+### Travail effectué
+- **Résumé 1 ligne** : E11 trust row déjà mergée main (PR #705, 09-22 — tâche stale corrigée) ; mesure post-ship J+7 = 7,9 % vs baseline 11,2 %, non significatif (p≈0,33), aval intact → GARDER, re-mesure J+14.
+- **Détails** :
+  - Regression Guard : rebase `agent/ui/e11-trust-row-rebased` → commit sauté "previously applied" (`17c46f1bb` dans main) ; 2 branches locales stales supprimées ; aucune PR E11 orpheline restante.
+  - Mesure `.ai/E11_POST_SHIP_J7.md` : 09-22→09-29 = 114 vues / 9 CTA = 7,9 % ; z=0,968 p≈0,33 ; bande 0-13 % respectée ; cta→onsite 100 % ; conversion 0 (inchangé) ; trafic vues ÷2 → puissance faible.
+  - Décision panel (produit/adversarial) : garder (coût nul, rollback `?trust_row=0` dispo et vérifié dans `src/PassOffer.jsx`), prolongation fenêtre à J+14 (2026-10-06) ; règle de sortie : cumul ≤8 % avec N≥200 vues → revert.
+
+### Fichiers modifiés
+- `.ai/E11_POST_SHIP_J7.md` (NOUVEAU) — jour par jour + stat + décision
+- `.ai/tasks.md` — entrée E11 corrigée (main réel, mesure, NEXT re-mesure)
+- `.ai/changelog.md` — entrée E11 mesure
+- `.ai/current_state.md` — ce handoff
+- Aucun code produit modifié.
+
+### Tests réalisés
+- [x] Regression Guard git (rebase preuve merge antérieur) → OK
+- [x] Données = pipelines committés (`daily-metrics.json`), zéro requête ad hoc
+- [ ] Build/smoke : N/A (docs uniquement, 0 code touché)
+
+### Problèmes restants
+- [ ] E11 re-mesure J+14 le 2026-10-06 (cumul 09-22→10-05, seuil revert ≤8 % & N≥200) — Rôle : uiux-agent
+- [ ] Volume PassOffer ÷2 vs baseline — surveiller cause trafic (non E11) — Rôle : growth_agent
+
+### Prochaine action recommandée
+1. 2026-10-06 : re-mesure E11 J+14 cumulée — Rôle : uiux-agent
+2. PR money-path (#778 mergée) : probe prod claim_referral_credit → 200 — Rôle : release_agent
+
+### Branche / PR
+- Branche : `main` (docs direct)
+- Commit head : `à remplir`
+
+---
+
 ## 2026-09-30 · Agent: coding (MONEY-PATH 400) — claim_referral_credit + applepay alias routés, 44/44 contrat
 
 ### Travail effectué
