@@ -182,7 +182,7 @@ async function phaseObserve() {
   }
   if (DRY) {
     S('OBSERVED', 'dry-run: skipping Playwright probe, using mock observation');
-    return { id: 'dry-run-mock', at: C.nowIso(), totals: { pages: 0, consoleErrors: 0, pageErrors: 0, firstPartyFailures: 0, brokenLinks: 0, visualFlagged: 0 }, durationSec: 0, heavy: false };
+    return { id: 'dry-run-mock', at: C.nowIso(), regions: {}, totals: { pages: 0, consoleErrors: 0, pageErrors: 0, firstPartyFailures: 0, brokenLinks: 0, visualFlagged: 0 }, durationSec: 0, heavy: false };
   }
   if (LIVE) progress('OBSERVE     starting Playwright probe...');
   S('OBSERVED', 'sonde Playwright prod lancée…');
