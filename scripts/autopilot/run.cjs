@@ -10,13 +10,27 @@
  *   node scripts/autopilot/run.cjs --live       → runner avec streaming OpenCode temps réel
  *   node scripts/autopilot/run.cjs --continuous → runner en boucle continue (WAITING entre cycles)
  *   node scripts/autopilot/run.cjs --live --continuous  → mode LIVE + CONTINUOUS combiné
+ *   node scripts/autopilot/run.cjs --check-flags → affiche les variables d'env et quitte (test)
  */
 'use strict';
 const { spawnSync } = require('child_process');
 const path = require('path');
 
 const args = process.argv.slice(2);
-const passthrough = args.filter(a => !['--observe', '--status', '--direct', '--live', '--continuous'].includes(a));
+const passthrough = args.filter(a => !['--observe', '--status', '--direct', '--live', '--continuous', '--check-flags'].includes(a));
+
+// Check flags mode - just print env vars and exit
+if (args.includes('--check-flags')) {
+  if (args.includes('--live')) {
+    process.env.SARGA_AUTOPILOT_LIVE = '1';
+  }
+  if (args.includes('--continuous')) {
+    process.env.SARGA_AUTOPILOT_CONTINUOUS = '1';
+  }
+  console.log('SARGA_AUTOPILOT_LIVE=' + (process.env.SARGA_AUTOPILOT_LIVE || '0'));
+  console.log('SARGA_AUTOPILOT_CONTINUOUS=' + (process.env.SARGA_AUTOPILOT_CONTINUOUS || '0'));
+  process.exit(0);
+}
 
 let script;
 if (args.includes('--status')) script = 'status.cjs';
