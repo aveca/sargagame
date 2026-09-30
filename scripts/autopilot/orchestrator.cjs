@@ -482,6 +482,12 @@ async function main() {
     if (budgetExceeded()) throw new Error('time budget exceeded before OBSERVE');
     const obs = await phaseObserve();
 
+    // In DRY mode, exit early after observe to avoid external dependencies
+    if (DRY) {
+      S('OBSERVED', 'dry-run: exiting early after observe phase');
+      return finish(0);
+    }
+
     // 2. REVENUE
     await phaseRevenueAndMeasure();
 
