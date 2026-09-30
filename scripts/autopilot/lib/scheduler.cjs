@@ -100,11 +100,13 @@ function isPrBlocking(pr, selected, queue) {
   }
   const mergeable = String(pr.mergeable || '').toUpperCase();
   if (mergeable === 'CONFLICTING') {
-    return { blocking: true, reason: `PR #${pr.number} en conflit (mergeable=CONFLICTING) — repair humaine requise`, code: 'PR_CONFLICT' };
+    // Conflit détecté : potentiellement réparable automatiquement (rebase)
+    // L'orchestrateur tentera la réparation avant de bloquer.
+    return { blocking: true, reason: `PR #${pr.number} en conflit (mergeable=CONFLICTING) — tentative de réparation auto`, code: 'PR_CONFLICT_REPAIRABLE' };
   }
   const mss = String(pr.mergeStateStatus || '').toUpperCase();
   if (mss === 'DIRTY') {
-    return { blocking: true, reason: `PR #${pr.number} mergeStateStatus=DIRTY — repair humaine requise`, code: 'PR_CONFLICT' };
+    return { blocking: true, reason: `PR #${pr.number} mergeStateStatus=DIRTY — tentative de réparation auto`, code: 'PR_CONFLICT_REPAIRABLE' };
   }
   if (!selected) {
     return { blocking: true, reason: `PR #${pr.number} open + rien d'exécutable — observation only`, code: 'NO_SELECTION' };
