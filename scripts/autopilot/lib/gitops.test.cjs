@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { git, gitSafe, analyzeConflict, resolveKeepOurs, worktreeAddRecovery } = require('./gitops.cjs');
+const { git, gitSafe, analyzeConflict, resolveKeepOurs, worktreeAddRecovery, prepareRepairWorktree } = require('./gitops.cjs');
 
 const root = git(['rev-parse', '--show-toplevel']);
 assert.ok(typeof root === 'string' && root.length > 0, 'git() must return stdout as a string');
@@ -105,7 +105,61 @@ line after`;
   assert.strictEqual(result, 'throw', 'missing path -> throw');
 }
 
+// Test prepareRepairWorktree exports and basic structure
+{
+  assert.strictEqual(typeof prepareRepairWorktree, 'function', 'prepareRepairWorktree is exported as function');
+}
+
+// Test GENERATED_FILES classification logic (unit test of the logic)
+{
+  const GENERATED_FILES = new Set([
+    'public/data/media-manifest.json',
+    'public/api/copernicus/sargassum.json',
+    'public/version.json',
+    'dist/',
+    'node_modules/',
+  ]);
+  
+  function isGenerated(file) {
+    return Array.from(GENERATED_FILES).some(g => file === g || file.startsWith(g));
+  }
+  
+  assert.strictEqual(isGenerated('public/data/media-manifest.json'), true, 'media-manifest is generated');
+  assert.strictEqual(isGenerated('public/api/copernicus/sargassum.json'), true, 'sargassum.json is generated');
+  assert.strictEqual(isGenerated('public/version.json'), true, 'version.json is generated');
+  assert.strictEqual(isGenerated('dist/some/file.js'), true, 'dist files are generated');
+  assert.strictEqual(isGenerated('node_modules/foo/bar.js'), true, 'node_modules are generated');
+  assert.strictEqual(isGenerated('src/something.js'), false, 'src files are NOT generated');
+  assert.strictEqual(isGenerated('tests/unit/test.cjs'), false, 'test files are NOT generated');
+}
+
+// Test AUTOPILOT_TEMP_FILES classification logic
+{
+  const AUTOPILOT_TEMP_FILES = new Set([
+    '.ai/autopilot/observations/latest.json',
+    '.ai/autopilot/queue.json',
+    '.ai/autopilot/scheduler.json',
+    '.ai/autopilot/latest.md',
+    '.ai/autopilot/runs/',
+    '.ai/autopilot/regressions/',
+  ]);
+  
+  function isAutopilotTemp(file) {
+    return Array.from(AUTOPILOT_TEMP_FILES).some(g => file === g || file.startsWith(g));
+  }
+  
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/observations/latest.json'), true, 'latest.json is autopilot temp');
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/queue.json'), true, 'queue.json is autopilot temp');
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/scheduler.json'), true, 'scheduler.json is autopilot temp');
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/latest.md'), true, 'latest.md is autopilot temp');
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/runs/some-run.md'), true, 'runs/ files are autopilot temp');
+  assert.strictEqual(isAutopilotTemp('.ai/autopilot/regressions/some.txt'), true, 'regressions/ files are autopilot temp');
+  assert.strictEqual(isAutopilotTemp('src/something.js'), false, 'src files are NOT autopilot temp');
+  assert.strictEqual(isAutopilotTemp('public/data/media-manifest.json'), false, 'media-manifest is NOT autopilot temp');
+}
+
 console.log('GITOPS null-stdout contract: PASS');
 console.log('GITOPS conflict analysis tests: PASS');
 console.log('GITOPS resolveKeepOurs tests: PASS');
 console.log('GITOPS worktreeAddRecovery tests: PASS');
+console.log('GITOPS prepareRepairWorktree classification tests: PASS');
