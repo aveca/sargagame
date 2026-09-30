@@ -115,7 +115,7 @@ async function main() {
       }
 
       // 2. RUN ORCHESTRATOR
-      const orchestratorCode = await runOrchestrator();
+      const orchestratorCode = await runOrchestrator(cfg);
       
       if (orchestratorCode === 0) {
         cycleSuccess = true;
@@ -172,7 +172,7 @@ async function main() {
   process.exit(0);
 }
 
-async function runOrchestrator() {
+async function runOrchestrator(cfg) {
   return new Promise((resolve) => {
     const args = process.argv.slice(2).filter(a => !['--live', '--continuous', '--headed'].includes(a));
     orchestratorProcess = spawn(process.execPath, [path.join(__dirname, 'orchestrator.cjs'), ...args], {
