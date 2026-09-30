@@ -180,6 +180,10 @@ async function phaseObserve() {
     S('OBSERVED', `observation réutilisée (${latest.id}, âge ${ageMin.toFixed(0)} min)`);
     return latest;
   }
+  if (DRY) {
+    S('OBSERVED', 'dry-run: skipping Playwright probe, using mock observation');
+    return { id: 'dry-run-mock', at: C.nowIso(), totals: { pages: 0, consoleErrors: 0, pageErrors: 0, firstPartyFailures: 0, brokenLinks: 0, visualFlagged: 0 }, durationSec: 0, heavy: false };
+  }
   if (LIVE) progress('OBSERVE     starting Playwright probe...');
   S('OBSERVED', 'sonde Playwright prod lancée…');
   const cp = execFileSync(process.execPath, [path.join(__dirname, 'observe.cjs'), '--run-id', report.id], {
