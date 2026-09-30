@@ -48,14 +48,18 @@ function createMockObservation() {
 
 function runTest(name, args, env = {}) {
   console.log('\n' + name);
+  console.log('  ARGS:', args.join(' '));
+  console.log('  ROOT:', ROOT);
   const mockEnv = { ...process.env, SARGA_AUTOPILOT_LIVE: '0', SARGA_AUTOPILOT_CONTINUOUS: '0', ...env };
   createMockObservation(); // Ensure fresh mock before each run
+  console.log('  MOCK OBS CREATED');
   const r = spawnSync(process.execPath, [RUN, ...args], {
     cwd: ROOT, encoding: 'utf8', timeout: 120000, env: mockEnv
   });
+  console.log('  SPAWN DONE, status:', r.status, 'signal:', r.signal);
   if (r.status !== 0) {
-    console.log('  STDOUT:', r.stdout?.slice(0, 1000));
-    console.log('  STDERR:', r.stderr?.slice(0, 1000));
+    console.log('  STDOUT:', r.stdout?.slice(0, 2000));
+    console.log('  STDERR:', r.stderr?.slice(0, 2000));
     console.log('  STATUS:', r.status);
     console.log('  SIGNAL:', r.signal);
   }
