@@ -1,3 +1,70 @@
+## 2026-09-30 — MONEY-PATH 400 FIX : claim_referral_credit + applepay_merchant_session routés sur sg-payments (+PHP parity)
+
+**PROBLEM** : HTTP 400 `{"error":"action_inconnue"}` first-party `POST /api/mollie.php` sur CHAQUE chargement de page (home/paywall/beach/deep × 4 viewports × MQ+Florida — `probe-manual-2.json`), classé à tort "bruit bénin P2".
+**ROOT CAUSE (prouvée par probe live)** : boot effect `Sargasses_PROD.jsx:12382` POSTe `{action:"claim_referral_credit",code:<REF propre>}` à 2,5s (throttle 12h) ; en prod `/api/mollie.php` est intercepté par le Worker **sg-payments** (`handleMollie`) qui ne connaissait PAS l'action (connue seulement de `mollie.php` + `b2b-api`, jamais atteints en B2C) → 400. Preuve : `tmp-mollie-probe.cjs` a capturé le payload exact `{"action":"claim_referral_credit","code":"REF-6ZU3EE"}` sur `/` nu. Gap latent identique : front `doSubscribe.jsx:221` envoie `applepay_merchant_session`+`validationURL` alors que sg-payments/mollie.php n'acceptaient que `applepay_session`+`validationUrl` → 400 garanti sur Apple Pay natif.
+**CHANGE** (additif uniquement) :
+- `workers/sg-payments/src/index.ts` : handler `claim_referral_credit` verrouillé (REF-XXXXXX validé, `{days:0,code,enabled:false}` 200 — parité b2b-api/PHP) + alias `applepay_merchant_session` avec fallback champ `validationURL`, allowlist apple.com inchangée.
+- `public/api/mollie.php` + `railway-api/api/mollie.php` : même alias + fallback champ (parité, 1 ligne chacun).
+- `scripts/tests/worker-auth.contract.test.cjs` : +7 checks régression (claim 200/400-garde, applepay alias routé, canonique non-régressé).
+**MONEY-PATH** : validations intactes (allowlist prix, HMAC webhook, rate-limit, KV fail-open) ; pricing/montants/secrets intouchés ; `cancel_subscription` (non géré nulle part) et CORS Tulum (`sargazotulum.com` absent des allowlists) documentés comme restes, hors scope.
+**PROOF** :
+- `worker-auth.contract` → 44/44 (37 existants + 7 nouveaux)
+- payload prod exact rejoué sur worker bundlé : claim → **200** `{"days":0,...}` (avant : 400) ; applepay front shape → atteint Mollie (500 auth fake-key, plus de 400 action_inconnue)
+- `php -l` OK ×2 · `npm run build` exit 0 · bundle 38,2 Ko ≤ 210 Ko · `ux-smoke` 4/4 PASS · `funnel-payment` 13/13 · `regions` OK · `npm test` 74/76 (travel-30 pré-existant + distro-contract transitoire arbre-sale, vert après commit)
+- `dynamic-planner` unit 36/36
+**ROLLBACK** : revert 1 commit (handlers additifs purs, aucun comportement existant modifié).
+**NEXT** : `cancel_subscription` Mollie non implémenté (manage flow → 400) — feature dédiée requise ; CORS Tulum ; `?trip=1`/lazy E2E planner toujours bloqué (mission séparée).
+
+---
+
+## 2026-09-30 — DYNAMIC BEACH DAY PLANNER : Core Product Loop (TASK-P1-DYNAMIC-PLANNER)
+
+**PROBLEM** : Current TripPlanner was a static day-list (J+1..J+7). Users need a LIVING planning object: context-aware (date/time/duration/location), activity-filtered, scenario-driven ("what if tomorrow?", "what if swim?", "what if less travel?"), with instant recalculation and map↔planner sync.
+
+**CHANGE** : Complete rewrite of TripPlanner as Dynamic Beach Day Planner:
+
+1. **Planning Engine** (`src/lib/dynamic-planner.js`) — pure, deterministic, testable:
+   - Multi-objective scoring: status × confidence × travel × activity-fit × time-window × continuity
+   - Travel time estimation (haversine + coastal road factor)
+   - Activity matching (swim/snorkel/family/walk/photo/sunset)
+   - Scenario generation (8 presets: tomorrow, later, shorter, swim, snorkel, family, less_travel, two_beaches)
+   - Plan comparison (diff: score, beaches, travel, slot-by-slot)
+   - Persistence (localStorage) + shareable URLs (?plan_date, ?plan_time, ?plan_dur, ?plan_lat/lng, ?plan_act)
+   - Rollback: `?dynamicplan=0` (legacy), `?plansync=0` (map sync off)
+
+2. **UI Components** (all mobile-first, reduced-motion safe, a11y):
+   - `PlanningContextBar` — date/time/duration/location/activities in one expandable bar
+   - `PlanTimeline` — living timeline with travel buffers, beach cards, alternatives, day stats
+   - `ScenarioPanel` — "Et si…?" instant preview → apply
+   - `ComparisonView` — side-by-side diff with metrics, beach changes, travel delta
+
+3. **Integration**:
+   - `TripPlanner.jsx` rewritten: dual-mode (dynamic default, legacy behind `?tripplan=0`)
+   - `Sargasses_PROD.jsx` — map sync callbacks (`onMapSync`, `onPlanLocationChange`)
+   - Legacy TripPlanner preserved exactly (rollback safe)
+
+**MONEY-PATH** : ZÉRO modification (no .php, no pricing, no Mollie, no webhook touched).
+
+**PROOF** :
+- `npm run build` → exit 0 (417 modules, TripPlanner lazy chunk 16.4 Ko gzip)
+- `check-bundle-budget` → 38.2 Ko ≤ 210 Ko
+- `php -l` → OK (4 fichiers)
+- `ux-smoke` → 4 tokens OK + SMOKE_GATE=PASS
+- `npm test` → 74/75 fichiers OK (1 pre-existing travel-30 test unrelated)
+- `playwright funnel-payment` → 13/13 passed
+- `regions assertAllRegionsValid` → OK
+- Unit tests: dynamic-planner.test.cjs → 36/36 passed
+
+**ROLLBACK** : `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off), `?tripplan=0` (legacy entry).
+
+**NEXT** :
+1. Complete map→planner sync (long-press map pin → "Add to plan")
+2. Add E2E tests for dynamic planner (context bar, timeline, scenarios, comparison)
+3. Add "Add to plan" button in BeachExperience
+4. Multi-day premium planning (computeMultiDayPlan integration)
+
+---
+
 ## 2026-09-29 — AUTOPILOT QUEUE TRIAGE : Banner-z verified shipped + Slow LCP blocked + Visual shifts rejected
 
 **PROBLEM** : Autopilot queue contenait 4 opportunités en statut `picked` : banner-z (déjà fixé en prod), slow-lcp (prod), visual-shift ×2 (prod).

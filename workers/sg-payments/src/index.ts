@@ -1249,11 +1249,25 @@ async function handleMollie(request: Request, env: Env): Promise<Response> {
     }
 
 
-    if (action === 'applepay_session') {
-      const validationUrl = body.validationUrl; if (!validationUrl) throw new Error('validationUrl requis');
+    // Alias front historique : doSubscribe.jsx envoie `applepay_merchant_session`
+    // (b2b-api accepte déjà les deux noms). Le champ arrive en `validationURL`
+    // (capitaux) côté front — on accepte les deux casses, allowlist inchangée.
+    if (action === 'applepay_session' || action === 'applepay_merchant_session') {
+      const validationUrl = body.validationUrl || body.validationURL; if (!validationUrl) throw new Error('validationUrl requis');
       if (!/^https:\/\/(apple|cdn-apple|guzzoni).*\.apple\.com\//i.test(validationUrl)) throw new Error("validationUrl doit provenir d'apple.com");
       const session = await mollieReq('POST', 'v2/wallets/applepay/sessions', apiKey, { validationUrl, domain: body.domain || host });
       return new Response(JSON.stringify(session), { headers: h });
+    }
+
+    // ── claim_referral_credit (verrouillé — parité public/api/mollie.php + b2b-api)
+    // Ping viral au boot (Sargasses_PROD, throttle 12h, code REF-XXXXXX propre).
+    // Ledger referrals non implémenté (TASK-P0-002) → days:0 verrouillé, jamais
+    // d'erreur. Sans ce handler, chaque visite produisait un 400 action_inconnue
+    // (bruit money-path sur toutes les routes).
+    if (action === 'claim_referral_credit') {
+      const code = String(body.code || '');
+      if (!/^REF-[A-Z0-9]{6}$/.test(code)) return new Response(JSON.stringify({ error: 'Code de parrainage invalide' }), { status: 400, headers: h });
+      return new Response(JSON.stringify({ days: 0, code, enabled: false }), { headers: h });
     }
 
     return new Response(JSON.stringify({ error: 'action_inconnue' }), { status: 400, headers: h });

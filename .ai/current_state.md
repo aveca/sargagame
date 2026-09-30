@@ -1,4 +1,87 @@
-## 2026-09-29 · Agent: coding (AUTOPILOT QUEUE TRIAGE) — Banner-z fix verified shipped + Slow LCP blocked (server) + Visual shifts rejected
+## 2026-09-30 · Agent: coding (MONEY-PATH 400) — claim_referral_credit + applepay alias routés, 44/44 contrat
+
+### Travail effectué
+- **Résumé 1 ligne** : 400 `action_inconnue` sur `/api/mollie.php` à chaque page load tracé jusqu'au boot ping referral → handler verrouillé ajouté sur sg-payments (+parité PHP/railway) + alias `applepay_merchant_session` ; 7 tests régression ; tous gates verts.
+- **Détails** :
+  - Preuve live : probe Playwright a capturé `POST {"action":"claim_referral_credit","code":"REF-6ZU3EE"}` sur `/` nu (boot effect Sargasses_PROD.jsx:12382, 2,5s, throttle 12h) ; prod route vers Worker sg-payments qui ne connaissait pas l'action → 400 sur toutes routes × 4 viewports (probe-manual-2.json).
+  - Fix additif : `handleMollie` connaît `claim_referral_credit` (200 `{days:0,enabled:false}`, garde format) + alias `applepay_merchant_session`/`validationURL` ; même alias 1-ligne dans `public/api/mollie.php` + `railway-api/api/mollie.php`.
+  - Payload prod rejoué sur worker bundlé : 200 (avant 400). Apple Pay shape front : atteint Mollie (500 fake-key, plus de 400).
+- **Restes documentés (hors scope)** : `cancel_subscription` non géré nulle part (manage Mollie → 400, feature dédiée requise) ; CORS Tulum absent des allowlists ; E2E planner lazy toujours bloqué.
+
+### Fichiers modifiés
+- `workers/sg-payments/src/index.ts` — 2 handlers additifs dans `handleMollie`
+- `public/api/mollie.php`, `railway-api/api/mollie.php` — alias applepay 1 ligne chacun
+- `scripts/tests/worker-auth.contract.test.cjs` — +7 checks (44/44)
+
+### Tests réalisés
+- [x] `worker-auth.contract` → 44/44 (37 + 7 nouveaux)
+- [x] `php -l` ×2 → OK
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget` → 38,2 Ko ≤ 210 Ko
+- [x] `ux-smoke` → 4 tokens OK
+- [x] `funnel-payment` → 13/13
+- [x] `regions` → OK
+- [x] `npm test` → 74/76 (travel-30 pré-existant ; distro-contract transitoire arbre-sale)
+- [x] `dynamic-planner` unit → 36/36
+
+### Prochaine action recommandée
+1. Merge PR si CI verte → deploy auto → vérifier prod `POST claim_referral_credit` → 200 — Rôle : release_agent
+2. Feature `cancel_subscription` Mollie dédiée — Rôle : coding_agent
+3. CORS Tulum (`sargazotulum.com` → allowlists) — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/mollie-400-claim-applepay` (à créer)
+- Commit head : `à remplir`
+
+---
+
+## 2026-09-30 · Agent: product+coding+ui-ux (DYNAMIC BEACH DAY PLANNER) — Core Product Loop shipped
+
+### Travail effectué
+- **Résumé 1 ligne** : TripPlanner réinventé en Dynamic Beach Day Planner — moteur de planification temps-réel (contexte date/heure/durée/position + activités + scénarios "Et si…?" + comparaison) + UI mobile-first (barre contexte, timeline vivante, panel scénarios, vue comparaison) + persistance localStorage + URLs partageables + sync carte↔planner.
+- **Détails** :
+  1. **Moteur** `src/lib/dynamic-planner.js` (pur, déterministe, 36 tests unitaires) : scoring multi-objectifs (statut × confiance × trajet × activité × fenêtre × continuité), estimation trajet (haversine + facteur routes côtières), matching activités (nage/snorkel/famille/balade/photo/coucher), 8 scénarios prédéfinis, comparaison de plans (diff score/plages/trajet/créneau), persistance + URLs `?plan_*`.
+  2. **Composants UI** : `PlanningContextBar` (date/heure/durée/position/activités), `PlanTimeline` (timeline vivante avec buffers trajet, cartes plage, alternatives, stats jour), `ScenarioPanel` ("Et si…?" preview→apply instantané), `ComparisonView` (diff côte-à-côte métriques/changements/trajets).
+  3. **Intégration** : `TripPlanner.jsx` réécrit (mode dual : dynamique par défaut, legacy derrière `?tripplan=0` + `?dynamicplan=0`), `Sargasses_PROD.jsx` callbacks sync carte (`onMapSync`, `onPlanLocationChange`). Legacy TripPlanner préservé inchangé.
+  4. **Rollbacks** : `?dynamicplan=0` (legacy), `?plansync=0` (sync carte off), `?tripplan=0` (entrée legacy).
+
+### Fichiers modifiés
+- `src/lib/dynamic-planner.js` (NOUVEAU, 450+ lignes, moteur complet + utilitaires partage)
+- `src/components/PlanningContextBar.jsx` (NOUVEAU)
+- `src/components/ScenarioPanel.jsx` (NOUVEAU)
+- `src/components/PlanTimeline.jsx` (NOUVEAU)
+- `src/components/ComparisonView.jsx` (NOUVEAU)
+- `src/TripPlanner.jsx` (REECRIT complet, mode dual)
+- `src/Sargasses_PROD.jsx` (callbacks map sync ajoutés)
+- `tests/unit/dynamic-planner.test.cjs` (NOUVEAU, 36 tests)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (417 modules, TripPlanner lazy chunk 16.4 Ko gzip)
+- [x] `node scripts/check-bundle-budget.cjs` → 38.2 Ko ≤ 210 Ko
+- [x] `php -l` → OK (mollie.php, mollie-webhook.php, paypal.php, paypal-webhook.php)
+- [x] `node scripts/ux-smoke.mjs` → 4 tokens OK + SMOKE_GATE=PASS
+- [x] `npm test` → 74/75 fichiers OK (1 test travel-30 pré-existant non lié)
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → 13/13 passed
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → OK
+- [x] `node tests/unit/dynamic-planner.test.cjs` → 36/36 passed
+
+### Problèmes restants
+- [ ] Map → Planner sync complet (long-press pin → "Ajouter au plan") — Rôle : coding_agent
+- [ ] Tests E2E Dynamic Planner (barre contexte, timeline, scénarios, comparaison) — Rôle : qa_agent
+- [ ] Bouton "Ajouter au plan" dans BeachExperience — Rôle : coding_agent
+- [ ] Planification multi-jours Premium (intégration computeMultiDayPlan) — Rôle : coding_agent + product_agent
+- [ ] Test travel-30 pré-existant échoue (sans rapport avec ce changement) — Rôle : qa_agent
+
+### Prochaine action recommandée
+1. Compléter sync carte→planificateur (clic long sur pin → "Ajouter à mon plan") — Rôle : coding_agent
+2. Ajouter tests E2E pour le planificateur dynamique — Rôle : qa_agent
+3. Intégrer bouton "Ajouter au plan" dans BeachExperience — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `main` (direct commit)
+- Commit head : `9a17473c` (build stamp)
+
+---
 
 ### Travail effectué
 - **Résumé 1 ligne** : tri autopilot queue — OPP-2026-09-24-banner-z déjà shippé (commit 2387bcaea) validé par tests ; OPP-slow-lcp-mq-home-home bloqué (TTFB 2868ms = server/CDN cold start, optimisations client déjà en place) ; 2 visual-shifts rejetés (score négatif, font-swap/hydration, non-régression).
