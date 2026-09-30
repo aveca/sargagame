@@ -1,7 +1,7 @@
 ## MONEY-PATH 400 FIX (claim_referral_credit + applepay alias) — [x] done local, PR à créer 2026-09-30
 - **Livré** : handler `claim_referral_credit` verrouillé sur sg-payments (200 days:0, fini le 400/boot) + alias `applepay_merchant_session`/`validationURL` (worker + mollie.php + railway mirror) + 7 checks contrat (44/44).
 - **Gates** : build 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l OK · npm test 74/76 (travel-30 pré-existant).
-- **NEXT** : merge si CI verte → deploy auto → probe prod claim → 200 · feature `cancel_subscription` dédiée · CORS Tulum.
+- **NEXT** : [x] merge #778 → deploy auto SUCCESS → probe prod claim → 200 sur 6/6 domaines · reste : feature `cancel_subscription` dédiée · CORS Tulum.
 
 ## SEO MULTI-SITE GROWTH PHASE 2 — [x] done + LIVE 2026-09-28 (PR #762)
 - **Livré** : GP sitemap (813 URLs), track-click.php fix (2,316 links), EN/ES today pages (11 EN + 4 ES), cross-domain mirroring, editorialContent fixes

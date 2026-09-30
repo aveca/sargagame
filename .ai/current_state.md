@@ -30,8 +30,10 @@
 3. CORS Tulum (`sargazotulum.com` → allowlists) — Rôle : coding_agent
 
 ### Branche / PR
-- Branche : `agent/coding/mollie-400-claim-applepay` (à créer)
-- Commit head : `à remplir`
+- Branche : `agent/coding/mollie-400-claim-applepay`
+- PR : #778 MERGED (squash `534d50ee`, 2026-09-30T08:44:56Z) — CI 7/7 verte
+- Deploy Live : SUCCESS (Build + Workers sg-payments + Pages 6 régions + purge cache + health 6/6)
+- Prod : `version.json b=534d50ee` · `POST claim_referral_credit` → **200** `{days:0}` sur les 6 domaines (avant : 400)
 
 ---
 
