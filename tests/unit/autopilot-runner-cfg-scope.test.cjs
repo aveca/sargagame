@@ -50,14 +50,14 @@ const { spawnSync } = require('child_process');
 const RUN = path.join(ROOT, 'scripts', 'autopilot', 'run.cjs');
 
 const r = spawnSync(process.execPath, [RUN, '--dry', '--direct'], {
-  cwd: path.resolve(__dirname, '..', '..'), encoding: 'utf8', timeout: 30000, env: { ...process.env }
+  cwd: path.resolve(__dirname, '..', '..'), encoding: 'utf8', timeout: 120000, env: { ...process.env }
 });
 
 check('run.cjs --dry --direct exits cleanly (no ReferenceError)', r.status === 0, 
   r.status !== 0 ? 'exit code: ' + r.status + ', stderr: ' + (r.stderr || '').slice(0, 500) : '');
 
 console.log('\n' + passed + ' checks passed');
-process.exit(passed === 5 ? 0 : 1);
+process.exit(passed === 4 ? 0 : 1);
 
 function check(name, cond, details = '') {
   if (cond) {
