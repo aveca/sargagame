@@ -39,6 +39,17 @@ const REGION_PROJECTS = {
 
 /** Détecte l'URL preview Cloudflare Pages pour une PR */
 async function detectPreviewUrl(prUrl, prNumber, branchName) {
+  // Validate inputs — fail-fast with clear error instead of generating undefined URLs
+  if (prNumber == null) {
+    throw new Error('detectPreviewUrl: prNumber is required but got ' + String(prNumber));
+  }
+  if (!branchName) {
+    throw new Error('detectPreviewUrl: branchName is required but got ' + String(branchName));
+  }
+  if (!prUrl) {
+    throw new Error('detectPreviewUrl: prUrl is required but got ' + String(prUrl));
+  }
+
   // Cloudflare Pages preview URLs pour PRs :
   // Format: https://<pr-number>.<project>.pages.dev
   // ou https://<branch-name>.<project>.pages.dev
@@ -85,42 +96,58 @@ async function detectPreviewUrl(prUrl, prNumber, branchName) {
 async function waitForPreviewDeploy(prUrl, prNumber, branchName, commitSha, cfg, options = {}) {
   const maxWaitMs = options.maxWaitMs || 15 * 60 * 1000; // 15 min default
   const pollIntervalMs = options.pollIntervalMs || 30000; // 30s
+  const maxFingerprintRetries = options.maxFingerprintRetries || 10; // max 10 retries for fingerprint matching
   const startTime = Date.now();
   
-  log(`waiting for preview deploy (max ${maxWaitMs/60000} min)...`);
+  log(`waiting for preview deploy (max ${maxWaitMs/60000} min, max ${maxFingerprintRetries} fingerprint retries)...`);
+  
+  let previewUrl = null;
+  let fingerprintRetries = 0;
   
   while (Date.now() - startTime < maxWaitMs) {
-    // 1. Détecter l'URL preview
-    const preview = await detectPreviewUrl(prUrl, prNumber, branchName);
-    if (!preview) {
-      log(`preview not yet available, waiting ${pollIntervalMs/1000}s...`);
-      await sleep(pollIntervalMs);
-      continue;
+    // 1. Détecter l'URL preview (only if we don't have one yet)
+    if (!previewUrl) {
+      const preview = await detectPreviewUrl(prUrl, prNumber, branchName);
+      if (!preview) {
+        log(`preview not yet available, waiting ${pollIntervalMs/1000}s...`);
+        await sleep(pollIntervalMs);
+        continue;
+      }
+      // Got a preview URL — now wait for fingerprint
+      previewUrl = preview.url;
+      log(`preview URL detected: ${previewUrl} (status ${preview.status}), waiting for fingerprint...`);
     }
     
     // 2. Vérifier le fingerprint
-    const domain = new URL(preview.url).hostname;
+    const domain = new URL(previewUrl).hostname;
     const fp = await prodFingerprint(domain, 15000);
     
     if (fp && fp.b) {
       const expectedShort = commitSha.slice(0, 8);
       if (fp.b.startsWith(expectedShort)) {
         log(`preview fingerprint MATCH: ${fp.b} = commit ${expectedShort}`);
-        return { url: preview.url, domain, fingerprint: fp.b, matched: true };
+        return { url: previewUrl, domain, fingerprint: fp.b, matched: true };
       } else {
-        log(`preview fingerprint MISMATCH: got ${fp.b}, expected ${expectedShort}...`);
+        fingerprintRetries++;
+        log(`preview fingerprint MISMATCH (retry ${fingerprintRetries}/${maxFingerprintRetries}): got ${fp.b}, expected ${expectedShort}...`);
+        if (fingerprintRetries >= maxFingerprintRetries) {
+          throw new Error(`preview fingerprint mismatch after ${maxFingerprintRetries} retries: got ${fp.b}, expected ${expectedShort}`);
+        }
       }
     } else {
-      log(`preview fingerprint not available yet...`);
+      fingerprintRetries++;
+      log(`preview fingerprint not available yet (retry ${fingerprintRetries}/${maxFingerprintRetries})...`);
+      if (fingerprintRetries >= maxFingerprintRetries) {
+        throw new Error(`preview fingerprint not available after ${maxFingerprintRetries} retries`);
+      }
     }
     
-    // 3. Si fingerprint pas match, attendre et réessayer
-    // (le déploiement preview peut prendre quelques minutes après CI)
+    // 3. Attendre avant réessayer
     log(`waiting for fingerprint match, retry in ${pollIntervalMs/1000}s...`);
     await sleep(pollIntervalMs);
   }
   
-  throw new Error(`preview deploy timeout after ${maxWaitMs/60000} min`);
+  throw new Error(`preview deploy timeout after ${maxWaitMs/60000} min (fingerprint retries: ${fingerprintRetries})`);
 }
 
 /** Vérifie que le CI de la PR est vert */
