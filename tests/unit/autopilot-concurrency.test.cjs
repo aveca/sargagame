@@ -171,6 +171,15 @@ try {
       fs.readFileSync(path.join(ROOT, 'scripts', 'autopilot', 'runner.cjs'), 'utf8').includes('REFUSÉ second runner'));
     check('memory VALID_STATES intact', (mem.loadQueue() && true) || true);
     check('scheduler état persistant intact', typeof scheduler.persistDispatched === 'function' && typeof scheduler.restoreSelected === 'function');
+    check('implement LIVE ne branche jamais .on sur un stream null (crash 16:52)',
+      (() => {
+        const src = fs.readFileSync(path.join(ROOT, 'scripts', 'autopilot', 'implement.cjs'), 'utf8');
+        const stdoutGuarded = /if \(child\.stdout\) \{[\s\S]{0,300}?child\.stdout\.on/.test(src);
+        const stderrGuarded = /if \(child\.stderr\) \{[\s\S]{0,300}?child\.stderr\.on/.test(src);
+        const bareOn = (src.match(/^ {0,2}child\.std(?:out|err)\.on/gm) || []).length;
+        const guardedOn = (src.match(/^\s{4,}child\.std(?:out|err)\.on/gm) || []).length;
+        return stdoutGuarded && stderrGuarded && bareOn === 0 && guardedOn === 2;
+      })());
   }
 
   console.log(`\n${passed} checks OK${skipped ? ` (${skipped} skipped — runner vivant)` : ''}`);
