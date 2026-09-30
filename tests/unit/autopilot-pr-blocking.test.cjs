@@ -110,7 +110,7 @@ try {
 
   const prConflict = { ...PR_777, mergeable: 'CONFLICTING' };
   const rConflict = scheduler.isPrBlocking(prConflict, { ...OPP_LCP }, mem.loadQueue());
-  check('PR en conflit → bloquante', rConflict.blocking === true && rConflict.code === 'PR_CONFLICT');
+  check('PR en conflit → bloquante (repairable)', rConflict.blocking === true && rConflict.code === 'PR_CONFLICT_REPAIRABLE');
 
   const prOverlap = { ...PR_777, files: ['src/Sargasses_PROD.jsx', 'scripts/autopilot/runner.cjs'] };
   const rOverlap = scheduler.isPrBlocking(prOverlap, { ...OPP_LCP }, mem.loadQueue());
@@ -231,7 +231,7 @@ try {
   // ── 8. Fix: blocked-by-PR ne doit pas être re-sélectionné ────────────────────
   console.log('— cas 8 : blocked-by-PR ne doit pas être re-sélectionné');
   mem.saveQueue({ opportunities: [{ ...OPP_LCP, id: 'OPP-BLOCKED-TEST', status: 'new' }] });
-  scheduler.persistSelected({ ...OPP_LCP, id: 'OPP-BLOCKED-TEST' }, 'cycle-T1', { blocking: true, reason: 'PR #782 CONFLICTING', code: 'PR_CONFLICT', prNumber: 782 });
+  scheduler.persistSelected({ ...OPP_LCP, id: 'OPP-BLOCKED-TEST' }, 'cycle-T1', { blocking: true, reason: 'PR #782 CONFLICTING', code: 'PR_CONFLICT_REPAIRABLE', prNumber: 782 });
   const queueWithBlocked = mem.loadQueue();
   // Simuler le blocage par PR (comme le fait l'orchestrateur)
   mem.updateOpportunity('OPP-BLOCKED-TEST', { status: 'blocked', blockReason: 'blocked by PR #782 (PR_CONFLICT)', parkedAt: C.nowIso() });

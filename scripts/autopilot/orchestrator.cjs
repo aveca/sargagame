@@ -749,10 +749,34 @@ async function main() {
       } else {
         prBlocking = { blocking: true, reason: `PR #${prDetail.number} open + rien d'exécutable — observation only`, code: 'NO_SELECTION', prNumber: prDetail.number };
       }
-      if (prBlocking.blocking) {
-        log(scheduler.stateLine('selected', 'blocked-by-pr', prBlocking.reason));
+if (prBlocking.blocking) {
+      log(scheduler.stateLine('selected', 'blocked-by-pr', prBlocking.reason));
+    } else {
+      log(scheduler.stateLine('pr-evaluating', 'pr-non-blocking', prBlocking.reason));
+    }
+    }
+    
+    // AUTO-REPAIR pour PR en conflit (PR_CONFLICT_REPAIRABLE)
+    // Si la PR est en conflit mais réparable, on tente le rebase auto.
+    // Si succès → on continue normalement (prBlocking = non-bloquant).
+    // Si échec → on parque la tâche avec le diagnostic.
+    if (prBlocking && prBlocking.blocking && 
+        (prBlocking.code === 'PR_CONFLICT_REPAIRABLE') && 
+        selected && !DRY) {
+      progress(`PR REPAIR   attempting auto-rebase for PR #${prDetail.number}...`);
+      S('PR', `PR #${prDetail.number} en conflit (${prBlocking.code}) — tentative de réparation auto…`);
+      const repairResult = await gitops.repairPRConflict(prDetail.number, cfg, m => progress('PR REPAIR   ' + m));
+      if (repairResult.ok) {
+        S('PR', `PR #${prDetail.number} RÉPARÉE (${repairResult.method}) — head ${repairResult.commitSha} — poursuite pipeline`);
+        progress(`PR REPAIR   SUCCESS: ${repairResult.method}, head ${repairResult.commitSha}`);
+        // La PR est maintenant mergeable → on la traite comme non-bloquante
+        prBlocking = { blocking: false, reason: `PR #${prDetail.number} réparée (${repairResult.method}) — continuation`, code: 'PR_REPAIRED', prNumber: prDetail.number };
+        log(scheduler.stateLine('pr-repair', 'success', `PR #${prDetail.number} ${repairResult.method}`));
       } else {
-        log(scheduler.stateLine('pr-evaluating', 'pr-non-blocking', prBlocking.reason));
+        S('PR', `PR #${prDetail.number} ÉCHEC RÉPARATION: ${repairResult.reason}${repairResult.unsafe ? ' (unsafe)' : ''}`);
+        progress(`PR REPAIR   FAILED: ${repairResult.reason}`);
+        // On garde le blocage original pour parquer la tâche
+        prBlocking = Object.assign({ blocking: true }, prBlocking, { repairAttempted: true, repairReason: repairResult.reason, repairUnsafe: repairResult.unsafe });
       }
     }
 

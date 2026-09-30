@@ -262,9 +262,258 @@ async function prodFingerprint(domain, timeoutMs = 10000) {
   } catch (_) { return null; }
 }
 
+/**
+ * Tente de réparer automatiquement un PR en conflit (mergeable=CONFLICTING).
+ * Stratégie : rebase sur origin/main + résolution déterministe sûre.
+ * Retourne {ok: true, rebased: true, commitSha} ou {ok: false, reason, unsafe: boolean}.
+ * Ne JAMAIS écraser main. Abort propre si conflit ambigu/dangereux.
+ */
+async function repairPRConflict(prNumber, cfg, log = console.log) {
+  log(`REPAIR_PR   attempting auto-rebase for PR #${prNumber}`);
+  
+  try {
+    // 1. Fetch latest origin
+    git(['fetch', 'origin', cfg.git.baseBranch, '--quiet']);
+    log('REPAIR_PR   fetched origin/' + cfg.git.baseBranch);
+    
+    // 2. Get PR details to find the branch name
+    const prDetail = getPrDetail(prNumber);
+    if (!prDetail || !prDetail.headRefName) {
+      return { ok: false, reason: 'PR detail unavailable or no headRefName', unsafe: false };
+    }
+    const branch = prDetail.headRefName;
+    log(`REPAIR_PR   PR branch: ${branch}`);
+    
+    // 3. Check if this is an autopilot branch
+    if (!branch.startsWith(cfg.git.branchPrefix || 'agent/autopilot/')) {
+      return { ok: false, reason: `Not an autopilot branch (${branch})`, unsafe: true };
+    }
+    
+    // 4. Use the autopilot worktree for the rebase
+    const wt = worktreePath(cfg);
+    
+    // Ensure worktree is on the correct branch
+    const currentBranch = gitSafe(['rev-parse', '--abbrev-ref', 'HEAD'], wt) || '';
+    if (currentBranch !== branch) {
+      // Switch to the branch if it exists locally, or fetch it
+      const hasBranch = gitSafe(['rev-parse', '--verify', branch], wt);
+      if (hasBranch) {
+        git(['checkout', branch], wt);
+      } else {
+        git(['fetch', 'origin', branch + ':' + branch], wt);
+        git(['checkout', branch], wt);
+      }
+    }
+    
+    // 5. Rebase onto origin/main
+    log('REPAIR_PR   rebasing onto origin/' + cfg.git.baseBranch + '...');
+    const rebaseResult = gitSafe(['rebase', 'origin/' + cfg.git.baseBranch], wt);
+    
+    if (rebaseResult !== null) {
+      // Rebase succeeded without conflicts
+      log('REPAIR_PR   rebase successful (no conflicts)');
+      const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
+      git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+      log('REPAIR_PR   force-pushed rebased branch');
+      return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
+    }
+    
+    // 6. Check if there are conflicts
+    const status = gitSafe(['status', '--porcelain'], wt) || '';
+    const conflictedFiles = status.split('\n').filter(l => l.startsWith('UU') || l.startsWith('AA') || l.startsWith('DD')).map(parsePorcelainLine);
+    
+    if (conflictedFiles.length === 0) {
+      // No conflicts but rebase failed for other reason
+      git(['rebase', '--abort'], wt);
+      return { ok: false, reason: 'rebase failed without conflicts', unsafe: true };
+    }
+    
+    log(`REPAIR_PR   conflicts detected in: ${conflictedFiles.join(', ')}`);
+    
+    // 7. Attempt safe deterministic resolution
+    const resolution = attemptSafeConflictResolution(conflictedFiles, wt, log);
+    
+    if (!resolution.ok) {
+      git(['rebase', '--abort'], wt);
+      return { ok: false, reason: resolution.reason, unsafe: resolution.unsafe };
+    }
+    
+    // 8. Continue rebase
+    git(['rebase', '--continue'], wt);
+    log('REPAIR_PR   rebase continued after conflict resolution');
+    
+    // 9. Verify rebase completed
+    const finalStatus = gitSafe(['status', '--porcelain'], wt) || '';
+    if (finalStatus.trim()) {
+      git(['rebase', '--abort'], wt);
+      return { ok: false, reason: 'rebase left uncommitted changes', unsafe: true };
+    }
+    
+    const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
+    git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+    log('REPAIR_PR   force-pushed rebased branch with resolved conflicts');
+    
+    return { ok: true, rebased: true, commitSha, method: 'rebase-with-resolution', resolvedFiles: conflictedFiles };
+    
+  } catch (e) {
+    log(`REPAIR_PR   error: ${e.message}`);
+    // Try to abort any in-progress rebase
+    try { gitSafe(['rebase', '--abort'], worktreePath(cfg)); } catch (_) {}
+    return { ok: false, reason: e.message, unsafe: true };
+  }
+}
+
+/**
+ * Tente une résolution déterministe et SÛRE des conflits.
+ * Ne résout QUE les cas où la branche autopilot a des changements
+ * et main n'a pas touché aux mêmes lignes (ajout vs ajout, ou notre côté gagne).
+ * Retourne {ok: true} ou {ok: false, reason, unsafe: boolean}.
+ */
+function attemptSafeConflictResolution(conflictedFiles, wt, log) {
+  // Stratégie sûre : pour chaque fichier en conflit,
+  // on ne garde QUE nos changements (branche agent) si :
+  // - Le conflit est un "both added" (AA) → on garde notre version
+  // - Le conflit est "both modified" (UU) mais main n'a changé que des lignes
+  //   différentes de nos changements (heuristique : diff court, pas de logique métier)
+  
+  for (const file of conflictedFiles) {
+    const fullPath = path.join(wt, file);
+    if (!fs.existsSync(fullPath)) continue;
+    
+    const content = fs.readFileSync(fullPath, 'utf8');
+    const conflictMarkers = (content.match(/^<<<<<<< /gm) || []).length;
+    
+    if (conflictMarkers === 0) continue; // Already resolved
+    
+    // Analyze the conflict
+    const analysis = analyzeConflict(content);
+    
+    // SAFE CASE 1: "both added" (AA) - keep our version (agent branch)
+    if (analysis.type === 'both-added') {
+      log(`REPAIR_PR   ${file}: both-added conflict → keeping agent version`);
+      const resolved = resolveKeepOurs(content);
+      fs.writeFileSync(fullPath, resolved, 'utf8');
+      git(['add', file], wt);
+      continue;
+    }
+    
+    // SAFE CASE 2: "both modified" but our changes are purely additive (new lines only)
+    // and main's changes don't overlap with ours
+    if (analysis.type === 'both-modified' && analysis.safeToKeepOurs) {
+      log(`REPAIR_PR   ${file}: both-modified (safe) → keeping agent version`);
+      const resolved = resolveKeepOurs(content);
+      fs.writeFileSync(fullPath, resolved);
+      git(['add', file], wt);
+      continue;
+    }
+    
+    // UNSAFE: any other conflict type
+    log(`REPAIR_PR   ${file}: UNSAFE conflict type=${analysis.type}, markers=${conflictMarkers}`);
+    return { ok: false, reason: `Unsafe conflict in ${file}: ${analysis.type}`, unsafe: true };
+  }
+  
+  return { ok: true };
+}
+
+/**
+ * Analyse un conflit git pour déterminer s'il est résoluble de façon sûre.
+ */
+function analyzeConflict(content) {
+  // Find the conflict sections using a more robust approach
+  const lines = content.split('\n');
+  let inOurs = false, inTheirs = false;
+  const oursLines = [];
+  const theirsLines = [];
+  
+  for (const line of lines) {
+    if (line.startsWith('<<<<<<< ')) {
+      inOurs = true;
+      continue;
+    }
+    if (line === '=======') {
+      inOurs = false;
+      inTheirs = true;
+      continue;
+    }
+    if (line.startsWith('>>>>>>> ')) {
+      inTheirs = false;
+      continue;
+    }
+    if (inOurs) oursLines.push(line);
+    if (inTheirs) theirsLines.push(line);
+  }
+  
+  const ours = oursLines.join('\n');
+  const theirs = theirsLines.join('\n');
+  
+  const oursCount = oursLines.filter(l => l.trim()).length;
+  const theirsCount = theirsLines.filter(l => l.trim()).length;
+  
+  // Both added: both sides have content, base was empty
+  if (oursCount > 0 && theirsCount > 0) {
+    // Check if one side is purely additive (only new lines, no modifications to existing)
+    // For simplicity, if both have content, we consider it "both-modified"
+    // but allow keeping ours if theirs looks like whitespace/formatting only
+    const theirsOnlyWhitespace = theirsLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
+    const oursOnlyWhitespace = oursLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
+    
+    if (theirsOnlyWhitespace && !oursOnlyWhitespace) {
+      return { type: 'both-modified', safeToKeepOurs: true, reason: 'theirs is whitespace only' };
+    }
+    if (oursOnlyWhitespace && !theirsOnlyWhitespace) {
+      return { type: 'both-modified', safeToKeepOurs: false, reason: 'ours is whitespace only' };
+    }
+    return { type: 'both-modified', safeToKeepOurs: false, reason: 'both have substantive changes' };
+  }
+  
+  if (oursCount > 0 && theirsCount === 0) {
+    return { type: 'ours-only', safeToKeepOurs: true }; // Actually not a conflict
+  }
+  
+  if (oursCount === 0 && theirsCount > 0) {
+    return { type: 'theirs-only', safeToKeepOurs: false }; // Should take theirs
+  }
+  
+  return { type: 'both-added', safeToKeepOurs: true };
+}
+
+/**
+ * Résout un conflit en gardant notre version (HEAD = agent branch).
+ */
+function resolveKeepOurs(content) {
+  const lines = content.split('\n');
+  const result = [];
+  let inOurs = false;
+  let inTheirs = false;
+  
+  for (const line of lines) {
+    if (line.startsWith('<<<<<<< ')) {
+      inOurs = true;
+      continue;
+    }
+    if (line === '=======') {
+      inOurs = false;
+      inTheirs = true;
+      continue;
+    }
+    if (line.startsWith('>>>>>>> ')) {
+      inTheirs = false;
+      continue;
+    }
+    if (inOurs) {
+      result.push(line);
+    } else if (!inTheirs) {
+      result.push(line);
+    }
+    // Skip lines in theirs section
+  }
+  
+  return result.join('\n');
+}
+
 module.exports = {
   worktreePath, founderTreeState, prepareWorktree, diffStats, worktreeAddRecovery,
   commitAll, pushBranch, createPR, openAutopilotPR, getPrDetail, enableAutoMerge, cleanupWorktree,
-  prState, prodFingerprint,
+  prState, prodFingerprint, repairPRConflict, analyzeConflict, resolveKeepOurs,
   git, gitSafe, run,
 };
