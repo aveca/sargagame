@@ -1,7 +1,7 @@
 ## MONEY-PATH 400 FIX (claim_referral_credit + applepay alias) — [x] done local, PR à créer 2026-09-30
 - **Livré** : handler `claim_referral_credit` verrouillé sur sg-payments (200 days:0, fini le 400/boot) + alias `applepay_merchant_session`/`validationURL` (worker + mollie.php + railway mirror) + 7 checks contrat (44/44).
 - **Gates** : build 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l OK · npm test 74/76 (travel-30 pré-existant).
-- **NEXT** : merge si CI verte → deploy auto → probe prod claim → 200 · feature `cancel_subscription` dédiée · CORS Tulum.
+- **NEXT** : [x] merge #778 → deploy auto SUCCESS → probe prod claim → 200 sur 6/6 domaines · reste : feature `cancel_subscription` dédiée · CORS Tulum.
 
 ## SEO MULTI-SITE GROWTH PHASE 2 — [x] done + LIVE 2026-09-28 (PR #762)
 - **Livré** : GP sitemap (813 URLs), track-click.php fix (2,316 links), EN/ES today pages (11 EN + 4 ES), cross-domain mirroring, editorialContent fixes
@@ -76,10 +76,10 @@
 - **Preuves** : cart-recovery-truth 12/12 · build 0 · bundle 38,2 · smoke 4/4 · npm test 193/195 (2 préexistants).
 - **NEXT** : PR → CI → merge → deploy auto (workflow YAML → actif dès merge ; emails véridiques au prochain tick) → surveiller ERRORS workflow + deliverability.
 
-## E11 TRUST ROW — [~] fix local 2026-09-20 (branche agent/ui/e11-trust-row, baseline 11,2 % gelee)
-- **Fix** : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0).
-- **Preuves** : trust-row 13/13, E2E e11 2/2 + j0 + funnel, build 0, bundle 38.2, smoke 4/4, screenshot 390px.
-- **NEXT** : PR, CI, merge, deploy, QA prod, mesure J+7 vs 11,2 %.
+## E11 TRUST ROW — [~] LIVE + MESURE J+7 2026-09-30 : NEUTRE, prolongation J+14 (2026-10-06) (PR #705 mergee 09-22)
+- **Fix** : trust row sous CTA hero (copy recyclee, isComic, i18n, ?trust_row=0). Deja dans main via PR #705 (tache "fix local" etait stale).
+- **Mesure J+7** (09-22→09-29, `.ai/E11_POST_SHIP_J7.md`) : 114 vues / 9 CTA = **7,9 %** vs baseline 11,2 % (250/28) — z=0,968, p≈0,33 **non significatif**, aval intact (cta→onsite 100 %), bande 0-13 % respectée.
+- **NEXT** : re-mesure cumulee J+14 le 2026-10-06 ; si taux cumule ≤8 % avec N≥200 vues → revert `?trust_row=0`. Sinon garder (cout nul, rollback dispo).
 
 ## F2 LIVEPILL — [x] done + VALIDE PROD 2026-09-20 (PR #701 mergee, QA prod CR 18.58) 2026-09-20 (branche `agent/ui/f2-livepill`, scope F2 uniquement)
 - **Fix** : `.sg-live` fond opaque `#e6f4f1` (worst-case 1.41 → label 17+/18+, age 6.1 ≥ AA).

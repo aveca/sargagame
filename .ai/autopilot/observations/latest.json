@@ -1,6 +1,6 @@
 {
-  "id": "2026-09-30-1255",
-  "at": "2026-09-30T12:55:09.826Z",
+  "id": "2026-09-29-2133",
+  "at": "2026-09-29T21:33:13.353Z",
   "heavy": false,
   "regions": {
     "mq": {
@@ -10,40 +10,51 @@
           "route": "home",
           "url": "https://sargasses-martinique.com/",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargasses-martinique.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=168776373",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717597774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=382542470",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717597774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=382542470",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=168776373",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717597774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=382542470",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717597774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 89,
-            "dcl": 299,
-            "load": 473,
-            "total": 2814
+            "ttfb": 2868,
+            "dcl": 3267,
+            "load": 3688,
+            "total": 5839
           },
-          "bytes": 384324,
-          "lcp": 2152,
+          "bytes": 384482,
+          "lcp": 5232,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -53,7 +64,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-home-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0799,
+            "pctHot": 0.3073,
+            "flagged": true
           },
           "httpStatus": 200
         },
@@ -61,45 +74,51 @@
           "route": "paywall",
           "url": "https://sargasses-martinique.com/?paywall=1",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargasses-martinique.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717601495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=702409674",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717601495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=702409674",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717601495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=702409674",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717601495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 38,
-            "dcl": 232,
-            "load": 368,
-            "total": 2740
+            "ttfb": 151,
+            "dcl": 376,
+            "load": 2526,
+            "total": 2883
           },
-          "bytes": 439447,
-          "lcp": 244,
+          "bytes": 442335,
+          "lcp": 396,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
@@ -109,7 +128,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-paywall-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -122,13 +143,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 173,
-            "dcl": 424,
-            "load": 451,
-            "total": 2931
+            "ttfb": 204,
+            "dcl": 500,
+            "load": 597,
+            "total": 3012
           },
-          "bytes": 127835,
-          "lcp": 424,
+          "bytes": 131591,
+          "lcp": 504,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -138,7 +159,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-1-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0003,
+            "pctHot": 0.0005,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -146,50 +169,51 @@
           "route": "deep-2",
           "url": "https://sargasses-martinique.com/activity/family/",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargasses-martinique.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717609051&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=199132797",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717609051&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717609051&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=199132797",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
-              "status": 0,
-              "error": "net::ERR_ABORTED"
-            },
-            {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s0v9248042081za200zd9248042081xf1&_p=1790717609051&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=199132797",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 206,
-            "dcl": 282,
-            "load": 466,
-            "total": 2789
+            "ttfb": 189,
+            "dcl": 344,
+            "load": 808,
+            "total": 2862
           },
-          "bytes": 384287,
-          "lcp": 1996,
+          "bytes": 384391,
+          "lcp": 2180,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -199,7 +223,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0799,
+            "pctHot": 0.3073,
+            "flagged": true
           },
           "httpStatus": 200
         }
@@ -212,35 +238,41 @@
           "route": "home",
           "url": "https://sargassummiami.com/",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772925463&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=470139366",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h2v9255060904za200zd9255060904xf1&_p=1790717612704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5403577",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772925463&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=470139366",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h2v9255060904za200zd9255060904xf1&_p=1790717612704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5403577",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 38,
-            "dcl": 400,
-            "load": 439,
-            "total": 2907
+            "ttfb": 141,
+            "dcl": 428,
+            "load": 437,
+            "total": 2942
           },
-          "bytes": 381332,
-          "lcp": 2312,
+          "bytes": 381568,
+          "lcp": 2280,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -250,7 +282,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-home-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0001,
+            "pctHot": 0.0002,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -258,35 +292,46 @@
           "route": "paywall",
           "url": "https://sargassummiami.com/?paywall=1",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772928631&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=197670050",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717616102&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=120057865",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772928631&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=197670050",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717616102&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=120057865",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717616102&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=120057865",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 75,
-            "dcl": 139,
-            "load": 148,
-            "total": 2645
+            "ttfb": 141,
+            "dcl": 408,
+            "load": 2440,
+            "total": 2914
           },
-          "bytes": 436680,
-          "lcp": 136,
+          "bytes": 439289,
+          "lcp": 388,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
@@ -296,7 +341,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-paywall-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -304,35 +351,46 @@
           "route": "deep-1",
           "url": "https://sargassummiami.com/activity/family/",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772931860&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=181941679",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za208zd9255060904xf1&_p=1790717619530&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=67833520.",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772931860&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=181941679",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717619530&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=67833520.",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717619530&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=67833520.",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 132,
-            "dcl": 282,
-            "load": 353,
-            "total": 2788
+            "ttfb": 296,
+            "dcl": 460,
+            "load": 865,
+            "total": 2977
           },
-          "bytes": 381384,
-          "lcp": 2008,
+          "bytes": 381678,
+          "lcp": 2328,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -342,7 +400,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-deep-1-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0001,
+            "pctHot": 0.0002,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -350,45 +410,46 @@
           "route": "deep-2",
           "url": "https://sargassummiami.com/activity/parking/",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 400 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/mollie.php",
+              "status": 400
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717622949&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=159818054",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717622949&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=159818054",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
-              "status": 0,
-              "error": "net::ERR_ABORTED"
-            },
-            {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s0v9255060904za200zd9255060904xf1&_p=1790717622949&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=159818054",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 165,
-            "dcl": 227,
-            "load": 365,
-            "total": 2732
+            "ttfb": 232,
+            "dcl": 396,
+            "load": 846,
+            "total": 2910
           },
-          "bytes": 381381,
-          "lcp": 1904,
+          "bytes": 381566,
+          "lcp": 2244,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -398,7 +459,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-deep-2-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0001,
+            "pctHot": 0.0002,
+            "flagged": false
           },
           "httpStatus": 200
         }
@@ -407,11 +470,11 @@
   },
   "totals": {
     "pages": 8,
-    "consoleErrors": 0,
+    "consoleErrors": 7,
     "pageErrors": 0,
-    "firstPartyFailures": 7,
+    "firstPartyFailures": 14,
     "brokenLinks": 0,
-    "visualFlagged": 0
+    "visualFlagged": 2
   },
-  "durationSec": 28
+  "durationSec": 33
 }

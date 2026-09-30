@@ -41,7 +41,7 @@ Si le taux cumule 09-22->10-05 reste sous la bande <=8 % avec N >= 200 vues → 
 
 ## Checklist non-regression (rappel)
 
-- Rollback `?trust_row=0` present dans `src/PassOffer.jsx` (grace regex flags) — OK au 2026-09-30.
+- Rollback `?trust_row=0` present dans `src/PassOffer.jsx` (regex flags) — OK au 2026-09-30.
 - Aucun event ajoute par E11 (`sg_pass_offer_view` unique) — contrat test conserve.
 
-*Mesure par : uiux-agent · Script : comparaison daily-metrics (reproductible, z-score 2 proportions).*
+*Mesure par : uiux-agent · Comparaison daily-metrics (reproductible, z-score 2 proportions).*

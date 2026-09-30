@@ -28,6 +28,7 @@ const C = require('./lib/common.cjs');
 const mem = require('./lib/memory.cjs');
 const policy = require('./lib/policy.cjs');
 const gitops = require('./lib/gitops.cjs');
+const scheduler = require('./lib/scheduler.cjs');
 const metrics = require('./lib/metrics.cjs');
 const experiments = require('./lib/experiments.cjs');
 const { implementOpportunity } = require('./implement.cjs');
@@ -54,7 +55,10 @@ function progress(msg) {
   if (LIVE) log(`[${new Date().toISOString().slice(11, 19)}] ${msg}`);
   else log(msg);
 }
-function S(section, msg) { report.sections[section].push(msg); log(`[${section}] ${msg}`); }
+function S(section, msg) {
+  if (!report.sections[section]) report.sections[section] = [];
+  report.sections[section].push(msg); log(`[${section}] ${msg}`);
+}
 
 /** Stop the ENTIRE factory (not just a task) - only for critical conditions */
 function factoryStop(reason) {
@@ -64,11 +68,15 @@ function factoryStop(reason) {
 }
 
 /** Park a single task (HUMAN GATE, READY TO MERGE, blocked) - factory continues */
-function parkTask(oppId, reason, status = 'parked') {
+function parkTask(oppId, reason, status = 'blocked') {
+  // Garde-fou mémoire : seuls les statuts VALID_STATES sont persistables.
+  // Les codes fins (blocked-preview, parked…) restent dans blockReason.
+  const VALID = new Set(['new', 'picked', 'in_progress', 'blocked', 'validation', 'ready-to-merge', 'done', 'rejected']);
+  const safe = VALID.has(status) ? status : 'blocked';
   const msg = `TASK PARKED: ${oppId} — ${reason}`;
   log('🅿️  ' + msg);
   S('PARKED', `${oppId} — ${reason}`);
-  mem.updateOpportunity(oppId, { status, blockReason: reason.slice(0, 200), parkedAt: C.nowIso() });
+  mem.updateOpportunity(oppId, { status: safe, blockReason: (`[${status}] ` + reason).slice(0, 200), parkedAt: C.nowIso() });
   return { parked: true, reason };
 }
 
@@ -275,7 +283,22 @@ async function phaseImplementLocal(opp) {
   progress('WORKTREE    created');
   mem.updateOpportunity(opp.id, { status: 'picked', pickedAt: C.nowIso() });
 
-  const wt = gitops.prepareWorktree(cfg, branch, m => { if (LIVE) progress('WORKTREE    ' + m); else log('[worktree] ' + m); });
+  // Collision worktree/branche (ex: même runId réutilisé, résidu de crash) :
+  // parquer avec diagnostic au lieu de crasher la factory (exit 1).
+  // Seule la classe « collision d'état git local » est parquée ; toute autre
+  // erreur git remonte (fail-closed : jamais de masquage d'un vrai problème).
+  let wt;
+  try {
+    wt = gitops.prepareWorktree(cfg, branch, m => { if (LIVE) progress('WORKTREE    ' + m); else log('[worktree] ' + m); });
+  } catch (e) {
+    const msg = String((e && e.message) || e);
+    if (/already exists|already in use|worktree|not a valid ref|unable to create|locked/i.test(msg)) {
+      const diag = `worktree: ${msg.split('\n').slice(0, 3).join(' / ').slice(0, 200)} (branche ${branch})`;
+      S('FAILED', diag);
+      return parkTask(opp.id, diag, 'blocked');
+    }
+    throw e;
+  }
   let attempt = 0, gate = null, impl = null;
   while (attempt <= cfg.loop.maxRepairAttempts) {
     attempt++;
@@ -337,7 +360,17 @@ async function phaseImplementLocal(opp) {
     `- denylist money/secrets/api/régions : OK`,
   ].join('\n');
   if (LIVE) progress('PR          creating...');
-  const pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
+  // Échec PR (gh en panne, droits, réseau) : parquer avec diagnostic au lieu
+  // de crasher (la branche est déjà poussée — rien n'est perdu, reprise au
+  // prochain cycle). Raison toujours préservée, jamais masquée.
+  let pr;
+  try {
+    pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
+  } catch (e) {
+    const diag = `pr create failed (branche ${branch} poussée, commit ${commitSha}) : ${String((e && e.message) || e).split('\n').slice(0, 3).join(' / ').slice(0, 200)}`;
+    S('FAILED', diag);
+    return parkTask(opp.id, diag, 'blocked');
+  }
   report.prUrl = pr.url;
   S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
   if (LIVE) progress('PR          ' + pr.url);
@@ -505,10 +538,46 @@ async function phaseOnlineQA(opp, previewResult) {
   return parkTask(opp.id, 'online QA max repair attempts exceeded', 'blocked-online-qa');
 }
 
+/**
+ * Contrat opportunité (requis par processOpportunity) :
+ *  - id: string non vide (pour park/persist/tracking)
+ *  - type: string non vide (pour le routage browser-recon + hypothèse UX)
+ * Retourne {valid, missing[], reason} — la raison est TOUJOURS préservée
+ * (jamais de fallback silencieux : une opportunité invalide est parquée
+ * avec diagnostic, pas exécutée aveuglément).
+ */
+function validateOpportunityContract(opp) {
+  const missing = [];
+  if (!opp || typeof opp !== 'object') {
+    return { valid: false, missing: ['opportunity'], reason: 'contrat opportunité invalide: objet manquant (null/non-objet)' };
+  }
+  if (typeof opp.id !== 'string' || !opp.id) missing.push('id');
+  if (typeof opp.type !== 'string' || !opp.type) missing.push('type');
+  if (missing.length) {
+    const got = `id=${JSON.stringify(opp.id)} type=${JSON.stringify(opp.type)} fingerprint=${JSON.stringify(opp.fingerprint)}`;
+    return { valid: false, missing, reason: `contrat opportunité invalide: ${missing.join(', ')} manquant (${got})` };
+  }
+  return { valid: true, missing, reason: '' };
+}
+
+/** Routage browser-recon — null-safe (opp.type peut manquer sur les entrées historiques). */
+function needsBrowserRecon(opp) {
+  const t = (opp && typeof opp.type === 'string') ? opp.type : '';
+  return ['ux-ui', 'browser-interaction', 'aha-wow', 'svg-assets-a11y'].some(k => t.includes(k));
+}
+
 /** Process a single opportunity through the full pipeline */
 async function processOpportunity(opp) {
-  progress(`SELECT      ${opp.id}`);
-  S('SELECTED', `${opp.id} (score ${opp._score})`);
+  progress(`SELECT      ${(opp && opp.id) || 'unknown'}`);
+  S('SELECTED', `${(opp && opp.id) || 'unknown'} (score ${(opp && opp._score) || '?'})`);
+
+  // Garde-contrat : parquer avec diagnostic au lieu de crasher la factory
+  // (TypeError .includes sur opp.type undefined → exit 1, jamais dispatched).
+  const contract = validateOpportunityContract(opp);
+  if (!contract.valid) {
+    progress(`CONTRACT    invalide: ${contract.missing.join(', ')} manquant`);
+    return parkTask((opp && opp.id) || 'unknown', contract.reason, 'blocked');
+  }
 
   // 1. UX Hypothesis
   const hypothesis = hypothesisFromOpportunity(opp);
@@ -522,7 +591,7 @@ async function processOpportunity(opp) {
   progress(`UX-HYP      METRIC: ${hypothesis.metric}`);
 
   // Browser recon for UX
-  if (['ux-ui', 'browser-interaction', 'aha-wow', 'svg-assets-a11y'].some(t => opp.type.includes(t))) {
+  if (needsBrowserRecon(opp)) {
     progress('BROWSER     headed recon...');
     try {
       const recon = await runBrowserRecon(cfg);
@@ -586,7 +655,20 @@ async function main() {
     else { S('OBSERVED', `health OK (${[cfg.health.requiredDomains, cfg.health.warnDomains].flat().length} domains 2xx)`); progress('PROD        6/6 healthy'); }
 
     const prOpen = gitops.openAutopilotPR();
-    if (prOpen) S('PR', `PR #${prOpen.number} open — observation only this cycle`);
+    let prDetail = null;
+    if (prOpen) {
+      const detail = gitops.getPrDetail(prOpen.number);
+      prDetail = detail || {
+        number: prOpen.number, headRefName: prOpen.headRefName || null, title: prOpen.title || null,
+        isDraft: null, mergeable: null, mergeStateStatus: null, headRefOid: null, files: [],
+        detailUnavailable: true,
+      };
+      if (!prDetail.headRefName && prOpen.headRefName) prDetail.headRefName = prOpen.headRefName;
+      if (!prDetail.title && prOpen.title) prDetail.title = prOpen.title;
+      const headShort = prDetail.headRefOid ? String(prDetail.headRefOid).slice(0, 8) : null;
+      S('PR', `PR #${prDetail.number} open (${prDetail.headRefName || '?'}${prDetail.isDraft === true ? ', draft' : ''}${prDetail.mergeable ? ', mergeable=' + prDetail.mergeable : ''}${headShort ? ', head ' + headShort : ''}) — évaluation blocage par catégorie…`);
+      log(scheduler.stateLine('pr-detected', 'pr-evaluating', `PR #${prDetail.number} ${prDetail.headRefName || ''}`));
+    }
 
     const founder = gitops.founderTreeState();
     if (founder.foreignDirty) S('OBSERVED', `founder WIP preserved (${founder.files.length} files)`);
@@ -608,8 +690,22 @@ async function main() {
     if (!budgetExceeded()) await phaseResearch();
 
     // 4. ANALYZE + DISCOVER
+    // Le scheduler persistant prime : si un claim/sélection existe encore, on le
+    // reprend au lieu de redécouvrir aveuglément (anti-boucle 555→557).
+    const restored = scheduler.restoreSelected(mem.loadQueue());
     const res = phaseAnalyze(obs);
-    if (!budgetExceeded() && (!res.selected || prOpen || budgetExceeded())) {
+    if (restored.restored && (!res.selected || restored.restored.id !== res.selected.id)) {
+      const rs = restored.restored;
+      if (['new', 'picked', 'in_progress'].includes(rs.status)) {
+        log(scheduler.stateLine('scheduler-restored', 'selected', `${rs.id} (${rs.status}) repris du cycle ${restored.state.cycleId || '?'} — pas de réinitialisation`));
+        S('FOUND', `scheduler restauré : ${rs.id} (${rs.status}) — reprise au lieu de redécouverte`);
+        res.selected = rs;
+      }
+    }
+    // Discovery seulement si RIEN de sélectionné (jamais pour écraser une sélection
+    // existante, jamais à cause d'un PR ouvert — le PR gate est évalué plus bas
+    // par catégorie via scheduler.isPrBlocking).
+    if (!budgetExceeded() && !res.selected) {
       progress('DISCOVER    autonomous discovery...');
       const snap = metrics.snapshot();
       const discovered = await runDiscovery(cfg, report, obs, snap);
@@ -617,8 +713,11 @@ async function main() {
         const executable = discovered.filter(o => o.actionable !== 'human' && !o.blocked);
         if (executable.length > 0) {
           res.selected = executable[0];
+          log(scheduler.stateLine('discovered', 'selected', `${res.selected.id} via discovery (score ${res.selected._score})`));
         }
       }
+    } else if (res.selected) {
+      log(scheduler.stateLine('discovered', 'selected', `${res.selected.id} (score ${res.selected._score})`));
     }
 
     // 5. PROCESS SELECTED OPPORTUNITY
@@ -629,14 +728,62 @@ async function main() {
       const busy = experiments.activeForSurface(surf);
       if (busy) {
         S('FOUND', `surface "${surf}" busy with ${busy.id} — 1 change per surface`);
+        scheduler.persistSelected(selected, report.id, { blocking: true, reason: `surface busy ${busy.id}`, prNumber: prDetail ? prDetail.number : null });
+        log(scheduler.stateLine('selected', 'blocked-by-pr', `${selected.id} — surface ${surf} occupée par ${busy.id}`));
         selected = null;
       }
     }
 
-    if (prOpen || budgetExceeded()) {
-      if (budgetExceeded()) S('FAILED', 'time budget exceeded — deferring');
+    // Gate PR catégorie-aware : un PR simplement ouvert ne bloque QUE le travail
+    // réellement en conflit (draft / conflit / même branche / même surface /
+    // overlap fichiers). Sinon la factory continue normalement.
+    let prBlocking = null;
+    if (prDetail) {
+      if (prDetail.detailUnavailable) {
+        // gh indisponible → doute → bloquant (garde-fou préservé, jamais d'exécution aveugle).
+        prBlocking = { blocking: true, reason: `PR #${prDetail.number} open (détail gh indisponible) — prudence, observation only`, code: 'PR_DETAIL_UNKNOWN', prNumber: prDetail.number };
+      } else if (selected) {
+        const queueNow = mem.loadQueue();
+        prBlocking = Object.assign({ prNumber: prDetail.number }, scheduler.isPrBlocking(prDetail, selected, queueNow));
+      } else {
+        prBlocking = { blocking: true, reason: `PR #${prDetail.number} open + rien d'exécutable — observation only`, code: 'NO_SELECTION', prNumber: prDetail.number };
+      }
+      if (prBlocking.blocking) {
+        log(scheduler.stateLine('selected', 'blocked-by-pr', prBlocking.reason));
+      } else {
+        log(scheduler.stateLine('pr-evaluating', 'pr-non-blocking', prBlocking.reason));
+      }
+    }
+
+    if (budgetExceeded()) {
+      S('FAILED', 'time budget exceeded — deferring');
+      if (selected) {
+        scheduler.persistSelected(selected, report.id, { blocking: true, reason: 'time budget exceeded', prNumber: prDetail ? prDetail.number : null });
+        log(scheduler.stateLine('selected', 'persisted', `${selected.id} différé (budget) — repris au prochain cycle`));
+      }
+    } else if (prBlocking && prBlocking.blocking) {
+      // Bloquant réel : observation explicite + état persistant (pas de redécouverte aveugle).
+      if (selected) {
+        scheduler.persistSelected(selected, report.id, prBlocking);
+        log(scheduler.stateLine('selected', 'persisted', `${selected.id} persisté (${prBlocking.code})`));
+      }
+      S('PR', `PR #${prDetail.number} bloquant (${prBlocking.code}) — ${prBlocking.reason}`);
+      S('NEXT', `reprendre ${selected ? selected.id : 'sélection'} quand PR #${prDetail.number} mergée/fermée`);
     } else if (selected) {
-      await processOpportunity(selected);
+      // Non bloquant : claim persistant (idempotent) puis exécution.
+      const claim = scheduler.persistClaimed(selected, report.id, (id, patch) => mem.updateOpportunity(id, patch));
+      if (claim.alreadyClaimed) {
+        log(scheduler.stateLine('selected', 'claimed', `${selected.id} déjà claimée/en cours — pas de doublon, reprise`));
+        S('FOUND', `${selected.id} déjà claimée/en cours — reprise sans doublon`);
+      } else {
+        log(scheduler.stateLine('selected', 'claimed', `${selected.id} claimée (new → picked) cycle ${report.id}`));
+      }
+      // Refresh depuis la queue pour exécuter l'état persisté réel.
+      const fresh = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
+      const result = await processOpportunity(fresh);
+      scheduler.persistDispatched(fresh, report.id, { parked: !!(result && result.parked), reason: (result && result.reason) || null });
+      log(scheduler.stateLine('selected', 'dispatched', `${fresh.id} dispatchée (${result && result.parked ? 'parked: ' + result.reason : 'traitée'})`));
+      log(scheduler.stateLine('dispatched', 'persisted', `${fresh.id} état persisté`));
     } else {
       progress('QUEUE       0 executable');
       
@@ -649,8 +796,30 @@ async function main() {
           const executable = discovered.filter(o => o.actionable !== 'human' && !o.blocked);
           if (executable.length > 0) {
             selected = executable[0];
-            progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
-            await processOpportunity(selected);
+            selected.surface = selected.surface || surfaceOf(selected);
+            log(scheduler.stateLine('discovered', 'selected', `${selected.id} via discovery queue-vide (score ${selected._score})`));
+            // Même gate PR catégorie-aware sur ce chemin (jamais d'exécution aveugle).
+            let innerBlocking = null;
+            if (prDetail) {
+              if (prDetail.detailUnavailable) {
+                innerBlocking = { blocking: true, reason: `PR #${prDetail.number} open (détail gh indisponible) — prudence`, code: 'PR_DETAIL_UNKNOWN', prNumber: prDetail.number };
+              } else {
+                innerBlocking = Object.assign({ prNumber: prDetail.number }, scheduler.isPrBlocking(prDetail, selected, mem.loadQueue()));
+              }
+            }
+            if (innerBlocking && innerBlocking.blocking) {
+              scheduler.persistSelected(selected, report.id, innerBlocking);
+              log(scheduler.stateLine('selected', 'blocked-by-pr', innerBlocking.reason));
+              S('PR', `PR #${prDetail.number} bloquant (${innerBlocking.code}) — ${innerBlocking.reason}`);
+            } else {
+              const claim2 = scheduler.persistClaimed(selected, report.id, (id, patch) => mem.updateOpportunity(id, patch));
+              log(scheduler.stateLine('selected', claim2.alreadyClaimed ? 'claimed' : 'claimed', `${selected.id} claimée (queue-vide)`));
+              progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
+              const fresh2 = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
+              const result2 = await processOpportunity(fresh2);
+              scheduler.persistDispatched(fresh2, report.id, { parked: !!(result2 && result2.parked), reason: (result2 && result2.reason) || null });
+              log(scheduler.stateLine('selected', 'dispatched', `${fresh2.id} dispatchée`));
+            }
           } else {
             progress('DISCOVER    no executable (all human-gate or blocked)');
           }
@@ -683,8 +852,12 @@ function finish(code) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-main().catch(e => {
-  log('CRASH: ' + e.message);
-  log(e.stack);
-  finish(1);
-});
+if (require.main === module) {
+  main().catch(e => {
+    try { log('CRASH: ' + e.message); } catch (_) { console.error('CRASH: ' + (e && e.message)); }
+    try { log(e.stack); } catch (_) {}
+    finish(1);
+  });
+}
+
+module.exports = { validateOpportunityContract, needsBrowserRecon };

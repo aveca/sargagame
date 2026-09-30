@@ -67,8 +67,23 @@ function prepareWorktree(cfg, branchName, log = console.log) {
     }
   }
 
-  // Créer worktree frais depuis origin/main
-  git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+  // Créer worktree frais depuis origin/main — avec auto-réparation SÛRE :
+  // si le chemin est occupé mais NON enregistré (résidu de crash / rmSync
+  // partiel), mise de côté horodatée (récupérable, jamais supprimée) + UNE
+  // seule tentative. Tout autre échec remonte (fail-closed).
+  try {
+    git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+  } catch (e) {
+    // État FRAIS (le force-remove a pu déréférencer le worktree entre-temps).
+    const fresh = gitSafe(['worktree', 'list', '--porcelain']) || '';
+    const stillRegistered = fresh.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
+    const decision = worktreeAddRecovery({ pathExists: fs.existsSync(wt), registered: stillRegistered });
+    if (decision !== 'retry-aside') throw e;
+    const aside = `${wt}-stale-${Date.now().toString(36)}`;
+    log(`worktree orphelin détecté, mise de côté (récupérable) : ${wt} → ${aside}`);
+    fs.renameSync(wt, aside);
+    git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+  }
   log(`worktree créé : ${wt} (${branchName})`);
 
   // node_modules : npm ci seulement si absent ou lock plus récent
@@ -84,6 +99,19 @@ function prepareWorktree(cfg, branchName, log = console.log) {
     log('node_modules réutilisé (inchangé)');
   }
   return wt;
+}
+
+/**
+ * Décision PURE de reprise après échec de `git worktree add`
+ * (testable sans I/O) :
+ *  - chemin occupé MAIS non enregistré comme worktree → 'retry-aside'
+ *    (résidu de crash / rmSync partiel : mise de côté horodatée, récupérable)
+ *  - tout autre cas → 'throw' (fail-closed : collision réelle ou erreur
+ *    inconnue, jamais masquée — l'orchestrateur parque avec diagnostic).
+ */
+function worktreeAddRecovery({ pathExists, registered }) {
+  if (pathExists && !registered) return 'retry-aside';
+  return 'throw';
 }
 
 /** Parse une ligne git status --porcelain=v1 de façon robuste.
@@ -141,13 +169,21 @@ function pushBranch(wt, branch, cfg) {
   git(['push', '-u', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
 }
 
-/** gh pr create. Retourne {url} ou lève. */
+/** gh pr create. Retourne {url} ou lève.
+ * Le corps est écrit dans un tmpdir (jamais dans `<wt>/.git/` : dans un
+ * worktree lié, `.git` est un FICHIER `gitdir:` — writeFileSync lève ENOENT).
+ */
 function createPR(wt, { title, body, base }) {
-  const bodyFile = path.join(wt, '.git', 'autopilot-pr-body.md');
-  fs.writeFileSync(bodyFile, body, 'utf8');
-  const out = run(`gh pr create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --base ${base}`, wt, { timeoutMs: 120000 });
-  const m = out.match(/https:\/\/github\.com\/[^\s]+/);
-  return { url: m ? m[0] : out };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'autopilot-pr-'));
+  const bodyFile = path.join(dir, 'body.md');
+  try {
+    fs.writeFileSync(bodyFile, body, 'utf8');
+    const out = run(`gh pr create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --base ${base}`, wt, { timeoutMs: 120000 });
+    const m = out.match(/https:\/\/github\.com\/[^\s]+/);
+    return { url: m ? m[0] : out };
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {}
+  }
 }
 
 /** PR autopilot déjà ouverte ? (sérialisation : une seule à la fois) */
@@ -178,6 +214,29 @@ function cleanupWorktree(cfg, log = console.log) {
   try { git(['worktree', 'prune']); } catch (_) {}
 }
 
+/** Détail d'une PR ouverte (draft / mergeable / fichiers) — null si gh indisponible.
+ *  Ne lève jamais : en cas de doute l'appelant doit traiter comme bloquant. */
+function getPrDetail(number) {
+  try {
+    const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
+    const out = execFileSync(bin, ['pr', 'view', String(number), '--json', 'number,title,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,headRefOid,files'], {
+      cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
+    }).trim();
+    const j = JSON.parse(out || '{}');
+    return {
+      number: j.number != null ? j.number : number,
+      title: j.title || null,
+      headRefName: j.headRefName || null,
+      baseRefName: j.baseRefName || null,
+      isDraft: !!j.isDraft,
+      mergeable: j.mergeable || null,
+      mergeStateStatus: j.mergeStateStatus || null,
+      headRefOid: j.headRefOid || null,
+      files: Array.isArray(j.files) ? j.files.map(f => (typeof f === 'string' ? f : f.path)).filter(Boolean) : [],
+    };
+  } catch (_) { return null; }
+}
+
 /** État d'une PR (vérification post-ship) : {state, mergeCommit, mergedAt} ou null. */
 function prState(prUrl) {
   try {
@@ -204,8 +263,8 @@ async function prodFingerprint(domain, timeoutMs = 10000) {
 }
 
 module.exports = {
-  worktreePath, founderTreeState, prepareWorktree, diffStats,
-  commitAll, pushBranch, createPR, openAutopilotPR, enableAutoMerge, cleanupWorktree,
+  worktreePath, founderTreeState, prepareWorktree, diffStats, worktreeAddRecovery,
+  commitAll, pushBranch, createPR, openAutopilotPR, getPrDetail, enableAutoMerge, cleanupWorktree,
   prState, prodFingerprint,
   git, gitSafe, run,
 };
