@@ -292,26 +292,48 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
     // 4. Use the autopilot worktree for the rebase
     const wt = worktreePath(cfg);
     
-    // 4.5 Prepare worktree for repair (handle local changes from builds)
-    const prepResult = prepareRepairWorktree(wt, log);
-    if (!prepResult.ok) {
-      return { ok: false, reason: prepResult.reason, unsafe: prepResult.unsafe };
-    }
-    
-    // Ensure worktree is on the correct branch
+    // 4.5 FIRST: Ensure we're on the PR branch BEFORE preparing worktree
+    // This is critical - prepareRepairWorktree must run on the PR branch,
+    // not on main, so it sees the correct state.
     const currentBranch = gitSafe(['rev-parse', '--abbrev-ref', 'HEAD'], wt) || '';
     if (currentBranch !== branch) {
+      log(`REPAIR_PR   switching to PR branch ${branch} (was on ${currentBranch})`);
       // Switch to the branch if it exists locally, or fetch it
       const hasBranch = gitSafe(['rev-parse', '--verify', branch], wt);
       if (hasBranch) {
-        git(['checkout', branch], wt);
+        // Try to checkout, but first stash any local changes that would block it
+        const checkoutResult = gitSafe(['checkout', branch], wt);
+        if (checkoutResult === null) {
+          // Checkout failed - likely due to local changes. Prepare worktree first, then retry.
+          log('REPAIR_PR   checkout blocked by local changes, preparing worktree first');
+          const prepResult = prepareRepairWorktree(wt, log);
+          if (!prepResult.ok) {
+            return { ok: false, reason: prepResult.reason, unsafe: prepResult.unsafe };
+          }
+          // Retry checkout after preparation
+          git(['checkout', branch], wt);
+        }
       } else {
+        // Branch doesn't exist locally - fetch it from origin
         git(['fetch', 'origin', branch + ':' + branch], wt);
         git(['checkout', branch], wt);
       }
     }
     
-    // 5. Rebase onto origin/main
+    // 5. NOW prepare worktree (on the PR branch)
+    const prepResult = prepareRepairWorktree(wt, log);
+    if (!prepResult.ok) {
+      return { ok: false, reason: prepResult.reason, unsafe: prepResult.unsafe };
+    }
+    
+    // Verify we're on the correct branch
+    const verifyBranch = gitSafe(['rev-parse', '--abbrev-ref', 'HEAD'], wt) || '';
+    if (verifyBranch !== branch) {
+      return { ok: false, reason: `Failed to switch to PR branch (still on ${verifyBranch})`, unsafe: true };
+    }
+    log(`REPAIR_PR   on PR branch ${branch}, ready for rebase`);
+    
+    // 6. Rebase onto origin/main
     log('REPAIR_PR   rebasing onto origin/' + cfg.git.baseBranch + '...');
     const rebaseResult = gitSafe(['rebase', 'origin/' + cfg.git.baseBranch], wt);
     
@@ -324,7 +346,7 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
     }
     
-    // 6. Check if there are conflicts
+    // 7. Check if there are conflicts
     const status = gitSafe(['status', '--porcelain'], wt) || '';
     const conflictedFiles = status.split('\n').filter(l => l.startsWith('UU') || l.startsWith('AA') || l.startsWith('DD')).map(parsePorcelainLine);
     
@@ -336,7 +358,7 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
     
     log(`REPAIR_PR   conflicts detected in: ${conflictedFiles.join(', ')}`);
     
-    // 7. Attempt safe deterministic resolution
+    // 8. Attempt safe deterministic resolution
     const resolution = attemptSafeConflictResolution(conflictedFiles, wt, log);
     
     if (!resolution.ok) {
@@ -344,11 +366,11 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       return { ok: false, reason: resolution.reason, unsafe: resolution.unsafe };
     }
     
-    // 8. Continue rebase
+    // 9. Continue rebase
     git(['rebase', '--continue'], wt);
     log('REPAIR_PR   rebase continued after conflict resolution');
     
-    // 9. Verify rebase completed
+    // 10. Verify rebase completed
     const finalStatus = gitSafe(['status', '--porcelain'], wt) || '';
     if (finalStatus.trim()) {
       git(['rebase', '--abort'], wt);
