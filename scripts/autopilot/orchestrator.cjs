@@ -360,7 +360,17 @@ async function phaseImplementLocal(opp) {
     `- denylist money/secrets/api/régions : OK`,
   ].join('\n');
   if (LIVE) progress('PR          creating...');
-  const pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
+  // Échec PR (gh en panne, droits, réseau) : parquer avec diagnostic au lieu
+  // de crasher (la branche est déjà poussée — rien n'est perdu, reprise au
+  // prochain cycle). Raison toujours préservée, jamais masquée.
+  let pr;
+  try {
+    pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
+  } catch (e) {
+    const diag = `pr create failed (branche ${branch} poussée, commit ${commitSha}) : ${String((e && e.message) || e).split('\n').slice(0, 3).join(' / ').slice(0, 200)}`;
+    S('FAILED', diag);
+    return parkTask(opp.id, diag, 'blocked');
+  }
   report.prUrl = pr.url;
   S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
   if (LIVE) progress('PR          ' + pr.url);

@@ -169,13 +169,21 @@ function pushBranch(wt, branch, cfg) {
   git(['push', '-u', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
 }
 
-/** gh pr create. Retourne {url} ou lève. */
+/** gh pr create. Retourne {url} ou lève.
+ * Le corps est écrit dans un tmpdir (jamais dans `<wt>/.git/` : dans un
+ * worktree lié, `.git` est un FICHIER `gitdir:` — writeFileSync lève ENOENT).
+ */
 function createPR(wt, { title, body, base }) {
-  const bodyFile = path.join(wt, '.git', 'autopilot-pr-body.md');
-  fs.writeFileSync(bodyFile, body, 'utf8');
-  const out = run(`gh pr create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --base ${base}`, wt, { timeoutMs: 120000 });
-  const m = out.match(/https:\/\/github\.com\/[^\s]+/);
-  return { url: m ? m[0] : out };
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'autopilot-pr-'));
+  const bodyFile = path.join(dir, 'body.md');
+  try {
+    fs.writeFileSync(bodyFile, body, 'utf8');
+    const out = run(`gh pr create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --base ${base}`, wt, { timeoutMs: 120000 });
+    const m = out.match(/https:\/\/github\.com\/[^\s]+/);
+    return { url: m ? m[0] : out };
+  } finally {
+    try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {}
+  }
 }
 
 /** PR autopilot déjà ouverte ? (sérialisation : une seule à la fois) */

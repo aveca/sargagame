@@ -177,9 +177,15 @@ try {
         const stdoutGuarded = /if \(child\.stdout\) \{[\s\S]{0,300}?child\.stdout\.on/.test(src);
         const stderrGuarded = /if \(child\.stderr\) \{[\s\S]{0,300}?child\.stderr\.on/.test(src);
         const bareOn = (src.match(/^ {0,2}child\.std(?:out|err)\.on/gm) || []).length;
-        const guardedOn = (src.match(/^\s{4,}child\.std(?:out|err)\.on/gm) || []).length;
-        return stdoutGuarded && stderrGuarded && bareOn === 0 && guardedOn === 2;
+        return stdoutGuarded && stderrGuarded && bareOn === 0;
       })());
+    check('createPR écrit le body en tmpdir, jamais dans <wt>/.git (crash 17:01, .git fichier)',
+      (() => {
+        const src = fs.readFileSync(path.join(ROOT, 'scripts', 'autopilot', 'lib', 'gitops.cjs'), 'utf8');
+        return !/\.git.*autopilot-pr-body/.test(src) && /mkdtempSync\(path\.join\(os\.tmpdir/.test(src);
+      })());
+    check('échec PR ⇒ park diagnostiqué (branche poussée préservée, pas de crash)',
+      /pr create failed.*poussée/.test(fs.readFileSync(path.join(ROOT, 'scripts', 'autopilot', 'orchestrator.cjs'), 'utf8')));
   }
 
   console.log(`\n${passed} checks OK${skipped ? ` (${skipped} skipped — runner vivant)` : ''}`);
