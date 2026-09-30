@@ -458,7 +458,13 @@ async function main() {
     if (fs.existsSync(C.paths.stopFile)) { factoryStop('STOP file present'); return finish(2); }
     const health = await healthCheck();
     const fatalDown = health.filter(h => cfg.health.requiredDomains.some(d => h.startsWith(d)));
-    if (fatalDown.length) { factoryStop('production outage: ' + fatalDown.join(', ')); return finish(2); }
+    if (fatalDown.length) {
+      if (DRY) {
+        S('OBSERVED', `health check failed (dry-run, non-fatal): ${fatalDown.join(', ')}`);
+      } else {
+        factoryStop('production outage: ' + fatalDown.join(', ')); return finish(2);
+      }
+    }
     if (health.length) S('OBSERVED', `domains degraded: ${health.join(', ')}`);
     else { S('OBSERVED', `health OK (${[cfg.health.requiredDomains, cfg.health.warnDomains].flat().length} domains 2xx)`); progress('PROD        6/6 healthy'); }
 
