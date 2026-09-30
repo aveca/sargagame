@@ -1,4 +1,3 @@
 {
-  "$doc": "Expériences rejetées. L'orchestrateur ne re-propose JAMAIS un fingerprint listé ici avant revisitAfter (ISO). founderLocked=true = vedette interdite de rejet automatique.",
   "rejected": []
 }

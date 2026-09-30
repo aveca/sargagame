@@ -1,89 +1,179 @@
 {
-  "$doc": "File d'opportunités de l'autopilot. Statuts : new | picked | shipped | rejected | blocked. actionable : auto (recette déterministe) | agent (délégué opencode, gardes strictes) | human (enregistré, jamais tenté). L'orchestrateur n'exécute QUE le statut new. Ne jamais ré-ouvrir un 'rejected' sans preuve nouvelle (cf. decisions/rejected.json).",
   "opportunities": [
     {
-      "id": "OPP-2026-09-24-banner-z",
-      "surface": "checkout-entry",
-      "title": "UX-QA-002 : bannières recovery/expired/renew (z 1500) recouvrent paywall (1260) et checkout (1300)",
-      "source": "MASTER_AUDIT P1 + reproduction code 2026-09-24 (src/Sargasses_PROD.jsx ~14260/14291/14320)",
-      "severity": "high",
-      "confidence": "proven",
-      "actionable": "auto",
-      "recipe": "banner-z-below-paywall",
-      "scope": {
-        "files": [
-          "src/Sargasses_PROD.jsx"
-        ],
-        "tests": [
-          "tests/unit/autopilot-banner-z.test.cjs"
-        ]
-      },
-      "evidence": "Recovery banner rendue sans garde !showPremium, zIndex:1500 > paywall 1260 / checkout 1300 → offre masquée, clics interceptés.",
-      "expectedImpact": "Le visiteur qui abandonne le checkout revient et PEUT payer (paywall au-dessus). Funnel recovery débloqué.",
-      "rollback": "?bannertop=1",
-      "status": "shipped",
-      "createdAt": "2026-09-24T00:00:00.000Z",
-      "_score": 95,
-      "_economicBonus": 45,
-      "pickedAt": "2026-09-29T20:04:32.860Z",
-      "updatedAt": "2026-09-29T21:33:13.353Z"
-    },
-    {
-      "id": "OPP-visual-shift-mq-home-home",
-      "fingerprint": "visual-shift|mq|home|home",
-      "title": "visual-shift sur mq/home — home",
-      "source": "observation 2026-09-29-2002",
-      "severity": "low",
+      "id": "OPP-TEST-PERSIST",
+      "fingerprint": "test-fingerprint-persist",
+      "title": "Test persistence",
+      "source": "test",
+      "severity": "medium",
       "confidence": "observed",
       "actionable": "agent",
-      "evidence": "home@390 pctHot=0.3072",
-      "rollback": "revert du commit",
-      "expectedImpact": "",
-      "status": "rejected",
-      "createdAt": "2026-09-29T20:03:07.899Z",
-      "_score": -3,
-      "_economicBonus": -8,
-      "pickedAt": "2026-09-29T20:21:22.161Z",
-      "updatedAt": "2026-09-29T21:45:00.000Z",
-      "rejectedReason": "Negative score (-3) and economic bonus (-8). pctHot 0.307 likely from font swap (font-display:swap) or React hydration replacing boot skeleton. Not a regression, acceptable trade-off for non-blocking font loading."
+      "evidence": "persistence test",
+      "rollback": "revert",
+      "expectedImpact": "state survives restart",
+      "metric": "persistence",
+      "status": "in_progress",
+      "createdAt": "2026-09-30T19:18:26.503Z",
+      "scope": {
+        "files": [
+          "src/test-persist.jsx"
+        ]
+      },
+      "currentPhase": "implementation",
+      "repairAttempt": 1,
+      "branch": "agent/autopilot/test-persist",
+      "prUrl": "https://github.com/test/test/pull/1"
+    },
+    {
+      "id": "SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228",
+      "fingerprint": "chatgpt-issue|780|SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228",
+      "title": "Stop GP domain serving indexable Martinique content",
+      "source": "production-seo-sentinel issue #780",
+      "severity": "high",
+      "confidence": "observed",
+      "actionable": "agent",
+      "evidence": "LIVE evidence observed on 2026-09-30: /plages/pointe-faula/ identifies Pointe Faula, Le Vauclin, Martinique; /plages/anse-madame/ identifies Anse Madame, Schoelcher, Martinique; /conditions/plages-enfants/ is explicitly a Martinique page; /conditions/baignade-ideale/ is explicitly a Martinique page. Control evidence: genuine GP beach pages such as Caravelle and Pointe de la Verdure correctly identify Guadeloupe. Repository contracts already include region filtering/cross-domain duplicate prevention in scripts/prepare-ftp.cjs and sitemap cross-domain checks in scripts/automation/seo-sitemap-check.cjs.",
+      "rollback": "Revert the isolated domain-isolation commit if production verification shows unintended GP route loss; restore the previously valid sitemap/domain contract.",
+      "expectedImpact": "Count of MQ-owned indexable URLs served on sargasses-guadeloupe.com; target = 0.",
+      "status": "blocked",
+      "createdAt": "2026-09-30T16:43:27Z",
+      "scope": {
+        "files": [
+          "Only the minimal producer/packaging/deploy-contract files proven by diagnosis",
+          "Relevant deterministic SEO/domain-isolation regression tests"
+        ]
+      },
+      "persona": "seo",
+      "sourceIssue": {
+        "number": 780,
+        "url": "https://github.com/aveca/sargagame/issues/780",
+        "title": "[AUTOPILOT] Stop GP domain serving indexable Martinique content"
+      },
+      "task": {
+        "id": "SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228",
+        "source": "production-seo-sentinel",
+        "priority": "high",
+        "mode": "agent",
+        "moneyPath": false,
+        "humanGate": false,
+        "title": "Stop GP domain serving indexable Martinique content",
+        "diagnostic": "Production/SEO evidence shows multiple URLs on sargasses-guadeloupe.com serving Martinique-owned content. This conflicts with the existing multisite domain-isolation contract and risks geographic content pollution, duplicate/cross-domain indexing, and incorrect search landing pages.",
+        "evidence": "LIVE evidence observed on 2026-09-30: /plages/pointe-faula/ identifies Pointe Faula, Le Vauclin, Martinique; /plages/anse-madame/ identifies Anse Madame, Schoelcher, Martinique; /conditions/plages-enfants/ is explicitly a Martinique page; /conditions/baignade-ideale/ is explicitly a Martinique page. Control evidence: genuine GP beach pages such as Caravelle and Pointe de la Verdure correctly identify Guadeloupe. Repository contracts already include region filtering/cross-domain duplicate prevention in scripts/prepare-ftp.cjs and sitemap cross-domain checks in scripts/automation/seo-sitemap-check.cjs.",
+        "filesToRead": [
+          "scripts/prepare-ftp.cjs",
+          "scripts/lib/cross-domain-drops.cjs",
+          "scripts/lib/dedicated-pages.cjs",
+          "scripts/automation/seo-sitemap-check.cjs",
+          "regions/index.cjs",
+          ".ai/plans/SEO-OPPORTUNITY-MAP.md",
+          ".ai/plans/SEO-MULTISITE-GROWTH.md"
+        ],
+        "filesToModify": [
+          "Only the minimal producer/packaging/deploy-contract files proven by diagnosis",
+          "Relevant deterministic SEO/domain-isolation regression tests"
+        ],
+        "implementation": [
+          "Trace why Martinique-owned beach/conditions pages remain publicly reachable on the GP domain despite existing region filtering and cross-domain-drop logic.",
+          "Determine whether the root cause is generated HTML, GP mirror/overlay, packaging, stale deployment artifact, Cloudflare edge/cache propagation, or incomplete cross-domain filtering.",
+          "Fix the producer/packaging path so GP-owned indexable output cannot contain MQ-only pages.",
+          "Do not use blanket noindex as a substitute when a page should not exist on the GP domain.",
+          "Preserve legitimate Guadeloupe pages and intentional cross-domain links/canonicals.",
+          "Ensure sitemap generation/checks reject GP URLs whose content contract is MQ-owned.",
+          "Add regression coverage for representative MQ-only pages and representative GP pages.",
+          "Verify generated artifacts and, when deploy access is available, verify live production output after deployment."
+        ],
+        "tests": [
+          "Existing SEO sitemap checker",
+          "Existing region/content contract tests",
+          "Regression: MQ-only pages absent from GP indexable output",
+          "Regression: representative GP pages remain present",
+          "Generated HTML canonical/domain/geo/content assertions",
+          "Production post-deploy HTTP/content verification when deployment occurs"
+        ],
+        "acceptance": [
+          "sargasses-guadeloupe.com must not serve an indexable Martinique-owned beach/conditions page as GP content.",
+          "Pointe Faula and Anse Madame must be absent from GP indexable output or handled by the established intentional redirect/canonical contract.",
+          "Representative GP pages remain available and correctly identify Guadeloupe.",
+          "GP sitemap contains only valid GP-owned indexable URLs plus explicitly documented exceptions.",
+          "No cross-domain duplicate pollution is reintroduced."
+        ],
+        "metric": "Count of MQ-owned indexable URLs served on sargasses-guadeloupe.com; target = 0.",
+        "rollback": "Revert the isolated domain-isolation commit if production verification shows unintended GP route loss; restore the previously valid sitemap/domain contract.",
+        "constraints": [
+          "Local factory is the sole implementation runner.",
+          "Do not launch a parallel implementation loop.",
+          "Do not duplicate active [AUTOPILOT] work.",
+          "Do not change pricing, payment, checkout, webhook, grants, Supabase schema, or secrets.",
+          "Distinguish generator correctness from live edge/cache correctness.",
+          "If the actual root cause is Cloudflare cache/routing and requires an unavailable permission, stop with the exact operational action needed rather than masking the defect."
+        ],
+        "stopCondition": "Stop and report if diagnosis proves the remaining blocker requires an unavailable Cloudflare/GSC/DNS production permission or would require broad unrelated refactoring.",
+        "beforeAfter": {
+          "routes": [
+            "https://sargasses-guadeloupe.com/plages/pointe-faula/",
+            "https://sargasses-guadeloupe.com/plages/anse-madame/",
+            "https://sargasses-guadeloupe.com/conditions/plages-enfants/",
+            "https://sargasses-guadeloupe.com/conditions/baignade-ideale/"
+          ],
+          "viewports": [
+            "390x844",
+            "1440x900"
+          ],
+          "before": "Current observed live state: GP domain can expose/index Martinique-owned content.",
+          "after": "GP domain exposes only GP-owned indexable content for these surfaces; representative GP pages remain intact."
+        }
+      },
+      "_score": 45,
+      "_economicBonus": 15,
+      "blockReason": "blocked by PR #782 (PR_CONFLICT): PR #782 en conflit (mergeable=CONFLICTING) — repair humaine requise",
+      "parkedAt": "2026-09-30T19:18:41.010Z",
+      "updatedAt": "2026-09-30T19:18:41.011Z"
     },
     {
       "id": "OPP-slow-lcp-mq-home-home",
       "fingerprint": "slow-lcp|mq|home|home",
+      "type": "slow-lcp",
+      "region": "mq",
+      "route": "home",
+      "target": "home",
       "title": "slow-lcp sur mq/home — home",
-      "source": "observation 2026-09-29-2002",
+      "source": "observation 2026-09-30-185531570-pkp4-1slqv",
       "severity": "medium",
       "confidence": "observed",
       "actionable": "agent",
-      "evidence": "LCP 5332 ms > 4000 ms (home@390)",
+      "evidence": "LCP 4976 ms > 4000 ms (home@390)",
       "rollback": "revert du commit",
       "expectedImpact": "",
       "status": "blocked",
-      "createdAt": "2026-09-29T20:03:07.900Z",
+      "createdAt": "2026-09-30T19:18:41.002Z",
       "_score": 23,
       "_economicBonus": 8,
-      "pickedAt": "2026-09-29T20:06:49.869Z",
-      "updatedAt": "2026-09-29T21:45:00.000Z",
-      "blockedReason": "TTFB 2868ms is server/CDN (Cloudflare Pages cold start), not client-fixable. Client optimizations (preloads, inline CSS, boot skeleton, font-display:swap) already in place. Requires infra investigation."
+      "blockReason": "blocked by PR #782 (PR_CONFLICT): PR #782 en conflit (mergeable=CONFLICTING) — repair humaine requise",
+      "parkedAt": "2026-09-30T19:19:09.684Z",
+      "updatedAt": "2026-09-30T19:19:09.685Z"
     },
     {
-      "id": "OPP-visual-shift-mq-deep-2-deep-2",
-      "fingerprint": "visual-shift|mq|deep-2|deep-2",
-      "title": "visual-shift sur mq/deep-2 — deep-2",
-      "source": "observation 2026-09-29-2002",
+      "id": "OPP-visual-shift-florida-home-home",
+      "fingerprint": "visual-shift|florida|home|home",
+      "type": "visual-shift",
+      "region": "florida",
+      "route": "home",
+      "target": "home",
+      "title": "visual-shift sur florida/home — home",
+      "source": "observation 2026-09-30-185531570-pkp4-1slqv",
       "severity": "low",
       "confidence": "observed",
       "actionable": "agent",
-      "evidence": "deep-2@390 pctHot=0.3073",
+      "evidence": "home@390 pctHot=0.131",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "rejected",
-      "createdAt": "2026-09-29T20:03:07.900Z",
+      "status": "blocked",
+      "createdAt": "2026-09-30T19:18:41.002Z",
       "_score": -3,
       "_economicBonus": -8,
-      "pickedAt": "2026-09-29T20:10:12.519Z",
-      "updatedAt": "2026-09-29T21:45:00.000Z",
-      "rejectedReason": "Negative score (-3) and economic bonus (-8). Same pctHot as home page, likely font swap or hydration shift. Not a regression."
+      "blockReason": "blocked by PR #782 (PR_CONFLICT): PR #782 en conflit (mergeable=CONFLICTING) — repair humaine requise",
+      "parkedAt": "2026-09-30T19:19:39.816Z",
+      "updatedAt": "2026-09-30T19:19:39.817Z"
     }
   ]
 }

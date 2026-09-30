@@ -696,9 +696,10 @@ async function main() {
     const res = phaseAnalyze(obs);
     if (restored.restored && (!res.selected || restored.restored.id !== res.selected.id)) {
       const rs = restored.restored;
-      if (['new', 'picked', 'in_progress'].includes(rs.status)) {
-        log(scheduler.stateLine('scheduler-restored', 'selected', `${rs.id} (${rs.status}) repris du cycle ${restored.state.cycleId || '?'} — pas de réinitialisation`));
-        S('FOUND', `scheduler restauré : ${rs.id} (${rs.status}) — reprise au lieu de redécouverte`);
+      const rsStatus = (rs && typeof rs.status === 'string') ? rs.status : '';
+      if (['new', 'picked', 'in_progress'].includes(rsStatus)) {
+        log(scheduler.stateLine('scheduler-restored', 'selected', `${rs.id} (${rsStatus}) repris du cycle ${restored.state.cycleId || '?'} — pas de réinitialisation`));
+        S('FOUND', `scheduler restauré : ${rs.id} (${rsStatus}) — reprise au lieu de redécouverte`);
         res.selected = rs;
       }
     }
@@ -764,7 +765,12 @@ async function main() {
     } else if (prBlocking && prBlocking.blocking) {
       // Bloquant réel : observation explicite + état persistant (pas de redécouverte aveugle).
       if (selected) {
+        // Parquer l'opportunité dans la queue (status='blocked') pour éviter la re-sélection
+        // au cycle suivant. Le scheduler garde l'état 'blocked-by-pr' pour le diagnostic.
+        const parkReason = `blocked by PR #${prDetail.number} (${prBlocking.code}): ${prBlocking.reason}`;
         scheduler.persistSelected(selected, report.id, prBlocking);
+        // Mettre à jour le statut dans la queue pour éviter la re-sélection via restoreSelected
+        mem.updateOpportunity(selected.id, { status: 'blocked', blockReason: parkReason, parkedAt: C.nowIso() });
         log(scheduler.stateLine('selected', 'persisted', `${selected.id} persisté (${prBlocking.code})`));
       }
       S('PR', `PR #${prDetail.number} bloquant (${prBlocking.code}) — ${prBlocking.reason}`);
