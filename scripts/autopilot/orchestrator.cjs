@@ -549,6 +549,7 @@ function finish(code) {
   const p = mem.writeRunReport(report);
   log(`report: ${path.relative(C.ROOT, p)} + latest.md`);
   process.exitCode = code;
+  process.exit(code);
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
