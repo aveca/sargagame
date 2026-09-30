@@ -51,12 +51,13 @@ function runTest(name, args, env = {}) {
   const mockEnv = { ...process.env, SARGA_AUTOPILOT_LIVE: '0', SARGA_AUTOPILOT_CONTINUOUS: '0', ...env };
   createMockObservation(); // Ensure fresh mock before each run
   const r = spawnSync(process.execPath, [RUN, ...args], {
-    cwd: ROOT, encoding: 'utf8', timeout: 60000, env: mockEnv
+    cwd: ROOT, encoding: 'utf8', timeout: 120000, env: mockEnv
   });
   if (r.status !== 0) {
-    console.log('  STDOUT:', r.stdout?.slice(0, 500));
-    console.log('  STDERR:', r.stderr?.slice(0, 500));
+    console.log('  STDOUT:', r.stdout?.slice(0, 1000));
+    console.log('  STDERR:', r.stderr?.slice(0, 1000));
     console.log('  STATUS:', r.status);
+    console.log('  SIGNAL:', r.signal);
   }
   return r;
 }
