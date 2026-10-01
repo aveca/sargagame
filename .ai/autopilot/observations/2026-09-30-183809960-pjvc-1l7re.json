@@ -1,0 +1,443 @@
+{
+  "id": "2026-09-30-183809960-pjvc-1l7re",
+  "at": "2026-09-30T18:38:13.115Z",
+  "heavy": false,
+  "regions": {
+    "mq": {
+      "domain": "sargasses-martinique.com",
+      "pages": [
+        {
+          "route": "home",
+          "url": "https://sargasses-martinique.com/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793493704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163068416",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793493704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163068416",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793493704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793493704&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163068416",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 141,
+            "dcl": 341,
+            "load": 785,
+            "total": 2860
+          },
+          "bytes": 384185,
+          "lcp": 2220,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/mq-home-390.png",
+          "visual": {
+            "meanAbs": 0.0009,
+            "pctHot": 0.0032,
+            "flagged": false
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "paywall",
+          "url": "https://sargasses-martinique.com/?paywall=1",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793497084&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=287144929",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793497084&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=287144929",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793497084&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=287144929",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793497084&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 142,
+            "dcl": 351,
+            "load": 2844,
+            "total": 2856
+          },
+          "bytes": 441837,
+          "lcp": 372,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 1,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/mq-paywall-390.png",
+          "visual": {
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "deep-1",
+          "url": "https://sargasses-martinique.com/a-propos/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [],
+          "thirdPartyFailures": [],
+          "timing": {
+            "ttfb": 139,
+            "dcl": 412,
+            "load": 470,
+            "total": 2924
+          },
+          "bytes": 131667,
+          "lcp": 420,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/mq-deep-1-390.png",
+          "visual": {
+            "meanAbs": 0.0012,
+            "pctHot": 0.0024,
+            "flagged": false
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "deep-2",
+          "url": "https://sargasses-martinique.com/activity/family/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargasses-martinique.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793504449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158994209",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793504449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793504449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158994209",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790793504449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158994209",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 132,
+            "dcl": 332,
+            "load": 754,
+            "total": 2851
+          },
+          "bytes": 384219,
+          "lcp": 2120,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/mq-deep-2-390.png",
+          "visual": {
+            "meanAbs": 0.0009,
+            "pctHot": 0.0032,
+            "flagged": false
+          },
+          "httpStatus": 200
+        }
+      ]
+    },
+    "florida": {
+      "domain": "sargassummiami.com",
+      "pages": [
+        {
+          "route": "home",
+          "url": "https://sargassummiami.com/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793507961&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=204585509",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793507961&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=204585509",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793507961&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=204585509",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 132,
+            "dcl": 339,
+            "load": 745,
+            "total": 2849
+          },
+          "bytes": 381513,
+          "lcp": 2112,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/florida-home-390.png",
+          "visual": {
+            "meanAbs": 0.0595,
+            "pctHot": 0.131,
+            "flagged": true
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "paywall",
+          "url": "https://sargassummiami.com/?paywall=1",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t1h2v9255060904za200zd9255060904xf1&_p=1790793511227&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1527886",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t1h2v9255060904za200zd9255060904xf1&_p=1790793511227&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1527886",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t1h2v9255060904za200zd9255060904xf1&_p=1790793511227&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1527886",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 135,
+            "dcl": 335,
+            "load": 2353,
+            "total": 2839
+          },
+          "bytes": 439144,
+          "lcp": 332,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 1,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/florida-paywall-390.png",
+          "visual": {
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "deep-1",
+          "url": "https://sargassummiami.com/activity/family/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793514560&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=173327022",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793514560&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=173327022",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793514560&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=173327022",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 129,
+            "dcl": 331,
+            "load": 742,
+            "total": 2842
+          },
+          "bytes": 381469,
+          "lcp": 2108,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/florida-deep-1-390.png",
+          "visual": {
+            "meanAbs": 0.0595,
+            "pctHot": 0.131,
+            "flagged": true
+          },
+          "httpStatus": 200
+        },
+        {
+          "route": "deep-2",
+          "url": "https://sargassummiami.com/activity/parking/",
+          "viewport": "390",
+          "consoleErrors": [],
+          "pageErrors": [],
+          "firstPartyFailures": [
+            {
+              "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "thirdPartyFailures": [
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793517900&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=136377897",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793517900&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=136377897",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790793517900&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=136377897",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            }
+          ],
+          "timing": {
+            "ttfb": 139,
+            "dcl": 334,
+            "load": 730,
+            "total": 2846
+          },
+          "bytes": 381533,
+          "lcp": 2148,
+          "checks": {
+            "hasContent": true,
+            "dialogs": 0,
+            "h1": true,
+            "reachable": true
+          },
+          "brokenLinks": [],
+          "shot": "shots/florida-deep-2-390.png",
+          "visual": {
+            "meanAbs": 0.0595,
+            "pctHot": 0.131,
+            "flagged": true
+          },
+          "httpStatus": 200
+        }
+      ]
+    }
+  },
+  "totals": {
+    "pages": 8,
+    "consoleErrors": 0,
+    "pageErrors": 0,
+    "firstPartyFailures": 7,
+    "brokenLinks": 0,
+    "visualFlagged": 3
+  },
+  "durationSec": 28
+}

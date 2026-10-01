@@ -24,6 +24,15 @@ const ST = {
   _x:       { c: "#8A8F98", fr: "—", en: "—", es: "—" },
 }
 
+const STATUS_C = { clean: "#22C55E", moderate: "#B87A00", avoid: "#E8522A", unknown: "#8A8F98", _x: "#8A8F98" }
+const STATUS_LBL = {
+  clean: ["Propre", "Clean", "Limpia"],
+  moderate: ["Modéré", "Moderate", "Moderado"],
+  alert: ["À éviter", "Avoid", "Evitar"],
+  unknown: ["—", "—", "—"],
+  _x: ["—", "—", "—"]
+}
+
 // Meilleur choix + plan B par jour d'après le forecast réel par plage.
 // Règle déterministe et transparente : statut (clean>moderate>alert) → AFAI le
 // plus faible → confiance la plus haute. Le plan B vient d'une AUTRE commune
@@ -60,7 +69,13 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
      « Mon séjour se construit » : la semaine RÉELLE de la plage courante
      (ou ma plage) + son plan B, au-dessus du plan jour par jour. Absent
      (rollback ?sgjourney=0) → le strip n'existe pas. */
-  stay = null }) {
+  stay = null,
+  /* DYNAMIC PLANNER (2026-10-01) : plan state & map sync */
+  planBeaches = [],
+  onAddToPlan = () => {},
+  onRemoveFromPlan = () => {},
+  onClearPlan = () => {},
+  onPlanLocationChange = () => {} }) {
   const _t = (fr, en, es) => (lang === "en" ? en : lang === "es" ? es : fr)
   const SGM_ALL = (() => { try { return !/[?&]sgmotion=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })()
   const days = useMemo(() => planDays(beaches || [], forecastById || {}), [beaches, forecastById])
@@ -128,6 +143,44 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
                   <span style={{ fontSize: 12, fontWeight: 800, color: "#1EC8B0" }}>→ {_t("Plan B", "Plan B", "Plan B")} · {stay.backup.name}</span>
                 </div>
               )}
+            </div>
+          </section>
+        )}
+
+        {/* DYNAMIC PLANNER — plan strip: beaches added from map long-press */}
+        {planBeaches && planBeaches.length > 0 && (
+          <section data-testid="trip-plan-strip"
+            style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 16 }}>📍</span>
+                <span>{_t("Ton plan", "Your plan", "Tu plan")}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{planBeaches.length}</span>
+              </div>
+              <button onClick={onClearPlan} aria-label={_t("Vider le plan", "Clear plan", "Limpiar plan")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", padding: "4px 8px" }}>{_t("Vider", "Clear", "Limpiar")}</button>
+            </div>
+            <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+              {planBeaches.map((beachId) => {
+                const beach = beaches?.find(b => b.id === beachId)
+                if (!beach) return null
+                const fc = forecastById?.[beachId]?.forecast?.[0]
+                const st = fc?.status || "unknown"
+                const c = STATUS_C[st] || STATUS_C._x
+                const statusLabel = STATUS_LBL[st]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")
+                return (
+                  <div key={beachId} tabIndex={0} data-testid="trip-plan-chip" data-beach={beachId}
+                    onClick={() => { onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) } }}
+                    style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                      <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />
+                      <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{beach.name}</span>
+                      <button onClick={(e)=>{e.stopPropagation();onRemoveFromPlan(beachId)}} aria-label={_t("Retirer", "Remove", "Quitar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1, marginLeft: 2 }}>✕</button>
+                    </div>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{statusLabel}</span>
+                  </div>
+                )
+              })}
             </div>
           </section>
         )}

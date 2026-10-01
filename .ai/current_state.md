@@ -1,3 +1,42 @@
+## 2026-10-01 · Agent: coding (DYNAMIC BEACH DAY PLANNER COMPLETION) — plan strip + add to plan button shipped
+
+### Travail effectué
+- **Résumé 1 ligne** : Dynamic Beach Day Planner complété — plan strip dans TripPlanner + bouton "Add to plan" dans BeachExperience — tous gates verts.
+- **Détails** :
+  - Plan Strip dans TripPlanner (`src/TripPlanner.jsx`) : affiche plages ajoutées au plan, bouton remove par plage, bouton clear plan, click → sync map via `onPlanLocationChange`.
+  - Bouton "Add to plan" dans BeachExperience (`src/BeachExperience.jsx`) : bouton à côté de Trip, track `sg_plan_add_beachexp`, appelle `onAddToPlan`.
+  - État plan dans Sargasses_PROD.jsx : `planBeaches` (localStorage), `addToPlan`, `removeFromPlan`, `clearPlan`, `onMapSync`, `onPlanLocationChange`.
+  - Props TripPlanner : `planBeaches`, `onAddToPlan`, `onRemoveFromPlan`, `onClearPlan`, `onPlanLocationChange`.
+  - Rollbacks : `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off).
+
+### Fichiers modifiés
+- `src/TripPlanner.jsx` (plan strip + props)
+- `src/BeachExperience.jsx` (bouton Add to plan + prop onAddToPlan)
+- `src/Sargasses_PROD.jsx` (plan state + callbacks + TripPlanner props)
+- `src/components/PlanningContextBar.jsx`, `ScenarioPanel.jsx`, `PlanTimeline.jsx`, `ComparisonView.jsx` (inchangés, déjà présents)
+- `src/lib/dynamic-planner.js` (inchangé, déjà présent)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko
+- [x] php -l ×4 → OK
+- [x] ux-smoke → 4 tokens OK
+- [x] funnel-payment E2E → 13/13
+- [x] regions assertAllRegionsValid → OK
+- [x] Dynamic planner unit tests → 36/36 PASS
+
+### Prochaine action recommandée
+1. E2E tests for dynamic planner (lazy-loading fix) — Rôle : qa_agent
+2. Multi-day premium planning (computeMultiDayPlan integration) — Rôle : coding_agent
+2. E11 re-mesure J+14 le 2026-10-06 — Rôle : uiux-agent
+
+### Branche / PR
+- Branche : `agent/coding/autonomous-factory`
+- PR : #786 MERGED (squash 2797bc95a)
+- Commit head : `2797bc95a`
+
+---
+
 ## 2026-09-30 · Agent: ui-ux (E11 MESURE J+7) — trust row NEUTRE, prolongation J+14 2026-10-06
 
 ### Travail effectué

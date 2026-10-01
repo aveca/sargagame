@@ -1,0 +1,9 @@
+{
+  "takenAt": "2026-10-01T03:55:30.464Z",
+  "takenBy": 24500,
+  "why": "reprise stale (pid 999999 mort)",
+  "previous": {
+    "pid": 999999,
+    "startedAt": "2026-10-01T03:55:30.385Z"
+  }
+}

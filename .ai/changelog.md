@@ -1,3 +1,61 @@
+## 2026-10-01 — DYNAMIC BEACH DAY PLANNER COMPLETION : plan strip + add to plan button
+
+**CHANGES** :
+1. **Plan Strip in TripPlanner** (`src/TripPlanner.jsx`): Added plan strip showing beaches added from map long-press
+   - Shows beach count, status, name with remove button per beach
+   - Clear plan button
+   - Calls `onPlanLocationChange` to sync map highlight when clicking plan chip
+2. **Add to Plan Button in BeachExperience** (`src/BeachExperience.jsx`): Added "Add to plan" button next to Trip button
+   - Tracks `sg_plan_add_beachexp` event
+   - Calls `onAddToPlan` callback to add beach to plan
+   - Rollback: `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off)
+3. **TripPlanner Props** (`src/Sargasses_PROD.jsx`): Added `planBeaches`, `onAddToPlan`, `onRemoveFromPlan`, `onClearPlan`, `onPlanLocationChange` props
+4. **Plan State Management** (`src/Sargasses_PROD.jsx`): Added `planBeaches` state with localStorage persistence, `addToPlan`, `removeFromPlan`, `clearPlan`, `onMapSync`, `onPlanLocationChange` callbacks
+
+**GATES PASSED** :
+- ✅ Build exit 0
+- ✅ Bundle budget 38.2 KB ≤ 210 KB
+- ✅ PHP lint OK
+- ✅ Smoke: FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- ✅ Playwright funnel-payment: 13/13 passed
+- ✅ Regions validation: OK
+- ✅ Dynamic planner unit tests: 36/36 PASS
+
+**ROLLBACK** : `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off)
+
+**MERGE** : Direct commit to main (branch: agent/coding/TASK-P1-DYNAMIC-PLANNER-COMPLETION) → daily-copernicus auto-deploy
+
+---
+
+## 2026-10-01 — AUTOPILOT PHASE 2-3 : model router + multi-claim scheduler + label cap increase
+
+**CHANGES** :
+1. **Model Router** (`.ai/ux-agent/opencode-auto.cjs`): Intelligent model selection by task type
+   - `loadModelMetrics()` / `classifyTaskType()` / `calculateBackendScore()` / `sortBackendsByTaskType()`
+2. **Multi-Claim Scheduler** (`scripts/autopilot/lib/scheduler.cjs`): Support multiple concurrent claimed opportunities
+   - `claimedIds` array replaces single `claimedId`
+   - `isPrBlocking()` checks all claimed opportunities
+   - `persistClaimed()` updates `claimedIds`
+3. **Map Label Cap Increase** (`src/WorldMapView.jsx`): Wide 8→12, Zoomed 14→20 (DEC-2026-08-28)
+
+**GATES PASSED** :
+- ✅ Build exit 0
+- ✅ Bundle budget 38.2 KB ≤ 210 KB
+- ✅ PHP lint OK
+- ✅ Smoke: FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- ✅ Playwright funnel-payment: 13/13 passed
+- ✅ Regions validation: OK
+- ✅ Core product tests: dynamic-planner (36/36), coastal-lab (91/91), offers-contract (103/103), travel-30 (62/62), etc.
+
+**TEST FIXES** :
+- Fixed `autopilot-pr-blocking.test.cjs` for null selected handling
+- Rewrote `opencode-auto.test.cjs` for Node test runner compatibility
+- 78/79 test files pass (1 infra test flaky in CI: opencode-auto calls real API)
+
+**MERGE** : PR #786 squash merged → main (2797bc95a) → daily-copernicus auto-deploy
+
+---
+
 ## 2026-09-30 — E11 TRUST ROW : mesure post-ship J+7 (NEUTRE, prolongation J+14)
 
 **CONTEXTE** : tache `tasks.md` E11 marquee "[~] fix local + NEXT PR" alors que la PR **#705 etait deja mergee dans main le 2026-09-22** (Regression Guard : rebase de `agent/ui/e11-trust-row-rebased` → commit "skipped as previously applied" = `17c46f1bb` deja dans main). Branches locales stales supprimees.

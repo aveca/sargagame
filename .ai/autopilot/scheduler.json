@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "selectedId": "OPP-DISC-seo-opportunity-global-seo-SEO-opportunities-documented-in-S",
+  "claimedId": "OPP-visual-shift-florida-deep-1-deep-1",
+  "status": "blocked-by-pr",
+  "cycleId": "2026-10-01-044036379-p3u8-1f30x",
+  "prNumber": 777,
+  "prBlocking": true,
+  "blockReason": "PR #777 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
+  "updatedAt": "2026-10-01T04:40:40.082Z",
+  "dispatch": {
+    "parked": true,
+    "reason": "UX hypothesis invalid: Scope fichiers manquant"
+  }
+}

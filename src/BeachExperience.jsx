@@ -199,6 +199,8 @@ export default function BeachExperience({
      quittée (pile in-world de la session). Tout est OPTIONNEL : absent → le
      rail et le geste bord ne s'installent même pas (?sgjourney=0 côté parent). */
   stay = null, stayPrev = null, onStayBack = null,
+  /* DYNAMIC PLANNER (2026-10-01) : add beach to plan */
+  onAddToPlan = () => {},
 }) {
   const [whyOpen, setWhyOpen] = useState(false)
   const [tmrOpen, setTmrOpen] = useState(false)
@@ -900,15 +902,27 @@ export default function BeachExperience({
 
           {/* Trip — suite naturelle (TripPlanner existant, jamais recodé) */}
           <section className="bx-sec">
-            <button type="button" className="bx-reveal-btn" style={{ borderStyle: "dashed", borderColor: "rgba(255,199,44,.55)" }}
-              onClick={() => { trk("sg_trip_open", { source: "experience" }); onPlanTrip && onPlanTrip() }}
-              data-testid="exp-trip-open">
-              <span>
-                <span className="bx-kicker">{L("Ton séjour", "Your stay", "Tu estancia")}</span>
-                <span className="bx-reveal-name">{L("La meilleure plage chaque jour →", "Best beach each day →", "Mejor playa cada día →")}</span>
-              </span>
-              <span className="bx-chev" aria-hidden="true">→</span>
-            </button>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button type="button" className="bx-reveal-btn" style={{ borderStyle: "dashed", borderColor: "rgba(255,199,44,.55)" }}
+                onClick={() => { trk("sg_trip_open", { source: "experience" }); onPlanTrip && onPlanTrip() }}
+                data-testid="exp-trip-open">
+                <span>
+                  <span className="bx-kicker">{L("Ton séjour", "Your stay", "Tu estancia")}</span>
+                  <span className="bx-reveal-name">{L("La meilleure plage chaque jour →", "Best beach each day →", "Mejor playa cada día →")}</span>
+                </span>
+                <span className="bx-chev" aria-hidden="true">→</span>
+              </button>
+              {/* DYNAMIC PLANNER: Add to plan button */}
+              <button type="button" className="bx-reveal-btn bx-plan-btn" style={{ background: "rgba(255,199,44,.12)", borderStyle: "dashed", borderColor: "rgba(255,199,44,.55)" }}
+                onClick={() => { trk("sg_plan_add_beachexp", { beach_id: beach.id }); onAddToPlan(beach.id) }}
+                data-testid="exp-plan-add">
+                <span>
+                  <span className="bx-kicker">{L("Mon plan", "My plan", "Mi plan")}</span>
+                  <span className="bx-reveal-name">{L("Ajouter cette plage →", "Add this beach →", "Añadir esta playa →")}</span>
+                </span>
+                <span className="bx-chev" aria-hidden="true">+</span>
+              </button>
+            </div>
           </section>
 
           {/* Share — carte de voyage partageable */}
