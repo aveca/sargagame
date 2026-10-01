@@ -3,33 +3,30 @@
 ### Travail effectué
 - **Résumé 1 ligne** : E11 trust row déjà mergée main (PR #705, 09-22 — tâche stale corrigée) ; mesure post-ship J+7 = 7,9 % vs baseline 11,2 %, non significatif (p≈0,33), aval intact → GARDER, re-mesure J+14.
 - **Détails** :
-  - Regression Guard : rebase `agent/ui/e11-trust-row-rebased` → commit sauté "previously applied" (`17c46f1bb` dans main) ; 2 branches locales stales supprimées ; aucune PR E11 orpheline restante.
-  - Mesure `.ai/E11_POST_SHIP_J7.md` : 09-22→09-29 = 114 vues / 9 CTA = 7,9 % ; z=0,968 p≈0,33 ; bande 0-13 % respectée ; cta→onsite 100 % ; conversion 0 (inchangé) ; trafic vues ÷2 → puissance faible.
-  - Décision panel (produit/adversarial) : garder (coût nul, rollback `?trust_row=0` dispo et vérifié dans `src/PassOffer.jsx`), prolongation fenêtre à J+14 (2026-10-06) ; règle de sortie : cumul ≤8 % avec N≥200 vues → revert.
+  - Regression Guard : rebase `agent/ui/e11-trust-row-rebased` → commit sauté "previously applied" (`17c46f1bb` dans main) ; 2 branches locales stales supprimées.
+  - Mesure `.ai/E11_POST_SHIP_J7.md` : 09-22→09-29 = 114 vues / 9 CTA = 7,9 % ; z=0,968 p≈0,33 ; bande 0-13 % respectée ; cta→onsite 100 % ; trafic vues ÷2 → puissance faible.
+  - Décision : garder (rollback `?trust_row=0` vérifié dans `src/PassOffer.jsx`), re-mesure J+14 (2026-10-06) ; seuil revert : cumul ≤8 % avec N≥200 vues.
+  - ⚠️ Ce worktree est actif pour le runner autopilot (commits/reset concurrents observés en session) — travailler sur branche dédiée et pousser vite.
 
 ### Fichiers modifiés
-- `.ai/E11_POST_SHIP_J7.md` (NOUVEAU) — jour par jour + stat + décision
-- `.ai/tasks.md` — entrée E11 corrigée (main réel, mesure, NEXT re-mesure)
-- `.ai/changelog.md` — entrée E11 mesure
-- `.ai/current_state.md` — ce handoff
-- Aucun code produit modifié.
+- `.ai/E11_POST_SHIP_J7.md` (NOUVEAU) · `.ai/tasks.md` · `.ai/changelog.md` · `.ai/current_state.md`
+- Aucun code produit modifié (docs uniquement).
 
 ### Tests réalisés
-- [x] Regression Guard git (rebase preuve merge antérieur) → OK
-- [x] Données = pipelines committés (`daily-metrics.json`), zéro requête ad hoc
-- [ ] Build/smoke : N/A (docs uniquement, 0 code touché)
+- [x] Regression Guard git → OK · données pipelines committées (zéro requête ad hoc)
+- [ ] Build/smoke : N/A (docs uniquement)
 
 ### Problèmes restants
-- [ ] E11 re-mesure J+14 le 2026-10-06 (cumul 09-22→10-05, seuil revert ≤8 % & N≥200) — Rôle : uiux-agent
-- [ ] Volume PassOffer ÷2 vs baseline — surveiller cause trafic (non E11) — Rôle : growth_agent
+- [ ] E11 re-mesure J+14 le 2026-10-06 — Rôle : uiux-agent
+- [ ] Volume vues PassOffer ÷2 vs baseline — surveiller cause trafic — Rôle : growth_agent
 
 ### Prochaine action recommandée
 1. 2026-10-06 : re-mesure E11 J+14 cumulée — Rôle : uiux-agent
-2. PR money-path (#778 mergée) : probe prod claim_referral_credit → 200 — Rôle : release_agent
+2. Probe prod `claim_referral_credit` → 200 (PR #778 mergée) — Rôle : release_agent
 
 ### Branche / PR
-- Branche : `main` (docs direct)
-- Commit head : `à remplir`
+- Branche : `agent/ui/e11-j7-measure` → PR auto-merge
+- Commit head : `d413371e9` (+ amend handoff)
 
 ---
 
@@ -65,8 +62,10 @@
 3. CORS Tulum (`sargazotulum.com` → allowlists) — Rôle : coding_agent
 
 ### Branche / PR
-- Branche : `agent/coding/mollie-400-claim-applepay` (à créer)
-- Commit head : `à remplir`
+- Branche : `agent/coding/mollie-400-claim-applepay`
+- PR : #778 MERGED (squash `534d50ee`, 2026-09-30T08:44:56Z) — CI 7/7 verte
+- Deploy Live : SUCCESS (Build + Workers sg-payments + Pages 6 régions + purge cache + health 6/6)
+- Prod : `version.json b=534d50ee` · `POST claim_referral_credit` → **200** `{days:0}` sur les 6 domaines (avant : 400)
 
 ---
 

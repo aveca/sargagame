@@ -1,6 +1,6 @@
 {
-  "id": "2026-09-30-1255",
-  "at": "2026-09-30T12:55:09.826Z",
+  "id": "2026-09-30-185531570-pkp4-1slqv",
+  "at": "2026-09-30T18:55:34.496Z",
   "heavy": false,
   "regions": {
     "mq": {
@@ -21,29 +21,34 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=168776373",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794537793&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=155681549",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794537793&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772910676&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=168776373",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794537793&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=155681549",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794537793&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=155681549",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 89,
-            "dcl": 299,
-            "load": 473,
-            "total": 2814
+            "ttfb": 2843,
+            "dcl": 3119,
+            "load": 3479,
+            "total": 5633
           },
-          "bytes": 384324,
-          "lcp": 2152,
+          "bytes": 384220,
+          "lcp": 4976,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -53,7 +58,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-home-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0009,
+            "pctHot": 0.0032,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -72,34 +79,34 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t1h2v9248042081za200zd9248042081xf1&_p=1790794541306&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9538433",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t1h2v9248042081za200zd9248042081xf1&_p=1790794541306&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9538433",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=623992550",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t1h2v9248042081za200zd9248042081xf1&_p=1790794541306&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9538433",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69s1v9248042081za200zd9248042081xf1&_p=1790772914068&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t1h2v9248042081za200zd9248042081xf1&_p=1790794541306&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 38,
-            "dcl": 232,
-            "load": 368,
-            "total": 2740
+            "ttfb": 131,
+            "dcl": 344,
+            "load": 2321,
+            "total": 2851
           },
-          "bytes": 439447,
-          "lcp": 244,
+          "bytes": 442125,
+          "lcp": 352,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
@@ -109,7 +116,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-paywall-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -122,13 +131,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 173,
-            "dcl": 424,
-            "load": 451,
-            "total": 2931
+            "ttfb": 139,
+            "dcl": 434,
+            "load": 498,
+            "total": 2951
           },
-          "bytes": 127835,
-          "lcp": 424,
+          "bytes": 131667,
+          "lcp": 436,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -138,7 +147,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-1-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0011,
+            "pctHot": 0.0024,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -157,39 +168,34 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_eu=AEA&_fplc=0&ae=a&are=",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794548826&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794548826&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=528481339",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794548826&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=528481339",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
-              "status": 0,
-              "error": "net::ERR_ABORTED"
-            },
-            {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0h2v9248042081za200zd9248042081xf1&_p=1790772921926&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1051331",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je69t0v9248042081za200zd9248042081xf1&_p=1790794548826&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=528481339",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 206,
-            "dcl": 282,
-            "load": 466,
-            "total": 2789
+            "ttfb": 151,
+            "dcl": 347,
+            "load": 790,
+            "total": 2863
           },
-          "bytes": 384287,
-          "lcp": 1996,
+          "bytes": 384215,
+          "lcp": 2252,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -199,7 +205,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0009,
+            "pctHot": 0.0032,
+            "flagged": false
           },
           "httpStatus": 200
         }
@@ -223,24 +231,29 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772925463&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=470139366",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794552382&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=640062091",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772925463&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=470139366",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794552382&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=640062091",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794552382&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=640062091",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 38,
-            "dcl": 400,
-            "load": 439,
-            "total": 2907
+            "ttfb": 141,
+            "dcl": 367,
+            "load": 776,
+            "total": 2884
           },
-          "bytes": 381332,
-          "lcp": 2312,
+          "bytes": 381465,
+          "lcp": 2116,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -250,7 +263,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-home-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0595,
+            "pctHot": 0.131,
+            "flagged": true
           },
           "httpStatus": 200
         },
@@ -269,24 +284,29 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772928631&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=197670050",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794555782&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=990995178",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772928631&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=197670050",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794555782&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=990995178",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794555782&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=990995178",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 75,
-            "dcl": 139,
-            "load": 148,
-            "total": 2645
+            "ttfb": 148,
+            "dcl": 458,
+            "load": 2455,
+            "total": 2965
           },
-          "bytes": 436680,
-          "lcp": 136,
+          "bytes": 439284,
+          "lcp": 452,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
@@ -296,7 +316,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-paywall-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -315,24 +337,29 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772931860&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=181941679",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794559151&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852615697",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1v9255060904za200zd9255060904xf1&_p=1790772931860&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=181941679",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794559151&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852615697",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0v9255060904za200zd9255060904xf1&_p=1790794559151&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852615697",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 132,
-            "dcl": 282,
-            "load": 353,
-            "total": 2788
+            "ttfb": 141,
+            "dcl": 388,
+            "load": 798,
+            "total": 2904
           },
-          "bytes": 381384,
-          "lcp": 2008,
+          "bytes": 381652,
+          "lcp": 2164,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -342,7 +369,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-deep-1-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0007,
+            "pctHot": 0.0018,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -361,34 +390,29 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0h1v9255060904za200zd9255060904xf1&_p=1790794562549&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1122886",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0h1v9255060904za200zd9255060904xf1&_p=1790794562549&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1122886",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
-              "status": 0,
-              "error": "net::ERR_ABORTED"
-            },
-            {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69s1h1v9255060904za200zd9255060904xf1&_p=1790772935056&gcs=G100&gcd=13p3p3p3p5l1&npa=1&dma_cps=-&dma=0&_fplc=0&are=1&cid=1644687",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je69t0h1v9255060904za200zd9255060904xf1&_p=1790794562549&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1122886",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 165,
-            "dcl": 227,
-            "load": 365,
-            "total": 2732
+            "ttfb": 141,
+            "dcl": 397,
+            "load": 818,
+            "total": 2915
           },
-          "bytes": 381381,
-          "lcp": 1904,
+          "bytes": 381612,
+          "lcp": 2276,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -398,7 +422,9 @@
           "brokenLinks": [],
           "shot": "shots/florida-deep-2-390.png",
           "visual": {
-            "seeded": true
+            "meanAbs": 0.0007,
+            "pctHot": 0.0018,
+            "flagged": false
           },
           "httpStatus": 200
         }
@@ -411,7 +437,7 @@
     "pageErrors": 0,
     "firstPartyFailures": 7,
     "brokenLinks": 0,
-    "visualFlagged": 0
+    "visualFlagged": 1
   },
-  "durationSec": 28
+  "durationSec": 31
 }

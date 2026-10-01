@@ -105,7 +105,7 @@ function writeRegression(id, details) {
  */
 function writeRunReport(report) {
   fs.mkdirSync(paths.runs, { recursive: true });
-  const secs = ['OBSERVED', 'REVENUE', 'RESEARCHED', 'FOUND', 'MEASURED', 'IMPLEMENTED', 'TESTED', 'FAILED', 'FIXED', 'PR', 'NEXT'];
+  const secs = ['OBSERVED', 'REVENUE', 'RESEARCHED', 'FOUND', 'MEASURED', 'SELECTED', 'IMPLEMENTED', 'TESTED', 'FAILED', 'FIXED', 'PR', 'PARKED', 'READY', 'FACTORY_STOP', 'NEXT'];
   const lines = [];
   lines.push(`# Autopilot run ${report.id}`);
   lines.push('');
@@ -128,7 +128,7 @@ function writeRunReport(report) {
 function newReport(id) {
   return {
     id, startedAt: nowIso(), stopped: false, stopReason: null,
-    sections: { OBSERVED: [], REVENUE: [], RESEARCHED: [], FOUND: [], MEASURED: [], IMPLEMENTED: [], TESTED: [], FAILED: [], FIXED: [], PR: [], NEXT: [] },
+    sections: { OBSERVED: [], REVENUE: [], RESEARCHED: [], FOUND: [], MEASURED: [], SELECTED: [], IMPLEMENTED: [], TESTED: [], FAILED: [], FIXED: [], PR: [], PARKED: [], READY: [], FACTORY_STOP: [], NEXT: [] },
   };
 }
 

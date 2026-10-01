@@ -508,6 +508,9 @@ function makeOpp({ type, region, route, severity, evidence, source, expectedImpa
   return {
     id: 'OPP-DISC-' + fingerprint.replace(/[^a-z0-9]+/gi, '-').slice(0, 60),
     fingerprint,
+    // Contrat opportunité : type/region/route requis par processOpportunity
+    // (orchestrator.cjs) — ne jamais les omettre (crash .includes sur undefined).
+    type, region, route,
     title: `${type} on ${region}/${route} — ${String(evidence || '').slice(0, 60)}`,
     source,
     severity,
@@ -574,4 +577,4 @@ function scoreOpportunity(o, cfg) {
     - (EFFORT_PENALTY[o.actionable] ?? 999);
 }
 
-module.exports = { runDiscovery, DISCOVERY_SOURCES };
+module.exports = { runDiscovery, DISCOVERY_SOURCES, makeOpp };

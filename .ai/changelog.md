@@ -1,3 +1,14 @@
+## 2026-09-30 — E11 TRUST ROW : mesure post-ship J+7 (NEUTRE, prolongation J+14)
+
+**CONTEXTE** : tache `tasks.md` E11 marquee "[~] fix local + NEXT PR" alors que la PR **#705 etait deja mergee dans main le 2026-09-22** (Regression Guard : rebase de `agent/ui/e11-trust-row-rebased` → commit "skipped as previously applied" = `17c46f1bb` deja dans main). Branches locales stales supprimees.
+**MESURE** (`.ai/E11_POST_SHIP_J7.md`, daily-metrics committes, fenetre 09-22→09-29 vs baseline 11,2 % gellee) :
+- Post-ship 7j : 114 vues / 9 CTA = **7,9 %** — z = 0,968, p ≈ 0,33 → **non significatif**, dans la bande de decision 0-13 %.
+- Aval intact : `cta_to_onsite` = 100 % (9/9), `conversion` = 0 (inchange), volume vues PassOffer ÷2 (35,7→16,3 j).
+**DECISION** : GARDER la trust row, **prolonger mesure a J+14 (2026-10-06)**. Regle de sortie : taux cumule ≤8 % avec N≥200 vues → revert `?trust_row=0`.
+**PROOF** : doc `.ai/E11_POST_SHIP_J7.md` (jour par jour + stat) ; rollback verifie present dans `src/PassOffer.jsx`. Aucun code modifie (docs seules).
+
+---
+
 ## 2026-09-30 — MONEY-PATH 400 FIX : claim_referral_credit + applepay_merchant_session routés sur sg-payments (+PHP parity)
 
 **PROBLEM** : HTTP 400 `{"error":"action_inconnue"}` first-party `POST /api/mollie.php` sur CHAQUE chargement de page (home/paywall/beach/deep × 4 viewports × MQ+Florida — `probe-manual-2.json`), classé à tort "bruit bénin P2".
