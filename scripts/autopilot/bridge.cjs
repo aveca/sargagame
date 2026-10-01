@@ -19,13 +19,31 @@ const CONFIDENCE = new Set(['proven', 'observed', 'inferred']);
 const FENCE = String.fromCharCode(96).repeat(3);
 
 function gh(args, cwd = C.ROOT) {
-  const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
-  return execFileSync(bin, args, {
-    cwd,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-    timeout: 60000,
-  }).trim();
+  const isWin = process.platform === 'win32';
+  const primary = isWin ? 'C:\\\\Program Files\\\\GitHub CLI\\\\gh.exe' : '/usr/local/bin/gh';
+  const fallback = isWin ? 'gh.exe' : 'gh';
+
+  try {
+    return execFileSync(primary, args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: 60000,
+    }).trim();
+  } catch (primaryError) {
+    console.log(`[bridge] gh primary path (${primary}) failed: ${primaryError.message}. Trying fallback.`);
+    try {
+      return execFileSync(fallback, args, {
+        cwd,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+        timeout: 60000,
+      }).trim();
+    } catch (fallbackError) {
+      console.log(`[bridge] gh fallback (${fallback}) also failed: ${fallbackError.message}`);
+      throw primaryError;
+    }
+  }
 }
 
 function extractTask(body = '') {
@@ -169,11 +187,22 @@ function ingestOpenIssues({ dry = false, log = console.log } = {}) {
   }
 
   if (imported && !dry) mem.saveQueue(queue);
-  return { issues: issues.length, imported, ignored };
+return { issues: issues.length, imported, ignored };
+}
+function ghHealthCheck(log = console.log) {
+  try {
+    const version = gh(['--version']);
+    log(`[bridge] Health check: gh version: ${version}`);
+    return true;
+  } catch (e) {
+    log(`[bridge] Health check failed: ${e.message}`);
+    return false;
+  }
 }
 
 if (require.main === module) {
   try {
+    ghHealthCheck();
     const dry = process.argv.includes('--dry');
     const result = ingestOpenIssues({ dry, log: console.log });
     console.log('BRIDGE ' + (dry ? 'DRY' : 'PASS') + ' · issues=' + result.issues + ' imported=' + result.imported + ' ignored=' + result.ignored);
@@ -189,4 +218,5 @@ module.exports = {
   inferPersona,
   toOpportunity,
   ingestOpenIssues,
+  priorityToSeverity,
 };

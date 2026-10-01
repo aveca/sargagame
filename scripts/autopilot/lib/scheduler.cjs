@@ -27,7 +27,7 @@ function schedulerPath() { return SCHEDULER_FILE; }
 
 function loadScheduler() {
   return readJSON(SCHEDULER_FILE, {
-    version: 1, selectedId: null, claimedId: null, status: 'idle',
+    version: 1, selectedId: null, claimedId: null, claimedIds: [], status: 'idle',
     cycleId: null, prNumber: null, prBlocking: null, blockReason: null, updatedAt: null,
   });
 }
@@ -100,54 +100,67 @@ function isPrBlocking(pr, selected, queue) {
   }
   const mergeable = String(pr.mergeable || '').toUpperCase();
   if (mergeable === 'CONFLICTING') {
-    // Conflit détecté : potentiellement réparable automatiquement (rebase)
-    // L'orchestrateur tentera la réparation avant de bloquer.
     return { blocking: true, reason: `PR #${pr.number} en conflit (mergeable=CONFLICTING) — tentative de réparation auto`, code: 'PR_CONFLICT_REPAIRABLE' };
   }
   const mss = String(pr.mergeStateStatus || '').toUpperCase();
   if (mss === 'DIRTY') {
     return { blocking: true, reason: `PR #${pr.number} mergeStateStatus=DIRTY — tentative de réparation auto`, code: 'PR_CONFLICT_REPAIRABLE' };
   }
+
+  // Si selected est explicitement null → observation-only (bloquant)
+  if (selected === null) {
+    return { blocking: true, reason: 'nothing selected — observation only', code: 'NO_SELECTION' };
+  }
+
+  // Si selected est une opportunité, la vérifier
+  // Si selected est undefined, vérifier les claimedIds
+  const toCheck = selected ? [selected] : [];
   if (!selected) {
-    return { blocking: true, reason: `PR #${pr.number} open + rien d'exécutable — observation only`, code: 'NO_SELECTION' };
+    const st = loadScheduler();
+    const claimedIds = st.claimedIds || [];
+    if (claimedIds.length > 0) {
+      const opportunities = queue && queue.opportunities || [];
+      const claimedOpportunities = claimedIds.map(id => opportunities.find(o => o.id === id)).filter(Boolean);
+      toCheck.push(...claimedOpportunities);
+    }
   }
-  const opps = (queue && queue.opportunities) || [];
-  const selInQueue = opps.find(o => o.id === selected.id) || selected;
-  // Tâche déjà claimée/en cours → ne pas dupliquer : on considère bloqué sur doublon
-  // (le cycle doit reprendre l'état, pas recréer).
-  const ACTIVE = new Set(['picked', 'in_progress', 'validation']);
-  const linked = findLinkedOpp(pr, queue);
-  if (linked && linked.id === selected.id && ACTIVE.has(linked.status)) {
-    return { blocking: true, reason: `PR #${pr.number} liée à ${selected.id} déjà ${linked.status} — pas de doublon, reprise au prochain cycle`, code: 'ALREADY_CLAIMED' };
+
+  // Si rien à vérifier (ni selected ni claimed), PR non bloquant
+  if (toCheck.length === 0) {
+    return { blocking: false, reason: 'no opportunity to check', code: 'NO_OPP_TO_CHECK' };
   }
-  if (ACTIVE.has(selInQueue.status) && linked && linked.id !== selected.id) {
-    // selected déjà en cours mais PR liée à un AUTRE travail → collision de branche/worktree
-    // On reste prudent : bloquant, avec état persistant.
-    return { blocking: true, reason: `${selected.id} déjà ${selInQueue.status} + PR #${pr.number} (${pr.headRefName}) en vol — pas de travail concurrent`, code: 'ALREADY_CLAIMED' };
+
+  // Vérifier si le PR bloque une quelconque des opportunités à vérifier
+  for (const opp of toCheck) {
+    if (!opp) continue;
+    const ACTIVE = new Set(['picked', 'in_progress', 'validation']);
+    const linked = findLinkedOpp(pr, queue);
+    if (linked && linked.id === opp.id && ACTIVE.has(linked.status)) {
+      return { blocking: true, reason: `PR #${pr.number} liée à ${opp.id} déjà ${linked.status} — pas de doublon, reprise au prochain cycle`, code: 'ALREADY_CLAIMED' };
+    }
+    if (ACTIVE.has(opp.status) && linked && linked.id !== opp.id) {
+      return { blocking: true, reason: `${opp.id} déjà ${opp.status} + PR #${pr.number} (${pr.headRefName}) en vol — pas de travail concurrent`, code: 'ALREADY_CLAIMED' };
+    }
+    if (linked && opp.branch && linked.branch === opp.branch) {
+      return { blocking: true, reason: `même branche ${opp.branch} que PR #${pr.number} — observation only`, code: 'SAME_BRANCH' };
+    }
+    if (pr.headRefName && opp.branch && pr.headRefName === opp.branch) {
+      return { blocking: true, reason: `même branche ${opp.branch} que PR #${pr.number} — observation only`, code: 'SAME_BRANCH' };
+    }
+    const oppSurface = surfaceOfOpp(opp);
+    const linkedSurface = linked ? surfaceOfOpp(linked) : null;
+    if (linkedSurface && linkedSurface === oppSurface && oppSurface !== 'misc') {
+      return { blocking: true, reason: `surface "${oppSurface}" occupée par PR #${pr.number} (${linked.id}) — 1 change per surface`, code: 'SURFACE_BUSY' };
+    }
+    const prFiles = pr.files || [];
+    const oppFiles = (opp.scope && opp.scope.files) || [];
+    if (prFiles.length && oppFiles.length && filesOverlap(prFiles, oppFiles)) {
+      return { blocking: true, reason: `PR #${pr.number} touche les mêmes fichiers (${oppFiles.slice(0, 3).join(', ')}) — observation only`, code: 'FILES_OVERLAP' };
+    }
   }
-  // Même branche → même travail en vol.
-  if (linked && selected.branch && linked.branch === selected.branch) {
-    return { blocking: true, reason: `même branche ${selected.branch} que PR #${pr.number} — observation only`, code: 'SAME_BRANCH' };
-  }
-  if (pr.headRefName && selected.branch && pr.headRefName === selected.branch) {
-    return { blocking: true, reason: `même branche ${selected.branch} que PR #${pr.number} — observation only`, code: 'SAME_BRANCH' };
-  }
-  // 1 changement par surface : même surface que le travail porté par la PR → bloquant.
-  const selSurface = surfaceOfOpp(selected);
-  const linkedSurface = linked ? surfaceOfOpp(linked) : null;
-  if (linkedSurface && linkedSurface === selSurface && selSurface !== 'misc') {
-    return { blocking: true, reason: `surface "${selSurface}" occupée par PR #${pr.number} (${linked.id}) — 1 change per surface`, code: 'SURFACE_BUSY' };
-  }
-  // Overlap fichiers PR vs scope sélectionné → bloquant (vrai conflit).
-  const prFiles = pr.files || [];
-  const selFiles = (selected.scope && selected.scope.files) || [];
-  if (prFiles.length && selFiles.length && filesOverlap(prFiles, selFiles)) {
-    return { blocking: true, reason: `PR #${pr.number} touche les mêmes fichiers (${selFiles.slice(0, 3).join(', ')}) — observation only`, code: 'FILES_OVERLAP' };
-  }
-  // Sinon : PR simplement ouverte (ex: #777 factory-only vs OPP LCP produit) → NON bloquante.
   return {
     blocking: false,
-    reason: `PR #${pr.number} ouverte mais non bloquante pour ${selected.id} (surface ${selSurface}, fichiers disjoints) — poursuite normale`,
+    reason: `PR #${pr.number} ouverte mais non bloquante (surfaces disjointes) — poursuite normale`,
     code: 'NON_BLOCKING',
   };
 }
@@ -186,6 +199,7 @@ function persistSelected(selected, cycleId, blockingInfo) {
  * Claim idempotent : new → picked (persisté queue + scheduler).
  * Si déjà picked/in_progress/validation → {alreadyClaimed:true}, aucun doublon.
  * Nécessite mem.updateOpportunity injecté pour rester testable sans I/O caché.
+ * Met également à jour le tableau claimedIds pour suivre plusieurs opportunités claimées.
  */
 function persistClaimed(selected, cycleId, updateFn) {
   const ACTIVE = new Set(['picked', 'in_progress', 'validation']);
@@ -194,6 +208,10 @@ function persistClaimed(selected, cycleId, updateFn) {
     const st = loadScheduler();
     st.claimedId = selected.id;
     st.selectedId = selected.id;
+    // Ajouter à claimedIds si pas déjà présent
+    if (!st.claimedIds.includes(selected.id)) {
+      st.claimedIds.push(selected.id);
+    }
     st.status = 'claimed';
     st.cycleId = cycleId;
     saveScheduler(st);
@@ -209,7 +227,11 @@ function persistClaimed(selected, cycleId, updateFn) {
   st.status = 'claimed';
   st.cycleId = cycleId;
   st.prBlocking = false;
-  st.blockReason = null;
+    st.blockReason = null;
+    // Ajouter à claimedIds
+    if (!st.claimedIds.includes(selected.id)) {
+      st.claimedIds.push(selected.id);
+    }
   saveScheduler(st);
   return { claimed: updated, alreadyClaimed: false, state: loadScheduler() };
 }

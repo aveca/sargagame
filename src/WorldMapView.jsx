@@ -728,7 +728,7 @@ export default function WorldMapView({
     // → lève le cap large ET montre les vertes quel que soit le zoom.
     const camK=camRef.current.k
     const wide = camK<=1.35
-    const MAX = mapLabelCapOff ? Infinity : (wide ? 8 : 14)
+    const MAX = mapLabelCapOff ? Infinity : (wide ? 12 : 20)
     const els=layer.querySelectorAll('[data-vx]')
     const RANK={avoid:0,moderate:1,clean:2}
     const boxes=[]
@@ -2591,3 +2591,4 @@ return (
     </div>
   )
 }
+
