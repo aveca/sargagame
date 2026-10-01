@@ -14,8 +14,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
-$cmd = Join-Path $repo "scripts\autopilot\autopilot.cmd"
-if (-not (Test-Path $cmd)) { throw "autopilot.cmd introuvable : $cmd" }
+$cmd = Join-Path $repo "scripts\autopilot\autopilot-live.cmd"
+if (-not (Test-Path $cmd)) { throw "autopilot-live.cmd introuvable : $cmd" }
 
 $action = New-ScheduledTaskAction -Execute "$env:ComSpec" -Argument "/c `"$cmd`"" -WorkingDirectory $repo
 

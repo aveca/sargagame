@@ -208,7 +208,8 @@ function persistClaimed(selected, cycleId, updateFn) {
     const st = loadScheduler();
     st.claimedId = selected.id;
     st.selectedId = selected.id;
-    // Ajouter à claimedIds si pas déjà présent
+    // Ensure claimedIds exists (migration for older scheduler.json)
+    if (!Array.isArray(st.claimedIds)) st.claimedIds = [];
     if (!st.claimedIds.includes(selected.id)) {
       st.claimedIds.push(selected.id);
     }
@@ -227,11 +228,12 @@ function persistClaimed(selected, cycleId, updateFn) {
   st.status = 'claimed';
   st.cycleId = cycleId;
   st.prBlocking = false;
-    st.blockReason = null;
-    // Ajouter à claimedIds
-    if (!st.claimedIds.includes(selected.id)) {
-      st.claimedIds.push(selected.id);
-    }
+  st.blockReason = null;
+  // Ensure claimedIds exists
+  if (!Array.isArray(st.claimedIds)) st.claimedIds = [];
+  if (!st.claimedIds.includes(selected.id)) {
+    st.claimedIds.push(selected.id);
+  }
   saveScheduler(st);
   return { claimed: updated, alreadyClaimed: false, state: loadScheduler() };
 }
