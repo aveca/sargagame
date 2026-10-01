@@ -1,5 +1,5 @@
 # install-scheduler.ps1 — installe la tache planifiee "SargagameAutopilot".
-# Reboot-proof : declencheurs AtStartup + repetition toutes les 4 h,
+# Reboot-proof : declencheurs AtStartup + repetition toutes les N h,
 # StartWhenAvailable (rattrape un tick manque), restart on failure x3,
 # priorite BelowNormal. Execution sous le compte courant, loggue ou non.
 #
@@ -15,7 +15,7 @@ param(
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation.MyCommand.Path))
 $cmd = Join-Path $repo "scripts\autopilot\autopilot.cmd"
-if (-not (Test-Path $cmd)) { throw "autopilot.cmd introuvable : $cmd" }
+if (-not (Test-Path $cmd)) { throw "autopilot-live.cmd introuvable : $cmd" }
 
 $action = New-ScheduledTaskAction -Execute "$env:ComSpec" -Argument "/c `"$cmd`"" -WorkingDirectory $repo
 
