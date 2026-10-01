@@ -119,6 +119,21 @@
     "enabled": false,
     "doc": ".ai/autopilot/personalization.md"
   },
+  "models": {
+    "$comment": "Modèles Ollama configurés par rôle. Priorité au local pour l'autonomie.",
+    "default": "mistral:latest",
+    "reasoning": "qwen3-coder:30b",
+    "fast": "mistral:latest",
+    "fallback": "mistral:latest",
+    "temperature": 0.2,
+    "timeoutSeconds": 120,
+    "maxTokens": 4096,
+    "resourceCost": {
+      "reasoning": "high",
+      "fast": "low",
+      "fallback": "low"
+    }
+  },
   "git": {
     "remote": "origin",
     "baseBranch": "main",
