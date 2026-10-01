@@ -61,27 +61,29 @@ function processStartTime(pid) {
   } catch (_) { return null; }
 }
 
-function readLock() {
-  try { return JSON.parse(fs.readFileSync(paths.lockFile, 'utf8')); } catch (_) { return null; }
+function readLock(lockFile) {
+  try { return JSON.parse(fs.readFileSync(lockFile || paths.lockFile, 'utf8')); } catch (_) { return null; }
 }
 
 /** Lecture brute : distingue « absent » (null + missing) de « corrompu ». */
-function readLockRaw() {
+function readLockRaw(lockFile) {
+  const f = lockFile || paths.lockFile;
   let raw = null;
-  try { raw = fs.readFileSync(paths.lockFile, 'utf8'); }
+  try { raw = fs.readFileSync(f, 'utf8'); }
   catch (e) { return { state: e.code === 'ENOENT' ? 'missing' : 'unreadable', error: e.message }; }
   try { return { state: 'ok', lock: JSON.parse(raw), raw }; }
   catch (e) { return { state: 'corrupt', error: e.message, raw }; }
 }
 
-function removeLock() { try { fs.unlinkSync(paths.lockFile); } catch (_) {} }
+function removeLock(lockFile) { try { fs.unlinkSync(lockFile || paths.lockFile); } catch (_) {} }
 
 /** Écriture atomique tmp→rename (jamais de JSON tronqué observable). */
-function writeLockAtomic(entry) {
-  fs.mkdirSync(path.dirname(paths.lockFile), { recursive: true });
-  const tmp = `${paths.lockFile}.${process.pid}.tmp`;
+function writeLockAtomic(entry, lockFile) {
+  const f = lockFile || paths.lockFile;
+  fs.mkdirSync(path.dirname(f), { recursive: true });
+  const tmp = `${f}.${process.pid}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(entry, null, 2), 'utf8');
-  fs.renameSync(tmp, paths.lockFile);
+  fs.renameSync(tmp, f);
 }
 
 /**
@@ -107,9 +109,15 @@ function holderAlive(holder) {
 
 /** Notre entrée (détenteur courant de CE processus). */
 let owned = null;
-function isOwner() {
+/** Fichier verrou détenu (défaut : paths.lockFile ; opts.lockFile pour tests). */
+let ownedFile = null;
+function lockFileOf(opts) {
+  return (opts && opts.lockFile) || paths.lockFile;
+}
+function isOwner(opts) {
   if (!owned) return false;
-  const cur = readLock();
+  const cur = readLock(ownedFile);
+  void opts;
   return !!cur && cur.pid === owned.pid && cur.token === owned.token;
 }
 
@@ -117,19 +125,21 @@ function isOwner() {
  * Tente d'acquérir. Retourne {ok:true, entry, release} ou
  * {ok:false, reason, holder, code:'LOCKED'|'CORRUPT'}.
  * opts.staleAfterMs : garde-fou ultime (défaut 2 h).
+ * opts.lockFile : chemin alternatif (tests — défaut paths.lockFile).
  */
 function acquire(opts = {}) {
   const staleAfter = opts.staleAfterMs || STALE_AFTER_MS_DEFAULT;
-  const raw = readLockRaw();
+  const lf = lockFileOf(opts);
+  const raw = readLockRaw(lf);
 
   if (raw.state === 'missing') {
     // Chemin rapide atomique : création exclusive, échec si un concurrent gagne.
     const entry = newEntry();
     try {
-      fs.mkdirSync(path.dirname(paths.lockFile), { recursive: true });
-      fs.writeFileSync(paths.lockFile, JSON.stringify(entry, null, 2), { flag: 'wx', encoding: 'utf8' });
+      fs.mkdirSync(path.dirname(lf), { recursive: true });
+      fs.writeFileSync(lf, JSON.stringify(entry, null, 2), { flag: 'wx', encoding: 'utf8' });
     } catch (e) {
-      if (e.code === 'EEXIST') return acquireContended();
+      if (e.code === 'EEXIST') return acquireContended(lf);
       return { ok: false, reason: `lock non acquis (FS: ${e.message})`, code: 'LOCKED' };
     }
     return claimVerified(entry, 'créé (atomique)', opts);
@@ -139,7 +149,7 @@ function acquire(opts = {}) {
     // Fail-closed : on ne devine jamais. Le fichier est préservé pour diagnostic.
     return {
       ok: false,
-      reason: `lock ${raw.state} (${paths.lockFile}) — refus fail-closed, intervention requise : inspecter puis supprimer le fichier. Détail : ${raw.error || ''}`.slice(0, 300),
+      reason: `lock ${raw.state} (${lf}) — refus fail-closed, intervention requise : inspecter puis supprimer le fichier. Détail : ${raw.error || ''}`.slice(0, 300),
       code: 'CORRUPT',
     };
   }
@@ -169,8 +179,8 @@ function acquire(opts = {}) {
 }
 
 /** Perdu la course 'wx' : relit l'état réel et refuse proprement. */
-function acquireContended() {
-  const cur = readLock();
+function acquireContended(lf) {
+  const cur = readLock(lf);
   return {
     ok: false,
     reason: `course d'acquisition perdue — lock détenu par PID ${cur && cur.pid} (démarré ${cur && cur.startedAt})`,
@@ -193,7 +203,8 @@ function newEntry() {
 
 /** Vérifie qu'on possède bien ce qu'on vient d'écrire (anti-TOCTOU résiduel). */
 function claimVerified(entry, how, opts = {}) {
-  const cur = readLock();
+  const lf = lockFileOf(opts);
+  const cur = readLock(lf);
   if (!cur || cur.pid !== entry.pid || cur.token !== entry.token) {
     return { ok: false, reason: 'vérification post-écriture échouée — un concurrent a gagné, refus', holder: cur, code: 'LOCKED' };
   }
@@ -202,6 +213,7 @@ function claimVerified(entry, how, opts = {}) {
 
 function hold(entry, how, opts = {}) {
   owned = entry;
+  ownedFile = lockFileOf(opts);
   const release = () => releaseOwned();
   process.on('exit', () => releaseOwned());
   if (!opts.noSignalHandlers && !hold._sig) {
@@ -215,29 +227,31 @@ function hold(entry, how, opts = {}) {
 
 /** Reprise d'un lock stale : backup horodaté PUIS remplacement vérifié. */
 function takeover(existing, why, opts = {}) {
+  const lf = lockFileOf(opts);
   const entry = newEntry();
   // 1. Preuve conservée (jamais de suppression silencieuse).
   try {
-    const bak = `${paths.lockFile}.stale-${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}.json`;
+    const bak = `${lf}.stale-${new Date().toISOString().replace(/[:.]/g, '').slice(0, 15)}.json`;
     fs.mkdirSync(path.dirname(bak), { recursive: true });
     fs.writeFileSync(bak, JSON.stringify({ takenAt: nowIso(), takenBy: entry.pid, why, previous: existing }, null, 2), 'utf8');
   } catch (_) {}
   // 2. Relecture anti-course : si le lock a changé depuis, quelqu'un a gagné → refus.
-  const cur = readLock();
+  const cur = readLock(lf);
   if (cur && (cur.pid !== (existing && existing.pid) || cur.token !== (existing && existing.token))) {
     return { ok: false, reason: 'reprise avortée — le lock a changé pendant la vérification (concurrent actif), refus', holder: cur, code: 'LOCKED' };
   }
   // 3. Remplacement atomique + vérification.
-  try { writeLockAtomic(entry); }
+  try { writeLockAtomic(entry, lf); }
   catch (e) { return { ok: false, reason: `reprise échouée (FS: ${e.message})`, code: 'LOCKED' }; }
   return claimVerified(entry, why, opts);
 }
 
 function releaseOwned() {
   if (!owned) return false;
-  const cur = readLock();
-  if (cur && cur.pid === owned.pid && cur.token === owned.token) { removeLock(); owned = null; return true; }
+  const cur = readLock(ownedFile);
+  if (cur && cur.pid === owned.pid && cur.token === owned.token) { removeLock(ownedFile); owned = null; ownedFile = null; return true; }
   owned = null;
+  ownedFile = null;
   return false;
 }
 
@@ -249,14 +263,15 @@ function release() { return releaseOwned(); }
  */
 function heartbeat() {
   if (!isOwner()) return { ok: false, reason: 'non-détenteur — heartbeat refusé' };
-  const cur = readLock();
+  const cur = readLock(ownedFile);
   cur.heartbeatAt = nowIso();
-  try { writeLockAtomic(cur); owned = cur; return { ok: true }; }
+  try { writeLockAtomic(cur, ownedFile); owned = cur; return { ok: true }; }
   catch (e) { return { ok: false, reason: e.message }; }
 }
 
-function status() {
-  const raw = readLockRaw();
+function status(opts = {}) {
+  const lf = lockFileOf(opts);
+  const raw = readLockRaw(lf);
   if (raw.state === 'missing') return { locked: false };
   if (raw.state !== 'ok') return { locked: false, state: raw.state, error: raw.error };
   const l = raw.lock;
