@@ -1,20 +1,20 @@
-## 2026-10-01 · Agent: coding (AUTOPILOT PHASE 2-3) — model router + multi-claim scheduler + label cap increase merged
+## 2026-10-01 · Agent: coding (DYNAMIC BEACH DAY PLANNER COMPLETION) — plan strip + add to plan button shipped
 
 ### Travail effectué
-- **Résumé 1 ligne** : Autopilot Phase 2-3 livré — model router intelligent, scheduler multi-claim, label cap increase (8→12 wide, 14→20 zoomed) — PR #786 squash merged.
+- **Résumé 1 ligne** : Dynamic Beach Day Planner complété — plan strip dans TripPlanner + bouton "Add to plan" dans BeachExperience — tous gates verts.
 - **Détails** :
-  - Model Router (`.ai/ux-agent/opencode-auto.cjs`) : `loadModelMetrics`, `classifyTaskType`, `calculateBackendScore`, `sortBackendsByTaskType` — sélection modèle par type tâche + métriques historiques.
-  - Multi-Claim Scheduler (`scripts/autopilot/lib/scheduler.cjs`) : `claimedIds` array, `isPrBlocking` vérifie toutes claimed opportunities, `persistClaimed` met à jour `claimedIds`.
-  - Map Label Cap (`src/WorldMapView.jsx`) : MAX wide 8→12, zoomé 14→20 (DEC-2026-08-28).
-  - Test fixes : `autopilot-pr-blocking.test.cjs` (null selected), `opencode-auto.test.cjs` (Node test runner).
+  - Plan Strip dans TripPlanner (`src/TripPlanner.jsx`) : affiche plages ajoutées au plan, bouton remove par plage, bouton clear plan, click → sync map via `onPlanLocationChange`.
+  - Bouton "Add to plan" dans BeachExperience (`src/BeachExperience.jsx`) : bouton à côté de Trip, track `sg_plan_add_beachexp`, appelle `onAddToPlan`.
+  - État plan dans Sargasses_PROD.jsx : `planBeaches` (localStorage), `addToPlan`, `removeFromPlan`, `clearPlan`, `onMapSync`, `onPlanLocationChange`.
+  - Props TripPlanner : `planBeaches`, `onAddToPlan`, `onRemoveFromPlan`, `onClearPlan`, `onPlanLocationChange`.
+  - Rollbacks : `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off).
 
 ### Fichiers modifiés
-- `.ai/ux-agent/opencode-auto.cjs` (model router)
-- `scripts/autopilot/lib/scheduler.cjs` (multi-claim)
-- `src/WorldMapView.jsx` (label cap)
-- `scripts/autopilot/bridge.cjs` (bridge fix)
-- `tests/unit/autopilot-pr-blocking.test.cjs` (fix null selected)
-- `tests/unit/opencode-auto.test.cjs` (réécrit pour Node test runner)
+- `src/TripPlanner.jsx` (plan strip + props)
+- `src/BeachExperience.jsx` (bouton Add to plan + prop onAddToPlan)
+- `src/Sargasses_PROD.jsx` (plan state + callbacks + TripPlanner props)
+- `src/components/PlanningContextBar.jsx`, `ScenarioPanel.jsx`, `PlanTimeline.jsx`, `ComparisonView.jsx` (inchangés, déjà présents)
+- `src/lib/dynamic-planner.js` (inchangé, déjà présent)
 
 ### Tests réalisés
 - [x] npm run build → exit 0
@@ -23,11 +23,11 @@
 - [x] ux-smoke → 4 tokens OK
 - [x] funnel-payment E2E → 13/13
 - [x] regions assertAllRegionsValid → OK
-- [x] Core product tests: dynamic-planner 36/36, coastal-lab 91/91, offers-contract 103/103, travel-30 62/62
-- [x] 78/79 test files pass (1 infra test flaky CI: opencode-auto appelle API réelle)
+- [x] Dynamic planner unit tests → 36/36 PASS
 
 ### Prochaine action recommandée
-1. Compléter Dynamic Planner (map sync, E2E tests, bouton "Add to plan") — Rôle : coding_agent
+1. E2E tests for dynamic planner (lazy-loading fix) — Rôle : qa_agent
+2. Multi-day premium planning (computeMultiDayPlan integration) — Rôle : coding_agent
 2. E11 re-mesure J+14 le 2026-10-06 — Rôle : uiux-agent
 
 ### Branche / PR

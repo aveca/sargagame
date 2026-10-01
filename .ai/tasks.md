@@ -386,7 +386,8 @@ NEXT_CONCRETE_ACTION:
     - [x] Plan persists across sessions (localStorage)
     - [x] Premium gates: full stay locked, day-plan free
     - [x] All gates pass (build, bundle ≤210KB, smoke 4/4, funnel-payment 13/13, regions)
-  - **STATUS** : IN_PROGRESS (core shipped, E2E lazy-loading fix pending) — **NEXT: claim for completion**
+  - **STATUS** : [x] CORE SHIPPED (2026-09-30), [x] PLAN STRIP IN TRIP PLANNER (2026-10-01), [x] ADD TO PLAN BUTTON IN BEACHEXPERIENCE (2026-10-01)
+  - **NEXT** : E2E tests for dynamic planner (lazy-loading fix), Multi-day premium planning (computeMultiDayPlan integration)
 ﻿# .ai/tasks.md — Backlog priorisé
 
 > Lu par tous les agents pour choisir leur prochaine tâche.

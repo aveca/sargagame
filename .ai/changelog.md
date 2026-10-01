@@ -1,3 +1,32 @@
+## 2026-10-01 — DYNAMIC BEACH DAY PLANNER COMPLETION : plan strip + add to plan button
+
+**CHANGES** :
+1. **Plan Strip in TripPlanner** (`src/TripPlanner.jsx`): Added plan strip showing beaches added from map long-press
+   - Shows beach count, status, name with remove button per beach
+   - Clear plan button
+   - Calls `onPlanLocationChange` to sync map highlight when clicking plan chip
+2. **Add to Plan Button in BeachExperience** (`src/BeachExperience.jsx`): Added "Add to plan" button next to Trip button
+   - Tracks `sg_plan_add_beachexp` event
+   - Calls `onAddToPlan` callback to add beach to plan
+   - Rollback: `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off)
+3. **TripPlanner Props** (`src/Sargasses_PROD.jsx`): Added `planBeaches`, `onAddToPlan`, `onRemoveFromPlan`, `onClearPlan`, `onPlanLocationChange` props
+4. **Plan State Management** (`src/Sargasses_PROD.jsx`): Added `planBeaches` state with localStorage persistence, `addToPlan`, `removeFromPlan`, `clearPlan`, `onMapSync`, `onPlanLocationChange` callbacks
+
+**GATES PASSED** :
+- ✅ Build exit 0
+- ✅ Bundle budget 38.2 KB ≤ 210 KB
+- ✅ PHP lint OK
+- ✅ Smoke: FUNNEL_REACHED=map+fiche+paywall, ERRORS=[], WHITE_OR_TRANSPARENT_BUTTONS=[], RM_INFINITE=[]
+- ✅ Playwright funnel-payment: 13/13 passed
+- ✅ Regions validation: OK
+- ✅ Dynamic planner unit tests: 36/36 PASS
+
+**ROLLBACK** : `?dynamicplan=0` (legacy TripPlanner), `?plansync=0` (map sync off)
+
+**MERGE** : Direct commit to main (branch: agent/coding/TASK-P1-DYNAMIC-PLANNER-COMPLETION) → daily-copernicus auto-deploy
+
+---
+
 ## 2026-10-01 — AUTOPILOT PHASE 2-3 : model router + multi-claim scheduler + label cap increase
 
 **CHANGES** :
