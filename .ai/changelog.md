@@ -20,6 +20,22 @@
 
 ---
 
+## 2026-10-01 — AUTOPILOT AUTONOMY FINAL : ENOENT PATH-hardening + prune/rotation + scheduler LIVE (infra seule)
+
+**CHANGES** (branche `agent/infra/autopilot-autonomy-final`, zero produit) :
+1. `autopilot-live.cmd` / `autopilot-live-wsl.sh` : preflight lock (exit 3), env LIVE+CONTINUOUS via `run.cjs`, watchdog crash-only (MAX_RESTARTS=5), STOP respecté, prune pré-démarrage, **PATH durci Git for Windows + `where git` diagnostique** (ferme la classe `spawnSync git ENOENT` sous Task Scheduler à PATH minimal — preuve runtime : PATH minimal reproduit ENOENT, PATH durci résout `git version 2.53.0`).
+2. `install-scheduler.ps1` : launcher = `autopilot-live.cmd` (fonctionnel), description LIVE.
+3. `prune.cjs` (NOUVEAU) : rapports `runs/20*.md` bornés (KEEP=1000 + grâce 2 h cycle actif), rotation `runner.log`/`log.txt` > 8 Mo → 2 Mo. Ne touche JAMAIS scheduler/queue/latest/config/STOP/lock. Exit toujours 0.
+4. `tests/unit/autopilot-live-single-runner.test.cjs` : 56 checks (entrée, wrappers, lock, persistance, denyGlobs, PATH-hardening + preuve runtime, scheduler, prune en dir temporaire).
+
+**FAITS TERRAIN** : runner LIVE PID 29396 MORT ~13:04 locales (dernier cycle 1354 OK, cause externe inconnue — pas de crash loggé) ; lock stale récupérable ; Task Scheduler `SargagameAutopilot` Ready (prochain tick 13:33 → auto-reprise legacy). Réparations `gitops.cjs` = session concurrente (`sg-pr777-repair` + stash@{1,2}) : NON touchées. PR #777 (live-dev-mode, 18 commits) toujours CONFLICTING — réparation = session propriétaire. Arbre main churné pendant la session (commit fondateur 453993318 + stash + `checkout main` + `clean`) : travail poursuivi en worktree isolé `sargagame-infra-final`, fichiers récupérés via `git checkout stash@{0} -- <fichier-propre>`.
+
+**GATES** : 56/56 nouveau test · live-mode 4/4 · gitops PASS · pr-blocking 45/45 · opp 27/27 · bridge PASS · concurrency 45/45 · factory-sim 71/71 · revenue 15/15 · banner-z 5/5 · share-utm PASS · runner-cfg 4/4 · esbuild parse OK (infra + TripPlanner/Sargasses_PROD) · bundle 38.2 Ko (dist existant, zero src touché) · build complet non relancé (CI le prouvera ; zero src dans le diff) · opencode-auto FAIL pré-existant identique sur main (hors scope).
+
+**ROLLBACK** : revert des 4 commits ou suppression des 5 fichiers (aucun appelant existant modifié).
+
+---
+
 ## 2026-10-01 — AUTOPILOT PROD AUDIT : wrapper LIVE single-runner + test 39 checks (produit intouche)
 
 **CHANGES** (factory uniquement, zero produit) :

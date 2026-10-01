@@ -34,6 +34,48 @@
 
 ---
 
+## 2026-10-01 · Agent: integration (AUTOPILOT AUTONOMY FINAL) — ENOENT fermé au niveau env, prune, scheduler LIVE, 4 commits + PR
+
+### Travail effectué
+- **Résumé 1 ligne** : Factory rendue autonome/redémarrable sans toucher produit ni réparation d'autrui : PATH-hardening anti-ENOENT, prune/rotation bornée, scheduler→live.cmd, 56 checks verts, branche + PR infra.
+- **Détails** :
+  - ENOENT : `execFileSync('git')` (gitops.cjs, session concurrente — intouché) échoue sous PATH minimal du scheduler → durcissement dans wrappers (prepend Git ssi `git.exe` présent + `where git` loggé) ; preuve runtime reproduite puis fermée (`git 2.53.0`).
+  - PR #777 : toujours CONFLICTING/DIRTY (live-dev-mode, 18 commits) ; réparation = worktree `sg-pr777-repair` + stash@{1,2} d'autrui → AUCUNE tentative maison (anti-doublon) ; mes fichiers ne chevauchent aucun des 16 fichiers de #777.
+  - Runner : PID 29396 MORT ~13:04 locales (cycle 1354 OK, mort externe sans trace) ; lock stale ; scheduler Ready (tick 13:33 → auto-reprise) ; AUCUN lancement manuel maison.
+  - Churn main (commit 453993318 + stash@{0} + switch main + clean) : 3 reverts subis → règle appliquée (stop, analyse, récup chirurgicale `checkout stash@{0} -- <mon-fichier>`, commit immédiat), suite en worktree isolé `sargagame-infra-final`.
+  - Pollution `.ai/autopilot` par la suite de tests restaurée (`checkout --`) dans le worktree.
+
+### Fichiers modifiés
+- `scripts/autopilot/autopilot-live.cmd` (durcissement PATH + prune + diag git)
+- `scripts/autopilot/autopilot-live-wsl.sh` (idem WSL + refus sargagame-tmp)
+- `scripts/autopilot/prune.cjs` (NOUVEAU)
+- `scripts/autopilot/install-scheduler.ps1` (launcher → live.cmd)
+- `tests/unit/autopilot-live-single-runner.test.cjs` (56 checks)
+- `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md` (docs)
+
+### Tests réalisés
+- [x] live-single-runner 56/56 · live-mode 4/4 · gitops PASS · pr-blocking 45/45 · opp 27/27 · bridge PASS · concurrency 45/45 · factory-sim 71/71 · revenue 15/15 · banner-z 5/5 · share-utm PASS · runner-cfg 4/4
+- [x] esbuild parse OK (infra + produit) · node --check OK
+- [x] bundle 38.2 Ko ≤ 210 Ko (dist existant ; zero src dans le diff)
+- [ ] build complet → délégué CI (zero src touché) ; opencode-auto FAIL pré-existant sur main aussi (hors scope)
+
+### Problèmes restants
+- [ ] Runner DOWN depuis ~13:04 locales — auto-reprise scheduler 13:33, upgrade LIVE = one-liner fondateur — ACTION HUMAINE UNIQUE
+- [ ] PR #777 CONFLICTING — session propriétaire (`sg-pr777-repair`) — Rôle : autre session
+- [ ] opencode-auto FAIL pré-existant — Rôle : coding_agent (hors factory)
+
+### Prochaine action recommandée
+1. Fondateur : one-liner PowerShell (rapport) → task LIVE reboot-proof — Rôle : fondateur (2 min)
+2. Surveiller tick 13:33 (reprise stale lock) + CI de la PR infra — Rôle : release_agent
+3. Laisser session propriétaire merger/réparer #777 — Rôle : autre session
+
+### Branche / PR
+- Branche : `agent/infra/autopilot-autonomy-final` (4 commits infra + 1 docs)
+- PR : infra-scope, base main (à créer)
+- Commit head : voir `git log` branche
+
+---
+
 ## 2026-10-01 · Agent: audit (AUTOPILOT PROD AUDIT) — wrapper LIVE single-runner + test 39 checks, produit intouche
 
 ### Travail effectué

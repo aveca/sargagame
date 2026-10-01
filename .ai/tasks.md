@@ -1,3 +1,9 @@
+## AUTOPILOT AUTONOMY FINAL — [x] done 2026-10-01 (branche agent/infra/autopilot-autonomy-final, PR infra)
+- **Livré** : PATH-hardening anti-ENOENT (preuve runtime) · prune.cjs bornée · scheduler→autopilot-live.cmd · test 56/56 · 4 commits infra + docs.
+- **Vérifié** : 13 suites vertes (détail changelog) · esbuild OK · bundle 38.2 Ko · zero produit · zero réparation d'autrui · opencode-auto FAIL pré-existant (main aussi).
+- **État runner** : DOWN ~13:04 locales (cycle 1354 OK) → auto-reprise tick scheduler 13:33 → upgrade LIVE = one-liner fondateur (UNIQUE action humaine).
+- **NEXT** : fondateur one-liner → surveiller reprise + CI PR infra → laisser #777 à sa session.
+
 ## AUTOPILOT PROD AUDIT 24/7 — [x] done 2026-10-01 (wrappers live + test 39/39, produit intouche)
 - **Livré** : `autopilot-live.cmd` + `autopilot-live-wsl.sh` (preflight lock exit 3, watchdog crash-only MAX_RESTARTS=5, STOP respecté, refus sargagame-tmp) + `tests/unit/autopilot-live-single-runner.test.cjs` (39/39).
 - **Preuves** : single-runner prouvé sur runner vivant PID 29396 (2e acquire → LOCKED) · 81 fichiers test (≥78) · bundle 38.2 Ko · pr-blocking 45/45 · opp 27/27 · bridge PASS.
