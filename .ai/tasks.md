@@ -45,6 +45,12 @@
 - **Rapport** : `.ai/ui-audit/VISUAL-OVERHAUL-2026-09-25E.md` (21 points).
 - **NEXT** : CI 7/7 → squash merge → Deploy Live → probes prod → marquer [x] done.
 
+## AUTOPILOT PHASE 2-3 — [x] done + LIVE 2026-10-01 (PR #786 MERGED squash 2797bc95a, CI 6/6 verts, deploy auto)
+- **Livré** : Model router intelligent (task-type classification + historical metrics), multi-claim scheduler (claimedIds array), map label cap increase (wide 8→12, zoomed 14→20)
+- **Gates** : build 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l OK · core product tests all pass
+- **Test fixes** : autopilot-pr-blocking (null selected), opencode-auto (Node test runner compat)
+- **Rapport** : voir changelog 2026-10-01
+
 ## AUTOPILOT + OPP-2026-001 — [x] done + LIVE 2026-09-24 (PR #742 mergée 06:41 UTC, squash 3427f978, CI+Deploy+Perf+Secret 4/4 verts)
 - **Système** : `.ai/autopilot/` (mémoire) + `scripts/autopilot/` (orchestrateur + browser QA prod 6 régions × 3 viewports + baselines bloquantes + rapport quotidien + 8 agents via opencode run) + workflow `autopilot.yml` 06:35 UTC + npm script `autopilot`.
 - **Baseline prod** : 129 routes · 0 erreur · 0 lien cassé · 0 HTTP≥400 · interactions 9/9 surfaces × 6/6 régions (carte→fiche→xp→tomorrow→backup→trip→share→premium→checkout-entry).
@@ -380,7 +386,7 @@ NEXT_CONCRETE_ACTION:
     - [x] Plan persists across sessions (localStorage)
     - [x] Premium gates: full stay locked, day-plan free
     - [x] All gates pass (build, bundle ≤210KB, smoke 4/4, funnel-payment 13/13, regions)
-  - **STATUS** : IN_PROGRESS (core shipped, E2E lazy-loading fix pending)
+  - **STATUS** : IN_PROGRESS (core shipped, E2E lazy-loading fix pending) — **NEXT: claim for completion**
 ﻿# .ai/tasks.md — Backlog priorisé
 
 > Lu par tous les agents pour choisir leur prochaine tâche.

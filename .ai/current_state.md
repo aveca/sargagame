@@ -1,3 +1,42 @@
+## 2026-10-01 · Agent: coding (AUTOPILOT PHASE 2-3) — model router + multi-claim scheduler + label cap increase merged
+
+### Travail effectué
+- **Résumé 1 ligne** : Autopilot Phase 2-3 livré — model router intelligent, scheduler multi-claim, label cap increase (8→12 wide, 14→20 zoomed) — PR #786 squash merged.
+- **Détails** :
+  - Model Router (`.ai/ux-agent/opencode-auto.cjs`) : `loadModelMetrics`, `classifyTaskType`, `calculateBackendScore`, `sortBackendsByTaskType` — sélection modèle par type tâche + métriques historiques.
+  - Multi-Claim Scheduler (`scripts/autopilot/lib/scheduler.cjs`) : `claimedIds` array, `isPrBlocking` vérifie toutes claimed opportunities, `persistClaimed` met à jour `claimedIds`.
+  - Map Label Cap (`src/WorldMapView.jsx`) : MAX wide 8→12, zoomé 14→20 (DEC-2026-08-28).
+  - Test fixes : `autopilot-pr-blocking.test.cjs` (null selected), `opencode-auto.test.cjs` (Node test runner).
+
+### Fichiers modifiés
+- `.ai/ux-agent/opencode-auto.cjs` (model router)
+- `scripts/autopilot/lib/scheduler.cjs` (multi-claim)
+- `src/WorldMapView.jsx` (label cap)
+- `scripts/autopilot/bridge.cjs` (bridge fix)
+- `tests/unit/autopilot-pr-blocking.test.cjs` (fix null selected)
+- `tests/unit/opencode-auto.test.cjs` (réécrit pour Node test runner)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko
+- [x] php -l ×4 → OK
+- [x] ux-smoke → 4 tokens OK
+- [x] funnel-payment E2E → 13/13
+- [x] regions assertAllRegionsValid → OK
+- [x] Core product tests: dynamic-planner 36/36, coastal-lab 91/91, offers-contract 103/103, travel-30 62/62
+- [x] 78/79 test files pass (1 infra test flaky CI: opencode-auto appelle API réelle)
+
+### Prochaine action recommandée
+1. Compléter Dynamic Planner (map sync, E2E tests, bouton "Add to plan") — Rôle : coding_agent
+2. E11 re-mesure J+14 le 2026-10-06 — Rôle : uiux-agent
+
+### Branche / PR
+- Branche : `agent/coding/autonomous-factory`
+- PR : #786 MERGED (squash 2797bc95a)
+- Commit head : `2797bc95a`
+
+---
+
 ## 2026-09-30 · Agent: ui-ux (E11 MESURE J+7) — trust row NEUTRE, prolongation J+14 2026-10-06
 
 ### Travail effectué
