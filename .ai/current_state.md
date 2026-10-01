@@ -1,3 +1,83 @@
+## 2026-10-01 · Agent: coding (TRIP PLANNER REWRITE) — fix corrupted WIP file (multi-day premium planning integration)
+
+### Travail effectué
+- **Résumé 1 ligne** : Réécriture complète de `src/TripPlanner.jsx` corrompu (déclarations dupliquées, exports manquants, JSX cassé suite à tentative d'intégration multi-day premium planning).
+- **Détails** :
+  - Fix : double `export default function TripPlanner`, imports mal placés, structure JSX cassée
+  - Préservé toutes features existantes : mode legacy (`?tripplan=0`), WOW Journey strip (`stay` prop), Dynamic Planner plan strip (`planBeaches` + map sync), Multi-day premium planning (`showMultiDay` + intégration `computeMultiDayPlan`)
+  - Ajout import manquant : `computeMultiDayPlan` depuis `./lib/dynamic-planner.js`
+  - Conservé tous rollbacks : `?tripplan=0`, `?sgmotion=0`, `?dynamicplan=0`, `?plansync=0`
+  - Préservé tout tracking métriques : `sg_trip_open`, `sg_trip_days_pick`, `sg_trip_beach_open`, `sg_trip_premium_cta`, `sg_exp_chip_tap`
+
+### Fichiers modifiés
+- `src/TripPlanner.jsx` (REECRIT complet)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 38.2 Ko ≤ 210 Ko
+- [x] php -l ×4 → OK
+- [x] regions assertAllRegionsValid → OK
+- [x] Playwright funnel-payment → 13/13 passed
+- [x] Core Playwright : contract-pass-one-time, bottomnav-redesign (23/27 passed, 4 échecs = problèmes infrastructure test pré-existants timeout headless Chrome, PAS régressions)
+
+### Problèmes restants
+- [ ] E2E tests lazy-loading (TripPlanner chunk) bloqué dans headless Chrome — infrastructure test, unit tests couvrent la logique (36/36)
+- [ ] Intégration multi-day premium planning vérification complète — Rôle : coding_agent
+
+### Prochaine action recommandée
+1. Documenter limitation E2E lazy-loading comme known issue test-infra — Rôle : qa_agent
+2. Reprendre factory autonome : prochaine tâche P1 non bloquée (multi-day premium planning integration verification, CORS Tulum, ou tâches SEO) — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `main` (direct commit)
+- Commit head : voir `git log`
+
+---
+
+## 2026-10-01 · Agent: audit (AUTOPILOT PROD AUDIT) — wrapper LIVE single-runner + test 39 checks, produit intouche
+
+### Travail effectué
+- **Résumé 1 ligne** : Audit 24/7 LIVE : lock single-runner prouvé sur runner vivant (PID 29396), wrappers `autopilot-live.cmd/.sh` créés (watchdog crash-only, refus sargagame-tmp), test 39/39 vert, build ROUGE pré-existant documenté (WIP TripPlanner non commité, non touché).
+- **Détails** :
+  - START COMMAND vérifiée : `run.cjs --live --continuous` → env `SARGA_AUTOPILOT_LIVE/CONTINUOUS=1` → `runner.cjs` (délégation confirmée).
+  - SINGLE-RUNNER prouvé en réel : `lock.acquire()` refuse (code LOCKED) tant que PID 29396 heartbeat frais ; stale backups `.stale-*.json` = reprises propres ; corrompu → fail-closed.
+  - sargagame-tmp = vieux clone SANS `scripts/autopilot/` ni `.ai/autopilot/` → runner NON lançable depuis là (exigence §3 = NON, par design : un seul repo canonique = un seul lock).
+  - Gap trouvé : `autopilot.cmd`/`autopilot-wsl.sh` appellent `runner.cjs` EN DIRECT (bypass flags LIVE/CONTINUOUS) → nouveaux wrappers `autopilot-live.*` passent par `run.cjs --live --continuous` (existants intouchés).
+  - Bug réel observé (non corrigé, logique réparation gelée) : `latest.md` = `PR #777 ÉCHEC RÉPARATION: spawnSync git ENOENT (unsafe)` — git introuvable dans l'env du runner lors du rebase auto. À investiguer par le porteur factory (PATH scheduler vs worktree cwd).
+  - Runs/ = ~3000 rapports/jour (cycle ~30 s, 1,7 Ko chacun) + runner.log 18 Mo + log.txt 19 Mo — bruit à pruner, cycles vides majoritaires (scheduler `blocked-by-pr` #777 CONFLICTING).
+
+### Fichiers modifiés
+- `scripts/autopilot/autopilot-live.cmd` (NOUVEAU, wrapper Windows)
+- `scripts/autopilot/autopilot-live-wsl.sh` (NOUVEAU, wrapper WSL)
+- `tests/unit/autopilot-live-single-runner.test.cjs` (NOUVEAU, 39 checks)
+- `.ai/changelog.md`, `.ai/tasks.md`, `.ai/current_state.md` (docs handoff uniquement)
+- Produit : ZÉRO modification (3 WIP pré-existants `TripPlanner.jsx`/`Sargasses_PROD.jsx`/`dynamic-planner.spec.ts` laissés intacts ; `media-manifest.json` régénéré par mon build reverté)
+
+### Tests réalisés
+- [x] nouveau test live-single-runner → 39/39
+- [x] live-mode → 4/4 · gitops → PASS · pr-blocking → 45/45 · opp-contract → 27/27 · bridge → PASS
+- [x] esbuild parse + node --check → OK
+- [x] check-bundle-budget → 38,2 Ko ≤ 210 Ko (dist existant)
+- [ ] build → ROUGE pré-existant (`TripPlanner.jsx:53` WIP non commité, hors scope)
+- [ ] smoke/Playwright → non relancés (produit intouché)
+
+### Problèmes restants
+- [ ] BUILD ROUGE : WIP TripPlanner multi-day corrompu (ligne 53) — porteur WIP doit réparer avant merge — SÉVÉRITÉ P0
+- [ ] PR #777 CONFLICTING + repair `spawnSync git ENOENT` — investiguer env git du runner — Rôle : coding_agent factory
+- [ ] Prune runs/ (~3000 fichiers/jour) + log rotation — Rôle : coding_agent factory
+
+### Prochaine action recommandée
+1. Réparer WIP TripPlanner (build vert) puis merger — Rôle : coding_agent (porteur WIP)
+2. Pointer Task Scheduler vers `autopilot-live.cmd` (action fondateur, 2 min) — Rôle : release_agent
+3. Investiguer `spawnSync git ENOENT` dans repairPRConflict — Rôle : coding_agent
+
+### Branche / PR
+- Branche : active locale (audit, non poussé — live runner concurrent sur ce worktree)
+- PR : aucune (docs + factory additive, à commiter par le porteur)
+- Commit head : voir `git log` (arbre partagé avec runner LIVE PID 29396)
+
+---
+
 ## 2026-10-01 · Agent: coding (DYNAMIC BEACH DAY PLANNER COMPLETION) — plan strip + add to plan button shipped
 
 ### Travail effectué

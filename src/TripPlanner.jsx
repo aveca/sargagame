@@ -12,6 +12,7 @@
  * ROLLBACK : ?tripplan=0 (l'entrée disparaît, produit intact).
  */
 import React, { useMemo, useState } from "react"
+import { computeMultiDayPlan } from "./lib/dynamic-planner.js"
 
 export const tripPlannerEnabled = () => {
   try { return !/[?&]tripplan=0(?:&|$)/.test(window.location.search) } catch (_) { return true }
@@ -80,6 +81,22 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
   const SGM_ALL = (() => { try { return !/[?&]sgmotion=0(?:&|$)/.test(window.location.search) } catch (_) { return true } })()
   const days = useMemo(() => planDays(beaches || [], forecastById || {}), [beaches, forecastById])
   const visibleDays = isPremium ? Math.max(0, days.length) : Math.min(2, days.length)
+  const [showMultiDay, setShowMultiDay] = useState(false)
+  const multiDayPlan = useMemo(() => {
+    if (!isPremium) return null
+    return computeMultiDayPlan({
+      date: new Date().toISOString().split('T')[0],
+      startTime: '09:00',
+      duration: 360,
+      startPos: null,
+      beaches: beaches || [],
+      forecastById: forecastById || {},
+      allBeaches: beaches || [],
+      preferences: { maxTravelMin: 45, preferSheltered: true },
+      constraints: { maxBeachesPerDay: 3 },
+      lang: lang,
+    }, 7)
+  }, [beaches, forecastById, lang, isPremium])
   const _sbhv = (() => { try { return (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) ? "auto" : "smooth" } catch (_) { return "smooth" } })()
   const chipTap = (d) => {
     try { track && track("sg_exp_chip_tap", { via: "trip_day", day: d.i, locked: !!d.locked }) } catch (_) {}
@@ -92,118 +109,296 @@ export default function TripPlanner({ lang, beaches, forecastById, isPremium, on
       className={SGM_ALL ? "sgm-sheet" : undefined}
       style={{ position: "fixed", inset: 0, zIndex: 1350, background: "rgba(11,7,22,.66)", display: "flex", alignItems: "flex-end", justifyContent: "center" }}
       onClick={onClose}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "88dvh", overflowY: "auto", background: "#0F2A23", borderRadius: "20px 20px 0 0", padding: "18px 16px calc(18px + env(safe-area-inset-bottom,0px))", border: "1px solid rgba(255,199,44,.25)", WebkitOverflowScrolling: "touch" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-          <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 22, textTransform: "uppercase", color: "#fff", letterSpacing: ".01em" }}>
-            {_t("Planifier mon séjour", "Plan my stay", "Planificar mi estancia")}
-          </div>
-          <button onClick={onClose} aria-label={_t("Fermer", "Close", "Cerrar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.6)", fontSize: 22, cursor: "pointer", padding: 8, minWidth: 44, minHeight: 44 }}>✕</button>
+    <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 480, maxHeight: "88dvh", overflowY: "auto", background: "#0F2A23", borderRadius: "20px 20px 0 0", padding: "18px 16px calc(18px + env(safe-area-inset-bottom,0px))", border: "1px solid rgba(255,199,44,.25)", WebkitOverflowScrolling: "touch" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ fontFamily: "'Anton',sans-serif", fontSize: 22, textTransform: "uppercase", color: "#fff", letterSpacing: ".01em" }}>
+          {_t("Planifier mon séjour", "Plan my stay", "Planificar mi estancia")}
         </div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginBottom: 14 }}>
-          {_t("La meilleure plage chaque jour, et un plan B si la mer change.",
-              "The best beach each day, plus a backup if the sea shifts.",
-              "La mejor playa cada día y un plan B si el mar cambia.")}
-        </div>
-
-        {/* WOW JOURNEY (2026-09-24) — le fil du séjour : semaine réelle de la
-            plage courante du monde (ou ma plage) + plan B réel. Même données
-            que l'experience (spine partagée) — « mon séjour se construit ». */}
-        {stay && (stay.days.length > 0 || stay.backup) && (
-          <section data-testid="trip-stay-strip"
-            aria-label={_t(`Ton séjour s'appuie sur ${stay.beachName}`, `Your stay leans on ${stay.beachName}`, `Tu estancia se apoya en ${stay.beachName}`)}
-            style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px dashed rgba(255,199,44,.45)", background: "rgba(255,199,44,.06)" }}>
-            <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", marginBottom: 8 }}>
-              {_t("Ton séjour s'appuie sur", "Your stay leans on", "Tu estancia se apoya en")} <span style={{ color: "#fff" }}>{stay.beachName}</span>
-            </div>
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
-              {stay.days.map((d) => {
-                const c = (ST[d.status] || ST._x).c
-                return (
-                  <div key={d.i} tabIndex={0} data-testid="trip-stay-chip" data-day={d.i}
-                    onClick={() => chipTap(d)}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); chipTap(d) } }}
-                    style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: d.i === 0 ? "rgba(255,199,44,.18)" : "rgba(255,255,255,.07)", border: `1px solid ${d.i === 0 ? "rgba(255,199,44,.6)" : "rgba(255,255,255,.16)"}`, opacity: d.locked ? 0.6 : 1 }}>
-                    {d.locked
-                      ? <span style={{ fontSize: 11 }} aria-hidden="true">🔒</span>
-                      : <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />}
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>
-                      {d.i === 0 ? _t("Aujourd'hui", "Today", "Hoy") : ((d.label || "").slice(0, 4) || `J+${d.i}`)}
-                    </span>
-                    {!!(!d.locked && d.confidence != null) && <span style={{ fontSize: 10, fontWeight: 700, color: c }}>{d.confidence}%</span>}
-                  </div>
-                )
-              })}
-              {stay.backup && (
-                <div tabIndex={0} data-testid="trip-planb-chip"
-                  onClick={() => { try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) }}
-                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) } }}
-                  aria-label={_t(`Plan B : aller à ${stay.backup.name}`, `Plan B: go to ${stay.backup.name}`, `Plan B: ir a ${stay.backup.name}`)}
-                  style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(30,200,176,.12)", border: "1px solid rgba(30,200,176,.4)" }}>
-                  <span style={{ width: 8, height: 8, borderRadius: 4, background: (ST[stay.backup.status] || ST._x).c, flexShrink: 0 }} aria-hidden="true" />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#1EC8B0" }}>→ {_t("Plan B", "Plan B", "Plan B")} · {stay.backup.name}</span>
-                </div>
-              )}
-            </div>
-          </section>
-        )}
-
-        {/* DYNAMIC PLANNER — plan strip: beaches added from map long-press */}
-        {planBeaches && planBeaches.length > 0 && (
-          <section data-testid="trip-plan-strip"
-            style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 16 }}>📍</span>
-                <span>{_t("Ton plan", "Your plan", "Tu plan")}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{planBeaches.length}</span>
-              </div>
-              <button onClick={onClearPlan} aria-label={_t("Vider le plan", "Clear plan", "Limpiar plan")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", padding: "4px 8px" }}>{_t("Vider", "Clear", "Limpiar")}</button>
-            </div>
-            <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
-              {planBeaches.map((beachId) => {
-                const beach = beaches?.find(b => b.id === beachId)
-                if (!beach) return null
-                const fc = forecastById?.[beachId]?.forecast?.[0]
-                const st = fc?.status || "unknown"
-                const c = STATUS_C[st] || STATUS_C._x
-                const statusLabel = STATUS_LBL[st]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")
-                return (
-                  <div key={beachId} tabIndex={0} data-testid="trip-plan-chip" data-beach={beachId}
-                    onClick={() => { onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) }}
-                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) } }}
-                    style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />
-                      <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{beach.name}</span>
-                      <button onClick={(e)=>{e.stopPropagation();onRemoveFromPlan(beachId)}} aria-label={_t("Retirer", "Remove", "Quitar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1, marginLeft: 2 }}>✕</button>
-                    </div>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{statusLabel}</span>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
-
-        {days.map((d, i) => (
-          <DayRow key={i} day={d} idx={i} rowId={"tp-day-" + i} locked={!isPremium && i >= visibleDays} lang={lang} _t={_t}
-            img={d && d.best && d.best.b && imageMap && imageMap[d.best.b.id] ? "/beaches/" + imageMap[d.best.b.id] : null}
-            onOpen={() => { try { track("sg_trip_beach_open", { day: i, beach_id: d && d.best && d.best.b.id }) } catch (_) {} onOpenBeach(d.best.b) }} />
-        ))}
-
-        {!isPremium && days.length > visibleDays && (
-          <div tabIndex={0} onClick={() => { try { track("sg_trip_premium_cta", {}) } catch (_) {} try { track("sg_perfect_trip_cta", { source: "trip_stay_unlock" }) } catch (_) {} onPremium("trip_planner") }}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track("sg_trip_premium_cta", { via: "kbd" }) } catch (_) {} onPremium("trip_planner") } }}
-            data-testid="trip-premium-cta"
-            style={{ width: "100%", marginTop: 10, background: "linear-gradient(135deg,#FFE08A,#FFC72C)", color: "#120821", borderRadius: 14, padding: "14px 16px", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "3px 3px 0 rgba(0,0,0,.4)", textAlign: "center", boxSizing: "border-box" }}>
-            {_t("Débloquer tout mon séjour →", "Unlock my whole stay →", "Desbloquear toda mi estancia →")}
-          </div>
-        )}
-        <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center" }}>
-          {_t("Prévision satellite Copernicus — mesuré, pas deviné.", "Copernicus satellite forecast — measured, not guessed.", "Pronóstico satelital Copernicus — medido, no adivinado.")}
-        </div>
+        <button onClick={onClose} aria-label={_t("Fermer", "Close", "Cerrar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.6)", fontSize: 22, cursor: "pointer", padding: 8, minWidth: 44, minHeight: 44 }}>✕</button>
       </div>
+      <div style={{ fontSize: 13, color: "rgba(255,255,255,.7)", marginBottom: 14 }}>
+        {_t("La meilleure plage chaque jour, et un plan B si la mer change.",
+            "The best beach each day, plus a backup if the sea shifts.",
+            "La mejor playa cada día y un plan B si el mar cambia.")}
+      </div>
+
+      {/* WOW JOURNEY (2026-09-24) — le fil du séjour : semaine réelle de la
+          plage courante du monde (ou ma plage) + plan B réel. Même données
+          que l'experience (spine partagée) — « mon séjour se construit ». */}
+      {stay && (stay.days.length > 0 || stay.backup) && (
+        <section data-testid="trip-stay-strip"
+          aria-label={_t(`Ton séjour s'appuie sur ${stay.beachName}`, `Your stay leans on ${stay.beachName}`, `Tu estancia se apoya en ${stay.beachName}`)}
+          style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px dashed rgba(255,199,44,.45)", background: "rgba(255,199,44,.06)" }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", marginBottom: 8 }}>
+          {_t("Ton séjour s'appuie sur", "Your stay leans on", "Tu estancia se apoya en")} <span style={{ color: "#fff" }}>{stay.beachName}</span>
+        </div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+          {stay.days.map((d) => {
+            const c = (ST[d.status] || ST._x).c
+            return (
+              <div key={d.i} tabIndex={0} data-testid="trip-stay-chip" data-day={d.i}
+                onClick={() => chipTap(d)}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); chipTap(d) } }}
+                style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: d.i === 0 ? "rgba(255,199,44,.18)" : "rgba(255,255,255,.07)", border: `1px solid ${d.i === 0 ? "rgba(255,199,44,.6)" : "rgba(255,255,255,.16)"}`, opacity: d.locked ? 0.6 : 1 }}>
+                {d.locked
+                  ? <span style={{ fontSize: 11 }} aria-hidden="true">🔒</span>
+                  : <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />}
+                <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>
+                  {d.i === 0 ? _t("Aujourd'hui", "Today", "Hoy") : ((d.label || "").slice(0, 4) || `J+${d.i}`)}
+                </span>
+                {!!(!d.locked && d.confidence != null) && <span style={{ fontSize: 10, fontWeight: 700, color: c }}>{d.confidence}%</span>}
+              </div>
+            )
+          })}
+          {stay.backup && (
+            <div tabIndex={0} data-testid="trip-planb-chip"
+              onClick={() => { try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) }}
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track && track("sg_exp_chip_tap", { via: "trip_planb", to: stay.backup.id }) } catch (_) {} onOpenBeach && onOpenBeach(stay.backup.beach) } }}
+              aria-label={_t(`Plan B : aller à ${stay.backup.name}`, `Plan B: go to ${stay.backup.name}`, `Plan B: ir a ${stay.backup.name}`)}
+              style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", alignItems: "center", gap: 6, minHeight: 34, padding: "4px 11px", borderRadius: 999, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(30,200,176,.12)", border: "1px solid rgba(30,200,176,.4)" }}>
+              <span style={{ width: 8, height: 8, borderRadius: 4, background: (ST[stay.backup.status] || ST._x).c, flexShrink: 0 }} aria-hidden="true" />
+              <span style={{ fontSize: 12, fontWeight: 800, color: "#1EC8B0" }}>→ {_t("Plan B", "Plan B", "Plan B")} · {stay.backup.name}</span>
+            </div>
+          )}
+        </div>
+      </section>
+    )}
+
+    {/* MULTI-DAY PREMIUM PLANNING (2026-10-01) — full stay view for premium users */}
+    {isPremium && multiDayPlan && multiDayPlan.days?.length > 0 && !showMultiDay && (
+      <section data-testid="trip-multiday-strip"
+        style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 16 }}>🗓</span>
+          <span>{_t("Mon séjour complet", "My full stay", "Mi estancia completa")}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{multiDayPlan.days.length}</span>
+        </div>
+        <button onClick={() => setShowMultiDay(true)} aria-label={_t("Voir mon séjour complet", "View full stay", "Ver mi estancia completa")} style={{ background: "linear-gradient(135deg,#FFE08A,#FFC72C)", color: "#120821", border: "none", borderRadius: 999, padding: "6px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "2px 2px 0 rgba(0,0,0,.3)" }}>
+          {_t("Voir les 7 jours →", "View 7 days →", "Ver 7 días →")}
+        </button>
+      </div>
+    </section>
+  )}
+
+  {/* MULTI-DAY VIEW — expanded view */}
+  {showMultiDay && multiDayPlan && multiDayPlan.days?.length > 0 && (
+    <section data-testid="trip-multiday-view"
+      style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 16 }}>🗓</span>
+        <span>{_t("Mon séjour complet — {count} jours", "My full stay — {count} days", "Mi estancia completa — {count} días").replace('{count}', multiDayPlan.days.length)}</span>
+      </div>
+      <button onClick={() => setShowMultiDay(false)} aria-label={_t("Fermer", "Close", "Cerrar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.6)", fontSize: 22, cursor: "pointer", padding: 8, minWidth: 44, minHeight: 44 }}>✕</button>
     </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {multiDayPlan.days.map((dayPlan, dayIdx) => (
+        <section key={dayPlan.date} data-testid={`multiday-day-${dayIdx}`} style={{ padding: "10px", borderRadius: 12, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#FFC72C" }}>
+                {dayIdx === 0 ? _t("Aujourd'hui", "Today", "Hoy") : new Date(dayPlan.date).toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'short' })}
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "2px 8px" }}>
+                {_t("Score du jour", "Day score", "Puntuación del día")} {dayPlan.dayScore}
+              </span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 4 }}>
+            {dayPlan.slots?.map((slot, slotIdx) => (
+              <div key={slotIdx} data-testid={`multiday-slot-${dayIdx}-${slotIdx}`} style={{ flex: "0 0 auto", scrollSnapAlign: "start", minWidth: 140, padding: "10px 12px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#FFC72C", marginBottom: 4 }}>
+                  {slot.label}
+                </div>
+                {slot.beach ? (
+                  <>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{slot.beach.name}</div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: STATUS_C[slot.forecast?.status] || STATUS_C._x }}>{STATUS_LBL[slot.forecast?.status]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")}</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,.6)", marginTop: 2 }}>
+                      {slot.travelMin ? _t("{min} min trajet", "{min} min travel", "{min} min viaje").replace('{min}', slot.travelMin) : ''}
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>{_t("Aucune plage disponible", "No beach available", "Ninguna playa disponible")}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+    <button onClick={() => setShowMultiDay(false)} style={{ marginTop: 10, width: "100%", padding: "12px", borderRadius: 12, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,199,44,.3)", color: "#FFC72C", fontWeight: 800, fontSize: 14, cursor: "pointer" }}>
+      {_t("Fermer la vue multi-jours", "Close multi-day view", "Cerrar vista multi-día")}
+    </button>
+  </section>
+)}
+
+      {/* DYNAMIC PLANNER — plan strip: beaches added from map long-press */}
+      {planBeaches && planBeaches.length > 0 && (
+        <section data-testid="trip-plan-strip"
+          style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 16 }}>📍</span>
+            <span>{_t("Ton plan", "Your plan", "Tu plan")}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{planBeaches.length}</span>
+          </div>
+          <button onClick={onClearPlan} aria-label={_t("Vider le plan", "Clear plan", "Limpiar plan")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", padding: "4px 8px" }}>{_t("Vider", "Clear", "Limpiar")}</button>
+        </div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+          {planBeaches.map((beachId) => {
+            const beach = beaches?.find(b => b.id === beachId)
+            if (!beach) return null
+            const fc = forecastById?.[beachId]?.forecast?.[0]
+            const st = fc?.status || "unknown"
+            const c = STATUS_C[st] || STATUS_C._x
+            const statusLabel = STATUS_LBL[st]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")
+            return (
+              <div key={beachId} tabIndex={0} data-testid="trip-plan-chip" data-beach={beachId}
+                onClick={() => { onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) } }}
+                style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{beach.name}</span>
+                  <button onClick={(e)=>{e.stopPropagation();onRemoveFromPlan(beachId)}} aria-label={_t("Retirer", "Remove", "Quitar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1, marginLeft: 2 }}>✕</button>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{statusLabel}</span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    )}
+
+    {/* MULTI-DAY PREMIUM PLANNING (2026-10-01) — full stay view for premium users */}
+    {isPremium && multiDayPlan && multiDayPlan.days?.length > 0 && !showMultiDay && (
+      <section data-testid="trip-multiday-strip"
+        style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+        <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 16 }}>🗓</span>
+          <span>{_t("Mon séjour complet", "My full stay", "Mi estancia completa")}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{multiDayPlan.days.length}</span>
+        </div>
+        <button onClick={() => setShowMultiDay(true)} aria-label={_t("Voir mon séjour complet", "View full stay", "Ver mi estancia completa")} style={{ background: "linear-gradient(135deg,#FFE08A,#FFC72C)", color: "#120821", border: "none", borderRadius: 999, padding: "6px 14px", fontSize: 12, fontWeight: 800, cursor: "pointer", boxShadow: "2px 2px 0 rgba(0,0,0,.3)" }}>
+          {_t("Voir les 7 jours →", "View 7 days →", "Ver 7 días →")}
+        </button>
+      </div>
+    </section>
+  )}
+
+  {/* MULTI-DAY VIEW — expanded view */}
+  {showMultiDay && multiDayPlan && multiDayPlan.days?.length > 0 && (
+    <section data-testid="trip-multiday-view"
+      style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 16 }}>🗓</span>
+        <span>{_t("Mon séjour complet — {count} jours", "My full stay — {count} days", "Mi estancia completa — {count} días").replace('{count}', multiDayPlan.days.length)}</span>
+      </div>
+      <button onClick={() => setShowMultiDay(false)} aria-label={_t("Fermer", "Close", "Cerrar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.6)", fontSize: 22, cursor: "pointer", padding: 8, minWidth: 44, minHeight: 44 }}>✕</button>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      {multiDayPlan.days.map((dayPlan, dayIdx) => (
+        <section key={dayPlan.date} data-testid={`multiday-day-${dayIdx}`} style={{ padding: "10px", borderRadius: 12, border: "1px solid rgba(255,255,255,.1)", background: "rgba(255,255,255,.03)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#FFC72C" }}>
+                {dayIdx === 0 ? _t("Aujourd'hui", "Today", "Hoy") : new Date(dayPlan.date).toLocaleDateString(lang, { weekday: 'short', day: 'numeric', month: 'short' })}
+              </span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "2px 8px" }}>
+                {_t("Score du jour", "Day score", "Puntuación del día")} {dayPlan.dayScore}
+              </span>
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 4 }}>
+            {dayPlan.slots?.map((slot, slotIdx) => (
+              <div key={slotIdx} data-testid={`multiday-slot-${dayIdx}-${slotIdx}`} style={{ flex: "0 0 auto", scrollSnapAlign: "start", minWidth: 140, padding: "10px 12px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#FFC72C", marginBottom: 4 }}>
+                  {slot.label}
+                </div>
+                {slot.beach ? (
+                  <>
+                    <div style={{ fontWeight: 800, fontSize: 13, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 160 }}>{slot.beach.name}</div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: STATUS_C[slot.forecast?.status] || STATUS_C._x }}>{STATUS_LBL[slot.forecast?.status]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")}</span>
+                    <span style={{ fontSize: 9, color: "rgba(255,255,255,.6)", marginTop: 2 }}>
+                      {slot.travelMin ? _t("{min} min trajet", "{min} min travel", "{min} min viaje").replace('{min}', slot.travelMin) : ''}
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,.5)" }}>{_t("Aucune plage disponible", "No beach available", "Ninguna playa disponible")}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+    <button onClick={() => setShowMultiDay(false)} style={{ marginTop: 10, width: "100%", padding: "12px", borderRadius: 12, background: "rgba(255,255,255,.08)", border: "1px solid rgba(255,199,44,.3)", color: "#FFC72C", fontWeight: 800, fontSize: 14, cursor: "pointer" }}>
+      {_t("Fermer la vue multi-jours", "Close multi-day view", "Cerrar vista multi-día")}
+    </button>
+  </section>
+)}
+
+      {/* DYNAMIC PLANNER — plan strip: beaches added from map long-press */}
+      {planBeaches && planBeaches.length > 0 && (
+        <section data-testid="trip-plan-strip"
+          style={{ margin: "0 0 12px", padding: "12px 12px 10px", borderRadius: 14, border: "1px solid rgba(255,199,44,.3)", background: "rgba(255,199,44,.08)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: ".09em", textTransform: "uppercase", color: "#FFC72C", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 16 }}>📍</span>
+            <span>{_t("Ton plan", "Your plan", "Tu plan")}</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#FFC72C", background: "rgba(255,199,44,.2)", borderRadius: 999, padding: "0 6px" }}>{planBeaches.length}</span>
+          </div>
+          <button onClick={onClearPlan} aria-label={_t("Vider le plan", "Clear plan", "Limpiar plan")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 12, cursor: "pointer", padding: "4px 8px" }}>{_t("Vider", "Clear", "Limpiar")}</button>
+        </div>
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollSnapType: "x mandatory", WebkitOverflowScrolling: "touch", paddingBottom: 2 }}>
+          {planBeaches.map((beachId) => {
+            const beach = beaches?.find(b => b.id === beachId)
+            if (!beach) return null
+            const fc = forecastById?.[beachId]?.forecast?.[0]
+            const st = fc?.status || "unknown"
+            const c = STATUS_C[st] || STATUS_C._x
+            const statusLabel = STATUS_LBL[st]?.[lang==="en"?1:lang==="es"?2:0] || _t("—", "—", "—")
+            return (
+              <div key={beachId} tabIndex={0} data-testid="trip-plan-chip" data-beach={beachId}
+                onClick={() => { onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onPlanLocationChange && onPlanLocationChange(beachId); onOpenBeach && onOpenBeach(beaches.find(b => b.id === beachId)) } }}
+                style={{ flex: "0 0 auto", scrollSnapAlign: "start", display: "inline-flex", flexDirection: "column", alignItems: "center", gap: 2, minWidth: 80, padding: "8px 10px", borderRadius: 10, cursor: "pointer", whiteSpace: "nowrap", background: "rgba(255,255,255,.05)", border: "1px solid rgba(255,255,255,.1)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 4, background: c, flexShrink: 0 }} aria-hidden="true" />
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 100 }}>{beach.name}</span>
+                  <button onClick={(e)=>{e.stopPropagation();onRemoveFromPlan(beachId)}} aria-label={_t("Retirer", "Remove", "Quitar")} style={{ background: "none", border: "none", color: "rgba(255,255,255,.5)", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1, marginLeft: 2 }}>✕</button>
+                </div>
+                <span style={{ fontSize: 9, fontWeight: 700, color: c }}>{statusLabel}</span>
+              </div>
+            )
+          })}
+        </div>
+      </section>
+    )}
+
+    {days.map((d, i) => (
+      <DayRow key={i} day={d} idx={i} rowId={"tp-day-" + i} locked={!isPremium && i >= visibleDays} lang={lang} _t={_t}
+        img={d && d.best && d.best.b && imageMap && imageMap[d.best.b.id] ? "/beaches/" + imageMap[d.best.b.id] : null}
+        onOpen={() => { try { track("sg_trip_beach_open", { day: i, beach_id: d && d.best && d.best.b.id }) } catch (_) {} onOpenBeach(d.best.b) }} />
+    ))}
+
+    {!isPremium && days.length > visibleDays && (
+      <div tabIndex={0} onClick={() => { try { track("sg_trip_premium_cta", {}) } catch (_) {} try { track("sg_perfect_trip_cta", { source: "trip_stay_unlock" }) } catch (_) {} onPremium("trip_planner") }}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); try { track("sg_trip_premium_cta", { via: "kbd" }) } catch (_){} onPremium("trip_planner") } }}
+        data-testid="trip-premium-cta"
+        style={{ width: "100%", marginTop: 10, background: "linear-gradient(135deg,#FFE08A,#FFC72C)", color: "#120821", borderRadius: 14, padding: "14px 16px", fontWeight: 800, fontSize: 15, cursor: "pointer", boxShadow: "3px 3px 0 rgba(0,0,0,.4)", textAlign: "center", boxSizing: "border-box" }}>
+        {_t("Débloquer tout mon séjour →", "Unlock my whole stay →", "Desbloquear toda mi estancia →")}
+      </div>
+    )}
+    <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,.45)", textAlign: "center" }}>
+      {_t("Prévision satellite Copernicus — mesuré, pas deviné.", "Copernicus satellite forecast — measured, not guessed.", "Pronóstico satelital Copernicus — medido, no adivinado.")}
+    </div>
+  </div>
+</div>
   )
 }
 

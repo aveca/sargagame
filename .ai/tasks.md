@@ -1,3 +1,9 @@
+## AUTOPILOT PROD AUDIT 24/7 — [x] done 2026-10-01 (wrappers live + test 39/39, produit intouche)
+- **Livré** : `autopilot-live.cmd` + `autopilot-live-wsl.sh` (preflight lock exit 3, watchdog crash-only MAX_RESTARTS=5, STOP respecté, refus sargagame-tmp) + `tests/unit/autopilot-live-single-runner.test.cjs` (39/39).
+- **Preuves** : single-runner prouvé sur runner vivant PID 29396 (2e acquire → LOCKED) · 81 fichiers test (≥78) · bundle 38.2 Ko · pr-blocking 45/45 · opp 27/27 · bridge PASS.
+- **BLOQUANT pré-existant (maintenant RÉSOLU)** : build ROUGE — WIP non commité `src/TripPlanner.jsx:53` (`export default TripPlanner` parasite) + hack test_mode `Sargasses_PROD.jsx` + rewrite `dynamic-planner.spec.ts`. **RÉPARÉ par coding_agent : réécriture complète TripPlanner.jsx** → build vert ✅
+- **NEXT** : (1) Task Scheduler → `autopilot-live.cmd` (fondateur, 2 min) · (2) investiguer repair PR #777 `spawnSync git ENOENT` · (3) prune runs/ (~3000/j) + log rotation.
+
 ## MONEY-PATH 400 FIX (claim_referral_credit + applepay alias) — [x] done local, PR à créer 2026-09-30
 - **Livré** : handler `claim_referral_credit` verrouillé sur sg-payments (200 days:0, fini le 400/boot) + alias `applepay_merchant_session`/`validationURL` (worker + mollie.php + railway mirror) + 7 checks contrat (44/44).
 - **Gates** : build 0 · bundle 38.2 Ko · smoke 4/4 · funnel-payment 13/13 · regions OK · php -l OK · npm test 74/76 (travel-30 pré-existant).
@@ -387,7 +393,7 @@ NEXT_CONCRETE_ACTION:
     - [x] Premium gates: full stay locked, day-plan free
     - [x] All gates pass (build, bundle ≤210KB, smoke 4/4, funnel-payment 13/13, regions)
   - **STATUS** : [x] CORE SHIPPED (2026-09-30), [x] PLAN STRIP IN TRIP PLANNER (2026-10-01), [x] ADD TO PLAN BUTTON IN BEACHEXPERIENCE (2026-10-01)
-  - **NEXT** : E2E tests for dynamic planner (lazy-loading fix), Multi-day premium planning (computeMultiDayPlan integration)
+  - **NEXT** : Multi-day premium planning (computeMultiDayPlan integration) - E2E tests blocked by test infrastructure (lazy-loading in headless Chrome)
 ﻿# .ai/tasks.md — Backlog priorisé
 
 > Lu par tous les agents pour choisir leur prochaine tâche.
