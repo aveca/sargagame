@@ -52,7 +52,7 @@ test('calculateBackendScore computes score based on success rate and latency', (
   // avgLatency = (200+100)/2 = 150
   // normalizedLatency = Math.max(0, Math.min(1, 1 - (150-1000)/4000)) = 1 - (-850)/4000 = 1 + 0.2125 = 1.2125 -> clamped to 1
   // score = 0.7*0.85 + 0.3*1 = 0.595 + 0.3 = 0.895
-  assert.closeTo(score, 0.895, 0.001);
+  assert(Math.abs(score - 0.895) < 0.001, `Expected score close to 0.895, got ${score}`);
 });
 
 test('sortBackendsByTaskType sorts backends by score descending', () => {

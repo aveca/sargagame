@@ -120,12 +120,15 @@ function loadModelMetrics() {
  * @returns {string} - Type de tâche (ex: 'coding', 'debugging', 'analysis', 'etc')
  */
 function classifyTaskType(userArgs) {
+  if (!userArgs || userArgs.length === 0) return 'etc';
+  
   // Joindre les arguments en une seule chaîne pour l'analyse
   const argsString = userArgs.join(' ').toLowerCase();
+  const firstWord = userArgs[0].toLowerCase();
   
   // Mots-clés pour différents types de tâches
   const taskPatterns = {
-    coding: ['write', 'create', 'implement', 'add', 'build', 'make', 'code', 'function', 'class'],
+    coding: ['write', 'create', 'implement', 'add', 'build', 'make', 'function', 'class'],
     debugging: ['fix', 'debug', 'error', 'bug', 'issue', 'problem', 'fail', 'broken'],
     analysis: ['analyze', 'review', 'check', 'inspect', 'examine', 'audit', 'assess'],
     refactoring: ['refactor', 'restructure', 'reorganize', 'clean', 'simplify', 'optimize'],
@@ -134,7 +137,25 @@ function classifyTaskType(userArgs) {
     planning: ['plan', 'design', 'architecture', 'structure', 'outline', 'specify']
   };
   
-  // Compter les correspondances pour chaque type de tâche
+  // Priorité au premier mot (verbe principal)
+  const firstWordPatterns = {
+    coding: ['write', 'create', 'implement', 'add', 'build', 'make'],
+    debugging: ['fix', 'debug'],
+    analysis: ['analyze', 'review', 'check', 'inspect', 'examine', 'audit', 'assess'],
+    refactoring: ['refactor', 'restructure', 'reorganize'],
+    testing: ['test'],
+    documentation: ['doc', 'document'],
+    planning: ['plan', 'design']
+  };
+  
+  // Vérifier le premier mot en priorité
+  for (const [type, patterns] of Object.entries(firstWordPatterns)) {
+    if (patterns.includes(firstWord)) {
+      return type;
+    }
+  }
+  
+  // Sinon, compter les correspondances dans toute la chaîne
   const scores = {};
   for (const [type, patterns] of Object.entries(taskPatterns)) {
     let score = 0;
@@ -147,7 +168,7 @@ function classifyTaskType(userArgs) {
   }
   
   // Trouver le type avec le score le plus élevé
-  let bestType = 'etc'; // Type par défaut
+  let bestType = 'etc';
   let maxScore = 0;
   for (const [type, score] of Object.entries(scores)) {
     if (score > maxScore) {
@@ -156,7 +177,6 @@ function classifyTaskType(userArgs) {
     }
   }
   
-  // Si aucun mot-clé trouvé, retourner 'etc'
   return maxScore > 0 ? bestType : 'etc';
 }
 
@@ -239,16 +259,18 @@ async function main() {
   child.on("exit", (code) => process.exit(code || 0));
 }
 
-main().catch((e) => {
-  console.error("[auto] erreur launcher:", e && e.message ? e.message : e);
-  process.exit(1);
-});
-"" 
-"if (process.env.TEST_MODE) {" 
-"  module.exports = {" 
-"    loadModelMetrics," 
-"    classifyTaskType," 
-"    calculateBackendScore," 
-"    sortBackendsByTaskType" 
-"  };" 
-"}" 
+if (require.main === module) {
+  main().catch((e) => {
+    console.error("[auto] erreur launcher:", e && e.message ? e.message : e);
+    process.exit(1);
+  });
+}
+
+if (process.env.TEST_MODE) {
+  module.exports = {
+    loadModelMetrics,
+    classifyTaskType,
+    calculateBackendScore,
+    sortBackendsByTaskType
+  };
+} 
