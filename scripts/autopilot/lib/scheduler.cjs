@@ -26,10 +26,16 @@ const SCHEDULER_FILE = path.join(AP_DIR, 'scheduler.json');
 function schedulerPath() { return SCHEDULER_FILE; }
 
 function loadScheduler() {
-  return readJSON(SCHEDULER_FILE, {
+  const st = readJSON(SCHEDULER_FILE, {
     version: 1, selectedId: null, claimedId: null, claimedIds: [], status: 'idle',
     cycleId: null, prNumber: null, prBlocking: null, blockReason: null, updatedAt: null,
+    // ÉTAPE 5 : anti-monopole — compteur d'échecs de réparation par PR.
+    // {<prNumber>: {attempts, lastAt, parkedAt}} — survit au restart (disque).
+    prRepair: {},
   });
+  // Compat ascendante : les états écrits avant l'ÉTAPE 5 n'ont pas prRepair.
+  if (!st.prRepair || typeof st.prRepair !== 'object') st.prRepair = {};
+  return st;
 }
 
 function saveScheduler(state) {
@@ -250,9 +256,150 @@ function stateLine(from, to, detail) {
   return `[AUTOPILOT STATE] ${from} → ${to}${detail ? ' — ' + detail : ''}`;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * ÉTAPE 5 — ANTI-MONOPOLE : une tâche bloquée ne bloque jamais l'usine.
+ *
+ *  - nextEligibleOpportunity(queue, excludeIds) : PURE — la prochaine
+ *    opportunité actionnable en excluant celles déjà essayées/parkées
+ *    dans le cycle (round-robin : jamais deux fois la même par cycle).
+ *  - applyRepairAttempt(state, prNumber, ok, nowMs) : PURE — comptabilise
+ *    un essai de réparation (aucun I/O ; le wrapper recordRepairAttempt
+ *    persiste).
+ *  - shouldParkPr(state, prNumber, max) : PURE — vrai après `max` échecs.
+ *  - repairCooldownOver(state, prNumber, nowMs, cooldownMs) : PURE — une PR
+ *    parkée redevient éligible à la réparation après `cooldownMs`
+ *    (reprise plus tard, pas d'acharnement, pas d'oubli).
+ *  - resumeParkedOpportunities(queue, isBlockerClearedFn) : PURE — rend leur
+ *    chance aux tâches parkées dont le bloqueur a disparu.
+ * ═══════════════════════════════════════════════════════════════════ */
+
+const ELIGIBLE_STATUSES = new Set(['new']);
+const RESUMABLE_STATUSES = new Set(['picked', 'in_progress', 'validation']);
+
+/**
+ * Prochaine opportunité actionnable, en excluant `excludeIds`
+ * (tâches déjà essayées/parkées ce cycle). Tri : score décroissant
+ * (à défaut : ordre d'insertion). PURE.
+ */
+function nextEligibleOpportunity(queue, excludeIds) {
+  const excluded = new Set(excludeIds || []);
+  const opps = ((queue && queue.opportunities) || []).filter(o =>
+    o && ELIGIBLE_STATUSES.has(o.status) && !excluded.has(o.id));
+  opps.sort((a, b) => {
+    const sa = typeof a._score === 'number' ? a._score : -Infinity;
+    const sb = typeof b._score === 'number' ? b._score : -Infinity;
+    return sb - sa;
+  });
+  return opps[0] || null;
+}
+
+/** Une opportunité est-elle opposable à un double-claim ? PURE. */
+function isAlreadyActive(opp) {
+  return !!opp && RESUMABLE_STATUSES.has(opp.status);
+}
+
+/**
+ * Comptabilise un essai de réparation de PR. PURE (retourne un nouvel état).
+ * Succès → compteur remis à zéro (la PR réparée ne pénalise plus).
+ */
+function applyRepairAttempt(state, prNumber, ok, nowMs) {
+  const now = nowMs || Date.now();
+  const next = Object.assign({}, state, { prRepair: Object.assign({}, state.prRepair) });
+  const key = String(prNumber);
+  const prev = next.prRepair[key] || { attempts: 0, lastAt: null, parkedAt: null };
+  if (ok) {
+    next.prRepair[key] = { attempts: 0, lastAt: new Date(now).toISOString(), parkedAt: null };
+  } else {
+    next.prRepair[key] = {
+      attempts: (prev.attempts || 0) + 1,
+      lastAt: new Date(now).toISOString(),
+      parkedAt: prev.parkedAt || null,
+    };
+  }
+  return next;
+}
+
+/** Vrai quand la PR a épuisé ses essais → parker, passer à la suivante. PURE. */
+function shouldParkPr(state, prNumber, max) {
+  const limit = (typeof max === 'number' && max > 0) ? max : 3;
+  const rec = (state.prRepair || {})[String(prNumber)];
+  return !!rec && (rec.attempts || 0) >= limit;
+}
+
+/**
+ * Marque la PR comme parkée (horodatage). PURE.
+ * Une PR parkée sera réessayée après `cooldownMs` (reprise plus tard).
+ */
+function markPrParked(state, prNumber, nowMs) {
+  const now = nowMs || Date.now();
+  const next = Object.assign({}, state, { prRepair: Object.assign({}, state.prRepair) });
+  const key = String(prNumber);
+  const prev = next.prRepair[key] || { attempts: 0, lastAt: null, parkedAt: null };
+  next.prRepair[key] = Object.assign({}, prev, { parkedAt: new Date(now).toISOString() });
+  return next;
+}
+
+/**
+ * Vrai si le cooldown de reprise est écoulé (ou si jamais parkée). PURE.
+ * Au-delà du cooldown, la réparation est retentée UNE fois (compteur remis
+ * à zéro au premier nouvel essai via applyRepairAttempt après succès, ou
+ * réincrémenté en cas d'échec — jamais d'acharnement intra-cycle grâce à
+ * shouldParkPr qui reste vrai jusqu'au prochain cycle avec cooldown écoulé).
+ */
+function repairCooldownOver(state, prNumber, nowMs, cooldownMs) {
+  const rec = (state.prRepair || {})[String(prNumber)];
+  if (!rec || !rec.parkedAt) return true;
+  const cd = (typeof cooldownMs === 'number' && cooldownMs >= 0) ? cooldownMs : 24 * 3600000;
+  return (nowMs || Date.now()) - new Date(rec.parkedAt).getTime() >= cd;
+}
+
+/**
+ * Tâches parkées dont le bloqueur a disparu → à re-proposer.
+ * `isBlockerClearedFn(opp)` : prédicat fourni par l'appelant (ex: PR mergée).
+ * PURE. Ne change aucun statut (la reprise passe par le claim idempotent).
+ */
+function resumeParkedOpportunities(queue, isBlockerClearedFn) {
+  const opps = (queue && queue.opportunities) || [];
+  if (typeof isBlockerClearedFn !== 'function') return [];
+  return opps.filter(o => o && o.status === 'blocked' && isBlockerClearedFn(o));
+}
+
+/**
+ * Tâches parkées re-tentables : status 'blocked' avec mention `PR #N` dans
+ * blockReason ET cooldown de reprise écoulé pour N. PURE.
+ * Le scheduler les fait repasser à 'new' (une seule par cycle — l'appelant
+ * flippe la première et laisse les autres pour les cycles suivants :
+ * anti-acharnement).
+ */
+function blockedRetryCandidates(queue, state, nowMs, cooldownMs) {
+  const opps = (queue && queue.opportunities) || [];
+  return opps.filter(o => {
+    if (!o || o.status !== 'blocked') return false;
+    const m = String(o.blockReason || '').match(/PR #(\d+)/);
+    if (!m) return false;
+    return repairCooldownOver(state, m[1], nowMs, cooldownMs);
+  });
+}
+
+/** Wrapper persistant : comptabilise + sauvegarde (survit au restart). */
+function recordRepairAttempt(prNumber, ok) {
+  const st = loadScheduler();
+  return saveScheduler(applyRepairAttempt(st, prNumber, ok, Date.now()));
+}
+
+/** Wrapper persistant : marque parkée + sauvegarde. */
+function parkPr(prNumber) {
+  const st = loadScheduler();
+  return saveScheduler(markPrParked(st, prNumber, Date.now()));
+}
+
 module.exports = {
   schedulerPath, loadScheduler, saveScheduler,
   surfaceOfOpp, filesOverlap, findLinkedOpp,
   isPrBlocking, restoreSelected, persistSelected, persistClaimed, persistDispatched,
   stateLine,
+  nextEligibleOpportunity, isAlreadyActive,
+  applyRepairAttempt, shouldParkPr, markPrParked, repairCooldownOver,
+  resumeParkedOpportunities, blockedRetryCandidates,
+  recordRepairAttempt, parkPr,
 };

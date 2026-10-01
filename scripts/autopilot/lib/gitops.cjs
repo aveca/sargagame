@@ -15,6 +15,7 @@ const path = require('path');
 const { execFileSync, execSync } = require('child_process');
 const os = require('os');
 const { ROOT } = require('./common.cjs');
+const { isGeneratedFile, classifyRepairFile } = require('./generated-files.cjs');
 
 function git(args, cwd, opts = {}) {
   const pipeOut = opts.pipeOut !== false;
@@ -342,7 +343,7 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       log('REPAIR_PR   branch already up to date with origin/' + cfg.git.baseBranch);
       // Still push to ensure remote is in sync (force-push in case of remote divergence)
       const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
-      git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+      git(['push', '--force-with-lease', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
       log('REPAIR_PR   force-pushed (already up to date)');
       return { ok: true, rebased: false, commitSha, method: 'already-up-to-date' };
     }
@@ -356,12 +357,12 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       if (rebaseResult.alreadyUpToDate) {
         log('REPAIR_PR   rebase: already up to date');
         const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
-        git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+        git(['push', '--force-with-lease', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
         return { ok: true, rebased: false, commitSha, method: 'already-up-to-date' };
       } else {
         log('REPAIR_PR   rebase successful (commits replayed)');
         const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
-        git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+        git(['push', '--force-with-lease', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
         log('REPAIR_PR   force-pushed rebased branch');
         return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
       }
@@ -404,7 +405,16 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       return { ok: false, reason: continueResult.output || 'rebase --continue failed', unsafe: true };
     }
     log('REPAIR_PR   rebase continued after conflict resolution');
-    
+
+    // 10b. Vérification post-réparation (syntaxe + marqueurs + diff --check)
+    // avant tout push : une résolution qui casse le code ne part jamais.
+    const verify = verifyResolvedFiles((resolution.resolved || []).map(r => r.file), wt, log);
+    if (!verify.ok) {
+      log(`REPAIR_PR   post-repair verification FAILED: ${verify.reason} — abort, pas de push`);
+      return { ok: false, reason: `post-repair verification: ${verify.reason}`, unsafe: true };
+    }
+    log('REPAIR_PR   post-repair verification OK');
+
     // 11. Verify rebase completed
     const finalStatus = gitSafe(['status', '--porcelain'], wt) || '';
     if (finalStatus.trim()) {
@@ -413,11 +423,17 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       }
       return { ok: false, reason: 'rebase left uncommitted changes', unsafe: true };
     }
-    
+
     const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
-    git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+    // --force-with-lease (jamais -f aveugle) : si la branche distante a bougé
+    // (push concurrent), le push échoue au lieu d'écraser → park + diagnostic.
+    try {
+      git(['push', '--force-with-lease', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
+    } catch (e) {
+      return { ok: false, reason: `push rejected (remote moved?) — ${String(e.message).split('\n')[0].slice(0, 160)}`, unsafe: false };
+    }
     log('REPAIR_PR   force-pushed rebased branch with resolved conflicts');
-    
+
     return { ok: true, rebased: true, commitSha, method: 'rebase-with-resolution', resolvedFiles: conflictedFiles };
     
   } catch (e) {
@@ -472,116 +488,145 @@ function runGitWithOutput(args, wt) {
 
 /**
  * Tente une résolution déterministe et SÛRE des conflits.
- * Ne résout QUE les cas où la branche autopilot a des changements
- * et main n'a pas touché aux mêmes lignes (ajout vs ajout, ou notre côté gagne).
- * Retourne {ok: true} ou {ok: false, reason, unsafe: boolean}.
+ *
+ * Stratégies autorisées (tout le reste → abort propre, jamais de devinette) :
+ *  - fichier généré (generated-files.cjs) → version main (`--theirs` au rebase),
+ *    régénérable au prochain build de toute façon ;
+ *  - ours-only (main n'a rien apporté) → garde ours ;
+ *  - theirs-only (branche n'a rien apporté) → garde theirs ;
+ *  - both-added / both-modified MAIS un seul côté substantif → garde ce côté ;
+ *  - whitespace-only des deux côtés → garde ours (équivalent) ;
+ *  - TOUS les hunks du fichier doivent être sûrs (pas seulement le premier).
+ *
+ * Retourne {ok:true, resolved:[{file, strategy}]} ou
+ * {ok:false, reason, unsafe:true}. L'appelant DOIT `git rebase --abort`
+ * sur échec (fait par repairPRConflict).
  */
 function attemptSafeConflictResolution(conflictedFiles, wt, log) {
-  // Stratégie sûre : pour chaque fichier en conflit,
-  // on ne garde QUE nos changements (branche agent) si :
-  // - Le conflit est un "both added" (AA) → on garde notre version
-  // - Le conflit est "both modified" (UU) mais main n'a changé que des lignes
-  //   différentes de nos changements (heuristique : diff court, pas de logique métier)
-  
+  const resolved = [];
   for (const file of conflictedFiles) {
     const fullPath = path.join(wt, file);
-    if (!fs.existsSync(fullPath)) continue;
-    
-    const content = fs.readFileSync(fullPath, 'utf8');
-    const conflictMarkers = (content.match(/^<<<<<<< /gm) || []).length;
-    
-    if (conflictMarkers === 0) continue; // Already resolved
-    
-    // Analyze the conflict
+    if (!fs.existsSync(fullPath)) {
+      // Fichier supprimé d'un côté (delete/modify ou les deux) : toute
+      // décision jetterait du contenu → ambigu, abort propre.
+      log(`REPAIR_PR   ${file}: côté manquant sur disque (delete/modify) → abort`);
+      return { ok: false, reason: `Delete/modify conflict in ${file} — décision humaine requise`, unsafe: true };
+    }
+
+    let content;
+    try { content = fs.readFileSync(fullPath, 'utf8'); }
+    catch (_) {
+      log(`REPAIR_PR   ${file}: illisible/binaire → abort`);
+      return { ok: false, reason: `Unreadable (binary?) conflict in ${file}`, unsafe: true };
+    }
+    const hunks = (content.match(/^<<<<<<< /gm) || []).length;
+    if (hunks === 0) continue; // déjà résolu (ex: git a auto-fusionné un côté)
+
+    // Fichier généré : prend la version main, le build régénère le reste.
+    // (Au rebase, HEAD = branche agent, --theirs = base = origin/main.)
+    // Échec checkout (pas de base — ex: fichier untracked) → abort propre,
+    // jamais d'exception brute vers l'appelant.
+    if (isGeneratedFile(file)) {
+      log(`REPAIR_PR   ${file}: généré → version main (${hunks} hunk(s), régénérable au build)`);
+      try {
+        git(['checkout', '--theirs', '--', file], wt);
+        git(['add', file], wt);
+      } catch (e) {
+        log(`REPAIR_PR   ${file}: checkout --theirs impossible (${String(e.message).split('\n')[0].slice(0, 120)}) → abort`);
+        return { ok: false, reason: `Generated file ${file} without merge base — cannot auto-resolve`, unsafe: true };
+      }
+      resolved.push({ file, strategy: 'generated-theirs' });
+      continue;
+    }
+
     const analysis = analyzeConflict(content);
-    
-    // SAFE CASE 1: "both added" (AA) - keep our version (agent branch)
-    if (analysis.type === 'both-added') {
-      log(`REPAIR_PR   ${file}: both-added conflict → keeping agent version`);
-      const resolved = resolveKeepOurs(content);
-      fs.writeFileSync(fullPath, resolved, 'utf8');
-      git(['add', file], wt);
-      continue;
+    if (!analysis.safe) {
+      log(`REPAIR_PR   ${file}: UNSAFE (${analysis.type}, ${hunks} hunk(s)) — ${analysis.reason}`);
+      return { ok: false, reason: `Unsafe conflict in ${file}: ${analysis.type} — ${analysis.reason}`, unsafe: true };
     }
-    
-    // SAFE CASE 2: "both modified" but our changes are purely additive (new lines only)
-    // and main's changes don't overlap with ours
-    if (analysis.type === 'both-modified' && analysis.safeToKeepOurs) {
-      log(`REPAIR_PR   ${file}: both-modified (safe) → keeping agent version`);
-      const resolved = resolveKeepOurs(content);
-      fs.writeFileSync(fullPath, resolved);
-      git(['add', file], wt);
-      continue;
+    const out = analysis.strategy === 'theirs' ? resolveKeepTheirs(content) : resolveKeepOurs(content);
+    if ((out.match(/^<<<<<<< /gm) || []).length > 0) {
+      log(`REPAIR_PR   ${file}: marqueurs résiduels après résolution → abort`);
+      return { ok: false, reason: `Residual markers in ${file} after ${analysis.strategy} resolution`, unsafe: true };
     }
-    
-    // UNSAFE: any other conflict type
-    log(`REPAIR_PR   ${file}: UNSAFE conflict type=${analysis.type}, markers=${conflictMarkers}`);
-    return { ok: false, reason: `Unsafe conflict in ${file}: ${analysis.type}`, unsafe: true };
+    log(`REPAIR_PR   ${file}: ${analysis.type} (${hunks} hunk(s)) → garde ${analysis.strategy} (${analysis.reason})`);
+    try {
+      fs.writeFileSync(fullPath, out, 'utf8');
+      git(['add', file], wt);
+    } catch (e) {
+      log(`REPAIR_PR   ${file}: écriture/add impossible (${String(e.message).split('\n')[0].slice(0, 120)}) → abort`);
+      return { ok: false, reason: `Cannot write/resolve ${file} — ${String(e.message).split('\n')[0].slice(0, 120)}`, unsafe: true };
+    }
+    resolved.push({ file, strategy: analysis.strategy });
   }
-  
-  return { ok: true };
+
+  return { ok: true, resolved };
 }
 
+/** Découpe le contenu en hunks {ours[], theirs[]} (un par marqueur).
+ * Tolère CRLF (worktrees Windows — core.autocrlf) : la comparaison se fait
+ * sur lignes sans `\r` final, mais les lignes ORIGINALES sont conservées pour
+ * ne jamais changer les fins de ligne du fichier résolu. */
+function splitHunks(content) {
+  const hunks = [];
+  const lines = content.split('\n');
+  let inOurs = false, inTheirs = false, cur = null;
+  for (const raw of lines) {
+    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
+    if (line.startsWith('<<<<<<< ')) { inOurs = true; cur = { ours: [], theirs: [] }; continue; }
+    if (line === '=======') { inOurs = false; inTheirs = true; continue; }
+    if (line.startsWith('>>>>>>> ')) { inTheirs = false; if (cur) { hunks.push(cur); cur = null; } continue; }
+    if (inOurs && cur) cur.ours.push(raw);
+    else if (inTheirs && cur) cur.theirs.push(raw);
+  }
+  return hunks;
+}
+
+function nonEmpty(lines) { return lines.filter(l => l.trim()); }
+function normWs(s) { return String(s).replace(/\s+/g, ' ').trim(); }
+
 /**
- * Analyse un conflit git pour déterminer s'il est résoluble de façon sûre.
+ * Analyse TOUS les hunks d'un conflit.
+ * Retourne {type, safe, strategy:'ours'|'theirs', reason}.
+ *  - 'ours-only' : theirs vide partout → garde ours.
+ *  - 'theirs-only' : ours vide partout → garde theirs.
+ *  - 'both-added' : les deux côtés apportent du contenu substantif DIFFÉRENT
+ *    → UNSAFE (deux créations concurrentes, choix humain).
+ *  - 'both-modified' : sûr SEULEMENT si un côté est vide/blanc et l'autre
+ *    substantif (garde le substantif), ou blanc des deux côtés (garde ours).
+ * Règle dure : UN SEUL hunk unsafe → tout le fichier est unsafe.
  */
 function analyzeConflict(content) {
-  // Find the conflict sections using a more robust approach
-  const lines = content.split('\n');
-  let inOurs = false, inTheirs = false;
-  const oursLines = [];
-  const theirsLines = [];
-  
-  for (const line of lines) {
-    if (line.startsWith('<<<<<<< ')) {
-      inOurs = true;
-      continue;
-    }
-    if (line === '=======') {
-      inOurs = false;
-      inTheirs = true;
-      continue;
-    }
-    if (line.startsWith('>>>>>>> ')) {
-      inTheirs = false;
-      continue;
-    }
-    if (inOurs) oursLines.push(line);
-    if (inTheirs) theirsLines.push(line);
+  const hunks = splitHunks(content);
+  if (!hunks.length) return { type: 'no-markers', safe: false, strategy: null, reason: 'aucun marqueur' };
+
+  let sawOursSub = false, sawTheirsSub = false, sawBothSub = false;
+  for (const h of hunks) {
+    const o = nonEmpty(h.ours), t = nonEmpty(h.theirs);
+    const oSub = o.length > 0, tSub = t.length > 0;
+    if (oSub && tSub) {
+      // Même contenu modulo espaces → équivalent, garde ours.
+      const same = o.length === t.length && o.every((l, i) => normWs(l) === normWs(t[i]));
+      if (same) continue;
+      sawBothSub = true;
+    } else if (oSub) { sawOursSub = true; }
+    else if (tSub) { sawTheirsSub = true; }
+    // hunk vide des deux côtés : neutre.
   }
-  
-  const ours = oursLines.join('\n');
-  const theirs = theirsLines.join('\n');
-  
-  const oursCount = oursLines.filter(l => l.trim()).length;
-  const theirsCount = theirsLines.filter(l => l.trim()).length;
-  
-  // Both added: both sides have content, base was empty
-  if (oursCount > 0 && theirsCount > 0) {
-    // Check if one side is purely additive (only new lines, no modifications to existing)
-    // For simplicity, if both have content, we consider it "both-modified"
-    // but allow keeping ours if theirs looks like whitespace/formatting only
-    const theirsOnlyWhitespace = theirsLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
-    const oursOnlyWhitespace = oursLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
-    
-    if (theirsOnlyWhitespace && !oursOnlyWhitespace) {
-      return { type: 'both-modified', safeToKeepOurs: true, reason: 'theirs is whitespace only' };
-    }
-    if (oursOnlyWhitespace && !theirsOnlyWhitespace) {
-      return { type: 'both-modified', safeToKeepOurs: false, reason: 'ours is whitespace only' };
-    }
-    return { type: 'both-modified', safeToKeepOurs: false, reason: 'both have substantive changes' };
+
+  if (sawBothSub) {
+    return { type: 'both-modified', safe: false, strategy: null, reason: 'les deux côtés apportent du contenu substantif différent' };
   }
-  
-  if (oursCount > 0 && theirsCount === 0) {
-    return { type: 'ours-only', safeToKeepOurs: true }; // Actually not a conflict
+  if (sawOursSub && sawTheirsSub) {
+    // Hunsk disjoints : ours ici, theirs là — addition pure des deux côtés ?
+    // NON : au rebase, prendre ours perd theirs et inversement. Sans preuve que
+    // les hunks sont indépendants (même fichier, contexte partagé), abort.
+    return { type: 'both-modified', safe: false, strategy: null, reason: 'changements disjoints des deux côtés — union non prouvée sûre' };
   }
-  
-  if (oursCount === 0 && theirsCount > 0) {
-    return { type: 'theirs-only', safeToKeepOurs: false }; // Should take theirs
-  }
-  
-  return { type: 'both-added', safeToKeepOurs: true };
+  if (sawOursSub) return { type: 'ours-only', safe: true, strategy: 'ours', reason: 'main sans apport' };
+  if (sawTheirsSub) return { type: 'theirs-only', safe: true, strategy: 'theirs', reason: 'branche sans apport' };
+  // Blanc partout (whitespace-only) : équivalent, garde ours.
+  return { type: 'whitespace-only', safe: true, strategy: 'ours', reason: 'blanc des deux côtés' };
 }
 
 /**
@@ -592,8 +637,9 @@ function resolveKeepOurs(content) {
   const result = [];
   let inOurs = false;
   let inTheirs = false;
-  
-  for (const line of lines) {
+
+  for (const raw of lines) {
+    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
     if (line.startsWith('<<<<<<< ')) {
       inOurs = true;
       continue;
@@ -608,16 +654,103 @@ function resolveKeepOurs(content) {
       continue;
     }
     if (inOurs) {
-      result.push(line);
+      result.push(raw);
     } else if (!inTheirs) {
-      result.push(line);
+      result.push(raw);
     }
     // Skip lines in theirs section
   }
-  
+
   return result.join('\n');
 }
 
+/**
+ * Résout un conflit en gardant leur version (theirs = origin/main au rebase).
+ */
+function resolveKeepTheirs(content) {
+  const lines = content.split('\n');
+  const result = [];
+  let inOurs = false;
+  let inTheirs = false;
+
+  for (const raw of lines) {
+    const line = raw.endsWith('\r') ? raw.slice(0, -1) : raw;
+    if (line.startsWith('<<<<<<< ')) {
+      inOurs = true;
+      continue;
+    }
+    if (line === '=======') {
+      inOurs = false;
+      inTheirs = true;
+      continue;
+    }
+    if (line.startsWith('>>>>>>> ')) {
+      inTheirs = false;
+      continue;
+    }
+    if (inTheirs) {
+      result.push(raw);
+    } else if (!inOurs) {
+      result.push(raw);
+    }
+    // Skip lines in ours section
+  }
+
+  return result.join('\n');
+}
+
+/**
+ * Vérification post-réparation (avant push) : les fichiers résolus doivent
+ * rester syntaxiquement valides et sans marqueurs ni whitespace errors.
+ * Léger et déterministe (pas de build complet ici — le gate complet tourne
+ * dans phaseImplementLocal / CI). Retourne {ok:true} ou {ok:false, reason}.
+ */
+function verifyResolvedFiles(files, wt, log = () => {}) {
+  const { execFileSync } = require('child_process');
+  for (const f of files || []) {
+    const full = path.join(wt, f);
+    if (!fs.existsSync(full)) {
+      // Supprimé par la résolution : valide seulement si git le sait déjà.
+      continue;
+    }
+    let content = '';
+    try { content = fs.readFileSync(full, 'utf8'); }
+    catch (e) { return { ok: false, reason: `${f}: illisible après résolution (${e.message})` }; }
+    if (/^<<<<<<< /m.test(content) || /^>>>>>>> /m.test(content)) {
+      return { ok: false, reason: `${f}: marqueurs de conflit résiduels` };
+    }
+    if (/\.(cjs|js)$/.test(f) && !/\.min\.js$/.test(f)) {
+      try {
+        execFileSync(process.execPath, ['--check', full], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 30000 });
+      } catch (e) {
+        return { ok: false, reason: `${f}: syntaxe invalide après résolution (${String((e.stderr || e.message) || '').split('\n')[0].slice(0, 160)})` };
+      }
+    }
+    if (/\.(jsx|mjs)$/.test(f)) {
+      // node --check ne parse pas JSX/ESM : esbuild si dispo, sinon garde-fou
+      // d'équilibre accolades/parenthèses (heuristique, jamais bloquant seul).
+      let esbuildOk = null;
+      try {
+        const esbuildCli = path.join(ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'esbuild.exe' : 'esbuild');
+        if (fs.existsSync(esbuildCli)) {
+          execFileSync(esbuildCli, [full, '--bundle=false', '--log-level=error', '--outfile=/dev/null'],
+            { stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+          esbuildOk = true;
+        }
+      } catch (e) {
+        esbuildOk = false;
+        return { ok: false, reason: `${f}: esbuild rejette le fichier résolu (${String(e.stderr || e.message).split('\n')[0].slice(0, 160)})` };
+      }
+      if (esbuildOk === null) log(`REPAIR_PR   ${f}: esbuild indisponible — vérification syntaxique JSX sautée (CI la fera)`);
+    }
+  }
+  try {
+    execFileSync('git', ['diff', '--check'], { cwd: wt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+  } catch (e) {
+    return { ok: false, reason: `git diff --check rouge après résolution (${String(e.stdout || '').split('\n')[0].slice(0, 160)})` };
+  }
+  return { ok: true };
+}
 /**
  * Prépare le worktree pour la réparation de PR.
  * Gère les modifications locales générées par le build (ex: public/data/media-manifest.json)
@@ -632,39 +765,23 @@ function prepareRepairWorktree(wt, log = console.log) {
   }
   
   log('REPAIR_PR   worktree dirty — analyzing local changes');
-  
-  // Fichiers générés/artefacts de build connus (sûrs à nettoyer)
-  const GENERATED_FILES = new Set([
-    'public/data/media-manifest.json',
-    'public/api/copernicus/sargassum.json',
-    'public/version.json',
-    'dist/',
-    'node_modules/',
-  ]);
-  
-  // Fichiers de config autopilot qui peuvent être modifiés par le cycle (sûrs à stash)
-  const AUTOPILOT_TEMP_FILES = new Set([
-    '.ai/autopilot/observations/latest.json',
-    '.ai/autopilot/queue.json',
-    '.ai/autopilot/scheduler.json',
-    '.ai/autopilot/latest.md',
-    '.ai/autopilot/runs/',
-    '.ai/autopilot/regressions/',
-  ]);
-  
+
+  // Listes centralisées (generated-files.cjs = source unique, testée).
+  // NOTE : le préfixe exige le séparateur ('dist/' couvre 'dist/x', jamais
+  // 'distx') — voir matchesPattern, anti-faux-positif 'src' vs 'srcx'.
+
   const lines = status.split('\n').filter(Boolean);
   const stashedFiles = [];
   const cleanedFiles = [];
   const preservedFiles = [];
   let hasUnsafeChanges = false;
   let unsafeDetails = [];
-  
+
   for (const line of lines) {
-    const file = line.slice(3).trim(); // Format: "XY filename"
-    const isGenerated = Array.from(GENERATED_FILES).some(g => file === g || file.startsWith(g));
-    const isAutopilotTemp = Array.from(AUTOPILOT_TEMP_FILES).some(g => file === g || file.startsWith(g));
-    
-    if (isGenerated) {
+    const file = parsePorcelainLine(line);
+    const kind = classifyRepairFile(file);
+
+    if (kind === 'generated') {
       // Generated files: safe to discard (will be regenerated by next build)
       try {
         git(['checkout', '--', file], wt);
@@ -684,7 +801,7 @@ function prepareRepairWorktree(wt, log = console.log) {
           hasUnsafeChanges = true;
         }
       }
-    } else if (isAutopilotTemp) {
+    } else if (kind === 'autopilot-temp') {
       // Autopilot temp files: stash them (preserve for later)
       try {
         git(['stash', 'push', '-m', `autopilot-repair-${Date.now()}`, '--', file], wt);
@@ -718,7 +835,7 @@ function prepareRepairWorktree(wt, log = console.log) {
   const verifyStatus = gitSafe(['status', '--short'], wt) || '';
   if (verifyStatus.trim()) {
     log('REPAIR_PR   worktree still has changes after preparation');
-    const remaining = verifyStatus.split('\n').filter(Boolean).map(l => l.slice(3).trim());
+    const remaining = verifyStatus.split('\n').filter(Boolean).map(parsePorcelainLine);
     log(`REPAIR_PR   remaining: ${remaining.join(', ')}`);
     // Not necessarily fatal - checkout might still work if changes don't conflict
   }
@@ -730,6 +847,8 @@ function prepareRepairWorktree(wt, log = console.log) {
 module.exports = {
   worktreePath, founderTreeState, prepareWorktree, diffStats, worktreeAddRecovery,
   commitAll, pushBranch, createPR, openAutopilotPR, getPrDetail, enableAutoMerge, cleanupWorktree,
-  prState, prodFingerprint, repairPRConflict, analyzeConflict, resolveKeepOurs, prepareRepairWorktree,
+  prState, prodFingerprint, repairPRConflict, analyzeConflict, splitHunks,
+  resolveKeepOurs, resolveKeepTheirs, attemptSafeConflictResolution,
+  verifyResolvedFiles, prepareRepairWorktree,
   git, gitSafe, run,
 };

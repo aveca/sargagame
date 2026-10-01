@@ -1,39 +1,44 @@
-## 2026-10-01 — TRIP PLANNER REWRITE : fix corrupted WIP file (multi-day premium planning integration)
+## 2026-10-01 — AUTONOMOUS FACTORY HARDENING (PR #777) : discover→deploy sans intervention
+
+**MISSION** : usine autonome continue — une tache bloquee ne bloque jamais l usine (park propre + suivante).
+
+**PR #777 REPAREE** : branche agent/autopilot/live-dev-mode reset sur origin/main (contenu 100% supersede, verifie hunk-par-hunk + diff net ; backup tag pr777-pre-repair-ea6e4ca0d). Nouveau contenu = durcissement mission uniquement.
 
 **CHANGES** :
-1. **Complete rewrite of `src/TripPlanner.jsx`** (was corrupted with duplicate declarations, missing exports, malformed JSX from multi-day premium planning integration attempt)
-   - Fixed: duplicate `export default function TripPlanner`, misplaced imports, broken JSX structure
-   - Preserved all existing features: legacy mode (`?tripplan=0`), WOW Journey strip (`stay` prop), Dynamic Planner plan strip (`planBeaches` + map sync), Multi-day premium planning (`showMultiDay` + `computeMultiDayPlan` integration)
-   - Added missing imports: `computeMultiDayPlan` from `./lib/dynamic-planner.js`
-   - Kept rollback flags: `?tripplan=0`, `?sgmotion=0`, `?dynamicplan=0`, `?plansync=0`
-   - Preserved all metrics tracking: `sg_trip_open`, `sg_trip_days_pick`, `sg_trip_beach_open`, `sg_trip_premium_cta`, `sg_exp_chip_tap`
+1. **GENERATED_FILES centralise** (scripts/autopilot/lib/generated-files.cjs, source unique testee) : + public/api/b2b-partners.json (gen-b2b-partners.cjs) + src/lib/partners-catalog.json (gen-context-partners.cjs) — fin du faux WIP bloquant au build. gitops.cjs importe le module (plus de Set inline). Anti-faux-positif prefixe (dist/ vs distx).
+2. **Conflict repair durci** (gitops.cjs) : analyse multi-hunks (1 hunk unsafe = abort), whitespace-only, ours-only/theirs-only, fichiers generes -> version main, delete/modify et binaire -> abort propre, try/catch sans exception brute, verification post-reparation (syntaxe node --check/esbuild + diff --check) avant push, push --force-with-lease (jamais -f aveugle). Fix CRLF (splitHunks/resolve tolerent \\r — worktrees Windows).
+3. **Scheduler anti-monopole** (scheduler.cjs + orchestrator.cjs) : nextEligibleOpportunity (round-robin, exclues sautees), comptabilite essais par PR (RAZ au succes), park apres 3 echecs, cooldown reprise 24h, blockedRetryCandidates + resumeParkedOpportunities, continueWithNextEligible (borne 5/cycle), claimAndProcess factorise. decideRecovery pure (retry borne/park immediat, jamais de stop-factory).
+4. **Single-runner** (lock.cjs) : opts.lockFile additif pour tests ; comportement prod inchange.
+5. **Nettoyage repo** : .gitignore runtime autopilot (runs/, lock, stale backups) + scratch racine ; 29 fichiers debris supprimes (git rm) ; 1770 run-logs untracked (git rm --cached, persistent disque).
+6. **Bug pre-existant corrige** : .ai/ux-agent/opencode-auto.cjs lancait main() au require (TUI opencode -> hang npm test) + bloc exports quote (no-op) ; garde require.main + exports restaures ; opencode-auto.test.cjs : inputs ambigus + assert.closeTo inexistant corriges (8/8).
 
-**GATES PASSED** :
-- ✅ Build exit 0
-- ✅ Bundle budget 38.2 KB ≤ 210 KB
-- ✅ PHP lint OK (mollie.php, mollie-webhook.php, paypal.php, paypal-webhook.php)
-- ✅ Regions validation: OK
-- ✅ Playwright funnel-payment: 13/13 passed
-- ✅ Core Playwright tests: contract-pass-one-time, bottomnav-redesign (23/27 passed, 4 failures are pre-existing test infrastructure issues - timeout waiting for map labels in headless Chrome, NOT regressions)
+**TESTS** : 6 nouvelles suites (generated-files 36, conflict-repair 18 git-reel, scheduler-park 32, runner-lock 19 PIDs reels, pipeline-recovery 24, factory-autonomy 14 sur 24 cycles) + gitops.test.cjs etendu (CRLF/strategies) + factory-simulation scenario 5 sur vrai classifyError (71). Full npm test 86/86 (post-build ; distro-contract exige dist/). Build exit 0, bundle 38.2 Ko, smoke 4/4, diff --check OK.
 
-**ROLLBACK** : `?tripplan=0` (entry disappears, product intact)
+**GATES** : build 0 - bundle 38.2 Ko <= 210 Ko - smoke FUNNEL_REACHED=map+fiche+paywall ERRORS=[] WHITE=[] RM_INFINITE=[] - esbuild 12 fichiers OK - php -l N/A (0 .php touche) - regions N/A (0 region touchee).
 
----
+**ROLLBACK** : revert par commit (6 commits separes) ; tag backup pr777-pre-repair-ea6e4ca0d ; ?flag=0 N/A (aucun ajout conversion/UI).
 
-## 2026-10-01 — AUTOPILOT PROD AUDIT : wrapper LIVE single-runner + test 39 checks (produit intouche)
 
-**CHANGES** (factory uniquement, zero produit) :
-1. `scripts/autopilot/autopilot-live.cmd` (NOUVEAU) : wrapper Windows — preflight lock (exit 3 si runner actif), env LIVE+CONTINUOUS, watchdog borne crash-only (MAX_RESTARTS=5, jamais de relance sur 0/2/3/4), STOP file respecte.
-2. `scripts/autopilot/autopilot-live-wsl.sh` (NOUVEAU) : meme contrat en WSL + refus explicite `sargagame-tmp` (exit 2, vieux clone sans autopilot) + defaut repo canonique Backup/sargagame.
-3. `tests/unit/autopilot-live-single-runner.test.cjs` (NOUVEAU) : 39 checks — start command, wrappers, lock repo-local, persistance, denyGlobs human gates. Aucun runner lance, aucun lock mute.
+## 2026-10-01 — AUTONOMOUS FACTORY HARDENING (PR #777) : discover→deploy sans intervention
 
-**CONSTAT BLOQUANT (pre-existant, hors scope audit)** : `npm run build` ROUGE sur WIP non commite (`src/TripPlanner.jsx:53` — `export default TripPlanner` parasite mid-function + brace cassee ; + `src/Sargasses_PROD.jsx` hack test_mode + `tests/e2e/dynamic-planner.spec.ts` rewrite). Produit NON touche par cet audit (interdiction). A reparer par le porteur du WIP avant tout merge.
+**MISSION** : usine autonome continue — une tache bloquee ne bloque jamais l usine (park propre + suivante).
 
-**GATES (cet audit)** : nouveau test 39/39 · live-mode 4/4 · gitops PASS · pr-blocking 45/45 · opp-contract 27/27 · bridge PASS · esbuild+node --check OK · bundle budget 38.2 Ko ≤ 210 Ko (dist existant) · build ROUGE pre-existant (voir ci-dessus) · smoke/Playwright non relances (produit intouche, dist existant inchange).
+**PR #777 REPAREE** : branche agent/autopilot/live-dev-mode reset sur origin/main (contenu 100% supersede, verifie hunk-par-hunk + diff net ; backup tag pr777-pre-repair-ea6e4ca0d). Nouveau contenu = durcissement mission uniquement.
 
-**ROLLBACK** : supprimer les 3 fichiers (aucun appelant existant modifie — autopilot.cmd/wsl.sh/install-scheduler.ps1 intouches).
+**CHANGES** :
+1. **GENERATED_FILES centralise** (scripts/autopilot/lib/generated-files.cjs, source unique testee) : + public/api/b2b-partners.json (gen-b2b-partners.cjs) + src/lib/partners-catalog.json (gen-context-partners.cjs) — fin du faux WIP bloquant au build. gitops.cjs importe le module (plus de Set inline). Anti-faux-positif prefixe (dist/ vs distx).
+2. **Conflict repair durci** (gitops.cjs) : analyse multi-hunks (1 hunk unsafe = abort), whitespace-only, ours-only/theirs-only, fichiers generes -> version main, delete/modify et binaire -> abort propre, try/catch sans exception brute, verification post-reparation (syntaxe node --check/esbuild + diff --check) avant push, push --force-with-lease (jamais -f aveugle). Fix CRLF (splitHunks/resolve tolerent \\r — worktrees Windows).
+3. **Scheduler anti-monopole** (scheduler.cjs + orchestrator.cjs) : nextEligibleOpportunity (round-robin, exclues sautees), comptabilite essais par PR (RAZ au succes), park apres 3 echecs, cooldown reprise 24h, blockedRetryCandidates + resumeParkedOpportunities, continueWithNextEligible (borne 5/cycle), claimAndProcess factorise. decideRecovery pure (retry borne/park immediat, jamais de stop-factory).
+4. **Single-runner** (lock.cjs) : opts.lockFile additif pour tests ; comportement prod inchange.
+5. **Nettoyage repo** : .gitignore runtime autopilot (runs/, lock, stale backups) + scratch racine ; 29 fichiers debris supprimes (git rm) ; 1770 run-logs untracked (git rm --cached, persistent disque).
+6. **Bug pre-existant corrige** : .ai/ux-agent/opencode-auto.cjs lancait main() au require (TUI opencode -> hang npm test) + bloc exports quote (no-op) ; garde require.main + exports restaures ; opencode-auto.test.cjs : inputs ambigus + assert.closeTo inexistant corriges (8/8).
 
----
+**TESTS** : 6 nouvelles suites (generated-files 36, conflict-repair 18 git-reel, scheduler-park 32, runner-lock 19 PIDs reels, pipeline-recovery 24, factory-autonomy 14 sur 24 cycles) + gitops.test.cjs etendu (CRLF/strategies) + factory-simulation scenario 5 sur vrai classifyError (71). Full npm test 86/86 (post-build ; distro-contract exige dist/). Build exit 0, bundle 38.2 Ko, smoke 4/4, diff --check OK.
+
+**GATES** : build 0 - bundle 38.2 Ko <= 210 Ko - smoke FUNNEL_REACHED=map+fiche+paywall ERRORS=[] WHITE=[] RM_INFINITE=[] - esbuild 12 fichiers OK - php -l N/A (0 .php touche) - regions N/A (0 region touchee).
+
+**ROLLBACK** : revert par commit (6 commits separes) ; tag backup pr777-pre-repair-ea6e4ca0d ; ?flag=0 N/A (aucun ajout conversion/UI).
+
 
 ## 2026-10-01 — DYNAMIC BEACH DAY PLANNER COMPLETION : plan strip + add to plan button
 

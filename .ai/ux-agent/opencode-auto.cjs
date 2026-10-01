@@ -239,16 +239,17 @@ async function main() {
   child.on("exit", (code) => process.exit(code || 0));
 }
 
-main().catch((e) => {
-  console.error("[auto] erreur launcher:", e && e.message ? e.message : e);
-  process.exit(1);
-});
-"" 
-"if (process.env.TEST_MODE) {" 
-"  module.exports = {" 
-"    loadModelMetrics," 
-"    classifyTaskType," 
-"    calculateBackendScore," 
-"    sortBackendsByTaskType" 
-"  };" 
-"}" 
+if (require.main === module) {
+  main().catch((e) => {
+    console.error("[auto] erreur launcher:", e && e.message ? e.message : e);
+    process.exit(1);
+  });
+}
+if (process.env.TEST_MODE) {
+  module.exports = {
+    loadModelMetrics,
+    classifyTaskType,
+    calculateBackendScore,
+    sortBackendsByTaskType
+  };
+}
