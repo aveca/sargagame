@@ -16,9 +16,43 @@ const { execFileSync, execSync } = require('child_process');
 const os = require('os');
 const { ROOT } = require('./common.cjs');
 
+/** Résout le chemin vers git (git.exe sur Windows) pour éviter ENOENT sous Task Scheduler/cron. */
+function resolveGit() {
+  // 1. Déjà dans PATH (cas normal)
+  try {
+    execFileSync('git', ['--version'], { stdio: 'ignore' });
+    return 'git';
+  } catch (_) {}
+
+  // 2. Emplacements courants Windows
+  if (process.platform === 'win32') {
+    const candidates = [
+      path.join(process.env['ProgramFiles'] || 'C:\\Program Files', 'Git', 'bin', 'git.exe'),
+      path.join(process.env['ProgramFiles'] || 'C:\\Program Files', 'Git', 'cmd', 'git.exe'),
+      path.join(process.env['LOCALAPPDATA'] || '', 'Programs', 'Git', 'bin', 'git.exe'),
+      path.join(process.env['LOCALAPPDATA'] || '', 'Programs', 'Git', 'cmd', 'git.exe'),
+      path.join(process.env['USERPROFILE'] || '', 'scoop', 'apps', 'git', 'current', 'bin', 'git.exe'),
+      path.join(process.env['USERPROFILE'] || '', 'scoop', 'apps', 'git', 'current', 'cmd', 'git.exe'),
+    ];
+    for (const c of candidates) {
+      if (c && fs.existsSync(c)) {
+        try {
+          execFileSync(c, ['--version'], { stdio: 'ignore' });
+          return c;
+        } catch (_) {}
+      }
+    }
+  }
+
+  // 3. Fallback: git dans PATH standard Unix
+  return 'git';
+}
+
+const GIT_CMD = resolveGit();
+
 function git(args, cwd, opts = {}) {
   const pipeOut = opts.pipeOut !== false;
-  const out = execFileSync('git', args, {
+  const out = execFileSync(GIT_CMD, args, {
     cwd: cwd || ROOT,
     encoding: 'utf8',
     stdio: ['ignore', pipeOut ? 'pipe' : 'ignore', opts.pipeErr ? 'pipe' : 'pipe'],
@@ -636,8 +670,10 @@ function prepareRepairWorktree(wt, log = console.log) {
   // Fichiers générés/artefacts de build connus (sûrs à nettoyer)
   const GENERATED_FILES = new Set([
     'public/data/media-manifest.json',
+    'public/api/b2b-partners.json',
     'public/api/copernicus/sargassum.json',
     'public/version.json',
+    'src/lib/partners-catalog.json',
     'dist/',
     'node_modules/',
   ]);
