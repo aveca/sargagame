@@ -284,7 +284,11 @@ async function testScenario4_NoOpportunityThenDiscovery() {
 async function testScenario5_ErrorRecovery() {
   console.log('\n📋 Scenario 5: Factory Recovers from Various Errors');
   setupTestEnv();
-  
+
+  // Le VRAI classifyError (exporté par l'orchestrateur) — jamais de copie inline
+  // (une copie divergerait du comportement réel de la factory).
+  const { classifyError } = require('../../scripts/autopilot/orchestrator.cjs');
+
   // Test that different error types don't stop the factory
   const errorTypes = [
     'ci-failure',
@@ -298,20 +302,6 @@ async function testScenario5_ErrorRecovery() {
   ];
   
   for (const errorType of errorTypes) {
-    // Just verify the classifyError function works
-    // (imported from orchestrator - we'll test the logic inline)
-    const classifyError = (msg) => {
-      const m = msg.toLowerCase();
-      if (m.includes('ci') && (m.includes('fail') || m.includes('error') || m.includes('red'))) return 'ci-failure';
-      if (m.includes('build') && (m.includes('fail') || m.includes('error'))) return 'build-failure';
-      if (m.includes('test') && (m.includes('fail') || m.includes('error') || m.includes('assert'))) return 'test-failure';
-      if (m.includes('preview') && (m.includes('deploy') || m.includes('fail'))) return 'preview-deploy-failed';
-      if ((m.includes('online qa') || m.includes('online-qa')) && (m.includes('regression') || m.includes('fail') || m.includes('error'))) return 'online-qa-regression';
-      if (m.includes('browser') || m.includes('playwright') || m.includes('pageerror') || m.includes('console error')) return 'browser-error';
-      if (m.includes('timeout') || m.includes('timed out') || m.includes('etimedout')) return 'timeout';
-      return 'unknown';
-    };
-    
     const classified = classifyError(`some ${errorType} error message`);
     check(`classifies ${errorType} correctly`, classified === errorType);
   }

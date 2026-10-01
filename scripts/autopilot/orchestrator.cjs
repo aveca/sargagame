@@ -400,15 +400,43 @@ async function attemptRepair(opp, phase, error, log) {
 }
 
 function classifyError(errorMsg) {
-  const msg = errorMsg.toLowerCase();
+  const msg = String(errorMsg || '').toLowerCase();
   if (msg.includes('ci') && (msg.includes('fail') || msg.includes('error') || msg.includes('red'))) return 'ci-failure';
   if (msg.includes('build') && (msg.includes('fail') || msg.includes('error'))) return 'build-failure';
   if (msg.includes('test') && (msg.includes('fail') || msg.includes('error') || msg.includes('assert'))) return 'test-failure';
   if (msg.includes('preview') && (msg.includes('deploy') || msg.includes('fail'))) return 'preview-deploy-failed';
-  if (msg.includes('online qa') && (msg.includes('regression') || msg.includes('fail') || msg.includes('error'))) return 'online-qa-regression';
+  if ((msg.includes('online qa') || msg.includes('online-qa')) && (msg.includes('regression') || msg.includes('fail') || msg.includes('error'))) return 'online-qa-regression';
   if (msg.includes('browser') || msg.includes('playwright') || msg.includes('pageerror') || msg.includes('console error')) return 'browser-error';
   if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('etimedout')) return 'timeout';
   return 'unknown';
+}
+
+/**
+ * ÉTAPE 7 — décideur de reprise PURE (testable, jamais de prompt humain) :
+ * échec récupérable + essais restants → 'retry' (avec backoff) ;
+ * essais épuisés OU cause non récupérable → 'park' (parquer la tâche,
+ * continuer le scheduler) ; STOP usine uniquement sur literally 'abort-factory'
+ * (jamais retourné ici : une tâche ne stoppe jamais la factory).
+ *
+ * Non récupérable (park immédiat, pas d'acharnement) : denylist/policy,
+ * secrets détectés, contrat opportunité invalide, protection GitHub.
+ */
+const NON_RECOVERABLE = [
+  'denylist', 'secrets', 'contrat opportunité invalide', 'invalid opportunity',
+  'protection', 'branch protection', 'policy', 'blocked:',
+];
+function decideRecovery({ classification, attempt, maxAttempts, reason }) {
+  const r = String(reason || '');
+  const max = (typeof maxAttempts === 'number' && maxAttempts > 0) ? maxAttempts : 3;
+  const att = (typeof attempt === 'number' && attempt >= 0) ? attempt : 0;
+  if (NON_RECOVERABLE.some(k => r.toLowerCase().includes(k)) ||
+      NON_RECOVERABLE.some(k => String(classification || '').toLowerCase().includes(k))) {
+    return { action: 'park', reason: `non récupérable (${classification || 'n/a'}) — park immédiat : ${r.slice(0, 160)}` };
+  }
+  if (att < max) {
+    return { action: 'retry', reason: `récupérable (${classification || 'unknown'}) — essai ${att + 1}/${max}`, backoffMs: 30000 * att };
+  }
+  return { action: 'park', reason: `essais épuisés (${att}/${max}, ${classification || 'unknown'}) — park : ${r.slice(0, 160)}` };
 }
 
 async function repairCIFailure(opp, errorMsg, log) {
@@ -622,6 +650,136 @@ async function processOpportunity(opp) {
   return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+ * ÉTAPE 5 — PARK-AND-CONTINUE : une tâche bloquée ne bloque jamais
+ * l'usine. claimAndProcess / parkSelected factorisent le dispatch ;
+ * continueWithNextEligible boucle (bornée) vers la prochaine opportunité
+ * éligible quand la courante est parkée. Plafond anti-boucle : 5/cycle.
+ * ═══════════════════════════════════════════════════════════════════ */
+const MAX_CONTINUE_ITERS = 5;
+
+/** Claim idempotent + exécution + état dispatché (une opportunité). */
+async function claimAndProcess(opp, via) {
+  const claim = scheduler.persistClaimed(opp, report.id, (id, patch) => mem.updateOpportunity(id, patch));
+  if (claim.alreadyClaimed) {
+    log(scheduler.stateLine('selected', 'claimed', `${opp.id} déjà claimée/en cours — pas de doublon, reprise`));
+    S('FOUND', `${opp.id} déjà claimée/en cours — reprise sans doublon`);
+  } else {
+    log(scheduler.stateLine('selected', 'claimed', `${opp.id} claimée (new → picked) cycle ${report.id}${via ? ' via ' + via : ''}`));
+  }
+  const fresh = (mem.loadQueue().opportunities || []).find(o => o.id === opp.id) || opp;
+  const result = await processOpportunity(fresh);
+  scheduler.persistDispatched(fresh, report.id, { parked: !!(result && result.parked), reason: (result && result.reason) || null });
+  log(scheduler.stateLine('selected', 'dispatched', `${fresh.id} dispatchée (${result && result.parked ? 'parked: ' + result.reason : 'traitée'})`));
+  log(scheduler.stateLine('dispatched', 'persisted', `${fresh.id} état persisté`));
+  return result;
+}
+
+/** Parke `opp` comme bloquée-par-PR (queue + scheduler persistants). */
+function parkSelected(opp, prDetail, blocking) {
+  const parkReason = `blocked by PR #${prDetail.number} (${blocking.code}): ${blocking.reason}`;
+  scheduler.persistSelected(opp, report.id, blocking);
+  mem.updateOpportunity(opp.id, { status: 'blocked', blockReason: parkReason, parkedAt: C.nowIso() });
+  log(scheduler.stateLine('selected', 'persisted', `${opp.id} persisté (${blocking.code})`));
+}
+
+/** Gate PR catégorie-aware sur une opportunité (null = pas de PR). */
+function gateOnPr(prDetail, opp) {
+  if (!prDetail) return null;
+  if (prDetail.detailUnavailable) {
+    return { blocking: true, reason: `PR #${prDetail.number} open (détail gh indisponible) — prudence`, code: 'PR_DETAIL_UNKNOWN', prNumber: prDetail.number };
+  }
+  return Object.assign({ prNumber: prDetail.number }, scheduler.isPrBlocking(prDetail, opp, mem.loadQueue()));
+}
+
+/**
+ * Tente la réparation auto d'une PR conflictuelle avec comptabilité
+ * anti-acharnement : succès → compteur RAZ ; échec → +1, park au-delà
+ * de `maxRepairAttempts`, reprise possible après cooldown 24h.
+ * Retourne {repaired:boolean}.
+ */
+async function tryRepairPr(prDetail, blocking) {
+  const n = prDetail.number;
+  if (scheduler.shouldParkPr(scheduler.loadScheduler(), n, cfg.loop.maxRepairAttempts) &&
+      !scheduler.repairCooldownOver(scheduler.loadScheduler(), n, Date.now())) {
+    S('PR', `PR #${n} parkée (essais épuisés, cooldown 24h) — pas de nouvel essai ce cycle`);
+    progress(`PR REPAIR   PR #${n} parked (cooldown) — skipping repair`);
+    return { repaired: false, parked: true };
+  }
+  progress(`PR REPAIR   attempting auto-rebase for PR #${n}...`);
+  S('PR', `PR #${n} en conflit (${blocking.code}) — tentative de réparation auto…`);
+  const repairResult = await gitops.repairPRConflict(n, cfg, m => progress('PR REPAIR   ' + m));
+  if (repairResult.ok) {
+    scheduler.recordRepairAttempt(n, true);
+    S('PR', `PR #${n} RÉPARÉE (${repairResult.method}) — head ${repairResult.commitSha} — poursuite pipeline`);
+    progress(`PR REPAIR   SUCCESS: ${repairResult.method}, head ${repairResult.commitSha}`);
+    log(scheduler.stateLine('pr-repair', 'success', `PR #${n} ${repairResult.method}`));
+    return { repaired: true };
+  }
+  scheduler.recordRepairAttempt(n, false);
+  S('PR', `PR #${n} ÉCHEC RÉPARATION: ${repairResult.reason}${repairResult.unsafe ? ' (unsafe)' : ''}`);
+  progress(`PR REPAIR   FAILED: ${repairResult.reason}`);
+  if (scheduler.shouldParkPr(scheduler.loadScheduler(), n, cfg.loop.maxRepairAttempts)) {
+    scheduler.parkPr(n);
+    S('PR', `PR #${n} parkée après ${cfg.loop.maxRepairAttempts} échecs — reprise après cooldown, usine continue`);
+  }
+  return { repaired: false, reason: repairResult.reason, unsafe: repairResult.unsafe };
+}
+
+/**
+ * Boucle park-and-continue (bornée) : après une tâche parkée, passe à la
+ * prochaine opportunité éligible au lieu de finir le cycle bloqué.
+ * Garantit : NO DEADLOCK (borne), NO HUMAN PROMPT (park + continue),
+ * NEXT TASK CONTINUES (claimAndProcess de la suivante).
+ */
+async function continueWithNextEligible(prDetail, excludedIds) {
+  const excluded = new Set(excludedIds || []);
+  for (let i = 0; i < MAX_CONTINUE_ITERS; i++) {
+    if (budgetExceeded()) { S('FAILED', 'time budget exceeded — fin de la boucle continue'); return { continued: false }; }
+    const queue = mem.loadQueue();
+    let next = scheduler.nextEligibleOpportunity(queue, excluded);
+    if (!next) {
+      // Reprise : une tâche parkée dont le cooldown est écoulé repasse 'new'
+      // (une seule par cycle — anti-acharnement). Sinon fin de cycle.
+      const cands = scheduler.blockedRetryCandidates(queue, scheduler.loadScheduler(), Date.now(), 24 * 3600000);
+      const retry = (cands || []).find(o => !excluded.has(o.id));
+      if (retry) {
+        mem.updateOpportunity(retry.id, { status: 'new', blockReason: null, resumedAt: C.nowIso() });
+        log(scheduler.stateLine('blocked', 'new', `${retry.id} reprise après cooldown — re-proposée`));
+        S('FOUND', `${retry.id} reprise après cooldown (bloqueur réévalué)`);
+        next = (mem.loadQueue().opportunities || []).find(o => o.id === retry.id) || retry;
+      } else {
+        S('NEXT', 'plus aucune opportunité éligible ce cycle — fin (prochain cycle / discovery)');
+        progress('QUEUE       0 eligible remaining');
+        return { continued: false };
+      }
+    }
+    next.surface = next.surface || surfaceOf(next);
+    const busy = experiments.activeForSurface(next.surface);
+    if (busy) {
+      S('FOUND', `surface "${next.surface}" busy with ${busy.id} — suivante`);
+      excluded.add(next.id);
+      continue;
+    }
+    let blocking = gateOnPr(prDetail, next);
+    if (blocking && blocking.blocking && blocking.code === 'PR_CONFLICT_REPAIRABLE' && !DRY) {
+      const rep = await tryRepairPr(prDetail, blocking);
+      if (rep.repaired) blocking = { blocking: false, reason: `PR #${prDetail.number} réparée — continuation`, code: 'PR_REPAIRED', prNumber: prDetail.number };
+      else { parkSelected(next, prDetail, Object.assign({ blocking: true }, blocking)); excluded.add(next.id); continue; }
+    }
+    if (blocking && blocking.blocking) {
+      parkSelected(next, prDetail, blocking);
+      S('PR', `PR #${prDetail.number} bloquant (${blocking.code}) — ${next.id} parkée, suivante…`);
+      excluded.add(next.id);
+      continue;
+    }
+    await claimAndProcess(next, 'continue');
+    return { continued: true, id: next.id };
+  }
+  S('NEXT', `plafond ${MAX_CONTINUE_ITERS} opportunités/cycle atteint — fin (anti-boucle)`);
+  return { continued: false, reason: 'max-iters' };
+}
+
 async function main() {
   C.ensureDirs();
   cfg = C.loadConfig();
@@ -760,23 +918,16 @@ if (prBlocking.blocking) {
     // Si la PR est en conflit mais réparable, on tente le rebase auto.
     // Si succès → on continue normalement (prBlocking = non-bloquant).
     // Si échec → on parque la tâche avec le diagnostic.
-    if (prBlocking && prBlocking.blocking && 
-        (prBlocking.code === 'PR_CONFLICT_REPAIRABLE') && 
+    if (prBlocking && prBlocking.blocking &&
+        (prBlocking.code === 'PR_CONFLICT_REPAIRABLE') &&
         selected && !DRY) {
-      progress(`PR REPAIR   attempting auto-rebase for PR #${prDetail.number}...`);
-      S('PR', `PR #${prDetail.number} en conflit (${prBlocking.code}) — tentative de réparation auto…`);
-      const repairResult = await gitops.repairPRConflict(prDetail.number, cfg, m => progress('PR REPAIR   ' + m));
-      if (repairResult.ok) {
-        S('PR', `PR #${prDetail.number} RÉPARÉE (${repairResult.method}) — head ${repairResult.commitSha} — poursuite pipeline`);
-        progress(`PR REPAIR   SUCCESS: ${repairResult.method}, head ${repairResult.commitSha}`);
+      const rep = await tryRepairPr(prDetail, prBlocking);
+      if (rep.repaired) {
         // La PR est maintenant mergeable → on la traite comme non-bloquante
-        prBlocking = { blocking: false, reason: `PR #${prDetail.number} réparée (${repairResult.method}) — continuation`, code: 'PR_REPAIRED', prNumber: prDetail.number };
-        log(scheduler.stateLine('pr-repair', 'success', `PR #${prDetail.number} ${repairResult.method}`));
+        prBlocking = { blocking: false, reason: `PR #${prDetail.number} réparée — continuation`, code: 'PR_REPAIRED', prNumber: prDetail.number };
       } else {
-        S('PR', `PR #${prDetail.number} ÉCHEC RÉPARATION: ${repairResult.reason}${repairResult.unsafe ? ' (unsafe)' : ''}`);
-        progress(`PR REPAIR   FAILED: ${repairResult.reason}`);
         // On garde le blocage original pour parquer la tâche
-        prBlocking = Object.assign({ blocking: true }, prBlocking, { repairAttempted: true, repairReason: repairResult.reason, repairUnsafe: repairResult.unsafe });
+        prBlocking = Object.assign({ blocking: true }, prBlocking, { repairAttempted: true, repairReason: rep.reason, repairUnsafe: rep.unsafe });
       }
     }
 
@@ -787,38 +938,31 @@ if (prBlocking.blocking) {
         log(scheduler.stateLine('selected', 'persisted', `${selected.id} différé (budget) — repris au prochain cycle`));
       }
     } else if (prBlocking && prBlocking.blocking) {
-      // Bloquant réel : observation explicite + état persistant (pas de redécouverte aveugle).
+      // Bloquant réel : parquer la courante PUIS continuer vers la suivante
+      // (anti-monopole : une PR/tâche ne monopolise jamais les cycles).
       if (selected) {
-        // Parquer l'opportunité dans la queue (status='blocked') pour éviter la re-sélection
-        // au cycle suivant. Le scheduler garde l'état 'blocked-by-pr' pour le diagnostic.
-        const parkReason = `blocked by PR #${prDetail.number} (${prBlocking.code}): ${prBlocking.reason}`;
-        scheduler.persistSelected(selected, report.id, prBlocking);
-        // Mettre à jour le statut dans la queue pour éviter la re-sélection via restoreSelected
-        mem.updateOpportunity(selected.id, { status: 'blocked', blockReason: parkReason, parkedAt: C.nowIso() });
-        log(scheduler.stateLine('selected', 'persisted', `${selected.id} persisté (${prBlocking.code})`));
+        parkSelected(selected, prDetail, prBlocking);
       }
       S('PR', `PR #${prDetail.number} bloquant (${prBlocking.code}) — ${prBlocking.reason}`);
-      S('NEXT', `reprendre ${selected ? selected.id : 'sélection'} quand PR #${prDetail.number} mergée/fermée`);
+      S('NEXT', `reprendre ${selected ? selected.id : 'sélection'} quand PR #${prDetail.number} mergée/fermée — en attendant : suivante`);
+      await continueWithNextEligible(prDetail, selected ? [selected.id] : []);
     } else if (selected) {
       // Non bloquant : claim persistant (idempotent) puis exécution.
-      const claim = scheduler.persistClaimed(selected, report.id, (id, patch) => mem.updateOpportunity(id, patch));
-      if (claim.alreadyClaimed) {
-        log(scheduler.stateLine('selected', 'claimed', `${selected.id} déjà claimée/en cours — pas de doublon, reprise`));
-        S('FOUND', `${selected.id} déjà claimée/en cours — reprise sans doublon`);
-      } else {
-        log(scheduler.stateLine('selected', 'claimed', `${selected.id} claimée (new → picked) cycle ${report.id}`));
-      }
-      // Refresh depuis la queue pour exécuter l'état persisté réel.
-      const fresh = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-      const result = await processOpportunity(fresh);
-      scheduler.persistDispatched(fresh, report.id, { parked: !!(result && result.parked), reason: (result && result.reason) || null });
-      log(scheduler.stateLine('selected', 'dispatched', `${fresh.id} dispatchée (${result && result.parked ? 'parked: ' + result.reason : 'traitée'})`));
-      log(scheduler.stateLine('dispatched', 'persisted', `${fresh.id} état persisté`));
+      await claimAndProcess(selected);
     } else {
       progress('QUEUE       0 executable');
-      
-      // Autonomous discovery when queue empty
-      if (!DRY && LIVE) {
+
+      // Reprise d'abord : une tâche parkée dont le cooldown est écoulé
+      // repasse devant la discovery (reprise > redécouverte).
+      const retryCands = scheduler.blockedRetryCandidates(mem.loadQueue(), scheduler.loadScheduler(), Date.now(), 24 * 3600000);
+      if (retryCands.length && !budgetExceeded()) {
+        const retry = retryCands[0];
+        mem.updateOpportunity(retry.id, { status: 'new', blockReason: null, resumedAt: C.nowIso() });
+        log(scheduler.stateLine('blocked', 'new', `${retry.id} reprise après cooldown — re-proposée`));
+        S('FOUND', `${retry.id} reprise après cooldown (bloqueur réévalué)`);
+        const freshRetry = (mem.loadQueue().opportunities || []).find(o => o.id === retry.id) || retry;
+        await claimAndProcess(freshRetry, 'resume');
+      } else if (!DRY && LIVE) {
         progress('DISCOVER    autonomous discovery (queue empty)...');
         const snap = metrics.snapshot();
         const discovered = await runDiscovery(cfg, report, obs, snap);
@@ -842,13 +986,9 @@ if (prBlocking.blocking) {
               log(scheduler.stateLine('selected', 'blocked-by-pr', innerBlocking.reason));
               S('PR', `PR #${prDetail.number} bloquant (${innerBlocking.code}) — ${innerBlocking.reason}`);
             } else {
-              const claim2 = scheduler.persistClaimed(selected, report.id, (id, patch) => mem.updateOpportunity(id, patch));
-              log(scheduler.stateLine('selected', claim2.alreadyClaimed ? 'claimed' : 'claimed', `${selected.id} claimée (queue-vide)`));
+              log(scheduler.stateLine('selected', 'claimed', `${selected.id} claimée (queue-vide)`));
               progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
-              const fresh2 = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-              const result2 = await processOpportunity(fresh2);
-              scheduler.persistDispatched(fresh2, report.id, { parked: !!(result2 && result2.parked), reason: (result2 && result2.reason) || null });
-              log(scheduler.stateLine('selected', 'dispatched', `${fresh2.id} dispatchée`));
+              await claimAndProcess(selected, 'discovery queue-vide');
             }
           } else {
             progress('DISCOVER    no executable (all human-gate or blocked)');
@@ -890,4 +1030,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { validateOpportunityContract, needsBrowserRecon };
+module.exports = { validateOpportunityContract, needsBrowserRecon, classifyError, decideRecovery, claimAndProcess, parkSelected, gateOnPr, tryRepairPr, continueWithNextEligible, MAX_CONTINUE_ITERS };
