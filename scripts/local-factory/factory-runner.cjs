@@ -401,6 +401,28 @@ async function waitForWorkflow(workflowName) {
   return false;
 }
 
+// Update tasks.md to mark task as in_progress
+function updateTaskInProgress(taskId) {
+  const content = fs.readFileSync(TASKS_FILE, 'utf8');
+  const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
+  if (inProgressMatch) return; // Already marked
+  
+  const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
+  if (doneMatch) return; // Already done
+  
+  const newContent = content.replace(
+    new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
+    `$1 — in_progress by factory_runner`
+  );
+  
+  if (newContent !== content) {
+    fs.writeFileSync(TASKS_FILE, newContent);
+    execSync(`git add ${TASKS_FILE}`, { cwd: ROOT, encoding: 'utf8' });
+    execSync(`git commit -m "chore(tasks): claim ${taskId} by factory_runner"`, { cwd: ROOT, encoding: 'utf8' });
+    log('tasks.md.claimed', { taskId });
+  }
+}
+
 // Queue processing
 async function processQueue() {
   let totalProcessed = 0;
@@ -430,6 +452,9 @@ async function processQueue() {
           continue;
         }
       }
+      
+      // Update tasks.md to mark as in_progress
+      updateTaskInProgress(taskId);
       
       // Mark as processing
       fs.writeFileSync(processingFile, JSON.stringify({ 
