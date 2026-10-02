@@ -404,16 +404,36 @@ async function waitForWorkflow(workflowName) {
 // Update tasks.md to mark task as in_progress
 function updateTaskInProgress(taskId) {
   const content = fs.readFileSync(TASKS_FILE, 'utf8');
+  
+  // Check if already claimed (in progress) - list format
   const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
   if (inProgressMatch) return; // Already marked
   
+  // Check if already claimed (in progress) - header format
+  const headerInProgressMatch = content.match(new RegExp(`^### ${taskId} .*in_progress`, 'm'));
+  if (headerInProgressMatch) return;
+  
+  // Check if already done - list format
   const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
   if (doneMatch) return; // Already done
   
-  const newContent = content.replace(
+  // Check if already done - header format
+  const headerDoneMatch = content.match(new RegExp(`^### ${taskId} .*done`, 'm'));
+  if (headerDoneMatch) return;
+  
+  // Try list format: - [ ] TASK-PX-XXX
+  let newContent = content.replace(
     new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
     `$1 — in_progress by factory_runner`
   );
+  
+  // If no change, try header format: ### TASK-PX-XXX
+  if (newContent === content) {
+    newContent = content.replace(
+      new RegExp(`^(### ${taskId} .*)$`, 'm'),
+      `$1 — in_progress by factory_runner`
+    );
+  }
   
   if (newContent !== content) {
     fs.writeFileSync(TASKS_FILE, newContent);
