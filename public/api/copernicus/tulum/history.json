@@ -1,51 +1,6 @@
 {
   "history": [
     {
-      "date": "2026-09-01",
-      "levels": [
-        {
-          "id": "tu001",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "tu002",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "tu003",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "tu004",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "tu005",
-          "afai": 0.2,
-          "status": "moderate"
-        },
-        {
-          "id": "tu006",
-          "afai": 0.18,
-          "status": "moderate"
-        },
-        {
-          "id": "tu007",
-          "afai": 0.18,
-          "status": "moderate"
-        },
-        {
-          "id": "tu008",
-          "afai": 0.21,
-          "status": "moderate"
-        }
-      ]
-    },
-    {
       "date": "2026-09-02",
       "levels": [
         {
@@ -1349,65 +1304,54 @@
           "status": "clean"
         }
       ]
+    },
+    {
+      "date": "2026-10-02",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.17,
+          "status": "moderate"
+        }
+      ]
     }
   ],
   "changes": [
-    {
-      "date": "2026-09-01",
-      "beach": "tu001",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.2
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu002",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.2
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu003",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.2
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu004",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.2
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu005",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.2
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu006",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.18
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu007",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.18
-    },
-    {
-      "date": "2026-09-01",
-      "beach": "tu008",
-      "from": "clean",
-      "to": "moderate",
-      "afai": 0.21
-    },
     {
       "date": "2026-09-04",
       "beach": "tu007",
@@ -2044,6 +1988,48 @@
       "from": "moderate",
       "to": "clean",
       "afai": 0.08
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
     }
   ]
 }
