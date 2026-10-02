@@ -112,14 +112,19 @@ test.describe("WOW Journey — continuity layer", () => {
     expect(page.url()).not.toContain("exp=")
   })
 
-  test("rollback ?sgjourney=0 : aucune trace du layer (rail + URL + geste)", async ({ page }) => {
-    await openExperience(page, "?sgjourney=0")
+  test("rollback ?sgjourney=0 : fiche legacy, aucune trace du layer (rail + URL + geste + overlay)", async ({ page }) => {
+    // Kill-switch Journey (recovery SESSION D) : clic carte → BeachSheetComic
+    // legacy (.bsc-sheet), PAS l'overlay Experience (gaté) ni BeachDecisionPage.
+    await page.goto(BASE + "/?sgjourney=0", { waitUntil: "load", timeout: 60000 })
+    await page.waitForTimeout(2500)
+    await page.locator('[data-testid="xp-best-open"]').first().click()
+    await page.waitForSelector(".bsc-sheet, .lc-detail, .sheet", { timeout: 20000 })
     await page.waitForTimeout(800)
     expect(await page.locator(RAIL).count()).toBe(0)
+    expect(await page.locator(EXP).count()).toBe(0)
+    expect(await page.locator('[data-testid="beach-decision-page"]').count()).toBe(0)
     expect(page.url()).not.toContain("exp=")
-    // core experience intact (verdict présent)
-    const verdict = await page.locator(EXP + " .bx-verdict").first().innerText()
-    expect(verdict.trim().length).toBeGreaterThan(1)
+    expect(await page.locator(".bsc-sheet, .lc-detail, .sheet").count()).toBeGreaterThan(0)
   })
 
   test("trip : strip séjour partagé (même plage que le monde) + chip verrouillée → premium", async ({ page }) => {
