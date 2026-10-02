@@ -98,6 +98,11 @@ scripts/automation/data/payers.json
 scripts/automation/data/sheet-*.csv
 
 # Pipeline video (artefacts de rendu)
+# Factory runtime state (queue, lock, telemetry, circuit breakers) — ephemeral, never commit
+queue/
+scripts/local-factory/state/
+scripts/local-factory/logs/
+
 scripts/video/out/
 scripts/video/cache/
 video-remotion/public/cache/
