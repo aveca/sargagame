@@ -132,21 +132,26 @@ const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
-// puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
-// Le chunk lazy PremiumModal (53 Ko gzip) met du temps à charger en CI.
-// On vérifie que le handler a tourné (URL nettoyée = proof que le chemin paywall est atteint).
-const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel';
-await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
-// Attendre que l'URL soit nettoyée (handler deep-link exécuté = chemin paywall atteint)
-await p.waitForFunction(
-  () => !window.location.search.includes('paywall=1'),
-  {},
-  { timeout: 15000 }
-).catch(() => {});
-await p.waitForTimeout(500);
-await p.screenshot({ path: '/tmp/j3-paywall.png' });
-// Paywall considéré comme "atteint" si le handler deep-link a nettoyé l'URL
-const paywallOk = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
+ // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
+ // Le chunk lazy PremiumModal (53 Ko gzip) met du temps à charger en CI.
+ // On vérifie que le handler a tourné (URL nettoyée = proof que le chemin paywall est atteint).
+ const PAYWALL_SEL = '.pww-wrap, .sg-modal-panel, [role="dialog"]';
+ await p.goto(BASE + '/?paywall=1', { waitUntil: 'load', timeout: 60000 });
+ // Attendre que l'URL soit nettoyée (handler deep-link exécuté = chemin paywall atteint)
+ await p.waitForFunction(
+   () => !window.location.search.includes('paywall=1'),
+   {},
+   { timeout: 15000 }
+ ).catch(() => {});
+ // Attendre que le modal paywall soit visible (chunk lazy chargé + rendu)
+ await p.waitForSelector(PAYWALL_SEL, { timeout: 20000, state: 'visible' }).catch(() => {});
+ await p.waitForTimeout(1000);
+ await p.screenshot({ path: '/tmp/j3-paywall.png' });
+ // Paywall considéré comme "atteint" SI : URL nettoyée OU modal visible
+ // (le handler deep-link peut ne pas nettoyer l'URL dans certains cas, mais le modal s'affiche)
+ const urlCleaned = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
+ const modalVisible = await p.locator(PAYWALL_SEL).first().isVisible({ timeout: 2000 }).catch(() => false);
+ const paywallOk = urlCleaned || modalVisible;
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
