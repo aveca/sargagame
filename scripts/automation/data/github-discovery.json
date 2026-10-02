@@ -1,0 +1,31 @@
+[
+  {
+    "timestamp": "2026-10-02T21:26:31.371Z",
+    "rawResults": 301,
+    "filtered": 211,
+    "analyzed": 50,
+    "candidates": 22,
+    "topCandidates": [
+      {
+        "repo": "mastra-ai/mastra",
+        "score": 150
+      },
+      {
+        "repo": "VoltAgent/voltagent",
+        "score": 150
+      },
+      {
+        "repo": "langfuse/langfuse",
+        "score": 150
+      },
+      {
+        "repo": "melgarafael/DeskcommCRM",
+        "score": 144
+      },
+      {
+        "repo": "SigNoz/signoz",
+        "score": 140
+      }
+    ]
+  }
+]

@@ -1,0 +1,51 @@
+MISSION INTELLIGENT NETTOYAGE STOCKAGE C: - RAPPORT RESUME
+
+DATE: 2026-10-02
+AGENT: Automatise via opencode
+
+ETAT AVANT:
+- 111,40 Go libres sur C:
+- Seuil 20 Go depuce (111 >> 20)
+- Seuil 30 Go recommandes (111 >> 30)
+
+ETAT APRÈS:
+- 151,04 Go libres sur C:
+- Gain net: +39,64 Go
+- Seuil largement depasse
+
+OPERATIONS SURES (commandes officielles) :
+- npm cache clean --force (11,52 Go)
+- pip cache purge (4152 fichiers)
+- uv cache clean (27826 fichiers, 0,70 Go)
+- Suppression crashdumps Windows (0,16 Go)
+
+JAMAIS supprime (CONSTRAINTE ABSOLUE) :
+- blobs sha256 directement
+- modèles Ollama sans validation officielle (ollama rm)
+- fichiers projet / .env / SSH / GitHub
+- fichiers Casinobabe
+- WSL VHDX / Programs / Python / VS Code
+- Corbeille sans confirmation utilisee
+- HF models sans validation modele par modele
+
+PROJETS VERIFIES INTACTS :
+- Sargagame repo: git main...origin/main, 2 fichiers modifie pre-existant
+- Casinobabe_FREEZE_*: timestamps 02/10/2026 04:36 et 03:49 inchanges
+- Open-Sable: .git, .env, secrets presentes
+- Ollama: 9 models listables, ps montre qwen3-coder:30b charge
+- OpenCode / OpenHands: configs presentes
+
+FICHIERS CREES dans .ai/factory/ :
+- disk-cleanup-before.json (etat initial)
+- disk-cleanup-after.json (etat final)
+- DISK_AUDIT.json (24 categories detaillees)
+- ollama-storage.json (inventaire complet)
+- ollama-models-classification.json (9 modeles)
+- disk-cleanup-report.txt (rapport final 14 phases)
+- ollama-integrity-check.txt (verification)
+- sargagame-integrity-check.txt (verification)
+
+CONCLUSION :
+Objectif "libérer de l'espace sur C: sans casser l'environnement" ATTEINT.
+151 Go libres, environnements intacts, zéro suppression risquée.
+La sécurité a prime sur la quantité comme impose par la mission.

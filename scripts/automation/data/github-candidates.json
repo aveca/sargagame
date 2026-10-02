@@ -1,0 +1,579 @@
+[
+  {
+    "id": "DISC-1790976391369-skvc",
+    "type": "github_discovery_candidate",
+    "repo": "mastra-ai/mastra",
+    "score": 150,
+    "usefulFor": [
+      "ai-agents",
+      "frontend-perf"
+    ],
+    "priorityTopics": [
+      "agents",
+      "ai",
+      "evals",
+      "llm",
+      "mcp",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-hbv9",
+    "type": "github_discovery_candidate",
+    "repo": "VoltAgent/voltagent",
+    "score": 150,
+    "usefulFor": [
+      "ai-agents",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "agents",
+      "ai",
+      "llm",
+      "mcp",
+      "observability",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-eun2",
+    "type": "github_discovery_candidate",
+    "repo": "langfuse/langfuse",
+    "score": 150,
+    "usefulFor": [
+      "ai-agents",
+      "analytics-seo",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "autogen",
+      "langchain",
+      "llm",
+      "monitoring",
+      "observability"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-jmv6",
+    "type": "github_discovery_candidate",
+    "repo": "melgarafael/DeskcommCRM",
+    "score": 144,
+    "usefulFor": [
+      "ai-agents",
+      "supabase",
+      "b2b-conversion"
+    ],
+    "priorityTopics": [
+      "ai",
+      "crm",
+      "ecommerce",
+      "mcp",
+      "supabase",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns",
+      "Review B2B funnel/outreach patterns",
+      "Check conversion optimization"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-3sjv",
+    "type": "github_discovery_candidate",
+    "repo": "SigNoz/signoz",
+    "score": 140,
+    "usefulFor": [
+      "frontend-perf",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "monitoring",
+      "observability",
+      "react",
+      "tracing",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-740e",
+    "type": "github_discovery_candidate",
+    "repo": "NanmiCoder/cc-haha",
+    "score": 140,
+    "usefulFor": [
+      "ai-agents",
+      "frontend-perf"
+    ],
+    "priorityTopics": [
+      "ai",
+      "llm",
+      "mcp",
+      "react",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-g08l",
+    "type": "github_discovery_candidate",
+    "repo": "cobusgreyling/loop-engineering",
+    "score": 140,
+    "usefulFor": [
+      "ai-agents",
+      "ci-cd"
+    ],
+    "priorityTopics": [
+      "automation",
+      "coding-agents",
+      "github-actions",
+      "llm",
+      "mcp"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Review GitHub Actions workflow patterns",
+      "Check deployment automation"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-z2g2",
+    "type": "github_discovery_candidate",
+    "repo": "hyperdxio/hyperdx",
+    "score": 130,
+    "usefulFor": [
+      "analytics-seo",
+      "frontend-perf",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "monitoring",
+      "observability",
+      "react",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns",
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-s23m",
+    "type": "github_discovery_candidate",
+    "repo": "open-multi-agent/open-multi-agent",
+    "score": 130,
+    "usefulFor": [
+      "ai-agents",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "llm",
+      "mcp",
+      "observability",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-e1ey",
+    "type": "github_discovery_candidate",
+    "repo": "Helicone/helicone",
+    "score": 124,
+    "usefulFor": [
+      "ai-agents",
+      "analytics-seo",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "langchain",
+      "llm",
+      "monitoring"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-8w2s",
+    "type": "github_discovery_candidate",
+    "repo": "supabase/supabase",
+    "score": 120,
+    "usefulFor": [
+      "ai-agents",
+      "supabase"
+    ],
+    "priorityTopics": [
+      "ai",
+      "postgres",
+      "supabase"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-0yw2",
+    "type": "github_discovery_candidate",
+    "repo": "onlook-dev/onlook",
+    "score": 120,
+    "usefulFor": [
+      "ai-agents",
+      "supabase",
+      "frontend-perf"
+    ],
+    "priorityTopics": [
+      "ai",
+      "react",
+      "supabase",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns",
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-w369",
+    "type": "github_discovery_candidate",
+    "repo": "hexclave/hexclave",
+    "score": 120,
+    "usefulFor": [
+      "ai-agents",
+      "supabase",
+      "payments",
+      "analytics-seo"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "billing",
+      "payments",
+      "supabase"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns",
+      "Review Mollie/Stripe integration patterns",
+      "Check webhook handling",
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-1uhi",
+    "type": "github_discovery_candidate",
+    "repo": "grafana/grafana",
+    "score": 120,
+    "usefulFor": [
+      "supabase",
+      "analytics-seo"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "monitoring",
+      "postgres"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns",
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-aoke",
+    "type": "github_discovery_candidate",
+    "repo": "openobserve/openobserve",
+    "score": 120,
+    "usefulFor": [
+      "analytics-seo",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "analytics",
+      "monitoring",
+      "observability"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-53c5",
+    "type": "github_discovery_candidate",
+    "repo": "langwatch/langwatch",
+    "score": 117,
+    "usefulFor": [
+      "ai-agents",
+      "analytics-seo",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "ai",
+      "analytics",
+      "llm",
+      "observability"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate GA4/Search Console automation",
+      "Check SEO tooling patterns",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-1eji",
+    "type": "github_discovery_candidate",
+    "repo": "openstatusHQ/openstatus",
+    "score": 116,
+    "usefulFor": [
+      "ai-agents",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "mcp",
+      "monitoring",
+      "observability"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-4yt6",
+    "type": "github_discovery_candidate",
+    "repo": "jo-inc/camofox-browser",
+    "score": 110,
+    "usefulFor": [
+      "ai-agents",
+      "cloudflare-workers",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "automation",
+      "playwright"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Test Cloudflare Workers deployment",
+      "Check Durable Objects patterns",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-5w39",
+    "type": "github_discovery_candidate",
+    "repo": "microsoft/playwright-mcp",
+    "score": 110,
+    "usefulFor": [
+      "ai-agents",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "mcp",
+      "playwright"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.369Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391369-s1ub",
+    "type": "github_discovery_candidate",
+    "repo": "FailproofAI/failproofai",
+    "score": 110,
+    "usefulFor": [
+      "ai-agents",
+      "observability-testing"
+    ],
+    "priorityTopics": [
+      "evals",
+      "llm",
+      "observability"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.370Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate testing/observability patterns",
+      "Check Playwright/Vitest integration"
+    ]
+  },
+  {
+    "id": "DISC-1790976391370-mnhe",
+    "type": "github_discovery_candidate",
+    "repo": "srizzon/git-city",
+    "score": 106,
+    "usefulFor": [
+      "supabase",
+      "frontend-perf"
+    ],
+    "priorityTopics": [
+      "react",
+      "supabase",
+      "typescript"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.370Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns",
+      "Review Vite/React performance patterns",
+      "Check bundle optimization techniques"
+    ]
+  },
+  {
+    "id": "DISC-1790976391370-4yc5",
+    "type": "github_discovery_candidate",
+    "repo": "NateBJones-Projects/OB1",
+    "score": 105,
+    "usefulFor": [
+      "ai-agents",
+      "supabase"
+    ],
+    "priorityTopics": [
+      "mcp",
+      "supabase"
+    ],
+    "securityFlags": [],
+    "createdAt": "2026-10-02T21:26:31.370Z",
+    "status": "pending_review",
+    "suggestedActions": [
+      "Evaluate for agent orchestration / MCP integration",
+      "Test sandbox compatibility",
+      "Evaluate for Supabase schema/migrations",
+      "Check realtime/Edge Function patterns"
+    ]
+  }
+]

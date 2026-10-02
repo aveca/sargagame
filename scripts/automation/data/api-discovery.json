@@ -1,0 +1,299 @@
+[
+  {
+    "id": "open-meteo",
+    "name": "Open-Meteo",
+    "category": "weather",
+    "url": "https://api.open-meteo.com",
+    "docs": "https://open-meteo.com/en/docs",
+    "auth": "none",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://api.open-meteo.com/v1/openapi.json",
+    "rateLimit": "10000/day",
+    "relevance": "High - already used for beach weather",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.740Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "copernicus-marine",
+    "name": "Copernicus Marine Service",
+    "category": "satellite",
+    "url": "https://marine-api.open-meteo.com",
+    "docs": "https://marine.copernicus.eu",
+    "auth": "oauth2",
+    "https": true,
+    "commercial": true,
+    "openapi": null,
+    "rateLimit": "variable",
+    "relevance": "High - primary sargassum data source",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": false,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 83
+    }
+  },
+  {
+    "id": "sentinel-hub",
+    "name": "Sentinel Hub",
+    "category": "satellite",
+    "url": "https://services.sentinel-hub.com",
+    "docs": "https://docs.sentinel-hub.com",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://services.sentinel-hub.com/openapi.json",
+    "rateLimit": "plan-based",
+    "relevance": "High - Sentinel-2 near-shore",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "mollie-api",
+    "name": "Mollie API",
+    "category": "payments",
+    "url": "https://api.mollie.com/v2",
+    "docs": "https://docs.mollie.com/reference/v2/overview",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://docs.mollie.com/openapi.json",
+    "rateLimit": "1000/min",
+    "relevance": "High - active payment provider",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "onesignal-api",
+    "name": "OneSignal API",
+    "category": "notifications",
+    "url": "https://onesignal.com/api/v1",
+    "docs": "https://documentation.onesignal.com/reference",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": null,
+    "rateLimit": "1000/min",
+    "relevance": "High - push notifications",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": false,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 83
+    }
+  },
+  {
+    "id": "google-analytics-data",
+    "name": "Google Analytics Data API (GA4)",
+    "category": "analytics",
+    "url": "https://analyticsdata.googleapis.com/v1beta",
+    "docs": "https://developers.google.com/analytics/devguides/reporting/data/v1",
+    "auth": "oauth2",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://analyticsdata.googleapis.com/$discovery/rest?version=v1beta",
+    "rateLimit": "10000/day",
+    "relevance": "High - GA4 funnel data",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "search-console-api",
+    "name": "Google Search Console API",
+    "category": "seo",
+    "url": "https://searchconsole.googleapis.com/v1",
+    "docs": "https://developers.google.com/search/apis/search-console-api",
+    "auth": "oauth2",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://searchconsole.googleapis.com/$discovery/rest?version=v1",
+    "rateLimit": "1000/day",
+    "relevance": "High - SEO indexing",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "openstreetmap-nominatim",
+    "name": "OpenStreetMap Nominatim",
+    "category": "geolocation",
+    "url": "https://nominatim.openstreetmap.org",
+    "docs": "https://nominatim.org/release-docs/latest/api/Overview/",
+    "auth": "none",
+    "https": true,
+    "commercial": true,
+    "openapi": null,
+    "rateLimit": "1/sec",
+    "relevance": "High - beach geocoding",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": false,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 83
+    }
+  },
+  {
+    "id": "mapbox-api",
+    "name": "Mapbox API",
+    "category": "maps",
+    "url": "https://api.mapbox.com",
+    "docs": "https://docs.mapbox.com/api/",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": null,
+    "rateLimit": "plan-based",
+    "relevance": "Medium - map tiles alternative",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": false,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 83
+    }
+  },
+  {
+    "id": "cloudflare-api",
+    "name": "Cloudflare API",
+    "category": "other",
+    "url": "https://api.cloudflare.com/client/v4",
+    "docs": "https://developers.cloudflare.com/api/",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://api.cloudflare.com/client/v4/openapi.yaml",
+    "rateLimit": "1200/5min",
+    "relevance": "High - Workers/Pages/DNS automation",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  },
+  {
+    "id": "supabase-api",
+    "name": "Supabase Management API",
+    "category": "other",
+    "url": "https://api.supabase.com/v1",
+    "docs": "https://supabase.com/docs/reference/api",
+    "auth": "api-key",
+    "https": true,
+    "commercial": true,
+    "openapi": "https://api.supabase.com/v1/openapi.json",
+    "rateLimit": "variable",
+    "relevance": "High - Supabase automation",
+    "status": "verified",
+    "added": "2026-10-02T21:27:31.741Z",
+    "source": "seed",
+    "requirements": {
+      "checks": {
+        "https": true,
+        "commercial": true,
+        "noAuthOrStandard": true,
+        "hasOpenAPI": true,
+        "hasDocs": true,
+        "hasRateLimit": true
+      },
+      "score": 100
+    }
+  }
+]

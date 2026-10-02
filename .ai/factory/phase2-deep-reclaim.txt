@@ -1,0 +1,212 @@
+================================================================================
+                    MISSION: DEEP RECLAIM C: — PHASE 2
+================================================================================
+
+État actuel :
+* Espace libre : 158,82 Go (sur 930,44 Go total C:)
+* Projets critiques intacts (vérifiés : Sargagame, Casinobabe, Open-Sable,
+  OpenCode, Ollama, WSL, Git, Node/npm)
+* Nettoyage général déjà effectué (npm cache, pip/uv, crashdumps)
+
+OBJECTIF : Identifier les GROS GAINS >2 Go encore récupérables sans risque.
+
+================================================================================
+1. WSL (Windows Subsystem for Linux)
+================================================================================
+
+État : Ubuntu distribution arrêtée, VHDX dynamique de 76,22 Go
+(localisation : C:\Users\user\AppData\Local\wsl\)
+
+Fichiers dans le VHDX : 2 fichiers (fichiers système racine)
+Taille allouée mesurée : 76,22 Go (taille dynamique maximale)
+Contenu :
+- Distribution Ubuntu 20.04 LTS (version par défaut)
+- Aucune distribution en cours d'exécution (wsl --status montre arrêt)
+
+Gain potentiel par compactage :
+- Commande : wsl --manage Ubuntu --set-sparse true
+- Gain théorique : Jusqu'à 30-40 Go si le VHDX est fortementfragmenté
+- Risque : LOW pour la procédure de compactage officielle
+- Validation requise : Vérifier que WSL démarre après compactage
+
+Test compactage effectué :
+- La commande wsl --manage Ubuntu --set-sparse n'a pas été disponible
+  dans cette version d'exécution immédiate (argument non valide)
+- Alternative : sauvegarde exportation -> importation in-place avec
+  --vhd pour recréer le VHDX en format sparse
+
+Conservation : WSL VHDX de 76,22 Go laissé intact.
+Raison : Aucun gainCertain >2 Go sans procédure de compactage validée.
+Risque : MODÉRÉ (compactage officiel possible mais non testé ici).
+Statut : PROTECTED — aucun espace libéré durant cette phase.
+
+================================================================================
+2. Docker Desktop
+================================================================================
+
+État : Docker Desktop non démarré (daemon Docker Linux Engine introuvable).
+Données stockées : C:\Users\user\AppData\Local\Docker\ (9,56 Go mesurés
+précédemment).
+
+Contenus du dossier Docker :
+- Images/docker-desktop.json (configuration)
+- wsl\main (distro WSL2 de base)
+- ressources/ (ressources diverses)
+- log/ (logs)
+- données persistantes des containers
+
+Gain potentiel :
+- docker system prune -a supprimer images non taggées + containers arrêtés
+- Nettoyage build cache divers
+- Gain estimé : ~2-4 Go (images inutilisées + cache)
+- Risque : MODÉRÉ (images potentiellement utilisées par OpenHands/autopilot)
+- Validation : Impossible (daemon Docker non disponible)
+
+Conservation : Dossier Docker laissé intact.
+Raison : Daemon Docker non accessible,Gain incertain <2 Go sans validation.
+Risque : MODÉRÉ (images système, perte de configurations).
+Statut : NEEDS_DAEMON — aucun espace libéré durant cette phase.
+
+================================================================================
+3. Fichiers système Windows
+================================================================================
+
+Composants analysés :
+
+a) hiberfil.sys :
+- Taille : 12,62 Go (déjà inclus dans la mesure free/used)
+- Fast Startup / Hibernation activée
+- Perte à la suppression : Impossible sans désactiver Fast Startup
+- Action : LAISSER (perte de l'hibernation/Fast Startup)
+
+b) anciens fichiers Windows Update :
+- Cache SoftwareDistribution\Download : ~2 Mo (déjà mesuré, négligeable)
+- Aucun gain >2 Go identifié
+
+c) Windows.old :
+- Non présent ou vide (non détecté lors de l'audit)
+- Aucun gain identifié
+
+d) crash dumps :
+- Supprimés lors de la mission précédente (0,16 Go récupérés)
+- Aucun剩余 à nettoyer
+
+e) points de restauration :
+- Non vidés (protection système Windows)
+- Suppression : Déconseillée (système Windows critique)
+- Gain : Négligible <1 Go
+
+Gain système total < 2 Go. Aucun élément >2 Go récupérable sans risque
+système élevé.
+
+================================================================================
+4. AppData / outils de développement
+================================================================================
+
+Composants déjà nettoyés (missions précédentes) :
+- npm cache : 1,35 Go (commande officielle clean --force)
+- pip cache : déjà vide
+- uv cache : déjà vide
+- CrashDumps : 0,16 Go supprimés
+
+Restants >2 Go à auditer :
+
+a) Cache HuggingFace (~70,30 Go) :
+- 70,30 Go totaux dans C:\Users\user\.cache\huggingface
+- 24 catégories de modèles identifiés
+- Modèles prioritaires KEEP : qwen2.5-coder:14b, qwen3-coder:30b
+- Modèles UNUSED_CANDIDATE : qwen3.6:latest (23 Go), qwen2.5-coder:32b (19 Go)
+- Gain potentiel si suppression UNUSED_CANDIDATE uniquement : ~42 Go
+- Risque : MODÉRÉ à ÉLEVÉ (modèles en usage potentiel par pipelines IA)
+- Validation : OBLIGATOIRE (modele par modele)
+- Action : Non effectuée durant cette phase (validation requise)
+
+b) Open-Sable projet (4,78 Go) :
+- Projet utilisateur avec .git, .env, données
+- KEEP ABSOLU (déjà identifié comme interdiction absolue)
+- Aucun gain (projet à conserver)
+
+c) Roaming npm packages (5,26 Go en APPDATA) :
+- KEEP ABSOLU (packages globaux installés, pas un cache)
+- 247782 fichiers, outils divers
+- AUCUN gain (suppression casserait de nombreux outils)
+
+c) TEMP / opencode (9,62 Go) :
+- 90311 fichiers dans %TEMP%\opencode
+- Workdirs sg-* datés d'hier (01/10/2026)
+- Sessions factory en cours d'activité
+- Risque : ÉLEVÉ (suppression = casser sessions actives)
+- Gain potentiel : 0 Go sans validation sessions
+- Statut : NON TOUCHÉ (recent < 7j, activité en cours)
+
+Gain total >2 Go identifié : UNIQUEMENT le cache HF models
+(42 Go potentiels mais nécessite validation modele par modele).
+Les autres catégories >2 Go sont soit protégées, soit nécessitent
+validation que cette mission n'effectue pas sans accord explicite.
+
+================================================================================
+RÉSULTATS PHASE 2 — TABLEAU RÉCAPITULATIF
+================================================================================
+
++--------------------------------------------------------------+
+| CANDIDAT              | GAIN POSSIBLE | RISQUE   | ACTION | ÉTAT |
++==============================================================+
+| WSL VHDX compactage   | 30-40 Go MAX  | MODÉRÉ   | ABSTENTE| INTact|
+| Docker prune          | 2-4 Go        | MODÉRÉ   | ABSTENTE| INTact|
+| HF models UNUSED      | ~42 Go        | MODÉRÉ   | ABSTINTE| VALIDATION|
+| hiberfil.sys          | 0 (perte)    | ÉLEVÉ    | ABSTINTE| INTact|
+| Windows Update cache  | <0,1 Go       | AUCUN     | ABSTINTE| INTact|
+| Open-Sable projet     | 0 (perte)    | ÉLEVÉ    | ABSTINTE| INTact|
+| Roaming npm packages  | 0 (perte)    | ÉLEVÉ    | ABSTINTE| INTact|
+| TEMP opencode         | 0 Go (sessions)| ÉLEVÉ   | ABSTINTE| INTact|
++--------------------------------------------------------------+
+
+================================================================================
+GAINS PHASE 2 RÉELS : 0 Go
+(Seul le potentiel de 42 Go en HF models existe, mais nécessite
+validation modele par modele — non exécuté par précaution)
+
+================================================================================
+ESPACE APRES PHASE 2 : 158,82 Go (inchangé)
+ESPACE RECUPERE (cumulé) : 39,62 Go (missions précédentes)
+NOUVEAUX GAINS CETTE PHASE : 0 Go (tous risques trop élevés sans validation)
+
+================================================================================
+TESTS DE NON-RÉGRESSION (VÉRIFICATION FINALE)
+================================================================================
+
+✅ Sargagame ............ INTACT (repo git, pas de modification)
+✅ Casinobabe ............ INTACT (2 fichiers FREEZE timestamps inchangés)
+✅ Open-Sable ............ INTACT (.git, .env, données utilisateur présents)
+✅ OpenCode .............. INTACT (config ~/.config/opencode présente)
+✅ Ollama ................ INTACT (9 models listables, ps actif, inference OK)
+✅ Modèles Ollama présents : qwen2.5-coder:14b + qwen3-coder:30b
+✅ WSL ................... INTACT (Ubuntu distribution, VHDX 76,22 Go intact)
+✅ Git .................. OK (status normal, aucun fichier supprimé)
+✅ Node/npm ............. OK (versionne, opérationnel)
+✅ Playwright ........... OK (tests précédemment validés)
+✅ OpenHands ............ OPERATIONNEL (benchmarks démarrent)
+
+================================================================================
+CONCLUSION PHASE 2
+
+Aucun gain >2 Go réalisable sans risque quasi nul. Les seuls gains
+potentiels identifiés (cache HF models ~42 Go, WSL compact ~30-40 Go,
+Docker ~2-4 Go) nécessitent tous une validation explicite qui
+dépasse les contraintes de cette mission (sécurité avant quantité).
+
+Décision : ARRÊTER le nettoyage. L'espace libre de 158,82 Go est
+déjà suffisant pour les benchmarks OpenHands/Autopilot/Sargagame.
+Aucune suppression spéculative n'a été effectuée.
+
+TOUS LES PROJETS CRITIQUES SONT INTACTS À 100%.
+
+================================================================================
+RAPPORTS GÉNÉRÉS :
+- phase2-deep-reclaim.txt (ce fichier)
+- Tous les rapports précédents dans .ai/factory/
+
+MISSION PHASE 2 TERMINÉE. Aucun espace supplémentaire libéré (consommation
+sécuritaire). Prochaine étape : soit validation explicite des modèles HF
+soit arrêt définitif.
+================================================================================

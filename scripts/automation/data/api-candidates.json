@@ -1,0 +1,255 @@
+[
+  {
+    "id": "open-meteo",
+    "type": "api_candidate",
+    "name": "Open-Meteo",
+    "category": "weather",
+    "url": "https://api.open-meteo.com",
+    "docs": "https://open-meteo.com/en/docs",
+    "auth": "none",
+    "openapi": "https://api.open-meteo.com/v1/openapi.json",
+    "rateLimit": "10000/day",
+    "relevance": "High - already used for beach weather",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "weather"
+    ],
+    "suggestedActions": [
+      "Integrate Open-Meteo for weather",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "copernicus-marine",
+    "type": "api_candidate",
+    "name": "Copernicus Marine Service",
+    "category": "satellite",
+    "url": "https://marine-api.open-meteo.com",
+    "docs": "https://marine.copernicus.eu",
+    "auth": "oauth2",
+    "openapi": null,
+    "rateLimit": "variable",
+    "relevance": "High - primary sargassum data source",
+    "requirementsScore": 83,
+    "usefulFor": [
+      "satellite"
+    ],
+    "suggestedActions": [
+      "Integrate Copernicus Marine Service for satellite",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "sentinel-hub",
+    "type": "api_candidate",
+    "name": "Sentinel Hub",
+    "category": "satellite",
+    "url": "https://services.sentinel-hub.com",
+    "docs": "https://docs.sentinel-hub.com",
+    "auth": "api-key",
+    "openapi": "https://services.sentinel-hub.com/openapi.json",
+    "rateLimit": "plan-based",
+    "relevance": "High - Sentinel-2 near-shore",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "satellite"
+    ],
+    "suggestedActions": [
+      "Integrate Sentinel Hub for satellite",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "mollie-api",
+    "type": "api_candidate",
+    "name": "Mollie API",
+    "category": "payments",
+    "url": "https://api.mollie.com/v2",
+    "docs": "https://docs.mollie.com/reference/v2/overview",
+    "auth": "api-key",
+    "openapi": "https://docs.mollie.com/openapi.json",
+    "rateLimit": "1000/min",
+    "relevance": "High - active payment provider",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "payments"
+    ],
+    "suggestedActions": [
+      "Integrate Mollie API for payments",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "onesignal-api",
+    "type": "api_candidate",
+    "name": "OneSignal API",
+    "category": "notifications",
+    "url": "https://onesignal.com/api/v1",
+    "docs": "https://documentation.onesignal.com/reference",
+    "auth": "api-key",
+    "openapi": null,
+    "rateLimit": "1000/min",
+    "relevance": "High - push notifications",
+    "requirementsScore": 83,
+    "usefulFor": [
+      "notifications"
+    ],
+    "suggestedActions": [
+      "Integrate OneSignal API for notifications",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "google-analytics-data",
+    "type": "api_candidate",
+    "name": "Google Analytics Data API (GA4)",
+    "category": "analytics",
+    "url": "https://analyticsdata.googleapis.com/v1beta",
+    "docs": "https://developers.google.com/analytics/devguides/reporting/data/v1",
+    "auth": "oauth2",
+    "openapi": "https://analyticsdata.googleapis.com/$discovery/rest?version=v1beta",
+    "rateLimit": "10000/day",
+    "relevance": "High - GA4 funnel data",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "analytics"
+    ],
+    "suggestedActions": [
+      "Integrate Google Analytics Data API (GA4) for analytics",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "search-console-api",
+    "type": "api_candidate",
+    "name": "Google Search Console API",
+    "category": "seo",
+    "url": "https://searchconsole.googleapis.com/v1",
+    "docs": "https://developers.google.com/search/apis/search-console-api",
+    "auth": "oauth2",
+    "openapi": "https://searchconsole.googleapis.com/$discovery/rest?version=v1",
+    "rateLimit": "1000/day",
+    "relevance": "High - SEO indexing",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "seo"
+    ],
+    "suggestedActions": [
+      "Integrate Google Search Console API for seo",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "openstreetmap-nominatim",
+    "type": "api_candidate",
+    "name": "OpenStreetMap Nominatim",
+    "category": "geolocation",
+    "url": "https://nominatim.openstreetmap.org",
+    "docs": "https://nominatim.org/release-docs/latest/api/Overview/",
+    "auth": "none",
+    "openapi": null,
+    "rateLimit": "1/sec",
+    "relevance": "High - beach geocoding",
+    "requirementsScore": 83,
+    "usefulFor": [
+      "geolocation"
+    ],
+    "suggestedActions": [
+      "Integrate OpenStreetMap Nominatim for geolocation",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "mapbox-api",
+    "type": "api_candidate",
+    "name": "Mapbox API",
+    "category": "maps",
+    "url": "https://api.mapbox.com",
+    "docs": "https://docs.mapbox.com/api/",
+    "auth": "api-key",
+    "openapi": null,
+    "rateLimit": "plan-based",
+    "relevance": "Medium - map tiles alternative",
+    "requirementsScore": 83,
+    "usefulFor": [
+      "maps"
+    ],
+    "suggestedActions": [
+      "Integrate Mapbox API for maps",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "cloudflare-api",
+    "type": "api_candidate",
+    "name": "Cloudflare API",
+    "category": "other",
+    "url": "https://api.cloudflare.com/client/v4",
+    "docs": "https://developers.cloudflare.com/api/",
+    "auth": "api-key",
+    "openapi": "https://api.cloudflare.com/client/v4/openapi.yaml",
+    "rateLimit": "1200/5min",
+    "relevance": "High - Workers/Pages/DNS automation",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "other"
+    ],
+    "suggestedActions": [
+      "Integrate Cloudflare API for other",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  },
+  {
+    "id": "supabase-api",
+    "type": "api_candidate",
+    "name": "Supabase Management API",
+    "category": "other",
+    "url": "https://api.supabase.com/v1",
+    "docs": "https://supabase.com/docs/reference/api",
+    "auth": "api-key",
+    "openapi": "https://api.supabase.com/v1/openapi.json",
+    "rateLimit": "variable",
+    "relevance": "High - Supabase automation",
+    "requirementsScore": 100,
+    "usefulFor": [
+      "other"
+    ],
+    "suggestedActions": [
+      "Integrate Supabase Management API for other",
+      "Test OpenAPI spec",
+      "Add to factory workers"
+    ],
+    "createdAt": "2026-10-02T21:27:33.086Z",
+    "status": "pending_review"
+  }
+]
