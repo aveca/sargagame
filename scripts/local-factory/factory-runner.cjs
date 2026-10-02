@@ -529,24 +529,39 @@ async function generateDiscoveryTasks() {
   
   // Check tasks.md for pending tasks
   const tasksContent = fs.readFileSync(TASKS_FILE, 'utf8');
-  const pendingTasks = tasksContent.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})/gm) || [];
-  for (const match of pendingTasks) {
-    const taskId = match.match(/TASK-P\d-\d{3}/)[0];
-    const queueId = `task-${taskId}`;
-    const queueFile = path.join(QUEUE_DIR, `${queueId}.json`);
+  const lines = tasksContent.split('\n');
+  const pendingTasks = [];
+  let currentSection = '';
+  
+  for (const line of lines) {
+    if (line.startsWith('## ')) currentSection = line.slice(3).trim();
     
-    if (!fs.existsSync(queueFile)) {
-      saveQueueItem({
-        id: queueId,
-        type: 'code_task',
-        payload: { taskId },
-        agent: 'coding',
-        priority: 0,
-        createdAt: new Date().toISOString(),
-        retryCount: 0,
-        maxRetries: 1
-      });
-      log('queue.add', { task: taskId });
+    // Format 1: liste avec checkbox - [ ] TASK-PX-XXX
+    let match = line.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})\s*(.*)/);
+    
+    // Format 2: header ### TASK-PX-XXX
+    if (!match) {
+      match = line.match(/^###\s+(TASK-P\d-\d{3})\s*(.*)/);
+    }
+    
+    if (match) {
+      const taskId = match[1];
+      const queueId = `task-${taskId}`;
+      const queueFile = path.join(QUEUE_DIR, `${queueId}.json`);
+      
+      if (!fs.existsSync(queueFile)) {
+        saveQueueItem({
+          id: queueId,
+          type: 'code_task',
+          payload: { taskId },
+          agent: 'coding',
+          priority: 0,
+          createdAt: new Date().toISOString(),
+          retryCount: 0,
+          maxRetries: 1
+        });
+        log('queue.add', { task: taskId });
+      }
     }
   }
 }
