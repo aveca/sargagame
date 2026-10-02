@@ -1,11 +1,11 @@
 {
- "date": "2026-09-25T16:12:33.750Z",
+ "date": "2026-10-02T16:51:13.330Z",
  "domains": {
   "https://sargasses-martinique.com": {
    "checks": {
-    "lcp_under_2_5s": false,
+    "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
-    "data_freshness_shown": true,
+    "data_freshness_shown": false,
     "source_attribution": true,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
@@ -17,15 +17,15 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "2516ms",
-    "cta_count_above_fold": "43 visibles"
+    "lcp_under_2_5s": "2332ms",
+    "cta_count_above_fold": "15 visibles"
    }
   },
   "https://sargasses-guadeloupe.com": {
    "checks": {
     "lcp_under_2_5s": true,
     "hero_verdict_visible": true,
-    "data_freshness_shown": true,
+    "data_freshness_shown": false,
     "source_attribution": true,
     "promise_one_sentence": true,
     "cta_count_above_fold": false,
@@ -37,8 +37,8 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "2288ms",
-    "cta_count_above_fold": "43 visibles"
+    "lcp_under_2_5s": "1856ms",
+    "cta_count_above_fold": "15 visibles"
    }
   },
   "https://sargassumpuntacana.com": {
@@ -57,8 +57,8 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "2396ms",
-    "cta_count_above_fold": "33 visibles"
+    "lcp_under_2_5s": "2272ms",
+    "cta_count_above_fold": "13 visibles"
    }
   },
   "https://sargassummiami.com": {
@@ -77,8 +77,8 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "780ms",
-    "cta_count_above_fold": "41 visibles"
+    "lcp_under_2_5s": "1800ms",
+    "cta_count_above_fold": "13 visibles"
    }
   },
   "https://sargassumcancun.com": {
@@ -97,8 +97,8 @@
     "no_blank_checkout": true
    },
    "note": {
-    "lcp_under_2_5s": "2280ms",
-    "cta_count_above_fold": "41 visibles"
+    "lcp_under_2_5s": "2452ms",
+    "cta_count_above_fold": "13 visibles"
    }
   }
  }
