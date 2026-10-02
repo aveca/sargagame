@@ -98,6 +98,21 @@ function getAgentTypeForTask(taskId) {
 
 function claimTask(taskId, agentType) {
   let content = readFile(TASKS_FILE);
+  
+  // Check if already claimed (in progress)
+  const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
+  if (inProgressMatch) {
+    console.log(`⏭ Task ${taskId} already in progress, skipping claim`);
+    return;
+  }
+  
+  // Check if already done
+  const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
+  if (doneMatch) {
+    console.log(`⏭ Task ${taskId} already done, skipping claim`);
+    return;
+  }
+  
   content = content.replace(
     new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
     `$1 — in_progress by ${agentType}_agent`
