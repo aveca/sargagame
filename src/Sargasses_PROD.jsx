@@ -11568,7 +11568,7 @@ export default function App(){
         let paid=null
         for(let attempt=0;attempt<3;attempt++){
           if(signal.aborted)break
-          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId}),signal});const d=await r.json()
+          try{const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:ctx.paymentId,email:ctx.email||""}),signal});const d=await r.json()
             if(d&&d.terminal&&d.status){
               // Handle terminal failure status immediately (canceled, expired, failed)
               const terminalMsg={canceled:_t("Paiement annulé","Payment canceled","Pago cancelado"),expired:_t("Paiement expiré","Payment expired","Pago expirado"),failed:_t("Paiement échoué","Payment failed","Pago fallido")}
