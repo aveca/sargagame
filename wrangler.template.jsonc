@@ -6,5 +6,5 @@
   "workers_dev":true,
   "assets":{"directory":"./dist","binding":"ASSETS","not_found_handling":"404-page"},
   "vars":{"SUPABASE_URL":"https://rswdmjtdzrucqzzukfmd.supabase.co"},
-  "routes":[{"pattern":"__DOMAIN__","custom_domain":true}]
+  "routes":[{"pattern":"__DOMAIN__/*","zone_name":"__DOMAIN__"}]
 }
