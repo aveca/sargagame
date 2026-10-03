@@ -286,26 +286,15 @@ $(git diff --stat main...HEAD)
             --label "auto-handoff,${AGENT_TYPE}"
 
       # ══════════════════════════════════════════════════════════════
-      # 9. AUTO-MERGE — Si CI vert, merge direct sur main
+      # 9. SAFETY — No implicit merge from this scheduled/manual worker
       # ══════════════════════════════════════════════════════════════
-      - name: Auto-merge if CI green
-        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'pull_request' && github.event.pull_request.labels.*.name contains 'auto-handoff' }}
-        run: |
-          # Attendre que tous les checks soient verts
-          # Puis merge auto (pas de demande permission)
-          gh pr merge --auto --squash --delete-branch
+      # Merging is handled by repository PR checks/merge policy.
+      # This workflow must never pretend that a coding task is complete
+      # or merge a PR without the normal CI gates.
 
-      # ══════════════════════════════════════════════════════════════
-      # 10. POST-MERGE — Déclencher deploy + MAJ tasks
-      # ══════════════════════════════════════════════════════════════
-      - name: Post-merge tasks update
-        if: ${{ steps.pick_task.outputs.task_id != '' && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      # 10. HANDOFF STATE
+      - name: Report handoff state
+        if: ${{ steps.pick_task.outputs.task_id != '' }}
         run: |
-          # La tâche vient d'être mergée sur main
-          # Marquer [x] done dans .ai/tasks.md
-          # (Le fichier a été mis à jour par l'agent dans son handoff)
-          echo "Task completed and merged to main"
-          
-          # Vérifier déploiement
-          sleep 30
-          gh run list --repo ${{ github.repository }} --workflow daily-copernicus.yml --limit 1 --json conclusion --jq '.[0].conclusion'
+          echo "Task handoff prepared: ${{ steps.pick_task.outputs.task_id }}"
+          echo "No implicit merge is performed by this workflow."
