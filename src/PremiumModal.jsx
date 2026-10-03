@@ -1682,23 +1682,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     // fermeture. NON-capture uniquement (en capture, gap_freemium ci-dessus suffit —
     // évite le double submitLead qui gonflait les métriques de 2× par déblocage).
     try{submitLead(email,"onsite_checkout")}catch(_){}
-    // ── Pont Mollie : createToken (Components) → mollie.php. 3DS → redirect+retour
-    // (?mollie_return=1 confirme + débloque). Sinon confirme inline puis débloque. ─
+    // ── Pont Mollie : hosted checkout ─────────────────────────────────────
+    // Le Worker Cloudflare crée le paiement Mollie et renvoie l'URL de checkout.
+    // Aucun token Mollie Components n'est nécessaire ici : le token était collecté
+    // côté navigateur mais ignoré par le Worker, ce qui pouvait bloquer le paiement
+    // avant même l'appel serveur. Mollie collecte désormais la carte sur son checkout
+    // sécurisé et gère elle-même le 3DS/les wallets.
     if(PAY_PROVIDER==="mollie"){
       setPayBusy(true);setPayError("")
       try{
-        // createToken exige les composants montés : si le SDK répond « not yet
-        // loaded » (iframes encore en boot juste après le mount), on réessaie
-        // brièvement avant d'abandonner.
-        let token=null,tErr=null
-        for(let i=0;i<3;i++){
-          const res=await mollieRef.current.createToken()
-          if(res.token){token=res.token;break}
-          tErr=res.error
-          if(!/not yet loaded|not loaded/i.test(String((tErr&&tErr.message)||"")))break
-          await new Promise(r=>setTimeout(r,700))
-        }
-        if(tErr||!token)throw new Error((tErr&&tErr.message)||_t(lang,"Vérifie ta carte.","Check your card.","Revisa tu tarjeta."))
         const _pc=passCtxRef.current
         const _pcCur=_pc?_pc.cur:undefined
         // Parrainage (Mollie) : transmet le code parrain + le mien (attribution
