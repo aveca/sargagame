@@ -641,7 +641,11 @@ function gitPush() {
 
 // Main loop
 async function runCycle() {
-  log('cycle.start');
+  const telemetry = loadTelemetry();
+  telemetry.cycles = (telemetry.cycles || 0) + 1;
+  telemetry.lastCycle = new Date().toISOString();
+  saveTelemetry(telemetry);
+  log('cycle.start', { cycle: telemetry.cycles });
   
   // Generate discovery tasks
   await generateDiscoveryTasks();
