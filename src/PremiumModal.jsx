@@ -1480,14 +1480,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     if(!PAYWALL_READY)return
     if(PAY_CAPTURE_ONLY){payReadyRef.current=true;setPayReady(true);return}
     if(PAY_PROVIDER==="mollie"){
-      const p=loadMollieJs().then(()=>{
-        const locale=lang==="es"?"es_ES":lang==="en"?"en_US":"fr_FR"
-        mollieRef.current=window.Mollie(MOLLIE_PROFILE,{locale,testmode:MOLLIE_TESTMODE})
-        // payReady au chargement SDK (comportement d'origine) : le bouton s'active,
-        // et createToken() (avec retry ci-dessous) gère le window entre SDK et mount.
-        payReadyRef.current=true;setPayReady(true)
-      })
-      payPrewarmPromiseRef.current=p
+      // Hosted Checkout : aucune carte n'est saisie dans notre UI.
+      // Mollie héberge la page de paiement et gère carte/3DS/wallets.
+      payReadyRef.current=true
+      setPayReady(true)
       return
     }
     if(PAY_PROVIDER==="paypal"){payReadyRef.current=true;setPayReady(true);return}
@@ -3210,41 +3206,36 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               </div>
             )
           })()}
-          {/* Mode carte Mollie : panneau SOMBRE premium (zéro blanc). E-mail + 4 champs
-              carte (composants Mollie individuels montés dans nos divs sombres MOL_FIELD,
-              libellés clairs MOL_LABEL hors iframe). Repères Visa/Mastercard sur le numéro
-              (confiance au moment du paiement). Capture / PayPal / Stripe → champ sombre. */}
+          {/* Mollie Hosted Checkout : email + résumé, puis redirection vers Mollie.
+              Ne jamais afficher de champs carte locaux : le checkout Mollie est la
+              surface de paiement sécurisée et gère lui-même 3DS / wallets. */}
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"?(
-            <div style={{background:"linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02))",
-              borderRadius:16,border:"1px solid rgba(255,255,255,.10)",
-              padding:"14px 14px 4px",boxShadow:"0 8px 30px rgba(0,0,0,.30)"}}>
-              <label style={MOL_LABEL}>{_t(lang,"Nom du titulaire","Cardholder name","Nombre del titular")}</label>
-              <div ref={molHolderRef} style={MOL_FIELD}/>
-              <label style={MOL_LABEL}>{_t(lang,"Numéro de carte","Card number","Número de tarjeta")}</label>
-              <div style={{position:"relative"}}>
-                <div ref={molNumberRef} style={{...MOL_FIELD,paddingRight:74}}/>
-                <span aria-hidden="true" style={{position:"absolute",right:11,top:15,display:"flex",gap:5,alignItems:"center",pointerEvents:"none"}}>
-                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><text x="24" y="21" fontFamily="Arial,Helvetica,sans-serif" fontSize="13" fontWeight="700" fill="#1A1F71" textAnchor="middle" letterSpacing="0.5">VISA</text></svg>
-                  <svg width="26" height="17" viewBox="0 0 48 32"><rect width="48" height="32" rx="4" fill="#fff"/><circle cx="20" cy="16" r="9" fill="#EB001B"/><circle cx="28" cy="16" r="9" fill="#F79E1B" fillOpacity="0.85"/></svg>
-                </span>
-              </div>
-              <div style={{display:"flex",gap:11}}>
-                <div style={{flex:1,minWidth:0}}>
-                  <label style={MOL_LABEL}>{_t(lang,"Expiration","Expiry","Caducidad")}</label>
-                  <div ref={molExpiryRef} style={MOL_FIELD}/>
+            <div style={{background:"linear-gradient(180deg,rgba(255,199,44,.07),rgba(255,255,255,.025))",
+              borderRadius:16,border:"1px solid rgba(255,199,44,.18)",padding:"14px",
+              boxShadow:"0 8px 30px rgba(0,0,0,.22)"}}>
+              <input ref={payEmailRef} type="email" inputMode="email" autoComplete="email"
+                onBlur={capturePayEmail} onChange={onPayEmailInput}
+                defaultValue={typeof localStorage!=="undefined"?(localStorage.getItem("sg_email")||""):""}
+                placeholder={_t(lang,"ton@email.com","you@email.com","tu@email.com")}
+                aria-label={_t(lang,"E-mail pour recevoir ton accès","Email for your access","Email para recibir tu acceso")}
+                style={{width:"100%",boxSizing:"border-box",padding:"13px 14px",borderRadius:12,
+                  fontSize:16,fontFamily:"inherit",outline:"none",border:"1px solid rgba(255,255,255,.16)",
+                  background:"#13261F",color:"#e6edf3"}}/>
+              <div style={{display:"flex",alignItems:"flex-start",gap:9,marginTop:12}}>
+                <div style={{width:30,height:30,borderRadius:10,display:"grid",placeItems:"center",
+                  flexShrink:0,background:"rgba(124,224,176,.10)",color:"#7CE0B0",fontSize:16}}>🔒</div>
+                <div style={{fontSize:12,lineHeight:1.45,color:"rgba(255,255,255,.68)"}}>
+                  <strong style={{color:"#fff"}}>{_t(lang,"Paiement sécurisé par Mollie","Secure payment by Mollie","Pago seguro con Mollie")}</strong>
+                  <div style={{marginTop:2}}>{_t(lang,
+                    "Après « Payer », tu seras redirigé vers la page Mollie pour choisir ta carte ou ton moyen de paiement. 3DS est géré automatiquement.",
+                    "After “Pay”, you'll be redirected to Mollie to choose your card or payment method. 3DS is handled automatically.",
+                    "Después de « Pagar », serás redirigido a Mollie para elegir tu tarjeta o medio de pago. 3DS se gestiona automáticamente.")}</div>
                 </div>
-                <div style={{flex:1,minWidth:0}}>
-                  <label style={MOL_LABEL}>CVC</label>
-                  <div ref={molCvcRef} style={MOL_FIELD}/>
-                </div>
               </div>
-              {/* Réassurance au point d'anxiété max (saisie carte) — levier conversion D. */}
-              <div style={{display:"flex",alignItems:"center",gap:7,marginTop:12,fontSize:11.5,color:"rgba(255,255,255,.5)",lineHeight:1.35}}>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{flexShrink:0}}>
-                  <rect x="4" y="10" width="16" height="10" rx="2" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
-                  <path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="rgba(124,224,176,.85)" strokeWidth="2"/>
-                </svg>
-                {_t(lang,"Paiement chiffré · tes données carte ne sont jamais stockées chez nous","Encrypted payment · your card data is never stored on our servers","Pago cifrado · tus datos de tarjeta nunca se guardan en nuestros servidores")}
+              <div style={{display:"flex",flexWrap:"wrap",gap:6,marginTop:12}}>
+                {["VISA","Mastercard","Apple Pay","Google Pay"].map(x=><span key={x} style={{fontSize:10.5,fontWeight:700,
+                  padding:"5px 8px",borderRadius:7,background:"rgba(255,255,255,.06)",
+                  border:"1px solid rgba(255,255,255,.08)",color:"rgba(255,255,255,.65)"}}>{x}</span>)}
               </div>
             </div>
           ):(
