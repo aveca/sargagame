@@ -63,7 +63,7 @@ const targets = getAllRegions().map((r) => {
 })
 
 async function connect(t) {
-  const client = new Client(undefined, 120000)
+  const client = new Client(120000)
   client.ftp.verbose = false
   await client.access({
     host: t.host,
