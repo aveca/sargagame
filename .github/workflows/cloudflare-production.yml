@@ -102,3 +102,20 @@ jobs:
             sleep $((i*5))
           done
           exit 1
+      - name: Payment API smoke
+        env:
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          code=$(curl -sS -o /tmp/mollie-smoke.json -w "%{http_code}" --max-time 20 \
+            -X POST -H "Content-Type: application/json" \
+            --data '{"action":"__payment_smoke__"}' \
+            "https://$DOMAIN/api/mollie.php" || true)
+          cat /tmp/mollie-smoke.json || true
+          if [ "$code" != "400" ]; then
+            echo "Payment API smoke failed: expected HTTP 400 from a configured Worker, got $code"
+            exit 1
+          fi
+          if grep -Eq '"error":"(payment_backend_not_configured|api_route_not_migrated)' /tmp/mollie-smoke.json; then
+            echo "Payment backend is not configured or route is not migrated"
+            exit 1
+          fi
