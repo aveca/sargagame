@@ -1,0 +1,59 @@
+name: Sargagame Autonomous Cloud Factory
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "*/15 * * * *"
+
+concurrency:
+  group: sargagame-autonomous-factory
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  factory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Run one autonomous factory cycle
+        uses: anomalyco/opencode/github@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        with:
+          model: anthropic/claude-sonnet-4-5
+          use_github_token: true
+          prompt: |
+            You are the Sargagame autonomous factory running in GitHub Actions.
+
+            Execute ONE deterministic factory cycle against the real repository.
+            Do not ask the founder to paste prompts or run commands.
+
+            1. Read AGENTS.md and the relevant .ai memory/contracts.
+            2. Inspect open GitHub issues whose title starts with [AUTOPILOT].
+            3. Select exactly one eligible task that is not human-gated, not a duplicate,
+               and not already represented by an active PR.
+            4. If an existing [AUTOPILOT] task is already actively being implemented,
+               do not duplicate it.
+            5. Implement the smallest evidence-backed change required by that task.
+            6. Run the relevant deterministic tests and build/QA checks.
+            7. Create or update a PR with a concise evidence-based description.
+            8. Never merge a PR merely because this job created it.
+            9. Never modify payment/pricing/checkout/webhook/grants/Supabase schema/secrets
+               or other founder-gated production configuration autonomously.
+            10. If no eligible task exists, perform read-only inspection and exit cleanly.
+            11. Do not invent production observations. Use repository/GitHub evidence only.
+            12. Keep changes reversible and scoped to the selected task.
+
+            Important: this workflow is a cloud continuation of the local factory.
+            Do not create a second implementation loop inside the repository.
