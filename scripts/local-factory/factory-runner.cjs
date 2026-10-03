@@ -20,7 +20,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { execSync, spawn } = require('child_process');
+const { execSync, execFileSync, spawn } = require('child_process');
 const { withPreviewServer, stopAllServers, killProcessTree, runBounded } = require('../lib/process-runner.cjs');
 
 // Get repo root by walking up from script location
@@ -144,8 +144,8 @@ function saveTelemetry(t) { saveJSON(TELEMETRY_FILE, t); }
 
 function recordTelemetry(event, data) {
   const t = loadTelemetry();
-  t.cycles++;
-  t.lastCycle = new Date().toISOString();
+  t.events = (t.events || 0) + 1;
+  t.lastEvent = new Date().toISOString();
   if (!t.tasks[event]) t.tasks[event] = { count: 0, success: 0, failed: 0 };
   t.tasks[event].count++;
   if (data.success) t.tasks[event].success++;
@@ -229,7 +229,8 @@ async function executeTask(task, worker) {
     const duration = Date.now() - startTime;
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
-    recordFailure(worker.model);
+    // Do not trip a model circuit breaker for application/test/Git failures.
+    // Provider health is classified centrally by executeWithFallback().
     throw error;
   }
 }
@@ -252,6 +253,10 @@ async function executeWithFallback(task) {
       const isTimeout = error.message.includes('timeout') || error.message.includes('TIMEOUT');
       const isModelError = error.message.includes('model') || error.message.includes('provider');
       
+      if (is429 || isTimeout || isModelError) {
+        recordFailure(worker.model);
+      }
+
       log('worker.fallback', { 
         taskId: task.id, 
         failedWorker: worker.name, 
@@ -315,7 +320,7 @@ async function executeCodeTask(task, worker) {
   const taskId = task.id;
   const agentType = task.agent || 'coding';
   
-  execSync(`node scripts/agent-handoff.cjs --task ${taskId}`, { cwd: ROOT, encoding: 'utf8' });
+  execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
   
   // The agent will work on the task and mark complete
   // We wait for the branch to be pushed and PR created
@@ -349,7 +354,7 @@ async function executeTestTask(task, worker) {
 async function executeDeployTask(task, worker) {
   // Trigger deploy via git push
   const { execSync } = require('child_process');
-  execSync('git push origin main', { cwd: ROOT, encoding: 'utf8' });
+  execFileSync('git', ['push', 'origin', 'main'], { cwd: ROOT, encoding: 'utf8' });
   
   // Wait for workflow
   await waitForWorkflow('daily-copernicus.yml');
@@ -363,14 +368,11 @@ async function executeGenericTask(task, worker) {
   const taskId = task.id;
   const agentType = task.agent || 'coding';
   
-  execSync(`node scripts/agent-handoff.cjs --task ${taskId}`, { cwd: ROOT, encoding: 'utf8' });
-  
-  // Simulate work - in real implementation, this would be the actual AI work
-  await new Promise(r => setTimeout(r, 5000));
-  
-  execSync(`node scripts/agent-handoff.cjs --complete`, { cwd: ROOT, encoding: 'utf8' });
-  
-  return { taskId, completed: true };
+  execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
+  // Generic tasks must produce an observable PR, not a fake five-second completion.
+  const prNumber = await waitForPR(taskId);
+  if (!prNumber) throw new Error(`No PR created for task ${taskId}`);
+  return { taskId, prNumber, completed: true };
 }
 
 async function waitForPR(taskId) {
@@ -439,10 +441,11 @@ async function processQueue() {
       }));
       
       try {
-        removeQueueItem(taskId);
         await executeWithFallback(task);
         
-        // Mark completed
+        // Mark completed only after successful execution. Keeping the queue item
+        // until success makes the task recoverable across runner crashes.
+        removeQueueItem(taskId);
         fs.unlinkSync(processingFile);
         log('task.completed', { id: taskId });
         processedThisRound++;
@@ -643,7 +646,11 @@ function gitPush() {
 
 // Main loop
 async function runCycle() {
-  log('cycle.start');
+  const telemetry = loadTelemetry();
+  telemetry.cycles = (telemetry.cycles || 0) + 1;
+  telemetry.lastCycle = new Date().toISOString();
+  saveTelemetry(telemetry);
+  log('cycle.start', { cycle: telemetry.cycles });
   
   // Generate discovery tasks
   await generateDiscoveryTasks();
@@ -656,7 +663,7 @@ async function runCycle() {
   const processed = await processQueue();
   
   // Cleanup temp files
-  stopAllServers();
+  await stopAllServers();
   
   log('cycle.end', { processed, queueRemaining: loadQueue().length });
   
