@@ -1,0 +1,54 @@
+name: Cloudflare Production
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: cloudflare-production
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: mq, domain: sargasses-martinique.com }
+          - { id: gp, domain: sargasses-guadeloupe.com }
+          - { id: florida, domain: sargassummiami.com }
+          - { id: puntacana, domain: sargassumpuntacana.com }
+          - { id: rivieramaya, domain: sargassumcancun.com }
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, cache: npm }
+      - run: npm ci
+      - run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
+      - name: Build region
+        env: { VITE_REGION: ${{ matrix.id }} }
+        run: npm run build
+      - name: Generate Wrangler config
+        env: { REGION: ${{ matrix.id }}, DOMAIN: ${{ matrix.domain }} }
+        run: node -e "const fs=require('fs');let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN);fs.writeFileSync('wrangler.jsonc',s)"
+      - run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
+      - name: Configure Worker secrets
+        run: |
+          printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
+          printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@latest secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
+      - name: Smoke test
+        env: { DOMAIN: ${{ matrix.domain }} }
+        run: |
+          for i in 1 2 3 4 5; do
+            code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/?cfdeploy=$GITHUB_SHA" || true)
+            [ "$code" = "200" ] && exit 0
+            sleep $((i*5))
+          done
+          exit 1
