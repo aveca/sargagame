@@ -90,7 +90,8 @@ export default {
       const k=u.searchParams.get("k")||"";
       const verify=async token=>{
         const parts=token.split("."); if(parts.length!==2)return false;
-        const base=env.MOLLIE_WEBHOOK_SECRET||"sargasses-widget";
+        const base=env.MOLLIE_WEBHOOK_SECRET;
+        if(!base)return false;
         const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
         const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
         const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(parts[0]));
@@ -105,7 +106,8 @@ export default {
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
       const email=String(d.email||"").trim();if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email))return out({error:"invalid_email"},400);
       const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
-      const base=env.MOLLIE_WEBHOOK_SECRET||"sargasses-widget";
+      const base=env.MOLLIE_WEBHOOK_SECRET;
+      if(!base)return out({error:"payment_backend_not_configured"},503);
       const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
       const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
       const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
