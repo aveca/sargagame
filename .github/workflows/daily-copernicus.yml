@@ -1031,38 +1031,13 @@ jobs:
       # sautés) → verify_data lit la donnée committée (potentiellement vieille). On ne
       # veut PAS qu'une donnée dégradée déjà committée gèle les deploys de CODE → sur
       # push on déploie toujours (le code/site change, pas la donnée).
-      - name: Deploy FTPS toutes régions (sessions fragmentées)
+      # Production deployment is handled by cloudflare-production.yml.
+      # No FTP/FTPS host is used anymore.
+      - name: Legacy FTP deploy disabled
         id: ftp_deploy
-        if: github.event_name == 'push' || steps.verify_data.outcome == 'success'
-        continue-on-error: true
-        # Garde-fou : une session FTPS morte peut faire griller le step indéfiniment
-        # (vu 2026-06-16 : 33 min bloqués, run suivant en queue derrière). Le step est
-        # déjà continue-on-error → un timeout n'échoue PAS le build, il laisse tourner
-        # le health-check (sites up = warning, down = error). Borne le blocage de queue.
-        timeout-minutes: 60
-        env:
-          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}
-          FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}
-          FTP_USERNAME_MQ: ${{ secrets.FTP_USERNAME_MQ }}
-          FTP_PASSWORD_MQ: ${{ secrets.FTP_PASSWORD_MQ }}
-          FTP_SERVER_GP: ${{ secrets.FTP_SERVER_GP }}
-          FTP_USERNAME_GP: ${{ secrets.FTP_USERNAME_GP }}
-          FTP_PASSWORD_GP: ${{ secrets.FTP_PASSWORD_GP }}
-          FTP_SERVER_PUNTACANA: ${{ secrets.FTP_SERVER_PUNTACANA }}
-          FTP_USERNAME_PUNTACANA: ${{ secrets.FTP_USERNAME_PUNTACANA }}
-          FTP_PASSWORD_PUNTACANA: ${{ secrets.FTP_PASSWORD_PUNTACANA }}
-          FTP_SERVER_FLORIDA: ${{ secrets.FTP_SERVER_FLORIDA }}
-          FTP_USERNAME_FLORIDA: ${{ secrets.FTP_USERNAME_FLORIDA }}
-          FTP_PASSWORD_FLORIDA: ${{ secrets.FTP_PASSWORD_FLORIDA }}
-          FTP_SERVER_RIVIERAMAYA: ${{ secrets.FTP_SERVER_RIVIERAMAYA }}
-          FTP_USERNAME_RIVIERAMAYA: ${{ secrets.FTP_USERNAME_RIVIERAMAYA }}
-          FTP_PASSWORD_RIVIERAMAYA: ${{ secrets.FTP_PASSWORD_RIVIERAMAYA }}
-        run: node scripts/manual-ftp-deploy.cjs
+        run: echo "Cloudflare Worker deployment is handled by cloudflare-production.yml"
+        continue-on-error: false
 
-      # ── 6. Final health check — fail workflow only if sites actually down ──
-      # FTP can be flaky; data is already committed to git so next run redeploys.
-      # We only want to fail the workflow (and alert) when the live sites are
-      # actually broken, not when FTP had a transient hiccup.
       - name: Health check after deploy
         run: |
           sleep 10
@@ -1108,44 +1083,7 @@ jobs:
           if [ "${{ steps.ftp_deploy.outcome }}" = "skipped" ]; then
             echo "::warning::Deploy FTP SAUTÉ — intégrité des données refusée (source dégradée ou pic tout-vert). Sites servent l'ancienne donnée (réelle). Prochain run re-tentera la source live."
           fi
-          # ── Le deploy a-t-il PRIS ? (leçon 2026-06-11 : prod gelée 3h30 avec
-          # sites 200 + vieux bundle — invisible pour le check up/fraîcheur).
-          # Référence = le sw.js du dossier FTP réellement uploadé, JAMAIS
-          # public/sw.js : les git pull mid-run (commits data/email) peuvent y
-          # amener le SW d'un push POSTÉRIEUR au build → faux positif (run
-          # 27388423022 : déployé v59, tree pullé v60, alerte à tort 2026-06-12).
-          if [ "${{ steps.check_build.outputs.full }}" = "true" ]; then
-            WANT=$(grep -o "sargasses-v[0-9]*" martinique-ftp/sw.js 2>/dev/null | head -1)
-            [ -z "$WANT" ] && WANT=$(grep -o "sargasses-v[0-9]*" public/sw.js | head -1)
-            # Vérif TOLÉRANTE : la propagation FTP/CDN a parfois un léger retard (faux
-            # positif, surtout domaines USD type puntacana). On re-vérifie UNIQUEMENT les
-            # domaines encore en écart, jusqu'à 4× × 20 s, avant de déclarer un VRAI échec
-            # → fini les fausses alertes « deploy failed » alors que le site se déploie bien.
-            check_sw() {
-              local out=""
-              for D in $1; do
-                # UA explicite pour passer Cloudflare WAF (cf. health check principal)
-                GOT=$(curl -sL --max-time 15 -A "Mozilla/5.0 (compatible; SargagameHealthCheck/1.0; +https://sargasses-martinique.com)" -H "Accept: */*" "https://$D/sw.js?t=$(date +%s)" | grep -o "sargasses-v[0-9]*" | head -1)
-                [ "$GOT" != "$WANT" ] && out="$out $D($GOT)"
-              done
-              echo "$out"
-            }
-            MISMATCH=$(check_sw "$DOMAINS")
-            TRIES=0
-            while [ -n "$MISMATCH" ] && [ "$TRIES" -lt 4 ]; do
-              TRIES=$((TRIES+1))
-              echo "::notice::SW pas encore propagé (essai $TRIES/4) :$MISMATCH — nouvelle vérif dans 20s"
-              sleep 20
-              PENDING=$(echo "$MISMATCH" | sed 's/([^)]*)//g')
-              MISMATCH=$(check_sw "$PENDING")
-            done
-            if [ -n "$MISMATCH" ]; then
-              echo "::error::SW version mismatch (attendu $WANT):$MISMATCH — le deploy n'a pas pris (après $TRIES re-essai(s))"
-              exit 1
-            fi
-            if [ "$TRIES" -gt 0 ]; then echo "SW version OK après $TRIES re-essai(s): $WANT"; else echo "SW version OK sur toutes les régions: $WANT"; fi
-          fi
-          # ── Gardes email : incident d'excuses bloqué >24h + plafond Resend ──
+          # Deploy version verification is performed by cloudflare-production.yml smoke tests.\n          # ── Gardes email : incident d'excuses bloqué >24h + plafond Resend ──
           node -e "try{const i=require('./scripts/automation/data/incidents.json');const stuck=i.filter(x=>(x.recipients||[]).some(h=>!(x.sent||{})[h])&&Date.now()-new Date(x.created)>864e5);if(stuck.length)console.log('::warning::Incident(s) excuse en attente >24h: '+stuck.map(x=>x.id).join(','))}catch(e){}"
           node -e "try{const s=require('./scripts/automation/data/subscribers.json');const n=s.filter(x=>['sargacatch','beach_alert'].includes(x.source||'')).length;if(n>85)console.log('::warning::Audience daily_verdict '+n+' — proche du plafond Resend 100/jour (tache 37: upgrade ou throttle)')}catch(e){}"
 
