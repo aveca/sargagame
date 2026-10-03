@@ -6,6 +6,26 @@ export default {
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
+    const grantB2CPass=async(payment)=>{
+      const md=payment?.metadata||{};
+      const pass=String(md.pass||"");
+      const email=String(md.email||"").trim();
+      const days={p30:30,trip7:7,season:210}[pass];
+      if(!days||!email)return {granted:false,skipped:true};
+      if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return {granted:false,error:"payment_backend_not_configured"};
+      const r=await fetch(env.SUPABASE_URL+"/rest/v1/payment_grants",{
+        method:"POST",
+        headers:{apikey:env.SUPABASE_SERVICE_KEY,Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
+        body:JSON.stringify({
+          payment_id:payment.id,type:"b2c_pass",pass,email,
+          currency:payment.amount?.currency||"EUR",
+          expires_at:new Date(Date.now()+days*86400000).toISOString(),
+          granted_at:new Date().toISOString(),metadata:md
+        })
+      });
+      if(!r.ok)return {granted:false,error:"grant_sync_failed",status:r.status};
+      return {granted:true,pass,email,days};
+    };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
       const raw=await request.text(); const ct=request.headers.get("content-type")||"";
@@ -13,15 +33,9 @@ export default {
       if(!id)return out({error:"id requis"},400);
       const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
       const payment=await p.json();
-      if(payment.status==="paid" && payment.metadata && payment.metadata.pass && payment.metadata.email){
-        const days={p30:30,trip7:7,season:210}[payment.metadata.pass];
-        if(days){
-          await fetch(env.SUPABASE_URL+"/rest/v1/payment_grants",{method:"POST",headers:{apikey:env.SUPABASE_SERVICE_KEY,Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify({
-            payment_id:id,type:"b2c_pass",pass:payment.metadata.pass,email:payment.metadata.email,
-            currency:(payment.amount&&payment.amount.currency)||"EUR",
-            expires_at:new Date(Date.now()+days*86400000).toISOString(),granted_at:new Date().toISOString(),metadata:payment.metadata
-          })});
-        }
+      if(payment.status==="paid"){
+        const grant=await grantB2CPass(payment);
+        if(grant.error)return out({error:grant.error},503);
       }
       return out({received:true,paymentId:id,status:payment.status},200);
     }
@@ -32,8 +46,20 @@ export default {
       if(!env.MOLLIE_API_KEY)return out({error:"payment_backend_not_configured"},503);
       try{
         if(d.action==="payment_status"){
-          const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(d.paymentId),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
-          const x=await p.json(); return out({paid:["paid","settled"].includes(x.status),status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
+          const paymentId=String(d.paymentId||"").trim();
+          if(!paymentId)return out({error:"paymentId requis"},400);
+          const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(paymentId),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
+          const x=await p.json();
+          if(!p.ok)return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502);
+          const paid=["paid","settled"].includes(x.status);
+          if(paid){
+            const requestedEmail=String(d.email||"").trim().toLowerCase();
+            const paymentEmail=String(x.metadata?.email||"").trim().toLowerCase();
+            if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail)return out({error:"payment_owner_mismatch"},403);
+            const grant=await grantB2CPass(x);
+            if(grant.error)return out({error:grant.error},503);
+          }
+          return out({paid,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
         }
         if(d.action==="verify_subscription"){
           const email=String(d.email||"").trim();
