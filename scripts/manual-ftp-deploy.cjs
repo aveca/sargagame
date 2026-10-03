@@ -63,7 +63,7 @@ const targets = getAllRegions().map((r) => {
 })
 
 async function connect(t) {
-  const client = new Client(undefined, 120000)
+  const client = new Client(120000)
   client.ftp.verbose = false
   await client.access({
     host: t.host,
@@ -217,8 +217,7 @@ async function deployOne(t) {
       const allNestedFiles = collectFiles(sdPath, "")
       
       if (allNestedFiles.length <= BATCH_SIZE) {
-        const n = await withFreshClient(`${d}/${sd}/`, async client => {
-          await client.ensureDir(`/${d}/${sd}`)
+        const n = await withFreshClient(`${d}/${sd}/`, async client => {          await client.ensureDir(`/${d}/${sd}`)
           await client.uploadFromDir(sdPath)
         })
         console.log(`  [${t.label}] ${d}/${sd}/ ✓ (${n} files)`)
@@ -397,9 +396,33 @@ async function main() {
     process.exit(summarize(results, picked, only) ? 0 : 1)
   }
 
-  // Défaut : full deploy, fast path + fallback, régions EN PARALLÈLE.
+  // Défaut : full deploy, fast path + fallback.
+  // Serialize regions sharing the same FTP host. The previous Promise.all
+  // opened multiple FTPS control sockets simultaneously; the shared host then
+  // dropped every socket with "Timeout (control socket)" even though each
+  // credential was valid. Independent hosts may still be deployed in parallel
+  // by grouping only identical host values.
   if (!token) console.log("⚠️  DEPLOY_TOKEN absent → fast path désactivé, fallback FTP fichier-par-fichier.")
-  const results = await Promise.allSettled(picked.map((t) => deployRegion(t, { token, noFast })))
+  const results = []
+  const hostGroups = new Map()
+  for (const t of picked) {
+    const key = t.host || "__missing_host__"
+    if (!hostGroups.has(key)) hostGroups.set(key, [])
+    hostGroups.get(key).push(t)
+  }
+  for (const [host, group] of hostGroups) {
+    if (group.length > 1) {
+      console.log(`\n── Serialisation de ${group.length} régions sur le même hôte (${group.map(t => t.key).join(", ")}) ──`)
+    }
+    for (const t of group) {
+      try {
+        const value = await deployRegion(t, { token, noFast })
+        results.push({ status: "fulfilled", value })
+      } catch (reason) {
+        results.push({ status: "rejected", reason })
+      }
+    }
+  }
   process.exit(summarize(results, picked, only) ? 0 : 1)
 }
 

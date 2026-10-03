@@ -22,7 +22,7 @@ async function main() {
   console.log('[run-smoke] Starting smoke test orchestration...');
   
   // Nettoyer tout serveur résiduel au démarrage
-  const cleaned = stopAllServers();
+  const cleaned = await stopAllServers();
   if (cleaned.length) console.log('[run-smoke] Cleaned up', cleaned.length, 'residual server(s)');
   
   try {
@@ -32,7 +32,7 @@ async function main() {
         
         // Exécuter le smoke test avec timeout
         // execFileSync with encoding returns stdout as string, stderr is not captured
-        const output = execFileSync('node', [SMOKE_SCRIPT], {
+        const output = execFileSync(process.execPath, [SMOKE_SCRIPT], {
           cwd: ROOT,
           encoding: 'utf8',
           timeout: TIMEOUT_MS,
@@ -65,22 +65,24 @@ async function main() {
     );
     
     console.log('[run-smoke] ✅ Smoke test PASSED');
-    process.exit(0);
+    process.exitCode = 0;
     
   } catch (error) {
     console.error('[run-smoke] ❌ Smoke test FAILED:', error.message);
     if (error.stdout) console.error('STDOUT:', error.stdout);
     if (error.stderr) console.error('STDERR:', error.stderr);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
-    // Nettoyage final garanti
-    const finalCleanup = stopAllServers();
+    // Nettoyage final garanti et attendu avant de rendre la main.
+    const finalCleanup = await stopAllServers();
     if (finalCleanup.length) console.log('[run-smoke] Final cleanup:', finalCleanup.length, 'server(s) stopped');
   }
 }
 
-main().catch(e => {
+main().catch(async e => {
   console.error('[run-smoke] Fatal error:', e);
-  stopAllServers();
-  process.exit(1);
+  try { await stopAllServers(); } catch (cleanupError) {
+    console.error('[run-smoke] Cleanup failed:', cleanupError.message);
+  }
+  process.exitCode = 1;
 });
