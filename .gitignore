@@ -179,3 +179,7 @@ scripts/veilleurs/_artifacts/
 
 # Vite dev build artefact
 /dev/
+
+# Autonomous factory runtime state/logs — local only
+scripts/local-factory/state/
+scripts/local-factory/logs/
