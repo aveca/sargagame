@@ -1698,8 +1698,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
         // cf. MOLLIE_MIGRATION.md — Mollie n'a pas de coupon/balance comme Stripe).
         const _refBy=sgReferredBy(),_myRef=sgMyReferralCode()
         const body=_pc
-          ?{action:"create_payment",cardToken:token,pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
-          :{action:"create_subscription",cardToken:token,plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
+          ?{action:"create_payment",pass:_pc.pass,cents:_pc.cents,cur:_pc.cur,email,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef,consent:{accepted:true,v:"2026-06-29",lang}}
+          :{action:"create_subscription",plan,email,cur:_pcCur,source:source||"unknown",lang,referredBy:_refBy,myReferralCode:_myRef}
          const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
          const d=await r.json().catch(()=>({}))
          if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){
