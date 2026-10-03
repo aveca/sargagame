@@ -762,36 +762,6 @@ jobs:
             || echo "release depthflow-heroes absente — zoompan seul"
           node scripts/make-hero-loops.cjs
 
-      - name: Build new regions (séquentiel, avant le build MQ/GP)
-        if: steps.check_build.outputs.full == 'true'
-        run: |
-          set -e
-          NEW_REGIONS=$(node -e "console.log(require('./regions/index.cjs').getAllRegions().map(r => r.id).filter(id => !['mq','gp'].includes(id)).join(' '))")
-          for RID in $NEW_REGIONS; do
-            echo "── Build région $RID ──"
-            VITE_REGION=$RID npm run build
-            VITE_REGION=$RID node scripts/prepare-ftp.cjs
-          done
-
-      - name: Build site (Vite)
-        if: steps.check_build.outputs.full == 'true'
-        run: npm run build
-
-      - name: Prepare FTP folders
-        if: steps.check_build.outputs.full == 'true'
-        run: node scripts/prepare-ftp.cjs
-
-      # Injecte api/mollie-config.php (clé live + webhook_secret) dans les dossiers de staging EUR à
-      # partir des secrets MOLLIE_API_KEY + MOLLIE_WEBHOOK_SECRET. Les secrets ne sont lus que via env:
-      # (jamais dans une ligne shell → pas dans les logs). Échoue explicitement si webhook_secret absent.
-      - name: Inject Mollie config into staging api/ dirs
-        if: steps.check_build.outputs.full == 'true'
-        env:
-          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
-          MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}  # BUG-2026-011 : payment_grants mirror + verify_subscription
-        run: node scripts/write-mollie-config.cjs
-
       - name: Submit URLs to Google Indexing
         if: steps.check_build.outputs.full == 'true' && github.event_name != 'push'
         env:
