@@ -3,6 +3,10 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+  workflow_run:
+    workflows: [Daily Copernicus + Deploy]
+    types: [completed]
+
 permissions:
   contents: read
 concurrency:
@@ -10,6 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
