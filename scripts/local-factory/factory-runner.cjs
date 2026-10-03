@@ -229,7 +229,8 @@ async function executeTask(task, worker) {
     const duration = Date.now() - startTime;
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
-    recordFailure(worker.model);
+    // Do not trip a model circuit breaker for application/test/Git failures.
+    // Provider health is classified centrally by executeWithFallback().
     throw error;
   }
 }
@@ -252,6 +253,10 @@ async function executeWithFallback(task) {
       const isTimeout = error.message.includes('timeout') || error.message.includes('TIMEOUT');
       const isModelError = error.message.includes('model') || error.message.includes('provider');
       
+      if (is429 || isTimeout || isModelError) {
+        recordFailure(worker.model);
+      }
+
       log('worker.fallback', { 
         taskId: task.id, 
         failedWorker: worker.name, 
