@@ -1646,7 +1646,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     if(payBusy)return
     // Components pas encore prêts (SDK chargé ≠ composants montés chez Mollie) :
     // message clair au lieu de l'erreur SDK brute « Components are not yet loaded ».
-    if(PAY_PROVIDER!=="paypal"&&!PAY_CAPTURE_ONLY&&!payReadyRef.current){
+    if(PAY_PROVIDER!=="paypal"&&PAY_PROVIDER!=="mollie"&&!PAY_CAPTURE_ONLY&&!payReadyRef.current){
       setPayError(_t(lang,"Le paiement sécurisé se charge… patiente un instant.","Secure checkout is loading… one moment.","El pago seguro está cargando… un momento."))
       return
     }
@@ -1723,7 +1723,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
             setTimeout(()=>window.location.href=d.checkoutUrl,50);return
           }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
-        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email})})
         const cd=await cr.json().catch(()=>({}))
         if(cd.terminal&&cd.status){
           const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
