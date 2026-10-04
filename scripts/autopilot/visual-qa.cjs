@@ -23,6 +23,7 @@ function log(msg) {
 }
 
 const SCREENSHOTS_DIR = path.join(C.paths.observations, 'screenshots');
+// Self-healing test marker
 const BASELINE_DIR = path.join(C.paths.baselines, 'visual');
 
 /**
