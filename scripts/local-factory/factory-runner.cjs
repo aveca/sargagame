@@ -286,7 +286,7 @@ async function executeTask(task, worker) {
     };
     
     try {
-      const healResult = await selfHealing.handleError(error, context, (msg) => log('self-heal', { taskId: task.id, msg }));
+      const healResult = await selfHealing.handleError(error, context, autopilotConfig, (msg) => log('self-heal', { taskId: task.id, msg }));
       if (healResult.success) {
         log('task.self_healed', { id: task.id, type: taskType, classification: healResult.classification.type });
         // Retry the task once after successful self-healing

@@ -132,7 +132,7 @@ async function diagnoseAndSelfHeal() {
   };
 
   try {
-    const result = await selfHealing.handleError(stuckError, context, (msg) => log(`[WATCHDOG-HEAL] ${msg}`));
+    const result = await selfHealing.handleError(stuckError, context, cfg, (msg) => log(`[WATCHDOG-HEAL] ${msg}`));
     if (result.success) {
       log(`[WATCHDOG] Self-healing SUCCESS: ${result.classification.type} — resuming`);
       // Reset progress timer to allow continuation
@@ -414,7 +414,7 @@ async function attemptRepair(opp, phase, error, log) {
   };
 
   try {
-    const result = await selfHealing.handleError(error, context, (msg) => log(`REPAIR      ${msg}`));
+    const result = await selfHealing.handleError(error, context, cfg, (msg) => log(`REPAIR      ${msg}`));
     if (result.success) {
       log(`REPAIR      ${phase}: self-healing SUCCESS — ${result.classification.type} fixed`);
       return { attempted: true, type: result.classification.type, action: 'self-healed', detail: result.repairPlan?.analysis };
