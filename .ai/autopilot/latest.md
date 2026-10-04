@@ -1,52 +1,14 @@
-# Autopilot run 2026-10-01-044056587-pkuw-1d89a
+# Autopilot — état documentaire mis à jour 2026-10-04
 
-- Début : 2026-10-01T04:40:56.588Z · Fin : 2026-10-01T04:40:58.999Z · Durée : 0 min
-- Statut : ✅ cycle complet (sans PR)
+## État vérifié
 
-## OBSERVED
-- health OK (6 domains 2xx)
-- founder WIP preserved (10 files)
-- observation réutilisée (2026-10-01-043310634-piwc-1psfk, âge 8 min)
-- dry-run: exiting early after observe phase
+- HEAD `main` : `54ba19ba2a8ccdafe42fa2d5ad81fa41d03c81e3`
+- Self-healing : code présent avec réparation en worktree isolé et retry borné côté factory.
+- Visual QA : la propagation de l'URL de preview est prévue dans la branche de correction ; ne pas considérer l'ancien fallback 4183 comme une preuve de production avant validation du commit correspondant.
+- Cloudflare Production : workflow GitHub Actions présent et déploiement Worker prévu pour les cinq régions principales.
+- Observabilité : sentinel live ajouté sur la branche de travail pour scanner production/GitHub/Cloudflare.
+- Webhook Stripe : la parité des régions doit inclure Tulum ; un correctif correspondant est préparé.
 
-## REVENUE
-- _(rien)_
+## Règle
 
-## RESEARCHED
-- _(rien)_
-
-## FOUND
-- _(rien)_
-
-## MEASURED
-- _(rien)_
-
-## SELECTED
-- _(rien)_
-
-## IMPLEMENTED
-- _(rien)_
-
-## TESTED
-- _(rien)_
-
-## FAILED
-- _(rien)_
-
-## FIXED
-- _(rien)_
-
-## PR
-- PR #777 open (agent/autopilot/live-dev-mode, mergeable=CONFLICTING, head ea6e4ca0) — évaluation blocage par catégorie…
-
-## PARKED
-- _(rien)_
-
-## READY
-- _(rien)_
-
-## FACTORY_STOP
-- _(rien)_
-
-## NEXT
-- next cycle (continuous mode)
+Aucun rapport « COMPLETE » ne doit être utilisé comme preuve à lui seul. La preuve doit venir des fichiers, commits, logs et statuts CI/production réellement observés.
