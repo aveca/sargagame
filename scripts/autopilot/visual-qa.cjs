@@ -23,14 +23,16 @@ function log(msg) {
 }
 
 const SCREENSHOTS_DIR = path.join(C.paths.observations, 'screenshots');
+// Self-healing test marker
 const BASELINE_DIR = path.join(C.paths.baselines, 'visual');
 
 /**
  * Capture un screenshot d'une route dans un worktree
  */
-async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current') {
+async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current', baseUrl = 'http://localhost:4183') {
   const vp = getViewport(viewport);
-  const url = `http://localhost:4183${route}`; // Assumes preview server running
+  // Use new URL to properly handle route concatenation
+  const url = new URL(route, baseUrl).toString();
 
   const script = buildCaptureScript(url, route, viewport, label, wt);
   const scriptPath = path.join(wt, '.ai', 'autopilot', 'tmp', `capture-${route.replace(/\//g, '-')}-${viewport}-${label}-${Date.now()}.cjs`);
@@ -53,6 +55,10 @@ async function captureScreenshot(wt, route, viewport = 'mobile', label = 'curren
       if (code !== 0) return reject(new Error(`capture exit ${code}: ${err}`));
       try {
         const result = JSON.parse(out.trim());
+        // If Playwright returns an error object, reject
+        if (result.error) {
+          return reject(new Error(`Playwright error: ${result.error}`));
+        }
         resolve(result);
       } catch (_) {
         reject(new Error('capture parse error: ' + out.slice(-500)));
@@ -172,8 +178,8 @@ async function updateBaseline(route, viewport, sourcePath) {
  * Exécute le visual QA complet pour un worktree
  * Retourne { passed: boolean, results: [], summary }
  */
-async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop']) {
-  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports`);
+async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], baseUrl = 'http://localhost:4183') {
+  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports (baseUrl: ${baseUrl})`);
 
   const results = [];
   let passed = true;
@@ -182,7 +188,7 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
     for (const viewport of viewports) {
       try {
         // Capture current
-        const current = await captureScreenshot(wt, route, viewport, 'current');
+        const current = await captureScreenshot(wt, route, viewport, 'current', baseUrl);
 
         // Get baseline
         const baseline = await getBaseline(route, viewport);

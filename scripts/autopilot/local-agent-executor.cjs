@@ -186,7 +186,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
       }
       
       // Run visual QA to establish baselines
-      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop']);
+      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl);
       
       return {
         success: true,
@@ -239,7 +239,7 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       }
       
       // Run visual QA for comparison
-      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop']);
+      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl);
       
       // Check for visual regressions
       const regressions = visualResult.results.filter(r => !r.passed && !r.established);

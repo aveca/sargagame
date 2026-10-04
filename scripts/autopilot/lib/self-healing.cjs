@@ -384,8 +384,11 @@ async function callLocalAgentForRepair(prompt, log) {
 
 /**
  * Apply repair using search/replace (strict, verifiable)
+ * @param {Object} repairPlan - The repair plan with fixes
+ * @param {Function} log - Logger function
+ * @param {string} targetRoot - The root directory to apply changes to (default: ROOT)
  */
-function applyRepairDiffs(repairPlan, log) {
+function applyRepairDiffs(repairPlan, log, targetRoot = ROOT) {
   const results = { applied: [], failed: [] };
 
   for (const fix of repairPlan.fixes || []) {
@@ -394,7 +397,7 @@ function applyRepairDiffs(repairPlan, log) {
       continue;
     }
 
-    const fullPath = path.join(ROOT, fix.file);
+    const fullPath = path.join(targetRoot, fix.file);
     if (!fs.existsSync(fullPath)) {
       results.failed.push({ file: fix.file, reason: 'File does not exist' });
       continue;
@@ -446,15 +449,19 @@ function applyRepairDiffs(repairPlan, log) {
 
 /**
  * Verify applied changes against self-healing policy and syntax
+ * @param {Object} applyResult - Result from applyRepairDiffs
+ * @param {Object} cfg - Configuration
+ * @param {Function} log - Logger function
+ * @param {string} targetRoot - The root directory to verify (default: ROOT)
  */
-function verifyAppliedChanges(applyResult, cfg, log) {
+function verifyAppliedChanges(applyResult, cfg, log, targetRoot = ROOT) {
   const errors = [];
 
   const { execSync } = require('child_process');
   const IS_WIN = process.platform === 'win32';
 
   for (const applied of applyResult.applied) {
-    const fullPath = path.join(ROOT, applied.file);
+    const fullPath = path.join(targetRoot, applied.file);
     if (!fs.existsSync(fullPath)) {
       errors.push(`${applied.file}: file missing after apply`);
       continue;
@@ -469,7 +476,7 @@ function verifyAppliedChanges(applyResult, cfg, log) {
           ? `npx.cmd --no-install esbuild "${applied.file}" --bundle=false --log-level=error --outfile=NUL`
           : `npx --no-install esbuild "${applied.file}" --bundle=false --log-level=error --outfile=NUL`;
         execSync(cmd, {
-          cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 30000
+          cwd: targetRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 30000
         });
       } catch (e) {
         errors.push(`${applied.file}: esbuild syntax check failed - ${e.message}`);
@@ -479,7 +486,7 @@ function verifyAppliedChanges(applyResult, cfg, log) {
     if (applied.file.endsWith('.php')) {
       try {
         execSync(`php -l "${applied.file}"`, {
-          cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 30000
+          cwd: targetRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true, timeout: 30000
         });
       } catch (e) {
         errors.push(`${applied.file}: PHP lint failed - ${e.message}`);
@@ -500,9 +507,12 @@ function verifyAppliedChanges(applyResult, cfg, log) {
 }
 
 /**
- * Run validation tests after repair in the repair worktree
+ * Run validation tests after repair in the specified directory
+ * @param {Object} repairPlan - The repair plan with tests
+ * @param {Function} log - Logger function
+ * @param {string} targetRoot - The root directory to run tests from (default: ROOT)
  */
-async function runValidationTests(repairPlan, log) {
+async function runValidationTests(repairPlan, log, targetRoot = ROOT) {
   const results = { passed: [], failed: [] };
 
   for (const testCmd of repairPlan.tests || []) {
@@ -510,7 +520,7 @@ async function runValidationTests(repairPlan, log) {
       log(`Running test: ${testCmd}`);
       const { execSync } = require('child_process');
       const output = execSync(testCmd, {
-        cwd: ROOT,
+        cwd: targetRoot,
         encoding: 'utf8',
         timeout: 120000,
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -536,7 +546,7 @@ async function runValidationTests(repairPlan, log) {
         log(`Running core test: ${testCmd}`);
         const { execSync } = require('child_process');
         execSync(testCmd, {
-          cwd: ROOT,
+          cwd: targetRoot,
           encoding: 'utf8',
           timeout: 180000,
           stdio: ['ignore', 'pipe', 'pipe'],
@@ -556,8 +566,9 @@ async function runValidationTests(repairPlan, log) {
 
 /**
  * Create isolated repair worktree, apply fix, test, and create PR
+ * The repair is applied DIRECTLY in the worktree, not copied from ROOT
  */
-async function executeRepairInWorktree(capturedError, classification, repairPlan, applyResult, testResults, cfg, log) {
+async function executeRepairInWorktree(capturedError, classification, repairPlan, cfg, log) {
   const taskId = capturedError.context.taskId || `repair-${Date.now()}`;
   const branchName = `agent/autopilot/repair-${classification.type}-${Date.now().toString(36)}`;
 
@@ -574,17 +585,18 @@ async function executeRepairInWorktree(capturedError, classification, repairPlan
     // Create dedicated repair worktree from origin/main
     repairWt = gitops.prepareWorktree(cfg, branchName, (msg) => log(`[repair-wt] ${msg}`));
 
-    // Apply the repair in the worktree
+    // Apply the repair DIRECTLY in the worktree
     log('Applying repair in isolated worktree...');
-    for (const applied of applyResult.applied) {
-      const srcPath = path.join(ROOT, applied.file);
-      const dstPath = path.join(repairWt, applied.file);
-      if (!fs.existsSync(dstPath)) {
-        throw new Error(`File not found in worktree: ${applied.file}`);
-      }
-      // Read the fixed content from main workspace and write to worktree
-      const fixedContent = fs.readFileSync(srcPath, 'utf8');
-      fs.writeFileSync(dstPath, fixedContent, 'utf8');
+    const applyResult = applyRepairDiffs(repairPlan, log, repairWt);
+
+    if (applyResult.failed.length > 0) {
+      throw new Error(`Failed to apply repair in worktree: ${applyResult.failed.map(f => f.reason).join(', ')}`);
+    }
+
+    // Verify applied changes in worktree
+    const verifyErrors = verifyAppliedChanges(applyResult, cfg, log, repairWt);
+    if (verifyErrors.length > 0) {
+      throw new Error(`Verification failed in worktree: ${verifyErrors.join(', ')}`);
     }
 
     // Verify changes in worktree
@@ -605,8 +617,16 @@ async function executeRepairInWorktree(capturedError, classification, repairPlan
       throw new Error(`Secrets detected in repair: ${secrets.join(', ')}`);
     }
 
-    // Run validation tests in worktree (need to run from worktree context)
+    // Run validation tests in worktree
     log('Running validation tests in repair worktree...');
+    const testResults = await runValidationTests(repairPlan, log, repairWt);
+
+    if (testResults.failed.length > 0) {
+      throw new Error(`Tests failed in repair worktree: ${testResults.failed.map(f => f.error).join(', ')}`);
+    }
+
+    // Run gate checks in worktree
+    log('Running gate checks in repair worktree...');
     const { runGate } = require('../verify.cjs');
     const gate = await runGate({
       wt: repairWt,
@@ -659,7 +679,7 @@ async function executeRepairInWorktree(capturedError, classification, repairPlan
     // Cleanup worktree (keep branch for PR)
     gitops.cleanupWorktree(cfg);
 
-    return { success: true, pr, branch: branchName, commitSha, diff };
+    return { success: true, pr, branch: branchName, commitSha, diff, applyResult, testResults };
   } catch (e) {
     log(`Repair worktree failed: ${e.message}`);
     if (repairWt) {
@@ -673,6 +693,7 @@ async function executeRepairInWorktree(capturedError, classification, repairPlan
 
 /**
  * Attempt self-repair for a captured error - FULL ISOLATED WORKTREE FLOW
+ * Does NOT modify ROOT workspace. Creates isolated worktree, applies repair there, tests, then PR.
  */
 async function attemptSelfRepair(capturedError, cfg, log) {
   const classification = classifyError(capturedError);
@@ -718,33 +739,9 @@ async function attemptSelfRepair(capturedError, cfg, log) {
     return { success: false, reason: `Too many files: ${repairPlan.fixes.length} > ${MAX_FILES_PER_REPAIR}`, classification, repairPlan };
   }
 
-  // Apply repair to MAIN workspace first (for testing)
-  log('Applying repair to main workspace for validation...');
-  const applyResult = applyRepairDiffs(repairPlan, log);
-
-  if (applyResult.failed.length > 0) {
-    return { success: false, reason: `Failed to apply: ${applyResult.failed.map(f => f.reason).join(', ')}`, classification, repairPlan, applyResult };
-  }
-
-  // Verify applied changes
-  const verifyErrors = verifyAppliedChanges(applyResult, cfg, log);
-  if (verifyErrors.length > 0) {
-    log('Rolling back failed verification...');
-    // Rollback: we'd need git to do this properly
-    return { success: false, reason: `Verification failed: ${verifyErrors.join(', ')}`, classification, repairPlan, applyResult };
-  }
-
-  // Run validation tests
-  log('Running validation tests...');
-  const testResults = await runValidationTests(repairPlan, log);
-
-  if (testResults.failed.length > 0) {
-    return { success: false, reason: `Tests failed: ${testResults.failed.map(f => f.error).join(', ')}`, classification, repairPlan, applyResult, testResults };
-  }
-
-  // Now execute in ISOLATED REPAIR WORKTREE and create PR
+  // Execute repair in ISOLATED worktree (does NOT touch ROOT)
   log('Executing repair in isolated worktree and creating PR...');
-  const worktreeResult = await executeRepairInWorktree(capturedError, classification, repairPlan, applyResult, testResults, cfg, log);
+  const worktreeResult = await executeRepairInWorktree(capturedError, classification, repairPlan, cfg, log);
 
   const success = worktreeResult.success;
 
@@ -754,8 +751,6 @@ async function attemptSelfRepair(capturedError, cfg, log) {
     capturedError,
     classification,
     repairPlan,
-    applyResult,
-    testResults,
     worktreeResult,
     success,
   };
@@ -764,12 +759,12 @@ async function attemptSelfRepair(capturedError, cfg, log) {
   saveRepairHistory(history);
 
   if (success) {
-    log(`REPAIR SUCCESS: ${classification.type} fixed with ${applyResult.applied.length} file(s), PR: ${worktreeResult.pr.url}`);
+    log(`REPAIR SUCCESS: ${classification.type} fixed with ${worktreeResult.applyResult.applied.length} file(s), PR: ${worktreeResult.pr.url}`);
   } else {
     log(`REPAIR FAILED: ${classification.type} - ${worktreeResult.reason}`);
   }
 
-  return { success, classification, repairPlan, applyResult, testResults, worktreeResult, repairRecord };
+  return { success, classification, repairPlan, worktreeResult, repairRecord };
 }
 
 /**

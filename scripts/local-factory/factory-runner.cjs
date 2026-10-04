@@ -277,6 +277,13 @@ async function executeTask(task, worker) {
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
     
+    // Guard: prevent recursive self-healing
+    // A task can only receive ONE retry after self-heal
+    if (task.__selfHealRetried) {
+      log('task.self_heal_guard', { id: task.id, reason: 'already retried after self-heal, not re-entering' });
+      throw error;
+    }
+    
     // Attempt self-healing for factory infrastructure errors
     const context = {
       phase: 'factory-task',
@@ -289,7 +296,9 @@ async function executeTask(task, worker) {
       const healResult = await selfHealing.handleError(error, context, autopilotConfig, (msg) => log('self-heal', { taskId: task.id, msg }));
       if (healResult.success) {
         log('task.self_healed', { id: task.id, type: taskType, classification: healResult.classification.type });
-        // Retry the task once after successful self-healing
+        // Mark task as having been retried after self-heal
+        task.__selfHealRetried = true;
+        // Retry the task ONCE after successful self-healing
         try {
           const retryResult = await executeTask(task, worker);
           return retryResult;
