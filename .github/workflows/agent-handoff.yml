@@ -125,26 +125,26 @@ jobs:
           
           # Mark the status line belonging to this task as in_progress.
           python3 - "$TASK_ID" "$AGENT_TYPE" <<'PY'
-import pathlib, re, sys
-p = pathlib.Path('.ai/tasks.md')
-task_id, agent_type = sys.argv[1], sys.argv[2]
-lines = p.read_text(encoding='utf-8').splitlines()
-in_task = False
-changed = False
-for i, line in enumerate(lines):
-    if re.match(rf'^### {re.escape(task_id)}(?:\s|$)', line):
-        in_task = True
-        continue
-    if in_task and line.startswith('### '):
-        break
-    if in_task and re.match(r'^- \[ \]', line):
-        lines[i] = line.replace('- [ ]', f'- [~] {task_id} — in_progress by {agent_type}_agent', 1)
-        changed = True
-        break
-if not changed:
-    raise SystemExit(f'Could not claim {task_id}: status line not found')
-p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
-PY
+          import pathlib, re, sys
+          p = pathlib.Path('.ai/tasks.md')
+          task_id, agent_type = sys.argv[1], sys.argv[2]
+          lines = p.read_text(encoding='utf-8').splitlines()
+          in_task = False
+          changed = False
+          for i, line in enumerate(lines):
+              if re.match(rf'^### {re.escape(task_id)}(?:\s|$)', line):
+                  in_task = True
+                  continue
+              if in_task and line.startswith('### '):
+                  break
+              if in_task and re.match(r'^- \[ \]', line):
+                  lines[i] = line.replace('- [ ]', f'- [~] {task_id} — in_progress by {agent_type}_agent', 1)
+                  changed = True
+                  break
+          if not changed:
+              raise SystemExit(f'Could not claim {task_id}: status line not found')
+          p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          PY
           
           git config user.name "agent-handoff[bot]"
           git config user.email "agent-handoff@users.noreply.github.com"
@@ -188,23 +188,23 @@ PY
               gh issue create \
                 --title "[AUTO] $TASK_ID — Assigned to coding_agent" \
                 --body "## Task: $TASK_ID
-                
-**Assigned to**: coding_agent (external: OpenCode/Codex/Claude Code)
-**Branch**: \`agent/coding/$TASK_ID\`
-**Instructions**: 
-1. Read \`.ai/current_state.md\` + \`.ai/tasks.md\`
-2. Work on branch \`agent/coding/$TASK_ID\`
-3. Follow Gate de ship (build + smoke + bundle + PHP lint)
-4. Update \`.ai/changelog.md\` + \`.ai/current_state.md\` + \`.ai/tasks.md\`
-5. Push + PR → auto-merge if CI green
 
-**Gate de ship**:
-- \`npm run build\` exit 0
-- \`node scripts/check-bundle-budget.cjs\` ≤ 210 Ko
-- \`php -l\` on modified PHP files
-- \`node scripts/ux-smoke.mjs\` → 4 tokens OK
+            **Assigned to**: coding_agent (external: OpenCode/Codex/Claude Code)
+            **Branch**: \`agent/coding/$TASK_ID\`
+            **Instructions**:
+            1. Read \`.ai/current_state.md\` + \`.ai/tasks.md\`
+            2. Work on branch \`agent/coding/$TASK_ID\`
+            3. Follow Gate de ship (build + smoke + bundle + PHP lint)
+            4. Update \`.ai/changelog.md\` + \`.ai/current_state.md\` + \`.ai/tasks.md\`
+            5. Push + PR → auto-merge if CI green
 
-See \`.ai/roles/coding-agent.md\` for full role definition." \
+            **Gate de ship**:
+            - \`npm run build\` exit 0
+            - \`node scripts/check-bundle-budget.cjs\` ≤ 210 Ko
+            - \`php -l\` on modified PHP files
+            - \`node scripts/ux-smoke.mjs\` → 4 tokens OK
+
+            See \`.ai/roles/coding-agent.md\` for full role definition." \
                 --label "agent:coding,auto-assigned" \
                 --assignee "@me"
               ;;
@@ -293,27 +293,27 @@ See \`.ai/roles/coding-agent.md\` for full role definition." \
             --title "$TASK_ID: ${AGENT_TYPE} agent work" \
             --body "## Automated handoff PR
 
-**Task**: $TASK_ID
-**Agent**: ${AGENT_TYPE}_agent
-**Branch**: \`$BRANCH\`
+            **Task**: $TASK_ID
+            **Agent**: ${AGENT_TYPE}_agent
+            **Branch**: \`$BRANCH\`
 
-### Changes
-\`\`\`diff
-$(git diff --stat main...HEAD)
-\`\`\`
+            ### Changes
+            \`\`\`diff
+            $(git diff --stat main...HEAD)
+            \`\`\`
 
-### Gate de ship
-- [ ] Build passed
-- [ ] Bundle budget ≤ 210 Ko
-- [ ] PHP lint passed
-- [ ] Smoke tests: 4 tokens OK
+            ### Gate de ship
+            - [ ] Build passed
+            - [ ] Bundle budget ≤ 210 Ko
+            - [ ] PHP lint passed
+            - [ ] Smoke tests: 4 tokens OK
 
-### Handoff
-- \`.ai/changelog.md\` updated
-- \`.ai/current_state.md\` updated (template)
-- \`.ai/tasks.md\` → [x] done
+            ### Handoff
+            - \`.ai/changelog.md\` updated
+            - \`.ai/current_state.md\` updated (template)
+            - \`.ai/tasks.md\` → [x] done
 
-**Auto-merge**: Will merge when all checks pass (mandat fondateur 100% mobile)." \
+            **Auto-merge**: Will merge when all checks pass (mandat fondateur 100% mobile)." \
             --base main \
             --label "auto-handoff,${AGENT_TYPE}"
 
