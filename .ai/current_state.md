@@ -4,6 +4,40 @@
 
 ---
 
+## 2026-10-04 01:30 UTC · Agent: Principal Agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : Autonomie factory prouvée par cycle réel (19/19) + chaîne PR complète (CI verte, fermée sans merge).
+- **Détails** :
+  - 3 bugs factory corrigés (ID mapping, binaires Windows, require path) + exports de testabilité.
+  - Preuve live : lock, bounded, breaker/fallback, cycle npm-test réel, kill+reprise sans perte.
+  - PR #804 : test→commit→PR→checks verts→close, main intacte. Push c3a690df : CI/deploy verts.
+  - Frontière d'autonomie identifiée : CI = dispatch/validation, exécution code = agent local (WO + scheduler + Ollama).
+
+### Fichiers modifiés
+- `scripts/local-factory/factory-runner.cjs` — 3 fixes + exports (poussé c3a690df)
+- `.ai/changelog.md`, `.ai/current_state.md` — ce handoff
+
+### Tests réalisés
+- [x] proof harness 19/19 (lock, bounded, breaker, cycle, crash)
+- [x] node --check factory-runner
+- [x] PR #804 : test-frontend pass, perf pass, GitGuardian pass
+- [x] push c3a690df : CI SUCCESS, Perf SUCCESS, Deploy SUCCESS
+
+### Problèmes restants
+- [ ] EXT-2 : routes custom Cloudflare (permission token, dashboard)
+- [ ] EXT-3 : achat réel Mollie (humain uniquement)
+
+### Prochaine action recommandée
+1. Élargir permissions token Cloudflare (Workers Routes:Edit) puis re-run Cloudflare Production — Rôle : devops/fondateur
+
+### Branche / PR
+- Branche : `main`
+- PR : #804 (closed, preuve)
+- Commit head : `c3a690df`
+
+---
+
 ## 2026-10-03 23:45 UTC · Agent: Principal Agent (OpenCode)
 
 ### Travail effectué

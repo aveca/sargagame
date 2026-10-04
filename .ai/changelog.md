@@ -4,6 +4,21 @@
 
 ---
 
+## 2026-10-04 — principal_agent (OpenCode)
+
+**Preuve d'autonomie factory 24/7 (cycle réel, 19/19 checks) :**
+
+- Fix factory-runner : mapping queue-id → TASK-ID (executeCodeTask/executeGenericTask/processQueue) — le claim ne matchait plus rien après le merge distant
+- Fix executeTestTask : NPM_CMD + playwright cli.js via node (bare npm/npx + .cmd cassés sur Windows) ; require ../lib/process-runner.cjs (./lib inexistant → MODULE_NOT_FOUND → retry → park)
+- Exports additifs (lock/queue/recovery, zéro changement comportemental) pour vérification réelle
+- Preuve live : lock unique (2e runner refusé), bounded exec (exit 3 + timeout), breaker open→STRONG→reset, cycle queue→npm-test→cleanup, kill ciblé→aucune perte→reprise→succès
+- Chaîne complète : branche agent/coding/PROOF-001 → test factory-queue-invariants → commit → PR #804 (CI verte : test-frontend, perf, GitGuardian) → fermée sans merge, branches supprimées, main intact
+- Docs handoff mergées (#802), fix YAML agent-handoff mergé (#803) — stub-runs 0s terminés
+
+**Files :** `scripts/local-factory/factory-runner.cjs`, `.ai/changelog.md`, `.ai/current_state.md`
+
+---
+
 ## 2026-10-03 — principal_agent (OpenCode)
 
 **Mission autonome production + paiement + factory 24/7 :**
