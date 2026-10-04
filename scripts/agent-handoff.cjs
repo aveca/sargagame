@@ -41,21 +41,6 @@ function parseTasks(content) {
     // Format 1: liste avec checkbox - [ ] TASK-PX-XXX
     let match = line.match(/^-\s*\[([ x~])\]\s*(TASK-P\d-\d{3})\s*(.*)/);
     
-    // Format 2: header ### TASK-PX-XXX
-    if (!match) {
-      match = line.match(/^###\s+(TASK-P\d-\d{3})\s*(.*)/);
-      if (match) {
-        // Chercher le statut dans les lignes suivantes
-        tasks.push({
-          status: ' ',
-          id: match[1],
-          rest: match[2].trim(),
-          section: currentSection
-        });
-        continue;
-      }
-    }
-    
     if (match) {
       tasks.push({
         status: match[1],
@@ -63,7 +48,12 @@ function parseTasks(content) {
         rest: match[3].trim(),
         section: currentSection
       });
+      continue;
     }
+    
+    // Format 2: header ### TASK-PX-XXX - only if NO list item exists for this task
+    // Headers are documentation, not task trackers. The list format is the source of truth.
+    // Skip headers to avoid auto-claiming done/in_progress tasks as pending.
   }
   return tasks;
 }

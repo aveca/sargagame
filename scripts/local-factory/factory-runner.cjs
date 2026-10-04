@@ -45,6 +45,12 @@ const TELEMETRY_FILE = path.join(STATE_DIR, 'telemetry.json');
 const CIRCUIT_BREAKER_FILE = path.join(STATE_DIR, 'circuit-breakers.json');
 const WORKER_POOL_FILE = path.join(STATE_DIR, 'worker-pool.json');
 
+// UX Observer & Local Agent Executor (autonomous loop)
+const { runUXObserver } = require('../autopilot/ux-observer.cjs');
+const { executeLocalAgentTask, executeCodeTaskLocal } = require('../autopilot/local-agent-executor.cjs');
+const autopilotCommon = require('../autopilot/lib/common.cjs');
+const autopilotConfig = autopilotCommon.loadConfig();
+
 // Worker model tiers
 const WORKER_TIERS = [
   { name: 'FAST', model: 'gpt-4o-mini', maxTokens: 4096, timeout: 60000, costTier: 'low' },
@@ -207,6 +213,9 @@ async function executeTask(task, worker) {
       case 'code_task':
         result = await executeCodeTask(task, worker);
         break;
+      case 'ux_observer':
+        result = await executeUxObserver(task, worker);
+        break;
       case 'test_task':
         result = await executeTestTask(task, worker);
         break;
@@ -214,7 +223,7 @@ async function executeTask(task, worker) {
         result = await executeDeployTask(task, worker);
         break;
       default:
-        // Generic handler via agent-handoff
+        // Generic handler via local agent
         result = await executeGenericTask(task, worker);
     }
     
@@ -314,22 +323,44 @@ async function executeAPIDiscovery(task, worker) {
   return { candidates: result.candidates, verified: result.verified };
 }
 
+async function executeUxObserver(task, worker) {
+  log('ux_observer.start', { taskId: task.id });
+  
+  const result = await runUXObserver();
+  
+  log('ux_observer.complete', { 
+    taskId: task.id, 
+    tasksGenerated: result.tasks.length,
+    findings: result.findings.length 
+  });
+  
+  return { 
+    tasksGenerated: result.tasks.length, 
+    tasks: result.tasks.map(t => ({ id: t.id, title: t.title, score: t.score, severity: t.severity })),
+    findings: result.findings.length 
+  };
+}
+
 async function executeCodeTask(task, worker) {
-  // Use agent-handoff to create branch, implement, test
-  const { execSync } = require('child_process');
-  // Queue item id is `task-<TASK-ID>`; agent-handoff expects the raw TASK-ID
-  // from .ai/tasks.md (passing the queue id makes the claim match nothing
-  // and the git commit fail with "nothing to commit").
+  // Execute locally via OpenCode + Ollama (autonomous, no GitHub issue)
   const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
-  const agentType = task.agent || 'coding';
+  log('code_task.local_execution', { taskId });
   
-  execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
+  const result = await executeCodeTaskLocal(task, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
   
-  // The agent will work on the task and mark complete
-  // We wait for the branch to be pushed and PR created
-  await waitForPR(taskId);
+  if (!result.success) {
+    throw new Error(result.error || 'Local agent execution failed');
+  }
   
-  return { taskId, branch: `agent/${agentType}/${taskId}` };
+  return { 
+    taskId, 
+    branch: result.branch, 
+    prUrl: result.prUrl, 
+    prNumber: result.prNumber,
+    commitSha: result.commitSha,
+    duration: result.duration,
+    validation: { before: result.beforeValidation, after: result.afterValidation }
+  };
 }
 
 async function executeTestTask(task, worker) {
@@ -373,17 +404,31 @@ async function executeDeployTask(task, worker) {
 }
 
 async function executeGenericTask(task, worker) {
-  // Generic implementation via agent-handoff
-  const { execSync } = require('child_process');
-  // Same queue-id → task-id mapping as executeCodeTask (see above).
+  // Generic implementation via local agent executor
   const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
-  const agentType = task.agent || 'coding';
+  log('generic_task.local_execution', { taskId });
   
-  execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
-  // Generic tasks must produce an observable PR, not a fake five-second completion.
-  const prNumber = await waitForPR(taskId);
-  if (!prNumber) throw new Error(`No PR created for task ${taskId}`);
-  return { taskId, prNumber, completed: true };
+  // For generic tasks, we still use local agent but with coding persona
+  const genericTask = {
+    ...task,
+    payload: {
+      ...task.payload,
+      taskId,
+      persona: 'coding'
+    }
+  };
+  
+  const result = await executeCodeTaskLocal(genericTask, autopilotConfig, (msg) => log('generic_task', { taskId, msg }));
+  
+  if (!result.success) {
+    throw new Error(result.error || 'Local agent execution failed');
+  }
+  
+  if (!result.prNumber) {
+    throw new Error(`No PR created for task ${taskId}`);
+  }
+  
+  return { taskId, prNumber: result.prNumber, completed: true, prUrl: result.prUrl };
 }
 
 async function waitForPR(taskId) {
@@ -414,7 +459,7 @@ async function waitForWorkflow(workflowName) {
   return false;
 }
 
-// Update tasks.md to mark task as in_progress
+// Update tasks.md to mark task as in_progress (list format only - headers are documentation)
 function updateTaskInProgress(taskId) {
   const content = fs.readFileSync(TASKS_FILE, 'utf8');
   
@@ -422,31 +467,15 @@ function updateTaskInProgress(taskId) {
   const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
   if (inProgressMatch) return; // Already marked
   
-  // Check if already claimed (in progress) - header format
-  const headerInProgressMatch = content.match(new RegExp(`^### ${taskId} .*in_progress`, 'm'));
-  if (headerInProgressMatch) return;
-  
   // Check if already done - list format
   const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
   if (doneMatch) return; // Already done
-  
-  // Check if already done - header format
-  const headerDoneMatch = content.match(new RegExp(`^### ${taskId} .*done`, 'm'));
-  if (headerDoneMatch) return;
   
   // Try list format: - [ ] TASK-PX-XXX
   let newContent = content.replace(
     new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
     `$1 — in_progress by factory_runner`
   );
-  
-  // If no change, try header format: ### TASK-PX-XXX
-  if (newContent === content) {
-    newContent = content.replace(
-      new RegExp(`^(### ${taskId} .*)$`, 'm'),
-      `$1 — in_progress by factory_runner`
-    );
-  }
   
   if (newContent !== content) {
     fs.writeFileSync(TASKS_FILE, newContent);
@@ -588,22 +617,13 @@ async function generateDiscoveryTasks() {
     log('queue.add', { task: 'api_discovery' });
   }
   
-  // Check tasks.md for pending tasks
+  // Check tasks.md for pending tasks (list format only - headers are documentation, not trackers)
   const tasksContent = fs.readFileSync(TASKS_FILE, 'utf8');
   const lines = tasksContent.split('\n');
-  const pendingTasks = [];
-  let currentSection = '';
   
   for (const line of lines) {
-    if (line.startsWith('## ')) currentSection = line.slice(3).trim();
-    
-    // Format 1: liste avec checkbox - [ ] TASK-PX-XXX
-    let match = line.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})\s*(.*)/);
-    
-    // Format 2: header ### TASK-PX-XXX
-    if (!match) {
-      match = line.match(/^###\s+(TASK-P\d-\d{3})\s*(.*)/);
-    }
+    // Format 1 only: liste avec checkbox - [ ] TASK-PX-XXX
+    const match = line.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})\s*(.*)/);
     
     if (match) {
       const taskId = match[1];
@@ -712,6 +732,16 @@ async function runCycle() {
   
   // Generate discovery tasks
   await generateDiscoveryTasks();
+  
+  // Run UX Observer to generate autonomous UX tasks (every 3 cycles = ~3 min)
+  if (telemetry.cycles % 3 === 0) {
+    log('ux_observer.scheduled', { cycle: telemetry.cycles });
+    try {
+      await executeUxObserver({ id: `ux-observer-${telemetry.cycles}`, type: 'ux_observer' }, { name: 'UX_OBSERVER' });
+    } catch (e) {
+      log('ux_observer.error', { error: e.message });
+    }
+  }
   
   // Recover stale/failed
   await recoverStaleTasks();
