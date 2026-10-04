@@ -29,10 +29,10 @@ const BASELINE_DIR = path.join(C.paths.baselines, 'visual');
 /**
  * Capture un screenshot d'une route dans un worktree
  */
-async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current', baseUrl = 'http://localhost:4183') {
+async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current', baseUrl = null) {
   const vp = getViewport(viewport);
-  // Use new URL to properly handle route concatenation
-  const url = new URL(route, baseUrl).toString();
+  const resolvedBaseUrl = baseUrl || process.env.SARGA_AUTOPILOT_BASE_URL || 'http://localhost:4173';
+  const url = new URL(route, resolvedBaseUrl).toString();
 
   const script = buildCaptureScript(url, route, viewport, label, wt);
   const scriptPath = path.join(wt, '.ai', 'autopilot', 'tmp', `capture-${route.replace(/\//g, '-')}-${viewport}-${label}-${Date.now()}.cjs`);
@@ -55,10 +55,7 @@ async function captureScreenshot(wt, route, viewport = 'mobile', label = 'curren
       if (code !== 0) return reject(new Error(`capture exit ${code}: ${err}`));
       try {
         const result = JSON.parse(out.trim());
-        // If Playwright returns an error object, reject
-        if (result.error) {
-          return reject(new Error(`Playwright error: ${result.error}`));
-        }
+        if (result && result.error) return reject(new Error(`capture failed: ${result.error}`));
         resolve(result);
       } catch (_) {
         reject(new Error('capture parse error: ' + out.slice(-500)));
@@ -178,8 +175,8 @@ async function updateBaseline(route, viewport, sourcePath) {
  * Exécute le visual QA complet pour un worktree
  * Retourne { passed: boolean, results: [], summary }
  */
-async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], baseUrl = 'http://localhost:4183') {
-  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports (baseUrl: ${baseUrl})`);
+async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], baseUrl = null) {
+  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports`);
 
   const results = [];
   let passed = true;

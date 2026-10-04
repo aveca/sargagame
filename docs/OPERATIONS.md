@@ -48,7 +48,7 @@ Raison : isoler le risque (un ban FB ne touche pas les sessions Google/Stripe) e
 
 | Workflow | Déclencheurs | Rôle |
 |---|---|---|
-| `daily-copernicus.yml` | cron `0 0,6,12,18 * * *` + push main + dispatch | **Le pipeline principal.** Fetch ERDDAP (+fallback Copernicus), météo Open-Meteo, notifications push/email, pipeline emails (bounces→subscribers→weekend/welcome/drip), health-check, backtest, stats. Full build 4 builds Vite (3 nouvelles régions + MQ/GP) à 06/18 UTC (+1 h de tolérance), sur dispatch et sur push humain ; data-only sinon. Commit des JSON (rebase `-X theirs`, 5 retries), deploy FTPS 5 régions, health-check final sur tous les domaines, retry auto 1× après 5 min, email d'alerte si échec. |
+| `daily-copernicus.yml` | cron `0 0,6,12,18 * * *` + push main + dispatch | **Le pipeline principal de données et de déploiement principal. Fetch ERDDAP (+fallback Copernicus), météo Open-Meteo, notifications push/email, pipeline emails (bounces→subscribers→weekend/welcome/drip), health-check, backtest, stats. Full build 4 builds Vite (3 nouvelles régions + MQ/GP) à 06/18 UTC (+1 h de tolérance), sur dispatch et sur push humain ; data-only sinon. Commit des JSON (rebase `-X theirs`, 5 retries), deploy FTPS des 5 régions principales, health-check final sur tous les domaines, et mécanismes de retry/alerte existants. |
 | `content-generation.yml` | cron lun/mer/ven 8h UTC + dispatch | Génération de contenu SEO via API Anthropic (payante), redeploy FTP MQ/GP. |
 | `morning-brief.yml` | cron `57 11 * * *` (07:57 Antilles) | Push OneSignal quotidien "morning brief" — top plage du jour par région (F3). |
 | `weekly-seo-automation.yml` | cron lun 11h UTC | Le gros workflow SEO (~22 étapes, ~12 min) : GSC, analyzers, rapports, redeploy. |

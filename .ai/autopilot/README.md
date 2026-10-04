@@ -1,86 +1,58 @@
 # .ai/autopilot/ — Sargagame Autonomous Product Factory
 
-> Usine autonome 24/7 : la machine Windows locale observe la prod, trouve des
-> problèmes, implémente des améliorations sûres, teste (Gate de ship complet) et
-> prépare des PR — sans prompt fondateur à chaque itération.
+> Usine autonome 24/7 : la machine locale observe la production, trouve des problèmes, prépare des améliorations sûres, exécute les gates et reprend la boucle sans demander un nouveau prompt pour chaque incident.
 
-## Un fichier à lire
-
-**`latest.md`** — le dernier cycle en 30 secondes (OBSERVED / FOUND / IMPLEMENTED / TESTED / PR / NEXT).
-Historique complet : `runs/YYYY-MM-DD-HHMM.md`.
-
-## Boucle (1 cycle = 1 run)
+## Boucle
 
 ```
 OBSERVE → RESEARCH → ANALYZE → PRIORITIZE → IMPLEMENT → TEST
-→ BROWSER QA → VISUAL QA → PERF QA → REVIEW → PR → OBSERVE AGAIN
+→ BROWSER QA → VISUAL QA → PERF QA → REVIEW → PR → RESUME
 ```
 
-Un cycle = **UNE** opportunité max. Jamais deux écrivains sur les mêmes fichiers :
-verrou PID (`orchestrator.lock`) + un seul worktree de travail dédié
-(`../sargagame-autopilot-wt/`, `origin/main` frais à chaque cycle —
-le worktree du fondateur n'est JAMAIS touché).
+Le runner est un processus long-lived avec lock unique, heartbeat, timebox et reprise après erreur. Le factory travaille dans son propre worktree ; le worktree du fondateur reste séparé.
 
-## Contrôles fondateur (sur mobile, zéro CLI)
+## Self-healing
 
-| Action | Comment |
-|---|---|
-| **Tout arrêter** | créer un fichier `.ai/autopilot/STOP` (vide) → le prochain tick s'arrête et reste arrêté. Supprimer pour reprendre. |
-| Changer le rythme | `config.json` → `loop.intervalMinutes` |
-| Interdire un type de modif | `config.json` → `policy.denyGlobs` |
-| Rejeter une idée | `decisions/rejected.json` (l'orchestrateur ne la re-proposera jamais sans preuve nouvelle) |
-| Ajouter une idée | `queue.json` → objet `status:"new"` |
-| Autoriser l'auto-merge | `config.json` → (défaut OFF ; whitelist docs/.ai uniquement) |
-
-## Ce que l'autopilot ne fera JAMAIS
-
-- écrire sur `main` directement (branch → PR, checks CI)
-- toucher paiements / secrets / workers / `public/api/**` / `regions/**` / workflows (denylist dure, `policy.denyGlobs`)
-- continuer après : prod down, régression tests, budget bundle dépassé, diff trop gros,
-  3 réparations échouées, PR autopilot déjà ouverte, arbre en conflit
-- répéter une expérience rejetée
-
-## Structure
+Le superviseur `scripts/autopilot/lib/self-healing.cjs` applique la politique suivante :
 
 ```
-.ai/autopilot/
-  config.json        ← réglages (budgets, fenêtres, denylist…)
-  queue.json         ← opportunités (source de vérité du "quoi faire")
-  latest.md          ← dernier cycle (lisible en 30 s)
-  STOP               ← fichier kill-switch (présent = arrêté)
-  runs/              ← 1 rapport horodaté par cycle + runner.log
-  observations/      ← sondes Playwright prod (JSON + screenshots locaux)
-  baselines/         ← captures de référence (locales, visual diff)
-  research/          ← veille persistée (travel UX, motion, SEO, concurrence…)
-  opportunities/     ← fiches détaillées des candidats retenus
-  experiments/       ← expériences livrées + mesures
-  regressions/       ← échecs documentés (auto-réparation épuisée)
-  decisions/         ← rejected.json (mémoire anti-répétition)
+CAPTURE → CLASSIFY → CREATE REPAIR WORKTREE
+→ APPLY PATCH → TEST → VERIFY → PUSH BRANCH → PR → RESUME
 ```
 
-## Code
+Les réparations automatiques sont limitées aux fichiers de l'usine/autopilot et aux tests autorisés. Les chemins sensibles restent denylistés : paiements, `public/api/**`, workers, régions, secrets, workflows, dépendances et money-path.
 
-`scripts/autopilot/` : `observe.cjs` (sonde prod) · `analyze.cjs` (priorisation) ·
-`implement.cjs` (+ `recipes/`) · `verify.cjs` (Gate de ship) · `orchestrator.cjs`
-(boucle) · `runner.cjs` (tick unattended, lock, timebox).
+Une réparation qui échoue est bornée puis parquée ; elle ne doit pas récursivement relancer indéfiniment la même tâche.
 
-## Installation du service (une fois, sur la machine)
+## Live production sentinel
+
+Le script `scripts/autopilot/live-production-sentinel.cjs` fournit un pont d'observabilité commun :
+
+- production HTTP : pages, robots, sitemap, version ;
+- endpoint paiement : smoke `__payment_smoke__` sans transaction ;
+- GitHub Actions : récents workflows en échec via `gh` ;
+- logs locaux : erreurs/régressions récentes ;
+- Cloudflare Wrangler Tail : incidents Worker bornés lorsqu'un répertoire de capture est fourni.
+
+Le workflow `.github/workflows/live-production-sentinel.yml` est planifié toutes les 10 minutes. Il peut créer/compléter un incident GitHub dédupliqué afin que la factory dispose d'un identifiant stable à diagnostiquer.
+
+## Ce que l'autopilot ne fait jamais automatiquement
+
+- modifier directement le worktree du fondateur ;
+- modifier les fichiers de paiement, secrets ou workers via le mécanisme self-healing ;
+- contourner les gates ;
+- considérer un test statique ou une absence de log comme une preuve de réparation réelle.
+
+## Contrôles fondateur
+
+`config.json` reste la source de politique : cadence, denylist, limites de diff, budgets et kill-switch `.ai/autopilot/STOP`.
+
+## Commandes
 
 ```powershell
-# PowerShell en admin — crée la tâche planifiée (reboot-proof, toutes les 4 h)
-powershell -ExecutionPolicy Bypass -File scripts\autopilot\install-scheduler.ps1
-# Retirer :
-powershell -ExecutionPolicy Bypass -File scripts\autopilot\uninstall-scheduler.ps1
+npm run autopilot
+npm run autopilot:observe
+npm run autopilot:status
 ```
 
-Manuel : `npm run autopilot` (1 cycle) · `npm run autopilot:observe` (sonde seule) ·
-`npm run autopilot:status` (état mémoire).
-WSL : `scripts/autopilot/autopilot-wsl.sh` (cron possible, le verrou empêche les doublons).
-
-## Vérités terrain
-
-- L'autopilot travaille dans SON worktree ; le vôtre (même sale/with WIP) est sacré.
-- Il ouvre des PR, il ne merge que si whitelisté (défaut : jamais pour du code).
-- Chaque cycle est < 50 min (`loop.maxRunMinutes`) ; au-delà il s'arrête proprement.
-- Zéro secret requis locallement : la prod est sondée en GET public, le Git via `gh`
-  (compte déjà authentifié) — jamais de paiement, jamais d'email sortant.
+Pour une exécution continue, utiliser le runner 24/7 documenté dans `scripts/autopilot/runner.cjs`.

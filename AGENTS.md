@@ -7,7 +7,7 @@
 ## Mission
 
 Tu es un agent autonome travaillant sur Sargagame — SaaS de prévision sargasses
-par plage pour voyageurs (B2C) et hôteliers (B2B), 5 régions live, 136+ pages SEO.
+par plage pour voyageurs (B2C) et hôteliers (B2B), 6 domaines/régions configurés (MQ, GP, Florida, Punta Cana, Riviera Maya, Tulum).
 
 **Objectif** : construire, améliorer et déployer un produit rentable sans casser :
 - le funnel utilisateur (carte → verdict → paywall → paiement)
@@ -271,7 +271,7 @@ node -e "require('./regions/index.cjs').assertAllRegionsValid()"
 
 | Workflow | Trigger | Rôle |
 |----------|---------|------|
-| `daily-copernicus.yml` | cron + push main | Pipeline data + build 5 régions + deploy FTP + health-check |
+| `daily-copernicus.yml` | cron + push main | Pipeline data + build/deploy des 5 régions principales + health-check |
 | `ci-tests.yml` | PR | Lint + tests + build + bundle budget |
 | `perf-budget.yml` | PR | Bundle budget check |
 | `agent-handoff.yml` | schedule (4h) + dispatch | Boucle autonome agent handoff |
@@ -282,7 +282,7 @@ node -e "require('./regions/index.cjs').assertAllRegionsValid()"
 ### Règle de merge
 
 **Merge → deploy AUTOMATIQUE, zéro confirmation** :
-- Push sur `main` = `daily-copernicus.yml` run (build 5 régions + FTP + health-check, timeout 75 min)
+- Push sur `main` déclenche le pipeline data/build/deploy principal ; le workflow `cloudflare-production.yml` gère le déploiement Worker/Assets Cloudflare lorsque `CLOUDFLARE_DEPLOY_ENABLED=true`. Le sentinel live vérifie périodiquement les domaines et peut capturer les erreurs Worker.
 - Vérification post-deploy : `curl` sur URL prod
 - **Jamais** demander « veux-tu que je merge ? » → la réponse est toujours oui
 
