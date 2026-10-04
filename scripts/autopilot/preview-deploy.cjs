@@ -162,7 +162,7 @@ async function waitForCIGreen(prUrl, maxWaitMs = 20 * 60 * 1000) {
     try {
       const out = execFileSync(bin, [
         'pr', 'view', prUrl, '--json', 'statusCheckRollup'
-      ], { cwd: C.ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+      ], { cwd: C.ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000, windowsHide: true });
       
       const pr = JSON.parse(out.trim());
       const checks = pr.statusCheckRollup || [];

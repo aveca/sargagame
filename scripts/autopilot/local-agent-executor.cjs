@@ -100,7 +100,7 @@ function buildAgentPrompt(task, isUxTask = false) {
 }
 
 /**
- * Execute OpenCode agent on worktree
+ * Run OpenCode agent on worktree
  */
 async function runOpenCodeAgent(worktreePath, prompt, cfg, log) {
   return new Promise((resolve) => {
@@ -114,12 +114,18 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log) {
     
     const child = spawn(process.execPath, [OPENCODE_AUTO, 'run', prompt], {
       cwd: worktreePath,
-      stdio: liveMode ? ['ignore', 'inherit', 'inherit'] : ['ignore', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
       env: {
         ...process.env,
         SARGA_LOCAL_ONLY: '1',
         OPENAI_API_KEY: undefined,
         ANTHROPIC_API_KEY: undefined,
+        GOOGLE_API_KEY: undefined,
+        NVIDIA_API_KEY: undefined,
+        COHERE_API_KEY: undefined,
+        MISTRAL_API_KEY: undefined,
+        OLLAMA_HOST: String(process.env.SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, ''),
       },
     });
     
@@ -131,10 +137,7 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log) {
       child.stderr.on('data', d => { err += d; if (liveMode && err.length > 10000) err = err.slice(-8000); });
     }
     
-    const kill = setTimeout(() => {
-      try { child.kill('SIGKILL'); } catch (_) {}
-    }, cfg.policy.agentMaxMinutes * 60000);
-    
+    const kill = setTimeout(() => { try { child.kill('SIGKILL'); } catch (_) {} }, cfg.policy.agentMaxMinutes * 60000);
     child.on('exit', (code, signal) => {
       clearTimeout(kill);
       if (liveMode) log(`[LIVE] OpenCode exited with code ${code}`);
@@ -144,11 +147,7 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log) {
         resolve({ ok: code === 0, code, out: out.slice(-5000), err: err.slice(-3000) });
       }
     });
-    
-    child.on('error', e => {
-      clearTimeout(kill);
-      resolve({ ok: false, code: -1, err: e.message });
-    });
+    child.on('error', e => { clearTimeout(kill); resolve({ ok: false, code: -1, err: e.message }); });
   });
 }
 
@@ -158,25 +157,22 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log) {
 async function runBeforeValidation(worktreePath, task, cfg, log) {
   log(`Running BEFORE validation for ${task.id}...`);
   
-  // Build and start preview server
   const { withPreviewServer, stopAllServers, VITE_BIN } = require('../lib/process-runner.cjs');
   await stopAllServers();
   
   const validation = await withPreviewServer(
     async (baseUrl) => {
       const { execFileSync } = require('child_process');
-      
-      // Run ux-smoke.mjs
       const smokeScript = path.join(ROOT, 'scripts', 'ux-smoke.mjs');
       const output = execFileSync(process.execPath, [smokeScript], {
         cwd: ROOT,
         encoding: 'utf8',
         timeout: 180000,
         env: { ...process.env, SMOKE_BASE: baseUrl },
-        stdio: ['ignore', 'pipe', 'pipe']
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true
       });
       
-      // Check required tokens
       const requiredTokens = [
         'FUNNEL_REACHED=map+fiche+paywall',
         'ERRORS=[]',
@@ -220,18 +216,16 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
   const validation = await withPreviewServer(
     async (baseUrl) => {
       const { execFileSync } = require('child_process');
-      
-      // Run ux-smoke.mjs
       const smokeScript = path.join(ROOT, 'scripts', 'ux-smoke.mjs');
       const output = execFileSync(process.execPath, [smokeScript], {
         cwd: ROOT,
         encoding: 'utf8',
         timeout: 180000,
         env: { ...process.env, SMOKE_BASE: baseUrl },
-        stdio: ['ignore', 'pipe', 'pipe']
+        stdio: ['ignore', 'pipe', 'pipe'],
+        windowsHide: true
       });
       
-      // Check required tokens
       const requiredTokens = [
         'FUNNEL_REACHED=map+fiche+paywall',
         'ERRORS=[]',
@@ -256,7 +250,7 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       // Check bundle budget
       try {
         execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
-          cwd: ROOT, encoding: 'utf8', timeout: 60000
+          cwd: ROOT, encoding: 'utf8', timeout: 60000, windowsHide: true
         });
       } catch (e) {
         throw new Error(`Bundle budget exceeded: ${e.message}`);
@@ -369,8 +363,7 @@ async function executeLocalAgentTask(task, cfg, log) {
     // 7. Commit and push
     const commitSha = gitops.commitAll(wt,
       `fix(ux): ${task.title.slice(0, 90)}\n\nTask: ${task.id}\nEvidence: ${(task.evidence || '').slice(0, 200)}\nRollback: ${task.rollback || 'revert'}\n\nAutopilot UX cycle`,
-      diff.files
-    );
+      diff.files);
     
     gitops.pushBranch(wt, branch, cfg);
     
@@ -416,8 +409,7 @@ async function executeLocalAgentTask(task, cfg, log) {
       branch,
       commitSha,
       duration,
-      beforeValidation: beforeResult,
-      afterValidation: afterResult,
+      validation: { before: beforeResult, after: afterResult },
       diff: { files: diff.files, insertions: diff.insertions, deletions: diff.deletions },
       gateSteps: gate.steps
     };
@@ -458,12 +450,23 @@ async function executeCodeTaskLocal(task, cfg, log) {
  */
 async function runGateInline(worktreePath, files, log) {
   const { withPreviewServer, stopAllServers, VITE_BIN, NPM_CMD } = require('../lib/process-runner.cjs');
+  const { spawnSync } = require('child_process');
   const steps = [];
+  
+  // Helper to run command that works with both string and array commands
+  function runSync(cmd, args, options) {
+    const opts = { ...options, windowsHide: true };
+    if (Array.isArray(cmd)) {
+      // cmd is [nodePath, npmCliPath] - use spawnSync with the full command
+      return spawnSync(cmd[0], [cmd[1], ...args], opts);
+    }
+    return execFileSync(cmd, args, opts);
+  }
   
   try {
     // 1. Build
     log('Gate: Building...');
-    execFileSync(NPM_CMD, ['run', 'build'], { cwd: ROOT, encoding: 'utf8', timeout: 300000 });
+    runSync(NPM_CMD, ['run', 'build'], { cwd: ROOT, encoding: 'utf8', timeout: 300000 });
     steps.push('build');
     
     // 2. Bundle budget
@@ -474,13 +477,14 @@ async function runGateInline(worktreePath, files, log) {
     steps.push('bundle-budget');
     
     // 3. PHP lint on modified PHP files
-    const phpFiles = files.filter(f => f.endsWith('.php'));
+    const phpFiles = (files || []).filter(f => typeof f === 'string' && f.endsWith('.php'));
     if (phpFiles.length > 0) {
       log('Gate: PHP lint...');
       for (const phpFile of phpFiles) {
+        if (typeof phpFile !== 'string') continue;
         const fullPath = path.join(worktreePath, phpFile);
         if (fs.existsSync(fullPath)) {
-          execFileSync('php', ['-l', fullPath], { cwd: ROOT, encoding: 'utf8', timeout: 30000 });
+          execFileSync('php', ['-l', fullPath], { cwd: ROOT, encoding: 'utf8', timeout: 30000, windowsHide: true });
         }
       }
       steps.push('php-lint');
@@ -496,7 +500,8 @@ async function runGateInline(worktreePath, files, log) {
           encoding: 'utf8',
           timeout: 180000,
           env: { ...process.env, SMOKE_BASE: baseUrl },
-          stdio: ['ignore', 'pipe', 'pipe']
+          stdio: ['ignore', 'pipe', 'pipe'],
+          windowsHide: true
         });
         
         const requiredTokens = [

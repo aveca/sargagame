@@ -119,11 +119,10 @@ async function probeRoute(url, routeName, viewport, domain) {
   fs.writeFileSync(scriptPath, script);
 
   return new Promise((resolve, reject) => {
-    const isWin = process.platform === 'win32';
-    const pw = spawn(isWin ? 'npx.cmd' : 'npx', ['--no-install', 'playwright', 'run', scriptPath], {
+    const pw = spawn(process.execPath, ['scripts/autopilot/playwright-runner.cjs', scriptPath], {
       cwd: C.ROOT,
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: isWin,
+      windowsHide: true,
       env: { ...process.env, SARGA_AUTOPILOT_PROBE: '1' },
     });
 

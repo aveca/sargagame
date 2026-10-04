@@ -84,7 +84,7 @@ function findOllamaExe() {
   for (const c of cands) {
     try {
       if (path.isAbsolute(c)) { if (fs.existsSync(c)) return c; continue; }
-      execFileSync(process.platform === 'win32' ? 'where' : 'which', [c], { stdio: 'ignore' });
+      execFileSync(process.platform === 'win32' ? 'where' : 'which', [c], { stdio: 'ignore', windowsHide: true });
       return c;
     } catch (_) {}
   }

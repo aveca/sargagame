@@ -46,7 +46,7 @@ function detectGPU() {
     // Linux
     try {
       const out = execFileSync('nvidia-smi', ['--query-gpu=name,memory.total,driver_version', '--format=csv,noheader,nounits'], { 
-        encoding: 'utf8', timeout: 10000 
+        encoding: 'utf8', timeout: 10000, windowsHide: true 
       });
       for (const line of out.trim().split('\n')) {
         const [name, mem, driver] = line.split(',').map(s => s.trim());
@@ -57,7 +57,7 @@ function detectGPU() {
     } catch (_) {
       // try lspci
       try {
-        const out = execFileSync('lspci', ['-nn'], { encoding: 'utf8', timeout: 5000 });
+        const out = execFileSync('lspci', ['-nn'], { encoding: 'utf8', timeout: 5000, windowsHide: true });
         for (const line of out.trim().split('\n')) {
           if (/VGA|3D|Display/.test(line)) {
             gpus.push({ name: line.trim(), vramBytes: 0, vramGB: null, driver: 'unknown', platform: 'linux' });
@@ -115,7 +115,7 @@ function detectDisk() {
       }
       return disks;
     } else {
-      const out = execSync('df -h /', { encoding: 'utf8', timeout: 5000 });
+      const out = execSync('df -h /', { encoding: 'utf8', timeout: 5000, windowsHide: true });
       const lines = out.trim().split('\n').slice(1);
       for (const line of lines) {
         const parts = line.split(/\s+/);

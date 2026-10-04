@@ -72,7 +72,8 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     
     const child = spawn(process.execPath, [router, 'run', prompt], {
       cwd: wt, 
-      stdio: liveMode ? ['ignore', 'inherit', 'inherit'] : ['ignore', 'pipe', 'pipe'],
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
     });
     
     let out = '', err = '';

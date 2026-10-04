@@ -225,7 +225,7 @@ async function phaseObserve() {
   if (LIVE) progress('OBSERVE     starting Playwright probe...');
   S('OBSERVED', `sonde Playwright prod lancée (headed=${headed})…`);
   const cp = execFileSync(process.execPath, [path.join(__dirname, 'observe.cjs'), '--run-id', report.id, headed ? '--headed' : ''], {
-    cwd: C.ROOT, encoding: 'utf8', timeout: 15 * 60000, stdio: ['ignore', 'pipe', 'pipe'],
+    cwd: C.ROOT, encoding: 'utf8', timeout: 15 * 60000, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
   }).trim();
   const file = (cp.match(/OBSERVATION_FILE=(.+)/) || [])[1];
   const obs = file ? C.readJSON(file.trim(), null) : null;

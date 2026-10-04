@@ -108,10 +108,17 @@ async function runGate({ wt, files = [], tests = [], log = console.log }) {
   // 5. preview + smoke
   if (LIVE) log('vite preview + ux-smoke...');
   log('verify: vite preview :4183 + ux-smoke…');
-  const isWin = process.platform === 'win32';
-  const preview = spawn(isWin ? 'npx.cmd' : 'npx',
-    ['--no-install', 'vite', 'preview', '--port', '4183', '--strictPort'],
-    { cwd: wt, stdio: ['ignore', 'ignore', 'pipe'], shell: isWin, windowsHide: true });
+  const { VITE_BIN } = require('../lib/process-runner.cjs');
+  
+  // Handle VITE_BIN being either string or [node, script] array
+  let preview;
+  if (Array.isArray(VITE_BIN)) {
+    preview = spawn(VITE_BIN[0], [...VITE_BIN.slice(1), 'preview', '--port', '4183', '--strictPort'],
+      { cwd: wt, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
+  } else {
+    preview = spawn(VITE_BIN, ['preview', '--port', '4183', '--strictPort'],
+      { cwd: wt, stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true });
+  }
   try {
     const up = await waitForPort('http://localhost:4183/');
     if (!up) return fail('preview', 'vite preview :4183 pas monté en 20 s');

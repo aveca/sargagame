@@ -41,8 +41,9 @@ const CODING_MODELS = [
   'starcoder2:3b'
 ];
 
-// Modèles vision connus
+// Modèles vision connus (avec qwen3.6 si vision confirmé)
 const VISION_MODELS = [
+  'qwen3.6:latest',  // if vision confirmed via Ollama metadata
   'qwen2.5vl:32b',
   'qwen2.5vl:7b',
   'qwen2.5vl:3b',
@@ -56,6 +57,7 @@ const VISION_MODELS = [
 
 // Modèles rapides (pour fast tasks)
 const FAST_MODELS = [
+  'qwen2.5-coder:7b',
   'qwen2.5:7b',
   'qwen2.5:3b',
   'phi3:3.8b',
@@ -67,6 +69,7 @@ const FAST_MODELS = [
 
 // Modèles strong (raisonnement complexe)
 const STRONG_MODELS = [
+  'qwen3-coder:30b',
   'qwen2.5:32b',
   'qwen2.5:14b',
   'deepseek-r1:32b',
@@ -99,37 +102,70 @@ function estimateVRAMNeeded(modelName) {
   return Math.ceil(params * 0.6);
 }
 
-function canRunModel(modelName, hw) {
+function hasVisionCapability(modelName) {
+  const visionKeywords = ['vl', 'llava', 'bakllava', 'moondream', 'vision', 'qwen3.6', 'qwen2.5'];
+  return visionKeywords.some(k => modelName.toLowerCase().includes(k));
+}
+
+function getModelSpeedClass(modelName) {
+  // Estimate speed class based on model size
+  const sizeMatch = modelName.match(/(\d+(?:\.\d+)?)b/i);
+  if (!sizeMatch) return 'medium';
+  const params = parseFloat(sizeMatch[1]);
+  if (params <= 7) return 'fast';
+  if (params <= 14) return 'medium';
+  return 'slow';
+}
+
+function canRunModel(modelName, hw, taskType = 'coding') {
   const vramNeeded = estimateVRAMNeeded(modelName);
   const totalVRAM = hw.summary.totalVRAM_GB;
   const freeRAM = hw.summary.freeRAM_GB;
+  const speedClass = getModelSpeedClass(modelName);
   
   // Can run if VRAM sufficient OR system RAM sufficient (offload)
-  return (totalVRAM >= vramNeeded) || (freeRAM >= vramNeeded + 4); // +4GB for OS
+  const canRunVRAM = totalVRAM >= vramNeeded;
+  const canRunRAM = freeRAM >= vramNeeded + 4; // +4GB for OS
+  
+  if (!canRunVRAM && !canRunRAM) return false;
+  
+  // Stability check: for 24/7 operation
+  // FAST/VISION: prefer VRAM fit for responsiveness
+  // CODING/STRONG/REVIEW: allow offloading if enough RAM (quality > speed)
+  if (taskType === 'fast' || taskType === 'vision') {
+    // For fast/vision, require VRAM fit for stability/responsiveness
+    if (!canRunVRAM && vramNeeded > totalVRAM * 1.5) {
+      return false; // Would require too much offloading, unstable for interactive use
+    }
+  }
+  // For CODING/STRONG/REVIEW, allow offloading if sufficient RAM
+  // (quality over speed, batch processing)
+  
+  return true;
 }
 
-function selectBestModel(availableModels, preferredList, hw, exclude = []) {
+function selectBestModel(availableModels, preferredList, hw, exclude = [], taskType = 'coding') {
   for (const pref of preferredList) {
     // Exact match
     if (availableModels.includes(pref) && !exclude.includes(pref)) {
-      if (canRunModel(pref, hw)) return pref;
+      if (canRunModel(pref, hw, taskType)) return pref;
     }
     // Stem match (e.g., qwen3-coder matches qwen3-coder:30b)
     const stem = pref.split(':')[0];
     const hit = availableModels.find(m => m.split(':')[0] === stem && !exclude.includes(m));
-    if (hit && canRunModel(hit, hw)) return hit;
+    if (hit && canRunModel(hit, hw, taskType)) return hit;
   }
   
   // Any coder model
-  const coder = availableModels.find(m => /coder/i.test(m) && !exclude.includes(m) && canRunModel(m, hw));
+  const coder = availableModels.find(m => /coder/i.test(m) && !exclude.includes(m) && canRunModel(m, hw, taskType));
   if (coder) return coder;
   
   // Any vision model  
-  const vision = availableModels.find(m => VISION_MODELS.some(v => m.startsWith(v.split(':')[0])) && !exclude.includes(m) && canRunModel(m, hw));
+  const vision = availableModels.find(m => VISION_MODELS.some(v => m.startsWith(v.split(':')[0])) && !exclude.includes(m) && canRunModel(m, hw, taskType));
   if (vision) return vision;
   
   // First runnable model
-  const first = availableModels.find(m => !exclude.includes(m) && canRunModel(m, hw));
+  const first = availableModels.find(m => !exclude.includes(m) && canRunModel(m, hw, taskType));
   if (first) return first;
   
   return null;
@@ -149,40 +185,40 @@ async function routeModel(taskType, options = {}) {
   
   switch (taskType) {
     case TASK_TYPES.CODING:
-      selected = selectBestModel(available, CODING_MODELS, hw, exclude);
+      selected = selectBestModel(available, CODING_MODELS, hw, exclude, 'coding');
       tier = 'coding';
       break;
       
     case TASK_TYPES.VISION:
-      selected = selectBestModel(available, VISION_MODELS, hw, exclude);
+      selected = selectBestModel(available, VISION_MODELS, hw, exclude, 'vision');
       tier = 'vision';
       if (!selected) {
-        // Fallback: any model with vision capability (llava, bakllava, qwen-vl)
+        // Fallback: any model with vision capability
         selected = available.find(m => 
-          ['llava', 'bakllava', 'qwen', 'moondream'].some(v => m.toLowerCase().includes(v)) 
-          && !exclude.includes(m) && canRunModel(m, hw)
+          hasVisionCapability(m) 
+          && !exclude.includes(m) && canRunModel(m, hw, 'vision')
         );
         if (selected) tier = 'vision-fallback';
       }
       break;
       
     case TASK_TYPES.FAST:
-      selected = selectBestModel(available, FAST_MODELS, hw, exclude);
+      selected = selectBestModel(available, FAST_MODELS, hw, exclude, 'fast');
       tier = 'fast';
       if (!selected) {
         // Fallback to smallest coding model
-        const small = available.filter(m => !exclude.includes(m) && canRunModel(m, hw))
+        const small = available.filter(m => !exclude.includes(m) && canRunModel(m, hw, 'fast'))
           .sort((a, b) => estimateVRAMNeeded(a) - estimateVRAMNeeded(b))[0];
         if (small) { selected = small; tier = 'fast-fallback'; }
       }
       break;
       
     case TASK_TYPES.STRONG:
-      selected = selectBestModel(available, STRONG_MODELS, hw, exclude);
+      selected = selectBestModel(available, STRONG_MODELS, hw, exclude, 'strong');
       tier = 'strong';
       if (!selected) {
         // Fallback to best available coding model
-        selected = selectBestModel(available, CODING_MODELS, hw, exclude);
+        selected = selectBestModel(available, CODING_MODELS, hw, exclude, 'strong');
         if (selected) tier = 'strong-fallback';
       }
       break;
@@ -190,18 +226,18 @@ async function routeModel(taskType, options = {}) {
     case TASK_TYPES.REVIEW:
       // Use a different model than the one that generated
       const excludeWithPrimary = [...exclude, options.primaryModel].filter(Boolean);
-      selected = selectBestModel(available, CODING_MODELS.concat(STRONG_MODELS), hw, excludeWithPrimary);
+      selected = selectBestModel(available, CODING_MODELS.concat(STRONG_MODELS), hw, excludeWithPrimary, 'review');
       tier = 'review';
       break;
       
     default:
-      selected = selectBestModel(available, CODING_MODELS, hw, exclude);
+      selected = selectBestModel(available, CODING_MODELS, hw, exclude, 'coding');
       tier = 'default';
   }
   
   if (!selected) {
     // Last resort: any runnable model
-    selected = available.find(m => !exclude.includes(m) && canRunModel(m, hw));
+    selected = available.find(m => !exclude.includes(m) && canRunModel(m, hw, taskType));
     if (selected) tier = 'any-available';
   }
   
@@ -211,7 +247,7 @@ async function routeModel(taskType, options = {}) {
       reason: 'NO_RUNABLE_MODEL', 
       hardware: hw.summary,
       availableModels: available,
-      vramNeeded: available.map(m => ({ model: m, vramGB: estimateVRAMNeeded(m), canRun: canRunModel(m, hw) }))
+      vramNeeded: available.map(m => ({ model: m, vramGB: estimateVRAMNeeded(m), canRun: canRunModel(m, hw, taskType) }))
     };
   }
   
@@ -221,7 +257,9 @@ async function routeModel(taskType, options = {}) {
     tier,
     hardware: hw.summary,
     estimatedVRAM_GB: estimateVRAMNeeded(selected),
-    availableModels: available.length
+    availableModels: available.length,
+    speedClass: getModelSpeedClass(selected),
+    visionCapable: hasVisionCapability(selected)
   };
 }
 

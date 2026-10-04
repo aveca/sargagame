@@ -23,12 +23,13 @@ function git(args, cwd, opts = {}) {
     encoding: 'utf8',
     stdio: ['ignore', pipeOut ? 'pipe' : 'ignore', opts.pipeErr ? 'pipe' : 'pipe'],
     timeout: opts.timeoutMs || 120000,
+    windowsHide: true,
   });
   return (out ?? '').trim();
 }
 function gitSafe(args, cwd, opts = {}) { try { return git(args, cwd, opts); } catch (_) { return null; } }
 function run(cmd, cwd, opts = {}) {
-  return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000 });
+  return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000, windowsHide: true });
 }
 
 function worktreePath(cfg) {

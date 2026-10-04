@@ -29,7 +29,7 @@ function pidAlive(pid) {
   if (!pid || typeof pid !== 'number') return false;
   if (process.platform === 'win32') {
     try {
-      const out = execFileSync('tasklist', ['/FI', `PID eq ${pid}`, '/NH'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+      const out = execFileSync('tasklist', ['/FI', `PID eq ${pid}`, '/NH'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
       return new RegExp(`\\b${pid}\\b`).test(out);
     } catch (_) { return false; }
   }
@@ -45,7 +45,7 @@ function processStartTime(pid) {
   try {
     if (process.platform === 'win32') {
       const out = execFileSync('powershell', ['-NoProfile', '-Command', `(Get-Process -Id ${pid} -ErrorAction Stop).StartTime.ToString('o')`],
-        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 15000 }).trim();
+        { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 15000, windowsHide: true }).trim();
       const t = new Date(out).getTime();
       return Number.isFinite(t) ? t : null;
     }
@@ -53,7 +53,7 @@ function processStartTime(pid) {
     const stat = fs.readFileSync(`/proc/${pid}/stat`, 'utf8');
     const m = stat.match(/\)\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+\S+\s+(\d+)/);
     if (m) {
-      const clk = Number(execFileSync('getconf', ['CLK_TCK'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()) || 100;
+      const clk = Number(execFileSync('getconf', ['CLK_TCK'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true }).trim()) || 100;
       const btime = Number(fs.readFileSync('/proc/stat', 'utf8').match(/btime\s+(\d+)/)[1]);
       return (btime + Number(m[1]) / clk) * 1000;
     }

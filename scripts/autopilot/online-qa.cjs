@@ -116,9 +116,8 @@ async function probeRouteOnline(url, routeName, path, viewport, checks) {
   fs.writeFileSync(scriptPath, script);
   
   return new Promise((resolve, reject) => {
-    const isWin = process.platform === 'win32';
-    const pw = spawn(isWin ? 'npx.cmd' : 'npx', ['--no-install', 'playwright', 'run', scriptPath], {
-      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'], shell: isWin,
+    const pw = spawn(process.execPath, ['scripts/autopilot/playwright-runner.cjs', scriptPath], {
+      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
     });
     
     let out = '', err = '';

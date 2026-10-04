@@ -48,7 +48,7 @@ function setupSignalHandlers() {
     isShuttingDown = true;
     if (orchestratorProcess) {
       try {
-        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true });
         else orchestratorProcess.kill('SIGKILL');
       } catch (_) {}
     }
@@ -57,7 +57,7 @@ function setupSignalHandlers() {
   process.on('SIGINT', () => handleSignal('SIGINT'));
   process.on('SIGTERM', () => handleSignal('SIGTERM'));
   if (process.platform === 'win32') {
-    process.on('exit', () => { if (orchestratorProcess) { try { execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' }); } catch (_) {} } });
+    process.on('exit', () => { if (orchestratorProcess) { try { execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true }); } catch (_) {} } });
   }
 }
 
@@ -78,8 +78,8 @@ async function main() {
 
   // Priorité douce — jamais 100 % CPU aux dépens du fondateur
   if (process.platform === 'win32') {
-    try { execSync(`wmic process where ProcessId=${process.pid} CALL setpriority 16384`, { stdio: 'ignore' }); } catch (_) {}
-    try { execSync(`powershell -NoProfile -Command "(Get-Process -Id ${process.pid}).PriorityClass='BelowNormal'"`, { stdio: 'ignore' }); } catch (_) {}
+    try { execSync(`wmic process where ProcessId=${process.pid} CALL setpriority 16384`, { stdio: 'ignore', windowsHide: true }); } catch (_) {}
+    try { execSync(`powershell -NoProfile -Command "(Get-Process -Id ${process.pid}).PriorityClass='BelowNormal'"`, { stdio: 'ignore', windowsHide: true }); } catch (_) {}
   } else { try { os.setPriority(os.constants.priority.PRIORITY_BELOW_NORMAL); } catch (_) {} }
 
   rlog(`═══════════════════════════════════════════`);
@@ -172,7 +172,7 @@ async function main() {
   rlog('shutdown initiated...');
   if (orchestratorProcess) {
     try {
-      if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+      if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true });
       else orchestratorProcess.kill('SIGKILL');
     } catch (_) {}
   }
@@ -185,7 +185,7 @@ async function runOrchestrator(cfg) {
   return new Promise((resolve) => {
     const args = process.argv.slice(2).filter(a => !['--live', '--continuous', '--headed'].includes(a));
     orchestratorProcess = spawn(process.execPath, [path.join(__dirname, 'orchestrator.cjs'), ...args], {
-      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'],
+      cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
     });
     
     let stdout = '', stderr = '';
@@ -196,7 +196,7 @@ async function runOrchestrator(cfg) {
     const hardTimeout = setTimeout(() => {
       rlog(`TIMEBOX ${cfg.loop.maxRunMinutes + 5} min exceeded — killing orchestrator`);
       try {
-        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore' });
+        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true });
         else orchestratorProcess.kill('SIGKILL');
       } catch (_) {}
     }, (cfg.loop.maxRunMinutes + 5) * 60000);

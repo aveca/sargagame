@@ -29,6 +29,7 @@ function gh(args, cwd = C.ROOT) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
       timeout: 60000,
+      windowsHide: true,
     }).trim();
   } catch (primaryError) {
     console.log(`[bridge] gh primary path (${primary}) failed: ${primaryError.message}. Trying fallback.`);
@@ -38,6 +39,7 @@ function gh(args, cwd = C.ROOT) {
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'pipe'],
         timeout: 60000,
+        windowsHide: true,
       }).trim();
     } catch (fallbackError) {
       console.log(`[bridge] gh fallback (${fallback}) also failed: ${fallbackError.message}`);
