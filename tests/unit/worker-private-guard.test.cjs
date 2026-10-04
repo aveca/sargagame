@@ -39,6 +39,13 @@ check('worker refuse .php non migré', /\\.php\$/.test(WORKER));
 check('garde placée avant ASSETS.fetch', WORKER.indexOf('/_private/') < WORKER.lastIndexOf('env.ASSETS.fetch'));
 check('refus neutre 404 (not_found, sans path)', /not_found/.test(WORKER));
 
+// 3b. Allowlist statique publique (run_worker_first oblige : sans elle, les
+// JSON publics casseraient — constaté : sargassum.json 404 après le 1er fix)
+check('allowlist JSON publics via ASSETS', WORKER.includes('\\.json$'));
+check('allowlist apple-pay-domain-association', WORKER.includes('/api/apple-pay-domain-association'));
+check('allowlist placée avant le 404 api_route_not_migrated',
+  WORKER.indexOf('\\.json$') < WORKER.indexOf('api_route_not_migrated'));
+
 // 4. Handlers migrés préservés (le premium autorisé continue de fonctionner)
 check('handler mollie.php POST préservé', /\/api\/mollie\.php/.test(WORKER));
 check('handler mollie-webhook préservé', /mollie-webhook/.test(WORKER));

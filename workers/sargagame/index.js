@@ -158,7 +158,15 @@ export default {
       || /\.env($|\.)/i.test(u.pathname)) {
       return out({error:"not_found"},404);
     }
-    if(u.pathname.startsWith("/api/")) return out({error:"api_route_not_migrated",path:u.pathname},404);
+    // Données statiques publiques : laissées aux ASSETS (après la garde
+    // ci-dessus : _private/dotfiles/php déjà refusés). Sans cette allowlist,
+    // run_worker_first casserait tous les JSON publics (/api/*.json).
+    if(u.pathname.startsWith("/api/")) {
+      if(/\.json$/.test(u.pathname) || u.pathname==="/api/apple-pay-domain-association") {
+        return env.ASSETS.fetch(request);
+      }
+      return out({error:"api_route_not_migrated",path:u.pathname},404);
+    }
     return env.ASSETS.fetch(request);
   }
 };
