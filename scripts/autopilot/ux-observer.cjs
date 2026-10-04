@@ -36,14 +36,53 @@ function loadLatestObservation() {
 }
 
 /**
- * Load funnel metrics from autopilot memory
+ * Load tasks.md and extract UX-related pending tasks
  */
-function loadFunnelMetrics() {
-  try {
-    return mem.metricsSnapshot ? mem.metricsSnapshot() : null;
-  } catch {
-    return null;
+function loadUXBacklogTasks() {
+  const tasksPath = path.join(C.ROOT, '.ai', 'tasks.md');
+  if (!fs.existsSync(tasksPath)) return [];
+  
+  const content = fs.readFileSync(tasksPath, 'utf8');
+  const lines = content.split('\n');
+  const uxTasks = [];
+  let currentSection = '';
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line.startsWith('## ')) currentSection = line.slice(3).trim();
+    
+    // Only list format: - [ ] TASK-PX-XXX
+    const match = line.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})\s*(.*)/);
+    if (match) {
+      const taskId = match[1];
+      const rest = match[2].trim();
+      
+      // Check if UX-related (contains UX, UI, paywall, CTA, conversion, funnel, mobile, visual, comic, modal)
+      const isUX = /ux|ui|paywall|cta|conversion|funnel|mobile|visual|comic|modal|transition|animation|header|button|checkout/i.test(rest + currentSection);
+      
+      if (isUX) {
+        // Extract more context from following lines
+        let description = rest;
+        for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+          if (lines[j].startsWith('- **') || lines[j].startsWith('###')) break;
+          if (lines[j].trim() && !lines[j].startsWith('- [')) {
+            description += ' ' + lines[j].trim();
+          }
+        }
+        
+        uxTasks.push({
+          id: taskId,
+          section: currentSection,
+          description: description,
+          priority: taskId.includes('P0') ? 0 : taskId.includes('P1') ? 1 : taskId.includes('P2') ? 2 : 3
+        });
+      }
+    }
   }
+  
+  // Sort by priority
+  uxTasks.sort((a, b) => a.priority - b.priority);
+  return uxTasks;
 }
 
 /**
@@ -490,10 +529,26 @@ async function runUXObserver() {
     .sort((a, b) => b.score - a.score);
   
   // Generate tasks for top findings
-  const tasks = scored
+  let tasks = scored
     .filter(f => f.score > 0.3) // Minimum threshold
     .slice(0, 10) // Max 10 tasks per cycle
     .map((f, i) => generateTask(f, i));
+  
+  // If no critical issues found, pick best UX task from backlog
+  if (tasks.length === 0) {
+    console.log('[UX-OBSERVER] No critical issues — checking UX backlog...');
+    const backlogTasks = loadUXBacklogTasks();
+    console.log(`[UX-OBSERVER] Found ${backlogTasks.length} UX tasks in backlog`);
+    
+    if (backlogTasks.length > 0) {
+      const topTask = backlogTasks[0];
+      console.log(`[UX-OBSERVER] Picking highest-priority UX task: ${topTask.id} (${topTask.section})`);
+      
+      // Create a task from the backlog item
+      const backlogTask = generateBacklogTask(topTask);
+      tasks.push(backlogTask);
+    }
+  }
   
   console.log(`[UX-OBSERVER] Generated ${tasks.length} UX tasks`);
   for (const t of tasks) {
@@ -545,13 +600,90 @@ async function validateUXTask(taskId, worktreePath, isBefore = true) {
   };
 }
 
+/**
+ * Generate a UX task from a backlog item
+ */
+function generateBacklogTask(backlogItem) {
+  const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  const taskId = `UX-${backlogItem.id}-${timestamp}`;
+  
+  // Map task ID to likely files and expected impact
+  const taskMap = {
+    'TASK-P1-003': {
+      title: 'Complete paywall comic header variants',
+      files: ['src/components/PaywallComic.jsx', 'src/hooks/usePaywallVariants.js'],
+      expectedImpact: 'Complete paywall comic variants (scene/constel/beat) → better engagement → higher CTA rate',
+      rollback: 'revert',
+      persona: 'ui-ux',
+      score: 0.85
+    },
+    'TASK-P2-004': {
+      title: 'Implement BD-style transitions between screens',
+      files: ['src/components/BeachExperience.jsx', 'src/components/BeachDetailComic.jsx', 'src/styles/transitions.css'],
+      expectedImpact: 'Comic-style slide/bolt animations for top-level transitions → improved perceived performance + delight',
+      rollback: 'revert',
+      persona: 'ui-ux',
+      score: 0.75
+    },
+    'TASK-P2-001': {
+      title: 'Split PremiumModal.jsx into sub-components',
+      files: ['src/PremiumModal.jsx', 'src/components/PremiumModal/DoSubscribe.jsx', 'src/components/PremiumModal/ErrorModal.jsx', 'src/components/PremiumModal/PayGatewayHandler.jsx'],
+      expectedImpact: 'Reduce 3352-line monolith → maintainable code → faster iteration on paywall UX',
+      rollback: 'revert',
+      persona: 'coding',
+      score: 0.7
+    }
+  };
+  
+  const taskInfo = taskMap[backlogItem.id] || {
+    title: `UX: ${backlogItem.id}`,
+    files: ['src/Sargasses_PROD.jsx'],
+    expectedImpact: backlogItem.description,
+    rollback: 'revert',
+    persona: 'ui-ux',
+    score: 0.5
+  };
+  
+  return {
+    id: taskId,
+    type: 'ux_task',
+    title: taskInfo.title,
+    description: backlogItem.description,
+    finding: {
+      type: 'backlog_task',
+      severity: backlogItem.priority === 0 ? 'high' : backlogItem.priority === 1 ? 'high' : 'medium',
+      route: 'paywall',
+      viewport: 'mobile',
+      evidence: `Backlog task: ${backlogItem.id} — ${backlogItem.description}`,
+      revenueImpact: 0.7,
+      userImpact: 0.7,
+      confidence: 0.6,
+      implementationCost: 0.4
+    },
+    score: taskInfo.score,
+    severity: backlogItem.priority === 0 ? 'high' : backlogItem.priority === 1 ? 'high' : 'medium',
+    route: 'paywall',
+    viewport: 'mobile',
+    region: 'mq',
+    files: taskInfo.files,
+    evidence: `Backlog task: ${backlogItem.id} — ${backlogItem.description}`,
+    expectedImpact: taskInfo.expectedImpact,
+    rollback: taskInfo.rollback,
+    actionable: taskInfo.score > 0.5 ? 'agent' : 'human',
+    persona: taskInfo.persona,
+    createdAt: new Date().toISOString()
+  };
+}
+
 module.exports = {
   runUXObserver,
   analyzeObservations,
   analyzeFunnelMetrics,
   calculateScore,
   generateTask,
+  generateBacklogTask,
   validateUXTask,
   loadLatestObservation,
-  loadFunnelMetrics
+  loadFunnelMetrics,
+  loadUXBacklogTasks
 };
