@@ -190,6 +190,43 @@ function requeueItem(item, delayMs = 0) {
   }
 }
 
+// Sync tasks from autopilot queue to factory queue
+function syncAutopilotQueue() {
+  const autopilotQueuePath = path.join(AI_DIR, 'autopilot', 'queue.json');
+  if (!fs.existsSync(autopilotQueuePath)) return 0;
+  
+  try {
+    const autopilotQueue = JSON.parse(fs.readFileSync(autopilotQueuePath, 'utf8'));
+    const factoryQueue = loadQueue();
+    const factoryIds = new Set(factoryQueue.map(t => t.id));
+    
+    let synced = 0;
+    for (const opp of (autopilotQueue.opportunities || [])) {
+      if (opp.status === 'new' && !factoryIds.has(opp.id)) {
+        // Convert autopilot opportunity to factory task
+        const task = {
+          id: opp.id,
+          type: opp.type === 'ux_task' ? 'code_task' : 'code_task',
+          payload: { ...opp },
+          agent: opp.persona || 'coding',
+          priority: opp.severity === 'critical' ? 0 : opp.severity === 'high' ? 1 : opp.severity === 'medium' ? 2 : 3,
+          createdAt: opp.createdAt,
+          retryCount: 0,
+          maxRetries: 3
+        };
+        saveQueueItem(task);
+        factoryIds.add(opp.id);
+        synced++;
+        log('queue.sync_from_autopilot', { id: opp.id, title: opp.title });
+      }
+    }
+    return synced;
+  } catch (e) {
+    log('queue.sync_error', { error: e.message });
+    return 0;
+  }
+}
+
 // Task execution with fallback
 async function executeTask(task, worker) {
   const startTime = Date.now();
@@ -742,6 +779,10 @@ async function runCycle() {
       log('ux_observer.error', { error: e.message });
     }
   }
+  
+  // Sync tasks from autopilot queue
+  const synced = syncAutopilotQueue();
+  if (synced > 0) log('queue.synced', { count: synced });
   
   // Recover stale/failed
   await recoverStaleTasks();

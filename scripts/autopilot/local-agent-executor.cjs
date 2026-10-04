@@ -159,7 +159,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
   log(`Running BEFORE validation for ${task.id}...`);
   
   // Build and start preview server
-  const { withPreviewServer, stopAllServers, VITE_BIN } = require('./lib/process-runner.cjs');
+  const { withPreviewServer, stopAllServers, VITE_BIN } = require('../lib/process-runner.cjs');
   await stopAllServers();
   
   const validation = await withPreviewServer(
@@ -215,7 +215,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
 async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
   log(`Running AFTER validation for ${task.id}...`);
   
-  const { withPreviewServer, stopAllServers, VITE_BIN } = require('./lib/process-runner.cjs');
+  const { withPreviewServer, stopAllServers, VITE_BIN } = require('../lib/process-runner.cjs');
   
   const validation = await withPreviewServer(
     async (baseUrl) => {
@@ -457,7 +457,7 @@ async function executeCodeTaskLocal(task, cfg, log) {
  * Run gate checks inline (build, bundle budget, PHP lint, smoke test)
  */
 async function runGateInline(worktreePath, files, log) {
-  const { withPreviewServer, stopAllServers, VITE_BIN, NPM_CMD } = require('./lib/process-runner.cjs');
+  const { withPreviewServer, stopAllServers, VITE_BIN, NPM_CMD } = require('../lib/process-runner.cjs');
   const steps = [];
   
   try {

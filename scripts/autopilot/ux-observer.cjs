@@ -18,6 +18,7 @@ const fs = require('fs');
 const path = require('path');
 const C = require('./lib/common.cjs');
 const mem = require('./lib/memory.cjs');
+const metrics = require('./lib/metrics.cjs');
 
 const OBSERVATIONS_DIR = path.join(C.paths.observations);
 const SCREENSHOTS_DIR = path.join(OBSERVATIONS_DIR, 'shots');
@@ -30,6 +31,17 @@ function loadLatestObservation() {
   if (!fs.existsSync(latestPath)) return null;
   try {
     return JSON.parse(fs.readFileSync(latestPath, 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Load funnel metrics from autopilot memory
+ */
+function loadFunnelMetrics() {
+  try {
+    return metrics.snapshot ? metrics.snapshot() : null;
   } catch {
     return null;
   }
