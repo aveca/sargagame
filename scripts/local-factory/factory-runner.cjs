@@ -380,10 +380,19 @@ async function executeUxObserver(task, worker) {
 
 async function executeCodeTask(task, worker) {
   // Execute locally via OpenCode + Ollama (autonomous, no GitHub issue)
-  const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
-  log('code_task.local_execution', { taskId });
+  // The task payload contains the full UX task from autopilot queue
+  const taskId = task.payload?.id || task.payload?.taskId || task.id.replace(/^task-/, '');
+  log('code_task.local_execution', { taskId, type: task.payload?.type || 'unknown' });
   
-  const result = await executeCodeTaskLocal(task, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
+  // Use the full task payload from autopilot queue (contains all UX task fields)
+  const uxTask = task.payload;
+  
+  // Validate required fields
+  if (!uxTask.title || !uxTask.files || !uxTask.evidence) {
+    throw new Error(`Invalid UX task payload: missing required fields (title, files, evidence)`);
+  }
+  
+  const result = await executeLocalAgentTask(uxTask, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
   
   if (!result.success) {
     throw new Error(result.error || 'Local agent execution failed');

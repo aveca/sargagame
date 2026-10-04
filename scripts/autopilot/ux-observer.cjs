@@ -434,6 +434,7 @@ function generateTask(finding, index) {
     rollback: 'revert',
     actionable: score > 0.5 ? 'agent' : 'human',
     persona: 'ui-ux',
+    status: 'new',
     createdAt: new Date().toISOString()
   };
 }
@@ -683,6 +684,7 @@ function generateBacklogTask(backlogItem) {
     rollback: taskInfo.rollback,
     actionable: taskInfo.score > 0.5 ? 'agent' : 'human',
     persona: taskInfo.persona,
+    status: 'new',
     createdAt: new Date().toISOString()
   };
 }
