@@ -291,7 +291,7 @@ async function executeRenderBrief(task, worker) {
   }
   
   // Use process-runner to execute the render
-  const { runBounded } = require('./lib/process-runner.cjs');
+  const { runBounded } = require('../lib/process-runner.cjs');
   const result = await runBounded('node', [
     path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), 
     region
@@ -317,7 +317,10 @@ async function executeAPIDiscovery(task, worker) {
 async function executeCodeTask(task, worker) {
   // Use agent-handoff to create branch, implement, test
   const { execSync } = require('child_process');
-  const taskId = task.id;
+  // Queue item id is `task-<TASK-ID>`; agent-handoff expects the raw TASK-ID
+  // from .ai/tasks.md (passing the queue id makes the claim match nothing
+  // and the git commit fail with "nothing to commit").
+  const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
   const agentType = task.agent || 'coding';
   
   execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
@@ -330,21 +333,28 @@ async function executeCodeTask(task, worker) {
 }
 
 async function executeTestTask(task, worker) {
-  const { runBounded } = require('./lib/process-runner.cjs');
+  // NOTE: bare 'npm'/'npx' do not spawn on Windows without a shell (npm.cmd
+  // wrapper). Use the resolved local binaries (node-direct execution) so test
+  // tasks work on the Windows factory host too. See process-runner.cjs.
+  const pr = require('../lib/process-runner.cjs');
+  const { runBounded, NPM_CMD } = pr;
+  // playwright's cli.js executed via node directly: node_modules/.bin/playwright
+  // is a .cmd wrapper on Windows and cannot spawn without a shell.
+  const PLAYWRIGHT_BIN = [process.execPath, path.join(ROOT, 'node_modules', 'playwright', 'cli.js')];
   const testType = task.payload?.testType || 'all';
-  
+
   let cmd, args;
   switch (testType) {
     case 'smoke':
       cmd = 'node'; args = ['scripts/run-smoke.cjs']; break;
     case 'unit':
-      cmd = 'npm'; args = ['test']; break;
+      cmd = NPM_CMD; args = ['test']; break;
     case 'e2e':
-      cmd = 'npx'; args = ['playwright', 'test']; break;
+      cmd = PLAYWRIGHT_BIN; args = ['test']; break;
     case 'build':
-      cmd = 'npm'; args = ['run', 'build']; break;
+      cmd = NPM_CMD; args = ['run', 'build']; break;
     default:
-      cmd = 'npm'; args = ['test']; break;
+      cmd = NPM_CMD; args = ['test']; break;
   }
   
   const result = await runBounded(cmd, args, { cwd: ROOT, timeout: 300000 });
@@ -365,7 +375,8 @@ async function executeDeployTask(task, worker) {
 async function executeGenericTask(task, worker) {
   // Generic implementation via agent-handoff
   const { execSync } = require('child_process');
-  const taskId = task.id;
+  // Same queue-id → task-id mapping as executeCodeTask (see above).
+  const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
   const agentType = task.agent || 'coding';
   
   execFileSync(process.execPath, ['scripts/agent-handoff.cjs', '--task', taskId], { cwd: ROOT, encoding: 'utf8' });
@@ -475,8 +486,10 @@ async function processQueue() {
         }
       }
       
-      // Update tasks.md to mark as in_progress
-      updateTaskInProgress(taskId);
+      // Update tasks.md to mark as in_progress (mapped to the raw TASK-ID;
+      // the queue id `task-<TASK-ID>` matches nothing in tasks.md).
+      // Proof-task ids (no TASK-Px-xxx pattern) intentionally no-op here.
+      updateTaskInProgress(task.payload?.taskId || taskId.replace(/^task-/, ''));
       
       // Mark as processing
       fs.writeFileSync(processingFile, JSON.stringify({ 
@@ -767,4 +780,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess };
+module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem };
