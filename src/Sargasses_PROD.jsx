@@ -2888,7 +2888,7 @@ function CadranVeilleur({weeklyData,lang,sargData}){
 // track() attache ab_dataviz aux events suivants (KPI = sg_premium_modal_open depuis fiche).
 // Le Cadran reste honnête ET statique sous reduced-motion → pas de garde reduced-motion.
 function ForecastCred({weeklyData,lang,sargData}){
-  const[viz]=useState(()=>{try{const q=window.location.search;if(/[?&]cadran=1/.test(q))return true;if(/[?&]cadran=0/.test(q))return false;return abVariant("dataviz",["control","viz"],[.5,.5])==="viz"}catch(_){return false}})
+  const[viz]=useState(()=>{try{const q=window.location.search;if(/[?&]cadran=1/.test(q))return true;if(/[?&]cadran=0/.test(q))return false;return false}catch(_){return false}})
   return viz
     ?<CadranVeilleur weeklyData={weeklyData} lang={lang} sargData={sargData}/>
     :<ForecastCredibility weeklyData={weeklyData} lang={lang} sargData={sargData}/>
@@ -3253,7 +3253,7 @@ function ForecastChart({forecast,lang,onPremiumClick,isPremium,weatherDaily,week
   // (hooks AVANT l'early-return ci-dessous = règle des hooks respectée.)
   // PROMU EN DÉFAUT (verdict design fondateur : « paywall = un BEAT du scroll, PAS un
   // modal posé ») → 85% révèlent le beat golden-hour inline, 15% holdout (modal direct).
-  const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return abVariant("pw_beat",["control","beat"],[.15,.85])==="beat"}catch(_){return false}})()
+  const pwBeat=(()=>{try{const q=window.location.search;if(/[?&]pwbeat=1/.test(q))return true;if(/[?&]pwbeat=0/.test(q))return false;return true}catch(_){return true}})()
   // ?arc=1 = Marée du Veilleur (houle) À LA PLACE des barres ; défaut OFF (observationnel,
   // pas un A/B parallèle — cf. note du composant). Rollback inhérent : défaut = barres.
   const arcOn=(()=>{try{return /[?&]arc=1/.test(window.location.search)}catch(_){return false}})()
@@ -4771,24 +4771,24 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   // A/B « la fiche EST le ScrollStory » (pw_beach_story) : story = PanelStoryEngine
   // (verdict→demain→vas-y) sous le hero À LA PLACE du bloc score/verdict ; control =
   // liste actuelle intacte. ?beachstory=1/0 force en QA. CTA premium inchangé.
-  const beachStory=(()=>{try{const s=window.location.search;if(/[?&]beachstory=1/.test(s))return true;if(/[?&]beachstory=0/.test(s))return false;return abVariant("pw_beach_story",["control","story"],[.5,.5])==="story"}catch(_){return false}})()
+  const beachStory=(()=>{try{const s=window.location.search;if(/[?&]beachstory=1/.test(s))return true;if(/[?&]beachstory=0/.test(s))return false;return false}catch(_){return false}})()
   // A/B « Verdict du Jour » (pw_verdict_guess) : Devine-puis-Révèle DANS la fiche —
   // l'user devine le statut de CETTE plage avant de voir la donnée (engagement +
   // série). Additif (control = fiche inchangée), une fois par plage par jour.
   // ?verdictguess=1/0 force en QA. Funnel premium en aval segmentable par bras.
-  const verdictGuess=(()=>{try{const q=window.location.search;if(/[?&]verdictguess=1/.test(q))return true;if(/[?&]verdictguess=0/.test(q))return false;return abVariant("pw_verdict_guess",["control","guess"],[.5,.5])==="guess"}catch(_){return false}})()
+  const verdictGuess=(()=>{try{const q=window.location.search;if(/[?&]verdictguess=1/.test(q))return true;if(/[?&]verdictguess=0/.test(q))return false;return false}catch(_){return false}})()
   // A/B `pw_planb` : feature #2 « où aller maintenant » — quand CETTE plage est
   // chargée (avoid/moderate), rail des plages PROPRES proches (data réelle).
   // Additif (control = fiche inchangée), ?planb=1/0 force en QA. Réduit l'angoisse
   // « journée gâchée » au moment vécu ; chaque pick = sg_planb_pick (segmentable).
-  const pwPlanb=(()=>{try{const q=window.location.search;if(/[?&]planb=1/.test(q))return true;if(/[?&]planb=0/.test(q))return false;return abVariant("pw_planb",["control","planb"],[.5,.5])==="planb"}catch(_){return false}})()
+  const pwPlanb=(()=>{try{const q=window.location.search;if(/[?&]planb=1/.test(q))return true;if(/[?&]planb=0/.test(q))return false;return false}catch(_){return false}})()
   // A/B `pw_h2s` : badge Indice santé/H2S GRADUÉ (feature #4, le standout) — libre,
   // toujours visible, panneau dépliable + alerte santé Premium. Remplace le warning
   // binaire (control = warning sur avoid uniquement). ?h2s=1/0 force en QA.
-  const pwH2s=(()=>{try{const q=window.location.search;if(/[?&]h2s=1/.test(q))return true;if(/[?&]h2s=0/.test(q))return false;return abVariant("pw_h2s",["control","badge"],[.5,.5])==="badge"}catch(_){return false}})()
+  const pwH2s=(()=>{try{const q=window.location.search;if(/[?&]h2s=1/.test(q))return true;if(/[?&]h2s=0/.test(q))return false;return false}catch(_){return false}})()
   // A/B `fc_position` : ForecastChart remonté sous le verdict (valeur payante visible tôt)
   // vs control (en bas après VisitPlan). ?fcup=1/0 force en QA.
-  const fcUp=(()=>{try{const q=window.location.search;if(/[?&]fcup=1/.test(q))return true;if(/[?&]fcup=0/.test(q))return false;return abVariant("fc_position",["control","top"],[.5,.5])==="top"}catch(_){return false}})()
+  const fcUp=(()=>{try{const q=window.location.search;if(/[?&]fcup=1/.test(q))return true;if(/[?&]fcup=0/.test(q))return false;return false}catch(_){return false}})()
 
   // Scroll to top when beach changes
   useEffect(()=>{
@@ -4895,7 +4895,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         {/* Hero — photo le jour, scène vectorielle golden-hour personnalisée par
             l'heure sinon (cf. useVectorHero). Immersif, tap pour scanner. */}
         <div onClick={e=>{if(!e.target.closest("button")){setPhotoScanOpen(v=>!v);track("sg_photo_scan",{beach_id:beach.id,open:!photoScanOpen,hero:"vector",ph:heroPh,status:beach.status})}}}
-          style={{height:(()=>{try{const q=window.location.search;if(/[?&]heroh=1/.test(q))return "min(480px, 46svh)";if(/[?&]heroh=0/.test(q))return "min(600px, 70svh)";return abVariant("aw_hero_height",["control","short"],[.6,.4])==="short"?"min(480px, 46svh)":"min(600px, 70svh)"}catch(_){return "min(600px, 70svh)"}})(),background:"#0B2230",
+          style={{height:(()=>{try{const q=window.location.search;if(/[?&]heroh=1/.test(q))return "min(480px, 46svh)";if(/[?&]heroh=0/.test(q))return "min(600px, 70svh)";return "min(600px, 70svh)"}catch(_){return "min(600px, 70svh)"}})(),background:"#0B2230",
           borderRadius:"0",position:"relative",overflow:"hidden",cursor:"pointer"}}>
           {/* SVG D'ABORD (directive 14/06 : « les images dépendent du jour,
               remplace par du svg perso par heure/lieu, pas ce qu'on voit en
@@ -5680,7 +5680,7 @@ function BeachListView({beaches,onBeachClick,favorites,lang,imageMap,sargData,on
   // TRI explicite (contrôle discret) — best (défaut, ordre data déjà classé) / near / az.
   // "near" = gracieux : haversine si géoloc, sinon temps de route (drive), sinon best.
   const [sort,setSort]=useState("best")
-  const listFclock=useMemo(()=>{try{const q=window.location.search;if(/[?&]listfclock=1/.test(q))return true;if(/[?&]listfclock=0/.test(q))return false;return abVariant("list_fclock",["control","lock"],[.5,.5])==="lock"}catch(_){return false}},[])
+  const listFclock=useMemo(()=>{try{const q=window.location.search;if(/[?&]listfclock=1/.test(q))return true;if(/[?&]listfclock=0/.test(q))return false;return false}catch(_){return false}},[])
 
   const filtered=useMemo(()=>{
     let r=beaches
@@ -8119,12 +8119,12 @@ function InlineEmailCapture({lang,beachName,source="inline_beach"}){
   // re-render, ce qui court-circuitait la confirmation au tout premier render post-submit.
   if(!submitted&&(dismissed||g("sg_email_prompt",false)||g("sg_email_snooze",0)>Date.now()))return null
   // em1 test: control (loss-frame "know before you go") vs curiosity ("where's the best beach today?")
-  const em1V=abVariant("em1",["control","curiosity"],[.5,.5])
+  const em1V="control"
   // em2 test (capture = levier #1 funnel, mesuré 0,35%) : control vs "progressive" —
   // vend le déblocage de valeur GRATUITE jour après jour (drip réel : confirmation →
   // plages propres J+3 → récap hebdo + alerte). État de succès multi-étapes ("plein de
   // state") qui matérialise la progression. Copy honnête (jamais plus que ce que le drip envoie).
-  const em2V=abVariant("em2",["control","progressive"],[.4,.6])
+  const em2V="progressive"
   if(!tracked.current){tracked.current=true;track("sg_smart_email_trigger",{visit_count:g("sg_visit_count",0)});track("sg_email_view")}
 
   const handleSubmit=e=>{
@@ -9096,7 +9096,7 @@ function BeachHeroVideo({ beachId }) {
     // un RÉCURRENT (≥2 visites) OU un marché USD (visite souvent unique → traité récurrent dès
     // V1) voit le clip. sg_visit_count est déjà incrémenté au boot (~L12440).
     if (!(IS_NEW_REGION || g("sg_visit_count", 0) >= 2)) return false;
-    return abVariant("aw_hero_video", ["control", "video"], [.5, .5]) === "video" } catch (_) { return false } })()
+    return false } catch (_) { return false } })()
   useEffect(() => {
     if (!allowed) return
     const el = boxRef.current; if (!el) return
@@ -11148,7 +11148,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   //    plage se fond plein écran sur le MÊME golden-hour → la fiche s'ouvre comme
   //    la culmination, PAS une téléportation. reduced-motion + control = ouverture
   //    directe (snap, zéro pop). Override QA : ?pwtide=1/0. Réutilise runTween.
-  const mareeOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]pwtide=1/.test(q))return true;if(/[?&]pwtide=0/.test(q))return false;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;return abVariant("nav_maree",["control","maree"],[.85,.15])==="maree"}catch(_){return false}},[])
+  const mareeOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]pwtide=1/.test(q))return true;if(/[?&]pwtide=0/.test(q))return false;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return false;return false}catch(_){return false}},[])
   const[diving,setDiving]=useState(null)
   const diveTimers=useRef([])
   const[pressed,setPressed]=useState(null) // verdict-au-toucher : id du SEUL point pressé vivant
@@ -11191,13 +11191,13 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
   //   de rivage golden-hour, dessinés LÀ où sont les plages (concave, gère les baies,
   //   AUCUNE fake-île — la lumière = exactement les plages surveillées). Statique = calme.
   //   A/B pw_mapground (override ?mapground=1/0). Filter-free → zéro re-raster au zoom.
-  const groundOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapground=1/.test(q))return true;if(/[?&]mapground=0/.test(q))return false;return abVariant("pw_mapground",["control","ground"],[.18,.82])==="ground"}catch(_){return true}},[])
+  const groundOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]mapground=1/.test(q))return true;if(/[?&]mapground=0/.test(q))return false;return true}catch(_){return true}},[])
   // VERDICT AU TOUCHER (fix dead-clicks #1 : la carte = surface la + tapée-sans-réponse,
   //   2021+2451 dead-clicks). pointerdown sur un point au repos = il fleurit son verdict
   //   RÉEL (couleur scoreColor + nom + verbe) DANS la scène, 1 seul vivant. Tap court =
   //   plongée ; appui maintenu (>280ms) = peek sans plonger. Zéro anim idle (one-shot).
   //   A/B aw_press_verdict (override ?pv=1/0). PAS de setPointerCapture (piège click).
-  const pv=useMemo(()=>{try{const q=window.location.search;if(/[?&]pv=1/.test(q))return true;if(/[?&]pv=0/.test(q))return false;return abVariant("aw_press_verdict",["control","press"],[.5,.5])==="press"}catch(_){return false}},[])
+  const pv=useMemo(()=>{try{const q=window.location.search;if(/[?&]pv=1/.test(q))return true;if(/[?&]pv=0/.test(q))return false;return false}catch(_){return false}},[])
   // CARTE-FOG + STREAK DE VEILLE (brief #5, rétention « payer = habitude », Zenly).
   // veille = série de jours consécutifs où l'user ouvre l'app (habitude). consultedRef
   // = plages déjà ouvertes (fog sur les autres). Le fog NE voile JAMAIS la couleur de
@@ -11342,7 +11342,7 @@ function ArchipelView({beaches,island,userPos,lang,onOpenBeach,onClose,onSolutio
         </div>
         :(()=>{const i=tourOrder[tour],b=proj[i]&&proj[i].b;if(!b)return null;const vm=verdictMeta(b.status,lang),sc=typeof b.score==="number"?b.score:null,afai=typeof b.afai==="number"?b.afai:null
           // A/B pw_freshness (geste Watch Duty : « vérifié il y a 2h » lève l'objection screenshot-périmé). Override ?fresh=1/0.
-          const freshLbl=(()=>{try{if(!updatedAt)return null;const q=window.location.search;const on=/[?&]fresh=1/.test(q)?true:/[?&]fresh=0/.test(q)?false:abVariant("pw_freshness",["control","fresh"],[.3,.7])==="fresh";if(!on)return null;const fr=formatFreshness(updatedAt,lang);return fr?(_t(lang,"vérifié","verified","verificado")+" "+fr):null}catch(_){return null}})()
+          const freshLbl=(()=>{try{if(!updatedAt)return null;const q=window.location.search;const on=/[?&]fresh=1/.test(q)?true:/[?&]fresh=0/.test(q)?false:true;if(!on)return null;const fr=formatFreshness(updatedAt,lang);return fr?(_t(lang,"vérifié","verified","verificado")+" "+fr):null}catch(_){return null}})()
           return(<div onClick={e=>e.stopPropagation()} style={{position:"absolute",left:0,right:0,bottom:0,zIndex:7,padding:"0 12px calc(14px + env(safe-area-inset-bottom))"}}>
             <div style={{maxWidth:520,margin:"0 auto",background:"rgba(7,32,30,.94)",border:"1px solid rgba(95,211,201,.32)",borderRadius:18,padding:"14px 16px",backdropFilter:"blur(10px)",WebkitBackdropFilter:"blur(10px)",color:"#fff",boxShadow:"0 -6px 34px rgba(0,0,0,.5)"}}>
               <div style={{display:"flex",alignItems:"center",gap:11}}>
@@ -12211,7 +12211,7 @@ export default function App(){
     const q=window.location.search
     if(/[?&]stations=1/.test(q)) return true
     if(/[?&]stations=0/.test(q)) return false
-    return abVariant("stations",["control","story"],[.5,.5])==="story"
+    return false
   }catch(_){return false}})()
   const [showStation,setShowStation] = useState(()=>stationOn)
   // MONDE SVG — feed vertical infini des plages (fondation, direction 14/06). Zéro
@@ -12237,7 +12237,7 @@ export default function App(){
   // A/B `prev_az` : landing golden-hour sur /previsions/ (ForecastChart + meilleur jour)
   // vs control (carte brute actuelle). 50/50. Override ?prev_az=1/0. Pathname-gated.
   const isPrevisions=(()=>{try{return /^\/previsions\/?$/.test(window.location.pathname)||/^\/_gp\/previsions\/?$/.test(window.location.pathname)}catch(_){return false}})()
-  const[prevAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]prev_az=1/.test(q))return true;if(/[?&]prev_az=0/.test(q))return false;return isPrevisions&&abVariant("prev_az",["control","az"],[.5,.5])==="az"}catch(_){return false}})
+  const[prevAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]prev_az=1/.test(q))return true;if(/[?&]prev_az=0/.test(q))return false;return false}catch(_){return false}})
   const[showPrevLanding,setShowPrevLanding]=useState(prevAZ)
   const[prevExiting,setPrevExiting]=useState(false)
   const dismissPrevLanding=useCallback(action=>{
@@ -12292,7 +12292,7 @@ export default function App(){
   // A/B `clean_list` : /plages-sans-sargasses/ scene golden-hour + rail clean beaches.
   // Override ?clean_list=1/0. Control = app/carte generique (comportement actuel).
   const isCleanListPath=(()=>{try{return /^\/(?:plages-sans-sargasses|en\/best-beaches-no-sargassum|es\/mejores-playas-sin-sargazo)\/?$/.test(window.location.pathname)}catch(_){return false}})()
-  const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clean_list=1/.test(q))return true;if(/[?&]clean_list=0/.test(q))return false;return isCleanListPath&&abVariant("clean_list",["control","scene"],[.5,.5])==="scene"}catch(_){return false}})
+  const[cleanListAZ]=useState(()=>{try{const q=window.location.search;if(/[?&]clean_list=1/.test(q))return true;if(/[?&]clean_list=0/.test(q))return false;return false}catch(_){return false}})
   const[showCleanList,setShowCleanList]=useState(cleanListAZ)
   const[cleanListExiting,setCleanListExiting]=useState(false)
   const dismissCleanList=useCallback(action=>{
@@ -12306,7 +12306,7 @@ export default function App(){
     try{const q=window.location.search
       if(/[?&]pw_alertes=1/.test(q))return"hub"
       if(/[?&]pw_alertes=0/.test(q))return"control"
-      return abVariant("pw_alertes",["control","hub"],[.5,.5])
+      return "control"
     }catch(_){return"control"}
   })
   const[showAlertHub,setShowAlertHub]=useState(()=>{
@@ -12329,7 +12329,7 @@ export default function App(){
       const q = window.location.search
       if (/[?&]pw_conditions=1/.test(q)) return "conditions"
       if (/[?&]pw_conditions=0/.test(q)) return "control"
-      return abVariant("pw_conditions", ["control", "conditions"], [.7, .3])
+      return "control"
     } catch (_) {
       return "control"
     }
@@ -12372,7 +12372,7 @@ export default function App(){
   // (funnel-jeu immersif, tranche verticale 13/06). Mesuré contre le landing
   // prouvé, jamais imposé ; ?lf=game force en QA. La conversion (paywall/trial/
   // A-B pw_prelude) reste strictement intacte — GameFunnel ne fait que la nourrir.
-  const[landingFunnel]=useState(()=>LF_OVERRIDE||abVariant("landing_funnel",["control","game"],[.7,.3]))
+  const[landingFunnel]=useState(()=>LF_OVERRIDE||"control")
   // Bras A/B `home_az` : accueil A→Z (funnel scroll 5 beats + Le Veilleur
   // satellite v2 rassure≠surveille + yole + perso H1 daté EN DIRECT), porté du
   // design VALIDÉ (src/HomeAZ.jsx, monté en Shadow DOM = isolation CSS totale).
@@ -12527,7 +12527,7 @@ export default function App(){
   const[showExitCap,setShowExitCap]=useState(false)
   const[showExitVeilleur,setShowExitVeilleur]=useState(false)
   // A/B exitcap : capture email de sortie (50/50, override ?exitcap=1/0)
-  const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=1/.test(q))return true;if(/[?&]exitcap=0/.test(q))return false;return abVariant("exitcap",["control","email"],[.5,.5])==="email"}catch(_){return false}},[])
+  const exitcapOn=useMemo(()=>{try{const q=window.location.search;if(/[?&]exitcap=1/.test(q))return true;if(/[?&]exitcap=0/.test(q))return false;return false}catch(_){return false}},[])
   // Carte Veilleur de sortie = FEATURE PRINCIPALE, pas un A/B (décision fondateur 22/06 :
   // « c'est une main feature, on l'ab test pas »). ON pour 100% des partants éligibles ;
   // ?exit_veilleur=0 la désactive (holdout/test ponctuel), ?exit_veilleur=1 reste un no-op ON.
@@ -13132,7 +13132,7 @@ export default function App(){
   // déjà servi network-first). Gated A/B `wn1` (80% journal / 20% holdout) pour
   // mesurer l'effet sur ré-engagement + conversion (verdict via ab-eval).
   useEffect(()=>{
-    if(abVariant("wn1",["journal","off"],[0.8,0.2])!=="journal")return
+    if(false)return
     let cancelled=false
     const numOf=(v)=>parseInt(String(v||"").replace(/^v/,""),10)||0
     const run=async()=>{
