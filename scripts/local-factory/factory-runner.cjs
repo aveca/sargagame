@@ -44,6 +44,34 @@ const LOCK_FILE = path.join(STATE_DIR, 'factory.lock');
 const TELEMETRY_FILE = path.join(STATE_DIR, 'telemetry.json');
 const CIRCUIT_BREAKER_FILE = path.join(STATE_DIR, 'circuit-breakers.json');
 const WORKER_POOL_FILE = path.join(STATE_DIR, 'worker-pool.json');
+const OPENCODE_SEMAPHORE_FILE = path.join(STATE_DIR, 'opencode-semaphore.json');
+
+const MAX_OPENCODE_CONCURRENT = 2;
+
+// Semaphore for OpenCode concurrency control
+function acquireOpenCodeSemaphore(taskId) {
+  let semaphore = { count: 0, holders: [] };
+  if (fs.existsSync(OPENCODE_SEMAPHORE_FILE)) {
+    try { semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8')); } catch (_) {}
+  }
+  if (semaphore.count >= MAX_OPENCODE_CONCURRENT) {
+    return false;
+  }
+  semaphore.count++;
+  semaphore.holders.push({ taskId, acquiredAt: Date.now() });
+  fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
+  return true;
+}
+
+function releaseOpenCodeSemaphore(taskId) {
+  if (!fs.existsSync(OPENCODE_SEMAPHORE_FILE)) return;
+  try {
+    const semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8'));
+    semaphore.count = Math.max(0, semaphore.count - 1);
+    semaphore.holders = semaphore.holders.filter(h => h.taskId !== taskId);
+    fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
+  } catch (_) {}
+}
 
 // UX Observer & Local Agent Executor (autonomous loop)
 const { runUXObserver } = require('../autopilot/ux-observer.cjs');
@@ -430,29 +458,43 @@ async function executeCodeTask(task, worker) {
   const taskId = task.payload?.id || task.payload?.taskId || task.id.replace(/^task-/, '');
   log('code_task.local_execution', { taskId, type: task.payload?.type || 'unknown' });
   
-  // Use the full task payload from autopilot queue (contains all UX task fields)
-  const uxTask = task.payload;
-  
-  // Validate required fields
-  if (!uxTask.title || !uxTask.files || !uxTask.evidence) {
-    throw new Error(`Invalid UX task payload: missing required fields (title, files, evidence)`);
+  // Acquire semaphore for OpenCode concurrency control
+  const acquired = acquireOpenCodeSemaphore(taskId);
+  if (!acquired) {
+    log('code_task.semaphore_wait', { taskId, reason: 'max concurrent OpenCode reached' });
+    // Requeue with backoff
+    const backoff = Math.min(10000 + Math.random() * 5000, 60000);
+    task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
+    return { requeued: true, reason: 'semaphore_wait', backoff };
   }
   
-  const result = await executeLocalAgentTask(uxTask, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
-  
-  if (!result.success) {
-    throw new Error(result.error || 'Local agent execution failed');
+  try {
+    // Use the full task payload from autopilot queue (contains all UX task fields)
+    const uxTask = task.payload;
+    
+    // Validate required fields
+    if (!uxTask.title || !uxTask.files || !uxTask.evidence) {
+      throw new Error(`Invalid UX task payload: missing required fields (title, files, evidence)`);
+    }
+    
+    const result = await executeLocalAgentTask(uxTask, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Local agent execution failed');
+    }
+    
+    return { 
+      taskId, 
+      branch: result.branch, 
+      prUrl: result.prUrl, 
+      prNumber: result.prNumber,
+      commitSha: result.commitSha,
+      duration: result.duration,
+      validation: { before: result.beforeValidation, after: result.afterValidation }
+    };
+  } finally {
+    releaseOpenCodeSemaphore(taskId);
   }
-  
-  return { 
-    taskId, 
-    branch: result.branch, 
-    prUrl: result.prUrl, 
-    prNumber: result.prNumber,
-    commitSha: result.commitSha,
-    duration: result.duration,
-    validation: { before: result.beforeValidation, after: result.afterValidation }
-  };
 }
 
 async function executeTestTask(task, worker) {

@@ -1,14 +1,50 @@
-# Autopilot — état documentaire mis à jour 2026-10-04
+# Autopilot run 2026-10-04-222710399-pgrc-1zwlg
 
-## État vérifié
+- Début : 2026-10-04T22:27:10.399Z · Fin : 2026-10-04T22:27:12.066Z · Durée : 0 min
+- Statut : ✅ cycle complet (sans PR)
 
-- HEAD `main` : `54ba19ba2a8ccdafe42fa2d5ad81fa41d03c81e3`
-- Self-healing : code présent avec réparation en worktree isolé et retry borné côté factory.
-- Visual QA : la propagation de l'URL de preview est prévue dans la branche de correction ; ne pas considérer l'ancien fallback 4183 comme une preuve de production avant validation du commit correspondant.
-- Cloudflare Production : workflow GitHub Actions présent et déploiement Worker prévu pour les cinq régions principales.
-- Observabilité : sentinel live ajouté sur la branche de travail pour scanner production/GitHub/Cloudflare.
-- Webhook Stripe : la parité des régions doit inclure Tulum ; un correctif correspondant est préparé.
+## OBSERVED
+- health OK (6 domains 2xx)
+- sonde Playwright prod lancée (headed=false)…
 
-## Règle
+## REVENUE
+- _(rien)_
 
-Aucun rapport « COMPLETE » ne doit être utilisé comme preuve à lui seul. La preuve doit venir des fichiers, commits, logs et statuts CI/production réellement observés.
+## RESEARCHED
+- _(rien)_
+
+## FOUND
+- _(rien)_
+
+## MEASURED
+- _(rien)_
+
+## SELECTED
+- _(rien)_
+
+## IMPLEMENTED
+- _(rien)_
+
+## TESTED
+- _(rien)_
+
+## FAILED
+- _(rien)_
+
+## FIXED
+- _(rien)_
+
+## PR
+- _(rien)_
+
+## PARKED
+- _(rien)_
+
+## READY
+- _(rien)_
+
+## FACTORY_STOP
+- _(rien)_
+
+## NEXT
+- next cycle (continuous mode)

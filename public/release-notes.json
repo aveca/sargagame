@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v218",
+  "current": "v219",
   "releases": [
+    {
+      "v": "v219",
+      "date": "2026-10-04",
+      "title": {
+        "fr": "Autopilot self-healing + runtime stabilisation",
+        "en": "Autopilot self-healing + runtime stabilisation",
+        "es": "Autopilot auto-reparación + estabilización runtime"
+      },
+      "items": [
+        {
+          "emoji": "🛠️",
+          "fr": "Autopilot self-healing : retry/backoff sur 429, semaphore concurrence, worktree isolé pour réparations.",
+          "en": "Autopilot self-healing: 429 retry/backoff, concurrency semaphore, isolated repair worktree.",
+          "es": "Autopilot auto-reparación: retry/backoff 429, semáforo concurrencia, worktree aislado."
+        },
+        {
+          "emoji": "🛠️",
+          "fr": "Runtime stabilisation : fix concurrence OpenCode, version drift, deploy path unifié.",
+          "en": "Runtime stabilisation: OpenCode concurrency fix, version drift fix, unified deploy path.",
+          "es": "Estabilización runtime: fix concurrencia OpenCode, fix drift versión, deploy unificado."
+        }
+      ]
+    },
     {
       "v": "v218",
       "date": "2026-07-29",
