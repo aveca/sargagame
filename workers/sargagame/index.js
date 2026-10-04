@@ -145,6 +145,19 @@ export default {
       // B2B recurring subscription compatibility with the former PHP endpoint.
       // This uses Mollie's customer subscriptions API; the API key never reaches the browser.
     }
+    // Garde fail-closed (2e barrière après public/.assetsignore) : avec
+    // run_worker_first=true, les assets existants passent AUSSI par ce handler
+    // (sans ça, tout fichier de dist/ serait servi quel que soit le code
+    // ci-dessus — constaté : /api/.htaccess lisible en clair sur workers.dev).
+    // Refus neutre 404 (aucun détail) pour tout ce qui ne doit jamais être
+    // public, même si un futur upload l'y déposait.
+    if(u.pathname.includes("/_private/")
+      || /(^|\/)\.[^/]*$/.test(u.pathname)
+      || /\.php$/i.test(u.pathname)
+      || /\.htaccess$/i.test(u.pathname)
+      || /\.env($|\.)/i.test(u.pathname)) {
+      return out({error:"not_found"},404);
+    }
     if(u.pathname.startsWith("/api/")) return out({error:"api_route_not_migrated",path:u.pathname},404);
     return env.ASSETS.fetch(request);
   }
