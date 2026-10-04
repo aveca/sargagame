@@ -40,6 +40,7 @@ const { runVisualQA } = require('./visual-qa.cjs');
 const { hypothesisFromOpportunity, validateHypothesis, UXHypothesis } = require('./ux-hypothesis.cjs');
 const { deployAndValidatePreview } = require('./preview-deploy.cjs');
 const { runOnlineQA } = require('./online-qa.cjs');
+const selfHealing = require('./lib/self-healing.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -98,28 +99,50 @@ function getEffectiveHeaded() {
   return true;
 }
 
-/** Watchdog — surveille l'absence de progression > 120s */
+/** Watchdog — surveille l'absence de progression > 120s + auto self-healing */
 function startWatchdog() {
   if (!LIVE) return null;
-  return setInterval(() => {
+  return setInterval(async () => {
     const idle = Date.now() - lastProgress;
     if (idle > 120000) {
       log(`[WATCHDOG] No progress for ${Math.round(idle/1000)}s`);
-      log(`[WATCHDOG] Diagnosing stuck phase...`);
-      diagnoseStuckPhase();
+      log(`[WATCHDOG] Initiating self-healing diagnosis...`);
+      await diagnoseAndSelfHeal();
     }
   }, 30000);
 }
 
-/** Diagnose which phase is stuck and attempt recovery */
-function diagnoseStuckPhase() {
+/** Diagnose stuck phase and attempt self-healing */
+async function diagnoseAndSelfHeal() {
   const elapsed = elapsedMin();
   log(`[WATCHDOG] Elapsed: ${elapsed.toFixed(1)}min / ${cfg.loop.maxRunMinutes}min budget`);
   if (budgetExceeded()) {
     log(`[WATCHDOG] Time budget exceeded — will stop at next checkpoint`);
   }
-  // Could add more sophisticated diagnosis here
-  // e.g., check if orchestrator process is alive, etc.
+
+  // Capture current state as error context for self-healing
+  const stuckError = new Error(`Watchdog: No progress for > 120s (elapsed ${elapsed.toFixed(1)}min)`);
+  stuckError.name = 'WatchdogTimeout';
+
+  const context = {
+    phase: 'watchdog',
+    taskId: report.currentTaskId || 'unknown',
+    command: 'orchestrator cycle',
+    exitCode: -1,
+  };
+
+  try {
+    const result = await selfHealing.handleError(stuckError, context, (msg) => log(`[WATCHDOG-HEAL] ${msg}`));
+    if (result.success) {
+      log(`[WATCHDOG] Self-healing SUCCESS: ${result.classification.type} — resuming`);
+      // Reset progress timer to allow continuation
+      lastProgress = Date.now();
+    } else {
+      log(`[WATCHDOG] Self-healing attempted but failed: ${result.reason} — will retry next interval`);
+    }
+  } catch (e) {
+    log(`[WATCHDOG] Self-healing error: ${e.message} — continuing watchdog`);
+  }
 }
 
 async function healthCheck() {
@@ -378,72 +401,31 @@ async function phaseImplementLocal(opp) {
   return { pr, branch, commitSha, wt };
 }
 
-/** Self-repair: classify error and attempt targeted fix */
+/** Self-repair using self-healing supervisor — classify error and attempt targeted fix */
 async function attemptRepair(opp, phase, error, log) {
   const errorMsg = String(error.message || error).slice(0, 500);
-  const errorType = classifyError(errorMsg);
-  log(`REPAIR      ${phase}: ${errorType} — ${errorMsg.slice(0, 120)}`);
-  
-  const repairActions = {
-    'ci-failure': () => repairCIFailure(opp, errorMsg, log),
-    'build-failure': () => repairBuildFailure(opp, errorMsg, log),
-    'test-failure': () => repairTestFailure(opp, errorMsg, log),
-    'preview-deploy-failed': () => repairPreviewDeploy(opp, errorMsg, log),
-    'online-qa-regression': () => repairOnlineQARegression(opp, errorMsg, log),
-    'browser-error': () => repairBrowserError(opp, errorMsg, log),
-    'timeout': () => repairTimeout(opp, errorMsg, log),
-    'unknown': () => ({ attempted: false, reason: 'unknown error type' }),
+  log(`REPAIR      ${phase}: initiating self-healing for: ${errorMsg.slice(0, 120)}`);
+
+  const context = {
+    phase,
+    taskId: opp.id,
+    branch: opp.branch,
+    worktree: opp.worktree,
   };
-  
-  const repair = repairActions[errorType] || repairActions.unknown;
-  return await repair();
-}
 
-function classifyError(errorMsg) {
-  const msg = errorMsg.toLowerCase();
-  if (msg.includes('ci') && (msg.includes('fail') || msg.includes('error') || msg.includes('red'))) return 'ci-failure';
-  if (msg.includes('build') && (msg.includes('fail') || msg.includes('error'))) return 'build-failure';
-  if (msg.includes('test') && (msg.includes('fail') || msg.includes('error') || msg.includes('assert'))) return 'test-failure';
-  if (msg.includes('preview') && (msg.includes('deploy') || msg.includes('fail'))) return 'preview-deploy-failed';
-  if (msg.includes('online qa') && (msg.includes('regression') || msg.includes('fail') || msg.includes('error'))) return 'online-qa-regression';
-  if (msg.includes('browser') || msg.includes('playwright') || msg.includes('pageerror') || msg.includes('console error')) return 'browser-error';
-  if (msg.includes('timeout') || msg.includes('timed out') || msg.includes('etimedout')) return 'timeout';
-  return 'unknown';
-}
-
-async function repairCIFailure(opp, errorMsg, log) {
-  log('REPAIR      CI failure — checking CI logs for actionable error');
-  return { attempted: true, type: 'ci-failure', action: 'CI log analysis needed', detail: errorMsg };
-}
-
-async function repairBuildFailure(opp, errorMsg, log) {
-  log('REPAIR      Build failure — checking for syntax/typo issues');
-  return { attempted: true, type: 'build-failure', action: 'build error analysis needed', detail: errorMsg };
-}
-
-async function repairTestFailure(opp, errorMsg, log) {
-  log('REPAIR      Test failure — extracting failing test details');
-  return { attempted: true, type: 'test-failure', action: 'test failure analysis needed', detail: errorMsg };
-}
-
-async function repairPreviewDeploy(opp, errorMsg, log) {
-  log('REPAIR      Preview deploy failed — checking deployment logs');
-  return { attempted: true, type: 'preview-deploy', action: 'deployment error analysis needed', detail: errorMsg };
-}
-
-async function repairOnlineQARegression(opp, errorMsg, log) {
-  log('REPAIR      Online QA regression — identifying failing route/interaction');
-  return { attempted: true, type: 'online-qa', action: 'QA regression analysis needed', detail: errorMsg };
-}
-
-async function repairBrowserError(opp, errorMsg, log) {
-  log('REPAIR      Browser error — checking for page errors/console errors');
-  return { attempted: true, type: 'browser', action: 'browser error analysis needed', detail: errorMsg };
-}
-
-async function repairTimeout(opp, errorMsg, log) {
-  log('REPAIR      Timeout — may need more time or optimization');
-  return { attempted: true, type: 'timeout', action: 'timeout handling needed', detail: errorMsg };
+  try {
+    const result = await selfHealing.handleError(error, context, (msg) => log(`REPAIR      ${msg}`));
+    if (result.success) {
+      log(`REPAIR      ${phase}: self-healing SUCCESS — ${result.classification.type} fixed`);
+      return { attempted: true, type: result.classification.type, action: 'self-healed', detail: result.repairPlan?.analysis };
+    } else {
+      log(`REPAIR      ${phase}: self-healing attempted but failed: ${result.reason}`);
+      return { attempted: true, type: result.classification?.type || 'unknown', action: 'failed', detail: result.reason };
+    }
+  } catch (e) {
+    log(`REPAIR      ${phase}: self-healing error: ${e.message}`);
+    return { attempted: false, reason: `self-healing crashed: ${e.message}` };
+  }
 }
 
 /** CI WAIT + PREVIEW DEPLOY with true self-repair (max 3) */

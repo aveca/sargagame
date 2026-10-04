@@ -50,6 +50,7 @@ const { runUXObserver } = require('../autopilot/ux-observer.cjs');
 const { executeLocalAgentTask, executeCodeTaskLocal } = require('../autopilot/local-agent-executor.cjs');
 const autopilotCommon = require('../autopilot/lib/common.cjs');
 const autopilotConfig = autopilotCommon.loadConfig();
+const selfHealing = require('../autopilot/lib/self-healing.cjs');
 
 // Worker model tiers
 const WORKER_TIERS = [
@@ -275,6 +276,33 @@ async function executeTask(task, worker) {
     const duration = Date.now() - startTime;
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
+    
+    // Attempt self-healing for factory infrastructure errors
+    const context = {
+      phase: 'factory-task',
+      taskId: task.id,
+      command: `executeTask:${taskType}`,
+      exitCode: -1,
+    };
+    
+    try {
+      const healResult = await selfHealing.handleError(error, context, (msg) => log('self-heal', { taskId: task.id, msg }));
+      if (healResult.success) {
+        log('task.self_healed', { id: task.id, type: taskType, classification: healResult.classification.type });
+        // Retry the task once after successful self-healing
+        try {
+          const retryResult = await executeTask(task, worker);
+          return retryResult;
+        } catch (retryError) {
+          log('task.retry_failed', { id: task.id, error: retryError.message });
+        }
+      } else {
+        log('task.self_heal_failed', { id: task.id, reason: healResult.reason });
+      }
+    } catch (healError) {
+      log('task.self_heal_error', { id: task.id, error: healError.message });
+    }
+    
     // Do not trip a model circuit breaker for application/test/Git failures.
     // Provider health is classified centrally by executeWithFallback().
     throw error;
@@ -282,9 +310,13 @@ async function executeTask(task, worker) {
 }
 
 async function executeWithFallback(task) {
+  // code_task is LOCAL-ONLY (OpenCode + Ollama) — never falls back to cloud models
+  const isCodeTask = task.type === 'code_task';
   let lastError;
   
-  for (let tierIndex = 0; tierIndex < WORKER_TIERS.length; tierIndex++) {
+  const maxTiers = isCodeTask ? 1 : WORKER_TIERS.length;
+  
+  for (let tierIndex = 0; tierIndex < maxTiers; tierIndex++) {
     const worker = getAvailableWorker(tierIndex);
     if (!worker) {
       log('worker.exhausted', { taskId: task.id, triedTiers: tierIndex });
@@ -310,6 +342,11 @@ async function executeWithFallback(task) {
         is429, isTimeout, isModelError,
         nextTier: tierIndex + 1
       });
+      
+      // code_task never falls back — local agent either works or fails honestly
+      if (isCodeTask) {
+        throw error;
+      }
       
       // Backoff before retry
       const backoff = Math.min(1000 * Math.pow(2, tierIndex) + Math.random() * 1000, 30000);

@@ -78,9 +78,10 @@ const path = require('path');
   });
   const page = await context.newPage();
 
-  const issues = [];
-  page.on('console', msg => { if (msg.type() === 'error' && !msg.text().includes('Failed to load resource')) issues.push(msg.text()); });
-  page.on('pageerror', err => issues.push(err.message));
+const issues = [];
+   page.on('console', msg => { if (msg.type() === 'error' && !msg.text().includes('Failed to load resource')) issues.push(msg.text()); });
+   page.on('pageerror', err => issues.push(err.message));
+   // Note: 'g' was previously used here but is undefined - fixed to use 'page'
 
   try {
     await page.goto('${url}', { waitUntil: 'networkidle', timeout: 30000 });
@@ -115,11 +116,11 @@ function getViewport(name) {
  * Retourne { match: boolean, diffPixels: number, diffPercent: number }
  */
 async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
-  // Utilise pixelmatch via Playwright ou script Node (ESM import for pixelmatch)
+  // Utilise pixelmatch via script Node (CommonJS require)
   const script = `
-import fs from 'fs';
-import { PNG } from 'pngjs';
-import pixelmatch from 'pixelmatch';
+const fs = require('fs');
+const { PNG } = require('pngjs');
+const pixelmatch = require('pixelmatch');
 
 const img1 = PNG.sync.read(fs.readFileSync('${baselinePath}'));
 const img2 = PNG.sync.read(fs.readFileSync('${currentPath}'));
@@ -138,8 +139,7 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
 `;
 
   return new Promise((resolve, reject) => {
-    // Use --input-type=module for ESM
-    const child = spawn(process.execPath, ['--input-type=module', '-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     child.stdout.on('data', d => { out += d; });
     child.on('exit', code => {
