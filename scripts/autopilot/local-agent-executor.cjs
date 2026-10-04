@@ -186,7 +186,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
       }
       
       // Run visual QA to establish baselines
-      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop']);
+      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], { baseUrl });
       
       return {
         success: true,
