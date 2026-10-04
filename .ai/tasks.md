@@ -35,7 +35,7 @@
 - **Description** : ~50 flags `abVariant()` dans `Sargasses_PROD.jsx` diluent le trafic et compliquent les changements UX. Garder les flags avec résultats sig., supprimer le reste.
 - **Comment** : `grep abVariant src/Sargasses_PROD.jsx` → lister → identifier ceux validés → supprimer les perdants
 - **Estimation** : 2h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P1-001 — in_progress by coding_agent
 
 ### TASK-P1-002 Tests E2E Playwright du funnel payant
 - **Priorité** : P1
