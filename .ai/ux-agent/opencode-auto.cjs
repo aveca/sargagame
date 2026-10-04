@@ -95,9 +95,12 @@ async function main() {
   const child = spawn(command, opencodeArgs, {
     cwd: process.cwd(),
     env,
-    stdio: 'inherit',
-    windowsHide: false,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    windowsHide: true,
   });
+  
+  child.stdout?.on('data', d => { process.stdout.write(d); });
+  child.stderr?.on('data', d => { process.stderr.write(d); });
   
   child.on('error', e => {
     console.error('[local-agent] OpenCode spawn failed: ' + e.message);

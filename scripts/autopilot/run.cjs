@@ -47,6 +47,8 @@ if (args.includes('--continuous')) {
 }
 
 const r = spawnSync(process.execPath, [path.join(__dirname, script), ...passthrough], {
-  cwd: path.resolve(__dirname, '..', '..'), stdio: 'inherit',
+  cwd: path.resolve(__dirname, '..', '..'), 
+  stdio: ['ignore', 'pipe', 'pipe'],
+  windowsHide: true,
 });
 process.exit(r.status == null ? 1 : r.status);

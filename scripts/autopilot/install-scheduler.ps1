@@ -17,7 +17,11 @@ $repo = Split-Path -Parent (Split-Path -Parent (Split-Path -Parent $MyInvocation
 $cmd = Join-Path $repo "scripts\autopilot\autopilot-live.cmd"
 if (-not (Test-Path $cmd)) { throw "autopilot-live.cmd introuvable : $cmd" }
 
-$action = New-ScheduledTaskAction -Execute "$env:ComSpec" -Argument "/c `"$cmd`"" -WorkingDirectory $repo
+# Run completely hidden: use PowerShell -WindowStyle Hidden to avoid any visible window
+$psHidden = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$escapedRepo = $repo.Replace("'", "''")
+$escapedCmd = $cmd.Replace("'", "''")
+$action = New-ScheduledTaskAction -Execute $psHidden -Argument "-NoProfile -WindowStyle Hidden -Command & { cd '$escapedRepo'; & '$escapedCmd' }" -WorkingDirectory $repo
 
 $triggers = @(
   (New-ScheduledTaskTrigger -AtStartup)
