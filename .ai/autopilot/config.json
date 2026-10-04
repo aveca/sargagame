@@ -128,14 +128,14 @@
   },
   "health": {
     "requiredDomains": [
-      "sargasses-martinique.com"
+      "sargasses-martinique.com",
+      "sargazotulum.com"
     ],
     "warnDomains": [
       "sargasses-guadeloupe.com",
       "sargassummiami.com",
       "sargassumpuntacana.com",
-      "sargassumcancun.com",
-      "sargazotulum.com"
+      "sargassumcancun.com"
     ],
     "timeoutMs": 10000
   }
