@@ -28,9 +28,14 @@ const BASELINE_DIR = path.join(C.paths.baselines, 'visual');
 /**
  * Capture un screenshot d'une route dans un worktree
  */
-async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current') {
+async function captureScreenshot(wt, route, viewport = 'mobile', label = 'current', baseUrl = process.env.SARGA_PREVIEW_BASE || 'http://localhost:4173') {
   const vp = getViewport(viewport);
-  const url = `http://localhost:4183${route}`; // Assumes preview server running
+  let url;
+  try {
+    url = new URL(route, baseUrl).toString();
+  } catch (e) {
+    throw new Error(`invalid preview URL for ${route}@${viewport}: ${e.message}`);
+  }
 
   const script = buildCaptureScript(url, route, viewport, label, wt);
   const scriptPath = path.join(wt, '.ai', 'autopilot', 'tmp', `capture-${route.replace(/\//g, '-')}-${viewport}-${label}-${Date.now()}.cjs`);
@@ -40,6 +45,7 @@ async function captureScreenshot(wt, route, viewport = 'mobile', label = 'curren
   return new Promise((resolve, reject) => {
     const pw = spawn(process.execPath, ['scripts/autopilot/playwright-runner.cjs', scriptPath], {
       cwd: wt, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
+      env: { ...process.env, SARGA_PREVIEW_BASE: baseUrl },
     });
 
     let out = '', err = '';
@@ -93,7 +99,7 @@ const path = require('path');
 
     console.log(JSON.stringify({ route: '${route}', viewport: '${viewport}', label: '${label}', path: shotPath, issues }));
   } catch (e) {
-    console.log(JSON.stringify({ route: '${route}', viewport: '${viewport}', label: '${label}', error: e.message }));
+    console.log(JSON.stringify({ route: '${route}', viewport: '${viewport}', label: '${label}', error: e.message, stack: e.stack }));
   } finally {
     await browser.close();
   }
@@ -139,7 +145,11 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
 
   return new Promise((resolve, reject) => {
     // Use --input-type=module for ESM
-    const child = spawn(process.execPath, ['--input-type=module', '-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['--input-type=module', '-e', script], {
+      cwd: C.ROOT,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true,
+    });
     let out = '';
     child.stdout.on('data', d => { out += d; });
     child.on('exit', code => {
@@ -172,8 +182,9 @@ async function updateBaseline(route, viewport, sourcePath) {
  * Exécute le visual QA complet pour un worktree
  * Retourne { passed: boolean, results: [], summary }
  */
-async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop']) {
-  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports`);
+async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], options = {}) {
+  const baseUrl = options.baseUrl || process.env.SARGA_PREVIEW_BASE || 'http://localhost:4173';
+  log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports (base=${baseUrl})`);
 
   const results = [];
   let passed = true;
@@ -182,7 +193,10 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
     for (const viewport of viewports) {
       try {
         // Capture current
-        const current = await captureScreenshot(wt, route, viewport, 'current');
+        const current = await captureScreenshot(wt, route, viewport, 'current', baseUrl);
+        if (!current || current.error || !current.path) {
+          throw new Error(`screenshot failed for ${route}@${viewport}: ${current?.error || 'missing screenshot path'}${current?.stack ? `\n${current.stack}` : ''}`);
+        }
 
         // Get baseline
         const baseline = await getBaseline(route, viewport);
@@ -205,9 +219,9 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
           log(`visual-qa: ${route}@${viewport} diff=${(comparison.diffPercent*100).toFixed(2)}% ${comparison.match ? 'PASS' : 'FAIL'}`);
         } else {
           // First run - establish baseline
-          await updateBaseline(route, viewport, current.path);
-          results.push({ route, viewport, baseline: current.path, established: true, passed: true });
-          log(`visual-qa: ${route}@${viewport} baseline established`);
+          const baselinePath = await updateBaseline(route, viewport, current.path);
+          results.push({ route, viewport, baseline: baselinePath, current: current.path, established: true, passed: true });
+          log(`visual-qa: ${route}@${viewport} baseline established at ${baselinePath}`);
         }
       } catch (e) {
         results.push({ route, viewport, error: e.message, passed: false });
