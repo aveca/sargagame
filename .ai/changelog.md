@@ -4,6 +4,24 @@
 
 ---
 
+## 2026-10-03 — principal_agent (OpenCode)
+
+**Mission autonome production + paiement + factory 24/7 :**
+
+- Smoke test Windows corrigé via `scripts/run-smoke.cjs` (orchestrateur `withPreviewServer`, cross-platform) — 4 tokens OK
+- Gate de ship complet validé : tests 5/5, build OK, bundle 207.1 Ko ≤ 210 Ko, smoke OK, PHP lint OK
+- Fix factory-runner : mapping queue ID `task-TASK-XXX` → tasks.md ID `TASK-XXX` (executeCodeTask, executeGenericTask, updateTaskInProgress)
+- Fix agent-handoff : `git add -A` avant commit (échec sur arbre sale), skip si déjà claim/done
+- Fix agent-handoff.yml : 3 blocs `run: |` avaient du contenu colonne-0 (heredoc Python, --body issue/PR) → YAML invalide, stub-runs 0s en échec sur chaque push. Réindenté, 35/35 workflows valides (commit local 1967f985 — push bloqué : token sans scope `workflow`)
+- Merge origin/main (25 commits distants : hardening factory/cloudflare/paiement) — conflit `queue/.gitignore` résolu en faveur version distante durcie (`state/` + `*.json`)
+- Push 934ec1c7 → CI verte : Daily Copernicus + Deploy SUCCESS (FTP + health-check), CI Tests SUCCESS, Perf Budget SUCCESS
+- Post-deploy vérifié : homepage 200, sargassum.json live, mollie.php 405-sur-GET (POST-only OK), sitemap.xml + robots.txt live
+- Cloudflare Production : workers uploadés OK, échec route attach (`No access`) → token API sans permission routes (BLOCKED_EXTERNAL)
+
+**Files :** `scripts/local-factory/factory-runner.cjs`, `scripts/agent-handoff.cjs`, `.github/workflows/agent-handoff.yml`, `.gitignore`, `queue/` (runtime untracked)
+
+---
+
 ## 2026-07-31 — release_engineer (OpenCode)
 
 **Production Release Cleanup & Validation :**
