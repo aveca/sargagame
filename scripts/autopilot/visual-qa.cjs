@@ -115,11 +115,11 @@ function getViewport(name) {
  * Retourne { match: boolean, diffPixels: number, diffPercent: number }
  */
 async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
-  // Utilise pixelmatch via Playwright ou script Node
+  // Utilise pixelmatch via Playwright ou script Node (ESM import for pixelmatch)
   const script = `
-const fs = require('fs');
-const { PNG } = require('pngjs');
-const pixelmatch = require('pixelmatch');
+import fs from 'fs';
+import { PNG } from 'pngjs';
+import pixelmatch from 'pixelmatch';
 
 const img1 = PNG.sync.read(fs.readFileSync('${baselinePath}'));
 const img2 = PNG.sync.read(fs.readFileSync('${currentPath}'));
@@ -138,7 +138,8 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
 `;
 
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    // Use --input-type=module for ESM
+    const child = spawn(process.execPath, ['--input-type=module', '-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     child.stdout.on('data', d => { out += d; });
     child.on('exit', code => {

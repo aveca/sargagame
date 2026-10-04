@@ -9,6 +9,8 @@
     // handler (garde _private/.php/dotfiles morte — constaté : /api/.htaccess
     // lisible sur workers.dev). true = chaque requête passe par index.js.
     "run_worker_first":true},
-  "vars":{"SUPABASE_URL":"https://rswdmjtdzrucqzzukfmd.supabase.co"},
-  "routes":[{"pattern":"__DOMAIN__/*","zone_name":"__DOMAIN__"}]
+  "vars":{"SUPABASE_URL":"https://rswdmjtdzrucqzzukfmd.supabase.co"}
+  // routes retirés : nécessitent permission "Workers Routes:Edit" sur le token Cloudflare.
+  // Le Worker déploie sur workers.dev ; les routes domaines custom se configurent
+  // une fois manuellement dans Cloudflare Dashboard (DNS + Workers Routes).
 }
