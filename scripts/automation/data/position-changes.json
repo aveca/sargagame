@@ -1,78 +1,291 @@
 {
-  "generatedAt": "2026-08-03T14:02:54.211Z",
-  "comparedTo": "2026-07-27",
+  "generatedAt": "2026-10-05T19:54:00.168Z",
+  "comparedTo": "2026-08-03",
   "alerts": {
     "drops": [
       {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/",
-        "prevPos": 28.9,
-        "currPos": 42.8,
-        "delta": 13.9,
-        "impressions": 283
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+        "prevPos": 6.1,
+        "currPos": 26.1,
+        "delta": 20,
+        "impressions": 80
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/en/",
+        "prevPos": 1.7,
+        "currPos": 5.4,
+        "delta": 3.7,
+        "impressions": 254
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+        "prevPos": 1.6,
+        "currPos": 15.6,
+        "delta": 14,
+        "impressions": 66
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/saison-sargasses-martinique/",
+        "prevPos": 5.4,
+        "currPos": 9.8,
+        "delta": 4.4,
+        "impressions": 66
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages/anse-michel/",
+        "prevPos": 4.7,
+        "currPos": 13.4,
+        "delta": 8.7,
+        "impressions": 31
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+        "prevPos": 4.6,
+        "currPos": 12,
+        "delta": 7.4,
+        "impressions": 32
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/detection-satellite-sargasses/",
+        "prevPos": 10.6,
+        "currPos": 22,
+        "delta": 11.4,
+        "impressions": 20
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/en/",
+        "prevPos": 4.4,
+        "currPos": 7.5,
+        "delta": 3.1,
+        "impressions": 63
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/anse-a-la-gourde/",
+        "prevPos": 11.2,
+        "currPos": 18.1,
+        "delta": 6.9,
+        "impressions": 23
+      }
+    ],
+    "gains": [],
+    "appeared": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/saison-sargasses-guadeloupe/",
+        "avgPos": 6.3,
+        "clicks": 10,
+        "impressions": 205
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/meteo-sargasses-guadeloupe/",
+        "avgPos": 9.7,
+        "clicks": 1,
+        "impressions": 116
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/plages/plage-de-sinai/",
+        "avgPos": 11.2,
+        "clicks": 0,
+        "impressions": 124
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+        "avgPos": 43.7,
+        "clicks": 0,
+        "impressions": 78
+      }
+    ],
+    "vanished": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/meteo-sargasses-martinique/",
+        "prevImpressions": 133
       },
       {
         "site": "gp",
         "page": "https://sargasses-guadeloupe.com/plages/ile-de-la-petite-terre/",
-        "prevPos": 1.3,
-        "currPos": 20.2,
-        "delta": 18.9,
-        "impressions": 42
+        "prevImpressions": 42
       },
       {
         "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
-        "prevPos": 2.3,
-        "currPos": 6.1,
-        "delta": 3.8,
-        "impressions": 137
+        "page": "https://sargasses-guadeloupe.com/plages/plage-de-saint-francois/",
+        "prevImpressions": 77
       },
       {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/en/best-beaches-martinique/",
-        "prevPos": 23.5,
-        "currPos": 30.5,
-        "delta": 7,
-        "impressions": 33
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
+        "prevImpressions": 99
       },
       {
-        "site": "puntacana",
-        "page": "https://sargassumpuntacana.com/es/playas/punta-cana-beach/",
-        "prevPos": 54.9,
-        "currPos": 59.5,
-        "delta": 4.6,
-        "impressions": 34
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/plages/anse-champagne/",
+        "prevImpressions": 99
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+        "prevImpressions": 64
       },
       {
         "site": "gp",
         "page": "https://sargasses-guadeloupe.com/meilleures-plages-guadeloupe-sargasses/",
-        "prevPos": 7.9,
-        "currPos": 11.3,
-        "delta": 3.4,
-        "impressions": 40
-      }
-    ],
-    "gains": [
+        "prevImpressions": 40
+      },
       {
-        "site": "rivieramaya",
-        "page": "https://sargassumcancun.com/semaforo-del-sargazo/",
-        "prevPos": 55.2,
-        "currPos": 44.2,
-        "delta": -11,
-        "impressions": 85
+        "site": "florida",
+        "page": "https://sargassummiami.com/",
+        "prevImpressions": 1538
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/es/mapa-sargazo/",
+        "prevImpressions": 144
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/es/",
+        "prevImpressions": 614
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/seaweed-map/",
+        "prevImpressions": 110
+      },
+      {
+        "site": "florida",
+        "page": "https://sargassummiami.com/beaches-without-sargassum-today/",
+        "prevImpressions": 119
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/",
+        "prevImpressions": 1174
       },
       {
         "site": "puntacana",
         "page": "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/",
-        "prevPos": 29,
-        "currPos": 23.5,
-        "delta": -5.5,
-        "impressions": 64
+        "prevImpressions": 64
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/es/",
+        "prevImpressions": 87
+      },
+      {
+        "site": "puntacana",
+        "page": "https://sargassumpuntacana.com/es/sargazo-punta-cana-hoy/",
+        "prevImpressions": 45
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/",
+        "prevImpressions": 283
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/en/",
+        "prevImpressions": 405
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/sargazo-salud-riesgos/",
+        "prevImpressions": 319
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/temporada-sargazo-rivieramaya/",
+        "prevImpressions": 310
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/semaforo-del-sargazo/",
+        "prevImpressions": 85
+      },
+      {
+        "site": "rivieramaya",
+        "page": "https://sargassumcancun.com/mapa-sargazo/",
+        "prevImpressions": 54
       }
     ],
-    "appeared": [],
-    "vanished": [],
-    "queryDrops": [],
-    "queryGains": []
+    "queryDrops": [
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/",
+        "query": "sargasses martinique",
+        "prevPos": 4.9,
+        "currPos": 6.4,
+        "delta": 1.5,
+        "prevImpressions": 2225,
+        "impressions": 1295,
+        "clicks": 54,
+        "prevClicks": 275
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/",
+        "query": "carte sargasse martinique",
+        "prevPos": 2.8,
+        "currPos": 4.3,
+        "delta": 1.5,
+        "prevImpressions": 366,
+        "impressions": 98,
+        "clicks": 10,
+        "prevClicks": 83
+      }
+    ],
+    "queryGains": [
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/",
+        "query": "les sargasses en guadeloupe",
+        "prevPos": 9.1,
+        "currPos": 6,
+        "delta": -3.1,
+        "impressions": 204,
+        "clicks": 6
+      },
+      {
+        "site": "mq",
+        "page": "https://sargasses-martinique.com/carte-sargasses/",
+        "query": "carte sargasse martinique",
+        "prevPos": 9.1,
+        "currPos": 6.4,
+        "delta": -2.7,
+        "impressions": 62,
+        "clicks": 7
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/carte-sargasses/",
+        "query": "sargasse guadeloupe en direct",
+        "prevPos": 8.4,
+        "currPos": 5.9,
+        "delta": -2.5,
+        "impressions": 70,
+        "clicks": 7
+      },
+      {
+        "site": "gp",
+        "page": "https://sargasses-guadeloupe.com/",
+        "query": "sargasse en guadeloupe",
+        "prevPos": 5,
+        "currPos": 2.7,
+        "delta": -2.3,
+        "impressions": 61,
+        "clicks": 9
+      }
+    ]
   }
 }

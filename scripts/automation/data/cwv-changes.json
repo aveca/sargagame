@@ -1,15 +1,165 @@
 {
-  "generatedAt": "2026-08-03T14:02:54.459Z",
+  "generatedAt": "2026-10-05T19:54:00.397Z",
   "kind": "delta",
   "changes": [
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 3660,
+      "to": 2224,
+      "delta": -1436,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "mq",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 3579,
+      "to": 2462,
+      "delta": -1117,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
     {
       "site": "puntacana",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 3432,
-      "to": 3206,
-      "delta": -226,
+      "from": 3206,
+      "to": 2218,
+      "delta": -988,
       "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "LCP",
+      "from": 3209,
+      "to": 2420,
+      "delta": -789,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 980,
+      "to": 439,
+      "delta": -541,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "mq",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 998,
+      "to": 474,
+      "delta": -524,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "puntacana",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 862,
+      "to": 596,
+      "delta": -266,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 578,
+      "to": 393,
+      "delta": -185,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "TTFB",
+      "from": 680,
+      "to": 495,
+      "delta": -185,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "mq",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 435,
+      "to": 312,
+      "delta": -123,
+      "kind": "improvement",
+      "crossesThreshold": false
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 310,
+      "to": 187,
+      "delta": -123,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "puntacana",
+      "formFactor": "combined",
+      "metric": "INP",
+      "from": 259,
+      "to": 171,
+      "delta": -88,
+      "kind": "improvement",
+      "crossesThreshold": true
+    },
+    {
+      "site": "florida",
+      "formFactor": "combined",
+      "metric": "CLS",
+      "from": 0.01,
+      "to": 0.27,
+      "delta": 0.26,
+      "kind": "regression",
+      "crossesThreshold": true
+    },
+    {
+      "site": "mq",
+      "formFactor": "combined",
+      "metric": "CLS",
+      "from": 0.01,
+      "to": 0.18,
+      "delta": 0.16999999999999998,
+      "kind": "regression",
+      "crossesThreshold": true
+    },
+    {
+      "site": "puntacana",
+      "formFactor": "combined",
+      "metric": "CLS",
+      "from": 0.01,
+      "to": 0.09,
+      "delta": 0.08,
+      "kind": "regression",
+      "crossesThreshold": false
+    },
+    {
+      "site": "gp",
+      "formFactor": "combined",
+      "metric": "CLS",
+      "from": 0.02,
+      "to": 0.07,
+      "delta": 0.05,
+      "kind": "regression",
       "crossesThreshold": false
     }
   ]

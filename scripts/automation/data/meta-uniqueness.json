@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-03T14:03:02.769Z",
+  "generatedAt": "2026-10-05T19:54:08.667Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
-      "uniqueTitles": 206,
-      "uniqueDescs": 189,
+      "pageCount": 363,
+      "uniqueTitles": 205,
+      "uniqueDescs": 188,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -31,7 +31,7 @@
           ]
         }
       ],
-      "issueCount": 546,
+      "issueCount": 548,
       "issues": [
         {
           "file": "404.html",
@@ -121,14 +121,19 @@
           "value": "Plages avec mer agitée aujourd’hui — Martinique (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 96
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 99
+          "length": 89
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -188,19 +193,13 @@
           "file": "en/sargassum-alerts/index.html",
           "kind": "desc-length-warn",
           "length": 106
-        },
-        {
-          "file": "en/sargassum-health/index.html",
-          "kind": "title-length-warn",
-          "length": 65,
-          "value": "Is sargassum dangerous? Health effects, who's at risk, what to do"
         }
       ]
     },
     "gp": {
-      "pageCount": 403,
-      "uniqueTitles": 245,
-      "uniqueDescs": 229,
+      "pageCount": 402,
+      "uniqueTitles": 244,
+      "uniqueDescs": 228,
       "duplicateTitleGroups": 1,
       "duplicateDescGroups": 1,
       "duplicateTitlePages": 3,
@@ -327,14 +326,19 @@
           "value": "Plages avec mer agitée aujourd’hui — Guadeloupe (surf, bodyboard)"
         },
         {
+          "file": "conditions/mer-agitee/index.html",
+          "kind": "desc-length-warn",
+          "length": 114
+        },
+        {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 107
+          "length": 96
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 99
+          "length": 89
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -383,12 +387,6 @@
           "file": "en/index.html",
           "kind": "desc-length-warn",
           "length": 119
-        },
-        {
-          "file": "en/sargassum-alerts/index.html",
-          "kind": "title-length-warn",
-          "length": 66,
-          "value": "Sargassum alerts Guadeloupe & Martinique — Real-time notifications"
         }
       ]
     }

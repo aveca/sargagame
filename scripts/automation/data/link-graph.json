@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-08-03T14:03:01.930Z",
+  "generatedAt": "2026-10-05T19:54:07.959Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
-      "noIncomingCount": 193,
-      "fewIncomingCount": 44,
+      "pageCount": 363,
+      "noIncomingCount": 194,
+      "fewIncomingCount": 42,
       "phantomCount": 12,
       "noIncoming": [
         {
@@ -111,6 +111,11 @@
           "url": "/sargasses-aujourdhui/",
           "in": 0,
           "out": 10
+        },
+        {
+          "url": "/sargasses-juillet-2026/",
+          "in": 0,
+          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -251,23 +256,18 @@
           "url": "/widget/embed/anse-cafard/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-canot-marie-galante/",
-          "in": 0,
-          "out": 0
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 18
+          "out": 7
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 13
+          "out": 7
         },
         {
           "url": "/en/sargassum-health/",
@@ -303,16 +303,6 @@
           "url": "/que-faire-sargasses-martinique/",
           "in": 1,
           "out": 12
-        },
-        {
-          "url": "/sargasses-aout-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
-          "url": "/sargasses-juillet-2026/",
-          "in": 1,
-          "out": 3
         },
         {
           "url": "/sargasses-martinique-cette-semaine/",
@@ -408,12 +398,22 @@
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 2,
           "out": 2
+        },
+        {
+          "url": "/es/temporada-sargazo/",
+          "in": 2,
+          "out": 2
+        },
+        {
+          "url": "/faq/",
+          "in": 2,
+          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 188,
+          "in": 187,
           "out": 17
         },
         {
@@ -438,7 +438,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 48,
+          "in": 47,
           "out": 8
         },
         {
@@ -457,9 +457,9 @@
           "out": 9
         },
         {
-          "url": "/plages/grande-anse-d-arlet/",
-          "in": 23,
-          "out": 10
+          "url": "/plages/plages-cote-caraibe-martinique/",
+          "in": 22,
+          "out": 24
         }
       ],
       "topDonors": [
@@ -467,11 +467,6 @@
           "url": "/plages/",
           "in": 63,
           "out": 55
-        },
-        {
-          "url": "/conditions/uv-fort/",
-          "in": 6,
-          "out": 36
         },
         {
           "url": "/plages/plages-cote-caraibe-martinique/",
@@ -489,29 +484,34 @@
           "out": 20
         },
         {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 18
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 18
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 18
-        },
-        {
           "url": "/",
-          "in": 188,
+          "in": 187,
           "out": 17
         },
         {
           "url": "/sargasses-la-trinite/",
           "in": 3,
           "out": 16
+        },
+        {
+          "url": "/sargasses-sainte-anne-martinique/",
+          "in": 9,
+          "out": 16
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "in": 13,
+          "out": 16
+        },
+        {
+          "url": "/sargasses-sainte-luce/",
+          "in": 6,
+          "out": 14
+        },
+        {
+          "url": "/saison-sargasses-martinique/",
+          "in": 28,
+          "out": 14
         }
       ],
       "phantom": [
@@ -593,9 +593,9 @@
       ]
     },
     "gp": {
-      "pageCount": 403,
-      "noIncomingCount": 199,
-      "fewIncomingCount": 44,
+      "pageCount": 402,
+      "noIncomingCount": 200,
+      "fewIncomingCount": 42,
       "phantomCount": 16,
       "noIncoming": [
         {
@@ -724,6 +724,11 @@
           "out": 13
         },
         {
+          "url": "/sargasses-juillet-2026/",
+          "in": 0,
+          "out": 2
+        },
+        {
           "url": "/sargasses-les-saintes/",
           "in": 0,
           "out": 12
@@ -842,23 +847,18 @@
           "url": "/widget/embed/anse-a-la-barque-vh/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-a-la-gourde/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 29
+          "out": 7
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 11
+          "out": 7
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -921,19 +921,9 @@
           "out": 10
         },
         {
-          "url": "/sargasses-aout-2026/",
-          "in": 1,
-          "out": 3
-        },
-        {
           "url": "/sargasses-guadeloupe-cette-semaine/",
           "in": 1,
           "out": 11
-        },
-        {
-          "url": "/sargasses-juillet-2026/",
-          "in": 1,
-          "out": 3
         },
         {
           "url": "/sargasses-saint-francois/",
@@ -999,12 +989,22 @@
           "url": "/comprendre-sargasses/",
           "in": 2,
           "out": 8
+        },
+        {
+          "url": "/en/best-beaches-guadeloupe/",
+          "in": 2,
+          "out": 1
+        },
+        {
+          "url": "/en/understanding-sargassum/",
+          "in": 2,
+          "out": 0
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 313,
+          "in": 312,
           "out": 15
         },
         {
@@ -1029,7 +1029,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 48,
+          "in": 47,
           "out": 8
         },
         {
@@ -1065,26 +1065,6 @@
           "out": 38
         },
         {
-          "url": "/conditions/uv-fort/",
-          "in": 6,
-          "out": 36
-        },
-        {
-          "url": "/conditions/mer-calme/",
-          "in": 6,
-          "out": 30
-        },
-        {
-          "url": "/conditions/plages-enfants/",
-          "in": 1,
-          "out": 29
-        },
-        {
-          "url": "/conditions/baignade-ideale/",
-          "in": 6,
-          "out": 28
-        },
-        {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
           "out": 27
@@ -1103,6 +1083,26 @@
           "url": "/sargasses-sainte-rose/",
           "in": 3,
           "out": 15
+        },
+        {
+          "url": "/sargasses-terre-de-haut-les-saintes/",
+          "in": 3,
+          "out": 15
+        },
+        {
+          "url": "/plages-sans-sargasses/",
+          "in": 10,
+          "out": 15
+        },
+        {
+          "url": "/",
+          "in": 312,
+          "out": 15
+        },
+        {
+          "url": "/sargasses-la-desirade/",
+          "in": 3,
+          "out": 14
         }
       ],
       "phantom": [
