@@ -948,7 +948,8 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // plan/setPlan/effectivePlan) du PremiumModal parent → ZÉRO logique de paiement ici.
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
+// Header variants: scene (golden-hour), constel (constellation map), beat (beat panel).
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,headerVariant="scene"}){
    const ST=ctxStatus||(beach&&beach.status)||null
    const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
    const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
@@ -1081,42 +1082,161 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
        @media(prefers-reduced-motion:reduce){.pwx-title{animation:none;text-shadow:2px 2px 0 #fff}.pwx-plan{transition:none}.pwx-cta{transition:none}.pwx-pow{display:none}}
      `}</style>
     <div className="pwx-wrap">
-      <div className="pwx-hero">
-        <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-          <defs><linearGradient id="pwxSky" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#2e1a5e"/><stop offset=".5" stopColor="#6a2f9e"/>
-            <stop offset=".78" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/></linearGradient></defs>
-          <rect width="430" height="200" fill="url(#pwxSky)"/>
-          <circle cx="330" cy="120" r="46" fill="#ffe08a" opacity=".5"/>
-          <circle cx="330" cy="120" r="28" fill="#fff2c4"/>
-          <g stroke="#fff" strokeOpacity=".28" strokeWidth="1.6"><line x1="20" y1="36" x2="120" y2="31"/><line x1="14" y1="54" x2="96" y2="50"/></g>
-          <path d="M0 138 H430 V200 H0 Z" fill="#3e2470"/>
-          <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#3e2470" opacity=".6"/>
-          <path d="M0 176 Q215 168 430 182 V200 H0 Z" fill="#f3d9a3"/>
-          <path d="M0 176 Q215 168 430 182" fill="none" stroke="#0d0b14" strokeWidth="1.6"/>
-        </svg>
-        <span className="pwx-veil">
-          <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
-            <g stroke="#0d0b14" strokeWidth="2.5">
-              <rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
-              <rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
-              <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
-            </g>
-            <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
-            <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
-            <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
-            <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
-            <circle cx="60" cy="62" r="14" fill={iris}/>
-            <circle className="pwx-iris-veil" cx="60" cy="62" r="14" fill="#cfc7d8"/>
-            <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
-            <circle cx="64" cy="58" r="2.5" fill="#fff"/>
-            <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
-            <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
-          </svg>
-        </span>
-        <span className="pwx-eyebrow">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
-        {ctx&&<span className={"pwx-verdict "+stCls}>{ctx}{ST?" · "+vLbl:""}</span>}
-      </div>
+      {(()=>{
+        // SCENE variant — golden-hour scene (original)
+        if(headerVariant==="scene"||!headerVariant){
+          return(
+            <div className="pwx-hero">
+              <svg className="sc" viewBox="0 0 430 200" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+                <defs><linearGradient id="pwxSky" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stopColor="#2e1a5e"/><stop offset=".5" stopColor="#6a2f9e"/>
+                  <stop offset=".78" stopColor="#ffb267"/><stop offset="1" stopColor="#ff8a3d"/></linearGradient></defs>
+                <rect width="430" height="200" fill="url(#pwxSky)"/>
+                <circle cx="330" cy="120" r="46" fill="#ffe08a" opacity=".5"/>
+                <circle cx="330" cy="120" r="28" fill="#fff2c4"/>
+                <g stroke="#fff" strokeOpacity=".28" strokeWidth="1.6"><line x1="20" y1="36" x2="120" y2="31"/><line x1="14" y1="54" x2="96" y2="50"/></g>
+                <path d="M0 138 H430 V200 H0 Z" fill="#3e2470"/>
+                <path d="M0 138 q110 -10 215 0 t215 0 V160 H0 Z" fill="#3e2470" opacity=".6"/>
+                <path d="M0 176 Q215 168 430 182 V200 H0 Z" fill="#f3d9a3"/>
+                <path d="M0 176 Q215 168 430 182" fill="none" stroke="#0d0b14" strokeWidth="1.6"/>
+              </svg>
+              <span className="pwx-veil">
+                <svg viewBox="0 0 120 120" width="72" height="72" aria-hidden="true">
+                  <g stroke="#0d0b14" strokeWidth="2.5">
+                    <rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
+                    <rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
+                    <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+                  </g>
+                  <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+                  <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+                  <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+                  <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+                  <circle cx="60" cy="62" r="14" fill={iris}/>
+                  <circle className="pwx-iris-veil" cx="60" cy="62" r="14" fill="#cfc7d8"/>
+                  <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+                  <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+                  <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+                  <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              </span>
+              <span className="pwx-eyebrow">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
+              {ctx&&<span className={"pwx-verdict "+stCls}>{ctx}{ST?" · "+vLbl:""}</span>}
+            </div>
+          )
+        }
+        // CONSTEL variant — constellation map (from pwConstel)
+        if(headerVariant==="constel"){
+          const m=VEILLEUR_MOOD[moodFromStatus(_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean")]||VEILLEUR_MOOD.serein
+          const propres=_t(lang,"propres","clean","limpias")
+          const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
+          const _constel=[..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
+            .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
+          const guide=_constel.find(p=>p.top)
+          return(
+            <div className="pwx-hero" style={{height:150}}>
+              <style>{`@keyframes pcDot{from{opacity:0;transform:translateY(2px)}to{opacity:1;transform:translateY(0)}}.pc-dot{animation:pcDot .42s ease-out both}@keyframes pcStar{0%{transform:scale(1)}45%{transform:scale(1.18)}100%{transform:scale(1)}}.pc-star{animation:pcStar .7s ease-out 1 both;transform-origin:center;transform-box:fill-box}@media(prefers-reduced-motion:reduce){.pc-dot,.pc-star{animation:none}}`}</style>
+              <svg viewBox="0 0 400 150" preserveAspectRatio="xMidYMid slice" style={{width:"100%",height:"100%",display:"block"}} aria-hidden="true">
+                <defs>
+                  <linearGradient id="pcSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0B2230"/><stop offset=".48" stopColor="#155A5A"/><stop offset=".82" stopColor="#C97E3A"/><stop offset="1" stopColor="#F2B05E"/></linearGradient>
+                  <linearGradient id="pcSea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1A5852"/><stop offset="1" stopColor="#08251F"/></linearGradient>
+                </defs>
+                <rect width="400" height="150" fill="url(#pcSky)"/>
+                <circle cx="200" cy="106" r="58" fill="#FFD884" opacity=".2"/><circle cx="200" cy="106" r="32" fill="#FFD884" opacity=".4"/>
+                <rect y="106" width="400" height="44" fill="url(#pcSea)"/>
+                <line x1="0" y1="106" x2="400" y2="106" stroke="#FFD884" strokeWidth="1" opacity=".5"/>
+                <line x1="200" y1="106" x2="186" y2="150" stroke="#FFD884" strokeWidth="3" strokeDasharray="2 7" opacity=".28"/>
+                <line x1="200" y1="106" x2="214" y2="150" stroke="#FFD884" strokeWidth="3" strokeDasharray="2 7" opacity=".28"/>
+                {_constel.map((p,i)=>(<circle key={i} className="pc-dot" style={{animationDelay:(i*38)+"ms"}} cx={p.x} cy={p.y} r={p.top?4:2.4} fill={p.col}/>))}
+                {guide&&<circle className="pc-star" cx={guide.x} cy={guide.y} r="9" fill={m.lens} opacity=".22"/>}
+                <g>{miVeil(200,48,m.wing,m.lens)}</g>
+                <g><rect x="128" y="120" width="144" height="18" rx="9" fill="#120821" opacity=".4"/><text x="200" y="133" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9ADCD4" opacity=".92" textAnchor="middle">{cleanCount}/{totalCount} {propres}</text></g>
+              </svg>
+              <div aria-hidden style={{position:"absolute",left:0,right:0,bottom:0,height:42,background:"linear-gradient(180deg,transparent,#190c2c)"}}/>
+            </div>
+          )
+        }
+        // BEAT variant — beat panel (from PanelStoryEngine)
+        if(headerVariant==="beat"){
+          const rp=recordProof||_t(lang,"76-79% fiabilité · registre public","76-79% reliability · public record","76-79% fiabilidad · registro público")
+          const beats=[
+            {eyebrow:_t(lang,"LE VEILLEUR","THE WATCHER","EL VIGÍA"),heading:_t(lang,"Ton Pass","Your Pass","Tu Pase"),sub:_t(lang,"7 jours de prévision + alerte le jour où ça bascule","7-day forecast + alert the day it flips","7 días de pronóstico + alerta el día que cambia")},
+            {eyebrow:_t(lang,"HONNÊTETÉ","HONESTY","HONESTIDAD"),heading:_t(lang,"On publie nos erreurs","We publish our misses","Publicamos nuestros errores"),sub:rp},
+            {eyebrow:_t(lang,"OFFRE","OFFER","OFERTA"),heading:_t(lang,"Débloque tout","Unlock everything","Desbloquea todo"),sub:_t(lang,"Prévision 7 j · Alerte · Brief matin · Pas d'abo","7-day forecast · Alert · Morning brief · No subscription","Pronóstico 7 d · Alerta · Brief matutino · Sin suscripción"),cta:_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")},
+          ]
+          return(
+            <div className="pwx-hero" style={{height:"auto",minHeight:188,paddingBottom:16}}>
+              <style>{`
+                .pwx-beat{--ink:#0d0b14;--paper:#fdf6e3;--yel:#ffd23f;--grn:#27c46b;
+                  font-family:"Bricolage Grotesque",system-ui,sans-serif;color:var(--ink);
+                  padding:16px 22px 12px;background:linear-gradient(180deg,#fff3c8 0%,#ffe9a6 60%,#fdf6e3 100%);
+                  border-bottom:3px solid var(--ink)}
+                .pwx-beat-head{display:flex;align-items:center;gap:10;margin-bottom:14}
+                .pwx-beat-veil{width:56px;height:56px;flex-shrink:0;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
+                .pwx-beat-title{flex:1;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:26px;line-height:1.03;color:var(--ink);text-shadow:2px 2px 0 #fff}
+                .pwx-beat-title em{font-style:normal;color:var(--red)}
+                .pwx-beat-sub{font-size:13.5px;font-weight:700;color:#0d2330;line-height:1.35}
+                .pwx-beat-row{display:flex;gap:10;margin-top:12}
+                .pwx-beat-card{flex:1;background:var(--paper);border:2.5px solid var(--ink);border-radius:14px;padding:12px 14px;box-shadow:4px 4px 0 var(--ink);cursor:pointer}
+                .pwx-beat-card:nth-child(odd){transform:rotate(-.7deg)}.pwx-beat-card:nth-child(even){transform:rotate(.7deg)}
+                .pwx-beat-card:last-child{transform:rotate(.3deg)}
+                .pwx-beat-kick{display:block;font-size:9.5px;font-weight:800;letter-spacing:.08em;color:#9a5b12;margin-bottom:3px;text-transform:uppercase}
+                .pwx-beat-line{display:block;font-size:14.5px;font-weight:800;color:var(--ink);line-height:1.2}
+                .pwx-beat-meta{display:block;font-size:11.5px;font-weight:700;color:#5a5566;margin-top:3px}
+                .pwx-beat-cta{margin-top:16px;display:block;width:100%;border:2.5px solid var(--ink);border-radius:14px;padding:15px 18px;cursor:pointer;font-family:"AntonLC","Anton",system-ui,sans-serif;letter-spacing:.5px;text-transform:uppercase;text-align:center;background:linear-gradient(180deg,#ffe07a,var(--yel));color:var(--ink);box-shadow:0 5px 0 var(--ink),0 11px 20px rgba(13,11,20,.4);transform:rotate(-.8deg)}
+                @media(prefers-reduced-motion:no-preference){
+                  .pwx-beat-card{animation:pwxInkOdd .34s var(--punch) both}
+                  .pwx-beat-card:nth-child(2){animation-name:pwxInkEven}
+                  .pwx-beat-cta{animation:pwxCtaIn .34s var(--punch) .4s both}
+                }
+              `}</style>
+              <div className="pwx-beat">
+                <div className="pwx-beat-head">
+                  <span className="pwx-beat-veil">
+                    <svg viewBox="0 0 120 120" width="56" height="56" aria-hidden="true">
+                      <g stroke="#0d0b14" strokeWidth="2.5">
+                        <rect x="6" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
+                        <rect x="94" y="50" width="20" height="22" rx="2" fill="#5b3a8e"/>
+                        <line x1="26" y1="61" x2="40" y2="61"/><line x1="94" y1="61" x2="80" y2="61"/>
+                      </g>
+                      <circle cx="60" cy="62" r="34" fill="#fdf6e3" stroke="#0d0b14" strokeWidth="3"/>
+                      <line x1="60" y1="28" x2="60" y2="14" stroke="#0d0b14" strokeWidth="3"/>
+                      <circle cx="60" cy="11" r="5" fill="#ffd23f" stroke="#0d0b14" strokeWidth="2.5"/>
+                      <circle cx="60" cy="62" r="20" fill="#0d0b14"/>
+                      <circle cx="60" cy="62" r="14" fill={iris}/>
+                      <circle className="pwx-iris-veil" cx="60" cy="62" r="14" fill="#cfc7d8"/>
+                      <circle cx="60" cy="62" r="6" fill="#0d0b14"/>
+                      <circle cx="64" cy="58" r="2.5" fill="#fff"/>
+                      <path d="M44 40 Q60 34 76 40" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+                      <path d="M50 86 Q60 92 70 86" fill="none" stroke="#0d0b14" strokeWidth="3" strokeLinecap="round"/>
+                    </svg>
+                  </span>
+                  <h2 className="pwx-beat-title">{beats[0].heading} <em>{beats[0].eyebrow}</em></h2>
+                </div>
+                <p className="pwx-beat-sub">{beats[0].sub}</p>
+                <div className="pwx-beat-row">
+                  {beats.slice(1).map((bt,i)=>(
+                    <div key={i} className="pwx-beat-card">
+                      <span className="pwx-beat-kick">{bt.eyebrow}</span>
+                      <span className="pwx-beat-line">{bt.heading}</span>
+                      <span className="pwx-beat-meta">{bt.sub}</span>
+                    </div>
+                  ))}
+                </div>
+                <button type="button" className="pwx-beat-cta"
+                  onClick={e=>{const b=e.currentTarget;b.classList.remove("pow");void b.offsetWidth;b.classList.add("pow");onStart(e)}}
+                  onAnimationEnd={e=>{if(e.animationName==="pwxPow")e.currentTarget.classList.remove("pow")}}>
+                  <span className="big">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+                  <span className="sm">{ctaSub}</span>
+                  <svg className="pwx-pow" viewBox="0 0 130 130" aria-hidden="true">
+                    <polygon points="65,4 76,40 112,30 86,58 122,72 84,74 96,112 65,86 34,112 46,74 8,72 44,58 18,30 54,40" fill="var(--yel)" stroke="#0d0b14" strokeWidth="3" strokeLinejoin="round"/>
+                    <g fill="#0d0b14"><circle cx="91" cy="65" r="2.4"/><circle cx="83.4" cy="83.4" r="2.4"/><circle cx="65" cy="91" r="2.4"/><circle cx="46.6" cy="83.4" r="2.4"/><circle cx="39" cy="65" r="2.4"/><circle cx="46.6" cy="46.6" r="2.4"/><circle cx="65" cy="39" r="2.4"/><circle cx="83.4" cy="46.6" r="2.4"/></g>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )
+        }
+      })()}
       <div className="pwx-body">
         <h2 className="pwx-title">{calm
           ?_t(lang,<>Sache où sera la mer <em>demain</em><br/>pas juste aujourd'hui</>,<>Know where the sea will be <em>tomorrow</em><br/>not just today</>,<>Sabe dónde estará el mar <em>mañana</em><br/>no solo hoy</>)
@@ -2343,6 +2463,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
+          headerVariant={(typeof window!=="undefined"&&/[?&]pwheader=constel/.test(window.location.search))?"constel":(typeof window!=="undefined"&&/[?&]pwheader=beat/.test(window.location.search))?"beat":"scene"}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
