@@ -49,7 +49,7 @@
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Terminer le paywall BD en ajoutant les variants d'entête (scene/constel/beat) + vérifier les transitions
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P1-003 — in_progress by coding_agent
 
 ---
 
