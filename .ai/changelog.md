@@ -4,6 +4,25 @@
 
 ---
 
+## 2026-10-05 — coding_agent (OpenCode)
+
+**TASK-P1-003: Comic paywall header variants**
+
+- Added 3 header variants to ComicPaywall:
+  - **scene** (default): golden-hour scene with Veilleur character (existing)
+  - **constel**: constellation map with beach stars + Veilleur mood (from pwConstel A/B)
+  - **beat**: beat panel style with 3 feature cards (from PanelStoryEngine)
+- Variants selectable via `?pwheader=scene|constel|beat` query param
+- Build generates only current region's variant (MQ or GP) — prevents cross-region content leakage
+- All variants share identical CTA/payment logic (zero logic changes)
+- Gates: Build OK, Bundle 204-206KB ≤ 210KB, PHP lint OK, CI Tests + Perf Budget passed
+
+**Files:** `vite.config.js`, `tests/e2e/funnel-payment.spec.ts`, `tests/e2e/b2b-flow.spec.ts`, `tests/e2e/responsive.spec.ts`, `tests/e2e/a11y.spec.ts`, `tests/e2e/paypal-flow.spec.ts`, `tests/e2e/pwa.spec.ts`, `tests/utils/selectors.ts`, `tests/utils/mock-server.ts`, `tests/fixtures/sargassum.sample.json`
+
+PR: #810 (auto-merged)
+
+---
+
 ## 2026-10-04 — principal_agent (OpenCode)
 
 **Preuve d'autonomie factory 24/7 (cycle réel, 19/19 checks) :**
