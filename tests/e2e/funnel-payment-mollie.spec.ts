@@ -52,24 +52,31 @@ test.describe("Funnel payant — Mollie mocked", () => {
 
     const payButton = await openPaidPaywall(page)
 
-    await Promise.all([
-      page.waitForRequest((request) => {
-        if (!request.url().includes("/api/mollie.php") || request.method() !== "POST") return false
-        try {
-          const body = request.postDataJSON() as Record<string, unknown>
-          return body.action === "create_subscription" || body.action === "create_payment"
-        } catch {
-          return false
-        }
-      }, { timeout: 15000 }),
-      payButton.click(),
-    ])
+    await page.route("https://www.mollie.com/checkout/test-playwright", async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<!doctype html><title>Mollie mock checkout</title><p>Mock checkout</p>",
+      })
+    })
+
+    const requestPromise = page.waitForRequest((request) => {
+      if (!request.url().includes("/api/mollie.php") || request.method() !== "POST") return false
+      try {
+        const body = request.postDataJSON() as Record<string, unknown>
+        return body.action === "create_subscription" || body.action === "create_payment"
+      } catch {
+        return false
+      }
+    }, { timeout: 15000 })
+
+    await payButton.click()
+    await requestPromise
 
     expect(createCheckoutBody).not.toBeNull()
     expect(["create_subscription", "create_payment"]).toContain(createCheckoutBody?.action)
 
-    const redirecting = page.getByText(/redirigé vers Mollie|redirected to Mollie|redige a Mollie/i)
-    await expect(redirecting).toBeVisible({ timeout: 5000 })
+    await expect(page).toHaveURL(/https://www\.mollie\.com\/checkout\/test-playwright/, { timeout: 10000 })
   })
 
   test("un échec Mollie reste visible et ne devient pas un faux succès", async ({ page }) => {
@@ -78,7 +85,7 @@ test.describe("Funnel payant — Mollie mocked", () => {
         await route.fulfill({
           status: 500,
           contentType: "application/json",
-          body: JSON.stringify({ error: "simulated_checkout_failure" }),
+          body: JSON.stringify({ error: "Payment failed" }),
         })
         return
       }
