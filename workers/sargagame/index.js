@@ -29,7 +29,23 @@ export default {
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
       const raw=await request.text(); const ct=request.headers.get("content-type")||"";
-      let id=""; if(ct.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
+      // Verify Mollie webhook signature (HMAC-SHA256)
+      const webhookSecret = env.MOLLIE_WEBHOOK_SECRET;
+      if (!webhookSecret) {
+        return out({error:"webhook_unavailable"},503);
+      }
+      const signature = request.headers.get("x-mollie-signature") || request.headers.get("X-Mollie-Signature") || "";
+      const expectedSig = await (async () => {
+        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(webhookSecret), {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
+        const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(raw));
+        const b64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+        return b64;
+      })();
+      if (!signature || signature !== expectedSig) {
+        return out({error:"invalid_signature"},403);
+      }
+      let id=""; const ct=request.headers.get("content-type")||"";
+      if(ct.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
       if(!id)return out({error:"id requis"},400);
       const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
       const payment=await p.json();
