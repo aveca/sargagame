@@ -44,8 +44,8 @@ export default {
       if (!signature || signature !== expectedSig) {
         return out({error:"invalid_signature"},403);
       }
-      let id=""; const ct=request.headers.get("content-type")||"";
-      if(ct.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
+      let id=""; const ct2=request.headers.get("content-type")||"";
+      if(ct2.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
       if(!id)return out({error:"id requis"},400);
       const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
       const payment=await p.json();
