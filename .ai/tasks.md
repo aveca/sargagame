@@ -42,14 +42,14 @@
 - **Rôle** : QA_agent
 - **Description** : Créer des scénarios Playwright couvrant le parcours critique : carte → verdict → paywall → paiement → premium.
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [x] done by QA_agent
 
 ### TASK-P1-003 Paywall comic compléter (header variants)
 - **Priorité** : P1
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Terminer le paywall BD en ajoutant les variants d'entête (scene/constel/beat) + vérifier les transitions
 - **Estimation** : 3h
-- **Statut** : [~] TASK-P1-003 — in_progress by coding_agent
+- **Statut** : [x] done by coding_agent
 
 ---
 
