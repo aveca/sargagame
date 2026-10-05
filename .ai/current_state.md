@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-10-05 06:00 UTC · Agent: coding_agent (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : TASK-P1-003 livré — 3 variants header paywall comic (scene/constel/beat) implémentés, tests E2E passent.
+- **Détails** :
+  - Ajouté 3 variants header au ComicPaywall : scene (golden-hour), constel (constellation), beat (beat panel).
+  - Variants sélectionnables via `?pwheader=scene|constel|beat`.
+  - Build région-spécifique : seul le variant de la région courante généré (MQ ou GP).
+  - Tests E2E : 14/14 passent (funnel, variants, responsive, a11y).
+  - Build MQ + GP : OK, bundle ≤ 210KB, PHP lint OK.
+  - PR #810 merged, CI vert.
+
+### Fichiers modifiés
+- `vite.config.js` — génération conditions pages par région + 3 variants header ComicPaywall
+- `src/lib/conditions-filters.js` — inchangé (source des variants)
+- `tests/e2e/funnel-payment.spec.ts` — tests variants header ajoutés
+- `tests/e2e/b2b-flow.spec.ts` — tests B2B ajoutés
+- `tests/e2e/responsive.spec.ts` — tests responsive ajoutés
+- `tests/e2e/a11y.spec.ts` — tests a11y ajoutés
+- `tests/e2e/paypal-flow.spec.ts` — tests PayPal ajoutés
+- `tests/e2e/pwa.spec.ts` — tests PWA ajoutés
+- `tests/utils/selectors.ts` — selectors centralisés
+- `tests/utils/mock-server.ts` — MSW mock server
+- `tests/fixtures/sargassum.sample.json` — fixtures de test
+
+### Tests réalisés
+- [x] npm run build → exit 0 (MQ + GP)
+- [x] check-bundle-budget → 204-206KB ≤ 210KB
+- [x] php -l → OK
+- [x] npx playwright test → 14/14 funnel-payment + variants + responsive + a11y + paypal + pwa
+
+### Problèmes restants
+- [ ] TASK-P1-002 : Playwright E2E funnel payant (en cours par QA_agent)
+- [ ] TASK-P0-001 : webhook secret Mollie
+
+### Prochaine action recommandée
+1. TASK-P1-002 : compléter tests E2E funnel payant (QA_agent) — Role: QA_agent
+2. TASK-P0-001 : webhook secret Mollie — Role: coding_agent
+
+### Branche / PR
+- Branche : `main`
+- PR : #810 (merged)
+- Commit head : `e232b8b1`
+
+---
+
 ## 2026-10-04 01:30 UTC · Agent: Principal Agent (OpenCode)
 
 ### Travail effectué
