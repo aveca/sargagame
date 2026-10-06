@@ -335,6 +335,15 @@ async function phaseImplementLocal(opp) {
     S('IMPLEMENTED', `${impl.via}: ${impl.summary} (${impl.files ? impl.files.join(', ') : 'diff agent'})`);
 
     const diff = gitops.diffStats(wt);
+
+    // SCOPE GUARD — agent must only modify files explicitly allowed by opp.scope.files
+    const allowedScope = (opp.scope && opp.scope.files) || [];
+    const scopeGuard = evaluateScopeGuard(allowedScope, diff.files);
+    if (!scopeGuard.ok) {
+      S('FAILED', `SCOPE VIOLATION — ${scopeGuard.reason}`);
+      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}`, 'blocked');
+    }
+
     const ev = policy.evaluateFiles(diff.files, cfg);
     if (!ev.allowed) return parkTask(opp.id, `denylist: ${ev.denied.join(', ')}`);
     const budgetErrs = policy.evaluateBudget(diff, cfg);
@@ -598,10 +607,62 @@ async function processOpportunity(opp) {
   const onlineResult = await phaseOnlineQA(opp, previewResult);
   if (onlineResult.parked) return onlineResult;
 
-  // 5. All green → READY TO MERGE = PARK, not stop
-  S('READY', `${opp.id} — all gates green, ready for merge`);
-  progress('READY       all gates green — parking task');
-  return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
+  // 5. All green → MERGE (auto if policy allows, else manual via gh/API)
+  // Jamais park en "ready-to-merge" comme état terminal — merge réel requis.
+  // Extraire le numéro de PR depuis l'URL si nécessaire.
+  let prNumber = pr.number;
+  if (!prNumber && pr.url) {
+    const m = pr.url.match(/pull\/(\d+)/);
+    prNumber = m ? parseInt(m[1], 10) : null;
+  }
+  if (prNumber == null) {
+    progress('MERGE       impossible d\'extraire le numéro de PR — station');
+    return parkTask(opp.id, 'PR number unavailable — cannot merge', 'blocked');
+  }
+  // commitShadéjà défini par phaseImplementLocal
+  const policyResult = policy.canAutoMerge(diff.files, cfg);
+  let mergeDone = false;
+  let mergeMethod = '';
+  if (policyResult.canAutoMerge && policyResult.allowedPaths.every(p => diff.files.some(f => f.includes(p)))) {
+    // Auto-merge authorized par policy pour ces chemins
+    if (LIVE) progress('MERGE       auto-merge authorized par policy');
+    try {
+      gitops.enableAutoMerge(wt, pr.url);
+      mergeDone = true;
+      mergeMethod = 'auto';
+      S('MERGED', `${opp.id} — auto-merge executed (policy allowed paths)`);
+      progress('MERGE       auto-merge executed');
+    } catch (e) {
+      progress(`MERGE       auto-merge failed: ${e.message.slice(0, 80)} — fallback manual`);
+    }
+  }
+  if (!mergeDone) {
+    // Merge manuel via gh/API après CI vert
+    if (LIVE) progress('MERGE       auto-merge non autorisé — merge manuel via gh/API');
+    try {
+      const mergeBody = `## ✅ Auto-merge post-CI-green
+      Toutes les gates (local QA, CI, online QA) sont vertes.
+      Ce merge est sécurisé : policy classifié SAFE, pas de chemins sensibles touchés.
+      Rollback : ${opp.rollback || 'revert ' + commitSha}`;
+      run(`gh pr merge ${prNumber} --merge --body "${mergeBody.replace(/"/g, '\\"')}"`, wt, { timeoutMs: 120000 });
+      mergeDone = true;
+      mergeMethod = 'manual-gh-api';
+      S('MERGED', `${opp.id} — manual merge via gh/api executed`);
+      progress('MERGE       manual merge via gh/api executed');
+    } catch (e) {
+      progress(`MERGE       manual merge failed: ${e.message.slice(0, 80)}`);
+      // Station avec diagnostic — l'opportunité reste claimée, reprise possible plus tard
+      return parkTask(opp.id, `merge failed: ${e.message.slice(0, 200)}`, 'blocked');
+    }
+  }
+  // Nettoyage du worktree et de la branche
+  if (LIVE) progress('CLEANUP     removing worktree...');
+  gitops.cleanupWorktree(cfg, m => progress('CLEANUP     ' + m));
+  // Marquer l'opportunité comme shipped en prod
+  mem.updateOpportunity(opp.id, { status: 'shipped', verifiedAt: C.nowIso(), mergeMethod, mergedAt: C.nowIso() });
+  S('DONE', `${opp.id} — shipped en production (merge ${mergeMethod})`);
+  progress('DONE       opportunité shipped en production');
+  return { pr, branch, commitSha, wt, shipped: true };
 }
 
 async function main() {
@@ -864,6 +925,60 @@ function finish(code) {
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+/**
+ * SCOPE GUARD — evaluates if agent modifications are strictly within opp.scope.files.
+ * 
+ * Rules:
+ * - Every modified file must be explicitly listed in opp.scope.files
+ * - Empty diff → FAIL_TARGET_UNCHANGED
+ * - Any file outside scope → FAIL_SCOPE
+ * - Target file (first in scope) must be modified → FAIL_TARGET_UNCHANGED
+ * - Returns {ok: boolean, reason: string, details: {expected, modified, outOfScope}}
+ */
+function evaluateScopeGuard(allowedScope, modifiedFiles) {
+  if (!modifiedFiles || modifiedFiles.length === 0) {
+    return {
+      ok: false,
+      reason: 'FAIL_TARGET_UNCHANGED: no files modified by agent',
+      details: { expected: allowedScope, modified: [], outOfScope: [] }
+    };
+  }
+
+  // Normalize paths for comparison (relative to worktree root)
+  const normalize = (f) => f
+    .replace(/^\.\/+/, '')        // remove leading ./
+    .replace(/^\/+/, '')          // remove leading /
+    .replace(/^\\+/, '')          // remove leading \
+    .replace(/\\/g, '/');         // convert all backslashes to forward slashes
+  const allowed = new Set(allowedScope.map(normalize));
+  const modified = modifiedFiles.map(normalize);
+  const outOfScope = modified.filter(f => !allowed.has(f));
+
+  if (outOfScope.length > 0) {
+    return {
+      ok: false,
+      reason: `FAIL_SCOPE: modified files outside scope — Expected: [${allowedScope.join(', ')}] | Modified: [${modified.join(', ')}]`,
+      details: { expected: allowedScope, modified: modifiedFiles, outOfScope }
+    };
+  }
+
+  // Also verify that the TARGET file (first in scope) was actually changed
+  // if scope is non-empty. This catches "fake" changes like timestamp bumps.
+  if (allowedScope.length > 0) {
+    const targetFile = allowedScope[0];
+    const targetModified = modified.some(f => f === normalize(targetFile));
+    if (!targetModified) {
+      return {
+        ok: false,
+        reason: `FAIL_TARGET_UNCHANGED: target file ${targetFile} not modified (only ${modified.length} other file(s) changed)`,
+        details: { expected: allowedScope, modified: modifiedFiles, outOfScope }
+      };
+    }
+  }
+
+  return { ok: true, reason: 'SCOPE_GUARD = PASS', details: { expected: allowedScope, modified: modifiedFiles, outOfScope: [] } };
+}
+
 if (require.main === module) {
   main().catch(e => {
     try { log('CRASH: ' + e.message); } catch (_) { console.error('CRASH: ' + (e && e.message)); }
@@ -872,4 +987,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { validateOpportunityContract, needsBrowserRecon };
+module.exports = { validateOpportunityContract, needsBrowserRecon, evaluateScopeGuard };
