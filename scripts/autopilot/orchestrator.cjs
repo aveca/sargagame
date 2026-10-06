@@ -335,6 +335,15 @@ async function phaseImplementLocal(opp) {
     S('IMPLEMENTED', `${impl.via}: ${impl.summary} (${impl.files ? impl.files.join(', ') : 'diff agent'})`);
 
     const diff = gitops.diffStats(wt);
+
+    // SCOPE GUARD — agent must only modify files explicitly allowed by opp.scope.files
+    const allowedScope = (opp.scope && opp.scope.files) || [];
+    const scopeGuard = evaluateScopeGuard(allowedScope, diff.files);
+    if (!scopeGuard.ok) {
+      S('FAILED', `SCOPE VIOLATION — ${scopeGuard.reason}`);
+      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}`, 'blocked');
+    }
+
     const ev = policy.evaluateFiles(diff.files, cfg);
     if (!ev.allowed) return parkTask(opp.id, `denylist: ${ev.denied.join(', ')}`);
     const budgetErrs = policy.evaluateBudget(diff, cfg);
@@ -872,4 +881,58 @@ if (require.main === module) {
   });
 }
 
-module.exports = { validateOpportunityContract, needsBrowserRecon };
+/**
+ * SCOPE GUARD — evaluates if agent modifications are strictly within opp.scope.files.
+ * 
+ * Rules:
+ * - Every modified file must be explicitly listed in opp.scope.files
+ * - Empty diff → FAIL_TARGET_UNCHANGED
+ * - Any file outside scope → FAIL_SCOPE
+ * - Target file (first in scope) must be modified → FAIL_TARGET_UNCHANGED
+ * - Returns {ok: boolean, reason: string, details: {expected, modified, outOfScope}}
+ */
+function evaluateScopeGuard(allowedScope, modifiedFiles) {
+  if (!modifiedFiles || modifiedFiles.length === 0) {
+    return {
+      ok: false,
+      reason: 'FAIL_TARGET_UNCHANGED: no files modified by agent',
+      details: { expected: allowedScope, modified: [], outOfScope: [] }
+    };
+  }
+
+  // Normalize paths for comparison (relative to worktree root)
+  const normalize = (f) => f
+    .replace(/^\.\/+/, '')        // remove leading ./
+    .replace(/^\/+/, '')          // remove leading /
+    .replace(/^\\+/, '')          // remove leading \
+    .replace(/\\/g, '/');         // convert all backslashes to forward slashes
+  const allowed = new Set(allowedScope.map(normalize));
+  const modified = modifiedFiles.map(normalize);
+  const outOfScope = modified.filter(f => !allowed.has(f));
+
+  if (outOfScope.length > 0) {
+    return {
+      ok: false,
+      reason: `FAIL_SCOPE: modified files outside scope — Expected: [${allowedScope.join(', ')}] | Modified: [${modified.join(', ')}]`,
+      details: { expected: allowedScope, modified: modifiedFiles, outOfScope }
+    };
+  }
+
+  // Also verify that the TARGET file (first in scope) was actually changed
+  // if scope is non-empty. This catches "fake" changes like timestamp bumps.
+  if (allowedScope.length > 0) {
+    const targetFile = allowedScope[0];
+    const targetModified = modified.some(f => f === normalize(targetFile));
+    if (!targetModified) {
+      return {
+        ok: false,
+        reason: `FAIL_TARGET_UNCHANGED: target file ${targetFile} not modified (only ${modified.length} other file(s) changed)`,
+        details: { expected: allowedScope, modified: modifiedFiles, outOfScope }
+      };
+    }
+  }
+
+  return { ok: true, reason: 'SCOPE_GUARD = PASS', details: { expected: allowedScope, modified: modifiedFiles, outOfScope: [] } };
+}
+
+module.exports = { validateOpportunityContract, needsBrowserRecon, evaluateScopeGuard };
