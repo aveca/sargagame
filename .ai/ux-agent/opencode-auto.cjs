@@ -86,7 +86,7 @@ async function main() {
   env.OLLAMA_HOST = ollamaBase;
   
   // 4. Launch OpenCode with selected local model
-  const opencodeArgs = ['run', '--model', 'ollama/' + selected, prompt];
+  const opencodeArgs = ['run', '--model', 'ollama/' + selected, '--auto', prompt];
   
   console.log('[local-agent] Ollama OK · model=' + selected);
   console.log('[local-agent] OpenCode local worker starting…');
