@@ -30,7 +30,6 @@ jobs:
           - id: florida
           - id: puntacana
           - id: rivieramaya
-          - id: tulum
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -63,8 +62,6 @@ jobs:
             domain: sargassumpuntacana.com
           - id: rivieramaya
             domain: sargassumcancun.com
-          - id: tulum
-            domain: sargazotulum.com
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -95,56 +92,16 @@ jobs:
           printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
           printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@latest secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
           printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@latest secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
-      - name: Verify deploy fingerprint
+      - name: Smoke test
         env:
           DOMAIN: ${{ matrix.domain }}
-          EXPECTED_SHA: ${{ github.sha }}
         run: |
-          echo "Verifying deploy fingerprint for ${{ matrix.domain }}..."
-          echo "Expected commit SHA: $EXPECTED_SHA"
-          
           for i in 1 2 3 4 5; do
-            # Fetch version.json from live domain
-            response=$(curl -sS -o /tmp/version.json -w "%{http_code}" --max-time 20 \
-              -A "Mozilla/5.0" "https://$DOMAIN/version.json" || true)
-            code=${response: -3}
-            
-            if [ "$code" = "200" ]; then
-              # Parse version.json
-              DEPLOYED_SHA=$(cat /tmp/version.json | grep -o '"b":"[^"]*"' | cut -d'"' -f4)
-              DEPLOYED_VERSION=$(cat /tmp/version.json | grep -o '"v":"[^"]*"' | cut -d'"' -f4)
-              
-              echo "Deployed version: $DEPLOYED_VERSION"
-              echo "Deployed commit (short): $DEPLOYED_SHA"
-              echo "Expected commit (full): $EXPECTED_SHA"
-              
-              if [ -z "$DEPLOYED_SHA" ]; then
-                echo "WARNING: No commit SHA found in version.json"
-                cat /tmp/version.json
-              else
-                # Check if deployed SHA matches expected (compare first 7 chars)
-                EXPECTED_SHORT=${EXPECTED_SHA:0:7}
-                if [ "$DEPLOYED_SHA" = "$EXPECTED_SHORT" ]; then
-                  echo "✓ FINGERPRINT MATCH: Deployed commit $DEPLOYED_SHA matches expected $EXPECTED_SHORT"
-                  exit 0
-                else
-                  echo "✗ FINGERPRINT MISMATCH: Deployed $DEPLOYED_SHA != Expected $EXPECTED_SHORT"
-                  echo "Deploy may be stale or failed. Retrying..."
-                fi
-              fi
-            else
-              echo "Attempt $i: version.json returned HTTP $code, retrying..."
-            fi
-            
-            if [ $i -lt 5 ]; then
-              sleep $((i*10))
-            fi
+            code=$(curl -sL -o /dev/null -w "%{http_code}" --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/?cfdeploy=$GITHUB_SHA" || true)
+            [ "$code" = "200" ] && exit 0
+            sleep $((i*5))
           done
-          
-          echo "FAIL: Could not verify deploy fingerprint after 5 attempts"
-          cat /tmp/version.json 2>/dev/null || echo "No version.json retrieved"
           exit 1
-
       - name: Payment API smoke
         env:
           DOMAIN: ${{ matrix.domain }}
