@@ -58,7 +58,7 @@ function copyStampedVersion(out) {
   }
 
   const sw = fs.readFileSync(path.join(dist, 'sw.js'), 'utf-8')
-  const match = sw.match(/CACHE_NAME = 'sargasses-v\\d+-([a-z0-9]+)'/)
+  const match = sw.match(/CACHE_NAME = 'sargasses-v\d+-([a-z0-9]+)'/)
   const swHash = match && match[1]
   if (!version.b || !swHash || version.b !== swHash) {
     throw new Error(`version.json.b (${version.b || 'absent'}) != sw CACHE_NAME hash (${swHash || 'absent'})`)
