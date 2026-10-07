@@ -1,0 +1,17 @@
+2026-10-06T01:30:01.437Z [runner] ═══════════════════════════════════════════
+2026-10-06T01:30:01.440Z [runner] SARGAGAME AUTOPILOT 24/7
+2026-10-06T01:30:01.440Z [runner] ═══════════════════════════════════════════
+2026-10-06T01:30:01.440Z [runner] free 14306 Mo · live=false · headed=false · continuous=false · pid 24968
+2026-10-06T01:30:01.578Z [runner] lock acquired — single runner active (pid 24968, token 1028cc…)
+2026-10-06T01:30:01.578Z [runner] 
+┌─ CYCLE 1 ──────────────────────────────
+2026-10-06T01:30:02.369Z [runner] [bridge] issue #796 ignorée : AUTOPILOT_TASK invalide/absent
+2026-10-06T01:30:02.369Z [runner] [bridge] HUMAN #781 PAYUX-UNBLOCK-715-716-20260930 laissée dans GitHub
+2026-10-06T01:30:02.370Z [runner] bridge: 0 imported, 2 ignored
+2026-10-06T01:30:02.441Z [orchestrator] cycle 2026-10-06-013002440-pc6k-1757p started (active)
+2026-10-06T01:30:03.827Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-06T01:30:03.827Z [orchestrator] PROD        6/6 healthy
+2026-10-06T01:30:05.110Z [orchestrator] [PR] PR #801 open (agent/autopilot/full-autonomy-runtime, mergeable=MERGEABLE, head 8d99f83f) — évaluation blocage par catégorie…
+2026-10-06T01:30:05.110Z [orchestrator] [AUTOPILOT STATE] pr-detected → pr-evaluating — PR #801 agent/autopilot/full-autonomy-runtime
+2026-10-06T01:30:05.566Z [orchestrator] [OBSERVED] founder WIP preserved (5 files)
+2026-10-06T01:30:05.568Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
