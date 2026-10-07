@@ -1,0 +1,15 @@
+{
+  "event_id": "AUTOPILOT_FACTORY_EVENT-agent-handoff-claim-status-line-not-found",
+  "repo": "aveca/sargagame",
+  "sha": "main",
+  "branch": "main",
+  "pr": null,
+  "workflow": "Agent Handoff Automation",
+  "job": "Agent Handoff Loop",
+  "severity": "P1",
+  "error": "Claim task in tasks.md failed with status line not found; execution and PR creation were skipped.",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37548069634",
+  "detected_at": "2026-10-06T23:44:05Z",
+  "human_gate": false,
+  "requested_action": "Repair the deterministic task-claim state contract and rerun the normal handoff gate."
+}
