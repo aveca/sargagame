@@ -1,0 +1,20 @@
+{
+  "timestamp": "2026-10-07T03:35:46.851Z",
+  "version": "factory-pipeline-v1.0.1",
+  "state_present": true,
+  "queue_depth": 1,
+  "active_workers": 0,
+  "claimed_tasks": 0,
+  "active_sessions": 0,
+  "orphaned_sessions": 0,
+  "expired_leases": 0,
+  "retry_count": 0,
+  "parked_count": 0,
+  "pipeline_health": "healthy",
+  "projects_seen": [
+    "sargagame"
+  ],
+  "last_event_id": "evt-worker-done",
+  "last_correlation_id": "corr-worker-done",
+  "baseline_hash": "sha256:5c3351194d8c31b8faeff38b767c0811264512c0abdbd13eebe8635b77563559"
+}
