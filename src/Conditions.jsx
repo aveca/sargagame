@@ -196,7 +196,7 @@ function thumbSVG(seed) {
 function fmtFreshness(ts, lang) {
   var h = (Date.now() - ts) / 3.6e6;
   if (h < 12) return _t(lang, "EN DIRECT - il y a " + Math.max(1, Math.round(h)) + " h · " + (lang==="fr"?"GO":lang==="en"?"GO":"IR A PLAYA"), "LIVE - " + Math.max(1, Math.round(h)) + "h ago · GO", "EN VIVO - hace " + Math.max(1, Math.round(h)) + " h · IR A PLAYA");
-  return _t(lang, "DONNÉES EN RETARD - >12h old - vérification nécessaire", "STALE DATA - >12h old - verification needed", "DATOS ATRASADOS - >12h old - verificaci\u00f3n necesaria")
+  return _t(lang, "DONNÉES EN RETARD - >12 h - vérification nécessaire", "STALE DATA - >12 h - verification needed", "DATOS ATRASADOS - >12 h - verificaci\u00f3n necesaria")
 }
 
 function el(tag, cls, txt) {

@@ -38,8 +38,8 @@ function _t(lang, fr, en, es){ return lang==="es"?es:lang==="en"?en:fr }
 function fmtFresh(updatedAt){
   try{
     const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6
-    if(h<1) return `${Math.round(h*60)} min ${_t("fr","GO", "en","GO", "es","IR A PLAYA")}`
-    if(h<12) return `${h.toFixed(0)} h ${_t("fr","GO", "en","GO", "es","IR A PLAYA")}`
+    if(h<1) return `${Math.round(h*60)} min ${_t(lang,"GO", "en","GO", "es","IR A PLAYA")}`
+    if(h<12) return `${h.toFixed(0)} h ${_t(lang,"GO", "en","GO", "es","IR A PLAYA")}`
     return `${Math.round(h/24)} j ${_t(lang,"DONNÉES EN RETARD","STALE DATA","DATOS ATRASADOS")}`
   }catch(_){ return "···" }
 }
