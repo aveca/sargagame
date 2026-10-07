@@ -7,9 +7,9 @@
   "workflow": "Agent Handoff Automation",
   "job": "Agent Handoff Loop",
   "severity": "P1",
-  "error": "Claim task in tasks.md failed with status line not found; execution and PR creation were skipped.",
-  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37548069634",
-  "detected_at": "2026-10-06T23:44:05Z",
+  "error": "Claim task in tasks.md failed with status line not found; the failure was reproduced again in run 37576974291 and execution/PR creation were skipped.",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37576974291",
+  "detected_at": "2026-10-07T11:50:34Z",
   "human_gate": false,
-  "requested_action": "Repair the deterministic task-claim state contract and rerun the normal handoff gate."
+  "requested_action": "Repair the deterministic task-claim state contract and rerun the normal handoff gate; do not create a parallel dispatch."
 }
