@@ -1,0 +1,15 @@
+{
+  "event_id": "AUTOPILOT_FACTORY_EVENT-sargagame-smoke-token-verification",
+  "repo": "aveca/sargagame",
+  "sha": "f3bd18895b7d4fb8716f5e6749cc52b6d2d0c1ff",
+  "branch": "factory/sargagame-1791403500000",
+  "pr": 836,
+  "workflow": "CI Tests",
+  "job": "test-frontend",
+  "severity": "P1",
+  "error": "Verify smoke tokens failed after UX smoke: the smoke output contained ERRORS=[\"Failed to load resource: the server responded with a status of 404 ()\"], so the required ERRORS=[] assertion failed.",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37679392009",
+  "detected_at": "2026-10-07T20:06:38Z",
+  "human_gate": false,
+  "requested_action": "Repair the deterministic local smoke-token/404 contract on the PR branch and rerun CI; do not create a parallel dispatch."
+}
