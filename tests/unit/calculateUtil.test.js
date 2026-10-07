@@ -1,4 +1,5 @@
-const calculateUtil = require('../../utils/calculateUtil');
+import { calculateUtil } from '../../utils/calculateUtil.js';
+import { describe, test, expect } from 'vitest';
 
 describe('calculateUtil', () => {
   test('calculates sum of 2 and 3 equals 5', () => {

@@ -4,8 +4,6 @@
  * @param {number} b - The second number
  * @returns {number} The sum of a and b
  */
-function calculateUtil(a, b) {
+export function calculateUtil(a, b) {
   return a + b;
 }
-
-module.exports = calculateUtil;
