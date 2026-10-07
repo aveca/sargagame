@@ -30,6 +30,8 @@ function verdictMeta(status,lang){
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
 function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
 function stLabelLong(status,lang){const S={clean:{fr:"Baignade OK",en:"Safe to swim",es:"Baño OK"},moderate:{fr:"À vérifier",en:"Check first",es:"A verificar"},avoid:{fr:"Évite l'eau",en:"Skip the swim",es:"Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
+export function explainBeachStatus(status,lang){const M={clean:{fr:"Eau dégagée au satellite — tu peux y aller.",en:"Clear water on satellite — good to go.",es:"Agua despejada en satélite — puedes ir."},moderate:{fr:"Dépôts possibles — jette un œil avant de te poser.",en:"Some deposits possible — look before settling in.",es:"Posibles restos — mira antes de instalarte."},avoid:{fr:"Sargasses vues au satellite — vise une plage propre à côté.",en:"Sargassum seen on satellite — try a clean beach nearby.",es:"Sargazo visto por satélite — prueba una playa limpia cercana."}};const e=M[status]||{fr:"Statut en vérification — reviens dans un moment.",en:"Status being checked — come back shortly.",es:"Estado en verificación — vuelve en un momento."};return e[lang]||e.fr}
+export function isStatusExplainOn(search){try{const s=typeof search==="string"?search:window.location.search;return !/[?&]statusexplain=0(?:&|$)/.test(s)}catch(_){return true}}
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,p=Math.PI/180,x=(lat2-lat1)*p,y=(lon2-lon1)*p,h=Math.sin(x/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(y/2)**2
   return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))
@@ -199,6 +201,7 @@ export default function BeachSheet({
   track:trackProp,communityReports={},onRequestGeo,onEnsureAlerts
 }){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
+  const statusExplainOn=isStatusExplainOn()
   const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
@@ -342,6 +345,7 @@ export default function BeachSheet({
             <div style={{textAlign:"center",marginTop:12,font:"600 11px/1.4 'Bricolage Grotesque'",color:COMIC.sub,maxWidth:360,margin:"12px auto 0"}}>
               {_t(lang,"Le verdict est 100 % data satellite. L'argent ne l'influence jamais.","The verdict is 100% satellite data. Money never touches it.","El veredicto es 100 % datos satelitales. El dinero nunca lo influye.")}
             </div>
+            {statusExplainOn&&<div data-testid="status-explain" style={{textAlign:"center",marginTop:8,font:"600 12px/1.5 'Bricolage Grotesque'",color:COMIC.ink,maxWidth:360,margin:"8px auto 0"}}>{explainBeachStatus(status,lang)}</div>}
           </StorySection>
 
           {/* #3 — Forecast 7j */}

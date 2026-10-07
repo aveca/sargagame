@@ -36,6 +36,7 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     const personaPath = path.join(__dirname, 'personas', (opp.persona || 'ui-ux') + '.md');
     const persona = fs.existsSync(personaPath) ? fs.readFileSync(personaPath, 'utf8') : '';
     const scopeFiles = (opp.scope && opp.scope.files || []).join(', ');
+    const wtRel = path.relative(C.ROOT, wt).replace(/\\/g, '/');
     const prompt = [
       persona,
       '',
@@ -44,6 +45,7 @@ function runAgent(opp, wt, cfg, log, failureContext) {
       `Preuve : ${opp.evidence || 'n/a'}`,
       `Impact attendu : ${opp.expectedImpact || 'n/a'}`,
       `Fichiers AUTORISÉS (y rester strictement) : ${scopeFiles || 'aucun — propose seulement'}`,
+      `Répertoire de travail (worktree) : ${wt} (relatif: ${wtRel})`,
       'Contexte tâche structurée : ' + (opp.task ? JSON.stringify({
         filesToRead: opp.task.filesToRead || [],
         implementation: opp.task.implementation || '',
