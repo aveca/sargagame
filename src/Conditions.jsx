@@ -195,8 +195,8 @@ function thumbSVG(seed) {
 
 function fmtFreshness(ts, lang) {
   var h = (Date.now() - ts) / 3.6e6;
-  if (h < 12) return _t(lang, "EN DIRECT - il y a " + Math.max(1, Math.round(h)) + " h", "LIVE - " + Math.max(1, Math.round(h)) + "h ago", "EN VIVO - hace " + Math.max(1, Math.round(h)) + " h");
-  return _t(lang, "vérification en cours...", "checking...", "verificando...");
+  if (h < 12) return _t(lang, "EN DIRECT - il y a " + Math.max(1, Math.round(h)) + " h · " + (lang==="fr"?"GO":lang==="en"?"GO":"IR A PLAYA"), "LIVE - " + Math.max(1, Math.round(h)) + "h ago · GO", "EN VIVO - hace " + Math.max(1, Math.round(h)) + " h · IR A PLAYA");
+  return _t(lang, "DONNÉES EN RETARD - >12h old - vérification nécessaire", "STALE DATA - >12h old - verification needed", "DATOS ATRASADOS - >12h old - verificaci\u00f3n necesaria")
 }
 
 function el(tag, cls, txt) {
@@ -215,9 +215,9 @@ function buildCard(b, i, lang, geo, onOpen, weather) {
   var card = el("button", "card" + (best ? " is-best" : ""));
   
   var statusLabels = {
-    clean: _t(lang, "PROPRE", "CLEAN", "LIMPIA"),
-    moderate: _t(lang, "MODÉRÉ", "MODERATE", "MODERADO"),
-    avoid: _t(lang, "À ÉVITER", "AVOID", "EVITAR")
+    clean: _t(lang, "GO", "GO", "IR A PLAYA"),
+    moderate: _t(lang, "ATTENTION", "ATTENTION", "ATTENTION"),
+    avoid: _t(lang, "ÉVITER", "AVOID", "EVITAR")
   };
   
   card.setAttribute("aria-label", b.name + " " + b.commune + ", score " + b.score + " /100");

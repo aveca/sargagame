@@ -29,7 +29,7 @@ function verdictMeta(status,lang){
 }
 function comicStatusColor(st){return st==="clean"?COMIC.clean:st==="moderate"?COMIC.moderate:st==="avoid"?COMIC.avoid:COMIC.loading}
 function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"},moderate:{fr:"MODÉRÉ",en:"MODERATE",es:"MODERADA"},avoid:{fr:"À ÉVITER",en:"AVOID",es:"EVITAR"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
-function stLabelLong(status,lang){const S={clean:{fr:"Baignade OK",en:"Safe to swim",es:"Baño OK"},moderate:{fr:"À vérifier",en:"Check first",es:"A verificar"},avoid:{fr:"Évite l'eau",en:"Skip the swim",es:"Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
+function stLabelLong(status,lang){const S={clean:{fr:"GO - Baignade OK",en:"GO - Safe to swim",es:"IR A PLAYA - Baño OK"},moderate:{fr:"ATTENTION - À vérifier",en:"ATTENTION - Check first",es:"ATTENTION - A verificar"},avoid:{fr:"ÉVITER - Évite l'eau",en:"ÉVITER - Skip the swim",es:"ÉVITER - Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,p=Math.PI/180,x=(lat2-lat1)*p,y=(lon2-lon1)*p,h=Math.sin(x/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(y/2)**2
   return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))
@@ -42,7 +42,7 @@ function nearestCleanAlt(beach,allBeaches){
   return best
 }
 function forecastColor(status){return status==="clean"?"#22C55E":status==="moderate"?"#F59E0B":status==="avoid"?"#E8522A":"#5A5A5A"}
-function forecastLabel(status,lang){return status==="clean"?_t(lang,"Calme","Calm","Calma"):status==="moderate"?_t(lang,"Surveiller","Watch","Vigilar"):status==="avoid"?_t(lang,"Éviter","Avoid","Evitar"):"-"}
+function forecastLabel(status,lang){return status==="clean"?_t(lang,"GO","GO","IR A PLAYA"):status==="moderate"?_t(lang,"ATTENTION","ATTENTION","ATTENTION"):status==="avoid"?_t(lang,"ÉVITER","AVOID","EVITAR"):"-"}
 
 /* ── Golden-hour tokens (subset of SCENE_TOKENS) ── */
 const GH={

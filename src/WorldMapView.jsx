@@ -22,9 +22,9 @@ const INK = "#0d0b14"
 const GLASS = { background:"rgba(20,11,32,.46)", border:"1px solid rgba(255,255,255,.22)", boxShadow:"0 8px 26px rgba(0,0,0,.42)", backdropFilter:"blur(11px)", WebkitBackdropFilter:"blur(11px)" }
 const GOLD  = { background:"linear-gradient(180deg,#ffe07a,#ffb338)", border:"1px solid rgba(0,0,0,.18)", boxShadow:"0 8px 22px rgba(255,150,60,.45)" }
 const STATUS_LBL = {
-  clean:    ["Propre","Clean","Limpia"],
-  moderate: ["Modéré","Moderate","Moderado"],
-  avoid:    ["À éviter","Avoid","Evitar"],
+  clean:    ["GO","GO","IR A PLAYA"],
+  moderate: ["ATTENTION","ATTENTION","ATTENTION"],
+  avoid:    ["ÉVITER","AVOID","EVITAR"]
 }
 const DAY_LBL  = [
   ["Auj","Today","Hoy"],
@@ -38,9 +38,9 @@ function _t(lang, fr, en, es){ return lang==="es"?es:lang==="en"?en:fr }
 function fmtFresh(updatedAt){
   try{
     const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6
-    if(h<1) return `${Math.round(h*60)} min`
-    if(h<24) return `${h.toFixed(0)} h`
-    return `${Math.round(h/24)} j`
+    if(h<1) return `${Math.round(h*60)} min ${_t("fr","GO", "en","GO", "es","IR A PLAYA")}`
+    if(h<12) return `${h.toFixed(0)} h ${_t("fr","GO", "en","GO", "es","IR A PLAYA")}`
+    return `${Math.round(h/24)} j ${_t(lang,"DONNÉES EN RETARD","STALE DATA","DATOS ATRASADOS")}`
   }catch(_){ return "···" }
 }
 // Honnêteté fraîcheur : si l'image satellite a >36h, Le Veilleur l'avoue (flag STALE)
