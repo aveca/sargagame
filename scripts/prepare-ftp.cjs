@@ -44,6 +44,30 @@ function fleetVersion() {
   return b ? { v: d, date: d, b } : { v: d, date: d }
 }
 
+function copyStampedVersion(out) {
+  const src = path.join(dist, 'version.json')
+  if (!fs.existsSync(src)) {
+    throw new Error('dist/version.json introuvable : le build doit produire la version stampée avant prepare-ftp')
+  }
+
+  let version
+  try {
+    version = JSON.parse(fs.readFileSync(src, 'utf-8'))
+  } catch (e) {
+    throw new Error(`dist/version.json invalide : ${e.message}`)
+  }
+
+  const sw = fs.readFileSync(path.join(dist, 'sw.js'), 'utf-8')
+  const match = sw.match(/CACHE_NAME = 'sargasses-v\\d+-([a-z0-9]+)'/)
+  const swHash = match && match[1]
+  if (!version.b || !swHash || version.b !== swHash) {
+    throw new Error(`version.json.b (${version.b || 'absent'}) != sw CACHE_NAME hash (${swHash || 'absent'})`)
+  }
+
+  fs.copyFileSync(src, path.join(out, 'version.json'))
+  return version
+}
+
 if (!fs.existsSync(dist)) {
   console.error('Run npm run build first.')
   process.exit(1)
@@ -458,16 +482,12 @@ Généré par: npm run build && node scripts/prepare-ftp.cjs
 À envoyer: tout le contenu de ce dossier sur le FTP (remplacer l'existant).
 Ne pas utiliser une ancienne .zip : régénérer avec "npm run martinique" ou "npm run daily" puis envoyer le dossier frais.
 `
-const fvLegacy = fleetVersion()
 for (const region of legacyRegions) {
   const out = path.join(root, region.ftpDir)
   fs.writeFileSync(path.join(out, 'BUILD.txt'), buildInfo, 'utf-8')
-  // version.json unifié flotte : garantit MQ/GP sur le MÊME id que les régions
-  // USD même si prepare-ftp est lancé sans le prebuild (sync-version). Tue le
-  // public/version.json figé "2026-04-14-map-click-fix" copié depuis dist/.
-  fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify(fvLegacy) + '\n', 'utf-8')
+  const version = copyStampedVersion(out)
+  console.log(`   → version.json ${region.id} préservé depuis dist/ (${version.v}, b=${version.b})`)
 }
-console.log(`   → version.json MQ/GP unifié (${fvLegacy.v})`)
 
 console.log('')
 console.log('   → Martinique : envoie le contenu de martinique-ftp/ sur le FTP (pas une vieille zip).')
@@ -1037,11 +1057,11 @@ Sitemap: https://${domain}/sitemap.xml
     console.log(`   → manifest.json région-aware (${title})`)
   }
 
-  // version.json unifié flotte (même id que MQ/GP). sw.js est copié tel quel
-  // depuis dist/ (déjà bumpé par sync-version.cjs au prebuild) — pas dans le skip set.
-  const fv = fleetVersion()
-  fs.writeFileSync(path.join(out, 'version.json'), JSON.stringify(fv) + '\n', 'utf-8')
-  console.log(`   → version.json (${fv.v})`)
+  // version.json doit rester celui du build courant : son b hashé doit matcher
+  // le CACHE_NAME du sw.js copié depuis le même dist/. Ne pas le régénérer depuis
+  // la version flotte, sinon un build régional peut recevoir le hash d'une autre région.
+  const version = copyStampedVersion(out)
+  console.log(`   → version.json préservé depuis dist/ (${version.v}, b=${version.b})`)
 
   // Données sargasses : le front fetche /api/copernicus/sargassum.json (chemin
   // racine, codé en dur). Le dist/ partagé y met les plages MQ/GP → on écrase
