@@ -119,3 +119,48 @@ jobs:
             echo "Payment backend is not configured or route is not migrated"
             exit 1
           fi
+
+  deploy-pages:
+    needs: build
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: sargagame
+            region: mq
+          - project: sargagame-gp
+            region: gp
+          - project: sargagame-florida
+            region: florida
+          - project: sargagame-puntacana
+            region: puntacana
+          - project: sargagame-rivieramaya
+            region: rivieramaya
+          - project: sargagame-tulum
+            region: tulum
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Build region for Pages
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: npm run build
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ matrix.project }}
+          directory: dist
+          branch: main
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
