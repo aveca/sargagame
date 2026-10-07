@@ -320,32 +320,21 @@
            Visuel-only (pas de texte) → neutre pour les 5 domaines/langues. -->
       <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:#0d1117;z-index:0;padding-top:env(safe-area-inset-top,0)">
         <style>
-          @keyframes sgBootPulse{0%{box-shadow:0 0 0 0 rgba(255,199,44,.45);transform:scale(1)}70%{box-shadow:0 0 0 16px rgba(255,199,44,0);transform:scale(1.06)}100%{box-shadow:0 0 0 0 rgba(255,199,44,0);transform:scale(1)}}
-          @keyframes sgSkSweep{0%{background-position:160% 0}100%{background-position:-160% 0}}
-          #sg-boot .sk{background:linear-gradient(100deg,rgba(255,255,255,.05) 30%,rgba(255,255,255,.14) 50%,rgba(255,255,255,.05) 70%);background-size:200% 100%;animation:sgSkSweep 1.5s ease-in-out infinite}
-          #sg-boot .dot{width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 50% 42%,#FFE47A,#FFC72C 55%,#E89400);box-shadow:0 0 0 0 rgba(255,199,44,.45);animation:sgBootPulse 1.5s ease-in-out infinite;flex:0 0 auto}
-          @media (prefers-reduced-motion:reduce){#sg-boot .dot,#sg-boot .sk{animation:none}}
+          .sg-boot-header { padding: 14px 16px; text-align: center; color: #fff; }
+          .sg-boot-headline { font: clamp(24px,4vw,32px) "Anton",system-ui,sans-serif; margin: 8px 0; }
+          .sg-boot-subheadline { font: 14px/1.4 "Bricolage Grotesque",system-ui,sans-serif; opacity: 0.8; margin: 0 0 20px 0; }
+          .sg-boot-cta { display: inline-block; padding: 10px 20px; background: #FFC72C; color: #0d1117; text-decoration: none; font: 700 15px "Bricolage Grotesque",sans-serif; border-radius: 999px; margin: 10px 0; }
+          .sg-boot-links { padding: 0 16px; }
+          .sg-boot-link { display: block; padding: 8px 0; color: #aaa; font: 13px "Bricolage Grotesque",sans-serif; border-top: 1px solid #333; border-bottom: 1px solid #333; }
         </style>
-        <!-- Squelette de l'above-the-fold (barre + carte hero + chips + lignes) : un VRAI
-             bloc dimensionné = élément LCP peint dès la 1re réponse HTTP, zéro JS/fetch,
-             visuel-only (neutre 5 domaines/langues). React (createRoot) remplace #root. -->
-        <div style="display:flex;align-items:center;gap:11px;padding:14px 16px">
-          <div class="dot"></div>
-          <div class="sk" style="height:15px;width:150px;border-radius:8px"></div>
-          <div class="sk" style="height:30px;width:30px;border-radius:50%;margin-left:auto"></div>
-        </div>
-        <div style="padding:6px 16px 0">
-          <div class="sk" style="height:38vh;min-height:220px;border-radius:22px"></div>
-        </div>
-        <div style="display:flex;gap:10px;padding:16px 16px 0">
-          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
-          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
-          <div class="sk" style="height:34px;flex:1;border-radius:999px"></div>
-        </div>
-        <div style="padding:18px 16px 0;display:flex;flex-direction:column;gap:12px">
-          <div class="sk" style="height:56px;border-radius:14px"></div>
-          <div class="sk" style="height:56px;border-radius:14px"></div>
-          <div class="sk" style="height:56px;border-radius:14px"></div>
+        <div class="sg-boot-header">
+          <div class="sg-boot-headline">Plages Martinique aujourd'hui</div>
+          <div class="sg-boot-subheadline">53 plages notées en direct · Score 0-100 · Données Copernicus Marine</div>
+          <a href="/carte-sargasses/" class="sg-boot-cta">Voir la carte des plages</a>
+          <div class="sg-boot-links">
+            <a href="/previsions/" class="sg-boot-link">Prévisions 7 jours</a>
+            <a href="/alertes/" class="sg-boot-link">Alertes push gratuites</a>
+          </div>
         </div>
       </div>
       <!-- Révélé par JS uniquement → les crawlers/no-JS voient le <noscript> SEO intact, jamais le boot. React (createRoot) remplace #root au montage → le boot disparaît seul. -->
