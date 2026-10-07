@@ -59,7 +59,7 @@
         /* The production domain may expose this verification file, but the local Vite
            preview intentionally does not. Do not turn that expected preview 404 into a
            console error that fails the UX smoke gate. Real production checks remain active. */
-        var isLocalPreview = /^https?:\\/\\/localhost(?::\\d+)?$/.test(window.location.origin);
+        var isLocalPreview = window.location.hostname === 'localhost';
         if(!isLocalPreview){
           fetch(checkUrl, { method: 'HEAD', cache: 'no-cache' })
             .then(function(r){ if(r.ok) window.__SG_APPLEPAY_DOMAIN_READY = true; })
