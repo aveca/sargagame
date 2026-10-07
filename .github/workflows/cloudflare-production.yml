@@ -89,32 +89,133 @@ jobs:
         run: ls -la dist/ && echo "dist/version.json:" && cat dist/version.json
       - name: Deploy Worker with Assets
         run: npx --yes wrangler@3.80.0 deploy --config wrangler.jsonc --strict
-      - name: Configure Worker Route for custom domain
+      - name: Lookup Zone IDs for custom domains
+        id: zone_ids
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          echo "Looking up zone IDs..."
+          ZONES=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            "https://api.cloudflare.com/client/v4/zones?per_page=100" | jq -r '.result[] | "\(.name)=\(.id)"')
+          echo "$ZONES"
+          # Export zone IDs for each domain
+          for pair in $ZONES; do
+            name=$(echo "$pair" | cut -d= -f1)
+            id=$(echo "$pair" | cut -d= -f2)
+            case "$name" in
+              "sargasses-martinique.com") echo "ZONE_MQ=$id" >> $GITHUB_OUTPUT ;;
+              "sargasses-guadeloupe.com") echo "ZONE_GP=$id" >> $GITHUB_OUTPUT ;;
+              "sargassummiami.com") echo "ZONE_FLORIDA=$id" >> $GITHUB_OUTPUT ;;
+              "sargassumpuntacana.com") echo "ZONE_PUNTA_CANA=$id" >> $GITHUB_OUTPUT ;;
+              "sargassumcancun.com") echo "ZONE_RIVIERA_MAYA=$id" >> $GITHUB_OUTPUT ;;
+            esac
+          done
+      - name: Configure Worker Route for custom domain (idempotent)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           WORKER_NAME: sargagame-${{ matrix.id }}
           DOMAIN: ${{ matrix.domain }}
+          ZONE_MQ: ${{ steps.zone_ids.outputs.ZONE_MQ }}
+          ZONE_GP: ${{ steps.zone_ids.outputs.ZONE_GP }}
+          ZONE_FLORIDA: ${{ steps.zone_ids.outputs.ZONE_FLORIDA }}
+          ZONE_PUNTA_CANA: ${{ steps.zone_ids.outputs.ZONE_PUNTA_CANA }}
+          ZONE_RIVIERA_MAYA: ${{ steps.zone_ids.outputs.ZONE_RIVIERA_MAYA }}
         run: |
-          echo "Configuring route for ${{ matrix.domain }} -> ${{ env.WORKER_NAME }}"
-          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ env.CLOUDFLARE_ACCOUNT_ID }}/workers/routes" \
-            -H "Authorization: Bearer ${{ env.CLOUDFLARE_API_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            --data "{\"pattern\":\"${{ env.DOMAIN }}/*\",\"script\":\"${{ env.WORKER_NAME }}\"}" | jq .
+          set -euo pipefail
+          # Determine zone_id for this domain
+          case "${DOMAIN}" in
+            "sargasses-martinique.com") ZONE_ID="${ZONE_MQ}" ;;
+            "sargasses-guadeloupe.com") ZONE_ID="${ZONE_GP}" ;;
+            "sargassummiami.com") ZONE_ID="${ZONE_FLORIDA}" ;;
+            "sargassumpuntacana.com") ZONE_ID="${ZONE_PUNTA_CANA}" ;;
+            "sargassumcancun.com") ZONE_ID="${ZONE_RIVIERA_MAYA}" ;;
+            *) echo "Unknown domain: ${DOMAIN}"; exit 1 ;;
+          esac
+          if [ -z "${ZONE_ID}" ]; then
+            echo "ERROR: No zone_id found for ${DOMAIN}"
+            exit 1
+          fi
+          echo "Zone ID for ${DOMAIN}: ${ZONE_ID}"
+          PATTERN="${DOMAIN}/*"
+          SCRIPT="${WORKER_NAME}"
+          # Get existing routes
+          EXISTING=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" | jq -r '.result[] | "\(.pattern)=\(.script)"')
+          echo "Existing routes: ${EXISTING}"
+          # Check if our route exists
+          MATCH=$(echo "${EXISTING}" | grep "^${PATTERN}=" || true)
+          if [ -n "${MATCH}" ]; then
+            EXISTING_SCRIPT=$(echo "${MATCH}" | cut -d= -f2)
+            if [ "${EXISTING_SCRIPT}" = "${SCRIPT}" ]; then
+              echo "Route ${PATTERN} -> ${SCRIPT} already correct, skipping."
+            else
+              echo "Route ${PATTERN} exists but points to ${EXISTING_SCRIPT}, updating to ${SCRIPT}"
+              ROUTE_ID=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+                "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" | jq -r ".result[] | select(.pattern==\"${PATTERN}\") | .id")
+              curl -sX PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes/${ROUTE_ID}" \
+                -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+                -H "Content-Type: application/json" \
+                --data "{\"pattern\":\"${PATTERN}\",\"script\":\"${SCRIPT}\"}" | jq .
+            fi
+          else
+            echo "Creating route ${PATTERN} -> ${SCRIPT}"
+            curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data "{\"pattern\":\"${PATTERN}\",\"script\":\"${SCRIPT}\"}" | jq .
+          fi
       - name: Configure Worker secrets
         run: |
-          printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
-          printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@latest secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
-          printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@latest secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
-      - name: Purge Cloudflare CDN cache
+          printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@3.80.0 secret put MOLLIE_API_KEY --config wrangler.jsonc
+          printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@3.80.0 secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
+          printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@3.80.0 secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
+      - name: Purge Cloudflare CDN cache (zone-level, optional)
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          ZONE_MQ: ${{ steps.zone_ids.outputs.ZONE_MQ }}
+          ZONE_GP: ${{ steps.zone_ids.outputs.ZONE_GP }}
+          ZONE_FLORIDA: ${{ steps.zone_ids.outputs.ZONE_FLORIDA }}
+          ZONE_PUNTA_CANA: ${{ steps.zone_ids.outputs.ZONE_PUNTA_CANA }}
+          ZONE_RIVIERA_MAYA: ${{ steps.zone_ids.outputs.ZONE_RIVIERA_MAYA }}
         run: |
-          curl -sX POST "https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/purge_cache" \
-            -H "Authorization: Bearer ${env.CLOUDFLARE_API_TOKEN}" \
-            -H "Content-Type: application/json" \
-            --data "{\"files\":[\"/version.json\"]}"
+          set -euo pipefail
+          case "${DOMAIN}" in
+            "sargasses-martinique.com") ZONE_ID="${ZONE_MQ}" ;;
+            "sargasses-guadeloupe.com") ZONE_ID="${ZONE_GP}" ;;
+            "sargassummiami.com") ZONE_ID="${ZONE_FLORIDA}" ;;
+            "sargassumpuntacana.com") ZONE_ID="${ZONE_PUNTA_CANA}" ;;
+            "sargassumcancun.com") ZONE_ID="${ZONE_RIVIERA_MAYA}" ;;
+            *) echo "Unknown domain: ${DOMAIN}"; exit 1 ;;
+          esac
+          if [ -n "${ZONE_ID}" ]; then
+            echo "Purging cache for zone ${ZONE_ID} (${DOMAIN})"
+            curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
+              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+              -H "Content-Type: application/json" \
+              --data '{"files":["/version.json"]}' | jq .
+          else
+            echo "WARNING: No zone_id for ${DOMAIN}, skipping purge"
+          fi
+      - name: Verify version.json served by custom domain
+        env:
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          set -euo pipefail
+          echo "Verifying version.json on https://${DOMAIN}..."
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            CONTENT=$(curl -sfL "https://${DOMAIN}/version.json?t=$(date +%s)" || true)
+            if [ -n "${CONTENT}" ]; then
+              echo "Got version.json: ${CONTENT}"
+              # Verify it's valid JSON with expected fields
+              echo "${CONTENT}" | jq -e '.v and .b' >/dev/null && exit 0
+            fi
+            echo "Attempt ${i}/10: version.json not ready, waiting..."
+            sleep 10
+          done
+          echo "FAIL: version.json not served correctly after 10 attempts"
+          exit 1
       - name: Smoke test
         env:
           DOMAIN: ${{ matrix.domain }}
