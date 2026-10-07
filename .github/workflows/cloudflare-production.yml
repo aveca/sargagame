@@ -85,13 +85,36 @@ jobs:
           REGION: ${{ matrix.id }}
           DOMAIN: ${{ matrix.domain }}
         run: node -e "const fs=require('fs');let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN);fs.writeFileSync('wrangler.jsonc',s)"
-      - name: Deploy Worker
-        run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
+      - name: Verify dist folder exists
+        run: ls -la dist/ && echo "dist/version.json:" && cat dist/version.json
+      - name: Deploy Worker with Assets
+        run: npx --yes wrangler@3.80.0 deploy --config wrangler.jsonc --strict
+      - name: Configure Worker Route for custom domain
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WORKER_NAME: sargagame-${{ matrix.id }}
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          echo "Configuring route for ${{ matrix.domain }} -> ${{ env.WORKER_NAME }}"
+          curl -sX PUT "https://api.cloudflare.com/client/v4/accounts/${{ env.CLOUDFLARE_ACCOUNT_ID }}/workers/routes" \
+            -H "Authorization: Bearer ${{ env.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data "{\"pattern\":\"${{ env.DOMAIN }}/*\",\"script\":\"${{ env.WORKER_NAME }}\"}" | jq .
       - name: Configure Worker secrets
         run: |
           printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
           printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@latest secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
           printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@latest secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
+      - name: Purge Cloudflare CDN cache
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          curl -sX POST "https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/purge_cache" \
+            -H "Authorization: Bearer ${env.CLOUDFLARE_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data "{\"files\":[\"/version.json\"]}"
       - name: Smoke test
         env:
           DOMAIN: ${{ matrix.domain }}
