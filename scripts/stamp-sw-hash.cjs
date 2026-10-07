@@ -79,14 +79,18 @@ const hash = h.digest('hex').slice(0, 8)
 // comparait que `v` (= release-notes `current`, inchangé sur un deploy de code) → ne reloadait
 // JAMAIS sur un fix de code = cause « version grise coincée » (fondateur 18/06). `v` reste pour
 // le Journal du Veilleur ; `b` est le déclencheur de fraîcheur.
+// Ajoute aussi un identifiant worker/région pour forcer Cloudflare à créer un manifest d'assets
+// distinct par Worker (évite la déduplication d'assets Cloudflare qui garde l'ancien manifest).
+const workerId = process.env.VITE_REGION || 'unknown'
 try {
   const vp = path.join(root, 'dist', 'version.json')
   if (fs.existsSync(vp)) {
     const vj = JSON.parse(fs.readFileSync(vp, 'utf-8'))
-    if (vj.b !== hash) {
+    if (vj.b !== hash || vj.worker !== workerId) {
       vj.b = hash
+      vj.worker = workerId
       fs.writeFileSync(vp, JSON.stringify(vj) + '\n', 'utf-8')
-      console.log(`[stamp-sw] dist/version.json b → ${hash}`)
+      console.log(`[stamp-sw] dist/version.json b → ${hash}, worker → ${workerId}`)
     }
   }
 } catch (e) { console.error('[stamp-sw] version.json (non bloquant):', e.message) }
