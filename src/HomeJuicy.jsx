@@ -100,6 +100,10 @@ function GridCard({b,lang,idx,onOpen,revealRef}){
   const L=STR[lang]||STR.fr
   const grad=b.status==="clean"?["#123047","#C97E3A"]:b.status==="moderate"?["#0B2230","#6a4a2a"]:["#141026","#B85A2A"]
   const gid="hj-cg"+idx
+  const score=b.score!=null?String(Math.round(b.score)):"—"
+  /* trend : proxy based on status — clean → good, moderate → stable, avoid → poor */
+  const trendMap={clean:"↑",moderate:"→",avoid:"↓"}
+  const trend=trendMap[b.status]||"·"
   return(
     <div ref={revealRef} className="hj-card" role="button" tabIndex={0}
       onClick={onOpen} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onOpen()}}}>
@@ -115,6 +119,8 @@ function GridCard({b,lang,idx,onOpen,revealRef}){
       <div className="hj-lab">
         <span className="hj-nm">{b.name}</span>
         <span className={"hj-pill hj-pill-"+b.status}>{L.pill[b.status]||"—"}</span>
+        <span className="hj-trend">{trend}</span>
+        <span className="hj-scr">{L.pill[b.status]?.includes("clean")?score:"Score "+score}</span>
       </div>
     </div>
   )
@@ -352,6 +358,10 @@ const HJ_CSS=`
 .hj-nm{font:800 13px/1.1 "Bricolage Grotesque",sans-serif;color:#0D0D0D}
 .hj-pill{font:800 10px/1 "JetBrains Mono",monospace;padding:4px 7px;border-radius:999px;border:2px solid #0D0D0D}
 .hj-pill-clean{background:#22C55E;color:#06210f} .hj-pill-moderate{background:#B87A00;color:#fff} .hj-pill-avoid{background:#E8522A;color:#fff}
+
+.hj-trend{font:800 10px/1 "JetBrains Mono",monospace;padding:2px 5px;border-radius:999px;border:2px solid #0D0D0D;color:#0D0D0D;min-width:14px;text-align:center}
+.hj-trend-clean{color:#22C55E} .hj-trend-moderate{color:#B87A00} .hj-trend-avoid{color:#E8522A}
+.hj-scr{font:800 11px/1 "JetBrains Mono",monospace;color:#FFE47A;letter-spacing:.02em}
 
 .hj-story{padding:24px 16px 8px}
 .hj-beat{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:2px dashed rgba(13,13,13,.14)}
