@@ -1,0 +1,15 @@
+{
+  "event_id": "AUTOPILOT_FACTORY_EVENT-sargagame-paid-funnel-e2e",
+  "repo": "aveca/sargagame",
+  "sha": "f611fff180ab9b939dc8817ba7473a1f2d754b6a",
+  "branch": "unknown",
+  "pr": 811,
+  "workflow": "CI Tests",
+  "job": "test-frontend",
+  "severity": "P1",
+  "error": "Paid funnel Playwright E2E failed because localhost:4173 was already used and the HTML reporter folder test-results/report clashes with the test results folder test-results.",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37328604016",
+  "detected_at": "2026-10-05T14:56:10Z",
+  "human_gate": false,
+  "requested_action": "Repair the deterministic Playwright server/report-directory collision and rerun CI; do not create a parallel dispatch."
+}
