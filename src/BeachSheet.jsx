@@ -13,9 +13,10 @@
  * Each section triggers animation once on first reveal via IntersectionObserver.
  * prefers-reduced-motion: all transitions skipped, content shown immediately.
  */
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react"
+import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { _t, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
+const SOSPlage = lazy(() => import("./SOSPlage.jsx"))
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
 function moodFromScore(score){return typeof score!=="number"?"scan":score>=70?"serein":score>=40?"vigilant":"alerte"}
@@ -235,6 +236,12 @@ export default function BeachSheet({
 
   const fave=favorites&&favorites.includes(beach?.id)
 
+  const [showSOS, setShowSOS] = useState(false)
+  const onSOSClick = () => {
+    trk("sg_sos_beachsheet_click", { beach_id: beach?.id, status })
+    setShowSOS(true)
+  }
+
   // CTA
   const ctaLabel=isPremium?_t(lang,"Mes alertes","My alerts","Mis alertas"):_t(lang,"Activer mon alerte","Turn on my alert","Activar mi alerta")
   const onCTA=()=>{trk("sg_beach_cta",{beach_id:beach?.id,status,premium:!!isPremium});if(isPremium){try{onEnsureAlerts&&onEnsureAlerts()}catch(_){};onClose&&onClose()}else{onPremiumClick&&onPremiumClick("beach_sheet")}}
@@ -347,6 +354,37 @@ export default function BeachSheet({
               {_t(lang,"Le verdict est 100 % data satellite. L'argent ne l'influence jamais.","The verdict is 100% satellite data. Money never touches it.","El veredicto es 100 % datos satelitales. El dinero nunca lo influye.")}
             </div>
             {statusExplainOn&&<div data-testid="status-explain" style={{textAlign:"center",marginTop:8,font:"600 12px/1.5 'Bricolage Grotesque'",color:COMIC.ink,maxWidth:360,margin:"8px auto 0"}}>{explainBeachStatus(status,lang)}</div>}
+          </StorySection>
+
+          {/* SOS PLAGE 24H — CTA after verdict */}
+          <StorySection delay={.15} style={{padding:"24px 20px"}}>
+            <div style={{maxWidth:400,margin:"0 auto",textAlign:"center"}}>
+              <div style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"#FFC72C",marginBottom:8}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:"#22C55E" }}/>
+                {_t(lang,"SOS PLAGE 24H","SOS BEACH 24H","SOS PLAYA 24H")}
+              </div>
+              <h3 style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(22px,5vw,28px)",lineHeight:1,color:"#fff",margin:"4px 0 8px",letterSpacing:"-.01em"}}>
+                {_t(lang,"Quelle plage choisir <span style='color:#FFC72C'>demain</span> ?","Which beach to pick <span style='color:#FFC72C'>tomorrow</span>?","¿Qué playa elegir <span style='color:#FFC72C'>mañana</span>?")}
+              </h3>
+              <p style={{fontSize:13,lineHeight:1.5,fontWeight:600,color:"rgba(234,247,244,.70)",margin:"0 0 16px"}}>
+                {_t(lang,"Prévision sargasses personnalisée · Satellite 4×/jour · Décision immédiate.","Personalized sargassum forecast · Satellite 4×/day · Instant decision.","Previsión sargazo personalizada · Satélite 4×/día · Decisión inmediata.")}
+              </p>
+              <button onClick={onSOSClick}
+                style={{
+                  width:"100%",padding:"16px 20px",borderRadius:14,border:"none",
+                  background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",
+                  color:"#190c2c",fontWeight:800,fontSize:16,fontFamily:"inherit",
+                  cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
+                  fontFamily:"inherit"
+                }}>
+                {_t(lang,"Voir mon rapport — 1 €","See my report — 1 €","Ver mi informe — 1 €")}
+              </button>
+              <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,marginTop:10,fontSize:11,fontWeight:700,color:"rgba(234,247,244,.55)"}}>
+                <span>🔒 Mollie</span><span aria-hidden="true">·</span>
+                <span>{_t(lang,"Paiement sécurisé","Secure payment","Pago seguro")}</span><span aria-hidden="true">·</span>
+                <span>{_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</span>
+              </div>
+            </div>
           </StorySection>
 
           {/* #3 — Forecast 7j */}
@@ -520,6 +558,11 @@ export default function BeachSheet({
         </div>
       </div>
     </>
+    {showSOS && (
+      <Suspense fallback={null}>
+        <SOSPlage lang={lang} sargData={sargData} region={beach?.island || "mq"} onClose={() => setShowSOS(false)} />
+      </Suspense>
+    )}
   )
 }
 

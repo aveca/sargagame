@@ -14469,6 +14469,18 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
+          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + env(safe-area-inset-bottom))",zIndex:950,pointerEvents:"none"}}>
+            <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
+              <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
+                className="sg-fab"
+                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
+                <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
+              </button>
+            </div>
+          </div>
+        )}
+        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
@@ -14484,7 +14496,8 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-
+        {showSOS&&<ErrBound><Suspense fallback={null}><SOSPlage lang={lang} sargData={sargData} region={island} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound>}
+        
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}
