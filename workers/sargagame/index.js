@@ -111,7 +111,7 @@ export default {
         if(d.action==="create_payment" || d.action==="applepay_session"){
           const pass=d.pass||null, currency=String(d.cur||"EUR").toUpperCase();
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
-          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null}};
+          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null},sos:{EUR:1.00,USD:null}};
           let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
           if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
           if(!valid)return out({error:"Prix invalide"},400);
