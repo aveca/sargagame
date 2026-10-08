@@ -13551,6 +13551,18 @@ export default function App(){
     else if(p.get("sos")==="1"){setShowSOS(true);track("sg_sos_open",{source:"deeplink"});window.history.replaceState({},"",window.location.pathname)}
   }catch(_){}},[openPremium])
 
+  // SOS deep-link handler — separate effect to ensure it runs on mount regardless of openPremium stability
+  useEffect(()=>{
+    try{
+      const p=new URLSearchParams(window.location.search)
+      if(p.get("sos")==="1"){
+        setShowSOS(true)
+        track("sg_sos_open",{source:"deeplink"})
+        window.history.replaceState({},"",window.location.pathname)
+      }
+    }catch(_){}
+  },[])
+
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
   // Was hijacking active explorers mid-flow, reading as "the app keeps bugging on my 3rd click".

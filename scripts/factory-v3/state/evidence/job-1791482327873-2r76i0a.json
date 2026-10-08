@@ -1,0 +1,19 @@
+{
+  "job_id": "job-1791482327873-2r76i0a",
+  "repo": "sargagame",
+  "branch": "main",
+  "commit": "",
+  "pr": null,
+  "ci": null,
+  "merge": null,
+  "deploy": null,
+  "live": null,
+  "baseline": null,
+  "after": null,
+  "errors": [
+    "Divergence locale/remote non sûre"
+  ],
+  "attempts": 1,
+  "timestamps": {},
+  "verdict": "BLOCKED"
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, memo } from "react"
+import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { track } from "./Sargasses_PROD.jsx"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
@@ -14,12 +14,42 @@ function moneyEUR(cents, lang) {
   return lang === "en" ? `€${euros}` : `${euros} €`
 }
 
+// Modal a11y - focus trap, ESC, restore focus
+function useModalA11y(panelRef, onClose) {
+  useEffect(() => {
+    const panel = panelRef.current
+    const prevFocus = (typeof document !== "undefined" && document.activeElement) || null
+    const SEL = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
+    const focusables = () => panel ? Array.prototype.filter.call(panel.querySelectorAll(SEL), el => el.offsetParent !== null || el === document.activeElement) : []
+    try { if (panel && !panel.contains(document.activeElement)) { const f = focusables(); (f[0] || panel).focus && (f[0] || panel).focus() } } catch (_) {}
+    const onKey = e => {
+      if (e.key === "Escape") { e.stopPropagation(); onClose && onClose(); return }
+      if (e.key !== "Tab" || !panel) return
+      const f = focusables(); if (!f.length) { e.preventDefault(); return }
+      const first = f[0], last = f[f.length - 1], a = document.activeElement
+      if (e.shiftKey && (a === first || !panel.contains(a))) { e.preventDefault(); last.focus() }
+      else if (!e.shiftKey && a === last) { e.preventDefault(); first.focus() }
+    }
+    document.addEventListener("keydown", onKey, true)
+    return () => { document.removeEventListener("keydown", onKey, true); try { prevFocus && prevFocus.focus && prevFocus.focus() } catch (_) {} }
+  }, [onClose])
+}
+
 function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
   const [beaches, setBeaches] = useState([])
   const [selectedBeachId, setSelectedBeachId] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const panelRef = useRef(null)
+  
+  useModalA11y(panelRef, onClose)
+  
+  // Debug: log component mount
+  useEffect(() => {
+    console.log('[SOSPlage] Component mounted', { lang, region })
+    return () => console.log('[SOSPlage] Component unmounted')
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -72,6 +102,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
 
   const handleBuy = useCallback(async () => {
     if (!selectedBeach || checkoutLoading) return
+    if (typeof window !== "undefined") window.__sosHandleBuyCalled = true
     setCheckoutLoading(true)
     track("sg_sos_checkout_start", { beach: selectedBeach.id, beachName: selectedBeach.name })
     try {
@@ -141,7 +172,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
   const recommendationColor = statusMeta.color
 
   return (
-    <div style={{ color: "#FDFCF7", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+    <div data-sos-plage="true" style={{ color: "#FDFCF7", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
       <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C", marginBottom: 8 }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
         {_t(lang, "SOS PLAGE 24H", "SOS BEACH 24H", "SOS PLAYA 24H")}
@@ -252,6 +283,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
 
       <div style={{ marginTop: 16, textAlign: "center" }}>
         <button
+          id="sos-plage-cta"
           onClick={handleBuy}
           disabled={checkoutLoading}
           style={{
