@@ -1,0 +1,14 @@
+{
+  "takenAt": "2026-10-08T05:12:33.909Z",
+  "takenBy": 23040,
+  "why": "reprise stale (pid 8664 mort)",
+  "previous": {
+    "pid": 8664,
+    "ppid": 13308,
+    "token": "4aa503cb5bb6c752",
+    "startedAt": "2026-10-08T03:33:09.992Z",
+    "heartbeatAt": "2026-10-08T05:11:15.489Z",
+    "host": "DESKTOP-HG0O76B",
+    "argv": "C:\\Users\\user\\sargagame-tmp\\scripts\\autopilot\\runner.cjs"
+  }
+}

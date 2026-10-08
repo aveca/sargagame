@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v218",
+  "current": "v219",
   "releases": [
+    {
+      "v": "v219",
+      "date": "2026-10-08",
+      "title": {
+        "fr": "Paywall Comic : 3 variantes visuelles + A/B test",
+        "en": "Comic Paywall: 3 visual variants + A/B test",
+        "es": "Paywall Comic: 3 variantes visuales + test A/B"
+      },
+      "items": [
+        {
+          "emoji": "🎴",
+          "fr": "Le paywall Comic retrouve ses 3 en-têtes animés (scène golden-hour, constellation, beat) — testés en A/B pour mesurer la préférence.",
+          "en": "Comic paywall gets back its 3 animated headers (golden-hour scene, constellation, beat) — A/B tested to measure preference.",
+          "es": "El paywall Comic recupera sus 3 cabeceras animadas (escena golden-hour, constelación, beat) — testadas en A/B para medir preferencia."
+        },
+        {
+          "emoji": "🔬",
+          "fr": "A/B test pw_header_variant (34/33/33) — override QA via ?pwheader=scene|constel|beat.",
+          "en": "A/B test pw_header_variant (34/33/33) — QA override via ?pwheader=scene|constel|beat.",
+          "es": "Test A/B pw_header_variant (34/33/33) — override QA via ?pwheader=scene|constel|beat."
+        }
+      ]
+    },
     {
       "v": "v218",
       "date": "2026-07-29",

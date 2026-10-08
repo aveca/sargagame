@@ -2343,6 +2343,15 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
+          headerVariant={(()=>{
+            try{
+              const q=window.location.search
+              if(/[?&]pwheader=constel/.test(q))return "constel"
+              if(/[?&]pwheader=beat/.test(q))return "beat"
+              if(/[?&]pwheader=scene/.test(q))return "scene"
+              return abVariant("pw_header_variant",["scene","constel","beat"],[0.34,0.33,0.33])
+            }catch(_){return "scene"}
+          })()}
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}

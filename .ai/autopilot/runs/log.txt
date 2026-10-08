@@ -1,0 +1,945 @@
+2026-10-08T18:37:10.568Z [orchestrator] cycle 2026-10-08-183710566-pcbw-11szv started (active · LIVE)
+2026-10-08T18:37:11.574Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:37:11.575Z [orchestrator] [18:37:11] PROD        6/6 healthy
+2026-10-08T18:37:11.758Z [orchestrator] [18:37:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:37:11.758Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:37:12.139Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183710566-pcbw-11szv 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:37:12.141Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183710566-pcbw-11szv 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:37:12.142Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183710566-pcbw-11szv.md + latest.md
+2026-10-08T18:37:40.741Z [orchestrator] cycle 2026-10-08-183740740-pecw-1fi0c started (active · LIVE)
+2026-10-08T18:37:42.053Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:37:42.053Z [orchestrator] [18:37:42] PROD        6/6 healthy
+2026-10-08T18:37:42.211Z [orchestrator] [18:37:42] OBSERVE     starting Playwright probe...
+2026-10-08T18:37:42.212Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:37:42.605Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183740740-pecw-1fi0c 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:37:42.606Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183740740-pecw-1fi0c 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:37:42.608Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183740740-pecw-1fi0c.md + latest.md
+2026-10-08T18:38:10.497Z [orchestrator] cycle 2026-10-08-183810495-pdlw-1yr23 started (active · LIVE)
+2026-10-08T18:38:11.596Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:38:11.597Z [orchestrator] [18:38:11] PROD        6/6 healthy
+2026-10-08T18:38:11.780Z [orchestrator] [18:38:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:38:11.780Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:38:12.217Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183810495-pdlw-1yr23 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:38:12.218Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183810495-pdlw-1yr23 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:38:12.219Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183810495-pdlw-1yr23.md + latest.md
+2026-10-08T18:38:40.554Z [orchestrator] cycle 2026-10-08-183840552-plfo-1fjsb started (active · LIVE)
+2026-10-08T18:38:41.648Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:38:41.649Z [orchestrator] [18:38:41] PROD        6/6 healthy
+2026-10-08T18:38:41.794Z [orchestrator] [18:38:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:38:41.795Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:38:42.224Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183840552-plfo-1fjsb 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:38:42.225Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183840552-plfo-1fjsb 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:38:42.226Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183840552-plfo-1fjsb.md + latest.md
+2026-10-08T18:39:10.600Z [orchestrator] cycle 2026-10-08-183910598-pgeo-1api8 started (active · LIVE)
+2026-10-08T18:39:11.650Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:39:11.651Z [orchestrator] [18:39:11] PROD        6/6 healthy
+2026-10-08T18:39:11.799Z [orchestrator] [18:39:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:39:11.800Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:39:12.249Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183910598-pgeo-1api8 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:39:12.250Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183910598-pgeo-1api8 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:39:12.252Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183910598-pgeo-1api8.md + latest.md
+2026-10-08T18:39:40.576Z [orchestrator] cycle 2026-10-08-183940574-pjzs-1nebl started (active · LIVE)
+2026-10-08T18:39:41.599Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:39:41.600Z [orchestrator] [18:39:41] PROD        6/6 healthy
+2026-10-08T18:39:41.742Z [orchestrator] [18:39:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:39:41.743Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:39:42.151Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183940574-pjzs-1nebl 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:39:42.151Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-183940574-pjzs-1nebl 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:39:42.152Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-183940574-pjzs-1nebl.md + latest.md
+2026-10-08T18:40:10.558Z [orchestrator] cycle 2026-10-08-184010556-pibg-1ndda started (active · LIVE)
+2026-10-08T18:40:11.602Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:40:11.603Z [orchestrator] [18:40:11] PROD        6/6 healthy
+2026-10-08T18:40:11.731Z [orchestrator] [18:40:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:40:11.732Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:40:12.116Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184010556-pibg-1ndda 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:40:12.117Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184010556-pibg-1ndda 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:40:12.118Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184010556-pibg-1ndda.md + latest.md
+2026-10-08T18:40:40.596Z [orchestrator] cycle 2026-10-08-184040595-pbao-1khcp started (active · LIVE)
+2026-10-08T18:40:41.636Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:40:41.636Z [orchestrator] [18:40:41] PROD        6/6 healthy
+2026-10-08T18:40:41.780Z [orchestrator] [18:40:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:40:41.780Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:40:42.131Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184040595-pbao-1khcp 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:40:42.132Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184040595-pbao-1khcp 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:40:42.133Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184040595-pbao-1khcp.md + latest.md
+2026-10-08T18:41:11.280Z [orchestrator] cycle 2026-10-08-184111278-pkqg-1ebnn started (active · LIVE)
+2026-10-08T18:41:12.325Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:41:12.326Z [orchestrator] [18:41:12] PROD        6/6 healthy
+2026-10-08T18:41:12.476Z [orchestrator] [18:41:12] OBSERVE     starting Playwright probe...
+2026-10-08T18:41:12.476Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:41:13.674Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184111278-pkqg-1ebnn 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:41:13.675Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184111278-pkqg-1ebnn 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:41:13.676Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184111278-pkqg-1ebnn.md + latest.md
+2026-10-08T18:41:40.615Z [orchestrator] cycle 2026-10-08-184140613-p7zw-1nyde started (active · LIVE)
+2026-10-08T18:41:41.638Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:41:41.638Z [orchestrator] [18:41:41] PROD        6/6 healthy
+2026-10-08T18:41:41.819Z [orchestrator] [18:41:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:41:41.819Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:41:42.206Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184140613-p7zw-1nyde 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:41:42.206Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184140613-p7zw-1nyde 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:41:42.208Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184140613-p7zw-1nyde.md + latest.md
+2026-10-08T18:42:10.639Z [orchestrator] cycle 2026-10-08-184210638-pcrs-1x9j0 started (active · LIVE)
+2026-10-08T18:42:11.687Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:42:11.687Z [orchestrator] [18:42:11] PROD        6/6 healthy
+2026-10-08T18:42:11.794Z [orchestrator] [18:42:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:42:11.794Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:42:12.178Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184210638-pcrs-1x9j0 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:42:12.179Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184210638-pcrs-1x9j0 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:42:12.181Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184210638-pcrs-1x9j0.md + latest.md
+2026-10-08T18:42:40.614Z [orchestrator] cycle 2026-10-08-184240612-p53w-19ubn started (active · LIVE)
+2026-10-08T18:42:41.651Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:42:41.652Z [orchestrator] [18:42:41] PROD        6/6 healthy
+2026-10-08T18:42:41.811Z [orchestrator] [18:42:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:42:41.811Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:42:42.157Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184240612-p53w-19ubn 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:42:42.158Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184240612-p53w-19ubn 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:42:42.160Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184240612-p53w-19ubn.md + latest.md
+2026-10-08T18:43:10.589Z [orchestrator] cycle 2026-10-08-184310588-peek-1kgfz started (active · LIVE)
+2026-10-08T18:43:11.630Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:43:11.630Z [orchestrator] [18:43:11] PROD        6/6 healthy
+2026-10-08T18:43:11.786Z [orchestrator] [18:43:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:43:11.786Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:43:12.159Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184310588-peek-1kgfz 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:43:12.159Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184310588-peek-1kgfz 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:43:12.161Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184310588-peek-1kgfz.md + latest.md
+2026-10-08T18:43:40.657Z [orchestrator] cycle 2026-10-08-184340655-pfvs-18dka started (active · LIVE)
+2026-10-08T18:43:41.797Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:43:41.797Z [orchestrator] [18:43:41] PROD        6/6 healthy
+2026-10-08T18:43:41.932Z [orchestrator] [18:43:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:43:41.932Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:43:42.289Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184340655-pfvs-18dka 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:43:42.290Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184340655-pfvs-18dka 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:43:42.292Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184340655-pfvs-18dka.md + latest.md
+2026-10-08T18:44:10.646Z [orchestrator] cycle 2026-10-08-184410645-pks0-13eed started (active · LIVE)
+2026-10-08T18:44:11.697Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:44:11.698Z [orchestrator] [18:44:11] PROD        6/6 healthy
+2026-10-08T18:44:11.852Z [orchestrator] [18:44:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:44:11.852Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:44:12.207Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184410645-pks0-13eed 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:44:12.208Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184410645-pks0-13eed 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:44:12.209Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184410645-pks0-13eed.md + latest.md
+2026-10-08T18:44:40.581Z [orchestrator] cycle 2026-10-08-184440578-pk1w-1p26p started (active · LIVE)
+2026-10-08T18:44:41.611Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:44:41.612Z [orchestrator] [18:44:41] PROD        6/6 healthy
+2026-10-08T18:44:41.758Z [orchestrator] [18:44:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:44:41.759Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:44:42.158Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184440578-pk1w-1p26p 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:44:42.159Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184440578-pk1w-1p26p 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:44:42.161Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184440578-pk1w-1p26p.md + latest.md
+2026-10-08T18:45:10.580Z [orchestrator] cycle 2026-10-08-184510578-phuc-1kzva started (active · LIVE)
+2026-10-08T18:45:12.383Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:45:12.383Z [orchestrator] [18:45:12] PROD        6/6 healthy
+2026-10-08T18:45:12.473Z [orchestrator] [18:45:12] OBSERVE     starting Playwright probe...
+2026-10-08T18:45:12.473Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:45:12.900Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184510578-phuc-1kzva 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:45:12.901Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184510578-phuc-1kzva 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:45:12.903Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184510578-phuc-1kzva.md + latest.md
+2026-10-08T18:45:40.632Z [orchestrator] cycle 2026-10-08-184540630-piqw-1utwu started (active · LIVE)
+2026-10-08T18:45:41.627Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:45:41.627Z [orchestrator] [18:45:41] PROD        6/6 healthy
+2026-10-08T18:45:41.756Z [orchestrator] [18:45:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:45:41.756Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:45:42.154Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184540630-piqw-1utwu 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:45:42.155Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184540630-piqw-1utwu 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:45:42.156Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184540630-piqw-1utwu.md + latest.md
+2026-10-08T18:46:10.588Z [orchestrator] cycle 2026-10-08-184610586-pb1s-1yvkb started (active · LIVE)
+2026-10-08T18:46:11.631Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:46:11.631Z [orchestrator] [18:46:11] PROD        6/6 healthy
+2026-10-08T18:46:11.772Z [orchestrator] [18:46:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:46:11.773Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:46:12.132Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184610586-pb1s-1yvkb 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:46:12.133Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184610586-pb1s-1yvkb 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:46:12.135Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184610586-pb1s-1yvkb.md + latest.md
+2026-10-08T18:46:40.585Z [orchestrator] cycle 2026-10-08-184640584-pmjo-11mr0 started (active · LIVE)
+2026-10-08T18:46:41.618Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:46:41.619Z [orchestrator] [18:46:41] PROD        6/6 healthy
+2026-10-08T18:46:41.746Z [orchestrator] [18:46:41] OBSERVE     starting Playwright probe...
+2026-10-08T18:46:41.746Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:46:42.086Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184640584-pmjo-11mr0 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:46:42.087Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184640584-pmjo-11mr0 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:46:42.088Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184640584-pmjo-11mr0.md + latest.md
+2026-10-08T18:47:10.620Z [orchestrator] cycle 2026-10-08-184710618-phtw-1nuia started (active · LIVE)
+2026-10-08T18:47:11.651Z [orchestrator] [OBSERVED] health OK (6 domains 2xx)
+2026-10-08T18:47:11.651Z [orchestrator] [18:47:11] PROD        6/6 healthy
+2026-10-08T18:47:11.771Z [orchestrator] [18:47:11] OBSERVE     starting Playwright probe...
+2026-10-08T18:47:11.771Z [orchestrator] [OBSERVED] sonde Playwright prod lancée (headed=false)…
+2026-10-08T18:47:12.161Z [orchestrator] CRASH: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184710618-phtw-1nuia 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+2026-10-08T18:47:12.161Z [orchestrator] Error: Command failed: C:\Program Files\nodejs\node.exe C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs --run-id 2026-10-08-184710618-phtw-1nuia 
+OBSERVE_FATAL browserType.launch: Executable doesn't exist at C:\WINDOWS\system32\config\systemprofile\AppData\Local\ms-playwright\chromium_headless_shell-1234\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:209:34)
+    at Object.<anonymous> (C:\Users\user\sargagame-tmp\scripts\autopilot\observe.cjs:256:1) {
+  log: [],
+  name: 'Error'
+}
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at phaseObserve (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:227:14)
+    at main (C:\Users\user\sargagame-tmp\scripts\autopilot\orchestrator.cjs:678:23)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+2026-10-08T18:47:12.162Z [orchestrator] report: .ai\autopilot\runs\2026-10-08-184710618-phtw-1nuia.md + latest.md
