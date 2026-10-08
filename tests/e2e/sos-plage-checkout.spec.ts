@@ -23,7 +23,9 @@ async function captureNetwork(page: Page) {
     }
   })
   page.on('console', msg => {
-    console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`)
+    if (msg.type() === 'log' && msg.text().includes('[SOSPlage]')) {
+      console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`)
+    }
   })
   page.on('pageerror', e => {
     console.log(`[BROWSER ERROR] ${e.message}`)
@@ -156,6 +158,9 @@ test.describe("SOS Plage Checkout — Browser Diagnostics", () => {
       })
       console.log("🔍 handleBuy called after JS click:", handleBuyCalled2)
     }
+
+    // Wait longer for potential redirect (Mollie checkout can take a few seconds)
+    await page.waitForTimeout(8000)
 
     // 12. Check if redirected to Mollie
     const currentUrl = page.url()

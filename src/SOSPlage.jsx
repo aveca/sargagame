@@ -44,12 +44,6 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
   const panelRef = useRef(null)
   
   useModalA11y(panelRef, onClose)
-  
-  // Debug: log component mount
-  useEffect(() => {
-    console.log('[SOSPlage] Component mounted', { lang, region })
-    return () => console.log('[SOSPlage] Component unmounted')
-  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -107,7 +101,6 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
     track("sg_sos_checkout_start", { beach: selectedBeach.id, beachName: selectedBeach.name })
     try {
       const origin = window.location.origin
-      console.log('[SOSPlage] handleBuy: calling /api/mollie', { beach: selectedBeach.id })
       const res = await fetch("/api/mollie", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,9 +119,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
           redirectUrl: origin + "/?sos_success=1",
         }),
       })
-      console.log('[SOSPlage] handleBuy: response status', res.status)
       const data = await res.json()
-      console.log('[SOSPlage] handleBuy: response data', data)
       if (!res.ok) throw new Error(data.error || "Erreur paiement")
       if (data.checkoutUrl) {
         track("sg_sos_redirect", { beach: selectedBeach.id, paymentId: data.paymentId })
@@ -137,7 +128,6 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
         throw new Error("URL de paiement non reçue")
       }
     } catch (e) {
-      console.error('[SOSPlage] handleBuy error:', e)
       track("sg_sos_checkout_error", { beach: selectedBeach.id, error: e.message })
       alert(_t(lang, "Erreur lors de l'ouverture du paiement. Réessayez.", "Error opening payment. Please try again.", "Error al abrir el pago. Inténtalo de nuevo."))
     } finally {
