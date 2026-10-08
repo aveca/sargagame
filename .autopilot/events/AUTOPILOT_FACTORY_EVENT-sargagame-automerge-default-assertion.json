@@ -1,0 +1,15 @@
+{
+  "event_id": "AUTOPILOT_FACTORY_EVENT-sargagame-automerge-default-assertion",
+  "repo": "aveca/sargagame",
+  "sha": "8d99f83f094deb5e87fe031316cd861292a0ccd6",
+  "branch": "agent/autopilot/full-autonomy-runtime",
+  "pr": 801,
+  "workflow": "CI Tests",
+  "job": "test-frontend",
+  "severity": "P1",
+  "error": "AssertionError [ERR_ASSERTION]: autoMerge OFF par defaut; actual=false, expected=true.",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37152012405",
+  "detected_at": "2026-10-03T20:34:36Z",
+  "human_gate": false,
+  "requested_action": "Repair the deterministic autoMerge policy/test contract on the PR branch and rerun CI; do not create a parallel dispatch."
+}
