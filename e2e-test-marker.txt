@@ -1,0 +1,4 @@
+E2E Test Marker
+Job ID: FACTORY-E2E-TEST
+Agent: ollama_direct
+Timestamp: 2026-10-08T19:51:18.922Z
