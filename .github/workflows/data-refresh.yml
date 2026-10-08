@@ -1,0 +1,150 @@
+name: Data Freshness (ERDDAP → repo)
+
+# Pourquoi ce workflow existe
+# ---------------------------
+# Depuis le 2026-08-05, AUCUNE donnée Copernicus n'a été committée : les 16
+# runs planifiés de `daily-copernicus.yml` du 02/10 au 07/10 se font tous
+# tuer par `timeout-minutes: 75` alors que la première étape utile arrive vers
+# +65 min. Conséquence en prod : les 6 domaines servaient un
+# `/api/copernicus/sargassum.json` daté du 2026-08-05 (64 jours) — statut de
+# plage périmé pour tous les utilisateurs.
+#
+# Ce workflow est volontairement MINCE : fetch + vérification d'intégrité +
+# commit/push. Il tourne en < 5 min, donc il est insensible aux timeouts du
+# job monolithique, et il ne dépend d'aucune des ~60 étapes de mailings.
+# Un push sur `main` déclenche ensuite `cloudflare-production.yml` (deploy des
+# 6 Workers) automatiquement.
+
+on:
+  schedule:
+    # Décalé de +20 min par rapport aux crons de daily-copernicus (0,6,12,18)
+    # pour éviter deux jobs de fetch simultanés sur la même branche.
+    - cron: '20 0,6,12,18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Sérialise sur main : deux pushes concurrents sur les mêmes JSONs se
+# contrediraient (le retry-rebase ci-dessous gère l'unicité du push).
+concurrency:
+  group: data-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Parité régions ↔ webhook (paiements)
+        run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
+
+      # Beach Scores d'abord : fetch-sargassum-live lit beaches-weather.json.
+      - name: Fetch beach weather (Open-Meteo)
+        continue-on-error: true
+        run: node scripts/fetch-beach-weather.cjs
+
+      - name: Fetch LIVE sargassum data from ERDDAP
+        id: erddap
+        continue-on-error: true
+        run: node scripts/fetch-sargassum-live.cjs
+
+      - name: Report source
+        id: src
+        run: |
+          if [ -f public/api/copernicus/sargassum.json ]; then
+            SOURCE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).source)")
+            UPDATED=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).updatedAt)")
+          else
+            SOURCE=none; UPDATED=n/a
+          fi
+          echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE updatedAt=$UPDATED"
+
+      # Garde MOAT : jamais de commit d'une carte issue d'une source dégradée
+      # ou d'un pic « tout vert » suspect (mêmes critères que le gate FTP).
+      - name: Gate intégrité (refuse source dégradée / pic tout-vert)
+        id: verify
+        continue-on-error: true
+        run: node scripts/verify-ftp-ready.cjs
+
+      - name: Commit + push des données Copernicus
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        run: |
+          set -e
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Racine (servie telle quelle par le front : /api/copernicus/sargassum.json)
+          # Chaque pathspec est ajouté SÉPARÉMENT : `git add a b c` est ATOMIQUE,
+          # un seul glob vide ferait échouer tout le staging (bug 15-17/06/2026).
+          git add public/api/copernicus/sargassum.json || true
+          git add public/api/copernicus/history.json || true
+          git add public/api/copernicus/sargassum-grid.json || true
+          git add public/api/copernicus/sargassum-banks.json || true
+          for f in climatology.json forecast-archive.json track-record.json citizen-accuracy.json \
+                   sentinel2-nearshore.json sentinel2-history.json sentinel2-calibration.json; do
+            if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
+          done
+          if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
+
+          # Prévision privée (root + régions) : un push-deploy la redéploye telle quelle.
+          if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
+          for p in public/api/copernicus/*/_private/forecast-full.json; do
+            if [ -f "$p" ]; then git add "$p"; fi
+          done
+
+          # Sorties par région (mq/, gp/, florida/, …). Chaque pathspec est
+          # ajouté SÉPARÉMENT : `git add a b` est atomique et un glob vide
+          # ferait échouer tout le staging (bug du 15-17/06/2026).
+          for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
+            git add "public/api/copernicus/*/$pat" 2>/dev/null || true
+          done
+
+          if git diff --cached --quiet; then
+            echo "Aucune donnée à commit (déjà à jour)."
+            exit 0
+          fi
+
+          git commit -m "chore(data): refresh Copernicus $(date -u +'%Y-%m-%d %H:%M UTC')"
+
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if ! git rebase -X theirs "origin/$BRANCH"; then
+              echo "::warning::git rebase -X theirs échoué (tentative $i/5)"
+              git rebase --abort || true
+              sleep 10
+              continue
+            fi
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "git push OK (tentative $i)"
+              break
+            fi
+            echo "::warning::git push échoué (tentative $i/5), pause 20s"
+            sleep 20
+          done
+          if [ "$push_ok" != "1" ]; then
+            echo "::error::git push a échoué après 5 tentatives"
+            exit 1
+          fi
+
+      - name: Alerte — données non publiées
+        if: steps.verify.outcome == 'failure'
+        run: |
+          echo "::error title=Data refresh bloquee::verify-ftp-ready a refuse la publication. Aucun commit, aucun deploy - les donnees restent celles deja en prod. Prochain run (4x/j) re-tentera."

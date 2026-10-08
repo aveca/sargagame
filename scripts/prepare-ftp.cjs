@@ -994,18 +994,59 @@ Sitemap: https://${domain}/sitemap.xml
     }
   }
   if (!sitemapDone) {
-    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://${domain}/</loc>
+    // Fallback : regions/seo-content/<id>.json absent ⇒ le générateur SEO
+    // region-seo-pages n'écrit aucun dist/sitemap.xml. On n'invente PAS de
+    // contenu éditorial, mais on liste les pages qui existent RÉELLEMENT dans
+    // le dossier déployé. Le fallback « racine seule » laissait /sitemap.xml
+    // en 404 (0 URL) ou en 1 URL alors que robots.txt le publiait — c'était
+    // précisément l'état de tulum le 07/10/2026.
+    const SKIP_DIRS = new Set([
+      'api', 'assets', 'config', 'data', 'fonts', 'images', 'img', 'audio',
+      'confirme', 'pro', 'jeu', 'widget', 'videos', 'themes-lab',
+      'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
+      'expansion-survey',
+    ])
+    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html'])
+
+    const urls = []
+    const walk = (dir, segs) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue
+        if (SKIP_DIRS.has(entry.name)) continue
+        const next = [...segs, entry.name]
+        const child = path.join(dir, entry.name)
+        if (fs.existsSync(path.join(child, 'index.html'))) {
+          urls.push({ path: `/${next.join('/')}/`, depth: next.length })
+        }
+        walk(child, next)
+      }
+    }
+    walk(out, [])
+    for (const f of fs.readdirSync(out, { withFileTypes: true })) {
+      if (f.isFile() && /\.html$/i.test(f.name) && !SKIP_TOP_FILES.has(f.name)) {
+        if (/^google[0-9a-f]+\.html$/i.test(f.name)) continue
+        if (f.name === 'index.html') urls.push({ path: '/', depth: 0 })
+        else urls.push({ path: `/${f.name}`, depth: 1 })
+      }
+    }
+
+    urls.sort((a, b) => a.path.localeCompare(b.path))
+    const entries = urls.map((u) => `  <url>
+    <loc>https://${domain}${u.path}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
+    <priority>${u.depth === 0 ? '1.0' : u.depth <= 1 ? '0.8' : '0.6'}</priority>
+  </url>`)
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries.join('\n')}
 </urlset>
 `
     fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemapXml, 'utf-8')
-    console.log(`   → sitemap.xml minimal (${domain})`)
+    console.log(`   → sitemap.xml généré depuis les pages réelles (${domain}, ${urls.length} URLs)`)
+    if (urls.length < 5) {
+      console.warn(`   ! sitemap très court (${urls.length} URLs) — vérifie regions/seo-content/${region.id}.json`)
+    }
   }
 
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on

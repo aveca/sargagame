@@ -30,6 +30,7 @@ jobs:
           - id: florida
           - id: puntacana
           - id: rivieramaya
+          - id: tulum
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,6 +43,16 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.id }}
         run: npm run build
+      # Garde-fou : prepare-ftp doit réussir AVANT tout deploy. C'est lui qui
+      # crée sitemap.xml, le robots.txt par domaine, l'overlay _gp/, réécrit les
+      # canonicals et swap les données Copernicus par région.
+      - name: Verify prepare-ftp produces a deployable site
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
 
   deploy:
     needs: build
@@ -62,6 +73,8 @@ jobs:
             domain: sargassumpuntacana.com
           - id: rivieramaya
             domain: sargassumcancun.com
+          - id: tulum
+            domain: sargazotulum.com
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -80,11 +93,22 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.id }}
         run: npm run build
+      # Le Worker sert ce dossier, pas dist/. prepare-ftp = transformation
+      # domaine (canonicals, robots, sitemap.xml, overlay _gp/, données
+      # Copernicus de la région). Sans elle chaque domaine reçoit le build brut.
+      - name: Prepare domain site (prepare-ftp)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('assets dir OK -> '+d)"
       - name: Generate Wrangler config
         env:
           REGION: ${{ matrix.id }}
           DOMAIN: ${{ matrix.domain }}
-        run: node -e "const fs=require('fs');let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN);fs.writeFileSync('wrangler.jsonc',s)"
+        run: |
+          node -e "const fs=require('fs');const ftp=String(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir).replace(/^.\//,'');if(!fs.existsSync(ftp+'/index.html')){console.error('assets dir missing '+ftp);process.exit(1)};let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN).replaceAll('__ASSETS_DIR__','./'+ftp);fs.writeFileSync('wrangler.jsonc',s)"
       - name: Deploy Worker
         run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
       - name: Configure Worker secrets
@@ -102,6 +126,50 @@ jobs:
             sleep $((i*5))
           done
           exit 1
+      # Garde-fou de déploiement (restauré) : compare le (v, b) du dossier qui
+      # a RÉELLEMENT été servi au (v, b) servi en ligne. Un "curl / → 200" ne
+      # détecte ni un dossier obsolète ni un Worker pas encore mis à jour.
+      - name: Verify deploy fingerprint
+        env:
+          REGION: ${{ matrix.id }}
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          set -euo pipefail
+          FTP_DIR=$(node -e "console.log(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir)")
+          built_v=$(node -p "require('./${FTP_DIR}/version.json').v")
+          built_b=$(node -p "require('./${FTP_DIR}/version.json').b")
+          echo "built: region=$REGION dir=$FTP_DIR v=$built_v b=$built_b"
+          ok=0
+          for i in 1 2 3 4 5 6 7 8; do
+            body=$(curl -sS --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/version.json?cfdeploy=$GITHUB_SHA" || true)
+            live_v=$(printf '%s' "$body" | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).v}catch(e){'parse-error'}" || echo error)
+            live_b=$(printf '%s' "$body" | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).b}catch(e){'parse-error'}" || echo error)
+            if [ "$live_v" = "$built_v" ] && [ "$live_b" = "$built_b" ]; then
+              ok=1; echo "fingerprint OK: v=$live_v b=$live_b"; break
+            fi
+            echo "attempt $i: live v=$live_v b=$live_b != built v=$built_v b=$built_b"
+            sleep $((i*5))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "FINGERPRINT MISMATCH on $DOMAIN — le domaine ne sert pas ce qui vient d'être déployé"
+            exit 1
+          fi
+          echo "{\"id\":\"$REGION\",\"domain\":\"$DOMAIN\",\"v\":\"$built_v\",\"b\":\"$built_b\"}" > fingerprint-$REGION.json
+          # Sitemap : doit être 200 APRÈS prepare-ftp (régression du 07/10).
+          for i in 1 2 3 4 5; do
+            sm=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/sitemap.xml" || true)
+            if [ "$sm" = "200" ]; then echo "sitemap.xml 200 OK"; break; fi
+            if [ "$i" = "5" ]; then echo "sitemap.xml = $sm on $DOMAIN"; exit 1; fi
+            sleep $((i*5))
+          done
+      - name: Upload fingerprint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fingerprint-${{ matrix.id }}
+          path: fingerprint-${{ matrix.id }}.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Payment API smoke
         env:
           DOMAIN: ${{ matrix.domain }}
@@ -156,9 +224,37 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: npm run build
+      # Pages doit recevoir le même artefact que le Worker, sinon *.pages.dev
+      # et le domaine divergent (source de faux diagnostics en audit).
+      - name: Prepare domain site (prepare-ftp)
+        id: prep
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;if(!fs.existsSync(d+'/index.html')){console.error('missing '+d+'/index.html');process.exit(1)};require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'dir='+d+'\n')"
       - name: Deploy Pages
         uses: cloudflare/wrangler-action@v4
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ matrix.project }} --branch=main
+          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=main
+
+  # Contrôle de flotte : les 6 domaines doivent rester cohérents entre eux.
+  # C'est le garde-fou qui aurait bloqué le cutover du 07/10 (tulum figé,
+  # sitemap 404 sur 3 domaines, canonicals GP → Martinique).
+  verify-fleet:
+    needs: [deploy]
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fleet coherence + SEO guards (live)
+        run: node scripts/verify-live-fleet.cjs --regions mq,gp,florida,puntacana,rivieramaya,tulum
