@@ -14496,7 +14496,7 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<ErrBound><Suspense fallback={null}><SOSPlage lang={lang} sargData={sargData} region={island} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound>}
+        {showSOS&&<ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound>}
         
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
