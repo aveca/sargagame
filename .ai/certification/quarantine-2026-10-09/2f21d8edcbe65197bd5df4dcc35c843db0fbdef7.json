@@ -1,0 +1,72 @@
+{
+  "commit": "2f21d8edcbe65197bd5df4dcc35c843db0fbdef7",
+  "mode": "all",
+  "evidence": [
+    {
+      "key": "build",
+      "path": "dist/index.html",
+      "desc": "Build output exists",
+      "sha256": "4f2fc3546eed2ab74d152d28a6624b866b1d2cdae11acc6af0fb7c06ccf2ee51",
+      "size": 36698,
+      "mtime": "2026-10-09T00:24:20.210Z"
+    },
+    {
+      "key": "bundle",
+      "path": "scripts/check-bundle-budget.cjs",
+      "desc": "Bundle budget check",
+      "sha256": "16e376eccd6d99b54a4f05098ea207aaab94610df686541e308665cad6731d88",
+      "size": 3208,
+      "mtime": "2026-10-08T01:41:05.465Z"
+    },
+    {
+      "key": "ci",
+      "path": ".github/workflows/ci-tests.yml",
+      "desc": "CI pipeline",
+      "sha256": "05045d3b2dc03774688057e8f5eaa9b149dd6662010cfc78ba5dd443ef416933",
+      "size": 2459,
+      "mtime": "2026-10-09T01:23:23.486Z"
+    },
+    {
+      "key": "security",
+      "path": "scripts/CHECK_certification_status.cjs",
+      "desc": "Security gate",
+      "sha256": "88144e36d1eeb92b0d4ea906e7b640c03f97a6b12c006e29e7af30a9f9b28b95",
+      "size": 34089,
+      "mtime": "2026-10-09T01:25:57.081Z"
+    },
+    {
+      "key": "deploy",
+      "path": "scripts/verify-ftp-ready.cjs",
+      "desc": "Deploy verification",
+      "sha256": "2f763dd6e599d4b953888f662aea39f6798889e0f10b6c9bcb04c453f82efacc",
+      "size": 8157,
+      "mtime": "2026-10-08T01:41:05.591Z"
+    },
+    {
+      "key": "smoke",
+      "path": "scripts/ux-smoke.mjs",
+      "desc": "UX smoke test",
+      "sha256": "6a5ab57e5de6533071c9a7f7e057b2a6968f3e59004075c5d7be980cd4b0df86",
+      "size": 12719,
+      "mtime": "2026-10-08T01:41:05.545Z"
+    },
+    {
+      "key": "payment",
+      "path": "public/api/mollie.php",
+      "desc": "Payment endpoint",
+      "sha256": "96d3a0207c60de779afad7aff632104b0082cde8c13a16aaf96970c2628de982",
+      "size": 18845,
+      "mtime": "2026-10-08T19:26:39.879Z"
+    },
+    {
+      "key": "analytics",
+      "path": "scripts/automation/data/ux-daily.json",
+      "desc": "UX analytics",
+      "sha256": "05424a7bffe95f8594622ca1e015746dfb8cf46c3f64b7ea693e1f9c7e890bc7",
+      "size": 4685,
+      "mtime": "2026-10-08T01:41:05.378Z"
+    }
+  ],
+  "generatedAt": "2026-10-09T01:32:12.972Z",
+  "expiresAt": "2026-11-09T01:32:12.972Z"
+}

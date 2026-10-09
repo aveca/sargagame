@@ -281,13 +281,14 @@ node -e "require('./regions/index.cjs').assertAllRegionsValid()"
 
 ### Règle de merge
 
-**Merge → deploy AUTOMATIQUE, zéro confirmation, MAIS sous verrou de certification (2026-10-08)** :
-- Push sur `main` déclenche le pipeline data/build ; le workflow `cloudflare-production.yml` ne déploie Worker/Assets Cloudflare (lorsque `CLOUDFLARE_DEPLOY_ENABLED=true`) **que si le Contrôle B passe** : `node scripts/CHECK_certification_status.cjs --mode deploy` (job `certification-gate`, `needs` des jobs `deploy` et `deploy-pages`).
-- Toute publication FTP (`scripts/manual-ftp-deploy.cjs`, workflows `weekly-optimize`, `weekly-seo-automation`, `provision-barbados`) exécute le même contrôle **avant toute connexion** ; `NOT_PROVEN` ⇒ refus, aucune écriture.
-- Tant que la certification est `NOT_PROVEN` (état actuel : aucune preuve LIVE), **aucune modification de production n'est déployée** — les données pipeline continuent d'être commitées, les sites servent la dernière version certifiée.
-- CI des PR (Contrôle A) : `ci-tests.yml` inclut `--mode pr` (intégrité du mécanisme, tolère `NOT_PROVEN`) ; la certification n'est JAMAIS une condition de merge des PR.
-- Vérification post-deploy : `curl` sur URL prod
-- **Jamais** demander « veux-tu que je merge ? » → la réponse est toujours oui (sous réserve du verrou ci-dessus)
+**Merge → deploy AUTOMATIQUE, zéro confirmation, sous verrou de certification par étapes (contrat v3, 2026-10-09)** :
+- États : `PREDEPLOY_ELIGIBLE` (checks CI `test-frontend`+`perf` verts SUR LE SHA EXACT, vérifiés via API GitHub) → déploiement autorisé ; `DEPLOYED_PENDING_VERIFICATION` → déployé mais contrôle post-déploiement pas terminé ; `PRODUCTION_VERIFIED` → attestation complète committée (preuves réelles post-déploiement, sha256 scellés au SHA) ; `NOT_PROVEN`/`FAILED` → refus.
+- `cloudflare-production.yml` : job `certification-gate` (`--mode deploy`) → jobs `deploy`/`deploy-pages` (`needs`) → job `post-deploy-verify` (contrôles HTTP réels : accessibilité, artefact v/b, fraîcheur données, cohérence région↔plages, params régionaux/GA4, `?sos=1`, contrat paiement POST `__payment_smoke__`→400 ; un contrôle irréalisable reste `NOT_VERIFIED`, jamais simulé).
+- FTP (`scripts/manual-ftp-deploy.cjs` + workflows `weekly-optimize`/`weekly-seo-automation`/`provision-barbados`) : même Contrôle B avant toute connexion.
+- CI des PR (Contrôle A) : `ci-tests.yml` inclut `--mode pr` + audits de câblage (`ci-certification-audit`, `deploy-audit`) ; la certification n'est JAMAIS une condition de merge des PR.
+- Une attestation présente mais invalide (hash, scellement SHA, péremption) ⇒ REFUS dur, aucun repli. Une preuve de production n'est JAMAIS fabriquée depuis un build local ou un mock.
+- Traçabilité : même `job_id` propagé (trace `scripts/traces/`, artefacts `trace-*`/ `post-deploy-*` du run).
+- **Jamais** demander « veux-tu que je merge ? » → oui, sous réserve du verrou ci-dessus.
 
 ### Rollback
 

@@ -34,7 +34,7 @@ function assertDeployCertified({ cwd = ROOT, throwOnFail = false, label = 'dépl
   if (r.status === 0) return true;
   const digest = (r.stdout || '')
     .split('\n')
-    .filter(l => /GLOBAL|commit produit|deploy:|TECHNICAL|PRODUCTION|BUSINESS/.test(l))
+    .filter(l => /GLOBAL|décision|stade|commit produit|deploy:|predeploy:|TECHNICAL|PRODUCTION|BUSINESS/.test(l))
     .join('\n');
   const msg = `CERTIFICATION REFUSÉE (${label}) — opération de production annulée AVANT tout accès externe.\n${digest}`;
   if (throwOnFail) {
