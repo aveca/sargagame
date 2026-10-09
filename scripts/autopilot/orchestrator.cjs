@@ -481,9 +481,16 @@ async function phaseOnlineQA(opp, previewResult) {
 
     try {
       progress('ONLINE BROWSER  starting...');
-      const onlineQA = await runOnlineQA(previewResult.url, 
-        ['/', '/?paywall=1', '/carte-sargasses/', '/?exp=', '/?trip=1', '/alertes/', '/sargasses-pour-hotels/'],
-        ['mobile', 'desktop']);
+      const onlineRoutes = [
+        { route: 'home', path: '/', weight: 50, checks: ['funnel'] },
+        { route: 'paywall', path: '/?paywall=1', weight: 50, checks: ['funnel', 'visual'] },
+        { route: 'map', path: '/carte-sargasses/', weight: 45, checks: ['navigation', 'visual'] },
+        { route: 'decision', path: '/?exp=', weight: 35, checks: ['funnel', 'visual'] },
+        { route: 'trip-planner', path: '/?trip=1', weight: 30, checks: ['funnel'] },
+        { route: 'protect', path: '/alertes/', weight: 25, checks: ['navigation'] },
+        { route: 'b2b', path: '/sargasses-pour-hotels/', weight: 20, checks: ['navigation'] },
+      ];
+      const onlineQA = await runOnlineQA(previewResult.url, onlineRoutes, ['mobile', 'desktop']);
       
       progress(`ONLINE VISUAL   ${onlineQA.visual?.length || 0} screenshots`);
       progress(`ONLINE FUNNEL   ${onlineQA.funnel?.filter(f => f.ok).length || 0}/${onlineQA.funnel?.length || 0}`);
@@ -557,6 +564,28 @@ function needsBrowserRecon(opp) {
   return ['ux-ui', 'browser-interaction', 'aha-wow', 'svg-assets-a11y'].some(k => t.includes(k));
 }
 
+/**
+ * Autonomous delivery: once local gate + CI + preview + online QA are green,
+ * auto-merge only when policy explicitly allows every changed path.
+ * GitHub Actions is the deploy executor; the local agent never holds production
+ * credentials and never deploys directly to Cloudflare.
+ */
+async function autonomousDelivery(opp, pr, diffFiles) {
+  const allowed = policy.canAutoMerge(diffFiles, cfg);
+  if (!allowed) return { merged: false, reason: 'auto-merge policy denied for one or more files' };
+  if (!pr || !pr.url) return { merged: false, reason: 'PR URL missing' };
+  try {
+    progress('MERGE       policy PASS — enabling GitHub auto-merge...');
+    gitops.enableAutoMerge(C.ROOT, pr.url);
+    S('MERGE', 'auto-merge enabled for ' + pr.url + ' — GitHub Actions will deploy after merge');
+    progress('DEPLOY      delegated to GitHub Actions after merge');
+    return { merged: true, delegated: true };
+  } catch (e) {
+    const msg = String(e && e.message || e).slice(0, 300);
+    S('MERGE', 'auto-merge not enabled: ' + msg);
+    return { merged: false, reason: msg };
+  }
+}
 /** Process a single opportunity through the full pipeline */
 async function processOpportunity(opp) {
   progress(`SELECT      ${(opp && opp.id) || 'unknown'}`);
@@ -607,10 +636,18 @@ async function processOpportunity(opp) {
   const onlineResult = await phaseOnlineQA(opp, previewResult);
   if (onlineResult.parked) return onlineResult;
 
-  // 5. All green → READY TO MERGE = PARK, not stop
-  S('READY', `${opp.id} — all gates green, ready for merge`);
-  progress('READY       all gates green — parking task');
-  return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
+  // 5. All green → autonomous delivery when policy allows.
+  // Sensitive paths are denied before this point; safe paths may auto-merge.
+  const prDetailForDelivery = gitops.getPrDetail(pr.number);
+  const diffForDelivery = prDetailForDelivery ? prDetailForDelivery.files : [];
+  const delivery = await autonomousDelivery(opp, pr, diffForDelivery);
+  if (delivery.merged) {
+    progress('MERGE       auto-merge queued');
+    return parkTask(opp.id, 'AUTO-MERGE QUEUED — GitHub Actions owns production deploy', 'ready-to-merge');
+  }
+  S('READY', `${opp.id} — all gates green, awaiting merge: ${delivery.reason}`);
+  progress('READY       all gates green — merge blocked by policy/runtime');
+  return parkTask(opp.id, `READY TO MERGE — ${delivery.reason}`, 'ready-to-merge');
 }
 
 async function main() {
