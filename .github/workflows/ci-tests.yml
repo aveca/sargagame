@@ -26,6 +26,13 @@ jobs:
       # c'est le rôle du Contrôle B (--mode deploy) appliqué aux déploiements.
       - name: Certification integrity (Contrôle A — PR)
         run: node scripts/CHECK_certification_status.cjs --mode pr
+      # Audits de câblage (composants scripts/autopilot/) — les issues bloquent,
+      # les warnings restent visibles. Empêche une régression débranchant le
+      # gate de certification ou les vérifications de déploiement.
+      - name: Governance wiring audits (ci-certification-audit + deploy-audit)
+        run: |
+          node scripts/autopilot/ci-certification-audit.cjs
+          node scripts/autopilot/deploy-audit.cjs
       - name: Verify Build
         run: npm run build
       - name: Check bundle budget (JS eager ≤ 210 Ko gzip)

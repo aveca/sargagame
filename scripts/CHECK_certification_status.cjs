@@ -103,6 +103,63 @@ function git(root, args) {
   return execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 }).trim();
 }
 
+// ── Check-runs GitHub (preuve CI authentique, liée au SHA) ──────────────────
+// Rien n'est simulé : les conclusions de checks viennent de l'API GitHub pour
+// le SHA EXACT. Indisponible (pas de réseau, gh absent, 404…) => null => refus.
+const PREDEPLOY_REQUIRED_CHECKS = ['test-frontend', 'perf'];
+function repoSlug(root) {
+  if (process.env.GITHUB_REPOSITORY) return process.env.GITHUB_REPOSITORY;
+  try {
+    const url = git(root, ['remote', 'get-url', 'origin']);
+    const m = url.match(/github\.com[:/]([^/]+\/[^/.]+?)(?:\.git)?$/);
+    return m ? m[1] : null;
+  } catch (_) { return null; }
+}
+function fetchCheckRuns(root, sha) {
+  const slug = repoSlug(root);
+  if (!slug) return null;
+  try {
+    const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
+    const out = execFileSync(bin, ['api', `repos/${slug}/commits/${sha}/check-runs?per_page=100`], {
+      cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 45000,
+      env: { ...process.env, GH_TOKEN: process.env.GH_TOKEN || process.env.GITHUB_TOKEN || '' },
+    }).trim();
+    const j = JSON.parse(out);
+    if (!j || !Array.isArray(j.check_runs)) return null;
+    return j.check_runs;
+  } catch (_) { return null; }
+}
+/**
+ * Décision pure PREDEPLOY (testable avec payloads fixtures) :
+ * les contextes requis existent sur P, sont tous terminés, et leur run le plus
+ * récent par nom est `success`. Zéro pending toléré, zéro failure tolérée.
+ */
+function decidePredeploy(product, runs, reasons) {
+  const latest = new Map();
+  for (const r of runs) {
+    const cur = latest.get(r.name);
+    if (!cur || String(r.completed_at || '') > String(cur.completed_at || '')) latest.set(r.name, r);
+  }
+  const proofs = [];
+  for (const ctx of PREDEPLOY_REQUIRED_CHECKS) {
+    const r = latest.get(ctx);
+    if (!r) { reasons.push(`predeploy: check requis "${ctx}" ABSENT sur ${product.slice(0, 8)} — jamais exécuté pour ce SHA`); continue; }
+    if (r.status !== 'completed') { reasons.push(`predeploy: check "${ctx}" ${r.status} sur ${product.slice(0, 8)} — CI pas terminée, pas d'autorisation`); continue; }
+    if (r.conclusion !== 'success') { reasons.push(`predeploy: check "${ctx}" conclu "${r.conclusion}" sur ${product.slice(0, 8)} — refus`); continue; }
+    proofs.push({ check: ctx, conclusion: r.conclusion, url: r.html_url || null, completedAt: r.completed_at || null });
+  }
+  if (reasons.length) return null;
+  return proofs;
+}
+function evaluatePredeploy(root, product, reasons) {
+  const runs = fetchCheckRuns(root, product);
+  if (!runs) {
+    reasons.push('predeploy: check-runs CI (test-frontend, perf) non vérifiables via API GitHub — pas de réseau / gh indisponible / SHA non poussé — refus (fail-closed, le hors-ligne local ne vaut jamais autorisation)');
+    return null;
+  }
+  return decidePredeploy(product, runs, reasons);
+}
+
 /**
  * Résout le commit PRODUIT EFFECTIF de HEAD : remonte la chaîne first-parent
  * en sautant les commits « attestation-only » (ne touchent que .ai/certification/).
@@ -394,43 +451,80 @@ function evaluatePr(opts) {
 }
 
 // ── CONTRÔLE B : certification stricte avant promotion/déploiement ───────────
-// Résout le commit produit effectif de HEAD et exige une attestation valide
-// (trois PASS + preuves sha256 scellées à ce commit, non périmées, règles
-// PRODUCTION/BUSINESS appliquées). AUCUNE option ne court-circuite ce verdict :
-// --now est ignoré en mode deploy (horloge réelle), --commit est ignoré (la
-// cible est toujours dérivée du dépôt).
+// États séparés (contrat v3) :
+//   PRODUCTION_VERIFIED  — attestation complète committée et valide pour le
+//                          commit produit (trois PASS + preuves scellées au
+//                          SHA, non périmées, règles PRODUCTION/BUSINESS).
+//                          IMPLIQUE une vérification post-déploiement réelle
+//                          antérieure (une preuve de production n'est jamais
+//                          fabriquée depuis un build local ou des mocks).
+//   PREDEPLOY_ELIGIBLE   — pas d'attestation complète, MAIS les checks CI
+//                          requis (test-frontend, perf) sont VERTS sur GitHub
+//                          pour le SHA exact : tests+build+smoke+budget et
+//                          identité d'artefact validés pour CE commit.
+//                          Autorise le déploiement ; la version déployée reste
+//                          DEPLOYED_PENDING_VERIFICATION jusqu'au contrôle
+//                          post-déploiement réel (post-deploy-verify).
+//   NOT_PROVEN / FAIL    — preuve manquante, checks absents/rouges/encours,
+//                          API indisponible, attestation corrompue => REFUS.
+//
+// Une attestation PRÉSENTE mais invalide (hash, scellement, péremption) REFUSE
+// immédiatement : aucun repli sur la voie predeploy face à une preuve altérée.
+// AUCUNE option ne court-circuite ce verdict : --now et --commit ignorés ici.
 function evaluateDeploy(opts) {
   const root = path.resolve(opts.root);
   const reasons = [];
   const nowMs = Date.now();
 
   const product = effectiveProductCommit(root, reasons);
-  if (!product) return { mode: 'deploy', global: 'NOT_PROVEN', exit: 1, productCommit: null, reasons, certifications: {} };
+  if (!product) return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: null, reasons, certifications: {} };
 
-  const att = loadAttestation(root, product, reasons);
-  if (!att) return { mode: 'deploy', global: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {} };
-
-  const certs = att.certifications;
-  const perCert = {};
-  if (!certs || typeof certs !== 'object' || Array.isArray(certs)) {
-    reasons.push('deploy: attestation sans certifications valides');
-    return { mode: 'deploy', global: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {} };
+  // ── Voie 1 : attestation complète (PRÉSENTE ⇒ doit être pleinement valide) ──
+  const attAbs = safeResolve(root, path.join('.ai', 'certification', 'attestations', `${product}.json`));
+  const attExists = attAbs ? fs.existsSync(attAbs) : false;
+  if (attExists) {
+    const att = loadAttestation(root, product, reasons);
+    if (att) {
+      const certs = att.certifications;
+      const perCert = {};
+      if (!certs || typeof certs !== 'object' || Array.isArray(certs)) {
+        reasons.push('deploy: attestation sans certifications valides');
+      } else {
+        for (const extra of Object.keys(certs).filter(k => !CERT_KEYS.includes(k))) {
+          reasons.push(`deploy: certification inconnue "${extra}" — ambiguïté bloquante`);
+        }
+        for (const k of CERT_KEYS) perCert[k] = checkCertification(root, product, nowMs, k, certs[k], reasons);
+      }
+      if (CERT_KEYS.every(k => perCert[k] === 'PASS') && reasons.length === 0) {
+        return {
+          mode: 'deploy', global: 'PASS', decision: 'ALLOW', stage: 'PRODUCTION_VERIFIED', exit: 0,
+          productCommit: product, attestedAt: att.createdAt || null, proofs: [{ check: 'attestation', target: product }],
+          reasons, certifications: perCert,
+        };
+      }
+      // Attestation présente mais invalide/incomplète => REFUS dur (intégrité).
+      return {
+        mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1,
+        productCommit: product, reasons: reasons.concat('deploy: attestation présente mais invalide/incomplète — aucun repli predeploy face à une preuve altérée'),
+        certifications: perCert,
+      };
+    }
+    return { mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1, productCommit: product, reasons, certifications: {} };
   }
-  for (const extra of Object.keys(certs).filter(k => !CERT_KEYS.includes(k))) {
-    reasons.push(`deploy: certification inconnue "${extra}" — ambiguïté bloquante`);
+
+  // ── Voie 2 : PREDEPLOY_ELIGIBLE via les check-runs CI réels du SHA ─────────
+  const proofs = evaluatePredeploy(root, product, reasons);
+  if (proofs) {
+    return {
+      mode: 'deploy', global: 'PREDEPLOY_ELIGIBLE', decision: 'ALLOW', stage: 'PREDEPLOY_ELIGIBLE', exit: 0,
+      productCommit: product, proofs,
+      reasons: ['predeploy: éligible via checks CI verts — la version déployée restera DEPLOYED_PENDING_VERIFICATION jusqu\'au contrôle post-déploiement réel'],
+      certifications: { TECHNICAL: 'PASS', PRODUCTION: 'NOT_PROVEN', BUSINESS: 'NOT_PROVEN' },
+    };
   }
-  for (const k of CERT_KEYS) perCert[k] = checkCertification(root, product, nowMs, k, certs[k], reasons);
-
-  const allPass = CERT_KEYS.every(k => perCert[k] === 'PASS') && reasons.length === 0;
-  let global;
-  if (allPass) global = 'PASS';
-  else if (Object.values(perCert).includes('FAIL')) global = 'FAIL';
-  else global = 'NOT_PROVEN';
-
   return {
-    mode: 'deploy', global, exit: global === 'PASS' ? 0 : 1,
-    productCommit: product, attestedAt: att.createdAt || null,
-    reasons, certifications: perCert,
+    mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1,
+    productCommit: product, reasons, certifications: {},
   };
 }
 
@@ -467,7 +561,11 @@ if (require.main === module) {
     } else {
       console.log(`=== CHECK_certification_status [mode ${a.mode}] ===`);
       console.log(`  racine            : ${a.root}`);
-      if (a.mode === 'deploy') console.log(`  commit produit    : ${r.productCommit || '(irrésolu)'}`);
+      if (a.mode === 'deploy') {
+        console.log(`  commit produit    : ${r.productCommit || '(irrésolu)'}`);
+        console.log(`  décision          : ${r.decision} · stade : ${r.stage}`);
+        if (r.proofs) for (const p of r.proofs) console.log(`  preuve            : ${p.check}${p.conclusion ? ' = ' + p.conclusion : ''}${p.completedAt ? ' @ ' + p.completedAt : ''}${p.target ? ' target=' + p.target.slice(0, 8) : ''}`);
+      }
       else console.log(`  commit contrôlé   : ${r.commit || '(introuvable)'}`);
       for (const k of CERT_KEYS) console.log(`  ${k.padEnd(11)} : ${r.certifications[k] || 'NON ÉVALUÉ'}`);
       if (r.reasons.length) {
@@ -475,9 +573,12 @@ if (require.main === module) {
         for (const m of r.reasons) console.log(`    - ${m}`);
       }
       console.log(`  GLOBAL : ${r.global}`);
-      if (r.global === 'PASS') {
+      if (a.mode === 'deploy' && r.stage === 'PREDEPLOY_ELIGIBLE') {
+        console.log('\nDéploiement AUTORISÉ (stade PREDEPLOY_ELIGIBLE) : checks CI verts sur le SHA exact.');
+        console.log('La version déployée reste DEPLOYED_PENDING_VERIFICATION jusqu\'au contrôle post-déploiement réel.');
+      } else if (r.global === 'PASS') {
         console.log('\nCertification globale AUTORISÉE : trois certifications PASS avec preuves vérifiées.'
-          + (a.mode === 'deploy' ? ` Cible attestée : ${r.productCommit}.` : ''));
+          + (a.mode === 'deploy' ? ` Cible attestée : ${r.productCommit} (stade PRODUCTION_VERIFIED).` : ''));
       } else {
         console.log('\nCertification globale BLOQUÉE. En cas de doute : pas de promotion, pas de déploiement.');
       }
@@ -490,4 +591,4 @@ if (require.main === module) {
   process.exit(code);
 }
 
-module.exports = { evaluate, evaluatePr, evaluateDeploy };
+module.exports = { evaluate, evaluatePr, evaluateDeploy, decidePredeploy, PREDEPLOY_REQUIRED_CHECKS };

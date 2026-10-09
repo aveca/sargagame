@@ -175,7 +175,7 @@ let keepForD3D4 = null;
   writeCode(root, 'app.js', 'v2\n');
   gcommit(root, 'MIXTE: code + attestation'); // tente de passer la certification avec du code
   const r = runCheck(root, 'deploy');
-  record('D8 commit mêlant code+attestation => traité comme produit, REFUS (exit 1)', r.code === 1 && r.json && r.json.reasons.some(x => /attestation pour/.test(x)), `exit=${r.code}`);
+  record('D8 commit mêlant code+attestation => traité comme produit, REFUS (exit 1)', r.code === 1 && r.json && r.json.reasons.some(x => /attestation pour|non vérifiables/.test(x)), `exit=${r.code}`);
 }
 
 // ── D9 : Contrôle A (pr) tolère NOT_PROVEN, refuse l'ambiguïté ───────────────
@@ -194,14 +194,25 @@ let keepForD3D4 = null;
   record('D9b pr-mode : statut "GREEN" inconnu => exit 1', ko.code === 1 && ko.json.reasons.some(x => /inconnu\/ambigu/.test(x)), `exit=${ko.code}`);
 }
 
-// ── D10 : vrai point d'entrée FTP — arrêt AVANT tout accès externe ───────────
+// ── D10 : gate FTP — ordre (avant creds/connexion) + refus non vérifiable ────
+//    (sans jamais exécuter l'upload FTP réel dans un test)
 {
-  const t0 = Date.now();
-  const r = spawnSync(process.execPath, [path.join(REPO, 'scripts', 'manual-ftp-deploy.cjs')], { encoding: 'utf8', cwd: REPO, env: { ...process.env, FTP_HOST: '127.0.0.1', FTP_USER: 'x', FTP_PASS: 'x' }, timeout: 60000 });
-  const out = (r.stdout || '') + (r.stderr || '');
-  const refused = r.status === 1 && /CERTIFICATION REFUSÉE/.test(out);
-  const noFtp = !/connect|FTPS|Upload|STOR/i.test(out.replace(/CERTIFICATION REFUSÉE[^]*$/m, '')); // rien après le refus
-  record('D10 manual-ftp-deploy.cjs (réel) : NOT_PROVEN => exit 1 AVANT toute connexion FTP', refused && noFtp, `exit=${r.status} en ${Date.now() - t0}ms`);
+  const src = fs.readFileSync(path.join(REPO, 'scripts', 'manual-ftp-deploy.cjs'), 'utf8');
+  const gatePos = src.indexOf('assertDeployCertified(');
+  const envPos = src.indexOf('loadProjectEnv()');
+  const connectPos = src.indexOf('client.access(');
+  record('D10a manual-ftp-deploy : assertDeployCertified AVANT loadProjectEnv et toute connexion',
+    gatePos > 0 && envPos > gatePos && connectPos > gatePos,
+    `gate@${gatePos} env@${envPos} connexion@${connectPos}`);
+
+  // Fixture git jamais poussée vers GitHub => preuves CI invérifiables => REFUS.
+  // "Pas de réseau local" ne vaut jamais autorisation (fail-closed).
+  const root = makeGitRoot();
+  writeCode(root, 'app.js', 'v1\n');
+  gcommit(root, 'product only, jamais poussé');
+  const { isDeployCertified } = require(path.join(REPO, 'scripts', 'lib', 'certification-gate.cjs'));
+  const verdict = isDeployCertified({ cwd: root });
+  record('D10b commit sans checks CI vérifiables => gate REFUSE le FTP', verdict === false);
 }
 
 // ── D11 : câblage des workflows (gate AVANT déploiement) ─────────────────────
@@ -224,20 +235,51 @@ let keepForD3D4 = null;
   record('D11c ci-tests.yml : Contrôle A (--mode pr) présent', /--mode pr/.test(ci));
 }
 
-// ── D12 : auto-merge orchestrateur verrouillé (avant tout appel gh) ──────────
+// ── D12 : auto-merge orchestrateur verrouillé quand non certifié ─────────────
 {
-  const gitops = require(path.join(REPO, 'scripts', 'autopilot', 'lib', 'gitops.cjs'));
+  // (a) gate présent AVANT l'appel gh dans le code (anti-régression structurelle)
+  const src = fs.readFileSync(path.join(REPO, 'scripts', 'autopilot', 'lib', 'gitops.cjs'), 'utf8');
+  const gatePos = src.indexOf('assertDeployCertified(');
+  const ghPos = src.indexOf("'pr', 'merge'");
+  record('D12a enableAutoMerge : gate certification AVANT gh pr merge', gatePos > 0 && ghPos > gatePos);
+  // (b) sur fixture non vérifiable, le gate LÈVE CERTIFICATION_REFUSED
+  const { assertDeployCertified } = require(path.join(REPO, 'scripts', 'lib', 'certification-gate.cjs'));
+  const root = makeGitRoot();
+  fs.writeFileSync(path.join(root, 'app.js'), 'v1\n');
+  execFileSync('git', ['-C', root, 'add', '-A']); execFileSync('git', ['-C', root, 'commit', '-q', '--no-verify', '-m', 'x']);
   let threw = null;
-  try { gitops.enableAutoMerge(REPO, 'https://github.com/aveca/sargagame/pull/0'); }
-  catch (e) { threw = e; }
-  record('D12 gitops.enableAutoMerge : CERTIFICATION_REFUSED avant tout gh pr merge', !!threw && threw.code === 'CERTIFICATION_REFUSED', threw ? `code=${threw.code}` : 'PAS DE REFUS — gate absent!');
+  try { assertDeployCertified({ cwd: root, throwOnFail: true, label: 'test' }); } catch (e) { threw = e; }
+  record('D12b fixture non vérifiable => CERTIFICATION_REFUSED levé', !!threw && threw.code === 'CERTIFICATION_REFUSED', threw ? `code=${threw.code}` : 'aucun refus');
 }
 
-// ── D13 : dépôt réel — verdicts honnêtes ─────────────────────────────────────
+// ── D13 : dépôt réel — décision deploy cohérente avec les check-runs RÉELS ───
+// Contrat v3 : ALLOW si attestation complète OU checks test-frontend+perf verts
+// sur le SHA produit ; sinon REFUSE. On calcule la vérité attendue via l'API
+// GitHub ELLE-MÊME (aucune simulation : si l'API est injoignable, on attend un
+// refus fail-closed du checker).
 {
+  const head = execFileSync('git', ['-C', REPO, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
+  // Une attestation déjà committée pour le produit prime (voie intégrité) :
+  // la vérité API des checks ne vaut que lorsqu'il n'y en a pas.
+  const product = (() => { try { return execFileSync(process.execPath, [CHECK, '--mode', 'deploy', '--json'], { cwd: REPO, encoding: 'utf8' }).match(/"productCommit":\s*"([0-9a-f]{40})"/)[1]; } catch (_) { return head; } })();
+  const attPresent = fs.existsSync(path.join(REPO, '.ai', 'certification', 'attestations', product + '.json'));
+  let expectedAllow = false;
+  if (!attPresent) {
+    try {
+      const out = execFileSync('gh', ['api', `repos/aveca/sargagame/commits/${product}/check-runs?per_page=100`], { encoding: 'utf8' });
+      const runs = JSON.parse(out).check_runs || [];
+      const check = require(CHECK);
+      const reasons = [];
+      expectedAllow = !!check.decidePredeploy(product, runs, reasons);
+    } catch (_) { expectedAllow = false; }
+  }
   const rd = runCheck(REPO, 'deploy');
   const rp = runCheck(REPO, 'pr');
-  record('D13a dépôt réel : deploy => NOT_PROVEN (exit 1) tant que non attesté', rd.code === 1 && rd.json.global === 'NOT_PROVEN', `exit=${rd.code}`);
+  const consistent = attPresent
+    ? (rd.json.decision === 'REFUSE' || (rd.json.decision === 'ALLOW' && rd.json.stage === 'PRODUCTION_VERIFIED'))
+    : rd.json && rd.json.decision === (expectedAllow ? 'ALLOW' : 'REFUSE');
+  record('D13a dépôt réel : décision deploy cohérente (attestation prime, sinon vérité API)', consistent,
+    `stage=${rd.json && rd.json.stage} decision=${rd.json && rd.json.decision} attPresent=${attPresent} attendu=${attPresent ? 'REFUSE|PRODUCTION_VERIFIED' : (expectedAllow ? 'ALLOW' : 'REFUSE')} (sha ${product.slice(0, 8)})`);
   record('D13b dépôt réel : pr => intégrité OK (exit 0)', rp.code === 0, `exit=${rp.code}`);
 }
 

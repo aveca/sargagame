@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-10-09 — coding_agent (OpenCode) · branche `agent/security/e2e-automation`
+
+**Automatisation de bout en bout : contrat v3 par étapes + câblage réel des composants.**
+
+- Contrat v3 (blocage circulaire résolu, protections conservées) :
+  `PREDEPLOY_ELIGIBLE` (check-runs CI `test-frontend`+`perf` verts SUR LE SHA
+  exact, via API GitHub — preuve authentique, rien de simulé) autorise le
+  déploiement ; `DEPLOYED_PENDING_VERIFICATION` tant que le contrôle
+  post-déploiement n'a pas tourné ; `PRODUCTION_VERIFIED` uniquement via
+  attestation complète committée (preuves réelles scellées au SHA) ;
+  `NOT_PROVEN`/`FAILED` = refus. Attestation présente-mais-invalide ⇒ REFUS
+  dur, aucun repli predeploy. Hors-ligne local ⇒ REFUS (jamais d'autorisation).
+- Composants factory adoptés et RÉELLEMENT branchés (propriétaire identifié :
+  session automation concurrente du 2026-10-08, fichiers stables) :
+  `lib/scope-guard.cjs` (validation de scope), `pr-automation.cjs` (RÉPARÉ :
+  erreur de syntaxe ligne 28 + doublons, sécurité WIP anti-`git add -A`,
+  extraction PR par URL, câblage job-trace), `ci-certification-audit.cjs` +
+  `deploy-audit.cjs` (branchés comme étapes gate dans ci-tests.yml),
+  `post-deploy-verify.cjs` (RÉPARÉ : contrat paiement réel POST
+  `__payment_smoke__`→400, GA4 par région depuis regions/*.json, états
+  VERIFIED/NOT_VERIFIED/FAILED, `--report`, `--job`), `lib/job-trace.cjs`
+  (utilisé tel quel par pr-automation, post-deploy-verify et les workflows).
+- Workflows : `cloudflare-production.yml` gate = token `GH_TOKEN` + permission
+  `checks: read`, trace `job_id=job-<run>-<attempt>` uploadée en artefact ;
+  nouveau job `post-deploy-verify` (needs: deploy) avec rapport
+  `post-deploy-report.json` + summary. `ci-tests.yml` : + audits de câblage.
+- Sécurité gouvernance : une ATTESTATION FORGÉE détectée en critique sur le
+  dépôt réel (attestations/2f21d8ed….json, créée par processus concurrent,
+  hashes de fichiers sources présentés comme preuves) → le verrou l'a REFUSÉE
+  (comportement prouvé) ; fichier mis en quarantaine non destructive
+  `.ai/certification/quarantine-2026-10-09/` (conservé pour audit).
+- Tests : predeploy-gate 8/8, deploy-binding 22/22, certification-status 20/20,
+  suite complète npm test 13/13.
+- Chaîne E2E prouvée sur cette PR même (job_id corrélé, livraison autorisée,
+  post-vérification réelle) — détails dans le rapport de mission.
+
+**Fichiers :** `scripts/CHECK_certification_status.cjs`,
+`scripts/lib/certification-gate.cjs`, `scripts/autopilot/{pr-automation,
+post-deploy-verify,ci-certification-audit,deploy-audit}.cjs`,
+`scripts/autopilot/lib/{job-trace,scope-guard}.cjs`,
+`.github/workflows/{cloudflare-production,ci-tests}.yml`, `.gitignore`,
+`tests/unit/certification/{predeploy-gate,deploy-binding}.test.cjs`,
+`.ai/certification/quarantine-2026-10-09/`, `AGENTS.md`, `.ai/changelog.md`.
+
+---
+
 ## 2026-10-08 — coding_agent (OpenCode) · branche `agent/security/governance-lock`
 
 **Verrouillage RÉEL des chemins de promotion/déploiement (mission 2/2) :**

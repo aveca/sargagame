@@ -55,13 +55,22 @@ jobs:
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
 
   # VERROU GOUVERNANCE — certification stricte AVANT toute mise en production.
-  # Refuse (job rouge) si le commit produit effectif de HEAD n'a pas
-  # d'attestation PASS valide (.ai/certification/attestations/<sha>.json).
-  # Les jobs deploy et deploy-pages en dépendent via needs: pas d'upload,
-  # pas de secret, pas d'écriture Cloudflare quand la certification échoue.
+  # Contrat v3 (états séparés) :
+  #   PRODUCTION_VERIFIED  = attestation complète committée, valide pour le SHA produit
+  #   PREDEPLOY_ELIGIBLE   = checks CI requis (test-frontend, perf) VERTS sur le SHA
+  #                          exact → autorise le déploiement, qui restera
+  #                          DEPLOYED_PENDING_VERIFICATION jusqu'au contrôle post-deploy
+  #   NOT_PROVEN           = checks absents/rouges/en-cours, API indisponible,
+  #                          attestation corrompue ⇒ REFUS (deploy/deploy-pages skipped)
   certification-gate:
+    permissions:
+      contents: read
+      checks: read        # lecture des check-runs du SHA (preuve CI authentique)
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -70,7 +79,23 @@ jobs:
         with:
           node-version: 24
       - name: Certification gate (deploy)
+        id: gate
         run: node scripts/CHECK_certification_status.cjs --mode deploy
+      - name: Trace gate decision (job_id)
+        if: always()
+        run: |
+          mkdir -p scripts/traces
+          node -e "const fs=require('fs');const f='scripts/traces/'+process.env.JOB_TRACE_ID+'.json';const t=fs.existsSync(f)?JSON.parse(fs.readFileSync(f,'utf8')):{jobId:process.env.JOB_TRACE_ID,taskId:'CF-PROD-PIPELINE',createdAt:new Date().toISOString(),gitSha:process.env.GITHUB_SHA,steps:[]};t.steps.push({step:'certification-gate',status:process.env.GATE_OUTCOME==='success'?'completed':'failed',timestamp:new Date().toISOString(),details:{sha:process.env.GITHUB_SHA}});fs.writeFileSync(f,JSON.stringify(t,null,2))"
+        env:
+          GATE_OUTCOME: ${{ steps.gate.outcome }}
+      - name: Upload job trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-gate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: scripts/traces/
+          if-no-files-found: ignore
+          retention-days: 90
 
   deploy:
     needs: [build, certification-gate]
@@ -205,6 +230,44 @@ jobs:
             echo "Payment backend is not configured or route is not migrated"
             exit 1
           fi
+
+  # CONTRÔLE POST-DÉPLOIEMENT RÉEL — s'exécute UNIQUEMENT après un déploiement
+  # autorisé et réussi. Vérifications HTTP réelles sur chaque domaine live :
+  # accessibilité, identité artefact (version.json), fraîcheur données,
+  # cohérence région↔plages, params régionaux (canonical, GA4), ?sos=1,
+  # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
+  # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
+  post-deploy-verify:
+    needs: [deploy]
+    if: always() && needs.deploy.result == 'success'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Post-deploy verification (all live domains)
+        id: pdv
+        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json
+      - name: Upload post-deploy report + job trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            post-deploy-report.json
+            scripts/traces/
+          if-no-files-found: ignore
+          retention-days: 90
+      - name: Summary
+        if: always()
+        run: |
+          node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
 
   deploy-pages:
     needs: [build, certification-gate]
