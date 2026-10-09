@@ -16,20 +16,25 @@ const { execFileSync, execSync } = require('child_process');
 const os = require('os');
 const { ROOT } = require('./common.cjs');
 
+const GIT_EXE = process.platform === 'win32'
+  ? (process.env.GIT_EXE || 'C:\\Program Files\\Git\\mingw64\\bin\\git.exe')
+  : 'git';
+
 function git(args, cwd, opts = {}) {
   const pipeOut = opts.pipeOut !== false;
-  const out = execFileSync('git', args, {
+  const out = execFileSync(GIT_EXE, args, {
     cwd: cwd || ROOT,
     encoding: 'utf8',
     stdio: ['ignore', pipeOut ? 'pipe' : 'ignore', opts.pipeErr ? 'pipe' : 'pipe'],
     timeout: opts.timeoutMs || 120000,
-    windowsHide: true,
+    // windowsHide: true, // disabled to avoid spawn issues on Windows
+    env: process.env,
   });
   return (out ?? '').trim();
 }
 function gitSafe(args, cwd, opts = {}) { try { return git(args, cwd, opts); } catch (_) { return null; } }
 function run(cmd, cwd, opts = {}) {
-  return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000, windowsHide: true });
+  return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000, windowsHide: true, env: process.env });
 }
 
 function worktreePath(cfg) {
