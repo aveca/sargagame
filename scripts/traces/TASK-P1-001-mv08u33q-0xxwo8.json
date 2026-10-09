@@ -1,0 +1,28 @@
+{
+  "jobId": "TASK-P1-001-mv08u33q-0xxwo8",
+  "taskId": "TASK-P1-001",
+  "createdAt": "2026-10-09T00:45:03.159Z",
+  "gitSha": "2f21d8edcbe65197bd5df4dcc35c843db0fbdef7",
+  "branch": "agent/security/governance-lock",
+  "metadata": {
+    "scope": "src/*,tests/*"
+  },
+  "steps": [
+    {
+      "step": "create-branch",
+      "status": "started",
+      "timestamp": "2026-10-09T00:45:10.794Z",
+      "details": {}
+    },
+    {
+      "step": "create-branch",
+      "status": "completed",
+      "timestamp": "2026-10-09T00:45:10.799Z",
+      "details": {
+        "branch": "agent/coding/TASK-P1-001"
+      }
+    }
+  ],
+  "prNumber": 42,
+  "prUrl": "https://github.com/aveca/sargagame/pull/42"
+}

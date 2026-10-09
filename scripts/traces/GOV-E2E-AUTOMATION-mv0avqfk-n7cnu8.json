@@ -1,0 +1,84 @@
+{
+  "jobId": "GOV-E2E-AUTOMATION-mv0avqfk-n7cnu8",
+  "taskId": "GOV-E2E-AUTOMATION",
+  "createdAt": "2026-10-09T01:42:19.280Z",
+  "gitSha": "2f21d8edcbe65197bd5df4dcc35c843db0fbdef7",
+  "branch": "agent/security/governance-lock",
+  "metadata": {},
+  "steps": [
+    {
+      "step": "branch",
+      "status": "started",
+      "timestamp": "2026-10-09T01:42:35.894Z",
+      "details": {}
+    },
+    {
+      "step": "branch",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:42:36.499Z",
+      "details": {}
+    },
+    {
+      "step": "commit",
+      "status": "started",
+      "timestamp": "2026-10-09T01:43:37.548Z",
+      "details": {}
+    },
+    {
+      "step": "commit",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:43:37.749Z",
+      "details": {}
+    },
+    {
+      "step": "push",
+      "status": "started",
+      "timestamp": "2026-10-09T01:43:56.215Z",
+      "details": {}
+    },
+    {
+      "step": "push",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:43:58.298Z",
+      "details": {}
+    },
+    {
+      "step": "pr",
+      "status": "started",
+      "timestamp": "2026-10-09T01:44:48.248Z",
+      "details": {}
+    },
+    {
+      "step": "pr",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:44:50.428Z",
+      "details": {}
+    },
+    {
+      "step": "ci",
+      "status": "started",
+      "timestamp": "2026-10-09T01:45:20.508Z",
+      "details": {}
+    },
+    {
+      "step": "ci",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:49:14.573Z",
+      "details": {}
+    },
+    {
+      "step": "merge",
+      "status": "started",
+      "timestamp": "2026-10-09T01:49:14.644Z",
+      "details": {}
+    },
+    {
+      "step": "merge",
+      "status": "completed",
+      "timestamp": "2026-10-09T01:49:59.444Z",
+      "details": {}
+    }
+  ],
+  "prNumber": 850,
+  "prUrl": "https://github.com/aveca/sargagame/pull/850"
+}
