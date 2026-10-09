@@ -281,10 +281,13 @@ node -e "require('./regions/index.cjs').assertAllRegionsValid()"
 
 ### Règle de merge
 
-**Merge → deploy AUTOMATIQUE, zéro confirmation** :
-- Push sur `main` déclenche le pipeline data/build/deploy principal ; le workflow `cloudflare-production.yml` gère le déploiement Worker/Assets Cloudflare lorsque `CLOUDFLARE_DEPLOY_ENABLED=true`. Le sentinel live vérifie périodiquement les domaines et peut capturer les erreurs Worker.
+**Merge → deploy AUTOMATIQUE, zéro confirmation, MAIS sous verrou de certification (2026-10-08)** :
+- Push sur `main` déclenche le pipeline data/build ; le workflow `cloudflare-production.yml` ne déploie Worker/Assets Cloudflare (lorsque `CLOUDFLARE_DEPLOY_ENABLED=true`) **que si le Contrôle B passe** : `node scripts/CHECK_certification_status.cjs --mode deploy` (job `certification-gate`, `needs` des jobs `deploy` et `deploy-pages`).
+- Toute publication FTP (`scripts/manual-ftp-deploy.cjs`, workflows `weekly-optimize`, `weekly-seo-automation`, `provision-barbados`) exécute le même contrôle **avant toute connexion** ; `NOT_PROVEN` ⇒ refus, aucune écriture.
+- Tant que la certification est `NOT_PROVEN` (état actuel : aucune preuve LIVE), **aucune modification de production n'est déployée** — les données pipeline continuent d'être commitées, les sites servent la dernière version certifiée.
+- CI des PR (Contrôle A) : `ci-tests.yml` inclut `--mode pr` (intégrité du mécanisme, tolère `NOT_PROVEN`) ; la certification n'est JAMAIS une condition de merge des PR.
 - Vérification post-deploy : `curl` sur URL prod
-- **Jamais** demander « veux-tu que je merge ? » → la réponse est toujours oui
+- **Jamais** demander « veux-tu que je merge ? » → la réponse est toujours oui (sous réserve du verrou ci-dessus)
 
 ### Rollback
 

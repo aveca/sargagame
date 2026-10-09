@@ -55,7 +55,19 @@ jobs:
           fi
 
       # Deploy via FTP (same as daily-copernicus — will skip if no FTP creds for Barbados)
+      # VERROU GOUVERNANCE : pas de publication sans certification PASS du
+      # commit produit (backstop identique dans manual-ftp-deploy.cjs).
+      - name: Certification gate (deploy)
+        id: cert_gate
+        continue-on-error: true
+        run: node scripts/CHECK_certification_status.cjs --mode deploy
+
+      - name: Annonce si deploy bloqué par certification
+        if: steps.cert_gate.outcome != 'success'
+        run: echo "::error title=Deploy FTP bloqué::Certification NOT_PROVEN pour le commit produit — publication sautée."
+
       - name: Deploy Barbados (FTPS or fast-deploy)
+        if: steps.cert_gate.outcome == 'success'
         continue-on-error: true
         timeout-minutes: 15
         env:
