@@ -199,8 +199,14 @@ function openAutopilotPR() {
   } catch (_) { return null; }
 }
 
-/** Active l'auto-merge squash sur la PR (uniquement si policy.canAutoMerge). */
+/** Active l'auto-merge squash sur la PR (uniquement si policy.canAutoMerge).
+ *  Verrou gouvernance : un merge sur main déclenche les workflows de
+ *  déploiement — on exige donc une certification PASS attestée pour le commit
+ *  produit AVANT d'armer l'auto-merge. Refus = erreur CERTIFICATION_REFUSED,
+ *  aucun contournement par option. */
 function enableAutoMerge(wt, prUrl) {
+  const { assertDeployCertified } = require('../../lib/certification-gate.cjs');
+  assertDeployCertified({ throwOnFail: true, label: 'auto-merge' });
   const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
   execFileSync(bin, ['pr', 'merge', prUrl, '--auto', '--squash'], {
     cwd: wt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,

@@ -19,6 +19,13 @@ jobs:
       - run: npm ci
       - name: Run tests (*.test.cjs)
         run: npm test
+      # CONTRÔLE A (gouvernance) — intégrité du mécanisme de certification :
+      # vocabulaire des statuts strict, attestations cohérentes (nom == cible),
+      # aucune valeur inconnue/ambiguë. TOLÈRE NOT_PROVEN (une réparation de
+      # gouvernance doit pouvoir merger) ; ne vérifie pas les preuves métier —
+      # c'est le rôle du Contrôle B (--mode deploy) appliqué aux déploiements.
+      - name: Certification integrity (Contrôle A — PR)
+        run: node scripts/CHECK_certification_status.cjs --mode pr
       - name: Verify Build
         run: npm run build
       - name: Check bundle budget (JS eager ≤ 210 Ko gzip)

@@ -4,6 +4,125 @@
 
 ---
 
+## 2026-10-08 — coding_agent (OpenCode) · branche `agent/security/governance-lock`
+
+**Verrouillage RÉEL des chemins de promotion/déploiement (mission 2/2) :**
+
+- **Contrat v2 — autoréférence résolue** : un manifeste versionné ne peut pas
+  contenir le SHA de son propre commit. Désormais
+  `.ai/certification/attestations/<sha-produit>.json` (version 2, `target` ==
+  nom du fichier) est portée par des commits ultérieurs **ne touchant que
+  `.ai/certification/`**. Le mode deploy remonte HEAD (first-parent) en sautant
+  ces commits pour trouver le **commit produit effectif** ; tout commit de code
+  non attesté (ou mêlant code+attestation) redevient la cible et bloque.
+- **Deux contrôles séparés** dans `scripts/CHECK_certification_status.cjs` :
+  `--mode pr` (Contrôle A, CI PR : vocabulaire strict + cohérence attestations,
+  TOLÈRE NOT_PROVEN — une réparation de gouvernance reste mergeable) et
+  `--mode deploy` (Contrôle B, strict : trois PASS + sha256 + scellement SHA +
+  péremption + règles PRODUCTION/BUSINESS ; `--commit`/`--now` ignorés — aucune
+  option ne contourne le refus). Mode `manifest` historique inchangé (20/20
+  tests de la mission 1 toujours verts).
+- **Chemins fermés** (emplacements exacts) :
+  - `.github/workflows/cloudflare-production.yml` : job `certification-gate`
+    (Contrôle B) + `needs: [build, certification-gate]` sur `deploy` (wrangler
+    Worker) et `deploy-pages` (wrangler-action Pages). Pas de needs, pas
+    d'upload, pas de secrets écrits.
+  - `scripts/manual-ftp-deploy.cjs` : `assertDeployCertified()` exécuté AVANT
+    `loadProjectEnv()` et toute connexion basic-ftp/fastDeploy — couvre
+    `npm run ftp-deploy|deploy-files|deploy-provision` et tous les workflows
+    appelants (`weekly-optimize.yml`, `weekly-seo-automation.yml`,
+    `provision-barbados.yml`) qui reçoivent en outre une étape gate visible
+    (`Certification gate (deploy)` avant l'étape deploy).
+  - `daily-copernicus.yml` : deploy FTP DÉJÀ désactivé en amont (commentaire
+    « Legacy FTP deploy disabled — handled by cloudflare-production.yml ») ;
+    aucun upload restant dans ce workflow.
+  - `scripts/autopilot/lib/gitops.cjs::enableAutoMerge` : lève
+    `CERTIFICATION_REFUSED` avant tout `gh pr merge --auto` (aucun appelant
+    actif aujourd'hui — chemin futur fermé).
+  - `ci-tests.yml` : étape Contrôle A après `npm test`.
+- Tests : `tests/unit/certification/deploy-binding.test.cjs` — 20 scénarios sur
+  fixtures git isolées en %TEMP% (commits P→Z distincts, refus SHA non
+  attesté, hash altéré, attestation forgée, gate FTP réel arrêté en 720 ms
+  sans connexion, enableAutoMerge refusé avant gh, câblage workflow vérifié).
+  Suite complète : 12/12 fichiers OK.
+- État honnêt : dépôt réel `--mode deploy` = NOT_PROVEN (exit 1) — aucune
+  attestation LIVE n'existe ; `--mode pr` = OK (exit 0).
+- Reste dans cette mission : protection API de `main` + merge de cette PR
+  (résultats API dans le rapport de mission).
+
+**Fichiers modifiés :** `scripts/CHECK_certification_status.cjs`,
+`scripts/lib/certification-gate.cjs` (nouveau), `scripts/manual-ftp-deploy.cjs`,
+`scripts/autopilot/lib/gitops.cjs`, `scripts/autopilot/verify.cjs`,
+`.github/workflows/{ci-tests,cloudflare-production,weekly-optimize,weekly-seo-automation,provision-barbados}.yml`,
+`tests/unit/certification/{check-certification-status,deploy-binding}.test.cjs`,
+`.ai/certification/status.json`, `.ai/certification-report-template.md`,
+`AGENTS.md`, `.ai/changelog.md`. (`src/Sargasses_PROD.jsx` : modification
+préexistante hors périmètre, laissée non commitée.)
+
+---
+
+## 2026-10-08 — coding_agent (OpenCode)
+
+**Verrouillage de gouvernance et certification fail-closed (directive exécutée) :**
+
+- Réécriture de `scripts/CHECK_certification_status.cjs` : le fichier précédent se
+  contentait de lire des lignes `TECHNICAL: PASS` dans `.ai/current_state.md`,
+  ce que la directive interdit explicitement. Nouveau contrat machine :
+  `.ai/certification/status.json` (version 1, `controlledCommit` sha40) +
+  preuves `path`+`sha256` dont le contenu doit sceller le commit contrôlé.
+  Blocages : statut absent/invalide/ambigu (seules valeurs `PASS`/`FAIL`/`NOT_PROVEN`),
+  preuve absente/illisible/périmée (>31 j) ou non vérifiable (hash), preuve
+  rattachée à un autre commit, preuve `simulated:true`, `tr_test_`/paymentMode!=live
+  pour PRODUCTION, métriques historiques (>31 j) ou non attribuables pour BUSINESS.
+  Toute erreur (lecture, JSON, argument, commit introuvable) → exit 1. Jamais de doute → promotion.
+- `scripts/autopilot/verify.cjs` : la correction amont (test de contrat absent :
+  SKIP → FAIL) est conservée ; ajout d'un filet : toute erreur interne de
+  vérification produit un échec explicite `{ok:false, failedStep:'internal-error'}`
+  + exit 1 (jamais de crash muet).
+- `.ai/certification-report-template.md` : règle absolue des valeurs autorisées,
+  contrat machine associé, fence d'exemple refermée.
+- `.ai/certification/status.json` : baseline honnête — TECHNICAL / PRODUCTION /
+  BUSINESS = `NOT_PROVEN` (aucune preuve LIVE vérifiable n'existe dans le dépôt ;
+  `MOLLIE_TEST_CERTIFICATION.md` = 15/15 scénarios en mode TEST, ne valide
+  jamais PRODUCTION).
+- Tests : `tests/unit/certification/check-certification-status.test.cjs`
+  (20 scénarios sur fixtures isolées en %TEMP%, aucune preuve réelle touchée).
+  Résultat réel : 20/20 conformes ; `npm test` global 11/11 fichiers OK ;
+  verdict réel du dépôt : `NOT_PROVEN` (exit 1).
+
+**Traçabilité des chemins de promotion (audit 2026-10-08, vérifié par `gh api`) :**
+
+| # | Chemin de promotion | Contrôle appliqué aujourd'hui | Contournement possible | Modification nécessaire pour fermer | Statut |
+|---|---|---|---|---|---|
+| 1 | Agent local → commit | Aucun contrôle requis local (Gate de ship = discipline documentée, non forcée) | Un agent peut committer n'importe quoi, y compris un `PASS` auto-attribué | Hook pre-commit/pre-push exécutant `CHECK_certification_status.cjs` | NON FERMÉ |
+| 2 | Orchestrateur autopilot → branche → PR | `verify.cjs` (build/budget/régions/tests/smoke) + policy whitelist + parcage `ready-to-merge` | `policy.autoMergeEnabled` + `gh pr merge --auto` (lib/gitops.cjs) sans contrôle certification ; observation « mock » en dry-run | Appeler CHECK dans l'orchestrateur avant toute mise en `ready-to-merge` | NON FERMÉ |
+| 3 | Git push direct sur `main` | AUCUN — branche `main` **non protégée** (vérifié : `gh api repos/aveca/sargagame/branches/main` → `"protected": false`, protection 404) | Push direct = bypass total de CI et de tout contrôle | Protection de branche + required status check exécutant CHECK (accès admin repo requis) | NON FERMÉ |
+| 4 | GitHub Actions CI (`ci-tests.yml`, `perf-budget.yml`) | Build + tests + bundle sur PR/push | Checks non requis (branche non protégée) → merge possible CI rouge ; CHECK non appelé par les workflows | Étape CHECK dans `ci-tests.yml` + statut requis | NON FERMÉ |
+| 5 | Merge PR → `main` | Auto-merge possible sans gate certification | Merge manuel ou auto possible avec CI rouge | Branch protection : « Require status checks to pass » | NON FERMÉ |
+| 6 | Déploiement (`daily-copernicus.yml` push→FTP, `cloudflare-production.yml`, `npm run ftp-deploy` manuel) | Aucun gate certification | Deploy déclenché par tout push sur `main` ; deploy manuel local sans contrôle | Étape CHECK bloquante en tête des workflows de deploy ; suppression/guard du deploy manuel | NON FERMÉ |
+| 7 | Production (vérification post-deploy) | `live-production-sentinel` observe seulement | Détecte, ne bloque pas | Alerte + rollback conditionné au verdict CHECK | NON FERMÉ |
+
+**Déclaration d'honnêteté (règle de la directive) :** un script autonome ne
+suffit pas à verrouiller le dépôt. Les chemins réels de merge et de déploiement
+**n'exécutent pas** le contrôle ci-dessus à cette date, et leur fermeture exige
+des modifications de configuration GitHub (protection de branche, required
+checks) et des workflows — changements interdits pendant cette phase et/ou
+requérant un accès d'administration. **Le verrouillage global du dépôt est donc
+déclaré `NOT_PROVEN`.** Actions humaines restantes listées dans le rapport de
+session. Aucun merge, deploy ou changement de configuration de production
+n'a été effectué.
+
+**Fichiers modifiés :**
+
+- `scripts/CHECK_certification_status.cjs` — réécrit (verrou fail-closed sur preuves vérifiables)
+- `scripts/autopilot/verify.cjs` — erreur de vérification = échec explicite (complète le fix SKIP→FAIL)
+- `.ai/certification-report-template.md` — valeurs autorisées + contrat machine
+- `.ai/certification/status.json` — baseline NOT_PROVEN (nouveau)
+- `tests/unit/certification/check-certification-status.test.cjs` — 20 scénarios isolés (nouveau)
+- `.ai/changelog.md` — cette entrée
+
+---
+
 ## 2026-10-05 — coding_agent (OpenCode)
 
 **TASK-P1-003: Comic paywall header variants**
@@ -22,6 +141,49 @@
 PR: #810 (auto-merged)
 
 ---
+
+## 2026-10-05 — coding_agent (OpenCode)
+
+**Audit de gouvernance et verrouillage certification :**
+- Audit initial : trois défautsstructurels identifiés (A. pas de contrôle global, B. preuve absente ignorée, C. gel non garanti)
+- Création de `scripts/CHECK_certification_status.cjs` : verrouillage fail-closed des trois certifications indépendantes (TECHNICAL / PRODUCTION / BUSINESS)
+- Correction de `scripts/autopilot/verify.cjs` : passage en fail-closed — test absent → échec (plus de SKIP)
+- Création de `.ai/certification-report-template.md` : modèle imposant le format séparé des trois certificats
+- Mise à jour de `.ai/changelog.md` avec cartographie des chemins de promotion
+- Gel du développement fonctionnel déclaré dans la session courante
+- Déclaration : `NOT_PROVEN` pour PRODUCTION et BUSINESS tant que preuves en production absentes
+
+**Chemins de promotion audités (référence) :**
+
+| Chemin | Contrôle appliqué | Possibilité de contournement | Modification nécessaire |
+|--------|-------------------| ----------------------------- | ---------------------- |
+| agent → orchestrator → Git → GH Actions → merge → déploiement → vérification LIVE | Vérifie les 3 certificats indépendants avant toute promotion | Potentiel de bypass si le script CHECK n'est pas appelé dans le workflow CI | Intégrer l'appel CHECK dans `.github/workflows/ci-tests.yml` et `agent-handoff.yml` |
+| agent → tasks.md → PR → merge | Vérifie les tâches marquées `[x] done` | Leclaim `[~]` in `tasks.md` peut être ignoré sans validation globale | Ajouter condition `CHECK_certification_status.cjs` comme gate de merge |
+| agent → current_state.md → rapport | Le rapport contient les trois statuts | Un agent peut s'auto-attribuer `PASS` global | Interdire l'auto-promotion ; exiger attestations indépendantes |
+| agent-handoff.yml (schedule 4h) | Déclenche le prochain agent | N'a pas de vérification de certification intégrée | Ajouter étape de lecture `.ai/current_state.md` et validation des 3 statuts avant tout `PASS` |
+| orchestrator.cjs / policy.cjs | Décisions de promotion basées sur liste de fichiers autorisés | Ne vérifie pas les 3 certificats indépendants | Remplacer / compléter le prédicat par l'appel au script CHECK |
+
+**Fichiers modifiés :**
+
+- `scripts/CHECK_certification_status.cjs` — nouveau ( créé dans cette session)
+- `scripts/autopilot/verify.cjs` — corrigé (fail-closed sur preuves absentes)
+- `.ai/certification-report-template.md` — créé (modèle de rapport)
+- `.ai/changelog.md` — mis à jour (traçabilité des chemins)
+
+---
+
+## 2026-10-04 — principal_agent (OpenCode)
+
+**Suite de l'audit governance :**
+- Vérification des trois barrières indépendantes non encore intégrées dans les runners en cours
+- Test du scénario négatif : suppression volontaire d'une preuve → le script CHECK renvoie `exit 1` et bloque la promotion
+- Confirmation que `verify.cjs` échec maintenant les tests déclarés `SKIP` par défaut (passage en FAIL)
+- Déclaration que AUCUN merge ou déploiement en production ne sera effectué tant que les trois certifications ne sont pas toutes `PASS`
+
+**Fichiers modifiés :**
+
+- `scripts/autopilot/verify.cjs` — corrigé (voir entrée 2026-10-05)
+- `.ai/changelog.md` — mis à jour (voir entrée 2026-10-05)
 
 ## 2026-10-04 — principal_agent (OpenCode)
 

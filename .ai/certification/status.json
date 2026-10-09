@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "controlledCommit": "6342e869031883fca3e201daf4df27983e74ace9",
+  "updatedAt": "2026-10-08T00:00:00Z",
+  "notes": "Baseline de gouvernance. Aucune certification n'est prouvée à ce stade : les preuves exigées (build+paiement LIVE+rétention réelle scellées au commit contrôlé) n'existent pas dans le dépôt. MOLLIE_TEST_CERTIFICATION.md atteste 15/15 scénarios en mode TEST uniquement — ne valide jamais PRODUCTION. Toute promotion globale est bloquée (node scripts/CHECK_certification_status.cjs => exit 1).",
+  "certifications": {
+    "TECHNICAL": {
+      "status": "NOT_PROVEN",
+      "reason": "Pas de preuve vérifiable scellée au commit contrôlé (build, bundle budget, CI) dans .ai/certification/. L'historique changelog n'est pas une preuve vérifiable."
+    },
+    "PRODUCTION": {
+      "status": "NOT_PROVEN",
+      "paymentMode": "none",
+      "reason": "Aucun paiement LIVE attesté de bout en bout (création → webhook → grant → service délivré). Les 15 scénarios MOLLIE TEST (tr_test_) ne valident jamais PRODUCTION."
+    },
+    "BUSINESS": {
+      "status": "NOT_PROVEN",
+      "reason": "Pas de période d'observation définie ni de métriques attribuables à une promotion récente. Les chiffres historiques (> 6 mois) ne valident jamais BUSINESS."
+    }
+  }
+}
