@@ -97,7 +97,7 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
   const statusLabels = { clean:"Plage annoncée propre", moderate:"Présence possible", avoid:"Présence élevée signalée" };
   let publicForecast = null;
   let unlockedWeekly = null;
-  let token = "";
+  let token = (() => { try { return localStorage.getItem("sg_hotel_trial_token") || ""; } catch (_) { return ""; } })();
   const visitorId = (() => {
     try {
       let id = sessionStorage.getItem("sg_hotel_visitor");
@@ -176,15 +176,40 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
   }
   async function unlockForecast() {
     if (!token) return;
+    const status = $("trial-status");
     try {
       const response = await fetch("/api/copernicus/forecast.php?k=" + encodeURIComponent(token), {cache:"no-store"});
-      if (!response.ok) return;
+      if (response.status === 403) {
+        try { localStorage.removeItem("sg_hotel_trial_token"); } catch (_) {}
+        token = "";
+        $("trial-form").classList.remove("hidden");
+        status.className = "small notice";
+        status.textContent = "Le jeton d'essai n'est plus valide. Vous pouvez demander un nouvel essai.";
+        return;
+      }
+      if (!response.ok) {
+        $("trial-form").classList.add("hidden");
+        status.className = "small notice";
+        status.textContent = "Votre essai est activé, mais la prévision J+3 est temporairement indisponible. Réessayez plus tard.";
+        return;
+      }
       const data = await response.json();
       if (data && data.ok && data.weekly) {
         unlockedWeekly = data.weekly;
         renderJ3();
+        $("trial-form").classList.add("hidden");
+        status.className = "small notice success";
+        status.textContent = "Essai actif. La tendance J+3 est disponible pour la plage sélectionnée.";
+      } else {
+        $("trial-form").classList.add("hidden");
+        status.className = "small notice";
+        status.textContent = "Votre essai est activé, mais le flux ne fournit pas de prévision J+3 exploitable.";
       }
-    } catch (_) {}
+    } catch (_) {
+      $("trial-form").classList.add("hidden");
+      status.className = "small notice";
+      status.textContent = "Votre essai est activé, mais la prévision n'a pas pu être chargée. Réessayez plus tard.";
+    }
   }
   $("beach").addEventListener("change", () => { renderToday(); renderJ3(); });
   $("share").addEventListener("click", async () => {
@@ -209,12 +234,12 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
       const result = await response.json();
       if (!response.ok || !result.ok || !result.token) throw new Error(result.error || "Activation impossible");
       token = result.token;
+      try { localStorage.setItem("sg_hotel_trial_token", token); } catch (_) {}
       const eventRecorded = await record("hotel_trial_signup");
-      status.className = "small notice success";
+      status.className = eventRecorded ? "small notice success" : "small notice";
       status.textContent = eventRecorded
         ? "Essai activé pour 14 jours. Chargement de la tendance J+3…"
         : "Essai activé pour 14 jours, mais l'enregistrement du suivi Supabase n'a pas été confirmé.";
-      $("trial-form").classList.add("hidden");
       await unlockForecast();
     } catch (error) {
       status.className = "small notice error";
@@ -224,6 +249,7 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
   syncFromUrl();
   record("hotel_page_open");
   loadPublic();
+  if (token) unlockForecast();
 })();
 </script>
 </body>
