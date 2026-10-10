@@ -1,0 +1,179 @@
+name: Factory Cloud Runner (Sargagame)
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: factory-cloud-runner-sargagame
+  cancel-in-progress: false
+
+jobs:
+  cloud-runner:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    env:
+      CF_ACCOUNT_ID: abf2b92cf718313567b4b38eb9dda17f
+      CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
+      OLLAMA_MODELS: ${{ runner.temp }}/ollama-models
+    steps:
+      - name: Checkout Sargagame
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Claim one queued Sargagame task
+        id: claim
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: node scripts/factory/cloud-runner.mjs claim
+
+      - name: Cache local coding model
+        if: steps.claim.outputs.has_job == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/ollama-models
+          key: ollama-qwen2.5-coder-7b-v1
+
+      - name: Install Ollama and load local coding model
+        if: steps.claim.outputs.has_job == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL https://ollama.com/install.sh | sh
+          sudo systemctl stop ollama 2>/dev/null || true
+          OLLAMA_HOST=127.0.0.1:11434 OLLAMA_MODELS="$OLLAMA_MODELS" nohup ollama serve >/tmp/factory-ollama.log 2>&1 &
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:11434/api/tags >/dev/null || { cat /tmp/factory-ollama.log; exit 1; }
+          ollama pull qwen2.5-coder:7b
+
+      - name: Install Aider
+        if: steps.claim.outputs.has_job == 'true'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/aider-venv"
+          "$RUNNER_TEMP/aider-venv/bin/pip" install --disable-pip-version-check aider-chat
+
+      - name: Create isolated task branch
+        if: steps.claim.outputs.has_job == 'true'
+        id: branch
+        env:
+          JOB_ID: ${{ steps.claim.outputs.job_id }}
+        run: |
+          set -euo pipefail
+          SAFE_ID="$(printf '%s' "$JOB_ID" | tr -cs 'A-Za-z0-9._-' '-' | cut -c1-48)"
+          BRANCH="factory/cloud-$SAFE_ID-${GITHUB_RUN_ID}"
+          git checkout -b "$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Run local coding agent without credentials
+        if: steps.claim.outputs.has_job == 'true'
+        env:
+          JOB_ID: ${{ steps.claim.outputs.job_id }}
+          TASK_TYPE: ${{ steps.claim.outputs.task_type }}
+        run: |
+          set -euo pipefail
+          {
+            printf '\n\n--- Factory execution constraints ---\n'
+            printf 'Repository scope: aveca/sargagame only. Task type: %s. Job ID: %s.\n' "$TASK_TYPE" "$JOB_ID"
+            printf 'Do not modify .github/, scripts/factory/cloud-runner.mjs, wrangler configuration, deployment workflows, secrets, or environment files. Do not add credentials. Make the smallest tested change that fulfills the task.\n'
+            printf 'Do not claim tests passed unless you actually made code changes and tests pass.\n'
+          } >> "$RUNNER_TEMP/factory-task.md"
+          "$RUNNER_TEMP/aider-venv/bin/aider" \
+            --model ollama_chat/qwen2.5-coder:7b \
+            --yes \
+            --no-auto-commits \
+            --message-file "$RUNNER_TEMP/factory-task.md"
+
+      - name: Enforce file scope and check diff
+        if: steps.claim.outputs.has_job == 'true'
+        run: |
+          set -euo pipefail
+          git diff --check
+          git status --porcelain
+          CHANGED="$( { git diff --name-only; git ls-files --others --exclude-standard; } | sort -u )"
+          if [ -z "$CHANGED" ]; then
+            echo "The coding agent produced no file changes."
+            exit 1
+          fi
+          printf '%s\n' "$CHANGED"
+          if printf '%s\n' "$CHANGED" | grep -E '(^|/)\.github/|^scripts/factory/cloud-runner\.mjs$|(^|/)\.env($|\.)|^wrangler[^/]*$|(^|/)secrets?(/|$)'; then
+            echo "Refusing to publish changes to protected automation or secret-related paths."
+            exit 1
+          fi
+
+      - name: Install project dependencies
+        if: steps.claim.outputs.has_job == 'true'
+        run: npm ci
+
+      - name: Run Sargagame tests
+        if: steps.claim.outputs.has_job == 'true'
+        run: npm test
+
+      - name: Verify production build
+        if: steps.claim.outputs.has_job == 'true'
+        run: npm run build
+
+      - name: Commit and push isolated branch
+        if: steps.claim.outputs.has_job == 'true'
+        env:
+          BRANCH: ${{ steps.branch.outputs.name }}
+          JOB_ID: ${{ steps.claim.outputs.job_id }}
+        run: |
+          set -euo pipefail
+          git add -A
+          git diff --cached --check
+          git commit -m "factory(sargagame): implement queued task $JOB_ID"
+          git push origin "HEAD:refs/heads/$BRANCH"
+
+      - name: Open pull request
+        if: steps.claim.outputs.has_job == 'true'
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ steps.branch.outputs.name }}
+          JOB_ID: ${{ steps.claim.outputs.job_id }}
+          TASK_TYPE: ${{ steps.claim.outputs.task_type }}
+        run: |
+          set -euo pipefail
+          URL="$(gh pr create \
+            --repo "$GITHUB_REPOSITORY" \
+            --base main \
+            --head "$BRANCH" \
+            --title "Factory task: $TASK_TYPE ($JOB_ID)" \
+            --body "Created by the Cloudflare D1-backed Factory runner using local Ollama model qwen2.5-coder:7b on a GitHub-hosted runner.\n\nValidation: npm test and npm run build passed.\n\nThis PR is intentionally not auto-merged; review and CI remain required.")"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Created $URL"
+
+      - name: Record successful run in D1
+        if: steps.claim.outputs.has_job == 'true' && steps.pr.outcome == 'success'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FACTORY_JOB_ID: ${{ steps.claim.outputs.job_id }}
+          FACTORY_FINAL_STATUS: succeeded
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          FACTORY_RESULT_JSON="$(node -e 'console.log(JSON.stringify({pull_request:process.env.PR_URL,runner:"github-hosted-ollama",model:"qwen2.5-coder:7b",tests:["npm test","npm run build"],merged:false}))')"
+          export FACTORY_RESULT_JSON
+          node scripts/factory/cloud-runner.mjs finish
+
+      - name: Record failure in D1
+        if: failure() && steps.claim.outputs.has_job == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          FACTORY_JOB_ID: ${{ steps.claim.outputs.job_id }}
+          FACTORY_FINAL_STATUS: failed
+        run: |
+          FACTORY_RESULT_JSON="$(node -e 'console.log(JSON.stringify({run_id:process.env.GITHUB_RUN_ID,run_url:process.env.GITHUB_SERVER_URL+"/"+process.env.GITHUB_REPOSITORY+"/actions/runs/"+process.env.GITHUB_RUN_ID,reason:"Cloud runner step failed; inspect GitHub Actions logs"}))')"
+          export FACTORY_RESULT_JSON
+          node scripts/factory/cloud-runner.mjs finish
