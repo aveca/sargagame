@@ -9,7 +9,11 @@ async function openPaidPaywall(page: Page) {
     waitUntil: "domcontentloaded",
     timeout: 60000,
   })
-  // The mobile layout intentionally omits the bottom nav. Open the paywall through the app event.\n  await page.waitForTimeout(500)\n  await page.evaluate(() => document.dispatchEvent(new CustomEvent("sg_open_paywall")))\n\n  const modal = page.locator('[role="dialog"], .pww-wrap').first()
+  // The mobile layout intentionally omits the bottom nav. Open the paywall through the app event.
+  await page.waitForTimeout(500)
+  await page.evaluate(() => document.dispatchEvent(new CustomEvent("sg_open_paywall")))
+
+  const modal = page.locator('[role="dialog"], .pww-wrap').first()
   await expect(modal).toBeVisible({ timeout: 15000 })
 
   const cta = page.locator(".pww-gobtn, .pwx-cta").first()
