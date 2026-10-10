@@ -76,7 +76,7 @@ test.describe("Funnel payant — Mollie mocked", () => {
     expect(createCheckoutBody).not.toBeNull()
     expect(["create_subscription", "create_payment"]).toContain(createCheckoutBody?.action)
 
-    await expect(page).toHaveURL(/https://www\.mollie\.com\/checkout\/test-playwright/, { timeout: 10000 })
+    await expect(page).toHaveURL("https://www.mollie.com/checkout/test-playwright", { timeout: 10000 })
   })
 
   test("un échec Mollie reste visible et ne devient pas un faux succès", async ({ page }) => {
