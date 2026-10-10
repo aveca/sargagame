@@ -20,9 +20,10 @@ async function openPaidPaywall(page: Page) {
   await expect(cta).toBeVisible({ timeout: 10000 })
   await cta.click()
 
-  const email = page.locator('input[type="email"][aria-label*="E-mail"], input[type="email"]').first()
+  const email = page.locator('input[type="email"]:visible').last()
   await expect(email).toBeVisible({ timeout: 10000 })
   await email.fill("qa@example.com")
+  await expect(email).toHaveValue("qa@example.com")
 
   const payButton = page.locator("button.sg-paygold:visible").last()
   await expect(payButton).toBeVisible({ timeout: 15000 })
