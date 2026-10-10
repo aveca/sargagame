@@ -68,10 +68,12 @@ function checkCertificationGate() {
     issues.push('cloudflare-production.yml: Missing --mode deploy flag');
   }
 
-  if (cfProd.indexOf('needs: [build, certification-gate]') !== -1) {
-    passes.push('cloudflare-production.yml: deploy depends on certification-gate');
+  if (cfProd.indexOf('publication-gate:') !== -1
+      && (cfProd.match(/needs: \\[build, certification-gate, publication-gate\\]/g) || []).length === 2
+      && cfProd.includes("publication-gate.outputs.eligible == 'true'")) {
+    passes.push('cloudflare-production.yml: publication + certification gates protect Worker and Pages deploys');
   } else {
-    issues.push('cloudflare-production.yml: deploy does not depend on certification-gate');
+    issues.push('cloudflare-production.yml: missing publication/certification gate wiring for both deploy targets');
   }
 
   // 3. Check that cert script exists and has proper modes
