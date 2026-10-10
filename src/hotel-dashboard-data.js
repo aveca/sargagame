@@ -14,6 +14,8 @@ export function normalizeIsland(value, hostname) {
   const hostIsland = host.includes("guadeloupe") ? "gp"
     : host.includes("martinique") ? "mq"
     : null;
+  const knownUnsupported = ["miami", "florida", "puntacana", "cancun", "rivieramaya", "tulum"].some((part) => host.includes(part));
+  if (knownUnsupported) return null;
   if (requested && !SUPPORTED_ISLANDS.includes(requested)) return null;
   if (hostIsland && requested && requested !== hostIsland) return null;
   if (hostIsland) return hostIsland;
