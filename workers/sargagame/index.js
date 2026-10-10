@@ -159,7 +159,9 @@ export default {
       if(request.method!=="POST")return out({error:"method_not_allowed"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
       const email=String(d.email||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return out({error:"invalid_email"},400);
-      const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
+      const requestedDays=Number(d.days);
+      const days=requestedDays===14?14:30; // keep existing 30-day flow unless explicitly requested by hotel pilot
+      const payload={h:email,exp:Math.floor(Date.now()/1000)+days*86400};
       const base=env.MOLLIE_WEBHOOK_SECRET;
       if(!base)return out({error:"payment_backend_not_configured"},503);
       const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
@@ -167,7 +169,7 @@ export default {
       const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
       const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw));
       const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-      return out({ok:true,token,days:30},200);
+      return out({ok:true,token,days},200);
     }
     if(u.pathname==="/api/mollie.php" && request.method==="POST"){
       // B2B recurring subscription compatibility with the former PHP endpoint.
