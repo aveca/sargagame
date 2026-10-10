@@ -5,11 +5,11 @@ const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 async function openPaidPaywall(page: Page) {
   // Keep QA query flags intact until PremiumModal's lazy module loads.
   // The ?paywall=1 deep-link immediately cleans the query string before that import.
-  await page.goto(BASE_URL + "/?paywall=1&pay=mollie&pay_capture=0&pwpass=0&pwcomic=1", {
+  await page.goto(BASE_URL + "/?pay=mollie&pay_capture=0&pwpass=0&pwcomic=1", {
     waitUntil: "domcontentloaded",
     timeout: 60000,
   })
-  const modal = page.locator('[role="dialog"], .pww-wrap').first()
+  // The mobile layout intentionally omits the bottom nav. Open the paywall through the app event.\n  await page.waitForTimeout(500)\n  await page.evaluate(() => document.dispatchEvent(new CustomEvent("sg_open_paywall")))\n\n  const modal = page.locator('[role="dialog"], .pww-wrap').first()
   await expect(modal).toBeVisible({ timeout: 15000 })
 
   const cta = page.locator(".pww-gobtn, .pwx-cta").first()
