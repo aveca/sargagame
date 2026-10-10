@@ -25,7 +25,9 @@ export default defineConfig({
     },
   ],
 
-  webServer: {
+  // CI already starts Vite for UX smoke; don't start a second server for Playwright.
+  // Local runs keep Playwright's managed server unless explicitly using an external preview.
+  webServer: process.env.PLAYWRIGHT_EXTERNAL_PREVIEW === '1' ? undefined : {
     command: 'npx vite preview --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,
