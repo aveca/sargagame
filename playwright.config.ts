@@ -20,6 +20,8 @@ export default defineConfig({
       name: 'mobile-chromium',
       use: {
         ...devices['iPhone 12'],
+        // Keep the iPhone viewport/user agent while running the installed Chromium binary in CI.
+        browserName: 'chromium',
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
       },
     },
