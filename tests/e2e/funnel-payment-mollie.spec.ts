@@ -3,7 +3,7 @@ import { test, expect, type Page } from "@playwright/test"
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 
 async function openPaidPaywall(page: Page) {
-  await page.goto(BASE_URL + "/?paywall=1&pay=mollie&pay_capture=0&pwcomic=1", {
+  await page.goto(BASE_URL + "/?paywall=1&pay=mollie&pay_capture=0&pwpass=0&pwcomic=1", {
     waitUntil: "domcontentloaded",
     timeout: 60000,
   })
