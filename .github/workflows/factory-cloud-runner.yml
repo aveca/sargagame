@@ -1,6 +1,11 @@
 name: Factory Cloud Runner (Sargagame)
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/factory-cloud-runner.yml"
+      - "scripts/factory/cloud-runner.mjs"
   schedule:
     - cron: "*/30 * * * *"
   workflow_dispatch:
