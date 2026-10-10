@@ -171,6 +171,24 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // Region-aware canonical for the dedicated hotel dashboard entry.
+    // The page is supported only in MQ/GP; other regional builds must not index it.
+    {
+      name: 'hotel-dashboard-html',
+      transformIndexHtml(html, ctx) {
+        const htmlPath = String((ctx && ctx.path) || 'index.html').replace(/^\\/+/, '')
+        if (htmlPath !== 'votre-hotel/index.html') return html
+        const domain = (REGION && REGION.domain) || 'sargasses-martinique.com'
+        html = html.replace(
+          /<link rel="canonical" href="[^"]*">/,
+          `<link rel="canonical" href="https://${domain}/votre-hotel/">`
+        )
+        if (!REGION || !['mq', 'gp'].includes(REGION.id)) {
+          html = html.replace('</head>', '  <meta name="robots" content="noindex,follow">\\n</head>')
+        }
+        return html
+      },
+    },
     // ── Preload de la carte du first paint (WorldMapView) ──
     // WorldMapView est la carte rendue au premier paint par défaut (bras A/B map_world="world",
     // cf. Sargasses_PROD.jsx). Mais c'est un import LAZY → son chunk ne se télécharge qu'APRÈS
