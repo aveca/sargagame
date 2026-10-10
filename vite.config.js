@@ -182,7 +182,8 @@ export default defineConfig({
       name: 'preload-first-paint-map',
       enforce: 'post',
       transformIndexHtml(html, ctx) {
-        if (!ctx || !ctx.bundle) return html
+        const htmlPath = String((ctx && ctx.path) || 'index.html').replace(/^\/+/, '')
+        if (!ctx || !ctx.bundle || htmlPath !== 'index.html') return html
         let tags = ''
         const chunk = Object.keys(ctx.bundle).find(f => /assets\/WorldMapView-[^/]*\.js$/.test(f))
         if (chunk) tags += `  <link rel="modulepreload" crossorigin href="/${chunk}" />\n`
@@ -2511,6 +2512,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
     // 600 Ko raw garde le warning utile sur une vraie dérive sans spammer sur l'entry/hls connus.
     chunkSizeWarningLimit: 600,
     rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        hotel: resolve(__dirname, 'votre-hotel/index.html'),
+      },
       output: {
         // preact (alias react/react-dom) isolé dans un vendor cacheable séparé → il ne se
         // re-télécharge pas quand le code applicatif change (cache long terme).
