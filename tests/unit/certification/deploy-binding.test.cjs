@@ -219,11 +219,11 @@ let keepForD3D4 = null;
 {
   const wf = (f) => fs.readFileSync(path.join(REPO, '.github', 'workflows', f), 'utf8');
   const cf = wf('cloudflare-production.yml');
-  const cfOk = /publication-gate:[\\s\\S]*?eligible/.test(cf)
-    && /certification-gate:[\\s\\S]*?--mode deploy/.test(cf)
-    && /\\n  deploy:\\r?\\n    needs: \\[build, certification-gate, publication-gate\\]/.test(cf)
-    && /\\n  deploy-pages:\\r?\\n    needs: \\[build, certification-gate, publication-gate\\]/.test(cf)
-    && /publication-gate\\.outputs\\.eligible == 'true'/.test(cf)
+  const cfOk = /publication-gate:[\s\S]*?eligible/.test(cf)
+    && /certification-gate:[\s\S]*?--mode deploy/.test(cf)
+    && /\n  deploy:\r?\n    needs: \[build, certification-gate, publication-gate\]/.test(cf)
+    && /\n  deploy-pages:\r?\n    needs: \[build, certification-gate, publication-gate\]/.test(cf)
+    && /publication-gate\.outputs\.eligible == 'true'/.test(cf)
     && cf.indexOf('--mode deploy') < cf.indexOf('wrangler@latest deploy');
   record('D11a cloudflare-production.yml : publication gate + certification gate protègent Worker et Pages', cfOk);
 
@@ -231,7 +231,7 @@ let keepForD3D4 = null;
     const t = wf(f);
     const gate = t.indexOf('Certification gate (deploy)');
     const deployStep = t.indexOf('node scripts/manual-ftp-deploy.cjs');
-    record(`D11b ${f} : étape gate AVANT manual-ftp-deploy`, gate >= 0 && deployStep > gate);
+    record('D11b ' + f + ' : étape gate AVANT manual-ftp-deploy', gate >= 0 && deployStep > gate);
   }
   const ci = wf('ci-tests.yml');
   record('D11c ci-tests.yml : Contrôle A (--mode pr) présent', /--mode pr/.test(ci));
