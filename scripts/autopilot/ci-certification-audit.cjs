@@ -69,7 +69,7 @@ function checkCertificationGate() {
   }
 
   if (cfProd.indexOf('publication-gate:') !== -1
-      && (cfProd.match(/needs: \\[build, certification-gate, publication-gate\\]/g) || []).length === 2
+      && (cfProd.match(/needs: \[build, certification-gate, publication-gate\]/g) || []).length === 2
       && cfProd.includes("publication-gate.outputs.eligible == 'true'")) {
     passes.push('cloudflare-production.yml: publication + certification gates protect Worker and Pages deploys');
   } else {
