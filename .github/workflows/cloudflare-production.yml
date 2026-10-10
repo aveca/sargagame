@@ -8,8 +8,11 @@ on:
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
+      - Data Freshness (ERDDAP → repo)
     types:
       - completed
+    branches:
+      - main
 
 permissions:
   contents: read
@@ -19,7 +22,48 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # A workflow_run completion alone is insufficient: Data Freshness can finish
+  # successfully without committing data when the integrity gate blocks or
+  # there are no changes. Deploy only when main advanced past the upstream SHA.
+  publication-gate:
+    name: Confirm upstream workflow published a main commit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      eligible: ${{ steps.publication.outputs.eligible }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Check publication eligibility
+        id: publication
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          UPSTREAM_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          if [ "$EVENT_NAME" != "workflow_run" ]; then
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ -z "$UPSTREAM_HEAD_SHA" ]; then
+            echo "::error::Missing upstream workflow head SHA; fail closed."
+            exit 1
+          fi
+          git fetch origin main
+          MAIN_SHA=$(git rev-parse origin/main)
+          if [ "$MAIN_SHA" = "$UPSTREAM_HEAD_SHA" ]; then
+            echo "eligible=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No new main commit from upstream; production deployment skipped."
+          else
+            echo "eligible=true" >> "$GITHUB_OUTPUT"
+            echo "main advanced from $UPSTREAM_HEAD_SHA to $MAIN_SHA."
+          fi
+
   build:
+    needs: [publication-gate]
+    if: needs.publication-gate.outputs.eligible == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -63,6 +107,8 @@ jobs:
   #   NOT_PROVEN           = checks absents/rouges/en-cours, API indisponible,
   #                          attestation corrompue ⇒ REFUS (deploy/deploy-pages skipped)
   certification-gate:
+    needs: [publication-gate]
+    if: needs.publication-gate.outputs.eligible == 'true'
     permissions:
       contents: read
       checks: read        # lecture des check-runs du SHA (preuve CI authentique)
@@ -98,8 +144,8 @@ jobs:
           retention-days: 90
 
   deploy:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, publication-gate]
+    if: needs.publication-gate.outputs.eligible == 'true' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -270,8 +316,8 @@ jobs:
           node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
 
   deploy-pages:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, publication-gate]
+    if: needs.publication-gate.outputs.eligible == 'true' && (github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main')) && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
