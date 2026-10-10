@@ -215,15 +215,17 @@ let keepForD3D4 = null;
   record('D10b commit sans checks CI vérifiables => gate REFUSE le FTP', verdict === false);
 }
 
-// ── D11 : câblage des workflows (gate AVANT déploiement) ─────────────────────
+// ── D11 : câblage des workflows (publication + certification AVANT déploiement) ─
 {
   const wf = (f) => fs.readFileSync(path.join(REPO, '.github', 'workflows', f), 'utf8');
   const cf = wf('cloudflare-production.yml');
-  const cfOk = /certification-gate:[\s\S]*?--mode deploy/.test(cf)
-    && /\n  deploy:\r?\n    needs: \[build, certification-gate\]/.test(cf)
-    && /\n  deploy-pages:\r?\n    needs: \[build, certification-gate\]/.test(cf)
+  const cfOk = /publication-gate:[\\s\\S]*?eligible/.test(cf)
+    && /certification-gate:[\\s\\S]*?--mode deploy/.test(cf)
+    && /\\n  deploy:\\r?\\n    needs: \\[build, certification-gate, publication-gate\\]/.test(cf)
+    && /\\n  deploy-pages:\\r?\\n    needs: \\[build, certification-gate, publication-gate\\]/.test(cf)
+    && /publication-gate\\.outputs\\.eligible == 'true'/.test(cf)
     && cf.indexOf('--mode deploy') < cf.indexOf('wrangler@latest deploy');
-  record('D11a cloudflare-production.yml : job gate + needs deploy/deploy-pages', cfOk);
+  record('D11a cloudflare-production.yml : publication gate + certification gate protègent Worker et Pages', cfOk);
 
   for (const f of ['weekly-optimize.yml', 'weekly-seo-automation.yml', 'provision-barbados.yml']) {
     const t = wf(f);
