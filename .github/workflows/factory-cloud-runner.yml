@@ -25,7 +25,6 @@ jobs:
     env:
       CF_ACCOUNT_ID: abf2b92cf718313567b4b38eb9dda17f
       CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
-      OLLAMA_MODELS: ${{ runner.temp }}/ollama-models
     steps:
       - name: Checkout Sargagame
         uses: actions/checkout@v4
@@ -49,17 +48,19 @@ jobs:
       - name: Install Ollama and load local coding model
         if: steps.claim.outputs.has_job == 'true'
         shell: bash
+        env:
+          OLLAMA_MODELS: ${{ runner.temp }}/ollama-models
         run: |
           set -euo pipefail
-          curl -fsSL https://ollama.com/install.sh | sh
-          sudo systemctl stop ollama 2>/dev/null || true
-          OLLAMA_HOST=127.0.0.1:11434 OLLAMA_MODELS="$OLLAMA_MODELS" nohup ollama serve >/tmp/factory-ollama.log 2>&1 &
-          for i in $(seq 1 60); do
-            if curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; then break; fi
+          docker pull ollama/ollama:latest
+          docker run -d --name factory-ollama -p 11434:11434 -v "$OLLAMA_MODELS:/root/.ollama" ollama/ollama:latest
+          attempt=0
+          until curl -fsS http://127.0.0.1:11434/api/tags >/dev/null; do
+            attempt=$((attempt + 1))
+            if [ "$attempt" -ge 60 ]; then docker logs factory-ollama; exit 1; fi
             sleep 2
           done
-          curl -fsS http://127.0.0.1:11434/api/tags >/dev/null || { cat /tmp/factory-ollama.log; exit 1; }
-          ollama pull qwen2.5-coder:7b
+          docker exec factory-ollama ollama pull qwen2.5-coder:7b
 
       - name: Install Aider
         if: steps.claim.outputs.has_job == 'true'
