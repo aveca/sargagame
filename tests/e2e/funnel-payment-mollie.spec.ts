@@ -22,7 +22,7 @@ async function openPaidPaywall(page: Page) {
   await expect(email).toBeVisible({ timeout: 10000 })
   await email.fill("qa@example.com")
 
-  const payButton = page.locator("button.sg-paygold").first()
+  const payButton = page.locator("button.sg-paygold").last()
   await expect(payButton).toBeVisible({ timeout: 15000 })
   return payButton
 }
