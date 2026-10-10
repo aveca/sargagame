@@ -176,7 +176,7 @@ export default defineConfig({
     {
       name: 'hotel-dashboard-html',
       transformIndexHtml(html, ctx) {
-        const htmlPath = String((ctx && ctx.path) || 'index.html').replace(/^\\/+/, '')
+        const htmlPath = String((ctx && ctx.path) || 'index.html').replace(/^\/+/, '')
         if (htmlPath !== 'votre-hotel/index.html') return html
         const domain = (REGION && REGION.domain) || 'sargasses-martinique.com'
         html = html.replace(
@@ -184,7 +184,7 @@ export default defineConfig({
           `<link rel="canonical" href="https://${domain}/votre-hotel/">`
         )
         if (!REGION || !['mq', 'gp'].includes(REGION.id)) {
-          html = html.replace('</head>', '  <meta name="robots" content="noindex,follow">\\n</head>')
+          html = html.replace('</head>', '  <meta name="robots" content="noindex,follow">\n</head>')
         }
         return html
       },
