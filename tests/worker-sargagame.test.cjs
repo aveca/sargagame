@@ -31,7 +31,17 @@ const base64url = (value) => Buffer.from(value).toString("base64").replace(/\+/g
     assert.equal(response.status, 200);
     const issued = await response.json();
     assert.equal(issued.ok, true);
+    assert.equal(issued.days, 30); // Existing clients keep the 30-day default.
     assert.ok(issued.token);
+
+    response = await worker.fetch(new Request("https://worker.test/api/b2b-trial", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "pilot@example.com", days: 14 })
+    }), env);
+    assert.equal(response.status, 200);
+    const hotelTrial = await response.json();
+    assert.equal(hotelTrial.days, 14);
+    assert.ok(hotelTrial.token);
 
     response = await worker.fetch(new Request("https://worker.test/api/widget-token?k=" + encodeURIComponent(issued.token)), env);
     assert.equal(response.status, 200);
