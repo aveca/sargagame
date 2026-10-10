@@ -67,7 +67,7 @@ jobs:
       # ══════════════════════════════════════════════════════════════
       # 3. PICK TASK — Choisir la priorité #1 disponible
       # ══════════════════════════════════════════════════════════════
-- name: Pick next task
+      - name: Pick next task
         id: pick_task
         run: |
           # Si task_id forc� via workflow_dispatch
@@ -148,7 +148,7 @@ PY
       # ══════════════════════════════════════════════════════════════
       # 4. CLAIM TASK — Marquer comme in_progress
       # ══════════════════════════════════════════════════════════════
-- name: Claim task in tasks.md
+      - name: Claim task in tasks.md
         if: ${{ steps.pick_task.outputs.task_id != '' }}
         run: |
           TASK_ID="${{ steps.pick_task.outputs.task_id }}"
