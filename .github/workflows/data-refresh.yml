@@ -144,10 +144,10 @@ jobs:
             exit 1
           fi
 
-          # A successful push to main triggers cloudflare-production.yml via its
-          # existing push: branches: [main] event. Avoid a second workflow_dispatch,
-          # which fails with GITHUB_TOKEN's restricted Actions permissions.
-          echo "Data committed and pushed; production workflow is triggered by the main push."
+          # GITHUB_TOKEN pushes do not start a separate workflow via `push`.
+          # cloudflare-production.yml listens for this workflow's `workflow_run: completed`.
+          # Its deploy job still requires upstream success and the certification gate.
+          echo "Data committed and pushed; Cloudflare Production will be evaluated on workflow completion."
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'
