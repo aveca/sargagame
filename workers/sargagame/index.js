@@ -6,6 +6,7 @@ export default {
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
+    const b64url=(buf)=>{let s="";for(const x of new Uint8Array(buf))s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
     const grantB2CPass=async(payment)=>{
       const md=payment?.metadata||{};
       const pass=String(md.pass||"");
@@ -28,26 +29,13 @@ export default {
     };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
-      const raw=await request.text(); const ct=request.headers.get("content-type")||"";
-      // Verify Mollie webhook signature (HMAC-SHA256)
-      const webhookSecret = env.MOLLIE_WEBHOOK_SECRET;
-      if (!webhookSecret) {
-        return out({error:"webhook_unavailable"},503);
-      }
-      const signature = request.headers.get("x-mollie-signature") || request.headers.get("X-Mollie-Signature") || "";
-      const expectedSig = await (async () => {
-        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(webhookSecret), {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
-        const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(raw));
-        const b64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-        return b64;
-      })();
-      if (!signature || signature !== expectedSig) {
-        return out({error:"invalid_signature"},403);
-      }
+      const raw=await request.text();
       let id=""; const ct2=request.headers.get("content-type")||"";
       if(ct2.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
       if(!id)return out({error:"id requis"},400);
+      if(!env.MOLLIE_API_KEY)return out({error:"webhook_unavailable"},503);
       const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
+      if(!p.ok)return out({error:"mollie_lookup_failed"},502);
       const payment=await p.json();
       if(payment.status==="paid"){
         const grant=await grantB2CPass(payment);
@@ -137,24 +125,24 @@ export default {
         const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
         const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
         const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(parts[0]));
-        const b64=a=>{let s="";const bytes=new Uint8Array(a);for(const x of bytes)s+=String.fromCharCode(x);return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"")};
-        if(b64(sig)!==parts[1])return false;
+        if(b64url(sig)!==parts[1])return false;
         try{let s=parts[0].replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";const d=JSON.parse(atob(s));return d.exp&&Number(d.exp)>Date.now()/1000?d:false}catch{return false}
       };
       const d=await verify(k); return out(d?{pro:true,host:d.h||null}:{pro:false},200);
     }
     if(u.pathname==="/api/b2b-trial.php" || u.pathname==="/api/b2b-trial"){
+      if(request.method==="OPTIONS")return new Response(null,{status:204,headers});
       if(request.method!=="POST")return out({error:"method_not_allowed"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
-      const email=String(d.email||"").trim();if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email))return out({error:"invalid_email"},400);
+      const email=String(d.email||"").trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return out({error:"invalid_email"},400);
       const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
       const base=env.MOLLIE_WEBHOOK_SECRET;
       if(!base)return out({error:"payment_backend_not_configured"},503);
       const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
       const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
-      const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+      const raw=b64url(new TextEncoder().encode(JSON.stringify(payload)));
       const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw));
-      const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+      const token=raw+"."+b64url(sig);
       return out({ok:true,token,days:30},200);
     }
     if(u.pathname==="/api/mollie.php" && request.method==="POST"){
