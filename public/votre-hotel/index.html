@@ -111,12 +111,13 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
 
   async function record(event) {
     try {
-      await fetch(SUPABASE_URL + "/rest/v1/b2b_hotel_events", {
+      const response = await fetch(SUPABASE_URL + "/rest/v1/b2b_hotel_events", {
         method:"POST", headers:{ apikey:SUPABASE_ANON_KEY, Authorization:"Bearer " + SUPABASE_ANON_KEY,
           "Content-Type":"application/json", Prefer:"return=minimal" },
         body:JSON.stringify({event, hotel_name:hotel() || null, beach_key:selected(), visitor_id:visitorId || null})
       });
-    } catch (_) {}
+      return response.ok;
+    } catch (_) { return false; }
   }
   function updateShareUrl() {
     const url = new URL(location.href);
@@ -137,7 +138,12 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
   function renderJ3() {
     const key = selected();
     const forecast = unlockedWeekly?.[key]?.forecast;
-    const day = Array.isArray(forecast) ? forecast[3] : null;
+    const target = new Date();
+    target.setHours(12, 0, 0, 0);
+    target.setDate(target.getDate() + 3);
+    const pad = (value) => String(value).padStart(2, "0");
+    const targetDate = target.getFullYear() + "-" + pad(target.getMonth() + 1) + "-" + pad(target.getDate());
+    const day = Array.isArray(forecast) ? forecast.find((item) => item.date === targetDate) : null;
     if (day && day.status) {
       $("j3-status").textContent = statusText(day.status);
       $("j3-detail").textContent = "Tendance calculée pour J+3. Fiabilité variable selon les conditions et la fraîcheur des données.";
@@ -180,8 +186,7 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
       }
     } catch (_) {}
   }
-  $("beach").addEventListener("change", () => { renderToday(); renderJ3(); record("hotel_page_open"); });
-  $("hotel").addEventListener("change", () => { record("hotel_page_open"); });
+  $("beach").addEventListener("change", () => { renderToday(); renderJ3(); });
   $("share").addEventListener("click", async () => {
     const url = updateShareUrl();
     try {
@@ -204,10 +209,12 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
       const result = await response.json();
       if (!response.ok || !result.ok || !result.token) throw new Error(result.error || "Activation impossible");
       token = result.token;
-      await record("hotel_trial_signup");
+      const eventRecorded = await record("hotel_trial_signup");
       status.className = "small notice success";
-      status.textContent = "Essai activé pour 14 jours. Chargement de la tendance J+3…";
-      $("trial-card").classList.add("hidden");
+      status.textContent = eventRecorded
+        ? "Essai activé pour 14 jours. Chargement de la tendance J+3…"
+        : "Essai activé pour 14 jours, mais l'enregistrement du suivi Supabase n'a pas été confirmé.";
+      $("trial-form").classList.add("hidden");
       await unlockForecast();
     } catch (error) {
       status.className = "small notice error";
