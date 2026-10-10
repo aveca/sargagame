@@ -20,7 +20,8 @@ async function openPaidPaywall(page: Page) {
   await expect(cta).toBeVisible({ timeout: 10000 })
   await cta.click()
 
-  const email = page.locator('input[type="email"]:visible').last()
+  // Bind to the actual Mollie checkout field; other visible email inputs may belong to unrelated UI.
+  const email = page.getByLabel(/E-mail pour recevoir ton accès|Email for your access|Email para recibir tu acceso/i)
   await expect(email).toBeVisible({ timeout: 10000 })
   await email.fill("qa@example.com")
   await expect(email).toHaveValue("qa@example.com")
