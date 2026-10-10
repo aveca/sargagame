@@ -204,7 +204,7 @@ export default function BeachSheet({
 }){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const statusExplainOn=isStatusExplainOn()
-  const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
+  const trk=(n,p)=>{try{(trackProp||window.track||(() => {}))(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
   const hasScore=typeof beach?.score==="number"
