@@ -11,7 +11,7 @@ async function openPaidPaywall(page: Page) {
   const modal = page.locator('[role="dialog"], .pww-wrap').first()
   await expect(modal).toBeVisible({ timeout: 15000 })
 
-  const cta = page.locator(".pww-gobtn").first()
+  const cta = page.locator(".pww-gobtn, .pwx-cta").first()
   await expect(cta).toBeVisible({ timeout: 10000 })
   await cta.click()
 
