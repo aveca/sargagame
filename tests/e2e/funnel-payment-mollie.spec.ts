@@ -24,7 +24,7 @@ async function openPaidPaywall(page: Page) {
   await expect(email).toBeVisible({ timeout: 10000 })
   await email.fill("qa@example.com")
 
-  const payButton = page.locator("button.sg-paygold").last()
+  const payButton = page.locator("button.sg-paygold:visible").last()
   await expect(payButton).toBeVisible({ timeout: 15000 })
   return payButton
 }
@@ -102,6 +102,6 @@ test.describe("Funnel payant — Mollie mocked", () => {
 
     const alert = page.locator('[role="alert"]').first()
     await expect(alert).toBeVisible({ timeout: 15000 })
-    await expect(page.getByText(/Paiement impossible|Payment failed|Pago imposible/i).first()).toBeVisible()
+    await expect(alert).toContainText(/Paiement impossible|Payment failed|Pago imposible/i, { timeout: 10000 })
   })
 })
