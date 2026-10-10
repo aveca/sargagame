@@ -98,6 +98,7 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
   let publicForecast = null;
   let unlockedWeekly = null;
   let token = (() => { try { return localStorage.getItem("sg_hotel_trial_token") || ""; } catch (_) { return ""; } })();
+  let eventTrackingFailed = false;
   const visitorId = (() => {
     try {
       let id = sessionStorage.getItem("sg_hotel_visitor");
@@ -199,7 +200,9 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
         renderJ3();
         $("trial-form").classList.add("hidden");
         status.className = "small notice success";
-        status.textContent = "Essai actif. La tendance J+3 est disponible pour la plage sélectionnée.";
+        status.textContent = eventTrackingFailed
+          ? "Essai actif et tendance J+3 disponible. Attention : l'enregistrement du suivi Supabase n'a pas été confirmé."
+          : "Essai actif. La tendance J+3 est disponible pour la plage sélectionnée.";
       } else {
         $("trial-form").classList.add("hidden");
         status.className = "small notice";
@@ -236,6 +239,7 @@ button,.button{display:flex;justify-content:center;align-items:center;gap:8px;wi
       token = result.token;
       try { localStorage.setItem("sg_hotel_trial_token", token); } catch (_) {}
       const eventRecorded = await record("hotel_trial_signup");
+      eventTrackingFailed = !eventRecorded;
       status.className = eventRecorded ? "small notice success" : "small notice";
       status.textContent = eventRecorded
         ? "Essai activé pour 14 jours. Chargement de la tendance J+3…"
