@@ -11561,7 +11561,12 @@ export default function App(){
           const storedEmail=localStorage.getItem("sg_email")||""
           if(storedEmail){ctx={paymentId:null,email:storedEmail}}
         }
-        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        // Anti-replay + purge complète : un même paymentId ne grante UNE seule fois,
+        // et le pending est purgé des DEUX stockages (sinon revisite de l'URL =
+        // re-grant + re-track sg_conversion + extension indéfinie du pass). Contrat
+        // verrouillé par tests/e2e/money-path-regression.spec.ts (T5 2026-08-23).
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{localStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        if(ctx&&ctx.paymentId){try{if(localStorage.getItem("sg_mollie_done_"+ctx.paymentId)==="1"){clean();return}}catch(_){}}
         if(!ctx||!ctx.paymentId){
           if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
           clean();return
@@ -11586,7 +11591,8 @@ export default function App(){
           try{localStorage.setItem("sg_email",ctx.email||"")
             if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
-            localStorage.setItem("sg_premium_welcome","1")}catch(_){}
+            localStorage.setItem("sg_premium_welcome","1")
+            localStorage.setItem("sg_mollie_done_"+ctx.paymentId,"1")}catch(_){}
           track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
         } else {
           try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
