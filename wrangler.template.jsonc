@@ -17,4 +17,14 @@
   // routes retirés : nécessitent permission "Workers Routes:Edit" sur le token Cloudflare.
   // Le Worker déploie sur workers.dev ; les routes domaines custom se configurent
   // une fois manuellement dans Cloudflare Dashboard (DNS + Workers Routes).
+  //
+  // Secrets requis (wrangler secret put <NAME> ou CI) :
+  //   MOLLIE_API_KEY        — paiements Mollie (déjà configuré)
+  //   MOLLIE_WEBHOOK_SECRET — signature webhook (déjà configuré)
+  //   SUPABASE_SERVICE_KEY  — payment_grants (déjà configuré)
+  //   GIFT_LINK_SECRET      — NOUVEAU (MP-2) : signature HMAC des liens cadeaux
+  //                           /?gift=<token>. Sans lui → /api/gift-redeem = 503
+  //                           fail-closed (JAMAIS d'octroi). À provisionner avant
+  //                           usage des liens cadeaux.
+  //                           Générer : openssl rand -base64 48
 }
