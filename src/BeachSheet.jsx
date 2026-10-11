@@ -33,7 +33,6 @@ function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"
 function stLabelLong(status,lang){const S={clean:{fr:"GO - Baignade OK",en:"GO - Safe to swim",es:"IR A PLAYA - Baño OK"},moderate:{fr:"ATTENTION - À vérifier",en:"ATTENTION - Check first",es:"ATTENTION - A verificar"},avoid:{fr:"ÉVITER - Évite l'eau",en:"ÉVITER - Skip the swim",es:"ÉVITER - Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
 export function explainBeachStatus(status,lang){const M={clean:{fr:"Eau dégagée au satellite — tu peux y aller.",en:"Clear water on satellite — good to go.",es:"Agua despejada en satélite — puedes ir."},moderate:{fr:"Dépôts possibles — jette un œil avant de teposer.",en:"Some deposits possible — look before settling in.",es:"Posibles restos — mira antes de instalarte."},avoid:{fr:"Sargasses vues au satellite — vise une plage propre à côté.",en:"Sargassum seen on satellite — try a clean beach nearby.",es:"Sargazo visto por satélite — prueba una playa limpia cercana."}};const e=M[status]||{fr:"Statut en vérification — reviens dans un moment.",en:"Status being checked — come back shortly.",es:"Estado en verificación — vuelve en un momento."};return e[lang]||e.fr}
 export function isStatusExplainOn(search){try{const s=typeof search==="string"?search:window.location.search;return !/[?&]statusexplain=0(?:&|$)/.test(s)}catch(_){return true}}
->>>>>>> 752480ffb70b40080a810956eb1b7537f530fa80
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,p=Math.PI/180,x=(lat2-lat1)*p,y=(lon2-lon1)*p,h=Math.sin(x/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(y/2)**2
   return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))
@@ -557,12 +556,12 @@ export default function BeachSheet({
           </div>
         </div>
       </div>
-    </>
     {showSOS && (
       <Suspense fallback={null}>
         <SOSPlage lang={lang} sargData={sargData} region={beach?.island || "mq"} onClose={() => setShowSOS(false)} />
       </Suspense>
     )}
+    </>
   )
 }
 
