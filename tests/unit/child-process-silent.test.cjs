@@ -96,8 +96,12 @@ const r2 = cp.spawnSync(process.execPath, ['-e', 'process.stdout.write(\'PING_AR
 ok(r2.status === 0 && r2.stdout === 'PING_ARGV', 'dynamique: spawnSync(exe direct) + windowsHide → exit 0 + stdout')
 const r3 = cp.execFileSync('node', ['-e', 'console.log(\'PING_FILE\')'], { encoding: 'utf8', windowsHide: true }).trim()
 ok(r3 === 'PING_FILE', 'dynamique: execFileSync + windowsHide → capture OK')
-const r4 = cp.spawnSync('cmd.exe', ['/c', 'echo PING_SHELL'], { encoding: 'utf8', windowsHide: true })
-ok(r4.status === 0 && /PING_SHELL/.test(r4.stdout || ''), 'dynamique: cmd.exe /c + windowsHide → termine sans blocage')
+if (process.platform === 'win32') {
+  const r4 = cp.spawnSync('cmd.exe', ['/c', 'echo PING_SHELL'], { encoding: 'utf8', windowsHide: true })
+  ok(r4.status === 0 && /PING_SHELL/.test(r4.stdout || ''), 'dynamique: cmd.exe /c + windowsHide → termine sans blocage')
+} else {
+  console.log('SKIP cmd.exe /c (non-Windows)')
+}
 
 // ── Partie C : chaine console-less (wscript, meme mecanisme que SargaFactory) ──
 if (process.platform === 'win32') {
