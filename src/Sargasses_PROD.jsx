@@ -5080,6 +5080,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
               </div>
             )
           })()}
+          {(()=>{try{return !/[?&]statusexplain=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()&&<div data-testid="status-explain" style={{fontSize:12,fontWeight:600,opacity:.85,margin:"-6px 0 14px"}}>{beach.status==="clean"?_t(lang,"Eau dégagée au satellite — tu peux y aller.","Clear water on satellite — good to go.","Agua despejada en satélite — puedes ir."):beach.status==="avoid"?_t(lang,"Sargasses vues au satellite — vise une plage propre à côté.","Sargassum seen on satellite — try a clean beach nearby.","Sargazo visto por satélite — prueba una playa limpia cercana."):beach.status==="moderate"?_t(lang,"Dépôts possibles — jette un œil avant de te poser.","Some deposits possible — look before settling in.","Posibles restos — mira antes de instalarte."):_t(lang,"Statut en vérification — reviens dans un moment.","Status being checked — come back shortly.","Estado en verificación — vuelve en un momento.")}</div>}
           {/* Freshness chip — satellite timestamp sous le verdict */}
           {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
           {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
@@ -11562,7 +11563,12 @@ export default function App(){
           const storedEmail=localStorage.getItem("sg_email")||""
           if(storedEmail){ctx={paymentId:null,email:storedEmail}}
         }
-        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        // Anti-replay + purge complète : un même paymentId ne grante UNE seule fois,
+        // et le pending est purgé des DEUX stockages (sinon revisite de l'URL =
+        // re-grant + re-track sg_conversion + extension indéfinie du pass). Contrat
+        // verrouillé par tests/e2e/money-path-regression.spec.ts (T5 2026-08-23).
+        const clean=()=>{try{sessionStorage.removeItem("sg_mollie_pending")}catch(_){}try{localStorage.removeItem("sg_mollie_pending")}catch(_){}try{window.location.replace(window.location.pathname)}catch(_){}}
+        if(ctx&&ctx.paymentId){try{if(localStorage.getItem("sg_mollie_done_"+ctx.paymentId)==="1"){clean();return}}catch(_){}}
         if(!ctx||!ctx.paymentId){
           if(ctx&&ctx.email){try{const v=await sgVerifySub(ctx.email);if(v&&v.active){localStorage.setItem("sg_premium","1");localStorage.setItem("sg_premium_email",ctx.email);localStorage.setItem("sg_premium_welcome","1");track("sg_conversion",{session_id:ctx.email,method:"email_fallback"})}}catch(_){}clean();return}
           clean();return
@@ -11587,7 +11593,8 @@ export default function App(){
           try{localStorage.setItem("sg_email",ctx.email||"")
             if(ctx.pass){localStorage.setItem("sg_premium_pass_end",String(Date.now()+((ctx.days||7)*86400000)))}
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
-            localStorage.setItem("sg_premium_welcome","1")}catch(_){}
+            localStorage.setItem("sg_premium_welcome","1")
+            localStorage.setItem("sg_mollie_done_"+ctx.paymentId,"1")}catch(_){}
           track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
         } else {
           try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}

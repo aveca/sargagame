@@ -2493,6 +2493,19 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
         })
       },
     },
+    // Force version.json refresh par CDN à chaque deploy via timestamp query param
+    // Le timestamp change à chaque build, forçant Cloudflare CDN à fetch la version fraîche
+    // Le code client (sg_v) compare d.v|d.b et ne reload que si le contenu change vraiment
+    {
+      name: 'version-refresh',
+      transformIndexHtml(html) {
+        const timestamp = Date.now().toString(36);
+        return html.replace(
+          /fetch\('\/version\.json/g,
+          (match) => match.replace("/version.json", "/version.json?t=" + timestamp)
+        );
+      }
+    },
   ].filter(Boolean),
   root: '.',
   define: {
