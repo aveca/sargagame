@@ -887,6 +887,26 @@ function generateReliabilityPages(region, distDir) {
     const inSitemap = appendToRegionSitemap(distDir, region.domain, slug)
     done.push(`/${slug}/${inSitemap ? '' : ' (sitemap absent)'}`)
   }
+
+  // Redirection legacy /fiabilite/ : ce slug n'existe que sur les builds MQ/GP.
+  // Sur les domaines régionaux, un visiteur utilisant l'URL FR (anciens liens,
+  // mémoire musculaire) tombait sur le 404 « Le Veilleur a perdu celle-ci »
+  // (audit live 2026-10-11 : HTTP 404 sur sargassummiami.com, sargassumpuntacana.com,
+  // sargassumcancun.com). On émet une redirection permanente statique vers la page
+  // de confiance de la langue primaire. Pas d'entrée sitemap : le canonical reste
+  // /reliability/ ou /fiabilidad/.
+  const legacyTarget = `/${SLUG[primary]}/`
+  const legacyHtml = `<!doctype html>
+<html lang="${primary}"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="0; url=${legacyTarget}">
+<link rel="canonical" href="https://${region.domain}${legacyTarget}">
+<title>Redirecting…</title></head><body>
+<script>location.replace(${JSON.stringify(legacyTarget)})</script>
+<p>Redirecting to <a href="${legacyTarget}">${legacyTarget}</a></p>
+</body></html>
+`
+  writePage(distDir, 'fiabilite', legacyHtml)
+  done.push(`/fiabilite/ (redirect → ${legacyTarget})`)
   console.log(`   → ${done.join(' + ')} générée(s) (${region.id})${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
 }
 
