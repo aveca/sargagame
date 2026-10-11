@@ -1,8 +1,10 @@
+import { signGiftToken, verifyGiftToken } from "./gift-token.js";
+
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || "";
-    const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com","https://sargazotulum.com"];
+    const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com","https://sargazotulum.com","https://sargassumbarbados.com"];
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
@@ -127,6 +129,42 @@ export default {
         }
         return out({error:"Unknown action"},400);
       }catch(e){return out({error:e.message||"backend_error"},400)}
+    }
+    // ── /api/gift-redeem — Échange d'un lien cadeau signé HMAC (MP-2) ──────────
+    // Le jeton est signé avec GIFT_LINK_SECRET (secret Worker, JAMAIS côté front).
+    // Consommation atomique : insertion payment_grants(payment_id="gift_<jti>")
+    // avec ignore-duplicates ; si la ligne existe déjà → rejeu refusé.
+    // Fail-closed : secret ou Supabase manquant → 503, JAMAIS d'octroi.
+    if(u.pathname==="/api/gift-redeem.php" || u.pathname==="/api/gift-redeem"){
+      if(request.method==="OPTIONS") return new Response(null,{status:204,headers});
+      if(request.method!=="POST") return out({error:"POST only"},405);
+      if(!env.GIFT_LINK_SECRET) return out({error:"gift_not_configured"},503);
+      if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY) return out({error:"payment_backend_not_configured"},503);
+      let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
+      const email=String(d.email||"").trim().toLowerCase();
+      if(email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return out({error:"invalid_email"},400);
+      const v=await verifyGiftToken(d.token,env.GIFT_LINK_SECRET);
+      if(!v.ok){
+        const status=v.reason==="expired"?410:(v.reason==="server_misconfigured"?503:403);
+        return out({error:"gift_"+v.reason},status);
+      }
+      // Consommation atomique : 1 jeton = 1 usage (clé unique gift_<jti>)
+      try{
+        const ins=await fetch(env.SUPABASE_URL+"/rest/v1/payment_grants",{
+          method:"POST",
+          headers:{apikey:env.SUPABASE_SERVICE_KEY,Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,"Content-Type":"application/json",Prefer:"resolution=ignore-duplicates,return=representation"},
+          body:JSON.stringify({
+            payment_id:"gift_"+v.payload.jti,type:"gift_link",pass:v.payload.pass,email,
+            currency:"EUR",expires_at:new Date(Date.now()+v.payload.days*86400000).toISOString(),
+            granted_at:new Date().toISOString(),metadata:{source:"gift_link",jti:v.payload.jti}
+          })
+        });
+        if(!ins.ok)return out({error:"grant_sync_failed",status:ins.status},503);
+        const rows=await ins.json().catch(()=>[]);
+        if(!Array.isArray(rows)||rows.length===0)return out({error:"gift_already_used"},409);
+        return out({granted:true,pass:v.payload.pass,days:v.payload.days,
+          expires_at:new Date(Date.now()+v.payload.days*86400000).toISOString()},200);
+      }catch(e){return out({error:"gift_redeem_failed"},503)}
     }
     if(u.pathname==="/api/widget-token.php" || u.pathname==="/api/widget-token"){
       const k=u.searchParams.get("k")||"";
