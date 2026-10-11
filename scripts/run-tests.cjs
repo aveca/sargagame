@@ -31,7 +31,8 @@ for (const t of tests) {
   const rel = path.relative(ROOT, t)
   console.log(`\n▶ ${rel}`)
   try {
-    execFileSync('node', [t], { stdio: 'inherit' })
+    execFileSync('node', [t], {
+        windowsHide: true, stdio: 'inherit' })
   } catch (e) {
     failed++
     console.error(`✗ ÉCHEC : ${rel}`)

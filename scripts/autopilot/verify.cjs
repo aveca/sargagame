@@ -27,7 +27,8 @@ function log(msg) {
 }
 
 function sh(cmd, cwd, opts = {}) {
-  return execSync(cmd, { cwd, encoding: 'utf8', timeout: (opts.timeoutMin || 3) * 60000, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...(opts.env || {}) } });
+  return execSync(cmd, {
+        windowsHide: true, cwd, encoding: 'utf8', timeout: (opts.timeoutMin || 3) * 60000, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, ...(opts.env || {}) } });
 }
 function shSafe(cmd, cwd, opts = {}) {
   try { return { ok: true, out: sh(cmd, cwd, opts) }; }
@@ -45,7 +46,8 @@ async function waitForPort(url, tries = 40) {
 function killTree(child, log) {
   if (!child || !child.pid) return;
   try {
-    if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${child.pid}`, { stdio: 'ignore' });
+    if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${child.pid}`, {
+        windowsHide: true, stdio: 'ignore' });
     else process.kill(-child.pid, 'SIGKILL');
   } catch (_) { try { child.kill('SIGKILL'); } catch (__) {} }
 }

@@ -17,7 +17,8 @@ const RED = '\x1b[31m', GREEN = '\x1b[32m', YELLOW = '\x1b[33m', CYAN = '\x1b[36
 
 function check(cmd, args, label) {
   try {
-    execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' })
+    execFileSync(cmd, args, {
+        windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], encoding: 'utf8' })
     return true
   } catch (e) {
     return false
@@ -69,13 +70,15 @@ async function main() {
       }
       // Rendu Remotion
       execFileSync('node', ['scripts/video/make-brief-remotion.cjs', r], {
+        windowsHide: true,
         cwd: ROOT, stdio: ['ignore', 'pipe', 'inherit'], encoding: 'utf8'
       })
       // Trouver le fichier produit (le plus récent par date dans le nom)
       const files = fs.readdirSync(OUT).filter(f => f.startsWith(`brief-${r}-`) && f.endsWith('.mp4'))
       const mp4 = files.sort().pop()
       if (mp4) {
-        const dur = parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(OUT, mp4)], { encoding: 'utf8' }).trim())
+        const dur = parseFloat(execFileSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', path.join(OUT, mp4)], {
+        windowsHide: true, encoding: 'utf8' }).trim())
         console.log(`${GREEN}✓${RESET} ${mp4} — ${dur.toFixed(1)}s`)
         results.push({ region: r, ok: true, file: mp4, dur: Math.round(dur * 10) / 10 })
       } else {

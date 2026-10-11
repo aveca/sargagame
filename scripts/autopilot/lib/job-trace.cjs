@@ -17,12 +17,14 @@ const AI_DIR = path.join(ROOT, '.ai');
 const TRACE_DIR = path.join(ROOT, 'traces');
 
 function run(cmd) {
-  return execSync(cmd, { cwd: ROOT, encoding: 'utf-8', stdio: 'pipe' }).trim();
+  return execSync(cmd, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf-8', stdio: 'pipe' }).trim();
 }
 
 function runSafe(cmd) {
   try {
-    return { ok: true, out: execSync(cmd, { cwd: ROOT, encoding: 'utf-8', stdio: 'pipe' }).trim() };
+    return { ok: true, out: execSync(cmd, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf-8', stdio: 'pipe' }).trim() };
   } catch (e) {
     var stdout = e.stdout ? e.stdout.toString() : '';
     var stderr = e.stderr ? e.stderr.toString() : '';

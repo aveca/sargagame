@@ -1,6 +1,6 @@
 'use strict';
 /**
- * local-agent-executor.cjs — Execute coding tasks locally via OpenCode + Ollama
+ * local-agent-executor.cjs â€” Execute coding tasks locally via OpenCode + Ollama
  * 
  * Replaces the GitHub issue creation with actual local agent execution.
  * 
@@ -38,12 +38,12 @@ function buildAgentPrompt(task, isUxTask = false) {
   
   const constraints = [
     'HARD CONSTRAINTS (violation = task failure):',
-    '- ONLY modify files in scope: ' + (scopeFiles || 'NONE — propose only'),
+    '- ONLY modify files in scope: ' + (scopeFiles || 'NONE â€” propose only'),
     '- NO payment/checkout/mollie/paypal/stripe code',
     '- NO public/api, workers, regions, workflows, secrets',
     '- NO new dependencies without approval',
     '- NO dist/, translations without i18n _t()',
-    '- Bundle eager JS ≤ 210 KB gzip (check-bundle-budget.cjs)',
+    '- Bundle eager JS â‰¤ 210 KB gzip (check-bundle-budget.cjs)',
     '- Rollback pattern REQUIRED for UI changes: flag ?xxx=0 disables feature',
     '- Follow existing repo patterns, minimal changes',
     '- All new text must use i18n _t() function',
@@ -81,19 +81,19 @@ function buildAgentPrompt(task, isUxTask = false) {
     `Description: ${task.description}`,
     `Evidence: ${evidence}`,
     `Expected Impact: ${task.expectedImpact || 'N/A'}`,
-    `Files AUTHORIZED: ${scopeFiles || 'aucun — propose seulement'}`,
+    `Files AUTHORIZED: ${scopeFiles || 'aucun â€” propose seulement'}`,
     taskContext,
     '',
     ...constraints,
     '',
     'ROLLBACK REQUIREMENT:',
     '- Any UI change MUST be disableable via query flag ?feature=0',
-    '- Pattern: /[?&]feature=0/.test(window.location.search) → skip feature',
+    '- Pattern: /[?&]feature=0/.test(window.location.search) â†’ skip feature',
     '',
     ...acceptanceCriteria,
     '',
-    'Applique le fix MAINTENANT sur le working tree, puis arrête-toi.',
-    'Ne commit pas, ne push pas — le runner gère le reste.',
+    'Applique le fix MAINTENANT sur le working tree, puis arrÃªte-toi.',
+    'Ne commit pas, ne push pas â€” le runner gÃ¨re le reste.',
   ];
   
   return promptParts.join('\n');
@@ -425,19 +425,19 @@ async function executeLocalAgentTask(task, cfg, log) {
     
     // 8. Create PR
     const body = [
-      `## 🤖 Autonomous UX Improvement`,
+      `## ðŸ¤– Autonomous UX Improvement`,
       '',
-      `**Task**: ${task.id} — ${task.title}`,
+      `**Task**: ${task.id} â€” ${task.title}`,
       `**Evidence**: ${task.evidence || 'N/A'}`,
       `**Expected Impact**: ${task.expectedImpact || 'N/A'}`,
       `**Score**: ${task.score}`,
       '',
       `### Validation Results`,
-      `- ✅ BEFORE: All funnel tokens passed`,
-      `- ✅ AFTER: All funnel tokens passed`,
-      `- ✅ Visual QA: No regressions (${afterResult.visualResults?.filter(r => r.passed).length || 0}/${afterResult.visualResults?.length || 0})`,
-      `- ✅ Gate: ${gate.steps.join(', ')}`,
-      `- ✅ Bundle Budget: OK`,
+      `- âœ… BEFORE: All funnel tokens passed`,
+      `- âœ… AFTER: All funnel tokens passed`,
+      `- âœ… Visual QA: No regressions (${afterResult.visualResults?.filter(r => r.passed).length || 0}/${afterResult.visualResults?.length || 0})`,
+      `- âœ… Gate: ${gate.steps.join(', ')}`,
+      `- âœ… Bundle Budget: OK`,
       '',
       `### Rollback`,
       `${task.rollback || 'revert ' + commitSha}`,
@@ -527,8 +527,8 @@ async function runGateInline(worktreePath, files, log) {
     
     // 2. Bundle budget
     log('Gate: Checking bundle budget...');
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], { 
-      cwd: ROOT, encoding: 'utf8', timeout: 60000 
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8', timeout: 60000
     });
     steps.push('bundle-budget');
     

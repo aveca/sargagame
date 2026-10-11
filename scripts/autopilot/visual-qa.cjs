@@ -143,7 +143,8 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
 `;
 
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, ['-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(process.execPath, ['-e', script], {
+        windowsHide: true, cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     child.stdout.on('data', d => { out += d; });
     child.on('exit', code => {

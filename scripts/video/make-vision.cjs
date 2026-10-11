@@ -20,7 +20,7 @@ fs.mkdirSync(CACHE, { recursive: true })
 fs.mkdirSync(OUT, { recursive: true })
 
 const ffprobeDur = f => parseFloat(execFileSync('ffprobe',
-  ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
+  ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f], { windowsHide: true }).toString().trim())
 const toMs = ts => { const m = ts.match(/(\d+):(\d+):(\d+)[,.](\d+)/); return ((+m[1] * 3600 + +m[2] * 60 + +m[3]) * 1000 + +m[4]) }
 
 // ── Script figé (synthèse du panel, cf. justification complète en session) ──
@@ -75,7 +75,8 @@ for (const s of SCENES) {
   const mp3 = path.join(CACHE, `vo-vision-${s.id}.mp3`)
   const srt = path.join(CACHE, `vo-vision-${s.id}.srt`)
   execFileSync('python', ['-m', 'edge_tts', '--voice', VOICE, '--rate=+12%', '--text', s.vo,
-    '--write-media', mp3, '--write-subtitles', srt], { stdio: 'ignore' })
+    '--write-media', mp3, '--write-subtitles', srt], {
+        windowsHide: true, stdio: 'ignore' })
   s.voDur = ffprobeDur(mp3)
   s.dur = Math.max(s.minDur || 4, s.voDur + 0.5)
   s._voice = `cache/vo-vision-${s.id}.mp3`
@@ -129,10 +130,12 @@ console.log('[3/3] rendu Remotion…')
 const finalName = 'vision-fondateur.mp4'
 const raw = path.join(OUT, finalName.replace('.mp4', '-raw.mp4'))
 execFileSync('npx', ['remotion', 'render', 'Vision', raw, `--props=${propsPath}`, '--crf=28', '--log=error'],
-  { cwd: RPROJ, stdio: 'inherit', shell: process.platform === 'win32' })
+  {
+        windowsHide: true, cwd: RPROJ, stdio: 'inherit', shell: process.platform === 'win32' })
 execFileSync('ffmpeg', ['-y', '-i', raw, '-c:v', 'copy',
   '-af', 'loudnorm=I=-16:TP=-1.5:LRA=11', '-c:a', 'aac', '-b:a', '160k',
-  '-movflags', '+faststart', path.join(OUT, finalName)], { stdio: 'ignore' })
+  '-movflags', '+faststart', path.join(OUT, finalName)], {
+        windowsHide: true, stdio: 'ignore' })
 fs.unlinkSync(raw)
 
 const fin = path.join(OUT, finalName)
