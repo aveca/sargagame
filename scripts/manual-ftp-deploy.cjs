@@ -33,6 +33,14 @@ const { loadProjectEnv } = require("./lib/load-project-env.cjs")
 const { getAllRegions } = require("../regions/index.cjs")
 const { fastDeploy } = require("./lib/fast-deploy.cjs")
 const { purgeRegionResidues } = require("./lib/purge-cross-domain.cjs")
+const { assertDeployCertified } = require("./lib/certification-gate.cjs")
+
+// VERROU GOUVERNANCE — AVANT toute lecture de secrets, connexion FTP ou upload :
+// sans attestation PASS pour le commit produit effectif, le processus s'arrête
+// ici (exit 1). Couvre npm run ftp-deploy / deploy-files / deploy-provision et
+// tous les workflows qui appellent ce script (weekly-optimize,
+// weekly-seo-automation, provision-barbados, …).
+assertDeployCertified({ label: "manual-ftp-deploy" })
 
 loadProjectEnv()
 

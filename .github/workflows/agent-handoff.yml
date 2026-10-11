@@ -67,47 +67,78 @@ jobs:
       # ══════════════════════════════════════════════════════════════
       # 3. PICK TASK — Choisir la priorité #1 disponible
       # ══════════════════════════════════════════════════════════════
-      - name: Pick next task
+- name: Pick next task
         id: pick_task
         run: |
-          # Si task_id forcé via workflow_dispatch
+          # Si task_id forc� via workflow_dispatch
           if [ -n "${{ github.event.inputs.task_id }}" ]; then
             TASK_ID="${{ github.event.inputs.task_id }}"
             AGENT_TYPE="${{ github.event.inputs.agent_type }}"
             echo "Forced task: $TASK_ID by $AGENT_TYPE"
           else
-            # Parser .ai/tasks.md pour trouver la première tâche [ ] non assignée
-            # Priorité : P0 > P1 > P2 > P3, ordre FIFO dans le fichier
-            # .ai/tasks.md uses a heading + separate status line.
-            # Never let a no-match grep exit status fail the workflow under bash -e.
-            TASK_INFO=$(awk '
-              /^### TASK-P[0-9]-[0-9]{3}([[:space:]]|$)/ { task=$2 }
-              /^- \[ \]/ && task != "" { print task "|" $0; exit }
-            ' .ai/tasks.md || true)
-            if [ -z "$TASK_INFO" ]; then
+            # Parser .ai/tasks.md pour trouver la premi�re t�che [ ] non assign�e
+            # Priorit� : P0 > P1 > P2 > P3, ordre FIFO dans le fichier
+            # Format r�el : ### TASK-PX-XXX ... - **Statut** : [ ] pending
+            # On utilise Python pour parser correctement le format markdown
+            python3 <<'PY' > /tmp/pick_task.json
+import re, json, sys
+with open('.ai/tasks.md', 'r', encoding='utf-8') as f:
+    content = f.read()
+
+# Find all task sections with their status
+# Pattern: ### TASK-PX-XXX followed by content until next ### or end
+# Then find **Statut** : [ ] ...
+sections = re.split(r'(^### TASK-P\d-\d{3}(?:\s|$))', content, flags=re.MULTILINE)
+# sections alternates: prefix, task_id, content, task_id, content...
+
+priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 2}
+candidates = []
+
+for i in range(1, len(sections), 2):
+    task_header = sections[i]
+    task_content = sections[i+1] if i+1 < len(sections) else ''
+    task_id = task_header.strip().replace('### ', '')
+    
+    # Check for status line in this task's content
+    # Format: - **Statut** : [ ] pending
+    status_match = re.search(r'^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$', task_content, re.MULTILINE)
+    if not status_match:
+        # Fallback: look for [ ] anywhere in task
+        if '- [ ]' in task_content or '[ ]' in task_content:
+            status = ' '
+        else:
+            continue
+    else:
+        status = status_match.group(1)
+    
+    if status == ' ':
+        # Extract role
+        role_match = re.search(r'\*\*R[oô]le\*\*\s*:\s*(\w+)', task_content)
+        role = role_match.group(1) if role_match else 'coding'
+        priority = priority_order.get(task_id.split('-')[1][0] if len(task_id.split('-')) > 1 else 'Z', 99)
+        candidates.append((priority, task_id, role))
+
+if not candidates:
+    print(json.dumps({"task_id": "", "agent_type": ""}))
+    sys.exit(0)
+
+candidates.sort(key=lambda x: (x[0], x[1]))
+task_id, role = candidates[0][1], candidates[0][2]
+print(json.dumps({"task_id": task_id, "agent_type": role}))
+PY
+            if [ -s /tmp/pick_task.json ]; then
+              TASK_ID=$(jq -r '.task_id' /tmp/pick_task.json)
+              AGENT_TYPE=$(jq -r '.agent_type' /tmp/pick_task.json)
+            else
+              TASK_ID=""
+              AGENT_TYPE=""
+            fi
+            if [ -z "$TASK_ID" ]; then
               echo "No pending tasks found"
               echo "task_id=" >> "$GITHUB_OUTPUT"
               echo "agent_type=" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-
-            TASK_ID="${TASK_INFO%%|*}"
-            TASK_LINE="${TASK_INFO#*|}"
-
-            # Role is documented in the task metadata; default to coding.
-            AGENT_TYPE=$(awk -v task="$TASK_ID" '
-              $0 ~ "^### " task "([[:space:]]|$)" {in_task=1; next}
-              in_task && /^### / {exit}
-              in_task && /\*\*R.l.e\*\*:/ {
-                line=$0
-                sub(/^.*\*\*R.l.e\*\*:[[:space:]]*/, "", line)
-                sub(/_agent.*$/, "", line)
-                print line
-                exit
-              }
-            ' .ai/tasks.md || true)
-            AGENT_TYPE=${AGENT_TYPE:-coding}
-
             echo "Auto-picked: $TASK_ID by $AGENT_TYPE"
           fi
           
@@ -117,7 +148,7 @@ jobs:
       # ══════════════════════════════════════════════════════════════
       # 4. CLAIM TASK — Marquer comme in_progress
       # ══════════════════════════════════════════════════════════════
-      - name: Claim task in tasks.md
+- name: Claim task in tasks.md
         if: ${{ steps.pick_task.outputs.task_id != '' }}
         run: |
           TASK_ID="${{ steps.pick_task.outputs.task_id }}"
@@ -128,22 +159,35 @@ jobs:
           import pathlib, re, sys
           p = pathlib.Path('.ai/tasks.md')
           task_id, agent_type = sys.argv[1], sys.argv[2]
-          lines = p.read_text(encoding='utf-8').splitlines()
-          in_task = False
-          changed = False
-          for i, line in enumerate(lines):
-              if re.match(rf'^### {re.escape(task_id)}(?:\s|$)', line):
-                  in_task = True
-                  continue
-              if in_task and line.startswith('### '):
-                  break
-              if in_task and re.match(r'^- \[ \]', line):
-                  lines[i] = line.replace('- [ ]', f'- [~] {task_id} — in_progress by {agent_type}_agent', 1)
-                  changed = True
-                  break
-          if not changed:
-              raise SystemExit(f'Could not claim {task_id}: status line not found')
-          p.write_text('\n'.join(lines) + '\n', encoding='utf-8')
+          content = p.read_text(encoding='utf-8')
+          
+          # Find the task section first
+          task_section_pattern = rf'(^### {re.escape(task_id)}(?:\s|$).*?)(?=^### TASK-P|\Z)'
+          task_match = re.search(task_section_pattern, content, re.MULTILINE | re.DOTALL)
+          if not task_match:
+              raise SystemExit(f'Task {task_id} not found')
+          
+          task_content = task_match.group(1)
+          
+          # Find the status line within this task
+          status_pattern = r'^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$'
+          status_match = re.search(status_pattern, task_content, re.MULTILINE)
+          if not status_match:
+              raise SystemExit(f'Status line not found in task {task_id}')
+          
+          status_char = status_match.group(1)
+          status_rest = status_match.group(2)
+          full_status_line = status_match.group(0)
+          
+          if status_char != ' ':
+              raise SystemExit(f'Task {task_id} already claimed (status: {status_char})')
+          
+          # Replace only this specific line
+          new_status = full_status_line.replace(f'- **Statut** : [{status_char}]', f'- **Statut** : [~] {task_id} ?" in_progress by {agent_type}_agent', 1)
+          
+          # Replace in the full content using precise positions
+          new_content = content[:task_match.start(1) + status_match.start(0)] + new_status + content[task_match.start(1) + status_match.end(0):]
+          p.write_text(new_content, encoding='utf-8')
           PY
           
           git config user.name "agent-handoff[bot]"

@@ -113,6 +113,7 @@ const SolutionsStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({def
 const MapIntroStory=lazyWithRetry(()=>import("./StoryScenes.jsx").then(m=>({default:m.MapIntroStory})))
 const SargaChat=lazyWithRetry(()=>import("./SargaChat.jsx"))
 const WhatsNewJournal=lazyWithRetry(()=>import("./WhatsNewJournal.jsx"))
+const LazySOSPlage=lazyWithRetry(()=>import("./SOSPlage.jsx"))
 // Slugs stations (validation légère côté App ; STATION_BEATS vit dans StoryScenes.jsx).
 const STATION_SLUGS=new Set(["comprendre-sargasses","detection-satellite-sargasses","danger-sargasses-h2s","nettoyer-sargasses","methode-carte","en/understanding-sargassum","en/satellite-sargassum-detection"])
 
@@ -11418,6 +11419,7 @@ export default function App(){
   // Ancien coachmark désactivé : remplacé par ArenaOnboarding (flow 3 étapes plein cadre).
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
+  const[showSOS,setShowSOS]=useState(false)
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
@@ -13553,7 +13555,20 @@ export default function App(){
       try{const b=p.get("b");if(b)track("sg_b2b_visit",{b,campaign:p.get("utm_campaign")||"",medium:p.get("utm_medium")||""})}catch(_){}
       window.history.replaceState({},"",window.location.pathname)}
     else if(/\/(alertes|sargassum-alerts|alertas-sargazo)\/?$/.test(window.location.pathname)){openPremium("alertes_landing")}
+    else if(p.get("sos")==="1"){setShowSOS(true);track("sg_sos_open",{source:"deeplink"});window.history.replaceState({},"",window.location.pathname)}
   }catch(_){}},[openPremium])
+
+  // SOS deep-link handler — separate effect to ensure it runs on mount regardless of openPremium stability
+  useEffect(()=>{
+    try{
+      const p=new URLSearchParams(window.location.search)
+      if(p.get("sos")==="1"){
+        setShowSOS(true)
+        track("sg_sos_open",{source:"deeplink"})
+        window.history.replaceState({},"",window.location.pathname)
+      }
+    }catch(_){}
+  },[])
 
   // Engagement trigger: modal open rate is 1.72% of sessions — most users never hit a paywall gate.
   // Show modal only to IDLE returning users (no beach-sheet interaction for 50s on visit 2+).
@@ -14376,7 +14391,7 @@ export default function App(){
           }catch(_){}
         }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
-          beach={selectedBeach||null}/></Suspense></ErrBound>}
+           beach={selectedBeach||null}/></Suspense></ErrBound>}
 
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
@@ -14458,6 +14473,18 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
+          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + env(safe-area-inset-bottom))",zIndex:950,pointerEvents:"none"}}>
+            <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
+              <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
+                className="sg-fab"
+                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
+                <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
+              </button>
+            </div>
+          </div>
+        )}
+        {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
             style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
@@ -14473,7 +14500,8 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-
+        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
+        
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
             onExit={()=>{ setShowStation(false); track("sg_station_exit",{slug:stationSlug}) }}

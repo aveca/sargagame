@@ -97,7 +97,7 @@ async function runGate({ wt, files = [], tests = [], log = console.log }) {
 
   // 4. tests de contrat
   for (const t of tests) {
-    if (!fs.existsSync(path.join(wt, t))) { steps.push(`test ${t}: SKIP (absent)`); continue; }
+    if (!fs.existsSync(path.join(wt, t))) { steps.push(`test ${t}: FAIL (absent — preuve obligatoire)`); return fail('test-absent:' + t, `La preuve obligatoire "${t}" est absente du worktree.`); }
     if (LIVE) log(`test ${t}...`);
     const r = shSafe(`node "${t}"`, wt, { timeoutMin: 3 });
     steps.push(`test ${t}: ${r.ok ? 'OK' : 'FAIL'}`);
@@ -136,6 +136,9 @@ async function runGate({ wt, files = [], tests = [], log = console.log }) {
 }
 
 // ── CLI ──────────────────────────────────────────────────────────────────────
+// Fail-closed : une preuve absente = FAIL (jamais SKIP), et toute erreur de
+// vérification (exception interne, spawn, require…) produit un échec EXPLICITE
+// {ok:false, failedStep:'internal-error'} + exit 1 — jamais un crash muet.
 if (require.main === module) {
   const args = process.argv.slice(2);
   const ARG = (n, d) => { const i = args.indexOf('--' + n); return i >= 0 ? args[i + 1] : d; };
@@ -146,6 +149,9 @@ if (require.main === module) {
   }).then(r => {
     console.log(JSON.stringify(r, null, 2));
     process.exit(r.ok ? 0 : 1);
+  }).catch(e => {
+    console.log(JSON.stringify({ ok: false, steps: [], failedStep: 'internal-error', detail: String((e && e.stack) || e).slice(-2500) }, null, 2));
+    process.exit(1);
   });
 }
 

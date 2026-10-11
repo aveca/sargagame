@@ -2,7 +2,7 @@ export default {
   async fetch(request, env) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || "";
-    const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com"];
+    const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com","https://sargazotulum.com"];
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
@@ -111,7 +111,7 @@ export default {
         if(d.action==="create_payment" || d.action==="applepay_session"){
           const pass=d.pass||null, currency=String(d.cur||"EUR").toUpperCase();
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
-          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null}};
+          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null},sos:{EUR:1.00,USD:null}};
           let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
           if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
           if(!valid)return out({error:"Prix invalide"},400);

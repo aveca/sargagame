@@ -228,7 +228,19 @@ jobs:
           [ "$push_ok" = "1" ] || { echo "::error::git push failed after 5 attempts"; exit 1; }
 
       # ── 9. FTPS sessions fragmentées (même logique que daily-copernicus)
+      # VERROU GOUVERNANCE : pas de publication FTP sans certification PASS du
+      # commit produit (backstop identique dans manual-ftp-deploy.cjs).
+      - name: Certification gate (deploy)
+        id: cert_gate
+        continue-on-error: true
+        run: node scripts/CHECK_certification_status.cjs --mode deploy
+
+      - name: Annonce si deploy bloqué par certification
+        if: steps.cert_gate.outcome != 'success'
+        run: echo "::error title=Deploy FTP bloqué::Certification NOT_PROVEN pour le commit produit — publication sautée."
+
       - name: Deploy FTPS Martinique + Guadeloupe
+        if: steps.cert_gate.outcome == 'success'
         continue-on-error: true
         env:
           FTP_SERVER_MQ: ${{ secrets.FTP_SERVER_MQ }}

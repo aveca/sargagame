@@ -183,6 +183,24 @@ for (const region of legacyRegions) {
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out, COPY_SKIP_TOP)
 
+  // Séparation régionale des DONNÉES sargasses (P0 MQ/GP) : le dist/ partagé
+  // contient les 21 clés MQ+GP ; sans filtre, chaque domaine sert les plages
+  // de l'autre île (post-deploy-verify FAILED côté MQ le 2026-10-10 : 10
+  // niveaux gp-* servis sur sargasses-martinique.com). Règle : appartenance
+  // via SARG_TO_BEACH + beaches-list (jamais les préfixes seuls) ; seules les
+  // clés prouvées étrangères sont retirées (inconnues conservées + alerte,
+  // jamais de suppression aveugle). Le JSON global partagé (public/, dist/)
+  // n'est JAMAIS modifié ici — seule la copie du dossier FTP est filtrée.
+  const copernicusPath = path.join(out, 'api', 'copernicus', 'sargassum.json')
+  if (fs.existsSync(copernicusPath)) {
+    const { filterCopernicusForIsland } = require('./lib/regional-copernicus.cjs')
+    const ownIsland = (region.beachFilter && region.beachFilter.island) || region.id
+    const raw = JSON.parse(fs.readFileSync(copernicusPath, 'utf-8'))
+    const res = filterCopernicusForIsland(raw, ownIsland)
+    fs.writeFileSync(copernicusPath, JSON.stringify(res.json))
+    console.log(`   → sargassum.json filtré (${title}): weekly ${res.kept.weekly}/${res.total.weekly}, scores ${res.kept.scores}/${res.total.scores}, levels ${res.kept.levels}/${res.total.levels} gardés, ${res.droppedTotal} étranger(s) supprimé(s)${res.unknownTotal ? `, ${res.unknownTotal} inconnu(s) conservé(s): ${res.unknown.slice(0, 3).join(',')}` : ''}`)
+  }
+
   // GP-mirror overlay is deferred until the END of this iteration (after all
   // content patching) — see comment near the OK log. If we stamped here, the
   // bulk sargasses-martinique→sargasses-guadeloupe URL swap would clobber the
@@ -994,18 +1012,59 @@ Sitemap: https://${domain}/sitemap.xml
     }
   }
   if (!sitemapDone) {
-    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://${domain}/</loc>
+    // Fallback : regions/seo-content/<id>.json absent ⇒ le générateur SEO
+    // region-seo-pages n'écrit aucun dist/sitemap.xml. On n'invente PAS de
+    // contenu éditorial, mais on liste les pages qui existent RÉELLEMENT dans
+    // le dossier déployé. Le fallback « racine seule » laissait /sitemap.xml
+    // en 404 (0 URL) ou en 1 URL alors que robots.txt le publiait — c'était
+    // précisément l'état de tulum le 07/10/2026.
+    const SKIP_DIRS = new Set([
+      'api', 'assets', 'config', 'data', 'fonts', 'images', 'img', 'audio',
+      'confirme', 'pro', 'jeu', 'widget', 'videos', 'themes-lab',
+      'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
+      'expansion-survey',
+    ])
+    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html'])
+
+    const urls = []
+    const walk = (dir, segs) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (!entry.isDirectory()) continue
+        if (SKIP_DIRS.has(entry.name)) continue
+        const next = [...segs, entry.name]
+        const child = path.join(dir, entry.name)
+        if (fs.existsSync(path.join(child, 'index.html'))) {
+          urls.push({ path: `/${next.join('/')}/`, depth: next.length })
+        }
+        walk(child, next)
+      }
+    }
+    walk(out, [])
+    for (const f of fs.readdirSync(out, { withFileTypes: true })) {
+      if (f.isFile() && /\.html$/i.test(f.name) && !SKIP_TOP_FILES.has(f.name)) {
+        if (/^google[0-9a-f]+\.html$/i.test(f.name)) continue
+        if (f.name === 'index.html') urls.push({ path: '/', depth: 0 })
+        else urls.push({ path: `/${f.name}`, depth: 1 })
+      }
+    }
+
+    urls.sort((a, b) => a.path.localeCompare(b.path))
+    const entries = urls.map((u) => `  <url>
+    <loc>https://${domain}${u.path}</loc>
     <lastmod>${today}</lastmod>
     <changefreq>daily</changefreq>
-    <priority>1.0</priority>
-  </url>
+    <priority>${u.depth === 0 ? '1.0' : u.depth <= 1 ? '0.8' : '0.6'}</priority>
+  </url>`)
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${entries.join('\n')}
 </urlset>
 `
     fs.writeFileSync(path.join(out, 'sitemap.xml'), sitemapXml, 'utf-8')
-    console.log(`   → sitemap.xml minimal (${domain})`)
+    console.log(`   → sitemap.xml généré depuis les pages réelles (${domain}, ${urls.length} URLs)`)
+    if (urls.length < 5) {
+      console.warn(`   ! sitemap très court (${urls.length} URLs) — vérifie regions/seo-content/${region.id}.json`)
+    }
   }
 
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on

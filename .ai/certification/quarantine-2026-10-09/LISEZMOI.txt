@@ -1,0 +1,1 @@
+﻿Attestation invalide (pas de version:2, pas de target, pas de certifications) creee par un processus concurrent le 2026-10-08 20:57. Hashes de fichiers sources utilises comme 'preuves' = ne prouve rien. Mise en quarantaine (non supprimee) par la mission gouvernance le 2026-10-09.

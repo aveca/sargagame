@@ -68,6 +68,7 @@ try {
         // Allowlist complète : pass -> {EUR: montant, USD: montant|null}
         // USD null = montant variable par région (trip7) → fallback plausibilité
         $passPrices = [
+            'sos'    => ['EUR' => 1.00,  'USD' => null],
             'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
             'trip7'  => ['EUR' => 4.99,  'USD' => null],
             'season' => ['EUR' => 19.99, 'USD' => null],

@@ -338,8 +338,21 @@ jobs:
           done
           [ "$push_ok" = "1" ] || { echo "::error::git push failed after 5 attempts"; exit 1; }
 
+      # VERROU GOUVERNANCE — certification stricte avant toute publication FTP.
+      # NOT_PROVEN / preuve absente / SHA non attesté => gate rouge => étape
+      # deploy sautée. Backstop non contournable : manual-ftp-deploy.cjs exécute
+      # le même contrôle lui-même avant toute connexion (exit 1).
+      - name: Certification gate (deploy)
+        id: cert_gate
+        continue-on-error: true
+        run: node scripts/CHECK_certification_status.cjs --mode deploy
+
+      - name: Annonce si deploy bloqué par certification
+        if: steps.cert_gate.outcome != 'success'
+        run: echo "::error title=Deploy FTP bloqué::Certification NOT_PROVEN pour le commit produit — publication sautée (voir job log, étape Certification gate)."
+
       - name: Deploy FTPS Martinique + Guadeloupe
-        if: steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday'
+        if: (steps.day.outputs.task == 'monday' || steps.day.outputs.task == 'friday') && steps.cert_gate.outcome == 'success'
         continue-on-error: true
         # Timeout PROPRE au step : une session FTPS morte pendait jusqu'au timeout
         # du job → run "cancelled" cosmétique (la donnée est déjà commitée + le push

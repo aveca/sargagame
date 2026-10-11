@@ -8,8 +8,8 @@
   "job": "support-inbox",
   "severity": "P1",
   "error": "Inbox processing fails during 'Read inbox + classify + reply (Niveau 1)' due to external IMAP authentication/credential dependency.",
-  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37522480917",
-  "detected_at": "2026-10-06T19:55:30Z",
+  "evidence_url": "https://github.com/aveca/sargagame/actions/runs/37601582050",
+  "detected_at": "2026-10-07T09:35:19Z",
   "human_gate": true,
   "requested_action": "Restore the authorized IMAP credentials/access and rerun the normal workflow. Do not bypass authentication or fabricate inbox state."
 }

@@ -1,7 +1,30 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v219",
+  "current": "v220",
   "releases": [
+    {
+      "v": "v220",
+      "date": "2026-10-07",
+      "title": {
+        "fr": "Version de vérification dd8e3ad + provenance chaîne",
+        "en": "dd8e3ad provenance verification + chain",
+        "es": "Verificación dd8e3ad + cadena de procedencia"
+      },
+      "items": [
+        {
+          "emoji": "🔍",
+          "fr": "Vérification que le commit dd8e3ad est servi par les 5 Workers production via la chaîne complète : git push → workflow cloudflare-production.yml → build → deploy Workers (modified_on: 2026-10-07) → contenu servi avec GO/ATTENTION/ÉVITER.",
+          "en": "Verifying that commit dd8e3ad is served by the 5 production Workers via the full chain: git push → cloudflare-production.yml workflow → build → deploy Workers (modified_on: 2026-10-07) → content served with GO/ATTENTION/AVOID.",
+          "es": "Verificando que el commit dd8e3ad sea servido por los 5 Workers de producción a través de la cadena completa: git push → flujo cloudflare-production.yml → build → deploy Workers (modified_on: 2026-10-07) → contenido servido con GO/ATTENTION/EVITAR."
+        },
+        {
+          "emoji": "📦",
+          "fr": "Bump version de v219 à v220 pour forcer la propagation via sync-version.cjs → public/version.json + CACHE_NAME sw.js sur les 5 régions.",
+          "en": "Bump version from v219 to v220 to force propagation via sync-version.cjs → public/version.json + sw.js CACHE_NAME across all 5 regions.",
+          "es": "Incremento de versión de v219 a v220 paraforzar la propagación a través de sync-version.cjs → public/version.json + CACHE_NAME sw.js en todas las 5 regiones."
+        }
+      ]
+    },
     {
       "v": "v219",
       "date": "2026-10-04",

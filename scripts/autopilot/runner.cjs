@@ -184,8 +184,10 @@ async function main() {
 async function runOrchestrator(cfg) {
   return new Promise((resolve) => {
     const args = process.argv.slice(2).filter(a => !['--live', '--continuous', '--headed'].includes(a));
+    const env = { ...process.env, PATH: process.env.PATH || 'C:\\Program Files\\Git\\cmd;C:\\Windows\\system32;C:\\Windows;C:\\Windows\\System32\\Wbem' };
     orchestratorProcess = spawn(process.execPath, [path.join(__dirname, 'orchestrator.cjs'), ...args], {
       cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true,
+      env,
     });
     
     let stdout = '', stderr = '';

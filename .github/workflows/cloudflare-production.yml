@@ -30,6 +30,7 @@ jobs:
           - id: florida
           - id: puntacana
           - id: rivieramaya
+          - id: tulum
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -42,9 +43,72 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.id }}
         run: npm run build
+      # Garde-fou : prepare-ftp doit réussir AVANT tout deploy. C'est lui qui
+      # crée sitemap.xml, le robots.txt par domaine, l'overlay _gp/, réécrit les
+      # canonicals et swap les données Copernicus par région.
+      - name: Verify prepare-ftp produces a deployable site
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      # Garde P0 MQ/GP : l'artefact préparé ne doit contenir aucune plage
+      # d'une autre île (bloque le déploiement via `needs: [build, ...]`).
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
+
+  # VERROU GOUVERNANCE — certification stricte AVANT toute mise en production.
+  # Contrat v3 (états séparés) :
+  #   PRODUCTION_VERIFIED  = attestation complète committée, valide pour le SHA produit
+  #   PREDEPLOY_ELIGIBLE   = checks CI requis (test-frontend, perf) VERTS sur le SHA
+  #                          exact → autorise le déploiement, qui restera
+  #                          DEPLOYED_PENDING_VERIFICATION jusqu'au contrôle post-deploy
+  #   NOT_PROVEN           = checks absents/rouges/en-cours, API indisponible,
+  #                          attestation corrompue ⇒ REFUS (deploy/deploy-pages skipped)
+  certification-gate:
+    permissions:
+      contents: read
+      checks: read        # lecture des check-runs du SHA (preuve CI authentique)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # requis : résolution du commit produit effectif
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Attente bornée anti-course gate-vs-CI (P0) : la gate tourne dans la
+      # même vague que test-frontend/perf. Sans --wait-ms elle les voit
+      # `in_progress` et refuse à jamais (aucun retry) — livraison bloquée
+      # alors que tout finit vert. Échec => refus immédiat, timeout => refus.
+      - name: Certification gate (deploy)
+        id: gate
+        run: node scripts/CHECK_certification_status.cjs --mode deploy --wait-ms 1200000
+      - name: Trace gate decision (job_id)
+        if: always()
+        run: |
+          mkdir -p scripts/traces
+          node -e "const fs=require('fs');const f='scripts/traces/'+process.env.JOB_TRACE_ID+'.json';const t=fs.existsSync(f)?JSON.parse(fs.readFileSync(f,'utf8')):{jobId:process.env.JOB_TRACE_ID,taskId:'CF-PROD-PIPELINE',createdAt:new Date().toISOString(),gitSha:process.env.GITHUB_SHA,steps:[]};t.steps.push({step:'certification-gate',status:process.env.GATE_OUTCOME==='success'?'completed':'failed',timestamp:new Date().toISOString(),details:{sha:process.env.GITHUB_SHA}});fs.writeFileSync(f,JSON.stringify(t,null,2))"
+        env:
+          GATE_OUTCOME: ${{ steps.gate.outcome }}
+      - name: Upload job trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: trace-gate-${{ github.run_id }}-${{ github.run_attempt }}
+          path: scripts/traces/
+          if-no-files-found: ignore
+          retention-days: 90
 
   deploy:
-    needs: build
+    needs: [build, certification-gate]
     if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -62,6 +126,8 @@ jobs:
             domain: sargassumpuntacana.com
           - id: rivieramaya
             domain: sargassumcancun.com
+          - id: tulum
+            domain: sargazotulum.com
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -80,142 +146,35 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.id }}
         run: npm run build
+      # Le Worker sert ce dossier, pas dist/. prepare-ftp = transformation
+      # domaine (canonicals, robots, sitemap.xml, overlay _gp/, données
+      # Copernicus de la région). Sans elle chaque domaine reçoit le build brut.
+      - name: Prepare domain site (prepare-ftp)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('assets dir OK -> '+d)"
+      # Garde P0 MQ/GP (2e rideau) : revérifie l'artefact du job deploy lui-même
+      # avant génération wrangler/envoi Cloudflare.
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
       - name: Generate Wrangler config
         env:
           REGION: ${{ matrix.id }}
           DOMAIN: ${{ matrix.domain }}
-        run: node -e "const fs=require('fs');let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN);fs.writeFileSync('wrangler.jsonc',s)"
-      - name: Verify dist folder exists
-        run: ls -la dist/ && echo "dist/version.json:" && cat dist/version.json
-      - name: Deploy Worker with Assets
-        run: npx --yes wrangler@3.80.0 deploy --config wrangler.jsonc --strict
-      - name: Lookup Zone IDs for custom domains
-        id: zone_ids
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
-          echo "Looking up zone IDs..."
-          ZONES=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
-            "https://api.cloudflare.com/client/v4/zones?per_page=100" | jq -r '.result[] | "\(.name)=\(.id)"')
-          echo "$ZONES"
-          # Export zone IDs for each domain
-          for pair in $ZONES; do
-            name=$(echo "$pair" | cut -d= -f1)
-            id=$(echo "$pair" | cut -d= -f2)
-            case "$name" in
-              "sargasses-martinique.com") echo "ZONE_MQ=$id" >> $GITHUB_OUTPUT ;;
-              "sargasses-guadeloupe.com") echo "ZONE_GP=$id" >> $GITHUB_OUTPUT ;;
-              "sargassummiami.com") echo "ZONE_FLORIDA=$id" >> $GITHUB_OUTPUT ;;
-              "sargassumpuntacana.com") echo "ZONE_PUNTA_CANA=$id" >> $GITHUB_OUTPUT ;;
-              "sargassumcancun.com") echo "ZONE_RIVIERA_MAYA=$id" >> $GITHUB_OUTPUT ;;
-            esac
-          done
-      - name: Configure Worker Route for custom domain (idempotent)
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          WORKER_NAME: sargagame-${{ matrix.id }}
-          DOMAIN: ${{ matrix.domain }}
-          ZONE_MQ: ${{ steps.zone_ids.outputs.ZONE_MQ }}
-          ZONE_GP: ${{ steps.zone_ids.outputs.ZONE_GP }}
-          ZONE_FLORIDA: ${{ steps.zone_ids.outputs.ZONE_FLORIDA }}
-          ZONE_PUNTA_CANA: ${{ steps.zone_ids.outputs.ZONE_PUNTA_CANA }}
-          ZONE_RIVIERA_MAYA: ${{ steps.zone_ids.outputs.ZONE_RIVIERA_MAYA }}
-        run: |
-          set -euo pipefail
-          # Determine zone_id for this domain
-          case "${DOMAIN}" in
-            "sargasses-martinique.com") ZONE_ID="${ZONE_MQ}" ;;
-            "sargasses-guadeloupe.com") ZONE_ID="${ZONE_GP}" ;;
-            "sargassummiami.com") ZONE_ID="${ZONE_FLORIDA}" ;;
-            "sargassumpuntacana.com") ZONE_ID="${ZONE_PUNTA_CANA}" ;;
-            "sargassumcancun.com") ZONE_ID="${ZONE_RIVIERA_MAYA}" ;;
-            *) echo "Unknown domain: ${DOMAIN}"; exit 1 ;;
-          esac
-          if [ -z "${ZONE_ID}" ]; then
-            echo "ERROR: No zone_id found for ${DOMAIN}"
-            exit 1
-          fi
-          echo "Zone ID for ${DOMAIN}: ${ZONE_ID}"
-          PATTERN="${DOMAIN}/*"
-          SCRIPT="${WORKER_NAME}"
-          # Get existing routes
-          EXISTING=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-            "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" | jq -r '.result[] | "\(.pattern)=\(.script)"')
-          echo "Existing routes: ${EXISTING}"
-          # Check if our route exists
-          MATCH=$(echo "${EXISTING}" | grep "^${PATTERN}=" || true)
-          if [ -n "${MATCH}" ]; then
-            EXISTING_SCRIPT=$(echo "${MATCH}" | cut -d= -f2)
-            if [ "${EXISTING_SCRIPT}" = "${SCRIPT}" ]; then
-              echo "Route ${PATTERN} -> ${SCRIPT} already correct, skipping."
-            else
-              echo "Route ${PATTERN} exists but points to ${EXISTING_SCRIPT}, updating to ${SCRIPT}"
-              ROUTE_ID=$(curl -s -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-                "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" | jq -r ".result[] | select(.pattern==\"${PATTERN}\") | .id")
-              curl -sX PUT "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes/${ROUTE_ID}" \
-                -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-                -H "Content-Type: application/json" \
-                --data "{\"pattern\":\"${PATTERN}\",\"script\":\"${SCRIPT}\"}" | jq .
-            fi
-          else
-            echo "Creating route ${PATTERN} -> ${SCRIPT}"
-            curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/workers/routes" \
-              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              --data "{\"pattern\":\"${PATTERN}\",\"script\":\"${SCRIPT}\"}" | jq .
-          fi
+          node -e "const fs=require('fs');const ftp=String(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir).replace(/^.\//,'');if(!fs.existsSync(ftp+'/index.html')){console.error('assets dir missing '+ftp);process.exit(1)};let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN).replaceAll('__ASSETS_DIR__','./'+ftp);fs.writeFileSync('wrangler.jsonc',s)"
+      - name: Deploy Worker
+        run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
       - name: Configure Worker secrets
         run: |
-          printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@3.80.0 secret put MOLLIE_API_KEY --config wrangler.jsonc
-          printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@3.80.0 secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
-          printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@3.80.0 secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
-      - name: Purge Cloudflare CDN cache (zone-level, optional)
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          ZONE_MQ: ${{ steps.zone_ids.outputs.ZONE_MQ }}
-          ZONE_GP: ${{ steps.zone_ids.outputs.ZONE_GP }}
-          ZONE_FLORIDA: ${{ steps.zone_ids.outputs.ZONE_FLORIDA }}
-          ZONE_PUNTA_CANA: ${{ steps.zone_ids.outputs.ZONE_PUNTA_CANA }}
-          ZONE_RIVIERA_MAYA: ${{ steps.zone_ids.outputs.ZONE_RIVIERA_MAYA }}
-        run: |
-          set -euo pipefail
-          case "${DOMAIN}" in
-            "sargasses-martinique.com") ZONE_ID="${ZONE_MQ}" ;;
-            "sargasses-guadeloupe.com") ZONE_ID="${ZONE_GP}" ;;
-            "sargassummiami.com") ZONE_ID="${ZONE_FLORIDA}" ;;
-            "sargassumpuntacana.com") ZONE_ID="${ZONE_PUNTA_CANA}" ;;
-            "sargassumcancun.com") ZONE_ID="${ZONE_RIVIERA_MAYA}" ;;
-            *) echo "Unknown domain: ${DOMAIN}"; exit 1 ;;
-          esac
-          if [ -n "${ZONE_ID}" ]; then
-            echo "Purging cache for zone ${ZONE_ID} (${DOMAIN})"
-            curl -sX POST "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/purge_cache" \
-              -H "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
-              -H "Content-Type: application/json" \
-              --data '{"files":["/version.json"]}' | jq .
-          else
-            echo "WARNING: No zone_id for ${DOMAIN}, skipping purge"
-          fi
-      - name: Verify version.json served by custom domain
-        env:
-          DOMAIN: ${{ matrix.domain }}
-        run: |
-          set -euo pipefail
-          echo "Verifying version.json on https://${DOMAIN}..."
-          for i in 1 2 3 4 5 6 7 8 9 10; do
-            CONTENT=$(curl -sfL "https://${DOMAIN}/version.json?t=$(date +%s)" || true)
-            if [ -n "${CONTENT}" ]; then
-              echo "Got version.json: ${CONTENT}"
-              # Verify it's valid JSON with expected fields
-              echo "${CONTENT}" | jq -e '.v and .b' >/dev/null && exit 0
-            fi
-            echo "Attempt ${i}/10: version.json not ready, waiting..."
-            sleep 10
-          done
-          echo "FAIL: version.json not served correctly after 10 attempts"
-          exit 1
+          printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
+          printf '%s' "$SUPABASE_SERVICE_KEY" | npx --yes wrangler@latest secret put SUPABASE_SERVICE_KEY --config wrangler.jsonc
+          printf '%s' "$MOLLIE_WEBHOOK_SECRET" | npx --yes wrangler@latest secret put MOLLIE_WEBHOOK_SECRET --config wrangler.jsonc
       - name: Smoke test
         env:
           DOMAIN: ${{ matrix.domain }}
@@ -226,6 +185,50 @@ jobs:
             sleep $((i*5))
           done
           exit 1
+      # Garde-fou de déploiement (restauré) : compare le (v, b) du dossier qui
+      # a RÉELLEMENT été servi au (v, b) servi en ligne. Un "curl / → 200" ne
+      # détecte ni un dossier obsolète ni un Worker pas encore mis à jour.
+      - name: Verify deploy fingerprint
+        env:
+          REGION: ${{ matrix.id }}
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          set -euo pipefail
+          FTP_DIR=$(node -e "console.log(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir)")
+          built_v=$(node -p "require('./${FTP_DIR}/version.json').v")
+          built_b=$(node -p "require('./${FTP_DIR}/version.json').b")
+          echo "built: region=$REGION dir=$FTP_DIR v=$built_v b=$built_b"
+          ok=0
+          for i in 1 2 3 4 5 6 7 8; do
+            body=$(curl -sS --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/version.json?cfdeploy=$GITHUB_SHA" || true)
+            live_v=$(printf '%s' "$body" | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).v}catch(e){'parse-error'}" || echo error)
+            live_b=$(printf '%s' "$body" | node -p "try{JSON.parse(require('fs').readFileSync(0,'utf8')).b}catch(e){'parse-error'}" || echo error)
+            if [ "$live_v" = "$built_v" ] && [ "$live_b" = "$built_b" ]; then
+              ok=1; echo "fingerprint OK: v=$live_v b=$live_b"; break
+            fi
+            echo "attempt $i: live v=$live_v b=$live_b != built v=$built_v b=$built_b"
+            sleep $((i*5))
+          done
+          if [ "$ok" != "1" ]; then
+            echo "FINGERPRINT MISMATCH on $DOMAIN — le domaine ne sert pas ce qui vient d'être déployé"
+            exit 1
+          fi
+          echo "{\"id\":\"$REGION\",\"domain\":\"$DOMAIN\",\"v\":\"$built_v\",\"b\":\"$built_b\"}" > fingerprint-$REGION.json
+          # Sitemap : doit être 200 APRÈS prepare-ftp (régression du 07/10).
+          for i in 1 2 3 4 5; do
+            sm=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/sitemap.xml" || true)
+            if [ "$sm" = "200" ]; then echo "sitemap.xml 200 OK"; break; fi
+            if [ "$i" = "5" ]; then echo "sitemap.xml = $sm on $DOMAIN"; exit 1; fi
+            sleep $((i*5))
+          done
+      - name: Upload fingerprint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fingerprint-${{ matrix.id }}
+          path: fingerprint-${{ matrix.id }}.json
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Payment API smoke
         env:
           DOMAIN: ${{ matrix.domain }}
@@ -243,3 +246,130 @@ jobs:
             echo "Payment backend is not configured or route is not migrated"
             exit 1
           fi
+
+  # CONTRÔLE POST-DÉPLOIEMENT RÉEL — s'exécute UNIQUEMENT après un déploiement
+  # autorisé et réussi. Vérifications HTTP réelles sur chaque domaine live :
+  # accessibilité, identité artefact (version.json), fraîcheur données,
+  # cohérence région↔plages, params régionaux (canonical, GA4), ?sos=1,
+  # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
+  # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
+  post-deploy-verify:
+    needs: [deploy]
+    if: always() && needs.deploy.result == 'success'
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # P0 §4 : l'identité d'artefact post-déploiement doit COMPARER le servi
+      # au construit (v/b des 6 fingerprints uploadés par le job deploy).
+      # Sans attente, artifact_identity reste NOT_VERIFIED (jamais VERIFIED).
+      - name: Download built fingerprints
+        uses: actions/download-artifact@v4
+        with:
+          pattern: fingerprint-*
+          path: fingerprints/
+          merge-multiple: true
+      - name: Resolve expected fingerprint (built v/b, all regions agree)
+        id: fp
+        run: |
+          node -e "const fs=require('fs');const files=fs.readdirSync('fingerprints').filter(f=>f.endsWith('.json'));if(!files.length){console.error('no fingerprint artifacts');process.exit(1)}const vs=new Set(),bs=new Set();for(const f of files){const j=JSON.parse(fs.readFileSync('fingerprints/'+f,'utf8'));vs.add(j.v);bs.add(j.b)}if(vs.size!==1||bs.size!==1){console.error('fingerprints disagree: v='+[...vs]+' b='+[...bs]);process.exit(1)}fs.appendFileSync(process.env.GITHUB_OUTPUT,'v='+[...vs][0]+'\n');fs.appendFileSync(process.env.GITHUB_OUTPUT,'b='+[...bs][0]+'\n');console.log('expect v='+[...vs][0]+' b='+[...bs][0])"
+      - name: Post-deploy verification (all live domains)
+        id: pdv
+        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json --expect-v "${{ steps.fp.outputs.v }}" --expect-b "${{ steps.fp.outputs.b }}"
+      - name: Upload post-deploy report + job trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            post-deploy-report.json
+            scripts/traces/
+          if-no-files-found: ignore
+          retention-days: 90
+      - name: Summary
+        if: always()
+        run: |
+          node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
+
+  deploy-pages:
+    needs: [build, certification-gate]
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      deployments: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - region: mq
+            project: sargagame
+          - region: gp
+            project: sargagame-gp
+          - region: florida
+            project: sargagame-florida
+          - region: puntacana
+            project: sargagame-puntacana
+          - region: rivieramaya
+            project: sargagame-rivieramaya
+          - region: tulum
+            project: sargagame-tulum
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
+      - name: Build region
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: npm run build
+      # Pages doit recevoir le même artefact que le Worker, sinon *.pages.dev
+      # et le domaine divergent (source de faux diagnostics en audit).
+      - name: Prepare domain site (prepare-ftp)
+        id: prep
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-ftp.cjs
+          node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;if(!fs.existsSync(d+'/index.html')){console.error('missing '+d+'/index.html');process.exit(1)};require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'dir='+d+'\n')"
+      # Garde P0 MQ/GP : idem deploy-pages (avant envoi Cloudflare).
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
+      - name: Deploy Pages
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=main
+
+  # Contrôle de flotte : les 6 domaines doivent rester cohérents entre eux.
+  # C'est le garde-fou qui aurait bloqué le cutover du 07/10 (tulum figé,
+  # sitemap 404 sur 3 domaines, canonicals GP → Martinique).
+  verify-fleet:
+    needs: [deploy]
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fleet coherence + SEO guards (live)
+        run: node scripts/verify-live-fleet.cjs --regions mq,gp,florida,puntacana,rivieramaya,tulum
