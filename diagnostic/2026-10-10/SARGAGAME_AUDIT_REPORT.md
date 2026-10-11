@@ -1,6 +1,11 @@
 # SARGAGAME_AUDIT_REPORT — 2026-10-11
 
-> Audit QA autonome. Dépôt : `aveca/sargagame`. Aucune modification poussée, aucun déploiement, aucune transaction réelle.
+> Audit QA autonome. Dépôt : `aveca/sargagame`. Aucune transaction réelle.
+> **MAJ 17:25 UTC** — PR #871 fusionnée (squash `2ed3e994f`), déploiement `cloudflare-production.yml` run 38159116756 **succès** (4m39s). Vérifications post-déploiement :
+> - `/.well-known/apple-developer-merchantid-domain-association` → **200 (9 095 o) sur les 6 domaines** ✅ (était 404)
+> - `/data/region-outlines/tulum.json` → **200 (1 010 o)** ✅ ; carte Tulum : **0 → 5 labels plage** (capture `prod-tulum-after-fix-mobile.png`, « EN VIVO », 4 playas limpias)
+> - Anti-replay Mollie confirmé dans le bundle prod live (`index-BjqSdL4V.js` contient `sg_mollie_done_`) ✅
+> - Merge : 1 conflit `cloudflare-production.yml` résolu en faveur d'origin/main (approche `__ASSETS_DIR__` déjà déployée avec succès 2026-10-11 02:23Z)
 
 ## 1. Contexte et état du dépôt
 

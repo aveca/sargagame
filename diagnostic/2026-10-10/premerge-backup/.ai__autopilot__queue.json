@@ -1,0 +1,28 @@
+{
+  "opportunities": [
+    {
+      "id": "OPP-TEST-PERSIST",
+      "fingerprint": "test-fingerprint-persist",
+      "title": "Test persistence",
+      "source": "test",
+      "severity": "medium",
+      "confidence": "observed",
+      "actionable": "agent",
+      "evidence": "persistence test",
+      "rollback": "revert",
+      "expectedImpact": "state survives restart",
+      "metric": "persistence",
+      "status": "in_progress",
+      "createdAt": "2026-10-11T11:08:02.584Z",
+      "scope": {
+        "files": [
+          "src/test-persist.jsx"
+        ]
+      },
+      "currentPhase": "implementation",
+      "repairAttempt": 1,
+      "branch": "agent/autopilot/test-persist",
+      "prUrl": "https://github.com/test/test/pull/1"
+    }
+  ]
+}

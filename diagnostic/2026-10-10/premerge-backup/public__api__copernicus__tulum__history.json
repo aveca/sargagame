@@ -1,0 +1,2035 @@
+{
+  "history": [
+    {
+      "date": "2026-09-02",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-03",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.22,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-05",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.1,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.1,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-06",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.2,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-07",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.18,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-08",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-09",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.06,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-10",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-11",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-12",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.2,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.19,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.2,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-13",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.22,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-14",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.17,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-15",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-16",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.21,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-17",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.12,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-18",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.13,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-19",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.22,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.21,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.23,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-20",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-21",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.07,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-22",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.19,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-23",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.12,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-24",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.11,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.07,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.2,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-25",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.09,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-26",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.18,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-27",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.18,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-28",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.16,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-29",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.17,
+          "status": "moderate"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-01",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.09,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.08,
+          "status": "clean"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.15,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.12,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.08,
+          "status": "clean"
+        }
+      ]
+    },
+    {
+      "date": "2026-10-02",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.17,
+          "status": "moderate"
+        },
+        {
+          "id": "tu006",
+          "afai": 0.16,
+          "status": "moderate"
+        },
+        {
+          "id": "tu007",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu008",
+          "afai": 0.17,
+          "status": "moderate"
+        }
+      ]
+    }
+  ],
+  "changes": [
+    {
+      "date": "2026-09-04",
+      "beach": "tu007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.08
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu006",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-09-05",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu007",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.18
+    },
+    {
+      "date": "2026-09-06",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu006",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-09",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.06
+    },
+    {
+      "date": "2026-09-11",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-09-11",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-12",
+      "beach": "tu007",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu006",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-17",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu007",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-18",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.22
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.22
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.22
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.22
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.22
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.21
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.23
+    },
+    {
+      "date": "2026-09-19",
+      "beach": "tu007",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu006",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-09-20",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-09-21",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-09-22",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.19
+    },
+    {
+      "date": "2026-09-23",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.12
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.13
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.07
+    },
+    {
+      "date": "2026-09-24",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.2
+    },
+    {
+      "date": "2026-09-25",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu006",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.15
+    },
+    {
+      "date": "2026-09-26",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.18
+    },
+    {
+      "date": "2026-09-28",
+      "beach": "tu007",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.16
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu001",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu002",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu003",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.09
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.08
+    },
+    {
+      "date": "2026-10-01",
+      "beach": "tu008",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.08
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu001",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu002",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu003",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu004",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu005",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    },
+    {
+      "date": "2026-10-02",
+      "beach": "tu008",
+      "from": "clean",
+      "to": "moderate",
+      "afai": 0.17
+    }
+  ]
+}
