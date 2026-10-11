@@ -477,6 +477,14 @@ export default defineConfig({
             const { generateLegalPages } = _require('./scripts/lib/legal-pages.cjs')
             generateLegalPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ pages légales région:', e.message) }
+          // Page 404 localisée (langue primaire région) — sinon c'est public/404.html
+          // FR générique qui se sert sur les domaines EN/ES (constat audit live 2026-10-11:
+          // « Même le satellite a perdu celle-ci » en français sur sargassummiami.com).
+          try {
+            const { localize404 } = _require('./scripts/lib/legacy-404-localize.cjs')
+            const r404 = localize404(REGION, resolve(__dirname, 'dist'))
+            console.log(`   → /404.html localisée (${REGION.id}, langue ${r404.lang})`)
+          } catch (e) { console.warn('   ⚠ 404 localisée région:', e.message) }
           return
         }
         const indexPath = resolve(outDir, 'index.html')
