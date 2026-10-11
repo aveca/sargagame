@@ -76,6 +76,15 @@ function checkArtifactIdentity(vj, expectV, expectB) {
   return { status: 'NOT_VERIFIED', detail: `servi v=${vj.v} b=${vj.b || 'n/a'} (aucune attente fournie — identité enregistrée, non comparée)` };
 }
 
+// ID GA4 d'une région : champ `ga4Id` (config actuelle), repli `ga4` historique.
+// `TODO_GA4_ID`, absent ou vide => null (contrôle NOT_VERIFIED honnête).
+// Pure et testée (voir tests/unit/sos-modal.test.cjs, série G).
+function resolveGa4Id(region) {
+  const raw = (region && region.ga4Id) || (region && region.ga4) || null;
+  if (typeof raw !== 'string' || !raw.trim() || raw.trim() === 'TODO_GA4_ID') return null;
+  return raw.trim();
+}
+
 function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
@@ -129,8 +138,8 @@ function verifyDomain(region, opts) {
   const canonOk = htmlOk && html.body.includes(`://${domain}`);
   set('region_domain_params', htmlOk ? (canonOk ? 'VERIFIED' : 'FAILED') : 'NOT_VERIFIED',
     htmlOk ? (canonOk ? `canonical/og référencent ${domain}` : `le HTML servi ne référence pas ${domain}`) : 'HTML servi trop court/injoignable');
-  const ga4 = region.ga4;
-  if (ga4 && ga4 !== 'TODO_GA4_ID') {
+  const ga4 = resolveGa4Id(region);
+  if (ga4) {
     set('analytics_region_param', htmlOk && html.body.includes(ga4) ? 'VERIFIED' : 'FAILED', htmlOk ? (html.body.includes(ga4) ? `GA4 ${ga4} présent` : `GA4 ${ga4} ABSENT du HTML servi`) : 'HTML injoignable');
   } else {
     set('analytics_region_param', 'NOT_VERIFIED', `aucun GA4 configuré pour ${region.id} — contrôle non applicable (jamais simulé)`);
@@ -243,4 +252,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id };

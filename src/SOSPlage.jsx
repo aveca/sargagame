@@ -35,7 +35,7 @@ function useModalA11y(panelRef, onClose) {
   }, [onClose])
 }
 
-function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
+function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beaches: regionBeaches = null }) {
   const [beaches, setBeaches] = useState([])
   const [selectedBeachId, setSelectedBeachId] = useState("")
   const [loading, setLoading] = useState(true)
@@ -55,11 +55,17 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
         ])
         if (cancelled) return
 
-        if (!beachListRes || !Array.isArray(beachListRes)) {
+        // Source des plages : prop région (USD : liste inline de la région,
+        // ex. 20 plages florida) en priorité, sinon beaches-list.json fetchée
+        // (MQ/GP). Sans aucune source : erreur explicite refermable.
+        const sourceList = (regionBeaches && regionBeaches.length)
+          ? regionBeaches
+          : (Array.isArray(beachListRes) ? beachListRes : null)
+        if (!sourceList) {
           throw new Error("Données plages indisponibles")
         }
 
-        const islandBeaches = beachListRes.filter(b => b.island === region)
+        const islandBeaches = sourceList.filter(b => b.island === region)
         const bySargId = {}
         if (sargRes && Array.isArray(sargRes.levels)) {
           for (const lvl of sargRes.levels) bySargId[lvl.id] = lvl
@@ -88,7 +94,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
     }
     load()
     return () => { cancelled = true }
-  }, [sargData, region, selectedBeachId])
+  }, [sargData, region, regionBeaches, selectedBeachId])
 
   const selectedBeach = beaches.find(b => b.id === selectedBeachId)
   const tomorrowForecast = selectedBeach?.forecast?.[1] || null
@@ -158,6 +164,19 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq" }) {
     return (
       <div style={{ padding: 24, textAlign: "center", color: "rgba(255,255,255,.6)" }}>
         <div style={{ fontSize: 14 }}>Aucune plage disponible</div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              marginTop: 16, padding: "10px 16px", borderRadius: 999,
+              border: "1px solid rgba(255,255,255,.15)", background: "transparent",
+              color: "rgba(253,252,247,.6)", fontSize: 12, fontWeight: 700,
+              fontFamily: "inherit", cursor: "pointer",
+            }}
+          >
+            {_t(lang, "Plus tard", "Later", "Más tarde")}
+          </button>
+        )}
       </div>
     )
   }

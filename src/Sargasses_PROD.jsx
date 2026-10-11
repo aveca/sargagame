@@ -14384,10 +14384,7 @@ export default function App(){
           }catch(_){}
         }} lang={lang} source={premiumSource}
           onActivated={()=>{setIsPremium(true);setShowWelcome(true)}} sargData={sargData} island={island}
-          beach={selectedBeach||null}/></Suspense></ErrBound>}
-
-        {/* SOS PLAGE 24H — deep-link ?sos=1 */}
-        {showSOS&&<ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound>}
+           beach={selectedBeach||null}/></Suspense></ErrBound>}
 
         {/* B2B PRO (self-serve) — deep-link ?pro=1 depuis l'outreach B2B */}
         {showProB2B&&<ErrBound><Suspense fallback={null}><B2BModal lang={lang} sargData={sargData} island={island} beach={selectedBeach||null} source={proB2BSrc.current} onClose={()=>setShowProB2B(false)}/></Suspense></ErrBound>}
@@ -14496,7 +14493,7 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound>}
+        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
         
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}
