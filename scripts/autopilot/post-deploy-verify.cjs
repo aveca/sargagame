@@ -60,6 +60,22 @@ function httpBody(url, timeoutMs) {
 // Préfixes d'ids de plages par région (cohérence croisée)
 const REGION_PREFIX = { mq: ['mq', 'martinique'], gp: ['gp', 'guadeloupe'], florida: ['fl'], puntacana: ['pc'], rivieramaya: ['rm'], tulum: ['tu'] };
 
+// Identité d'artefact : comparaison stricte servi-vs-attendu quand une attente
+// est fournie (fingerprints du build) ; sinon NOT_VERIFIED explicite — une
+// identité seulement enregistrée ne vaut jamais VERIFIED (mission P0 §4).
+// Pure et testable (voir tests/unit/regional-copernicus.test.cjs, série V).
+function checkArtifactIdentity(vj, expectV, expectB) {
+  if (!vj || !vj.v) return { status: 'FAILED', detail: 'version.json absent/invalide' };
+  if (expectV || expectB) {
+    const okV = !expectV || vj.v === expectV;
+    const okB = !expectB || vj.b === expectB;
+    return okV && okB
+      ? { status: 'VERIFIED', detail: `v=${vj.v} b=${vj.b} == build` }
+      : { status: 'FAILED', detail: `servi v=${vj.v} b=${vj.b} != attendu v=${expectV} b=${expectB}` };
+  }
+  return { status: 'NOT_VERIFIED', detail: `servi v=${vj.v} b=${vj.b || 'n/a'} (aucune attente fournie — identité enregistrée, non comparée)` };
+}
+
 function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
@@ -70,20 +86,18 @@ function verifyDomain(region, opts) {
   if (!home.ok || home.status !== 200) { set('http_accessible', 'FAILED', home.ok ? `HTTP ${home.status}` : `injoignable (${String(home.error || '').split('\n')[0]})`); finalize(); return R; }
   set('http_accessible', 'VERIFIED', 'HTTP 200');
 
-  // 2. Identité d'artefact (version.json)
+  // 2. Identité d'artefact (version.json) — règle P0 : sans attente fournie,
+  //    l'identité est ENREGISTRÉE mais NON COMPARÉE => NOT_VERIFIED (jamais
+  //    VERIFIED simulé). Avec attente (fingerprints du build) => comparaison
+  //    stricte v/b => VERIFIED ou FAILED.
   const ver = httpBody(`https://${domain}/version.json?pdv=${Date.now()}`);
   let vj = null;
   try { vj = JSON.parse(ver.body); } catch (_) {}
   if (!ver.ok || !vj || !vj.v) { set('artifact_identity', 'FAILED', 'version.json absent/invalide'); }
   else {
     R.served = { v: vj.v, b: vj.b || null };
-    if (opts.expectV || opts.expectB) {
-      const okV = !opts.expectV || vj.v === opts.expectV;
-      const okB = !opts.expectB || vj.b === opts.expectB;
-      set('artifact_identity', okV && okB ? 'VERIFIED' : 'FAILED', okV && okB ? `v=${vj.v} b=${vj.b} == build` : `servi v=${vj.v} b=${vj.b} != attendu v=${opts.expectV} b=${opts.expectB}`);
-    } else {
-      set('artifact_identity', 'VERIFIED', `servi v=${vj.v} b=${vj.b || 'n/a'} (aucune attente fournie — identité enregistrée, non comparée)`);
-    }
+    const idr = checkArtifactIdentity(vj, opts.expectV, opts.expectB);
+    set('artifact_identity', idr.status, idr.detail);
   }
 
   // 3. Fraîcheur données
@@ -229,4 +243,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity };
