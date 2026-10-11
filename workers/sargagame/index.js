@@ -161,6 +161,15 @@ export default {
       // B2B recurring subscription compatibility with the former PHP endpoint.
       // This uses Mollie's customer subscriptions API; the API key never reaches the browser.
     }
+    // Apple Pay domain association : Apple exige le chemin canonique
+    // /.well-known/apple-developer-merchantid-domain-association, mais le
+    // fichier déployé côté assets est /api/apple-pay-domain-association
+    // (constaté 2026-10-11 : /.well-known/... → 404 en prod sur les 6 domaines,
+    // Apple Pay indisponible au checkout). Réécriture explicite AVANT la garde
+    // dotfiles.
+    if(u.pathname==="/.well-known/apple-developer-merchantid-domain-association"){
+      return env.ASSETS.fetch(new URL("/api/apple-pay-domain-association",u.origin),request);
+    }
     // Garde fail-closed (2e barrière après public/.assetsignore) : avec
     // run_worker_first=true, les assets existants passent AUSSI par ce handler
     // (sans ça, tout fichier de dist/ serait servi quel que soit le code
@@ -168,6 +177,8 @@ export default {
     // Refus neutre 404 (aucun détail) pour tout ce qui ne doit jamais être
     // public, même si un futur upload l'y déposait.
     if(u.pathname.includes("/_private/")
+      || u.pathname.startsWith("/.well-known/") // dot-dirs canoniques non opt-in
+      || /(^|\/)\.[^/]*$/.test(u.pathname)
       || /(^|\/)\.[^/]*$/.test(u.pathname)
       || /\.php$/i.test(u.pathname)
       || /\.htaccess$/i.test(u.pathname)
