@@ -183,6 +183,24 @@ for (const region of legacyRegions) {
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out, COPY_SKIP_TOP)
 
+  // Séparation régionale des DONNÉES sargasses (P0 MQ/GP) : le dist/ partagé
+  // contient les 21 clés MQ+GP ; sans filtre, chaque domaine sert les plages
+  // de l'autre île (post-deploy-verify FAILED côté MQ le 2026-10-10 : 10
+  // niveaux gp-* servis sur sargasses-martinique.com). Règle : appartenance
+  // via SARG_TO_BEACH + beaches-list (jamais les préfixes seuls) ; seules les
+  // clés prouvées étrangères sont retirées (inconnues conservées + alerte,
+  // jamais de suppression aveugle). Le JSON global partagé (public/, dist/)
+  // n'est JAMAIS modifié ici — seule la copie du dossier FTP est filtrée.
+  const copernicusPath = path.join(out, 'api', 'copernicus', 'sargassum.json')
+  if (fs.existsSync(copernicusPath)) {
+    const { filterCopernicusForIsland } = require('./lib/regional-copernicus.cjs')
+    const ownIsland = (region.beachFilter && region.beachFilter.island) || region.id
+    const raw = JSON.parse(fs.readFileSync(copernicusPath, 'utf-8'))
+    const res = filterCopernicusForIsland(raw, ownIsland)
+    fs.writeFileSync(copernicusPath, JSON.stringify(res.json))
+    console.log(`   → sargassum.json filtré (${title}): weekly ${res.kept.weekly}/${res.total.weekly}, scores ${res.kept.scores}/${res.total.scores}, levels ${res.kept.levels}/${res.total.levels} gardés, ${res.droppedTotal} étranger(s) supprimé(s)${res.unknownTotal ? `, ${res.unknownTotal} inconnu(s) conservé(s): ${res.unknown.slice(0, 3).join(',')}` : ''}`)
+  }
+
   // GP-mirror overlay is deferred until the END of this iteration (after all
   // content patching) — see comment near the OK log. If we stamped here, the
   // bulk sargasses-martinique→sargasses-guadeloupe URL swap would clobber the

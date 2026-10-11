@@ -53,6 +53,12 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      # Garde P0 MQ/GP : l'artefact préparé ne doit contenir aucune plage
+      # d'une autre île (bloque le déploiement via `needs: [build, ...]`).
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
 
   # VERROU GOUVERNANCE — certification stricte AVANT toute mise en production.
   # Contrat v3 (états séparés) :
@@ -150,6 +156,12 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('assets dir OK -> '+d)"
+      # Garde P0 MQ/GP (2e rideau) : revérifie l'artefact du job deploy lui-même
+      # avant génération wrangler/envoi Cloudflare.
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
       - name: Generate Wrangler config
         env:
           REGION: ${{ matrix.id }}
@@ -255,9 +267,22 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      # P0 §4 : l'identité d'artefact post-déploiement doit COMPARER le servi
+      # au construit (v/b des 6 fingerprints uploadés par le job deploy).
+      # Sans attente, artifact_identity reste NOT_VERIFIED (jamais VERIFIED).
+      - name: Download built fingerprints
+        uses: actions/download-artifact@v4
+        with:
+          pattern: fingerprint-*
+          path: fingerprints/
+          merge-multiple: true
+      - name: Resolve expected fingerprint (built v/b, all regions agree)
+        id: fp
+        run: |
+          node -e "const fs=require('fs');const files=fs.readdirSync('fingerprints').filter(f=>f.endsWith('.json'));if(!files.length){console.error('no fingerprint artifacts');process.exit(1)}const vs=new Set(),bs=new Set();for(const f of files){const j=JSON.parse(fs.readFileSync('fingerprints/'+f,'utf8'));vs.add(j.v);bs.add(j.b)}if(vs.size!==1||bs.size!==1){console.error('fingerprints disagree: v='+[...vs]+' b='+[...bs]);process.exit(1)}fs.appendFileSync(process.env.GITHUB_OUTPUT,'v='+[...vs][0]+'\n');fs.appendFileSync(process.env.GITHUB_OUTPUT,'b='+[...bs][0]+'\n');console.log('expect v='+[...vs][0]+' b='+[...bs][0])"
       - name: Post-deploy verification (all live domains)
         id: pdv
-        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json
+        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json --expect-v "${{ steps.fp.outputs.v }}" --expect-b "${{ steps.fp.outputs.b }}"
       - name: Upload post-deploy report + job trace
         if: always()
         uses: actions/upload-artifact@v4
@@ -319,6 +344,11 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;if(!fs.existsSync(d+'/index.html')){console.error('missing '+d+'/index.html');process.exit(1)};require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'dir='+d+'\n')"
+      # Garde P0 MQ/GP : idem deploy-pages (avant envoi Cloudflare).
+      - name: Guard regional data separation (no foreign beaches)
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
       - name: Deploy Pages
         uses: cloudflare/wrangler-action@v4
         with:
