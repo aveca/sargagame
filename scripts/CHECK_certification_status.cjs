@@ -41,7 +41,30 @@
  *                    certifications PASS et leurs preuves vérifiées (sha256 +
  *                    contenu scellant P + non périmées + règles PRODUCTION/BUSINESS).
  *                    Aucune option ne change ce verdict : seul le code de HEAD et
- *                    ses preuves comptent. Exit 1 dans tout autre cas.
+  *                    ses preuves comptent. Exit 1 dans tout autre cas.
+  *   --wait-ms N (deploy seul, défaut 0) : attente bornée anti-course
+  *                    gate-vs-CI. La gate tourne dans la même vague que les
+  *                    checks requis : sans attente, elle les voit `in_progress`
+  *                    et refuse à jamais (aucun retry) — la livraison reste
+  *                    bloquée alors que tout finit vert. Avec N>0 on attend que
+  *                    chaque check requis ait CONCLU (échec => refus immédiat,
+  *                    timeout => refus fail-closed). Le workflow production
+  *                    passe --wait-ms 1200000 ; la lib et les scripts FTP
+  *                    gardent le verdict instantané (N=0).
+  *
+  * Cartographie des stades (mission P0) :
+  *   PREDEPLOY_ELIGIBLE  = technique prouvé sur le SHA exact (checks CI
+  *                         test-frontend+perf verts — qui incluent build,
+  *                         tests, smoke et budget — + builds régionaux et
+  *                         artefacts validés par le job `build` requis en
+  *                         amont) ; PRODUCTION/BUSINESS restent NOT_PROVEN
+  *                         (aucune allégation commerciale anticipée).
+  *   PRODUCTION_VERIFIED = attestation complète committée et valide (trois
+  *                         PASS scellés au SHA) — équivaut aux critères
+  *                         GLOBAL_CERTIFIED (technique + paiement live +
+  *                         métriques attribuées) ; implique une vérification
+  *                         post-déploiement réelle antérieure.
+  * Sortie informative (jamais bloquante) : paymentSensitive + rollback.
  *
  * Usage :
  *   node scripts/CHECK_certification_status.cjs [--mode manifest|pr|deploy]
@@ -67,7 +90,7 @@ const MOLLIE_TEST_MARKER = /tr_test_/;
 // ── Args ─────────────────────────────────────────────────────────────────────
 const MODES = new Set(['manifest', 'pr', 'deploy']);
 function parseArgs(argv) {
-  const a = { root: path.resolve(__dirname, '..'), commit: null, manifest: path.join('.ai', 'certification', 'status.json'), now: null, json: false, mode: 'manifest' };
+  const a = { root: path.resolve(__dirname, '..'), commit: null, manifest: path.join('.ai', 'certification', 'status.json'), now: null, json: false, mode: 'manifest', waitMs: 0 };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     if (k === '--json') { a.json = true; continue; }
@@ -76,6 +99,15 @@ function parseArgs(argv) {
     if (k === '--commit') { a.commit = String(argv[++i] || ''); continue; }
     if (k === '--manifest') { a.manifest = String(argv[++i] || ''); continue; }
     if (k === '--now') { a.now = String(argv[++i] || ''); continue; }
+    // Attente bornée des checks CI en mode deploy (défaut 0 = verdict
+    // instantané, comportement historique préservé pour tous les appelants
+    // existants : lib certification-gate, scripts FTP, tests).
+    if (k === '--wait-ms') {
+      const n = Number(argv[++i]);
+      if (!Number.isFinite(n) || n < 0) return { error: `--wait-ms invalide : "${argv[i]}" (entier >= 0 attendu)` };
+      a.waitMs = Math.floor(n);
+      continue;
+    }
     return { error: `argument inconnu: ${k}` };
   }
   if (!MODES.has(a.mode)) return { error: `--mode invalide : "${a.mode}" (attendu : manifest|pr|deploy)` };
@@ -151,13 +183,85 @@ function decidePredeploy(product, runs, reasons) {
   if (reasons.length) return null;
   return proofs;
 }
-function evaluatePredeploy(root, product, reasons) {
-  const runs = fetchCheckRuns(root, product);
+function evaluatePredeploy(root, product, reasons, fetchOverride) {
+  let runs = null;
+  try {
+    runs = fetchOverride ? fetchOverride() : fetchCheckRuns(root, product);
+  } catch (_) { runs = null; }
   if (!runs) {
     reasons.push('predeploy: check-runs CI (test-frontend, perf) non vérifiables via API GitHub — pas de réseau / gh indisponible / SHA non poussé — refus (fail-closed, le hors-ligne local ne vaut jamais autorisation)');
     return null;
   }
   return decidePredeploy(product, runs, reasons);
+}
+
+// ── Fichiers sensibles paiements (informatif : n'autorise ni ne bloque) ─────
+// Toute release touchant ces chemins exige le contrôle adapté (Payment API
+// smoke post-déploiement, déjà systématique dans le workflow) et une stratégie
+// de retour arrière explicite (rollback joint). Le flag ne bloque JAMAIS :
+// seul le verdict technique décide (fail-open informatif, jamais fail-closed).
+const PAYMENT_PATH_RE = /mollie|paypal|stripe|payment|checkout|pass-price|PremiumModal/i;
+function paymentSensitiveInfo(root, product) {
+  let files = [];
+  try {
+    files = git(root, ['diff', '--name-only', `${product}~1`, product]).split('\n').filter(Boolean);
+  } catch (_) {
+    return { paymentSensitive: false, paymentFiles: [], note: 'diff git invérifiable (commit racine ou historique illisible)' };
+  }
+  const hits = files.map(f => String(f).replace(/\\/g, '/')).filter(f => PAYMENT_PATH_RE.test(f));
+  return {
+    paymentSensitive: hits.length > 0,
+    paymentFiles: hits.slice(0, 20),
+    rollback: hits.length > 0 ? `git revert ${product} --no-edit && git push origin main` : null,
+  };
+}
+
+// ── Attente bornée des checks CI (résout la course gate-vs-CI) ───────────────
+// La gate s'exécute dans la même vague que les checks requis : un verdict
+// instantané voit `in_progress` et refuse à jamais (aucun retry) — la livraison
+// reste bloquée alors que les checks finissent verts 3 minutes plus tard.
+// On attend (poll borné) que chaque check requis ait CONCLU :
+//   - tous success            => prêt (la décision suit)
+//   - une conclusion non-success => REFUS immédiat (attente inutile)
+//   - timeout ou API muette   => REFUS fail-closed (jamais d'autorisation)
+// fetchFn/sleepFn injectables => testable sans réseau (voir tests W5/W6/W8).
+const WAIT_POLL_MS = 15000;
+function waitForChecks(fetchFn, product, opts, reasons) {
+  const o = opts || {};
+  const timeoutMs = o.timeoutMs > 0 ? o.timeoutMs : 0;
+  const pollMs = o.pollMs > 0 ? o.pollMs : WAIT_POLL_MS;
+  const sleepFn = o.sleepFn || ((ms) => { try { Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms); } catch (_) {} });
+  const startedAt = Date.now();
+  const short = product.slice(0, 8);
+  for (;;) {
+    let runs = null;
+    try { runs = fetchFn(); } catch (_) { runs = null; }
+    if (runs) {
+      const latest = new Map();
+      for (const r of runs) {
+        const cur = latest.get(r.name);
+        if (!cur || String(r.completed_at || '') > String(cur.completed_at || '')) latest.set(r.name, r);
+      }
+      const pending = [];
+      let failed = null;
+      for (const ctx of PREDEPLOY_REQUIRED_CHECKS) {
+        const r = latest.get(ctx);
+        if (!r) { pending.push(ctx); continue; }
+        if (r.status !== 'completed') { pending.push(ctx); continue; }
+        if (r.conclusion !== 'success') { failed = ctx; break; }
+      }
+      if (!failed && pending.length === 0) return { ready: true, runs, waitedMs: Date.now() - startedAt };
+      if (failed) {
+        reasons.push(`predeploy: check "${failed}" conclu "${latest.get(failed).conclusion}" sur ${short} — refus immédiat (attente inutile)`);
+        return { ready: false, runs, waitedMs: Date.now() - startedAt };
+      }
+    }
+    if (Date.now() - startedAt >= timeoutMs) {
+      reasons.push(`predeploy: attente des checks CI épuisée (${timeoutMs} ms) sur ${short} — CI pas terminée ou API muette, refus fail-closed (relancer une fois les checks verts)`);
+      return { ready: false, runs, waitedMs: Date.now() - startedAt };
+    }
+    sleepFn(Math.min(pollMs, Math.max(0, timeoutMs - (Date.now() - startedAt))));
+  }
 }
 
 /**
@@ -471,8 +575,9 @@ function evaluatePr(opts) {
 // Une attestation PRÉSENTE mais invalide (hash, scellement, péremption) REFUSE
 // immédiatement : aucun repli sur la voie predeploy face à une preuve altérée.
 // AUCUNE option ne court-circuite ce verdict : --now et --commit ignorés ici.
-function evaluateDeploy(opts) {
+function evaluateDeploy(opts, overrides) {
   const root = path.resolve(opts.root);
+  const deps = overrides || {};
   const reasons = [];
   const nowMs = Date.now();
 
@@ -513,18 +618,37 @@ function evaluateDeploy(opts) {
   }
 
   // ── Voie 2 : PREDEPLOY_ELIGIBLE via les check-runs CI réels du SHA ─────────
-  const proofs = evaluatePredeploy(root, product, reasons);
+  // waitMs > 0 (workflow) : attente bornée anti-course gate-vs-CI.
+  // waitMs = 0 (défaut) : verdict instantané, comportement historique préservé
+  // pour la lib certification-gate, les scripts FTP et les tests existants.
+  const waitMs = Number.isFinite(deps.waitMs) ? deps.waitMs
+    : (Number.isFinite(opts.waitMs) ? opts.waitMs : 0);
+  const fetchFn = deps.fetchCheckRuns || (() => fetchCheckRuns(root, product));
+  let proofs = null;
+  let waitedMs = 0;
+  if (waitMs > 0) {
+    const w = waitForChecks(fetchFn, product, { timeoutMs: waitMs, pollMs: deps.pollMs, sleepFn: deps.sleepFn }, reasons);
+    waitedMs = w.waitedMs;
+    if (w.ready) proofs = decidePredeploy(product, w.runs, reasons);
+    // sinon reasons contient déjà l'échec immédiat ou le timeout
+  } else {
+    proofs = evaluatePredeploy(root, product, reasons, deps.fetchCheckRuns);
+  }
+  // Sensibilité paiements : informative uniquement (ne bloque jamais).
+  const pay = paymentSensitiveInfo(root, product);
   if (proofs) {
     return {
       mode: 'deploy', global: 'PREDEPLOY_ELIGIBLE', decision: 'ALLOW', stage: 'PREDEPLOY_ELIGIBLE', exit: 0,
-      productCommit: product, proofs,
+      productCommit: product, proofs, waitedMs,
+      paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback,
       reasons: ['predeploy: éligible via checks CI verts — la version déployée restera DEPLOYED_PENDING_VERIFICATION jusqu\'au contrôle post-déploiement réel'],
       certifications: { TECHNICAL: 'PASS', PRODUCTION: 'NOT_PROVEN', BUSINESS: 'NOT_PROVEN' },
     };
   }
   return {
     mode: 'deploy', global: 'NOT_PROVEN', decision: 'REFUSE', stage: 'NOT_PROVEN', exit: 1,
-    productCommit: product, reasons, certifications: {},
+    productCommit: product, reasons, waitedMs,
+    paymentSensitive: pay.paymentSensitive, paymentFiles: pay.paymentFiles, rollback: pay.rollback, certifications: {},
   };
 }
 
@@ -542,7 +666,7 @@ if (require.main === module) {
     if (a.mode === 'pr') {
       r = evaluatePr({ root: a.root });
     } else if (a.mode === 'deploy') {
-      r = evaluateDeploy({ root: a.root });
+      r = evaluateDeploy({ root: a.root }, { waitMs: a.waitMs });
     } else {
       r = evaluate({ root: a.root, commit: a.commit, manifest: a.manifest, now: a.now === null ? undefined : a.now });
     }
@@ -564,6 +688,10 @@ if (require.main === module) {
       if (a.mode === 'deploy') {
         console.log(`  commit produit    : ${r.productCommit || '(irrésolu)'}`);
         console.log(`  décision          : ${r.decision} · stade : ${r.stage}`);
+        if (typeof r.waitedMs === 'number') console.log(`  attente CI        : ${r.waitedMs} ms`);
+        if (r.paymentSensitive) {
+          console.log(`  paiements         : release SENSIBLE (${(r.paymentFiles || []).join(', ')}) — contrôle Payment API smoke requis + rollback : ${r.rollback}`);
+        }
         if (r.proofs) for (const p of r.proofs) console.log(`  preuve            : ${p.check}${p.conclusion ? ' = ' + p.conclusion : ''}${p.completedAt ? ' @ ' + p.completedAt : ''}${p.target ? ' target=' + p.target.slice(0, 8) : ''}`);
       }
       else console.log(`  commit contrôlé   : ${r.commit || '(introuvable)'}`);
@@ -591,4 +719,4 @@ if (require.main === module) {
   process.exit(code);
 }
 
-module.exports = { evaluate, evaluatePr, evaluateDeploy, decidePredeploy, PREDEPLOY_REQUIRED_CHECKS };
+module.exports = { evaluate, evaluatePr, evaluateDeploy, decidePredeploy, waitForChecks, paymentSensitiveInfo, PREDEPLOY_REQUIRED_CHECKS };

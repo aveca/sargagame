@@ -67,7 +67,7 @@ jobs:
       contents: read
       checks: read        # lecture des check-runs du SHA (preuve CI authentique)
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 30
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
@@ -78,9 +78,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      # Attente bornée anti-course gate-vs-CI (P0) : la gate tourne dans la
+      # même vague que test-frontend/perf. Sans --wait-ms elle les voit
+      # `in_progress` et refuse à jamais (aucun retry) — livraison bloquée
+      # alors que tout finit vert. Échec => refus immédiat, timeout => refus.
       - name: Certification gate (deploy)
         id: gate
-        run: node scripts/CHECK_certification_status.cjs --mode deploy
+        run: node scripts/CHECK_certification_status.cjs --mode deploy --wait-ms 1200000
       - name: Trace gate decision (job_id)
         if: always()
         run: |
