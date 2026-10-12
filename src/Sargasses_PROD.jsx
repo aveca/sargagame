@@ -4434,6 +4434,15 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     return fc
   },[beach?.id,sargData,forecastProp,lang])
 
+  // ── Données hebdo RÉELLES de cette plage (pour ForecastCred/CadranVeilleur —
+  //    weekly réel → interpolé ; jamais de données fabriquées : sans weeklyData
+  //    l'instrument de crédibilité ne se monte pas).
+  const weeklyData=useMemo(()=>{
+    if(!beach)return null
+    const sargId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
+    return (sargId&&sargData?.weekly?.[sargId])||sargData?._enrichedWeekly?.[`_interp_${beach.id}`]||null
+  },[beach?.id,sargData])
+
   const _satStatus=beach?.status||"_loading"
   // Le niveau AFFICHÉ suit le terrain si un signalement approuvé < 48 h l'exige (beaching monte,
   // cleanup baisse), sinon le satellite. Provenance nommée dans le bandeau ci-dessous → jamais
@@ -4687,6 +4696,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             {!isPremium&&fcDays.length>1&&<button onClick={onCTA} style={{position:"absolute",right:0,top:0,bottom:18,left:"15%",border:"none",background:"transparent",cursor:"pointer"}} aria-label={_t(lang,"Débloquer les prévisions","Unlock forecast","Desbloquear pronóstico")}/>}
           </div>
         </div>
+
+        {/* Crédibilité prévisions — instrument A/B ForecastCred (CadranVeilleur via
+            ?cadran=1, barre plate sinon), mêmes composants que l'ancienne BeachSheet.
+            Alimenté par les données hebdo RÉELLES de cette plage + sargData courant ;
+            fraîcheur via prédicats partagés (erddap seul), jamais updatedAt. */}
+        {weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
 
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
