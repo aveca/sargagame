@@ -25,7 +25,10 @@
   background:#102a35;box-shadow:0 26px 80px rgba(0,0,0,.26)}
 .sg-tp__hero-art{position:absolute;inset:0;z-index:-2;overflow:hidden}
 .sg-tp__hero-art svg{width:100%;height:100%;display:block;min-height:280px}
-.sg-tp__wave{stroke-dasharray:10 14;animation:sgtpWave 8s linear infinite}\n.sg-tp__wave--two{animation-duration:11s;animation-direction:reverse}\n@keyframes sgtpWave{to{stroke-dashoffset:-192}}\n.sg-tp__hero:after{content:"";position:absolute;inset:0;z-index:-1;background:
+.sg-tp__wave{stroke-dasharray:10 14;animation:sgtpWave 8s linear infinite}
+.sg-tp__wave--two{animation-duration:11s;animation-direction:reverse}
+@keyframes sgtpWave{to{stroke-dashoffset:-192}}
+.sg-tp__hero:after{content:"";position:absolute;inset:0;z-index:-1;background:
   linear-gradient(90deg,rgba(5,23,31,.94) 0%,rgba(5,23,31,.77) 52%,rgba(5,23,31,.12) 100%),
   linear-gradient(0deg,rgba(5,23,31,.65),transparent 75%)}
 .sg-tp__hero-copy{max-width:630px}
@@ -42,7 +45,7 @@
 .sg-tp__panel-title{margin:0 0 18px;color:var(--tp-muted);font-size:14px;line-height:1.5}
 .sg-tp__actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
 .sg-tp__button{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;
-  padding:12px 18px;border:1px solid transparent;border-radius:13px;font:800 14px/1.25 inherit;
+  padding:12px 18px;border:1px solid transparent;border-radius:13px;font-family:inherit;font-size:14px;font-weight:800;line-height:1.25;
   text-align:center;text-decoration:none;cursor:pointer;transition:transform .18s ease,background .18s ease,border-color .18s ease}
 .sg-tp__button:hover{transform:translateY(-2px)}
 .sg-tp__button:focus-visible,.sg-tp__close:focus-visible,.sg-tp__planb:focus-visible,.sg-tp__bottom-links button:focus-visible{
@@ -133,4 +136,71 @@
   .sg-tp__wave,.sg-tp__spinner{animation:none!important}
   .sg-tp__button{transition:none}
   .sg-tp__button:hover{transform:none}
+}
+
+
+/* Cinematic presentation layer: lightweight SVG motion, no remote video dependency. */
+.sg-tp__hero{min-height:320px;isolation:isolate}
+.sg-tp__hero:before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse at 78% 31%,rgba(255,218,153,.13),transparent 27%),
+  linear-gradient(130deg,rgba(103,226,202,.07),transparent 46%);mix-blend-mode:screen}
+.sg-tp__hero-copy{position:relative;z-index:2}
+.sg-tp__hero-art svg{min-height:320px;transform:scale(1.025);transform-origin:center}
+.sg-tp__hero-tag{display:inline-flex;align-items:center;gap:7px;margin:0 0 0 9px;padding:5px 8px;
+  border:1px solid rgba(255,226,171,.33);border-radius:999px;background:rgba(7,27,34,.32);
+  color:#fff0c8;font-size:9px;font-weight:800;letter-spacing:.08em;vertical-align:middle}
+.sg-tp__hero-hud{position:absolute;z-index:1;top:25px;right:25px;display:grid;justify-items:end;gap:12px;
+  width:190px;pointer-events:none}
+.sg-tp__hud-compass{position:relative;width:84px;height:84px;color:#e1f5ed;filter:drop-shadow(0 8px 20px rgba(0,0,0,.18));animation:sgtpHudFloat 7s ease-in-out infinite}
+.sg-tp__hud-compass svg{display:block;width:100%;height:100%;overflow:visible}
+.sg-tp__hud-compass span{position:absolute;left:0;right:0;bottom:-7px;text-align:center;color:rgba(245,252,246,.77);
+  font-size:7px;font-weight:900;letter-spacing:.25em}
+.sg-tp__hud-card{width:100%;padding:13px;border:1px solid rgba(255,255,255,.22);border-radius:15px;
+  background:linear-gradient(145deg,rgba(7,31,39,.78),rgba(7,31,39,.47));
+  box-shadow:0 12px 30px rgba(0,0,0,.16);backdrop-filter:blur(13px);-webkit-backdrop-filter:blur(13px)}
+.sg-tp__hud-card-top{display:flex;align-items:center;gap:7px;color:#c6dfd8;font-size:8px;font-weight:900;letter-spacing:.1em}
+.sg-tp__hud-pulse{width:6px;height:6px;flex:0 0 6px;border-radius:50%;background:#ffc475}
+.sg-tp__hud-pulse.is-fresh{background:#75e5bc;box-shadow:0 0 0 4px rgba(117,229,188,.13);animation:sgtpPulse 2.1s ease-out infinite}
+.sg-tp__hud-card>strong{display:block;margin-top:10px;color:#fff4d8;font-size:12px;line-height:1.35}
+.sg-tp__hud-date{display:block;margin-top:4px;color:rgba(241,249,245,.76);font-size:10px;line-height:1.4}
+.sg-tp__hud-signal{display:flex;align-items:end;gap:3px;height:12px;margin-top:12px;opacity:.85}
+.sg-tp__hud-signal i{display:block;flex:1;height:40%;border-radius:2px;background:#75dcc6;animation:sgtpSignal 1.7s ease-in-out infinite alternate}
+.sg-tp__hud-signal i:nth-child(3n){height:100%;animation-delay:-.7s}
+.sg-tp__hud-signal i:nth-child(3n + 1){height:65%;animation-delay:-1.1s}
+.sg-tp__sun-halo{transform-box:fill-box;transform-origin:center;animation:sgtpSunPulse 5.5s ease-in-out infinite}
+.sg-tp__sun{transform-box:fill-box;transform-origin:center;animation:sgtpSunPulse 7s ease-in-out infinite reverse}
+.sg-tp__cloud{transform-box:fill-box;transform-origin:center;animation:sgtpCloudDrift 28s ease-in-out infinite alternate}
+.sg-tp__cloud--two{animation-duration:35s;animation-direction:alternate-reverse}
+.sg-tp__sun-road{transform-box:fill-box;transform-origin:center;animation:sgtpSunRoad 6s ease-in-out infinite}
+.sg-tp__water-glint{animation:sgtpGlint 4.5s ease-in-out infinite alternate}
+.sg-tp__water-glint--two{animation-delay:-1.8s;animation-duration:5.3s}
+.sg-tp__water-glint--three{animation-delay:-2.6s;animation-duration:6.2s}
+.sg-tp__sea-sparkles{animation:sgtpSparkle 5s ease-in-out infinite alternate}
+.sg-tp__birds{animation:sgtpBirds 6s ease-in-out infinite alternate}
+.sg-tp__wave{stroke-dasharray:10 14;animation:sgtpWave 8s linear infinite}
+.sg-tp__wave--two{animation-duration:11s;animation-direction:reverse}
+@keyframes sgtpWave{to{stroke-dashoffset:-192}}
+@keyframes sgtpSunPulse{0%,100%{opacity:.88;transform:scale(1)}50%{opacity:1;transform:scale(1.045)}}
+@keyframes sgtpCloudDrift{from{transform:translateX(-9px)}to{transform:translateX(13px)}}
+@keyframes sgtpSunRoad{0%,100%{opacity:.12;transform:scaleX(.86)}50%{opacity:.28;transform:scaleX(1.08)}}
+@keyframes sgtpGlint{from{opacity:.2;transform:translateX(-8px)}to{opacity:.82;transform:translateX(10px)}}
+@keyframes sgtpSparkle{from{opacity:.35}to{opacity:.95}}
+@keyframes sgtpBirds{from{transform:translateX(-2px) translateY(2px)}to{transform:translateX(5px) translateY(-3px)}}
+@keyframes sgtpHudFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes sgtpPulse{0%{box-shadow:0 0 0 0 rgba(117,229,188,.25)}100%{box-shadow:0 0 0 7px rgba(117,229,188,0)}}
+@keyframes sgtpSignal{from{opacity:.45;transform:scaleY(.72)}to{opacity:1;transform:scaleY(1)}}
+@media(max-width:900px){
+  .sg-tp__hero-hud{display:none}
+  .sg-tp__hero{min-height:300px}
+  .sg-tp__hero-art svg{min-height:300px}
+}
+@media(max-width:720px){
+  .sg-tp__hero{min-height:280px}
+  .sg-tp__hero-art svg{min-height:280px}
+  .sg-tp__hero-tag{display:table;margin:10px 0 0;font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .sg-tp__sun-halo,.sg-tp__sun,.sg-tp__cloud,.sg-tp__sun-road,.sg-tp__water-glint,.sg-tp__sea-sparkles,
+  .sg-tp__birds,.sg-tp__hud-compass,.sg-tp__hud-pulse,.sg-tp__hud-signal i{animation:none!important}
+  .sg-tp__sun-halo,.sg-tp__sun{transform:none}
 }
