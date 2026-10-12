@@ -12,6 +12,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallba
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { formatFreshnessAge } from "./lib/format-freshness.mjs"
+import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
 const LazyWeekHub = React.lazy(()=>import("./WeekHub"))
@@ -1223,7 +1224,9 @@ export default function WorldMapView({
   // de dérive) restent affichés même en reduced-motion (statiques) = info, pas animation.
   const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
-  const cleanCnt  = beachList.filter(b=>b.days[day]==="clean").length // inconnu ≠ propre (anti-flash)
+  const dayStatus = summarizeBeachStatuses(beachList, day)
+  const cleanCnt  = dayStatus.clean // inconnu ≠ propre (anti-flash)
+  const avoidCnt  = dayStatus.avoid
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = vantColor(beachList,day)
   const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
@@ -1776,8 +1779,8 @@ export default function WorldMapView({
           }}>
             {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
-          <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir les plages propres près de moi","See clean beaches near me","Ver playas limpias cerca"),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
-            marginTop:9,display:"inline-flex",alignItems:"center",gap:9,pointerEvents:"auto",
+          <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
+            marginTop:9,display:"inline-flex",flexWrap:"wrap",alignItems:"center",gap:9,rowGap:6,maxWidth:"calc(100vw - 36px)",pointerEvents:"auto",
             cursor:mapCleanTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
@@ -1790,6 +1793,18 @@ export default function WorldMapView({
             </div>
             <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
               <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
+            </span>
+            <span
+              aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
+              style={{
+                display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
+                padding:"5px 8px",border:`1.5px solid ${INK}`,borderRadius:8,
+                background:avoidCnt>0?"#ffe7e3":"#e5f8eb",
+                color:avoidCnt>0?"#a62b20":"#177A42",
+                font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+              }}>
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:14}}>{avoidCnt}</b>
+              {_t(lang,"à éviter","to avoid","a evitar")}
             </span>
           </div>
           </>)}
