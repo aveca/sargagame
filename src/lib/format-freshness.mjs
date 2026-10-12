@@ -5,6 +5,21 @@ const LABELS = {
 };
 
 /**
+ * Gate 12h anti-fake-freshness (contrat produit) : seule l'observation satellite
+ * (sargData.erddapTimestamp) prouve la fraîcheur. `updatedAt` (heure de republication
+ * pipeline) ne doit JAMAIS servir seul — sinon un republish frais masque un satellite
+ * vieux (défaut prod 2026-10-12 : updatedAt 22:07Z, erddap 54,8h, stale:false).
+ * Absent/invalide/futur => false (« Vérification en cours »).
+ */
+export function isSatelliteFresh12h(sargData, now = Date.now()) {
+  const raw = sargData?.erddapTimestamp;
+  const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''));
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now)) return false;
+  const elapsed = now - timestamp;
+  return elapsed >= 0 && elapsed < 12 * 3_600_000;
+}
+
+/**
  * Format the age of the last verified data update for the map header.
  * It deliberately returns complete localized copy; it never invents a timestamp.
  */

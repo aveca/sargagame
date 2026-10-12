@@ -9,6 +9,7 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { isSatelliteFresh12h } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
@@ -9510,9 +9511,12 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   // la scène — JAMAIS de rAF/var pilotée (un rAF throttlé rendrait la scène
   // invisible). reduced-motion = état final statique (cf. <style>).
   const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    // Heure affichee = observation satellite UNIQUEMENT (jamais updatedAt = republication).
+    const ts=sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
   }catch(_){return""}})()
+  // Gate 12h anti-fake-LIVE (contrat produit) : seule l'observation satellite prouve la fraîcheur.
+  const updFresh=isSatelliteFresh12h(sargData)
   const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
   const wordmark=IS_NEW_REGION
     ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
@@ -9740,14 +9744,14 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
           </g>
         </svg>
       )}
-      {/* barre haute */}
+        {/* barre haute */}
       <div style={{position:"absolute",top:0,left:0,right:0,display:"flex",justifyContent:"space-between",alignItems:"center",
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
-          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",padding:"5px 10px",borderRadius:999}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
-          LIVE{upd?` · ${upd}`:""}
+          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:updFresh?"#fff":"#B87A00",padding:"5px 10px",borderRadius:999}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px #22C55E":"none"}}/>
+          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </span>
       </div>
       {/* contenu bas */}
@@ -10038,9 +10042,12 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     return parts.join(" · ")
   })()
   const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    // Heure affichee = observation satellite UNIQUEMENT (jamais updatedAt = republication).
+    const ts=sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
   }catch(_){return""}})()
+  // Gate 12h anti-fake-LIVE (contrat produit) : seule l'observation satellite prouve la fraîcheur.
+  const updFresh=isSatelliteFresh12h(sargData)
   const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
   const wordmark=IS_NEW_REGION
     ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
@@ -10115,10 +10122,10 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         padding:"calc(14px + env(safe-area-inset-top)) 18px 0",maxWidth:560,margin:"0 auto"}}>
         <span style={{fontFamily:"'Anton',sans-serif",fontSize:13,letterSpacing:".14em",color:"#fff",opacity:.92}}>{wordmark}</span>
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
-          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:"#fff",
+          background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:updFresh?"#fff":"#B87A00",
           padding:"5px 10px",borderRadius:999}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",boxShadow:"0 0 8px #22C55E"}}/>
-          LIVE{upd?` · ${upd}`:""}
+          <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px #22C55E":"none"}}/>
+          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </span>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",
@@ -10201,7 +10208,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           <h2 style={h2s}>{_t(lang,"Le verdict, plage par plage","The verdict, beach by beach","El veredicto, playa por playa")}</h2>
           <p style={{fontSize:14,lineHeight:1.55,color:"rgba(255,255,255,.62)",margin:"0 0 18px"}}>
             {_t(lang,"Pas d'avis, pas de promesses : la mesure satellite du matin.","No opinions, no promises: this morning's satellite measurement.","Sin opiniones ni promesas: la medición satelital de esta mañana.")}
-            {upd?` · LIVE ${upd}`:""}
+            {upd?(updFresh?` · LIVE ${upd}`:` · ${_t(lang,"Données en retard","Data delayed","Datos desactualizados")}`):""}
           </p>
         </div>
         {!!(topBeaches&&topBeaches.length)&&(
@@ -10356,7 +10363,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         textAlign:"center",borderTop:"1px solid rgba(255,255,255,.07)",marginTop:36}}>
         <div style={{fontFamily:"'Anton',sans-serif",fontSize:12,letterSpacing:".14em",color:"rgba(255,255,255,.6)",marginBottom:6}}>{wordmark}</div>
         <div style={{fontSize:11,color:"rgba(255,255,255,.38)"}}>
-          🛰 {_t(lang,"Données : Copernicus Marine","Data: Copernicus Marine","Datos: Copernicus Marine")}{upd?` · LIVE ${upd}`:""}
+          🛰 {_t(lang,"Données : Copernicus Marine","Data: Copernicus Marine","Datos: Copernicus Marine")}{upd?(updFresh?` · LIVE ${upd}`:` · ${_t(lang,"Données en retard","Data delayed","Datos desactualizados")}`):""}
           {" · "}
           <a href={IS_NEW_REGION?"/about/":"/a-propos/"} style={{color:"rgba(255,255,255,.38)"}}>
             {_t(lang,"À propos","About","Acerca de")}
