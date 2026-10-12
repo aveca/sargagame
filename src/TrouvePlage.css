@@ -215,7 +215,7 @@
 .sg-tp__button--primary:hover{box-shadow:0 12px 30px rgba(255,210,124,.25)}
 .sg-tp__hud-window-label{display:block;margin-top:12px;color:rgba(241,249,245,.72);font-size:8px;letter-spacing:.035em}
 .sg-tp__hud-signal{height:4px;margin-top:6px;overflow:hidden;border-radius:999px;background:rgba(225,245,237,.17)}
-.sg-tp__hud-signal i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#72dec7,#ffd27c);transition:width .5s ease}
+.sg-tp__hud-signal i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#72dec7,#ffd27c);transition:width .5s ease;animation:none;transform:none;opacity:1}
 @keyframes sgtpCameraDrift{from{transform:scale(1.025) translate3d(0,0,0)}to{transform:scale(1.085) translate3d(-.6%,-.4%,0)}}
 @keyframes sgtpRise{from{opacity:0;transform:translate3d(0,15px,0)}to{opacity:1;transform:translate3d(0,0,0)}}
 @keyframes sgtpCardReveal{from{opacity:0;transform:translate3d(0,18px,0) scale(.992)}to{opacity:1;transform:translate3d(0,0,0) scale(1)}}
