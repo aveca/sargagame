@@ -9,6 +9,7 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
@@ -2805,11 +2806,12 @@ function CadranVeilleur({weeklyData,lang,sargData}){
   const levelLabel=level==="high"?LL.reliabilityHigh:level==="medium"?LL.reliabilityMedium:LL.reliabilityLow
   const method=(weeklyData&&weeklyData.forecastMethod)||"persistence"
   const methodLabel=method==="arrival-banks"?"AFAI + Banks":method==="banks-persistence"?"AFAI + Persistence":method==="memory-decay"?"Memory decay":method==="interpolated"?"IDW":_t(lang,"Persistance + vent","Persistence + wind","Persistencia + viento")
-  // Fraîcheur satellite honnête (formatFreshness → null si >=12 h ; stale → gris).
-  const updatedAt=(sargData&&(sargData.erddapTimestamp||sargData.updatedAt))||null
-  const ageH=(()=>{try{if(!updatedAt)return null;const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6;return(isFinite(h)&&h>=0)?h:null}catch(_){return null}})()
-  const stale=!!(sargData&&sargData.stale)
-  const freshOk=!stale&&ageH!=null&&ageH<12
+  // Fraîcheur satellite honnête calculée au rendu (jamais les instantanés figés
+  // dataAgeMinutes/stale) : observation erddap seule, contrat 12h, borne 36h.
+  const updatedAt=(sargData&&sargData.erddapTimestamp)||null
+  const ageH=satelliteAgeHours(sargData)
+  const stale=isSatelliteStale36h(sargData)
+  const freshOk=isSatelliteFresh12h(sargData)
   const freshLbl=formatFreshness(updatedAt,lang)
   // Géométrie : demi-cercle supérieur (180°→0° au-dessus de la baseline CY).
   const CX=120,CY=104,R_CONF=60,R_FRESH=78

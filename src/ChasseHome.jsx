@@ -21,6 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
+import { isSatelliteStale36h } from "./lib/format-freshness.mjs"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -500,7 +501,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   const [whyOpen,setWhyOpen]=useState(false)
   const why=useMemo(()=>{
     if(!whyOn)return null
-    const o={stale:!!(sargData&&sargData.stale)}
+    const o={stale:isSatelliteStale36h(sargData)}
     try{const sat=sargData&&sargData.erddapTimestamp,ts=sat||(sargData&&sargData.updatedAt)
       /* erddapTimestamp = heure du composite SATELLITE ; updatedAt = heure du RUN pipeline.
          Le libellé suit la source réelle — dire « mesure satellite » sur un updatedAt mentirait. */
