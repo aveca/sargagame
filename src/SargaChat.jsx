@@ -4,12 +4,12 @@
 // v2: Support input texte libre + keyword matching + frustration context
 import React,{useState,useEffect,useRef,useMemo}from"react"
 import{_t,track,BEACH_TO_SARG,IS_NEW_REGION,PAY_CAPTURE_ONLY,Veilleur,g,s}from"./Sargasses_PROD.jsx"
+import{isSatelliteFresh12h}from"./lib/format-freshness.mjs"
 export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClose,frustrationContext}){
   const t=(fr,en,es)=>_t(lang,fr,en,es)
-  // Honnêteté fraîcheur (contrat produit 12h, cf. formatFreshness dans Sargasses_PROD.jsx) :
-  // passé 12h, le badge et l'accroche n'affirment plus du « direct » ni des données « du jour ».
-  const dataTs=sargData?.updatedAt||sargData?.erddapTimestamp
-  const dataFresh12h=(()=>{try{const ms=Date.now()-new Date(dataTs).getTime();return isFinite(ms)&&ms>=0&&ms<12*3.6e6}catch(_){return false}})()
+  // Honnêteté fraîcheur (contrat produit 12h) : seule l'observation satellite
+  // (erddapTimestamp) prouve la fraîcheur — updatedAt seul ne prouve jamais rien.
+  const dataFresh12h=isSatelliteFresh12h(sargData)
   const helloToday=t(
     "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
     "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
