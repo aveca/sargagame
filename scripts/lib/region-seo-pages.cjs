@@ -29,6 +29,29 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const { getCanonicalSlug } = require('./slug-resolver.cjs')
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+/** Génère la description (meta + og) depuis les données réelles du fichier de
+ * région — jamais de count hardcodé susceptible d'être oublié quand on ajoute
+ * une plage. Compatible MQ/GP: appareil ancien si region.beaches absent.
+ */
+function buildHomeDesc(region, lang = region.primaryLang) {
+  const beaches = Array.isArray(region.beaches) ? region.beaches : []
+  const n = beaches.length
+  const names = beaches.slice(0, 3).map(b => b.name).filter(Boolean)
+  const namesPart = names.length ? names.join(', ') : ''
+  if (lang === 'es') {
+    return n > 0
+      ? `Sargazo en ${region.name} hoy — mapa live de ${n} playas${namesPart ? ` con ${namesPart}` : ''}, actualizado 4 veces al día por satélite, con pronóstico 7 días por playa.`
+      : `Sargazo en ${region.name} hoy — mapa live con pronóstico 7 días por playa.`
+  }
+  if (lang === 'en' || lang === 'fr') {
+    const sentence = region.primaryLang === 'fr'
+      ? `Carte live de ${n} plage${n > 1 ? 's' : ''} — ${namesPart}${namesPart ? ',' : ''} mise à jour 4× par jour, avec prévision 7 jours par plage.`
+      : `Live map of ${n} beach${n > 1 ? 'es' : ''} — ${namesPart}${namesPart ? ',' : ''} updated 4× daily from satellite, with a 7-day forecast per beach.`
+    return `Y a-t-il des sargasses dans ${region.name} aujourd'hui ? ${sentence}`
+  }
+  return `Is there sargassum in ${region.name} today? Live map of ${n} beaches — ${namesPart}${namesPart ? ',' : ''} updated 4× daily from satellite, with a 7-day forecast per beach.`
+}
+
 // Video-as-SEO (rail hero-loops prouvé) : ids des plages disposant d'un clip d'ambiance
 // /videos/hero/{id}.mp4 (manifest committé, déployé par région via filterHeroLoops).
 // Best-effort : manifest absent → Set vide → skip propre (aucune balise vidéo émise).
@@ -909,9 +932,16 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
         .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(region.seo.homeTitle)}</title>`)
         .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
         .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
-      if (region.seo.homeDesc) home = home
-        .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
-        .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
+      if (region.seo.homeDesc) {
+        // Dynamique à la demande (payload indépendant du déploiement futur),
+        // jamais fixe en disque. Source : reduceNumber(region) === beaches.length du JSON.
+        // Fix constat live 2026-10-12 : meta florida.html disait "12 Florida beaches"
+        // alors que regions/florida.json en a 20.
+        const dynDesc = buildHomeDesc(region, region.primaryLang)
+        home = home
+          .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(dynDesc)}"`)
+          .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(dynDesc)}"`)
+      }
     }
     if (Array.isArray(content.faq) && content.faq.length) {
       const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
@@ -965,4 +995,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages }
+module.exports = { generateRegionSeoPages, buildHomeDesc }
