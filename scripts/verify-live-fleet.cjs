@@ -151,8 +151,12 @@ async function main() {
     const domain = region.domain;
     const base = `https://${domain}`;
 
-    // 1 — version.json : preuve que le Worker sert le build attendu.
-    const v = await get(`${base}/version.json`);
+    // 1 — version.json : preuve du build réellement servi. Bypass le cache CDN :
+    // une ancienne réponse v221 peut sinon masquer un déploiement réussi et faire
+    // échouer la cohérence de flotte. La ressource est aussi déclarée no-store en _headers.
+    const versionUrl = new URL(`${base}/version.json`);
+    versionUrl.searchParams.set('fleet_verify', process.env.GITHUB_SHA || String(Date.now()));
+    const v = await get(versionUrl.href, { headers: { 'cache-control': 'no-cache', pragma: 'no-cache' } });
     let parsed = null;
     if (v.ok) { try { parsed = JSON.parse(v.body); } catch { /* deco */ } }
     if (!parsed || !parsed.v || !parsed.b) {
