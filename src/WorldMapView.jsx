@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
+import { formatFreshnessAge } from "./lib/format-freshness.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
 const LazyWeekHub = React.lazy(()=>import("./WeekHub"))
@@ -35,14 +36,7 @@ const DAY_LBL  = [
 function ti(lang, arr){ return lang==="en"?arr[1]:lang==="es"?arr[2]:arr[0] }
 function _t(lang, fr, en, es){ return lang==="es"?es:lang==="en"?en:fr }
 
-function fmtFresh(updatedAt){
-  try{
-    const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6
-    if(h<1) return `${Math.round(h*60)} min ${_t(lang,"GO", "en","GO", "es","IR A PLAYA")}`
-    if(h<12) return `${h.toFixed(0)} h ${_t(lang,"GO", "en","GO", "es","IR A PLAYA")}`
-    return `${Math.round(h/24)} j ${_t(lang,"DONNÉES EN RETARD","STALE DATA","DATOS ATRASADOS")}`
-  }catch(_){ return "···" }
-}
+
 // Honnêteté fraîcheur : si l'image satellite a >36h, Le Veilleur l'avoue (flag STALE)
 // au lieu de faire semblant de tout voir en direct (Story Bible : « quand le Veilleur ne voit pas »).
 function isStale(updatedAt){
@@ -1693,7 +1687,7 @@ export default function WorldMapView({
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&isStale(updatedAt)?_t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"):_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&isStale(updatedAt)?"#B87A00":"#00786C",marginLeft:2}}>
-              {updatedAt?_t(lang,`il y a ${fmtFresh(updatedAt)}`,`${fmtFresh(updatedAt)} ago`,`hace ${fmtFresh(updatedAt)}`):"···"}
+              {updatedAt?formatFreshnessAge(updatedAt,lang):"···"}
             </span>
             {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
           </div>
