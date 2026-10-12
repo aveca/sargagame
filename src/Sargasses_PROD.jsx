@@ -9,7 +9,7 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
-import { isSatelliteFresh12h } from "./lib/format-freshness.mjs"
+import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
@@ -2806,11 +2806,12 @@ function CadranVeilleur({weeklyData,lang,sargData}){
   const levelLabel=level==="high"?LL.reliabilityHigh:level==="medium"?LL.reliabilityMedium:LL.reliabilityLow
   const method=(weeklyData&&weeklyData.forecastMethod)||"persistence"
   const methodLabel=method==="arrival-banks"?"AFAI + Banks":method==="banks-persistence"?"AFAI + Persistence":method==="memory-decay"?"Memory decay":method==="interpolated"?"IDW":_t(lang,"Persistance + vent","Persistence + wind","Persistencia + viento")
-  // Fraîcheur satellite honnête (formatFreshness → null si >=12 h ; stale → gris).
-  const updatedAt=(sargData&&(sargData.erddapTimestamp||sargData.updatedAt))||null
-  const ageH=(()=>{try{if(!updatedAt)return null;const h=(Date.now()-new Date(updatedAt).getTime())/3.6e6;return(isFinite(h)&&h>=0)?h:null}catch(_){return null}})()
-  const stale=!!(sargData&&sargData.stale)
-  const freshOk=!stale&&ageH!=null&&ageH<12
+  // Fraîcheur satellite honnête calculée au rendu (jamais les instantanés figés
+  // dataAgeMinutes/stale) : observation erddap seule, contrat 12h, borne 36h.
+  const updatedAt=(sargData&&sargData.erddapTimestamp)||null
+  const ageH=satelliteAgeHours(sargData)
+  const stale=isSatelliteStale36h(sargData)
+  const freshOk=isSatelliteFresh12h(sargData)
   const freshLbl=formatFreshness(updatedAt,lang)
   // Géométrie : demi-cercle supérieur (180°→0° au-dessus de la baseline CY).
   const CX=120,CY=104,R_CONF=60,R_FRESH=78
@@ -3468,11 +3469,12 @@ function ForecastLanding({beach,lang,island,sargData,isPremium,onPremium,onOpenB
   const forecast=activeWeekly?.forecast||null
   const mood=moodFromStatus(beach?.status||"clean")
   const freshLbl=(()=>{
-    const fr=formatFreshness(sargData?.updatedAt,lang)
+    // Observation satellite SEULE (jamais updatedAt = republication pipeline).
+    const fr=formatFreshness(sargData?.erddapTimestamp,lang)
     if(fr)return fr
     return _t(lang,"vérification en cours","verification in progress","verificación en curso")
   })()
-  const isLive=sargData?.source==="erddap-live"&&!!formatFreshness(sargData?.updatedAt,lang)
+  const isLive=sargData?.source==="erddap-live"&&isSatelliteFresh12h(sargData)
   const bestDay=computeBestForecastDay(forecast,activeWeekly)
   useEffect(()=>{
     try{
@@ -4173,7 +4175,8 @@ function PlanBPanel({beach,allBeaches,userPos,lang,sargData,onBeachClick,onClose
     return list
   },[beach?.id,allBeaches,userPos])
   if(!clean.length)return null
-  const fresh=(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<12))return null;return _t(lang,"EN DIRECT · il y a "+Math.max(1,Math.round(h))+" h","LIVE · "+Math.max(1,Math.round(h))+"h ago","EN VIVO · hace "+Math.max(1,Math.round(h))+" h")}catch(_){return null}})()
+  // Observation satellite SEULE pour le badge EN DIRECT du rail (jamais updatedAt).
+  const fresh=(()=>{try{const ts=sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!isSatelliteFresh12h(sargData))return null;return _t(lang,"EN DIRECT · il y a "+Math.max(1,Math.round(h))+" h","LIVE · "+Math.max(1,Math.round(h))+"h ago","EN VIVO · hace "+Math.max(1,Math.round(h))+" h")}catch(_){return null}})()
   const card={scrollSnapAlign:"start",flex:"0 0 158px",borderRadius:14,overflow:"hidden",cursor:"pointer",
     background:"var(--sg-card,#fff)",border:"1px solid var(--sg-border,rgba(13,13,13,.10))",
     padding:0,textAlign:"left",fontFamily:"inherit",position:"relative",
@@ -5083,8 +5086,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
             )
           })()}
           {(()=>{try{return !/[?&]statusexplain=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()&&<div data-testid="status-explain" style={{fontSize:12,fontWeight:600,opacity:.85,margin:"-6px 0 14px"}}>{beach.status==="clean"?_t(lang,"Eau dégagée au satellite — tu peux y aller.","Clear water on satellite — good to go.","Agua despejada en satélite — puedes ir."):beach.status==="avoid"?_t(lang,"Sargasses vues au satellite — vise une plage propre à côté.","Sargassum seen on satellite — try a clean beach nearby.","Sargazo visto por satélite — prueba una playa limpia cercana."):beach.status==="moderate"?_t(lang,"Dépôts possibles — jette un œil avant de te poser.","Some deposits possible — look before settling in.","Posibles restos — mira antes de instalarte."):_t(lang,"Statut en vérification — reviens dans un moment.","Status being checked — come back shortly.","Estado en verificación — vuelve en un momento.")}</div>}
-          {/* Freshness chip — satellite timestamp sous le verdict */}
-          {!beachStory&&(()=>{try{const ts=sargData?.updatedAt||sargData?.erddapTimestamp;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;if(!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
+          {/* Freshness chip — satellite timestamp sous le verdict (erddap SEUL) */}
+          {!beachStory&&(()=>{try{const ts=sargData?.erddapTimestamp;if(!ts)return null;const h=satelliteAgeHours(sargData);if(h==null||!(h>=0&&h<72))return null;const label=h<1?_t(lang,"À l'instant","Just now","Ahora mismo"):h<12?_t(lang,"il y a "+Math.round(h)+" h",Math.round(h)+"h ago","hace "+Math.round(h)+" h"):_t(lang,"vérif. en cours","checking","verificando");return(<div style={{display:"flex",alignItems:"center",gap:5,margin:"-10px 0 14px",opacity:.72}}><span style={{fontSize:11}}>🛰️</span><span style={{fontSize:10.5,fontWeight:600,color:"var(--sg-mid,#5A5A5A)",letterSpacing:".02em"}}>{_t(lang,"Satellite","Satellite","Satélite")} · {label}</span></div>)}catch(_){return null}})()}
           {/* Verdict du Jour — Devine-puis-Révèle (A/B pw_verdict_guess). Rendu
               dans LES DEUX bras (additif) quand le vrai statut est connu. */}
           {verdictGuess&&ST[beach.status]&&<VerdictDuJourCard beach={beach} lang={lang}/>}
@@ -7392,16 +7395,18 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
+function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,republishedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
-  // paywall). Répond au « aucun tracking de mon paiement sur le site ». Flag rollback
+  // paywall). Répond au « aucun tracking de mon paiement sur mon site ». Flag rollback
   // ?monacces=0 → masque l'entrée (comportement d'avant).
   const showAccess=!!onAccess&&!(/[?&]monacces=0/.test(typeof window!=="undefined"?window.location.search:""))
-  // EN DIRECT canonique : vivant SEULEMENT si source live ET fraîcheur réelle <12h
-  // (formatFreshness retourne null au-delà → on bascule sur « vérification en cours »).
-  const fresh=formatFreshness(updatedAt,lang)
-  const isLive=dataSource==="erddap-live"&&!!fresh
+  // EN DIRECT canonique : vivant SEULEMENT si source live ET observation satellite
+  // fraîche <12h (isSatelliteFresh12h, erddap SEUL). `updatedAt` = heure de
+  // REPUBLICATION pipeline : jamais une preuve d'observation (défaut prod 2026-10-12).
+  // `republishedAt` reste transmis séparément : jamais présenté comme observation.
+  const isLive=dataSource==="erddap-live"&&isSatelliteFresh12h({erddapTimestamp:updatedAt})
+  const fresh=isLive?formatFreshness(updatedAt,lang):null
   const liveLbl=isLive
     ?_t(lang,"EN DIRECT","LIVE","EN DIRECTO")
     :_t(lang,"vérification en cours","verification in progress","verificación en curso")
@@ -7432,7 +7437,8 @@ function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,bea
 
       {/* Pill EN DIRECT — composant canonique .sg-live : teal #009E8E (plus le corail qui
           collisionnait avec « éviter »), label ENCRE (AA), fraîcheur en Mono branchée
-          sur l'âge RÉEL (isLive ← updatedAt <12h, sinon « vérification en cours »). */}
+          sur l'observation satellite RÉELLE (isLive ← isSatelliteFresh12h erddap-only,
+          sinon « vérification en cours » — jamais la republication updatedAt). */}
       <a href="https://marine.copernicus.eu" target="_blank" rel="noopener noreferrer"
         onClick={()=>track("sg_live_badge_click",{source:dataSource})}
         className="sg-seg sg-live" aria-label={_t(lang,"Données en direct","Live data","Datos en vivo")}>
@@ -14153,7 +14159,8 @@ export default function App(){
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
-              updatedAt={sargData?.updatedAt||sargData?.erddapTimestamp}
+              updatedAt={sargData?.erddapTimestamp||null}
+              republishedAt={sargData?.updatedAt||null}
               onHome={()=>{
                 // Le hero/arène n'est PLUS monté depuis onHome (jeu retiré, note ~L12138 :
                 // réintroduction = ?hero=1 uniquement). Avant, onHome montait du DOM mort
