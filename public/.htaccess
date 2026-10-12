@@ -348,7 +348,7 @@ RewriteRule ^(carte-sargasses|previsions|alertes|en|saison-sargasses-martinique|
 
 # Security headers (trust signals SEO + sécurité)
 <IfModule mod_headers.c>
-Header set X-Frame-Options "SAMEORIGIN"
+Header set X-Frame-Options "DENY"
 Header set X-Content-Type-Options "nosniff"
 Header set Referrer-Policy "strict-origin-when-cross-origin"
 # HSTS — 2 ans, include subdomains, preload-ready. Actif uniquement si HTTPS détecté

@@ -32,7 +32,12 @@ check(connectSrc.includes('https://*.clarity.ms'), 'connect-src autorise *.clari
 check(scriptSrc.includes("'self'"), "script-src conserve 'self'")
 check(scriptSrc.includes('https://js.mollie.com'), 'script-src conserve js.mollie.com (paiement)')
 check(connectSrc.includes('https://api.mollie.com'), 'connect-src conserve api.mollie.com (paiement)')
-check(directive('frame-ancestors').includes("'none'"), "frame-ancestors 'none' conservé")
+check(!directive('frame-ancestors').length, 'meta CSP omits frame-ancestors because it is unsupported in meta')
+const pageHeaders = fs.readFileSync(path.join(ROOT, 'public', '_headers'), 'utf8')
+const apacheHeaders = fs.readFileSync(path.join(ROOT, 'public', '.htaccess'), 'utf8')
+check(/Content-Security-Policy:\s*frame-ancestors 'none'/.test(pageHeaders), 'Cloudflare Pages sends frame-ancestors in an HTTP header')
+check(/Header set Content-Security-Policy "[^\n]*frame-ancestors 'none'/.test(apacheHeaders), 'classic hosting keeps frame-ancestors in an HTTP header')
+check(/Header set X-Frame-Options "DENY"/.test(apacheHeaders), 'X-Frame-Options is aligned with deny-framing policy')
 check(!/k\.clarity\.ms/.test(csp) || connectSrc.includes('https://*.clarity.ms'), 'pas de dépendance au seul k.clarity.ms')
 
 process.exit(fail ? 1 : 0)
