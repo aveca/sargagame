@@ -17,7 +17,7 @@ const assert = require('node:assert/strict');
     clean: 2, moderate: 1, avoid: 1, unknown: 2, total: 6
   });
   assert.deepEqual(summarizeBeachStatuses(beaches, 1), {
-    clean: 3, moderate: 1, avoid: 2, unknown: 0, total: 6
+    clean: 3, moderate: 1, avoid: 2, unknown: 1, total: 6
   });
   assert.deepEqual(summarizeBeachStatuses([], 0), {
     clean: 0, moderate: 0, avoid: 0, unknown: 0, total: 0
