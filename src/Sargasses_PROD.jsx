@@ -9511,7 +9511,8 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
   // la scène — JAMAIS de rAF/var pilotée (un rAF throttlé rendrait la scène
   // invisible). reduced-motion = état final statique (cf. <style>).
   const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    // Heure affichee = observation satellite UNIQUEMENT (jamais updatedAt = republication).
+    const ts=sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
   }catch(_){return""}})()
   // Gate 12h anti-fake-LIVE (contrat produit) : seule l'observation satellite prouve la fraîcheur.
@@ -9750,7 +9751,7 @@ function GameFunnel({beach,lang,island,sargData,userPos,pickBeaches,onOpenBeach,
         <span style={{display:"inline-flex",alignItems:"center",gap:6,fontSize:10.5,fontWeight:700,letterSpacing:".06em",
           background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:updFresh?"#fff":"#B87A00",padding:"5px 10px",borderRadius:999}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px #22C55E":"none"}}/>
-          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}{upd?` · ${upd}`:""}</>}
+          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </span>
       </div>
       {/* contenu bas */}
@@ -10041,7 +10042,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     return parts.join(" · ")
   })()
   const upd=(()=>{try{
-    const ts=sargData?.updatedAt||sargData?.erddapTimestamp
+    // Heure affichee = observation satellite UNIQUEMENT (jamais updatedAt = republication).
+    const ts=sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
   }catch(_){return""}})()
   // Gate 12h anti-fake-LIVE (contrat produit) : seule l'observation satellite prouve la fraîcheur.
@@ -10123,7 +10125,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           background:"rgba(10,23,20,.5)",border:"1px solid rgba(255,255,255,.18)",color:updFresh?"#fff":"#B87A00",
           padding:"5px 10px",borderRadius:999}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px #22C55E":"none"}}/>
-          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}{upd?` · ${upd}`:""}</>}
+          {updFresh?<>LIVE{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
         </span>
       </div>
       <div style={{position:"absolute",left:0,right:0,bottom:0,padding:"0 20px calc(10px + env(safe-area-inset-bottom))",

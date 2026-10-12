@@ -36,6 +36,14 @@ const assert = require('node:assert/strict');
   t(isSatelliteFresh12h({ erddapTimestamp: '2026-10-12T06:46:18.584Z' }, now) === true, '11:59:59 => frais');
   t(isSatelliteFresh12h({ erddapTimestamp: '2026-10-12T06:46:16.584Z' }, now) === false, '12:00:01 => non frais');
 
+  // 4b. Payload ~60h (updatedAt recent, stale:false) => false.
+  t(isSatelliteFresh12h({
+    updatedAt: '2026-10-12T18:40:00.000Z',
+    erddapTimestamp: '2026-10-10T06:40:00.000Z',
+    stale: false,
+    dataAgeMinutes: 3600
+  }, now) === false, 'payload ~60h => non frais (jamais LIVE)');
+
   // 5. Absent/invalide/futur => false (« Vérification en cours »).
   t(isSatelliteFresh12h({}, now) === false, 'sans horodatage => non frais');
   t(isSatelliteFresh12h({ updatedAt: '2026-10-12T18:40:00.000Z' }, now) === false, 'erddap absent (updatedAt seul) => non frais');
