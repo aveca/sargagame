@@ -36,7 +36,7 @@ const COPY = {
     outsideRegion: 'La position est hors de la zone reconnue pour ce site. Choisis une plage de la liste.',
     distance: km => 'À environ ' + km + ' km', freshnessHours: h => 'Observation il y a ' + h + ' h',
     freshnessMinutes: m => 'Observation il y a ' + m + ' min', source: 'Source satellite',
-    freshnessNow: 'Observation très récente', heroTag: 'SARGASSES · SIGNAL SATELLITE', hudTitle: 'ÉTAT DES DONNÉES', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observation récente', hudStale: 'Vérification nécessaire', noPhoto: 'Photo non disponible'
+    freshnessNow: 'Observation très récente', heroTag: 'SARGASSES · SIGNAL SATELLITE', hudTitle: 'ÉTAT DES DONNÉES', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observation récente', hudStale: 'Vérification nécessaire', hudWindow: 'Fenêtre restante · 12 h', noPhoto: 'Photo non disponible'
   },
   en: {
     eyebrow: 'THE WATCHER · PERSONAL RECOMMENDATION',
@@ -69,7 +69,7 @@ const COPY = {
     outsideRegion: 'Your location is outside the area recognised for this site. Choose a beach from the list.',
     distance: km => 'About ' + km + ' km away', freshnessHours: h => 'Observed ' + h + ' h ago',
     freshnessMinutes: m => 'Observed ' + m + ' min ago', source: 'Satellite source',
-    freshnessNow: 'Very recent observation', heroTag: 'SARGASSUM · SATELLITE SIGNAL', hudTitle: 'DATA STATUS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Recent observation', hudStale: 'Check required', noPhoto: 'Photo unavailable'
+    freshnessNow: 'Very recent observation', heroTag: 'SARGASSUM · SATELLITE SIGNAL', hudTitle: 'DATA STATUS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Recent observation', hudStale: 'Check required', hudWindow: 'Freshness window remaining · 12 h', noPhoto: 'Photo unavailable'
   },
   es: {
     eyebrow: 'EL VIGÍA · RECOMENDACIÓN PERSONAL',
@@ -102,7 +102,7 @@ const COPY = {
     outsideRegion: 'Tu ubicación está fuera del área reconocida para este sitio. Elige una playa de la lista.',
     distance: km => 'A unos ' + km + ' km', freshnessHours: h => 'Observación hace ' + h + ' h',
     freshnessMinutes: m => 'Observación hace ' + m + ' min', source: 'Fuente satelital',
-    freshnessNow: 'Observación muy reciente', heroTag: 'SARGAZO · SEÑAL SATELITAL', hudTitle: 'ESTADO DE LOS DATOS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observación reciente', hudStale: 'Requiere verificación', noPhoto: 'Foto no disponible'
+    freshnessNow: 'Observación muy reciente', heroTag: 'SARGAZO · SEÑAL SATELITAL', hudTitle: 'ESTADO DE LOS DATOS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observación reciente', hudStale: 'Requiere verificación', hudWindow: 'Vigencia restante · 12 h', noPhoto: 'Foto no disponible'
   }
 }
 
@@ -227,6 +227,7 @@ export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr
     : ageHours < 1 ? t.freshnessMinutes(Math.max(1, Math.round(ageHours * 60)))
       : t.freshnessHours(Math.round(ageHours))
   const dataIsFresh = ageHours != null && ageHours >= 0 && ageHours <= 12
+  const freshnessPercent = ageHours == null || ageHours < 0 ? 0 : Math.max(0, Math.min(100, Math.round((1 - ageHours / 12) * 100)))
 
   useEffect(() => {
     let active = true
@@ -369,7 +370,7 @@ export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr
                 <div className="sg-tp__hud-card-top"><span className={'sg-tp__hud-pulse' + (dataIsFresh ? ' is-fresh' : '')}/><span>{t.hudSource}</span></div>
                 <strong>{dataIsFresh ? t.hudFresh : t.hudStale}</strong>
                 <span className="sg-tp__hud-date">{observationDate || t.noObservationTitle}</span>
-                <div className="sg-tp__hud-signal" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div>
+                <div className="sg-tp__hud-window-label">{t.hudWindow}</div><div className="sg-tp__hud-signal" role="img" aria-label={t.hudWindow}><i style={{ width: freshnessPercent + "%" }}/></div>
               </div>
             </aside>
             <div className="sg-tp__hero-copy">
