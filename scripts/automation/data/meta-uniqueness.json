@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T19:54:08.667Z",
+  "generatedAt": "2026-10-12T20:25:26.028Z",
   "sites": {
     "mq": {
       "pageCount": 363,
@@ -128,12 +128,12 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 96
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 89
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",
@@ -333,12 +333,12 @@
         {
           "file": "conditions/mer-calme/index.html",
           "kind": "desc-length-warn",
-          "length": 96
+          "length": 107
         },
         {
           "file": "conditions/snorkeling/index.html",
           "kind": "desc-length-warn",
-          "length": 89
+          "length": 99
         },
         {
           "file": "conditions/uv-fort/index.html",

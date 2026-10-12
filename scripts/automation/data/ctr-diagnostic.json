@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T19:54:00.285Z",
+  "generatedAt": "2026-10-12T20:25:17.541Z",
   "sites": {
     "mq": {
       "opportunityCount": 0,
@@ -9,92 +9,101 @@
       "wins": [
         {
           "url": "https://sargasses-martinique.com/en/",
-          "impressions": 63,
-          "clicks": 16,
-          "position": 7.5,
-          "actualCtr": 25.4,
-          "expectedCtr": 2.73,
-          "ctrLift": 22.67
-        },
-        {
-          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-          "impressions": 121,
-          "clicks": 15,
-          "position": 8.3,
-          "actualCtr": 12.4,
-          "expectedCtr": 2.33,
-          "ctrLift": 10.07
+          "impressions": 57,
+          "clicks": 19,
+          "position": 6.9,
+          "actualCtr": 33.33,
+          "expectedCtr": 3.11,
+          "ctrLift": 30.22
         },
         {
           "url": "https://sargasses-martinique.com/sargasses-le-diamant/",
-          "impressions": 58,
+          "impressions": 53,
           "clicks": 6,
-          "position": 93.5,
-          "actualCtr": 10.34,
+          "position": 73.7,
+          "actualCtr": 11.32,
           "expectedCtr": 0.5,
-          "ctrLift": 9.84
+          "ctrLift": 10.82
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+          "impressions": 140,
+          "clicks": 15,
+          "position": 7.7,
+          "actualCtr": 10.71,
+          "expectedCtr": 2.64,
+          "ctrLift": 8.07
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1246,
-          "clicks": 94,
-          "position": 7.1,
-          "actualCtr": 7.54,
-          "expectedCtr": 2.95,
-          "ctrLift": 4.59
-        },
-        {
-          "url": "https://sargasses-martinique.com/saison-sargasses-martinique/",
-          "impressions": 66,
-          "clicks": 4,
-          "position": 9.8,
-          "actualCtr": 6.06,
-          "expectedCtr": 1.59,
-          "ctrLift": 4.47
+          "impressions": 1209,
+          "clicks": 101,
+          "position": 6.7,
+          "actualCtr": 8.35,
+          "expectedCtr": 3.32,
+          "ctrLift": 5.04
         },
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 3387,
-          "clicks": 239,
-          "position": 6.3,
-          "actualCtr": 7.06,
-          "expectedCtr": 3.65,
-          "ctrLift": 3.41
+          "impressions": 3610,
+          "clicks": 307,
+          "position": 6.2,
+          "actualCtr": 8.5,
+          "expectedCtr": 3.85,
+          "ctrLift": 4.66
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
+          "impressions": 88,
+          "clicks": 8,
+          "position": 5.3,
+          "actualCtr": 9.09,
+          "expectedCtr": 5.48,
+          "ctrLift": 3.61
         }
       ]
     },
     "gp": {
       "opportunityCount": 0,
-      "winCount": 3,
+      "winCount": 4,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
           "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
-          "impressions": 66,
+          "impressions": 63,
           "clicks": 6,
-          "position": 15.6,
-          "actualCtr": 9.09,
+          "position": 14.6,
+          "actualCtr": 9.52,
           "expectedCtr": 0.5,
-          "ctrLift": 8.59
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 5704,
-          "clicks": 601,
-          "position": 4.8,
-          "actualCtr": 10.54,
-          "expectedCtr": 6.4,
-          "ctrLift": 4.13
+          "ctrLift": 9.02
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 698,
-          "clicks": 47,
-          "position": 7.6,
-          "actualCtr": 6.73,
-          "expectedCtr": 2.7,
-          "ctrLift": 4.03
+          "impressions": 611,
+          "clicks": 51,
+          "position": 6.7,
+          "actualCtr": 8.35,
+          "expectedCtr": 3.26,
+          "ctrLift": 5.09
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/",
+          "impressions": 5860,
+          "clicks": 584,
+          "position": 5,
+          "actualCtr": 9.97,
+          "expectedCtr": 6.03,
+          "ctrLift": 3.93
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/",
+          "impressions": 238,
+          "clicks": 14,
+          "position": 7.4,
+          "actualCtr": 5.88,
+          "expectedCtr": 2.8,
+          "ctrLift": 3.08
         }
       ]
     },

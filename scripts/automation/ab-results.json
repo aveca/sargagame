@@ -1,6 +1,6 @@
 {
   "_comment": "Auto-fetched: Apps Script funnel > GA4 > Sheets. See _source.",
-  "_fetchedAt": "2026-10-05T19:55:22.417Z",
+  "_fetchedAt": "2026-10-12T20:26:49.021Z",
   "_source": "none",
   "tests": [
     {
@@ -18,6 +18,23 @@
         0
       ],
       "metric": "sg_email_submit",
+      "_source": "sheets"
+    },
+    {
+      "id": "pass_copy",
+      "variants": [
+        "control",
+        "benefit"
+      ],
+      "sessions": [
+        0,
+        0
+      ],
+      "conversions": [
+        0,
+        0
+      ],
+      "metric": "sg_pass_cta",
       "_source": "sheets"
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-05T19:54:00.222Z",
+  "generatedAt": "2026-10-12T20:25:17.475Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,13 +12,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 3387,
-          "clicks": 239
+          "impressions": 3610,
+          "clicks": 307
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1246,
-          "clicks": 94
+          "impressions": 1209,
+          "clicks": 101
         }
       ],
       "orphans": [
@@ -74,7 +74,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-season/",
-          "impressions": 4,
+          "impressions": 1,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -84,7 +84,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/mentions-legales.html",
-          "impressions": 0,
+          "impressions": 1,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -105,8 +105,8 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 5704,
-          "clicks": 601
+          "impressions": 5860,
+          "clicks": 584
         }
       ],
       "orphans": [
@@ -130,7 +130,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -139,7 +139,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
-          "impressions": 0,
+          "impressions": 1,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -184,7 +184,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/mentions-legales.html",
-          "impressions": 0,
+          "impressions": 2,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
