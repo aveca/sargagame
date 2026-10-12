@@ -38,6 +38,11 @@ const apacheHeaders = fs.readFileSync(path.join(ROOT, 'public', '.htaccess'), 'u
 check(/Content-Security-Policy:\s*frame-ancestors 'none'/.test(pageHeaders), 'Cloudflare Pages sends frame-ancestors in an HTTP header')
 check(/Header set Content-Security-Policy "[^\n]*frame-ancestors 'none'/.test(apacheHeaders), 'classic hosting keeps frame-ancestors in an HTTP header')
 check(/Header set X-Frame-Options "DENY"/.test(apacheHeaders), 'X-Frame-Options is aligned with deny-framing policy')
+check(/\/version\.json[\s\S]*?Cache-Control:\s*no-cache, no-store, must-revalidate/.test(pageHeaders), 'Cloudflare Pages disables caching for version.json')
+check(/\/sw\.js[\s\S]*?Cache-Control:\s*no-cache, no-store, must-revalidate/.test(pageHeaders), 'Cloudflare Pages disables caching for sw.js')
+const fleetVerifier = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-live-fleet.cjs'), 'utf8')
+check(/searchParams\.set\('fleet_verify'/.test(fleetVerifier), 'fleet verifier requests a cache-busted version.json')
+check(/'cache-control':\s*'no-cache'/.test(fleetVerifier), 'fleet verifier sends explicit no-cache request headers')
 check(!/k\.clarity\.ms/.test(csp) || connectSrc.includes('https://*.clarity.ms'), 'pas de dépendance au seul k.clarity.ms')
 
 process.exit(fail ? 1 : 0)
