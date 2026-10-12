@@ -36,7 +36,7 @@ const COPY = {
     outsideRegion: 'La position est hors de la zone reconnue pour ce site. Choisis une plage de la liste.',
     distance: km => 'À environ ' + km + ' km', freshnessHours: h => 'Observation il y a ' + h + ' h',
     freshnessMinutes: m => 'Observation il y a ' + m + ' min', source: 'Source satellite',
-    freshnessNow: 'Observation très récente', noPhoto: 'Photo non disponible'
+    freshnessNow: 'Observation très récente', heroTag: 'SARGASSES · SIGNAL SATELLITE', hudTitle: 'ÉTAT DES DONNÉES', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observation récente', hudStale: 'Vérification nécessaire', noPhoto: 'Photo non disponible'
   },
   en: {
     eyebrow: 'THE WATCHER · PERSONAL RECOMMENDATION',
@@ -69,7 +69,7 @@ const COPY = {
     outsideRegion: 'Your location is outside the area recognised for this site. Choose a beach from the list.',
     distance: km => 'About ' + km + ' km away', freshnessHours: h => 'Observed ' + h + ' h ago',
     freshnessMinutes: m => 'Observed ' + m + ' min ago', source: 'Satellite source',
-    freshnessNow: 'Very recent observation', noPhoto: 'Photo unavailable'
+    freshnessNow: 'Very recent observation', heroTag: 'SARGASSUM · SATELLITE SIGNAL', hudTitle: 'DATA STATUS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Recent observation', hudStale: 'Check required', noPhoto: 'Photo unavailable'
   },
   es: {
     eyebrow: 'EL VIGÍA · RECOMENDACIÓN PERSONAL',
@@ -102,7 +102,7 @@ const COPY = {
     outsideRegion: 'Tu ubicación está fuera del área reconocida para este sitio. Elige una playa de la lista.',
     distance: km => 'A unos ' + km + ' km', freshnessHours: h => 'Observación hace ' + h + ' h',
     freshnessMinutes: m => 'Observación hace ' + m + ' min', source: 'Fuente satelital',
-    freshnessNow: 'Observación muy reciente', noPhoto: 'Foto no disponible'
+    freshnessNow: 'Observación muy reciente', heroTag: 'SARGAZO · SEÑAL SATELITAL', hudTitle: 'ESTADO DE LOS DATOS', hudSource: 'COPERNICUS MARINE', hudFresh: 'Observación reciente', hudStale: 'Requiere verificación', noPhoto: 'Foto no disponible'
   }
 }
 
@@ -327,15 +327,53 @@ export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr
                   </linearGradient>
                 </defs>
                 <rect width="800" height="360" fill="url(#sg-tp-hero-sky)"/>
-                <circle cx="610" cy="92" r="58" fill="#FFE5AD"/>
+                <circle className="sg-tp__sun-halo" cx="610" cy="92" r="86" fill="#FFE3AC" opacity=".16"/>
+                <g className="sg-tp__cloud sg-tp__cloud--one" fill="#FFF0D5" opacity=".19">
+                  <ellipse cx="188" cy="94" rx="66" ry="13"/><ellipse cx="218" cy="85" rx="42" ry="17"/><ellipse cx="244" cy="96" rx="49" ry="10"/>
+                </g>
+                <g className="sg-tp__cloud sg-tp__cloud--two" fill="#FFF0D5" opacity=".13">
+                  <ellipse cx="392" cy="127" rx="49" ry="9"/><ellipse cx="420" cy="119" rx="31" ry="13"/><ellipse cx="445" cy="128" rx="37" ry="8"/>
+                </g>
+                <circle className="sg-tp__sun" cx="610" cy="92" r="58" fill="#FFE5AD"/>
+                <path d="M0 204 Q95 178 174 201 T330 196 L330 224 H0Z" fill="#274C48" opacity=".72"/>
+                <path d="M318 207 Q405 168 493 204 T655 200 L655 226 H318Z" fill="#35594F" opacity=".62"/>
+                <g className="sg-tp__birds" fill="none" stroke="#193D40" strokeWidth="2.5" strokeLinecap="round" opacity=".56">
+                  <path d="M478 83 q8 -8 16 0 q8 -8 16 0"/><path d="M523 106 q6 -6 12 0 q6 -6 12 0"/>
+                </g>
                 <path d="M0 190 Q120 164 240 190 T480 190 T800 190 V360 H0Z" fill="url(#sg-tp-hero-sea)"/>
+                <path className="sg-tp__sun-road" d="M566 171 L644 171 L738 333 L505 333Z" fill="#FFE4AA" opacity=".2"/>
+                <path className="sg-tp__water-glint sg-tp__water-glint--one" d="M526 211 Q565 206 604 211 T681 211" fill="none" stroke="#FFF0BE" strokeWidth="3" strokeLinecap="round" opacity=".8"/>
+                <path className="sg-tp__water-glint sg-tp__water-glint--two" d="M486 243 Q522 237 558 243 T621 243" fill="none" stroke="#C8F5E9" strokeWidth="2" strokeLinecap="round" opacity=".55"/>
+                <path className="sg-tp__water-glint sg-tp__water-glint--three" d="M580 278 Q607 273 634 278 T691 278" fill="none" stroke="#FFF0BE" strokeWidth="2.5" strokeLinecap="round" opacity=".62"/>
                 <path className="sg-tp__wave sg-tp__wave--one" d="M0 220 Q120 202 240 220 T480 220 T800 220" fill="none" stroke="#B8F4E7" strokeWidth="4" opacity=".85"/>
                 <path className="sg-tp__wave sg-tp__wave--two" d="M0 260 Q110 245 220 260 T440 260 T660 260 T800 260" fill="none" stroke="#B8F4E7" strokeWidth="2.5" opacity=".58"/>
                 <path d="M0 310 Q160 286 320 310 T640 310 T800 306 V360 H0Z" fill="#EBCB98"/>
+                <path d="M0 314 Q160 290 320 314 T640 314 T800 310" fill="none" stroke="#FFF0D0" strokeWidth="3" opacity=".8"/>
+                <g className="sg-tp__sea-sparkles" fill="#FFF3CA">
+                  <circle cx="577" cy="201" r="2.3"/><circle cx="648" cy="225" r="1.8"/><circle cx="536" cy="253" r="1.6"/><circle cx="621" cy="295" r="2.2"/><circle cx="701" cy="263" r="1.5"/>
+                </g>
               </svg>
             </div>
+            <aside className="sg-tp__hero-hud" aria-label={t.hudTitle}>
+              <div className="sg-tp__hud-compass" aria-hidden="true">
+                <svg viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="43" fill="none" stroke="currentColor" strokeOpacity=".36"/>
+                  <circle cx="50" cy="50" r="32" fill="none" stroke="currentColor" strokeOpacity=".22" strokeDasharray="2 5"/>
+                  <path d="M50 14V25 M50 75V86 M14 50H25 M75 50H86" stroke="currentColor" strokeOpacity=".72" strokeWidth="1.5"/>
+                  <path d="M50 25L61 58L50 51L39 58Z" fill="#FFD27C"/>
+                  <circle cx="50" cy="50" r="3.5" fill="#76E5D1"/>
+                </svg>
+                <span>N · E · S · O</span>
+              </div>
+              <div className="sg-tp__hud-card">
+                <div className="sg-tp__hud-card-top"><span className={'sg-tp__hud-pulse' + (dataIsFresh ? ' is-fresh' : '')}/><span>{t.hudSource}</span></div>
+                <strong>{dataIsFresh ? t.hudFresh : t.hudStale}</strong>
+                <span className="sg-tp__hud-date">{observationDate || t.noObservationTitle}</span>
+                <div className="sg-tp__hud-signal" aria-hidden="true"><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/><i/></div>
+              </div>
+            </aside>
             <div className="sg-tp__hero-copy">
-              <span className="sg-tp__eyebrow">{t.eyebrow}{region && region.name ? ' · ' + region.name : ''}</span>
+              <span className="sg-tp__eyebrow">{t.eyebrow}{region && region.name ? ' · ' + region.name : ''}<span className="sg-tp__hero-tag">{t.heroTag}</span></span>
               <h1 id="sg-tp-title">{t.title}</h1>
               <p>{t.subtitle}</p>
               <div className="sg-tp__trust-line">
