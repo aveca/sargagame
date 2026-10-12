@@ -13862,8 +13862,13 @@ export default function App(){
         {RECOMMEND_MODE && dataReady && (
           <ErrBound><Suspense fallback={null}>
             <LazyTrouvePlage
-              region={typeof getRegion === 'function' ? getRegion() : null}
-              beaches={(pickBeaches || (allBeaches||[]).filter(b => b && b.status && b.score != null)) || []}
+              region={REGION || {
+                id: window.location.hostname.includes('guadeloupe') ? 'gp' : 'mq',
+                name: window.location.hostname.includes('guadeloupe') ? 'Guadeloupe' : 'Martinique',
+                primaryLang: lang
+              }}
+              beaches={(Array.isArray(pickBeaches) && pickBeaches.length ? pickBeaches : (allBeaches||[]).filter(b => b && b.status && b.score != null)) || []}
+              sargData={sargData}
               lang={lang}
             />
           </Suspense></ErrBound>
