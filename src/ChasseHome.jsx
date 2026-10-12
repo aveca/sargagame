@@ -1431,8 +1431,11 @@ export default function ChasseHome(props){
   const collSet = useMemo(()=>new Set(collected),[collected])
 
   const fresh = useMemo(()=>{
-    try{ const u=sargData&&(sargData.updatedAt||sargData.erddapTimestamp); if(!u) return null
-      const age=(Date.now()-new Date(u).getTime())/36e5; if(!isFinite(age)||age<0||age>12) return null
+    // Observation satellite SEULE (isSatelliteFresh12h) : updatedAt = republication,
+    // jamais une preuve d'observation (défaut mixte prod 2026-10-12).
+    try{ if(!isSatelliteFresh12h(sargData)) return null
+      const u=sargData&&sargData.erddapTimestamp; if(!u) return null
+      const age=(Date.now()-new Date(u).getTime())/36e5; if(!isFinite(age)||age<0) return null
       return age<1 ? _t({fr:"il y a "+Math.max(1,Math.round(age*60))+" min",en:Math.max(1,Math.round(age*60))+" min ago",es:"hace "+Math.max(1,Math.round(age*60))+" min"})
                    : _t({fr:"il y a "+Math.round(age)+" h",en:Math.round(age)+"h ago",es:"hace "+Math.round(age)+" h"}) }
     catch(_){ return null }
@@ -1632,7 +1635,7 @@ export default function ChasseHome(props){
       <div className="lc-top">
         <div className="lc-veilwrap" {...(spaceEnabled&&veilTapOn?{role:"button",tabIndex:0,"aria-label":_t({fr:"Ouvrir mon espace",en:"Open my space",es:"Abrir mi espacio"}),onClick:()=>_openSpaceTap("sg_veiltap"),onKeyDown:_kd(()=>_openSpaceTap("sg_veiltap"))}:{})}><Veilleur mood={mood} size={52}/></div>
         <div className="lc-live">
-          <span className="lc-eyebrow">{_t(I18N.eyebrow)}</span>
+          <span className="lc-eyebrow">{fresh?_t(I18N.eyebrow):_t({fr:"LA CHASSE · VÉRIFICATION EN COURS",en:"THE HUNT · VERIFYING",es:"LA CAZA · VERIFICANDO"})}</span>
           <span className="lc-date">{dateLbl}{fresh?" · maj "+fresh:""}</span>
         </div>
         <div className="lc-streak" title={_t(I18N.streak)} {...(spaceEnabled&&streakTapOn?{role:"button",tabIndex:0,"aria-label":_t(I18N.streak),onClick:()=>_openSpaceTap("sg_streak_tap"),onKeyDown:_kd(()=>_openSpaceTap("sg_streak_tap"))}:{})}>
