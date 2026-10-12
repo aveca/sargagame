@@ -21,6 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
+import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
 const LS_KEY="sg_chasse"
@@ -166,6 +167,32 @@ function Veilleur({mood,size=64}){
   )
 }
 
+/* ---- photos de plage : cache partagé, fallback illustré si image absente ---- */
+let BEACH_PHOTO_MAP = null
+let BEACH_PHOTO_MAP_PROMISE = null
+function useBeachPhoto(beachId){
+  const [src,setSrc]=useState(()=>BEACH_PHOTO_MAP?resolveBeachPhoto(beachId,BEACH_PHOTO_MAP):null)
+  useEffect(()=>{
+    let active=true
+    if(BEACH_PHOTO_MAP){
+      setSrc(resolveBeachPhoto(beachId,BEACH_PHOTO_MAP))
+      return()=>{active=false}
+    }
+    if(!BEACH_PHOTO_MAP_PROMISE){
+      BEACH_PHOTO_MAP_PROMISE=fetch("/data/beaches-images.json",{cache:"force-cache",credentials:"same-origin"})
+        .then(r=>r.ok?r.json():{})
+        .then(map=>{
+          BEACH_PHOTO_MAP=map&&typeof map==="object"&&!Array.isArray(map)?map:{}
+          return BEACH_PHOTO_MAP
+        })
+        .catch(()=>{BEACH_PHOTO_MAP={};return BEACH_PHOTO_MAP})
+    }
+    BEACH_PHOTO_MAP_PROMISE.then(map=>{if(active)setSrc(resolveBeachPhoto(beachId,map))})
+    return()=>{active=false}
+  },[beachId])
+  return src
+}
+
 /* ---- carte TCG (face révélée) ---- */
 function TCard({beach,lang,onTap,rot=0,collected=true}){
   const v=vof(beach.status), r=rarity(beach.score)
@@ -173,6 +200,9 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
   const _t=(o)=>o[lang]||o.fr
   const sc=beach.score!=null?Math.round(beach.score):null
   const pw=powers(beach,lang)
+  const photoSrc=useBeachPhoto(beach&&beach.id)
+  const [failedPhotoSrc,setFailedPhotoSrc]=useState(null)
+  const hasPhoto=!!photoSrc&&failedPhotoSrc!==photoSrc
   return (
     <button type="button" className={`lc-card ${r.cls} ${collected?"":"lc-locked"}`} style={{"--rot":rot+"deg"}}
       onClick={onTap} aria-label={beach.name}>
@@ -184,8 +214,12 @@ function TCard({beach,lang,onTap,rot=0,collected=true}){
           <span className="lc-ty">{typeEmoji(beach)}</span>
         </span>
         <span className="lc-hp" aria-hidden="true"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
-        <span className="lc-illu"><Illu st={v.st} score={sc||0} uid={uid}/>
-          <span className="lc-rar">{r.stars} {_t(r.lbl)}</span></span>
+        <span className={"lc-illu"+(hasPhoto?" lc-illu-photo":"")}>
+          {hasPhoto
+            ? <img className="lc-photo" src={photoSrc} alt="" loading="lazy" decoding="async" onError={()=>setFailedPhotoSrc(photoSrc)}/>
+            : <Illu st={v.st} score={sc||0} uid={uid}/>}
+          <span className="lc-rar">{r.stars} {_t(r.lbl)}</span>
+        </span>
         <span className="lc-bd">
           {pw.map(([e,t],i)=>(
             <span className="lc-atk" key={i}><span className="lc-atke">{e}</span>
@@ -2340,8 +2374,20 @@ html.sg-standalone .lc-detail{bottom:auto;height:var(--sg-vh,100dvh)}
 .lc-nm{font-family:"AntonLC",system-ui,sans-serif;font-size:13px;color:#fff;line-height:1.05;text-shadow:1.5px 1.5px 0 var(--ink);
   flex:1;text-transform:uppercase;letter-spacing:.3px}
 .lc-sc{font-family:"AntonLC",system-ui,sans-serif;font-size:18px;color:#fff;text-shadow:1.5px 1.5px 0 var(--ink);line-height:1}
-.lc-illu{position:relative;display:block;height:96px;border-bottom:2.5px solid var(--ink);overflow:hidden}
+.lc-illu{position:relative;display:block;height:124px;border-bottom:2.5px solid var(--ink);overflow:hidden}
 .lc-illu svg{position:absolute;inset:0;width:100%;height:100%}
+.lc-illu-photo{isolation:isolate;background:#0c1925}
+.lc-illu .lc-photo{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;
+  transform:scale(1.015);filter:saturate(1.08) contrast(1.03);
+  transition:transform .55s cubic-bezier(.2,.7,.2,1),filter .55s ease}
+.lc-illu-photo::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(13,11,20,.01) 0%,rgba(13,11,20,.08) 42%,rgba(13,11,20,.72) 100%)}
+.lc-illu-photo .lc-rar{z-index:2;box-shadow:0 2px 10px rgba(0,0,0,.22)}
+.lc-card:hover .lc-photo,.lc-card:focus-visible .lc-photo{transform:scale(1.075);filter:saturate(1.18) contrast(1.04)}
+@media(prefers-reduced-motion:reduce){
+  .lc-illu .lc-photo{transition:none;transform:none;filter:saturate(1.04) contrast(1.02)}
+  .lc-card:hover .lc-photo,.lc-card:focus-visible .lc-photo{transform:none}
+}
 .lc-rar{position:absolute;left:5px;bottom:4px;font-family:"AntonLC",system-ui,sans-serif;font-size:8px;color:#fff;
   background:var(--ink);padding:1.5px 6px;border-radius:12px;letter-spacing:.4px;border:1.5px solid rgba(255,255,255,.5)}
 .lc-card.r-rare .lc-rar{background:#1f7fc0}
