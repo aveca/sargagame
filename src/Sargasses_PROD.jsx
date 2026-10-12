@@ -13867,7 +13867,7 @@ export default function App(){
                 name: window.location.hostname.includes('guadeloupe') ? 'Guadeloupe' : 'Martinique',
                 primaryLang: lang
               }}
-              beaches={(Array.isArray(pickBeaches) && pickBeaches.length ? pickBeaches : (allBeaches||[]).filter(b => b && b.status && b.score != null)) || []}
+              beaches={(allBeaches || []).filter(b => b && b.status && b.status !== '_loading' && b.score != null)}
               sargData={sargData}
               lang={lang}
             />
