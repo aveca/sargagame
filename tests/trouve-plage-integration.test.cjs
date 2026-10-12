@@ -12,14 +12,14 @@ const end = source.indexOf('\n        )}', start)
 assert.notEqual(end, -1, 'recommendation route integration must be closed')
 const integration = source.slice(start, end)
 
-assert.doesNotMatch(
-  integration,
-  /\\bpickBeaches\\b/,
+assert.equal(
+  integration.includes('pickBeaches'),
+  false,
   'the App scope does not define pickBeaches; the route must not reference it'
 )
-assert.match(
-  integration,
-  /beaches=\\{\\(allBeaches \\|\\| \\[\\]\\)\\.filter\\(/,
+assert.equal(
+  integration.includes('beaches={(allBeaches || []).filter('),
+  true,
   'the recommendation route must receive filtered beaches from the App state'
 )
 
