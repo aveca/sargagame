@@ -25,7 +25,7 @@
   background:#102a35;box-shadow:0 26px 80px rgba(0,0,0,.26)}
 .sg-tp__hero-art{position:absolute;inset:0;z-index:-2;overflow:hidden}
 .sg-tp__hero-art svg{width:100%;height:100%;display:block;min-height:280px}
-.sg-tp__hero:after{content:"";position:absolute;inset:0;z-index:-1;background:
+.sg-tp__wave{stroke-dasharray:10 14;animation:sgtpWave 8s linear infinite}\n.sg-tp__wave--two{animation-duration:11s;animation-direction:reverse}\n@keyframes sgtpWave{to{stroke-dashoffset:-192}}\n.sg-tp__hero:after{content:"";position:absolute;inset:0;z-index:-1;background:
   linear-gradient(90deg,rgba(5,23,31,.94) 0%,rgba(5,23,31,.77) 52%,rgba(5,23,31,.12) 100%),
   linear-gradient(0deg,rgba(5,23,31,.65),transparent 75%)}
 .sg-tp__hero-copy{max-width:630px}
