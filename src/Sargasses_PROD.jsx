@@ -68,6 +68,8 @@ const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 // design/proto-home-veilleur.html porté). Additif, opt-in debug ?home=1 (prioritaire
 // sur chasse/homeAZ le temps de l'A/B), control = HeroVerdict/GameFunnel/HomeAZ/Chasse intacts.
 const LazyHomeJuicy=lazyWithRetry(()=>import("./HomeJuicy.jsx"))
+const LazyTrouvePlage=lazyWithRetry(()=>import("./TrouvePlage.jsx"))
+const RECOMMEND_MODE=(()=>{try{return /[?&]recommend=1/.test(window.location.search)}catch(_){return false}})()
 // LE VEILLEUR TE RÉPOND — assistant visuel zéro-LLM (proto design/proto-veilleur-repond.html
 // porté). Intent-parsing déterministe (regex+lexique) → sélection d'une vraie plage → bulles
 // visuelles (scène SVG + verdict réel + plan B). Surface deep-link ?veille=1 (comme BriefMatin),
@@ -13856,6 +13858,17 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
+        {/* TROUVEPLAGE — expérience « trouve ta plage » (param URL ) ?recommend=1, pilotée par la mission #21). Additif, aucun détournement du hero. */}
+        {RECOMMEND_MODE && dataReady && (
+          <ErrBound><Suspense fallback={null}>
+            <LazyTrouvePlage
+              region={typeof getRegion === 'function' ? getRegion() : null}
+              beaches={(pickBeaches || (allBeaches||[]).filter(b => b && b.status && b.score != null)) || []}
+              lang={lang}
+            />
+          </Suspense></ErrBound>
+        )}
+
         {showHero&&dataReady&&heroPick&&(homeJuicy?(
           /* BRAS A/B `home_juicy` — « Le tampon qui claque » (proto porté 2026-07-03).
              Additif, PRIORITAIRE quand ?home=1 (sinon injoignable derrière chasse=true
