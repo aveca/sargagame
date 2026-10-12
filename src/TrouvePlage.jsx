@@ -8,9 +8,9 @@ const COPY = {
     eyebrow: 'LE VEILLEUR · RECOMMANDATION PERSONNELLE',
     title: 'Trouve ta plage idéale',
     subtitle: 'Une recommandation concrète, fondée sur la dernière observation satellite disponible.',
-    useLocation: 'Trouver près de moi', manual: 'Choisir une plage', locationBusy: 'Recherche des plages à proximité…',
+    useLocation: 'Trouver près de moi', manual: 'Choisir une plage', locationBusy: 'Recherche des plages à proximité…', privacy: 'La position est facultative. Elle sert uniquement à classer les plages proches dans cette session.',
     close: 'Fermer et revenir à la carte', photoCaption: 'Photo de la plage · pas une mesure satellite',
-    resultEyebrow: 'MEILLEURE OPTION DISPONIBLE', selectedEyebrow: 'ÉTAT DE LA PLAGE CHOISIE',
+    resultEyebrow: 'MEILLEURE OPTION DISPONIBLE', recommendedTitle: 'La meilleure option disponible', selectedEyebrow: 'ÉTAT DE LA PLAGE CHOISIE', selectedTitle: 'Statut actuel de cette plage',
     clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter', score: 'Score plage',
     observed: 'Observation satellite', why: 'Pourquoi ce choix',
     whyCopy: 'Cette plage ressort selon son statut et son score actuels. Le statut peut changer après une nouvelle observation.',
@@ -42,9 +42,9 @@ const COPY = {
     eyebrow: 'THE WATCHER · PERSONAL RECOMMENDATION',
     title: 'Find your ideal beach',
     subtitle: 'A useful recommendation based on the latest dated satellite observation available.',
-    useLocation: 'Find beaches near me', manual: 'Choose a beach', locationBusy: 'Finding nearby beaches…',
+    useLocation: 'Find beaches near me', manual: 'Choose a beach', locationBusy: 'Finding nearby beaches…', privacy: 'Location is optional and is used only to rank nearby beaches in this session.',
     close: 'Close and return to the map', photoCaption: 'Beach photo · not a satellite measurement',
-    resultEyebrow: 'BEST AVAILABLE MATCH', selectedEyebrow: 'STATUS OF YOUR SELECTED BEACH',
+    resultEyebrow: 'BEST AVAILABLE MATCH', recommendedTitle: 'Your best available option', selectedEyebrow: 'STATUS OF YOUR SELECTED BEACH', selectedTitle: 'Current beach status',
     clean: 'Clean', moderate: 'Moderate', avoid: 'Avoid', score: 'Beach score',
     observed: 'Satellite observation', why: 'Why this beach',
     whyCopy: 'This beach ranks by its current status and score. Its status may change after a new observation.',
@@ -75,9 +75,9 @@ const COPY = {
     eyebrow: 'EL VIGÍA · RECOMENDACIÓN PERSONAL',
     title: 'Encuentra tu playa ideal',
     subtitle: 'Una recomendación útil basada en la última observación satelital fechada disponible.',
-    useLocation: 'Buscar cerca de mí', manual: 'Elegir una playa', locationBusy: 'Buscando playas cercanas…',
+    useLocation: 'Buscar cerca de mí', manual: 'Elegir una playa', locationBusy: 'Buscando playas cercanas…', privacy: 'La ubicación es opcional y solo se usa para ordenar las playas cercanas en esta sesión.',
     close: 'Cerrar y volver al mapa', photoCaption: 'Foto de la playa · no es una medición satelital',
-    resultEyebrow: 'MEJOR OPCIÓN DISPONIBLE', selectedEyebrow: 'ESTADO DE LA PLAYA ELEGIDA',
+    resultEyebrow: 'MEJOR OPCIÓN DISPONIBLE', recommendedTitle: 'La mejor opción disponible', selectedEyebrow: 'ESTADO DE LA PLAYA ELEGIDA', selectedTitle: 'Estado actual de esta playa',
     clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar', score: 'Puntuación de playa',
     observed: 'Observación satelital', why: 'Por qué esta playa',
     whyCopy: 'Esta playa destaca según su estado y puntuación actuales. El estado puede cambiar tras una nueva observación.',
@@ -185,9 +185,9 @@ function ResultPhoto({ beach, photoMap, statusLabel, t }) {
 }
 
 function copyForState(state, t, selectedIsAvoid = false) {
-  if (state === 'recommended') return { title: t.resultEyebrow, detail: t.whyCopy }
+  if (state === 'recommended') return { title: t.recommendedTitle, detail: t.whyCopy }
   if (state === 'selected' && selectedIsAvoid) return { title: t.selectedAvoidTitle, detail: t.selectedAvoid }
-  if (state === 'selected') return { title: t.selectedEyebrow, detail: t.whyCopy }
+  if (state === 'selected') return { title: t.selectedTitle, detail: t.whyCopy }
   if (state === 'no_beaches') return { title: t.noBeachesTitle, detail: t.noBeaches }
   if (state === 'no_observation') return { title: t.noObservationTitle, detail: t.noObservation }
   if (state === 'stale') return { title: t.staleTitle, detail: t.stale }
@@ -345,16 +345,18 @@ export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr
             </div>
           </div>
 
+          {!dataIsFresh && <p className="sg-tp__notice sg-tp__freshness-warning" role="status">{observationMs == null ? t.noObservation : t.stale}</p>}
+
           {step === 'entry' && (
             <section className="sg-tp__panel">
-              <p className="sg-tp__panel-title">{t.subtitle}</p>
+              <p className="sg-tp__panel-title">{t.chooseTitle}</p>
               <div className="sg-tp__actions">
                 <button type="button" className="sg-tp__button sg-tp__button--primary" onClick={onUsePosition}>
                   <span aria-hidden="true">⌖</span>{t.useLocation}
                 </button>
                 <button type="button" className="sg-tp__button sg-tp__button--secondary" onClick={() => setStep('manual')}>{t.manual}</button>
               </div>
-              <p className="sg-tp__privacy">{t.locationDenied}</p>
+              <p className="sg-tp__privacy">{t.privacy}</p>
             </section>
           )}
 
