@@ -1864,6 +1864,7 @@ const AB_FREEZE_MAP = {
   // Tests CONVERSION — garder actifs (revenu direct)
   "pw_copy": null,           // 3-way CTA copy (urgency/value/trust) — LIRE le variant
   "pw_pass_seq": null,       // Pass offer sequencing — LIRE le variant
+  "pass_copy": null,          // PassOffer CTA/transparency copy — 85% benefit / 15% control
 
   // TOUT LE RESTE → gelé sur control (index 0) sauf si promu (variante dominante)
   "dataviz": "control",

@@ -40,6 +40,7 @@ const RESULTS_PATH = path.join(__dirname, 'ab-results.json')
 // no call site left): pw_prelude
 const TESTS = [
   { id: 'em1', dimension: 'customEvent:ab_em1', variants: ['control', 'curiosity'], metric: 'sg_email_submit' },
+  { id: 'pass_copy', dimension: 'customEvent:ab_pass_copy', variants: ['control', 'benefit'], metric: 'sg_pass_cta' },
 ]
 
 async function fetchTestData(analyticsdata, propertyId, test) {

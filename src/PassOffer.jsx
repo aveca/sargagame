@@ -1,6 +1,6 @@
 import React,{useEffect,memo,useRef,useState}from"react"
 import{getSegment}from"./lib/segment.js"
-import{track}from"./Sargasses_PROD.jsx"
+import{track,abVariant}from"./Sargasses_PROD.jsx"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
@@ -17,11 +17,20 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
+  // Copy A/B: 85% value-first CTA, 15% control. Query override for QA/rollback.
+  const copyVariant=(()=>{try{
+    const assigned=abVariant("pass_copy",["control","benefit"],[.15,.85])
+    const q=window.location.search||""
+    if(/[?&]passcopy=1(?:&|$)/.test(q))return "benefit"
+    if(/[?&]passcopy=0(?:&|$)/.test(q))return "control"
+    return assigned
+  }catch(_){return "control"}})()
+  const benefitCopy=copyVariant==="benefit"
   const cents = PASS.cents[cur]
-  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice"});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice"})}catch(_){}},[])
+  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice",copy_variant:copyVariant});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",copy_variant:copyVariant})}catch(_){}},[])
   const buy=()=>{
-    sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents})
-    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg})}catch(_){}
+    sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents,copy_variant:copyVariant})
+    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg,copy_variant:copyVariant})}catch(_){}
     localStorage.setItem('sg_checkout_started_at', Date.now())
     if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
   }
@@ -85,7 +94,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: "none",
             }}>
-              {_t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
+              {benefitCopy ? _t(lang, "Débloquer la prévision 7 jours →", "Unlock the 7-day forecast →", "Desbloquear el pronóstico de 7 días →") : _t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
             </span>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
@@ -116,7 +125,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
 
         <a href={lang === "en" ? "/reliability/" : lang === "es" ? "/fiabilidad/" : "/fiabilite/"} target="_blank" rel="noopener"
           style={{ display: "block", textAlign: "center", margin: "10px 0 0", fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
-          {_t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
+          {benefitCopy ? _t(lang, "Méthode, précision mesurée et limites →", "Method, measured accuracy & limitations →", "Método, precisión medida y límites →") : _t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
 
         {/* Transparence prix USD haute saison (juin-nov) */}
