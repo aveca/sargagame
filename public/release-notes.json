@@ -1,7 +1,36 @@
 {
   "_comment": "SOURCE DE VÉRITÉ unique des releases. Édite UNIQUEMENT ce fichier pour publier une nouveauté à toute la flotte (mq/gp/florida/rivieramaya/puntacana). `current` = id de la release en cours = releases[0].v. `scripts/sync-version.cjs` en dérive public/version.json + le CACHE_NAME de public/sw.js. Le frontend (Journal du Veilleur) montre aux visiteurs qui reviennent toutes les releases dont le v est > à leur sg_rel_seen. Items i18n fr/en/es, honnêtes (jamais de fausse fraîcheur). href optionnel = lien same-origin (n'apparaît que s'il existe sur le domaine courant).",
-  "current": "v220",
+  "current": "v221",
   "releases": [
+    {
+      "v": "v221",
+      "date": "2026-10-12",
+      "title": {
+        "fr": "Fiabilité régionale et navigation clarifiées",
+        "en": "Regional reliability and clearer navigation",
+        "es": "Fiabilidad regional y navegación más claras"
+      },
+      "items": [
+        {
+          "emoji": "🧭",
+          "fr": "Les anciens liens de fiabilité sont redirigés vers la page canonique de chaque région, dans sa langue principale.",
+          "en": "Legacy reliability links now redirect to each region's canonical page in its primary language.",
+          "es": "Los enlaces antiguos de fiabilidad ahora llevan a la página canónica de cada región en su idioma principal."
+        },
+        {
+          "emoji": "🌐",
+          "fr": "Les pages introuvables affichent maintenant le message 404 dans la langue de la région.",
+          "en": "Missing pages now display the 404 message in the region's language.",
+          "es": "Las páginas no encontradas ahora muestran el mensaje 404 en el idioma de la región."
+        },
+        {
+          "emoji": "🏝️",
+          "fr": "Le contour cartographique de Tulum est disponible en production avec les données régionales.",
+          "en": "Tulum's map outline is available in production alongside the regional data.",
+          "es": "El contorno cartográfico de Tulum está disponible en producción junto con los datos regionales."
+        }
+      ]
+    },
     {
       "v": "v220",
       "date": "2026-10-07",
