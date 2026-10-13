@@ -45,6 +45,36 @@ export function isSatelliteStale36h(sargData, now = Date.now()) {
 }
 
 /**
+ * Libellé de fraîcheur du détail de plage (lc-detail) — correction
+ * SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001 : le libellé principal annonçait
+ * « Mesuré au satellite ce matin » quelle que soit l'âge réel (baseline live :
+ * observation ~16h). Règle :
+ *   - observation <12h → « ce matin » (comportement historique préservé),
+ *   - au-delà → âge réel de l'observation (erddapTimestamp), cohérent avec le
+ *     panneau « Pourquoi ce verdict ? » qui affiche déjà ce nombre,
+ *   - absent/invalide/futur → formulation honnête de vérification, jamais
+ *     d'affirmation de fréquence inventée.
+ * Utilise exclusivement les prédicats partagés (aucune lecture updatedAt).
+ */
+export function lcDetailFreshnessLabel(sargData, lang = 'fr', now = Date.now()) {
+  const ageH = satelliteAgeHours(sargData, now);
+  if (ageH == null) {
+    return lang === 'es' ? 'Medición satelital en verificación — no adivinado.'
+      : lang === 'en' ? 'Satellite reading being verified — not guessed.'
+      : 'Mesure satellite en cours de vérification — pas deviné.';
+  }
+  if (isSatelliteFresh12h(sargData, now)) {
+    return lang === 'es' ? 'Medido por satélite esta mañana — no adivinado.'
+      : lang === 'en' ? 'Measured by satellite this morning — not guessed.'
+      : 'Mesuré au satellite ce matin — pas deviné.';
+  }
+  const h = Math.round(ageH);
+  return lang === 'es' ? `Última medición satelital hace ${h} h — verificado, no adivinado.`
+    : lang === 'en' ? `Last satellite reading ${h}h ago — verified, not guessed.`
+    : `Dernière mesure satellite il y a ${h} h — vérifié, pas deviné.`;
+}
+
+/**
  * Format the age of the last verified data update for the map header.
  * It deliberately returns complete localized copy; it never invents a timestamp.
  */

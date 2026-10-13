@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { isSatelliteStale36h } from "./lib/format-freshness.mjs"
+import { isSatelliteStale36h, lcDetailFreshnessLabel } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -607,7 +607,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
       <div className="lc-detail-body">
         <h2 className="lc-detail-name">{beach.name}</h2>
         <div className={`lc-detail-head s-${v.st}`}>{_t(head)}</div>
-        <div className="lc-detail-sub">{_t({fr:"Mesuré au satellite ce matin — pas deviné.",en:"Measured by satellite this morning — not guessed.",es:"Medido por satélite — no adivinado."})}
+        {/* Libellé de fraîcheur (SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001) :
+            « Mesuré au satellite ce matin » UNIQUEMENT si l'observation satellite
+            a < 12h (kill-switch produit déjà partagé). Au-delà, l'âge réel de
+            l'observation (erddap), cohérent avec le panneau « Pourquoi ce verdict ? ».
+            Sans horodatage valide : formulation de vérification, jamais de fréquence
+            inventée. */}
+        <div className="lc-detail-sub">{lcDetailFreshnessLabel(sargData,lang)}
           {why&&<button type="button" className="lc-why-btn" aria-expanded={whyOpen} onClick={toggleWhy}>
             {_t({fr:"Pourquoi ce verdict ?",en:"Why this verdict?",es:"¿Por qué este veredicto?"})} <span aria-hidden="true">{whyOpen?"−":"+"}</span>
           </button>}
