@@ -90,6 +90,29 @@ test('idempotence Vite → prepare-ftp : une 404 déjà localisée est préserv�
   }
 })
 
+test('page partiellement localisée → fail-loud (jamais acceptée en silence)', () => {
+  // Titre EN déjà posé (ancre FR.title consommée), reste de la page FR :
+  // isAlreadyLocalized() doit refuser (h1/lang non traduits) et la seconde
+  // passe doit lever sur l'ancre manquante au lieu de livrer un mélange.
+  const partial = SRC.replace(
+    'Le Veilleur a perdu celle-ci · Sargasses Martinique & Guadeloupe',
+    'The Watcher lost this one · Sargassum Florida'
+  )
+  assert.notStrictEqual(partial, SRC, 'fixture : le remplacement a bien eu lieu')
+  assert.throws(
+    () => localize404(partial, byId.florida, 'Florida'),
+    /404-i18n: ancre introuvable/,
+    'partielle EN → throw, pas de sortie silencieuse'
+  )
+  // Cas miroir ES : h1 posé, titre FR intact → throw aussi.
+  const partialEs = SRC.replace('Même le satellite a perdu celle-ci', 'Hasta el satélite perdió esta')
+  assert.throws(
+    () => localize404(partialEs, byId.tulum, 'Tulum'),
+    /404-i18n: ancre introuvable/,
+    'partielle ES → throw'
+  )
+})
+
 test('Vite et prepare-ftp utilisent le même helper 404', () => {
   const start = VITE_CONFIG.indexOf('// Page 404 localisée')
   const end = VITE_CONFIG.indexOf('const indexPath', start)
