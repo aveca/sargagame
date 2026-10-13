@@ -67,10 +67,15 @@ check(/Content-Security-Policy:\s*frame-ancestors 'none'/.test(pageHeaders), "_h
 check(!directive('frame-ancestors').length, 'meta CSP ne définit pas frame-ancestors (non supporté en meta)')
 
 // 5. Croisement avec le code appelant : exactement ces origines, HTTPS.
+//    Fichiers TRACKED uniquement (src/lib/marine.js peut ne pas exister sur
+//    toutes les branches : optionnel, jamais bloquant — l'appel marine tracked
+//    vit dans Sargasses_PROD.jsx).
 const prod = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
-const marine = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'marine.js'), 'utf8')
+let marine = ''
+try { marine = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'marine.js'), 'utf8') } catch (_) {}
 const called = new Set()
 for (const src of [prod, marine]) {
+  if (!src) continue
   for (const m of src.matchAll(/https:\/\/[a-z0-9.-]*open-meteo\.com/g)) called.add(m[0])
 }
 const allowed = new Set(['https://api.open-meteo.com', 'https://marine-api.open-meteo.com'])
