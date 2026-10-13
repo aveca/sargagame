@@ -345,8 +345,8 @@
         },
         {
           "id": "pc004",
-          "afai": 0.17,
-          "status": "moderate"
+          "afai": 0.1,
+          "status": "clean"
         },
         {
           "id": "pc005",
@@ -355,8 +355,8 @@
         },
         {
           "id": "pc006",
-          "afai": 0.18,
-          "status": "moderate"
+          "afai": 0.11,
+          "status": "clean"
         },
         {
           "id": "pc007",
@@ -496,6 +496,20 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-10-13",
+      "beach": "pc004",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.1
+    },
+    {
+      "date": "2026-10-13",
+      "beach": "pc006",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.11
     }
   ]
 }
