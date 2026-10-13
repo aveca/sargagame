@@ -60,7 +60,7 @@
 - **Rôle** : coding_agent
 - **Description** : Extraire en sous-composants : doSubscribe (logique Silver), ErrorModal, PayGatewayHandler (Apple/Google)
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-001 ?" in_progress by coding_agent_agent pending
 
 ### TASK-P2-002 BCD reccurring → expose entièrement
 - **Priorité** : P2
