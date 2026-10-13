@@ -234,5 +234,48 @@ console.log('15) Hote page.url == domaine manifeste (www tolere, etranger refuse
   assert(validateManifest(base([c])).length === 0, 'canonical externe toujours permis');
 }
 
-console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide (+ durcissements C.1.1/C.1.2)');
+console.log('16) Carte region<->domaine stricte (manifeste + entrees)');
+{
+  for (const [d, r] of [['sargasses-martinique.com', 'mq'], ['sargasses-guadeloupe.com', 'gp'], ['sargassummiami.com', 'florida'], ['sargassumpuntacana.com', 'puntacana'], ['sargassumcancun.com', 'rivieramaya'], ['sargazotulum.com', 'tulum']]) {
+    const e = JSON.parse(JSON.stringify(home));
+    e.domain = d;
+    e.region = r;
+    e.url = 'https://' + d + '/';
+    e.canonical = 'https://' + d + '/';
+    const errs = validateManifest({ version: '1', domain: d, region: r, pages: [e] });
+    assert(errs.length === 0, 'couple valide ' + d + '=' + r);
+  }
+  const wrong = JSON.parse(JSON.stringify(home));
+  wrong.domain = 'sargassummiami.com';
+  wrong.region = 'tulum';
+  wrong.url = 'https://sargassummiami.com/';
+  wrong.canonical = 'https://sargassummiami.com/';
+  assert(validateManifest({ version: '1', domain: 'sargassummiami.com', region: 'tulum', pages: [wrong] }).some((e) => e.includes('incoherent')), 'couple incoherent manifeste -> erreur');
+  const wrongPage = JSON.parse(JSON.stringify(home));
+  wrongPage.domain = 'sargassummiami.com';
+  wrongPage.url = 'https://sargassummiami.com/';
+  const fixedManifest = { version: '1', domain: 'sargassummiami.com', region: 'florida', pages: [wrongPage] };
+  assert(validateManifest(fixedManifest).some((e) => e.includes('incoherent')), 'entree hors manifeste -> erreur (domain page != manifest)');
+  const gw = JSON.parse(JSON.stringify(home));
+  gw.url = 'https://www.sargasses-martinique.com/';
+  gw.canonical = 'https://www.sargasses-martinique.com/';
+  assert(validateManifest(base([gw])).length === 0, 'www. ne cree pas de domaine etranger');
+}
+
+console.log('17) URL publiques : sans userinfo ni port');
+{
+  const cred = JSON.parse(JSON.stringify(home));
+  cred.url = 'https://user:pass@sargasses-martinique.com/';
+  cred.canonical = 'https://user:pass@sargasses-martinique.com/';
+  assert(validateManifest(base([cred])).some((e) => e.includes('url absolue https requise') || e.includes('identifiants')), 'userinfo dans url -> refuse');
+  const port = JSON.parse(JSON.stringify(legal));
+  port.url = 'https://sargasses-martinique.com:8443/cgv';
+  port.canonical = 'https://sargasses-martinique.com:8443/cgv';
+  const portErrs = validateManifest(base([port]));
+  assert(portErrs.some((e) => e.includes('port') || e.includes('url absolue https requise')), 'port explicite -> refuse (' + portErrs[0] + ')');
+  const ok = JSON.parse(JSON.stringify(legal));
+  assert(validateManifest(base([ok])).length === 0, 'HTTPS sans port reste valide');
+}
+
+console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide (+ durcissements C.1.1/C.1.2/C.1.3)');
 process.exit(failures ? 1 : 0);

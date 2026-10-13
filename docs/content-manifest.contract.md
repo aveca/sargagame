@@ -35,7 +35,7 @@
 
 | Champ | Type | Obligatoire | Règle |
 |---|---|---|---|
-| `url` | string, URL absolue `https://` | oui | URL finale publiée (forme servie 200, sans slash sauf racine `/`) |
+| `url` | string, URL absolue `https://` | oui | URL finale publiée (forme servie 200, sans slash sauf racine `/`), **sans query/fragment, sans userinfo (`user:pass@`), sans port explicite** — HTTPS sans port reste valide |
 | `canonical` | string, URL absolue, ou `null` | oui (nullable) | Canonical **extrait** de la page, tel quel (jamais réécrit, jamais inventé ; `null` si absent) |
 | `domain` | string (host nu) | oui | Doit appartenir aux 6 domaines produit |
 | `region` | string | oui | `mq\|gp\|florida\|puntacana\|rivieramaya\|tulum` |
@@ -85,6 +85,14 @@ connu) ET pas de redirection connue ET chemin non privé (voir §6) ET
    domaine étranger = rejet. Les hôtes des assets et des `hreflang` ne sont
    pas contraints (CDN et alternates possibles) ; les canonicals externes
    restent permis.
+4. **Carte région↔domaine obligatoire** (source `regions/*.json`) :
+   `sargasses-martinique.com→mq`, `sargasses-guadeloupe.com→gp`,
+   `sargassummiami.com→florida`, `sargassumpuntacana.com→puntacana`,
+   `sargassumcancun.com→rivieramaya`, `sargazotulum.com→tulum`. Tout couple
+   divergent, au niveau du manifeste ou d'une entrée, est rejeté.
+5. **URL publiques** : aucune userinfo intégrée (`user:pass@`) ni port
+   explicite dans `url`/`canonical` (règle de sécurité §6 appliquée aux URL) ;
+   HTTPS sans port reste valide, CDN tolérés pour les assets.
 
 ## 6. Invariants de sécurité (validés, bloquants)
 

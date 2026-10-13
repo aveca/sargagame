@@ -5,11 +5,20 @@
 // Reutilisable tel quel par le futur generateur (pas de seconde source).
 'use strict';
 
-const DOMAINS = new Set([
-  'sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassummiami.com',
-  'sargassumpuntacana.com', 'sargassumcancun.com', 'sargazotulum.com',
+// Couple region <-> domaine OBLIGATOIRE (source de verite regions/*.json).
+// Toute divergence, manifeste ou entree, est refusee. Tolere www. cote hote
+// uniquement (jamais de domaine etranger) ; canonicals croises restent permis.
+const REGION_BY_DOMAIN = new Map([
+  ['sargasses-martinique.com', 'mq'],
+  ['sargasses-guadeloupe.com', 'gp'],
+  ['sargassummiami.com', 'florida'],
+  ['sargassumpuntacana.com', 'puntacana'],
+  ['sargassumcancun.com', 'rivieramaya'],
+  ['sargazotulum.com', 'tulum'],
 ]);
-const REGIONS = new Set(['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']);
+// Derivees (une seule source de verite : la carte ci-dessus).
+const DOMAINS = new Set(REGION_BY_DOMAIN.keys());
+const REGIONS = new Set(REGION_BY_DOMAIN.values());
 const LANGS = new Set(['fr', 'en', 'es']);
 const KINDS = new Set(['home', 'beach', 'hub', 'editorial', 'legal', 'pro', 'tool', 'data', 'other']);
 const REASONS = new Set(['noindex', 'redirect', 'private', 'canonical-externe', 'excluded']);
@@ -36,12 +45,25 @@ function normUrl(u) {
   try {
     const x = new URL(u);
     if (x.protocol !== 'https:') return null;
+    if (x.username || x.password) return null;
+    if (x.port) return null;
     x.hostname = x.hostname.toLowerCase();
     x.hash = '';
     x.search = '';
     return x.toString().replace(/\/$/, '') || x.origin;
   } catch {
     return null;
+  }
+}
+// URL emise : aucune userinfo (username:password@) et aucun port explicite.
+// HTTPS sans port reste valide ; les CDN pour assets restent permis (hote
+// libre hors page.url). Documente contrat §5.
+function hasCredentialsOrPort(u) {
+  try {
+    const x = new URL(u);
+    return Boolean(x.username || x.password || x.port);
+  } catch {
+    return true;
   }
 }
 function isDate(s) {
@@ -122,13 +144,17 @@ function validateEntry(e, i, manifestDomain) {
   }
   if (typeof e.url !== 'string' || !normUrl(e.url)) errs.push(`${at} : url absolue https requise`);
   else if (hasQueryOrFragment(e.url)) errs.push(`${at} : url sans query ni fragment requise`);
+  else if (hasCredentialsOrPort(e.url)) errs.push(`${at} : url sans identifiants integres ni port explicite requise`);
   if (!(e.canonical === null || (typeof e.canonical === 'string' && normUrl(e.canonical)))) {
     errs.push(`${at} : canonical null ou URL absolue requise`);
-  } else if (typeof e.canonical === 'string' && hasQueryOrFragment(e.canonical)) {
-    errs.push(`${at} : canonical sans query ni fragment requis`);
+  } else if (typeof e.canonical === 'string' && (hasQueryOrFragment(e.canonical) || hasCredentialsOrPort(e.canonical))) {
+    errs.push(`${at} : canonical sans query/fragment ni identifiants/port requis`);
   }
   if (!DOMAINS.has(e.domain)) errs.push(`${at} : domain inconnu (${e.domain})`);
   if (!REGIONS.has(e.region)) errs.push(`${at} : region inconnue (${e.region})`);
+  if (DOMAINS.has(e.domain) && REGION_BY_DOMAIN.get(e.domain) !== e.region) {
+    errs.push(`${at} : couple domain/region incoherent (${e.domain} != ${e.region})`);
+  }
   if (!(e.lang === null || LANGS.has(e.lang))) errs.push(`${at} : lang fr|en|es|null requise`);
   if (e.hreflang !== undefined) {
     const HL_KEYS = new Set(['lang', 'href']);
@@ -196,6 +222,9 @@ function validateManifest(obj) {
   if (obj.version !== '1') errs.push('manifeste : version "1" requise');
   if (!DOMAINS.has(obj.domain)) errs.push('manifeste : domain inconnu');
   if (!REGIONS.has(obj.region)) errs.push('manifeste : region inconnue');
+  if (DOMAINS.has(obj.domain) && REGION_BY_DOMAIN.get(obj.domain) !== obj.region) {
+    errs.push('manifeste : couple domain/region incoherent');
+  }
   if (obj.generatedAt !== undefined && !isStrictIsoDateTime(obj.generatedAt)) {
     errs.push('manifeste : generatedAt ISO-8601 stricte requise si presente (AAAA-MM-JJTHH:mm:ss[.sss](Z|±HH:mm))');
   }
