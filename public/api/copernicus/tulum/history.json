@@ -149,6 +149,36 @@
           "status": "moderate"
         }
       ]
+    },
+    {
+      "date": "2026-10-13",
+      "levels": [
+        {
+          "id": "tu001",
+          "afai": 0.14,
+          "status": "clean"
+        },
+        {
+          "id": "tu002",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu003",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu004",
+          "afai": 0.13,
+          "status": "clean"
+        },
+        {
+          "id": "tu005",
+          "afai": 0.14,
+          "status": "clean"
+        }
+      ]
     }
   ],
   "changes": [
@@ -158,6 +188,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-10-13",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
     }
   ]
 }
