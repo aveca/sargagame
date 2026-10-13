@@ -31,6 +31,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { compareHtmlFingerprint } = require('./html-integrity.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -55,6 +56,51 @@ function httpStatus(url, timeoutMs) {
 function httpBody(url, timeoutMs) {
   const r = curl(['-sL', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', url], timeoutMs);
   return { ok: r.ok, body: r.out || '' };
+}
+
+/**
+ * Only invoked after the live HTML differs from the prepared artifact.
+ * Purges exactly the homepage and /index.html for the affected hostname.
+ * Never falls back to purge_everything; credential/permission failures are explicit.
+ */
+async function purgeSpecificHtmlCache(domain) {
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  if (!token) return { ok: false, detail: 'CLOUDFLARE_API_TOKEN absent; permission to purge exact URLs unavailable' };
+  const headers = { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' };
+  let zones;
+  try {
+    const response = await fetch('https://api.cloudflare.com/client/v4/zones?name=' + encodeURIComponent(domain) + '&per_page=50', {
+      headers: { Authorization: 'Bearer ' + token },
+      signal: AbortSignal.timeout(15000),
+    });
+    const body = await response.json();
+    if (!response.ok || body.success !== true) {
+      const codes = (body.errors || []).map(e => String(e.code)).join(',');
+      return { ok: false, detail: 'Cloudflare zone lookup failed HTTP ' + response.status + (codes ? ' codes=' + codes : '') };
+    }
+    zones = (body.result || []).filter(z => z.name === domain);
+  } catch (e) {
+    return { ok: false, detail: 'Cloudflare zone lookup unavailable: ' + String(e.message || e).slice(0, 180) };
+  }
+  if (zones.length !== 1 || !zones[0].id) {
+    return { ok: false, detail: 'exact Cloudflare zone not uniquely resolved for ' + domain };
+  }
+  try {
+    const response = await fetch('https://api.cloudflare.com/client/v4/zones/' + encodeURIComponent(zones[0].id) + '/purge_cache', {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ files: ['https://' + domain + '/', 'https://' + domain + '/index.html'] }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const body = await response.json();
+    if (!response.ok || body.success !== true) {
+      const codes = (body.errors || []).map(e => String(e.code)).join(',');
+      return { ok: false, detail: 'targeted purge rejected HTTP ' + response.status + (codes ? ' codes=' + codes : '') };
+    }
+    return { ok: true, detail: 'Cloudflare accepted targeted purge for / and /index.html' };
+  } catch (e) {
+    return { ok: false, detail: 'targeted purge request failed: ' + String(e.message || e).slice(0, 180) };
+  }
 }
 
 // Préfixes d'ids de plages par région (cohérence croisée)
@@ -85,7 +131,7 @@ function resolveGa4Id(region) {
   return raw.trim();
 }
 
-function verifyDomain(region, opts) {
+async function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
   const set = (name, status, detail) => { R.checks[name] = { status, detail: detail || '' }; if (status === 'FAILED') R.errors.push(`${name}: ${detail || ''}`); };
@@ -132,9 +178,59 @@ function verifyDomain(region, opts) {
     set('region_beaches_coherence', foreign.length === 0 ? 'VERIFIED' : 'FAILED', foreign.length === 0 ? `${sd.levels.length} niveaux, aucun niveau d'une autre région` : `${foreign.length} niveaux étrangers : ${foreign.slice(0, 3).map(l => l.id).join(',')}`);
   } else set('region_beaches_coherence', 'NOT_VERIFIED', 'levels absents du sargassum.json');
 
-  // 5. Paramètres régionaux (canonical domaine + GA4 si configuré)
-  const html = httpBody(`https://${domain}/?pdv=${Date.now()}`);
-  const htmlOk = html.ok && html.body.length > 500;
+  // 5. HTML servi vs empreinte construite (CSP + bundle JS/CSS exacts)
+  // Toute divergence déclenche au plus une purge ciblée, suivie d'une nouvelle lecture.
+  // Une purge acceptée seule ne vaut jamais PASS : l'HTML rechargé doit correspondre.
+  // Vérifier le chemin exact de visiteur, sans query string (le cache key peut ignorer la query).
+  let html = httpBody(`https://${domain}/`);
+  let htmlOk = html.ok && html.body.length > 500;
+  if (!opts.htmlFingerprint) {
+    set('live_html_integrity', opts.htmlFingerprintRequired ? 'FAILED' : 'NOT_VERIFIED',
+      opts.htmlFingerprintRequired ? 'fingerprint HTML du build préparé absent' : 'aucune empreinte HTML préparée fournie');
+  } else {
+    let comparison = htmlOk
+      ? compareHtmlFingerprint(html.body, opts.htmlFingerprint, domain)
+      : { ok: false, reason: 'HTML live absent/trop court', actual: null };
+    let purgeDetail = '';
+    if (!comparison.ok) {
+      const initialReason = comparison.reason;
+      const purge = await purgeSpecificHtmlCache(domain);
+      purgeDetail = purge.detail;
+      if (purge.ok) {
+        for (let attempt = 1; attempt <= 5; attempt++) {
+          if (attempt > 1) await new Promise(resolve => setTimeout(resolve, 1000));
+          const retryStatus = httpStatus(`https://${domain}/`, 20000);
+          if (!retryStatus.ok || retryStatus.status !== 200) continue;
+          const retry = httpBody(`https://${domain}/`);
+          if (!retry.ok || retry.body.length <= 500) continue;
+          const retryComparison = compareHtmlFingerprint(retry.body, opts.htmlFingerprint, domain);
+          html = retry;
+          htmlOk = true;
+          comparison = retryComparison;
+          if (retryComparison.ok) break;
+        }
+      }
+      if (!comparison.ok) {
+        set('live_html_integrity', 'FAILED', initialReason + '; ' + purgeDetail +
+          (purge.ok ? '; échec persistant après relecture post-purge: ' + comparison.reason : ''));
+      }
+    }
+    if (comparison.ok) {
+      const assets = [comparison.actual.moduleSrc, ...(comparison.actual.cssSrcs || [])];
+      const failedAssets = [];
+      for (const ref of assets) {
+        const assetUrl = new URL(ref, `https://${domain}/`).href;
+        const assetStatus = httpStatus(assetUrl, 20000);
+        if (!assetStatus.ok || assetStatus.status !== 200) failedAssets.push(ref + ' HTTP ' + assetStatus.status);
+      }
+      set('live_html_integrity', failedAssets.length ? 'FAILED' : 'VERIFIED',
+        failedAssets.length ? 'CSP/bundle paths matched but referenced asset unavailable: ' + failedAssets.join(', ') :
+          comparison.reason + '; bundle JS/CSS répondent HTTP 200' + (purgeDetail ? '; ' + purgeDetail : ''));
+    }
+  }
+
+  // L'HTML peut avoir été relu après une purge ciblée ; réutiliser ce corps pour SEO/GA4.
+  htmlOk = html.ok && html.body.length > 500;
   const canonOk = htmlOk && html.body.includes(`://${domain}`);
   set('region_domain_params', htmlOk ? (canonOk ? 'VERIFIED' : 'FAILED') : 'NOT_VERIFIED',
     htmlOk ? (canonOk ? `canonical/og référencent ${domain}` : `le HTML servi ne référence pas ${domain}`) : 'HTML servi trop court/injoignable');
@@ -185,6 +281,19 @@ async function main() {
   const expectV = A('expect-v'), expectB = A('expect-b');
   const reportPath = A('report');
   const jobId = A('job');
+  const fingerprintDir = A('fingerprint-dir');
+  const htmlFingerprints = new Map();
+  if (fingerprintDir) {
+    const fullDir = path.resolve(ROOT, fingerprintDir);
+    try {
+      for (const name of fs.readdirSync(fullDir).filter(f => f.endsWith('.json'))) {
+        try {
+          const record = JSON.parse(fs.readFileSync(path.join(fullDir, name), 'utf8'));
+          if (record && record.id && record.cspSha256 && record.moduleSrc) htmlFingerprints.set(record.id, record);
+        } catch (_) { /* fichiers illisibles : contrôle fail-closed ci-dessous */ }
+      }
+    } catch (_) { /* dossier absent : contrôle fail-closed ci-dessous */ }
+  }
 
   let regions = getRegions();
   if (ids) regions = regions.filter(r => ids.includes(r.id));
@@ -218,7 +327,11 @@ async function main() {
   const results = [];
   for (const r of regions) {
     try {
-      const res = verifyDomain(r, { sosTest, expectV, expectB });
+      const res = await verifyDomain(r, {
+        sosTest, expectV, expectB,
+        htmlFingerprint: htmlFingerprints.get(r.id) || null,
+        htmlFingerprintRequired: Boolean(fingerprintDir),
+      });
       results.push(res);
       console.log(`\n[${r.id}] ${r.domain} → ${res.stage}`);
       for (const [name, c] of Object.entries(res.checks)) console.log(`   ${c.status === 'VERIFIED' ? 'OK ' : c.status === 'FAILED' ? 'FAIL' : 'N/V '} ${name} — ${c.detail}`);
