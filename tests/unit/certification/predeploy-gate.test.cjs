@@ -128,12 +128,22 @@ console.log('predeploy-gate : décision PREDEPLOY_ELIGIBLE\n');
   } finally { try { fs.rmSync(root, { recursive: true, force: true }); } catch (_) {} }
 }
 
-// P8 — post-deploy-verify calcule un stade FAILED sur domaine injoignable
+// P8 — post-deploy-verify calcule un stade FAILED sur domaine injoignable.
+// verifyDomain est async depuis l'ajout du contrôle HTML/purge conditionnelle.
 {
   const { verifyDomain } = require(path.join(REPO, 'scripts', 'autopilot', 'post-deploy-verify.cjs'));
-  const res = verifyDomain({ id: 'mq', domain: 'invalid.invalid.127-0-0-1.example', ga4: null }, { sosTest: false });
-  record('P8 domaine injoignable => stade FAILED (jamais VERIFIED simulé)', res.stage === 'FAILED' && res.checks.http_accessible.status === 'FAILED');
+  verifyDomain({ id: 'mq', domain: 'invalid.invalid.127-0-0-1.example', ga4: null }, { sosTest: false })
+    .then(res => {
+      record('P8 domaine injoignable => stade FAILED (jamais VERIFIED simulé)',
+        res.stage === 'FAILED' && res.checks.http_accessible.status === 'FAILED');
+      finish();
+    })
+    .catch(error => {
+      record('P8 domaine injoignable => stade FAILED (jamais VERIFIED simulé)', false, error.message);
+      finish();
+    });
 }
-
-console.log(`\n${count - failures}/${count} scénarios conformes`);
-process.exit(failures ? 1 : 0);
+function finish() {
+  console.log(`\n${count - failures}/${count} scénarios conformes`);
+  process.exit(failures ? 1 : 0);
+}
