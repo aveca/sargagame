@@ -181,7 +181,8 @@ async function verifyDomain(region, opts) {
   // 5. HTML servi vs empreinte construite (CSP + bundle JS/CSS exacts)
   // Toute divergence déclenche au plus une purge ciblée, suivie d'une nouvelle lecture.
   // Une purge acceptée seule ne vaut jamais PASS : l'HTML rechargé doit correspondre.
-  let html = httpBody(`https://${domain}/?pdv=${Date.now()}`);
+  // Vérifier le chemin exact de visiteur, sans query string (le cache key peut ignorer la query).
+  let html = httpBody(`https://${domain}/`);
   let htmlOk = html.ok && html.body.length > 500;
   if (!opts.htmlFingerprint) {
     set('live_html_integrity', opts.htmlFingerprintRequired ? 'FAILED' : 'NOT_VERIFIED',
@@ -198,6 +199,8 @@ async function verifyDomain(region, opts) {
       if (purge.ok) {
         for (let attempt = 1; attempt <= 5; attempt++) {
           if (attempt > 1) await new Promise(resolve => setTimeout(resolve, 1000));
+          const retryStatus = httpStatus(`https://${domain}/`, 20000);
+          if (!retryStatus.ok || retryStatus.status !== 200) continue;
           const retry = httpBody(`https://${domain}/`);
           if (!retry.ok || retry.body.length <= 500) continue;
           const retryComparison = compareHtmlFingerprint(retry.body, opts.htmlFingerprint, domain);
