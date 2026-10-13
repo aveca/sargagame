@@ -9,8 +9,8 @@ const REQUIRED_OPEN_METEO = [
 
 function attr(tag, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = tag.match(new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*["']([^"']*)["']`, 'i'));
-  return match ? match[1] : null;
+  const match = tag.match(new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+  return match ? (match[1] !== undefined ? match[1] : match[2]) : null;
 }
 
 function localAssetPath(ref, baseUrl) {
