@@ -368,10 +368,6 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: npm run build
-      - name: Validate Pages HTML CSP and bundle references
-        env:
-          VITE_REGION: ${{ matrix.region }}
-        run: node scripts/autopilot/check-prepared-html.cjs
       # Pages doit recevoir le même artefact que le Worker, sinon *.pages.dev
       # et le domaine divergent (source de faux diagnostics en audit).
       - name: Prepare domain site (prepare-ftp)
@@ -382,6 +378,10 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;if(!fs.existsSync(d+'/index.html')){console.error('missing '+d+'/index.html');process.exit(1)};require('fs').appendFileSync(process.env.GITHUB_OUTPUT,'dir='+d+'\n')"
+      - name: Validate Pages HTML CSP and bundle references
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/autopilot/check-prepared-html.cjs
       # Garde P0 MQ/GP : idem deploy-pages (avant envoi Cloudflare).
       - name: Guard regional data separation (no foreign beaches)
         env:
