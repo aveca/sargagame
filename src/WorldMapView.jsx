@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge } from "./lib/format-freshness.mjs"
+import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -38,11 +38,9 @@ function ti(lang, arr){ return lang==="en"?arr[1]:lang==="es"?arr[2]:arr[0] }
 function _t(lang, fr, en, es){ return lang==="es"?es:lang==="en"?en:fr }
 
 
-// Honnêteté fraîcheur : si l'image satellite a >36h, Le Veilleur l'avoue (flag STALE)
-// au lieu de faire semblant de tout voir en direct (Story Bible : « quand le Veilleur ne voit pas »).
-function isStale(updatedAt){
-  try{ return (Date.now()-new Date(updatedAt).getTime())/3.6e6 >= 36 }catch(_){ return false }
-}
+// Honnêteté fraîcheur (mission #39) : la pill carte utilise désormais les prédicats
+// partagés 12h/36h (isSatelliteFresh12h / isSatelliteStale36h) calculés sur l'observation
+// erddap — l'ancien prédicat local isStale(36h) laissait « EN DIRECT » entre 12 et 36 h.
 
 // Distance grand-cercle (km) entre 2 plages {lat,lng} — pour « où aller plutôt » (plan B).
 function haversineKm(a, b){
@@ -199,9 +197,18 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  beaches, island, updatedAt, erddapTimestamp, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
 }){
+  // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
+  // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
+  const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
+  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now();
+  const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: erddapTimestamp });
+  const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: erddapTimestamp });
+  const wmSatLbl = !wmSatValid ? _t(lang,"Vérification","Verification","Verificación") : (wmSatFresh ? _t(lang,"EN DIRECT","LIVE","EN VIVO") : _t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"));
+  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp, lang) : "···";
+  const wmSatAgeColor = wmSatFresh ? "#00786C" : "#B87A00";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -1688,11 +1695,11 @@ export default function WorldMapView({
               width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
               animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
-            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{updatedAt&&isStale(updatedAt)?_t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"):_t(lang,"EN DIRECT","LIVE","EN VIVO")}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:updatedAt&&isStale(updatedAt)?"#B87A00":"#00786C",marginLeft:2}}>
-              {updatedAt?formatFreshnessAge(updatedAt,lang):"···"}
+            <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
+              {wmSatAge}
             </span>
-            {/* Companion edit line 1193: background:updatedAt&&isStale(updatedAt)?"#B87A00":"#009E8E" */}
+            {/* Companion edit (mission #39) : couleur du âge pilotée par wmSatFresh (prédicat partagé 12h). */}
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
           <div style={{position:"relative",flex:1,minWidth:0,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
