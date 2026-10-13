@@ -156,7 +156,7 @@ async function upsertIncident(token, repo, report, d, env = process.env) {
   }
   const issue = await api(token, repo, '/issues', {
     method: 'POST',
-    body: JSON.stringify({ title: titleFor(d), body: incidentBody(report, d, env), labels: labelsFor(d) }),
+    body: JSON.stringify({ title: titleFor(d), body: incidentBody(report, d, env), labels: labelsFor(d), assignees: ['aveca'] }),
   });
   return { status: 'created', number: issue.number, url: issue.html_url, fingerprint: fp };
 }
