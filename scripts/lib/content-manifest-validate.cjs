@@ -17,12 +17,20 @@ const REASONS = new Set(['noindex', 'redirect', 'private', 'canonical-externe', 
 const SECRET_PATTERNS = [/secret/i, /token/i, /api[_-]?key/i, /BEGIN PRIVATE KEY/, /sk_live/, /sb_secret/];
 const PRIVATE_PATH_PATTERNS = [/\/_private\//, /\.php($|[?#])/, /\.htaccess($|[?#])/, /\.env($|[?#.])/, /(^|\/)\.[^/]*$/];
 const PAYMENT_PATH_PATTERNS = [/\/api\/mollie/, /widget-token/, /b2b-trial/, /mollie_return/, /checkout/, /payment/];
+// Route /pass (premium/paiement) : segment exact uniquement, pour ne jamais
+// rejeter une page publique legitime contenant "pass" (ex. /compass).
+function paymentPathHit(pathname) {
+  if (PAYMENT_PATH_PATTERNS.some((re) => re.test(pathname))) return true;
+  return hasPassSegment(pathname);
+}
 
 const ENTRY_KEYS = new Set([
   'url', 'canonical', 'domain', 'region', 'lang', 'hreflang', 'kind',
   'title', 'description', 'lastmod', 'images', 'ogImage', 'videos',
   'indexable', 'indexableReason', 'listedInSitemap', 'inlinks',
 ]);
+// Racine du manifeste : strict aussi (generatedAt = meta du fichier, optionnelle).
+const ROOT_KEYS = new Set(['version', 'domain', 'region', 'generatedAt', 'pages']);
 
 function normUrl(u) {
   try {
@@ -37,7 +45,31 @@ function normUrl(u) {
   }
 }
 function isDate(s) {
-  return typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(s));
+  // Date calendaire STRICTE : pas de roulement (2026-02-30 invalide),
+  // mois 01-12, annees bissextiles respectees. Plage d'annees volontairement
+  // non bornee (un contenu legal peut predater le site).
+  if (typeof s !== 'string') return false;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!m) return false;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  if (mo < 1 || mo > 12 || d < 1) return false;
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1];
+  return d <= dim;
+}
+// Segment de chemin EXACTEMENT "pass" (insensible a la casse) : route
+// premium/paiement. Volontairement strict-segment : "passe", "passage",
+// "compass" restent acceptes (calibre : 0 occurrence dans les 641 URL live).
+function hasPassSegment(pathname) {
+  return String(pathname || '').split('/').some((s) => s.toLowerCase() === 'pass');
+}
+// Query string ou fragment dans une URL emise : refuse (le manifeste ne
+// decrit que des URL finales canoniques ; la normalisation ne sert qu'aux
+// comparaisons internes).
+function hasQueryOrFragment(u) {
+  return /[?#]/.test(String(u || ''));
 }
 
 function validateEntry(e, i) {
@@ -48,15 +80,22 @@ function validateEntry(e, i) {
     if (!ENTRY_KEYS.has(k)) errs.push(`${at} : cle inconnue "${k}"`);
   }
   if (typeof e.url !== 'string' || !normUrl(e.url)) errs.push(`${at} : url absolue https requise`);
+  else if (hasQueryOrFragment(e.url)) errs.push(`${at} : url sans query ni fragment requise`);
   if (!(e.canonical === null || (typeof e.canonical === 'string' && normUrl(e.canonical)))) {
     errs.push(`${at} : canonical null ou URL absolue requise`);
+  } else if (typeof e.canonical === 'string' && hasQueryOrFragment(e.canonical)) {
+    errs.push(`${at} : canonical sans query ni fragment requis`);
   }
   if (!DOMAINS.has(e.domain)) errs.push(`${at} : domain inconnu (${e.domain})`);
   if (!REGIONS.has(e.region)) errs.push(`${at} : region inconnue (${e.region})`);
   if (!(e.lang === null || LANGS.has(e.lang))) errs.push(`${at} : lang fr|en|es|null requise`);
   if (e.hreflang !== undefined) {
-    if (!Array.isArray(e.hreflang) || e.hreflang.some((h) => !h || !LANGS.has(h.lang) || typeof h.href !== 'string' || !normUrl(h.href))) {
-      errs.push(`${at} : hreflang [{lang, href absolu}] invalide`);
+    const HL_KEYS = new Set(['lang', 'href']);
+    if (!Array.isArray(e.hreflang) || e.hreflang.some((h) =>
+      !h || typeof h !== 'object' || Array.isArray(h) ||
+      Object.keys(h).some((k) => !HL_KEYS.has(k)) ||
+      !LANGS.has(h.lang) || typeof h.href !== 'string' || !normUrl(h.href) || hasQueryOrFragment(h.href))) {
+      errs.push(`${at} : hreflang [{lang, href absolu}] invalide (cles strictes, sans query/fragment)`);
     }
   }
   if (!KINDS.has(e.kind)) errs.push(`${at} : kind inconnu (${e.kind})`);
@@ -64,8 +103,13 @@ function validateEntry(e, i) {
   if (!(e.description === null || typeof e.description === 'string')) errs.push(`${at} : description string|null requise`);
   if (!isDate(e.lastmod)) errs.push(`${at} : lastmod AAAA-MM-JJ requise (date contenu, jamais build)`);
   if (e.images !== undefined) {
-    if (!Array.isArray(e.images) || e.images.some((im) => !im || typeof im.src !== 'string' || !normUrl(im.src) || (im.alt !== undefined && im.alt !== null && typeof im.alt !== 'string'))) {
-      errs.push(`${at} : images [{src absolu, alt?}] invalides`);
+    const IM_KEYS = new Set(['src', 'alt']);
+    if (!Array.isArray(e.images) || e.images.some((im) =>
+      !im || typeof im !== 'object' || Array.isArray(im) ||
+      Object.keys(im).some((k) => !IM_KEYS.has(k)) ||
+      typeof im.src !== 'string' || !normUrl(im.src) || hasQueryOrFragment(im.src) ||
+      (im.alt !== undefined && im.alt !== null && typeof im.alt !== 'string'))) {
+      errs.push(`${at} : images [{src absolu, alt?}] invalides (cles strictes, sans query/fragment)`);
     }
   }
   if (!(e.ogImage === null || e.ogImage === undefined || (typeof e.ogImage === 'string' && normUrl(e.ogImage)))) {
@@ -95,9 +139,7 @@ function validateEntry(e, i) {
     for (const re of PRIVATE_PATH_PATTERNS) {
       if (re.test(p)) errs.push(`${at} : chemin prive/interne interdit (${p})`);
     }
-    for (const re of PAYMENT_PATH_PATTERNS) {
-      if (re.test(p)) errs.push(`${at} : route paiement/compte interdite (${p})`);
-    }
+    if (paymentPathHit(p)) errs.push(`${at} : route paiement/compte interdite (${p})`);
   }
   return errs;
 }
@@ -105,17 +147,37 @@ function validateEntry(e, i) {
 function validateManifest(obj) {
   const errs = [];
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return ['manifeste : objet requis'];
+  for (const k of Object.keys(obj)) {
+    if (!ROOT_KEYS.has(k)) errs.push(`manifeste : cle inconnue "${k}"`);
+  }
   if (obj.version !== '1') errs.push('manifeste : version "1" requise');
   if (!DOMAINS.has(obj.domain)) errs.push('manifeste : domain inconnu');
   if (!REGIONS.has(obj.region)) errs.push('manifeste : region inconnue');
+  if (obj.generatedAt !== undefined && (typeof obj.generatedAt !== 'string' || Number.isNaN(Date.parse(obj.generatedAt)))) {
+    errs.push('manifeste : generatedAt ISO-8601 requise si presente');
+  }
   if (!Array.isArray(obj.pages) || obj.pages.length === 0) errs.push('manifeste : pages[] non vide requis');
   if (Array.isArray(obj.pages)) {
-    const seen = new Set();
+    // Doublons selon la normalisation convenue (§5) : /x et /x/ (ou casse
+    // d'hote) designent la meme ressource. L'ORDRE des pages n'est PAS
+    // verifie ici : le tri est un devoir du generateur (Phase C.2).
+    const seen = new Map();
     obj.pages.forEach((e, i) => {
       errs.push(...validateEntry(e, i));
+      if (e && typeof e === 'object') {
+        if (e.domain !== undefined && e.domain !== obj.domain) {
+          errs.push(`pages[${i}] : domain "${e.domain}" incoherent avec manifeste "${obj.domain}"`);
+        }
+        if (e.region !== undefined && e.region !== obj.region) {
+          errs.push(`pages[${i}] : region "${e.region}" incoherente avec manifeste "${obj.region}"`);
+        }
+      }
       if (e && typeof e.url === 'string') {
-        if (seen.has(e.url)) errs.push(`pages : doublon ${e.url}`);
-        seen.add(e.url);
+        const n = normUrl(e.url);
+        if (n) {
+          if (seen.has(n)) errs.push(`pages : doublon normalise ${e.url} (vu : ${seen.get(n)})`);
+          else seen.set(n, e.url);
+        }
       }
     });
   }
@@ -123,15 +185,25 @@ function validateManifest(obj) {
 }
 
 // Clusters canonical inter-domaines : signale, ne corrige jamais.
+// Robuste aux entrees malformees (objets non-tableau, pages non-objets,
+// url/canonical non-strings : ignores, jamais de throw).
 function canonicalClusters(manifests) {
   const byCanon = new Map();
-  for (const m of manifests) {
-    for (const e of (m && m.pages) || []) {
-      if (!e || !e.canonical) continue;
-      const n = normUrl(e.canonical);
-      if (!n) continue;
-      if (!byCanon.has(n)) byCanon.set(n, []);
-      byCanon.get(n).push(`${m.domain}${new URL(e.url).pathname}`);
+  for (const m of Array.isArray(manifests) ? manifests : []) {
+    if (!m || typeof m !== 'object') continue;
+    const pages = Array.isArray(m.pages) ? m.pages : [];
+    for (const e of pages) {
+      try {
+        if (!e || typeof e !== 'object') continue;
+        if (typeof e.canonical !== 'string' || typeof e.url !== 'string') continue;
+        const n = normUrl(e.canonical);
+        const p = new URL(e.url).pathname;
+        if (!n) continue;
+        if (!byCanon.has(n)) byCanon.set(n, []);
+        byCanon.get(n).push(`${typeof m.domain === 'string' ? m.domain : '?'}${p}`);
+      } catch {
+        continue;
+      }
     }
   }
   return [...byCanon.entries()].filter(([, urls]) => urls.length > 1)

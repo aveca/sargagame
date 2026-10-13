@@ -67,11 +67,15 @@ console.log('3) Normalisation URL + champs manquants');
   assert(validateManifest(base([unk])).some((e) => e.includes('inconnue')), 'cle inconnue -> erreur');
 }
 
-console.log('4) Dates deterministes (meme objet -> meme serialisation)');
+console.log('4) Determinisme du validateur (pas de la generation)');
 {
-  const a = JSON.stringify(base([home, beach]));
-  const b = JSON.stringify(base([home, beach]));
-  assert(a === b, 'serialisation deterministe');
+  // Ce test prouve que LE VALIDATEUR est deterministe (memes erreurs a
+  // chaque passe). La garantie octet-par-octet du GENERATEUR releve de la
+  // Phase C.2 (tri + cles triees), pas de ce contrat.
+  const m = base([beach, home]);
+  const e1 = validateManifest(m);
+  const e2 = validateManifest(JSON.parse(JSON.stringify(m)));
+  assert(JSON.stringify(e1) === JSON.stringify(e2) && e1.length === 0, 'validateur deterministe (entree desordonnee acceptee, 0 erreur)');
 }
 
 console.log('5) Absence de donnees privees');
@@ -111,5 +115,83 @@ console.log('6) indexable vs listedInSitemap vs canonical');
   assert(clusters.length === 1 && clusters[0].urls.length === 2, 'cluster canonical inter-domaines signale (2 URL)');
 }
 
-console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide');
+console.log('7) Cles inconnues (racine + imbriquees)');
+{
+  const r = base([home]);
+  r.extra = 1;
+  assert(validateManifest(r).some((e) => e.includes('cle inconnue')), 'cle racine inconnue -> erreur');
+  const h = JSON.parse(JSON.stringify(home));
+  h.hreflang = [{ lang: 'en', href: 'https://sargasses-martinique.com/en/', x: 1 }];
+  assert(validateManifest(base([h])).some((e) => e.includes('hreflang')), 'cle hreflang inconnue -> erreur');
+  const im = JSON.parse(JSON.stringify(beach));
+  im.images = [{ src: 'https://sargasses-martinique.com/i.jpg', alt: 'a', w: 3 }];
+  assert(validateManifest(base([im])).some((e) => e.includes('images')), 'cle image inconnue -> erreur');
+  const okRoot = { version: '1', domain: 'sargasses-martinique.com', region: 'mq', generatedAt: '2026-10-13T18:00:00.000Z', pages: [home] };
+  assert(validateManifest(okRoot).length === 0, 'generatedAt ISO racine optionnelle acceptee');
+  const okPage = JSON.parse(JSON.stringify(home));
+  okPage.generatedAt = '2026-10-13T18:00:00.000Z';
+  assert(validateManifest(base([okPage])).some((e) => e.includes('cle inconnue')), 'generatedAt au niveau page -> erreur (racine uniquement)');
+  const badGen = { version: '1', domain: 'sargasses-martinique.com', region: 'mq', generatedAt: 'hier', pages: [home] };
+  assert(validateManifest(badGen).some((e) => e.includes('generatedAt')), 'generatedAt non-ISO -> erreur');
+}
+
+console.log('8) Coherence manifest.domain/region vs pages');
+{
+  const d = JSON.parse(JSON.stringify(home));
+  d.domain = 'sargasses-guadeloupe.com';
+  assert(validateManifest(base([d])).some((e) => e.includes('incoherent')), 'domain page != manifest -> erreur');
+  const g = JSON.parse(JSON.stringify(home));
+  g.region = 'gp';
+  assert(validateManifest(base([g])).some((e) => e.includes('incoherente')), 'region page != manifest -> erreur');
+}
+
+console.log('9) Query string et fragments refuses a l emission');
+{
+  for (const bad of ['https://sargasses-martinique.com/cgv?x=1', 'https://sargasses-martinique.com/cgv#ancre']) {
+    const e = JSON.parse(JSON.stringify(legal));
+    e.url = bad;
+    e.canonical = bad;
+    assert(validateManifest(base([e])).some((x) => x.includes('query ni fragment')), 'query/fragment emis -> erreur (' + bad + ')');
+  }
+}
+
+console.log('10) Dates calendaires strictes');
+{
+  for (const [d, ok] of [['2024-02-29', true], ['2023-02-29', false], ['2026-02-30', false], ['2026-13-01', false], ['2026-00-10', false], ['2026-04-31', false], ['2026-12-31', true], ['1999-01-01', true]]) {
+    const e = JSON.parse(JSON.stringify(legal));
+    e.lastmod = d;
+    const errs = validateManifest(base([e]));
+    assert(ok ? errs.length === 0 : errs.some((x) => x.includes('lastmod')), 'lastmod ' + d + ' -> ' + (ok ? 'acceptee' : 'rejetee'));
+  }
+}
+
+console.log('11) Route /pass (segment exact, sans faux positifs)');
+{
+  for (const bad of ['https://sargasses-martinique.com/pass', 'https://sargasses-martinique.com/pass/', 'https://sargasses-martinique.com/pro/PASS']) {
+    const e = JSON.parse(JSON.stringify(home));
+    e.url = bad;
+    e.canonical = bad;
+    assert(validateManifest(base([e])).some((x) => x.includes('paiement')), '/pass-like refuse (' + bad + ')');
+  }
+  for (const good of ['https://sargasses-martinique.com/compass', 'https://sargasses-martinique.com/passage-du-nord/']) {
+    const e = JSON.parse(JSON.stringify(home));
+    e.url = good;
+    e.canonical = good;
+    assert(validateManifest(base([e])).length === 0, 'mot contenant pass accepte (' + good + ')');
+  }
+}
+
+console.log('12) Doublons normalises + clusters robustes');
+{
+  const a = JSON.parse(JSON.stringify(legal));
+  const b = JSON.parse(JSON.stringify(legal));
+  b.url = 'https://sargasses-martinique.com/cgv/';
+  b.canonical = 'https://sargasses-martinique.com/cgv/';
+  assert(validateManifest(base([a, b])).some((e) => e.includes('doublon normalise')), '/cgv + /cgv/ -> doublon normalise');
+  assert(JSON.stringify(canonicalClusters(null)) === '[]', 'clusters(null) -> [] sans throw');
+  assert(JSON.stringify(canonicalClusters([{ no: 1 }, null, 'x'])) === '[]', 'clusters(malforme) -> [] sans throw');
+  assert(JSON.stringify(canonicalClusters([{ domain: 'd', pages: [{ url: ':::', canonical: 42 }] }])) === '[]', 'clusters(entrees invalides) -> [] sans throw');
+}
+
+console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide (+ durcissements C.1.1)');
 process.exit(failures ? 1 : 0);

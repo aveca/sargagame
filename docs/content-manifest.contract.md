@@ -21,8 +21,13 @@
 
 - Fichier : `data/content-manifest.json` (futur, un par dossier déployé).
 - JSON UTF-8, clés triées, tableau `pages` trié par `url`. Même état Git →
-  octets identiques (exigé par test).
+  octets identiques (devoir du **générateur**, Phase C.2 — le validateur
+  n'impose **aucun ordre** et accepte tout ordre en entrée).
 - `version` : `"1"`. Évolutions additives seulement en v1.
+- Clés racine strictes : `version`, `domain`, `region`, `pages`,
+  `generatedAt` (optionnelle, ISO-8601, méta du fichier uniquement).
+  Structures imbriquées strictes : `hreflang[]` = `{lang, href}` exactement,
+  `images[]` = `{src, alt}` exactement.
 
 ## 3. Schéma d'une entrée `pages[]`
 
@@ -37,7 +42,7 @@
 | `kind` | enum | oui | `home\|beach\|hub\|editorial\|legal\|pro\|tool\|data\|other` |
 | `title` | string \| `null` | oui (nullable) | `<title>` extrait, `null` si absent |
 | `description` | string \| `null` | oui (nullable) | `meta[name=description]` extraite, `null` si absente |
-| `lastmod` | string `AAAA-MM-JJ` | oui | **Date réelle du contenu dans Git** (`git log -1 --format=%cs -- <source>`) ; pages générées : date de contenu connue du générateur. **INTERDIT : date de build/génération.** |
+| `lastmod` | string `AAAA-MM-JJ` calendaire strict | oui | **Date réelle du contenu dans Git** (`git log -1 --format=%cs -- <source>`) ; pages générées : date de contenu connue du générateur. **INTERDIT : date de build/génération.** Validité calendaire réelle exigée (mois 01–12, jour existant, 29/02 uniquement bissextile — `2026-02-30` invalide). Plage d'années non bornée (un contenu légal peut prédater le site). |
 | `images` | `[{src, alt}]`, `src` absolus | non (défaut `[]`) | `<img src>` + `og:image` dédupliqués ; `alt` `null` si absent |
 | `ogImage` | string \| `null` | oui (nullable) | `meta[property=og:image]` extraite |
 | `videos` | `[string]` (URL absolues) | non (défaut `[]`) | `<video src>` / `<source>` extraits |
@@ -61,14 +66,18 @@ connu) ET pas de redirection connue ET chemin non privé (voir §6) ET
   validateur échoue).
 - `indexable` ne dit RIEN de l'indexation Google réelle.
 
-## 5. Normalisation des URL (comparaisons)
+## 5. Normalisation des URL et URL émises
 
-1. Schéma + host en minuscules ; `www.` conservé tel que publié (pas de
-   réécriture).
-2. Requête/fragment supprimés pour la comparaison (jamais émis).
-3. Slash final : `/` racine gardée ; sinon **forme publiée exacte** (le
-   manifeste ne normalise pas `/x` vs `/x/`, il constate).
-4. Comparaison canonical≡url après étapes 1–3 ; encodage conservé.
+1. **Émission** : `url`, `canonical`, `hreflang[].href`, `images[].src`,
+   `ogImage`, `videos[]` ne doivent contenir **ni query string ni fragment**
+   (`?`, `#` → rejet). Le manifeste ne décrit que des URL finales.
+2. **Comparaisons** (doublons, clusters) : schéma + host en minuscules ;
+   `www.` conservé tel que publié (pas de réécriture) ; requête/fragment
+   ignorés par construction (voir 1) ; slash final ramené à la forme
+   canonique de comparaison (`/x/` ≡ `/x`) ; encodage conservé.
+3. **Cohérence** : chaque entrée doit porter exactement le `domain` et la
+   `region` du manifeste qui la contient (canonicals croisés autorisés,
+   champs `domain`/`region` croisés interdits).
 
 ## 6. Invariants de sécurité (validés, bloquants)
 
@@ -78,7 +87,10 @@ Le manifeste et ses entrées NE DOIVENT contenir :
 - aucun chemin interne (système de fichiers, `/\_private/`, `.php`, `.htaccess`,
   `.env`, dotfiles) ;
 - aucune route de paiement/compte (`/api/mollie`, `widget-token`, `b2b-trial`,
-  `pass`, `checkout`, `payment`, `mollie_return`) ;
+  `mollie_return`, `checkout`, `payment`, ainsi que tout segment de chemin
+  exactement égal à `pass`, insensible à la casse). Volontairement étroit :
+  `passe`, `passage`, `compass` restent valides (calibré : 0 occurrence de
+  `pass` dans les 641 URL des sitemaps live le 2026-10-13) ;
 - aucune donnée utilisateur (email, nom, id de suivi individuel).
 - Champs strictement limités au schéma : toute clé inconnue = échec.
 
