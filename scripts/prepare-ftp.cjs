@@ -1025,7 +1025,7 @@ Sitemap: https://${domain}/sitemap.xml
       'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
       'expansion-survey',
     ])
-    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html'])
+    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html', 'comic-cartes.html'])
 
     const urls = []
     const walk = (dir, segs) => {
