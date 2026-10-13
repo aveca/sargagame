@@ -80,3 +80,11 @@ test('garde fail-loud : ancre manquante → throw explicite', () => {
     'devrait lever sur source dérivante'
   )
 })
+
+test('idempotence Vite → prepare-ftp : une 404 déjà localisée est préservée', () => {
+  for (const r of R.getAllRegions()) {
+    const once = localize404(SRC, r, r.name)
+    const twice = localize404(once, r, r.name)
+    assert.strictEqual(twice, once, `${r.id}: seconde localisation identique octet par octet`)
+  }
+})
