@@ -15,6 +15,7 @@ const { localize404 } = require('./localize-404.cjs')
 const R = require('../../regions/index.cjs')
 
 const SRC = fs.readFileSync(path.join(__dirname, '..', '..', 'public', '404.html'), 'utf-8')
+const VITE_CONFIG = fs.readFileSync(path.join(__dirname, '..', '..', 'vite.config.js'), 'utf-8')
 const byId = Object.fromEntries(R.getAllRegions().map(r => [r.id, r]))
 
 const FR_MARKERS = [
@@ -87,4 +88,13 @@ test('idempotence Vite → prepare-ftp : une 404 déjà localisée est préserv�
     const twice = localize404(once, r, r.name)
     assert.strictEqual(twice, once, `${r.id}: seconde localisation identique octet par octet`)
   }
+})
+
+test('Vite et prepare-ftp utilisent le même helper 404', () => {
+  const start = VITE_CONFIG.indexOf('// Page 404 localisée')
+  const end = VITE_CONFIG.indexOf('const indexPath', start)
+  assert.ok(start >= 0 && end > start, 'bloc closeBundle de 404 trouvé')
+  const block = VITE_CONFIG.slice(start, end)
+  assert.ok(block.includes("_require('./scripts/lib/localize-404.cjs')"), 'helper partagé appelé pendant le build Vite')
+  assert.ok(!block.includes('legacy-404-localize.cjs'), 'pas de second localiseur concurrent dans le même bloc')
 })
