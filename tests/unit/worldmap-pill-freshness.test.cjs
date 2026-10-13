@@ -67,7 +67,7 @@ async function main() {
   t(/erddapTimestamp\?formatFreshnessAge\(erddapTimestamp,lang\)|formatFreshnessAge\(erddapTimestamp,\s*lang\)/.test(wm), 'âge pill = formatFreshnessAge(erddapTimestamp) (jamais updatedAt seul)')
   t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
-  t(/erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\|\\|sargData\\?\\.updatedAt\\|\\|null\\}/.test(caller), 'appelant : prop erddapTimestamp={sargData?.erddapTimestamp||sargData?.updatedAt||null} câblée (observation erddap, fallback updatedAt = valeur déjà affichée par l ancien âge)')
+  t(/erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\|\\|sargData\\?\\.updatedAt\\|\\|null\\}/.test(caller), 'appelant : prop erddapTimestamp (observation erddap, fallback updatedAt = valeur de l ancien affichage)')
   t(wm.includes('erddapTimestamp') && !/updatedAt&&isStale\(updatedAt\)/.test(wm), 'ancien câblage updatedAt&&isStale supprimé')
 
   // 9. Traductions FR/EN/ES de la pill conservées.
