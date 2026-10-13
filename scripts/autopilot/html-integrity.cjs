@@ -9,7 +9,7 @@ const REQUIRED_OPEN_METEO = [
 
 function attr(tag, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = tag.match(new RegExp('(?:^|\\s)' + escaped + '\\s*=\\s*["\\']([^"\\']*)["\\']', 'i'));
+  const match = tag.match(new RegExp(`(?:^|\\s)${escaped}\\s*=\\s*["']([^"']*)["']`, 'i'));
   return match ? match[1] : null;
 }
 
