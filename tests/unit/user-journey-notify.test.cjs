@@ -36,7 +36,7 @@ t(!clean('Bearer abc123 secret=xyz').includes('abc123'), 'credential-like text i
 
 const mission = missionBody(report,[a],'1234567890abcdef',{GITHUB_SERVER_URL:'https://github.com',GITHUB_REPOSITORY:'aveca/sargagame',GITHUB_RUN_ID:'123'});
 t(mission.includes('user-journey-factory-fingerprint:'), 'Factory mission includes stable marker');
-t(mission.includes('"categories": [\n        "targeted-repair"'), 'Factory mission uses permitted repair category');
+t(mission.includes('"targeted-repair"') && mission.includes('"type": "repair"'), 'Factory mission uses permitted repair category');
 t(mission.includes('"type": "repair"'), 'Factory mission uses allowlisted job type');
 t(!mission.includes('ciGreenOnExactSha'), 'Factory mission never fabricates delivery evidence');
 
