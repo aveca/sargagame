@@ -131,7 +131,7 @@ function resolveGa4Id(region) {
   return raw.trim();
 }
 
-function verifyDomain(region, opts) {
+async function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
   const set = (name, status, detail) => { R.checks[name] = { status, detail: detail || '' }; if (status === 'FAILED') R.errors.push(`${name}: ${detail || ''}`); };
