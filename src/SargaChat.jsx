@@ -4,8 +4,21 @@
 // v2: Support input texte libre + keyword matching + frustration context
 import React,{useState,useEffect,useRef,useMemo}from"react"
 import{_t,track,BEACH_TO_SARG,IS_NEW_REGION,PAY_CAPTURE_ONLY,Veilleur,g,s}from"./Sargasses_PROD.jsx"
+import{isSatelliteFresh12h}from"./lib/format-freshness.mjs"
 export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,onPremium,onClose,frustrationContext}){
   const t=(fr,en,es)=>_t(lang,fr,en,es)
+  // Honnêteté fraîcheur (contrat produit 12h) : seule l'observation satellite
+  // (erddapTimestamp) prouve la fraîcheur — updatedAt seul ne prouve jamais rien.
+  const dataFresh12h=isSatelliteFresh12h(sargData)
+  const helloToday=t(
+    "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
+    "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
+    "¡Hola! Respondo con los datos satelitales de hoy — nada inventado. ¿Qué quieres saber?")
+  const helloLatest=t(
+    "Salut ! Je réponds avec les dernières données satellite — rien d'inventé. Tu veux savoir quoi ?",
+    "Hi! I answer with the latest satellite data — nothing made up. What do you want to know?",
+    "¡Hola! Respondo con los últimos datos satelitales — nada inventado. ¿Qué quieres saber?")
+  const helloText=dataFresh12h?helloToday:helloLatest
   const cands=useMemo(()=>(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status),[allBeaches,island])
   const cleans=useMemo(()=>cands.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0)),[cands])
   const rootChips=[
@@ -14,10 +27,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
     {k:"premium",label:t("⭐ C'est quoi Premium ?","⭐ What's Premium?","⭐ ¿Qué es Premium?")},
     {k:"trust",label:t("🛰 C'est fiable ?","🛰 Is it reliable?","🛰 ¿Es confiable?")},
   ]
-  const hello={who:"bot",text:t(
-    "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
-    "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
-    "¡Hola! Respondo con los datos satelitales de hoy — nada inventado. ¿Qué quieres saber?"),chips:rootChips}
+  const hello={who:"bot",text:helloText,chips:rootChips}
   const [msgs, setMsgs] = useState(() => {
     // Personalize opening based on frustration context
     if (frustrationContext) {
@@ -37,10 +47,14 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
           "¿Buscas información específica? Estoy aquí para ayudarte."
         )
       } else if (frustrationContext.type === "hesitation") {
-        contextMessage = t(
+        contextMessage = dataFresh12h ? t(
           "Une question ? Je réponds avec les données satellite du jour.",
           "Got a question? I answer with today's satellite data.",
           "¿Tienes una pregunta? Respondo con los datos satelitales de hoy."
+        ) : t(
+          "Une question ? Je réponds avec les dernières données satellite.",
+          "Got a question? I answer with the latest satellite data.",
+          "¿Tienes una pregunta? Respondo con los últimos datos satelitales."
         )
       } else {
         contextMessage = t(
@@ -238,8 +252,8 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
             </svg>
             <div style={{minWidth:0}}>
               <strong style={{fontSize:13.5,color:"#fff",lineHeight:1.2,display:"block"}}>{t("Le Veilleur","The Watchman","El Vigía")}</strong>
-              <span style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:2,fontSize:10.5,fontWeight:800,letterSpacing:".04em",color:"#1EC8B0",textTransform:"uppercase"}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:"#009E8E"}}/>{t("En direct","Live","En vivo")}
+              <span style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:2,fontSize:10.5,fontWeight:800,letterSpacing:".04em",color:dataFresh12h?"#1EC8B0":"#B87A00",textTransform:"uppercase"}}>
+                <span style={{width:6,height:6,borderRadius:"50%",background:dataFresh12h?"#009E8E":"#B87A00"}}/>{dataFresh12h?t("En direct","Live","En vivo"):t("Vérification en cours","Verification in progress","Verificación en curso")}
               </span>
             </div>
           </div>

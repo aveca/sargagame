@@ -21,6 +21,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { SeqDots, SEQ_STEP_CSS } from "./SeqPrimitives.jsx"
 import { qrPath } from "./qr-lite.js"
+import { isSatelliteFresh12h } from "./lib/format-freshness.mjs"
 
 const GOLD = "#FFC72C"
 const INK = "#0d1117"
@@ -97,12 +98,11 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
   useEffect(() => { if (pick && !pickedRef.current) { pickedRef.current = true; try { onPick && onPick(pick) } catch (_) {} } }, [pick])
 
   // ── GATE-STALE dur : pas d'affirmation de fraîcheur si données >12 h / stale ──
+  // Calculé au rendu depuis l'observation satellite (jamais le flag figé ni updatedAt seul).
   const freshOK = useMemo(() => {
     try {
-      if (!sargData || sargData.stale) return false
-      const u = sargData.updatedAt; if (!u) return false
-      const h = (Date.now() - new Date(u).getTime()) / 3.6e6
-      return isFinite(h) && h >= 0 && h < 12
+      if (!sargData) return false
+      return isSatelliteFresh12h(sargData)
     } catch (_) { return false }
   }, [sargData])
   const freshLabel = freshOK ? t("en ce moment", "right now", "ahora mismo") : t("au dernier passage satellite", "at the last satellite pass", "en el último paso del satélite")
