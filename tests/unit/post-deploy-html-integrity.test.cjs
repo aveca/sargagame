@@ -16,7 +16,7 @@ const goodHtml = `<!doctype html>
 <meta name="description" content="Contrôle reproductible de l'intégrité HTML, CSP et bundle du build préparé.">
 </head>
 <body><div id="root"></div><script type="module" crossorigin src="/assets/index-xyz.js"></script></body>
-</html>`;
+</html>` + '<!-- ' + 'representative prepared HTML fixture '.repeat(25) + ' -->';
 
 function check(value, label) {
   assert.ok(value, label);
