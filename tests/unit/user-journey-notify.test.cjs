@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const {
   hash, fingerprintForDefect, uniqueDefects, severity, titleFor,
   incidentBody, missionBody, labelsFor, factoryQueueGate, clean,
-} = require('../scripts/automation/user-journey-notify.cjs');
+} = require('../../scripts/automation/user-journey-notify.cjs');
 
 let n = 0;
 function t(value, label) { n++; assert.ok(value, label); console.log('OK  ' + label); }
