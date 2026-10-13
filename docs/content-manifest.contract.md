@@ -25,7 +25,9 @@
   n'impose **aucun ordre** et accepte tout ordre en entrée).
 - `version` : `"1"`. Évolutions additives seulement en v1.
 - Clés racine strictes : `version`, `domain`, `region`, `pages`,
-  `generatedAt` (optionnelle, ISO-8601, méta du fichier uniquement).
+  `generatedAt` (optionnelle, méta du fichier uniquement, format strict :
+  `AAAA-MM-JJTHH:mm:ss[.sss](Z|±HH:mm)` — ni date seule (jour ambigu), ni
+  heure sans fuseau, ni format local, ni date calendaire invalide).
   Structures imbriquées strictes : `hreflang[]` = `{lang, href}` exactement,
   `images[]` = `{src, alt}` exactement.
 
@@ -77,7 +79,12 @@ connu) ET pas de redirection connue ET chemin non privé (voir §6) ET
    canonique de comparaison (`/x/` ≡ `/x`) ; encodage conservé.
 3. **Cohérence** : chaque entrée doit porter exactement le `domain` et la
    `region` du manifeste qui la contient (canonicals croisés autorisés,
-   champs `domain`/`region` croisés interdits).
+   champs `domain`/`region` croisés interdits). De plus, **l'hôte de
+   `page.url` doit être le `domain` du manifeste**, avec tolérance explicite
+   d'un unique préfixe `www.` (forme publiée tolérée) ; tout autre hôte =
+   domaine étranger = rejet. Les hôtes des assets et des `hreflang` ne sont
+   pas contraints (CDN et alternates possibles) ; les canonicals externes
+   restent permis.
 
 ## 6. Invariants de sécurité (validés, bloquants)
 

@@ -71,8 +71,49 @@ function hasPassSegment(pathname) {
 function hasQueryOrFragment(u) {
   return /[?#]/.test(String(u || ''));
 }
+// ISO-8601 STRICT pour generatedAt (meta du fichier manifeste) :
+// YYYY-MM-DDTHH:mm:ss(.sss)?(Z|±HH:mm) — ni date seule (jour ambigu, fuseau
+// absent), ni heure sans fuseau, ni format local ("Oct 13 2026"), ni date
+// calendaire invalide. Documente dans le contrat §2.
+function isStrictIsoDateTime(s) {
+  if (typeof s !== 'string') return false;
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(\.\d{1,3})?(Z|[+-]\d{2}:\d{2})$/);
+  if (!m) return false;
+  const y = Number(m[1]);
+  const mo = Number(m[2]);
+  const d = Number(m[3]);
+  const h = Number(m[4]);
+  const mi = Number(m[5]);
+  const sec = Number(m[6]);
+  if (mo < 1 || mo > 12 || d < 1) return false;
+  const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0;
+  const dim = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31][mo - 1];
+  if (d > dim) return false;
+  if (h > 23 || mi > 59 || sec > 60) return false;
+  const tz = m[8];
+  if (tz !== 'Z') {
+    const tm = tz.match(/^([+-])(\d{2}):(\d{2})$/);
+    if (!tm || Number(tm[2]) > 23 || Number(tm[3]) > 59) return false;
+  }
+  return true;
+}
+// Hote de page.url : doit etre le domaine du manifeste, avec tolerance
+// explicite d'un unique prefixe "www." (forme publiee toleree). Tout autre
+// hote = domaine etranger = refuse. Les canonicals externes restent permis
+// (cohérence §5) ; les hotes des assets (images/videos/ogImage) et des
+// hreflang ne sont pas contraints ici (CDN et alternates possibles).
+function hostMatchesManifest(urlStr, domain) {
+  let host = '';
+  try {
+    host = new URL(urlStr).hostname.toLowerCase();
+  } catch {
+    return false;
+  }
+  const d = String(domain || '').toLowerCase();
+  return host === d || host === 'www.' + d;
+}
 
-function validateEntry(e, i) {
+function validateEntry(e, i, manifestDomain) {
   const errs = [];
   const at = `pages[${i}]`;
   if (!e || typeof e !== 'object' || Array.isArray(e)) return [`${at} : entree invalide`];
@@ -112,11 +153,13 @@ function validateEntry(e, i) {
       errs.push(`${at} : images [{src absolu, alt?}] invalides (cles strictes, sans query/fragment)`);
     }
   }
-  if (!(e.ogImage === null || e.ogImage === undefined || (typeof e.ogImage === 'string' && normUrl(e.ogImage)))) {
-    errs.push(`${at} : ogImage URL absolue ou null requise`);
+  if (!(e.ogImage === null || e.ogImage === undefined ||
+      (typeof e.ogImage === 'string' && normUrl(e.ogImage) && !hasQueryOrFragment(e.ogImage)))) {
+    errs.push(`${at} : ogImage URL absolue sans query/fragment, ou null, requise`);
   }
-  if (e.videos !== undefined && (!Array.isArray(e.videos) || e.videos.some((v) => typeof v !== 'string' || !normUrl(v)))) {
-    errs.push(`${at} : videos [URL absolues] invalides`);
+  if (e.videos !== undefined && (!Array.isArray(e.videos) || e.videos.some((v) =>
+      typeof v !== 'string' || !normUrl(v) || hasQueryOrFragment(v)))) {
+    errs.push(`${at} : videos [URL absolues sans query/fragment] invalides`);
   }
   if (typeof e.indexable !== 'boolean') errs.push(`${at} : indexable booleen requis`);
   if (e.indexable === false && !REASONS.has(e.indexableReason)) {
@@ -153,8 +196,8 @@ function validateManifest(obj) {
   if (obj.version !== '1') errs.push('manifeste : version "1" requise');
   if (!DOMAINS.has(obj.domain)) errs.push('manifeste : domain inconnu');
   if (!REGIONS.has(obj.region)) errs.push('manifeste : region inconnue');
-  if (obj.generatedAt !== undefined && (typeof obj.generatedAt !== 'string' || Number.isNaN(Date.parse(obj.generatedAt)))) {
-    errs.push('manifeste : generatedAt ISO-8601 requise si presente');
+  if (obj.generatedAt !== undefined && !isStrictIsoDateTime(obj.generatedAt)) {
+    errs.push('manifeste : generatedAt ISO-8601 stricte requise si presente (AAAA-MM-JJTHH:mm:ss[.sss](Z|±HH:mm))');
   }
   if (!Array.isArray(obj.pages) || obj.pages.length === 0) errs.push('manifeste : pages[] non vide requis');
   if (Array.isArray(obj.pages)) {
@@ -163,7 +206,7 @@ function validateManifest(obj) {
     // verifie ici : le tri est un devoir du generateur (Phase C.2).
     const seen = new Map();
     obj.pages.forEach((e, i) => {
-      errs.push(...validateEntry(e, i));
+      errs.push(...validateEntry(e, i, obj.domain));
       if (e && typeof e === 'object') {
         if (e.domain !== undefined && e.domain !== obj.domain) {
           errs.push(`pages[${i}] : domain "${e.domain}" incoherent avec manifeste "${obj.domain}"`);
@@ -175,6 +218,9 @@ function validateManifest(obj) {
       if (e && typeof e.url === 'string') {
         const n = normUrl(e.url);
         if (n) {
+          if (!hostMatchesManifest(e.url, obj.domain)) {
+            errs.push(`pages[${i}] : hote de l'url hors manifeste (attendu ${obj.domain}, www. tolere)`);
+          }
           if (seen.has(n)) errs.push(`pages : doublon normalise ${e.url} (vu : ${seen.get(n)})`);
           else seen.set(n, e.url);
         }

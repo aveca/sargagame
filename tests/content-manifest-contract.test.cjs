@@ -193,5 +193,46 @@ console.log('12) Doublons normalises + clusters robustes');
   assert(JSON.stringify(canonicalClusters([{ domain: 'd', pages: [{ url: ':::', canonical: 42 }] }])) === '[]', 'clusters(entrees invalides) -> [] sans throw');
 }
 
-console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide (+ durcissements C.1.1)');
+console.log('13) Query/fragment dans ogImage et videos[]');
+{
+  const o = JSON.parse(JSON.stringify(home));
+  o.ogImage = 'https://sargasses-martinique.com/og.png?v=2';
+  assert(validateManifest(base([o])).some((e) => e.includes('ogImage')), 'ogImage avec query -> erreur');
+  const v = JSON.parse(JSON.stringify(home));
+  v.videos = ['https://sargasses-martinique.com/v.mp4#t=3'];
+  assert(validateManifest(base([v])).some((e) => e.includes('videos')), 'video avec fragment -> erreur');
+  const ok = JSON.parse(JSON.stringify(home));
+  ok.videos = ['https://sargasses-martinique.com/v.mp4'];
+  assert(validateManifest(base([ok])).length === 0, 'video propre acceptee');
+}
+
+console.log('14) generatedAt ISO-8601 stricte');
+{
+  for (const g of ['2026-10-13T18:00:00.000Z', '2026-10-13T18:00:00Z', '2026-10-13T18:00:00+02:00', '2024-02-29T12:00:00Z']) {
+    const m = { version: '1', domain: 'sargasses-martinique.com', region: 'mq', generatedAt: g, pages: [home] };
+    assert(validateManifest(m).length === 0, 'generatedAt acceptee (' + g + ')');
+  }
+  for (const g of ['hier', '2026-10-13', '2026-10-13T18:00', 'Oct 13 2026', '2026-02-30T00:00:00Z', '2023-02-29T00:00:00Z', '2026-10-13T25:00:00Z', '2026-10-13T18:00:00+25:00']) {
+    const m = { version: '1', domain: 'sargasses-martinique.com', region: 'mq', generatedAt: g, pages: [home] };
+    assert(validateManifest(m).some((e) => e.includes('generatedAt')), 'generatedAt rejetee (' + g + ')');
+  }
+}
+
+console.log('15) Hote page.url == domaine manifeste (www tolere, etranger refuse)');
+{
+  const w = JSON.parse(JSON.stringify(home));
+  w.url = 'https://www.sargasses-martinique.com/cgv';
+  w.canonical = 'https://www.sargasses-martinique.com/cgv';
+  assert(validateManifest(base([w])).length === 0, 'www. tolere');
+  const f = JSON.parse(JSON.stringify(home));
+  f.url = 'https://other.example/x';
+  f.canonical = 'https://other.example/x';
+  assert(validateManifest(base([f])).some((e) => e.includes('hors manifeste')), 'domaine etranger refuse');
+  const c = JSON.parse(JSON.stringify(home));
+  c.url = 'https://sargasses-martinique.com/x';
+  c.canonical = 'https://other.example/y';
+  assert(validateManifest(base([c])).length === 0, 'canonical externe toujours permis');
+}
+
+console.log(failures ? '\n' + failures + ' echec(s)' : '\nOK — contrat content-manifest v1 valide (+ durcissements C.1.1/C.1.2)');
 process.exit(failures ? 1 : 0);
