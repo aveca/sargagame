@@ -546,6 +546,7 @@ function writeRegionIndex(region, out) {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://static.cloudflareinsights.com https://www.clarity.ms https://scripts.clarity.ms; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://www.googletagmanager.com https://script.google.com https://script.googleusercontent.com https://*.clarity.ms https://rswdmjtdzrucqzzukfmd.supabase.co https://apple.com https://www.apple.com https://google.com https://www.google.com https://api.open-meteo.com https://marine-api.open-meteo.com; frame-src 'self' https://js.stripe.com https://www.paypal.com https://js.mollie.com; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com;">
     <!-- theme-color pilote en JS (#0d1117 = cadre sombre app) : sinon Safari iOS echantillonne
          le contenu dore derriere sa barre basse -> bande or mouvante en navigateur (pas en PWA). -->
     <link rel="manifest" href="/manifest.json" />
