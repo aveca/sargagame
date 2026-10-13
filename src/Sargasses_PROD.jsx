@@ -14640,7 +14640,7 @@ export default function App(){
           ?<ErrBound><Suspense fallback={<div aria-hidden="true" style={{position:"fixed",inset:0,zIndex:1020,background:"#0a1620"}}/>}>
               <LazyWorldView3D
                 beaches={allBeaches} lang={lang} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                  erddapTimestamp={sargData?.erddapTimestamp||null}
+                  erddapTimestamp={sargData?.erddapTimestamp||sargData?.updatedAt||null}
                 onBeachClick={onMapBeach} onPremium={()=>openPremium("view3d")} isPremium={isPremium}
                 track={track}
                 onClose={()=>{setShowArchipel(false);track("sg_archipel_close",{source:"view3d"})}}/>
