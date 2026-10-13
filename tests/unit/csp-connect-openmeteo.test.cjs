@@ -82,5 +82,22 @@ const allowed = new Set(['https://api.open-meteo.com', 'https://marine-api.open-
 check(called.size > 0 && [...called].every(o => allowed.has(o)), `toutes les origines open-meteo appelées (${[...called].join(', ')}) sont exactement celles autorisées`)
 check([...called].every(o => connectSrc.includes(o)), 'chaque origine appelée figure dans connect-src')
 
+// 6. Template GP custom (prepare-ftp.cjs écrit un index.html Guadeloupe DÉDIÉ —
+//    défaut production 2026-10-13 : ce template n'avait AUCUN meta CSP, les 5
+//    autres régions l'ayant ; sargasses-guadeloupe.com servait donc sans CSP).
+const prepareFtp = fs.readFileSync(path.join(ROOT, 'scripts', 'prepare-ftp.cjs'), 'utf8')
+const gpTpl = (prepareFtp.match(/const gpIndex = `([\s\S]*?)\n  <style>/) || ['', ''])[1]
+check(gpTpl.length > 0, 'template index.html Guadeloupe trouvé dans prepare-ftp.cjs')
+const gpMetas = [...gpTpl.matchAll(/<meta[^>]*Content-Security-Policy[^>]*content="([^"]+)"/g)]
+check(gpMetas.length === 1, 'template GP : exactement 1 meta CSP (défaut prod : 0)')
+if (gpMetas.length === 1) {
+  const gpCsp = gpMetas[0][1]
+  const gpConnect = (gpCsp.split(';').map(s => s.trim()).find(s => s.startsWith('connect-src ')) || '').split(/\s+/).slice(1)
+  check(gpConnect.includes('https://api.open-meteo.com') && gpConnect.includes('https://marine-api.open-meteo.com'),
+    'template GP : connect-src autorise les 2 origines open-meteo')
+  // Parité de protection avec le template principal (mêmes directives/mêmes origines) :
+  check(gpCsp === csp, 'template GP : CSP identique au template principal (parité de protection, aucune divergence région)')
+}
+
 console.log(fail ? `\n${fail} ECHEC(S)` : '\nCSP_OPEN_METEO_TESTS PASS')
 process.exit(fail ? 1 : 0)
