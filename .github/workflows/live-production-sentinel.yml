@@ -57,7 +57,10 @@ jobs:
           exit 0
 
       - name: Open or update deduplicated live incident
-        if: steps.scan.outputs.rc != '0' || hashFiles('tail-errors.txt') != ''
+        # Uniquement sur incident LIVE confirmé (rc!=0). L'échec du tail wrangler
+        # (sonde sensor) ne doit plus créer ni déclencher un incident live — ces
+        # erreurs visent le log d'audit, jamais un incident de production.
+        if: steps.scan.outputs.rc != '0'
         shell: bash
         run: |
           report=".ai/autopilot/observations/live-production-latest.json"
@@ -66,13 +69,25 @@ jobs:
             fp=$(node -e "const x=require('./$report'); console.log(x.fingerprint)")
             title="[LIVE-INCIDENT] $fp"
             body=$(node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync('$report','utf8')); console.log('## Autonomous live incident\\n\\n'+JSON.stringify(x,null,2).slice(0,12000))")
+            # Anti-recyclage : une issue existante n'est acceptée comme incident
+            # courant que si sa dernière mise à jour est récente (48h). Une
+            # empreinte obsolète reçoit une NOUVELLE issue (suffixe de date) au
+            # lieu de rouvrir l'incident ancien.
+            existing=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$title\"" --limit 1 --json number --jq '.[0].number' 2>/dev/null || true)
+            if [ -n "$existing" ]; then
+              updatedAt=$(gh issue view -R "$GITHUB_REPOSITORY" "$existing" --json updatedAt --jq '.updatedAt' 2>/dev/null || true)
+              if [ -n "$updatedAt" ]; then
+                ageH=$(( ( $(date +%s) - $(date -d "$updatedAt" +%s) ) / 3600 ))
+                if [ "$ageH" -gt 48 ]; then
+                  echo "::note::empreinte $fp existante sur l'issue #$existing mais périmée (${ageH}h) — nouvelle issue au lieu de recyclage"
+                  title="$title-recharge-$(date -u +%Y%m%d)"
+                  existing=""
+                fi
+              fi
+            fi
           else
-            body="## Autonomous live incident\n\nSentinel report missing. Check workflow logs and Cloudflare tail permissions."
+            body="## Autonomous live incident — NOT_PROVEN\n\nLe rapport du sentinel est manquant (.ai/autopilot/observations/live-production-latest.json absent). Aucun incident live n'est prouvé par cette exécution ; conserver la sonde. Cause technique et étape : scanner (run ci-dessus)."
           fi
-          if [ -f /tmp/sg-tail/tail-errors.txt ]; then
-            body="$body\n\n### Wrangler tail command errors\n\n$(cat /tmp/sg-tail/tail-errors.txt)"
-          fi
-          existing=$(gh issue list -R "$GITHUB_REPOSITORY" --state open --search "\"$title\"" --limit 1 --json number --jq '.[0].number' 2>/dev/null || true)
           if [ -z "$existing" ]; then
             gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "$body" --label "autopilot-live" 2>/dev/null || gh issue create -R "$GITHUB_REPOSITORY" --title "$title" --body "$body"
           else
@@ -90,7 +105,10 @@ jobs:
           retention-days: 7
 
       - name: Fail when live incident detected
-        if: steps.scan.outputs.rc != '0' || hashFiles('tail-errors.txt') != ''
+        # Uniquement sur incident LIVE confirmé (rc!=0). L'échec de la sonde
+        # (tail manquant ou permissions) n'est plus un incident de production ;
+        # il est rapporté NOT_PROVEN (cause visible dans le log, jamais masqué).
+        if: steps.scan.outputs.rc != '0'
         run: |
           echo "::error::Live production incident detected; evidence and a deduplicated GitHub issue were created."
           exit 1
