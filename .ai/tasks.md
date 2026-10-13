@@ -23,7 +23,7 @@
 - **Rôle** : coding_agent
 - **Description** : `mollie-config.php` a `webhook_secret` commenté → signature webhook non vérifiée. Doit être configuré sur chaque serveur FTP après deploy.
 - **Estimation** : 30 min
-- **Statut** : [ ] code_ready, [ ] deployed_to_prod
+- **Statut** : [~] TASK-P0-001 ?" in_progress by coding_agent_agent code_ready, [ ] deployed_to_prod
 
 ---
 
