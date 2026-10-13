@@ -53,6 +53,10 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      - name: Validate prepared HTML CSP and bundle references
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-prepared-html.cjs
       # Garde P0 MQ/GP : l'artefact préparé ne doit contenir aucune plage
       # d'une autre île (bloque le déploiement via `needs: [build, ...]`).
       - name: Guard regional data separation (no foreign beaches)
@@ -156,6 +160,10 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('assets dir OK -> '+d)"
+      - name: Validate deploy HTML CSP and bundle references
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-prepared-html.cjs
       # Garde P0 MQ/GP (2e rideau) : revérifie l'artefact du job deploy lui-même
       # avant génération wrangler/envoi Cloudflare.
       - name: Guard regional data separation (no foreign beaches)
@@ -360,6 +368,10 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: npm run build
+      - name: Validate Pages HTML CSP and bundle references
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/autopilot/check-prepared-html.cjs
       # Pages doit recevoir le même artefact que le Worker, sinon *.pages.dev
       # et le domaine divergent (source de faux diagnostics en audit).
       - name: Prepare domain site (prepare-ftp)
