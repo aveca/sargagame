@@ -169,6 +169,18 @@ async function fetchText(url, cap) {
 const fetchJsonAsset = (origin, path) =>
   fetchText(origin + path, BODY_CAP).then((t) => JSON.parse(t));
 
+// Statut d'observation direct d'une plage (niveaux Copernicus) : correspondance
+// directe sur l'id, sinon via la table SARG_TO_BEACH (cles d'archive courtes).
+// Retourne le statut ou null (pas de donnee direct fiable).
+export function liveStatusOf(levels, beachId) {
+  if (!Array.isArray(levels)) return null;
+  const direct = levels.find((l) => l && l.id === beachId);
+  if (direct && typeof direct.status === "string") return direct.status;
+  const sargKey = Object.keys(SARG_TO_BEACH).find((k) => SARG_TO_BEACH[k] === beachId);
+  if (!sargKey) return null;
+  const via = levels.find((l) => l && l.id === sargKey);
+  return via && typeof via.status === "string" ? via.status : null;
+}
 // Index plages : beaches-list.json (mq/gp, runtime) + table embarquee (4 nouvelles regions).
 function buildBeachIndex(beachesList) {
   const idx = new Map();
@@ -200,7 +212,7 @@ export function createSargaServer() {
   }));
 
   server.registerTool("search_beaches", {
-    description: "Recherche de plages existantes (au moins un filtre requis). Le statut renvoye est un instantane de build ; get_beach_status donne le direct.",
+    description: "Recherche de plages existantes (au moins un filtre requis). Le filtre status s'applique au statut d'observation direct (niveaux Copernicus, meme resolution que get_beach_status) ; les plages sans donnee direct sont exclues quand status est demande (compteur excludedNoLiveData). Sans filtre status, chaque resultat porte liveStatus (null si inconnu).",
     inputSchema: {
       query: z.string().min(1).max(80).optional(),
       island: z.enum(MCP_REGION_IDS).optional(),
@@ -213,24 +225,35 @@ export function createSargaServer() {
     const status = typeof args.status === "string" ? args.status : null;
     if (!q && !island && !status) return errPayload("query_required", "Provide at least one of: query, island, status.");
     if (island && !MCP_REGION_IDS.includes(island)) return errPayload("unknown_island", "Known islands: " + MCP_REGION_IDS.join(", "));
+    if (status && !["clean", "moderate", "avoid"].includes(status)) return errPayload("unknown_status", "Known statuses: clean, moderate, avoid.");
     let origin;
     try {
       origin = checkedOrigin(ctx.http.req);
     } catch (e) { return errPayload(e.code || "unknown_host"); }
-    let list;
+    let list, levels = null;
     try {
       list = await fetchJsonAsset(origin, ASSET_BEACHES);
+      if (status) {
+        const sarg = await fetchJsonAsset(origin, ASSET_SARGASSUM);
+        levels = Array.isArray(sarg.levels) ? sarg.levels : [];
+      }
     } catch (e) { return errPayload("data_unavailable"); }
     const idx = buildBeachIndex(Array.isArray(list) ? list : []);
     const limit = clampInt(args.limit, 20, 1, 50);
     const out = [];
+    let excludedNoLiveData = 0;
     for (const b of idx.values()) {
       if (island && b.island !== island) continue;
       if (q && !(fold(b.name).includes(q) || fold(b.commune).includes(q) || fold(b.id).includes(q) || fold(b.slug).includes(q))) continue;
-      out.push({ id: b.id, name: b.name, commune: b.commune, island: b.island, slug: b.slug });
+      const liveStatus = levels ? liveStatusOf(levels, b.id) : null;
+      if (status) {
+        if (liveStatus === null) { excludedNoLiveData += 1; continue; }
+        if (liveStatus !== status) continue;
+      }
+      out.push({ id: b.id, name: b.name, commune: b.commune, island: b.island, slug: b.slug, liveStatus });
       if (out.length >= limit) break;
     }
-    return okPayload({ beaches: out, count: out.length, statusNote: "Snapshot from build data; use get_beach_status for live status." });
+    return okPayload({ beaches: out, count: out.length, excludedNoLiveData });
   });
 
   const resolveBeachId = (beachId, idx) => {
@@ -351,7 +374,7 @@ export function createSargaServer() {
   });
 
   server.registerTool("search_public_pages", {
-    description: "Recherche plein-texte (insensible aux accents) dans les URL + titres du sitemap.",
+    description: "Recherche plein-texte (insensible aux accents) dans les URL du sitemap uniquement (pas dans les titres de pages : aucun index de titres embarque, aucun fetch massif).",
     inputSchema: {
       query: z.string().min(1).max(80),
       limit: z.number().int().min(1).max(50).optional(),
@@ -382,7 +405,7 @@ export function createSargaServer() {
   });
 
   server.registerTool("get_page_metadata", {
-    description: "Titre, description, canonical, langue et assets d'une page interne indexee (chemin valide contre le sitemap, rien d'autre).",
+    description: "Titre, description, canonical, langue et image Open Graph d'une page interne listee au sitemap (chemin valide contre le sitemap, rien d'autre). listedInSitemap signifie 'present au sitemap', pas 'indexe par Google'. Seule l'image Open Graph est exposee (pas d'inventaire complet des assets).",
     inputSchema: { path: z.string().min(1).max(500) },
   }, async (args, ctx) => {
     let origin;
@@ -408,7 +431,7 @@ export function createSargaServer() {
       title: meta.title, description: meta.description, canonical: meta.canonical,
       lang: meta.lang || langOf(pathname, region),
       ogImage: meta.ogImage, jsonLdBlocks: meta.jsonld,
-      indexed: true, fetchedAt: new Date().toISOString(),
+      listedInSitemap: true, fetchedAt: new Date().toISOString(),
     });
   });
 

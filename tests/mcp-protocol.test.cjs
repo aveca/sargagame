@@ -25,7 +25,7 @@ const textOf = (res) => {
 (async () => {
   const SARGASSUM = fs.readFileSync(path.join(ROOT, 'public', 'api', 'copernicus', 'sargassum.json'), 'utf8');
   const BEACHES = fs.readFileSync(path.join(ROOT, 'public', 'data', 'beaches-list.json'), 'utf8');
-  const { handleMcp } = await import('../workers/sargagame/mcp.js');
+  const { handleMcp, checkRateLimit } = await import('../workers/sargagame/mcp.js');
   const { Client } = await import('@modelcontextprotocol/client');
   const { StreamableHTTPClientTransport } = await import('@modelcontextprotocol/client');
 
@@ -42,9 +42,13 @@ const textOf = (res) => {
       '<link rel="canonical" href="http://127.0.0.1:' + port + '/cgv"/>' +
       '</head><body>cgv</body></html>',
     '/en/': '<!doctype html><html lang="en"><head><title>Home EN</title></head><body>en</body></html>',
+    '/nometa': '<!doctype html><html><head></head><body>bare</body></html>',
+    '/external-canon': '<!doctype html><html lang="fr"><head><title>Canon Externe</title>' +
+      '<link rel="canonical" href="https://other.example/x"/>' +
+      '</head><body>ext</body></html>',
   });
   const sitemap = () => '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
-    ['/', '/cgv', '/mentions-legales', '/en/', '/es/mapa', '/plages/plage-des-salines/', '/fiabilite/', '/pro/', '/a-propos/', '/carte-sargasses/']
+    ['/', '/cgv', '/mentions-legales', '/en/', '/es/mapa', '/plages/plage-des-salines/', '/fiabilite/', '/pro/', '/a-propos/', '/carte-sargasses/', '/nometa', '/external-canon']
       .map((p) => `  <url><loc>http://127.0.0.1:${port}${p}</loc><lastmod>2026-10-13</lastmod></url>`)
       .join('\n') + '\n</urlset>';
 
@@ -122,6 +126,13 @@ const textOf = (res) => {
   const expected = ['get_beach_forecast', 'get_beach_status', 'get_page_metadata', 'list_public_categories', 'list_regions', 'search_beaches', 'search_public_pages'].sort();
   assert(JSON.stringify(names) === JSON.stringify(expected), '7 outils attendus (vus : ' + names.join(',') + ')');
   assert((listed.tools || []).every((t) => t.inputSchema && t.description), 'chaque outil a description + inputSchema');
+  const spp = (listed.tools || []).find((t) => t.name === 'search_public_pages');
+  assert(spp && /URL/i.test(spp.description) && /uniquement/i.test(spp.description), 'search_public_pages : contrat URL-only explicite');
+  const gpm = (listed.tools || []).find((t) => t.name === 'get_page_metadata');
+  assert(gpm && (gpm.description || '').includes('listedInSitemap'),
+    'get_page_metadata : contrat listedInSitemap explicite');
+  const sb = (listed.tools || []).find((t) => t.name === 'search_beaches');
+  assert(sb && /liveStatus|direct/i.test(sb.description), 'search_beaches : contrat direct documente');
 
   const call = (name, args) => client.callTool({ name, arguments: args });
   console.log('4) Outils valides (donnees reelles du repo)');
@@ -157,7 +168,7 @@ const textOf = (res) => {
   }
   {
     const r = textOf(await call('list_public_categories', {}));
-    assert(r.total === 10 && Array.isArray(r.categories), 'categories : total 10 (fixture)');
+    assert(r.total === 12 && Array.isArray(r.categories), 'categories : total 12 (fixture)');
     assert(r.categories.some((c) => c.category === '_root'), 'categorie _root presente');
   }
   {
@@ -169,11 +180,59 @@ const textOf = (res) => {
   {
     const r = textOf(await call('get_page_metadata', { path: '/cgv' }));
     assert(r.title === 'CGV Fixture' && r.canonical && r.jsonLdBlocks === 0, 'metadata /cgv (titre/canonical)');
-    assert(r.indexed === true && r.fetchedAt, 'indexed + fetchedAt');
+    assert(r.listedInSitemap === true && r.fetchedAt, 'listedInSitemap + fetchedAt');
+    assert(!('indexed' in r), 'pas de cle indexed (ne prouve pas Google)');
     const n = textOf(await call('get_page_metadata', { path: '/nulle-part' }));
     assert(n.error === 'page_not_indexed', 'hors sitemap -> page_not_indexed (aucun fetch)');
     const t = textOf(await call('get_page_metadata', { path: '/../secret' }));
     assert(t.error === 'invalid_path', 'traversal -> invalid_path');
+    const m = textOf(await call('get_page_metadata', { path: '/nometa' }));
+    assert(m.title === null && m.description === null && m.canonical === null && m.ogImage === null && m.jsonLdBlocks === 0,
+      'page sans metadonnees -> nulls explicites (rien invente)');
+    const e = textOf(await call('get_page_metadata', { path: '/external-canon' }));
+    assert(e.canonical === 'https://other.example/x', 'canonical externe restitue tel quel (sans validation)');
+  }
+
+  console.log('4b) Filtre status search_beaches (direct reel)');
+  {
+    const c = textOf(await call('search_beaches', { status: 'clean', limit: 50 }));
+    assert(!c.error && c.count > 0 && c.beaches.every((b) => b.liveStatus === 'clean'),
+      'status=clean : que du clean direct (count=' + c.count + ')');
+    assert(typeof c.excludedNoLiveData === 'number', 'compteur excludedNoLiveData present');
+    const mo = textOf(await call('search_beaches', { status: 'moderate' }));
+    assert(!mo.error && mo.count === 0 && mo.beaches.every((b) => b.liveStatus === 'moderate'),
+      'status=moderate : 0 resultat sur snapshot (aucun moderate direct)');
+    const av = textOf(await call('search_beaches', { status: 'avoid' }));
+    assert(!av.error && av.count === 0, 'status=avoid : 0 resultat sur snapshot');
+    const tu = textOf(await call('search_beaches', { island: 'tulum', status: 'clean' }));
+    assert(!tu.error && tu.count === 0 && tu.excludedNoLiveData === 5,
+      'tulum+clean : 0 resultat, 5 exclues sans direct (pas de correspondance fiable)');
+  }
+
+  console.log('4c) Recherche limitee aux URL (pas aux titres)');
+  {
+    const r = textOf(await call('search_public_pages', { query: 'accueil' }));
+    assert(!r.error && r.count === 0, '"accueil" (titre de / seul) -> 0 resultat : pas de recherche titre');
+  }
+
+  console.log('6) Gardes : rate limit + routes paiement intactes');
+  {
+    const store = new Map();
+    let okCount = 0;
+    for (let i = 0; i < 120; i++) { if (checkRateLimit(store, '10.0.0.9', 1000000).allowed) okCount++; }
+    const over = checkRateLimit(store, '10.0.0.9', 1000000);
+    assert(okCount === 120 && over.allowed === false && over.retryAfterMs > 0, 'rate limit : 120 OK puis 429 avec retryAfterMs');
+    const other = checkRateLimit(store, '10.0.0.10', 1000000);
+    assert(other.allowed === true, 'rate limit : par IP (autre IP non affectee)');
+    const idx = fs.readFileSync(path.join(ROOT, 'workers', 'sargagame', 'index.js'), 'utf8');
+    for (const p of ['/api/mollie-webhook', '/api/mollie', '/api/widget-token', '/api/b2b-trial', '_private', 'run_worker_first']) {
+      assert(idx.includes(p), 'route/garde paiement intacte : ' + p);
+    }
+    const mcpCount = (idx.match(/u\.pathname==="\/mcp"/g) || []).length;
+    assert(mcpCount === 1, 'une seule branche /mcp (pas de doublon)');
+    assert(idx.indexOf('/api/mollie-webhook') < idx.indexOf('u.pathname==="/mcp"') &&
+      idx.indexOf('u.pathname==="/mcp"') < idx.indexOf('includes("/_private/")'),
+      'ordre des gardes : paiements -> /mcp -> _private (code, hors commentaires)');
   }
 
   console.log("5) Erreurs protocole (client officiel)");
