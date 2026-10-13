@@ -213,7 +213,31 @@ jobs:
             echo "FINGERPRINT MISMATCH on $DOMAIN — le domaine ne sert pas ce qui vient d'être déployé"
             exit 1
           fi
-          echo "{\"id\":\"$REGION\",\"domain\":\"$DOMAIN\",\"v\":\"$built_v\",\"b\":\"$built_b\"}" > fingerprint-$REGION.json
+          FTP_DIR="$FTP_DIR" REGION="$REGION" DOMAIN="$DOMAIN" node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const { extractHtmlFingerprint } = require('./scripts/autopilot/html-integrity.cjs');
+          const dir = process.env.FTP_DIR;
+          const region = process.env.REGION;
+          const domain = process.env.DOMAIN;
+          const indexPath = path.join(dir, 'index.html');
+          const html = fs.readFileSync(indexPath, 'utf8');
+          const fp = extractHtmlFingerprint(html, domain);
+          if (!fp.ok) {
+            console.error('PREPARED HTML INTEGRITY FAILED: ' + fp.reason);
+            process.exit(1);
+          }
+          const version = JSON.parse(fs.readFileSync(path.join(dir, 'version.json'), 'utf8'));
+          if (!version.v || !version.b) {
+            console.error('prepared version.json has no v/b fingerprint');
+            process.exit(1);
+          }
+          const record = { id: region, domain, v: String(version.v), b: String(version.b),
+            cspSha256: fp.cspSha256, moduleSrc: fp.moduleSrc, cssSrcs: fp.cssSrcs };
+          fs.writeFileSync('fingerprint-' + region + '.json', JSON.stringify(record, null, 2));
+          console.log('prepared HTML fingerprint OK: region=' + region + ' cspSha256=' + fp.cspSha256 +
+            ' module=' + fp.moduleSrc + ' css=' + fp.cssSrcs.length);
+          NODE
           # Sitemap : doit être 200 APRÈS prepare-ftp (régression du 07/10).
           for i in 1 2 3 4 5; do
             sm=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 20 -A "Mozilla/5.0" "https://$DOMAIN/sitemap.xml" || true)
@@ -262,6 +286,8 @@ jobs:
     timeout-minutes: 20
     env:
       JOB_TRACE_ID: job-${{ github.run_id }}-${{ github.run_attempt }}
+      # Utilisé uniquement si l’intégrité HTML live échoue : purge des 2 URL exactes.
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -282,7 +308,7 @@ jobs:
           node -e "const fs=require('fs');const files=fs.readdirSync('fingerprints').filter(f=>f.endsWith('.json'));if(!files.length){console.error('no fingerprint artifacts');process.exit(1)}const vs=new Set(),bs=new Set();for(const f of files){const j=JSON.parse(fs.readFileSync('fingerprints/'+f,'utf8'));vs.add(j.v);bs.add(j.b)}if(vs.size!==1||bs.size!==1){console.error('fingerprints disagree: v='+[...vs]+' b='+[...bs]);process.exit(1)}fs.appendFileSync(process.env.GITHUB_OUTPUT,'v='+[...vs][0]+'\n');fs.appendFileSync(process.env.GITHUB_OUTPUT,'b='+[...bs][0]+'\n');console.log('expect v='+[...vs][0]+' b='+[...bs][0])"
       - name: Post-deploy verification (all live domains)
         id: pdv
-        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json --expect-v "${{ steps.fp.outputs.v }}" --expect-b "${{ steps.fp.outputs.b }}"
+        run: node scripts/autopilot/post-deploy-verify.cjs --all --sos-test --job "$JOB_TRACE_ID" --report post-deploy-report.json --expect-v "${{ steps.fp.outputs.v }}" --expect-b "${{ steps.fp.outputs.b }}" --fingerprint-dir fingerprints/
       - name: Upload post-deploy report + job trace
         if: always()
         uses: actions/upload-artifact@v4
