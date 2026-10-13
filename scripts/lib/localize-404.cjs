@@ -71,14 +71,34 @@ function replaceOnce(html, anchor, value, lang) {
  * @param {string} title - region.name (ex: « Tulum »)
  * @returns {string} HTML localisé. FR = inchangé sauf nom de site (comportement historique).
  */
+function isAlreadyLocalized(html, lang, title, brand) {
+  const source = String(html)
+  if (!source.includes(`<html lang="${lang}">`)) return false
+  const dict = lang === 'es' ? ES : EN
+  const expectedTitle = lang === 'fr'
+    ? FR.title.split(FR.siteName).join(brand)
+    : dict.title.split('{TITLE}').join(title)
+  if (!source.includes(`<title>${expectedTitle}</title>`)) return false
+  if (lang === 'fr') return true
+  return source.includes(`<h1>${dict.h1}</h1>`)
+}
+
+/**
+ * Idempotent entre le build Vite et prepare-ftp : les nouveaux marchés sont
+ * localisés pendant le build pour Cloudflare Pages, puis prepare-ftp consomme
+ * le même dist/404.html. Une sortie déjà conforme à la même langue et au même
+ * titre reste intacte ; une page partiellement traduite ne passe pas ce contrôle.
+ */
 function localize404(html, region, title) {
   const lang = region && region.primaryLang === 'es' ? 'es' : region && region.primaryLang === 'fr' ? 'fr' : 'en'
   const brand = lang === 'es' ? `Sargazo ${title}` : `Sargassum ${title}`
+  const source = String(html)
+  if (isAlreadyLocalized(source, lang, title, brand)) return source
   // FR : historique — seul le nom de site est remplacé (le titre porte l'ancre).
-  if (lang === 'fr') return replaceOnce(String(html), FR.siteName, brand, lang)
+  if (lang === 'fr') return replaceOnce(source, FR.siteName, brand, lang)
   // EN/ES : le titre complet (qui contient le nom de site) est remplacé en
   // premier via FR.title — aucun remplacement siteName séparé (ancre consommée).
-  let out = String(html)
+  let out = source
   const dict = lang === 'es' ? ES : EN
   const pairs = [
     [FR.langAttr, dict.langAttr],
