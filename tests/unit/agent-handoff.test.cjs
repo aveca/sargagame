@@ -58,8 +58,8 @@ function claimTask(content, taskId, agentType) {
     throw new Error(`Task ${taskId} already claimed (status: ${statusChar})`);
   }
 
-  const fullStatusLine = statusMatch[0];
-  const newStatus = fullStatusLine.replace(`- **Statut** : [${statusChar}]`, `- **Statut** : [~] ${taskId} — in_progress by ${agentType}_agent`);
+  const agentLabel = agentType.endsWith('_agent') ? agentType : `${agentType}_agent`;
+  const newStatus = `- **Statut** : [~] ${taskId} — in_progress by ${agentLabel}`;
 
   const newContent = content.slice(0, taskMatch.index + statusMatch.index) + 
                      newStatus + 
@@ -105,7 +105,7 @@ function runTests() {
   try {
     const newContent = claimTask(contentWithP0, 'TASK-P0-000', 'coding');
     // Verify the status was updated
-    if (newContent.includes('- **Statut** : [~] TASK-P0-000')) {
+    if (newContent.includes('- **Statut** : [~] TASK-P0-000 — in_progress by coding_agent') && !newContent.includes('in_progress by coding_agent disponible')) {
       console.log('  ✓ PASS: Status updated to in_progress');
       passed++;
     } else {
