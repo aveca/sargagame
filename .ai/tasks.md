@@ -60,14 +60,14 @@
 - **Rôle** : coding_agent
 - **Description** : Extraire en sous-composants : doSubscribe (logique Silver), ErrorModal, PayGatewayHandler (Apple/Google)
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-001 ?" in_progress by coding_agent_agent pending
+- **Statut** : [ ] pending
 
 ### TASK-P2-002 BCD reccurring → expose entièrement
 - **Priorité** : P2
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-002 ?" in_progress by coding_agent_agent pending
+- **Statut** : [ ] pending
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
