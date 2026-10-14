@@ -35,16 +35,23 @@ jobs:
         run: |
           set +e
           mkdir -p /tmp/sg-tail
-          for worker in sargagame-mq sargagame-gp sargagame-florida sargagame-puntacana sargagame-rivieramaya; do
-            echo "::group::wrangler tail $worker"
-            timeout 35s npx --yes wrangler@latest tail "$worker" --format=json --status=error --sampling-rate=1 > "/tmp/sg-tail/${worker}.jsonl" 2>&1
-            code=$?
-            echo "tail_exit_code=$code"
-            echo "::endgroup::"
-            if [ "$code" != "0" ] && [ "$code" != "124" ]; then
-              echo "TAIL_COMMAND_ERROR=$worker exit=$code" >> /tmp/sg-tail/tail-errors.txt
-            fi
+          : > /tmp/sg-tail/tail-errors.txt
+          : > /tmp/sg-tail/tail-status.txt
+          # Run all six tails concurrently so the six 35s bounds do not add up
+          # and starve the 6-domain HTTP/freshness checks under the 8-minute job cap.
+          for worker in sargagame-mq sargagame-gp sargagame-florida sargagame-puntacana sargagame-rivieramaya sargagame-tulum; do
+            (
+              timeout 35s npx --yes wrangler@latest tail "$worker" --format=json --status=error --sampling-rate=1 > "/tmp/sg-tail/${worker}.jsonl" 2>&1
+              code=$?
+              echo "$worker=$code" >> /tmp/sg-tail/tail-status.txt
+              if [ "$code" != "0" ] && [ "$code" != "124" ]; then
+                echo "TAIL_COMMAND_ERROR=$worker exit=$code" >> /tmp/sg-tail/tail-errors.txt
+              fi
+            ) &
           done
+          wait
+          cat /tmp/sg-tail/tail-status.txt
+          if [ -s /tmp/sg-tail/tail-errors.txt ]; then cat /tmp/sg-tail/tail-errors.txt; fi
 
       - name: Scan production and automation evidence
         id: scan

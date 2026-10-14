@@ -76,7 +76,14 @@ test('les 7 régions réelles passent, lang attr conforme à primaryLang', () =>
 test('garde fail-loud : ancre manquante → throw explicite', () => {
   assert.throws(
     () => localize404('<html><body>sans ancres</body></html>', byId.florida, 'Florida'),
-    /404-i18n: ancre introuvable/,
+    /404-i18n: (?:ancre|attribut lang) introuvable/,
     'devrait lever sur source dérivante'
   )
+})
+
+
+test('attribut lang robuste aux attributs ajoutés/réordonnés par le build', () => {
+  const mutated = SRC.replace('<html lang="fr">', '<html data-build="1" lang="fr" class="regional">')
+  const out = localize404(mutated, byId.florida, byId.florida.name)
+  assert.ok(out.includes('<html data-build="1" lang="en" class="regional">'), 'lang remplacé sans perdre les autres attributs')
 })
