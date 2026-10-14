@@ -45,16 +45,16 @@ async function main() {
   const delayed = { erddapTimestamp: new Date(now - 17 * 3.6e6).toISOString() }
   t(isSatelliteFresh12h(delayed, now) === false, '17h => isSatelliteFresh12h false (pas de EN DIRECT)')
   t(isSatelliteStale36h(delayed, now) === false, '17h => isSatelliteStale36h false (fenêtre 12-36h)')
-  t(satelliteFreshnessStatus(delayed, 'fr', now) === 'DERNIÈRE MESURE SATELLITE', '12–36h => âge montré sans alarme globale « donnée en retard »')
-  t(satelliteFreshnessStatus(delayed, 'en', now) === 'LAST SATELLITE READING', '12–36h => libellé anglais neutre')
-  t(satelliteFreshnessStatus(delayed, 'es', now) === 'ÚLTIMA MEDICIÓN SATELITAL', '12–36h => libellé espagnol neutre')
+  t(satelliteFreshnessStatus(delayed, 'fr', now) === 'MESURE SATELLITE', '12–36h => âge montré sans alarme globale « donnée en retard »')
+  t(satelliteFreshnessStatus(delayed, 'en', now) === 'SATELLITE READING', '12–36h => libellé anglais neutre')
+  t(satelliteFreshnessStatus(delayed, 'es', now) === 'MEDICIÓN SATELITAL', '12–36h => libellé espagnol neutre')
 
   // 4. 36-40h : péremption.
   const old = { erddapTimestamp: new Date(now - 40 * 3.6e6).toISOString() }
   t(isSatelliteStale36h(old, now) === true, '40h => isSatelliteStale36h true (observation satellite en retard)')
   t(satelliteFreshnessStatus(old, 'fr', now) === 'SATELLITE EN RETARD', '>=36h => alerte explicitement attribuée au satellite')
   t(satelliteFreshnessStatus(old, 'en', now) === 'SATELLITE DELAYED', '>=36h => label retard anglais')
-  t(satelliteFreshnessStatus(old, 'es', now) === 'SATÉLITE CON RETRASO', '>=36h => label retard espagnol')
+  t(satelliteFreshnessStatus(old, 'es', now) === 'SATÉLITE ATRASADO', '>=36h => label retard espagnol')
 
   // 5. Horodatage absent : aucun LIVE inventé.
   t(isSatelliteFresh12h({}, now) === false, 'absent => isSatelliteFresh12h false (fallback honnête)')
