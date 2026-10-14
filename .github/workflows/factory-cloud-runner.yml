@@ -85,6 +85,11 @@ jobs:
 
       - name: Run local coding agent without credentials
         if: steps.claim.outputs.has_job == 'true'
+        # L'édition de fichiers sur Sargassses_PROD.jsx (~900 Ko) par un modèle
+        # 7B prend du temps ; 55 min de timeout job ont annulé une mission
+        # QUICK_CHANGE à 6 défauts (run 38525011137) avant même les tests.
+        # 90 min laissent le cycle modèle→tests→build se terminer.
+        timeout-minutes: 90
         env:
           JOB_ID: ${{ steps.claim.outputs.job_id }}
           TASK_TYPE: ${{ steps.claim.outputs.task_type }}
@@ -175,7 +180,10 @@ jobs:
           node scripts/factory/cloud-runner.mjs finish
 
       - name: Record failure in D1
-        if: failure() && steps.claim.outputs.has_job == 'true'
+        # cancelled() : un timeout job laisse sinon le job D1 bloqué en
+        # 'running' (constaté : run 38525011137 annulé à 55 min, job
+        # journey-ux-e6d21e57e997-20261014 resté 'running' → file bloquée).
+        if: (failure() || cancelled()) && steps.claim.outputs.has_job == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FACTORY_JOB_ID: ${{ steps.claim.outputs.job_id }}
