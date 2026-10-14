@@ -96,6 +96,8 @@ jobs:
           JOB_ID: ${{ steps.claim.outputs.job_id }}
           TASK_TYPE: ${{ steps.claim.outputs.task_type }}
           AIDER_FILES: ${{ steps.claim.outputs.files }}
+          # Ollama tourne dans le container docker du step précédent (port 11434).
+          OLLAMA_API_BASE: http://127.0.0.1:11434
         run: |
           set -euo pipefail
           {
@@ -107,13 +109,20 @@ jobs:
           # files hint (payload.files) : cible(s) explicite(s) — sans cible,
           # aider reconstruit la repo-map complète et n'aboutit pas en 90 min.
           # Tableau bash (pas d'eval) : chaque chemin reste un seul argument.
-          AIDER_CMD=("$RUNNER_TEMP/aider-venv/bin/aider" --model ollama_chat/qwen2.5-coder:7b --yes --no-auto-commits --message-file "$RUNNER_TEMP/factory-task.md")
+          # --timeout 1500 : litellm timeoutait à 600 s par requête (run
+          # 38587839359 : complétion >600 s sur un 7B avec repo-map 4096
+          # tokens) → APIConnectionError avant toute édition.
+          AIDER_CMD=("$RUNNER_TEMP/aider-venv/bin/aider" --model ollama_chat/qwen2.5-coder:7b --yes --no-auto-commits --timeout 1500 --message-file "$RUNNER_TEMP/factory-task.md")
+          HAS_FILES=0
           for f in $AIDER_FILES; do
             case "$f" in
               *.github/*|scripts/factory/cloud-runner.mjs|.env*|wrangler*|secrets/*) echo "skip protected file hint: $f" ;;
-              *) AIDER_CMD+=("$f") ;;
+              *) AIDER_CMD+=("$f") ; HAS_FILES=1 ;;
             esac
           done
+          # Cible explicite → repo-map inutile (4096 tokens de contexte en
+          # moins = complétions bien plus courtes sur un 7B).
+          if [ "$HAS_FILES" = "1" ]; then AIDER_CMD+=(--map-tokens 0); fi
           "${AIDER_CMD[@]}"
 
       - name: Enforce file scope and check diff
