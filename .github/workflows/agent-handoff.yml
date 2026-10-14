@@ -183,7 +183,8 @@ jobs:
               raise SystemExit(f'Task {task_id} already claimed (status: {status_char})')
           
           # Replace only this specific line
-          new_status = full_status_line.replace(f'- **Statut** : [{status_char}]', f'- **Statut** : [~] {task_id} ?" in_progress by {agent_type}_agent', 1)
+          agent_label = agent_type if agent_type.endswith('_agent') else f'{agent_type}_agent'
+          new_status = f'- **Statut** : [~] {task_id} — in_progress by {agent_label}'
           
           # Replace in the full content using precise positions
           new_content = content[:task_match.start(1) + status_match.start(0)] + new_status + content[task_match.start(1) + status_match.end(0):]
@@ -225,7 +226,7 @@ jobs:
           
           # Selon le type d'agent, lancer le script approprié
           case "$AGENT_TYPE" in
-            coding)
+            coding|coding_agent|coding-agent)
               # Pour coding agent : on ne peut pas coder vraiment en CI
               # On crée une issue pour qu'un agent externe (OpenCode/Codex/CC) la prenne
               echo "Coding task requires external agent. Creating tracking issue..."

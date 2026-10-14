@@ -15,6 +15,7 @@ const { localize404 } = require('./localize-404.cjs')
 const R = require('../../regions/index.cjs')
 
 const SRC = fs.readFileSync(path.join(__dirname, '..', '..', 'public', '404.html'), 'utf-8')
+const VITE_CONFIG = fs.readFileSync(path.join(__dirname, '..', '..', 'vite.config.js'), 'utf-8')
 const byId = Object.fromEntries(R.getAllRegions().map(r => [r.id, r]))
 
 const FR_MARKERS = [
@@ -76,7 +77,54 @@ test('les 7 régions réelles passent, lang attr conforme à primaryLang', () =>
 test('garde fail-loud : ancre manquante → throw explicite', () => {
   assert.throws(
     () => localize404('<html><body>sans ancres</body></html>', byId.florida, 'Florida'),
-    /404-i18n: ancre introuvable/,
+    /404-i18n: (?:ancre|attribut lang) introuvable/,
     'devrait lever sur source dérivante'
   )
+})
+
+
+test('attribut lang robuste aux attributs ajoutés/réordonnés par le build', () => {
+  const mutated = SRC.replace('<html lang="fr">', '<html data-build="1" lang="fr" class="regional">')
+  const out = localize404(mutated, byId.florida, byId.florida.name)
+  assert.ok(out.includes('<html data-build="1" lang="en" class="regional">'), 'lang remplacé sans perdre les autres attributs')
+})
+
+test('idempotence Vite → prepare-ftp : une 404 déjà localisée est préservée', () => {
+  for (const r of R.getAllRegions()) {
+    const once = localize404(SRC, r, r.name)
+    const twice = localize404(once, r, r.name)
+    assert.strictEqual(twice, once, `${r.id}: seconde localisation identique octet par octet`)
+  }
+})
+
+test('page partiellement localisée → fail-loud (jamais acceptée en silence)', () => {
+  // Titre EN déjà posé (ancre FR.title consommée), reste de la page FR :
+  // isAlreadyLocalized() doit refuser (h1/lang non traduits) et la seconde
+  // passe doit lever sur l'ancre manquante au lieu de livrer un mélange.
+  const partial = SRC.replace(
+    'Le Veilleur a perdu celle-ci · Sargasses Martinique & Guadeloupe',
+    'The Watcher lost this one · Sargassum Florida'
+  )
+  assert.notStrictEqual(partial, SRC, 'fixture : le remplacement a bien eu lieu')
+  assert.throws(
+    () => localize404(partial, byId.florida, 'Florida'),
+    /404-i18n: ancre introuvable/,
+    'partielle EN → throw, pas de sortie silencieuse'
+  )
+  // Cas miroir ES : h1 posé, titre FR intact → throw aussi.
+  const partialEs = SRC.replace('Même le satellite a perdu celle-ci', 'Hasta el satélite perdió esta')
+  assert.throws(
+    () => localize404(partialEs, byId.tulum, 'Tulum'),
+    /404-i18n: ancre introuvable/,
+    'partielle ES → throw'
+  )
+})
+
+test('Vite et prepare-ftp utilisent le même helper 404', () => {
+  const start = VITE_CONFIG.indexOf('// Page 404 localisée')
+  const end = VITE_CONFIG.indexOf('const indexPath', start)
+  assert.ok(start >= 0 && end > start, 'bloc closeBundle de 404 trouvé')
+  const block = VITE_CONFIG.slice(start, end)
+  assert.ok(block.includes("_require('./scripts/lib/localize-404.cjs')"), 'helper partagé appelé pendant le build Vite')
+  assert.ok(!block.includes('legacy-404-localize.cjs'), 'pas de second localiseur concurrent dans le même bloc')
 })

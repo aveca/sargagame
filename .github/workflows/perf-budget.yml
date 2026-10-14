@@ -1,8 +1,8 @@
 name: Perf Budget + Lighthouse
 
 # Garde-fou perf sur les PR (et push main) : build → budget gzip du JS eager (bloquant)
-# → Lighthouse CI mobile (report-only pour l'instant, cf. lighthouserc.json). Empêche une
-# régression du chemin critique (ex. un chunk lazy redevenu eager) de partir en prod.
+# Lighthouse mobile est un rapport non bloquant dans un job séparé, afin qu'une panne
+# externe de LHCI ne retarde jamais le check "perf" utilisé par la certification de déploiement.
 
 on:
   pull_request:
@@ -11,14 +11,15 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
-# Une PR qui pousse plusieurs fois → on annule les runs perf obsolètes.
 concurrency:
   group: perf-budget-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # Check bloquant, rapide et utilisé par CHECK_certification_status.cjs.
   perf:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,7 +34,22 @@ jobs:
       - name: Bundle budget (gzip, eager JS) — bloquant
         run: node scripts/check-bundle-budget.cjs
 
+  # Rapport informatif séparé : n'empêche pas "perf" de réussir.
+  lighthouse-report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+      - run: npm ci
+      - name: Build for Lighthouse
+        run: npm run build
       - name: Lighthouse CI (mobile) — report-only
+        timeout-minutes: 5
+        continue-on-error: true
         run: npx --yes @lhci/cli@0.14.x autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}

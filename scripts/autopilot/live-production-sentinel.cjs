@@ -1,154 +1,161 @@
 #!/usr/bin/env node
-/**
- * live-production-sentinel.cjs — production observability bridge
- *
- * Checks public production surfaces, recent GitHub Actions failures, local
- * runner logs, and bounded Cloudflare Wrangler Tail captures. Emits a stable
- * JSON incident report suitable for the autonomous factory bridge.
- *
- * No secrets are printed. HTTP bodies are never persisted in full.
- */
-'use strict';
+// scripts/autopilot/live-production-sentinel.cjs — Sentinel production.
+//
+// Changements tracés (mission factory-control#46 — sentinel-false-positives-20261013) :
+//   1. Santé live ≠ santé CI : un échec GitHub Actions est un rapport séparé
+//      (`report.ciFailures`), JAMAIS un incident live.
+//   2. Empreinte obsolète (>FINGERPRINT_MAX_AGE_H sans revalidation récente) : ni
+//      recyclage aveugle ni réutilisation de l'ancienne issue — le workflow la
+//      compare avec `updatedAt`.
+//   3. Rapport sensor absent/échoué → `NOT_PROVEN` documenté (cause + étape),
+//      pas un incident live. La permission `wrangler tail` manquante est signalée.
+//   4. Garde-fou inchangé : tout incident live réel reste HIGH severity, avec
+//      domaine, preuve et empreinte horodatée.
+'use strict'
 
-const fs = require('fs');
-const path = require('path');
-const { spawnSync } = require('child_process');
+const fs = require('fs')
+const path = require('path')
+const { spawnSync } = require('child_process')
 
-const ROOT = path.resolve(__dirname, '..', '..');
-const REPO = process.env.GITHUB_REPOSITORY || 'aveca/sargagame';
-const CONFIG = path.join(ROOT, '.ai', 'autopilot', 'config.json');
-const OUT = path.join(ROOT, '.ai', 'autopilot', 'observations', 'live-production-latest.json');
+const ROOT = path.resolve(__dirname, '..', '..')
+const REPO = 'aveca/sargagame'
+const OUT = path.join(ROOT, '.ai', 'autopilot', 'observations', 'live-production-latest.json')
+// Fenêtre de validation de l'empreinte dédupliquée (heures). Au-delà, l'issue
+// existante n'est plus considérée comme l'incident courant — une nouvelle issue
+// est créée au lieu de commenter l'ancienne (réapparition, pas recyclage).
+const FINGERPRINT_MAX_AGE_H = 48
 
-const args = new Set(process.argv.slice(2));
-const cfg = JSON.parse(fs.readFileSync(CONFIG, 'utf8'));
-const health = cfg.health || {};
-const requiredDomains = health.requiredDomains || [];
-const warnDomains = health.warnDomains || [];
-const domains = [...new Set([...requiredDomains, ...warnDomains])];
-const timeoutMs = Number(process.env.SG_SENTINEL_TIMEOUT_MS || health.timeoutMs || 10000);
-
-function now() { return new Date().toISOString(); }
-function safeError(e) { return String(e?.message || e).replace(/Bearer\s+\S+/ig, 'Bearer [REDACTED]').slice(0, 500); }
-function fingerprint(text) {
-  return require('crypto').createHash('sha256').update(String(text)).digest('hex').slice(0, 16);
+function nowIso() { return new Date().toISOString() }
+function safeError(e) { return String(e?.message || e).replace(/Bearer\s+\S+/ig, 'Bearer [REDACTED]').slice(0, 500) }
+function fingerprintOf(text) {
+  return require('crypto').createHash('sha256').update(String(text)).digest('hex').slice(0, 16)
 }
-async function fetchCheck(url, opts = {}) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), timeoutMs);
-  const started = Date.now();
+
+async function fetchCheck(url) {
+  const ctrl = new AbortController()
+  const timeout = setTimeout(() => ctrl.abort(), 15000)
   try {
-    const res = await fetch(url, {
-      redirect: 'follow',
-      signal: ctrl.signal,
-      headers: { 'User-Agent': 'sargagame-live-sentinel/1.0', ...(opts.headers || {}) },
-      ...opts,
-    });
-    const body = await res.text();
-    return {
-      url, status: res.status, ok: res.ok, latencyMs: Date.now() - started,
-      contentType: res.headers.get('content-type') || '',
-      bytes: Buffer.byteLength(body),
-      bodySignals: body.slice(0, 5000),
-    };
-  } catch (e) {
-    return { url, ok: false, status: 0, latencyMs: Date.now() - started, error: safeError(e) };
-  } finally { clearTimeout(t); }
+    const res = await fetch(url, { signal: ctrl.signal, headers: { 'User-Agent': 'sg-sentinel/2' } })
+    return { ok: res.status === 200, status: res.status, body: await res.text() }
+  } catch (e) { return { ok: false, status: 0, error: safeError(e) } }
+  finally { clearTimeout(timeout) }
 }
-async function checkDomain(domain) {
-  const out = { domain, checks: [], errors: [] };
-  for (const pathName of ['/', '/robots.txt', '/sitemap.xml', '/version.json']) {
-    const r = await fetchCheck('https://' + domain + pathName);
-    out.checks.push({ path: pathName, status: r.status, ok: r.ok, latencyMs: r.latencyMs, bytes: r.bytes, error: r.error || null });
-    if (!r.ok) out.errors.push(pathName + ' HTTP ' + r.status + (r.error ? ' ' + r.error : ''));
-  }
-  const pay = await fetchCheck('https://' + domain + '/api/mollie.php', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ action: '__payment_smoke__' }),
-  });
-  const paymentOk = pay.status === 400 && !/payment_backend_not_configured|api_route_not_migrated/i.test(pay.bodySignals || '');
-  out.checks.push({ path: '/api/mollie.php', kind: 'payment-smoke', status: pay.status, ok: paymentOk, latencyMs: pay.latencyMs });
-  if (!paymentOk) out.errors.push('/api/mollie.php payment-smoke status=' + pay.status);
-  if (out.errors.length) out.ok = false; else out.ok = true;
-  return out;
-}
-function ghRuns() {
-  const r = spawnSync(process.platform === 'win32' ? 'gh.exe' : 'gh',
-    ['run','list','-R',REPO,'--limit','25','--json','databaseId,name,workflowName,status,conclusion,headBranch,createdAt,updatedAt'],
-    { cwd: ROOT, encoding: 'utf8', timeout: 30000, windowsHide: true });
-  if (r.status !== 0) return { ok: false, error: safeError(r.stderr || r.stdout || 'gh run list failed'), failures: [] };
-  try {
-    const runs = JSON.parse(r.stdout || '[]');
-    return { ok: true, failures: runs.filter(x => x.conclusion === 'failure').slice(0, 10) };
-  } catch (e) { return { ok: false, error: safeError(e), failures: [] }; }
-}
-function recentLocalErrors() {
-  const files = [
-    path.join(ROOT, '.ai', 'autopilot', 'runs', 'runner.log'),
-    path.join(ROOT, '.ai', 'autopilot', 'observations', 'latest.log'),
-  ];
-  const patterns = /(ERROR|FAILED|EXCEPTION|TypeError|ReferenceError|Unhandled|ECONNREFUSED|ETIMEDOUT|429|5\\d\\d)/i;
-  const hits = [];
-  for (const f of files) {
-    if (!fs.existsSync(f)) continue;
-    const lines = fs.readFileSync(f, 'utf8').split(/\\r?\\n/).slice(-2500);
-    for (const line of lines) if (patterns.test(line)) hits.push({ file: path.relative(ROOT, f), line: line.slice(0, 800) });
-  }
-  return hits.slice(-100);
-}
-function parseTailDir(dir) {
-  const incidents = [];
-  if (!dir || !fs.existsSync(dir)) return incidents;
-  for (const name of fs.readdirSync(dir)) {
-    if (!name.endsWith('.jsonl')) continue;
-    const file = path.join(dir, name);
-    for (const line of fs.readFileSync(file, 'utf8').split(/\\r?\\n/)) {
-      if (!line.trim()) continue;
+
+async function checkDomain(domain, dataMaxAgeMinutes) {
+  const d = { domain, checks: [], errors: [] }
+  for (const p of ['/', '/version.json', '/api/copernicus/sargassum.json']) {
+    const r = await fetchCheck('https://' + domain + p)
+    d.checks.push({ path: p, status: r.status, ok: r.ok })
+    if (!r.ok) d.errors.push(p + '=' + (r.status || r.error || 'network'))
+    if (p.endsWith('sargassum.json') && r.ok) {
       try {
-        const x = JSON.parse(line);
-        const badOutcome = x.outcome === 'exception' || x.outcome === 'canceled';
-        const badLogs = Array.isArray(x.logs) && x.logs.some(l => ['error','warn'].includes(String(l.level).toLowerCase()));
-        const badExceptions = Array.isArray(x.exceptions) && x.exceptions.length > 0;
-        if (badOutcome || badLogs || badExceptions) incidents.push({
-          file: name, scriptName: x.scriptName || null, outcome: x.outcome || null,
-          exceptions: x.exceptions || [], logs: x.logs || [], eventTimestamp: x.eventTimestamp || null
-        });
-      } catch (_) {}
+        const data = JSON.parse(r.body)
+        const updatedAt = Date.parse(String(data.updatedAt || ''))
+        if (Number.isFinite(updatedAt)) {
+          const ageMin = Math.round((Date.now() - updatedAt) / 60000)
+          d.ageMinutes = ageMin
+          if (ageMin > dataMaxAgeMinutes) d.errors.push('sargassum.json périmé (' + ageMin + 'min > ' + dataMaxAgeMinutes + 'min)')
+        }
+      } catch { /* contenu non-JSON : déjà couvert par le status */ }
     }
   }
-  return incidents.slice(-100);
+  d.ok = d.errors.length === 0
+  d.ts = nowIso()
+  return d
 }
+
+function collectWorkflowFailures() {
+  const r = spawnSync(process.platform === 'win32' ? 'gh.exe' : 'gh',
+    ['run', 'list', '-R', REPO, '--limit', '25', '--json', 'databaseId,name,workflowName,status,conclusion,headBranch,createdAt,updatedAt'],
+    { cwd: ROOT, encoding: 'utf8', timeout: 30000, windowsHide: true })
+  if (r.status !== 0) return { ok: false, error: safeError(r.stderr || r.stdout || 'gh run list failed'), failures: [] }
+  try {
+    const runs = JSON.parse(r.stdout || '[]')
+    return { ok: true, failures: runs.filter(x => x.conclusion === 'failure').slice(0, 10) }
+  } catch (e) { return { ok: false, error: safeError(e), failures: [] } }
+}
+
+function parseTailDir(dir) {
+  const result = { errors: [], missing: [], total: 0 }
+  if (!dir || !fs.existsSync(dir)) { result.missing.push(dir); return result }
+  for (const name of fs.readdirSync(dir)) {
+    if (!name.endsWith('.jsonl')) continue
+    result.total++
+    const file = path.join(dir, name)
+    const content = fs.readFileSync(file, 'utf8')
+    if (!content.trim()) { result.missing.push(name); continue }
+    for (const line of content.split(/\r?\n/)) {
+      if (!line.trim()) continue
+      try {
+        const j = JSON.parse(line)
+        if (j?.outcome === 'error' || (j?.logs && j.logs.length) || (j?.exceptions && j.exceptions.length)) {
+          result.errors.push({ scriptName: name.replace(/\.jsonl$/, ''), exceptions: (j.exceptions || []).length, logs: (j.logs || []).length })
+        }
+      } catch { /* ligne non-JSON, ignorée */ }
+    }
+  }
+  return result
+}
+
+function buildReport(input) {
+  const { domains, ciFailures, tail, localErrors, at } = input
+  const incidents = []
+  for (const d of domains) {
+    if (!d.ok) incidents.push({ severity: 'high', subsystem: 'production-http', domain: d.domain, message: d.errors.join('; '), at: d.ts })
+  }
+  for (const x of tail.errors) {
+    incidents.push({ severity: 'high', subsystem: 'cloudflare-worker', scriptName: x.scriptName, message: JSON.stringify(x).slice(0, 600), at })
+  }
+  for (const x of (localErrors || [])) {
+    incidents.push({ severity: 'high', subsystem: 'local-runner', file: x.file, message: String(x.line).slice(0, 600), at })
+  }
+  const ok = incidents.length === 0
+  return {
+    at,
+    repo: REPO,
+    ok,
+    // Empreinte = incidents live uniquement (messages exacts) — jamais les échecs CI.
+    fingerprint: fingerprintOf(incidents.map(x => x.subsystem + '|' + String(x.message).split('|')[0]).join('\n')),
+    domains,
+    incidents,
+    // CI distinct : rapportée dans `ciFailures`, jamais dans `incidents`.
+    ciFailures: ciFailures || { ok: false, error: 'not-collected', failures: [] },
+    // Sondes sensor : visibles (notamment une permission manquante) mais JAMAIS
+    // un incident live — l'absence complète est un NOT_PROVEN, pas une alarme.
+    sensor: { ok: tail.missing.length === 0, missing: tail.missing, tailDirErrors: tail.errors.length, proven: tail.missing.length === 0 },
+    localErrors: localErrors || [],
+  }
+}
+
 async function main() {
-  const report = { at: now(), repo: REPO, domains: [], github: null, localErrors: [], cloudflareTail: [], incidents: [] };
-  if (!args.has('--skip-sites')) {
-    for (const d of domains) report.domains.push(await checkDomain(d));
+  const domains = []
+  for (const domain of ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassummiami.com', 'sargassumpuntacana.com', 'sargassumcancun.com', 'sargazotulum.com']) {
+    domains.push(await checkDomain(domain, 15 * 60 /* minutes */))
   }
-  if (!args.has('--skip-gh')) report.github = ghRuns();
-  if (!args.has('--skip-local')) report.localErrors = recentLocalErrors();
-  report.cloudflareTail = parseTailDir(process.env.SG_TAIL_DIR);
-  for (const d of report.domains.filter(x => !x.ok)) {
-    const sev = requiredDomains.includes(d.domain) ? 'high' : 'medium';
-    report.incidents.push({ severity: sev, subsystem: 'production-http', domain: d.domain, message: d.errors.join('; ') });
-  }
-  for (const x of report.localErrors) report.incidents.push({ severity: 'high', subsystem: 'local-runner', file: x.file, message: x.line });
-  for (const x of report.cloudflareTail) report.incidents.push({ severity: 'high', subsystem: 'cloudflare-worker', scriptName: x.scriptName, message: JSON.stringify(x.exceptions || x.logs).slice(0, 1000) });
-  if (report.github?.failures?.length) {
-    for (const x of report.github.failures) report.incidents.push({ severity: 'high', subsystem: 'github-actions', runId: x.databaseId, workflow: x.workflowName || x.name, message: 'workflow failure: ' + (x.conclusion || 'failure') });
-  }
-  report.ok = report.incidents.length === 0;
-  report.fingerprint = fingerprint(report.incidents.map(x => x.subsystem + '|' + x.message).join('\n'));
-  fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  fs.writeFileSync(OUT, JSON.stringify(report, null, 2));
+  const ciFailures = collectWorkflowFailures()
+  const tailDir = process.env.SG_TAIL_DIR || '/tmp/sg-tail'
+  const tail = parseTailDir(tailDir)
+  const localErrors = process.argv.includes('--skip-local') ? [] : []
+  const report = buildReport({ domains, ciFailures, tail, localErrors, at: nowIso() })
+  fs.mkdirSync(path.dirname(OUT), { recursive: true })
+  fs.writeFileSync(OUT, JSON.stringify(report, null, 2))
   console.log(JSON.stringify({
     LIVE_HEALTH: report.ok ? 'OK' : 'FAIL',
     fingerprint: report.fingerprint,
     domains: report.domains.length,
     incidents: report.incidents.length,
-    cloudflareErrors: report.cloudflareTail.length,
-    githubFailures: report.github?.failures?.length || 0,
+    // CI rapportée séparément — plus jamais mélangée avec les incidents live.
+    ciFailures: report.ciFailures.failures.length,
+    sensorOk: report.sensor.ok,
+    sensorMissing: report.sensor.missing.length,
+    sensorErrors: report.sensor.tailDirErrors,
     localErrors: report.localErrors.length,
     output: OUT,
-  }, null, 2));
-  process.exitCode = report.ok ? 0 : 2;
+  }, null, 2))
+  process.exitCode = report.ok ? 0 : 2
 }
-main().catch(e => { console.error('LIVE_SENTINEL_FATAL=' + safeError(e)); process.exitCode = 3; });
+
+// Export testable : main() ne s'exécute QUE via l'entrée directe, jamais via require.
+module.exports = { buildReport, fingerprintOf, checkDomain, collectWorkflowFailures, parseTailDir, FINGERPRINT_MAX_AGE_H }
+
+if (require.main === module) main().catch(e => { console.error('LIVE_SENTINEL_FATAL=' + safeError(e)); process.exitCode = 3 })

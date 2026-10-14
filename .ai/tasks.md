@@ -60,21 +60,21 @@
 - **Rôle** : coding_agent
 - **Description** : Extraire en sous-composants : doSubscribe (logique Silver), ErrorModal, PayGatewayHandler (Apple/Google)
 - **Estimation** : 4h
-- **Statut** : [~] TASK-P2-001 ?" in_progress by coding_agent_agent pending
+- **Statut** : [~] TASK-P2-001 — in_progress by coding_agent
 
 ### TASK-P2-002 BCD reccurring → expose entièrement
 - **Priorité** : P2
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-002 — in_progress by coding_agent
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Aujourd'hui via query params; les pages dédiées `/payement/good` et `/payment/error` seraient plus propres.
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-003 — in_progress by coding_agent
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2
