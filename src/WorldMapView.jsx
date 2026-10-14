@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h } from "./lib/format-freshness.mjs"
+import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -206,9 +206,12 @@ export default function WorldMapView({
   const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now();
   const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: erddapTimestamp });
   const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: erddapTimestamp });
-  const wmSatLbl = !wmSatValid ? _t(lang,"Vérification","Verification","Verificación") : (wmSatFresh ? _t(lang,"EN DIRECT","LIVE","EN VIVO") : _t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"));
+  const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: erddapTimestamp }, lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp, lang) : "···";
-  const wmSatAgeColor = wmSatFresh ? "#00786C" : "#B87A00";
+  // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
+  // >=36 h : alerte explicite sur la seule observation satellite.
+  const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const wmSatDotColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -1682,7 +1685,7 @@ export default function WorldMapView({
           padding:"calc(12px + env(safe-area-inset-top)) 16px 12px",
           maxWidth:560,margin:"0 auto",
         }}>
-          {/* Pill EN DIRECT — tapable → notre page fiabilité (preuve « on publie nos erreurs »). */}
+          {/* Pill de fraîcheur satellite — source et âge explicites, sans alarme globale prématurée. */}
           <div {...(!mapLiveTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir notre fiabilité","See our reliability","Ver nuestra fiabilidad"),onClick:_relGo,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();_relGo()}}}:{})} style={{
             display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
             whiteSpace:"nowrap",flexShrink:0,
@@ -1692,14 +1695,14 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
-              animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
+              width:8,height:8,borderRadius:"50%",background:wmSatDotColor,border:`1.5px solid ${INK}`,
+              animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
               {wmSatAge}
             </span>
-            {/* Companion edit (mission #39) : couleur du âge pilotée par wmSatFresh (prédicat partagé 12h). */}
+            {/* Couleur verte = satellite <12h ; neutre = 12–36h ; ambre = >=36h. */}
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
           <div style={{position:"relative",flex:1,minWidth:0,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
