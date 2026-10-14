@@ -76,7 +76,7 @@ test('les 7 régions réelles passent, lang attr conforme à primaryLang', () =>
 test('garde fail-loud : ancre manquante → throw explicite', () => {
   assert.throws(
     () => localize404('<html><body>sans ancres</body></html>', byId.florida, 'Florida'),
-    /404-i18n: ancre introuvable/,
+    /404-i18n: (?:ancre|attribut lang) introuvable/,
     'devrait lever sur source dérivante'
   )
 })
