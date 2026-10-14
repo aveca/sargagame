@@ -86,7 +86,7 @@ async function main() {
 
   // 9. Traductions FR/EN/ES de la pill conservées.
   t(lib.includes("fresh: 'SATELLITE CURRENT'") && lib.includes("fresh: 'SATÉLITE AL DÍA'"), 'statuts frais traduits en anglais et espagnol')
-  t(/SATELLITE EN RETARD/.test(lib) && /SATELLITE DELAYED/.test(lib) && /SATÉLITE CON RETRASO/.test(lib), 'traductions retard explicites et attribuées au satellite')
+  t(/SATELLITE EN RETARD/.test(lib) && /SATELLITE DELAYED/.test(lib) && /SATÉLITE ATRASADO/.test(lib), 'traductions retard explicites et attribuées au satellite')
   t(lib.includes("unknown: 'Vérification'") && lib.includes("unknown: 'Verification'") && lib.includes("unknown: 'Verificación'"), 'fallback de vérification traduit FR/EN/ES')
 
   // 10. Autres surfaces fraîcheur non régressées : les helpers canoniques restent exportés.
