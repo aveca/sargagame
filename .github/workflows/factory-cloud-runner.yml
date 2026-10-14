@@ -7,7 +7,8 @@ on:
       - ".github/workflows/factory-cloud-runner.yml"
       - "scripts/factory/cloud-runner.mjs"
   schedule:
-    - cron: "*/30 * * * *"
+    # Heartbeat/queue poll every 15 minutes; same runner, same Sargagame-only scope.
+    - cron: "*/15 * * * *"
   workflow_dispatch:
 
 permissions:
