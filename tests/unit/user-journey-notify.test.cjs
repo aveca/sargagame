@@ -73,7 +73,7 @@ t(d1Job.id==='journey-ux-'+d1Job.payload.source_fingerprint.slice(0,12)+'-202610
   'D1 repair job has a deterministic dedup ID per fingerprint and report date');
 t(d1Job.payload.source==='user-journey-audit' && d1Job.payload.defect_count===2,
   'D1 payload records the source and bounded defect count');
-t(d1Job.payload.prompt.includes('Run source:') && d1Job.payload.prompt.includes('do not'),
+t(d1Job.payload.prompt.includes('Run source') && d1Job.payload.prompt.includes('Ne pas modifier'),
   'D1 task carries audit provenance and explicit safety instructions');
 t(!d1Job.payload.prompt.includes('Bearer abc123'),
   'D1 task builder does not inject credentials into task instructions');
