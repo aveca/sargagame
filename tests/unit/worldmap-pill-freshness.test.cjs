@@ -72,7 +72,8 @@ async function main() {
   // 8. Câblage source : la pill consomme la prop erddapTimestamp (venue de l'appelant),
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
-  t(/isSatelliteFresh12h,\s*isSatelliteStale36h\s*\}\s*from\s*"\.\/lib\/format-freshness\.mjs"/.test(wm) || /import\s*\{\s*formatFreshnessAge,\s*isSatelliteFresh12h,\s*isSatelliteStale36h\s*\}\s*from\s*"\.\/lib\/format-freshness\.mjs"/.test(wm), 'WorldMapView importe les prédicats partagés')
+  const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
+  t(wm.includes('satelliteFreshnessStatus') && wm.includes('format-freshness.mjs'), 'WorldMapView utilise le statut partagé de fraîcheur satellite')
   t(!/function isStale\(/.test(wm), 'prédicat local isStale(36h) supprimé de WorldMapView')
   t(/wmSatLbl\s*=\s*satelliteFreshnessStatus\(\{\s*erddapTimestamp:\s*erddapTimestamp\s*\},\s*lang\)/.test(wm), 'label pill précise la fraîcheur de la seule source satellite')
   t(/wmSatDotColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
@@ -84,12 +85,11 @@ async function main() {
   t(wm.includes('erddapTimestamp') && !/updatedAt&&isStale\(updatedAt\)/.test(wm), 'ancien câblage updatedAt&&isStale supprimé')
 
   // 9. Traductions FR/EN/ES de la pill conservées.
-  t(wm.includes('"EN DIRECT","LIVE","EN VIVO"') || /_t\(lang,"EN DIRECT","LIVE","EN VIVO"\)/.test(wm), 'traductions EN DIRECT/LIVE/EN VIVO conservées')
+  t(lib.includes("fresh: 'SATELLITE CURRENT'") && lib.includes("fresh: 'SATÉLITE AL DÍA'"), 'statuts frais traduits en anglais et espagnol')
   t(/SATELLITE EN RETARD/.test(lib) && /SATELLITE DELAYED/.test(lib) && /SATÉLITE CON RETRASO/.test(lib), 'traductions retard explicites et attribuées au satellite')
-  t(/"Vérification","Verification","Verificación"/.test(wm), 'fallback traduit absent/invalide présent')
+  t(lib.includes("unknown: 'Vérification'") && lib.includes("unknown: 'Verification'") && lib.includes("unknown: 'Verificación'"), 'fallback de vérification traduit FR/EN/ES')
 
   // 10. Autres surfaces fraîcheur non régressées : les helpers canoniques restent exportés.
-  const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
   t(/export function isSatelliteFresh12h/.test(lib), 'isSatelliteFresh12h toujours exporté (contrat 12h intact)')
   t(/export function isSatelliteStale36h/.test(lib), 'isSatelliteStale36h toujours exporté')
   t(/export function lcDetailFreshnessLabel/.test(lib), 'lcDetailFreshnessLabel (#906) intact')
