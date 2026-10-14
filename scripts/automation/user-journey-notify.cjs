@@ -10,6 +10,7 @@ const INCIDENT_LABEL = 'autopilot-journey-alert';
 const BLOCKING_LABEL = 'autopilot-blocking';
 const UX_LABEL = 'autopilot-ux';
 const FACTORY_REPO = 'aveca/factory-control';
+const SARGAGAME_REPO = 'aveca/sargagame';
 const MAX_MISSIONS_24H = 2;
 const MIN_GAP_HOURS = 6;
 
@@ -318,7 +319,7 @@ function buildD1RepairJob(report, defects, env = process.env, nowMs = Date.now()
   ].join('\n').slice(0, 11500);
   return {
     id,
-    repo: REPO,
+    repo: SARGAGAME_REPO,
     task_type: 'QUICK_CHANGE',
     created_at: new Date(nowMs).toISOString(),
     payload: {
@@ -370,13 +371,13 @@ async function handoffD1Repair(token, report, defects, env = process.env, deps =
 
   const activeResult = await query(
     "SELECT id,status,created_at FROM factory_jobs WHERE repo=? AND status IN ('queued','running') ORDER BY created_at ASC LIMIT 1",
-    [REPO],
+    [SARGAGAME_REPO],
   );
   const active = activeResult.results?.[0] || null;
   const cutoff = new Date(nowMs - 24 * 60 * 60 * 1000).toISOString();
   const recentResult = await query(
     "SELECT id,status,created_at FROM factory_jobs WHERE repo=? AND task_type=? AND created_at>=? AND payload LIKE ? ORDER BY created_at DESC LIMIT 10",
-    [REPO, 'QUICK_CHANGE', cutoff, '%"source":"user-journey-audit"%'],
+    [SARGAGAME_REPO, 'QUICK_CHANGE', cutoff, '%"source":"user-journey-audit"%'],
   );
   const recent = recentResult.results || [];
   const decision = d1QueueDecision(active, recent, nowMs);
@@ -403,7 +404,7 @@ async function handoffD1Repair(token, report, defects, env = process.env, deps =
       'INSERT OR IGNORE INTO factory_events (id,ts,source,event_type,repo,status,payload) VALUES (?,?,?,?,?,?,?)',
       [
         'journey-enqueue-' + job.id, job.created_at, 'github-actions-user-journey',
-        'task_queued_from_journey', REPO, 'queued',
+        'task_queued_from_journey', SARGAGAME_REPO, 'queued',
         JSON.stringify({ job_id: job.id, source_run: runUrl(env), fingerprint: job.payload.source_fingerprint, defect_count: job.payload.defect_count }),
       ],
     );
