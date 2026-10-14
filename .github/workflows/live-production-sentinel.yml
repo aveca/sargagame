@@ -35,7 +35,7 @@ jobs:
         run: |
           set +e
           mkdir -p /tmp/sg-tail
-          for worker in sargagame-mq sargagame-gp sargagame-florida sargagame-puntacana sargagame-rivieramaya; do
+          for worker in sargagame-mq sargagame-gp sargagame-florida sargagame-puntacana sargagame-rivieramaya sargagame-tulum; do
             echo "::group::wrangler tail $worker"
             timeout 35s npx --yes wrangler@latest tail "$worker" --format=json --status=error --sampling-rate=1 > "/tmp/sg-tail/${worker}.jsonl" 2>&1
             code=$?
