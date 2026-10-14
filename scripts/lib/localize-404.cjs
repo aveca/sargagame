@@ -105,7 +105,8 @@ function localize404(html, region, title) {
     [FR.legalLink, dict.legalLink],
     [FR.privacyLink, dict.privacyLink]
   ]
-  out = replaceHtmlLang(out, lang, lang)\n  for (const [anchor, value] of pairs) out = replaceOnce(out, anchor, value, lang)
+  out = replaceHtmlLang(out, lang, lang)
+  for (const [anchor, value] of pairs) out = replaceOnce(out, anchor, value, lang)
   return out
 }
 
