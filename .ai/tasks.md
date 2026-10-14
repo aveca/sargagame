@@ -74,7 +74,7 @@
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Aujourd'hui via query params; les pages dédiées `/payement/good` et `/payment/error` seraient plus propres.
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-003 — in_progress by coding_agent
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2
