@@ -60,13 +60,13 @@ const ES = {
 function replaceHtmlLang(html, value, lang) {
   // HTML minifiers/build plugins may reorder attributes or add attributes.
   // Match the actual lang attribute rather than requiring the exact literal
-  // '<html lang="fr">', which caused every regional deploy to fail.
-  const tag = /<html\\b[^>]*>/i
+  // '<html lang="fr">', which caused regional builds to fail.
+  const tag = /<html\b[^>]*>/i
   const match = String(html).match(tag)
-  if (!match || !/\\blang\\s*=\\s*(["'])[^"']*\\1/i.test(match[0])) {
-    throw new Error(`404-i18n: attribut lang introuvable (lang=${lang}) — public/404.html a changé ?`)
+  if (!match || !/\blang\s*=\s*(["'])[^"']*\1/i.test(match[0])) {
+    throw new Error(\`404-i18n: attribut lang introuvable (lang=\${lang}) — public/404.html a changé ?\`)
   }
-  const nextTag = match[0].replace(/(\\blang\\s*=\\s*)(["'])[^"']*\\2/i, `$1${JSON.stringify(value).slice(0, -1).slice(1)}`)
+  const nextTag = match[0].replace(/(\blang\s*=\s*)(["'])[^"']*\2/i, \`$1\${JSON.stringify(value).slice(0, -1).slice(1)}\`)
   return String(html).replace(match[0], nextTag)
 }
 
