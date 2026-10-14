@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
+
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)

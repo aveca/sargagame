@@ -243,6 +243,14 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
 .sg-mapchip.sg-mapchip svg{stroke:#fdfcf7 !important}
+/* CTA primaire « Trouve ta plage » (mission P0 refonte UX 2026-10-14) : gradient teal =
+   action libre, distinct du mapchip encre (utilitaires) et du SOS or (payant). Texte ink
+   foncé sur teal = contraste garanti. Triple-classe (0,3,0) obligatoire : cf. note
+   sg-mapchip — le skin .theme-comic/.sg-onink-scope strippe sinon fond/bordure/ombre. */
+.sg-mapfind.sg-mapfind.sg-mapfind{background:linear-gradient(135deg,#2BD9C8 0%,#009E8E 100%) !important;color:#0B2230 !important;
+  border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
+  text-shadow:none !important;-webkit-text-fill-color:#0B2230 !important;border-radius:999px !important}
+.sg-mapfind.sg-mapfind svg{stroke:#0B2230 !important;fill:none !important}
 /* CTA « Voir la plage » (carte) — même cause : le skin de thème strippait le gradient
    or → texte noir illisible. Pastille encre + bordure OR + texte BLANC (CTA primaire
    distinct des chips utilitaires). Triple-classe (0,3,0) : bat .theme-comic button (0,1,1)
@@ -264,6 +272,17 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
 .sg-mapnav.sg-mapnav.sg-mapnav svg{stroke:#190c2c !important}
 .sg-mapnav.sg-mapnav.sg-mapnav:active{box-shadow:0 0 0 #190c2c !important;transform:translate(3px,3px)}
 /* FAB stack — pictos SVG ink, recette comic */
+/* SOS PLAGE 24H (payant) — régression confirmée en prod (2026-10-14) : le bloc
+   button.sg-fab ci-dessous verrouille TOUS les sg-fab sur fond encre #190c2c
+   !important, ce qui écrasait le gradient or inline du bouton « SOS PLAGE 24H
+   — 1 € » (className sg-fab) → le portail payant rendait une pastille sombre
+   quasi invisible sur la carte nuit. Classe dédiée, triple-classe (0,3,0) +
+   !important : restaure le gradient or prévu, texte ink lisible, distinct du
+   CTA teal « Trouve ta plage ». */
+.sg-soscta.sg-soscta.sg-soscta{background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317) !important;color:#190c2c !important;
+  border:none !important;box-shadow:0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28) !important;
+  text-shadow:none !important;-webkit-text-fill-color:#190c2c !important;border-radius:14px !important}
+.sg-soscta.sg-soscta svg{stroke:#190c2c !important}
 .sg-fab svg{width:24px;height:24px;display:block}
 /* Le picto Veilleur des FABs a des strokes clairs (teal/or/papier) qui n'ont de
    sens que sur le fond SOMBRE #190c2c. Le skin de thème (.theme-X button{bg !important})

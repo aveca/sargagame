@@ -1,3 +1,15 @@
+---
+
+## 2026-10-14 - ui_agent (OpenCode) · branche gent/ui/p0-first-screen-20261014
+
+**Mission P0 refonte UX visible : CTA « Trouve ta plage » sur l'accueil + bannière consentement non bloquante + SOS doré restauré.**
+
+- CTA primaire teal .sg-mapfind sur la carte (i18n FR/EN/ES), ouvre TrouvePlage IN-APP via onFind → showRecommend. Rollback ?trouveplage=0. Deep-link ?recommend=1 conservé (rétro-compat).
+- Bannière cookies compactée (~108px→~100px) + --sg-consent-h : CTA/SOS/chat/découverte remontent au-dessus d'elle (RGPD intact : texte + Accepter/Refuser conservés).
+- Régression prod SOS corrigée : .sg-fab (fond encre !important) strippait le gradient or inline → classe dédiée .sg-soscta armurée.
+- Tests : 
+pm test 43/43 OK ; build exit 0 ; budget 209.1/210 Ko gzip ; esbuild OK ; parcours Playwright mobile+desktop (consentement→CTA→TrouvePlage→retour carte) 0 erreur JS.
+- Nouveau test de verrouillage 	ests/ux-first-screen-cta.test.cjs (CTA, i18n, rollback, --sg-consent-h, onClose, SOS).
 # .ai/changelog.md — Historique des changements agents
 
 > Chaque agent ajoute une entrée après toute modification du code côté produit.
