@@ -28,6 +28,12 @@ if (!fingerprint.ok) {
   process.exit(1);
 }
 
+if (!require('../lib/bundle-css.cjs').hasBundleCss(fingerprint.cssSrcs)) {
+  console.error('PREPARED HTML FAIL (' + regionId + '): CSS applicatif /assets/*.css absent de index.html (vu: ' +
+    (fingerprint.cssSrcs.join(', ') || 'aucun') + ')');
+  process.exit(1);
+}
+
 const refs = [...new Set([fingerprint.moduleSrc, ...fingerprint.cssSrcs])];
 for (const ref of refs) {
   const url = new URL(ref, 'https://' + region.domain + '/');
