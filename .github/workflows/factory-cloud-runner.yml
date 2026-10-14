@@ -22,7 +22,9 @@ concurrency:
 jobs:
   cloud-runner:
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    # Plafond job ≥ timeout du step modèle (90 min) sinon le job annule
+    # avant la fin de l'étape (constat run 38525011137).
+    timeout-minutes: 105
     env:
       CF_ACCOUNT_ID: abf2b92cf718313567b4b38eb9dda17f
       CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
