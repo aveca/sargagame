@@ -4,6 +4,7 @@ const assert = require('node:assert/strict');
 const {
   hash, fingerprintForDefect, uniqueDefects, severity, titleFor,
   incidentBody, missionBody, labelsFor, factoryQueueGate, clean,
+  d1QueueDecision, buildD1RepairJob,
 } = require('../../scripts/automation/user-journey-notify.cjs');
 
 let n = 0;
@@ -47,5 +48,34 @@ t(!factoryQueueGate([issue(1,['mission'],'2026-10-13T11:00:00Z'),issue(2,['missi
 t(!factoryQueueGate([issue(1,['mission'],'2026-10-13T08:00:00Z')],now).allowed,'six-hour cooldown enforced');
 t(factoryQueueGate([issue(1,['mission'],'2026-10-13T05:00:00Z')],now).allowed,'mission allowed after cooldown and below cap');
 t(factoryQueueGate([issue(1,['mission'],'2026-10-13T05:00:00Z','closed')],now).allowed,'closed historical mission is not pending');
+
+
+const recentNow = Date.parse('2026-10-14T12:00:00.000Z');
+t(!d1QueueDecision({id:'job-running',status:'running'},[],recentNow).allowed,
+  'D1 handoff defers while any Sargagame job is running');
+t(!d1QueueDecision(null,[
+  {id:'j1',created_at:'2026-10-14T11:00:00.000Z'},
+  {id:'j2',created_at:'2026-10-14T06:00:00.000Z'}
+],recentNow).allowed, 'D1 handoff enforces max two journey repairs per rolling 24h');
+t(!d1QueueDecision(null,[{id:'j1',created_at:'2026-10-14T10:00:00.000Z'}],recentNow).allowed,
+  'D1 handoff enforces six-hour cooldown');
+t(d1QueueDecision(null,[{id:'j1',created_at:'2026-10-14T04:00:00.000Z'}],recentNow).allowed,
+  'D1 handoff resumes after cooldown and below daily cap');
+t(!d1QueueDecision(null,[{id:'j1',created_at:'invalid'}],recentNow).allowed,
+  'D1 handoff refuses when recent mission timestamp is invalid');
+
+const d1Job = buildD1RepairJob(report,[a,c],
+  {GITHUB_SERVER_URL:'https://github.com',GITHUB_REPOSITORY:'aveca/sargagame',GITHUB_RUN_ID:'123'},
+  Date.parse('2026-10-14T12:00:00.000Z'));
+t(d1Job.repo==='aveca/sargagame' && d1Job.task_type==='QUICK_CHANGE',
+  'D1 repair job stays in Sargagame and uses an existing runner task type');
+t(d1Job.id==='journey-ux-'+d1Job.payload.source_fingerprint.slice(0,12)+'-20261013',
+  'D1 repair job has a deterministic dedup ID per fingerprint and report date');
+t(d1Job.payload.source==='user-journey-audit' && d1Job.payload.defect_count===2,
+  'D1 payload records the source and bounded defect count');
+t(d1Job.payload.prompt.includes('Run source:') && d1Job.payload.prompt.includes('do not'),
+  'D1 task carries audit provenance and explicit safety instructions');
+t(!d1Job.payload.prompt.includes('Bearer abc123'),
+  'D1 task builder does not inject credentials into task instructions');
 
 console.log('\nUSER_JOURNEY_NOTIFY_TESTS PASS ('+n+' assertions)');
