@@ -225,7 +225,7 @@ jobs:
           
           # Selon le type d'agent, lancer le script approprié
           case "$AGENT_TYPE" in
-            coding)
+            coding|coding_agent|coding-agent)
               # Pour coding agent : on ne peut pas coder vraiment en CI
               # On crée une issue pour qu'un agent externe (OpenCode/Codex/CC) la prenne
               echo "Coding task requires external agent. Creating tracking issue..."
