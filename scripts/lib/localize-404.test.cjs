@@ -80,3 +80,10 @@ test('garde fail-loud : ancre manquante → throw explicite', () => {
     'devrait lever sur source dérivante'
   )
 })
+
+
+test('attribut lang robuste aux attributs ajoutés/réordonnés par le build', () => {
+  const mutated = SRC.replace('<html lang="fr">', '<html data-build="1" lang="fr" class="regional">')
+  const out = localize404(mutated, byId.florida, byId.florida.name)
+  assert.ok(out.includes('<html data-build="1" lang="en" class="regional">'), 'lang remplacé sans perdre les autres attributs')
+})
