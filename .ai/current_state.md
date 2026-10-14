@@ -1,3 +1,38 @@
+---
+
+## 2026-10-14 21:30 UTC · Agent: ui_agent (OpenCode, mission P0 refonte UX)
+
+### Travail effectué
+- **Résumé 1 ligne** : CTA primaire « Trouve ta plage » visible sur l'accueil (plus d'URL secrète ?recommend=1), bannière cookies ne masque plus le chrome bas, SOS doré restauré.
+- **Détails** :
+  - WorldMapView : nouveau CTA teal .sg-mapfind (data-testid cta-trouve-ta-plage) → prop onFind → ouvre TrouvePlage IN-APP (showRecommend). Rollback ?trouveplage=0 (pastille géoloc historique). Deep-link ?recommend=1 conservé.
+  - Bannière cookies compactée (~100px) + var CSS --sg-consent-h remontant CTA/SOS/chat/découverte tant qu'elle est affichée.
+  - Régression prod corrigée : .sg-fab fond encre !important strippait le gradient or du bouton SOS → classe dédiée .sg-soscta (triple-classe, bat le skin de thème).
+  - TrouvePlage : fermeture IN-APP douce (onClose + replaceState), sans rechargement.
+
+### Fichiers modifiés
+- src/Sargasses_PROD.jsx — state showRecommend, var --sg-consent-h, CTA onFind, bannière compacte, SOS .sg-soscta
+- src/WorldMapView.jsx — prop onFind, CTA primaire i18n FR/EN/ES, remontée consent
+- src/TrouvePlage.jsx — prop onClose, fermeture douce
+- src/app-runtime.css — classes .sg-mapfind (teal) et .sg-soscta (or) blindées
+- 	ests/ux-first-screen-cta.test.cjs — nouveau test de verrouillage (6 assertions)
+- 	ests/trouve-plage-integration.test.cjs — portes showRecommend || RECOMMEND_MODE
+
+### Tests réalisés
+- [x] npm test → 43/43 fichiers OK (exit 0) sur le SHA final
+- [x] npm run build → exit 0 (sargasses-v221-a40d93a3)
+- [x] check-bundle-budget → 209.1/210 Ko gzip (marge 0.9 Ko, serrée)
+- [x] npx esbuild → syntax OK
+- [x] Parcours Playwright mobile 390x844 + desktop 1440x900 : consentement → accueil → clic CTA → TrouvePlage → retour carte, 0 erreur JS (captures conservées)
+
+### Problèmes restants
+- [ ] Preuve en production (phase 5) à exécuter après merge/deploy
+- [ ] Budget gzip marge 0.9 Ko — prochaine feature UI à surveiller
+
+### Branche / PR
+- Branche : gent/ui/p0-first-screen-20261014
+- PR : voir gh (créée à la livraison)
+- Base : 54a94390 (= main au moment du travail)
 # .ai/current_state.md — État actuel du projet
 >
 > Dernière mise à jour par agent. Format strict.
