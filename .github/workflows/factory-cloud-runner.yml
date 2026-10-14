@@ -195,11 +195,11 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           FACTORY_JOB_ID: ${{ steps.claim.outputs.job_id }}
           FACTORY_FINAL_STATUS: failed
-          run: |
-            # finish() doit toujours exécuter le script CONFIÉ : le worktree
-            # peut contenir les mutations du modèle (run 38534628999 : le
-            # modèle a édité cloud-runner.mjs → require() en ESM → crash).
-            git checkout -- . && git clean -fdq
-            FACTORY_RESULT_JSON="$(node -e 'console.log(JSON.stringify({run_id:process.env.GITHUB_RUN_ID,run_url:process.env.GITHUB_SERVER_URL+"/"+process.env.GITHUB_REPOSITORY+"/actions/runs/"+process.env.GITHUB_RUN_ID,reason:"Cloud runner step failed; inspect GitHub Actions logs"}))')"
-            export FACTORY_RESULT_JSON
-            node scripts/factory/cloud-runner.mjs finish
+        run: |
+          # finish() doit toujours exécuter le script CONFIÉ : le worktree
+          # peut contenir les mutations du modèle (run 38534628999 : le
+          # modèle a édité cloud-runner.mjs → require() en ESM → crash).
+          git checkout -- . && git clean -fdq
+          FACTORY_RESULT_JSON="$(node -e 'console.log(JSON.stringify({run_id:process.env.GITHUB_RUN_ID,run_url:process.env.GITHUB_SERVER_URL+"/"+process.env.GITHUB_REPOSITORY+"/actions/runs/"+process.env.GITHUB_RUN_ID,reason:"Cloud runner step failed; inspect GitHub Actions logs"}))')"
+          export FACTORY_RESULT_JSON
+          node scripts/factory/cloud-runner.mjs finish
