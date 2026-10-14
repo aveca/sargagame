@@ -56,6 +56,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           FACTORY_CONTROL_TOKEN: ${{ secrets.FACTORY_CONTROL_TOKEN }}
+          # Fallback vers la file D1 existante si le jeton cross-repo n'est pas configuré.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: abf2b92cf718313567b4b38eb9dda17f
+          CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
         run: node scripts/automation/user-journey-notify.cjs --report user-journey-report.json
       - name: Upload report + screenshots
         if: always()
