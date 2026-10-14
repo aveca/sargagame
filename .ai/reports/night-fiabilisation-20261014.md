@@ -104,3 +104,28 @@ La mission impose : pas de nouvelle série de fonctionnalités tant que le cycle
 1. Réglage GitHub « Allow GitHub Actions to create and approve pull requests » — 1 clic UI nécessaire (API ne l'expose pas).
 2. Métrique de consommation KV indisponible via GraphQL sur ce compte.
 3. Deploy FTP statique complet des merges de la nuit : les sites servent `v221/50412b3b` (sain, cohérent) ; le prochain full build programmé (06:00 UTC) propagera les derniers merges — à revérifier au réveil via `curl <domaine>/version.json`.
+
+---
+
+## Addendum P0 — validation « Friction de confiance » (06:00 UTC, itération 1)
+
+Le correctif `d89122e4c fix(ux): clarify satellite freshness on mobile` (fusionné
+directement sur main à 05:08 UTC) a été **vérifié de bout en bout** — non dupliqué :
+
+- **Tests** : `tests/unit/worldmap-pill-freshness.test.cjs` → PASS, 37 assertions
+  (12–36 h neutre, ≥36 h retard satellite, absent/futur/invalide → « Vérification »,
+  i18n FR/EN/ES, câblage pill). CI Tests + Perf Budget **SUCCESS sur le SHA exact**
+  `d89122e4c` ; `Cloudflare Production` SUCCESS (post-deploy-verify artefact v/b).
+- **Déploiement vérifié** : nouveau hash `b=4076cb73` servi sur les **6 domaines**
+  (avant : `50412b3b`).
+- **Preuve visuelle production (mobile 390×844 headless)** :
+  - AVANT (02:30 UTC) : `● DONNÉE EN RETARD il y a 1 j` — alarme globale sur
+    observation de 17 h.
+  - APRÈS (05:45 UTC) : `● MESURE SATELLITE il y a 17 h` — neutre, point gris non
+    pulsant ; alarme réservée à la seule observation ≥36 h.
+  - ES live : `MEDICIÓN SATELITAL` sur sargassumcancun.com.
+- Seuils scientifiques inchangés (12 h / 36 h, prédicats partagés toujours exportés).
+- Captures conservées : `mobile-viewport.png` (avant) / `mobile-after-freshness-fix.png`
+  (après), artefacts de session.
+
+Statut : **VÉRIFIÉ EN PRODUCTION**.
