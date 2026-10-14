@@ -95,6 +95,7 @@ jobs:
         env:
           JOB_ID: ${{ steps.claim.outputs.job_id }}
           TASK_TYPE: ${{ steps.claim.outputs.task_type }}
+          AIDER_FILES: ${{ steps.claim.outputs.files }}
         run: |
           set -euo pipefail
           {
@@ -103,11 +104,17 @@ jobs:
             printf 'Do not modify .github/, scripts/factory/cloud-runner.mjs, wrangler configuration, deployment workflows, secrets, or environment files. Do not add credentials. Make the smallest tested change that fulfills the task.\n'
             printf 'Do not claim tests passed unless you actually made code changes and tests pass.\n'
           } >> "$RUNNER_TEMP/factory-task.md"
-          "$RUNNER_TEMP/aider-venv/bin/aider" \
-            --model ollama_chat/qwen2.5-coder:7b \
-            --yes \
-            --no-auto-commits \
-            --message-file "$RUNNER_TEMP/factory-task.md"
+          # files hint (payload.files) : cible(s) explicite(s) — sans cible,
+          # aider reconstruit la repo-map complète et n'aboutit pas en 90 min.
+          # Tableau bash (pas d'eval) : chaque chemin reste un seul argument.
+          AIDER_CMD=("$RUNNER_TEMP/aider-venv/bin/aider" --model ollama_chat/qwen2.5-coder:7b --yes --no-auto-commits --message-file "$RUNNER_TEMP/factory-task.md")
+          for f in $AIDER_FILES; do
+            case "$f" in
+              *.github/*|scripts/factory/cloud-runner.mjs|.env*|wrangler*|secrets/*) echo "skip protected file hint: $f" ;;
+              *) AIDER_CMD+=("$f") ;;
+            esac
+          done
+          "${AIDER_CMD[@]}"
 
       - name: Enforce file scope and check diff
         if: steps.claim.outputs.has_job == 'true'
