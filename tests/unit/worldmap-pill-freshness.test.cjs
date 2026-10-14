@@ -28,11 +28,14 @@ let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
 async function main() {
-  const { isSatelliteFresh12h, isSatelliteStale36h } = await import('../../src/lib/format-freshness.mjs')
+  const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } = await import('../../src/lib/format-freshness.mjs')
 
   // 1. Mesure récente <12h : LIVE autorisé.
   const fresh = { erddapTimestamp: new Date(now - 3 * 3.6e6).toISOString() }
-  t(isSatelliteFresh12h(fresh, now) === true, '<12h (3h) => isSatelliteFresh12h true (EN DIRECT autorisé)')
+  t(isSatelliteFresh12h(fresh, now) === true, '<12h (3h) => isSatelliteFresh12h true (observation satellite fraîche)')
+  t(satelliteFreshnessStatus(fresh, 'fr', now) === 'SATELLITE À JOUR', '<12h => statut satellite à jour')
+  t(satelliteFreshnessStatus(fresh, 'en', now) === 'SATELLITE CURRENT', '<12h => label anglais')
+  t(satelliteFreshnessStatus(fresh, 'es', now) === 'SATÉLITE AL DÍA', '<12h => label espagnol')
 
   // 2. Seuil exact 12h : PLUS de LIVE (bordure stricte).
   const edge = { erddapTimestamp: new Date(now - 12 * 3.6e6).toISOString() }
@@ -41,15 +44,23 @@ async function main() {
   // 3. 16-17h (la plainte production) : pas de LIVE, âge réel.
   const delayed = { erddapTimestamp: new Date(now - 17 * 3.6e6).toISOString() }
   t(isSatelliteFresh12h(delayed, now) === false, '17h => isSatelliteFresh12h false (pas de EN DIRECT)')
-  t(isSatelliteStale36h(delayed, now) === false, '17h => isSatelliteStale36h false (fenêtre 12-36h : statut non-actuel, âge réel affiché)')
+  t(isSatelliteStale36h(delayed, now) === false, '17h => isSatelliteStale36h false (fenêtre 12-36h)')
+  t(satelliteFreshnessStatus(delayed, 'fr', now) === 'DERNIÈRE MESURE SATELLITE', '12–36h => âge montré sans alarme globale « donnée en retard »')
+  t(satelliteFreshnessStatus(delayed, 'en', now) === 'LAST SATELLITE READING', '12–36h => libellé anglais neutre')
+  t(satelliteFreshnessStatus(delayed, 'es', now) === 'ÚLTIMA MEDICIÓN SATELITAL', '12–36h => libellé espagnol neutre')
 
   // 4. 36-40h : péremption.
   const old = { erddapTimestamp: new Date(now - 40 * 3.6e6).toISOString() }
-  t(isSatelliteStale36h(old, now) === true, '40h => isSatelliteStale36h true (statut non-actuel)')
+  t(isSatelliteStale36h(old, now) === true, '40h => isSatelliteStale36h true (observation satellite en retard)')
+  t(satelliteFreshnessStatus(old, 'fr', now) === 'SATELLITE EN RETARD', '>=36h => alerte explicitement attribuée au satellite')
+  t(satelliteFreshnessStatus(old, 'en', now) === 'SATELLITE DELAYED', '>=36h => label retard anglais')
+  t(satelliteFreshnessStatus(old, 'es', now) === 'SATÉLITE CON RETRASO', '>=36h => label retard espagnol')
 
   // 5. Horodatage absent : aucun LIVE inventé.
   t(isSatelliteFresh12h({}, now) === false, 'absent => isSatelliteFresh12h false (fallback honnête)')
   t(isSatelliteStale36h({}, now) === false, 'absent => isSatelliteStale36h false (fallback honnête)')
+  t(satelliteFreshnessStatus({}, 'fr', now) === 'Vérification', 'horodatage absent => vérification, aucune fraîcheur inventée')
+  t(satelliteFreshnessStatus({ erddapTimestamp: new Date(now + 3.6e6).toISOString() }, 'fr', now) === 'Vérification', 'horodatage futur => vérification')
 
   // 6. Horodatage invalide.
   t(isSatelliteFresh12h({ erddapTimestamp: 'not-a-timestamp' }, now) === false, 'invalide => pas de LIVE')
@@ -63,7 +74,9 @@ async function main() {
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
   t(/isSatelliteFresh12h,\s*isSatelliteStale36h\s*\}\s*from\s*"\.\/lib\/format-freshness\.mjs"/.test(wm) || /import\s*\{\s*formatFreshnessAge,\s*isSatelliteFresh12h,\s*isSatelliteStale36h\s*\}\s*from\s*"\.\/lib\/format-freshness\.mjs"/.test(wm), 'WorldMapView importe les prédicats partagés')
   t(!/function isStale\(/.test(wm), 'prédicat local isStale(36h) supprimé de WorldMapView')
-  t(/wmSatLbl\s*=.*isSatelliteFresh12h|wmSatFresh\s*&&\s*isSatelliteFresh12h|const wmSatFresh\s*=\s*wmSatValid\s*&&\s*isSatelliteFresh12h/.test(wm), 'label pill piloté par isSatelliteFresh12h')
+  t(/wmSatLbl\s*=\s*satelliteFreshnessStatus\(\{\s*erddapTimestamp:\s*erddapTimestamp\s*\},\s*lang\)/.test(wm), 'label pill précise la fraîcheur de la seule source satellite')
+  t(/wmSatDotColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
+  t(/wmSatAgeColor\s*=\s*wmSatStale\s*\?\s*"#B87A00"\s*:\s*wmSatFresh\s*\?\s*"#00786C"\s*:\s*"#667085"/.test(wm), 'couleur neutre entre 12h et 36h, ambre uniquement après 36h')
   t(/erddapTimestamp\?formatFreshnessAge\(erddapTimestamp,lang\)|formatFreshnessAge\(erddapTimestamp,\s*lang\)/.test(wm), 'âge pill = formatFreshnessAge(erddapTimestamp) (jamais updatedAt seul)')
   t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
@@ -72,7 +85,7 @@ async function main() {
 
   // 9. Traductions FR/EN/ES de la pill conservées.
   t(wm.includes('"EN DIRECT","LIVE","EN VIVO"') || /_t\(lang,"EN DIRECT","LIVE","EN VIVO"\)/.test(wm), 'traductions EN DIRECT/LIVE/EN VIVO conservées')
-  t(/DONNÉE EN RETARD|DATA DELAYED|DATO EN RETRASO/.test(wm), 'traductions statut non-actuel conservées')
+  t(/SATELLITE EN RETARD/.test(lib) && /SATELLITE DELAYED/.test(lib) && /SATÉLITE CON RETRASO/.test(lib), 'traductions retard explicites et attribuées au satellite')
   t(/"Vérification","Verification","Verificación"/.test(wm), 'fallback traduit absent/invalide présent')
 
   // 10. Autres surfaces fraîcheur non régressées : les helpers canoniques restent exportés.
