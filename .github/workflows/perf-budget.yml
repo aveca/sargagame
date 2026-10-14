@@ -34,6 +34,11 @@ jobs:
         run: node scripts/check-bundle-budget.cjs
 
       - name: Lighthouse CI (mobile) — report-only
+        # Le budget gzip reste bloquant ci-dessus. Lighthouse est explicitement
+        # report-only : une panne externe ou un runner LHCI bloqué ne doit pas
+        # bloquer le déploiement ; plafond dur de 5 minutes.
+        timeout-minutes: 5
+        continue-on-error: true
         run: npx --yes @lhci/cli@0.14.x autorun
         env:
           LHCI_GITHUB_APP_TOKEN: ${{ secrets.LHCI_GITHUB_APP_TOKEN }}
