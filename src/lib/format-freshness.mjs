@@ -56,10 +56,10 @@ export function isSatelliteStale36h(sargData, now = Date.now()) {
 export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()) {
   const age = satelliteAgeHours(sargData, now);
   const labels = lang === 'en'
-    ? { unknown: 'Verification', fresh: 'SATELLITE CURRENT', recent: 'LAST SATELLITE READING', stale: 'SATELLITE DELAYED' }
+    ? { unknown: 'Verification', fresh: 'SATELLITE CURRENT', recent: 'SATELLITE READING', stale: 'SATELLITE DELAYED' }
     : lang === 'es'
-      ? { unknown: 'Verificación', fresh: 'SATÉLITE AL DÍA', recent: 'ÚLTIMA MEDICIÓN SATELITAL', stale: 'SATÉLITE CON RETRASO' }
-      : { unknown: 'Vérification', fresh: 'SATELLITE À JOUR', recent: 'DERNIÈRE MESURE SATELLITE', stale: 'SATELLITE EN RETARD' };
+      ? { unknown: 'Verificación', fresh: 'SATÉLITE AL DÍA', recent: 'MEDICIÓN SATELITAL', stale: 'SATÉLITE ATRASADO' }
+      : { unknown: 'Vérification', fresh: 'SATELLITE À JOUR', recent: 'MESURE SATELLITE', stale: 'SATELLITE EN RETARD' };
   if (age == null) return labels.unknown;
   if (age < 12) return labels.fresh;
   if (age < 36) return labels.recent;
