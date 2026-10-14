@@ -197,7 +197,7 @@ function copyForState(state, t, selectedIsAvoid = false) {
   return { title: t.notFoundTitle, detail: t.notFound }
 }
 
-export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr' }) {
+export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr', onClose = null }) {
   const t = COPY[lang] || COPY.fr
   const regionId = region && region.id
   const regionalBeaches = useMemo(
@@ -239,6 +239,19 @@ export default function TrouvePlage({ region, beaches = [], sargData, lang = 'fr
   }, [])
 
   const close = () => {
+    // Ouvert IN-APP (CTA accueil, sans ?recommend=1) : fermeture douce, sans rechargement.
+    // Le deep-link historique conserve le comportement de sortie par URL.
+    if (typeof onClose === 'function') {
+      try {
+        const url = new URL(window.location.href)
+        if (url.searchParams.has('recommend')) {
+          url.searchParams.delete('recommend')
+          window.history.replaceState({}, '', url.pathname + url.search + url.hash)
+        }
+      } catch (_) {}
+      onClose()
+      return
+    }
     try {
       const url = new URL(window.location.href)
       url.searchParams.delete('recommend')
