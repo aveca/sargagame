@@ -535,8 +535,8 @@ function writeRegionIndex(region, out) {
     const html = fs.readFileSync(distIndex, 'utf-8')
     const jsMatch = html.match(/type="module"[^>]+src="([^"]+\.js)"/)
     if (jsMatch) scriptSrc = jsMatch[1]
-    const cssMatch = html.match(/href="([^"]+\.css)"/)
-    if (cssMatch) cssSrc = cssMatch[1]
+    // CSS applicatif Vite uniquement (pas /fonts/fonts.css, déjà inclus en dur plus bas).
+    cssSrc = require('./lib/bundle-css.cjs').pickBundleCss(html)
     // Extract modulepreload hints (React, Leaflet chunks)
     const preloadMatches = html.matchAll(/<link rel="modulepreload"[^>]+>/g)
     for (const m of preloadMatches) modulePreloads += '\n  ' + m[0]
