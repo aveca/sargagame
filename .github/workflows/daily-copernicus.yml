@@ -110,6 +110,14 @@ jobs:
               sleep 10
               continue
             fi
+            # Idempotence (exécutions concurrentes schedule/dispatch/veilleurs) :
+            # si main contient déjà ces données, la publication est acquise —
+            # inutile de pousser un doublon qui échouerait en boucle.
+            if git diff --quiet "origin/$BRANCH" -- public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json; then
+              echo "Données déjà publiées par une exécution concurrente — publication acquise."
+              push_ok=1
+              break
+            fi
             if git push origin "HEAD:$BRANCH"; then
               push_ok=1
               echo "git push OK (tentative $i)"
@@ -122,9 +130,9 @@ jobs:
             echo "::error::git push a échoué après 5 tentatives"
             exit 1
           fi
-          # Trigger cloudflare-production workflow to deploy the fresh data
-          echo "Triggering cloudflare-production workflow..."
-          gh workflow run cloudflare-production.yml --ref "$BRANCH"
+          # NOTE (2026-10-13) : aucun dispatch explicite ici — voir data-refresh.yml
+          # (GITHUB_TOKEN => 403 systématique ; publication couverte par le cron
+          # et les triggers push du workflow de production).
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'
@@ -304,6 +312,13 @@ jobs:
               git rebase --abort || true
               sleep 10
               continue
+            fi
+            # Idempotence (exécutions concurrentes) : mêmes marqueurs déjà sur
+            # main => publication acquise, pas de doublon.
+            if git diff --quiet "origin/$BRANCH"; then
+              echo "État email déjà publié par une exécution concurrente — publication acquise."
+              push_ok=1
+              break
             fi
             if git push origin "HEAD:$BRANCH"; then
               push_ok=1

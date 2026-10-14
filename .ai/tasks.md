@@ -8,6 +8,8 @@
 
 ## Récemment complété
 
+- [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
+
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
 - [x] P0 - PremiumModal error msg bug (@coding_agent, 2026-07-31)
@@ -60,21 +62,21 @@
 - **Rôle** : coding_agent
 - **Description** : Extraire en sous-composants : doSubscribe (logique Silver), ErrorModal, PayGatewayHandler (Apple/Google)
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-001 — in_progress by coding_agent
 
 ### TASK-P2-002 BCD reccurring → expose entièrement
 - **Priorité** : P2
 - **Rôle** : coding_agent
 - **Description** : Les plans `mol_b2b_plans()` dans `mollie-lib.php` ont les montants; il faut exposer le CTA sur `/pro/` + auto-émission token essai 30j.
 - **Estimation** : 4h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-002 — in_progress by coding_agent
 
 ### TASK-P2-003 Pages dédiée payment succès/erreur
 - **Priorité** : P2
 - **Rôle** : coding_agent + UX_agent
 - **Description** : Aujourd'hui via query params; les pages dédiées `/payement/good` et `/payment/error` seraient plus propres.
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] TASK-P2-003 — in_progress by coding_agent
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2

@@ -477,13 +477,15 @@ export default defineConfig({
             const { generateLegalPages } = _require('./scripts/lib/legal-pages.cjs')
             generateLegalPages(REGION, resolve(__dirname, 'dist'))
           } catch (e) { console.warn('   ⚠ pages légales région:', e.message) }
-          // Page 404 localisée (langue primaire région) — sinon c'est public/404.html
-          // FR générique qui se sert sur les domaines EN/ES (constat audit live 2026-10-11:
-          // « Même le satellite a perdu celle-ci » en français sur sargassummiami.com).
+          // Page 404 localisée depuis public/404.html via le helper partagé avec prepare-ftp.
+          // Le même helper est idempotent : l'étape de packaging peut relire cette sortie sans
+          // essayer de remplacer à nouveau les ancres françaises déjà consommées.
           try {
-            const { localize404 } = _require('./scripts/lib/legacy-404-localize.cjs')
-            const r404 = localize404(REGION, resolve(__dirname, 'dist'))
-            console.log(`   → /404.html localisée (${REGION.id}, langue ${r404.lang})`)
+            const target404 = resolve(__dirname, 'dist', '404.html')
+            const { localize404 } = _require('./scripts/lib/localize-404.cjs')
+            const source404 = readFileSync(target404, 'utf-8')
+            writeFileSync(target404, localize404(source404, REGION, REGION.name), 'utf-8')
+            console.log(`   → /404.html localisée (${REGION.id}, langue ${REGION.primaryLang})`)
           } catch (e) { console.warn('   ⚠ 404 localisée région:', e.message) }
           return
         }

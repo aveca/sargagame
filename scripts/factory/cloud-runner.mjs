@@ -89,7 +89,17 @@ async function claim() {
   setOutput("has_job", "true");
   setOutput("job_id", job.id);
   setOutput("task_type", job.task_type || "DEFAULT");
-  console.log(`Claimed task ${job.id} (${job.task_type || "DEFAULT"}).`);
+  // files: cible(s) explicite(s) pour aider. Sans cible, aider construit une
+  // repo-map complète (~3 700 fichiers) à chaque message — constat : 90 min
+  // sans aucune édition (runs 38553015613, 38571791705). Une cible rend
+  // l'édition directe possible et borne le périmètre.
+  const fileHint = Array.isArray(payload.files)
+    ? payload.files
+        .filter((f) => typeof f === "string" && f.length > 0 && f.length < 200 && !f.startsWith("/") && !f.includes("..") && !/[\u0000-\u001f]/.test(f))
+        .slice(0, 8)
+    : [];
+  setOutput("files", fileHint.join(" "));
+  console.log(`Claimed task ${job.id} (${job.task_type || "DEFAULT"}), files hint: ${fileHint.length}.`);
 }
 
 async function finish() {

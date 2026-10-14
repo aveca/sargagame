@@ -138,6 +138,14 @@ jobs:
               sleep 10
               continue
             fi
+            # Idempotence (exécutions concurrentes schedule/dispatch/veilleurs) :
+            # si main contient déjà ces données, la publication est acquise —
+            # inutile de pousser un doublon qui échouerait en boucle.
+            if git diff --quiet "origin/$BRANCH" -- public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json; then
+              echo "Données déjà publiées par une exécution concurrente — publication acquise."
+              push_ok=1
+              break
+            fi
             if git push origin "HEAD:$BRANCH"; then
               push_ok=1
               echo "git push OK (tentative $i)"
@@ -151,9 +159,13 @@ jobs:
             exit 1
           fi
 
-          # Trigger cloudflare-production workflow to deploy the fresh data
-          echo "Triggering cloudflare-production workflow..."
-          gh workflow run cloudflare-production.yml --ref "$BRANCH"
+          # NOTE (2026-10-13, issue #862) : aucun dispatch explicite ici. Le
+          # GITHUB_TOKEN ne peut pas déclencher cloudflare-production.yml
+          # (403 systématique « Resource not accessible by integration ») et la
+          # publication est déjà couverte par le cron daily-copernicus
+          # (0/6/12/18 UTC + full build/deploy) et les triggers push du
+          # workflow de production. Un step en échec ici rendait TOUT le run
+          # rouge alors que les données étaient publiées avec succès.
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'

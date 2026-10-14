@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h } from "./lib/format-freshness.mjs"
+import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -199,6 +199,7 @@ const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,
 export default function WorldMapView({
   beaches, island, updatedAt, erddapTimestamp, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
+  onFind=null,
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
@@ -206,9 +207,12 @@ export default function WorldMapView({
   const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now();
   const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: erddapTimestamp });
   const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: erddapTimestamp });
-  const wmSatLbl = !wmSatValid ? _t(lang,"Vérification","Verification","Verificación") : (wmSatFresh ? _t(lang,"EN DIRECT","LIVE","EN VIVO") : _t(lang,"DONNÉE EN RETARD","DATA DELAYED","DATO EN RETRASO"));
+  const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: erddapTimestamp }, lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp, lang) : "···";
-  const wmSatAgeColor = wmSatFresh ? "#00786C" : "#B87A00";
+  // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
+  // >=36 h : alerte explicite sur la seule observation satellite.
+  const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const wmSatDotColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -1682,7 +1686,7 @@ export default function WorldMapView({
           padding:"calc(12px + env(safe-area-inset-top)) 16px 12px",
           maxWidth:560,margin:"0 auto",
         }}>
-          {/* Pill EN DIRECT — tapable → notre page fiabilité (preuve « on publie nos erreurs »). */}
+          {/* Pill de fraîcheur satellite — source et âge explicites, sans alarme globale prématurée. */}
           <div {...(!mapLiveTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,"Voir notre fiabilité","See our reliability","Ver nuestra fiabilidad"),onClick:_relGo,onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();_relGo()}}}:{})} style={{
             display:"inline-flex",alignItems:"center",gap:7,pointerEvents:"auto",
             whiteSpace:"nowrap",flexShrink:0,
@@ -1692,14 +1696,14 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:"#009E8E",border:`1.5px solid ${INK}`,
-              animation:noAnim?"none":"wmPulse 2.4s ease-out infinite",
+              width:8,height:8,borderRadius:"50%",background:wmSatDotColor,border:`1.5px solid ${INK}`,
+              animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
               {wmSatAge}
             </span>
-            {/* Companion edit (mission #39) : couleur du âge pilotée par wmSatFresh (prédicat partagé 12h). */}
+            {/* Couleur verte = satellite <12h ; neutre = 12–36h ; ambre = >=36h. */}
           </div>
           {/* P7 — Recherche plage par nom (carte-monde) */}
           <div style={{position:"relative",flex:1,minWidth:0,margin:"0 8px",maxWidth:260,pointerEvents:"auto"}}>
@@ -1909,7 +1913,7 @@ export default function WorldMapView({
             adverse 2026-07-02). Constant aussi plage sélectionnée (le digest s'y
             cache) : pas de chrome qui saute au tap. */}
         <div style={{
-          position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + env(safe-area-inset-bottom))`,
+          position:"absolute",left:16,bottom:`calc(${mapPremium&&!mapDecideOff?210:164}px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))`,
           display:"flex",flexDirection:"column",gap:5,pointerEvents:"none",
         }}>
           {[["#22C55E",_t(lang,"Propre","Clean","Limpia")],
@@ -1936,19 +1940,26 @@ export default function WorldMapView({
           )}
         </div>
 
-        {/* Bouton Près de moi — TEXTE BLANC sur pastille SOMBRE OPAQUE (recette FAB,
-            prouvée sur cette carte). Le texte ne peut JAMAIS virer noir-illisible :
-            la couleur EST blanche, indépendante du fond de pastille (le crème ne
-            peignait pas de façon fiable sur iOS → texte ink sur carte sombre = noir). */}
-        <button type="button" className="sg-mapchip" style={{
-          position:"absolute",right:16,bottom:"calc(74px + env(safe-area-inset-bottom))",
-          pointerEvents:"auto",display:"inline-flex",alignItems:"center",gap:7,
-          background:"#190c2c",
-          color:"#fdfcf7",border:`2.5px solid ${INK}`,font:"800 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-          padding:"11px 14px",borderRadius:999,cursor:"pointer",textShadow:"0 1px 2px rgba(0,0,0,.55)",
-          boxShadow:`3px 3px 0 ${INK}`,
-        }} onClick={nearMe}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#009E8E" stroke="#fdfcf7" strokeWidth="1.8" style={{flexShrink:0}}><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.6" fill="#fdfcf7" stroke="none"/></svg> {_t(lang,"Une plage propre près de moi","A clean beach near me","Una playa limpia cerca")}
+        {/* CTA PRINCIPAL « Trouve ta plage » (mission P0 refonte UX 2026-10-14) — une seule
+            action dominante sur l'accueil : ouvre le parcours TrouvePlage IN-APP via onFind
+            (plus d'URL « secrète » ?recommend=1). La peinture (gradient teal = action libre,
+            distincte du SOS doré payant) vit dans la classe .sg-mapfind (app-runtime.css,
+            triple-classe + !important pour survivre au skin .theme-comic/.sg-onink-scope
+            qui sinon strippe fond/bordure, cf. note sg-mapchip). Pleine largeur mobile,
+            max 380, au-dessus de la frise des jours : bande 76-120px (frise 120-156,
+            FAB son 124-166) — flush sans chevauchement ; remonte via --sg-consent-h
+            tant que la bannière cookies est affichée.
+            Fallback nearMe (pastille géoloc historique) si onFind absent — rollback ?trouveplage=0. */}
+        <button type="button" className="sg-mapfind" data-testid="cta-trouve-ta-plage"
+          style={{
+          position:"absolute",left:0,right:0,maxWidth:380,width:"calc(100% - 32px)",margin:"0 auto",height:44,boxSizing:"border-box",
+          bottom:"calc(76px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",
+          pointerEvents:"auto",display:"flex",alignItems:"center",justifyContent:"center",gap:9,
+          font:"800 15.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+          letterSpacing:".02em",padding:"0 18px",cursor:"pointer",
+        }} onClick={()=>{ if(onFind){onFind()} else {nearMe()} }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" strokeWidth="2.1" strokeLinecap="round" strokeLinejoin="round" style={{flexShrink:0}} aria-hidden="true"><circle cx="12" cy="12" r="9.2"/><path d="m15.4 8.6-2.1 4.8-4.8 2.1 2.1-4.8z" fill="#0B2230" stroke="none"/></svg>
+          {_t(lang,"Trouve ta plage","Find your beach","Encuentra tu playa")}
         </button>
 
         {/* Bouton son d'échouage (mute/unmute) — son ON par défaut, débloqué au 1er geste */}

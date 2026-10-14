@@ -58,8 +58,8 @@ function claimTask(content, taskId, agentType) {
     throw new Error(`Task ${taskId} already claimed (status: ${statusChar})`);
   }
 
-  const fullStatusLine = statusMatch[0];
-  const newStatus = fullStatusLine.replace(`- **Statut** : [${statusChar}]`, `- **Statut** : [~] ${taskId} — in_progress by ${agentType}_agent`);
+  const agentLabel = agentType.endsWith('_agent') ? agentType : `${agentType}_agent`;
+  const newStatus = `- **Statut** : [~] ${taskId} — in_progress by ${agentLabel}`;
 
   const newContent = content.slice(0, taskMatch.index + statusMatch.index) + 
                      newStatus + 
@@ -70,21 +70,29 @@ function claimTask(content, taskId, agentType) {
 
 function runTests() {
   const content = readTasks();
+  // Herméticité (2026-10-13) : le backlog live évolue — les agents claiment les
+  // tâches (ex. TASK-P0-001 claimé le 13/10 11:31 UTC, ce qui cassait ces tests).
+  // La logique (parse/claim/priorité) est donc testée sur une entrée P0
+  // synthétique non claimée, jamais sur l'état mutable du fichier.
+  // Note technique : claimTask capture une section jusqu'au prochain en-tête
+  // `### TASK-P` — la fixture se termine donc par une sentinelle d'en-tête,
+  // sinon la dernière section ne correspond pas (lookahead sans succès).
+  const contentWithP0 = content + '\n\n### TASK-P0-000 Test hermétique P0\n- **Priorité** : P0\n- **Rôle** : coding\n- **Statut** : [ ] disponible\n- **Description** : entrée de test — jamais exécutée.\n\n### TASK-P9-900 Sentinelle de fin de fixture\n';
   
   console.log('=== Agent Handoff Task Claiming Tests ===\n');
   
   let passed = 0;
   let failed = 0;
 
-  // Test 1: Parse tasks and find next available
+  // Test 1: Parse tasks and find next available (entrée P0 synthétique)
   console.log('Test 1: Parse tasks and pick next available');
   try {
-    const nextTask = parseTasks(content);
-    if (nextTask && nextTask.taskId === 'TASK-P0-001') {
-      console.log('  ✓ PASS: Next task is TASK-P0-001 (P0 priority)');
+    const nextTask = parseTasks(contentWithP0);
+    if (nextTask && nextTask.taskId === 'TASK-P0-000') {
+      console.log('  ✓ PASS: Next task is TASK-P0-000 (P0 priority)');
       passed++;
     } else {
-      console.log('  ✗ FAIL: Expected TASK-P0-001, got', nextTask?.taskId);
+      console.log('  ✗ FAIL: Expected TASK-P0-000, got', nextTask?.taskId);
       failed++;
     }
   } catch (e) {
@@ -92,12 +100,12 @@ function runTests() {
     failed++;
   }
 
-  // Test 2: Claim TASK-P0-001
-  console.log('Test 2: Claim TASK-P0-001');
+  // Test 2: Claim TASK-P0-000 (synthétique — l'état du P0 live n'est pas requis)
+  console.log('Test 2: Claim TASK-P0-000');
   try {
-    const newContent = claimTask(content, 'TASK-P0-001', 'coding');
+    const newContent = claimTask(contentWithP0, 'TASK-P0-000', 'coding');
     // Verify the status was updated
-    if (newContent.includes('- **Statut** : [~] TASK-P0-001')) {
+    if (newContent.includes('- **Statut** : [~] TASK-P0-000 — in_progress by coding_agent') && !newContent.includes('in_progress by coding_agent disponible')) {
       console.log('  ✓ PASS: Status updated to in_progress');
       passed++;
     } else {
@@ -113,9 +121,9 @@ function runTests() {
   console.log('Test 3: Claim already claimed task should fail');
   try {
     // First claim it
-    let newContent = claimTask(content, 'TASK-P0-001', 'coding');
+    let newContent = claimTask(contentWithP0, 'TASK-P0-000', 'coding');
     // Try to claim again
-    claimTask(newContent, 'TASK-P0-001', 'qa');
+    claimTask(newContent, 'TASK-P0-000', 'qa');
     console.log('  ✗ FAIL: Should have thrown for already claimed task');
     failed++;
   } catch (e) {
@@ -147,7 +155,7 @@ function runTests() {
   // Test 5: Priority ordering (P0 before P1 before P2)
   console.log('Test 5: Priority ordering');
   try {
-    const nextTask = parseTasks(content);
+    const nextTask = parseTasks(contentWithP0);
     if (nextTask && nextTask.taskId.startsWith('TASK-P0')) {
       console.log('  ✓ PASS: P0 task selected first');
       passed++;
@@ -163,10 +171,10 @@ function runTests() {
   // Test 6: Malformed task (missing status) should be skipped
   console.log('Test 6: Malformed task without status line should be skipped');
   try {
-    const testContent = content + '\n\n### TASK-P9-001\nNo status line here\n';
+    const testContent = contentWithP0 + '\n\n### TASK-P9-001\nNo status line here\n';
     const nextTask = parseTasks(testContent);
     // Should still pick the original valid P0 task
-    if (nextTask && nextTask.taskId === 'TASK-P0-001') {
+    if (nextTask && nextTask.taskId === 'TASK-P0-000') {
       console.log('  ✓ PASS: Malformed task skipped, valid P0 task picked');
       passed++;
     } else {

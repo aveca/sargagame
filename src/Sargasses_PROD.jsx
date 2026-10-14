@@ -69,6 +69,11 @@ const LazyHomeAZ=lazyWithRetry(()=>import("./HomeAZ"))
 // design/proto-home-veilleur.html porté). Additif, opt-in debug ?home=1 (prioritaire
 // sur chasse/homeAZ le temps de l'A/B), control = HeroVerdict/GameFunnel/HomeAZ/Chasse intacts.
 const LazyHomeJuicy=lazyWithRetry(()=>import("./HomeJuicy.jsx"))
+const LazyTrouvePlage=lazyWithRetry(()=>import("./TrouvePlage.jsx"))
+const RECOMMEND_MODE=(()=>{try{return /[?&]recommend=1/.test(window.location.search)}catch(_){return false}})()
+// Mission P0 refonte UX (2026-10-14) : CTA primaire « Trouve ta plage » directement sur l'accueil
+// (au lieu du deep-link « secret » ?recommend=1). Rollback ?trouveplage=0 → ancienne pastille géoloc.
+const FIND_CTA_OFF=(()=>{try{return /[?&]trouveplage=0/.test(window.location.search)}catch(_){return false}})()
 // LE VEILLEUR TE RÉPOND — assistant visuel zéro-LLM (proto design/proto-veilleur-repond.html
 // porté). Intent-parsing déterministe (regex+lexique) → sélection d'une vraie plage → bulles
 // visuelles (scène SVG + verdict réel + plan B). Surface deep-link ?veille=1 (comme BriefMatin),
@@ -11449,6 +11454,9 @@ export default function App(){
   const[showOnboarding,setShowOnboarding]=useState(false)
   const[showPremium,setShowPremium]=useState(false)
   const[showSOS,setShowSOS]=useState(false)
+  // Parcours « Trouve ta plage » (TrouvePlage) ouvert IN-APP depuis le CTA primaire de la carte —
+  // plus besoin du deep-link ?recommend=1 (conservé pour rétro-compatibilité des liens sortants).
+  const[showRecommend,setShowRecommend]=useState(RECOMMEND_MODE)
   const[showAccount,setShowAccount]=useState(false)
   const[alertsTick,setAlertsTick]=useState(0) // bump → recompute alertsOn après toggle / retour focus
   const[showChat,setShowChat]=useState(false) // assistant guidé (SargaChat)
@@ -13665,6 +13673,13 @@ export default function App(){
   const[cookieConsent,setCookieConsent]=useState(()=>{
     try{return localStorage.getItem("sg_cookie_consent")||null}catch(_){return null}
   })
+  // Mission P0 refonte UX (2026-10-14) : la bannière cookies (~100px) recouvrait la chrome basse
+  // de l'accueil (CTA compris) → --sg-consent-h remonte CTA/SOS/chat/découverte tant qu'elle est affichée.
+  useEffect(()=>{try{
+    const h=(!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb)?"100px":"0px"
+    document.documentElement.style.setProperty("--sg-consent-h",h)
+    return()=>{document.documentElement.style.removeProperty("--sg-consent-h")}
+  }catch(_){} },[cookieConsent,showHero,showPremium,showSplash,showArenaOnb])
   const v2UiEnabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const finishArenaOnb=useCallback(()=>{ try{localStorage.setItem("sg_onb","1");}catch(_){} setShowArenaOnb(false); },[]);
   // Marché de l'onboarding : Martinique → null (chaînes legacy intactes). GP + régions
@@ -13884,6 +13899,24 @@ export default function App(){
             header z700 + contrôles MapView z1000 ["Toute l'île"/Caraïbe],
             sous paywall z1100+). La carte charge derrière pendant la
             lecture → plus de "vide bleu nuit" au premier paint. */}
+        {/* TROUVEPLAGE — expérience « trouve ta plage » : ouverte par le CTA primaire de la carte
+            (showRecommend, mission P0) ou par le deep-link historique ?recommend=1. Additif, aucun détournement du hero. */}
+        {(showRecommend||RECOMMEND_MODE) && dataReady && (
+          <ErrBound><Suspense fallback={null}>
+            <LazyTrouvePlage
+              region={REGION || {
+                id: window.location.hostname.includes('guadeloupe') ? 'gp' : 'mq',
+                name: window.location.hostname.includes('guadeloupe') ? 'Guadeloupe' : 'Martinique',
+                primaryLang: lang
+              }}
+              beaches={(allBeaches || []).filter(b => b && b.status && b.status !== '_loading' && b.score != null)}
+              sargData={sargData}
+              lang={lang}
+              onClose={()=>setShowRecommend(false)}
+            />
+          </Suspense></ErrBound>
+        )}
+
         {showHero&&dataReady&&heroPick&&(homeJuicy?(
           /* BRAS A/B `home_juicy` — « Le tampon qui claque » (proto porté 2026-07-03).
              Additif, PRIORITAIRE quand ?home=1 (sinon injoignable derrière chasse=true
@@ -14482,7 +14515,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(166px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:"calc(166px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
@@ -14503,10 +14536,10 @@ export default function App(){
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
-          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + env(safe-area-inset-bottom))",zIndex:950,pointerEvents:"none"}}>
+          <div style={{position:"fixed",left:14,right:14,bottom:"calc(160px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,pointerEvents:"none"}}>
             <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
               <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
-                className="sg-fab"
+                className="sg-soscta"
                 style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
                 <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
@@ -14517,7 +14550,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(220px + env(safe-area-inset-bottom))",zIndex:960,
+            style={{position:"fixed",right:14,bottom:"calc(220px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
               animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
@@ -14667,6 +14700,7 @@ export default function App(){
                   forecastByBeach={mapForecastByBeach}
                   onCaptureEmail={em=>{try{submitLead(em,"map_world")}catch(_){}}}
                   onShare={shareBeachCard}
+                  onFind={FIND_CTA_OFF?undefined:()=>{try{track("sg_findcta",{src:"map_primary",island})}catch(_){} setShowRecommend(true)}}
                   seasonOutlook={sargData?.seasonOutlook||null}
                   topInset={(showRecoveryBanner||showPassExpired)?(bannerH||96):0}
                   onOpenPro={()=>{try{track("sg_b2b_open",{source:"map"})}catch(_){}; proB2BSrc.current="map_legend"; setShowProB2B(true)}}
@@ -14815,9 +14849,9 @@ export default function App(){
         {!cookieConsent&&!showHero&&!showPremium&&!showSplash&&!showArenaOnb&&(
           <div className={v2UiEnabled?"sg-cookie-banner sg-v2-cookie-banner":"sg-cookie-banner"} style={{position:"fixed",bottom:0,left:0,right:0,zIndex:1600,
             background:"linear-gradient(180deg,rgba(13,17,23,.96),rgba(13,17,23,.99))",
-            borderTop:"1px solid rgba(255,199,44,.2)",padding:"16px max(16px,env(safe-area-inset-left)) max(16px,env(safe-area-inset-bottom))",
-            display:"flex",flexDirection:"column",gap:12,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
-            <div style={{fontSize:13,lineHeight:1.5,color:"rgba(255,255,255,.72)"}}>
+borderTop:"1px solid rgba(255,199,44,.2)",padding:"10px max(12px,env(safe-area-inset-left)) max(10px,env(safe-area-inset-bottom))",
+display:"flex",flexDirection:"column",gap:8,backdropFilter:"blur(12px)",WebkitBackdropFilter:"blur(12px)"}}>
+<div style={{fontSize:11.5,lineHeight:1.35,color:"rgba(255,255,255,.72)"}}>
               {_t(lang,
                 "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
                 "We use cookies to improve experience and measure analytics. You can accept or decline.",
@@ -14825,23 +14859,23 @@ export default function App(){
               {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
                 style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
             </div>
-            <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               <button onClick={()=>{
                 try{localStorage.setItem("sg_cookie_consent","accepted")}catch(_){}
                 setCookieConsent("accepted")
                 try{if(window.gtag)gtag('consent','update',{analytics_storage:'granted'})}catch(_){}
                 try{track("sg_cookie_accept",{island})}catch(_){}
-              }} style={{flex:"1 1 140px",background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:10,
-                padding:"12px 16px",fontWeight:800,fontSize:14,cursor:"pointer",fontFamily:"inherit",
-                boxShadow:"2px 2px 0 rgba(0,0,0,.35)",minHeight:44}}>
+}} style={{flex:"1 1 120px",background:"#FFC72C",color:"#0B2230",border:"none",borderRadius:10,
+padding:"9px 14px",fontWeight:800,fontSize:13,cursor:"pointer",fontFamily:"inherit",
+boxShadow:"2px 2px 0 rgba(0,0,0,.35)",minHeight:40}}>
                 {_t(lang,"Accepter","Accept","Aceptar")}
               </button>
               <button onClick={()=>{
                 try{localStorage.setItem("sg_cookie_consent","denied")}catch(_){}
                 setCookieConsent("denied")
                 try{track("sg_cookie_deny",{island})}catch(_){}
-              }} style={{flex:"1 1 140px",background:"transparent",color:"rgba(255,255,255,.6)",border:"1.5px solid rgba(255,255,255,.2)",borderRadius:10,
-                padding:"12px 16px",fontWeight:700,fontSize:14,cursor:"pointer",fontFamily:"inherit",minHeight:44}}>
+}} style={{flex:"1 1 120px",background:"transparent",color:"rgba(255,255,255,.6)",border:"1.5px solid rgba(255,255,255,.2)",borderRadius:10,
+padding:"9px 14px",fontWeight:700,fontSize:13,cursor:"pointer",fontFamily:"inherit",minHeight:40}}>
                 {_t(lang,"Refuser","Decline","Rechazar")}
               </button>
             </div>

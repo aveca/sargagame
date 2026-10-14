@@ -1025,7 +1025,7 @@ Sitemap: https://${domain}/sitemap.xml
       'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
       'expansion-survey',
     ])
-    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html'])
+    const SKIP_TOP_FILES = new Set(['404.html', 'neptunes_fury.html', 'comic-cartes.html'])
 
     const urls = []
     const walk = (dir, segs) => {
@@ -1069,23 +1069,13 @@ ${entries.join('\n')}
   }
 
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on
-  // adapte le nom de site (+ libellés EN si la région n'est pas francophone).
+  // le localise via scripts/lib/localize-404.cjs (dictionnaires EN/ES ancrés
+  // sur public/404.html + garde fail-loud). FR = comportement historique.
   const distNotFound = path.join(dist, '404.html')
   if (fs.existsSync(distNotFound)) {
-    let html = fs.readFileSync(distNotFound, 'utf-8')
-    html = html.replace(/Sargasses Martinique & Guadeloupe/g, `Sargassum ${title}`)
-    if (region.primaryLang !== 'fr') {
-      html = html
-        .replace('<html lang="fr">', `<html lang="${region.primaryLang}">`)
-        .replace(/Page introuvable/g, 'Page not found')
-        .replace('Cette page n’existe pas ou a été déplacée. Retournez à l’accueil pour consulter la carte des sargasses et les prévisions.', 'This page does not exist or has moved. Head back to the homepage for the live sargassum map and forecasts.')
-        .replace(">Retour à l'accueil<", '>Back to home<')
-        .replace('>Carte<', '>Map<')
-        .replace('>Prévisions<', '>Forecast<')
-        .replace('>Mentions légales<', '>Legal<')
-        .replace('>Confidentialité<', '>Privacy<')
-    }
-    fs.writeFileSync(path.join(out, '404.html'), html, 'utf-8')
+    const html = fs.readFileSync(distNotFound, 'utf-8')
+    const { localize404 } = require('./lib/localize-404.cjs')
+    fs.writeFileSync(path.join(out, '404.html'), localize404(html, region, title), 'utf-8')
     console.log(`   → 404.html région-aware (${title})`)
   }
 
