@@ -1,0 +1,19 @@
+From: "Le Veilleur" <alerte@sargasses-martinique.com>
+To: <egoursaud@wanadoo.fr>
+Subject: Petit contretemps sur ton paiement
+MIME-Version: 1.0
+Content-Type: text/html; charset="UTF-8"
+X-Tracking: payment_retry:2026-10-15:3edd1510
+
+<div style="background:linear-gradient(135deg,#FFC72C,#FFB347);padding:20px 24px;border-radius:12px 12px 0 0;text-align:center">
+    <img src="https://sargasses-martinique.com/veilleur-logo-120.png" alt="Le Veilleur" style="width:60px;height:60px;border-radius:50%;border:3px solid #fff">
+    <h1 style="margin:12px 0 4px;font-size:22px;color:#0d1117;font-weight:700">Le Veilleur</h1>
+    <p style="margin:0;font-size:14px;color:#0d1117;opacity:.85">Ton accès est presque prêt</p>
+  </div><div style="padding:30px 24px;font-size:15px;line-height:1.6;color:#1a1a1a">
+          <p style="margin:0 0 18px">Bonjour,</p>
+          <p style="margin:0 0 18px">On a vu que ta carte n'a pas passé à deux reprises. Pas d'inquiétude — c'est souvent un refus temporaire de la banque.</p>
+               <p style="margin:0 0 18px">Tu peux réessayer avec une autre carte, ou utiliser Apple Pay / Google Pay directement depuis notre page :</p>
+          <a href="https://sargasses-martinique.com/?paywall=1&utm_source=email&utm_medium=payment_retry" style="display:inline-block;background:#FFC72C;color:#0d1117;font-size:16px;font-weight:700;padding:14px 32px;border-radius:40px;text-decoration:none;margin:6px 0 20px">Finaliser mon achat →</a>
+          <p style="margin:18px 0 0;font-size:13px;color:#666">Une question ? Réponds simplement à cet email.</p>
+          <p style="margin:18px 0 0;font-size:11px;color:#999">Tracking: payment_retry:2026-10-15:3edd1510</p>
+        </div>
