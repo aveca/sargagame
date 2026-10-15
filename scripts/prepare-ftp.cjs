@@ -372,7 +372,8 @@ Sitemap: https://${domain}/sitemap.xml
       content = content.replace(/##GP_Y_MQ_ES##/g, 'Guadalupe y Martinica')
 
       // 1. Domain: sargasses-martinique.com → sargasses-guadeloupe.com (canonicals, OG urls, hreflang, JSON-LD, breadcrumbs, sitemaps)
-      content = content.replace(/sargasses-martinique\.com/g, 'sargasses-guadeloupe.com')
+      //    Les énumérations des deux sites (pages légales) sont préservées telles quelles.
+      content = require('./lib/gp-domain-swap.cjs').swapMqDomainToGp(content)
 
       // 2. GA4 + Clarity IDs
       content = content.replace(/G-V8JGMDZZ2Y/g, 'G-Q31VV3LLM9')
