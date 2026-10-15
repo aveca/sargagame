@@ -60,11 +60,12 @@ jobs:
           cache: 'npm'
       - run: npm ci
       # continue-on-error : un veilleur qui échoue ne bloque ni les autres (fail-fast:false)
-      # ni la synthèse. ANTHROPIC_API_KEY est OPTIONNEL (absent = recon déterministe).
+      # ni la synthèse. ANTHROPIC_API_KEY est OPTIONNEL + opt-in SARGA_PAID_LLM=1.
+      # MODE GRATUIT (2026-10-15) : le secret n'est même plus injecté — run-veilleur.cjs
+      # exige de plus SARGA_PAID_LLM=1 ; sans lui, tout veilleur tourne en recon
+      # déterministe (zéro appel payant). Pour réactiver : décommenter l'env ET poser le flag.
       - name: Veille ${{ matrix.id }}
         continue-on-error: true
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: node scripts/veilleurs/run-veilleur.cjs ${{ matrix.id }}
       - name: Upload brief
         uses: actions/upload-artifact@v4

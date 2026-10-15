@@ -1,15 +1,21 @@
-name: Factory Cloud Runner (Sargagame)
+name: Factory Cloud Runner (Sargagame — NEUTRALISÉ)
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - ".github/workflows/factory-cloud-runner.yml"
-      - "scripts/factory/cloud-runner.mjs"
-  schedule:
-    # Heartbeat/queue poll every 15 minutes; same runner, same Sargagame-only scope.
-    - cron: "*/15 * * * *"
+  # NEUTRALISÉ 2026-10-15 (directive : boucle de codage UNIQUE = Factory locale PC1,
+  # Ollama + OpenCode, zéro appel de modèle payant). Ce runner GitHub hébergé constituait
+  # une seconde boucle d'implémentation concurrente (cron 15 min + push) : suppressée.
+  # Les déclencheurs push/schedule sont retirés. L'exécution reste possible UNIQUEMENT
+  # en workflow_dispatch avec confirmation explicite ET variable de repo
+  # FACTORY_CLOUD_RUNNER_ENABLED=true (désactivée par défaut) — garde-fou double opt-in.
+  # Ne touche PAS à ci-tests, perf-budget, user-journey-audit (Playwright), ni
+  # cloudflare-production, daily-copernicus, live-production-sentinel (CI/data/vérifs conservés).
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: "Taper RUNNER-CLOUD pour exécuter quand même (et FACTORY_CLOUD_RUNNER_ENABLED=true requis)"
+        required: true
+        default: ""
+        type: string
 
 permissions:
   contents: write
@@ -22,6 +28,9 @@ concurrency:
 jobs:
   cloud-runner:
     runs-on: ubuntu-latest
+    # Garde-fou : sans le double opt-in (variable repo + input), le job est sauté —
+    # aucun runner de codage hébergé ne peut consommer la file ni créer de PR.
+    if: vars.FACTORY_CLOUD_RUNNER_ENABLED == 'true' && inputs.confirm == 'RUNNER-CLOUD'
     # Plafond job ≥ timeout du step modèle (90 min) sinon le job annule
     # avant la fin de l'étape (constat run 38525011137).
     timeout-minutes: 105

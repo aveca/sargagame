@@ -5,8 +5,13 @@
  * NE DÉCLENCHE JAMAIS d'envoi (outreach/drip/dunning restent aux workflows dédiés).
  *
  * mode "script"  : brief déterministe depuis la donnée repo (jamais de LLM).
- * mode "hybrid"  : LLM si ANTHROPIC_API_KEY, sinon brief déterministe.
- * mode "agent"   : LLM si clé, sinon recon déterministe + note « clé absente ».
+ * mode "hybrid"  : LLM si ANTHROPIC_API_KEY **et** SARGA_PAID_LLM=1, sinon brief déterministe.
+ * mode "agent"   : LLM si clé + opt-in, sinon recon déterministe + note.
+ *
+ * MODE GRATUIT (2026-10-15, directive direction) : aucun appel de modèle payant.
+ * Le chemin LLM est OFF par défaut ; il n'est utilisé que si l'opt-in explicite
+ * SARGA_PAID_LLM=1 est posé dans le workflow (défaut absent = zéro appel paid,
+ * même si le secret ANTHROPIC_API_KEY existe). Sans ce flag → recon déterministe.
  *
  * Sortie : scripts/veilleurs/out/<id>/<date>.md + latest.json
  */
@@ -23,6 +28,9 @@ fs.mkdirSync(outDir, { recursive: true })
 
 async function llmBrief() {
   if (v.mode === 'script') return null
+  // Garde-fou zero-credit : sans opt-in explicite, le chemin payant est fermé
+  // même si ANTHROPIC_API_KEY est provisionné (le routé n'essaie pas d'appeler).
+  if (process.env.SARGA_PAID_LLM !== '1') return null
   if (!process.env.ANTHROPIC_API_KEY) return null
   try {
     const mod = require('@anthropic-ai/sdk')
