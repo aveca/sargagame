@@ -145,6 +145,24 @@ async function stripeTruth() {
 // que le bloc stripe). ⚠️ Fenêtre GLISSANTE : un refund sur un paiement plus
 // vieux que 30 j n'apparaît pas ici — la détection temps réel vit dans
 // mollie-webhook.php (alerte fondateur).
+// Agrégation par île+devise (mission attribution) : calculée sur les mêmes
+// objets bruts, clés ADDITIVES (paid/refunds/chargebacks/b2b/payers calculés
+// exactement comme avant). Enveloppe sûre : toute erreur interne → clés
+// absentes (jamais de bloc partiel), le bloc global reste la vérité.
+function islandAggregation(rows, since) {
+  try {
+    const { aggregateMollieByIsland } = require('./lib/mollie-island.cjs')
+    const agg = aggregateMollieByIsland(rows, { sinceMs: since, nowMs: Date.now() })
+    return {
+      byIsland: agg.byIsland,
+      unattributed: agg.unattributed,
+      islandMeta: { period: agg.period, test: agg.test, duplicates: agg.duplicates, unmappedBeachIds: agg.unmappedBeachIds },
+    }
+  } catch (e) {
+    console.log(`Attribution par île indisponible (${(e && e.message || e).split('\n')[0]}) — bloc global seul conservé`)
+    return {}
+  }
+}
 async function mollieTruth() {
   let key = (process.env.MOLLIE_API_KEY || '').trim()
   if (!key) {
@@ -163,6 +181,7 @@ async function mollieTruth() {
     const refunds = { count: 0, total: {} }            // paiements 30j avec amountRefunded > 0
     const chargebacks = { count: 0, total: {} }
     const payers = new Set()
+    const rows = [] // objets bruts pour l'agrégation par île (lib dédiée, même fenêtre)
     let b2b = 0
     let url = 'https://api.mollie.com/v2/payments?limit=250'
     for (let pg = 0; pg < 12 && url; pg++) {
@@ -171,6 +190,7 @@ async function mollieTruth() {
       if (!r.ok || !j || !j._embedded) { if (pg === 0) return null; break } // page 1 KO = pas de bloc (carry-forward)
       let pastWindow = false
       for (const p of j._embedded.payments || []) {
+        rows.push(p)
         const created = Date.parse(p.createdAt || '')
         if (!isNaN(created) && created < since) { pastWindow = true; continue } // tri antéchronologique Mollie
         if (p.status !== 'paid') continue
@@ -195,7 +215,7 @@ async function mollieTruth() {
       if (pastWindow) break
       url = (j._links && j._links.next && j._links.next.href) || null
     }
-    return { windowDays: 30, paid, refunds, chargebacks, b2b, payers: [...payers].sort() }
+    return { windowDays: 30, paid, refunds, chargebacks, b2b, payers: [...payers].sort(), ...islandAggregation(rows, since) }
   } catch { return null }
 }
 
@@ -416,6 +436,11 @@ async function main() {
       ? ` | ⚠️ refunds ${mo.refunds.count} (${Object.entries(mo.refunds.total).map(([c, v]) => `${v} ${c}`).join(' · ')})` : ''
     const cbLine = mo.chargebacks && mo.chargebacks.count ? ` | 🔴 chargebacks ${mo.chargebacks.count}` : ''
     console.log(`Mollie 30j: ${paidLine} | ${(mo.payers || []).length} payeur(s) distinct(s) | B2B ${mo.b2b || 0}${refLine}${cbLine}`)
+    if (mo.byIsland) {
+      const islLine = Object.entries(mo.byIsland).map(([isl, b]) => `${isl}: ` + (Object.entries(b.paid || {}).map(([c, v]) => `${v.count}× ${v.total} ${c}`).join('+') || '0')).join(' · ')
+      const unatt = mo.unattributed ? Object.entries(mo.unattributed.paid || {}).map(([c, v]) => `${v.count}× ${v.total} ${c}`).join('+') : ''
+      console.log(`Mollie par île: ${islLine || '—'}${unatt ? ` | non attribué: ${unatt}` : ''}`)
+    }
   }
   // KPI ATTRIBUTION EMAIL (« qu'est-ce que l'email rapporte » — B). Démarre à 0,
   // se remplit dès qu'une vente porte une source *email*. Détail : scripts/automation/email-roi.cjs
