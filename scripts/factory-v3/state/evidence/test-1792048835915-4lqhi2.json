@@ -1,0 +1,29 @@
+{
+  "job_id": "test-1792048835915-4lqhi2",
+  "repo": "sargagame",
+  "branch": "main",
+  "commit": "",
+  "pr": null,
+  "ci": null,
+  "merge": null,
+  "deploy": null,
+  "live": null,
+  "baseline": {
+    "type": "build",
+    "output": "\n> sargagame@0.0.0 build\n> node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs\n\n[sync-version] public/version.json → {\"v\":\"v221\",\"date\":\"2026-10-12\"}\n[sync-version] public/sw.js CACHE_NAME déjà à jour (sargasses-v221)\n[sync-version] OK — flotte alignée sur v221 (2026-10-12).\nOK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)\n[gen-b2b-partners] "
+  },
+  "after": null,
+  "errors": [
+    {
+      "type": "TEST_FAILURE",
+      "message": "Cannot read properties of undefined (reading 'slice')",
+      "category": "TEST_FAILURE"
+    }
+  ],
+  "attempts": 1,
+  "timestamps": {
+    "failedAt": "2026-10-15T07:21:28.061Z",
+    "failureType": "TEST_FAILURE"
+  },
+  "verdict": "FAILED"
+}
