@@ -213,3 +213,39 @@ alter table public.payment_grants enable row level security;
 -- Anon NE PEUT PAS lire (PII : email, customer_id) — lecture service_role seulement
 -- Écriture = webhook Mollie (clé service) via mol_supabase_mirror()
 -- Pas de policy INSERT anon → écriture côté serveur seulement
+
+
+-- =====================================================================
+-- B2B hotel pilot page events — no email/PII in the public analytics table.
+-- Client can INSERT only whitelisted event names; no anon SELECT/UPDATE/DELETE.
+-- Trial email remains inside the signed token flow and is never stored here.
+-- =====================================================================
+create table if not exists public.b2b_hotel_events (
+  id          bigint generated always as identity primary key,
+  created_at  timestamptz not null default now(),
+  event       text not null check (event in ('hotel_page_open', 'hotel_trial_signup')),
+  hotel_name  text,
+  beach_key   text,
+  visitor_id  text,
+  constraint b2b_hotel_events_hotel_name_len check (hotel_name is null or length(hotel_name) <= 120),
+  constraint b2b_hotel_events_beach_key_len check (beach_key is null or length(beach_key) <= 40),
+  constraint b2b_hotel_events_visitor_id_len check (visitor_id is null or length(visitor_id) <= 80)
+);
+
+alter table public.b2b_hotel_events enable row level security;
+
+drop policy if exists "anon insert b2b hotel events" on public.b2b_hotel_events;
+create policy "anon insert b2b hotel events"
+  on public.b2b_hotel_events
+  for insert to anon
+  with check (
+    event in ('hotel_page_open', 'hotel_trial_signup')
+    and (hotel_name is null or length(hotel_name) <= 120)
+    and (beach_key is null or length(beach_key) <= 40)
+    and (visitor_id is null or length(visitor_id) <= 80)
+  );
+
+create index if not exists b2b_hotel_events_created_idx
+  on public.b2b_hotel_events (created_at desc);
+create index if not exists b2b_hotel_events_event_idx
+  on public.b2b_hotel_events (event, created_at desc);
