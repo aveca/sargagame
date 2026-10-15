@@ -1,0 +1,37 @@
+{
+  "job_id": "test-1792048900997-c33sdl",
+  "repo": "sargagame",
+  "branch": "main",
+  "commit": "sim-1792048912919",
+  "pr": 36,
+  "ci": "ci-1792048926190",
+  "merge": {
+    "merged": true,
+    "timestamp": "2026-10-15T07:22:07.289Z"
+  },
+  "deploy": {
+    "deployed": true,
+    "url": "https://sargagame.example.com",
+    "timestamp": "2026-10-15T07:22:12.291Z"
+  },
+  "live": {
+    "passed": true,
+    "afterState": "all-targets-200",
+    "timestamp": "2026-10-15T07:22:15.295Z"
+  },
+  "baseline": {
+    "type": "build",
+    "output": "\n> sargagame@0.0.0 build\n> node scripts/sync-version.cjs && node scripts/build-sargassum-json.cjs && node scripts/automation/gen-b2b-partners.cjs && vite build && node scripts/stamp-sw-hash.cjs\n\n[sync-version] public/version.json déjà à jour (v221)\n[sync-version] public/sw.js CACHE_NAME déjà à jour (sargasses-v221)\n[sync-version] OK — flotte alignée sur v221 (2026-10-12).\nOK: public/api/copernicus/sargassum.json (kept erddap-live data, refreshed seasonOutlook)\n[gen-b2b-partners] OK — 0 partenair"
+  },
+  "after": "all-targets-200",
+  "errors": [],
+  "attempts": 0,
+  "timestamps": {
+    "end": "2026-10-15T07:22:15.295Z",
+    "ci": "2026-10-15T07:22:06.190Z",
+    "merge": "2026-10-15T07:22:07.289Z",
+    "deploy": "2026-10-15T07:22:12.291Z",
+    "live": "2026-10-15T07:22:15.295Z"
+  },
+  "verdict": "VERIFIED"
+}

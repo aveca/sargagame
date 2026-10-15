@@ -1,0 +1,8 @@
+{
+  "jobId": "test-1792049008944-qvnjtd",
+  "repo": "sargagame",
+  "branch": "main",
+  "task": "test-isolated",
+  "severity": 1,
+  "dryRun": true
+}
