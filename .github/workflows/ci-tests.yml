@@ -19,6 +19,12 @@ jobs:
       - run: npm ci
       - name: Run tests (*.test.cjs)
         run: npm test
+      # Garde-fou ciblé src/BeachSheet.jsx (PR #866) : le fichier a déjà été
+      # commité non parsable (résidu de merge) sans faire échouer le build
+      # (hors graphe vite). esbuild LOCAL verrouillé via `npm ci`
+      # (package-lock.json) — aucun téléchargement de version flottante.
+      - name: Guard BeachSheet syntax (esbuild, locked local version)
+        run: node scripts/check-beachsheet-syntax.cjs src/BeachSheet.jsx
       # CONTRÔLE A (gouvernance) — intégrité du mécanisme de certification :
       # vocabulaire des statuts strict, attestations cohérentes (nom == cible),
       # aucune valeur inconnue/ambiguë. TOLÈRE NOT_PROVEN (une réparation de
