@@ -267,6 +267,8 @@ async function processJob(job) {
   }
 
   const repoPath = path.resolve(repoConfig.local);
+  const dryRun = job.dryRun === true;
+  
   setJobState({
     repo,
     branch: job.branch || 'main',
@@ -355,6 +357,28 @@ async function processJob(job) {
 
     // === ÉTAT 5: PR_OPEN ===
     setJobState({ status: 'PR_OPEN' });
+    
+    // Skip PR/CI/merge/deploy/live-verify en mode dryRun
+    if (dryRun) {
+      console.log(`[${jobId}] Dry run: skipping PR/CI/merge/deploy/live-verify`);
+      setJobState({ status: 'VERIFIED' });
+      generateEvidence(jobId, {
+        ...evidence,
+        verdict: 'VERIFIED_DRY_RUN',
+        commit: result.commitSha || '',
+        timestamps: {
+          start: evidence.timestamps.start,
+          end: new Date().toISOString(),
+          sync: evidence.timestamps.sync,
+          agent: evidence.timestamps.agent,
+          tests: new Date().toISOString()
+        }
+      });
+      console.log(`[${jobId}] ✅ Job VERIFIED (dry run)`);
+      setJobState({ status: 'IDLE' });
+      releaseLock();
+      return { status: 'VERIFIED', jobId, dryRun: true };
+    }
     
     const prResult = await createPullRequest(repoPath, repo, jobId);
     if (!prResult) {
