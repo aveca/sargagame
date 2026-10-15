@@ -170,6 +170,16 @@ export default {
     if(u.pathname==="/.well-known/apple-developer-merchantid-domain-association"){
       return env.ASSETS.fetch(new URL("/api/apple-pay-domain-association",u.origin),request);
     }
+    // MCP public en lecture seule (Phase B) : /mcp APRES les routes de
+    // paiement (ordre des gardes inchange) et AVANT la garde _private (qui
+    // ne matche pas /mcp). Import dynamique = isolation de faute : un
+    // probleme MCP ne casse jamais les paiements ni les assets.
+    if(u.pathname==="/mcp"||u.pathname==="/mcp/"){
+      try{
+        const {handleMcp}=await import("./mcp.js");
+        return await handleMcp(request);
+      }catch(e){return out({error:"mcp_unavailable"},500)}
+    }
     // Garde fail-closed (2e barrière après public/.assetsignore) : avec
     // run_worker_first=true, les assets existants passent AUSSI par ce handler
     // (sans ça, tout fichier de dist/ serait servi quel que soit le code
