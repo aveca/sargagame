@@ -27,7 +27,8 @@ const JTRACE = path.join(__dirname, 'lib', 'job-trace.cjs');
 
 // ── Shell helpers (execFileSync, pas d'interpolation shell) ────────────────
 function exec(cmd, args, opts = {}) {
-  return execFileSync(cmd, args, { cwd: ROOT, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], ...opts }).trim();
+  return execFileSync(cmd, args, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf-8', stdio: ['ignore', 'pipe', 'pipe'], ...opts }).trim();
 }
 function git(args) { return exec('git', args); }
 function gitSafe(args) {
@@ -39,7 +40,8 @@ function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── Traçabilité (job-trace.cjs) ──────────────────────────────────────────────
 function traceCall(args) {
-  try { execFileSync(process.execPath, [JTRACE, ...args], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }); return true; }
+  try { execFileSync(process.execPath, [JTRACE, ...args], {
+        windowsHide: true, cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }); return true; }
   catch (_) { return false; }
 }
 function traceStep(jobId, action, step) { traceCall([action, '--job', jobId, '--step', step]); }

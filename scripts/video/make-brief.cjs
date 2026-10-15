@@ -34,7 +34,8 @@ const ANTON_CSS = (() => {
   } catch (e) { console.error('WARN police Anton locale introuvable, fallback système:', e.message); return '' }
 })()
 
-const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, ...opts })
+const run = (cmd, args, opts = {}) => execFileSync(cmd, args, {
+        windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, ...opts })
 const ffprobeDur = f => parseFloat(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
 
 // ── 1. Storyboard (garde-fou fraîcheur : skip PROPRE, exit 0, si donnée périmée) ──
@@ -53,7 +54,8 @@ for (const s of sb.scenes) {
   if (!s.vo) { s.voDur = 0; continue }
   const mp3 = path.join(OUT, `vo-${s.id}.mp3`), srt = path.join(OUT, `vo-${s.id}.srt`)
   execFileSync('python', ['-m', 'edge_tts', '--voice', sb.voice, '--text', s.vo,
-    '--write-media', mp3, '--write-subtitles', srt], { stdio: 'ignore' })
+    '--write-media', mp3, '--write-subtitles', srt], {
+        windowsHide: true, stdio: 'ignore' })
   s.voDur = ffprobeDur(mp3)
   s.dur = Math.max(s.minDur || 4, s.voDur + 0.7)
   console.log(`   ${s.id}: vo ${s.voDur.toFixed(1)}s → scène ${s.dur.toFixed(1)}s`)

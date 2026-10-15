@@ -49,7 +49,8 @@ const HANDLERS = {
     const marker = path.join(OUT, `brief-${region}-${todayStr()}.mp4`)
     if (fs.existsSync(marker) && fs.statSync(marker).size > 100000) return { skipped: 'exists', region }
     const r = spawnSync('node', [path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), region],
-      { cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000 })
+      {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000 })
     const outStr = String(r.stdout || '') + String(r.stderr || '')
     if (/BRIEF_SKIPPED_STALE/.test(outStr)) return { skipped: 'stale', region }
     const done = fs.existsSync(marker) && fs.statSync(marker).size > 100000

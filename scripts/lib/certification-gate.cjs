@@ -20,7 +20,8 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const CHECK = path.join(ROOT, 'scripts', 'CHECK_certification_status.cjs');
 
 function runCheck(cwd) {
-  return spawnSync(process.execPath, [CHECK, '--mode', 'deploy', '--root', cwd], { encoding: 'utf8' });
+  return spawnSync(process.execPath, [CHECK, '--mode', 'deploy', '--root', cwd], {
+        windowsHide: true, encoding: 'utf8' });
 }
 
 /**

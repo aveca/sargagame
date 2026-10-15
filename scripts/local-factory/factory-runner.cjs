@@ -529,7 +529,8 @@ async function executeTestTask(task, worker) {
 async function executeDeployTask(task, worker) {
   // Trigger deploy via git push
   const { execSync } = require('child_process');
-  execFileSync('git', ['push', 'origin', 'main'], { cwd: ROOT, encoding: 'utf8' });
+  execFileSync('git', ['push', 'origin', 'main'], {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
   
   // Wait for workflow
   await waitForWorkflow('daily-copernicus.yml');
@@ -569,7 +570,8 @@ async function waitForPR(taskId) {
   // Poll for PR creation
   for (let i = 0; i < 60; i++) {
     try {
-      const prs = execSync(`gh pr list --head agent/*/${taskId} --json number`, { cwd: ROOT, encoding: 'utf8' });
+      const prs = execSync(`gh pr list --head agent/*/${taskId} --json number`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
       const data = JSON.parse(prs);
       if (data.length > 0) return data[0].number;
     } catch (_) {}
@@ -582,7 +584,8 @@ async function waitForWorkflow(workflowName) {
   // Poll for workflow completion
   for (let i = 0; i < 180; i++) { // 15 min max
     try {
-      const runs = execSync(`gh run list --workflow ${workflowName} --limit 1 --json conclusion,status`, { cwd: ROOT, encoding: 'utf8' });
+      const runs = execSync(`gh run list --workflow ${workflowName} --limit 1 --json conclusion,status`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
       const data = JSON.parse(runs);
       if (data.length > 0 && data[0].status === 'completed') {
         return data[0].conclusion === 'success';
@@ -613,8 +616,10 @@ function updateTaskInProgress(taskId) {
   
   if (newContent !== content) {
     fs.writeFileSync(TASKS_FILE, newContent);
-    execSync(`git add ${TASKS_FILE}`, { cwd: ROOT, encoding: 'utf8' });
-    execSync(`git commit -m "chore(tasks): claim ${taskId} by factory_runner"`, { cwd: ROOT, encoding: 'utf8' });
+    execSync(`git add ${TASKS_FILE}`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
+    execSync(`git commit -m "chore(tasks): claim ${taskId} by factory_runner"`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
     log('tasks.md.claimed', { taskId });
   }
 }
@@ -830,15 +835,19 @@ async function recoverFailedWorkers() {
 // Git operations
 function gitStatus() {
   try {
-    return execSync('git status --porcelain', { cwd: ROOT, encoding: 'utf8' }).trim();
+    return execSync('git status --porcelain', {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' }).trim();
   } catch { return ''; }
 }
 
 function gitCommit(message, files = []) {
   try {
-    if (files.length) execSync(`git add ${files.join(' ')}`, { cwd: ROOT, encoding: 'utf8' });
-    else execSync('git add -A', { cwd: ROOT, encoding: 'utf8' });
-    execSync(`git commit -m "${message}"`, { cwd: ROOT, encoding: 'utf8' });
+    if (files.length) execSync(`git add ${files.join(' ')}`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
+    else execSync('git add -A', {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
+    execSync(`git commit -m "${message}"`, {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
     return true;
   } catch (e) {
     log('git.commit_failed', { error: e.message });
@@ -848,7 +857,8 @@ function gitCommit(message, files = []) {
 
 function gitPush() {
   try {
-    execSync('git push origin main', { cwd: ROOT, encoding: 'utf8' });
+    execSync('git push origin main', {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' });
     return true;
   } catch (e) {
     log('git.push_failed', { error: e.message });

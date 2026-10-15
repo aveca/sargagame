@@ -27,7 +27,8 @@ function latestObs() {
 
 function git24h() {
   try {
-    return execSync('git log --since="24 hours ago" --oneline --no-decorate', { cwd: ROOT, encoding: 'utf8' })
+    return execSync('git log --since="24 hours ago" --oneline --no-decorate', {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8' })
       .split('\n').filter(Boolean);
   } catch (_) { return []; }
 }

@@ -42,7 +42,8 @@ function getRegions() {
 // ── HTTP helpers (curl — réseau réel requis ; absent => contrôle FAILED/NOT_VERIFIED) ──
 function curl(args, timeoutMs) {
   try {
-    const out = execFileSync('curl', args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: timeoutMs || 25000 });
+    const out = execFileSync('curl', args, {
+        windowsHide: true, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: timeoutMs || 25000 });
     return { ok: true, out };
   } catch (e) {
     return { ok: false, out: String(e.stdout || ''), error: e.message };
@@ -302,10 +303,12 @@ async function main() {
   const trace = (action, extra) => {
     if (!jobId) return;
     const targs = [path.join(__dirname, 'lib', 'job-trace.cjs'), action, '--job', jobId, ...(extra || [])];
-    try { execFileSync(process.execPath, targs.filter(Boolean), { cwd: ROOT, stdio: 'ignore' }); } catch (_) {}
+    try { execFileSync(process.execPath, targs.filter(Boolean), {
+        windowsHide: true, cwd: ROOT, stdio: 'ignore' }); } catch (_) {}
   };
   if (jobId) {
-    try { execFileSync(process.execPath, [path.join(__dirname, 'lib', 'job-trace.cjs'), 'create', '--task', 'POST-DEPLOY-VERIFY'], { cwd: ROOT, stdio: 'ignore' }); } catch (_) {}
+    try { execFileSync(process.execPath, [path.join(__dirname, 'lib', 'job-trace.cjs'), 'create', '--task', 'POST-DEPLOY-VERIFY'], {
+        windowsHide: true, cwd: ROOT, stdio: 'ignore' }); } catch (_) {}
     // create génère son propre id ; pour corréler avec un id imposé, on réécrit le fichier si besoin
     const traceDir = path.join(ROOT, 'scripts', 'traces');
     const target = path.join(traceDir, jobId + '.json');
