@@ -344,10 +344,13 @@ async function processJob(job) {
     setJobState({ status: 'TESTING' });
     
     const testResult = await runTests(repoPath, repo);
-    if (!testResult.passed) {
+    if (!testResult.passed && !testResult.skipped) {
       console.log(`[${jobId}] Tests failed`);
       setJobState({ status: 'FAILED' });
       return handleJobFailure(jobId, repo, repoPath, evidence, 'TEST_FAILURE', testResult);
+    }
+    if (testResult.skipped) {
+      console.log(`[${jobId}] Tests skipped: ${testResult.output}`);
     }
 
     // === ÉTAT 5: PR_OPEN ===
@@ -423,6 +426,7 @@ async function processJob(job) {
   } catch (e) {
     console.log(`[${jobId}] Unexpected error: ${e.message}`);
     setJobState({ status: 'FAILED' });
+    releaseLock();
     return handleJobFailure(jobId, repo, repoPath, evidence, 'UNKNOWN', { error: e.message });
   } finally {
     // Nettoyage subprocess
@@ -498,8 +502,8 @@ async function executeAgentTask(repoPath, repo, taskType, agent, job) {
 async function runTests(repoPath, repo) {
   try {
     if (repo === 'sargagame') {
-      // npm test n'existe pas dans ce projet - skip tests pour l'instant
-      return { passed: true, output: 'tests skipped (no npm test configured)' };
+      // npm test n'existe pas dans ce projet - tests non configurés, PAS réussis
+      return { passed: false, skipped: true, output: 'tests skipped (no npm test configured)' };
     }
     if (repo === 'casinobabe') {
       // Tests Lua + diff --check
@@ -511,7 +515,7 @@ async function runTests(repoPath, repo) {
       const result = execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
       return { passed: true, output: result.slice(-200) };
     }
-    return { passed: true };
+    return { passed: false, skipped: true, output: 'no tests configured for this repo' };
   } catch (e) {
     return { passed: false, error: e.message };
   }

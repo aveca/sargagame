@@ -28,7 +28,7 @@ console.log(`[TEST] State dir: ${STATE_DIR}`);
 // Nettoyer lock avant test
 try { fs.unlinkSync(LOCK_FILE); } catch (_) {}
 
-// Créer job de test minimal (dryRun pour skip PR/merge)
+// Créer job de test minimal (dryRun pour éviter push/merge/déploiement réels)
 const testJob = {
   jobId: TEST_JOB_ID,
   repo: 'sargagame',
