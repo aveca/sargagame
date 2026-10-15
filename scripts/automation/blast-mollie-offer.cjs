@@ -39,6 +39,23 @@ const CONCURRENCY = 5
 
 function loadJSON(p, fb) { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 
+// MP-2 : les liens ?pass=p7 non signés sont désormais BLOQUÉS par le front.
+// Le fallback sans paiement Mollie génère un lien cadeau SIGNÉ (?gift=) si
+// GIFT_LINK_SECRET est en env local ; sinon lien paywall SANS pass (honnête :
+// on ne promet pas un accès que le front ne peut plus donner).
+function giftUrlFor(lead) {
+  try {
+    const crypto = require('crypto')
+    const secret = process.env.GIFT_LINK_SECRET || ''
+    if (secret.length < 16) return null
+    const b64url = (buf) => Buffer.from(buf).toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
+    const payload = { v: 1, pass: 'p7', days: 7, exp: Math.floor(Date.now() / 1000) + 72 * 3600, jti: b64url(crypto.randomBytes(12)) }
+    const body = b64url(Buffer.from(JSON.stringify(payload), 'utf8'))
+    const sig = b64url(crypto.createHmac('sha256', secret).update(body).digest())
+    return `https://${regionConfig(lead.island).domain}/?gift=${body}.${sig}&utm_source=blast_mollie`
+  } catch { return null }
+}
+
 function pricing(region) {
   const isEUR = region === 'mq' || region === 'gp'
   if (isEUR) return { symbol: '€', p7: '7.99', p30: '14.99', saison: '19.99', pro: '690' }
@@ -313,9 +330,9 @@ async function main() {
   for (const lead of toSend) {
     const h = emailHash(lead.email)
     const lang = langFor(lead.island, lead.source)
-    const checkoutUrl = lead.source !== 'b2b'
-      ? (payments[h] || `https://${regionConfig(lead.island).domain}/?paywall=1&pass=p7&utm_source=blast_mollie`)
-      : null
+const checkoutUrl = lead.source !== 'b2b'
+? (payments[h] || giftUrlFor(lead) || `https://${regionConfig(lead.island).domain}/?paywall=1&utm_source=blast_mollie`)
+: null
 
     try {
       const email = lead.source === 'b2b'

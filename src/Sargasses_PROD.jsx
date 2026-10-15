@@ -11469,11 +11469,9 @@ export default function App(){
   const[whatsNew,setWhatsNew]=useState(null)
   const[showFavToast,setShowFavToast]=useState(false)
   const[isPremium,setIsPremium]=useState(()=>{
-    // ?pass= RÉ-ARME TOUJOURS l'accueil onboarding, MÊME pour un premium de retour (sinon les
-    // early-returns ci-dessous — sg_premium / sg_premium_pass_end actifs — sautaient le bloc qui
-    // pose sg_premium_welcome → l'onboarding « ne faisait rien » au 2e chargement du lien). Bug
-    // fondateur. Le flag est consommé par le useState showWelcome plus bas.
-    try{ const pp=new URLSearchParams(window.location.search).get("pass"); if(pp&&(pp==="trip"||/^p\d{1,3}$/.test(pp))) s("sg_premium_welcome",true) }catch(_){}
+    // MP-2 : le re-arm du welcome pour ?pass= est SUPPRIMÉ (le grant ?pass= est
+    // désormais refusé). Le welcome est posé par les chemins vérifiés serveur
+    // (gift-redeem, mollie_return, premium_email).
     if(g("sg_premium",false))return true
     // Zero-friction 24h sample: local trial, no card required. Used at most once per device.
     try{
@@ -11490,53 +11488,38 @@ export default function App(){
       const params=new URLSearchParams(window.location.search)
       // Stripe redirect: ?premium=1 OR ?session_id=cs_xxx
       const sessionId=params.get("session_id")
-      // Trip Pass one-time : ?pass=trip → pose une expiration 7j AU LIEU du flag
-      // permanent. DOIT être testé AVANT le bloc générique (qui, lui, lit
-      // session_id et poserait sg_premium=1 à vie). Revenu loggé pareil (le
-      // webhook gère checkout.session.completed pour les sessions mode=payment).
       // Pass one-time TIME-BOXÉ : ?pass=trip (7j, rétrocompat) OU ?pass=pNN (NN jours,
-      // ex pass vacances p30). Pose une expiration AU LIEU du flag premium permanent.
+      // ex pass vacances p30).
+      // MP-2 (2026-10-11) — SÉCURITÉ REVENU : le paramètre URL ne constitue JAMAIS
+      // une preuve d'autorisation. Seuls deux chemins donnent le pass :
+      //   1) ?gift=<token HMAC serveur> → vérifié + consommé via /api/gift-redeem
+      //      (handler async ci-dessous, clean URL comme mollie_return).
+      //   2) Retour paiement Mollie confirmé côté serveur (mollie_return, géré plus bas).
+      // Un ?pass= nu ou avec session_id non vérifiable (Stripe legacy cs_, chaîne
+      // arbitraire) = REFUSÉ + track sg_pass_blocked. Les clients légitimes
+      // restaurent via « J'ai déjà un pass » / ?premium_email= (vérif serveur).
       const passParam=params.get("pass")
       if(passParam&&(passParam==="trip"||/^p\d{1,3}$/.test(passParam))){
-        const days=passParam==="trip"?7:Math.min(120,Math.max(1,parseInt(passParam.slice(1),10)||7))
-        const end=Date.now()+days*86400000
-        try{localStorage.setItem("sg_premium_pass_end",String(end))}catch{}
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"pass",plan:passParam,pass_days:days})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ",plan:passParam}}}})
-          }).catch(e=>sgLogError("webhook_conversion",e))}catch(ex){sgLogError("webhook_conversion_wrap",ex)}
-        }
-        // Ne retire QUE les params de paiement (sinon b=, r=, utm_* co-occurrents
-        // sont perdus → on casse le deeplink/contexte du payeur). Pattern aligné
-        // sur les autres replaceState (manage/premium_email).
+        try{track("sg_pass_blocked",{pass:passParam,has_session:!!sessionId})}catch(_){}
+        // Nettoie l'URL pour éviter les rejeux/faux tracks au refresh.
         params.delete("pass");params.delete("session_id");params.delete("premium");params.delete("success")
         {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
+        // Pas de return true : pas de grant.
       }
       if(params.get("premium")==="1"||params.get("success")==="1"||sessionId){
-        s("sg_premium",true)
-        s("sg_premium_welcome",true)
-        track("sg_conversion",{session_id:sessionId||"direct"})
-        // Wow Effect 3: celebration on premium conversion
-        triggerCelebration("premium")
-        // Log payment to Apps Script (fire-and-forget)
-        if(sessionId){
-          try{fetch(APPS_SCRIPT_URL,{
-            method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},
-            body:JSON.stringify({type:"checkout.session.completed",data:{object:{id:sessionId,payment_status:"paid",
-              metadata:{island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}}}})
-          }).catch(()=>{})}catch(ex){}
-        }
+        // MP-2 : session_id/premium/success ne sont JAMAIS une preuve à eux seuls.
+        // Le return Mollie authentique passe par ?mollie_return=1 (vérif serveur +
+        // anti-rejeu MP-1). Legacy Stripe cs_* : non vérifiable → refusé +
+        // restauration par premium_email (vérif Supabase serveur).
+        try{track("sg_pass_blocked",{type:"direct_premium_param"})}catch(_){}
         params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
         {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
-        return true
+        return false
       }
+      // MP-2 : ?gift=<token HMAC> → vérifié côté serveur (signature + expiration
+      // + consommation atomique). Handler async plus bas (même pattern que
+      // mollie_return). Ici : on ne grante rien en synchrone, on laisse passer.
+      if(params.get("gift")!==null){ return false }
     }catch(e){}
     return false
   })
@@ -11578,6 +11561,38 @@ export default function App(){
   const pwOnboard=useMemo(()=>{try{const q=window.location.search;if(/[?&]onboard=1/.test(q))return"onboard";if(/[?&]onboard=0/.test(q))return"control";return"onboard"}catch(_){return"control"}},[])
   // Toast 5s : auto-dismiss UNIQUEMENT en control. En onboarding, l'overlay reste jusqu'à onDone.
   useEffect(()=>{if(showWelcome&&pwOnboard!=="onboard"){track("sg_welcome_toast_view");const t=setTimeout(()=>setShowWelcome(false),5000);return()=>clearTimeout(t)}},[showWelcome,pwOnboard])
+
+  // ── Lien cadeau signé (?gift=<token>) — MP-2 : vérif HMAC serveur +
+  // consommation atomique (1 token = 1 usage). Le grant local n'est posé
+  // QU'APRÈS le 200 du Worker. Fail-closed : erreur → aucun accès.
+  useEffect(()=>{
+    const run=async()=>{
+      try{
+        const token=new URLSearchParams(window.location.search).get("gift")
+        if(!token)return
+        // Anti-rejeu local (ne remplace PAS la consommation atomique serveur) :
+        // un navigateur qui a déjà consommé ce token ne re-tente pas.
+        let jti=null;try{jti=JSON.parse(atob(token.split(".")[0].replace(/-/g,"+").replace(/_/g,"/"))).jti}catch(_){}
+        if(jti&&localStorage.getItem("sg_gift_done_"+jti)==="1"){try{window.location.replace(window.location.pathname)}catch(_){ }return}
+        const r=await fetch("/api/gift-redeem",{method:"POST",headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({token,email:localStorage.getItem("sg_email")||""})})
+        const d=await r.json().catch(()=>({}))
+        if(r.ok&&d&&d.granted){
+          try{
+            localStorage.setItem("sg_premium_pass_end",String(Date.parse(d.expires_at)||(Date.now()+(d.days||30)*86400000)))
+            localStorage.setItem("sg_premium_welcome","1")
+            if(jti)localStorage.setItem("sg_gift_done_"+jti,"1")
+          }catch(_){}
+          track("sg_conversion",{method:"gift_link",plan:d.pass,pass_days:d.days})
+          triggerCelebration("premium")
+        }else{
+          track("sg_gift_denied",{reason:(d&&d.error)||"unknown"})
+        }
+        try{window.location.replace(window.location.pathname)}catch(_){}
+      }catch(_){ }
+    }
+    run()
+  },[])
 
   // ── Retour 3DS Mollie (?mollie_return=1) : confirme le paiement côté serveur
   // (source de vérité), pose le premium en localStorage, puis reload propre.
