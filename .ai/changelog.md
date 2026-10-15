@@ -1,3 +1,14 @@
+﻿---
+
+## 2026-10-15 - devops_agent (directive DG : bascule gratuite, boucle codage unique)
+
+**Neutralisation du runner de codage GitHub hébergé + fermeture par défaut des appels LLM payants.**
+
+- `.github/workflows/factory-cloud-runner.yml` : triggers push + cron 15 min supprimés ; exécution uniquement en workflow_dispatch avec double opt-in (input `confirm=RUNNER-CLOUD` + variable repo `FACTORY_CLOUD_RUNNER_ENABLED=true`). ci-tests / perf-budget / user-journey-audit / cloudflare-production / daily-copernicus intacts.
+- `scripts/veilleurs/run-veilleur.cjs` : chemin LLM Anthropic uniquement si `SARGA_PAID_LLM=1` (absent par défaut → recon déterministe, même si le secret existe).
+- `.github/workflows/veilleurs.yml` : clef Anthropic non injectée (réactivable en déclarant le flag).
+- Rationale : PC1 (Ollama + OpenCode) = seul moteur d'implémentation.
+
 ---
 
 ## 2026-10-14 - ui_agent (OpenCode) · branche gent/ui/p0-first-screen-20261014

@@ -1,6 +1,30 @@
 ---
 
-## 2026-10-14 21:30 UTC · Agent: ui_agent (OpenCode, mission P0 refonte UX)
+## 2026-10-15 01:45 UTC · Agent: devops_agent (directive DG : bascule gratuite + boucle codage unique)
+
+### Travail effectué
+- **Résumé 1 ligne** : runner de codage GitHub hébergé neutralisé (double opt-in), appels LLM payants fermés par défaut, vérifications production du commit a4651f0.
+- **Détails** :
+  - `factory-cloud-runner.yml` : push + cron 15 min supprimés ; workflow_dispatch réservé avec `confirm=RUNNER-CLOUD` + variable `FACTORY_CLOUD_RUNNER_ENABLED=true` (off par défaut). CI/tests/Playwright/Copernicus/Cloudflare Production intacts.
+  - `run-veilleur.cjs` + `veilleurs.yml` : chemin Anthropic opt-in seulement (`SARGA_PAID_LLM=1` + secret), sinon recon déterministe. Aucun secret modifié.
+- **Vérifs production (commit a4651f0)** :
+  - GitHub Actions : CI Tests SUCCESS, Perf Budget + Lighthouse SUCCESS, Cloudflare Production SUCCESS, Daily Copernicus + Deploy SUCCESS, User Journey Audit SUCCESS.
+  - 5 domaines live : mq/gp/miami/cancun/puntacana HTTP 200 ; `version.json` = v221 (2026-10-12, b 36cfe6ed) ; `/api/copernicus/sargassum.json` ERDDAP-live updatedAt 2026-10-14T21:48Z.
+  - Guadeloupe : page d'accueil charge `/assets/index-DX5vsFeD.css` (HTTP 200 après revalidation d'un 404 en cache CF) ; pages légales `/cgv/`, `/mentions-legales/`, `/confidentialite/`, `/remboursement/` = 200 avec nommage « Guadeloupe & Martinique » correct (fix #943 live).
+
+### Problèmes restants
+- [ ] Runner local autopilot arrêté depuis ~2026-10-12 (dernière entrée runner.log 18:32, verrou caduque pid 29416) — relance + proof-of-cycle en cours hors PR.
+- [ ] `edge_tts` 7.2.8 → 403 wss bing speech : rendus vidéo quotidiens en échec (factory.cjs) — correctif pip à appliquer hors repo.
+- [ ] Factory V3 locale (C:\factory) : file `ctrl-*` non consommée depuis 3 jours (worker pool inactif), OmniRoute expose des providers payants — hors périmètre produit sargagame, signalé au fondateur.
+
+### Branche / PR
+- Branche : `factory/directive-cloud-neutralize-20261015`
+- PR : voir gh
+- Base : a4651f0ef166f491275cc6720887c7bd0facc96c
+
+---
+
+
 
 ### Travail effectué
 - **Résumé 1 ligne** : CTA primaire « Trouve ta plage » visible sur l'accueil (plus d'URL secrète ?recommend=1), bannière cookies ne masque plus le chrome bas, SOS doré restauré.
