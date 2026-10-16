@@ -265,8 +265,8 @@
         },
         {
           "id": "tu005",
-          "afai": 0.15,
-          "status": "moderate"
+          "afai": 0.14,
+          "status": "clean"
         }
       ]
     }
@@ -313,6 +313,13 @@
       "from": "clean",
       "to": "moderate",
       "afai": 0.15
+    },
+    {
+      "date": "2026-10-16",
+      "beach": "tu005",
+      "from": "moderate",
+      "to": "clean",
+      "afai": 0.14
     }
   ]
 }
