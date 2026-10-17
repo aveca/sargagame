@@ -1050,12 +1050,12 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -1080,12 +1080,12 @@
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp-deshaies",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {

@@ -3805,7 +3805,7 @@
         },
         {
           "id": "gp005",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3835,12 +3835,12 @@
         },
         {
           "id": "gp012",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp013",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3865,7 +3865,7 @@
         },
         {
           "id": "gp018",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3890,7 +3890,7 @@
         },
         {
           "id": "gp024",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3915,22 +3915,22 @@
         },
         {
           "id": "gp029",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp031",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp032",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp033",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -3940,7 +3940,7 @@
         },
         {
           "id": "gp038",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4015,7 +4015,7 @@
         },
         {
           "id": "gp057",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4045,7 +4045,7 @@
         },
         {
           "id": "gp066",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4055,7 +4055,7 @@
         },
         {
           "id": "gp069",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4095,17 +4095,17 @@
         },
         {
           "id": "gp083",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp084",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp087",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4115,12 +4115,12 @@
         },
         {
           "id": "gp093",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
           "id": "gp094",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4170,7 +4170,7 @@
         },
         {
           "id": "gp113",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4180,7 +4180,7 @@
         },
         {
           "id": "gp116",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         },
         {
@@ -4195,7 +4195,7 @@
         },
         {
           "id": "gp120",
-          "afai": 0.05,
+          "afai": 0.06,
           "status": "clean"
         }
       ]
