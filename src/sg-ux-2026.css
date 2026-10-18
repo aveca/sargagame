@@ -462,3 +462,83 @@
     transform: none;
   }
 }
+/* ============================================
+   MOBILE CONVERSION SAFEGUARDS (2026-10-18)
+   Factory V3 mobile UX mission.
+   Goal: conversion CTAs stay usable with a finger.
+   Measurable: targets >= 48px, no sticky hover on touch,
+   no iOS double-tap zoom on CTAs.
+   ============================================ */
+
+/* On touch screens the hover translateY(-2px) sticks after a tap and makes
+   the button look broken. Neutralise it properly. */
+@media (hover: none) {
+  .cta-premium:hover,
+  .cta-premium:active,
+  .forecast-card:hover,
+  .forecast-card:active {
+    transform: none;
+  }
+
+  .cta-premium:hover {
+    box-shadow:
+      0 4px 12px rgba(255, 199, 44, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  }
+
+  .cta-premium::before {
+    display: none; /* the hover shine has no meaning on touch */
+  }
+}
+
+/* Visible touch feedback instead of hover */
+@media (hover: none) {
+  .cta-premium:active {
+    transform: scale(0.97);
+    opacity: 0.92;
+  }
+}
+
+/* iOS: a fast double-tap on a CTA must no longer zoom the page */
+.cta-premium,
+.sg-soscta,
+.urgency-alert button,
+.forecast-card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+/* Small screens: tap targets >= 48px (Apple HIG 44px, Material 48px;
+   48px covers both). Full-width CTAs convert better on mobile and are
+   harder to miss. */
+@media (max-width: 768px) {
+  .cta-premium,
+  .sg-soscta {
+    min-height: 48px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    font-size: 17px; /* >= 16px avoids iOS auto-zoom on focus */
+    line-height: 1.2;
+  }
+
+  .cta-premium {
+    width: 100%;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+  }
+
+  .urgency-alert button {
+    min-height: 44px;
+  }
+}
+
+/* Accessibility: keyboard focus stays visible on CTAs */
+.cta-premium:focus-visible,
+.sg-soscta:focus-visible {
+  outline: 3px solid #58a6ff;
+  outline-offset: 2px;
+}
+
