@@ -1226,6 +1226,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             console.log('   → Landing B2B FR /sargasses-pour-hotels/ (MQ + GP mirror) générée')
           } catch (e) { console.warn('   ⚠ landing B2B FR:', e.message) }
 
+          // Pretty-URL copies for the legal pages. public/*.html are copied
+          // to dist as FILES, but canonicals + sitemap + live serving use the
+          // extensionless form (200, identical bytes). Without these copies
+          // the sitemap guard counts the extensionless URLs as 404 and throws,
+          // which the broad SEO-pages catch swallows -- silently skipping the
+          // rest of the pipeline (month pages, regional landings).
+          for (const slug of ['mentions-legales', 'confidentialite', 'cgv', 'remboursement']) {
+            const flat = resolve(outDir, `${slug}.html`)
+            const prettyDir = resolve(outDir, slug)
+            if (existsSync(flat) && !existsSync(prettyDir)) {
+              mkdirSync(prettyDir, { recursive: true })
+              writeFileSync(resolve(prettyDir, 'index.html'), readFileSync(flat, 'utf-8'))
+            }
+          }
+
           const sitemapMQ = buildSitemap('sargasses-martinique.com', false)
           const sitemapGP = buildSitemap('sargasses-guadeloupe.com', true)
           writeFileSync(resolve(outDir, 'sitemap-martinique.xml'), sitemapMQ)
