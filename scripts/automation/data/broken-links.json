@@ -1,12 +1,48 @@
 {
-  "generatedAt": "2026-10-12T20:25:25.540Z",
+  "generatedAt": "2026-10-19T17:37:49.555Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
-      "totalLinks": 6523,
-      "checkedLinks": 5179,
-      "brokenCount": 20,
+      "pageCount": 143,
+      "totalLinks": 3263,
+      "checkedLinks": 2689,
+      "brokenCount": 159,
       "broken": [
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-guadeloupe.com/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "cross-domain"
+        },
         {
           "from": "/carte-sargasses/",
           "href": "/meilleures-plages-guadeloupe-sargasses/",
@@ -80,15 +116,297 @@
           "kind": "internal"
         },
         {
+          "from": "/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/anse-a-l-ane/",
+          "target": "martinique-ftp/plages/anse-a-l-ane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/anse-trabaud/",
+          "target": "martinique-ftp/plages/anse-trabaud/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/anse-caritan/",
+          "target": "martinique-ftp/plages/anse-caritan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-martinique-sargasses/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/meteo-sargasses-martinique/",
           "href": "/meteo-sargasses-guadeloupe/",
           "target": "martinique-ftp/meteo-sargasses-guadeloupe/index.html",
           "kind": "internal"
         },
         {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/anse-madame/",
+          "target": "martinique-ftp/plages/anse-madame/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/anse-ceron/",
+          "target": "martinique-ftp/plages/anse-ceron/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-bourg-sainte-anne/",
+          "target": "martinique-ftp/plages/plage-du-bourg-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-marin/",
+          "target": "martinique-ftp/plages/plage-du-marin/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-diamant/",
+          "target": "martinique-ftp/plages/plage-du-diamant/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-deshaies/",
+          "target": "guadeloupe-ftp/plages/plage-de-deshaies/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-grande-anse/",
+          "target": "guadeloupe-ftp/plages/plage-de-grande-anse/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-caravelle/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-bas-du-fort/",
+          "target": "guadeloupe-ftp/plages/plage-de-bas-du-fort/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-moule/",
+          "target": "guadeloupe-ftp/plages/plage-du-moule/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/pointe-des-chateaux/",
+          "target": "guadeloupe-ftp/plages/pointe-des-chateaux/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-vieux-fort/",
+          "target": "guadeloupe-ftp/plages/plage-du-vieux-fort/index.html",
+          "kind": "cross-domain"
+        },
+        {
           "from": "/previsions/",
           "href": "/meilleures-plages-guadeloupe-sargasses/",
           "target": "martinique-ftp/meilleures-plages-guadeloupe-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-martinique/",
+          "href": "/plages/anse-a-l-ane/",
+          "target": "martinique-ftp/plages/anse-a-l-ane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-martinique/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
           "kind": "internal"
         },
         {
@@ -102,6 +420,300 @@
           "href": "https://sargasses-martinique.com/es/sargazo-hoy/",
           "target": "martinique-ftp/es/sargazo-hoy/index.html",
           "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-guadeloupe.com/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-case-pilote/",
+          "href": "/plages/bourg-de-case-pilote/",
+          "target": "martinique-ftp/plages/bourg-de-case-pilote/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-case-pilote/",
+          "href": "/plages/plage-du-vetiver/",
+          "target": "martinique-ftp/plages/plage-du-vetiver/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-fort-de-france/",
+          "href": "/plages/plage-de-la-francaise/",
+          "target": "martinique-ftp/plages/plage-de-la-francaise/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-grand-riviere/",
+          "href": "/plages/plage-de-sinai/",
+          "target": "martinique-ftp/plages/plage-de-sinai/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-grand-riviere/",
+          "href": "/plages/plage-de-grand-riviere/",
+          "target": "martinique-ftp/plages/plage-de-grand-riviere/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/anse-bonneville/",
+          "target": "martinique-ftp/plages/anse-bonneville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/anse-l-etang/",
+          "target": "martinique-ftp/plages/anse-l-etang/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/les-raisiniers/",
+          "target": "martinique-ftp/plages/les-raisiniers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/l-autre-bord-trinite/",
+          "target": "martinique-ftp/plages/l-autre-bord-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/anse-cosmy/",
+          "target": "martinique-ftp/plages/anse-cosmy/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/anse-riviere-trinite/",
+          "target": "martinique-ftp/plages/anse-riviere-trinite/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-trinite/",
+          "href": "/plages/pointe-fort-caravelle/",
+          "target": "martinique-ftp/plages/pointe-fort-caravelle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-carbet/",
+          "href": "/plages/grande-anse-du-carbet/",
+          "target": "martinique-ftp/plages/grande-anse-du-carbet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-carbet/",
+          "href": "/plages/anse-turin/",
+          "target": "martinique-ftp/plages/anse-turin/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-diamant/",
+          "href": "/plages/plage-du-diamant/",
+          "target": "martinique-ftp/plages/plage-du-diamant/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-diamant/",
+          "href": "/plages/anse-cafard/",
+          "target": "martinique-ftp/plages/anse-cafard/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-diamant/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-diamant/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-diamant/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-marin/",
+          "href": "/plages/plage-du-marin/",
+          "target": "martinique-ftp/plages/plage-du-marin/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-precheur/",
+          "href": "/plages/anse-belleville/",
+          "target": "martinique-ftp/plages/anse-belleville/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-precheur/",
+          "href": "/plages/anse-couleuvre/",
+          "target": "martinique-ftp/plages/anse-couleuvre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-precheur/",
+          "href": "/plages/anse-ceron/",
+          "target": "martinique-ftp/plages/anse-ceron/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-precheur/",
+          "href": "/plages/anse-des-galets/",
+          "target": "martinique-ftp/plages/anse-des-galets/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-robert/",
+          "href": "/plages/baie-coco/",
+          "target": "martinique-ftp/plages/baie-coco/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-vauclin/",
+          "href": "/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-vauclin/",
+          "href": "/plages/macabou-nord/",
+          "target": "martinique-ftp/plages/macabou-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-vauclin/",
+          "href": "/plages/anse-grosse-roche/",
+          "target": "martinique-ftp/plages/anse-grosse-roche/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-anses-d-arlet/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-anses-d-arlet/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-anses-d-arlet/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-anses-d-arlet/",
+          "href": "/plages/petite-anse-d-arlet/",
+          "target": "martinique-ftp/plages/petite-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-trois-ilets/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-trois-ilets/",
+          "href": "/plages/pointe-du-bout/",
+          "target": "martinique-ftp/plages/pointe-du-bout/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-trois-ilets/",
+          "href": "/plages/anse-a-l-ane/",
+          "target": "martinique-ftp/plages/anse-a-l-ane/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-trois-ilets/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-martinique-cette-semaine/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
         },
         {
           "from": "/sargasses-martinique-cette-semaine/",
@@ -122,19 +734,295 @@
           "kind": "cross-domain"
         },
         {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-guadeloupe.com/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-guadeloupe.com/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "cross-domain"
+        },
+        {
           "from": "/sargasses-record-2026/",
           "href": "/saison-sargasses-guadeloupe/",
           "target": "martinique-ftp/saison-sargasses-guadeloupe/index.html",
           "kind": "internal"
+        },
+        {
+          "from": "/sargasses-riviere-pilote/",
+          "href": "/plages/anse-figuier/",
+          "target": "martinique-ftp/plages/anse-figuier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-riviere-pilote/",
+          "href": "/plages/pointe-borgnesse/",
+          "target": "martinique-ftp/plages/pointe-borgnesse/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-pierre/",
+          "href": "/plages/plage-de-saint-pierre/",
+          "target": "martinique-ftp/plages/plage-de-saint-pierre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-caritan/",
+          "target": "martinique-ftp/plages/anse-caritan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-meunier/",
+          "target": "martinique-ftp/plages/anse-meunier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/plage-du-bourg-sainte-anne/",
+          "target": "martinique-ftp/plages/plage-du-bourg-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-trabaud/",
+          "target": "martinique-ftp/plages/anse-trabaud/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-michel/",
+          "target": "martinique-ftp/plages/anse-michel/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-martinique/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/anse-gros-raisins/",
+          "target": "martinique-ftp/plages/anse-gros-raisins/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/plage-de-sainte-luce/",
+          "target": "martinique-ftp/plages/plage-de-sainte-luce/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/anse-corps-de-garde/",
+          "target": "martinique-ftp/plages/anse-corps-de-garde/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/anse-mabouya/",
+          "target": "martinique-ftp/plages/anse-mabouya/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-luce/",
+          "href": "/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-marie/",
+          "href": "/plages/anse-charpentier/",
+          "target": "martinique-ftp/plages/anse-charpentier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-marie/",
+          "href": "/plages/bourg-sainte-marie/",
+          "target": "martinique-ftp/plages/bourg-sainte-marie/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-schoelcher/",
+          "href": "/plages/anse-madame/",
+          "target": "martinique-ftp/plages/anse-madame/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-schoelcher/",
+          "href": "/plages/plage-de-sch-lcher/",
+          "target": "martinique-ftp/plages/plage-de-sch-lcher/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-schoelcher/",
+          "href": "/plages/anse-collat/",
+          "target": "martinique-ftp/plages/anse-collat/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/veilleur-mvp/anse-mitan/",
+          "href": "https://sargasses-martinique.com/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/veilleur-mvp/grande-anse-arlet/",
+          "href": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/veilleur-mvp/les-salines/",
+          "href": "https://sargasses-martinique.com/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/veilleur-mvp/pointe-faula/",
+          "href": "https://sargasses-martinique.com/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/veilleur-mvp/pointe-faula/",
+          "href": "https://sargasses-martinique.com/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "cross-domain"
         }
       ]
     },
     "gp": {
-      "pageCount": 403,
-      "totalLinks": 8253,
-      "checkedLinks": 6546,
-      "brokenCount": 27,
+      "pageCount": 151,
+      "totalLinks": 3593,
+      "checkedLinks": 2963,
+      "brokenCount": 187,
       "broken": [
+        {
+          "from": "/algues-guadeloupe/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/algues-guadeloupe/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/algues-guadeloupe/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-martinique.com/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/bilan-sargasses-2025/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
         {
           "from": "/carte-sargasses/",
           "href": "/meilleures-plages-martinique-sargasses/",
@@ -214,15 +1102,333 @@
           "kind": "internal"
         },
         {
+          "from": "/",
+          "href": "/plages/plage-bois-jolan/",
+          "target": "guadeloupe-ftp/plages/plage-bois-jolan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-de-la-caravelle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-caravelle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-de-saint-francois/",
+          "target": "guadeloupe-ftp/plages/plage-de-saint-francois/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/pointe-des-chateaux/",
+          "target": "guadeloupe-ftp/plages/pointe-des-chateaux/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/",
+          "href": "/plages/plage-de-grande-anse/",
+          "target": "guadeloupe-ftp/plages/plage-de-grande-anse/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-deshaies/",
+          "target": "guadeloupe-ftp/plages/plage-de-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-grande-anse/",
+          "target": "guadeloupe-ftp/plages/plage-de-grande-anse/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/l-autre-bord/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/meilleures-plages-guadeloupe-sargasses/",
+          "href": "/plages/plage-de-la-caravelle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-caravelle/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/meteo-sargasses-guadeloupe/",
           "href": "/meteo-sargasses-martinique/",
           "target": "guadeloupe-ftp/meteo-sargasses-martinique/index.html",
           "kind": "internal"
         },
         {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/anse-madame/",
+          "target": "martinique-ftp/plages/anse-madame/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/anse-ceron/",
+          "target": "martinique-ftp/plages/anse-ceron/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/plage-du-bourg-sainte-anne/",
+          "target": "martinique-ftp/plages/plage-du-bourg-sainte-anne/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/plage-du-marin/",
+          "target": "martinique-ftp/plages/plage-du-marin/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/plage-du-diamant/",
+          "target": "martinique-ftp/plages/plage-du-diamant/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/pointe-faula/",
+          "target": "martinique-ftp/plages/pointe-faula/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "https://sargasses-martinique.com/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-deshaies/",
+          "target": "guadeloupe-ftp/plages/plage-de-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-grande-anse/",
+          "target": "guadeloupe-ftp/plages/plage-de-grande-anse/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-la-caravelle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-caravelle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-de-bas-du-fort/",
+          "target": "guadeloupe-ftp/plages/plage-de-bas-du-fort/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-moule/",
+          "target": "guadeloupe-ftp/plages/plage-du-moule/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/pointe-des-chateaux/",
+          "target": "guadeloupe-ftp/plages/pointe-des-chateaux/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/plages-sans-sargasses/",
+          "href": "/plages/plage-du-vieux-fort/",
+          "target": "guadeloupe-ftp/plages/plage-du-vieux-fort/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/previsions/",
           "href": "/meilleures-plages-martinique-sargasses/",
           "target": "guadeloupe-ftp/meilleures-plages-martinique-sargasses/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-guadeloupe/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-guadeloupe/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/que-faire-sargasses-guadeloupe/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/saison-sargasses-guadeloupe/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-anse-bertrand/",
+          "href": "/plages/porte-d-enfer/",
+          "target": "guadeloupe-ftp/plages/porte-d-enfer/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-anse-bertrand/",
+          "href": "/plages/anse-laborde/",
+          "target": "guadeloupe-ftp/plages/anse-laborde/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-anse-bertrand/",
+          "href": "/plages/anse-bertrand-nord/",
+          "target": "guadeloupe-ftp/plages/anse-bertrand-nord/index.html",
           "kind": "internal"
         },
         {
@@ -238,9 +1444,357 @@
           "kind": "cross-domain"
         },
         {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/plages/plage-des-salines/",
+          "target": "martinique-ftp/plages/plage-des-salines/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+          "target": "martinique-ftp/plages/bourg-de-tartane/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "https://sargasses-martinique.com/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-aujourdhui/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-basse-terre/",
+          "href": "/plages/plage-de-bananier/",
+          "target": "guadeloupe-ftp/plages/plage-de-bananier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/anse-de-pigeon/",
+          "target": "guadeloupe-ftp/plages/anse-de-pigeon/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/petite-plage-malendure/",
+          "target": "guadeloupe-ftp/plages/petite-plage-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/plage-des-amandiers/",
+          "target": "guadeloupe-ftp/plages/plage-des-amandiers/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/anse-a-sable/",
+          "target": "guadeloupe-ftp/plages/anse-a-sable/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-bouillante/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-capesterre-belle-eau/",
+          "href": "/plages/plage-de-capesterre-belle-eau/",
+          "target": "guadeloupe-ftp/plages/plage-de-capesterre-belle-eau/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-capesterre-de-marie-galante/",
+          "href": "/plages/plage-de-capesterre-mg/",
+          "target": "guadeloupe-ftp/plages/plage-de-capesterre-mg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-deshaies/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-deshaies/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-deshaies/",
+          "href": "/plages/plage-de-deshaies/",
+          "target": "guadeloupe-ftp/plages/plage-de-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-deshaies/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/la-datcha/",
+          "target": "guadeloupe-ftp/plages/la-datcha/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/plage-du-gosier/",
+          "target": "guadeloupe-ftp/plages/plage-du-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/petit-havre-gosier/",
+          "target": "guadeloupe-ftp/plages/petit-havre-gosier/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/saint-felix/",
+          "target": "guadeloupe-ftp/plages/saint-felix/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-gosier/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-grand-bourg/",
+          "href": "/plages/plage-de-grand-bourg/",
+          "target": "guadeloupe-ftp/plages/plage-de-grand-bourg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-guadeloupe-cette-semaine/",
+          "href": "/plages/plage-de-la-perle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-perle/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-guadeloupe-cette-semaine/",
           "href": "/sargasses-martinique-cette-semaine/",
           "target": "guadeloupe-ftp/sargasses-martinique-cette-semaine/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/plage-de-la-desirade/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-desirade/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/plage-de-baie-mahault-desirade/",
+          "target": "guadeloupe-ftp/plages/plage-de-baie-mahault-desirade/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/le-souffleur-desirade/",
+          "target": "guadeloupe-ftp/plages/le-souffleur-desirade/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/plage-de-la-desirade-sud/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-desirade-sud/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/grande-anse-desirade/",
+          "target": "guadeloupe-ftp/plages/grande-anse-desirade/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-la-desirade/",
+          "href": "/plages/ile-de-la-petite-terre/",
+          "target": "guadeloupe-ftp/plages/ile-de-la-petite-terre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-moule/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-moule/",
+          "href": "/plages/plage-du-moule/",
+          "target": "guadeloupe-ftp/plages/plage-du-moule/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-le-moule/",
+          "href": "/plages/plage-de-babin/",
+          "target": "guadeloupe-ftp/plages/plage-de-babin/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
+          "href": "/plages/plage-de-pompierre/",
+          "target": "guadeloupe-ftp/plages/plage-de-pompierre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
+          "href": "/plages/plage-pain-de-sucre/",
+          "target": "guadeloupe-ftp/plages/plage-pain-de-sucre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
+          "href": "/plages/anse-crawen/",
+          "target": "guadeloupe-ftp/plages/anse-crawen/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
+          "href": "/plages/anse-rodrigue/",
+          "target": "guadeloupe-ftp/plages/anse-rodrigue/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-les-saintes/",
+          "href": "/plages/anse-du-figuier-saintes/",
+          "target": "guadeloupe-ftp/plages/anse-du-figuier-saintes/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/plage-de-capesterre-mg/",
+          "target": "guadeloupe-ftp/plages/plage-de-capesterre-mg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/anse-canot-marie-galante/",
+          "target": "guadeloupe-ftp/plages/anse-canot-marie-galante/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/plage-de-moustique/",
+          "target": "guadeloupe-ftp/plages/plage-de-moustique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/anse-de-vieux-fort-mg/",
+          "target": "guadeloupe-ftp/plages/anse-de-vieux-fort-mg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/plage-de-grand-bourg/",
+          "target": "guadeloupe-ftp/plages/plage-de-grand-bourg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-marie-galante/",
+          "href": "/plages/anse-piton/",
+          "target": "guadeloupe-ftp/plages/anse-piton/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-petit-bourg/",
+          "href": "/plages/plage-de-petit-bourg/",
+          "target": "guadeloupe-ftp/plages/plage-de-petit-bourg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-petit-canal/",
+          "href": "/plages/anse-de-galet/",
+          "target": "guadeloupe-ftp/plages/anse-de-galet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pointe-a-pitre/",
+          "href": "/plages/plage-de-bas-du-fort/",
+          "target": "guadeloupe-ftp/plages/plage-de-bas-du-fort/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pointe-a-pitre/",
+          "href": "/plages/plage-de-fouillole/",
+          "target": "guadeloupe-ftp/plages/plage-de-fouillole/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pointe-noire/",
+          "href": "/plages/plage-de-baille-argent/",
+          "target": "guadeloupe-ftp/plages/plage-de-baille-argent/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-port-louis/",
+          "href": "/plages/l-autre-bord/",
+          "target": "guadeloupe-ftp/plages/l-autre-bord/index.html",
           "kind": "internal"
         },
         {
@@ -256,6 +1810,48 @@
           "kind": "cross-domain"
         },
         {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/plages/grande-anse-d-arlet/",
+          "target": "martinique-ftp/plages/grande-anse-d-arlet/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/plages/anse-dufour/",
+          "target": "martinique-ftp/plages/anse-dufour/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/plages/anse-mitan/",
+          "target": "martinique-ftp/plages/anse-mitan/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "https://sargasses-martinique.com/plages/anse-noire/",
+          "target": "martinique-ftp/plages/anse-noire/index.html",
+          "kind": "cross-domain"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-pres-de-moi/",
+          "href": "/plages/plage-du-souffleur/",
+          "target": "guadeloupe-ftp/plages/plage-du-souffleur/index.html",
+          "kind": "internal"
+        },
+        {
           "from": "/sargasses-record-2026/",
           "href": "/saison-sargasses-martinique/",
           "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
@@ -265,6 +1861,204 @@
           "from": "/sargasses-record-2026/",
           "href": "/saison-sargasses-martinique/",
           "target": "guadeloupe-ftp/saison-sargasses-martinique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-francois/",
+          "href": "/plages/plage-des-raisins-clairs/",
+          "target": "guadeloupe-ftp/plages/plage-des-raisins-clairs/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-francois/",
+          "href": "/plages/pointe-des-chateaux/",
+          "target": "guadeloupe-ftp/plages/pointe-des-chateaux/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-francois/",
+          "href": "/plages/anse-tarare/",
+          "target": "guadeloupe-ftp/plages/anse-tarare/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-francois/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-francois/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-louis/",
+          "href": "/plages/anse-piton/",
+          "target": "guadeloupe-ftp/plages/anse-piton/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-louis/",
+          "href": "/plages/anse-canot-marie-galante/",
+          "target": "guadeloupe-ftp/plages/anse-canot-marie-galante/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-louis/",
+          "href": "/plages/plage-de-moustique/",
+          "target": "guadeloupe-ftp/plages/plage-de-moustique/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-saint-louis/",
+          "href": "/plages/anse-de-vieux-fort-mg/",
+          "target": "guadeloupe-ftp/plages/anse-de-vieux-fort-mg/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/plage-bois-jolan/",
+          "target": "guadeloupe-ftp/plages/plage-bois-jolan/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/plage-de-la-caravelle/",
+          "target": "guadeloupe-ftp/plages/plage-de-la-caravelle/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/plage-de-sainte-anne/",
+          "target": "guadeloupe-ftp/plages/plage-de-sainte-anne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/anse-champagne/",
+          "target": "guadeloupe-ftp/plages/anse-champagne/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/la-grande-anse-deshaies/",
+          "target": "guadeloupe-ftp/plages/la-grande-anse-deshaies/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-anne-guadeloupe/",
+          "href": "/plages/plage-de-malendure/",
+          "target": "guadeloupe-ftp/plages/plage-de-malendure/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/plage-de-clugny/",
+          "target": "guadeloupe-ftp/plages/plage-de-clugny/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/plage-de-nogent/",
+          "target": "guadeloupe-ftp/plages/plage-de-nogent/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/plage-du-vieux-fort/",
+          "target": "guadeloupe-ftp/plages/plage-du-vieux-fort/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/plage-de-cluny-nord/",
+          "target": "guadeloupe-ftp/plages/plage-de-cluny-nord/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/plage-de-tillet/",
+          "target": "guadeloupe-ftp/plages/plage-de-tillet/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/vieux-fort-sainte-rose/",
+          "target": "guadeloupe-ftp/plages/vieux-fort-sainte-rose/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-sainte-rose/",
+          "href": "/plages/gros-cap/",
+          "target": "guadeloupe-ftp/plages/gros-cap/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-bas-les-saintes/",
+          "href": "/plages/la-feuillere/",
+          "target": "guadeloupe-ftp/plages/la-feuillere/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/plage-de-pompierre/",
+          "target": "guadeloupe-ftp/plages/plage-de-pompierre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/plage-pain-de-sucre/",
+          "target": "guadeloupe-ftp/plages/plage-pain-de-sucre/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/anse-rodrigue/",
+          "target": "guadeloupe-ftp/plages/anse-rodrigue/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/anse-mire/",
+          "target": "guadeloupe-ftp/plages/anse-mire/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/anse-du-figuier-saintes/",
+          "target": "guadeloupe-ftp/plages/anse-du-figuier-saintes/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/anse-crawen/",
+          "target": "guadeloupe-ftp/plages/anse-crawen/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-terre-de-haut-les-saintes/",
+          "href": "/plages/anse-du-bourg-saintes/",
+          "target": "guadeloupe-ftp/plages/anse-du-bourg-saintes/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-trois-rivieres/",
+          "href": "/plages/plage-de-grande-anse/",
+          "target": "guadeloupe-ftp/plages/plage-de-grande-anse/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-vieux-habitants/",
+          "href": "/plages/anse-a-la-barque-vh/",
+          "target": "guadeloupe-ftp/plages/anse-a-la-barque-vh/index.html",
+          "kind": "internal"
+        },
+        {
+          "from": "/sargasses-vieux-habitants/",
+          "href": "/plages/anse-turlet/",
+          "target": "guadeloupe-ftp/plages/anse-turlet/index.html",
           "kind": "internal"
         },
         {

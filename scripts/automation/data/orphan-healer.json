@@ -1,16 +1,12 @@
 {
-  "generatedAt": "2026-10-12T20:25:27.239Z",
+  "generatedAt": "2026-10-19T17:37:50.260Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 49,
+      "targetCount": 36,
       "injections": [
         {
           "donor": "/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/plages/",
           "targetCount": 8
         },
         {
@@ -22,7 +18,11 @@
           "targetCount": 8
         },
         {
-          "donor": "/conditions/",
+          "donor": "/alertes/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/comprendre-sargasses/",
           "targetCount": 8
         }
       ],
@@ -32,21 +32,17 @@
         "/agir/",
         "/bulletin-sargasses-martinique/",
         "/comic-cartes.html",
-        "/conditions/",
         "/confidentialite/",
-        "/confirme/"
+        "/confirme/",
+        "/expansion-survey/"
       ]
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 51,
+      "targetCount": 42,
       "injections": [
         {
           "donor": "/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/plages/",
           "targetCount": 8
         },
         {
@@ -58,19 +54,23 @@
           "targetCount": 8
         },
         {
-          "donor": "/conditions/",
+          "donor": "/alertes/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/comprendre-sargasses/",
           "targetCount": 8
         }
       ],
       "targets": [
         "/alertes/",
         "/danger-sargasses-h2s/",
-        "/plages-sans-sargasses/",
-        "/saison-sargasses-guadeloupe/",
+        "/saison-sargasses-martinique/",
         "/agir/",
         "/algues-guadeloupe/",
         "/bulletin-sargasses-guadeloupe/",
-        "/comic-cartes.html"
+        "/comic-cartes.html",
+        "/confidentialite/"
       ]
     }
   }

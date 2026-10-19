@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-12T20:25:17.475Z",
+  "generatedAt": "2026-10-19T17:37:42.684Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,13 +12,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 3610,
-          "clicks": 307
+          "impressions": 3578,
+          "clicks": 339
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1209,
-          "clicks": 101
+          "impressions": 1080,
+          "clicks": 84
         }
       ],
       "orphans": [
@@ -96,17 +96,17 @@
     },
     "gp": {
       "sitemapSize": 15,
-      "orphanCount": 9,
+      "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 4,
+        "editorial": 3,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 5860,
-          "clicks": 584
+          "impressions": 4946,
+          "clicks": 489
         }
       ],
       "orphans": [
@@ -129,17 +129,8 @@
           ]
         },
         {
-          "url": "https://sargasses-guadeloupe.com/plages-sans-sargasses/",
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-martinique/",
           "impressions": 0,
-          "clicks": 0,
-          "kind": "editorial",
-          "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
-          ]
-        },
-        {
-          "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
-          "impressions": 1,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -166,7 +157,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/sargassum-alerts/",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [

@@ -1,21 +1,33 @@
 {
-  "generatedAt": "2026-10-12T20:25:26.235Z",
+  "generatedAt": "2026-10-19T17:37:49.872Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
+      "pageCount": 142,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 172,
-      "pagesWithHreflang": 157,
-      "issueCount": 176,
+      "pagesWithCanonical": 105,
+      "pagesWithHreflang": 91,
+      "issueCount": 26,
       "byKind": {
-        "missing-canonical": 171,
-        "canonical-mismatch": 1,
+        "missing-canonical": 17,
+        "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "cgv.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/cgv",
+          "pageUrl": "/cgv.html"
+        },
+        {
+          "file": "confidentialite.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/confidentialite",
+          "pageUrl": "/confidentialite.html"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -28,6 +40,18 @@
         {
           "file": "jeu/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "mentions-legales.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/mentions-legales",
+          "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "remboursement.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/remboursement",
+          "pageUrl": "/remboursement.html"
         },
         {
           "file": "sarg_carte_satellite_app.html",
@@ -110,136 +134,36 @@
         {
           "file": "veilleur-studio/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-l-ane/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-l-eau/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-barque-vh/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-gourde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-sable/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-belleville/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-bertrand-nord/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-bonneville/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-cafard/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-canot-marie-galante/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-caritan/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-ceron/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-champagne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-charpentier/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-collat/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-corps-de-garde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-cosmy/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-couleuvre/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-crawen/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-galet/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-la-baie-olive/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 402,
+      "pageCount": 150,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 211,
-      "pagesWithHreflang": 196,
-      "issueCount": 176,
+      "pagesWithCanonical": 113,
+      "pagesWithHreflang": 99,
+      "issueCount": 26,
       "byKind": {
-        "missing-canonical": 171,
-        "canonical-mismatch": 1,
+        "missing-canonical": 17,
+        "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
       "issues": [
         {
           "file": "agir/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "cgv.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/cgv",
+          "pageUrl": "/cgv.html"
+        },
+        {
+          "file": "confidentialite.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/confidentialite",
+          "pageUrl": "/confidentialite.html"
         },
         {
           "file": "google22dbf19e7b743f5a.html",
@@ -252,6 +176,18 @@
         {
           "file": "jeu/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "mentions-legales.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/mentions-legales",
+          "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "remboursement.html",
+          "kind": "canonical-mismatch",
+          "canonical": "/remboursement",
+          "pageUrl": "/remboursement.html"
         },
         {
           "file": "sarg_carte_satellite_app.html",
@@ -333,118 +269,6 @@
         },
         {
           "file": "veilleur-studio/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-l-ane/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-l-eau/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-barque-ste-anne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-barque-vh/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-la-gourde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-a-sable/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-belleville/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-bertrand-nord/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-bonneville/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-cafard/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-canot-marie-galante/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-caritan/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-ceron/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-champagne/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-charpentier/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-collat/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-corps-de-garde/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-cosmy/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-couleuvre/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-crawen/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-galet/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-la-baie-olive/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-des-galets/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-bourg-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-figuier-saintes/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-du-mancenillier/index.html",
           "kind": "missing-canonical"
         }
       ]

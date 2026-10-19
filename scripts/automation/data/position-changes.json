@@ -1,26 +1,9 @@
 {
-  "generatedAt": "2026-10-12T20:25:17.418Z",
-  "comparedTo": "2026-10-05",
+  "generatedAt": "2026-10-19T17:37:42.638Z",
+  "comparedTo": "2026-10-12",
   "alerts": {
     "drops": [],
-    "gains": [
-      {
-        "site": "gp",
-        "page": "https://sargasses-guadeloupe.com/plages/",
-        "prevPos": 23.6,
-        "currPos": 12.5,
-        "delta": -11.1,
-        "impressions": 26
-      },
-      {
-        "site": "mq",
-        "page": "https://sargasses-martinique.com/plages/pointe-faula/",
-        "prevPos": 10.3,
-        "currPos": 3.9,
-        "delta": -6.4,
-        "impressions": 30
-      }
-    ],
+    "gains": [],
     "appeared": [],
     "vanished": [],
     "queryDrops": [],

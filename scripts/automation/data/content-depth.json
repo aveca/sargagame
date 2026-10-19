@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-10-12T20:25:26.448Z",
+  "generatedAt": "2026-10-19T17:37:49.958Z",
   "sites": {
     "mq": {
-      "pageCount": 363,
-      "medianWords": 41,
-      "thinCount": 211,
-      "richCount": 79,
+      "pageCount": 142,
+      "medianWords": 491,
+      "thinCount": 53,
+      "richCount": 26,
       "thinPages": [
         {
           "url": "/en/best-beaches-martinique/",
@@ -84,48 +84,48 @@
           "words": 5
         },
         {
-          "url": "/widget/embed/saint-felix/",
-          "words": 8
+          "url": "/veilleur-mvp/cancun/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-l-ane/",
-          "words": 9
+          "url": "/veilleur-mvp/sainte-anne-gp/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-l-eau/",
-          "words": 9
+          "url": "/veilleur-mvp/tulum/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-sable/",
-          "words": 9
+          "url": "/comic-cartes.html",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-belleville/",
-          "words": 9
+          "url": "/veilleur-mvp/fort-lauderdale/",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-bertrand-nord/",
-          "words": 9
+          "url": "/veilleur-mvp/miami-beach/",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-bonneville/",
-          "words": 9
+          "url": "/veilleur-mvp/anse-mitan/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-cafard/",
-          "words": 9
+          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-caritan/",
-          "words": 9
+          "url": "/veilleur-mvp/les-salines/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-champagne/",
-          "words": 9
+          "url": "/veilleur-mvp/pointe-faula/",
+          "words": 44
         },
         {
-          "url": "/widget/embed/anse-charpentier/",
-          "words": 9
+          "url": "/veilleur-mvp/punta-cana/",
+          "words": 44
         }
       ],
       "topPages": [
@@ -146,36 +146,36 @@
           "words": 1894
         },
         {
-          "url": "/plages/grande-anse-d-arlet/",
-          "words": 1846
+          "url": "/pro/es/pronostico-sargazo-cancun-hoteles/",
+          "words": 1122
         },
         {
-          "url": "/plages/plage-du-marin/",
-          "words": 1838
+          "url": "/pro/es/barrera-vs-pronostico-sargazo/",
+          "words": 1034
         },
         {
-          "url": "/plages/plage-du-bourg-sainte-anne/",
-          "words": 1833
+          "url": "/pro/en/sargassum-barrier-vs-forecast/",
+          "words": 1024
         },
         {
-          "url": "/plages/anse-corps-de-garde/",
-          "words": 1822
+          "url": "/pro/barrieres-vs-prevision/",
+          "words": 1023
         },
         {
-          "url": "/plages/anse-mitan/",
-          "words": 1821
+          "url": "/pro/es/hotels/",
+          "words": 955
         },
         {
-          "url": "/plages/grande-anse-du-carbet/",
-          "words": 1816
+          "url": "/pro/es/preparar-hotel-temporada-sargazo/",
+          "words": 953
         }
       ]
     },
     "gp": {
-      "pageCount": 402,
-      "medianWords": 199,
-      "thinCount": 210,
-      "richCount": 111,
+      "pageCount": 150,
+      "medianWords": 501,
+      "thinCount": 52,
+      "richCount": 26,
       "thinPages": [
         {
           "url": "/en/best-beaches-guadeloupe/",
@@ -254,48 +254,48 @@
           "words": 5
         },
         {
-          "url": "/widget/embed/saint-felix/",
-          "words": 8
+          "url": "/veilleur-mvp/cancun/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-l-ane/",
-          "words": 9
+          "url": "/veilleur-mvp/sainte-anne-gp/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-l-eau/",
-          "words": 9
+          "url": "/veilleur-mvp/tulum/",
+          "words": 39
         },
         {
-          "url": "/widget/embed/anse-a-sable/",
-          "words": 9
+          "url": "/comic-cartes.html",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-belleville/",
-          "words": 9
+          "url": "/veilleur-mvp/fort-lauderdale/",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-bertrand-nord/",
-          "words": 9
+          "url": "/veilleur-mvp/miami-beach/",
+          "words": 40
         },
         {
-          "url": "/widget/embed/anse-bonneville/",
-          "words": 9
+          "url": "/veilleur-mvp/anse-mitan/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-cafard/",
-          "words": 9
+          "url": "/veilleur-mvp/grande-anse-arlet/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-caritan/",
-          "words": 9
+          "url": "/veilleur-mvp/les-salines/",
+          "words": 41
         },
         {
-          "url": "/widget/embed/anse-champagne/",
-          "words": 9
+          "url": "/veilleur-mvp/pointe-faula/",
+          "words": 44
         },
         {
-          "url": "/widget/embed/anse-charpentier/",
-          "words": 9
+          "url": "/veilleur-mvp/punta-cana/",
+          "words": 44
         }
       ],
       "topPages": [
@@ -316,28 +316,28 @@
           "words": 1894
         },
         {
-          "url": "/plages/plage-de-grande-anse/",
-          "words": 1885
+          "url": "/pro/es/pronostico-sargazo-cancun-hoteles/",
+          "words": 1122
         },
         {
-          "url": "/plages/plage-de-la-caravelle/",
-          "words": 1875
+          "url": "/pro/es/barrera-vs-pronostico-sargazo/",
+          "words": 1034
         },
         {
-          "url": "/plages/plage-de-deshaies/",
-          "words": 1852
+          "url": "/pro/en/sargassum-barrier-vs-forecast/",
+          "words": 1024
         },
         {
-          "url": "/plages/plage-de-malendure/",
-          "words": 1844
+          "url": "/pro/barrieres-vs-prevision/",
+          "words": 1023
         },
         {
-          "url": "/plages/plage-de-la-desirade-sud/",
-          "words": 1839
+          "url": "/pro/es/hotels/",
+          "words": 955
         },
         {
-          "url": "/plages/plage-du-gosier/",
-          "words": 1838
+          "url": "/pro/es/preparar-hotel-temporada-sargazo/",
+          "words": 953
         }
       ]
     }

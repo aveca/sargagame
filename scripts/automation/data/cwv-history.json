@@ -1,77 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-07-20",
-      "sites": {
-        "mq": {
-          "combined": {
-            "LCP": {
-              "p75": 3258,
-              "good": null
-            },
-            "INP": {
-              "p75": 436,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.02,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 867,
-              "good": null
-            }
-          }
-        },
-        "gp": {
-          "combined": {
-            "LCP": {
-              "p75": 3246,
-              "good": null
-            },
-            "INP": {
-              "p75": 554,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.03,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 792,
-              "good": null
-            }
-          }
-        },
-        "florida": {
-          "combined": {
-            "LCP": {
-              "p75": 3107,
-              "good": null
-            },
-            "INP": {
-              "p75": 327,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 530,
-              "good": null
-            }
-          }
-        },
-        "puntacana": {
-          "combined": null
-        },
-        "rivieramaya": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-07-27",
       "sites": {
         "mq": {
@@ -410,6 +339,94 @@
             },
             "TTFB": {
               "p75": 600,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": null
+        }
+      }
+    },
+    {
+      "date": "2026-10-19",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 2398,
+              "good": null
+            },
+            "INP": {
+              "p75": 401,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.57,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 426,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 2473,
+              "good": null
+            },
+            "INP": {
+              "p75": 399,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.59,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 439,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 2383,
+              "good": null
+            },
+            "INP": {
+              "p75": 222,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.26,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 449,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 2117,
+              "good": null
+            },
+            "INP": {
+              "p75": 245,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.14,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 520,
               "good": null
             }
           }

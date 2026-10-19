@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-16T15:15:21.302Z",
+  "generatedAt": "2026-10-19T17:18:19.105Z",
   "sites": {
     "mq": {
       "domain": "sargasses-martinique.com",
-      "indexedCount": 57,
+      "indexedCount": 42,
       "totalUrls": 74,
       "findings": {
         "notIndexed": [],
@@ -13,7 +13,127 @@
             "verdict": "NEUTRAL",
             "pageFetchState": "NOT_FOUND",
             "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-10-16T14:58:50Z",
+            "lastCrawlTime": "2026-10-19T16:46:30Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/plage-des-salines/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T06:51:52Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-meunier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T12:48:36Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-trabaud/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T18:25:21Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-michel/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T17:00:56Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-noire/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T13:39:08Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-dufour/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T19:53:26Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/plage-du-diamant/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T00:46:15Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-gros-raisins/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T04:18:57Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-collat/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T00:12:21Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/plage-de-saint-pierre/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T11:21:30Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-couleuvre/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T22:35:15Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/bourg-de-tartane/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T07:52:40Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-l-etang/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T05:42:18Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/anse-charpentier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T19:09:26Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-martinique.com/plages/pointe-fort-caravelle/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T04:49:53Z",
             "coverageState": "Not found (404)"
           }
         ],
@@ -21,40 +141,80 @@
           {
             "page": "https://sargasses-martinique.com/meteo-sargasses-guadeloupe/",
             "avgPosition": 9,
-            "actualCtr": 0.72,
+            "actualCtr": 0.68,
             "expectedCtr": 3,
-            "impressions": 138,
+            "impressions": 147,
             "clicks": 1,
             "topQueries": [
               {
                 "query": "meteo sargasse guadeloupe",
-                "impressions": 40,
+                "impressions": 44,
                 "clicks": 0,
-                "position": 7.35
+                "position": 7.681818181818182
               },
               {
                 "query": "meteo sargasse guadeloupe",
-                "impressions": 20,
+                "impressions": 21,
                 "clicks": 0,
-                "position": 7.65
+                "position": 7.619047619047619
               },
               {
                 "query": "meteo sargasse guadeloupe",
-                "impressions": 13,
+                "impressions": 11,
                 "clicks": 0,
-                "position": 6.846153846153846
+                "position": 6.909090909090909
               },
               {
                 "query": "meteo sargasses guadeloupe",
-                "impressions": 9,
+                "impressions": 8,
                 "clicks": 0,
-                "position": 7.111111111111111
+                "position": 7.125
               },
               {
                 "query": "météo sargasse guadeloupe",
-                "impressions": 7,
+                "impressions": 8,
                 "clicks": 0,
-                "position": 7.857142857142857
+                "position": 7.5
+              }
+            ]
+          },
+          {
+            "page": "https://sargasses-martinique.com/plages/plage-du-diamant/",
+            "avgPosition": 4,
+            "actualCtr": 4.76,
+            "expectedCtr": 8,
+            "impressions": 42,
+            "clicks": 2,
+            "topQueries": [
+              {
+                "query": "plage du diamant sargasse",
+                "impressions": 12,
+                "clicks": 0,
+                "position": 2.166666666666667
+              },
+              {
+                "query": "plage du diamant martinique sargasse",
+                "impressions": 6,
+                "clicks": 0,
+                "position": 3.5
+              },
+              {
+                "query": "diamant sargasse martinique",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 11
+              },
+              {
+                "query": "plage du diamant martinique sargasse",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 5
+              },
+              {
+                "query": "plage du diamant sargasse",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 4
               }
             ]
           },
@@ -103,12 +263,12 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 371,
+            "value": 401,
             "threshold": 200
           },
           {
             "metric": "CLS",
-            "value": 0.58,
+            "value": 0.57,
             "threshold": 0.1
           }
         ],
@@ -117,7 +277,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 11
+            "count": 8
           },
           {
             "event": "clarity_rage_click",
@@ -127,13 +287,13 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/carte-sargasses/",
+            "page": "/plages-sans-sargasses/",
             "target": "",
-            "count": 2
+            "count": 3
           },
           {
             "event": "clarity_rage_click",
-            "page": "/plages-sans-sargasses/",
+            "page": "/carte-sargasses/",
             "target": "",
             "count": 2
           },
@@ -149,13 +309,13 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 72
+            "count": 67
           },
           {
             "event": "clarity_dead_click",
             "page": "/carte-sargasses/",
             "target": "",
-            "count": 22
+            "count": 19
           },
           {
             "event": "clarity_dead_click",
@@ -167,13 +327,13 @@
             "event": "clarity_dead_click",
             "page": "/en/",
             "target": "",
-            "count": 7
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
             "page": "/plages-sans-sargasses/",
             "target": "",
-            "count": 4
+            "count": 6
           },
           {
             "event": "clarity_dead_click",
@@ -228,28 +388,22 @@
             "page": "/sargasses-la-desirade/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargasses-les-anses-d-arlet/",
-            "target": "",
-            "count": 1
           }
         ],
         "quickBounces": []
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2408,
-        "inp": 371,
-        "cls": 0.58,
-        "ttfb": 457
+        "lcp": 2398,
+        "inp": 401,
+        "cls": 0.57,
+        "ttfb": 426
       },
       "sitemapStatus": [
         {
           "path": "https://sargasses-martinique.com/sitemap.xml",
           "lastSubmitted": "2026-02-18T16:45:01.910Z",
-          "lastDownloaded": "2026-10-11T05:35:45.407Z",
+          "lastDownloaded": "2026-10-17T16:36:19.567Z",
           "isPending": false,
           "warnings": "1",
           "errors": "0"
@@ -258,7 +412,7 @@
     },
     "gp": {
       "domain": "sargasses-guadeloupe.com",
-      "indexedCount": 72,
+      "indexedCount": 44,
       "totalUrls": 100,
       "findings": {
         "notIndexed": [],
@@ -272,11 +426,227 @@
             "coverageState": "Not found (404)"
           },
           {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-saint-francois/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T17:29:16Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-des-raisins-clairs/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T13:11:51Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/la-datcha/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T16:11:33Z",
+            "coverageState": "Not found (404)"
+          },
+          {
             "url": "https://sargasses-guadeloupe.com/plages/anse-a-la-gourde/",
             "verdict": "NEUTRAL",
             "pageFetchState": "NOT_FOUND",
             "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-10-16T13:22:52Z",
+            "lastCrawlTime": "2026-10-18T19:41:34Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/pointe-des-chateaux/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T15:53:18Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-bois-jolan/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T06:09:13Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T15:09:05Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T23:17:58Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-du-gosier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T08:35:20Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/petit-havre-gosier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T10:07:01Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-bas-du-fort/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T15:39:12Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-du-souffleur/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T09:02:56Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-grande-anse/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T14:37:56Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/la-grande-anse-deshaies/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T14:50:09Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-malendure/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T09:50:59Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-pompierre/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T03:05:26Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/le-souffleur-desirade/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T11:39:05Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/l-autre-bord/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T13:36:20Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/saint-felix/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T20:47:29Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/anse-champagne/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T08:21:32Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/anse-du-mancenillier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T19:19:32Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-perle/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T01:59:21Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/saint-felix-sud/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T13:06:42Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/anse-gros-sable/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T12:55:10Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/anse-sainte-marguerite/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-18T08:39:12Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/les-salines-saint-francois/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T14:44:04Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-du-moule/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T02:44:35Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-bananier/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-19T15:53:18Z",
             "coverageState": "Not found (404)"
           },
           {
@@ -284,7 +654,7 @@
             "verdict": "NEUTRAL",
             "pageFetchState": "NOT_FOUND",
             "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-10-15T16:04:24Z",
+            "lastCrawlTime": "2026-10-18T18:13:21Z",
             "coverageState": "Not found (404)"
           },
           {
@@ -292,31 +662,27 @@
             "verdict": "NEUTRAL",
             "pageFetchState": "NOT_FOUND",
             "robotsTxtState": "ALLOWED",
-            "lastCrawlTime": "2026-10-15T16:41:54Z",
+            "lastCrawlTime": "2026-10-18T18:35:24Z",
+            "coverageState": "Not found (404)"
+          },
+          {
+            "url": "https://sargasses-guadeloupe.com/plages/plage-de-moustique/",
+            "verdict": "NEUTRAL",
+            "pageFetchState": "NOT_FOUND",
+            "robotsTxtState": "ALLOWED",
+            "lastCrawlTime": "2026-10-17T16:54:01Z",
             "coverageState": "Not found (404)"
           }
         ],
         "lowCtrPages": [
           {
             "page": "https://sargasses-guadeloupe.com/plages/plage-de-sainte-anne/",
-            "avgPosition": 8,
-            "actualCtr": 1.49,
-            "expectedCtr": 3,
-            "impressions": 67,
-            "clicks": 1,
+            "avgPosition": 7,
+            "actualCtr": 0,
+            "expectedCtr": 4,
+            "impressions": 53,
+            "clicks": 0,
             "topQueries": [
-              {
-                "query": "plage saint anne",
-                "impressions": 8,
-                "clicks": 0,
-                "position": 20.75
-              },
-              {
-                "query": "plage saint anne",
-                "impressions": 6,
-                "clicks": 0,
-                "position": 24
-              },
               {
                 "query": "plage de sainte-anne",
                 "impressions": 3,
@@ -334,28 +700,46 @@
                 "impressions": 2,
                 "clicks": 0,
                 "position": 3
+              },
+              {
+                "query": "plage de sainte anne martinique",
+                "impressions": 2,
+                "clicks": 0,
+                "position": 2
+              },
+              {
+                "query": "anne plages",
+                "impressions": 1,
+                "clicks": 0,
+                "position": 21
               }
             ]
           },
           {
             "page": "https://sargasses-guadeloupe.com/plages/anse-champagne/",
-            "avgPosition": 10,
+            "avgPosition": 9,
             "actualCtr": 0,
-            "expectedCtr": 2,
-            "impressions": 23,
+            "expectedCtr": 3,
+            "impressions": 28,
             "clicks": 0,
             "topQueries": [
               {
                 "query": "anse champagne guadeloupe",
-                "impressions": 7,
+                "impressions": 9,
                 "clicks": 0,
-                "position": 9.285714285714286
+                "position": 9.222222222222221
               },
               {
                 "query": "anse champagne guadeloupe",
                 "impressions": 3,
                 "clicks": 0,
                 "position": 10
+              },
+              {
+                "query": "plage anse champagne",
+                "impressions": 3,
+                "clicks": 0,
+                "position": 9.666666666666666
               },
               {
                 "query": "anse champagne",
@@ -367,13 +751,7 @@
                 "query": "anse champagne",
                 "impressions": 2,
                 "clicks": 0,
-                "position": 10.5
-              },
-              {
-                "query": "anse champagne",
-                "impressions": 2,
-                "clicks": 0,
-                "position": 11.5
+                "position": 9
               }
             ]
           }
@@ -382,7 +760,7 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 410,
+            "value": 399,
             "threshold": 200
           },
           {
@@ -396,7 +774,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 9
+            "count": 10
           }
         ],
         "deadClicks": [
@@ -404,7 +782,19 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 42
+            "count": 51
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/en/sargassum-map/",
+            "target": "",
+            "count": 1
           },
           {
             "event": "clarity_dead_click",
@@ -417,8 +807,8 @@
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2457,
-        "inp": 410,
+        "lcp": 2473,
+        "inp": 399,
         "cls": 0.59,
         "ttfb": 439
       },
@@ -445,12 +835,12 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 221,
+            "value": 222,
             "threshold": 200
           },
           {
             "metric": "CLS",
-            "value": 0.27,
+            "value": 0.26,
             "threshold": 0.1
           }
         ],
@@ -459,7 +849,7 @@
             "event": "clarity_rage_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 6
+            "count": 5
           },
           {
             "event": "clarity_rage_click",
@@ -471,13 +861,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_rage_click",
-            "page": "/fort-lauderdale-sargassum-today/",
-            "target": "",
-            "count": 2
+            "count": 1
           },
           {
             "event": "clarity_rage_click",
@@ -491,19 +875,19 @@
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 25
+            "count": 27
           },
           {
             "event": "clarity_dead_click",
             "page": "/seaweed-map/",
             "target": "",
-            "count": 21
+            "count": 20
           },
           {
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 17
+            "count": 16
           },
           {
             "event": "clarity_dead_click",
@@ -515,7 +899,7 @@
             "event": "clarity_dead_click",
             "page": "/es/temporada-sargazo-florida/",
             "target": "",
-            "count": 7
+            "count": 8
           },
           {
             "event": "clarity_dead_click",
@@ -579,12 +963,6 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/fort-lauderdale-sargassum-today/",
-            "target": "",
-            "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/miami-beach-seaweed-map-today/",
             "target": "",
             "count": 1
@@ -594,10 +972,10 @@
       },
       "crux": {
         "formFactor": "ALL",
-        "lcp": 2403,
-        "inp": 221,
-        "cls": 0.27,
-        "ttfb": 450
+        "lcp": 2383,
+        "inp": 222,
+        "cls": 0.26,
+        "ttfb": 449
       },
       "sitemapStatus": []
     },
@@ -613,12 +991,12 @@
         "cwvIssues": [
           {
             "metric": "INP",
-            "value": 230,
+            "value": 245,
             "threshold": 200
           },
           {
             "metric": "CLS",
-            "value": 0.17,
+            "value": 0.14,
             "threshold": 0.1
           }
         ],
@@ -627,7 +1005,7 @@
             "event": "clarity_rage_click",
             "page": "/",
             "target": "",
-            "count": 11
+            "count": 13
           },
           {
             "event": "clarity_rage_click",
@@ -637,13 +1015,13 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/es/como-saber-si-hay-sargazo-en-punta-cana/",
+            "page": "/es/",
             "target": "",
             "count": 3
           },
           {
             "event": "clarity_rage_click",
-            "page": "/es/semaforo-del-sargazo/",
+            "page": "/es/como-saber-si-hay-sargazo-en-punta-cana/",
             "target": "",
             "count": 3
           },
@@ -661,7 +1039,13 @@
           },
           {
             "event": "clarity_rage_click",
-            "page": "/es/",
+            "page": "/es/playas/bavaro-beach/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/es/playas/cabeza-de-toro/",
             "target": "",
             "count": 1
           },
@@ -674,6 +1058,12 @@
           {
             "event": "clarity_rage_click",
             "page": "/es/sargazo-bavaro-hoy/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_rage_click",
+            "page": "/es/semaforo-del-sargazo/",
             "target": "",
             "count": 1
           }
@@ -683,31 +1073,31 @@
             "event": "clarity_dead_click",
             "page": "/",
             "target": "",
-            "count": 81
+            "count": 83
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/",
             "target": "",
-            "count": 53
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/es/semaforo-del-sargazo/",
-            "target": "",
-            "count": 22
+            "count": 49
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/pronostico-sargazo/",
             "target": "",
-            "count": 20
+            "count": 21
           },
           {
             "event": "clarity_dead_click",
             "page": "/es/sargazo-bavaro-hoy/",
             "target": "",
-            "count": 16
+            "count": 17
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/es/semaforo-del-sargazo/",
+            "target": "",
+            "count": 15
           },
           {
             "event": "clarity_dead_click",
@@ -719,7 +1109,7 @@
             "event": "clarity_dead_click",
             "page": "/es/playas/uvero-alto/",
             "target": "",
-            "count": 10
+            "count": 11
           },
           {
             "event": "clarity_dead_click",
@@ -729,13 +1119,13 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargassum-bayahibe-la-romana-today/",
+            "page": "/sargassum-forecast/",
             "target": "",
-            "count": 7
+            "count": 8
           },
           {
             "event": "clarity_dead_click",
-            "page": "/sargassum-forecast/",
+            "page": "/sargassum-bayahibe-la-romana-today/",
             "target": "",
             "count": 7
           },
@@ -777,6 +1167,12 @@
           },
           {
             "event": "clarity_dead_click",
+            "page": "/es/playas/cabeza-de-toro/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
             "page": "/es/playas/macao-beach/",
             "target": "",
             "count": 2
@@ -784,6 +1180,12 @@
           {
             "event": "clarity_dead_click",
             "page": "/sargassum-season-punta-cana/",
+            "target": "",
+            "count": 2
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/sargassum-uvero-alto-today/",
             "target": "",
             "count": 2
           },
@@ -828,22 +1230,16 @@
             "page": "/sargassum-cap-cana-today/",
             "target": "",
             "count": 1
-          },
-          {
-            "event": "clarity_dead_click",
-            "page": "/sargassum-uvero-alto-today/",
-            "target": "",
-            "count": 1
           }
         ],
         "quickBounces": []
       },
       "crux": {
         "formFactor": "PHONE",
-        "lcp": 2220,
-        "inp": 230,
-        "cls": 0.17,
-        "ttfb": 566
+        "lcp": 2117,
+        "inp": 245,
+        "cls": 0.14,
+        "ttfb": 520
       },
       "sitemapStatus": []
     },
@@ -898,12 +1294,6 @@
           },
           {
             "event": "clarity_dead_click",
-            "page": "/semaforo-del-sargazo/",
-            "target": "",
-            "count": 2
-          },
-          {
-            "event": "clarity_dead_click",
             "page": "/en/sargassum-forecast/",
             "target": "",
             "count": 1
@@ -929,6 +1319,12 @@
           {
             "event": "clarity_dead_click",
             "page": "/playas-sin-sargazo-hoy/",
+            "target": "",
+            "count": 1
+          },
+          {
+            "event": "clarity_dead_click",
+            "page": "/semaforo-del-sargazo/",
             "target": "",
             "count": 1
           }

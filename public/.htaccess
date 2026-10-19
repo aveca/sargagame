@@ -208,6 +208,18 @@ RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud
 # Auto-added 2026-10-12 by seo-fix-404
 RewriteRule ^saison-sargasses-guadeloupe/?$ / [R=301,L]
 RewriteRule ^saison-sargasses-martinique/?$ / [R=301,L]
+
+# Auto-added 2026-10-19 by seo-fix-404
+RewriteRule ^plages/plage-des-salines/?$ /plages/plage-des-salines/ [R=301,L]
+RewriteRule ^plages/anse-meunier/?$ /plages/anse-meunier/ [R=301,L]
+RewriteRule ^plages/anse-trabaud/?$ /plages/anse-trabaud/ [R=301,L]
+RewriteRule ^plages/anse-michel/?$ /plages/anse-michel/ [R=301,L]
+RewriteRule ^plages/anse-noire/?$ /plages/anse-noire/ [R=301,L]
+RewriteRule ^plages/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
+RewriteRule ^plages/plage-du-diamant/?$ /plages/plage-du-diamant/ [R=301,L]
+RewriteRule ^plages/anse-gros-raisins/?$ /plages/anse-gros-raisins/ [R=301,L]
+RewriteRule ^plages/anse-collat/?$ /plages/anse-collat/ [R=301,L]
+RewriteRule ^plages/plage-de-saint-pierre/?$ /plages/plage-de-saint-pierre/ [R=301,L]
 # CATCH-ALL — remaining old URLs that don't match specific rules → homepage
 # These MUST come AFTER all specific redirects above
 # =====================================================================
