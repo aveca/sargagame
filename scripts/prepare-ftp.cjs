@@ -893,6 +893,16 @@ function prepareNewRegion(region) {
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
+  // Final guard: the packaged homepage must be canonical to THIS regional domain.
+  // Vite normally sets this already; enforce it after copying to FTP output so a
+  // missing/wrong VITE_REGION cannot silently publish a cross-domain canonical.
+  const rootIndex = path.join(out, 'index.html')
+  if (!fs.existsSync(rootIndex)) throw new Error('index.html absent du paquet régional ' + domain)
+  const { enforceRegionHomeSeo } = require('./lib/region-home-seo.cjs')
+  const regionLangs = require('./lib/region-langs.cjs')
+  const correctedHome = enforceRegionHomeSeo(fs.readFileSync(rootIndex, 'utf-8'), region, regionLangs)
+  fs.writeFileSync(rootIndex, correctedHome, 'utf-8')
+  console.log('   → canonical + hreflang homepage vérifiés (' + domain + ')')
 
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
