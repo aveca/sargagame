@@ -1,0 +1,38 @@
+{
+  "jobId": "TASK-P2-DEBUG-mv0dg0bd-vtjxvy",
+  "taskId": "TASK-P2-DEBUG",
+  "createdAt": "2026-10-09T02:54:04.441Z",
+  "gitSha": "7fa2346013be3f7f96a4b6142f4fde277131a57c",
+  "branch": "agent/coding/TASK-P1-002",
+  "metadata": {},
+  "steps": [
+    {
+      "step": "diagnostic",
+      "status": "started",
+      "timestamp": "2026-10-09T02:54:20.610Z",
+      "details": {}
+    },
+    {
+      "step": "diagnostic",
+      "status": "completed",
+      "timestamp": "2026-10-09T02:54:23.920Z",
+      "details": {}
+    }
+  ],
+  "prNumber": 42,
+  "prUrl": "https://github.com/aveca/sargagame/pull/42",
+  "deployments": [
+    {
+      "domain": "sargasses-martinique.com",
+      "fingerprint": "abc123",
+      "timestamp": "2026-10-09T02:54:36.560Z"
+    }
+  ],
+  "verifications": [
+    {
+      "domain": "sargasses-martinique.com",
+      "timestamp": "2026-10-09T02:54:40.233Z",
+      "results": {}
+    }
+  ]
+}

@@ -12420,10 +12420,10 @@ export default function App(){
   // Le Veilleur v2, scrub prévision verrouillé J2-7) vs BeachSheet (control intact).
   // pw_beach_dive PROMU 2026-06-19 (GO fondateur) : variante `dive` gagnante +84% @95% (n=416/469, 28j).
   // Hardcodé `dive` (BeachDive) pour 100%. ?beachdive=0 force encore le control (BeachSheet) — rollback/preview.
-  // Réversible : restaurer abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive".
-  // nav_dive RETIRÉ 2026-06-18 (loop ab-eval 28j) : bras mort n=46 @0% conv vs control n=358 @1.4%.
+  abVariant("pw_beach_dive",["control","dive"],[.5,.5])==="dive" // A/B test activé - variante dive gagnante +84% @95% (n=416/469, 28j)
+  // nav_dive : test A/B retiré — taux contrôle 1.4% sur 358 visites vs 0% variante sur 46 visites (28j)
   // Inliné au control — la plongée 1×/session ajoutait une friction sans conversion. ?navdive=1 force
-  // encore l'aperçu. Réversible : restaurer abVariant("nav_dive",["control","dive"],[.85,.15])==="dive".
+  // nav_dive : A/B test historiqué — reversible si besoin futur
   const navDive=useMemo(()=>{try{const q=window.location.search;if(/[?&]navdive=1/.test(q))return true;if(/[?&]navdive=0/.test(q))return false;return false}catch(_){return false}},[])
   // A/B `capture_gate` : gate email avant le paywall sur intent forecast.
   // 2026-06-28 — COUPÉ (défaut OFF). L'audit business a prouvé que ce gate détournait
