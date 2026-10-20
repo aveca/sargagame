@@ -71,6 +71,9 @@ async function captureScreenshot(wt, route, viewport = 'mobile', label = 'curren
 
 function buildCaptureScript(url, route, viewport, label, wt) {
   const vp = getViewport(viewport);
+  // Échapper les antislashs des chemins Windows pour éviter les séquences
+  // d'échappement invalides lors de l'évaluation du script (ex: C:\Users -> \U)
+  const escDir = SCREENSHOTS_DIR.replace(/\\/g, '\\\\');
   return `
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -97,7 +100,7 @@ page.on('pageerror', err => {
     await page.goto('${url}', { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForSelector('#root', { timeout: 10000 }).catch(() => {});
 
-    const shotDir = path.join('${SCREENSHOTS_DIR}', 'visual-qa');
+    const shotDir = path.join('${escDir}', 'visual-qa');
     fs.mkdirSync(shotDir, { recursive: true });
     const shotPath = path.join(shotDir, '${label}-${route.replace(/\\//g, '-')}-${viewport}-${Date.now()}.png');
     await page.screenshot({ path: shotPath, fullPage: true });
@@ -135,13 +138,18 @@ async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
   }
 
   // Utilise pixelmatch via script Node (CommonJS require)
+  // pixelmatch v8 est ESM-only : la fonction se trouve dans .default
+  // Échapper les antislashs des chemins Windows pour éviter les séquences
+  // d'échappement Unicode invalides dans node -e (ex: C:\Users -> \U invalide)
+  const esc = (p) => p.replace(/\\/g, '\\\\');
   const script = `
 const fs = require('fs');
 const { PNG } = require('pngjs');
-const pixelmatch = require('pixelmatch');
+const pixelmatchMod = require('pixelmatch');
+const pixelmatch = pixelmatchMod.default || pixelmatchMod;
 
-const img1 = PNG.sync.read(fs.readFileSync('${baselinePath}'));
-const img2 = PNG.sync.read(fs.readFileSync('${currentPath}'));
+const img1 = PNG.sync.read(fs.readFileSync('${esc(baselinePath)}'));
+const img2 = PNG.sync.read(fs.readFileSync('${esc(currentPath)}'));
 
 if (img1.width !== img2.width || img1.height !== img2.height) {
   console.log(JSON.stringify({ match: false, reason: 'dimension mismatch', w1: img1.width, h1: img1.height, w2: img2.width, h2: img2.height }));

@@ -53,6 +53,22 @@ Register-ScheduledTask -TaskName 'SargaFactory-Serve' -Action $serveAction -Trig
   -Description 'Usine locale: draine la file de jobs a la demande toutes les 30 min (git pull + --serve). Zero LLM.' -RunLevel Limited -Force | Out-Null
 Write-Host "OK - tache 'SargaFactory-Serve' (draine la file a la demande toutes les 30 min)" -ForegroundColor Green
 
+# 4) Superviseur du runner autonome — lance --watch en continu (une seule instance).
+#    Détecte un runner mort (crash, blocage, redémarrage Windows) et le relance.
+#    MultipleInstances=IgnoreNew empêche tout doublon de watcher.
+$supervisor = Join-Path $PSScriptRoot 'supervisor.cjs'
+if (-not (Test-Path $supervisor)) { throw "supervisor.cjs introuvable: $supervisor" }
+$supervisorAction = New-ScheduledTaskAction -Execute $node -Argument "`"$supervisor`" --watch" -WorkingDirectory $repoRoot
+$supervisorTrigger = New-ScheduledTaskTrigger -AtLogOn
+$supervisorTrigger.Delay = 'PT1M'
+try {
+  Register-ScheduledTask -TaskName 'SargaFactory-Supervisor' -Action $supervisorAction -Trigger $supervisorTrigger -Settings $settings `
+    -Description 'Superviseur du runner autonome Sargagame: vérifie le heartbeat toutes les 60s et redémarre le runner en cas de crash. Zero LLM.' -RunLevel Limited -Force | Out-Null
+  Write-Host "OK - tache 'SargaFactory-Supervisor' (surveillance continue --watch, démarrage au logon +1min)" -ForegroundColor Green
+} catch {
+  Write-Host "  (tache 'SargaFactory-Supervisor' non créée : droits insuffisants, relancez ce script en admin.)" -ForegroundColor Yellow
+}
+
 Get-ScheduledTask -TaskName 'SargaFactory*' | Format-Table TaskName, State -AutoSize
 Write-Host "Test immediat : node scripts\local-factory\factory.cjs   (ou Start-ScheduledTask -TaskName SargaFactory)"
 Write-Host "Voir le plan  : node scripts\local-factory\factory.cjs --plan"
