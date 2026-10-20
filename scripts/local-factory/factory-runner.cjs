@@ -875,6 +875,9 @@ async function processQueue() {
         pid: process.pid 
       }));
       
+      // Marquer la tâche comme en cours pour le suivi de progrès du superviseur
+      setHeartbeatTaskId(taskId);
+      
       try {
         const result = await executeWithFallback(task);
         

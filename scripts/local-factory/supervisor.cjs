@@ -29,7 +29,7 @@ const SUPERVISOR_STATE_FILE = path.join(STATE_DIR, 'supervisor-persist.json');
 const RUNNER_SCRIPT = path.join(__dirname, 'factory-runner.cjs');
 
 const MAX_AGE_MINUTES = 10;      // heartbeat considéré périmé après 10 min
-const STUCK_PROGRESS_MINUTES = 15; // runner considéré bloqué si aucun progrès après 15 min
+const STUCK_PROGRESS_MINUTES = 60; // runner considéré bloqué si aucun progrès après 60 min (tâches visuelles longues)
 const RESTART_BACKOFF_BASE = 10000;  // 10s premier redémarrage
 const MAX_RESTARTS_PER_HOUR = 12;    // max 12 redémarrages par heure
 
