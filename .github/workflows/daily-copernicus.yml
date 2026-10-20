@@ -153,6 +153,12 @@ jobs:
       - name: Déclenche la chaîne CI + déploiement
         if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
         env:
+          # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
+          # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
+          # script échoue explicitement, fail-closed). C'est ce qui a fait
+          # échouer le premier essai en CI (run 39406923824).
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
           DEPLOY_REF: main
         run: node scripts/automation/trigger-production-deploy.cjs
 

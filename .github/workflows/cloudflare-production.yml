@@ -35,6 +35,11 @@ on:
       - Daily Copernicus + Deploy
     types:
       - completed
+    # Filtre de branche : un déploiement ne peut être déclenché que par un
+    # run de l'amorce effectué sur `main` (une publication sur une branche de
+    # développement ne doit jamais déclencher un déploiement de production).
+    branches:
+      - main
 
 permissions:
   contents: read
