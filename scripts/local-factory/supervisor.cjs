@@ -2,16 +2,16 @@
 /**
  * supervisor.cjs — Superviseur externe du factory runner
  * 
- * Vérifie périodiquement que le runner autonome est vivant (via heartbeat).
- * Si le runner est mort (crash, blocage, redémarrage Windows), le superviseur
- * le relance automatiquement avec délai progressif.
+ * Vérifie périodiquement que le runner autonome est vivant et progresse (via heartbeat).
+ * Si le runner est mort (crash, blocage, redémarrage Windows) ou bloqué (pas de progrès),
+ * le superviseur le relance automatiquement avec délai progressif.
  * 
  * Usage:
  *   node scripts/local-factory/supervisor.cjs --watch          # surveillance continue
  *   node scripts/local-factory/supervisor.cjs --check          # vérification unique
  *   node scripts/local-factory/supervisor.cjs --restart        # redémarrage forcé
  * 
- * À enregistrer dans le Planificateur Windows (tâche toutes les 5 min) pour
+ * À enregistrer dans le Planificateur Windows (tâche au logon) pour
  * assurer la reprise après crash immédiat du runner.
  */
 
@@ -25,9 +25,11 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const STATE_DIR = path.join(__dirname, 'state');
 const HEARTBEAT_FILE = path.join(STATE_DIR, 'heartbeat.json');
 const SUPERVISOR_LOG = path.join(STATE_DIR, 'supervisor.log');
+const SUPERVISOR_STATE_FILE = path.join(STATE_DIR, 'supervisor-persist.json');
 const RUNNER_SCRIPT = path.join(__dirname, 'factory-runner.cjs');
 
-const MAX_AGE_MINUTES = 5;      // heartbeat considéré périmé après 5 min
+const MAX_AGE_MINUTES = 10;      // heartbeat considéré périmé après 10 min
+const STUCK_PROGRESS_MINUTES = 15; // runner considéré bloqué si aucun progrès après 15 min
 const RESTART_BACKOFF_BASE = 10000;  // 10s premier redémarrage
 const MAX_RESTARTS_PER_HOUR = 12;    // max 12 redémarrages par heure
 
@@ -35,11 +37,21 @@ fs.mkdirSync(STATE_DIR, { recursive: true });
 
 let restartCount = 0;
 let lastRestartHour = new Date().getHours();
+// Dernier cycle observé pour détecter le blocage (pas de progrès)
+let lastSeenCycle = null;
+let lastSeenCycleTime = null;
 
 function log(msg) {
   const line = `[${new Date().toISOString()}] ${msg}`;
   console.log(line);
   try { fs.appendFileSync(SUPERVISOR_LOG, line + '\n'); } catch (_) {}
+}
+
+function loadSupervisorPersist() {
+  try { return JSON.parse(fs.readFileSync(SUPERVISOR_STATE_FILE, 'utf8')); } catch (_) { return {}; }
+}
+function saveSupervisorPersist(data) {
+  try { fs.writeFileSync(SUPERVISOR_STATE_FILE, JSON.stringify(data, null, 2)); } catch (_) {}
 }
 
 function loadHeartbeat() {
@@ -48,18 +60,48 @@ function loadHeartbeat() {
 
 function isRunnerAlive() {
   const hb = loadHeartbeat();
-  if (!hb) return { alive: false, reason: 'no heartbeat file' };
-  const ageMin = (Date.now() - Date.parse(hb.at)) / 60000;
+  if (!hb) return { alive: false, reason: 'no heartbeat file', heartbeat: null };
+
+  const now = Date.now();
+  const ageMin = (now - Date.parse(hb.at)) / 60000;
+
+  // 1. Vérifier la fraîcheur du heartbeat
   if (ageMin > MAX_AGE_MINUTES) {
     return { alive: false, reason: `heartbeat stale (${ageMin.toFixed(0)} min old)`, heartbeat: hb };
   }
+
+  // 2. Vérifier que le PID est encore vivant
   if (hb.pid) {
-    try { process.kill(hb.pid, 0); } catch (e) {
+    try {
+      process.kill(hb.pid, 0);
+    } catch (e) {
       if (e.code === 'ESRCH') {
         return { alive: false, reason: `PID ${hb.pid} not running`, heartbeat: hb };
       }
+      // EPERM sur Windows peut signifier que le processus existe mais n'est pas accessible
+      // Dans ce cas, considérer comme vivant si le heartbeat est frais
     }
   }
+
+  // 3. Vérifier les progrès : le cycle a-t-il augmenté depuis la dernière vérification ?
+  const currentCycle = hb.cycle || 0;
+  if (lastSeenCycle !== null && lastSeenCycleTime !== null) {
+    if (currentCycle === lastSeenCycle) {
+      const stuckMin = (now - lastSeenCycleTime) / 60000;
+      if (stuckMin > STUCK_PROGRESS_MINUTES) {
+        return { alive: false, reason: `runner stuck (no progress for ${stuckMin.toFixed(0)} min, cycle ${currentCycle})`, heartbeat: hb };
+      }
+    } else {
+      // Progrès détecté, réinitialiser le suivi de blocage
+      lastSeenCycle = currentCycle;
+      lastSeenCycleTime = now;
+    }
+  } else {
+    // Première observation
+    lastSeenCycle = currentCycle;
+    lastSeenCycleTime = now;
+  }
+
   return { alive: true, heartbeat: hb, ageMin };
 }
 
@@ -69,12 +111,14 @@ function canRestart() {
   if (hour !== lastRestartHour) {
     restartCount = 0;
     lastRestartHour = hour;
+    saveSupervisorPersist({ restartCount, lastRestartHour });
   }
   return restartCount < MAX_RESTARTS_PER_HOUR;
 }
 
 function recordRestart() {
   restartCount++;
+  saveSupervisorPersist({ restartCount, lastRestartHour });
   log(`supervisor: restart #${restartCount} this hour`);
 }
 

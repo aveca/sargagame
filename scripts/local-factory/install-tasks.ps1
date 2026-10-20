@@ -22,16 +22,21 @@ foreach ($old in 'SargaFactory-Boot', 'SargaFactory-Daily') {
   if (Get-ScheduledTask -TaskName $old -ErrorAction SilentlyContinue) { Unregister-ScheduledTask -TaskName $old -Confirm:$false }
 }
 
-$action = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`"" -WorkingDirectory $repoRoot
-$daily = New-ScheduledTaskTrigger -Daily -At '05:30'
-# StartWhenAvailable = rattrapage si l'heure a ete ratee. PAS de RunOnlyIfNetworkAvailable :
-# hors-ligne l'usine saute le git pull et rend quand meme.
-$settings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
-  -ExecutionTimeLimit (New-TimeSpan -Minutes 40) -MultipleInstances IgnoreNew `
+# Paramètres communs (admin-free, pas de limite sur batterie, ignorer nouveaux doublons)
+$commonSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
+  -MultipleInstances IgnoreNew `
   -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
 
+# Paramètres spécifiques au superviseur : durée illimitée (watcher permanent)
+$supervisorSettings = New-ScheduledTaskSettingsSet -StartWhenAvailable `
+  -ExecutionTimeLimit (New-TimeSpan -Minutes 0) -MultipleInstances IgnoreNew `
+  -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
+
+$action = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`"" -WorkingDirectory $repoRoot
+$daily = New-ScheduledTaskTrigger -Daily -At '05:30'
+
 # 1) Tache quotidienne — garantie, sans admin.
-Register-ScheduledTask -TaskName 'SargaFactory' -Action $action -Trigger $daily -Settings $settings `
+Register-ScheduledTask -TaskName 'SargaFactory' -Action $action -Trigger $daily -Settings $commonSettings `
   -Description 'Usine locale Sargasses (Couche C, zero LLM): rend le Brief video + publie FB. Quotidien 05:30 + rattrapage. Revenu = 100% cloud, ceci est du contenu.' `
   -RunLevel Limited -Force | Out-Null
 Write-Host "OK - tache 'SargaFactory' (quotidien 05:30 + rattrapage StartWhenAvailable)" -ForegroundColor Green
@@ -49,7 +54,7 @@ try {
 # 3) Timer de drain de la file a la demande (toutes les 30 min) — admin-free, interval-only.
 $serveAction = New-ScheduledTaskAction -Execute $node -Argument "`"$factory`" --serve" -WorkingDirectory $repoRoot
 $serveTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date '2020-01-01T06:00:00') -RepetitionInterval (New-TimeSpan -Minutes 30)
-Register-ScheduledTask -TaskName 'SargaFactory-Serve' -Action $serveAction -Trigger $serveTrigger -Settings $settings `
+Register-ScheduledTask -TaskName 'SargaFactory-Serve' -Action $serveAction -Trigger $serveTrigger -Settings $commonSettings `
   -Description 'Usine locale: draine la file de jobs a la demande toutes les 30 min (git pull + --serve). Zero LLM.' -RunLevel Limited -Force | Out-Null
 Write-Host "OK - tache 'SargaFactory-Serve' (draine la file a la demande toutes les 30 min)" -ForegroundColor Green
 
@@ -62,9 +67,9 @@ $supervisorAction = New-ScheduledTaskAction -Execute $node -Argument "`"$supervi
 $supervisorTrigger = New-ScheduledTaskTrigger -AtLogOn
 $supervisorTrigger.Delay = 'PT1M'
 try {
-  Register-ScheduledTask -TaskName 'SargaFactory-Supervisor' -Action $supervisorAction -Trigger $supervisorTrigger -Settings $settings `
+  Register-ScheduledTask -TaskName 'SargaFactory-Supervisor' -Action $supervisorAction -Trigger $supervisorTrigger -Settings $supervisorSettings `
     -Description 'Superviseur du runner autonome Sargagame: vérifie le heartbeat toutes les 60s et redémarre le runner en cas de crash. Zero LLM.' -RunLevel Limited -Force | Out-Null
-  Write-Host "OK - tache 'SargaFactory-Supervisor' (surveillance continue --watch, démarrage au logon +1min)" -ForegroundColor Green
+  Write-Host "OK - tache 'SargaFactory-Supervisor' (surveillance continue --watch, démarrage au logon +1min, durée illimitée)" -ForegroundColor Green
 } catch {
   Write-Host "  (tache 'SargaFactory-Supervisor' non créée : droits insuffisants, relancez ce script en admin.)" -ForegroundColor Yellow
 }

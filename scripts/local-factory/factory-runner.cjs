@@ -314,6 +314,46 @@ function isRunnerAlive(maxAgeMinutes = 5) {
 }
 
 // ============================================================
+// Heartbeat périodique pour le superviseur externe
+// ============================================================
+let heartbeatInterval = null;
+let heartbeatTimer = null;
+
+function writeHeartbeat(extra = {}) {
+  try {
+    fs.writeFileSync(HEARTBEAT_FILE, JSON.stringify({
+      pid: process.pid,
+      at: new Date().toISOString(),
+      cycle: (loadTelemetry().cycles || 0),
+      queueDepth: loadQueue().length,
+      ...extra
+    }, null, 2));
+  } catch (_) {}
+}
+
+function startPeriodicHeartbeat(intervalMs = 30000) {
+  if (heartbeatInterval) clearInterval(heartbeatInterval);
+  heartbeatInterval = setInterval(() => {
+    writeHeartbeat({ lastTaskId: heartbeatLastTaskId });
+  }, intervalMs);
+  // Ne pas empêcher la sortie du processus
+  if (heartbeatInterval.unref) heartbeatInterval.unref();
+}
+
+function stopPeriodicHeartbeat() {
+  if (heartbeatInterval) {
+    clearInterval(heartbeatInterval);
+    heartbeatInterval = null;
+  }
+}
+
+// Dernière tâche traitée (pour détection de blocage par le superviseur)
+let heartbeatLastTaskId = null;
+function setHeartbeatTaskId(taskId) {
+  heartbeatLastTaskId = taskId;
+}
+
+// ============================================================
 // Telemetry
 // ============================================================
 function loadTelemetry() { return loadJSON(TELEMETRY_FILE, { cycles: 0, tasks: {}, lastCycle: null }); }
@@ -838,6 +878,9 @@ async function processQueue() {
       try {
         const result = await executeWithFallback(task);
         
+        // Marquer la tâche comme terminée pour le suivi de progrès
+        setHeartbeatTaskId(null);
+        
         // Mark completed only after successful execution. Keeping the queue item
         // until success makes the task recoverable across runner crashes.
         removeQueueItem(taskId);
@@ -847,6 +890,8 @@ async function processQueue() {
         totalProcessed++;
         
       } catch (error) {
+        // Marquer la tâche comme en cours pour le suivi de progrès
+        setHeartbeatTaskId(taskId);
         // Requeue with backoff (synchronous - write immediately)
         fs.unlinkSync(processingFile);
         
@@ -1094,6 +1139,9 @@ async function runContinuous(options = {}) {
   
   log('factory.start', { mode: once ? 'once' : 'continuous', interval, supervisor, maxRunMinutes: MAX_RUN_MINUTES });
   
+  // Démarrer le heartbeat périodique pour le superviseur externe
+  startPeriodicHeartbeat(30000);
+  
   const startTime = Date.now();
   
   while (true) {
@@ -1131,6 +1179,7 @@ async function runContinuous(options = {}) {
   }
   
   log('factory.stop');
+  stopPeriodicHeartbeat();
 }
 
 async function main() {
