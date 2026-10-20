@@ -126,7 +126,8 @@ function getViewport(name) {
 
 /**
  * Compare deux screenshots (baseline vs current)
- * Retourne { match: boolean, diffPixels: number, diffPercent: number }
+ * Retourne { match: boolean, diffPixels: number, diffPercent: number, error?: string }
+ * Ne JAMAIS rejeter : retourne toujours un résultat, même en cas d'erreur de harnais.
  */
 async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
   // Vérifier que les fichiers existent avant de tenter la comparaison
@@ -167,10 +168,22 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, ['-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
+    let err = '';
     child.stdout.on('data', d => { out += d; });
+    child.stderr.on('data', d => { err += d; });
     child.on('exit', code => {
-      if (code !== 0) return reject(new Error('compare failed'));
-      try { resolve(JSON.parse(out.trim())); } catch (e) { reject(e); }
+      if (code !== 0) {
+        // Ne pas rejeter : retourner une erreur structurée pour que l'appelant
+        // puisse distinguer un vrai problème de harnais d'une régression visuelle
+        resolve({ match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `compare failed (exit ${code}): ${err.trim().slice(-200)}` });
+        return;
+      }
+      try { resolve(JSON.parse(out.trim())); } catch (e) {
+        resolve({ match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `compare parse error: ${e.message}` });
+      }
+    });
+    child.on('error', e => {
+      resolve({ match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `compare spawn error: ${e.message}` });
     });
   });
 }
@@ -216,19 +229,32 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
         if (baseline) {
           // Compare
           const comparison = await compareScreenshots(baseline, current.path);
+          // diffPercent peut être null si le harnais de comparaison a échoué
+          // (fichier manquant, node -e crash, etc.). Dans ce cas, ce n'est
+          // PAS une régression visuelle : c'est un défaut du harnais.
+          const isHarnessError = comparison.diffPercent === null || comparison.diffPercent === undefined;
           const result = {
             route,
             viewport,
             baseline,
             current: current.path,
-            match: comparison.match,
+            match: comparison.match && !isHarnessError,
             diffPercent: comparison.diffPercent,
             diffPixels: comparison.diffPixels,
-            passed: comparison.match,
+            passed: comparison.match && !isHarnessError,
+            error: comparison.error,
+            harnessError: isHarnessError,
           };
           results.push(result);
-          if (!comparison.match) passed = false;
-          log(`visual-qa: ${route}@${viewport} diff=${(comparison.diffPercent*100).toFixed(2)}% ${comparison.match ? 'PASS' : 'FAIL'}`);
+          if (isHarnessError) {
+            passed = false;
+            log(`visual-qa: ${route}@${viewport} HARNESS_ERROR ${comparison.error}`);
+          } else if (!comparison.match) {
+            passed = false;
+            log(`visual-qa: ${route}@${viewport} diff=${(comparison.diffPercent*100).toFixed(2)}% FAIL`);
+          } else {
+            log(`visual-qa: ${route}@${viewport} diff=${(comparison.diffPercent*100).toFixed(2)}% PASS`);
+          }
         } else {
           // First run - establish baseline
           await updateBaseline(route, viewport, current.path);

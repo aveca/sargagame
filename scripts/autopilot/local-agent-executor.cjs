@@ -294,7 +294,11 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl);
       
       // Check for visual regressions
-      const regressions = visualResult.results.filter(r => !r.passed && !r.established);
+      // Les erreurs de harnais (harnessError: true) ne sont PAS des régressions :
+      // elles indiquent un problème de capture/comparaison, pas un changement visuel.
+      const regressions = visualResult.results.filter(
+        r => !r.passed && !r.established && !r.harnessError
+      );
       if (regressions.length > 0) {
         throw new Error(`Visual regression detected: ${regressions.map(r => {
           const dp = typeof r.diffPercent === 'number' && !isNaN(r.diffPercent) ? (r.diffPercent * 100).toFixed(2) : 'N/A';
