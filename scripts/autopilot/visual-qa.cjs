@@ -12,7 +12,7 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 
 const LIVE = process.env.SARGA_AUTOPILOT_LIVE === '1';
@@ -166,8 +166,9 @@ function getViewport(name) {
  * Compare deux screenshots (baseline vs current)
  * Retourne { match: boolean, diffPixels: number, diffPercent: number, error?: string }
  * Ne JAMAIS rejeter : retourne toujours un résultat, même en cas d'erreur de harnais.
+ * @param timeoutMs Timeout en ms pour la comparaison (défaut 60s).
  */
-async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
+async function compareScreenshots(baselinePath, currentPath, threshold = 0.05, timeoutMs = 60000) {
   // Vérifier que les fichiers existent avant de tenter la comparaison
   if (!fs.existsSync(baselinePath)) {
     return { match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `baseline not found: ${baselinePath}` };
@@ -207,9 +208,28 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
     const child = spawn(process.execPath, ['-e', script], { cwd: C.ROOT, stdio: ['ignore', 'pipe', 'pipe'] });
     let out = '';
     let err = '';
+    let resolved = false;
+    const timeout = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      // Sous Windows, child.kill('SIGKILL') ne tue pas un processus bloqué
+      // dans une opération CPU-intensive. Utiliser taskkill /F /T pour tuer
+      // l'arbre de processus de manière forcée.
+      try {
+        if (process.platform === 'win32') {
+          execSync(`taskkill /F /T /PID ${child.pid}`, { windowsHide: true });
+        } else {
+          child.kill('SIGKILL');
+        }
+      } catch (_) {}
+      resolve({ match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `compare timeout after ${timeoutMs}ms` });
+    }, timeoutMs);
     child.stdout.on('data', d => { out += d; });
     child.stderr.on('data', d => { err += d; });
     child.on('exit', code => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
       if (code !== 0) {
         // Ne pas rejeter : retourner une erreur structurée pour que l'appelant
         // puisse distinguer un vrai problème de harnais d'une régression visuelle
@@ -221,6 +241,9 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
       }
     });
     child.on('error', e => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timeout);
       resolve({ match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `compare spawn error: ${e.message}` });
     });
   });
