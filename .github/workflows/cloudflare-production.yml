@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - agent/coding/TASK-P1-002
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
@@ -306,7 +307,7 @@ jobs:
           VITE_REGION: ${{ matrix.region }}
         run: npm run build
       # Pages doit recevoir le même artefact que le Worker, sinon *.pages.dev
-      # et le domaine divergent (source de faux diagnostics en audit).
+      # et le domaine diverge (source de faux diagnostics en audit).
       - name: Prepare domain site (prepare-ftp)
         id: prep
         env:
@@ -320,7 +321,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=main
+          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=${GITHUB_REF#refs/heads/}
 
   # Contrôle de flotte : les 6 domaines doivent rester cohérents entre eux.
   # C'est le garde-fou qui aurait bloqué le cutover du 07/10 (tulum figé,

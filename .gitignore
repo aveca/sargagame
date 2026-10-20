@@ -188,3 +188,13 @@ scripts/veilleurs/_artifacts/
 # Autonomous factory runtime state/logs — local only
 scripts/local-factory/state/
 scripts/local-factory/logs/
+
+# AI Autopilot temporary artefacts — generated per cycle, never committed
+.ai/autopilot/runs/
+.ai/autopilot/observations/
+.ai/autopilot/opportunities/
+.ai/autopilot/regressions/
+.ai/autopilot/baselines/*.lock.stale-*.json
+.ai/autopilot/config.json.bak*
+scripts/prepare-ftp.cjs.bak*
+supabase/.temp/
