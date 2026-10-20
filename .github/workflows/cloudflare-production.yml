@@ -40,6 +40,21 @@ on:
     # développement ne doit jamais déclencher un déploiement de production).
     branches:
       - main
+    # NOTE (2026-10-20) : ce déclencheur reste INOPÉRANT dans ce dépôt —
+    # 0 run `workflow_run` produit sur 162 exécutions, alors que l'amorce
+    # « Daily Copernicus + Deploy » s'est terminée plus de 247 fois depuis le
+    # 07/10 (y compris après le run 39406923824, terminé en `failure`).
+    # Le seul déclencheur `workflow_run` qui fonctionne ici
+    # (`user-journey-audit.yml` → « Cloudflare Production ») déclare le même
+    # filtre de branche — sans que cela suffise à réveiller celui-ci.
+    # Le chemin RÉEL de publication → déploiement est désormais EXPLICITE :
+    # `data-refresh.yml` / `daily-copernicus.yml` dispatchent `ci-tests.yml`,
+    # `perf-budget.yml` puis `cloudflare-production.yml` sur le SHA exact
+    # (scripts/automation/trigger-production-deploy.cjs). Vérifié en
+    # production : runs 39410485389 / 39410487343 / 39410489619, tous verts.
+    # Ce déclencheur est conservé comme filet de sécurité (il ne peut pas
+    # double-déployer : le groupe de concurrence sérialise les runs) — mais il
+    # ne doit PAS être compté comme un chemin de livraison fiable.
 
 permissions:
   contents: read
