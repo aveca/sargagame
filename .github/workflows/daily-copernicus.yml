@@ -22,6 +22,10 @@ on:
 
 permissions:
   contents: write
+  # `actions: write` autorise le dispatch de la chaîne CI + production après la
+  # publication des données (le push est fait avec le GITHUB_TOKEN, or un push
+  # GITHUB_TOKEN ne déclenche aucun workflow `push`).
+  actions: write
 
 # Sérialise les runs sur main pour éliminer les conflits rebase
 concurrency:
@@ -78,6 +82,7 @@ jobs:
         run: node scripts/verify-ftp-ready.cjs
 
       - name: Commit + push des données Copernicus
+        id: publish
         if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
         run: |
           set -e
@@ -101,6 +106,8 @@ jobs:
           fi
           git commit -m "chore(data): refresh Copernicus $(date -u +'%Y-%m-%d %H:%M UTC')"
           BRANCH="${GITHUB_REF_NAME:-main}"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
@@ -133,6 +140,21 @@ jobs:
           # NOTE (2026-10-13) : aucun dispatch explicite ici — voir data-refresh.yml
           # (GITHUB_TOKEN => 403 systématique ; publication couverte par le cron
           # et les triggers push du workflow de production).
+          # RÉVISÉ (2026-10-20) : le push GITHUB_TOKEN ne déclenche AUCUN workflow
+          # `push` — le step « Déclenche la chaîne CI + déploiement » (ajouté
+          # plus bas) dispatche explicitement `ci-tests.yml`, `perf-budget.yml`
+          # puis `cloudflare-production.yml`, la porte de certification exigeant
+          # `test-frontend` + `perf` verts sur le SHA exact déployé.
+
+      # ── Déclenchement de la chaîne CI + déploiement ────────────────────────
+      # Uniquement si la publication a réussi ET porte sur `main` : une
+      # publication sur une branche de développement ne doit jamais déclencher
+      # un déploiement de production.
+      - name: Déclenche la chaîne CI + déploiement
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        env:
+          DEPLOY_REF: main
+        run: node scripts/automation/trigger-production-deploy.cjs
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'

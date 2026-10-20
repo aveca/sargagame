@@ -5,6 +5,12 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  # Déclenchement manuel : utilisé par le workflow de rafraîchissement des
+  # données pour produire le check `test-frontend` SUR LE SHA EXACT qui sera
+  # déployé. Un commit créé par GITHUB_TOKEN ne déclenche aucun workflow
+  # `push` : sans ce déclencheur, la porte de certification n'aurait aucune
+  # preuve CI pour ce SHA et refuserait systématiquement le déploiement.
+  workflow_dispatch:
 
 jobs:
   test-frontend:
