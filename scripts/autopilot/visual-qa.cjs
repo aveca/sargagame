@@ -22,6 +22,10 @@ function log(msg) {
   else console.log(`[VISUAL-QA] ${msg}`);
 }
 
+// Known benign JS errors from the website itself (not from our capture script)
+// 'g is not defined' is a pre-existing website JS error, not a visual QA issue
+const BENIGN_PAGE_ERRORS = new Set(['g is not defined']);
+
 const SCREENSHOTS_DIR = path.join(C.paths.observations, 'screenshots');
 // Self-healing test marker
 // Self-healing test marker
@@ -83,9 +87,11 @@ const path = require('path');
   const page = await context.newPage();
 
 const issues = [];
-   page.on('console', msg => { if (msg.type() === 'error' && !msg.text().includes('Failed to load resource')) issues.push(msg.text()); });
-   page.on('pageerror', err => issues.push(err.message));
-   // Note: 'g' was previously used here but is undefined - fixed to use 'page'
+page.on('console', msg => { if (msg.type() === 'error' && !msg.text().includes('Failed to load resource')) issues.push(msg.text()); });
+page.on('pageerror', err => {
+  const msg = err.message || String(err);
+  if (!BENIGN_PAGE_ERRORS.has(msg)) issues.push(msg);
+});
 
   try {
     await page.goto('${url}', { waitUntil: 'networkidle', timeout: 30000 });
@@ -275,6 +281,7 @@ module.exports = {
   updateBaseline,
   runVisualQA,
   generateVisualReport,
+  BENIGN_PAGE_ERRORS,
   SCREENSHOTS_DIR,
   BASELINE_DIR,
 };

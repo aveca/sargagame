@@ -30,7 +30,7 @@ const REPOS = {
   sargagame: {
     id: 'sargagame',
     repo: 'aveca/sargagame',
-    local: path.resolve(__dirname, '..'), // C:\Users\user\Documents\GitHub\sargagame
+    local: path.resolve(__dirname, '..', '..'), // C:\Users\user\Documents\GitHub\sargagame (repo root)
     defaultBranch: 'main',
     liveTargets: [
       'sargasses-martinique.com',
@@ -205,7 +205,7 @@ function detectAndNormalizeReadOnly(filePath) {
 // ============================================================
 async function listLocalBranches(repoPath) {
   try {
-    const branches = execSync('git branch --format "%(refersname:short)"', { cwd: repoPath, encoding: 'utf8' }).trim();
+    const branches = execSync('git branch --format "%(refname:short)"', { cwd: repoPath, encoding: 'utf8' }).trim();
     return branches ? branches.split('\n').filter(b => b.trim()) : [];
   } catch {
     return [];
@@ -473,23 +473,22 @@ function determineTaskType(job) {
 
 // Exécuter la tâche agent
 async function executeAgentTask(repoPath, repo, taskType, agent, job) {
-  // Selon la spec, routage vers les bons modèles
-  // Pour l'instant, simulation d'exécution
-  
-  console.log(`[${globalJobId}] Executing task with ${agent}`);
-  
-  // Marquer qu'on a commencé l'auto-fix
-  // En vrai, ceci appellerait OpenCode, Aider, Hermes, etc.
+  // ⚠️ SIMULÉ — Cette fonction ne fait PAS appel à un agent réel.
+  // Elle attend l'intégration avec OpenCode / Ollama local (cf. scripts/local-factory/factory-runner.cjs).
+  // Aucune modification de code n'est effectuée ici.
+  console.log(`[${globalJobId}] [SIMULATED] Executing task with ${agent} (no real agent integration yet)`);
   
   // Simulation - en attendant l'intégration réelle
   await new Promise(r => setTimeout(r, 2000));
   
-  // Retour simulé réussi
+  // Retour simulé — NE PAS utiliser en production sans validation réelle
   return {
+    simulated: true,
     success: true,
     commitSha: `sim-${Date.now()}`,
     beforeValidation: { pass: true },
-    afterValidation: { pass: true }
+    afterValidation: { pass: true },
+    warning: 'executeAgentTask is simulated — no real code changes made'
   };
 }
 
@@ -497,18 +496,19 @@ async function executeAgentTask(repoPath, repo, taskType, agent, job) {
 async function runTests(repoPath, repo) {
   try {
     if (repo === 'sargagame') {
-      const result = execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
-      return { passed: result.status === 0, output: result.stdout.slice(-200) };
+      // execSync throws on non-zero exit; success means tests passed
+      execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
+      return { passed: true, output: 'npm test exited 0' };
     }
     if (repo === 'casinobabe') {
       // Tests Lua + diff --check
-      const result = execSync('git diff --check 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 30000 });
-      return { passed: result.status === 0, output: result.stdout };
+      execSync('git diff --check 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 30000 });
+      return { passed: true, output: 'git diff --check exited 0' };
     }
     if (repo === 'desktopagent') {
       // Tests pytest
-      const result = execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
-      return { passed: result.status === 0, output: result.stdout.slice(-200) };
+      execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
+      return { passed: true, output: 'npm test exited 0' };
     }
     return { passed: true };
   } catch (e) {
@@ -533,10 +533,11 @@ async function createPullRequest(repoPath, repo, jobId) {
     // Push
     execSync('git push origin HEAD', { cwd: repoPath, encoding: 'utf8' });
     
-    // Créer PR (simulé - nécessite gh CLI)
-    console.log(`[${jobId}] PR creation simulated`);
+    // ⚠️ PR creation SIMULÉ — nécessite gh CLI et authentification.
+    // En production, utiliser 'gh pr create' pour créer une vraie PR.
+    console.log(`[${jobId}] [SIMULATED] PR creation (no real PR created)`);
     
-    return { prNumber: Math.floor(Math.random() * 1000) + 1, prUrl: `https://github.com/aveca/${repo}/pull/123` };
+    return { simulated: true, prNumber: Math.floor(Math.random() * 1000) + 1, prUrl: `https://github.com/aveca/${repo}/pull/123`, warning: 'PR creation is simulated' };
   } catch (e) {
     console.log(`[${jobId}] PR creation failed: ${e.message}`);
     return null;
@@ -545,14 +546,26 @@ async function createPullRequest(repoPath, repo, jobId) {
 
 // Attendre CI
 async function waitForCI(repoPath, repo) {
-  console.log('[ci] Waiting for CI...');
-  await new Promise(r => setTimeout(r, 10000)); // Simulé
-  return { passed: true, id: `ci-${Date.now()}`, timestamp: new Date().toISOString() };
+  // ⚠️ SIMULÉ — Attend 10s et retourne succès sans vérifier réellement le CI.
+  // En production, ceci devrait interroger l'API GitHub pour le statut du workflow.
+  console.log('[ci] [SIMULATED] Waiting for CI... (no real CI check)');
+  await new Promise(r => setTimeout(r, 10000));
+  return { simulated: true, passed: true, id: `ci-${Date.now()}`, timestamp: new Date().toISOString(), warning: 'waitForCI is simulated' };
 }
 
 // Fusionner vers main
 async function mergeToMain(repoPath, repo) {
   try {
+    // 🔒 GARDE-FOU DE CERTIFICATION : vérifier qu'une attestation de déploiement
+    // est présente avant d'autoriser le merge sur main.
+    const { assertDeployCertified } = require('../lib/certification-gate.cjs');
+    try {
+      assertDeployCertified({ throwOnFail: true, label: 'merge-to-main' });
+    } catch (e) {
+      console.log(`[merge] BLOCKED: certification gate refused — ${e.message}`);
+      return { blocked: true, reason: `certification gate: ${e.message}` };
+    }
+
     // Passer sur main
     execSync('git checkout main', { cwd: repoPath, encoding: 'utf8' });
     // Fusionner
@@ -568,59 +581,34 @@ async function mergeToMain(repoPath, repo) {
 
 // Déployer
 async function deploy(repoPath, repo) {
-  try {
-    if (repo === 'sargagame') {
-      // Deploy vers Cloudflare Pages
-      console.log('[deploy] Deploying Sargagame...');
-      await new Promise(r => setTimeout(r, 5000));
-      return { deployed: true, url: 'https://sargagame.example.com', timestamp: new Date().toISOString() };
-    }
-    if (repo === 'casinobabe') {
-      // Sync vers WoW + validation
-      console.log('[deploy] Syncing Casinobabe to WoW...');
-      // Appeler le mécanisme de sync existant
-      await new Promise(r => setTimeout(r, 3000));
-      return { deployed: true, wow: true, timestamp: new Date().toISOString() };
-    }
-    if (repo === 'desktopagent') {
-      // Build EXE
-      console.log('[deploy] Building DesktopAgent...');
-      await new Promise(r => setTimeout(r, 5000));
-      return { deployed: true, exe: true, timestamp: new Date().toISOString() };
-    }
-    return { deployed: true, timestamp: new Date().toISOString() };
-  } catch (e) {
-    console.log(`[deploy] Failed: ${e.message}`);
-    return null;
-  }
+  // ⚠️ SIMULÉ — Aucun déploiement réel n'est effectué.
+  // En production, ceci devrait appeler wrangler/pages deploy avec vérification
+  // des empreintes (fingerprint) et contrôles post-déploiement.
+  // Ne jamais activer sans : certification gate, secrets configurés,
+  // et vérification post-déploiement sur les domaines de production.
+  console.log('[deploy] [SIMULATED] No real deployment performed');
+  await new Promise(r => setTimeout(r, 500));
+  return { 
+    simulated: true, 
+    deployed: false, 
+    warning: 'deploy is simulated — no production deployment performed',
+    timestamp: new Date().toISOString() 
+  };
 }
 
 // Vérification live
 async function liveVerify(repoPath, repo) {
-  try {
-    if (repo === 'sargagame') {
-      // Vérifier HTTP 200 sur tous les live targets
-      console.log('[live-verify] Checking Sargagame live targets...');
-      await new Promise(r => setTimeout(r, 3000));
-      return { passed: true, afterState: 'all-targets-200', timestamp: new Date().toISOString() };
-    }
-    if (repo === 'casinobabe') {
-      // Vérifier que le fichier WoW est synchronisé et functional
-      console.log('[live-verify] Checking Casinobabe live...');
-      // Vérifier ReadOnly, hash, etc.
-      await new Promise(r => setTimeout(r, 3000));
-      return { passed: true, afterState: 'wow-synced', timestamp: new Date().toISOString() };
-    }
-    if (repo === 'desktopagent') {
-      // Validation EXE
-      console.log('[live-verify] Checking DesktopAgent...');
-      await new Promise(r => setTimeout(r, 3000));
-      return { passed: true, afterState: 'exe-validated', timestamp: new Date().toISOString() };
-    }
-    return { passed: true, timestamp: new Date().toISOString() };
-  } catch (e) {
-    return { passed: false, error: e.message, timestamp: new Date().toISOString() };
-  }
+  // ⚠️ SIMULÉ — Aucune vérification HTTP réelle sur les domaines de production.
+  // En production, ceci devrait effectuer des requêtes HTTP réelles sur chaque
+  // domaine live et vérifier l'empreinte du déploiement.
+  console.log('[live-verify] [SIMULATED] No real live verification performed');
+  await new Promise(r => setTimeout(r, 500));
+  return { 
+    simulated: true, 
+    passed: false, 
+    warning: 'liveVerify is simulated — no production verification performed',
+    timestamp: new Date().toISOString() 
+  };
 }
 
 // Gérer l'échec d'un job

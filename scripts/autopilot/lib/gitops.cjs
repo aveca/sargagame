@@ -46,8 +46,11 @@ function founderTreeState() {
 
 /**
  * Prépare le worktree de cycle : fetch origin, worktree add/refresh sur branche neuve.
- * Idempotent : un worktree sale d'un cycle crashé est réarmé (reset --hard + clean).
- * Toujours force-remove si existant pour éviter les collisions.
+ * Idempotent et sûr :
+ *  - Si le worktree existe ET est propre (pas de modifications non committées) → réutilisé tel quel
+ *  - Si le worktree existe ET a des modifications non committées → jamais détruit, mise de côté horodatée + nouveau worktree
+ *  - Si le chemin existe mais n'est pas enregistré comme worktree (résidu de crash) → mise de côté + nouveau worktree
+ *  - Jamais de destruction de travail non livré.
  */
 function prepareWorktree(cfg, branchName, log = console.log) {
   const wt = worktreePath(cfg);
@@ -58,24 +61,55 @@ function prepareWorktree(cfg, branchName, log = console.log) {
   const existing = gitSafe(['worktree', 'list', '--porcelain']) || '';
   const has = existing.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
 
-  // Force remove si existant (propre ou crashé)
   if (has) {
-    log(`worktree existant détecté, suppression forcée : ${wt}`);
-    try { git(['worktree', 'remove', '--force', wt]); } catch (e) {
-      log(`worktree remove warning: ${e.message.split('\n')[0]}`);
-      // Tentative de nettoyage manuel si git worktree remove échoue
-      try { fs.rmSync(wt, { recursive: true, force: true }); } catch (_) {}
+    // Worktree enregistré : vérifier s'il a des modifications non committées
+    const status = gitSafe(['status', '--porcelain=v1'], wt) || '';
+    if (status.trim()) {
+      // Modifications non committées : NE JAMAIS détruire, mettre de côté horodaté
+      const aside = `${wt}-unsaved-${Date.now().toString(36)}`;
+      log(`worktree a des modifications non committées, mise de côté (sauvegarde) : ${wt} → ${aside}`);
+      try {
+        fs.renameSync(wt, aside);
+      } catch (e) {
+        throw new Error(`Impossible de déplacer le worktree avec modifications non committées : ${e.message}. Travail non livré préservé à ${wt}`);
+      }
+      // Nettoyer la référence git du worktree déplacé
+      try { git(['worktree', 'prune']); } catch (_) {}
+    } else {
+      // Worktree propre : le réutiliser (idempotent, pas de destruction)
+      log(`worktree existant et propre, réutilisation : ${wt}`);
+      // Vérifier que la branche existe déjà, sinon créer
+      const branchExists = gitSafe(['rev-parse', '--verify', branchName], wt);
+      if (!branchExists) {
+        git(['checkout', '-b', branchName, 'origin/' + cfg.git.baseBranch], wt);
+      } else {
+        git(['checkout', branchName], wt);
+        git(['pull', '--ff-only', 'origin', cfg.git.baseBranch], wt);
+      }
+      // node_modules : npm ci seulement si absent ou lock plus récent
+      return finishWorktreePrep(wt, cfg, log);
     }
   }
 
   // Créer worktree frais depuis origin/main — avec auto-réparation SÛRE :
   // si le chemin est occupé mais NON enregistré (résidu de crash / rmSync
   // partiel), mise de côté horodatée (récupérable, jamais supprimée) + UNE
-  // seule tentative. Tout autre échec remonte (fail-closed).
+  // seule tentative. Si la branche existe déjà, on l'utilise telle quelle.
   try {
     git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
   } catch (e) {
-    // État FRAIS (le force-remove a pu déréférencer le worktree entre-temps).
+    const errMsg = String(e.message || e);
+    // Cas 1 : branche déjà existe localement → créer worktree sur branche existante
+    if (/already exists/.test(errMsg)) {
+      const branchExists = gitSafe(['rev-parse', '--verify', branchName]);
+      if (branchExists) {
+        log(`branche ${branchName} existe déjà, création du worktree sur cette branche`);
+        git(['worktree', 'add', wt, branchName]);
+        log(`worktree créé : ${wt} (${branchName})`);
+        return finishWorktreePrep(wt, cfg, log);
+      }
+    }
+    // Cas 2 : chemin occupé mais non enregistré (résidu de crash)
     const fresh = gitSafe(['worktree', 'list', '--porcelain']) || '';
     const stillRegistered = fresh.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
     const decision = worktreeAddRecovery({ pathExists: fs.existsSync(wt), registered: stillRegistered });
@@ -87,6 +121,13 @@ function prepareWorktree(cfg, branchName, log = console.log) {
   }
   log(`worktree créé : ${wt} (${branchName})`);
 
+  return finishWorktreePrep(wt, cfg, log);
+}
+
+/**
+ * Étapes communes après création/réutilisation du worktree (npm ci si nécessaire).
+ */
+function finishWorktreePrep(wt, cfg, log = console.log) {
   // node_modules : npm ci seulement si absent ou lock plus récent
   const nm = path.join(wt, 'node_modules');
   const lock = path.join(wt, 'package-lock.json');

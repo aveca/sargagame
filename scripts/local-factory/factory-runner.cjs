@@ -45,14 +45,47 @@ const TELEMETRY_FILE = path.join(STATE_DIR, 'telemetry.json');
 const CIRCUIT_BREAKER_FILE = path.join(STATE_DIR, 'circuit-breakers.json');
 const WORKER_POOL_FILE = path.join(STATE_DIR, 'worker-pool.json');
 const OPENCODE_SEMAPHORE_FILE = path.join(STATE_DIR, 'opencode-semaphore.json');
+const SUPERVISOR_STATE_FILE = path.join(STATE_DIR, 'supervisor-state.json');
 
 const MAX_OPENCODE_CONCURRENT = 2;
+
+// Load configuration from autopilot config.json (timeouts, intervals)
+let FACTORY_CONFIG = null;
+function loadFactoryConfig() {
+  try {
+    const cfgPath = path.join(AI_DIR, 'autopilot', 'config.json');
+    if (fs.existsSync(cfgPath)) {
+      FACTORY_CONFIG = JSON.parse(fs.readFileSync(cfgPath, 'utf8'));
+    }
+  } catch (_) {}
+  return FACTORY_CONFIG || {};
+}
+
+function getConfigTimeout(key, defaultMs) {
+  const cfg = loadFactoryConfig();
+  const val = cfg.loop && cfg.loop[key];
+  if (typeof val === 'number') return val * 60000; // config is in minutes
+  return defaultMs;
+}
+
+const CYCLE_INTERVAL_MS = getConfigTimeout('intervalMinutes', 60000);
+const MAX_RUN_MINUTES = getConfigTimeout('maxRunMinutes', 50);
+const MAX_REPAIR_ATTEMPTS = (() => {
+  const cfg = loadFactoryConfig();
+  return cfg.loop && typeof cfg.loop.maxRepairAttempts === 'number' ? cfg.loop.maxRepairAttempts : 3;
+})();
 
 // Semaphore for OpenCode concurrency control
 function acquireOpenCodeSemaphore(taskId) {
   let semaphore = { count: 0, holders: [] };
   if (fs.existsSync(OPENCODE_SEMAPHORE_FILE)) {
     try { semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8')); } catch (_) {}
+  }
+  // Réparer un compteur incohérent (ex: count > holders.length après crash)
+  if (semaphore.count > semaphore.holders.length) {
+    log('supervisor.semaphore_repair', { oldCount: semaphore.count, holders: semaphore.holders.length });
+    semaphore.count = semaphore.holders.length;
+    saveJSON(OPENCODE_SEMAPHORE_FILE, semaphore);
   }
   if (semaphore.count >= MAX_OPENCODE_CONCURRENT) {
     return false;
@@ -173,7 +206,71 @@ function getAvailableWorker(currentTier = 0) {
   return null; // All exhausted
 }
 
+// ============================================================
+// Supervisor state (crash recovery, restart tracking)
+// ============================================================
+function loadSupervisorState() {
+  return loadJSON(SUPERVISOR_STATE_FILE, {
+    restarts: 0,
+    lastCrash: null,
+    lastHealthyCycle: null,
+    consecutiveFailures: 0,
+    maxConsecutiveFailures: 10,
+    startTime: new Date().toISOString()
+  });
+}
+function saveSupervisorState(s) { saveJSON(SUPERVISOR_STATE_FILE, s); }
+
+function recordCrash(error) {
+  const s = loadSupervisorState();
+  s.restarts++;
+  s.lastCrash = { at: new Date().toISOString(), error: String(error.message || error) };
+  s.consecutiveFailures++;
+  saveSupervisorState(s);
+  log('supervisor.crash', { restarts: s.restarts, error: s.lastCrash.error, consecutiveFailures: s.consecutiveFailures });
+}
+
+function recordHealthyCycle() {
+  const s = loadSupervisorState();
+  s.lastHealthyCycle = new Date().toISOString();
+  s.consecutiveFailures = 0;
+  saveSupervisorState(s);
+}
+
+function shouldStopSupervisor() {
+  const s = loadSupervisorState();
+  if (s.consecutiveFailures >= s.maxConsecutiveFailures) {
+    log('supervisor.stopping', { reason: 'max consecutive failures reached', count: s.consecutiveFailures });
+    return true;
+  }
+  // Never restart more than 10 times in a row (prevent crash loop)
+  if (s.restarts > 10 && s.consecutiveFailures > 0) {
+    log('supervisor.stopping', { reason: 'too many restarts with failures', restarts: s.restarts });
+    return true;
+  }
+  return false;
+}
+
+// Ollama health check
+async function checkOllamaHealth(timeoutMs = 5000) {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), timeoutMs);
+    const r = await fetch('http://127.0.0.1:11434/api/tags', { signal: ctrl.signal });
+    clearTimeout(t);
+    if (r.ok) {
+      const j = await r.json();
+      return { healthy: true, models: (j.models || []).map(m => m.name) };
+    }
+    return { healthy: false, reason: `HTTP ${r.status}` };
+  } catch (e) {
+    return { healthy: false, reason: String(e.message || e) };
+  }
+}
+
+// ============================================================
 // Telemetry
+// ============================================================
 function loadTelemetry() { return loadJSON(TELEMETRY_FILE, { cycles: 0, tasks: {}, lastCycle: null }); }
 function saveTelemetry(t) { saveJSON(TELEMETRY_FILE, t); }
 
@@ -231,23 +328,40 @@ function syncAutopilotQueue() {
     
     let synced = 0;
     for (const opp of (autopilotQueue.opportunities || [])) {
-      if (opp.status === 'new' && !factoryIds.has(opp.id)) {
-        // Convert autopilot opportunity to factory task
-        const task = {
-          id: opp.id,
-          type: opp.type === 'ux_task' ? 'code_task' : 'code_task',
-          payload: { ...opp },
-          agent: opp.persona || 'coding',
-          priority: opp.severity === 'critical' ? 0 : opp.severity === 'high' ? 1 : opp.severity === 'medium' ? 2 : 3,
-          createdAt: opp.createdAt,
-          retryCount: 0,
-          maxRetries: 3
-        };
-        saveQueueItem(task);
-        factoryIds.add(opp.id);
-        synced++;
-        log('queue.sync_from_autopilot', { id: opp.id, title: opp.title });
-      }
+      if (opp.status !== 'new' || factoryIds.has(opp.id)) continue;
+
+      // Convert autopilot opportunity to factory task.
+      // Map scope.files -> payload.files so executeCodeTask receives required fields.
+      const scopeFiles = (opp.scope && opp.scope.files) || [];
+      const taskPayload = {
+        ...opp,
+        title: opp.task?.title || opp.title,
+        files: scopeFiles,
+        filesToRead: opp.task?.filesToRead || [],
+        filesToModify: opp.task?.filesToModify || [],
+        evidence: opp.task?.evidence || opp.evidence,
+        implementation: opp.task?.implementation || [],
+        tests: opp.task?.tests || [],
+        acceptance: opp.task?.acceptance || [],
+        constraints: opp.task?.constraints || [],
+        stopCondition: opp.task?.stopCondition || '',
+        persona: opp.persona || 'coding'
+      };
+
+      const task = {
+        id: opp.id,
+        type: 'code_task',
+        payload: taskPayload,
+        agent: opp.persona || 'coding',
+        priority: opp.severity === 'critical' ? 0 : opp.severity === 'high' ? 1 : opp.severity === 'medium' ? 2 : 3,
+        createdAt: opp.createdAt,
+        retryCount: 0,
+        maxRetries: 3
+      };
+      saveQueueItem(task);
+      factoryIds.add(opp.id);
+      synced++;
+      log('queue.sync_from_autopilot', { id: opp.id, title: opp.title });
     }
     return synced;
   } catch (e) {
@@ -294,6 +408,15 @@ async function executeTask(task, worker) {
     }
     
     const duration = Date.now() - startTime;
+    
+    // Si le handler a demandé un réenfilage (ex: attente sémaphore), ce n'est PAS un succès
+    if (result && result.requeued) {
+      const requeueErr = new Error(`TASK_REQUEUED:${result.reason}`);
+      requeueErr.requeued = true;
+      requeueErr.backoff = result.backoff;
+      throw requeueErr;
+    }
+    
     log('task.success', { id: task.id, type: taskType, duration, worker: worker.name });
     recordTelemetry('task_success', { taskId: task.id, type: taskType, worker: worker.name, duration, success: true });
     recordSuccess(worker.model);
@@ -457,26 +580,32 @@ async function executeCodeTask(task, worker) {
   // The task payload contains the full UX task from autopilot queue
   const taskId = task.payload?.id || task.payload?.taskId || task.id.replace(/^task-/, '');
   log('code_task.local_execution', { taskId, type: task.payload?.type || 'unknown' });
-  
+
   // Acquire semaphore for OpenCode concurrency control
   const acquired = acquireOpenCodeSemaphore(taskId);
   if (!acquired) {
     log('code_task.semaphore_wait', { taskId, reason: 'max concurrent OpenCode reached' });
-    // Requeue with backoff
+    // Requeue with backoff — PERSISTER l'état pour survivre à un redémarrage
     const backoff = Math.min(10000 + Math.random() * 5000, 60000);
     task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
+    saveQueueItem(task);
     return { requeued: true, reason: 'semaphore_wait', backoff };
   }
-  
+
   try {
     // Use the full task payload from autopilot queue (contains all UX task fields)
     const uxTask = task.payload;
-    
-    // Validate required fields
-    if (!uxTask.title || !uxTask.files || !uxTask.evidence) {
+
+    // Validate required fields — accept both top-level and nested (scope/task) locations
+    // Autopilot opportunities store files under scope.files and title/evidence under task.*
+    const uxTitle = uxTask.title || uxTask.task?.title;
+    const uxFiles = uxTask.files || uxTask.scope?.files || uxTask.task?.filesToModify || [];
+    const uxEvidence = uxTask.evidence || uxTask.task?.evidence;
+
+    if (!uxTitle || !uxFiles || !uxEvidence) {
       throw new Error(`Invalid UX task payload: missing required fields (title, files, evidence)`);
     }
-    
+
     const result = await executeLocalAgentTask(uxTask, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
     
     if (!result.success) {
@@ -662,7 +791,7 @@ async function processQueue() {
       }));
       
       try {
-        await executeWithFallback(task);
+        const result = await executeWithFallback(task);
         
         // Mark completed only after successful execution. Keeping the queue item
         // until success makes the task recoverable across runner crashes.
@@ -675,6 +804,15 @@ async function processQueue() {
       } catch (error) {
         // Requeue with backoff (synchronous - write immediately)
         fs.unlinkSync(processingFile);
+        
+        // Si la tâche a demandé un réenfilage (ex: attente sémaphore), ne PAS incrémenter retryCount
+        if (error.requeued && error.message.startsWith('TASK_REQUEUED:')) {
+          const backoff = error.backoff || 10000;
+          task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
+          saveQueueItem(task);
+          log('task.requeued-sema', { id: taskId, reason: error.message, backoff });
+          continue;
+        }
         
         const retryCount = (task.retryCount || 0) + 1;
         const maxRetries = task.maxRetries || 3;
@@ -897,15 +1035,38 @@ async function runCycle() {
 }
 
 async function runContinuous(options = {}) {
-  const { once = false, interval = 60000 } = options; // Default 1 min between cycles
+  const { once = false, interval = CYCLE_INTERVAL_MS, supervisor = false } = options;
   
-  log('factory.start', { mode: once ? 'once' : 'continuous', interval });
+  log('factory.start', { mode: once ? 'once' : 'continuous', interval, supervisor, maxRunMinutes: MAX_RUN_MINUTES });
+  
+  const startTime = Date.now();
   
   while (true) {
+    // Check max run budget (configurable)
+    const elapsedMin = (Date.now() - startTime) / 60000;
+    if (elapsedMin > MAX_RUN_MINUTES && !once) {
+      log('supervisor.budget', { elapsedMin: elapsedMin.toFixed(1), maxRunMinutes: MAX_RUN_MINUTES });
+      break;
+    }
+    
     try {
       await runCycle();
+      recordHealthyCycle();
     } catch (error) {
+      recordCrash(error);
       log('cycle.error', { error: error.message, stack: error.stack });
+      
+      if (supervisor && !shouldStopSupervisor()) {
+        // Progressive backoff before restart
+        const backoffMs = Math.min(5000 * Math.pow(2, Math.min(loadSupervisorState().restarts, 5)), 300000);
+        log('supervisor.restarting', { backoffMs, restarts: loadSupervisorState().restarts });
+        await new Promise(r => setTimeout(r, backoffMs));
+        continue;
+      }
+      if (supervisor) {
+        log('supervisor.stopping', { reason: 'unrecoverable or max restarts' });
+        break;
+      }
     }
     
     if (once) break;
@@ -921,18 +1082,24 @@ async function main() {
   const args = process.argv.slice(2);
   const once = args.includes('--once') || args.includes('-1');
   const showStatus = args.includes('--status');
-  const interval = parseInt(args.find(a => a.startsWith('--interval='))?.split('=')[1] || '60000');
+  const supervisor = args.includes('--supervisor');
+  const interval = parseInt(args.find(a => a.startsWith('--interval='))?.split('=')[1] || String(CYCLE_INTERVAL_MS));
   
   if (showStatus) {
     const t = loadTelemetry();
     const cb = loadCircuitBreakers();
     const queue = loadQueue();
+    const s = loadSupervisorState();
     
     console.log('\n=== Factory Runner Status ===\n');
     console.log(`Cycles: ${t.cycles}`);
     console.log(`Last cycle: ${t.lastCycle || 'never'}`);
     console.log(`Queue depth: ${queue.length}`);
     console.log(`Circuit breakers: ${Object.keys(cb).length}`);
+    console.log(`Supervisor restarts: ${s.restarts}`);
+    console.log(`Last crash: ${s.lastCrash ? s.lastCrash.at : 'none'}`);
+    console.log(`Last healthy cycle: ${s.lastHealthyCycle || 'none'}`);
+    console.log(`Consecutive failures: ${s.consecutiveFailures}`);
     console.log(`Tasks:`, t.tasks);
     return;
   }
@@ -940,7 +1107,7 @@ async function main() {
   acquireLock();
   
   try {
-    await runContinuous({ once, interval });
+    await runContinuous({ once, interval, supervisor });
   } finally {
     releaseLock();
   }
@@ -948,4 +1115,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem };
+module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem, loadSupervisorState, saveSupervisorState, recordCrash, recordHealthyCycle, checkOllamaHealth, loadFactoryConfig, getConfigTimeout };

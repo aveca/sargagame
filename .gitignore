@@ -196,5 +196,8 @@ scripts/local-factory/logs/
 .ai/autopilot/regressions/
 .ai/autopilot/baselines/*.lock.stale-*.json
 .ai/autopilot/config.json.bak*
+.ai/autopilot/latest.md
+.ai/autopilot/queue.json
+.ai/autopilot/scheduler.json
 scripts/prepare-ftp.cjs.bak*
 supabase/.temp/
