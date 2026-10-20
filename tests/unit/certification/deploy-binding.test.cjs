@@ -218,12 +218,74 @@ let keepForD3D4 = null;
 // ── D11 : câblage des workflows (gate AVANT déploiement) ─────────────────────
 {
   const wf = (f) => fs.readFileSync(path.join(REPO, '.github', 'workflows', f), 'utf8');
+
+  /**
+   * Liste `needs:` effective d'un job (forme en ligne `[a, b]` ou bloc `- a`).
+   *
+   * ROBUSTESSE : l'assertion porte sur l'APPARTENANCE (`certification-gate` ∈
+   * needs), pas sur une chaîne fige. Une égalité de chaîne
+   * (`needs: [build, certification-gate]`) casse dès que le graphe gagne un
+   * nœud (le job `scope`, qui borne le parcours de production) — alors que
+   * l'intention testée (le déploiement dépend bien de la porte de
+   * certification) reste satisfaite. L'intention est ici fidèlement vérifiée.
+   */
+  const jobNeeds = (content, jobName) => {
+    const lines = content.split(/\r?\n/);
+    let jobIndent = -1;
+    let i = 0;
+    for (; i < lines.length; i++) {
+      const m = lines[i].match(/^(\s*)([A-Za-z0-9_-]+)\s*:\s*$/);
+      if (m && m[2] === jobName) { jobIndent = m[1].length; break; }
+    }
+    if (jobIndent === -1) return [];
+    const out = [];
+    for (i = i + 1; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      if (trimmed === '' || trimmed.charAt(0) === '#') continue;
+      const indent = line.match(/^\s*/)[0].length;
+      if (indent <= jobIndent) break;
+      const nm = line.match(/^\s*needs\s*:\s*(.*)$/);
+      if (!nm || indent !== jobIndent + 2) continue;
+      let raw = nm[1].trim();
+      if (raw !== '') {
+        if (raw.charAt(0) === '[' && raw.charAt(raw.length - 1) === ']') raw = raw.slice(1, -1);
+        raw.split(',').forEach((s) => {
+          s = s.trim().replace(/^["']|["']$/g, '');
+          if (s) out.push(s);
+        });
+        continue;
+      }
+      for (let j = i + 1; j < lines.length; j++) {
+        const l2 = lines[j];
+        const t2 = l2.trim();
+        if (t2 === '' || t2.charAt(0) === '#') continue;
+        const i2 = l2.match(/^\s*/)[0].length;
+        if (i2 <= jobIndent + 2) break;
+        const m2 = l2.match(/^\s*-\s*(.+?)\s*$/);
+        if (m2 && i2 === jobIndent + 4) out.push(m2[1].replace(/^["']|["']$/g, ''));
+      }
+    }
+    return out;
+  };
+
   const cf = wf('cloudflare-production.yml');
+  const deployNeeds = jobNeeds(cf, 'deploy');
+  const deployPagesNeeds = jobNeeds(cf, 'deploy-pages');
   const cfOk = /certification-gate:[\s\S]*?--mode deploy/.test(cf)
-    && /\n  deploy:\r?\n    needs: \[build, certification-gate\]/.test(cf)
-    && /\n  deploy-pages:\r?\n    needs: \[build, certification-gate\]/.test(cf)
+    && deployNeeds.indexOf('certification-gate') !== -1
+    && deployPagesNeeds.indexOf('certification-gate') !== -1
     && cf.indexOf('--mode deploy') < cf.indexOf('wrangler@latest deploy');
-  record('D11a cloudflare-production.yml : job gate + needs deploy/deploy-pages', cfOk);
+  record('D11a cloudflare-production.yml : job gate + needs deploy/deploy-pages', cfOk,
+    `deploy=[${deployNeeds.join(', ')}] deploy-pages=[${deployPagesNeeds.join(', ')}]`);
+
+  // D11a-bis : le déploiement doit rester conditionné par le périmètre
+  // (job `scope`) — sinon la porte tournerait hors périmètre de production.
+  const gateNeeds = jobNeeds(cf, 'certification-gate');
+  record('D11a-bis cloudflare-production.yml : gate conditionné par le périmètre (scope)',
+    gateNeeds.indexOf('scope') !== -1
+      && /needs\.scope\.outputs\.production\s*==\s*'true'/.test(cf),
+    `gate=[${gateNeeds.join(', ')}]`);
 
   for (const f of ['weekly-optimize.yml', 'weekly-seo-automation.yml', 'provision-barbados.yml']) {
     const t = wf(f);

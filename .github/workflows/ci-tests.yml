@@ -33,6 +33,14 @@ jobs:
         run: |
           node scripts/autopilot/ci-certification-audit.cjs
           node scripts/autopilot/deploy-audit.cjs
+      # Garde-fou de non-régression du DÉCLENCHEMENT du parcours de production.
+      # Bloque la réintroduction d'une branche de développement dans
+      # `on.push.branches` du workflow Cloudflare Production : la porte de
+      # certification exige `test-frontend` + `perf` sur le SHA exact, checks
+      # produits uniquement sur `main` — d'où 10 échecs identiques (run
+      # 39383768675, SHA 4eea0367, branche agent/coding/TASK-P1-002).
+      - name: Production trigger scope guard
+        run: node scripts/check-production-trigger-scope.cjs
       - name: Verify Build
         run: npm run build
       - name: Check bundle budget (JS eager ≤ 210 Ko gzip)

@@ -31,6 +31,65 @@ function checkWorkflow(file) {
   return content;
 }
 
+/**
+ * Extrait la liste `needs:` d'un job d'un workflow (sans dépendance YAML).
+ *
+ * ROBUSTESSE : on compare l'APPARTENANCE (`certification-gate` ∈ needs) et non
+ * une chaîne fige. Une égalité de chaîne (`needs: [build, certification-gate]`)
+ * casse dès que le graphe évolue (ajout de `scope`) — c'est exactement ce qui
+ * est arrivé : l'audit signalait « deploy does not depend on certification-gate »
+ * alors que la dépendance est intacte. L'intention de l'audit (le déploiement
+ * dépend bien de la porte de certification) est ici faithfully vérifiée.
+ *
+ * Gère les deux formes YAML : liste en ligne `[a, b]` et liste bloc `- a`.
+ */
+function jobNeeds(content, jobName) {
+  var lines = content.split(/\r?\n/);
+  var jobIndent = -1;
+  var out = [];
+  var i = 0;
+
+  // Localise l'en-tête du job.
+  for (; i < lines.length; i++) {
+    var m = lines[i].match(/^(\s*)([A-Za-z0-9_-]+)\s*:\s*$/);
+    if (m && m[2] === jobName) { jobIndent = m[1].length; break; }
+  }
+  if (jobIndent === -1) return out;
+
+  // Parcourt le corps du job jusqu'au job suivant (indent <= jobIndent).
+  for (i = i + 1; i < lines.length; i++) {
+    var line = lines[i];
+    var trimmed = line.trim();
+    if (trimmed === '' || trimmed.charAt(0) === '#') continue;
+    var indent = line.match(/^\s*/)[0].length;
+    if (indent <= jobIndent) break;
+
+    var nm = line.match(/^\s*needs\s*:\s*(.*)$/);
+    if (!nm || indent !== jobIndent + 2) continue;
+
+    var raw = nm[1].trim();
+    if (raw !== '') {
+      if (raw.charAt(0) === '[' && raw.charAt(raw.length - 1) === ']') raw = raw.slice(1, -1);
+      raw.split(',').forEach(function (s) {
+        s = s.trim().replace(/^["']|["']$/g, '');
+        if (s) out.push(s);
+      });
+      continue;
+    }
+    // Forme bloc : needs:\n  - a\n  - b
+    for (var j = i + 1; j < lines.length; j++) {
+      var l2 = lines[j];
+      var t2 = l2.trim();
+      if (t2 === '' || t2.charAt(0) === '#') continue;
+      var i2 = l2.match(/^\s*/)[0].length;
+      if (i2 <= jobIndent + 2) break;
+      var m2 = l2.match(/^\s*-\s*(.+?)\s*$/);
+      if (m2 && i2 === jobIndent + 4) out.push(m2[1].replace(/^["']|["']$/g, ''));
+    }
+  }
+  return out;
+}
+
 function checkCertificationGate() {
   console.log('\n=== Certification Gate Audit ===\n');
 
@@ -68,10 +127,32 @@ function checkCertificationGate() {
     issues.push('cloudflare-production.yml: Missing --mode deploy flag');
   }
 
-  if (cfProd.indexOf('needs: [build, certification-gate]') !== -1) {
+  // Dépendance du déploiement à la porte de certification : vérifiée par
+  // APPARTENANCE (et non par égalité de chaîne) — voir jobNeeds().
+  var deployNeeds = jobNeeds(cfProd, 'deploy');
+  if (deployNeeds.indexOf('certification-gate') !== -1) {
     passes.push('cloudflare-production.yml: deploy depends on certification-gate');
   } else {
-    issues.push('cloudflare-production.yml: deploy does not depend on certification-gate');
+    issues.push('cloudflare-production.yml: deploy does not depend on certification-gate (needs: ' + (deployNeeds.join(', ') || 'aucun') + ')');
+  }
+
+  // Périmètre d'application : la porte de certification ne doit tourner que
+  // sur un run de production (job `scope`). Sans cela, un run hors `main`
+  // (dispatch manuel sur une branche de dev, workflow_run hors main) échoue
+  // systématiquement sur la porte — 10 runs rouges identiques (run
+  // 39383768675, SHA 4eea0367, branche agent/coding/TASK-P1-002).
+  var gateNeeds = jobNeeds(cfProd, 'certification-gate');
+  if (gateNeeds.indexOf('scope') !== -1) {
+    passes.push('cloudflare-production.yml: certification-gate depends on scope (perimetre d\'application)');
+  } else {
+    issues.push('cloudflare-production.yml: certification-gate does not depend on scope — la porte tournerait hors perimetre de production');
+  }
+
+  var gateBody = cfProd.slice(cfProd.indexOf('certification-gate:'));
+  if (gateBody.indexOf('needs.scope.outputs.production') !== -1) {
+    passes.push('cloudflare-production.yml: certification-gate conditionne par la sortie production de scope');
+  } else {
+    issues.push('cloudflare-production.yml: certification-gate non conditionne par needs.scope.outputs.production');
   }
 
   // 3. Check that cert script exists and has proper modes
