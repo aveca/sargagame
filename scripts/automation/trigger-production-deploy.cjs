@@ -62,6 +62,20 @@ function env(name, fallback) {
   return v && v.trim() ? v.trim() : fallback;
 }
 
+/**
+ * Écrit une ligne de diagnostic dans le résumé du run (visible sur la page du
+ * run sans ouvrir les logs) — indispensable quand le job est déclenché par
+ * cron et que personne ne lit les logs.
+ */
+function note(line) {
+  console.log(line);
+  const summary = env('GITHUB_STEP_SUMMARY');
+  if (!summary) return;
+  try {
+    require('fs').appendFileSync(summary, line + '\n');
+  } catch (_) { /* le résumé est un confort, jamais un point de blocage */ }
+}
+
 function request(method, path, token, body) {
   return new Promise((resolve, reject) => {
     const data = body ? Buffer.from(JSON.stringify(body), 'utf8') : null;
@@ -100,11 +114,11 @@ async function main() {
   const ref = env('DEPLOY_REF', 'main');
 
   if (!repo) {
-    console.error('GITHUB_REPOSITORY absent : dépôt inconnu — déclenchement impossible (refus).');
+    note('GITHUB_REPOSITORY absent : dépôt inconnu — déclenchement impossible (refus).');
     process.exit(1);
   }
   if (!token) {
-    console.error('GITHUB_TOKEN absent : le dispatch exige un token avec la permission « actions: write » (refus).');
+    note('GITHUB_TOKEN absent : le dispatch exige un token avec la permission « actions: write » (refus).');
     process.exit(1);
   }
 
@@ -125,6 +139,7 @@ async function main() {
   }
 
   console.log(`Déploiement ciblé : ${repo} @ ${ref} (sha ${sha.slice(0, 8)})`);
+  note(`Déploiement ciblé : \`${repo}\` @ \`${ref}\` (sha ${sha.slice(0, 8)})`);
   if (dryRun) {
     for (const c of CHAIN) console.log(`  [dry-run] dispatch ${c.file} sur ${ref}`);
     console.log('DRY-RUN : aucune requête envoyée.');
@@ -135,7 +150,7 @@ async function main() {
   for (const c of CHAIN) {
     try {
       await request('POST', `/repos/${repo}/actions/workflows/${c.file}/dispatches`, token, { ref });
-      console.log(`  dispatch OK   ${c.file}${c.check ? '  (check attendu : ' + c.check + ')' : ''}`);
+      note(`  dispatch OK   ${c.file}${c.check ? '  (check attendu : ' + c.check + ')' : ''}`);
     } catch (e) {
       failures.push(`${c.file} : ${e.message}`);
       console.error(`  dispatch ECHEC ${c.file} : ${e.message}`);
@@ -143,6 +158,14 @@ async function main() {
   }
 
   if (failures.length) {
+    note('');
+    note('### ⚠️ Chaîne de déploiement NON déclenchée');
+    note('');
+    note(`Les données sont publiées dans \`${repo}\` mais ne seront **pas** déployées.`);
+    note('La fraîcheur en production va se dégrader : le contrôle de fraîcheur du');
+    note('Sentinel doit alerter — c\'est le comportement attendu, pas un défaut.');
+    note('');
+    for (const f of failures) note('- ' + f);
     console.error('');
     console.error('Chaîne de déclenchement INCOMPLÈTE :');
     for (const f of failures) console.error('  - ' + f);
@@ -153,10 +176,10 @@ async function main() {
     process.exit(1);
   }
 
-  console.log('');
-  console.log('Chaîne déclenchée. La porte de certification exigera `test-frontend` et');
-  console.log(`\`perf\` verts sur le SHA ${sha.slice(0, 8)} : aucun déploiement n'est`);
-  console.log('autorisé sans ces preuves.');
+  note('');
+  note(`Chaîne déclenchée sur \`${ref}\` (sha ${sha.slice(0, 8)}). La porte de`);
+  note('certification exigera `test-frontend` et `perf` verts sur ce SHA exact :');
+  note('aucun déploiement n\'est autorisé sans ces preuves.');
 }
 
 main().catch((e) => {
