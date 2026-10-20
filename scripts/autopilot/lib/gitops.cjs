@@ -15,6 +15,7 @@ const path = require('path');
 const { execFileSync, execSync } = require('child_process');
 const os = require('os');
 const { ROOT } = require('./common.cjs');
+const { execBounded, NPM_CMD } = require('../../lib/process-runner.cjs');
 
 function git(args, cwd, opts = {}) {
   const pipeOut = opts.pipeOut !== false;
@@ -27,7 +28,52 @@ function git(args, cwd, opts = {}) {
   });
   return (out ?? '').trim();
 }
+
+/**
+ * Version asynchrone de git() qui n'envoie pas l'event loop.
+ * Retourne { code, stdout, stderr, timedOut, error }.
+ */
+async function gitAsync(args, cwd, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 120000;
+  const result = await execBounded('git', args, { cwd: cwd || ROOT, timeout: timeoutMs, windowsHide: true });
+  return result;
+}
+
+/**
+ * Version asynchrone de git() retournant uniquement stdout (comme la version sync).
+ * Pour les appelants qui s'attendent à une chaîne de caractères.
+ */
+async function gitStdout(args, cwd, opts = {}) {
+  const result = await gitAsync(args, cwd, opts);
+  if (result.timedOut) throw new Error(`git ${args.join(' ')} timeout after ${result.error}`);
+  if (result.code !== 0) throw new Error(`git ${args.join(' ')} exited ${result.code}: ${(result.stderr || result.error || '').slice(0, 500)}`);
+  return result.stdout;
+}
+
+/**
+ * Version asynchrone de run() qui n'envoie pas l'event loop.
+ * Retourne { code, stdout, stderr, timedOut, error }.
+ * Utilise 'npm' depuis PATH (résolu de façon fiable sur Windows).
+ */
+async function runAsync(cmd, cwd, opts = {}) {
+  const timeoutMs = opts.timeoutMs || 600000;
+  const npmArgs = String(cmd).split(/\s+/).slice(1); // 'ci --no-audit --no-fund'
+
+  const { cmd: resolvedCmd, cmdArgs: resolvedArgs } = (() => {
+    if (Array.isArray(NPM_CMD)) {
+      return { cmd: NPM_CMD[0], cmdArgs: [...NPM_CMD.slice(1), ...npmArgs] };
+    }
+    return { cmd: NPM_CMD, cmdArgs: npmArgs };
+  })();
+  const result = await execBounded(resolvedCmd, resolvedArgs, { cwd: cwd || ROOT, timeout: timeoutMs, windowsHide: true });
+  return result;
+}
 function gitSafe(args, cwd, opts = {}) { try { return git(args, cwd, opts); } catch (_) { return null; } }
+
+/**
+ * Version asynchrone de gitSafe — ne lance jamais, retourne null en cas d'erreur.
+ */
+async function gitSafeAsync(args, cwd, opts = {}) { try { return await gitStdout(args, cwd, opts); } catch (_) { return null; } }
 function run(cmd, cwd, opts = {}) {
   return execSync(cmd, { cwd: cwd || ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: opts.timeoutMs || 600000, windowsHide: true });
 }
@@ -46,24 +92,20 @@ function founderTreeState() {
 
 /**
  * Prépare le worktree de cycle : fetch origin, worktree add/refresh sur branche neuve.
- * Idempotent et sûr :
- *  - Si le worktree existe ET est propre (pas de modifications non committées) → réutilisé tel quel
- *  - Si le worktree existe ET a des modifications non committées → jamais détruit, mise de côté horodatée + nouveau worktree
- *  - Si le chemin existe mais n'est pas enregistré comme worktree (résidu de crash) → mise de côté + nouveau worktree
- *  - Jamais de destruction de travail non livré.
+ * Idempotent et sûr. Asynchrone pour ne pas bloquer l'event loop pendant npm ci.
  */
-function prepareWorktree(cfg, branchName, log = console.log) {
+async function prepareWorktree(cfg, branchName, log = console.log) {
   const wt = worktreePath(cfg);
   const wtNormalized = wt.replace(/\\/g, '/');
-  git(['fetch', 'origin', cfg.git.baseBranch, '--quiet']);
+  await gitAsync(['fetch', 'origin', cfg.git.baseBranch, '--quiet']);
 
   // Vérification robuste : liste les worktrees et cherche le chemin exact (normalisé)
-  const existing = gitSafe(['worktree', 'list', '--porcelain']) || '';
+  const existing = await gitSafeAsync(['worktree', 'list', '--porcelain']) || '';
   const has = existing.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
 
   if (has) {
     // Worktree enregistré : vérifier s'il a des modifications non committées
-    const status = gitSafe(['status', '--porcelain=v1'], wt) || '';
+    const status = await gitSafeAsync(['status', '--porcelain=v1'], wt) || '';
     if (status.trim()) {
       // Modifications non committées : NE JAMAIS détruire, mettre de côté horodaté
       const aside = `${wt}-unsaved-${Date.now().toString(36)}`;
@@ -74,60 +116,58 @@ function prepareWorktree(cfg, branchName, log = console.log) {
         throw new Error(`Impossible de déplacer le worktree avec modifications non committées : ${e.message}. Travail non livré préservé à ${wt}`);
       }
       // Nettoyer la référence git du worktree déplacé
-      try { git(['worktree', 'prune']); } catch (_) {}
+      try { await gitAsync(['worktree', 'prune']); } catch (_) {}
     } else {
       // Worktree propre : le réutiliser (idempotent, pas de destruction)
       log(`worktree existant et propre, réutilisation : ${wt}`);
       // Vérifier que la branche existe déjà, sinon créer
-      const branchExists = gitSafe(['rev-parse', '--verify', branchName], wt);
+      const branchExists = await gitSafeAsync(['rev-parse', '--verify', branchName], wt);
       if (!branchExists) {
-        git(['checkout', '-b', branchName, 'origin/' + cfg.git.baseBranch], wt);
+        await gitAsync(['checkout', '-b', branchName, 'origin/' + cfg.git.baseBranch], wt);
       } else {
-        git(['checkout', branchName], wt);
-        git(['pull', '--ff-only', 'origin', cfg.git.baseBranch], wt);
+        await gitAsync(['checkout', branchName], wt);
+        await gitAsync(['pull', '--ff-only', 'origin', cfg.git.baseBranch], wt);
       }
       // node_modules : npm ci seulement si absent ou lock plus récent
-      return finishWorktreePrep(wt, cfg, log);
+      return await finishWorktreePrep(wt, cfg, log);
     }
   }
 
   // Créer worktree frais depuis origin/main — avec auto-réparation SÛRE :
-  // si le chemin est occupé mais NON enregistré (résidu de crash / rmSync
-  // partiel), mise de côté horodatée (récupérable, jamais supprimée) + UNE
-  // seule tentative. Si la branche existe déjà, on l'utilise telle quelle.
   try {
-    git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+    await gitAsync(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
   } catch (e) {
     const errMsg = String(e.message || e);
     // Cas 1 : branche déjà existe localement → créer worktree sur branche existante
     if (/already exists/.test(errMsg)) {
-      const branchExists = gitSafe(['rev-parse', '--verify', branchName]);
+      const branchExists = await gitSafeAsync(['rev-parse', '--verify', branchName]);
       if (branchExists) {
         log(`branche ${branchName} existe déjà, création du worktree sur cette branche`);
-        git(['worktree', 'add', wt, branchName]);
+        await gitAsync(['worktree', 'add', wt, branchName]);
         log(`worktree créé : ${wt} (${branchName})`);
-        return finishWorktreePrep(wt, cfg, log);
+        return await finishWorktreePrep(wt, cfg, log);
       }
     }
     // Cas 2 : chemin occupé mais non enregistré (résidu de crash)
-    const fresh = gitSafe(['worktree', 'list', '--porcelain']) || '';
+    const fresh = await gitSafeAsync(['worktree', 'list', '--porcelain']) || '';
     const stillRegistered = fresh.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
     const decision = worktreeAddRecovery({ pathExists: fs.existsSync(wt), registered: stillRegistered });
     if (decision !== 'retry-aside') throw e;
     const aside = `${wt}-stale-${Date.now().toString(36)}`;
     log(`worktree orphelin détecté, mise de côté (récupérable) : ${wt} → ${aside}`);
     fs.renameSync(wt, aside);
-    git(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+    await gitAsync(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
   }
   log(`worktree créé : ${wt} (${branchName})`);
 
-  return finishWorktreePrep(wt, cfg, log);
+  return await finishWorktreePrep(wt, cfg, log);
 }
 
 /**
  * Étapes communes après création/réutilisation du worktree (npm ci si nécessaire).
+ * Asynchrone pour ne pas bloquer l'event loop pendant npm ci.
  */
-function finishWorktreePrep(wt, cfg, log = console.log) {
+async function finishWorktreePrep(wt, cfg, log = console.log) {
   // node_modules : npm ci seulement si absent ou lock plus récent
   const nm = path.join(wt, 'node_modules');
   const lock = path.join(wt, 'package-lock.json');
@@ -136,7 +176,13 @@ function finishWorktreePrep(wt, cfg, log = console.log) {
     (fs.existsSync(nmStamp) && fs.existsSync(lock) && fs.statSync(lock).mtimeMs > fs.statSync(nmStamp).mtimeMs);
   if (needCi) {
     log('npm ci (worktree)…');
-    run(process.platform === 'win32' ? 'npm.cmd ci --no-audit --no-fund' : 'npm ci --no-audit --no-fund', wt, { timeoutMs: 600000 });
+    const result = await runAsync(process.platform === 'win32' ? 'npm.cmd ci --no-audit --no-fund' : 'npm ci --no-audit --no-fund', wt, { timeoutMs: 600000 });
+    if (result.timedOut) {
+      throw new Error(`npm ci timeout after 600000ms: ${result.error}`);
+    }
+    if (result.code !== 0) {
+      throw new Error(`npm ci failed (code ${result.code}): ${(result.stderr || result.error || '').slice(0, 2000)}`);
+    }
   } else {
     log('node_modules réutilisé (inchangé)');
   }
@@ -319,12 +365,12 @@ async function prodFingerprint(domain, timeoutMs = 10000) {
  */
 async function repairPRConflict(prNumber, cfg, log = console.log) {
   log(`REPAIR_PR   attempting auto-rebase for PR #${prNumber}`);
-  
+
   try {
     // 1. Fetch latest origin
     git(['fetch', 'origin', cfg.git.baseBranch, '--quiet']);
     log('REPAIR_PR   fetched origin/' + cfg.git.baseBranch);
-    
+
     // 2. Get PR details to find the branch name
     const prDetail = getPrDetail(prNumber);
     if (!prDetail || !prDetail.headRefName) {
@@ -332,15 +378,15 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
     }
     const branch = prDetail.headRefName;
     log(`REPAIR_PR   PR branch: ${branch}`);
-    
+
     // 3. Check if this is an autopilot branch
     if (!branch.startsWith(cfg.git.branchPrefix || 'agent/autopilot/')) {
       return { ok: false, reason: `Not an autopilot branch (${branch})`, unsafe: true };
     }
-    
+
     // 4. Use the autopilot worktree for the rebase
     const wt = worktreePath(cfg);
-    
+
     // 4.5 FIRST: Ensure we're on the PR branch BEFORE preparing worktree
     // This is critical - prepareRepairWorktree must run on the PR branch,
     // not on main, so it sees the correct state.
@@ -368,20 +414,20 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
         git(['checkout', branch], wt);
       }
     }
-    
+
     // 5. NOW prepare worktree (on the PR branch)
     const prepResult = prepareRepairWorktree(wt, log);
     if (!prepResult.ok) {
       return { ok: false, reason: prepResult.reason, unsafe: prepResult.unsafe };
     }
-    
+
     // Verify we're on the correct branch
     const verifyBranch = gitSafe(['rev-parse', '--abbrev-ref', 'HEAD'], wt) || '';
     if (verifyBranch !== branch) {
       return { ok: false, reason: `Failed to switch to PR branch (still on ${verifyBranch})`, unsafe: true };
     }
     log(`REPAIR_PR   on PR branch ${branch}, ready for rebase`);
-    
+
     // 6. Check if branch is already based on origin/main (fast-forward check)
     // If HEAD is already an ancestor of origin/main, no rebase needed
     const mergeBase = gitSafe(['merge-base', 'HEAD', 'origin/' + cfg.git.baseBranch], wt);
@@ -394,11 +440,11 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       log('REPAIR_PR   force-pushed (already up to date)');
       return { ok: true, rebased: false, commitSha, method: 'already-up-to-date' };
     }
-    
+
     // 7. Rebase onto origin/main with explicit output capture
     log('REPAIR_PR   rebasing onto origin/' + cfg.git.baseBranch + '...');
     const rebaseResult = runRebaseWithOutput(wt, cfg.git.baseBranch, log);
-    
+
     if (rebaseResult.success) {
       // Rebase succeeded (either with commits or already up to date)
       if (rebaseResult.alreadyUpToDate) {
@@ -414,15 +460,15 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
         return { ok: true, rebased: true, commitSha, method: 'rebase-clean' };
       }
     }
-    
+
     // 8. Rebase failed - check if it's a conflict
     const status = gitSafe(['status', '--porcelain'], wt) || '';
     const conflictedFiles = status.split('\n').filter(l => l.startsWith('UU') || l.startsWith('AA') || l.startsWith('DD')).map(parsePorcelainLine);
-    
+
     // Only abort if rebase is actually in progress
-    const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) || 
+    const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) ||
                              fs.existsSync(path.join(wt, '.git', 'rebase-apply'));
-    
+
     if (conflictedFiles.length === 0) {
       // No conflicts but rebase failed for other reason
       if (rebaseInProgress) {
@@ -430,19 +476,19 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       }
       return { ok: false, reason: rebaseResult.output || 'rebase failed without conflicts', unsafe: true };
     }
-    
+
     log(`REPAIR_PR   conflicts detected in: ${conflictedFiles.join(', ')}`);
-    
+
     // 9. Attempt safe deterministic resolution
     const resolution = attemptSafeConflictResolution(conflictedFiles, wt, log);
-    
+
     if (!resolution.ok) {
       if (rebaseInProgress) {
         git(['rebase', '--abort'], wt);
       }
       return { ok: false, reason: resolution.reason, unsafe: resolution.unsafe };
     }
-    
+
     // 10. Continue rebase
     const continueResult = runGitWithOutput(['rebase', '--continue'], wt);
     if (!continueResult.success) {
@@ -452,7 +498,7 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       return { ok: false, reason: continueResult.output || 'rebase --continue failed', unsafe: true };
     }
     log('REPAIR_PR   rebase continued after conflict resolution');
-    
+
     // 11. Verify rebase completed
     const finalStatus = gitSafe(['status', '--porcelain'], wt) || '';
     if (finalStatus.trim()) {
@@ -461,19 +507,19 @@ async function repairPRConflict(prNumber, cfg, log = console.log) {
       }
       return { ok: false, reason: 'rebase left uncommitted changes', unsafe: true };
     }
-    
+
     const commitSha = git(['rev-parse', '--short', 'HEAD'], wt);
     git(['push', '-f', cfg.git.remote, branch], wt, { timeoutMs: 180000 });
     log('REPAIR_PR   force-pushed rebased branch with resolved conflicts');
-    
+
     return { ok: true, rebased: true, commitSha, method: 'rebase-with-resolution', resolvedFiles: conflictedFiles };
-    
+
   } catch (e) {
     log(`REPAIR_PR   error: ${e.message}`);
     // Try to abort any in-progress rebase
-    try { 
+    try {
       const wt = worktreePath(cfg);
-      const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) || 
+      const rebaseInProgress = fs.existsSync(path.join(wt, '.git', 'rebase-merge')) ||
                                fs.existsSync(path.join(wt, '.git', 'rebase-apply'));
       if (rebaseInProgress) {
         gitSafe(['rebase', '--abort'], wt);
@@ -492,7 +538,7 @@ function runRebaseWithOutput(wt, baseBranch, log) {
     const out = run(`git rebase origin/${baseBranch}`, wt, { timeoutMs: 180000 });
     const output = out.trim();
     log(`REPAIR_PR   rebase output: ${output.slice(0, 200)}`);
-    
+
     // Check for "already up to date" message
     if (/already up to date|Current branch .+ is up to date/i.test(output)) {
       return { success: true, alreadyUpToDate: true, output };
@@ -530,19 +576,19 @@ function attemptSafeConflictResolution(conflictedFiles, wt, log) {
   // - Le conflit est un "both added" (AA) → on garde notre version
   // - Le conflit est "both modified" (UU) mais main n'a changé que des lignes
   //   différentes de nos changements (heuristique : diff court, pas de logique métier)
-  
+
   for (const file of conflictedFiles) {
     const fullPath = path.join(wt, file);
     if (!fs.existsSync(fullPath)) continue;
-    
+
     const content = fs.readFileSync(fullPath, 'utf8');
     const conflictMarkers = (content.match(/^<<<<<<< /gm) || []).length;
-    
+
     if (conflictMarkers === 0) continue; // Already resolved
-    
+
     // Analyze the conflict
     const analysis = analyzeConflict(content);
-    
+
     // SAFE CASE 1: "both added" (AA) - keep our version (agent branch)
     if (analysis.type === 'both-added') {
       log(`REPAIR_PR   ${file}: both-added conflict → keeping agent version`);
@@ -551,7 +597,7 @@ function attemptSafeConflictResolution(conflictedFiles, wt, log) {
       git(['add', file], wt);
       continue;
     }
-    
+
     // SAFE CASE 2: "both modified" but our changes are purely additive (new lines only)
     // and main's changes don't overlap with ours
     if (analysis.type === 'both-modified' && analysis.safeToKeepOurs) {
@@ -561,12 +607,12 @@ function attemptSafeConflictResolution(conflictedFiles, wt, log) {
       git(['add', file], wt);
       continue;
     }
-    
+
     // UNSAFE: any other conflict type
     log(`REPAIR_PR   ${file}: UNSAFE conflict type=${analysis.type}, markers=${conflictMarkers}`);
     return { ok: false, reason: `Unsafe conflict in ${file}: ${analysis.type}`, unsafe: true };
   }
-  
+
   return { ok: true };
 }
 
@@ -579,7 +625,7 @@ function analyzeConflict(content) {
   let inOurs = false, inTheirs = false;
   const oursLines = [];
   const theirsLines = [];
-  
+
   for (const line of lines) {
     if (line.startsWith('<<<<<<< ')) {
       inOurs = true;
@@ -597,13 +643,13 @@ function analyzeConflict(content) {
     if (inOurs) oursLines.push(line);
     if (inTheirs) theirsLines.push(line);
   }
-  
+
   const ours = oursLines.join('\n');
   const theirs = theirsLines.join('\n');
-  
+
   const oursCount = oursLines.filter(l => l.trim()).length;
   const theirsCount = theirsLines.filter(l => l.trim()).length;
-  
+
   // Both added: both sides have content, base was empty
   if (oursCount > 0 && theirsCount > 0) {
     // Check if one side is purely additive (only new lines, no modifications to existing)
@@ -611,7 +657,7 @@ function analyzeConflict(content) {
     // but allow keeping ours if theirs looks like whitespace/formatting only
     const theirsOnlyWhitespace = theirsLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
     const oursOnlyWhitespace = oursLines.every(l => !l.trim() || l.trim().startsWith('//') || l.trim().startsWith('/*'));
-    
+
     if (theirsOnlyWhitespace && !oursOnlyWhitespace) {
       return { type: 'both-modified', safeToKeepOurs: true, reason: 'theirs is whitespace only' };
     }
@@ -620,15 +666,15 @@ function analyzeConflict(content) {
     }
     return { type: 'both-modified', safeToKeepOurs: false, reason: 'both have substantive changes' };
   }
-  
+
   if (oursCount > 0 && theirsCount === 0) {
     return { type: 'ours-only', safeToKeepOurs: true }; // Actually not a conflict
   }
-  
+
   if (oursCount === 0 && theirsCount > 0) {
     return { type: 'theirs-only', safeToKeepOurs: false }; // Should take theirs
   }
-  
+
   return { type: 'both-added', safeToKeepOurs: true };
 }
 
@@ -640,7 +686,7 @@ function resolveKeepOurs(content) {
   const result = [];
   let inOurs = false;
   let inTheirs = false;
-  
+
   for (const line of lines) {
     if (line.startsWith('<<<<<<< ')) {
       inOurs = true;
@@ -662,7 +708,7 @@ function resolveKeepOurs(content) {
     }
     // Skip lines in theirs section
   }
-  
+
   return result.join('\n');
 }
 
@@ -678,9 +724,9 @@ function prepareRepairWorktree(wt, log = console.log) {
     log('REPAIR_PR   worktree clean');
     return { ok: true, stashedFiles: [], cleanedFiles: [] };
   }
-  
+
   log('REPAIR_PR   worktree dirty — analyzing local changes');
-  
+
   // Fichiers générés/artefacts de build connus (sûrs à nettoyer)
   const GENERATED_FILES = new Set([
     'public/data/media-manifest.json',
@@ -689,7 +735,7 @@ function prepareRepairWorktree(wt, log = console.log) {
     'dist/',
     'node_modules/',
   ]);
-  
+
   // Fichiers de config autopilot qui peuvent être modifiés par le cycle (sûrs à stash)
   const AUTOPILOT_TEMP_FILES = new Set([
     '.ai/autopilot/observations/latest.json',
@@ -699,19 +745,19 @@ function prepareRepairWorktree(wt, log = console.log) {
     '.ai/autopilot/runs/',
     '.ai/autopilot/regressions/',
   ]);
-  
+
   const lines = status.split('\n').filter(Boolean);
   const stashedFiles = [];
   const cleanedFiles = [];
   const preservedFiles = [];
   let hasUnsafeChanges = false;
   let unsafeDetails = [];
-  
+
   for (const line of lines) {
     const file = line.slice(3).trim(); // Format: "XY filename"
     const isGenerated = Array.from(GENERATED_FILES).some(g => file === g || file.startsWith(g));
     const isAutopilotTemp = Array.from(AUTOPILOT_TEMP_FILES).some(g => file === g || file.startsWith(g));
-    
+
     if (isGenerated) {
       // Generated files: safe to discard (will be regenerated by next build)
       try {
@@ -755,13 +801,13 @@ function prepareRepairWorktree(wt, log = console.log) {
       log(`REPAIR_PR   preserved unknown change: ${file}`);
     }
   }
-  
+
   if (hasUnsafeChanges) {
     const msg = `Cannot safely prepare worktree: ${unsafeDetails.join('; ')}`;
     log(`REPAIR_PR   UNSAFE: ${msg}`);
     return { ok: false, reason: msg, unsafe: true, stashedFiles, cleanedFiles, preservedFiles };
   }
-  
+
   // Verify worktree is now clean enough for checkout
   const verifyStatus = gitSafe(['status', '--short'], wt) || '';
   if (verifyStatus.trim()) {
@@ -770,7 +816,7 @@ function prepareRepairWorktree(wt, log = console.log) {
     log(`REPAIR_PR   remaining: ${remaining.join(', ')}`);
     // Not necessarily fatal - checkout might still work if changes don't conflict
   }
-  
+
   log(`REPAIR_PR   worktree prepared: ${cleanedFiles.length} cleaned, ${stashedFiles.length} stashed, ${preservedFiles.length} preserved`);
   return { ok: true, stashedFiles, cleanedFiles, preservedFiles };
 }
@@ -779,5 +825,5 @@ module.exports = {
   worktreePath, founderTreeState, prepareWorktree, diffStats, worktreeAddRecovery,
   commitAll, pushBranch, createPR, openAutopilotPR, getPrDetail, enableAutoMerge, cleanupWorktree,
   prState, prodFingerprint, repairPRConflict, analyzeConflict, resolveKeepOurs, prepareRepairWorktree,
-  git, gitSafe, run,
+  git, gitSafe, gitStdout, gitAsync, gitSafeAsync, run, runAsync,
 };

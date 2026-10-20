@@ -1,7 +1,7 @@
 'use strict';
 /**
  * process-runner.cjs — Mécanisme partagé d'exécution de processus (Windows-safe)
- * 
+ *
  * Règles :
  * - Pas de shell: true (crée cmd.exe wrapper orphelin sur Windows)
  * - Serveurs long-running = spawn direct, PID capturé, unref() pour non-blocage
@@ -28,11 +28,11 @@ function resolveLocalBin(binName) {
     // Return array for direct node execution - works on all platforms
     return [process.execPath, pkgBinJs];
   }
-  
+
   // Try local node_modules/.bin (may be .cmd on Windows)
   const localBin = path.join(process.cwd(), 'node_modules', '.bin', binName + (IS_WIN ? '.cmd' : ''));
   if (fs.existsSync(localBin)) return localBin;
-  
+
   // Fallback to global (may be .cmd on Windows)
   return binName;
 }
@@ -132,8 +132,8 @@ async function startServer(command, args, options = {}) {
 
   try {
     await waitForPort(port, host, readyTimeout);
-    return { 
-      pid, 
+    return {
+      pid,
       stop: () => stopServer(name, port),
       _child: child
     };
@@ -165,14 +165,14 @@ async function stopServer(name, port) {
   const key = `${name}-${port}`;
   const entry = pids[key];
   if (!entry) return { stopped: false, reason: 'not found' };
-  
+
   killProcessTree(entry.pid, 'SIGTERM');
   // Wait for process to actually die
   await waitForProcessDead(entry.pid, 5000);
   // Force kill if still alive
   killProcessTree(entry.pid, 'SIGKILL');
   await waitForProcessDead(entry.pid, 3000);
-  
+
   delete pids[key];
   savePids(pids);
   return { stopped: true, pid: entry.pid };
@@ -202,13 +202,13 @@ async function runBounded(command, args, options = {}) {
   const { cmd, cmdArgs } = normalizeCommand(command, args);
 
   return new Promise((resolve, reject) => {
-    const child = spawn(cmd, cmdArgs, { 
-      cwd, 
-      env, 
+    const child = spawn(cmd, cmdArgs, {
+      cwd,
+      env,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true
     });
-    
+
     let stdout = '', stderr = '';
     child.stdout?.on('data', d => { stdout += d; });
     child.stderr?.on('data', d => { stderr += d; });
@@ -232,18 +232,71 @@ async function runBounded(command, args, options = {}) {
   });
 }
 
+/**
+ * Exécute une commande de façon bornée et asynchrone.
+ * Retourne { code, stdout, stderr, timedOut, error } au lieu de lancer une exception.
+ * Permet à l'appelant de distinguer un timeout d'une erreur d'exécution,
+ * et de continuer le traitement sans bloquer l'event loop (heartbeat maintenu).
+ * Sous Windows, utilise killProcessTree (taskkill /T /F) pour terminer l'arbre complet.
+ */
+async function execBounded(command, args, options = {}) {
+  const {
+    cwd = process.cwd(),
+    env = { ...process.env },
+    timeout = 120000
+  } = options;
+
+  const { cmd, cmdArgs } = normalizeCommand(command, args);
+
+  return new Promise((resolve) => {
+    const child = spawn(cmd, cmdArgs, {
+      cwd,
+      env,
+      stdio: ['ignore', 'pipe', 'pipe'],
+      windowsHide: true
+    });
+
+    let stdout = '', stderr = '';
+    child.stdout?.on('data', d => { stdout += d; });
+    child.stderr?.on('data', d => { stderr += d; });
+
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      try { killProcessTree(child.pid, 'SIGKILL'); } catch (_) {}
+      try { child.kill('SIGKILL'); } catch (_) {}
+      resolve({ code: -1, stdout, stderr, timedOut: true, error: `Command timed out after ${timeout}ms: ${cmd} ${cmdArgs.join(' ')}` });
+    }, timeout);
+
+    child.on('close', (code) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      resolve({ code, stdout, stderr, timedOut: false, error: code !== 0 ? `Command exited with code ${code}` : null });
+    });
+
+    child.on('error', (err) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      resolve({ code: -1, stdout, stderr, timedOut: false, error: err.message });
+    });
+  });
+}
+
 async function withPreviewServer(testFn, options = {}) {
-  const { 
-    port = 4173, 
-    host = 'localhost', 
+  const {
+    port = 4173,
+    host = 'localhost',
     previewCmd = VITE_BIN,
     previewArgs = ['preview', '--port', String(port), '--host'],
     buildTimeout = 180000
   } = options;
-  
+
   // Run build via npm (short-lived, bounded)
   await runBounded(NPM_CMD, ['run', 'build'], { cwd: process.cwd(), timeout: buildTimeout });
-  
+
   // Start preview server with local vite binary (no npx wrapper)
   const server = await startServer(previewCmd, previewArgs, { port, host, name: 'vite-preview' });
   try {
@@ -259,6 +312,7 @@ module.exports = {
   stopServer,
   stopAllServers,
   runBounded,
+  execBounded,
   withPreviewServer,
   waitForPort,
   loadPids,

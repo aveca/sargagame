@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
  * factory-runner.cjs — Continuous Autonomous Factory Runner
- * 
+ *
  * Main orchestrator that runs continuously:
  * - Picks tasks from queue (local + GitHub/API discovery)
  * - Routes to appropriate worker (FAST/STRONG/SPECIALIST/FALLBACK)
  * - Implements circuit breaker, fallback, retry with backoff
  * - Handles Git/PR/CI/Deploy lifecycle
  * - Telemetry and recovery
- * 
+ *
  * Usage:
  *   node scripts/local-factory/factory-runner.cjs --run
  *   node scripts/local-factory/factory-runner.cjs --run --once
@@ -86,7 +86,7 @@ function acquireOpenCodeSemaphore(taskId) {
   const now = Date.now();
   const staleMaxAge = 10 * 60 * 1000; // 10 min
   let changed = false;
-  
+
   // Supprimer les holders orphelins (acquis il y a plus de 10 min)
   const validHolders = semaphore.holders.filter(h => {
     const age = now - h.acquiredAt;
@@ -97,23 +97,23 @@ function acquireOpenCodeSemaphore(taskId) {
     }
     return true;
   });
-  
+
   if (validHolders.length !== semaphore.holders.length) {
     semaphore.holders = validHolders;
     semaphore.count = validHolders.length;
     changed = true;
   }
-  
+
   if (semaphore.count !== semaphore.holders.length) {
     log('supervisor.semaphore_repair', { oldCount: semaphore.count, holders: semaphore.holders.length });
     semaphore.count = semaphore.holders.length;
     changed = true;
   }
-  
+
   if (changed) {
     saveJSON(OPENCODE_SEMAPHORE_FILE, semaphore);
   }
-  
+
   if (semaphore.count >= MAX_OPENCODE_CONCURRENT) {
     return false;
   }
@@ -190,13 +190,13 @@ function recordFailure(provider) {
   const state = cb[provider] || { state: CB_STATE.CLOSED, failures: 0, lastFailure: null, nextAttempt: null };
   state.failures++;
   state.lastFailure = new Date().toISOString();
-  
+
   if (state.failures >= 5 && state.state === CB_STATE.CLOSED) {
     state.state = CB_STATE.OPEN;
     state.nextAttempt = new Date(Date.now() + 5 * 60 * 1000).toISOString(); // 5 min
     log('circuit.open', { provider, failures: state.failures });
   }
-  
+
   cb[provider] = state;
   saveCircuitBreakers(cb);
 }
@@ -405,12 +405,12 @@ function requeueItem(item, delayMs = 0) {
 function syncAutopilotQueue() {
   const autopilotQueuePath = path.join(AI_DIR, 'autopilot', 'queue.json');
   if (!fs.existsSync(autopilotQueuePath)) return 0;
-  
+
   try {
     const autopilotQueue = JSON.parse(fs.readFileSync(autopilotQueuePath, 'utf8'));
     const factoryQueue = loadQueue();
     const factoryIds = new Set(factoryQueue.map(t => t.id));
-    
+
     let synced = 0;
     for (const opp of (autopilotQueue.opportunities || [])) {
       if (opp.status !== 'new' || factoryIds.has(opp.id)) continue;
@@ -459,9 +459,9 @@ function syncAutopilotQueue() {
 async function executeTask(task, worker) {
   const startTime = Date.now();
   const taskType = task.type || 'unknown';
-  
+
   log('task.start', { id: task.id, type: taskType, worker: worker.name, model: worker.model });
-  
+
   try {
     // Route to appropriate handler
     let result;
@@ -491,9 +491,9 @@ async function executeTask(task, worker) {
         // Generic handler via local agent
         result = await executeGenericTask(task, worker);
     }
-    
+
     const duration = Date.now() - startTime;
-    
+
     // Si le handler a demandé un réenfilage (ex: attente sémaphore), ce n'est PAS un succès
     if (result && result.requeued) {
       const requeueErr = new Error(`TASK_REQUEUED:${result.reason}`);
@@ -501,25 +501,25 @@ async function executeTask(task, worker) {
       requeueErr.backoff = result.backoff;
       throw requeueErr;
     }
-    
+
     log('task.success', { id: task.id, type: taskType, duration, worker: worker.name });
     recordTelemetry('task_success', { taskId: task.id, type: taskType, worker: worker.name, duration, success: true });
     recordSuccess(worker.model);
-    
+
     return { success: true, result, duration, worker: worker.name };
-    
+
   } catch (error) {
     const duration = Date.now() - startTime;
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
-    
+
     // Guard: prevent recursive self-healing
     // A task can only receive ONE retry after self-heal
     if (task.__selfHealRetried) {
       log('task.self_heal_guard', { id: task.id, reason: 'already retried after self-heal, not re-entering' });
       throw error;
     }
-    
+
     // Attempt self-healing for factory infrastructure errors
     const context = {
       phase: 'factory-task',
@@ -527,7 +527,7 @@ async function executeTask(task, worker) {
       command: `executeTask:${taskType}`,
       exitCode: -1,
     };
-    
+
     try {
       const healResult = await selfHealing.handleError(error, context, autopilotConfig, (msg) => log('self-heal', { taskId: task.id, msg }));
       if (healResult.success) {
@@ -547,7 +547,7 @@ async function executeTask(task, worker) {
     } catch (healError) {
       log('task.self_heal_error', { id: task.id, error: healError.message });
     }
-    
+
     // Do not trip a model circuit breaker for application/test/Git failures.
     // Provider health is classified centrally by executeWithFallback().
     throw error;
@@ -558,16 +558,16 @@ async function executeWithFallback(task) {
   // code_task is LOCAL-ONLY (OpenCode + Ollama) — never falls back to cloud models
   const isCodeTask = task.type === 'code_task';
   let lastError;
-  
+
   const maxTiers = isCodeTask ? 1 : WORKER_TIERS.length;
-  
+
   for (let tierIndex = 0; tierIndex < maxTiers; tierIndex++) {
     const worker = getAvailableWorker(tierIndex);
     if (!worker) {
       log('worker.exhausted', { taskId: task.id, triedTiers: tierIndex });
       throw new Error('All workers exhausted');
     }
-    
+
     try {
       return await executeTask(task, worker);
     } catch (error) {
@@ -575,36 +575,36 @@ async function executeWithFallback(task) {
       const is429 = error.message.includes('429') || error.message.includes('rate limit');
       const isTimeout = error.message.includes('timeout') || error.message.includes('TIMEOUT');
       const isModelError = error.message.includes('model') || error.message.includes('provider');
-      
+
       if (is429 || isTimeout || isModelError) {
         recordFailure(worker.model);
       }
 
-      log('worker.fallback', { 
-        taskId: task.id, 
-        failedWorker: worker.name, 
+      log('worker.fallback', {
+        taskId: task.id,
+        failedWorker: worker.name,
         error: error.message,
         is429, isTimeout, isModelError,
         nextTier: tierIndex + 1
       });
-      
+
       // code_task never falls back — local agent either works or fails honestly
       if (isCodeTask) {
         throw error;
       }
-      
+
       // Backoff before retry
       const backoff = Math.min(1000 * Math.pow(2, tierIndex) + Math.random() * 1000, 30000);
       log('worker.backoff', { taskId: task.id, backoffMs: backoff });
       await new Promise(r => setTimeout(r, backoff));
-      
+
       // If not a model/provider error, don't fallback to next tier
       if (!is429 && !isTimeout && !isModelError) {
         throw error;
       }
     }
   }
-  
+
   throw lastError || new Error('All workers failed');
 }
 
@@ -612,19 +612,19 @@ async function executeWithFallback(task) {
 async function executeRenderBrief(task, worker) {
   const { region } = task.payload || {};
   if (!region) throw new Error('Missing region');
-  
+
   const marker = path.join(ROOT, 'scripts', 'video', 'out', `brief-${region}-${new Date().toISOString().slice(0, 10)}.mp4`);
   if (fs.existsSync(marker) && fs.statSync(marker).size > 100000) {
     return { skipped: 'exists', region };
   }
-  
+
   // Use process-runner to execute the render
   const { runBounded } = require('../lib/process-runner.cjs');
   const result = await runBounded('node', [
-    path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), 
+    path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'),
     region
   ], { cwd: ROOT, timeout: 8 * 60000 });
-  
+
   const done = fs.existsSync(marker) && fs.statSync(marker).size > 100000;
   if (!done) throw new Error('Render failed - no output file');
   return { rendered: region, size: fs.statSync(marker).size };
@@ -644,19 +644,19 @@ async function executeAPIDiscovery(task, worker) {
 
 async function executeUxObserver(task, worker) {
   log('ux_observer.start', { taskId: task.id });
-  
+
   const result = await runUXObserver();
-  
-  log('ux_observer.complete', { 
-    taskId: task.id, 
+
+  log('ux_observer.complete', {
+    taskId: task.id,
     tasksGenerated: result.tasks.length,
-    findings: result.findings.length 
+    findings: result.findings.length
   });
-  
-  return { 
-    tasksGenerated: result.tasks.length, 
+
+  return {
+    tasksGenerated: result.tasks.length,
     tasks: result.tasks.map(t => ({ id: t.id, title: t.title, score: t.score, severity: t.severity })),
-    findings: result.findings.length 
+    findings: result.findings.length
   };
 }
 
@@ -692,15 +692,15 @@ async function executeCodeTask(task, worker) {
     }
 
     const result = await executeLocalAgentTask(uxTask, autopilotConfig, (msg) => log('code_task', { taskId, msg }));
-    
+
     if (!result.success) {
       throw new Error(result.error || 'Local agent execution failed');
     }
-    
-    return { 
-      taskId, 
-      branch: result.branch, 
-      prUrl: result.prUrl, 
+
+    return {
+      taskId,
+      branch: result.branch,
+      prUrl: result.prUrl,
       prNumber: result.prNumber,
       commitSha: result.commitSha,
       duration: result.duration,
@@ -735,7 +735,7 @@ async function executeTestTask(task, worker) {
     default:
       cmd = NPM_CMD; args = ['test']; break;
   }
-  
+
   const result = await runBounded(cmd, args, { cwd: ROOT, timeout: 300000 });
   return { testType, output: result.stdout };
 }
@@ -744,10 +744,10 @@ async function executeDeployTask(task, worker) {
   // Trigger deploy via git push
   const { execSync } = require('child_process');
   execFileSync('git', ['push', 'origin', 'main'], { cwd: ROOT, encoding: 'utf8' });
-  
+
   // Wait for workflow
   await waitForWorkflow('daily-copernicus.yml');
-  
+
   return { deployed: true };
 }
 
@@ -755,7 +755,7 @@ async function executeGenericTask(task, worker) {
   // Generic implementation via local agent executor
   const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
   log('generic_task.local_execution', { taskId });
-  
+
   // For generic tasks, we still use local agent but with coding persona
   const genericTask = {
     ...task,
@@ -765,17 +765,17 @@ async function executeGenericTask(task, worker) {
       persona: 'coding'
     }
   };
-  
+
   const result = await executeCodeTaskLocal(genericTask, autopilotConfig, (msg) => log('generic_task', { taskId, msg }));
-  
+
   if (!result.success) {
     throw new Error(result.error || 'Local agent execution failed');
   }
-  
+
   if (!result.prNumber) {
     throw new Error(`No PR created for task ${taskId}`);
   }
-  
+
   return { taskId, prNumber: result.prNumber, completed: true, prUrl: result.prUrl };
 }
 
@@ -810,21 +810,21 @@ async function waitForWorkflow(workflowName) {
 // Update tasks.md to mark task as in_progress (list format only - headers are documentation)
 function updateTaskInProgress(taskId) {
   const content = fs.readFileSync(TASKS_FILE, 'utf8');
-  
+
   // Check if already claimed (in progress) - list format
   const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
   if (inProgressMatch) return; // Already marked
-  
+
   // Check if already done - list format
   const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
   if (doneMatch) return; // Already done
-  
+
   // Try list format: - [ ] TASK-PX-XXX
   let newContent = content.replace(
     new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
     `$1 — in_progress by factory_runner`
   );
-  
+
   if (newContent !== content) {
     fs.writeFileSync(TASKS_FILE, newContent);
     execSync(`git add ${TASKS_FILE}`, { cwd: ROOT, encoding: 'utf8' });
@@ -836,23 +836,28 @@ function updateTaskInProgress(taskId) {
 // Queue processing
 async function processQueue() {
   let totalProcessed = 0;
-  
+
   while (true) {
     const queue = loadQueue();
     if (!queue.length) {
       if (totalProcessed === 0) log('queue.empty');
       break;
     }
-    
+
     let processedThisRound = 0;
     for (const task of queue) {
       const taskId = task.id;
-      
+
+      // Skip parked tasks (quarantined after max retries or manual intervention — never auto-retried)
+      if (task.status === 'parked') {
+        continue;
+      }
+
       // Skip if waiting for backoff
       if (task.nextRetryAt && new Date(task.nextRetryAt).getTime() > Date.now()) {
         continue;
       }
-      
+
       // Check if already processing
       const processingFile = path.join(STATE_DIR, `processing-${taskId}.json`);
       if (fs.existsSync(processingFile)) {
@@ -862,28 +867,28 @@ async function processQueue() {
           continue;
         }
       }
-      
+
       // Update tasks.md to mark as in_progress (mapped to the raw TASK-ID;
       // the queue id `task-<TASK-ID>` matches nothing in tasks.md).
       // Proof-task ids (no TASK-Px-xxx pattern) intentionally no-op here.
       updateTaskInProgress(task.payload?.taskId || taskId.replace(/^task-/, ''));
-      
+
       // Mark as processing
-      fs.writeFileSync(processingFile, JSON.stringify({ 
-        taskId, 
+      fs.writeFileSync(processingFile, JSON.stringify({
+        taskId,
         startedAt: new Date().toISOString(),
-        pid: process.pid 
+        pid: process.pid
       }));
-      
+
       // Marquer la tâche comme en cours pour le suivi de progrès du superviseur
       setHeartbeatTaskId(taskId);
-      
+
       try {
         const result = await executeWithFallback(task);
-        
+
         // Marquer la tâche comme terminée pour le suivi de progrès
         setHeartbeatTaskId(null);
-        
+
         // Mark completed only after successful execution. Keeping the queue item
         // until success makes the task recoverable across runner crashes.
         removeQueueItem(taskId);
@@ -891,13 +896,13 @@ async function processQueue() {
         log('task.completed', { id: taskId });
         processedThisRound++;
         totalProcessed++;
-        
+
       } catch (error) {
         // Marquer la tâche comme en cours pour le suivi de progrès
         setHeartbeatTaskId(taskId);
         // Requeue with backoff (synchronous - write immediately)
         fs.unlinkSync(processingFile);
-        
+
         // Si la tâche a demandé un réenfilage (ex: attente sémaphore), ne PAS incrémenter retryCount
         if (error.requeued && error.message.startsWith('TASK_REQUEUED:')) {
           const backoff = error.backoff || 10000;
@@ -906,18 +911,18 @@ async function processQueue() {
           log('task.requeued-sema', { id: taskId, reason: error.message, backoff });
           continue;
         }
-        
+
         const retryCount = (task.retryCount || 0) + 1;
         const maxRetries = task.maxRetries || 3;
-        
+
         if (retryCount <= maxRetries) {
           const backoff = Math.min(5000 * Math.pow(2, retryCount - 1), 300000); // Max 5 min
           task.retryCount = retryCount;
           task.lastError = error.message;
           task.lastRetryAt = new Date().toISOString();
-          
+
           log('task.requeue', { id: taskId, retry: retryCount, backoff });
-          
+
           // For backoff, we schedule a requeue but also continue processing other tasks
           // The backoff is handled by setting a future retry time
           task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
@@ -932,13 +937,13 @@ async function processQueue() {
         }
       }
     }
-    
+
     if (processedThisRound === 0) {
       // No tasks were processed this round (all still processing or waiting for backoff)
       break;
     }
   }
-  
+
   return totalProcessed;
 }
 
@@ -946,9 +951,9 @@ async function processQueue() {
 async function generateDiscoveryTasks() {
   // GitHub Discovery - run every 6 hours
   const ghLastRun = path.join(STATE_DIR, 'github-discovery-last.json');
-  const ghShouldRun = !fs.existsSync(ghLastRun) || 
+  const ghShouldRun = !fs.existsSync(ghLastRun) ||
     (Date.now() - new Date(JSON.parse(fs.readFileSync(ghLastRun, 'utf8')).timestamp).getTime()) > 6 * 60 * 60 * 1000;
-  
+
   if (ghShouldRun) {
     saveQueueItem({
       id: `gh-discovery-${Date.now()}`,
@@ -962,12 +967,12 @@ async function generateDiscoveryTasks() {
     fs.writeFileSync(ghLastRun, JSON.stringify({ timestamp: Date.now() }));
     log('queue.add', { task: 'github_discovery' });
   }
-  
+
   // API Discovery - run every 12 hours
   const apiLastRun = path.join(STATE_DIR, 'api-discovery-last.json');
-  const apiShouldRun = !fs.existsSync(apiLastRun) || 
+  const apiShouldRun = !fs.existsSync(apiLastRun) ||
     (Date.now() - new Date(JSON.parse(fs.readFileSync(apiLastRun, 'utf8')).timestamp).getTime()) > 12 * 60 * 60 * 1000;
-  
+
   if (apiShouldRun) {
     saveQueueItem({
       id: `api-discovery-${Date.now()}`,
@@ -981,20 +986,20 @@ async function generateDiscoveryTasks() {
     fs.writeFileSync(apiLastRun, JSON.stringify({ timestamp: Date.now() }));
     log('queue.add', { task: 'api_discovery' });
   }
-  
+
   // Check tasks.md for pending tasks (list format only - headers are documentation, not trackers)
   const tasksContent = fs.readFileSync(TASKS_FILE, 'utf8');
   const lines = tasksContent.split('\n');
-  
+
   for (const line of lines) {
     // Format 1 only: liste avec checkbox - [ ] TASK-PX-XXX
     const match = line.match(/^-\s*\[\s*\]\s*(TASK-P\d-\d{3})\s*(.*)/);
-    
+
     if (match) {
       const taskId = match[1];
       const queueId = `task-${taskId}`;
       const queueFile = path.join(QUEUE_DIR, `${queueId}.json`);
-      
+
       if (!fs.existsSync(queueFile)) {
         saveQueueItem({
           id: queueId,
@@ -1016,13 +1021,13 @@ async function generateDiscoveryTasks() {
 async function recoverStaleTasks() {
   const queue = loadQueue();
   const now = Date.now();
-  
+
   for (const task of queue) {
     // Check if task is waiting for backoff
     if (task.nextRetryAt && new Date(task.nextRetryAt).getTime() > now) {
       continue; // Still waiting for backoff
     }
-    
+
     // Stale if no update for 30 min and retryCount > 0
     const lastUpdate = task.lastRetryAt ? new Date(task.lastRetryAt).getTime() : new Date(task.createdAt).getTime();
     if (now - lastUpdate > 30 * 60 * 1000 && task.retryCount > 0) {
@@ -1042,7 +1047,7 @@ async function recoverFailedWorkers() {
     const proc = JSON.parse(fs.readFileSync(path.join(STATE_DIR, file), 'utf8'));
     if (!pidAlive(proc.pid)) {
       log('recovery.orphaned', { taskId: proc.taskId, deadPid: proc.pid });
-      
+
       // Requeue the task
       const taskId = proc.taskId;
       const queueFile = path.join(QUEUE_DIR, `${taskId}.json`);
@@ -1052,7 +1057,7 @@ async function recoverFailedWorkers() {
         task.lastError = 'Worker process died';
         saveQueueItem(task);
       }
-      
+
       fs.unlinkSync(path.join(STATE_DIR, file));
     }
   }
@@ -1094,10 +1099,10 @@ async function runCycle() {
   telemetry.lastCycle = new Date().toISOString();
   saveTelemetry(telemetry);
   log('cycle.start', { cycle: telemetry.cycles });
-  
+
   // Generate discovery tasks
   await generateDiscoveryTasks();
-  
+
   // Run UX Observer to generate autonomous UX tasks (every 3 cycles = ~3 min)
   if (telemetry.cycles % 3 === 0) {
     log('ux_observer.scheduled', { cycle: telemetry.cycles });
@@ -1107,21 +1112,21 @@ async function runCycle() {
       log('ux_observer.error', { error: e.message });
     }
   }
-  
+
   // Sync tasks from autopilot queue
   const synced = syncAutopilotQueue();
   if (synced > 0) log('queue.synced', { count: synced });
-  
+
   // Recover stale/failed
   await recoverStaleTasks();
   await recoverFailedWorkers();
-  
+
   // Process queue
   const processed = await processQueue();
-  
+
   // Cleanup temp files
   await stopAllServers();
-  
+
   // Write heartbeat for external supervisor monitoring
   try {
     fs.writeFileSync(HEARTBEAT_FILE, JSON.stringify({
@@ -1133,20 +1138,20 @@ async function runCycle() {
   } catch (_) {}
 
   log('cycle.end', { processed, queueRemaining: loadQueue().length });
-  
+
   return processed;
 }
 
 async function runContinuous(options = {}) {
   const { once = false, interval = CYCLE_INTERVAL_MS, supervisor = false } = options;
-  
+
   log('factory.start', { mode: once ? 'once' : 'continuous', interval, supervisor, maxRunMinutes: MAX_RUN_MINUTES });
-  
+
   // Démarrer le heartbeat périodique pour le superviseur externe
   startPeriodicHeartbeat(30000);
-  
+
   const startTime = Date.now();
-  
+
   while (true) {
     // Check max run budget (configurable)
     const elapsedMin = (Date.now() - startTime) / 60000;
@@ -1154,14 +1159,14 @@ async function runContinuous(options = {}) {
       log('supervisor.budget', { elapsedMin: elapsedMin.toFixed(1), maxRunMinutes: MAX_RUN_MINUTES });
       break;
     }
-    
+
     try {
       await runCycle();
       recordHealthyCycle();
     } catch (error) {
       recordCrash(error);
       log('cycle.error', { error: error.message, stack: error.stack });
-      
+
       if (supervisor && !shouldStopSupervisor()) {
         // Progressive backoff before restart
         const backoffMs = Math.min(5000 * Math.pow(2, Math.min(loadSupervisorState().restarts, 5)), 300000);
@@ -1174,13 +1179,13 @@ async function runContinuous(options = {}) {
         break;
       }
     }
-    
+
     if (once) break;
-    
+
     log('cycle.wait', { intervalMs: interval });
     await new Promise(r => setTimeout(r, interval));
   }
-  
+
   log('factory.stop');
   stopPeriodicHeartbeat();
 }
@@ -1191,13 +1196,13 @@ async function main() {
   const showStatus = args.includes('--status');
   const supervisor = args.includes('--supervisor');
   const interval = parseInt(args.find(a => a.startsWith('--interval='))?.split('=')[1] || String(CYCLE_INTERVAL_MS));
-  
+
   if (showStatus) {
     const t = loadTelemetry();
     const cb = loadCircuitBreakers();
     const queue = loadQueue();
     const s = loadSupervisorState();
-    
+
     console.log('\n=== Factory Runner Status ===\n');
     console.log(`Cycles: ${t.cycles}`);
     console.log(`Last cycle: ${t.lastCycle || 'never'}`);
@@ -1210,9 +1215,9 @@ async function main() {
     console.log(`Tasks:`, t.tasks);
     return;
   }
-  
+
   acquireLock();
-  
+
   try {
     await runContinuous({ once, interval, supervisor });
   } finally {

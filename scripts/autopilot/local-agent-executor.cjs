@@ -1,9 +1,9 @@
 'use strict';
 /**
  * local-agent-executor.cjs — Execute coding tasks locally via OpenCode + Ollama
- * 
+ *
  * Replaces the GitHub issue creation with actual local agent execution.
- * 
+ *
  * Flow:
  * 1. Receive task (from queue or tasks.md)
  * 2. Create git worktree/branch
@@ -22,6 +22,8 @@ const C = require('./lib/common.cjs');
 const gitops = require('./lib/gitops.cjs');
 const policy = require('./lib/policy.cjs');
 const { runVisualQA } = require('./visual-qa.cjs');
+const { execBounded } = require('../lib/process-runner.cjs');
+const { killProcessTree } = require('../lib/process-runner.cjs');
 
 const ROOT = C.ROOT;
 const OPENCODE_AUTO = path.join(ROOT, '.ai', 'ux-agent', 'opencode-auto.cjs');
@@ -32,10 +34,10 @@ const OPENCODE_AUTO = path.join(ROOT, '.ai', 'ux-agent', 'opencode-auto.cjs');
 function buildAgentPrompt(task, isUxTask = false) {
   const personaPath = path.join(__dirname, 'personas', (task.persona || 'ui-ux') + '.md');
   const persona = fs.existsSync(personaPath) ? fs.readFileSync(personaPath, 'utf8') : '';
-  
+
   const scopeFiles = (task.scope && task.scope.files || task.files || []).join(', ');
   const evidence = task.evidence || task.description || 'No specific evidence provided';
-  
+
   const constraints = [
     'HARD CONSTRAINTS (violation = task failure):',
     '- ONLY modify files in scope: ' + (scopeFiles || 'NONE — propose only'),
@@ -48,7 +50,7 @@ function buildAgentPrompt(task, isUxTask = false) {
     '- Follow existing repo patterns, minimal changes',
     '- All new text must use i18n _t() function',
   ];
-  
+
   const acceptanceCriteria = [
     'ACCEPTANCE CRITERIA:',
     '- Gate de ship passes: build + smoke + bundle + PHP lint',
@@ -59,7 +61,7 @@ function buildAgentPrompt(task, isUxTask = false) {
     '- Visual regression: no unintended changes on key routes',
     '- No new console errors or page errors',
   ];
-  
+
   let taskContext = '';
   if (task.task) {
     taskContext = '\nSTRUCTURED TASK CONTEXT:\n' + JSON.stringify({
@@ -71,7 +73,7 @@ function buildAgentPrompt(task, isUxTask = false) {
       stopCondition: task.task.stopCondition || '',
     }, null, 2);
   }
-  
+
   const promptParts = [
     persona,
     '',
@@ -95,7 +97,7 @@ function buildAgentPrompt(task, isUxTask = false) {
     'Applique le fix MAINTENANT sur le working tree, puis arrête-toi.',
     'Ne commit pas, ne push pas — le runner gère le reste.',
   ];
-  
+
   return promptParts.join('\n');
 }
 
@@ -111,11 +113,11 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = 
 
     const runAttempt = async () => {
       attempt++;
-      
+
       // Re-run model router with current exclude list to get a different model
       const { routeModel } = require('./local-model-router.cjs');
       const routeResult = await routeModel('coding', { exclude: currentExcludeModels });
-      
+
       if (!routeResult.ok) {
         if (liveMode) log(`[LIVE] No local model available after exclusions`);
         else log(`No local model available after exclusions`);
@@ -150,13 +152,21 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = 
         child.stderr.on('data', d => { err += d; if (liveMode && err.length > 10000) err = err.slice(-8000); });
       }
 
-      const kill = setTimeout(() => { try { child.kill('SIGKILL'); } catch (_) {} }, cfg.policy.agentMaxMinutes * 60000);
-      
+      // Timeout hard cap de 5 minutes (300000 ms) pour éviter qu'une tâche ne bloque la queue indéfiniment.
+      // child.kill('SIGKILL') ne tue pas un processus bloqué dans une opération CPU-intensive sous Windows.
+      // On utilise killProcessTree (taskkill /T /F) pour une terminaison fiable de l'arbre de processus.
+      const agentMaxMs = cfg.policy.agentMaxMinutes * 60000;
+      const timeoutMs = Math.min(agentMaxMs, 300000);
+      const kill = setTimeout(() => {
+        try { killProcessTree(child.pid, 'SIGKILL'); } catch (_) {}
+        try { child.kill('SIGKILL'); } catch (_) {}
+      }, timeoutMs);
+
       child.on('exit', async (code, signal) => {
         clearTimeout(kill);
-        
+
         if (liveMode) log(`[LIVE] OpenCode exited with code ${code}, model: ${selectedModel}`);
-        
+
         if (signal) {
           // Process was killed - retry if attempts remain
           if (attempt < maxRetries) {
@@ -188,8 +198,8 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = 
         }
       });
 
-      child.on('error', async (e) => { 
-        clearTimeout(kill); 
+      child.on('error', async (e) => {
+        clearTimeout(kill);
         if (attempt < maxRetries) {
           await new Promise(r => setTimeout(r, 5000 * attempt));
           runAttempt();
@@ -208,38 +218,43 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = 
  */
 async function runBeforeValidation(worktreePath, task, cfg, log) {
   log(`Running BEFORE validation for ${task.id}...`);
-  
+
   const { withPreviewServer, stopAllServers, VITE_BIN } = require('../lib/process-runner.cjs');
   await stopAllServers();
-  
+
   const validation = await withPreviewServer(
     async (baseUrl) => {
-      const { execFileSync } = require('child_process');
       const smokeScript = path.join(ROOT, 'scripts', 'ux-smoke.mjs');
-      const output = execFileSync(process.execPath, [smokeScript], {
+      const result = await execBounded(process.execPath, [smokeScript], {
         cwd: ROOT,
-        encoding: 'utf8',
         timeout: 180000,
         env: { ...process.env, SMOKE_BASE: baseUrl },
-        stdio: ['ignore', 'pipe', 'pipe'],
         windowsHide: true
       });
-      
+
+      if (result.timedOut) {
+        throw new Error(`BEFORE validation smoke test timeout after 180000ms`);
+      }
+      if (result.code !== 0) {
+        throw new Error(`BEFORE validation smoke test failed (code ${result.code}): ${(result.stderr || result.error || '').slice(0, 2000)}`);
+      }
+      const output = result.stdout;
+
       const requiredTokens = [
         'FUNNEL_REACHED=map+fiche+paywall',
         'ERRORS=[]',
         'WHITE_OR_TRANSPARENT_BUTTONS=[]',
         'RM_INFINITE=[]'
       ];
-      
+
       const missing = requiredTokens.filter(t => !output.includes(t));
       if (missing.length) {
         throw new Error(`BEFORE validation failed - missing tokens: ${missing.join(', ')}`);
       }
-      
+
       // Run visual QA to establish baselines
       const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl, task.region);
-      
+
       return {
         success: true,
         smokeOutput: output,
@@ -253,7 +268,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
       previewArgs: ['preview', '--port', '4173', '--host']
     }
   );
-  
+
   return validation;
 }
 
@@ -262,37 +277,42 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
  */
 async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
   log(`Running AFTER validation for ${task.id}...`);
-  
+
   const { withPreviewServer, stopAllServers, VITE_BIN } = require('../lib/process-runner.cjs');
-  
+
   const validation = await withPreviewServer(
     async (baseUrl) => {
-      const { execFileSync } = require('child_process');
       const smokeScript = path.join(ROOT, 'scripts', 'ux-smoke.mjs');
-      const output = execFileSync(process.execPath, [smokeScript], {
+      const result = await execBounded(process.execPath, [smokeScript], {
         cwd: ROOT,
-        encoding: 'utf8',
         timeout: 180000,
         env: { ...process.env, SMOKE_BASE: baseUrl },
-        stdio: ['ignore', 'pipe', 'pipe'],
         windowsHide: true
       });
-      
+
+      if (result.timedOut) {
+        throw new Error(`BEFORE validation smoke test timeout after 180000ms`);
+      }
+      if (result.code !== 0) {
+        throw new Error(`BEFORE validation smoke test failed (code ${result.code}): ${(result.stderr || result.error || '').slice(0, 2000)}`);
+      }
+      const output = result.stdout;
+
       const requiredTokens = [
         'FUNNEL_REACHED=map+fiche+paywall',
         'ERRORS=[]',
         'WHITE_OR_TRANSPARENT_BUTTONS=[]',
         'RM_INFINITE=[]'
       ];
-      
+
       const missing = requiredTokens.filter(t => !output.includes(t));
       if (missing.length) {
         throw new Error(`AFTER validation failed - missing tokens: ${missing.join(', ')}`);
       }
-      
+
       // Run visual QA for comparison
       const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl, task.region);
-      
+
       // Check for visual regressions
       // Les erreurs de harnais (harnessError: true) ne sont PAS des régressions :
       // elles indiquent un problème de capture/comparaison, pas un changement visuel.
@@ -305,16 +325,22 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
           return `${r.route}@${r.viewport} (${dp}%)`;
         }).join(', ')}`);
       }
-      
+
       // Check bundle budget
       try {
-        execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
-          cwd: ROOT, encoding: 'utf8', timeout: 60000, windowsHide: true
+        const budgetResult = await execBounded(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
+          cwd: ROOT, timeout: 60000, windowsHide: true
         });
+        if (budgetResult.timedOut) {
+          throw new Error(`Bundle budget timeout after 60000ms`);
+        }
+        if (budgetResult.code !== 0) {
+          throw new Error(`Bundle budget exceeded: ${(budgetResult.stderr || budgetResult.error || '').slice(0, 2000)}`);
+        }
       } catch (e) {
         throw new Error(`Bundle budget exceeded: ${e.message}`);
       }
-      
+
       return {
         success: true,
         smokeOutput: output,
@@ -329,7 +355,7 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       previewArgs: ['preview', '--port', '4174', '--host']
     }
   );
-  
+
   return validation;
 }
 
@@ -338,16 +364,16 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
  */
 async function executeLocalAgentTask(task, cfg, log) {
   const startTime = Date.now();
-  
+
   // Create worktree
   const slug = task.id.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
   const branch = cfg.git.branchPrefix + 'ux-' + slug;
-  
+
   log(`Creating worktree for ${task.id} on branch ${branch}...`);
-  
+
   let wt;
   try {
-    wt = gitops.prepareWorktree(cfg, branch, m => log('[worktree] ' + m));
+    wt = await gitops.prepareWorktree(cfg, branch, m => log('[worktree] ' + m));
   } catch (e) {
     const msg = String(e.message || e);
     if (/already exists|already in use|worktree|not a valid ref|unable to create|locked/i.test(msg)) {
@@ -355,31 +381,31 @@ async function executeLocalAgentTask(task, cfg, log) {
     }
     throw e;
   }
-  
+
   try {
     // 1. BEFORE validation
     const beforeResult = await runBeforeValidation(wt, task, cfg, log);
     log(`BEFORE validation passed`);
-    
+
     // 2. Build agent prompt
     let prompt = buildAgentPrompt(task, task.type === 'ux_task');
-    
+
     // 3. Execute agent with repair attempts and 429/model fallback
     let agentResult = null;
     for (let attempt = 1; attempt <= cfg.loop.maxRepairAttempts; attempt++) {
       log(`Agent attempt ${attempt}/${cfg.loop.maxRepairAttempts}...`);
-      
+
       // Pass current exclude models from previous 429 failures
       const excludeModels = agentResult?.excludedModels || [];
       agentResult = await runOpenCodeAgent(wt, prompt, cfg, log, excludeModels);
-      
+
       if (agentResult.ok) {
         log(`Agent completed successfully with model: ${agentResult.model}`);
         break;
       }
-      
+
       log(`Agent attempt ${attempt} failed: ${agentResult.err || agentResult.out}`);
-      
+
       if (attempt < cfg.loop.maxRepairAttempts) {
         // Add failure context to prompt for next attempt
         const failureContext = agentResult.err || agentResult.out;
@@ -387,49 +413,49 @@ async function executeLocalAgentTask(task, cfg, log) {
         await new Promise(r => setTimeout(r, 10000));
       }
     }
-    
+
     if (!agentResult || !agentResult.ok) {
       const lastModel = agentResult?.model || 'unknown';
       const is429 = agentResult?.is429 ? ' (rate limited)' : '';
       throw new Error(`Agent failed after ${cfg.loop.maxRepairAttempts} attempts with model ${lastModel}${is429}: ${agentResult?.err || 'unknown'}`);
     }
-    
+
     // 4. Policy checks on diff
     const diff = gitops.diffStats(wt);
     const ev = policy.evaluateFiles(diff.files, cfg);
     if (!ev.allowed) {
       throw new Error(`Policy violation: ${ev.denied.join(', ')}`);
     }
-    
+
     const budgetErrs = policy.evaluateBudget(diff, cfg);
     if (budgetErrs.length) {
       throw new Error(`Budget exceeded: ${budgetErrs.join(' ; ')}`);
     }
-    
+
     const secrets = policy.scanSecrets(diff.diffText);
     if (secrets.length) {
       throw new Error(`Secrets detected: ${secrets.join(', ')}`);
     }
-    
+
     // 5. Run gate (build + tests + bundle + PHP lint)
     log(`Running gate checks...`);
     const gate = await runGateInline(wt, diff.files, log);
-    
+
     if (!gate.ok) {
       throw new Error(`Gate failed: ${gate.failedStep} - ${gate.detail}`);
     }
-    
+
     // 6. AFTER validation
     const afterResult = await runAfterValidation(wt, task, beforeResult, cfg, log);
     log(`AFTER validation passed`);
-    
+
     // 7. Commit and push
     const commitSha = gitops.commitAll(wt,
       `fix(ux): ${task.title.slice(0, 90)}\n\nTask: ${task.id}\nEvidence: ${(task.evidence || '').slice(0, 200)}\nRollback: ${task.rollback || 'revert'}\n\nAutopilot UX cycle`,
       diff.files);
-    
+
     gitops.pushBranch(wt, branch, cfg);
-    
+
     // 8. Create PR
     const body = [
       `## 🤖 Autonomous UX Improvement`,
@@ -455,15 +481,15 @@ async function executeLocalAgentTask(task, cfg, log) {
       `### Stats`,
       `- ${diff.files.length} files, +${diff.insertions}/-${diff.deletions} lines`,
     ].join('\n');
-    
-    const pr = gitops.createPR(wt, { 
-      title: `[ux] ${task.title.slice(0, 80)}`, 
-      body, 
-      base: cfg.git.baseBranch 
+
+    const pr = gitops.createPR(wt, {
+      title: `[ux] ${task.title.slice(0, 80)}`,
+      body,
+      base: cfg.git.baseBranch
     });
-    
+
     const duration = Date.now() - startTime;
-    
+
     return {
       success: true,
       taskId: task.id,
@@ -476,7 +502,7 @@ async function executeLocalAgentTask(task, cfg, log) {
       diff: { files: diff.files, insertions: diff.insertions, deletions: diff.deletions },
       gateSteps: gate.steps
     };
-    
+
   } finally {
     // Cleanup worktree
     try { gitops.cleanupWorktree(wt); } catch (_) {}
@@ -488,11 +514,11 @@ async function executeLocalAgentTask(task, cfg, log) {
  */
 async function executeCodeTaskLocal(task, cfg, log) {
   const taskId = task.payload?.taskId || task.id.replace(/^task-/, '');
-  
+
   // Load task details from tasks.md
   const tasksContent = fs.readFileSync(path.join(ROOT, '.ai', 'tasks.md'), 'utf8');
   const taskMatch = tasksContent.match(new RegExp(`### ${taskId}[\\s\\S]*?(?=###|$)`, 'm'));
-  
+
   const fullTask = {
     id: taskId,
     type: 'code_task',
@@ -504,7 +530,7 @@ async function executeCodeTaskLocal(task, cfg, log) {
     rollback: 'revert',
     ...task.payload
   };
-  
+
   return executeLocalAgentTask(fullTask, cfg, log);
 }
 
@@ -513,32 +539,32 @@ async function executeCodeTaskLocal(task, cfg, log) {
  */
 async function runGateInline(worktreePath, files, log) {
   const { withPreviewServer, stopAllServers, VITE_BIN, NPM_CMD } = require('../lib/process-runner.cjs');
-  const { spawnSync } = require('child_process');
   const steps = [];
-  
-  // Helper to run command that works with both string and array commands
-  function runSync(cmd, args, options) {
-    const opts = { ...options, windowsHide: true };
-    if (Array.isArray(cmd)) {
-      // cmd is [nodePath, npmCliPath] - use spawnSync with the full command
-      return spawnSync(cmd[0], [cmd[1], ...args], opts);
-    }
-    return execFileSync(cmd, args, opts);
-  }
-  
   try {
     // 1. Build
     log('Gate: Building...');
-    runSync(NPM_CMD, ['run', 'build'], { cwd: ROOT, encoding: 'utf8', timeout: 300000 });
+    const buildResult = await execBounded(NPM_CMD, ['run', 'build'], { cwd: ROOT, timeout: 300000, windowsHide: true });
+    if (buildResult.timedOut) {
+      throw new Error(`Gate build timeout after 300000ms`);
+    }
+    if (buildResult.code !== 0) {
+      throw new Error(`Gate build failed (code ${buildResult.code}): ${(buildResult.stderr || buildResult.error || '').slice(0, 2000)}`);
+    }
     steps.push('build');
-    
+
     // 2. Bundle budget
     log('Gate: Checking bundle budget...');
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], { 
-      cwd: ROOT, encoding: 'utf8', timeout: 60000 
+    const budgetResult = await execBounded(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
+      cwd: ROOT, timeout: 60000, windowsHide: true
     });
+    if (budgetResult.timedOut) {
+      throw new Error(`Gate bundle budget timeout after 60000ms`);
+    }
+    if (budgetResult.code !== 0) {
+      throw new Error(`Gate bundle budget failed (code ${budgetResult.code}): ${(budgetResult.stderr || budgetResult.error || '').slice(0, 2000)}`);
+    }
     steps.push('bundle-budget');
-    
+
     // 3. PHP lint on modified PHP files
     const phpFiles = (files || []).filter(f => typeof f === 'string' && f.endsWith('.php'));
     if (phpFiles.length > 0) {
@@ -547,38 +573,50 @@ async function runGateInline(worktreePath, files, log) {
         if (typeof phpFile !== 'string') continue;
         const fullPath = path.join(worktreePath, phpFile);
         if (fs.existsSync(fullPath)) {
-          execFileSync('php', ['-l', fullPath], { cwd: ROOT, encoding: 'utf8', timeout: 30000, windowsHide: true });
+          const phpResult = await execBounded('php', ['-l', fullPath], { cwd: ROOT, timeout: 30000, windowsHide: true });
+          if (phpResult.timedOut) {
+            throw new Error(`Gate PHP lint timeout after 30000ms for ${phpFile}`);
+          }
+          if (phpResult.code !== 0) {
+            throw new Error(`Gate PHP lint failed for ${phpFile}: ${(phpResult.stderr || phpResult.error || '').slice(0, 500)}`);
+          }
         }
       }
       steps.push('php-lint');
     }
-    
+
     // 4. Smoke test (ux-smoke.mjs)
     log('Gate: Running smoke test...');
     await withPreviewServer(
       async (baseUrl) => {
         const smokeScript = path.join(ROOT, 'scripts', 'ux-smoke.mjs');
-        const output = execFileSync(process.execPath, [smokeScript], {
+        const result = await execBounded(process.execPath, [smokeScript], {
           cwd: ROOT,
-          encoding: 'utf8',
           timeout: 180000,
           env: { ...process.env, SMOKE_BASE: baseUrl },
-          stdio: ['ignore', 'pipe', 'pipe'],
           windowsHide: true
         });
-        
+
+        if (result.timedOut) {
+          throw new Error(`Gate smoke test timeout after 180000ms`);
+        }
+        if (result.code !== 0) {
+          throw new Error(`Gate smoke test failed (code ${result.code}): ${(result.stderr || result.error || '').slice(0, 2000)}`);
+        }
+        const output = result.stdout;
+
         const requiredTokens = [
           'FUNNEL_REACHED=map+fiche+paywall',
           'ERRORS=[]',
           'WHITE_OR_TRANSPARENT_BUTTONS=[]',
           'RM_INFINITE=[]'
         ];
-        
+
         const missing = requiredTokens.filter(t => !output.includes(t));
         if (missing.length) {
           throw new Error(`Smoke test failed - missing tokens: ${missing.join(', ')}`);
         }
-        
+
         steps.push('smoke-test');
       },
       {
@@ -588,9 +626,9 @@ async function runGateInline(worktreePath, files, log) {
         previewArgs: ['preview', '--port', '4173', '--host']
       }
     );
-    
+
     return { ok: true, steps };
-    
+
   } catch (e) {
     return { ok: false, failedStep: steps[steps.length - 1] || 'unknown', detail: e.message };
   }
