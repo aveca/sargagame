@@ -1,11 +1,27 @@
 name: Cloudflare Production
 
+# CORRECTION DU DECLENCHEMENT (P0)
+#
+# Cette branche de developpement etait listee dans `on.push.branches` (ajout
+# par ff7ba671 « TASK-P1-002 branch deployment »). Consequence mesuree :
+# 10 executions rouges IDENTIQUES (run 39383768675, SHA 4eea0367, ...) — les
+# 6 builds regionaux passaient, `certification-gate` echouait toujours.
+#
+# Cause racine : la porte de certification exige les checks CI `test-frontend`
+# et `perf` SUR LE SHA EXACT ; ces checks ne sont produits que sur `main` (ou
+# PR vers `main`). Sur une autre ref ils n'existent JAMAIS pour ce SHA, et la
+# porte — fail-closed par conception — refuse systematiquement. Le refus etait
+# CORRECT ; c'est le declenchement qui etait fautif.
+#
+# Correction : la production n'est declenchee que depuis `main`. Un
+# declenchement manuel sur cette branche est un run de VALIDATION (build +
+# controles, aucun deploiement) — le job `scope` le marque explicitement.
+
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-      - agent/coding/TASK-P1-002
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
@@ -20,6 +36,83 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── PÉRIMÈTRE D'APPLICATION (P0) ──────────────────────────────────────────
+  # Détermine si ce run est un run de PRODUCTION (déploiement réel) ou un run
+  # de VALIDATION (build + contrôles de développement, sans parcours de prod).
+  #
+  # CE QUE CE JOB NE FAIT PAS — il ne contourne aucune preuve :
+  #   - la porte de certification reste fail-closed et inchangée sur tout run
+  #     de production (mêmes checks requis, même attente bornée anti-course) ;
+  #   - un run non applicable n'est jamais « vert » par fraude : les jobs de
+  #     production sont ÉCARTÉS (skipped) et le motif est écrit explicitement
+  #     dans le résumé du run (GitHub annotation ::warning::) ;
+  #   - une absence de preuve n'est jamais convertie en succès : un run de
+  #     production sans `test-frontend`/`perf` verts reste rouge.
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      production: ${{ steps.decide.outputs.production }}
+      ref: ${{ steps.decide.outputs.ref }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - id: decide
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          TRIGGER_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          TRIGGER_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        run: |
+          set -euo pipefail
+          production=false
+          reason=""
+          case "$EVENT_NAME" in
+            push)
+              if [ "$REF_NAME" = "main" ]; then
+                production=true
+                reason="push sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            workflow_dispatch)
+              if [ "$REF_NAME" = "main" ]; then
+                production=true
+                reason="declenchement manuel sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            workflow_run)
+              if [ "$TRIGGER_BRANCH" = "main" ] && [ "$TRIGGER_CONCLUSION" = "success" ]; then
+                production=true
+                reason="workflow_run 'Daily Copernicus + Deploy' reussi sur 'main' : parcours de production applicable"
+              fi
+              ;;
+            *)
+              reason="evenement '$EVENT_NAME' non couvert par un deploiement"
+              ;;
+          esac
+          if [ "$production" != "true" ]; then
+            reason="ref '$REF_NAME' (evenement '$EVENT_NAME') non deployable : parcours de production NON APPLICABLE - build et controles executes, aucun deploiement, aucune certification exigee"
+            echo "::warning title=Cloudflare Production - parcours non applicable::${reason}"
+          fi
+          echo "production=$production" >> "$GITHUB_OUTPUT"
+          echo "ref=$REF_NAME" >> "$GITHUB_OUTPUT"
+          echo "reason=$reason" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Cloudflare Production - perimetre du run"
+            echo ""
+            echo "- Evenement : \`$EVENT_NAME\`"
+            echo "- Ref : \`$REF_NAME\`"
+            echo "- Parcours de production : \`$production\`"
+            echo "- Motif : $reason"
+            if [ "$production" != "true" ]; then
+              echo ""
+              echo "> **NON APPLICABLE** - ce run ne deploie rien."
+              echo "> Les jobs de production (certification-gate, deploy, deploy-pages,"
+              echo "> verify-fleet, post-deploy-verify) sont ecartes explicitement."
+              echo "> Les builds et controles de ce run restent valables comme"
+              echo "> validation de developpement."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -64,6 +157,8 @@ jobs:
   #   NOT_PROVEN           = checks absents/rouges/en-cours, API indisponible,
   #                          attestation corrompue ⇒ REFUS (deploy/deploy-pages skipped)
   certification-gate:
+    needs: [scope]
+    if: needs.scope.outputs.production == 'true'
     permissions:
       contents: read
       checks: read        # lecture des check-runs du SHA (preuve CI authentique)
@@ -103,8 +198,8 @@ jobs:
           retention-days: 90
 
   deploy:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, scope]
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     strategy:
@@ -243,8 +338,8 @@ jobs:
   # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
   # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
   post-deploy-verify:
-    needs: [deploy]
-    if: always() && needs.deploy.result == 'success'
+    needs: [deploy, scope]
+    if: always() && needs.deploy.result == 'success' && needs.scope.outputs.production == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -275,8 +370,8 @@ jobs:
           node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
 
   deploy-pages:
-    needs: [build, certification-gate]
-    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
+    needs: [build, certification-gate, scope]
+    if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -325,14 +420,18 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=${GITHUB_REF#refs/heads/}
+          # Pages doit recevoir le meme artefact que le Worker. Le deploiement
+          # de production n'existe que depuis `main` (job `scope`) : la branche
+          # de deploiement reste donc toujours `main`. On ne derive plus la
+          # branche du ref ici — un ref non-`main` ne deploie plus rien.
+          command: pages deploy ${{ steps.prep.outputs.dir }} --project-name=${{ matrix.project }} --branch=main
 
   # Contrôle de flotte : les 6 domaines doivent rester cohérents entre eux.
   # C'est le garde-fou qui aurait bloqué le cutover du 07/10 (tulum figé,
   # sitemap 404 sur 3 domaines, canonicals GP → Martinique).
   verify-fleet:
-    needs: [deploy]
-    if: always() && needs.deploy.result == 'success'
+    needs: [deploy, scope]
+    if: always() && needs.deploy.result == 'success' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
