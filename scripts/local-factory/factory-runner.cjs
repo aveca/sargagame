@@ -46,6 +46,7 @@ const CIRCUIT_BREAKER_FILE = path.join(STATE_DIR, 'circuit-breakers.json');
 const WORKER_POOL_FILE = path.join(STATE_DIR, 'worker-pool.json');
 const OPENCODE_SEMAPHORE_FILE = path.join(STATE_DIR, 'opencode-semaphore.json');
 const SUPERVISOR_STATE_FILE = path.join(STATE_DIR, 'supervisor-state.json');
+const HEARTBEAT_FILE = path.join(STATE_DIR, 'heartbeat.json');
 
 const MAX_OPENCODE_CONCURRENT = 2;
 
@@ -81,17 +82,43 @@ function acquireOpenCodeSemaphore(taskId) {
   if (fs.existsSync(OPENCODE_SEMAPHORE_FILE)) {
     try { semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8')); } catch (_) {}
   }
-  // Réparer un compteur incohérent (ex: count > holders.length après crash)
-  if (semaphore.count > semaphore.holders.length) {
+  // Réparer un compteur incohérent ou des holders orphelins (après crash)
+  const now = Date.now();
+  const staleMaxAge = 10 * 60 * 1000; // 10 min
+  let changed = false;
+  
+  // Supprimer les holders orphelins (acquis il y a plus de 10 min)
+  const validHolders = semaphore.holders.filter(h => {
+    const age = now - h.acquiredAt;
+    if (age > staleMaxAge) {
+      changed = true;
+      log('supervisor.semaphore_purge', { taskId: h.taskId, ageMin: Math.round(age / 60000) });
+      return false;
+    }
+    return true;
+  });
+  
+  if (validHolders.length !== semaphore.holders.length) {
+    semaphore.holders = validHolders;
+    semaphore.count = validHolders.length;
+    changed = true;
+  }
+  
+  if (semaphore.count !== semaphore.holders.length) {
     log('supervisor.semaphore_repair', { oldCount: semaphore.count, holders: semaphore.holders.length });
     semaphore.count = semaphore.holders.length;
+    changed = true;
+  }
+  
+  if (changed) {
     saveJSON(OPENCODE_SEMAPHORE_FILE, semaphore);
   }
+  
   if (semaphore.count >= MAX_OPENCODE_CONCURRENT) {
     return false;
   }
   semaphore.count++;
-  semaphore.holders.push({ taskId, acquiredAt: Date.now() });
+  semaphore.holders.push({ taskId, acquiredAt: now });
   fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
   return true;
 }
@@ -102,7 +129,7 @@ function releaseOpenCodeSemaphore(taskId) {
     const semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8'));
     semaphore.count = Math.max(0, semaphore.count - 1);
     semaphore.holders = semaphore.holders.filter(h => h.taskId !== taskId);
-    fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
+    saveJSON(OPENCODE_SEMAPHORE_FILE, semaphore);
   } catch (_) {}
 }
 
@@ -251,7 +278,6 @@ function shouldStopSupervisor() {
   return false;
 }
 
-// Ollama health check
 async function checkOllamaHealth(timeoutMs = 5000) {
   try {
     const ctrl = new AbortController();
@@ -266,6 +292,25 @@ async function checkOllamaHealth(timeoutMs = 5000) {
   } catch (e) {
     return { healthy: false, reason: String(e.message || e) };
   }
+}
+
+// Heartbeat check for external supervisor
+function loadHeartbeat() {
+  return loadJSON(HEARTBEAT_FILE, null);
+}
+
+function isRunnerAlive(maxAgeMinutes = 5) {
+  const hb = loadHeartbeat();
+  if (!hb) return { alive: false, reason: 'no heartbeat file' };
+  const ageMin = (Date.now() - Date.parse(hb.at)) / 60000;
+  if (ageMin > maxAgeMinutes) {
+    return { alive: false, reason: `heartbeat stale (${ageMin.toFixed(0)} min old)`, heartbeat: hb };
+  }
+  // Also verify the PID is still alive
+  if (hb.pid && !pidAlive(hb.pid)) {
+    return { alive: false, reason: `PID ${hb.pid} not running`, heartbeat: hb };
+  }
+  return { alive: true, heartbeat: hb, ageMin };
 }
 
 // ============================================================
@@ -1029,6 +1074,16 @@ async function runCycle() {
   // Cleanup temp files
   await stopAllServers();
   
+  // Write heartbeat for external supervisor monitoring
+  try {
+    fs.writeFileSync(HEARTBEAT_FILE, JSON.stringify({
+      pid: process.pid,
+      at: new Date().toISOString(),
+      cycle: (loadTelemetry().cycles || 0),
+      queueDepth: loadQueue().length
+    }, null, 2));
+  } catch (_) {}
+
   log('cycle.end', { processed, queueRemaining: loadQueue().length });
   
   return processed;

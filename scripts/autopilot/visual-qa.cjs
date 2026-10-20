@@ -126,6 +126,14 @@ function getViewport(name) {
  * Retourne { match: boolean, diffPixels: number, diffPercent: number }
  */
 async function compareScreenshots(baselinePath, currentPath, threshold = 0.05) {
+  // Vérifier que les fichiers existent avant de tenter la comparaison
+  if (!fs.existsSync(baselinePath)) {
+    return { match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `baseline not found: ${baselinePath}` };
+  }
+  if (!fs.existsSync(currentPath)) {
+    return { match: false, diffPercent: null, diffPixels: 0, totalPixels: 0, error: `current screenshot not found: ${currentPath}` };
+  }
+
   // Utilise pixelmatch via script Node (CommonJS require)
   const script = `
 const fs = require('fs');
@@ -220,7 +228,7 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
           log(`visual-qa: ${route}@${viewport} baseline established`);
         }
       } catch (e) {
-        results.push({ route, viewport, error: e.message, passed: false });
+        results.push({ route, viewport, error: e.message, diffPercent: null, passed: false });
         passed = false;
         log(`visual-qa: ${route}@${viewport} ERROR ${e.message}`);
       }

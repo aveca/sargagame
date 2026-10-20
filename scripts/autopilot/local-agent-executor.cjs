@@ -296,7 +296,10 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       // Check for visual regressions
       const regressions = visualResult.results.filter(r => !r.passed && !r.established);
       if (regressions.length > 0) {
-        throw new Error(`Visual regression detected: ${regressions.map(r => `${r.route}@${r.viewport} (${(r.diffPercent*100).toFixed(2)}%)`).join(', ')}`);
+        throw new Error(`Visual regression detected: ${regressions.map(r => {
+          const dp = typeof r.diffPercent === 'number' && !isNaN(r.diffPercent) ? (r.diffPercent * 100).toFixed(2) : 'N/A';
+          return `${r.route}@${r.viewport} (${dp}%)`;
+        }).join(', ')}`);
       }
       
       // Check bundle budget
