@@ -1,35 +1,39 @@
-# Autopilot run 2026-10-06-152945711-pmi0-1gm1t
+# Autopilot run 2026-10-20-013120509-pl8o-19xx5
 
-- Début : 2026-10-06T15:29:45.712Z · Fin : 2026-10-06T15:29:47.503Z · Durée : 0 min
+- Début : 2026-10-20T01:31:20.510Z · Fin : 2026-10-20T01:31:58.558Z · Durée : 0.6 min
 - Statut : ✅ cycle complet (sans PR)
 
 ## OBSERVED
 - health OK (6 domains 2xx)
-- sonde Playwright prod lancée (headed=false)…
+- founder WIP preserved (3 files)
+- observation réutilisée (2026-10-20-012436564-png4-17f0h, âge 7 min)
 
 ## REVENUE
-- _(rien)_
+- 7j : sessions 185284 · premium-open 14072 · CTA 52 · checkout 0 · PAID 16 · paiements 140 · rev 929.5999999999999€ · MRR Stripe 69.86€ (14 actifs)
+- chaîne AHA→revenue : open 14072 → CTA 52 → checkout 0 → redirect 0 → PAID 16 (étapes amont (aha_view/verdict/why/tomorrow/backup/trip) = events sg_* Supabase — joint analytique, absents du daily aggregator : non fabriqués ici)
+- B2B (séparé) : pas de bloc b2b dans daily-metrics.json (source = supabase b2b_probe / outreach) — non mélangé au B2C
 
 ## RESEARCHED
-- _(rien)_
+- veille dans 4 cycles (1/6)
 
 ## FOUND
-- _(rien)_
+- aucun nouveau finding (prod nominale)
+- rien d'auto-exécutable (candidats = agent/human)
 
 ## MEASURED
 - _(rien)_
 
 ## SELECTED
-- _(rien)_
+- OPP-DISC-visual-shift-high-florida-paywall-paywall-390-pctHot-0-212 (score 32)
 
 ## IMPLEMENTED
-- _(rien)_
+- agent: agent opencode applied (diff agent)
 
 ## TESTED
 - _(rien)_
 
 ## FAILED
-- _(rien)_
+- SCOPE VIOLATION — FAIL_TARGET_UNCHANGED: no files modified by agent
 
 ## FIXED
 - _(rien)_
@@ -38,7 +42,7 @@
 - _(rien)_
 
 ## PARKED
-- _(rien)_
+- OPP-DISC-visual-shift-high-florida-paywall-paywall-390-pctHot-0-212 — scope violation: FAIL_TARGET_UNCHANGED: no files modified by agent
 
 ## READY
 - _(rien)_

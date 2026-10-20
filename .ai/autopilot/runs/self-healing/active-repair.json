@@ -1,0 +1,44 @@
+{
+  "capturedError": {
+    "timestamp": "2026-10-20T00:38:30.120Z",
+    "error": {
+      "message": "Watchdog: No progress for > 120s (elapsed 2.5min)",
+      "stack": "WatchdogTimeout: Watchdog: No progress for > 120s (elapsed 2.5min)\n    at diagnoseAndSelfHeal (C:\\Users\\user\\Documents\\GitHub\\sargagame\\scripts\\autopilot\\orchestrator.cjs:124:22)\n    at Timeout._onTimeout (C:\\Users\\user\\Documents\\GitHub\\sargagame\\scripts\\autopilot\\orchestrator.cjs:110:13)\n    at listOnTimeout (node:internal/timers:605:17)\n    at process.processTimers (node:internal/timers:541:7)",
+      "name": "WatchdogTimeout"
+    },
+    "context": {
+      "phase": "watchdog",
+      "taskId": "unknown",
+      "branch": null,
+      "worktree": null,
+      "command": "orchestrator cycle",
+      "exitCode": -1
+    },
+    "system": {
+      "platform": "win32",
+      "nodeVersion": "v24.14.0",
+      "cwd": "C:\\Users\\user\\Documents\\GitHub\\sargagame",
+      "memoryUsage": {
+        "rss": 76001280,
+        "heapTotal": 11124736,
+        "heapUsed": 9359288,
+        "external": 3735182,
+        "arrayBuffers": 73981
+      }
+    }
+  },
+  "startedAt": "2026-10-20T00:38:30.121Z",
+  "status": "failed",
+  "taskId": "unknown",
+  "result": {
+    "success": false,
+    "reason": "No relevant files in allowed repair scope",
+    "classification": {
+      "type": "timeout",
+      "subsystem": "process-runner",
+      "severity": "medium",
+      "recoverable": true
+    }
+  },
+  "completedAt": "2026-10-20T00:38:30.123Z"
+}

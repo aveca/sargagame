@@ -1,6 +1,6 @@
 {
-  "id": "2026-10-06-024807746-pejw-1775v",
-  "at": "2026-10-06T02:48:11.222Z",
+  "id": "2026-10-20-012436564-png4-17f0h",
+  "at": "2026-10-20T01:24:40.408Z",
   "heavy": true,
   "regions": {
     "mq": {
@@ -21,45 +21,45 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254894479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163317273",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254894479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163317273",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459484625&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=848178847",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254894479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163317273",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459484625&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=848178847",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254894479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459484625&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=848178847",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 2848,
-            "dcl": 3050,
-            "load": 3450,
-            "total": 5570
+            "ttfb": 2925,
+            "dcl": 3400,
+            "load": 3483,
+            "total": 5914
           },
-          "bytes": 384189,
-          "lcp": 4852,
+          "bytes": 454827,
+          "lcp": 3512,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-home-390.png",
           "visual": {
-            "meanAbs": 0.0001,
-            "pctHot": 0,
+            "meanAbs": 0.0042,
+            "pctHot": 0.0117,
             "flagged": false
           },
           "httpStatus": 200
@@ -79,44 +79,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254897978&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=700495947",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254897978&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=700495947",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459488495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852352513",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254897978&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=700495947",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459488495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852352513",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254897978&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459488495&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=852352513",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 142,
-            "dcl": 356,
-            "load": 801,
-            "total": 2868
+            "ttfb": 167,
+            "dcl": 484,
+            "load": 551,
+            "total": 2991
           },
-          "bytes": 384156,
-          "lcp": 2256,
+          "bytes": 455269,
+          "lcp": 528,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-home-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -137,45 +137,50 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254901208&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1460537",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254901208&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1460537",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6aj0h2v9248042081za208zd9248042081xf1&_p=1792459492016&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1328788",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254901208&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6aj0h2v9248042081za200zd9248042081xf1&_p=1792459492016&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1328788",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254901208&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1460537",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6aj0h2v9248042081za200zd9248042081xf1&_p=1792459492016&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1328788",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6aj0h2v9248042081za200zd9248042081xf1&_p=1792459492016&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 143,
-            "dcl": 342,
-            "load": 769,
-            "total": 2852
+            "ttfb": 176,
+            "dcl": 490,
+            "load": 941,
+            "total": 2996
           },
-          "bytes": 384256,
-          "lcp": 2144,
+          "bytes": 417631,
+          "lcp": 536,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-home-1024.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
+            "meanAbs": 0.0024,
+            "pctHot": 0.0046,
             "flagged": false
           },
           "httpStatus": 200
@@ -195,45 +200,45 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254904479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=135073240",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254904479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=135073240",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459495526&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117228329",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254904479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459495526&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117228329",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254904479&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=135073240",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459495526&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117228329",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 136,
-            "dcl": 315,
-            "load": 737,
-            "total": 2832
+            "ttfb": 177,
+            "dcl": 511,
+            "load": 511,
+            "total": 3034
           },
-          "bytes": 384121,
-          "lcp": 2164,
+          "bytes": 411430,
+          "lcp": 536,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-home-1440.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
+            "meanAbs": 0.0028,
+            "pctHot": 0.0067,
             "flagged": false
           },
           "httpStatus": 200
@@ -253,46 +258,56 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254907748&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=188558281",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254907748&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=188558281",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254907748&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=188558281",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254907748&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459499287&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=137972432",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459499287&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=137972432",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459499287&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 129,
-            "dcl": 333,
-            "load": 2747,
-            "total": 2853
+            "ttfb": 166,
+            "dcl": 520,
+            "load": 852,
+            "total": 3032
           },
-          "bytes": 441967,
-          "lcp": 356,
+          "bytes": 517313,
+          "lcp": 500,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-paywall-390.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
-            "flagged": false
+            "meanAbs": 0.1119,
+            "pctHot": 0.2002,
+            "flagged": true
           },
           "httpStatus": 200
         },
@@ -311,44 +326,64 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254911072&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=829402748",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254911072&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=829402748",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254911072&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=829402748",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254911072&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1h1v9248042081za208zd9248042081xf1&_p=1792459503320&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5870903",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1h1v9248042081za200zd9248042081xf1&_p=1792459503320&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5870903",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1h1v9248042081za200zd9248042081xf1&_p=1792459503320&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5870903",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1h1v9248042081za200zd9248042081xf1&_p=1792459503320&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1h1v9248042081za200zd9248042081xf1&_p=1792459503320&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5870903",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 145,
-            "dcl": 348,
-            "load": 2121,
-            "total": 2858
+            "ttfb": 157,
+            "dcl": 471,
+            "load": 943,
+            "total": 2983
           },
-          "bytes": 441913,
-          "lcp": 668,
+          "bytes": 517121,
+          "lcp": 512,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-paywall-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0005,
             "pctHot": 0,
             "flagged": false
           },
@@ -369,44 +404,54 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za208zd9248042081xf1&_p=1791254914307&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=149634926",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254914307&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=149634926",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254914307&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=149634926",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254914307&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459507052&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=130337920",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459507052&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=130337920",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459507052&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=130337920",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 145,
-            "dcl": 353,
-            "load": 2628,
-            "total": 2863
+            "ttfb": 159,
+            "dcl": 464,
+            "load": 541,
+            "total": 2977
           },
-          "bytes": 441920,
-          "lcp": 620,
+          "bytes": 478132,
+          "lcp": 504,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-paywall-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -427,44 +472,59 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254917553&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1061464",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254917553&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1061464",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254917553&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1061464",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254917553&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459510689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=168252622",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459510689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=168252622",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459510689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=168252622",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459510689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 138,
-            "dcl": 341,
-            "load": 2388,
-            "total": 2851
+            "ttfb": 172,
+            "dcl": 458,
+            "load": 921,
+            "total": 2979
           },
-          "bytes": 441891,
-          "lcp": 672,
+          "bytes": 478137,
+          "lcp": 508,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-paywall-1440.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -479,13 +539,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 151,
-            "dcl": 479,
-            "load": 531,
-            "total": 2993
+            "ttfb": 201,
+            "dcl": 628,
+            "load": 855,
+            "total": 3150
           },
-          "bytes": 131423,
-          "lcp": 480,
+          "bytes": 34182,
+          "lcp": 636,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -495,9 +555,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-1-390.png",
           "visual": {
-            "meanAbs": 0.3352,
-            "pctHot": 0.5174,
-            "flagged": true
+            "meanAbs": 0.0012,
+            "pctHot": 0.0023,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -510,13 +570,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 136,
-            "dcl": 389,
-            "load": 473,
-            "total": 2897
+            "ttfb": 188,
+            "dcl": 588,
+            "load": 810,
+            "total": 3103
           },
-          "bytes": 127835,
-          "lcp": 400,
+          "bytes": 30914,
+          "lcp": 596,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -526,9 +586,9 @@
           "brokenLinks": [],
           "shot": "shots/mq-deep-1-768.png",
           "visual": {
-            "meanAbs": 0.1963,
-            "pctHot": 0.3726,
-            "flagged": true
+            "meanAbs": 0,
+            "pctHot": 0,
+            "flagged": false
           },
           "httpStatus": 200
         },
@@ -541,13 +601,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 132,
-            "dcl": 394,
-            "load": 446,
-            "total": 2900
+            "ttfb": 160,
+            "dcl": 547,
+            "load": 770,
+            "total": 3064
           },
-          "bytes": 127835,
-          "lcp": 400,
+          "bytes": 34256,
+          "lcp": 552,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -572,13 +632,13 @@
           "firstPartyFailures": [],
           "thirdPartyFailures": [],
           "timing": {
-            "ttfb": 139,
-            "dcl": 408,
-            "load": 507,
-            "total": 2926
+            "ttfb": 226,
+            "dcl": 637,
+            "load": 878,
+            "total": 3158
           },
-          "bytes": 131388,
-          "lcp": 416,
+          "bytes": 30914,
+          "lcp": 640,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
@@ -596,7 +656,7 @@
         },
         {
           "route": "deep-2",
-          "url": "https://sargasses-martinique.com/activity/family/",
+          "url": "https://sargasses-martinique.com/alertes/",
           "viewport": "390",
           "consoleErrors": [],
           "pageErrors": [],
@@ -609,52 +669,67 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254936490&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=936881747",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254936490&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=936881747",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254936490&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=936881747",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254936490&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459531995&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=980456835",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459531995&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=980456835",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459531995&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=980456835",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459531995&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 135,
-            "dcl": 333,
-            "load": 772,
-            "total": 2849
+            "ttfb": 163,
+            "dcl": 433,
+            "load": 919,
+            "total": 2945
           },
-          "bytes": 384118,
-          "lcp": 2180,
+          "bytes": 515763,
+          "lcp": 504,
           "checks": {
             "hasContent": true,
-            "dialogs": 0,
-            "h1": true,
+            "dialogs": 1,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-390.png",
           "visual": {
-            "meanAbs": 0.0001,
-            "pctHot": 0,
-            "flagged": false
+            "meanAbs": 0.1118,
+            "pctHot": 0.2002,
+            "flagged": true
           },
           "httpStatus": 200
         },
         {
           "route": "deep-2",
-          "url": "https://sargasses-martinique.com/activity/family/",
+          "url": "https://sargasses-martinique.com/alertes/",
           "viewport": "768",
           "consoleErrors": [],
           "pageErrors": [],
@@ -667,52 +742,62 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za208zd9248042081xf1&_p=1791254939819&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163350919",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254939819&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254939819&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163350919",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254939819&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=163350919",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459535746&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=860183887",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459535746&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=860183887",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459535746&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 137,
-            "dcl": 345,
-            "load": 838,
-            "total": 2855
+            "ttfb": 180,
+            "dcl": 491,
+            "load": 912,
+            "total": 3003
           },
-          "bytes": 384121,
-          "lcp": 2172,
+          "bytes": 516179,
+          "lcp": 524,
           "checks": {
             "hasContent": true,
-            "dialogs": 0,
-            "h1": true,
+            "dialogs": 1,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-768.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
+            "meanAbs": 0.0019,
+            "pctHot": 0.0045,
             "flagged": false
           },
           "httpStatus": 200
         },
         {
           "route": "deep-2",
-          "url": "https://sargasses-martinique.com/activity/family/",
+          "url": "https://sargasses-martinique.com/alertes/",
           "viewport": "1024",
           "consoleErrors": [],
           "pageErrors": [],
@@ -725,44 +810,54 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za208zd9248042081xf1&_p=1791254943070&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1953048",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254943070&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1953048",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254943070&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1953048",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21h1v9248042081za200zd9248042081xf1&_p=1791254943070&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459539449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=198623537",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459539449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=198623537",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459539449&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 135,
-            "dcl": 326,
-            "load": 759,
-            "total": 2839
+            "ttfb": 227,
+            "dcl": 554,
+            "load": 1003,
+            "total": 3063
           },
-          "bytes": 384121,
-          "lcp": 2188,
+          "bytes": 477832,
+          "lcp": 596,
           "checks": {
             "hasContent": true,
-            "dialogs": 0,
-            "h1": true,
+            "dialogs": 1,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0008,
             "pctHot": 0,
             "flagged": false
           },
@@ -770,7 +865,7 @@
         },
         {
           "route": "deep-2",
-          "url": "https://sargasses-martinique.com/activity/family/",
+          "url": "https://sargasses-martinique.com/alertes/",
           "viewport": "1440",
           "consoleErrors": [],
           "pageErrors": [],
@@ -783,45 +878,65 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254946327&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=103556651",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za208zd9248042081xf1&_p=1791254946327&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=103556651",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254946327&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=103556651",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6a21v9248042081za200zd9248042081xf1&_p=1791254946327&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za208zd9248042081xf1&_p=1792459543101&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=142676293",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459543101&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=142676293",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459543101&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=142676293",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459543101&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=142676293",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-V8JGMDZZ2Y&gtm=45je6ag1v9248042081za200zd9248042081xf1&_p=1792459543101&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_eu=AEA&_fplc=0&ae=a&are=1&",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 142,
-            "dcl": 334,
-            "load": 799,
-            "total": 2852
+            "ttfb": 173,
+            "dcl": 497,
+            "load": 887,
+            "total": 3012
           },
-          "bytes": 384121,
-          "lcp": 2112,
+          "bytes": 477646,
+          "lcp": 556,
           "checks": {
             "hasContent": true,
-            "dialogs": 0,
-            "h1": true,
+            "dialogs": 1,
+            "h1": false,
             "reachable": true
           },
           "brokenLinks": [],
           "shot": "shots/mq-deep-2-1440.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
+            "meanAbs": 0.0016,
+            "pctHot": 0.0025,
             "flagged": false
           },
           "httpStatus": 200
@@ -846,40 +961,45 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za208zd9255060904xf1&_p=1791254949800&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158128297",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254949800&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158128297",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459547133&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=193232020",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254949800&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=158128297",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459547133&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=193232020",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 172,
-            "dcl": 334,
-            "load": 765,
-            "total": 2854
+            "ttfb": 185,
+            "dcl": 437,
+            "load": 500,
+            "total": 2953
           },
-          "bytes": 381639,
-          "lcp": 2100,
+          "bytes": 455075,
+          "lcp": 516,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-home-390.png",
           "visual": {
-            "meanAbs": 0.0001,
-            "pctHot": 0.0003,
+            "meanAbs": 0.0041,
+            "pctHot": 0.0063,
             "flagged": false
           },
           "httpStatus": 200
@@ -899,39 +1019,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254953240&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=579111122",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254953240&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=579111122",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459550822&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=152045943",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254953240&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=579111122",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459550822&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=152045943",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 140,
-            "dcl": 351,
-            "load": 761,
-            "total": 2856
+            "ttfb": 201,
+            "dcl": 587,
+            "load": 872,
+            "total": 3103
           },
-          "bytes": 381632,
-          "lcp": 2184,
+          "bytes": 455805,
+          "lcp": 568,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-home-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -952,39 +1077,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254956590&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=201160163",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254956590&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=201160163",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za208zd9255060904xf1&_p=1792459554498&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=2011659",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254956590&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=201160163",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za200zd9255060904xf1&_p=1792459554498&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=2011659",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 144,
-            "dcl": 334,
-            "load": 771,
-            "total": 2842
+            "ttfb": 175,
+            "dcl": 456,
+            "load": 829,
+            "total": 2963
           },
-          "bytes": 381640,
-          "lcp": 2192,
+          "bytes": 416781,
+          "lcp": 532,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-home-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0009,
             "pctHot": 0,
             "flagged": false
           },
@@ -1005,39 +1135,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254959890&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=166744423",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254959890&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=166744423",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459557980&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=132166710",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254959890&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=166744423",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459557980&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=132166710",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 134,
-            "dcl": 334,
-            "load": 745,
-            "total": 2843
+            "ttfb": 182,
+            "dcl": 512,
+            "load": 829,
+            "total": 3021
           },
-          "bytes": 381629,
-          "lcp": 2112,
+          "bytes": 417207,
+          "lcp": 548,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-home-1440.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0008,
             "pctHot": 0,
             "flagged": false
           },
@@ -1047,52 +1182,83 @@
           "route": "paywall",
           "url": "https://sargassummiami.com/?paywall=1",
           "viewport": "390",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/copernicus/track-record.json",
+              "status": 404
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254963209&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=118168379",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254963209&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=118168379",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254963209&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=118168379",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459561743&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117953915",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459561743&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117953915",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459561743&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117953915",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459561743&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=117953915",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 137,
-            "dcl": 320,
-            "load": 2362,
-            "total": 2823
+            "ttfb": 171,
+            "dcl": 469,
+            "load": 861,
+            "total": 2975
           },
-          "bytes": 439278,
-          "lcp": 308,
+          "bytes": 516730,
+          "lcp": 636,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/cgv.html",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-paywall-390.png",
           "visual": {
-            "meanAbs": 0,
-            "pctHot": 0,
-            "flagged": false
+            "meanAbs": 0.1183,
+            "pctHot": 0.2116,
+            "flagged": true
           },
           "httpStatus": 200
         },
@@ -1100,50 +1266,71 @@
           "route": "paywall",
           "url": "https://sargassummiami.com/?paywall=1",
           "viewport": "768",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/copernicus/track-record.json",
+              "status": 404
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254966511&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1096103",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254966511&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1096103",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254966511&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1096103",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459565453&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=129542944",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459565453&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=129542944",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 139,
-            "dcl": 339,
-            "load": 2341,
-            "total": 2855
+            "ttfb": 190,
+            "dcl": 550,
+            "load": 1078,
+            "total": 3069
           },
-          "bytes": 439285,
-          "lcp": 612,
+          "bytes": 517223,
+          "lcp": 768,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/cgv.html",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-paywall-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0005,
             "pctHot": 0,
             "flagged": false
           },
@@ -1153,50 +1340,71 @@
           "route": "paywall",
           "url": "https://sargassummiami.com/?paywall=1",
           "viewport": "1024",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/copernicus/track-record.json",
+              "status": 404
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za208zd9255060904xf1&_p=1791254969712&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=123539087",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254969712&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=123539087",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254969712&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=123539087",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459569076&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=111593953",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459569076&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=111593953",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 137,
-            "dcl": 331,
-            "load": 2431,
-            "total": 2835
+            "ttfb": 161,
+            "dcl": 511,
+            "load": 1041,
+            "total": 3018
           },
-          "bytes": 439281,
-          "lcp": 680,
+          "bytes": 478272,
+          "lcp": 684,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/cgv.html",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-paywall-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -1206,50 +1414,81 @@
           "route": "paywall",
           "url": "https://sargassummiami.com/?paywall=1",
           "viewport": "1440",
-          "consoleErrors": [],
+          "consoleErrors": [
+            "Failed to load resource: the server responded with a status of 404 ()"
+          ],
           "pageErrors": [],
           "firstPartyFailures": [
             {
               "url": "https://sargassummiami.com/.well-known/apple-developer-merchantid-domain-association",
               "status": 0,
               "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://sargassummiami.com/api/copernicus/track-record.json",
+              "status": 404
             }
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254973048&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=254161768",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254973048&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=254161768",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254973048&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=254161768",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459572689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=226841242",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459572689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=226841242",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459572689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=226841242",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459572689&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=226841242",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 136,
-            "dcl": 348,
-            "load": 2389,
-            "total": 2865
+            "ttfb": 165,
+            "dcl": 496,
+            "load": 834,
+            "total": 3013
           },
-          "bytes": 439302,
-          "lcp": 688,
+          "bytes": 478276,
+          "lcp": 684,
           "checks": {
             "hasContent": true,
             "dialogs": 1,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/cgv.html",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-paywall-1440.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0008,
             "pctHot": 0,
             "flagged": false
           },
@@ -1257,7 +1496,7 @@
         },
         {
           "route": "deep-1",
-          "url": "https://sargassummiami.com/activity/family/",
+          "url": "https://sargassummiami.com/beaches-without-sargassum-today/",
           "viewport": "390",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1270,47 +1509,52 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254976383&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=165305284",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254976383&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=165305284",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459576517&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=572167925",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254976383&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=165305284",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459576517&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=572167925",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 131,
-            "dcl": 326,
-            "load": 754,
-            "total": 2838
+            "ttfb": 160,
+            "dcl": 484,
+            "load": 924,
+            "total": 2996
           },
-          "bytes": 381639,
-          "lcp": 2152,
+          "bytes": 455725,
+          "lcp": 492,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-1-390.png",
           "visual": {
-            "meanAbs": 0.0001,
-            "pctHot": 0.0003,
+            "meanAbs": 0.0041,
+            "pctHot": 0.0063,
             "flagged": false
           },
           "httpStatus": 200
         },
         {
           "route": "deep-1",
-          "url": "https://sargassummiami.com/activity/family/",
+          "url": "https://sargassummiami.com/beaches-without-sargassum-today/",
           "viewport": "768",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1323,39 +1567,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254979785&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=885774416",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254979785&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=885774416",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459580218&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=253798334",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254979785&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=885774416",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459580218&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=253798334",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 136,
-            "dcl": 332,
-            "load": 741,
-            "total": 2839
+            "ttfb": 167,
+            "dcl": 456,
+            "load": 756,
+            "total": 2971
           },
-          "bytes": 381639,
-          "lcp": 2192,
+          "bytes": 455481,
+          "lcp": 476,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-1-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0007,
             "pctHot": 0,
             "flagged": false
           },
@@ -1363,7 +1612,7 @@
         },
         {
           "route": "deep-1",
-          "url": "https://sargassummiami.com/activity/family/",
+          "url": "https://sargassummiami.com/beaches-without-sargassum-today/",
           "viewport": "1024",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1376,39 +1625,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254983060&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=8407747",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254983060&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=8407747",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459583672&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=188952793",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254983060&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=8407747",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459583672&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=188952793",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 131,
-            "dcl": 335,
-            "load": 737,
-            "total": 2847
+            "ttfb": 181,
+            "dcl": 499,
+            "load": 806,
+            "total": 3018
           },
-          "bytes": 381629,
-          "lcp": 2164,
+          "bytes": 417053,
+          "lcp": 548,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-1-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0009,
             "pctHot": 0,
             "flagged": false
           },
@@ -1416,7 +1670,7 @@
         },
         {
           "route": "deep-1",
-          "url": "https://sargassummiami.com/activity/family/",
+          "url": "https://sargassummiami.com/beaches-without-sargassum-today/",
           "viewport": "1440",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1429,39 +1683,44 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254986404&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9927246",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254986404&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9927246",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459587176&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=661708877",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254986404&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=9927246",
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459587176&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=661708877",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 148,
-            "dcl": 355,
-            "load": 749,
-            "total": 2862
+            "ttfb": 181,
+            "dcl": 495,
+            "load": 851,
+            "total": 3009
           },
-          "bytes": 381638,
-          "lcp": 2144,
+          "bytes": 417791,
+          "lcp": 520,
           "checks": {
-            "hasContent": true,
+            "hasContent": false,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-1-1440.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0009,
             "pctHot": 0,
             "flagged": false
           },
@@ -1469,7 +1728,7 @@
         },
         {
           "route": "deep-2",
-          "url": "https://sargassummiami.com/activity/parking/",
+          "url": "https://sargassummiami.com/beaches/bahia-honda/",
           "viewport": "390",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1482,47 +1741,62 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254989774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5928782",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254989774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5928782",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a50h2v9255060904za200zd9255060904xf1&_p=1791254989774&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=5928782",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6aj0h2v9255060904za208zd9255060904xf1&_p=1792459590917&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1009054",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6aj0h2v9255060904za200zd9255060904xf1&_p=1792459590917&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1009054",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 139,
-            "dcl": 337,
-            "load": 757,
-            "total": 2855
+            "ttfb": 226,
+            "dcl": 605,
+            "load": 964,
+            "total": 3115
           },
-          "bytes": 381629,
-          "lcp": 2124,
+          "bytes": 455816,
+          "lcp": 572,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-2-390.png",
           "visual": {
-            "meanAbs": 0.0001,
-            "pctHot": 0.0003,
-            "flagged": false
+            "meanAbs": 0.0682,
+            "pctHot": 0.1141,
+            "flagged": true
           },
           "httpStatus": 200
         },
         {
           "route": "deep-2",
-          "url": "https://sargassummiami.com/activity/parking/",
+          "url": "https://sargassummiami.com/beaches/bahia-honda/",
           "viewport": "768",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1535,39 +1809,64 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za208zd9255060904xf1&_p=1791254993212&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=125271675",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254993212&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=125271675",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254993212&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=125271675",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459594758&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=153654852",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459594758&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=153654852",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459594758&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=153654852",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459594758&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=153654852",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 147,
-            "dcl": 345,
-            "load": 763,
-            "total": 2861
+            "ttfb": 157,
+            "dcl": 454,
+            "load": 794,
+            "total": 2968
           },
-          "bytes": 381603,
-          "lcp": 2132,
+          "bytes": 455689,
+          "lcp": 492,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-2-768.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0001,
             "pctHot": 0,
             "flagged": false
           },
@@ -1575,7 +1874,7 @@
         },
         {
           "route": "deep-2",
-          "url": "https://sargassummiami.com/activity/parking/",
+          "url": "https://sargassummiami.com/beaches/bahia-honda/",
           "viewport": "1024",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1588,39 +1887,64 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254996499&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=175028799",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254996499&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=175028799",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21v9255060904za200zd9255060904xf1&_p=1791254996499&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=175028799",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za208zd9255060904xf1&_p=1792459598111&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1074243",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za200zd9255060904xf1&_p=1792459598111&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1074243",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za200zd9255060904xf1&_p=1792459598111&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1074243",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1h1v9255060904za200zd9255060904xf1&_p=1792459598111&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1074243",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 151,
-            "dcl": 375,
-            "load": 796,
-            "total": 2888
+            "ttfb": 178,
+            "dcl": 522,
+            "load": 939,
+            "total": 3036
           },
-          "bytes": 381632,
-          "lcp": 2232,
+          "bytes": 417887,
+          "lcp": 376,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-2-1024.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0003,
             "pctHot": 0,
             "flagged": false
           },
@@ -1628,7 +1952,7 @@
         },
         {
           "route": "deep-2",
-          "url": "https://sargassummiami.com/activity/parking/",
+          "url": "https://sargassummiami.com/beaches/bahia-honda/",
           "viewport": "1440",
           "consoleErrors": [],
           "pageErrors": [],
@@ -1641,39 +1965,54 @@
           ],
           "thirdPartyFailures": [
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21h1v9255060904za200zd9255060904xf1&_p=1791254999858&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1560797",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21h1v9255060904za200zd9255060904xf1&_p=1791254999858&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1560797",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
               "status": 0,
               "error": "net::ERR_ABORTED"
             },
             {
-              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6a21h1v9255060904za200zd9255060904xf1&_p=1791254999858&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=1560797",
+              "url": "https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za208zd9255060904xf1&_p=1792459601472&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=155100864",
+              "status": 0,
+              "error": "net::ERR_ABORTED"
+            },
+            {
+              "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-3LYNDLV1VH&gtm=45je6ag1v9255060904za200zd9255060904xf1&_p=1792459601472&gcs=G100&gcd=13p3p3p2p5l1&npa=1&dma_cps=-&dma=1&_fplc=0&are=1&cid=155100864",
               "status": 0,
               "error": "net::ERR_ABORTED"
             }
           ],
           "timing": {
-            "ttfb": 145,
-            "dcl": 358,
-            "load": 855,
-            "total": 2871
+            "ttfb": 161,
+            "dcl": 467,
+            "load": 947,
+            "total": 2978
           },
-          "bytes": 381665,
-          "lcp": 2196,
+          "bytes": 418019,
+          "lcp": 528,
           "checks": {
             "hasContent": true,
             "dialogs": 0,
-            "h1": true,
+            "h1": false,
             "reachable": true
           },
-          "brokenLinks": [],
+          "brokenLinks": [
+            {
+              "url": "/en/privacy/",
+              "status": 404
+            }
+          ],
           "shot": "shots/florida-deep-2-1440.png",
           "visual": {
-            "meanAbs": 0,
+            "meanAbs": 0.0004,
             "pctHot": 0,
             "flagged": false
           },
@@ -1684,11 +2023,11 @@
   },
   "totals": {
     "pages": 32,
-    "consoleErrors": 0,
+    "consoleErrors": 4,
     "pageErrors": 0,
-    "firstPartyFailures": 28,
-    "brokenLinks": 0,
-    "visualFlagged": 3
+    "firstPartyFailures": 32,
+    "brokenLinks": 16,
+    "visualFlagged": 5
   },
-  "durationSec": 112
+  "durationSec": 124
 }
