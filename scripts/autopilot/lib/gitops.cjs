@@ -65,6 +65,11 @@ async function runAsync(cmd, cwd, opts = {}) {
     }
     return { cmd: NPM_CMD, cmdArgs: npmArgs };
   })();
+  // S'assurer que le répertoire de travail existe (spawn lève ENOENT sur Windows
+  // si cwd n'existe pas, même lorsque l'exécutable existe ailleurs).
+  if (cwd && !fs.existsSync(cwd)) {
+    fs.mkdirSync(cwd, { recursive: true });
+  }
   const result = await execBounded(resolvedCmd, resolvedArgs, { cwd: cwd || ROOT, timeout: timeoutMs, windowsHide: true });
   return result;
 }

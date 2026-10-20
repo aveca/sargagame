@@ -319,6 +319,49 @@ function isRunnerAlive(maxAgeMinutes = 5) {
 let heartbeatInterval = null;
 let heartbeatTimer = null;
 
+/**
+ * Compte les tâches de queue par statut.
+ * Retourne un objet { parked, queued, backoff, running, completed, total }.
+ * - parked  : status === 'parked' (quarantaine, jamais retraitée automatiquement)
+ * - queued  : pas de statut, pas de nextRetryAt, pas de fichier de verrouillage (éligible immédiatement)
+ * - backoff : nextRetryAt dans le futur (attente de retry)
+ * - running : fichier processing-<id>.json existe (traitement en cours)
+ * - completed : tâche supprimée de la queue (jamais présente ici, mais comptée pour la cohérence)
+ * - total   : nombre total de fichiers de queue
+ */
+function countQueueByStatus() {
+  const queue = loadQueue();
+  const stats = { parked: 0, queued: 0, backoff: 0, running: 0, completed: 0, total: queue.length };
+  const now = Date.now();
+
+  for (const task of queue) {
+    if (task.status === 'parked') {
+      stats.parked++;
+    } else if (task.nextRetryAt && new Date(task.nextRetryAt).getTime() > now) {
+      stats.backoff++;
+    } else {
+      const processingFile = path.join(STATE_DIR, `processing-${task.id}.json`);
+      if (fs.existsSync(processingFile)) {
+        stats.running++;
+      } else {
+        stats.queued++;
+      }
+    }
+  }
+
+  return stats;
+}
+
+/**
+ * Retourne le nombre de tâches actives (non parkées, non terminées).
+ * Une tâche active est soit éligible immédiatement (queued), soit en attente de retry (backoff),
+ * soit en cours de traitement (running).
+ */
+function countQueueActive() {
+  const stats = countQueueByStatus();
+  return stats.queued + stats.backoff + stats.running;
+}
+
 function writeHeartbeat(extra = {}) {
   try {
     fs.writeFileSync(HEARTBEAT_FILE, JSON.stringify({
@@ -326,6 +369,8 @@ function writeHeartbeat(extra = {}) {
       at: new Date().toISOString(),
       cycle: (loadTelemetry().cycles || 0),
       queueDepth: loadQueue().length,
+      queueActive: countQueueActive(),
+      queueByStatus: countQueueByStatus(),
       ...extra
     }, null, 2));
   } catch (_) {}
@@ -1133,7 +1178,9 @@ async function runCycle() {
       pid: process.pid,
       at: new Date().toISOString(),
       cycle: (loadTelemetry().cycles || 0),
-      queueDepth: loadQueue().length
+      queueDepth: loadQueue().length,
+      queueActive: countQueueActive(),
+      queueByStatus: countQueueByStatus(),
     }, null, 2));
   } catch (_) {}
 
@@ -1227,4 +1274,4 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem, loadSupervisorState, saveSupervisorState, recordCrash, recordHealthyCycle, checkOllamaHealth, loadFactoryConfig, getConfigTimeout };
+module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem, loadSupervisorState, saveSupervisorState, recordCrash, recordHealthyCycle, checkOllamaHealth, loadFactoryConfig, getConfigTimeout, countQueueByStatus, countQueueActive };
