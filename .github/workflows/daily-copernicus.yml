@@ -164,7 +164,12 @@ jobs:
   email-automation:
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
+    # était de 30 min — trop juste : un seul appel bloqué annulait le job, donc
+    # le RUN entier (`cancelled`), donc les étapes suivantes. Marge +
+    # timeouts d'étape : un blocage devient un échec d'étape TOLÉRÉ, pas
+    # l'annulation de la chaîne.
+    timeout-minutes: 45
     continue-on-error: true
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -283,6 +288,15 @@ jobs:
       - name: Purge analytics_events (> 90j)
         if: github.event_name == 'schedule'
         continue-on-error: true
+        # Budget d'étape : un blocage réseau ne doit plus consommer le budget
+        # du JOB (30 min), car l'annulation du job ANNULAIT le run entier et
+        # faisait sauter les étapes suivantes — dont « Commit email state »
+        # (anti-doublon des envois). 157 runs `cancelled` en découlaient
+        # (cause racine : boucle de purge sans condition d'arrêt, cf.
+        # scripts/automation/purge-analytics.cjs). Un timeout d'ÉTAPE est
+        #.fail-lourd mais TOLÉRÉ (continue-on-error ci-dessus) : le job
+        # continue, le run reste vert.
+        timeout-minutes: 10
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/purge-analytics.cjs
@@ -317,6 +331,9 @@ jobs:
       - name: Commit email state (immédiat, anti-doublon)
         if: github.event_name != 'push'
         continue-on-error: true
+        # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
+        # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
+        timeout-minutes: 10
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
