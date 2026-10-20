@@ -238,7 +238,7 @@ async function runBeforeValidation(worktreePath, task, cfg, log) {
       }
       
       // Run visual QA to establish baselines
-      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl);
+      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl, task.region);
       
       return {
         success: true,
@@ -291,7 +291,7 @@ async function runAfterValidation(worktreePath, task, beforeResult, cfg, log) {
       }
       
       // Run visual QA for comparison
-      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl);
+      const visualResult = await runVisualQA(worktreePath, ['/', '/?paywall=1', '/carte-sargasses/'], ['mobile', 'desktop'], baseUrl, task.region);
       
       // Check for visual regressions
       // Les erreurs de harnais (harnessError: true) ne sont PAS des régressions :

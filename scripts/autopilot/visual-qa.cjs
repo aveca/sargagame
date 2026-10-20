@@ -29,7 +29,45 @@ const BENIGN_PAGE_ERRORS = new Set(['g is not defined']);
 const SCREENSHOTS_DIR = path.join(C.paths.observations, 'screenshots');
 // Self-healing test marker
 // Self-healing test marker
-const BASELINE_DIR = path.join(C.paths.baselines, 'visual');
+const BASELINES_DIR = path.join(C.paths.baselines);
+// Backward-compatible alias for existing code referencing BASELINE_DIR
+const BASELINE_DIR = BASELINES_DIR;
+
+// Mapping des noms de viewports vers les dimensions utilisées dans les noms de fichiers de baseline.
+// Les baselines existantes utilisent les dimensions en pixels (390, 768, 1024, 1440).
+const VIEWPORT_TO_DIMENSION = {
+  mobile: '390',
+  tablet: '768',
+  desktop: '1440',
+};
+
+function viewportToDimension(viewport) {
+  return VIEWPORT_TO_DIMENSION[viewport] || viewport;
+}
+
+/**
+ * Normalise un nom de route en nom de fichier de baseline.
+ * Ex: '/' → 'home', '/?paywall=1' → 'paywall', '/carte-sargasses/' → 'carte-sargasses'
+ */
+function routeToBaselineName(route) {
+  let name = route.replace(/^\/+|\/+$/g, ''); // supprimer slashes début/fin
+  name = name.split('?')[0]; // supprimer query string
+  if (!name || name === '') name = 'home'; // racine → home
+  name = name.replace(/\//g, '-'); // slashes restants → tirets
+  return name;
+}
+
+/**
+ * Calcule le répertoire de baselines pour une région donnée.
+ * Si region est défini, cherche dans .ai/autopilot/baselines/{region}/.
+ * Sinon, cherche directement dans .ai/autopilot/baselines/ (compatibilité).
+ */
+function getBaselinesDir(region) {
+  if (region) {
+    return path.join(BASELINES_DIR, region);
+  }
+  return BASELINES_DIR;
+}
 
 /**
  * Capture un screenshot d'une route dans un worktree
@@ -189,20 +227,26 @@ console.log(JSON.stringify({ match: diffPercent <= ${threshold}, diffPixels, dif
 }
 
 /**
- * Prend le baseline pour une route/viewport
+ * Prend le baseline pour une route/viewport dans une région donnée.
+ * Cherche dans .ai/autopilot/baselines/{region}/ avec le nom de fichier
+ * {route}-{dimension}.png (ex: baselines/mq/home-390.png).
  */
-async function getBaseline(route, viewport) {
-  const baselineFile = path.join(BASELINE_DIR, `${route.replace(/\//g, '-')}-${viewport}.png`);
+async function getBaseline(route, viewport, region) {
+  const dir = getBaselinesDir(region);
+  const baselineFile = path.join(dir, `${routeToBaselineName(route)}-${viewportToDimension(viewport)}.png`);
   if (fs.existsSync(baselineFile)) return baselineFile;
   return null;
 }
 
 /**
- * Met à jour le baseline
+ * Met à jour le baseline pour une route/viewport dans une région donnée.
+ * Sauvegarde dans .ai/autopilot/baselines/{region}/ avec le nom de fichier
+ * {route}-{dimension}.png.
  */
-async function updateBaseline(route, viewport, sourcePath) {
-  fs.mkdirSync(BASELINE_DIR, { recursive: true });
-  const baselineFile = path.join(BASELINE_DIR, `${route.replace(/\//g, '-')}-${viewport}.png`);
+async function updateBaseline(route, viewport, sourcePath, region) {
+  const dir = getBaselinesDir(region);
+  fs.mkdirSync(dir, { recursive: true });
+  const baselineFile = path.join(dir, `${routeToBaselineName(route)}-${viewportToDimension(viewport)}.png`);
   fs.copyFileSync(sourcePath, baselineFile);
   return baselineFile;
 }
@@ -211,7 +255,7 @@ async function updateBaseline(route, viewport, sourcePath) {
  * Exécute le visual QA complet pour un worktree
  * Retourne { passed: boolean, results: [], summary }
  */
-async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], baseUrl = null) {
+async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'], viewports = ['mobile', 'desktop'], baseUrl = null, region = null) {
   log(`visual-qa: starting on ${routes.length} routes × ${viewports.length} viewports`);
 
   const results = [];
@@ -224,7 +268,7 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
         const current = await captureScreenshot(wt, route, viewport, 'current', baseUrl);
 
         // Get baseline
-        const baseline = await getBaseline(route, viewport);
+        const baseline = await getBaseline(route, viewport, region);
 
         if (baseline) {
           // Compare
@@ -257,7 +301,7 @@ async function runVisualQA(wt, routes = ['/', '/?paywall=1', '/carte-sargasses/'
           }
         } else {
           // First run - establish baseline
-          await updateBaseline(route, viewport, current.path);
+          await updateBaseline(route, viewport, current.path, region);
           results.push({ route, viewport, baseline: current.path, established: true, passed: true });
           log(`visual-qa: ${route}@${viewport} baseline established`);
         }
