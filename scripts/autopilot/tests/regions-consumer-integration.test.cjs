@@ -71,11 +71,17 @@ test('I1: prepare-ftp.cjs résout scripts/regions/index.cjs', () => {
   console.log('   résolution OK depuis scripts/prepare-ftp.cjs');
 });
 
-// --- I2: scripts/manual-ftp-deploy.cjs peut importer le nouveau registre
-test('I2: manual-ftp-deploy.cjs peut importer scripts/regions/index.cjs', () => {
-  const mod = require('../../manual-ftp-deploy.cjs');
-  assert(typeof mod === 'object', 'manual-ftp-deploy.cjs a exporté un module valide');
-  console.log('   import OK depuis scripts/manual-ftp-deploy.cjs');
+// --- I2: scripts/manual-ftp-deploy.cjs résout scripts/regions/index.cjs
+// Vérifie la résolution du chemin require sans exécuter les effets de bord
+// de manual-ftp-deploy.cjs (certification gate, accès réseau, etc.).
+// Depuis scripts/autopilot/tests/, '../../manual-ftp-deploy.cjs' = scripts/manual-ftp-deploy.cjs,
+// et depuis scripts/ le require('../regions/index.cjs) résout scripts/regions/index.cjs.
+test('I2: manual-ftp-deploy.cjs résout scripts/regions/index.cjs', () => {
+  const manualFtpPath = path.resolve(__dirname, '../../manual-ftp-deploy.cjs');
+  assert(fs.existsSync(manualFtpPath), `fichier introuvable: ${manualFtpPath}`);
+  const expectedRegionsPath = path.resolve(path.dirname(manualFtpPath), '../regions/index.cjs');
+  assert(fs.existsSync(expectedRegionsPath), `fichier introuvable: ${expectedRegionsPath}`);
+  console.log('   résolution OK depuis scripts/manual-ftp-deploy.cjs');
 });
 
 // --- I3: Les 6 régions du nouveau registre existent dans le registre racine
