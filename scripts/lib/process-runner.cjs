@@ -95,10 +95,25 @@ function waitForPort(port, host = 'localhost', timeoutMs = 30000, intervalMs = 5
 function normalizeCommand(command, args) {
   // If command is array [node, script.js], keep as is
   // If command is string, use as is with args
+  let cmd;
+  let cmdArgs;
   if (Array.isArray(command)) {
-    return { cmd: command[0], cmdArgs: [...command.slice(1), ...args] };
+    cmd = command[0];
+    cmdArgs = [...command.slice(1), ...args];
+  } else {
+    cmd = command;
+    cmdArgs = args;
   }
-  return { cmd: command, cmdArgs: args };
+  // On Windows, shell: true is always used (IS_WIN). cmd.exe needs quoted
+  // paths when they contain spaces, otherwise it splits at the space
+  // and treats 'C:\Program' as the command instead of 'C:\Program Files\...'.
+  if (IS_WIN) {
+    if (typeof cmd === 'string' && cmd.includes(' ')) {
+      cmd = '"' + cmd + '"';
+    }
+    cmdArgs = cmdArgs.map(a => (typeof a === 'string' && a.includes(' ') ? '"' + a + '"' : a));
+  }
+  return { cmd, cmdArgs };
 }
 
 async function startServer(command, args, options = {}) {
