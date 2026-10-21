@@ -39,55 +39,18 @@ function git(args, cwd, opts = {}) {
  * prématurément).
  */
 async function gitInherit(args, cwd, opts = {}) {
-  const { spawn, execFileSync } = require('child_process');
+  const { spawn } = require('child_process');
   const timeoutMs = opts.timeoutMs || 120000;
-  // Résoudre le chemin de git.exe (spawn ne résout pas les commandes du
-  // PATH sur Windows sans shell). where.exe est dans C:\Windows\System32\
-  // et est toujours trouvé par CreateProcess.
-  let gitCmd = 'git';
-  try {
-    const whereOut = execFileSync('where', ['git'], { encoding: 'utf8', windowsHide: true });
-    const lines = whereOut.trim().split('\n').filter(Boolean);
-    // Préférer git.exe dans bin\ plutôt que cmd\ (wrapper batch non exécutable
-    // directement par spawn sur Windows)
-    const binLine = lines.find(l => l.toLowerCase().includes('\\bin\\git.exe'));
-    if (binLine) {
-      gitCmd = binLine;
-    } else if (lines.length > 0) {
-      // where a retourné cmd\git.exe ; essayer de convertir en bin\git.exe
-      const cmdLine = lines[0];
-      const binCandidate = cmdLine.replace(/\\cmd\\git\.exe$/i, '\\bin\\git.exe');
-      gitCmd = fs.existsSync(binCandidate) ? binCandidate : cmdLine;
-    }
-  } catch (_) {
-    // where.exe non trouvé, utiliser 'git' directement (fallback)
-  }
+  // Sur Windows, spawn avec shell:true permet à cmd.exe de résoudre git dans le PATH.
+  // stdio: 'inherit' permet à git d'écrire directement sur la console, évitant
+  // le remplissage du buffer de pipe par git worktree add (qui écrit
+  // "Updating files: X%").
   return new Promise((resolve, reject) => {
-    if (IS_WIN) {
-      // Sur Windows, spawn ne résout pas les commandes du PATH ni les exécutables
-      // système (cmd.exe, git.exe). Utiliser execFileSync avec shell: true permet
-      // à cmd.exe de résoudre git dans le PATH. Ceci est nécessaire pour
-      // git worktree add sur Windows.
-      try {
-        execFileSync('git', args, {
-          cwd: cwd || ROOT,
-          stdio: 'inherit',
-          windowsHide: true,
-          timeout: timeoutMs,
-          shell: true,
-        });
-        resolve();
-        return;
-      } catch (e) {
-        reject(new Error(`git ${args.join(' ')} exited with code ${e.code || -1}: ${e.message}`));
-        return;
-      }
-    }
-    // Sur Unix, spawn fonctionne normalement
-    const child = spawn(gitCmd, args, {
+    const child = spawn('git', args, {
       cwd: cwd || ROOT,
-      stdio: 'inherit',
-      windowsHide: false,
+      shell: IS_WIN,
+      stdio: IS_WIN ? 'inherit' : ['inherit', 'pipe', 'pipe'],
+      windowsHide: true,
     });
     let resolved = false;
     const timer = setTimeout(() => {
@@ -113,13 +76,7 @@ async function gitInherit(args, cwd, opts = {}) {
       reject(err);
     });
   });
-}
-
-/**
- * Version asynchrone de git() qui n'envoie pas l'event loop.
- * Retourne { code, stdout, stderr, timedOut, error }.
- */
-async function gitAsync(args, cwd, opts = {}) {
+}async function gitAsync(args, cwd, opts = {}) {
   const timeoutMs = opts.timeoutMs || 120000;
   const result = await execBounded('git', args, { cwd: cwd || ROOT, timeout: timeoutMs, windowsHide: true });
   return result;
@@ -194,6 +151,9 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
   const existing = await gitSafeAsync(['worktree', 'list', '--porcelain']) || '';
   const has = existing.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
 
+  // Détection robuste : la branche existe-t-elle dans le dépôt principal ?
+  const branchExistsInRepo = await gitSafeAsync(['rev-parse', '--verify', branchName], ROOT);
+
   if (has) {
     // Worktree enregistré : vérifier s'il a des modifications non committées
     const status = await gitSafeAsync(['status', '--porcelain=v1'], wt) || '';
@@ -208,62 +168,106 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
       }
       // Nettoyer la référence git du worktree déplacé
       try { await gitAsync(['worktree', 'prune']); } catch (_) {}
-    } else {
-      // Worktree propre : le réutiliser (idempotent, pas de destruction)
-      log(`worktree existant et propre, réutilisation : ${wt}`);
-      // Vérifier que la branche existe déjà, sinon créer
-      const branchExists = await gitSafeAsync(['rev-parse', '--verify', branchName], wt);
-      if (!branchExists) {
-        await gitAsync(['checkout', '-b', branchName, 'origin/' + cfg.git.baseBranch], wt);
-      } else {
-        await gitAsync(['checkout', branchName], wt);
-        await gitAsync(['pull', '--ff-only', 'origin', cfg.git.baseBranch], wt);
-      }
-      // node_modules : npm ci seulement si absent ou lock plus récent
-      return await finishWorktreePrep(wt, cfg, log);
     }
+    // Worktree propre : le réutiliser (idempotent, pas de destruction)
+    log(`worktree existant et propre, réutilisation : ${wt}`);
+    // Vérifier que la branche existe déjà dans le worktree (contexte local),
+    // sinon vérifier dans le dépôt principal, soit créer une nouvelle branche
+    const branchExistsInWorktree = await gitSafeAsync(['rev-parse', '--verify', branchName], wt);
+    if (!branchExistsInWorktree) {
+      // Branche inconnue du worktree : essayer dans le dépôt principal
+      if (branchExistsInRepo) {
+        await gitInherit(['checkout', branchName], wt);
+        await safePullFastForward(wt, cfg.git.baseBranch, log);
+      } else {
+        await gitInherit(['checkout', '-b', branchName], wt);
+      }
+    } else {
+      await gitInherit(['checkout', branchName], wt);
+      await safePullFastForward(wt, cfg.git.baseBranch, log);
+    }
+    // node_modules : npm ci seulement si absent ou lock plus récent
+    return await finishWorktreePrep(wt, cfg, log);
   }
+
+  // --- Worktree n'existe pas encore : création fraîche ---
+  // Déterminer si la branche existe déjà dans le dépôt principal
+  // Si elle existe : utiliser git checkout <branch> (sans -b)
+  // Sinon : utiliser git checkout -b <branch> pour créer la nouvelle branche
+  const createNewBranch = !branchExistsInRepo;
 
   // Créer worktree frais depuis origin/main — avec auto-réparation SÛRE :
   try {
-    await gitInherit(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch], wt);
-    // S'assurer que tous les fichiers sont extraits dans le workteur
-    // (git worktree add peut ne pas les peupler dans certains contextes Windows)
-    await gitInherit(['checkout', 'HEAD', '--', '.'], wt);
+    // Étape 1 : créer le worktree en HEAD détachée depuis origin/baseBranch
+    await gitInherit(['worktree', 'add', wt, 'origin/' + cfg.git.baseBranch], ROOT);
+
+    // Étape 2 : créer la branche de travail dans le worktree
+    // Si la branche existe déjà, checker sans -b ; sinon créer nouvelle branche avec -b
+    if (createNewBranch) {
+      await gitInherit(['checkout', '-b', branchName], wt);
+    } else {
+      await gitInherit(['checkout', branchName], wt);
+    }
   } catch (e) {
     const errMsg = String(e.message || e);
-    // Cas 1 : branche déjà existe localement → créer worktree sur branche existante
+
+    // Cas 1 : branche déjà existe localement → checker la branche existante au lieu de failed worktree add
     if (/already exists/.test(errMsg)) {
-      const branchExists = await gitSafeAsync(['rev-parse', '--verify', branchName]);
-      if (branchExists) {
-        log(`branche ${branchName} existe déjà, création du worktree sur cette branche`);
-        await gitInherit(['worktree', 'add', wt, branchName], wt);
-        log(`worktree créé : ${wt} (${branchName})`);
-        return await finishWorktreePrep(wt, cfg, log);
-      }
+      log(`branche ${branchName} déjà détectée, utilisation de git checkout <branch>`);
+      await gitInherit(['checkout', branchName], wt);
+      log(`worktree créé : ${wt} (${branchName})`);
+      return await finishWorktreePrep(wt, cfg, log);
     }
+
     // Cas 2 : chemin occupé mais non enregistré (résidu de crash)
     const fresh = await gitSafeAsync(['worktree', 'list', '--porcelain']) || '';
     const stillRegistered = fresh.split('\n').some(l => l.startsWith('worktree ') && l.slice(9).trim().replace(/\\/g, '/') === wtNormalized);
     const decision = worktreeAddRecovery({ pathExists: fs.existsSync(wt), registered: stillRegistered });
     if (decision !== 'retry-aside') throw e;
+
     const aside = `${wt}-stale-${Date.now().toString(36)}`;
     log(`worktree orphelin détecté, mise de côté (récupérable) : ${wt} → ${aside}`);
     fs.renameSync(wt, aside);
-    await gitInherit(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch], wt);
-    // S'assurer que tous les fichiers sont extraits dans le workteur
-    // (git worktree add peut ne pas les peupler dans certains contextes Windows)
-    await gitInherit(['checkout', 'HEAD', '--', '.'], wt);
+    // Réessayer la création du worktree proprement
+    await gitInherit(['worktree', 'add', wt, 'origin/' + cfg.git.baseBranch], ROOT);
+    // Utiliser le bon checkout selon que la branche existe ou non
+    if (branchExistsInRepo) {
+      await gitInherit(['checkout', branchName], wt);
+    } else {
+      await gitInherit(['checkout', '-b', branchName], wt);
+    }
   }
   log(`worktree créé : ${wt} (${branchName})`);
 
   return await finishWorktreePrep(wt, cfg, log);
 }
-
 /**
- * Étapes communes après création/réutilisation du worktree (npm ci si nécessaire).
- * Asynchrone pour ne pas bloquer l'event loop pendant npm ci.
+ * Tente un `git pull --ff-only origin/<baseBranch>` UNIQUEMENT si le HEAD
+ * courant est un ancêtre de origin/<baseBranch> (fast-forward possible).
+ * Si les branches ont divergé, on ne tire pas : le worktree reste sur son
+ * état courant. Ne modifie jamais de branche, n'utilise jamais -B, ne réinitialise rien.
+ * Retourne true si le pull a été effectué, false si ignoré (divergence).
  */
+async function safePullFastForward(wt, baseBranch, log = console.log) {
+  // Vérifier que HEAD est ancêtre de origin/<baseBranch> → fast-forward possible.
+  // merge-base --is-ancestor quitte avec code 0 (stdout vide) si ancêtre, code 1 sinon.
+  // gitSafeAsync renvoie "" (succès) ou null (échec).
+  const isAncestor = await gitSafeAsync(['merge-base', '--is-ancestor', 'HEAD', 'origin/' + baseBranch], wt);
+  if (isAncestor === null) {
+    log(`pull --ff-only origin/${baseBranch} ignoré : branches divergentes, HEAD n'est pas ancêtre. Worktree conservé tel quel.`);
+    return false;
+  }
+  try {
+    await gitInherit(['pull', '--ff-only', 'origin/' + baseBranch], wt);
+    log(`pull --ff-only origin/${baseBranch} effectué avec succès`);
+    return true;
+  } catch (e) {
+    // En cas d'échec inattendu malgré le pré-check, on ne fait pas échouer la tâche
+    log(`pull --ff-only origin/${baseBranch} échoué (non bloquant) : ${e.message}`);
+    return false;
+  }
+}
+
 async function finishWorktreePrep(wt, cfg, log = console.log) {
   // Vérifier que le workteur contient les fichiers essentiels du projet.
   // Un workteur réutilisé peut être dans un état incohérent (branche sans commits,
