@@ -180,6 +180,18 @@ async function finishWorktreePrep(wt, cfg, log = console.log) {
   const needCi = !fs.existsSync(nm) ||
     (fs.existsSync(nmStamp) && fs.existsSync(lock) && fs.statSync(lock).mtimeMs > fs.statSync(nmStamp).mtimeMs);
   if (needCi) {
+    // S'assurer que package-lock.json est présent dans le worktree (restauré
+    // depuis origin/main si manquant, cas d'un worktree créé avant son ajout
+    // sur la branche de base).
+    if (!fs.existsSync(lock)) {
+      log(`package-lock.json manquant dans le worktree, restauration depuis origin/${cfg.git.baseBranch}…`);
+      try {
+        await gitAsync(['checkout', 'origin/' + cfg.git.baseBranch, '--', 'package-lock.json'], wt);
+        log('package-lock.json restauré');
+      } catch (e) {
+        throw new Error(`Impossible de restaurer package-lock.json depuis origin/${cfg.git.baseBranch}: ${e.message}`);
+      }
+    }
     log('npm ci (worktree)…');
     const result = await runAsync(process.platform === 'win32' ? 'npm.cmd ci --no-audit --no-fund' : 'npm ci --no-audit --no-fund', wt, { timeoutMs: 600000 });
     if (result.timedOut) {

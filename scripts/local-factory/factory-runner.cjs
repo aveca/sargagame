@@ -903,6 +903,20 @@ async function processQueue() {
         continue;
       }
 
+      // Une tâche à sa limite de retries ne doit pas être exécutée à nouveau.
+      // Elle est automatiquement parkée pour préserver son historique et éviter
+      // les doubles exécutions après épuisement du budget.
+      const retryCount = task.retryCount || 0;
+      const maxRetries = task.maxRetries || 3;
+      if (retryCount >= maxRetries && task.status !== 'parked') {
+        task.status = 'parked';
+        task.finalError = task.lastError || 'budget de retries épuisé';
+        task.parkedAt = new Date().toISOString();
+        saveQueueItem(task);
+        log('task.parked-budget', { id: taskId, retryCount, maxRetries, finalError: task.finalError });
+        continue;
+      }
+
       // Check if already processing
       const processingFile = path.join(STATE_DIR, `processing-${taskId}.json`);
       if (fs.existsSync(processingFile)) {
