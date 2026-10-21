@@ -1099,6 +1099,24 @@ ${entries.join('\n')}
     }
   }
 
+  // Inclure les trois landing pages statiques dans le sitemap, que le build
+  // régional ait produit un sitemap SEO complet ou le fallback depuis les fichiers.
+  const regionalSitemapPath = path.join(out, 'sitemap.xml')
+  let regionalSitemap = fs.readFileSync(regionalSitemapPath, 'utf-8')
+  if (!/<urlset\b/i.test(regionalSitemap) || !/<\/urlset>\s*$/i.test(regionalSitemap)) {
+    throw new Error(`[prepare-ftp] sitemap régional invalide pour ${region.id}; impossible d'ajouter les landing pages`)
+  }
+  const landingSitemapEntries = getRegionLandingPages(region.id)
+    .map(page => `https://${domain}${page.url}`)
+    .filter(url => !regionalSitemap.includes(`<loc>${url}</loc>`))
+    .map(url => `  <url><loc>${url}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`)
+  if (landingSitemapEntries.length) {
+    const addition = landingSitemapEntries.join('\n') + '\n'
+    regionalSitemap = regionalSitemap.replace(/<\/urlset>\s*$/i, addition + '</urlset>\n')
+    fs.writeFileSync(regionalSitemapPath, regionalSitemap, 'utf-8')
+    console.log(`   → ${landingSitemapEntries.length} landing URL(s) ajoutée(s) au sitemap (${region.id})`)
+  }
+
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on
   // le localise via scripts/lib/localize-404.cjs (dictionnaires EN/ES ancrés
   // sur public/404.html + garde fail-loud). FR = comportement historique.
