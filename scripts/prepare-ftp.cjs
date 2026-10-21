@@ -892,7 +892,15 @@ function prepareNewRegion(region) {
   // écrasé la landing statique MQ public/en/). Le skip 'en' ci-dessus ne visait que
   // cette landing MQ — inexistante dès qu'une région émet son propre /en/. Même
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
-  for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
+  const secondaryLangDirs = require('./lib/region-langs.cjs').secondaryLangDirs(region)
+  for (const d of secondaryLangDirs) skip.delete(d)
+  // Les dossiers de langue ne sont gardés en bloc que lorsqu'ils sont activés
+  // par region-langs. Les landing pages statiques explicitement autorisées sont
+  // recopiées individuellement plus bas, sans publier les autres pages d'une langue
+  // que cette région n'émet pas.
+  for (const lang of ['en', 'es']) {
+    if (!secondaryLangDirs.includes(lang)) skip.add(lang)
+  }
   copyRecursive(dist, out, skip)
 
   // Les landing pages sont présentes ensemble dans le build Vite, mais chaque
