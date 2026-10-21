@@ -6,6 +6,23 @@
 
 require_once __DIR__ . '/mollie-lib.php';
 
+// Vérifie qu'un paiement Mollie correspond à un montant/devise autorisés (anti-tampering).
+function validateMollieAmountPHP($payment){
+  $md = is_array($payment->metadata ?? []) ? (array)($payment->metadata ?? []) : [];
+  $pass = $md['pass'] ?? '';
+  $currency = strtoupper($payment->amount->currency ?? '');
+  $value = (float)($payment->amount->value ?? 0);
+  $prices = ['p30'=>['EUR'=>14.99,'USD'=>11.99],'trip7'=>['EUR'=>4.99,'USD'=>null],'season'=>['EUR'=>19.99,'USD'=>null],'sos'=>['EUR'=>1.00,'USD'=>null]];
+  if(!isset($prices[$pass])) return ['ok'=>false,'error'=>'unknown_pass'];
+  $expected = $prices[$pass][$currency] ?? null;
+  if($expected===null){
+    if(!($value>0.50 && $value<50)) return ['ok'=>false,'error'=>'amount_out_of_range'];
+  } elseif(abs($value-$expected)>=0.02){
+    return ['ok'=>false,'error'=>'amount_mismatch'];
+  }
+  return ['ok'=>true,'pass'=>$pass,'currency'=>$currency,'value'=>$value];
+}
+
 header('Content-Type: application/json; charset=utf-8');
 
 $raw = file_get_contents('php://input');
@@ -26,7 +43,7 @@ if (!$webhookSecret) {
     exit;
 }
 $expectedSig = hash_hmac('sha256', $raw, $webhookSecret);
-if (!hash_equals($expectedSig, $_SERVER['HTTP_X_MOLLIE_SIGNATURE'] ?? '')) {
+if (!hash_equals($expectedSig, strtolower(preg_replace('/^sha256=/i', '', $_SERVER['HTTP_X_MOLLIE_SIGNATURE'] ?? '')))) {
     error_log('[mollie-webhook] INVALID SIGNATURE — possible forgery');
     http_response_code(403);
     echo json_encode(['error' => 'invalid_signature']);
@@ -52,6 +69,13 @@ try {
         $payment = $mollie->payments->get($id);
         $status = $payment->status ?? '';
         $metadata = (array)($payment->metadata ?? []);
+        // Vérification indépendante du montant et de la devise (anti-tampering).
+        $amountCheck = validateMollieAmountPHP($payment);
+        if(!$amountCheck['ok']){
+            http_response_code(400);
+            echo json_encode(['error'=>$amountCheck['error']]);
+            exit;
+        }
 
         if ($status === 'paid') {
             $source = $metadata['source'] ?? 'unknown';
@@ -59,14 +83,28 @@ try {
             $email = $metadata['email'] ?? '';
 
             if (in_array($source, ['b2b_annual'], true)) {
-                mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
+                $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
+                $mirrorOk = $grant['mirror_ok'] ?? false;
+                if (!$mirrorOk) {
+                    http_response_code(500);
+                    echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
+                    exit;
+                }
                 error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id");
             } elseif (in_array($source, ['b2b_monthly'], true)) {
                 // B2B monthly - grant handled by subscription webhook
                 error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
-            } elseif ($pass && in_array($pass, ['p30', 'trip7', 'season'], true)) {
+            } elseif ($pass && in_array($pass, ['p30', 'trip7', 'p7', 'season', 'sos'], true)) {
                 // B2C pass — grant côté serveur (backup du localStorage frontend)
-                mol_b2c_pass_grant($id, $pass, $email, $metadata);
+                // sos (rapport 24h) : durée 1 jour, email vide acceptable.
+                $grant = mol_b2c_pass_grant($id, $pass, $email, $metadata);
+                $mirrorOk = $grant['mirror_ok'] ?? false;
+                if (!$mirrorOk) {
+                    http_response_code(500);
+                    echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
+                    exit;
+                }
+                error_log("[mollie-webhook] payment.paid pass=$pass paymentId=$id mirror_ok=$mirrorOk");
             }
         }
         http_response_code(200);
@@ -87,15 +125,27 @@ try {
          if (in_array($event, ['subscription.created', 'subscription.updated'], true)) {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
                  if (in_array($status, ['active', 'pending'], true)) {
-                     mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                     $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                     $mirrorOk = $grant['mirror_ok'] ?? false;
+                     if (!$mirrorOk) {
+                         http_response_code(500);
+                         echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
+                         exit;
+                     }
                  }
              }
          }
 
          if ($event === 'subscription.paid') {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
-                 mol_b2b_grant_once($customerId, $planKey, $subscription->id);
-                 error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId");
+                 $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 $mirrorOk = $grant['mirror_ok'] ?? false;
+                 if (!$mirrorOk) {
+                     http_response_code(500);
+                     echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
+                     exit;
+                 }
+                 error_log("[mollie-webhook] subscription.paid renewal grant id=$id plan=$planKey customer=$customerId mirror_ok=$mirrorOk");
              }
          }
 
@@ -103,7 +153,7 @@ try {
              error_log("[mollie-webhook] subscription.charge_failed id=$id plan=$planKey customer=$customerId");
          }
 
-         if ($event === 'payment.failed') {
+         if ($event === 'payment.failed' || $status === 'failed') {
              mol_b2c_pass_revoke($id);
              error_log("[mollie-webhook] payment.failed pass paymentId=$id");
          }

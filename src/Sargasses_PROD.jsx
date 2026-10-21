@@ -81,7 +81,17 @@ const FIND_CTA_OFF=(()=>{try{return /[?&]trouveplage=0/.test(window.location.sea
 const LazyVeilleurRepond=lazyWithRetry(()=>import("./VeilleurRepond.jsx"))
 const VEILLE_OFF=(()=>{try{return /[?&]veille=0/.test(window.location.search)}catch(_){return false}})()
 // Accueil « LA CHASSE » (bras A/B `arena_loop`) — boucle de jeu TCG comic.
+// Depuis la refonte P1 (2026-10-21) : bras de SECOURS, plus le défaut.
 const LazyChasse=lazyWithRetry(()=>import("./ChasseHome"))
+// Accueil « INTERFACE PRODUIT » (bras A/B `voyage`) — refonte visuelle P1
+// (2026-10-21). Nouveau DÉFAUT : proposition de valeur immédiate, verdict
+// régional réel, fraîcheur satellite honnête, top plages + alternatives.
+// Additif : `chasse` reste monté tel quel (contrôle). Rollback produit
+// `?voyage=0` (retour accueil précédent) ; force ancien accueil `?chasse=1`.
+const LazyHomeVoyage=lazyWithRetry(()=>import("./HomeVoyage.jsx"))
+const VOYAGE_OFF=(()=>{try{return /[?&]voyage=0(?:&|$)/.test(window.location.search)}catch(_){return false}})()
+const CHASSE_FORCE=(()=>{try{return /[?&]chasse=1(?:&|$)/.test(window.location.search)}catch(_){return false}})()
+const VOYAGE_ON=!VOYAGE_OFF
 // Carte SVG monde golden-hour (bras A/B `map_world`) — port proto-map-v2, region-aware.
 const LazyWorldMapView=lazyWithRetry(()=>import("./WorldMapView"))
 const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
@@ -12241,9 +12251,14 @@ export default function App(){
       // COHÉRENCE : on atterrit sur la CARTE (l'utilitaire qui répond « où me baigner
       // aujourd'hui »), pas sur le jeu. Le jeu reste à 1 tap via le bouton « 🎴 Jouer ».
       // ?hero=1 force l'arène (QA / A-B). Avant : l'arène prenait l'accueil 1ʳᵉ visite.
-      if(/[?&]hero=1/.test(window.location.search)) return true
-      return false
-    }catch(_){return false}
+      // REFONTE P1 (2026-10-21) : on atterrit sur l'ACCUEIL PRODUIT (bras `voyage` :
+      // proposition de valeur, verdict regional reel, fraicheur honnete, alternatives),
+      // puis la CARTE a 1 tap via le CTA principal. Le jeu reste a 1 tap via "Jouer".
+      // ROLLBACK : ?hero=0 -> retour carte-first (ancien defaut, comportement d'avant).
+      // ?hero=1 reste l'override QA des anciens designs d'accueil.
+      if(/[?&]hero=0(?:&|$)/.test(window.location.search)) return false
+      return true
+    }catch(_){return true}
   })
   // Découverte éducative (StoryEngine). Gate URL ?decouverte=1 pour QA ; entrée UI dédiée.
   const[showDiscovery,setShowDiscovery]=useState(()=>{try{return /[?&]decouverte=1/.test(window.location.search)}catch(_){return false}})
@@ -12429,6 +12444,10 @@ export default function App(){
   // fin de la mosaïque d'A/B sur l'accueil — un seul parcours fluide, monde comic
   // de bout en bout). home_az désactivé pour ne pas se superposer à l'arène.
   // Override debug : ?home_az=1 pour ré-essayer l'ancien accueil A→Z.
+  // Depuis REFONTE P1 (2026-10-21) : ces quatre bras (chasse/homeAZ/landingFunnel
+  // ->GameFunnel/HeroVerdict) restent montés mais ne sont plus le défaut — le défaut
+  // est le bras `voyage` (accueil interface produit). Rollback produit : ?voyage=0
+  // (retour bras `chasse`) ; retour carte-first pur : ?hero=0.
   // ⚠️ SUPERSEDÉ (pivot CARTE-FIRST, cf. showHero ~L11543) : cette section entière
   // (chasse/homeAZ/landingFunnel→GameFunnel/HeroVerdict) n'est plus atteinte pour
   // le trafic organique — showHero=false par défaut, l'accueil réel est la carte.
@@ -13946,9 +13965,11 @@ export default function App(){
             onReliability={()=>{try{const rp=lang==="en"?"/reliability/":lang==="es"?"/fiabilidad/":"/fiabilite/";window.location.href=rp}catch(_){}}}
             exiting={heroExiting}/>
           </Suspense></ErrBound>
-        ):chasse?(
+        ):(chasse&&(CHASSE_FORCE||VOYAGE_OFF))?(
           /* BRAS A/B `arena_loop` — accueil « LA CHASSE » (boucle de jeu TCG).
-             Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0. */
+             Additif : control = HomeAZ/GameFunnel/HeroVerdict, intact. ?chasse=1/0.
+             Depuis la refonte P1, ce bras n'est plus le défaut : il se monte sur
+             `?chasse=1` (force) ou `?voyage=0` (rollback produit). */
           <ErrBound><Suspense fallback={null}>
           <LazyChasse beach={heroPick} lang={lang} island={island} sargData={sargData} userPos={userPos} isPremium={isPremium} captureMode={PAY_CAPTURE_ONLY} favorites={favorites} onToggleFav={toggleFav} onOpenPro={()=>{ try{track("sg_b2b_open",{source:"space"})}catch(_){}; proB2BSrc.current="space"; setShowProB2B(true) }}
             pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
@@ -13970,6 +13991,33 @@ export default function App(){
             onCaptureEmail={em=>{ try{ submitLead(em,"chasse") }catch(_){} }}
             onShowMap={()=>{
               dismissHero("chasse_map")
+              fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
+            }}
+            exiting={heroExiting}/>
+          </Suspense></ErrBound>
+        ):VOYAGE_ON?(
+          /* BRAS A/B `voyage` — accueil « INTERFACE PRODUIT » (refonte visuelle P1,
+             2026-10-21). Nouveau DÉFAUT : proposition de valeur immédiate, verdict
+             régional réel, fraîcheur satellite honnête (jamais devinée), top plages
+             et alternatives réelles. Additif : control = HomeAZ/GameFunnel/HeroVerdict
+             inchangés. Rollback produit : ?voyage=0 ; force ancien accueil : ?chasse=1. */
+          <ErrBound><Suspense fallback={null}>
+          <LazyHomeVoyage beach={heroPick}
+            lang={lang}
+            regionName={IS_NEW_REGION?REGION.name:(island==="gp"?"Guadeloupe":"Martinique")}
+            sargData={sargData} userPos={userPos} isPremium={isPremium}
+            favorites={favorites} onToggleFav={toggleFav}
+            pickBeaches={(allBeaches||[]).filter(b=>(IS_NEW_REGION||b.island===island)&&b.status&&b.score!=null)
+              .sort((a,b)=>(b.score||0)-(a.score||0))}
+            onOpenBeach={b=>{
+              dismissHero("voyage_card")
+              setSelectedBeach(b)
+              fireWipe(_t(lang,"Score 0-100 · mis à jour 4×/jour","0-100 score · updated 4×/day","Score 0-100 · actualizado 4×/día"))
+              track("sg_beach_open",{beach_id:b.id,status:b.status,source:"voyage_top3"})
+            }}
+            onPremium={src=>{dismissHero("voyage_premium");openPremium(src||"voyage")}}
+            onShowMap={()=>{
+              dismissHero("voyage_map")
               fireWipe(_t(lang,"Chaque pastille = la mesure du matin","Every dot = this morning's measurement","Cada punto = la medición de la mañana"))
             }}
             exiting={heroExiting}/>

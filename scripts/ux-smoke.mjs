@@ -106,10 +106,20 @@ const scanGhost = () => {
 };
 const whiteButtons = [];
 
-// ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
-//       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
-//       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
+// ── 1. Atterrissage réel : accueil produit (bras `voyage`, défaut depuis P1) ou
+//       carte-monde (CARTE-FIRST, ?hero=0). L'accueil couvre la carte ; son CTA
+//       « Trouve ta plage » l'efface pour révéler la carte et ses labels .sg-maplabel.
 await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
+await p.waitForTimeout(2500); // laisse le chunk lazy + données peindre
+const onVoyage = await p.evaluate(() => !!document.querySelector('.vg-root'));
+if (onVoyage) {
+  // CTA principal : ouvre la carte (efface l'accueil)
+  await p.evaluate(() => {
+    const cta = document.querySelector('.vg-cta');
+    if (cta) cta.click();
+  });
+  await p.waitForTimeout(1200);
+}
 await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
