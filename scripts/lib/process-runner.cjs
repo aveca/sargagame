@@ -95,25 +95,12 @@ function waitForPort(port, host = 'localhost', timeoutMs = 30000, intervalMs = 5
 function normalizeCommand(command, args) {
   // If command is array [node, script.js], keep as is
   // If command is string, use as is with args
-  let cmd;
-  let cmdArgs;
+  // No quoting here: startServer uses spawn without shell (CreateProcess on Windows)
+  // which handles paths natively. runBounded/execBounded handle quoting for shell:true.
   if (Array.isArray(command)) {
-    cmd = command[0];
-    cmdArgs = [...command.slice(1), ...args];
-  } else {
-    cmd = command;
-    cmdArgs = args;
+    return { cmd: command[0], cmdArgs: [...command.slice(1), ...args] };
   }
-  // On Windows, shell: true is always used (IS_WIN). cmd.exe needs quoted
-  // paths when they contain spaces, otherwise it splits at the space
-  // and treats 'C:\Program' as the command instead of 'C:\Program Files\...'.
-  if (IS_WIN) {
-    if (typeof cmd === 'string' && cmd.includes(' ')) {
-      cmd = '"' + cmd + '"';
-    }
-    cmdArgs = cmdArgs.map(a => (typeof a === 'string' && a.includes(' ') ? '"' + a + '"' : a));
-  }
-  return { cmd, cmdArgs };
+  return { cmd: command, cmdArgs: args };
 }
 
 async function startServer(command, args, options = {}) {
@@ -214,7 +201,16 @@ async function runBounded(command, args, options = {}) {
     timeout = 120000
   } = options;
 
-  const { cmd, cmdArgs } = normalizeCommand(command, args);
+  let { cmd, cmdArgs } = normalizeCommand(command, args);
+
+  // On Windows with shell:true, quote command and args with spaces so cmd.exe
+  // doesn't split them at spaces (e.g. 'C:\Program Files\nodejs\node.exe').
+  if (IS_WIN) {
+    if (typeof cmd === 'string' && cmd.includes(' ')) {
+      cmd = '"' + cmd + '"';
+    }
+    cmdArgs = cmdArgs.map(a => (typeof a === 'string' && a.includes(' ') ? '"' + a + '"' : a));
+  }
 
   return new Promise((resolve, reject) => {
     const child = spawn(cmd, cmdArgs, {
@@ -262,7 +258,16 @@ async function execBounded(command, args, options = {}) {
     timeout = 120000
   } = options;
 
-  const { cmd, cmdArgs } = normalizeCommand(command, args);
+  let { cmd, cmdArgs } = normalizeCommand(command, args);
+
+  // On Windows with shell:true, quote command and args with spaces so cmd.exe
+  // doesn't split them at spaces (e.g. 'C:\Program Files\nodejs\node.exe').
+  if (IS_WIN) {
+    if (typeof cmd === 'string' && cmd.includes(' ')) {
+      cmd = '"' + cmd + '"';
+    }
+    cmdArgs = cmdArgs.map(a => (typeof a === 'string' && a.includes(' ') ? '"' + a + '"' : a));
+  }
 
   return new Promise((resolve) => {
     const child = spawn(cmd, cmdArgs, {
