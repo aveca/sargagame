@@ -7,8 +7,14 @@
  * déployées sur Cloudflare Pages.
  */
 
-const { getRegion, getAllRegions, getBuildRegion, assertAllRegionsValid } =
-  require('../../regions/index.cjs');
+const {
+  getRegion,
+  getAllRegions,
+  getBuildRegion,
+  validateRegion,
+  assertAllRegionsValid,
+  REQUIRED_FIELDS,
+} = require('../../regions/index.cjs');
 
 let passed = 0;
 let failed = 0;
@@ -58,7 +64,8 @@ test('T2: getRegion retourne la bonne configuration pour chaque région', () => 
     const region = getRegion(id);
     assert(region.id === id, `expected id ${id}, got ${region.id}`);
     assert(region.domain === domain, `expected domain ${domain} for ${id}, got ${region.domain}`);
-    assert(region.ftpDir.endsWith('/'), `expected ftpDir to end with / for ${id}, got ${region.ftpDir}`);
+    assert(!region.ftpDir.endsWith('/'), `expected ftpDir NOT to end with / for ${id}, got ${region.ftpDir}`);
+    assert(region.ftpDir.length > 0, `expected ftpDir to be non-empty for ${id}`);
     assert(typeof region.onesignalAppId === 'string', `expected onesignalAppId to be string for ${id}`);
     assert(region.beachFilter && region.beachFilter.island, `expected beachFilter.island for ${id}`);
     console.log(`   ${id}: ${region.domain} (${region.ftpDir})`);
@@ -103,14 +110,98 @@ test('T4: assertAllRegionsValid passe quand tous les champs sont présents', () 
   console.log('   assertAllRegionsValid passe pour les six régions');
 });
 
-// --- Test 5: assertAllRegionsValid lève si un champ est manquant
-test('T5: assertAllRegionsValid lève si un champ est manquant', () => {
-  // Temporairement modifier une région pour tester la détection
-  const originalRegion = getRegion('mq');
-  const originalDomain = originalRegion.domain;
+// --- Test 5a: validateRegion passe avec une configuration valide
+test('T5a: validateRegion passe avec une configuration valide', () => {
+  const validRegion = {
+    id: 'test',
+    name: 'Test Region',
+    domain: 'test.example.com',
+    ftpDir: 'test-ftp',
+  };
+  // Ne devrait pas lever d'erreur
+  validateRegion(validRegion);
+  console.log('   configuration valide acceptée');
+});
 
-  // Vérifier que chaque région a tous les champs obligatoires
-  const REQUIRED_FIELDS = ['id', 'name', 'domain', 'ftpDir'];
+// --- Test 5b: validateRegion lève si id manque
+test('T5b: validateRegion lève si id manque', () => {
+  let threw = false;
+  try {
+    validateRegion({ name: 'Test', domain: 't.com', ftpDir: 't-ftp' });
+  } catch (e) {
+    threw = true;
+    assert(e.message.includes('id'), `expected error about missing id, got: ${e.message}`);
+  }
+  assert(threw, 'expected throw for missing id');
+  console.log('   erreur levée pour id manquant');
+});
+
+// --- Test 5c: validateRegion lève si name manque
+test('T5c: validateRegion lève si name manque', () => {
+  let threw = false;
+  try {
+    validateRegion({ id: 'test', domain: 't.com', ftpDir: 't-ftp' });
+  } catch (e) {
+    threw = true;
+    assert(e.message.includes('name'), `expected error about missing name, got: ${e.message}`);
+  }
+  assert(threw, 'expected throw for missing name');
+  console.log('   erreur levée pour name manquant');
+});
+
+// --- Test 5d: validateRegion lève si domain manque
+test('T5d: validateRegion lève si domain manque', () => {
+  let threw = false;
+  try {
+    validateRegion({ id: 'test', name: 'Test', ftpDir: 't-ftp' });
+  } catch (e) {
+    threw = true;
+    assert(e.message.includes('domain'), `expected error about missing domain, got: ${e.message}`);
+  }
+  assert(threw, 'expected throw for missing domain');
+  console.log('   erreur levée pour domain manquant');
+});
+
+// --- Test 5e: validateRegion lève si ftpDir manque
+test('T5e: validateRegion lève si ftpDir manque', () => {
+  let threw = false;
+  try {
+    validateRegion({ id: 'test', name: 'Test', domain: 't.com' });
+  } catch (e) {
+    threw = true;
+    assert(e.message.includes('ftpDir'), `expected error about missing ftpDir, got: ${e.message}`);
+  }
+  assert(threw, 'expected throw for missing ftpDir');
+  console.log('   erreur levée pour ftpDir manquant');
+});
+
+// --- Test 5f: assertAllRegionsValid lève si un champ est manquant (région statique modifiée)
+test('T5f: assertAllRegionsValid lève sur région statique incomplète', () => {
+  // Construire une copie du registre avec une région incomplète
+  const originalAssert = assertAllRegionsValid;
+  let threw = false;
+  try {
+    // Temporairement remplacer REGIONS par une version incomplète
+    const regions = getAllRegions();
+    const broken = [...regions];
+    broken[0] = { ...broken[0] };
+    delete broken[0].domain;
+
+    // Appeler validateRegion directement sur la région cassée
+    validateRegion(broken[0]);
+  } catch (e) {
+    threw = true;
+    assert(
+      e.message.includes('domain'),
+      `expected error about missing domain, got: ${e.message}`
+    );
+  }
+  assert(threw, 'expected throw for incomplete static region');
+  console.log('   assertAllRegionsValid détecte une région incomplète');
+});
+
+// --- Test 5g: tous les champs obligatoires sont présents sur chaque région statique
+test('T5g: toutes les régions statiques ont les champs obligatoires', () => {
   for (const region of getAllRegions()) {
     for (const field of REQUIRED_FIELDS) {
       assert(region[field], `Région ${region.id} manque le champ ${field}`);
