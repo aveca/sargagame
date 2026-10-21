@@ -206,7 +206,8 @@ async function runBounded(command, args, options = {}) {
       cwd,
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
-      windowsHide: true
+      windowsHide: true,
+      shell: IS_WIN, // Windows: cmd.exe résout .cmd/.bat (npm.cmd) directement
     });
 
     let stdout = '', stderr = '';
@@ -253,7 +254,8 @@ async function execBounded(command, args, options = {}) {
       cwd,
       env,
       stdio: ['ignore', 'pipe', 'pipe'],
-      windowsHide: true
+      windowsHide: true,
+      shell: IS_WIN, // Windows: cmd.exe résout .cmd/.bat (npm.cmd) directement
     });
 
     let stdout = '', stderr = '';
