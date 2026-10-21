@@ -49,20 +49,28 @@ function backupRealFiles() {
   const backupDir = path.join(os.tmpdir(), `queue-backup-${Date.now()}`);
   fs.mkdirSync(backupDir, { recursive: true });
   for (const f of REAL_QUEUE_FILES) {
-    fs.copyFileSync(path.join(QUEUE_DIR, f), path.join(backupDir, f));
+    const src = path.join(QUEUE_DIR, f);
+    if (!fs.existsSync(src)) continue; // Le runner a pu le supprimer entre-temps
+    fs.copyFileSync(src, path.join(backupDir, f));
   }
   for (const f of REAL_STATE_FILES) {
-    fs.copyFileSync(path.join(STATE_DIR, f), path.join(backupDir, f));
+    const src = path.join(STATE_DIR, f);
+    if (!fs.existsSync(src)) continue;
+    fs.copyFileSync(src, path.join(backupDir, f));
   }
   return backupDir;
 }
 
 function restoreRealFiles(backupDir) {
   for (const f of REAL_QUEUE_FILES) {
-    fs.copyFileSync(path.join(backupDir, f), path.join(QUEUE_DIR, f));
+    const src = path.join(backupDir, f);
+    if (!fs.existsSync(src)) continue; // N'a pas pu être sauvegardé
+    fs.copyFileSync(src, path.join(QUEUE_DIR, f));
   }
   for (const f of REAL_STATE_FILES) {
-    fs.copyFileSync(path.join(backupDir, f), path.join(STATE_DIR, f));
+    const src = path.join(backupDir, f);
+    if (!fs.existsSync(src)) continue;
+    fs.copyFileSync(src, path.join(STATE_DIR, f));
   }
   // Supprimer le backup
   try { fs.rmSync(backupDir, { recursive: true, force: true }); } catch (_) {}
