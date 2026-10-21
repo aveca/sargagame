@@ -244,8 +244,30 @@ jobs:
           if-no-files-found: ignore
           retention-days: 90
 
+  mollie-live-gate:
+    needs: [scope]
+    if: needs.scope.outputs.production == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+      MOLLIE_WEBHOOK_SECRET: ${{ secrets.MOLLIE_WEBHOOK_SECRET }}
+    steps:
+      - name: Require LIVE Mollie key and payment backend secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${MOLLIE_API_KEY:-}" in
+            live_*) echo "Mollie key mode: LIVE" ;;
+            *) echo "::error::MOLLIE_API_KEY must be configured with a live_ key before production deployment"; exit 1 ;;
+          esac
+          test -n "${SUPABASE_SERVICE_KEY:-}" || { echo "::error::SUPABASE_SERVICE_KEY is missing"; exit 1; }
+          test -n "${MOLLIE_WEBHOOK_SECRET:-}" || { echo "::error::MOLLIE_WEBHOOK_SECRET is missing"; exit 1; }
+          echo "Required payment backend secrets are present; values were not printed."
+
   deploy:
-    needs: [build, certification-gate, scope]
+    needs: [build, certification-gate, scope, mollie-live-gate]
     if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -466,7 +488,7 @@ jobs:
           node -e "const fs=require('fs');if(fs.existsSync('post-deploy-report.json')){const r=JSON.parse(fs.readFileSync('post-deploy-report.json','utf8'));let s='## Post-deploy verification\n\nJob trace: '+r.jobId+'\n\nSTAGE: **'+r.stage+'**\n\n| Région | Domaine | Stade |\n|---|---|---|\n';for(const d of r.domains)s+='| '+d.region+' | '+d.domain+' | '+d.stage+' |\n';fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,s)}"
 
   deploy-pages:
-    needs: [build, certification-gate, scope]
+    needs: [build, certification-gate, scope, mollie-live-gate]
     if: (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success') && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true' && needs.scope.outputs.production == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 60
