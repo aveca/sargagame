@@ -48,7 +48,7 @@ export default {
       if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return {granted:false,error:"payment_backend_not_configured"};
       let r;
       try {
-        r=await fetch(String(env.SUPABASE_URL).replace(/\\/+$/,"")+"/rest/v1/rpc/sg_upsert_payment_grant",{
+        r=await fetch(String(env.SUPABASE_URL).replace(/\/+$/,"")+"/rest/v1/rpc/sg_upsert_payment_grant",{
           method:"POST",
           headers:{
             apikey:env.SUPABASE_SERVICE_KEY,
