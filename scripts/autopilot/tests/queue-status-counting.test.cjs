@@ -42,8 +42,13 @@ function assert(condition, msg) {
 async function waitMs(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // Sauvegarder les fichiers de queue réels avant le test
-const REAL_QUEUE_FILES = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.json'));
-const REAL_STATE_FILES = fs.existsSync(STATE_DIR) ? fs.readdirSync(STATE_DIR).filter(f => f.startsWith('processing-') && f.endsWith('.json')) : [];
+let REAL_QUEUE_FILES = [];
+let REAL_STATE_FILES = [];
+
+function captureRealFiles() {
+  REAL_QUEUE_FILES = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.json'));
+  REAL_STATE_FILES = fs.existsSync(STATE_DIR) ? fs.readdirSync(STATE_DIR).filter(f => f.startsWith('processing-') && f.endsWith('.json')) : [];
+}
 
 function backupRealFiles() {
   const backupDir = path.join(os.tmpdir(), `queue-backup-${Date.now()}`);
@@ -111,11 +116,11 @@ function writeProcessingFile(taskId) {
   }));
 }
 
-console.log(`\nSauvegarde de ${REAL_QUEUE_FILES.length} fichier(s) de queue réel(s)...`);
-const backupDir = backupRealFiles();
-
+let backupDir;
 try {
-  // --- Test 1: Queue vide ---
+  captureRealFiles();
+  console.log(`\nSauvegarde de ${REAL_QUEUE_FILES.length} fichier(s) de queue réel(s)...`);
+  backupDir = backupRealFiles();
   test('T1: queue vide → tous les compteurs à zéro', () => {
     purgeQueue();
     const stats = countQueueByStatus();

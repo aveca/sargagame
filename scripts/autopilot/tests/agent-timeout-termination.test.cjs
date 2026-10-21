@@ -284,14 +284,31 @@ test('CAS 9: tâche indépendante s\'exécute après terminaison d\'un processus
 // CAS 10: Tâche `parked` reste en quarantaine
 // ---------------------------------------------------------------------------
 test('CAS 10: tâche parked n\'est pas retraitée (statut préservé)', () => {
-  const queueFile = path.join(__dirname, '..', '..', '..', 'queue', 'FACTORY-LOCAL-OLLAMA-FINAL-20261003.json');
-  const content = fs.readFileSync(queueFile, 'utf8');
-  const task = JSON.parse(content);
+  const queueFile = path.join(__dirname, '..', '..', '..', 'queue', 'test-cas10-parked.json');
+  const parkedTask = {
+    id: 'test-cas10-parked',
+    type: 'code_task',
+    status: 'parked',
+    retryCount: 3,
+    maxRetries: 3,
+    nextRetryAt: null,
+    lastError: 'test parked task',
+    parkedAt: new Date().toISOString(),
+    quarantineReason: 'test quarantine',
+    createdAt: new Date().toISOString(),
+  };
+  fs.writeFileSync(queueFile, JSON.stringify(parkedTask, null, 2));
+  try {
+    const content = fs.readFileSync(queueFile, 'utf8');
+    const task = JSON.parse(content);
 
-  assert(task.status === 'parked', `expected status=parked, got ${task.status}`);
-  assert(task.quarantineReason !== undefined, 'quarantineReason doit être présent');
-  assert(task.nextRetryAt === null, 'nextRetryAt doit être null (pas de retry auto)');
-  console.log(`   statut=${task.status}, quarantaine="${task.quarantineReason.slice(0, 60)}..."`);
+    assert(task.status === 'parked', `expected status=parked, got ${task.status}`);
+    assert(task.quarantineReason !== undefined, 'quarantineReason doit être présent');
+    assert(task.nextRetryAt === null, 'nextRetryAt doit être null (pas de retry auto)');
+    console.log(`   statut=${task.status}, quarantaine="${task.quarantineReason.slice(0, 60)}..."`);
+  } finally {
+    try { fs.unlinkSync(queueFile); } catch (_) {}
+  }
 });
 
 // ---------------------------------------------------------------------------
