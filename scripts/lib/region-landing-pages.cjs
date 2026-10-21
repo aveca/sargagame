@@ -25,7 +25,12 @@ const LANDING_PAGES = Object.freeze({
 });
 
 function getRegionLandingPages(regionId) {
-  return (LANDING_PAGES[regionId] || []).map(page => ({ ...page }));
+  return (LANDING_PAGES[regionId] || []).map(page => ({ ...page, regionId }));
+}
+
+function getAllRegionLandingPages() {
+  return Object.entries(LANDING_PAGES)
+    .flatMap(([regionId, pages]) => pages.map(page => ({ ...page, regionId })));
 }
 
 function withLandingPageSlugs(regionId, existingSlugs) {
@@ -37,4 +42,4 @@ function withLandingPageSlugs(regionId, existingSlugs) {
   return slugs;
 }
 
-module.exports = { getRegionLandingPages, withLandingPageSlugs };
+module.exports = { getRegionLandingPages, getAllRegionLandingPages, withLandingPageSlugs };

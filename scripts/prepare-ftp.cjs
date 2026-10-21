@@ -13,7 +13,7 @@ const fs = require('fs')
 const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
-const { getRegionLandingPages, withLandingPageSlugs } = require('./lib/region-landing-pages.cjs')
+const { getRegionLandingPages, getAllRegionLandingPages, withLandingPageSlugs } = require('./lib/region-landing-pages.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 
 const root = path.join(__dirname, '..')
@@ -895,10 +895,18 @@ function prepareNewRegion(region) {
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
 
-  // Les neuf landing pages FR/EN/ES sont des exceptions explicites au filtre
-  // historique des dossiers de langue : garder uniquement les routes listées
-  // pour cette région, sans recopier tout le /en/ historique MQ sur un domaine USD.
-  for (const page of getRegionLandingPages(region.id)) {
+  // Les landing pages sont présentes ensemble dans le build Vite, mais chaque
+  // domaine ne doit publier que ses propres versions FR/EN/ES.
+  const ownLandingPages = getRegionLandingPages(region.id)
+  const ownLandingFiles = new Set(ownLandingPages.map(page => page.file))
+  for (const page of getAllRegionLandingPages()) {
+    if (ownLandingFiles.has(page.file)) continue
+    const unwanted = path.join(out, page.file)
+    if (fs.existsSync(unwanted)) fs.rmSync(unwanted, { recursive: true, force: true })
+  }
+  // Les dossiers de langue historiques peuvent être ignorés par la copie
+  // générale. Recopier explicitement uniquement les trois routes autorisées.
+  for (const page of ownLandingPages) {
     const source = path.join(dist, page.file)
     const destination = path.join(out, page.file)
     if (!fs.existsSync(source)) {

@@ -1,6 +1,10 @@
 'use strict';
 const assert = require('node:assert/strict');
-const { getRegionLandingPages, withLandingPageSlugs } = require('./region-landing-pages.cjs');
+const {
+  getRegionLandingPages,
+  getAllRegionLandingPages,
+  withLandingPageSlugs,
+} = require('./region-landing-pages.cjs');
 
 const CASES = {
   puntacana: ['playa-punta-cana', '/en/plages/punta-cana/', '/es/playas/punta-cana/'],
@@ -29,8 +33,16 @@ for (const [id, expected] of Object.entries(CASES)) {
     assert.ok(pages.every(p => p.file.endsWith('/index.html')));
     assert.ok(pages.some(p => p.url === expected[1]));
     assert.ok(pages.some(p => p.url === expected[2]));
+    assert.ok(pages.every(p => p.regionId === id));
   });
 }
+
+test('les neuf landing pages ont des chemins uniques et des propriétaires explicites', () => {
+  const all = getAllRegionLandingPages();
+  assert.equal(all.length, 9);
+  assert.equal(new Set(all.map(p => p.file)).size, 9);
+  assert.deepEqual([...new Set(all.map(p => p.regionId))].sort(), Object.keys(CASES).sort());
+});
 
 test('une région inconnue ne reçoit aucune landing spécifique', () => {
   assert.deepEqual(getRegionLandingPages('unknown-region'), []);

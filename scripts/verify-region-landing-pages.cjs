@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const Regions = require('../regions/index.cjs');
-const { getRegionLandingPages } = require('./lib/region-landing-pages.cjs');
+const { getRegionLandingPages, getAllRegionLandingPages } = require('./lib/region-landing-pages.cjs');
 
 const root = path.resolve(__dirname, '..');
 const regionId = process.env.REGION || process.env.VITE_REGION;
@@ -42,4 +42,10 @@ for (const page of pages) {
   assert.ok(sitemap.includes(`<loc>${expectedCanonical}</loc>`), `sitemap missing ${expectedCanonical}`);
 }
 
-console.log(`PASS ${regionId}: 3 localized pages, canonicals/hreflang, sitemap and core artifacts verified in ${region.ftpDir}/`);
+const ownFiles = new Set(pages.map(p => p.file));
+for (const page of getAllRegionLandingPages()) {
+  if (ownFiles.has(page.file)) continue;
+  assert.ok(!fs.existsSync(path.join(outDir, page.file)), `cross-region landing page must not ship: ${region.ftpDir}/${page.file}`);
+}
+
+console.log(`PASS ${regionId}: 3 localized pages, no foreign landing pages, canonicals/hreflang, sitemap and core artifacts verified in ${region.ftpDir}/`);
