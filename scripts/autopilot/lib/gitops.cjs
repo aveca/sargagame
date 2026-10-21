@@ -17,6 +17,8 @@ const os = require('os');
 const { ROOT } = require('./common.cjs');
 const { execBounded, NPM_CMD } = require('../../lib/process-runner.cjs');
 
+const IS_WIN = os.platform() === 'win32';
+
 function git(args, cwd, opts = {}) {
   const pipeOut = opts.pipeOut !== false;
   const out = execFileSync('git', args, {
@@ -27,6 +29,90 @@ function git(args, cwd, opts = {}) {
     windowsHide: true,
   });
   return (out ?? '').trim();
+}
+
+/**
+ * Version asynchrone de git avec stdio: 'inherit' pour les commandes qui
+ * doivent peuplement le répertoire de travail (git worktree add écrit
+ * beaucoup sur stderr pendant l'extraction des fichiers, ce qui peut
+ * remplir le buffer de pipe sur Windows et arrêter l'extraction
+ * prématurément).
+ */
+async function gitInherit(args, cwd, opts = {}) {
+  const { spawn, execFileSync } = require('child_process');
+  const timeoutMs = opts.timeoutMs || 120000;
+  // Résoudre le chemin de git.exe (spawn ne résout pas les commandes du
+  // PATH sur Windows sans shell). where.exe est dans C:\Windows\System32\
+  // et est toujours trouvé par CreateProcess.
+  let gitCmd = 'git';
+  try {
+    const whereOut = execFileSync('where', ['git'], { encoding: 'utf8', windowsHide: true });
+    const lines = whereOut.trim().split('\n').filter(Boolean);
+    // Préférer git.exe dans bin\ plutôt que cmd\ (wrapper batch non exécutable
+    // directement par spawn sur Windows)
+    const binLine = lines.find(l => l.toLowerCase().includes('\\bin\\git.exe'));
+    if (binLine) {
+      gitCmd = binLine;
+    } else if (lines.length > 0) {
+      // where a retourné cmd\git.exe ; essayer de convertir en bin\git.exe
+      const cmdLine = lines[0];
+      const binCandidate = cmdLine.replace(/\\cmd\\git\.exe$/i, '\\bin\\git.exe');
+      gitCmd = fs.existsSync(binCandidate) ? binCandidate : cmdLine;
+    }
+  } catch (_) {
+    // where.exe non trouvé, utiliser 'git' directement (fallback)
+  }
+  return new Promise((resolve, reject) => {
+    if (IS_WIN) {
+      // Sur Windows, spawn ne résout pas les commandes du PATH ni les exécutables
+      // système (cmd.exe, git.exe). Utiliser execFileSync avec shell: true permet
+      // à cmd.exe de résoudre git dans le PATH. Ceci est nécessaire pour
+      // git worktree add sur Windows.
+      try {
+        execFileSync('git', args, {
+          cwd: cwd || ROOT,
+          stdio: 'inherit',
+          windowsHide: true,
+          timeout: timeoutMs,
+          shell: true,
+        });
+        resolve();
+        return;
+      } catch (e) {
+        reject(new Error(`git ${args.join(' ')} exited with code ${e.code || -1}: ${e.message}`));
+        return;
+      }
+    }
+    // Sur Unix, spawn fonctionne normalement
+    const child = spawn(gitCmd, args, {
+      cwd: cwd || ROOT,
+      stdio: 'inherit',
+      windowsHide: false,
+    });
+    let resolved = false;
+    const timer = setTimeout(() => {
+      if (resolved) return;
+      resolved = true;
+      try { child.kill('SIGKILL'); } catch (_) {}
+      reject(new Error(`git ${args.join(' ')} timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+    child.on('close', (code) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      if (code !== 0) {
+        reject(new Error(`git ${args.join(' ')} exited with code ${code}`));
+      } else {
+        resolve();
+      }
+    });
+    child.on('error', (err) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
 }
 
 /**
@@ -140,7 +226,10 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
 
   // Créer worktree frais depuis origin/main — avec auto-réparation SÛRE :
   try {
-    await gitAsync(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+    await gitInherit(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch], wt);
+    // S'assurer que tous les fichiers sont extraits dans le workteur
+    // (git worktree add peut ne pas les peupler dans certains contextes Windows)
+    await gitInherit(['checkout', 'HEAD', '--', '.'], wt);
   } catch (e) {
     const errMsg = String(e.message || e);
     // Cas 1 : branche déjà existe localement → créer worktree sur branche existante
@@ -148,7 +237,7 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
       const branchExists = await gitSafeAsync(['rev-parse', '--verify', branchName]);
       if (branchExists) {
         log(`branche ${branchName} existe déjà, création du worktree sur cette branche`);
-        await gitAsync(['worktree', 'add', wt, branchName]);
+        await gitInherit(['worktree', 'add', wt, branchName], wt);
         log(`worktree créé : ${wt} (${branchName})`);
         return await finishWorktreePrep(wt, cfg, log);
       }
@@ -161,7 +250,10 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
     const aside = `${wt}-stale-${Date.now().toString(36)}`;
     log(`worktree orphelin détecté, mise de côté (récupérable) : ${wt} → ${aside}`);
     fs.renameSync(wt, aside);
-    await gitAsync(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch]);
+    await gitInherit(['worktree', 'add', '-b', branchName, wt, 'origin/' + cfg.git.baseBranch], wt);
+    // S'assurer que tous les fichiers sont extraits dans le workteur
+    // (git worktree add peut ne pas les peupler dans certains contextes Windows)
+    await gitInherit(['checkout', 'HEAD', '--', '.'], wt);
   }
   log(`worktree créé : ${wt} (${branchName})`);
 
@@ -173,6 +265,15 @@ async function prepareWorktree(cfg, branchName, log = console.log) {
  * Asynchrone pour ne pas bloquer l'event loop pendant npm ci.
  */
 async function finishWorktreePrep(wt, cfg, log = console.log) {
+  // Vérifier que le workteur contient les fichiers essentiels du projet.
+  // Un workteur réutilisé peut être dans un état incohérent (branche sans commits,
+  // fichiers manquants) sans avoir de modifications non committées — il serait
+  // alors réutilisé indéfiniment sans jamais fonctionner.
+  const pkgJson = path.join(wt, 'package.json');
+  if (!fs.existsSync(pkgJson)) {
+    throw new Error(`Worktree ${wt} ne contient pas de package.json — état incohérent (branche vide ou workteur corrompu). Le workteur doit être recréé.`);
+  }
+
   // node_modules : npm ci seulement si absent ou lock plus récent
   const nm = path.join(wt, 'node_modules');
   const lock = path.join(wt, 'package-lock.json');
@@ -180,17 +281,14 @@ async function finishWorktreePrep(wt, cfg, log = console.log) {
   const needCi = !fs.existsSync(nm) ||
     (fs.existsSync(nmStamp) && fs.existsSync(lock) && fs.statSync(lock).mtimeMs > fs.statSync(nmStamp).mtimeMs);
   if (needCi) {
-    // S'assurer que package-lock.json est présent dans le worktree (restauré
-    // depuis origin/main si manquant, cas d'un worktree créé avant son ajout
-    // sur la branche de base).
+    // S'assurer que package-lock.json est présent dans le worktree.
+    // Si manquant (worktree créé avant son ajout sur la branche de base),
+    // on le génère à partir du package.json du workteur avec
+    // `npm install --package-lock-only` (génère le lockfile sans installer),
+    // puis npm ci peut l'utiliser. Cela garantit la cohérence lockfile/package.json.
     if (!fs.existsSync(lock)) {
-      log(`package-lock.json manquant dans le worktree, restauration depuis origin/${cfg.git.baseBranch}…`);
-      try {
-        await gitAsync(['checkout', 'origin/' + cfg.git.baseBranch, '--', 'package-lock.json'], wt);
-        log('package-lock.json restauré');
-      } catch (e) {
-        throw new Error(`Impossible de restaurer package-lock.json depuis origin/${cfg.git.baseBranch}: ${e.message}`);
-      }
+      log(`package-lock.json manquant dans le worktree, génération depuis package.json…`);
+      const lockResult = await runAsync(process.platform === 'win32' ? 'npm.cmd install --package-lock-only' : 'npm install --package-lock-only', wt, { timeout: 300000, windowsHide: true });
     }
     log('npm ci (worktree)…');
     const result = await runAsync(process.platform === 'win32' ? 'npm.cmd ci --no-audit --no-fund' : 'npm ci --no-audit --no-fund', wt, { timeoutMs: 600000 });

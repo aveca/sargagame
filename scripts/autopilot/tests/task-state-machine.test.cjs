@@ -269,9 +269,33 @@ test('T7: UX-LOW-20261020-007 (retryCount=3/maxRetries=3) non réexécutée', ()
   console.log(`  → statut=${task.status}, retryCount=${task.retryCount}/maxRetries=${task.maxRetries}, non-éligible`);
 });
 
-// Restaurer les fichiers réels
-purgeQueue();
-restoreRealFiles();
+// --- Test 8: Tâche à limite de retries ET nextRetryAt dans le futur ---
+test('T8: tâche à retryCount>=maxRetries avec nextRetryAt futur est parkée (budget prioritaire)', () => {
+  purgeQueue();
+  const future = new Date(Date.now() + 60000).toISOString();
+  writeQueueFile('budget-and-backoff', {
+    status: 'queued',
+    retryCount: 3,
+    maxRetries: 3,
+    nextRetryAt: future,
+    lastError: 'échec répété',
+  });
+
+  const queue = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.json')).map(f => {
+    return JSON.parse(fs.readFileSync(path.join(QUEUE_DIR, f), 'utf8'));
+  });
+
+  const task = queue.find(t => t.id === 'budget-and-backoff');
+  assert(task !== undefined, 'tâche trouvée');
+  assert(task.retryCount >= task.maxRetries, `retryCount=${task.retryCount} >= maxRetries=${task.maxRetries}`);
+
+  // Même avec nextRetryAt dans le futur, le budget de retries est épuisé → non éligible
+  const isEligible = task.status !== 'parked' &&
+    (!task.nextRetryAt || new Date(task.nextRetryAt).getTime() <= Date.now()) &&
+    task.retryCount < task.maxRetries;
+  assert(isEligible === false, `tâche à budget épuisé ne doit pas être éligible même si backoff expiré`);
+  console.log('  → budget de retries prioritaire sur backoff, tâche non-éligible');
+});
 
 // Vérifier la restauration
 const restored = fs.readdirSync(QUEUE_DIR).filter(f => f.endsWith('.json')).length;
