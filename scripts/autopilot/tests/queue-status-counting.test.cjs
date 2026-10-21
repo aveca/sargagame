@@ -56,12 +56,20 @@ function backupRealFiles() {
   for (const f of REAL_QUEUE_FILES) {
     const src = path.join(QUEUE_DIR, f);
     if (!fs.existsSync(src)) continue; // Le runner a pu le supprimer entre-temps
-    fs.copyFileSync(src, path.join(backupDir, f));
+    try {
+      fs.copyFileSync(src, path.join(backupDir, f));
+    } catch (_) {
+      // Fichier supprimé par le runner entre-temps
+    }
   }
   for (const f of REAL_STATE_FILES) {
     const src = path.join(STATE_DIR, f);
     if (!fs.existsSync(src)) continue;
-    fs.copyFileSync(src, path.join(backupDir, f));
+    try {
+      fs.copyFileSync(src, path.join(backupDir, f));
+    } catch (_) {
+      // Fichier supprimé par le runner entre-temps
+    }
   }
   return backupDir;
 }
@@ -83,10 +91,12 @@ function restoreRealFiles(backupDir) {
 
 function purgeQueue() {
   for (const f of fs.readdirSync(QUEUE_DIR)) {
-    if (f.endsWith('.json')) fs.unlinkSync(path.join(QUEUE_DIR, f));
+    if (!f.endsWith('.json')) continue;
+    try { fs.unlinkSync(path.join(QUEUE_DIR, f)); } catch (_) {}
   }
   for (const f of fs.readdirSync(STATE_DIR)) {
-    if (f.startsWith('processing-') && f.endsWith('.json')) fs.unlinkSync(path.join(STATE_DIR, f));
+    if (!f.startsWith('processing-') || !f.endsWith('.json')) continue;
+    try { fs.unlinkSync(path.join(STATE_DIR, f)); } catch (_) {}
   }
 }
 

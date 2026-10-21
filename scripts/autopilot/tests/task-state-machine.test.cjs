@@ -58,12 +58,20 @@ function backupRealFiles() {
   for (const f of REAL_QUEUE_FILES) {
     const src = path.join(QUEUE_DIR, f);
     if (!fs.existsSync(src)) continue;
-    fs.copyFileSync(src, path.join(backupDir, f));
+    try {
+      fs.copyFileSync(src, path.join(backupDir, f));
+    } catch (_) {
+      // Fichier supprimé par le runner entre-temps
+    }
   }
   for (const f of REAL_STATE_FILES) {
     const src = path.join(STATE_DIR, f);
     if (!fs.existsSync(src)) continue;
-    fs.copyFileSync(src, path.join(backupDir, f));
+    try {
+      fs.copyFileSync(src, path.join(backupDir, f));
+    } catch (_) {
+      // Fichier supprimé par le runner entre-temps
+    }
   }
 }
 
