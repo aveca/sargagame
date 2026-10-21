@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://sargasses-martinique.com/sitemap.xml
+Sitemap: https://sargasses-guadeloupe.com/sitemap.xml
+Sitemap: https://sargassumpuntacana.com/sitemap.xml
+Sitemap: https://sargassummiami.com/sitemap.xml
+Sitemap: https://sargassumcancun.com/sitemap.xml
+Sitemap: https://sargazotulum.com/sitemap.xml
