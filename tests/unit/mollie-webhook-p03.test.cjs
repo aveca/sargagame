@@ -105,6 +105,7 @@ const assert = require("node:assert/strict");
     state.payment = { title: "Not found" };
     state.apiStatus = 404;
     state.rpcStatus = 204;
+    state.rpcCalls = [];
     const lookupFail = await worker.fetch(classicRequest(), env);
     assert.equal(lookupFail.status, 404);
     assert.equal(state.rpcCalls.length, 0);
