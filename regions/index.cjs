@@ -18,11 +18,70 @@ let _cache = null;
 // elles ne fasse pas tomber tout le deploy MQ/GP.
 const CORE_REGIONS = new Set(['mq', 'gp']);
 
+// Contrat minimal aligné sur regions/_schema.json. Gardé explicite pour que
+// le workflow puisse refuser une configuration incomplète sans dépendance
+// externe de validation JSON Schema.
+const REQUIRED_REGION_FIELDS = Object.freeze([
+  'id', 'name', 'country', 'domain', 'ftpDir', 'primaryLang',
+  'currency', 'timezone', 'bbox', 'center', 'emails', 'beachFilter', 'routes',
+]);
+const VALID_PRIMARY_LANGS = new Set(['fr', 'en', 'es']);
+const VALID_CURRENCIES = new Set(['EUR', 'USD']);
+
 /** Valide une config région (throw si invalide). `seen` = map id→… pour détecter
  *  les doublons. Partagé par loadAll (résilient) et assertAllRegionsValid (strict). */
 function validateRegion(cfg, f, seen) {
-  if (!cfg || !cfg.id) throw new Error(`[regions] ${f} sans champ "id"`);
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg) || typeof cfg.id !== 'string' || !cfg.id.trim()) {
+    throw new Error(`[regions] ${f} sans champ "id" valide`);
+  }
+  if (!/^[a-z]{2,12}$/.test(cfg.id)) {
+    throw new Error(`[regions] ${f}: id invalide "${cfg.id}"`);
+  }
+  const fileId = path.basename(f, '.json');
+  if (fileId !== cfg.id) {
+    throw new Error(`[regions] ${f}: id "${cfg.id}" différent du nom de fichier "${fileId}"`);
+  }
   if (seen && seen[cfg.id]) throw new Error(`[regions] id en double: ${cfg.id} (${f})`);
+
+  // Le workflow de production appelle assertAllRegionsValid() avant de lancer
+  // les déploiements. Une région avec des champs obligatoires absents ne doit
+  // donc jamais passer la porte de validation.
+  for (const key of REQUIRED_REGION_FIELDS) {
+    const value = cfg[key];
+    if (value == null || (typeof value === 'string' && !value.trim())) {
+      throw new Error(`[regions] ${f}: champ obligatoire absent ou vide "${key}"`);
+    }
+  }
+  if (!VALID_PRIMARY_LANGS.has(cfg.primaryLang)) {
+    throw new Error(`[regions] ${f}: primaryLang invalide "${cfg.primaryLang}"`);
+  }
+  if (!VALID_CURRENCIES.has(cfg.currency)) {
+    throw new Error(`[regions] ${f}: currency invalide "${cfg.currency}"`);
+  }
+  if (!/^[a-z0-9.-]+$/i.test(cfg.domain) || cfg.domain.includes('..')) {
+    throw new Error(`[regions] ${f}: domain invalide "${cfg.domain}"`);
+  }
+  if (typeof cfg.ftpDir !== 'string' || path.isAbsolute(cfg.ftpDir) || cfg.ftpDir.split(/[\\/]+/).includes('..')) {
+    throw new Error(`[regions] ${f}: ftpDir doit être un chemin relatif sûr`);
+  }
+  if (!Array.isArray(cfg.bbox) || cfg.bbox.length !== 4 || !cfg.bbox.every(Number.isFinite)) {
+    throw new Error(`[regions] ${f}: bbox doit contenir 4 nombres finis`);
+  }
+  if (cfg.bbox[0] >= cfg.bbox[2] || cfg.bbox[1] >= cfg.bbox[3]) {
+    throw new Error(`[regions] ${f}: bbox min/max incohérents`);
+  }
+  if (!cfg.center || !Number.isFinite(cfg.center.lat) || !Number.isFinite(cfg.center.lng)) {
+    throw new Error(`[regions] ${f}: center doit contenir lat/lng numériques`);
+  }
+  if (!cfg.emails || ['alerts', 'support'].some(k => typeof cfg.emails[k] !== 'string' || !cfg.emails[k].trim())) {
+    throw new Error(`[regions] ${f}: emails.alerts et emails.support sont obligatoires`);
+  }
+  if (!cfg.beachFilter || typeof cfg.beachFilter !== 'object' || Array.isArray(cfg.beachFilter)) {
+    throw new Error(`[regions] ${f}: beachFilter doit être un objet`);
+  }
+  if (!cfg.routes || ['season', 'best', 'weekly'].some(k => typeof cfg.routes[k] !== 'string' || !cfg.routes[k].trim())) {
+    throw new Error(`[regions] ${f}: routes.season, routes.best et routes.weekly sont obligatoires`);
+  }
   // Invariants des plages inline (nouvelles régions). Le front filtre sur
   // b.island===REGION.id : un island différent = ZÉRO plage rendue sur le
   // site (bug Miami/Cancún 2026-06-10). La bbox doit couvrir chaque plage,
@@ -86,13 +145,13 @@ function loadAll() {
  *  non-core). Le runtime utilise loadAll() qui isole les régions non-core ; cette
  *  fonction garantit que le filet de résilience ne MASQUE pas une vraie régression.
  *  Retourne le nombre de fichiers région validés. Ne touche pas le cache. */
-function assertAllRegionsValid() {
-  const files = fs.readdirSync(DIR).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
+function assertAllRegionsValid(dir = DIR) {
+  const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json') && !f.startsWith('_'));
   const seen = {};
   for (const f of files) {
     let cfg;
     try {
-      cfg = JSON.parse(fs.readFileSync(path.join(DIR, f), 'utf8'));
+      cfg = JSON.parse(fs.readFileSync(path.join(dir, f), 'utf8'));
     } catch (e) {
       throw new Error(`[regions] JSON invalide dans ${f}: ${e.message}`);
     }

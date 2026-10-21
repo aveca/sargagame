@@ -1,12 +1,5 @@
 #!/usr/bin/env node
-/**
- * regions.test.cjs — auto-découvert par scripts/run-tests.cjs (donc lancé en CI
- * via `npm test`). Deux objectifs :
- *   1. VALIDATION STRICTE de TOUTES les régions réelles (pas seulement mq) — une
- *      région cassée ne doit jamais passer la PR.
- *   2. Vérifier le filet de RÉSILIENCE build : un JSON non-core cassé est isolé
- *      (skip) sans faire tomber MQ/GP ; un core cassé, lui, fail-loud.
- */
+/** Tests du contrat régions consommé par les builds et le workflow Cloudflare. */
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -14,59 +7,94 @@ const assert = require('assert');
 const R = require('./index.cjs');
 
 let n = 0;
-function test(name, fn) { n++; try { fn(); console.log(`  ✓ ${name}`); } catch (e) { console.error(`  ✗ ${name}\n    ${e.message}`); process.exitCode = 1; } }
+function test(name, fn) {
+  n++;
+  try { fn(); console.log(`  ✓ ${name}`); }
+  catch (e) { console.error(`  ✗ ${name}\n    ${e.message}`); process.exitCode = 1; }
+}
 
-// ── 1. Régions réelles : validation stricte ────────────────────────────────
-test('assertAllRegionsValid passe sur les régions réelles', () => {
-  const count = R.assertAllRegionsValid();
-  assert.ok(count >= 5, `attendu ≥5 régions, eu ${count}`);
+const DEPLOY_REGIONS = ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum'];
+const validRegion = (id, domain) => ({
+  id, name: `Test ${id}`, country: 'Test', domain, ftpDir: `${id}-ftp`,
+  primaryLang: 'fr', currency: 'EUR', timezone: 'America/Martinique',
+  bbox: [-62, 13, -59, 17], center: { lat: 15, lng: -61 },
+  emails: { alerts: 'alerts@example.com', support: 'support@example.com' },
+  beachFilter: { island: id },
+  routes: { season: '/season/', best: '/best/', weekly: '/weekly/' },
 });
 
-test('getAllRegions contient les 5 régions attendues, chacune avec id+domain', () => {
-  const ids = R.getAllRegions().map(r => r.id);
-  for (const id of ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya']) {
-    assert.ok(ids.includes(id), `région manquante: ${id}`);
-  }
-  for (const r of R.getAllRegions()) {
-    assert.ok(r.id, 'région sans id');
-    assert.ok(r.domain, `région ${r.id} sans domain`);
-  }
-});
-
-// ── 2. Filet de résilience (sur un dossier temporaire, zéro pollution) ──────
 function mkTmp(files) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'regtest-'));
-  for (const [name, content] of Object.entries(files)) {
-    fs.writeFileSync(path.join(dir, name), typeof content === 'string' ? content : JSON.stringify(content));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'region-validation-'));
+  for (const [name, value] of Object.entries(files)) {
+    fs.writeFileSync(path.join(dir, name), typeof value === 'string' ? value : JSON.stringify(value));
   }
   return dir;
 }
-const validMq = { id: 'mq', domain: 'sargasses-martinique.com' };
-const validGp = { id: 'gp', domain: 'sargasses-guadeloupe.com' };
-// Non-core cassée : une plage dont island ≠ id (invariant validateRegion).
-const brokenUsd = { id: 'florida', domain: 'sargassummiami.com', bbox: [-81, 25, -80, 26], beaches: [{ id: 'fl1', island: 'mq', lat: 25.5, lng: -80.5 }] };
 
-test('une région NON-CORE cassée est isolée — MQ/GP préservées', () => {
-  const dir = mkTmp({ 'mq.json': validMq, 'gp.json': validGp, 'florida.json': brokenUsd });
+test('les configurations réelles de toutes les régions passent la validation stricte', () => {
+  const count = R.assertAllRegionsValid();
+  assert.ok(count >= 7, `attendu au moins 7 configurations, obtenu ${count}`);
+});
+
+test('les six régions de production existent et possèdent les champs obligatoires', () => {
+  for (const id of DEPLOY_REGIONS) {
+    const region = R.getRegion(id);
+    assert.strictEqual(region.id, id);
+    assert.ok(region.domain, `${id}: domain manquant`);
+    assert.ok(region.ftpDir, `${id}: ftpDir manquant`);
+    assert.ok(region.bbox.length === 4, `${id}: bbox invalide`);
+    assert.ok(region.center && Number.isFinite(region.center.lat) && Number.isFinite(region.center.lng), `${id}: center invalide`);
+    assert.ok(region.emails.alerts && region.emails.support, `${id}: emails incomplets`);
+    assert.ok(region.routes.season && region.routes.best && region.routes.weekly, `${id}: routes incomplètes`);
+  }
+});
+
+test('getRegion rejette un identifiant inconnu', () => {
+  assert.throws(() => R.getRegion('__region_inconnue__'), /région inconnue/i);
+});
+
+test('la validation stricte rejette un champ obligatoire absent', () => {
+  const mq = validRegion('mq', 'mq.example.com');
+  const gp = validRegion('gp', 'gp.example.com');
+  const florida = validRegion('florida', 'florida.example.com');
+  delete florida.ftpDir;
+  const dir = mkTmp({ 'mq.json': mq, 'gp.json': gp, 'florida.json': florida });
+  try { assert.throws(() => R.assertAllRegionsValid(dir), /ftpDir/); }
+  finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('la validation stricte rejette une bbox invalide', () => {
+  const mq = validRegion('mq', 'mq.example.com');
+  mq.bbox = [-60, 17, -62, 13];
+  const dir = mkTmp({ 'mq.json': mq });
+  try { assert.throws(() => R.assertAllRegionsValid(dir), /bbox/); }
+  finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('une région non-core invalide est isolée sans supprimer MQ/GP valides', () => {
+  const mq = validRegion('mq', 'mq.example.com');
+  const gp = validRegion('gp', 'gp.example.com');
+  const florida = validRegion('florida', 'florida.example.com');
+  florida.bbox = [-81, 25, -80, 26];
+  florida.beaches = [{ id: 'fl1', island: 'mq', lat: 25.5, lng: -80.5 }];
+  const dir = mkTmp({ 'mq.json': mq, 'gp.json': gp, 'florida.json': florida });
   try {
-    const out = R._loadFromDir(dir);
-    assert.ok(out.mq && out.gp, 'mq/gp doivent survivre');
-    assert.ok(!out.florida, 'florida cassée doit être ignorée');
+    const loaded = R._loadFromDir(dir);
+    assert.ok(loaded.mq && loaded.gp, 'MQ/GP doivent survivre');
+    assert.ok(!loaded.florida, 'la région non-core cassée doit être ignorée');
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('une région CORE cassée fait fail-loud (throw)', () => {
-  const dir = mkTmp({ 'mq.json': '{ bad json', 'gp.json': validGp });
-  try {
-    assert.throws(() => R._loadFromDir(dir), /mq/i, 'un mq.json cassé doit throw');
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+test('une configuration core invalide provoque une erreur immédiate', () => {
+  const dir = mkTmp({ 'mq.json': '{ JSON invalide', 'gp.json': validRegion('gp', 'gp.example.com') });
+  try { assert.throws(() => R._loadFromDir(dir), /CORE.*mq|JSON invalide/i); }
+  finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
-test('aucune région core chargée → throw', () => {
-  const dir = mkTmp({ 'florida.json': { id: 'florida', domain: 'x.com' } });
-  try {
-    assert.throws(() => R._loadFromDir(dir), /core/i);
-  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+test('aucune région core chargée provoque une erreur', () => {
+  const dir = mkTmp({ 'florida.json': validRegion('florida', 'florida.example.com') });
+  try { assert.throws(() => R._loadFromDir(dir), /core/i); }
+  finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 
 console.log(`\nregions.test.cjs : ${n} test(s)`);

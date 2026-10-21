@@ -13,6 +13,7 @@ const fs = require('fs')
 const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
+const { getRegionLandingPages, withLandingPageSlugs } = require('./lib/region-landing-pages.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 
 const root = path.join(__dirname, '..')
@@ -894,6 +895,19 @@ function prepareNewRegion(region) {
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
 
+  // Les neuf landing pages FR/EN/ES sont des exceptions explicites au filtre
+  // historique des dossiers de langue : garder uniquement les routes listées
+  // pour cette région, sans recopier tout le /en/ historique MQ sur un domaine USD.
+  for (const page of getRegionLandingPages(region.id)) {
+    const source = path.join(dist, page.file)
+    const destination = path.join(out, page.file)
+    if (!fs.existsSync(source)) {
+      throw new Error(`[prepare-ftp] landing page manquante pour ${region.id}: dist/${page.file}`)
+    }
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(source, destination)
+  }
+
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
   // URL stable /og-image.png — pas d'invalidation des caches FB/WhatsApp.
@@ -949,7 +963,7 @@ function prepareNewRegion(region) {
 
   // Pages plages : ne garder que les plages de la région.
   const plagesDir = path.join(out, 'plages')
-  const regionSlugs = beachSlugsFor(region)
+  const regionSlugs = withLandingPageSlugs(region.id, beachSlugsFor(region))
   if (fs.existsSync(plagesDir)) {
     let removed = 0
     for (const entry of fs.readdirSync(plagesDir)) {

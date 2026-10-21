@@ -49,6 +49,16 @@ jobs:
         run: node scripts/check-production-trigger-scope.cjs
       - name: Verify Build
         run: npm run build
+      - name: Verify localized regional landing pages in Cloudflare artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for region in puntacana rivieramaya tulum; do
+            echo "::group::Regional artifact validation: $region"
+            VITE_REGION="$region" node scripts/prepare-ftp.cjs
+            REGION="$region" node scripts/verify-region-landing-pages.cjs
+            echo "::endgroup::"
+          done
       - name: Check bundle budget (JS eager ≤ 210 Ko gzip)
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
