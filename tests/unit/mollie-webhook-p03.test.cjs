@@ -30,14 +30,14 @@ const assert = require("node:assert/strict");
 
   function makePayment(overrides = {}) {
     return {
-      id: "tr_classic_test",
+      id: "tr_classictest",
       status: "paid",
       amount: { currency: "EUR", value: "14.99" },
       metadata: { pass: "p30", email: "buyer@example.com", source: "test" },
       ...overrides
     };
   }
-  function classicRequest(id = "tr_classic_test", contentType = "application/x-www-form-urlencoded") {
+  function classicRequest(id = "tr_classictest", contentType = "application/x-www-form-urlencoded") {
     return new Request("https://worker.test/api/mollie-webhook", {
       method: "POST",
       headers: { "content-type": contentType },
@@ -62,13 +62,13 @@ const assert = require("node:assert/strict");
     assert.equal(state.mollieLookups, 1);
     assert.equal(state.lastMollieHeaders.Authorization, "Bearer test_only_key");
     assert.equal(state.rpcCalls.length, 1);
-    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classic_test");
+    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classictest");
 
     // Repeated webhook reaches the same atomic RPC with the same Mollie payment ID.
     result = await webhook(makePayment());
     assert.equal(result.response.status, 200);
     assert.equal(state.rpcCalls.length, 1);
-    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classic_test");
+    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classictest");
 
     // Non-paid payment is acknowledged but never grants.
     result = await webhook(makePayment({ status: "open" }));
@@ -87,7 +87,7 @@ const assert = require("node:assert/strict");
 
     // Wrong content type and malformed IDs are rejected before any API lookup.
     result = await webhook(makePayment(), new Request("https://worker.test/api/mollie-webhook", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: "tr_classic_test" })
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: "tr_classictest" })
     }));
     assert.equal(result.response.status, 415);
     assert.equal(state.mollieLookups, 0);
