@@ -28,7 +28,7 @@ const assert = require("node:assert/strict");
 
   function makePayment(overrides = {}) {
     return {
-      id: "tr_test_paid",
+      id: "tr_testpaid",
       status: "paid",
       amount: { currency: "EUR", value: "14.99" },
       metadata: { pass: "p30", email: "buyer@example.com", source: "test" },
@@ -44,7 +44,7 @@ const assert = require("node:assert/strict");
     const response = await worker.fetch(new Request("https://worker.test/api/mollie", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "payment_status", paymentId: payment.id || "tr_test_paid", ...payload })
+      body: JSON.stringify({ action: "payment_status", paymentId: payment.id || "tr_testpaid", ...payload })
     }), env);
     return { response, body: await response.json() };
   }
@@ -59,7 +59,7 @@ const assert = require("node:assert/strict");
     assert.deepEqual(Object.keys(state.rpcCalls[0].body).sort(), [
       "p_currency", "p_email", "p_expires_at", "p_granted_at", "p_metadata", "p_pass", "p_payment_id"
     ].sort());
-    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_test_paid");
+    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_testpaid");
     assert.equal(state.rpcCalls[0].body.p_pass, "p30");
     assert.equal(state.rpcCalls[0].body.p_email, "buyer@example.com");
     assert.equal(state.rpcCalls[0].body.p_currency, "EUR");
@@ -73,7 +73,7 @@ const assert = require("node:assert/strict");
 
     // SOS is the only B2C pass allowed to have an empty email.
     result = await paymentStatus(makePayment({
-      id: "tr_sos_test",
+      id: "tr_sostest",
       amount: { currency: "EUR", value: "1.00" },
       metadata: { pass: "sos", email: "", source: "sos_plage" }
     }));
@@ -95,7 +95,7 @@ const assert = require("node:assert/strict");
     const response = await worker.fetch(new Request("https://worker.test/api/mollie", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "payment_status", paymentId: "tr_test_paid", email: "buyer@example.com" })
+      body: JSON.stringify({ action: "payment_status", paymentId: "tr_testpaid", email: "buyer@example.com" })
     }), env);
     assert.equal(response.status, 503);
     assert.equal((await response.json()).error, "rpc_unavailable");
@@ -107,7 +107,7 @@ const assert = require("node:assert/strict");
     const pending = await worker.fetch(new Request("https://worker.test/api/mollie", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ action: "payment_status", paymentId: "tr_test_paid" })
+      body: JSON.stringify({ action: "payment_status", paymentId: "tr_testpaid" })
     }), env);
     assert.equal(pending.status, 200);
     assert.equal((await pending.json()).paid, false);
