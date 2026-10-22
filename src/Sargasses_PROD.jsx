@@ -1937,6 +1937,11 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+  // P0.7 (2026-10-22) : checkout 100% on-site — l'ancien funnel ne comptait que
+  // sg_checkout_redirect (PayPal uniquement) → checkout=0 en métrique alors que
+  // les PAID passent par le checkout on-site. sg_checkout_started = début réel
+  // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
+  "sg_checkout_started",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
