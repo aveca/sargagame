@@ -172,6 +172,16 @@ async function main() {
         } catch (e) {
           rlog(`gsc-seo-watch failed (non-fatal): ${String(e.message).slice(0, 80)}`);
         }
+        // Funnel GA4 (P0.7/V4) : mesure de conversion 5 régions (dont hors GSC),
+        // persistée dans ga4-funnel-latest.json. Étape "Mesurer" de la boucle.
+        try {
+          execFileSync(process.execPath, [path.join(__dirname, 'gsc-seo-watch.cjs'), '--funnel'], {
+            timeout: 120000, windowsHide: true, stdio: 'pipe',
+          });
+          rlog('gsc-seo-watch --funnel: funnel GA4 mesuré (5 régions)');
+        } catch (e) {
+          rlog(`gsc-seo-watch --funnel failed (non-fatal): ${String(e.message).slice(0, 80)}`);
+        }
       }
 
       // 2. RUN ORCHESTRATOR
