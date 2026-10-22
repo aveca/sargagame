@@ -1798,6 +1798,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     // fermeture. NON-capture uniquement (en capture, gap_freemium ci-dessus suffit —
     // évite le double submitLead qui gonflait les métriques de 2× par déblocage).
     try{submitLead(email,"onsite_checkout")}catch(_){}
+    // P0.7 (2026-10-22) : début réel du checkout ON-SITE, tous providers. Avant ce
+    // fix le funnel Apps Script ne comptait que sg_checkout_redirect (PayPal seul)
+    // → métrique checkout=0 malgré les PAID réels. Mesure réparée.
+    track("sg_checkout_started",{plan:payPlanRef.current||plan,source:source||"unknown",provider:PAY_PROVIDER})
     // ── Pont Mollie : hosted checkout ─────────────────────────────────────
     // Le Worker Cloudflare crée le paiement Mollie et renvoie l'URL de checkout.
     // Aucun token Mollie Components n'est nécessaire ici : le token était collecté
