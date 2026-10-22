@@ -1,0 +1,37 @@
+﻿{
+  "$comment": "Registre outils + skills Factory V4 - verifie reellement le 2026-10-22. Un outil n est operationnel qu apres test reel.",
+  "updated_at": "2026-10-22",
+  "tools_verified": {
+    "runtime": {"node": "v24.14.0", "python": "3.11.9", "uvx": "0.12.22", "npm_npx": "11.9.0"},
+    "git_github": {"gh_cli": "2.89.0", "actions_deploy": "verifie (cloudflare-production 6 runs success)", "auto_merge": "actif squash"},
+    "cloudflare": {"wrangler": "4.127.1", "zones": 7, "purge_cache": "VERIFIE OK", "graphql_analytics": "VERIFIE OK", "mcp_oauth": "5 serveurs connectes (bindings, builds, observability, docs, core)"},
+    "gsc": {"mcp": "google-search-console@3.0.1 (17 outils, lecture seule)", "properties_ok": ["sc-domain:sargasses-guadeloupe.com", "sc-domain:sargasses-martinique.com"], "properties_403": ["miami", "puntacana", "cancun"]},
+    "models": {"adaptive_router": "session manuelle -> free/local ; sinon NVIDIA", "ollama": "qwen2.5-coder:7b installe", "nvidia": "cle SET (nemotron 3.5 super VL 120B)", "opencode_free": "4 modeles free verifies"},
+    "monitoring": {"discord_webhook": "VERIFIE OK (anti-spam triple)", "healthchecks": "VERIFIE OK (dead man switch 1h/30min)", "status_json": "ecrit a chaque heartbeat"},
+    "supabase": "utilise par le produit (events sg_*) - acces via repo, cle non exposee",
+    "ga4": "google-auth.cjs operationnel (ab-fetch-ga4, GA4_PROPERTY_ID_MQ/GP secrets CI)"
+  },
+  "tools_missing": {
+    "ffmpeg_ffprobe": "ABSENT - bloque la creation video/motion (Remotion a son propre renderer, mais les conversions/pipelines video en dependent)",
+    "marketingskills": "a installer depuis coreyhaines31/marketingskills (SEO, CRO, copywriting, pricing, email) - selection a faire apres inspection du catalogue",
+    "botwow_analytics": "aucune donnee bot-wow/replaypilot connectee a la Factory"
+  },
+  "skills_opencode_verifies": {
+    "domaine": ["sargasses", "botwow-product-design"],
+    "design": ["frontend-design", "ui-ux-pro-max", "emil-design-eng", "web-design-guidelines", "banner-design"],
+    "motion": ["animate", "review-animations", "improve-animations", "find-animation-opportunities", "animation-performance", "break-ui", "animate-expo"],
+    "perf": ["web-perf"],
+    "video": ["remotion-create", "remotion-render", "remotion-captions", "remotion-studio", "remotion-saas", "remotion-docs"],
+    "infra": ["cloudflare", "workers-best-practices", "wrangler", "durable-objects", "turnstile-spin", "cloudflare-email-service"],
+    "divers": ["opencode", "report", "trading", "sargasses", "agents-sdk"]
+  },
+  "roles_agents_existants": ["architect-agent", "coding-agent", "data-agent", "devops-agent", "growth-agent", "product-agent", "qa-agent", "security-agent", "ui-ux-agent"],
+  "matrice_skill_agent_tache": [
+    {"skill": "sargasses", "agent": "growth-agent", "tache": "opportunites SEO/GSC sargasses", "test": "opportunite creee avec preuve GSC"},
+    {"skill": "web-perf", "agent": "qa-agent", "tache": "audit LCP/CLS paywall", "test": "rapport metrics sans regression"},
+    {"skill": "frontend-design + ui-ux-pro-max", "agent": "ui-ux-agent", "tache": "CRO paywall/checkout", "test": "parcours Playwright + capture avant/apres"},
+    {"skill": "botwow-product-design", "agent": "product-agent", "tache": "audit offre bot-wow", "test": "registre offre complete"},
+    {"skill": "remotion-create", "agent": "growth-agent", "tache": "asset video promo (apres install ffmpeg si requis)", "test": "video rendue + uploadable"},
+    {"skill": "workers-best-practices", "agent": "devops-agent", "tache": "fiabilisation Workers bot-wow", "test": "deploiement vert"}
+  ]
+}
