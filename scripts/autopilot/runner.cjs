@@ -161,8 +161,9 @@ async function main() {
         rlog(`bridge failed (non-fatal): ${e.message}`);
       }
 
-      // 1.5 GSC SEO watch (P0.7) — toutes les 16 cycles (~8 h), lecture seule,
-      //     émet des opportunités dans la queue avec preuve + scope. Non-fatal.
+      // 1.5 GSC SEO watch + funnel GA4 (P0.7/V4) — toutes les 16 cycles (~8 h),
+      //     lecture seule, émet des opportunités + persiste la mesure funnel
+      //     (5 régions, y compris celles hors GSC). Non-fatal.
       if (cycleCount % 16 === 2) {
         try {
           execFileSync(process.execPath, [path.join(__dirname, 'gsc-seo-watch.cjs')], {
@@ -171,6 +172,14 @@ async function main() {
           rlog('gsc-seo-watch: opportunités SEO GSC vérifiées');
         } catch (e) {
           rlog(`gsc-seo-watch failed (non-fatal): ${String(e.message).slice(0, 80)}`);
+        }
+        try {
+          execFileSync(process.execPath, [path.join(__dirname, 'gsc-seo-watch.cjs'), '--funnel'], {
+            timeout: 120000, windowsHide: true, stdio: 'pipe',
+          });
+          rlog('gsc-seo-watch --funnel: funnel GA4 mesuré (5 régions)');
+        } catch (e) {
+          rlog(`gsc-seo-watch --funnel failed (non-fatal): ${String(e.message).slice(0, 80)}`);
         }
       }
 

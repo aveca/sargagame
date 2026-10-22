@@ -211,4 +211,74 @@ async function main() {
   log(`Terminé: ${added} nouvelle(s) opportunité(s) ajoutée(s) à la queue`);
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FUNNEL GA4 (P0.7/V4) — mesure de conversion directe, toutes régions.
+// Le SA (analytics.readonly) accède aux 7 propriétés GA4 — y compris Miami/
+// PuntaCana/RivieraMaya bloquées dans GSC. Persistance: ga4-funnel-latest.json.
+// C'est l'étape "Mesurer" de la boucle: sans elle, aucun gain CRO n'est prouvable.
+// ─────────────────────────────────────────────────────────────────────────────
+const GA4_PROPS = [
+  { region: 'gp', id: 'properties/530818426', name: 'Sargasses Guadeloupe' },
+  { region: 'mq', id: 'properties/530828442', name: 'Sargasses Martinique' },
+  { region: 'florida', id: 'properties/540993106', name: 'Sargassum Florida' },
+  { region: 'puntacana', id: 'properties/540993949', name: 'Sargassum Punta Cana' },
+  { region: 'rivieramaya', id: 'properties/540997685', name: 'Sargassum Riviera Maya' },
+];
+const FUNNEL_EVENTS = ['sg_premium_modal_open', 'sg_pass_cta', 'sg_premium_modal_cta', 'sg_checkout_started', 'sg_checkout_redirect', 'sg_conversion', 'sg_payment_failed'];
+
+async function measureFunnelGA4(data) {
+  const out = { measuredAt: new Date().toISOString(), window: 'last_7_days', properties: {} };
+  for (const p of GA4_PROPS) {
+    try {
+      const r = await data.properties.runReport({
+        property: p.id,
+        requestBody: {
+          dateRanges: [{ startDate: '7daysAgo', endDate: 'today' }],
+          dimensions: [{ name: 'eventName' }],
+          metrics: [{ name: 'eventCount' }],
+          dimensionFilter: { filter: { fieldName: 'eventName', inListFilter: { values: FUNNEL_EVENTS } } },
+          limit: 20,
+        },
+      });
+      const ev = {};
+      for (const row of (r.data.rows || [])) ev[row.dimensionValues[0].value] = Number(row.metricValues[0].value);
+      const opens = ev.sg_premium_modal_open || 0;
+      const cta = (ev.sg_pass_cta || 0) + (ev.sg_premium_modal_cta || 0);
+      out.properties[p.region] = {
+        name: p.name,
+        premium_open: opens,
+        cta,
+        checkout_started: ev.sg_checkout_started || 0,
+        conversion: ev.sg_conversion || 0,
+        payment_failed: ev.sg_payment_failed || 0,
+        cta_rate_pct: opens > 0 ? Number(((cta / opens) * 100).toFixed(2)) : null,
+      };
+      log(`funnel GA4 ${p.region}: opens=${opens} cta=${cta} checkout_started=${out.properties[p.region].checkout_started} cta_rate=${out.properties[p.region].cta_rate_pct}%`);
+    } catch (e) {
+      out.properties[p.region] = { error: String(e.message).slice(0, 120) };
+      log(`funnel GA4 ${p.region}: échec (non-fatal) ${String(e.message).slice(0, 80)}`);
+    }
+  }
+  return out;
+}
+
+// Wrapper exécutable seul : node gsc-seo-watch.cjs --funnel
+if (process.argv.includes('--funnel')) {
+  const path = require('path');
+  const { google } = require(path.join(ROOT, 'node_modules', 'googleapis'));
+  const saRaw = loadSaJson();
+  if (!saRaw) { console.error('[gsc-watch] clé SA absente'); process.exit(1); }
+  (async () => {
+    const auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(saRaw),
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly'],
+    });
+    const data = google.analyticsdata({ version: 'v1beta', auth });
+    const result = await measureFunnelGA4(data);
+    const outFile = path.join(ROOT, '.ai', 'autopilot', 'ga4-funnel-latest.json');
+    fs.writeFileSync(outFile, JSON.stringify(result, null, 2));
+    console.log('Funnel persisté:', outFile);
+  })().catch(e => { console.error('[gsc-watch] funnel erreur:', e.message); process.exit(1); });
+}
+
 main().catch(e => log('ERREUR non-fatale: ' + e.message));
