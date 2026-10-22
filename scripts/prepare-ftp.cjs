@@ -276,9 +276,15 @@ for (const region of legacyRegions) {
   // GA4 GP intact). Exclut les EN/ES île-spécifiques (best-beaches-*, what-to-do-*)
   // déjà routées par MQ_ONLY/GP_ONLY. Clés = chemins sans /index.html.
   const GENERIC_INTL = new Set([
-    'en/sargassum-map', 'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
+    'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
     'es/mapa-sargazo', 'es/mejores-playas-sin-sargazo', 'es/temporada-sargazo', 'es/alertas-sargazo',
   ])
+  // P0.7 (2026-10-22) : 'en/sargassum-map' SORT de GENERIC_INTL -> self-canonical GP.
+  // Preuve GSC (28j vs 28j précédents) : la consolidation MQ faisait perdre -21 clics
+  // (-67,7 %) sur la page GP, exclue de l'index GP ; "sargassum map today" = 235 impr,
+  // pos 9.6, +20 clics potentiels non captés. Titres déjà différenciés GP-first via le
+  // swap ##GP_AMP_MQ## -> risque de cannibalisation cross-domain limité. Réversible :
+  // ré-ajouter la clé dans le Set suffit.
 
   const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
   let droppedCross = 0

@@ -3458,7 +3458,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               Masquée si ?consent=1 (case explicite dormante affichée) → pas de doublon. */}
           {!consentFlag&&!PAY_CAPTURE_ONLY&&<div style={{textAlign:"center",marginTop:8,fontSize:10,lineHeight:1.45,color:"rgba(255,255,255,.34)"}}>
             {_t(lang,"Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert. En cas de problème, écrivez-nous.","Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open. If anything goes wrong, just email us.","Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso. Si hay algún problema, escríbenos.")}{" "}
-            <a href="/cgv.html" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
+            <a href="/cgv" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
           </div>}
           {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout
               100% on-site). En cas d'échec de montage : bouton Réessayer (recharge

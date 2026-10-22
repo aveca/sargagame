@@ -6,54 +6,110 @@ export default {
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
-    const grantB2CPass=async(payment)=>{
+    const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
+    const PASS_PRICES = Object.freeze({
+      p30:{EUR:14.99,USD:11.99},
+      trip7:{EUR:4.99,USD:null},
+      season:{EUR:19.99,USD:null},
+      sos:{EUR:1.00,USD:null}
+    });
+    const validateMollieAmount = (payment) => {
+      if (!payment || payment.status !== "paid") return {ok:false,reason:"not_paid"};
+      const pass=String(payment.metadata?.pass||"");
+      const currency=String(payment.amount?.currency||"").toUpperCase();
+      const value=Number(payment.amount?.value);
+      const cents=Math.round(value*100);
+      if (!DAYS_TABLE[pass] || !PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
+      if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
+      if (!Object.prototype.hasOwnProperty.call(PASS_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
+      const expected=PASS_PRICES[pass][currency];
+      if (expected === null) {
+        // Preserve the existing variable-amount contract for products whose
+        // currency price is null in create_payment; never accept zero/negative.
+        const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
+        if (cents <= 50 || cents >= upper) return {ok:false,reason:"amount_out_of_range"};
+      } else {
+        const acceptable=[Math.round(expected*100)];
+        // The create_payment route applies a 15% USD seasonal adjustment to
+        // passes other than trip7. Allow the adjusted amount on a delayed webhook.
+        if (currency === "USD" && pass !== "trip7") acceptable.push(Math.round(acceptable[0]*1.15));
+        if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
+      }
+      return {ok:true,pass,currency};
+    };
+    const grantB2CPassIdempotent=async(payment)=>{
       const md=payment?.metadata||{};
       const pass=String(md.pass||"");
       const email=String(md.email||"").trim();
-      const days={p30:30,trip7:7,season:210}[pass];
-      if(!days||!email)return {granted:false,skipped:true};
+      const days=DAYS_TABLE[pass];
+      if(!days)return {granted:false,skipped:true,reason:"unknown_pass"};
+      if(pass!=="sos"&&!email)return {granted:false,skipped:true,reason:"email_required"};
+      if(!payment?.id)return {granted:false,skipped:true,reason:"payment_id_required"};
       if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return {granted:false,error:"payment_backend_not_configured"};
-      const r=await fetch(env.SUPABASE_URL+"/rest/v1/payment_grants",{
-        method:"POST",
-        headers:{apikey:env.SUPABASE_SERVICE_KEY,Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
-        body:JSON.stringify({
-          payment_id:payment.id,type:"b2c_pass",pass,email,
-          currency:payment.amount?.currency||"EUR",
-          expires_at:new Date(Date.now()+days*86400000).toISOString(),
-          granted_at:new Date().toISOString(),metadata:md
-        })
-      });
-      if(!r.ok)return {granted:false,error:"grant_sync_failed",status:r.status};
+      let r;
+      try {
+        r=await fetch(String(env.SUPABASE_URL).replace(/\/+$/,"")+"/rest/v1/rpc/sg_upsert_payment_grant",{
+          method:"POST",
+          headers:{
+            apikey:env.SUPABASE_SERVICE_KEY,
+            Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,
+            "Content-Type":"application/json",
+            Prefer:"return=minimal"
+          },
+          body:JSON.stringify({
+            p_payment_id:String(payment.id),
+            p_pass:pass,
+            p_email:email,
+            p_currency:String(payment.amount?.currency||"EUR").toUpperCase(),
+            p_expires_at:new Date(Date.now()+days*86400000).toISOString(),
+            p_granted_at:new Date().toISOString(),
+            p_metadata:md
+          })
+        });
+      } catch {
+        return {granted:false,error:"grant_sync_failed"};
+      }
+      if(!r.ok){
+        let code="";
+        try { code=String((await r.json())?.code||""); } catch {}
+        if(r.status===404 || code==="PGRST202") return {granted:false,error:"rpc_unavailable",status:r.status};
+        return {granted:false,error:"grant_sync_failed",status:r.status};
+      }
       return {granted:true,pass,email,days};
     };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
-      const raw=await request.text(); const ct=request.headers.get("content-type")||"";
-      // Verify Mollie webhook signature (HMAC-SHA256)
-      const webhookSecret = env.MOLLIE_WEBHOOK_SECRET;
-      if (!webhookSecret) {
-        return out({error:"webhook_unavailable"},503);
+      const raw=await request.text();
+      const contentType=request.headers.get("content-type")||"";
+      // This endpoint is for Mollie's classic Payments webhook: form-encoded id.
+      // The handler never trusts an asserted status; it fetches the payment from
+      // the authenticated Mollie API before any grant decision.
+      if(!contentType.toLowerCase().includes("application/x-www-form-urlencoded")){
+        return out({error:"unsupported_webhook_contract"},415);
       }
-      const signature = request.headers.get("x-mollie-signature") || request.headers.get("X-Mollie-Signature") || "";
-      const expectedSig = await (async () => {
-        const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(webhookSecret), {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
-        const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(raw));
-        const b64 = btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-        return b64;
-      })();
-      if (!signature || signature !== expectedSig) {
-        return out({error:"invalid_signature"},403);
+      const id=String(new URLSearchParams(raw).get("id")||"").trim();
+      if(!/^tr_[A-Za-z0-9]+$/.test(id)) return out({error:"invalid_payment_id"},400);
+      if(!env.MOLLIE_API_KEY) return out({error:"payment_backend_not_configured"},503);
+      let p,payment;
+      try {
+        p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{
+          headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}
+        });
+        try { payment=await p.json(); } catch { return out({error:"mollie_invalid_response"},502); }
+      } catch {
+        return out({error:"mollie_api_unavailable"},503);
       }
-      let id=""; const ct2=request.headers.get("content-type")||"";
-      if(ct2.includes("application/x-www-form-urlencoded")) id=new URLSearchParams(raw).get("id")||""; else {try{id=JSON.parse(raw).id||""}catch{}}
-      if(!id)return out({error:"id requis"},400);
-      const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
-      const payment=await p.json();
-      if(payment.status==="paid"){
-        const grant=await grantB2CPass(payment);
-        if(grant.error)return out({error:grant.error},503);
+      if(!p.ok) return out({error:"mollie_payment_lookup_failed"},p.status===404?404:502);
+      if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
+      const validation=validateMollieAmount(payment);
+      if(!validation.ok){
+        console.error("[mollie-webhook] grant rejected", {paymentId:id,reason:validation.reason});
+        return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
       }
-      return out({received:true,paymentId:id,status:payment.status},200);
+      const grant=await grantB2CPassIdempotent(payment);
+      if(grant.error) return out({error:grant.error},503);
+      if(!grant.granted) return out({received:true,paymentId:id,status:payment.status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
+      return out({received:true,paymentId:id,status:payment.status,granted:true},200);
     }
     if(u.pathname==="/api/mollie.php" || u.pathname==="/api/mollie"){
       if(request.method==="OPTIONS") return new Response(null,{status:204,headers});
@@ -63,19 +119,27 @@ export default {
       try{
         if(d.action==="payment_status"){
           const paymentId=String(d.paymentId||"").trim();
-          if(!paymentId)return out({error:"paymentId requis"},400);
-          const p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(paymentId),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
-          const x=await p.json();
-          if(!p.ok)return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502);
-          const paid=["paid","settled"].includes(x.status);
-          if(paid){
-            const requestedEmail=String(d.email||"").trim().toLowerCase();
-            const paymentEmail=String(x.metadata?.email||"").trim().toLowerCase();
-            if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail)return out({error:"payment_owner_mismatch"},403);
-            const grant=await grantB2CPass(x);
-            if(grant.error)return out({error:grant.error},503);
+          if(!/^tr_[A-Za-z0-9]+$/.test(paymentId))return out({error:"invalid_payment_id"},400);
+          let p,x;
+          try {
+            p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(paymentId),{
+              headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}
+            });
+            try { x=await p.json(); } catch { return out({error:"mollie_invalid_response"},502); }
+          } catch {
+            return out({error:"mollie_api_unavailable"},503);
           }
-          return out({paid,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
+          if(!p.ok)return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502);
+          if(x.status!=="paid")return out({paid:false,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
+          const requestedEmail=String(d.email||"").trim().toLowerCase();
+          const paymentEmail=String(x.metadata?.email||"").trim().toLowerCase();
+          if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail)return out({error:"payment_owner_mismatch"},403);
+          const validation=validateMollieAmount(x);
+          if(!validation.ok)return out({paid:false,status:x.status,paymentId:x.id,reason:validation.reason},409);
+          const grant=await grantB2CPassIdempotent(x);
+          if(grant.error)return out({error:grant.error},503);
+          if(!grant.granted)return out({paid:false,status:x.status,paymentId:x.id,reason:grant.reason||"pass_not_eligible"},409);
+          return out({paid:true,status:x.status,paymentId:x.id,granted:true},200);
         }
         if(d.action==="verify_subscription"){
           const email=String(d.email||"").trim();
@@ -137,7 +201,7 @@ export default {
         const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
         const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
         const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(parts[0]));
-        const b64=a=>{let s="";const bytes=new Uint8Array(a);for(const x of bytes)s+=String.fromCharCode(x);return btoa(s).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"")};
+        const b64=a=>{let s="";const bytes=new Uint8Array(a);for(const x of bytes)s+=String.fromCharCode(x);return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")};
         if(b64(sig)!==parts[1])return false;
         try{let s=parts[0].replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";const d=JSON.parse(atob(s));return d.exp&&Number(d.exp)>Date.now()/1000?d:false}catch{return false}
       };
@@ -146,15 +210,15 @@ export default {
     if(u.pathname==="/api/b2b-trial.php" || u.pathname==="/api/b2b-trial"){
       if(request.method!=="POST")return out({error:"method_not_allowed"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
-      const email=String(d.email||"").trim();if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email))return out({error:"invalid_email"},400);
+      const email=String(d.email||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return out({error:"invalid_email"},400);
       const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
       const base=env.MOLLIE_WEBHOOK_SECRET;
       if(!base)return out({error:"payment_backend_not_configured"},503);
       const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
       const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
-      const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+      const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
       const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw));
-      const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\\+/g,"-").replace(/\\//g,"_").replace(/=+$/,"");
+      const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
       return out({ok:true,token,days:30},200);
     }
     if(u.pathname==="/api/mollie.php" && request.method==="POST"){
