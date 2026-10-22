@@ -1,0 +1,79 @@
+﻿{
+  "$comment": "Backlog commercial priorise profit Factory V4. Score = impact_estime x confiance / cout. Une tache sans donnee n a pas de score artificiellement precis.",
+  "updated_at": "2026-10-22",
+  "scoring_rule": "P0 = bloque la mesure ou une vente. P1 = gain conversion/SEO demontre. P2 = exploration.",
+  "items": [
+    {
+      "rank": 1, "priority": "P0", "site": "sargagame",
+      "title": "Diagnostiquer et reparer le tracking funnel (CTA -> checkout = 0)",
+      "evidence": "Funnel 7j verifie: premium-open 17590 -> CTA 65 -> checkout 0 -> redirect 0 -> PAID 20. Les 20 PAID prouvent que le paiement fonctionne, donc soit le tracking checkout/redirect est casse, soit les clics CTA n atteignent jamais le checkout. Note REVENUE: events amont absents du daily aggregator.",
+      "why_P0": "SANS cette mesure, aucune decision CRO n est prouvable. C est le blocage de toutes les optimisations suivantes.",
+      "expected_gain": "Debloque la mesure de conversion (prerequis de tout gain CRO). Si le tracking seul est casse: zero changement produit.",
+      "confidence": "high (evidence directe dans daily-metrics)",
+      "cost": "moyen (audit code CTA -> checkout -> events sg_*)",
+      "scope_hints": ["src/components/PaywallComic.jsx", "src/PremiumModal.jsx", "supabase events pipeline", "scripts automation daily-metrics"],
+      "success_criteria": "Les events checkout/redirect apparaissent dans daily-metrics pour un parcours test reel OU preuve documentee que le parcours marche et seul l agregateur est casse",
+      "status": "a_lancer", "experiment_id": null
+    },
+    {
+      "rank": 2, "priority": "P1", "site": "sargagame",
+      "title": "Quick wins SEO watchdog (3 detects, donnees 7j reelles)",
+      "evidence": "GP home pos 3.9 CTR 6.4% ; GP /saison-sargasses-guadeloupe/ pos 4.3 CTR 5.0% ; MQ /carte-sargasses/ pos 6.5 CTR 7.7%. Potentiel ~10-20 clics/7j chacun a CTR 10%.",
+      "why_P1": "Cout faible (title/meta/H1), effet mesurable via GSC en 2-4 semaines, pipeline deja branché (watchdog -> queue -> agent).",
+      "expected_gain": "~30-50 clics organiques/7j additionnels si CTR ramene a ~10%",
+      "confidence": "medium-high (donnees GSC reelles)",
+      "cost": "faible",
+      "scope_hints": ["index.html", "scripts/prepare-ftp.cjs"],
+      "success_criteria": "CTR des pages traitees > 8-9% sur 28j post-deploiement (gsc_compare_periods)",
+      "status": "dans_queue_watchdog", "experiment_id": null
+    },
+    {
+      "rank": 3, "priority": "P1", "site": "sargagame",
+      "title": "Paywall reach 7.6% + CTA 0.37% (taches UX-LOW deja en queue)",
+      "evidence": "17590 premium-opens sur 231605 sessions (reach 7.6%); 65 CTA sur 17590 opens (0.37%).",
+      "why_P1": "Le levier de volume le plus gros: +4.4 pts de reach = +10200 opens/7j ; chaque point de CTA rate = 17590 opportunités.",
+      "expected_gain": "Si reach 12% et CTA 1%: CTA 65 -> 279 (+330%). CONDITIONNEL au rank 1 (mesure).",
+      "confidence": "medium (taux reels verifies, effet des changements a prouver)",
+      "cost": "moyen-eleve (design + tests A/B si volume)",
+      "scope_hints": ["src/components/PaywallComic.jsx", "src/PremiumModal.jsx", "src/hooks/usePaywallTrigger.js"],
+      "success_criteria": "reach >10% ET CTA >0.8% sur 14j glissants (apres rank 1 repare)",
+      "status": "dans_queue (UX-LOW-20261021-000/001)", "experiment_id": null, "depends_on": 1
+    },
+    {
+      "rank": 4, "priority": "P1", "site": "rivieramaya",
+      "title": "INCIDENT: site sargassumrivieramaya.com DOWN",
+      "evidence": "Zone CF active, build CF existe, mais HTTP fetch fail sur toutes les variantes testees (2026-10-22).",
+      "why_P1": "Un site mort d une chaine regionale = SEO negatif +信誉 marque. Cout de reparation probablement faible (DNS/deploy).",
+      "expected_gain": "Retablir la presence regionale + eviter la deindexation",
+      "confidence": "high (down verifie)",
+      "cost": "faible-moyen",
+      "scope_hints": ["regions/index.cjs", "deploy workflow"],
+      "success_criteria": "HTTP 200 sur le domaine",
+      "status": "a_diagnostiquer", "experiment_id": null
+    },
+    {
+      "rank": 5, "priority": "P2", "site": "bot-wow + replaypilot",
+      "title": "Premier audit commercial (offre, prix, funnel, analytics)",
+      "evidence": "Sites UP mais aucune donnee connectee a la Factory. Offre/prix non inventories.",
+      "why_P2": "Impossible de prioriser sans connaitre l offre. Audit = prerequis d allocation de ressources.",
+      "expected_gain": "Registre complet + premier backlog pour 2 proprietes",
+      "confidence": "n/a (exploration)",
+      "cost": "faible",
+      "scope_hints": [],
+      "success_criteria": "portfolio.json complete pour les 2 sites (offre, prix, funnel, analytics)",
+      "status": "a_lancer", "experiment_id": null
+    },
+    {
+      "rank": 6, "priority": "P2", "site": "sargagame",
+      "title": "Installer marketingskills + ffmpeg (capacites manquantes)",
+      "evidence": "ffmpeg ABSENT (creation video bloquee). Skills marketing (CRO/copy/pricing) absents du catalogue.",
+      "why_P2": "Capacites pour les rangs 2-3 (assets video, copy CRO).",
+      "expected_gain": "Capacites de creation commerciale",
+      "confidence": "n/a",
+      "cost": "faible",
+      "scope_hints": [],
+      "success_criteria": "ffmpeg --version OK + skills marketing installes et testables",
+      "status": "a_lancer", "experiment_id": null
+    }
+  ]
+}

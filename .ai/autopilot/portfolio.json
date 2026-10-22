@@ -1,0 +1,73 @@
+﻿{
+  "$comment": "Registre du portefeuille Factory V4 - donnees verifiees le 2026-10-22. Zero donnee inventee.",
+  "updated_at": "2026-10-22",
+  "objective": "MAX profit durable: benefice > marge contributive > ventes/MRR > conversion > acquisition > couts > produit",
+  "sites": [
+    {
+      "id": "sargagame", "priority_tier": 1,
+      "domains": ["sargasses-guadeloupe.com","sargasses-martinique.com","sargassummiami.com","sargassumpuntacana.com","sargassumcancun.com"],
+      "repo": "aveca/sargagame (PUBLIC, factory-v3-release-prep -> main)",
+      "product": "Carte temps reel sargasses + score plages 0-100 (B2C freemium + B2B hotels)",
+      "value_prop": "Savoir quelle plage est propre aujourd hui (satellite Copernicus, maj 4x/jour)",
+      "revenue_sources": ["Stripe MRR premium", "Mollie paiements", "B2B hotels"],
+      "revenue_verified": {
+        "rev_7j_eur": 939.58, "mrr_stripe_eur": 69.86, "subscribers_active": 14, "paid_total": 20,
+        "funnel_7j": {"sessions": 231605, "premium_open": 17590, "cta": 65, "checkout": 0, "redirect": 0, "paid": 20},
+        "source": "daily-metrics + runs REVENUE 2026-10-22"
+      },
+      "top_commercial_blockers": [
+        "FUNNEL: CTA 65 -> checkout 0 (100% perte etape checkout OU tracking sg_* casse - a diagnostiquer en premier)",
+        "CONVERSION: paywall reach 7.6% (17590/231605 sessions)",
+        "CONVERSION: paywall CTA rate 0.37% (65/17590)",
+        "SEO: quick wins watchdog actifs (GP home pos 3.9 CTR 6.4%, MQ carte pos 6.5 CTR 7.7%)"
+      ],
+      "analytics": ["Supabase sg_* events", "GA4 MQ+GP", "Clarity", "GSC MCP (2 domaines OK, 3 url-prefix 403)"],
+      "payments": ["Mollie LIVE gated", "Stripe MRR"],
+      "hosting": "Cloudflare Pages/Workers + FTP (6 regions)",
+      "autonomy_level": 3,
+      "gaps": ["3 proprietes GSC url-prefix sans acces SA", "events amont absents du daily aggregator"],
+      "verified": true
+    },
+    {
+      "id": "bot-wow", "priority_tier": 2, "domains": ["bot-wow.com"],
+      "repo": "aveca/bot-wow (PUBLIC, CF Workers: worker/, migrations/, tests/)",
+      "product": "BOT-WOW (offre a auditer: purchase flow + dashboards modules)",
+      "revenue_sources": ["a auditer (purchase flow existe)"],
+      "revenue_verified": null,
+      "top_commercial_blockers": ["Aucune donnee analytique connectee a la Factory - observer d abord"],
+      "hosting": "Cloudflare Workers", "autonomy_level": 1,
+      "gaps": ["offre/prix non inventories", "funnel non mesure"], "verified": true
+    },
+    {
+      "id": "replaypilot", "priority_tier": 2, "domains": ["replaypilot.com"],
+      "repo": "aveca/replaypilot (PUBLIC)", "product": "a auditer",
+      "revenue_verified": null, "top_commercial_blockers": ["Aucune donnee connectee"],
+      "hosting": "a auditer", "autonomy_level": 1, "verified": true
+    },
+    {
+      "id": "ecomartinique", "priority_tier": 3, "domains": ["ecomartinique.com (UP)"],
+      "repo": "non trouve dans aveca/* (a localiser)", "product": "a auditer",
+      "revenue_verified": null, "autonomy_level": 1, "verified": true
+    },
+    {
+      "id": "w11poker-store", "priority_tier": 3,
+      "domains": ["dronemartinique.com -> 301 w11poker.store (domaine redirige)"],
+      "repo": "a localiser", "product": "domaine DroneMartinique redirige vers boutique poker - a clarifier avec fondateur",
+      "revenue_verified": null, "autonomy_level": 1, "verified": true
+    },
+    {
+      "id": "rivieramaya", "priority_tier": 3,
+      "domains": ["sargassumrivieramaya.com (zone CF active mais SITE DOWN - fetch fail)"],
+      "repo": "build CF rivieramaya existe dans le workflow production",
+      "product": "site regional sargasses",
+      "top_commercial_blockers": ["SITE DOWN - incident a diagnostiquer (DNS/deploy)"],
+      "autonomy_level": 3, "verified": true
+    },
+    {
+      "id": "casinobabe", "priority_tier": 3,
+      "domains": ["casinobabe.com - DNS en echec (repo PUBLIC + skill botwow mentionne le site)"],
+      "repo": "aveca/Casinobabe (PUBLIC)", "revenue_verified": null, "autonomy_level": 1, "verified": true
+    }
+  ],
+  "allocation_rule": "Tier 1 (sargagame, revenu prouve + funnels mesures) recoit la majorite de l effort; tier 2 = observation + premier audit; tier 3 = surveillance minimale. Un incident tier 3 (site down) passe devant tout tier 2."
+}
