@@ -71,3 +71,17 @@ jobs:
           grep -q 'ERRORS=\[\]' /tmp/smoke.log
           grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log
           grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log
+
+      # Chaque région est reconstruite avant son packaging pour tester les mêmes
+      # étapes que le workflow Cloudflare de production, sans jamais déployer.
+      - name: Verify localized regional landing pages in Cloudflare artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          for region in puntacana rivieramaya tulum; do
+            echo "::group::Regional artifact validation: $region"
+            VITE_REGION="$region" npm run build
+            VITE_REGION="$region" node scripts/prepare-ftp.cjs
+            REGION="$region" node scripts/verify-region-landing-pages.cjs
+            echo "::endgroup::"
+          done

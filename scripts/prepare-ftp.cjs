@@ -13,6 +13,7 @@ const fs = require('fs')
 const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
+const { getRegionLandingPages, getAllRegionLandingPages, withLandingPageSlugs } = require('./lib/region-landing-pages.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 
 const root = path.join(__dirname, '..')
@@ -897,8 +898,37 @@ function prepareNewRegion(region) {
   // écrasé la landing statique MQ public/en/). Le skip 'en' ci-dessus ne visait que
   // cette landing MQ — inexistante dès qu'une région émet son propre /en/. Même
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
-  for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
+  const secondaryLangDirs = require('./lib/region-langs.cjs').secondaryLangDirs(region)
+  for (const d of secondaryLangDirs) skip.delete(d)
+  // Les dossiers de langue ne sont gardés en bloc que lorsqu'ils sont activés
+  // par region-langs. Les landing pages statiques explicitement autorisées sont
+  // recopiées individuellement plus bas, sans publier les autres pages d'une langue
+  // que cette région n'émet pas.
+  for (const lang of ['en', 'es']) {
+    if (!secondaryLangDirs.includes(lang)) skip.add(lang)
+  }
   copyRecursive(dist, out, skip)
+
+  // Les landing pages sont présentes ensemble dans le build Vite, mais chaque
+  // domaine ne doit publier que ses propres versions FR/EN/ES.
+  const ownLandingPages = getRegionLandingPages(region.id)
+  const ownLandingFiles = new Set(ownLandingPages.map(page => page.file))
+  for (const page of getAllRegionLandingPages()) {
+    if (ownLandingFiles.has(page.file)) continue
+    const unwanted = path.join(out, page.file)
+    if (fs.existsSync(unwanted)) fs.rmSync(unwanted, { recursive: true, force: true })
+  }
+  // Les dossiers de langue historiques peuvent être ignorés par la copie
+  // générale. Recopier explicitement uniquement les trois routes autorisées.
+  for (const page of ownLandingPages) {
+    const source = path.join(dist, page.file)
+    const destination = path.join(out, page.file)
+    if (!fs.existsSync(source)) {
+      throw new Error(`[prepare-ftp] landing page manquante pour ${region.id}: dist/${page.file}`)
+    }
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(source, destination)
+  }
 
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
@@ -955,7 +985,7 @@ function prepareNewRegion(region) {
 
   // Pages plages : ne garder que les plages de la région.
   const plagesDir = path.join(out, 'plages')
-  const regionSlugs = beachSlugsFor(region)
+  const regionSlugs = withLandingPageSlugs(region.id, beachSlugsFor(region))
   if (fs.existsSync(plagesDir)) {
     let removed = 0
     for (const entry of fs.readdirSync(plagesDir)) {
@@ -1100,6 +1130,24 @@ ${entries.join('\n')}
     if (urls.length < 5) {
       console.warn(`   ! sitemap très court (${urls.length} URLs) — vérifie regions/seo-content/${region.id}.json`)
     }
+  }
+
+  // Inclure les trois landing pages statiques dans le sitemap, que le build
+  // régional ait produit un sitemap SEO complet ou le fallback depuis les fichiers.
+  const regionalSitemapPath = path.join(out, 'sitemap.xml')
+  let regionalSitemap = fs.readFileSync(regionalSitemapPath, 'utf-8')
+  if (!/<urlset\b/i.test(regionalSitemap) || !/<\/urlset>\s*$/i.test(regionalSitemap)) {
+    throw new Error(`[prepare-ftp] sitemap régional invalide pour ${region.id}; impossible d'ajouter les landing pages`)
+  }
+  const landingSitemapEntries = getRegionLandingPages(region.id)
+    .map(page => `https://${domain}${page.url}`)
+    .filter(url => !regionalSitemap.includes(`<loc>${url}</loc>`))
+    .map(url => `  <url><loc>${url}</loc><lastmod>${today}</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>`)
+  if (landingSitemapEntries.length) {
+    const addition = landingSitemapEntries.join('\n') + '\n'
+    regionalSitemap = regionalSitemap.replace(/<\/urlset>\s*$/i, addition + '</urlset>\n')
+    fs.writeFileSync(regionalSitemapPath, regionalSitemap, 'utf-8')
+    console.log(`   → ${landingSitemapEntries.length} landing URL(s) ajoutée(s) au sitemap (${region.id})`)
   }
 
   // 404.html région-aware : celui du build partagé est bi-île MQ/GP → on
