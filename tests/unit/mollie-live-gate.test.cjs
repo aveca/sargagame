@@ -2,7 +2,13 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 
-const workflow = fs.readFileSync(path.join(__dirname, "../../.github/workflows/cloudflare-production.yml"), "utf8");
+// Le blob git est en LF, mais un checkout Windows (core.autocrlf=true) le
+// matérialise en CRLF : sans normalisation, les assertions de CE TEST passent
+// en CI (LF) et échouent en local (CRLF) sur le MÊME SHA. On normalise les fins
+// de ligne à la lecture — l'assertion fonctionnelle reste identique partout.
+const workflow = fs
+  .readFileSync(path.join(__dirname, "../../.github/workflows/cloudflare-production.yml"), "utf8")
+  .replace(/\r\n/g, "\n");
 const gateStart = workflow.indexOf("\n  mollie-live-gate:");
 const gateEnd = workflow.indexOf("\n  deploy:", gateStart);
 assert.notEqual(gateStart, -1, "production workflow defines mollie-live-gate");

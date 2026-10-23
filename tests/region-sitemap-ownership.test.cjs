@@ -46,10 +46,17 @@ console.log("3) Artefact tulum-ftp local (apres build+prepare-ftp) : aucune URL 
     assert(urls.length >= 5, "sitemap tulum >= 5 URLs (veu: " + urls.length + ")")
     for (const u of urls) {
       const slug = u.replace("https://sargazotulum.com", "")
-      assert(!/(sargasses-aujourdhui|sargasses-pres-de-moi|recherche|veilleur|agir|confidentialite|a-propos|about|for-hotels|research|investigacion|articles)/.test(slug),
-        "URL regionale uniquement : " + slug)
+      // Pages FR heritees (canonical MQ conserve) : interdites dans le sitemap.
+      // Les 4 routes PARTAGEES (/about /research /investigacion /for-hotels) sont
+      // desormais autoreferencees sur le domaine de la region (voir
+      // tests/region-canonical-rewrite.test.cjs) -> elles appartiennent au domaine.
+      assert(!/(sargasses-aujourdhui|sargasses-pres-de-moi|recherche|veilleur|agir|confidentialite|a-propos|articles)/.test(slug),
+        "URL regionale uniquement (pas de page FR heritee) : " + slug)
     }
     assert(!/\/fiabilite\//.test(xml), "pas de page de redirection /fiabilite/ dans le sitemap")
+    for (const p of ["about", "research", "investigacion", "for-hotels"]) {
+      assert(new RegExp("/" + p + "/").test(xml), "/" + p + "/ (page partagee autoreferencee) presente")
+    }
     assert(/\/fiabilidad\//.test(xml), "/fiabilidad/ (generee region) conservee")
     assert(/\/privacidad\//.test(xml), "/privacidad/ (generee region) conservee")
     assert(/\/terminos\//.test(xml), "/terminos/ (generee region) conservee")

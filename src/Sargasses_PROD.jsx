@@ -1814,6 +1814,12 @@ export const PAY_CUR=(IS_NEW_REGION&&REGION&&REGION.currency==="USD")?"usd":"eur
 // est mort depuis le retrait des redirects) : ces consts ne sont que des drapeaux.
 export const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):"onsite"
 export const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):"onsite"
+// Offre annuelle disponible (même source que PremiumModal : LINK_ANNUAL).
+// P0 2026-10-23 : openPremium() référençait `hasAnnual` sans que ce nom existe
+// dans CE module → ReferenceError à chaque clic sur un CTA premium
+// (VER LOS 7 DÍAS, Activar mi alerta…) : le paywall ne s'ouvrait pas,
+// sur les 6 domaines ( reproduit en production avant correction ).
+export const hasAnnual=!!LINK_ANNUAL
 export const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 export const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // EUR (MQ/GP, REGION_PAY null) : fallback de prix non-null OBLIGATOIRE — depuis

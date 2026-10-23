@@ -900,6 +900,18 @@ function prepareNewRegion(region) {
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
 
+  // Pages partagees (public/about, /research, /investigacion, /for-hotels) :
+  // elles codent en dur l hote MQ dans leur canonical/og/hreflang. Livrees
+  // telles quelles sur un domaine USD, la page declarait un canonical
+  // martinique -> Google la consolidait cote MQ (domaine jamais indexe).
+  // On reecrit l hote vers le domaine de la region + on purge les hreflang
+  // orphelins. MQ/GP : ce bloc n est jamais atteint (chemin heritage).
+  {
+    const { rewriteSharedSeoHost } = require('./lib/rewrite-shared-seo.cjs')
+    const r = rewriteSharedSeoHost(out, region)
+    if (r.files) console.log(`   → canonical hote region (${title}) : ${r.files} fichier(s), ${r.droppedAlts} hreflang orphelin(s) retire(s)`)
+  }
+
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
   // URL stable /og-image.png — pas d'invalidation des caches FB/WhatsApp.
