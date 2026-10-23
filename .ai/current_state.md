@@ -1,5 +1,82 @@
 ---
 
+## 2026-10-23 14:10 UTC - Agent: mission_agent (Factory V3 - lot 2 : P0 paywall, P1 canonicals, P2 lisibilite)
+
+### Travail effectue
+- **Resume 1 ligne** : 3 defauts fermes, reproduits avant correction, deployes et
+  verifies en production sur les 6 domaines (PR #1019 mergee, run Cloudflare
+  Production 39957557963 : 6/6 Worker + 6/6 Pages, verify-fleet + post-deploy-verify verts).
+
+### Deffauts reproduits et corriges
+- **P0 PAYWALL** : au clic sur « VER LOS 7 DIAS / VOIR LES 7 JOURS » (CTA prevision
+  verrouille de la fiche), l app levait `ReferenceError: hasAnnual is not defined` —
+  openPremium() referencait un identifiant present seulement dans PremiumModal.jsx.
+  Reproduit en production (PAGEERROR) donc PRE-EXISTANT. Fix :
+  `export const hasAnnual=!!LINK_ANNUAL` dans Sargasses_PROD.jsx (LINK_ANNUAL y est
+  deja defini/exporte). Verifie live : paywall ouvert, 0 exception JS.
+- **P1 CANONICALS** : /about/, /research/, /investigacion/, /for-hotels/ (statiques de
+  public/) codent en dur l hote MQ (canonical, og:url, og:image, hreflang). Livrees sur
+  Miami / Punta Cana / Cancun / Tulum, chaque page declarait canonical ->
+  sargasses-martinique.com (Google consolidait cote MQ, domaine USD jamais indexe).
+  Fix a la source du pipeline : scripts/lib/rewrite-shared-seo.cjs (appele par
+  prepareNewRegion) : hote SEO -> domaine de la region (self-canonical) + purge des
+  hreflang non livres (/a-propos/, /sobre/). Allowlist ETROITE aux 4 routes : les pages
+  FR heritees gardent leur canonical MQ (elles restent hors sitemap regional).
+  MQ/GP : /a-propos/ autocanonical, chemin historique inchange.
+- **P2 LISIBILITE** : badge de statut de la carte rendu en `800 9px`. Mesures
+  avant/apres sur le meme parcours : 9px -> 11.31px (mobile 390) / 12px (desktop 1440)
+  via clamp(11px,2.9vw,12px). Largeurs d etiquette quasi inchangees (+0 a +3.5px) :
+  0 debordement, 0 chevauchement, 0 troncature, meme nombre d etiquettes visibles.
+
+### Tests reellement executes
+- `npm test` : **58/58 OK** (etait 56/57 ; l artefact CRLF de mollie-live-gate a ete
+  corrige par normalisation des fins de ligne A LA LECTURE, assertion inchangee).
+- `tests/region-canonical-rewrite.test.cjs` (nouveau) : exit 0.
+- `tests/e2e/paywall-e2e.spec.ts` (nouveau) : 2/2 passed en preview ET en production.
+- build + check-bundle-budget sur 6 regions : 207.3/207.3/208.4/208.0/208.3/207.3 Ko (<= 210).
+- Non-regression prouvee : `playwright test tests/e2e` = 12 failed / 4 passed sur un
+  worktree BASELINE construit depuis origin/main, et 12 failed / 6 passes apres mes
+  changements (les +2 = mes nouveaux tests) -> les 12 echecs sont pre-existants et hors
+  perimetre (attendent `.lc-detail/.sheet` apres clic etiquette alors que la fiche
+  rendue est BeachSheetComic, + timeouts 30s).
+
+### Fichiers modifies (lot 2)
+- `src/Sargasses_PROD.jsx` : definition de `hasAnnual` (fix ReferenceError P0).
+- `src/WorldMapView.jsx` : badge de statut 9px -> clamp(11px,2.9vw,12px).
+- `scripts/lib/rewrite-shared-seo.cjs` (nouveau) : reecriture hote SEO des 4 pages partagees.
+- `scripts/prepare-ftp.cjs` : appel du module dans prepareNewRegion.
+- `tests/unit/mollie-live-gate.test.cjs` : normalisation CRLF a la lecture.
+- `tests/region-canonical-rewrite.test.cjs` (nouveau), `tests/e2e/paywall-e2e.spec.ts` (nouveau),
+  `tests/region-sitemap-ownership.test.cjs` (mis a jour : les 4 routes partagees sont
+  desormais legitiment regionales).
+
+### Livraison
+- Branche : `agent/mission/v3-sargagame-20261022`
+- Commits : `682ad99` (correctifs), `f86deed` (assertion du spec E2E)
+- PR : **#1019** (mergee 12:59 UTC), **#1021** (mergee 13:50 UTC, test seul)
+- Deploiement : Cloudflare Production 39957557963 (merge #1019) : 6/6 Worker + 6/6 Pages,
+  verify-fleet et post-deploy-verify verts. Merge #1021 : 39964541076 vert (aucun
+  changement de build : b=7d1ba39c servi avant et apres).
+- Verification LIVE : 4 regions USD -> 4/4 pages canonical self (about, research,
+  investigacion, for-hotels) ; MQ/GP -> /a-propos/ canonical correct ;
+  paywall E2E live OK, 0 exception JS ; puces 11.31/12px confirmees sur MQ et Tulum.
+
+### Problemes restants
+- [ ] P1 donnees : `/api/b2b-partners.json` et `/api/copernicus/track-record.json` sont en
+      404 sur les regions USD (non publies) — l app degrade sans crash, mais le registre
+      public /fiabilite/ et les preuves B2B ne s affichent pas sur ces domaines.
+- [ ] P1 E2E heritage : 12 specs existants (around-me, funnel-payment, sos-plage-checkout)
+      echouent de facon identique avant/apres mes changements (attente `.lc-detail/.sheet`
+      vs BeachSheetComic + timeouts 30s) — a realigner separement.
+- [ ] P1 contenu : `regions/seo-content/tulum.json` absent -> Tulum sans fiche plage ni
+      page SEO regionale (12 URLs de sitemap vs 92 Riviera Maya). Redaction editoriale.
+
+### Prochaine action recommandee
+1. Aligner les specs E2E heritage sur le DOM reel (BeachSheetComic, timeouts) — role QA.
+2. Publier les JSON regionaux manquants (track-record, b2b-partners) — role data.
+3. Rediger `regions/seo-content/tulum.json` — role contenu (aucune donnee inventee).
+
+---
 ## 2026-10-23 07:10 UTC - Agent: mission_agent (Factory V3 - mission audit/amelioration/validation)
 
 ### Travail effectue
