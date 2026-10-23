@@ -8,9 +8,9 @@ const path = require("node:path");
 const vm = require("node:vm");
 
 const html = fs.readFileSync(path.join(__dirname, "../public/pro/pricing/index.html"), "utf8");
-const match = html.match(/<script>\\s*\\(function\\(\\)\\{\\s*\/\/ The data pipeline runs every 6 hours[\\s\\S]*?<\\/script>/);
+const match = html.match(/<script>\s*\(function\(\)\{\s*\/\/ The data pipeline runs every 6 hours[\s\S]*?<\/script>/);
 assert.ok(match, "pricing page contains the tested track-record script");
-const script = match[0].replace(/^<script>\\s*/, "").replace(/<\\/script>\\s*$/, "");
+const script = match[0].replace(/^<script>\s*/, "").replace(/<\/script>\s*$/, "");
 
 const NOW = Date.parse("2026-10-23T16:00:00.000Z");
 class FixedDate extends Date {
