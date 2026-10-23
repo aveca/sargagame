@@ -1,4 +1,44 @@
-﻿---
+---
+
+---
+
+## 2026-10-23 - mission_agent (Factory V3, branche agent/mission/v3-sargagame-20261022)
+
+**Mission V3 : audit production des 6 domaines + correctifs P0 reproduits (PR #1016).**
+
+Audit Playwright reel (Chromium, mobile 390x844 + desktop 1440x900) + controle HTTP
+de toutes les URL des 6 sitemaps : MQ, GP, Miami, Punta Cana, Riviera Maya, Tulum
+tous HTTP 200, donnees ERDDAP fraiches (`stale=false`, `updatedAt` du jour),
+0 URL de sitemap en erreur, 0 erreur JS au chargement.
+
+- **P0** banniere cookies -> `/en/privacy/` (et `/es/privacy/`) = 404 sur 4 regions USD :
+  `legal-pages.cjs` ecrit des slugs RACINE localises (`/privacy/`, `/privacidad/`), la
+  table codee en dur prefixait par la langue. Corrige via source unique
+  `scripts/lib/legal-links-table.cjs` (miroir exact du generateur : SLUGS + emittedLangs)
+  injectee au build dans `__LEGAL_LINKS__`, consommee par `src/lib/legal-links.js`
+  (repli langue courante -> primaire -> autre langue livree).
+- **P0** paywall -> `/cgv` en dur = 404 sur les 4 regions USD (page CGV FR = MQ/GP only) :
+  lien casse sur le chemin de conversion. Meme table.
+- **P0** pied de page regional -> `/terms/` `/privacy/` `/refund/` = 404 sur tulum en EN
+  (tulum n emet que ES). Meme table.
+- **P0** budget bundle : build tulum a 210.3 Ko gzip AVANT ce travail (gate de deploiement
+  reflechi) — `BEACHES_FALLBACK` embarquait 20 plages MQ/GP dans chaque bundle USD.
+  Drapeau de compilation `__IS_NEW_REGION__` (litteral) -> branche morte eliminee :
+  207.3 Ko, et plus de plages etrangeres affichables en plan B avant le fetch.
+- **P1** sitemap de secours de Tulum : 21 URLs dont 8 pages FR/MQ/GP canoniquees vers
+  martinique + 2 articles d autres illes -> 8 URLs regionales (filtre
+  `_pageBelongsToRegion` : canonical region + langue emise + pas de redirection).
+- Tests ajoutes : `tests/legal-links-runtime.test.cjs`, `tests/region-sitemap-ownership.test.cjs`.
+  Suite complete 56/57 (le seul echec local est un artefact de checkout CRLF Windows, vert en CI).
+
+### Reste a faire (documente, non casse)
+
+- **P1 contenu** : `regions/seo-content/tulum.json` est absent -> Tulum n a aucune fiche
+  plage ni page SEO regionale (8 URLs de sitemap vs 92 pour Riviera Maya). Redaction
+  editoriale a faire (aucune donnee inventee).
+- **P1 SEO** : les pages partagees `/about/`, `/research/`, `/investigacion/`, `/for-hotels/`
+  gardent un canonical martinique sur les domaines USD (a traiter dans la meme correction).
+- **P2** : lisibilité mobile des puces carte (texte 9px « ATTENTION » / « IR A PLAYA »).
 
 ## 2026-10-15 - devops_agent (directive DG : bascule gratuite, boucle codage unique)
 

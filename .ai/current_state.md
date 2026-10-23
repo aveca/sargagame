@@ -1,5 +1,54 @@
 ---
 
+## 2026-10-23 07:10 UTC - Agent: mission_agent (Factory V3 - mission audit/amelioration/validation)
+
+### Travail effectue
+- **Resume 1 ligne** : audit production reel des 6 domaines (Playwright + HTTP) puis 2 correctifs livres en PR #1016 (liens legaux 404 sur le chemin de conversion + budget bundle + sitemap Tulum).
+- **Environnement** : worktree mission isole `C:\factory\worktrees\mission-v3-sargagame-20261022` cree depuis `origin/main` (`c79ec5c`). Le dossier `C:\factory\worktrees\test-sargagame` (modifications locales fondateur) n a JAMAIS ete touche : aucune commande destructive, worktree dedie a la place.
+- **Audit** : 6 domaines (MQ, GP, Miami, Punta Cana, Riviera Maya, Tulum) - tous HTTP 200, donnees ERDDAP fraiches (`stale=false`, `updatedAt` du jour), 0 URL de sitemap en erreur (82/86/90/76/92/21 URLs), 0 erreur JS, CLS <= 0.0034.
+
+### Defauts reproduits et corriges
+- **P0** Banniere cookies -> `/en/privacy/` et `/es/privacy/` = 404 sur florida/puntacana/rivieramaya/tulum (+ ES sur MQ/GP). `legal-pages.cjs` ecrit des slugs RACINE localises (`/privacy/`, `/privacidad/`) ; la table en dur prefixait par la langue.
+- **P0** Paywall -> `/cgv` en dur = 404 sur les 4 regions USD (page CGV FR = MQ/GP only) - lien casse sur le chemin de conversion.
+- **P0** Pied de page regional -> `/terms/` `/privacy/` `/refund/` = 404 sur tulum en EN (`emittedLangs=['es']`).
+- **P0** Budget bundle : 210.3 Ko gzip > 210 Ko AVANT ce travail (build tulum) - `BEACHES_FALLBACK` embarquait 20 plages MQ/GP dans chaque bundle USD -> 207.3 Ko apres (drapeau de compilation `__IS_NEW_REGION__`).
+- **P1** Sitemap de secours Tulum : 21 URLs dont 8 pages FR/MQ/GP canoniquees vers martinique + 2 articles d autres iles -> 8 URLs regionales.
+
+### Fichiers modifies
+- `scripts/lib/legal-links-table.cjs` (nouveau) - miroir exact du generateur de pages legales (SLUGS + emittedLangs).
+- `src/lib/legal-links.js` (nouveau) - helper runtime, repli langue courante -> primaire -> autre langue livree.
+- `vite.config.js` - injection `__LEGAL_LINKS__` + `__IS_NEW_REGION__` (litteral de compilation).
+- `src/Sargasses_PROD.jsx` - banniere cookies, pied de page regional, `IS_NEW_REGION` litteral, `BEACHES_FALLBACK` conditionne a la region.
+- `src/PremiumModal.jsx` - lien « CGV / Terms » du paywall via la table.
+- `scripts/prepare-ftp.cjs` - `_pageBelongsToRegion` (canonical region + langue emise + pas de redirection) dans le sitemap de secours.
+- `tests/legal-links-runtime.test.cjs`, `tests/region-sitemap-ownership.test.cjs` (nouveaux).
+
+### Tests realises
+- [x] `npm test` -> 56/57 OK. Le seul echec local (`tests/unit/mollie-live-gate.test.cjs`) est un artefact de checkout CRLF Windows : le blob committe est en LF et satisfait l assertion (verifie) ; CI verte sur le SHA.
+- [x] `node tests/legal-links-runtime.test.cjs` -> exit 0 (parite table <-> generateur sur 7 regions).
+- [x] `node tests/region-sitemap-ownership.test.cjs` -> exit 0.
+- [x] `npm run build` -> exit 0 (mq, tulum, rivieramaya).
+- [x] `node scripts/check-bundle-budget.cjs` -> 207.3 Ko (mq) / 207.3 Ko (tulum) / 208.3 Ko (rivieramaya) <= 210 Ko.
+- [x] Preview locale region tulum : bannière -> `/privacidad/` = 200 ; `/terminos/`, `/reembolso/`, `/reliability/`, `/fiabilidad/`, `/about/`, `/press/` = 200. Non-regression MQ : plages MQ/GP toujours dans le bundle MQ.
+- [ ] Playwright production apres deploiement (a executer apres merge).
+
+### Problemes restants
+- [ ] P1 contenu : `regions/seo-content/tulum.json` absent -> Tulum sans fiche plage ni page SEO regionale (8 URLs vs 92 Riviera Maya). Redaction editoriale a faire.
+- [ ] P1 SEO : `/about/`, `/research/`, `/investigacion/`, `/for-hotels/` gardent un canonical martinique sur les domaines USD.
+- [ ] P2 : lisibilite mobile des puces carte (texte 9px « ATTENTION » / « IR A PLAYA »).
+- [ ] Verification post-deploiement : apres merge, controler `/version.json`, les liens legaux et le sitemap sur les 6 domaines.
+
+### Prochaine action recommandee
+1. Merger la PR #1016 (CI verte) puis verifier la production (liens legaux + sitemap tulum + version servie) - Role : devops/release.
+2. Rediger `regions/seo-content/tulum.json` (contenu editorial, aucune donnee inventee) - Role : product/content.
+3. Traiter le canonical des pages partagees sur les regions USD - Role : seo/frontend.
+
+### Branche / PR
+- Branche : `agent/mission/v3-sargagame-20261022`
+- PR : #1016 (2 commits : `1eb1fe0`, `ca3191d`)
+- Base : `main` (`c79ec5c` au demarrage)
+
+---
 ## 2026-10-15 01:45 UTC · Agent: devops_agent (directive DG : bascule gratuite + boucle codage unique)
 
 ### Travail effectué
