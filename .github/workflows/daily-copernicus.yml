@@ -96,7 +96,7 @@ jobs:
         run: node scripts/automation/build-track-record.cjs
 
       - name: Mark existing track record stale if regeneration fails
-        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success' && (steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success')
+        if: steps.src.outputs.source != 'none' && (steps.verify.outcome != 'success' || steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success')
         run: |
           node <<'NODE'
           const fs = require('node:fs');
@@ -109,7 +109,7 @@ jobs:
           data.freshness = {
             ...(data.freshness || {}),
             stale: true,
-            failureReason: 'Backtest or track-record build failed in the current publication run'
+            failureReason: 'Data integrity gate, backtest, or track-record build failed in the current publication run'
           };
           fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
           console.warn('Existing track record marked stale; its metrics were not changed.');
@@ -117,23 +117,33 @@ jobs:
 
       - name: Commit + push des données Copernicus
         id: publish
-        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        if: steps.src.outputs.source != 'none'
+        env:
+          INTEGRITY_OUTCOME: ${{ steps.verify.outcome }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json 2>/dev/null || true
-          for f in climatology.json forecast-archive.json track-record.json citizen-accuracy.json sentinel2-nearshore.json sentinel2-history.json sentinel2-calibration.json; do
-            if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
-          done
-          if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
-          if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
-          for p in public/api/copernicus/*/_private/forecast-full.json; do
-            if [ -f "$p" ]; then git add "$p"; fi
-          done
-          for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
-            git add "public/api/copernicus/*/$pat" 2>/dev/null || true
-          done
+          if [ "$INTEGRITY_OUTCOME" != "success" ]; then
+            # The integrity gate rejected this fetch: publish only the stale marker,
+            # never the satellite payload that failed validation.
+            if [ -f public/api/copernicus/track-record.json ]; then
+              git add public/api/copernicus/track-record.json
+            fi
+          else
+            git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json 2>/dev/null || true
+            for f in climatology.json forecast-archive.json track-record.json citizen-accuracy.json sentinel2-nearshore.json sentinel2-history.json sentinel2-calibration.json; do
+              if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
+            done
+            if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
+            if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
+            for p in public/api/copernicus/*/_private/forecast-full.json; do
+              if [ -f "$p" ]; then git add "$p"; fi
+            done
+            for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
+              git add "public/api/copernicus/*/$pat" 2>/dev/null || true
+            done
+          fi
           if git diff --cached --quiet; then
             echo "Aucune donnée à commit (déjà à jour)."
             exit 0
