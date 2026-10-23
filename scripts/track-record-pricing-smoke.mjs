@@ -58,7 +58,8 @@ try {
     // best-effort because public hosting may block CI; after-preview is required.
     try {
       await page.goto(LIVE, { waitUntil: 'domcontentloaded', timeout: 20000 });
-      await page.waitForTimeout(500);
+      await page.waitForFunction(() => document.querySelector('#tr-clean')?.textContent.trim() === '96%', null, { timeout: 8000 }).catch(() => {});
+      await page.waitForTimeout(250);
       await page.screenshot({ path: path.join(OUT, 'before-' + viewport.name + '.png'), fullPage: true });
       const beforeValue = (await page.locator('#tr-clean').textContent().catch(() => 'unavailable') || '').trim();
       console.log('BEFORE_' + viewport.name + '=' + beforeValue);
