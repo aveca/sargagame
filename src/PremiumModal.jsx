@@ -451,7 +451,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
           <div style={{font:"700 13px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:13}}>{_t(lang,"Personne n'aime le découvrir dans un avis client.","No one likes finding out in a guest review.","A nadie le gusta descubrirlo en una reseña.")}</div>
           <button className="b2f-cta" onClick={()=>goStep(2)}>{bName
-            ?_t(lang,`Voir la semaine de ${bName} →`,`See the week for ${bName} →`,`Ver la semana de ${bName} →`)
+            ?_t(lang,`Voir la semaine propre de ${bName} →`,`See the clean week for ${bName} →`,`Ver la semana de ${bName} →`)
             :_t(lang,"Voir la semaine de vos plages →","See the week for your beaches →","Ver la semana de sus playas →")}</button>
           {priceChip}
         </div>:!sent&&step===2?<div key={2} className="sgseq-step">
