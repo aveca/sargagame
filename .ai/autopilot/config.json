@@ -1,5 +1,5 @@
 {
-  "$comment": "Configuration de l'usine autonome Sargagame. Éditable par le fondateur. Chaque changement est relu au prochain cycle. Ne JAMAIS mettre de secret ici.",
+  "$comment": "Configuration de l'usine autonome Sargagame. L'autopilot peut coder, tester, PR, activer l'auto-merge sur les chemins whitelistés et laisser GitHub Actions déployer. Les zones sensibles restent protégées par denylist et secrets hors repo.",
   "version": 1,
   "loop": {
     "maxRunMinutes": 50,
@@ -59,10 +59,13 @@
     "visualDiffThreshold": 0.08
   },
   "policy": {
-    "maxFilesChanged": 8,
-    "maxDiffLines": 400,
-    "autoMergeEnabled": false,
+    "maxFilesChanged": 12,
+    "maxDiffLines": 600,
+    "autoMergeEnabled": true,
     "autoMergeWhitelist": [
+      "src/**",
+      "public/**",
+      "tests/**",
       "docs/**",
       ".ai/**",
       "*.md"
@@ -92,7 +95,7 @@
     ],
     "agentsEnabled": true,
     "allowAgentImplementation": true,
-    "agentMaxMinutes": 25,
+    "agentMaxMinutes": 30,
     "stopFile": ".ai/autopilot/STOP"
   },
   "experiments": {
