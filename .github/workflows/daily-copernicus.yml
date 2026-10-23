@@ -81,6 +81,40 @@ jobs:
         continue-on-error: true
         run: node scripts/verify-ftp-ready.cjs
 
+      # The public B2B track record must be generated in THIS workspace, after
+      # fresh archive/history are fetched and before the data commit/deploy.
+      - name: Backtest forecast accuracy for public track record
+        id: public_track_record_backtest
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      - name: Build public track record before publication
+        id: public_track_record_build
+        if: steps.public_track_record_backtest.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/build-track-record.cjs
+
+      - name: Mark existing track record stale if regeneration fails
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success' && (steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success')
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'public/api/copernicus/track-record.json';
+          if (!fs.existsSync(file)) {
+            console.warn('No existing track-record artifact to mark stale; no forecast metrics created.');
+            process.exit(0);
+          }
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          data.freshness = {
+            ...(data.freshness || {}),
+            stale: true,
+            failureReason: 'Backtest or track-record build failed in the current publication run'
+          };
+          fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+          console.warn('Existing track record marked stale; its metrics were not changed.');
+          NODE
+
       - name: Commit + push des données Copernicus
         id: publish
         if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
@@ -223,20 +257,10 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
-      - name: Backtest forecast accuracy (archive vs observations)
-        if: github.event_name != 'push'
-        continue-on-error: true
-        run: node scripts/automation/backtest-forecast.cjs
-
       - name: Aggregate observed climatology (honest season trend)
         if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/automation/aggregate-climatology.cjs
-
-      - name: Build public track record (B2B proof artifact)
-        if: github.event_name != 'push'
-        continue-on-error: true
-        run: node scripts/automation/build-track-record.cjs
 
       - name: Check email delivery stats (opens, clicks, bounces)
         if: github.event_name != 'push'
