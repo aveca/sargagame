@@ -1659,7 +1659,12 @@ export default function WorldMapView({
                 textShadow:`1px 1px 0 ${INK},0 0 5px ${INK},0 0 9px rgba(13,11,20,.65)`,
               }}>{b.name}</div>
               <div style={{
-                font:"800 9px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                // Lisibilite (audit 2026-10-22 : badge de statut en 9px, sous le
+                // seuil lisible, surtout « IR A PLAYA »). Plancher 11px sur mobile,
+                // jusqu a 12px sur grand ecran. La couche est en HTML screen-space
+                // (taille pixel constante) ; declutter() masque les etiquettes qui
+                // se chevauchent, donc aucun texte tronque ni superpose n apparait.
+                font:"800 clamp(11px,2.9vw,12px)/1 'Bricolage Grotesque',system-ui,sans-serif",
                 letterSpacing:".05em",
                 textTransform:"uppercase",
                 color:col,
