@@ -6,7 +6,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  reporter: [['html', { outputFolder: 'test-results/report' }], ['line']],
+  reporter: [['html', { outputFolder: 'playwright-report' }], ['line']],
 
   use: {
     baseURL: process.env.PREVIEW_URL || 'http://localhost:4173',
@@ -20,12 +20,16 @@ export default defineConfig({
       name: 'mobile-chromium',
       use: {
         ...devices['iPhone 12'],
+        // Keep the iPhone viewport/user agent while running the installed Chromium binary in CI.
+        browserName: 'chromium',
         userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15',
       },
     },
   ],
 
-  webServer: {
+  // CI already starts Vite for UX smoke; don't start a second server for Playwright.
+  // Local runs keep Playwright's managed server unless explicitly using an external preview.
+  webServer: process.env.PLAYWRIGHT_EXTERNAL_PREVIEW === '1' ? undefined : {
     command: 'npx vite preview --port 4173',
     url: 'http://localhost:4173',
     reuseExistingServer: !process.env.CI,

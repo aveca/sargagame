@@ -3,40 +3,34 @@ import { test, expect, type Page } from "@playwright/test"
 const BASE_URL = process.env.PREVIEW_URL || "http://localhost:4173"
 
 /**
- * Intercept track() calls and log them for assertion.
- * Returns a getter function to retrieve tracked events.
+ * Observe the actual analytics sink used by the app. track() is an ES-module
+ * binding, not window.track, so replacing window.track does not intercept it.
  */
-function setupTrackInterceptor(page: Page) {
+async function setupTrackInterceptor(page: Page) {
   const tracked: Array<{ name: string; data: Record<string, unknown> }> = []
-  page.addInitScript(() => {
-    const orig = (window as any).track
-    ;(window as any).track = function (name: string, data: any) {
-      try {
-        const logs = JSON.parse(localStorage.getItem("sg_track_log") || "[]")
-        logs.push({ name, data, ts: Date.now() })
-        localStorage.setItem("sg_track_log", JSON.stringify(logs.slice(-50)))
-      } catch (_) {}
-      return orig?.apply(this, arguments)
+  await page.route("**/rest/v1/analytics_events**", async (route) => {
+    const request = route.request()
+    if (request.method() !== "POST") {
+      await route.continue()
+      return
+    }
+    try {
+      const payload = request.postDataJSON() as { event?: string; params?: Record<string, unknown> }
+      if (payload.event) tracked.push({ name: payload.event, data: payload.params || {} })
+      await route.fulfill({ status: 201, body: "" })
+    } catch (_) {
+      await route.continue()
     }
   })
   return {
-    async getEvents() {
-      return page.evaluate(() => {
-        return JSON.parse(localStorage.getItem("sg_track_log") || "[]")
-      })
-    },
-    async hasEvent(name: string) {
-      return page.evaluate((n) => {
-        const logs = JSON.parse(localStorage.getItem("sg_track_log") || "[]")
-        return logs.some((e: any) => e.name === n)
-      }, name)
-    },
+    async getEvents() { return tracked },
+    async hasEvent(name: string) { return tracked.some((event) => event.name === name) },
   }
 }
 
 test.describe("Funnel Principal B2C", () => {
   test("carte → fiche → paywall: funnel reaché + events trackés", async ({ page }) => {
-    const tracker = setupTrackInterceptor(page)
+    const tracker = await setupTrackInterceptor(page)
 
     // 1. Landing — carte monde
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
