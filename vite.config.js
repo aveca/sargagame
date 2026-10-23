@@ -74,6 +74,13 @@ try {
 // Nouvelle région (≠ mq/gp) → build dédié mono-région (SPA + meta), sans la génération SEO MQ/GP historique.
 const IS_NEW_REGION = !!(REGION && REGION.id !== 'mq' && REGION.id !== 'gp')
 
+// TABLE DES PAGES LÉGALES RÉELLEMENT LIVRÉES (runtime __LEGAL_LINKS__).
+// Miroir EXACT du générateur : mêmes slugs (SLUGS de legal-pages.cjs) et mêmes
+// langues (emittedLangs de region-langs.cjs) → un lien in-app ne peut plus
+// pointer vers une page absente du déploiement (bannière cookies, paywall, pied
+// de page). Même module que les tests → build et déploiement ne divergent plus.
+const LEGAL_LINKS = _require('./scripts/lib/legal-links-table.cjs').buildLegalLinks(REGION)
+
 // FIABILITÉ HONNÊTE — injectée au runtime via __RELIABILITY__ pour que le badge in-app
 // consomme la MÊME source que /fiabilite/ (backtest-results.json) et ne sur-claime/dérive
 // plus (était hardcodé "80%"). On publie le hit-rate PAR RÉGIME, jamais le global %
@@ -2526,6 +2533,14 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
     __RELIABILITY__: JSON.stringify(RELIABILITY),
     // Taille communauté (plancher honnête leads email) — preuve sociale paywall.
     __COMMUNITY__: JSON.stringify(COMMUNITY),
+    // Pages légales réellement livrées par région/langue (cf. bloc LEGAL_LINKS).
+    __LEGAL_LINKS__: JSON.stringify(LEGAL_LINKS),
+    // Drapeau région à la COMPILATION (littéral vrai/faux). Pourquoi : dériver
+    // IS_NEW_REGION de __REGION__ (= JSON inline) n'est PAS plié par le bundler,
+    // donc les blocs `IS_NEW_REGION ? [] : [données MQ/GP]` embarquaient quand
+    // même 20 plages Martinique/Guadeloupe dans chaque bundle USD (poids eager
+    // + données étrangères). Avec un littéral, la branche morte est éliminée.
+    __IS_NEW_REGION__: JSON.stringify(IS_NEW_REGION),
   },
   build: {
     // Carte Leaflet retirée (2026-06-21) → plus de chunk leaflet ni de filtre de preload.
