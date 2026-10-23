@@ -71,3 +71,13 @@ jobs:
           grep -q 'ERRORS=\[\]' /tmp/smoke.log
           grep -q 'WHITE_OR_TRANSPARENT_BUTTONS=\[\]' /tmp/smoke.log
           grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log
+      - name: Run B2B reliability freshness browser test
+        run: node scripts/track-record-pricing-smoke.mjs
+      - name: Upload B2B reliability before/after screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: b2b-track-record-pricing-visual-check
+          path: /tmp/track-record-pricing/*.png
+          if-no-files-found: warn
+          retention-days: 7
