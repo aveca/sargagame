@@ -7,6 +7,10 @@
 ---
 
 ## Récemment complété
+- [x] P0 - Paywall ne s ouvrait pas (ReferenceError hasAnnual) sur les 6 domaines (@mission_agent, 2026-10-23, PR #1019, deploye + verifie live)
+- [x] P1 - Canonicals martinique sur /about /research /investigacion /for-hotels des domaines USD (@mission_agent, 2026-10-23, PR #1019)
+- [x] P2 - Lisibilite des puces de carte 9px -> 11.31px (mobile) / 12px (desktop) (@mission_agent, 2026-10-23, PR #1019)
+- [x] P2 - Suite locale 57/57 : artefact CRLF de mollie-live-gate.test.cjs corrige (assertion inchangee) (@mission_agent, 2026-10-23, PR #1019)
 - [x] P0 - Liens legaux in-app 404 (banniere cookies, paywall, pied de page) sur 4 regions + budget bundle 210.3>210 Ko (@mission_agent, 2026-10-23, branche agent/mission/v3-sargagame-20261022, PR #1016)
 - [x] P1 - Sitemap de secours Tulum : pages FR/MQ/GP retirees, 8 URLs regionales (@mission_agent, 2026-10-23, meme branche)
 
