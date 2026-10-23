@@ -152,9 +152,10 @@ jobs:
               continue
             fi
             # Idempotence (exécutions concurrentes schedule/dispatch/veilleurs) :
-            # si main contient déjà ces données, la publication est acquise —
-            # inutile de pousser un doublon qui échouerait en boucle.
-            if git diff --quiet "origin/$BRANCH" -- public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json; then
+            # comparer l'arbre complet après rebase, pas seulement les quatre
+            # fichiers satellite : un run concurrent peut avoir les mêmes
+            # entrées satellite mais un track-record.json différent.
+            if git diff --quiet "origin/$BRANCH" HEAD --; then
               echo "Données déjà publiées par une exécution concurrente — publication acquise."
               push_ok=1
               break
