@@ -32,8 +32,8 @@ assert.match(fetchJob, /for f in climatology\.json forecast-archive\.json track-
   "track-record artifact remains in the data publication allowlist");
 assert.ok(publishStep.includes("INTEGRITY_OUTCOME: ${{ steps.verify.outcome }}"),
   "publication must know whether the integrity gate passed");
-const integrityFailurePublish = publishStep.split(/^\\s*else\\s*$/m)[0];
-const integritySuccessPublish = publishStep.split(/^\\s*else\\s*$/m)[1] || "";
+const integrityFailurePublish = publishStep.split(/^\s*else\s*$/m)[0];
+const integritySuccessPublish = publishStep.split(/^\s*else\s*$/m)[1] || "";
 assert.ok(integrityFailurePublish.includes("git add public/api/copernicus/track-record.json"),
   "failed integrity gate may publish only the stale track-record marker");
 assert.ok(!integrityFailurePublish.includes("git add public/api/copernicus/sargassum.json"),
