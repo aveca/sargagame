@@ -247,10 +247,18 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    action libre, distinct du mapchip encre (utilitaires) et du SOS or (payant). Texte ink
    foncé sur teal = contraste garanti. Triple-classe (0,3,0) obligatoire : cf. note
    sg-mapchip — le skin .theme-comic/.sg-onink-scope strippe sinon fond/bordure/ombre. */
-.sg-mapfind.sg-mapfind.sg-mapfind{background:linear-gradient(135deg,#2BD9C8 0%,#009E8E 100%) !important;color:#0B2230 !important;
+.sg-mapfind.sg-mapfind.sg-mapfind{background:linear-gradient(135deg,#FFE47A 0%,#FFC72C 50%,#E8A317 100%) !important;color:#190c2c !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:none !important;-webkit-text-fill-color:#0B2230 !important;border-radius:999px !important}
 .sg-mapfind.sg-mapfind svg{stroke:#0B2230 !important;fill:none !important}
+/* CTA PRINCIPAL — REFONTE 2026-10-23 (critique design « La case de couverture »).
+   Avant : gradient teal (#2BD9C8→#009E8E) pour « se distinguer du SOS doré ».
+   Mesure : deux CTA PLEINE LARGEUR de couleurs différentes à 44px l un de
+   l autre (or payant + teal libre) = aucune hiérarchie, message « paye d abord ».
+   Décision : l OR est le token d action primaire de la maison (PRODUCT.md §4
+   --yel) → le CTA libre le prend ; le SOS descend en ligne compacte sous la
+   frise. La distinction se fait par position + taille, plus par deux
+   couleurs primaires. Rollback : rétablir le teal dans cette règle. */
 /* CTA « Voir la plage » (carte) — même cause : le skin de thème strippait le gradient
    or → texte noir illisible. Pastille encre + bordure OR + texte BLANC (CTA primaire
    distinct des chips utilitaires). Triple-classe (0,3,0) : bat .theme-comic button (0,1,1)

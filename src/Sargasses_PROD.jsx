@@ -14550,7 +14550,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(166px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
+            style={{position:"fixed",right:14,bottom:"calc(158px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
@@ -14575,9 +14575,9 @@ export default function App(){
             <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
               <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
                 className="sg-soscta"
-                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"9px 16px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:13.5,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
+                <span style={{font:"800 13px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
               </button>
             </div>
           </div>

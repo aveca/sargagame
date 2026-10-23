@@ -1370,7 +1370,7 @@ export default function WorldMapView({
       background: warm
         // MONDE GTA SUNSET (cohérence avec le hero) : mer-coucher-de-soleil violet→magenta
         // →orange, soleil chaud haut-droite. Remplace l'ancienne mer bleu-teal comic.
-        ? "radial-gradient(110% 80% at 80% 4%, rgba(255,214,140,.6), rgba(255,140,80,.26) 34%, transparent 62%), radial-gradient(130% 110% at 6% 116%, rgba(42,21,80,.7), rgba(58,28,90,.28) 42%, transparent 62%), linear-gradient(166deg,#ff8a4d 0%,#ff7a4d 18%,#8a4a8e 40%,#6a2f9e 60%,#3e2470 82%,#2e1a5e 100%)"
+  ? "linear-gradient(165deg,#2a1a3e 0%,#3d2350 38%,#241539 68%,#190c2c 100%)"
         : "radial-gradient(130% 70% at 76% 4%, rgba(255,224,160,.16), transparent 48%), linear-gradient(162deg,#3aa6c4 0%,#1c6f93 40%,#103f63 72%,#0b2e4d 100%)",
     }}>
       <style>{`
@@ -1396,11 +1396,6 @@ export default function WorldMapView({
         background:"linear-gradient(180deg,rgba(255,178,103,.5) 0%,rgba(255,138,61,.24) 34%,rgba(255,138,61,.08) 60%,transparent 100%)",
         mixBlendMode:"screen"}}/>
 
-      {/* Soleil — disque chaud top-right (le « soleil » d'heure dorée) */}
-      <div style={{position:"absolute",top:"-7%",right:"4%",width:130,height:130,borderRadius:"50%",
-        pointerEvents:"none",zIndex:0,
-        background:"radial-gradient(circle at 50% 50%, rgba(255,238,210,.96), rgba(255,178,103,.9) 38%, rgba(255,138,61,.45) 62%, transparent 74%)",
-        animation:noAnim?"none":"wmSun 11s ease-in-out infinite"}}/>
       {/* Halo soleil large */}
       {!noAnim&&<div style={{position:"absolute",top:"-22%",right:"-12%",width:"80%",height:"58%",
         pointerEvents:"none",zIndex:0,
@@ -1412,7 +1407,6 @@ export default function WorldMapView({
         pointerEvents:"none",zIndex:0,opacity:.5,mixBlendMode:"screen",
         background:"radial-gradient(60% 40% at 78% 16%, rgba(255,224,160,.5), transparent 70%)"}}/>
       {/* Colonne de reflet solaire descendant sur la mer */}
-      <div style={{position:"absolute",top:"4%",right:"14%",width:"22%",height:"66%",
         pointerEvents:"none",zIndex:0,opacity:.42,mixBlendMode:"screen",
         background:"radial-gradient(40% 100% at 50% 0%, rgba(255,228,168,.7), rgba(255,210,140,.18) 46%, transparent 78%)"}}/>
 
@@ -1423,12 +1417,7 @@ export default function WorldMapView({
 
       {/* Dégradé bas (veil — profondeur GTA violet bas-gauche) */}
       <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:2,
-        background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.5) 100%)"}}/>
-      {/* Grain film (cohérence monde GTA / hero) — SANS mix-blend : un overlay blend au-dessus
-          du SVG recompose toute la pile à CHAQUE frame de pan/zoom (cher sur GPU mobile). Texture
-          statique conservée en alpha normal. */}
-      <div style={{position:"absolute",inset:0,pointerEvents:"none",zIndex:3,opacity:.05,
-        backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`,backgroundSize:"cover"}}/>
+        background:"linear-gradient(200deg,rgba(42,21,80,0) 46%,rgba(26,12,46,.32) 100%)"}}/>
 
       {/* SVG SOURCE DU BAKE (caché 0×0) — rendu une fois, sérialisé+rasterisé par l'effet bake.
           Hors caméra → jamais transformé ni repeint pendant le geste. */}
@@ -1801,25 +1790,27 @@ export default function WorldMapView({
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
-            <div style={{width:104,height:8,borderRadius:5,background:"#fff",border:`2px solid ${INK}`,overflow:"hidden"}}>
-              <div style={{
-                height:"100%",background:"linear-gradient(90deg,#22C55E,#B87A00)",transition:"width .4s ease",
-                width:beachList.length?Math.round(cleanCnt/beachList.length*100)+"%":"0%",
-              }}/>
+            {/* REFONTE 2026-10-23 — badge encré remplace la barre de progression.
+                Avant : barre 104x8 gradient vert->brun (lisait comme une alerte alors que
+                5/5 = propre) + texte 12.5px. Désormais la QUANTITÉ se lit dans le chiffre
+                (Anton 26px), la SÉCURITÉ dans la couleur du cadre. */}
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 13px 8px",background:"#eafaf1",
+              border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`}}>
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:26,lineHeight:1,color:"#177A42"}}>{cleanCnt}</b>
+              <span style={{font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
+                textTransform:"uppercase",color:"#177A42"}}>{_t(lang,"plages propres","clean beaches","playas limpias")}<br/>
+              <span style={{opacity:.72,fontWeight:700,letterSpacing:".02em",textTransform:"none"}}>{dayLbl}</span></span>
             </div>
-            <span style={{font:"700 12.5px/1 'Bricolage Grotesque',system-ui,sans-serif",color:INK}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,color:"#177A42"}}>{cleanCnt}</b> {_t(lang,`plages propres ${dayLbl}`,`clean beaches ${dayLbl}`,`playas limpias ${dayLbl}`)}
-            </span>
             <span
               aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
               style={{
                 display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
-                padding:"5px 8px",border:`1.5px solid ${INK}`,borderRadius:8,
-                background:avoidCnt>0?"#ffe7e3":"#e5f8eb",
-                color:avoidCnt>0?"#a62b20":"#177A42",
+                padding:"7px 11px 8px",border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`,
+                background:avoidCnt>0?"#ffe0db":"#e5f8eb",
+                color:avoidCnt>0?"#a62b20":"#177A42",font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",textTransform:"uppercase",
                 font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
               }}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:14}}>{avoidCnt}</b>
+              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:22,lineHeight:1}}>{avoidCnt}</b>
               {_t(lang,"à éviter","to avoid","a evitar")}
             </span>
           </div>
