@@ -27,6 +27,10 @@ assert.match(fetchJob, /stale: true/, "failed regeneration must mark the existin
 assert.match(fetchJob, /failureReason: 'Backtest or track-record build failed in the current publication run'/);
 assert.match(fetchJob, /for f in climatology\.json forecast-archive\.json track-record\.json/,
   "track-record artifact remains in the data publication allowlist");
+assert.match(fetchJob, /if git diff --quiet "origin\/\$BRANCH" HEAD --; then/,
+  "idempotence compares the entire rebased tree so track-record-only changes are published");
+assert.doesNotMatch(fetchJob, /git diff --quiet "origin\/\$BRANCH" -- public\/api\/copernicus\/sargassum\.json/,
+  "idempotence must not ignore changes to secondary published artifacts");
 assert.doesNotMatch(emailJob, /run: node scripts\/automation\/backtest-forecast\.cjs/,
   "backtest no longer runs only in the non-publishing email job");
 assert.doesNotMatch(emailJob, /run: node scripts\/automation\/build-track-record\.cjs/,
