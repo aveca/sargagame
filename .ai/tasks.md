@@ -7,6 +7,8 @@
 ---
 
 ## Récemment complété
+- [x] P0 - Liens legaux in-app 404 (banniere cookies, paywall, pied de page) sur 4 regions + budget bundle 210.3>210 Ko (@mission_agent, 2026-10-23, branche agent/mission/v3-sargagame-20261022, PR #1016)
+- [x] P1 - Sitemap de secours Tulum : pages FR/MQ/GP retirees, 8 URLs regionales (@mission_agent, 2026-10-23, meme branche)
 
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
 

@@ -9,6 +9,7 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
@@ -152,7 +153,13 @@ const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 export const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
 // Taille communauté (plancher honnête leads email) injectée au build — preuve sociale paywall.
 export const __COMM = (typeof __COMMUNITY__ !== "undefined" && Number(__COMMUNITY__)) || 0
-export const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
+// Littéral injecté au build (vite.config.js __IS_NEW_REGION__) : la branche
+// `IS_NEW_REGION ? [] : [plages MQ/GP]` ci-dessous doit être ÉLIMINÉE par le
+// bundler sur les régions USD (sinon 20 plages étrangères + ~1 Ko eager par
+// bundle). Repli runtime identique à l'ancien calcul si le define manque.
+export const IS_NEW_REGION = typeof __IS_NEW_REGION__ !== "undefined"
+  ? !!__IS_NEW_REGION__
+  : !!(__R && __R.id !== "mq" && __R.id !== "gp")
 export const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
 export const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
@@ -1668,7 +1675,13 @@ export const T={
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH DATA — 20 inline fallback + runtime fetch for 190
    ═══════════════════════════════════════════════════════════════════════════ */
-export const BEACHES_FALLBACK=[
+/* Nouvelles regions (USD/ES) : plages inline dans __REGION__ (plus haut).
+   BEACHES_FALLBACK reste le repli MQ/GP historique — vide ici : (1) aucun code
+   nouveau-regime ne le lit, (2) il ne doit plus servir d affichage par defaut
+   avant le fetch (un visiteur Cancun voyait des plages de Martinique en plan B),
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins par bundle USD. */
+export const BEACHES_FALLBACK=IS_NEW_REGION?[]:[
+
   {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,kids:true,snorkel:false,parking:true,drive:52},
   {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
   {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,kids:true,snorkel:true,parking:true,drive:25},
@@ -1691,9 +1704,19 @@ export const BEACHES_FALLBACK=[
   {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
+
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 /* Nouvelles régions : centre injecté au build via __REGION__ (MQ/GP inchangés). */
 if(IS_NEW_REGION&&REGION.center)ISLAND_CENTER[REGION.id]=[REGION.center.lat,REGION.center.lng]
+/* Nouvelles regions (USD/ES) : leurs plages vivent DANS __REGION__ (inline, plus
+   haut). BEACHES_FALLBACK reste le repli MQ/GP historique — on le VIDE ici :
+   (1) aucun code nouveau-regime ne le lit (tous les acces sont gardes IS_NEW_REGION
+       ci-dessus, cf. PremiumModal _nameOf/_kidsOf et la construction de `beaches`) ;
+   (2) il ne doit PAS servir de repli d'affichage avant le fetch — un visiteur
+       Cancun/Tulum voyait des plages "propres" de Martinique en plan B ;
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins dans chaque bundle USD.
+   Rollback : supprimer ce bloc (retour au repli MQ/GP partout). */
+
 
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 export const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","precheur":"mq033","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
@@ -10423,14 +10446,15 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {/* Liens société/légaux — régions USD/ES (pages générées EN/ES, slugs
             localisés). Identité opérateur 97TECH visible partout, comme MQ/GP. */}
         {IS_NEW_REGION && (() => {
-          const sl = lang==="es"?{t:"terminos",p:"privacidad",r:"reembolso",rel:"fiabilidad"}:{t:"terms",p:"privacy",r:"refund",rel:"reliability"}
+          const lg = legalLinks(lang)
+          const relHref = reliabilityHref(lang)
           const ls={color:"rgba(255,255,255,.38)"}, lsd={color:"rgba(255,255,255,.3)"}
           return (
             <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
-              <a href={`/${sl.rel}/`} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
-              <a href={`/${sl.t}/`} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
-              <a href={`/${sl.p}/`} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
-              <a href={`/${sl.r}/`} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
+              <a href={relHref||undefined} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
+              <a href={lg.terms||undefined} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
+              <a href={lg.privacy||undefined} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
+              <a href={lg.refund||undefined} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
               <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>{_t(lang,"Édité par","Operated by","Operado por")} 97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
             </div>
           )
@@ -14861,7 +14885,7 @@ display:"flex",flexDirection:"column",gap:8,backdropFilter:"blur(12px)",WebkitBa
                 "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
                 "We use cookies to improve experience and measure analytics. You can accept or decline.",
                 "Usamos cookies para mejorar la experiencia y medir la audiencia. Puedes aceptar o rechazar.")}
-              {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
+              {' '}<a href={legalHref("privacy",lang)||undefined}
                 style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>

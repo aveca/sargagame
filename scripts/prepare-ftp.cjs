@@ -1026,7 +1026,32 @@ Sitemap: https://${domain}/sitemap.xml
     // le dossier déployé. Le fallback « racine seule » laissait /sitemap.xml
     // en 404 (0 URL) ou en 1 URL alors que robots.txt le publiait — c'était
     // précisément l'état de tulum le 07/10/2026.
-    const SKIP_DIRS = new Set([
+    // APPARTENANCE A LA REGION (fallback sitemap) : une page n entre dans le
+// sitemap que si (a) son canonical ne pointe pas vers un AUTRE domaine — les
+// pages FR heritees de public/ (about, research, for-hotels...) sont
+// canoniquees vers sargasses-martinique.com, Google les consolide cote MQ :
+// les annoncer ici = crawl gaspille + contenu etranger publie sur un domaine
+// EN/ES ; et (b) sa langue est emise par la region.
+// Constat live 2026-10-22 : le sitemap de secours de Tulum listait 21 URLs
+// dont 8 pages FR/MQ/GP et 2 articles d autres iles, et aucune fiche regionale.
+// Langues acceptees : celles emises par la region + en/es, car les
+// generateurs produisent volontairement /reliability/ (EN) et /fiabilidad/ (ES)
+// sur une region a primaire ES (ex. tulum). Seul le FR (et le reste) est
+// etranger : les pages FR heritees de public/ sont ainsi ecartees.
+const _regionLangs = new Set([...require('./lib/region-langs.cjs').emittedLangs(region), 'en', 'es'])
+const _pageBelongsToRegion = (html) => {
+  const canon = (html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || [])[1]
+    || (html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i) || [])[1]
+  // Page de redirection pure (meta refresh) : aucun contenu a indexer.
+  if (/<meta[^>]+http-equiv=["']?refresh/i.test(html)) return false
+  if (canon) {
+    try { if (new URL(canon).host !== domain) return false } catch (_) { return false }
+  }
+  const lang = (html.match(/<html[^>]+lang=["']([^"']+)["']/i) || [])[1]
+  if (lang) return _regionLangs.has(String(lang).toLowerCase().slice(0, 2))
+  return true
+}
+const SKIP_DIRS = new Set([
       'api', 'assets', 'config', 'data', 'fonts', 'images', 'img', 'audio',
       'confirme', 'pro', 'jeu', 'widget', 'videos', 'themes-lab',
       'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
@@ -1041,8 +1066,10 @@ Sitemap: https://${domain}/sitemap.xml
         if (SKIP_DIRS.has(entry.name)) continue
         const next = [...segs, entry.name]
         const child = path.join(dir, entry.name)
-        if (fs.existsSync(path.join(child, 'index.html'))) {
-          urls.push({ path: `/${next.join('/')}/`, depth: next.length })
+        const idx = path.join(child, 'index.html')
+        if (fs.existsSync(idx)) {
+          const html = fs.readFileSync(idx, 'utf8')
+          if (_pageBelongsToRegion(html)) urls.push({ path: `/${next.join('/')}/`, depth: next.length })
         }
         walk(child, next)
       }
