@@ -45,6 +45,7 @@
   .proofline{margin-top:22px;font-size:13px;color:rgba(255,255,255,.9)}
   .proofline b{font-family:var(--sg-font-display);color:var(--sg-clean);font-size:18px}
   .proofline a{color:var(--sg-gold-l);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(255,199,44,.4)}
+  .proofline.is-stale b{color:#ffd166}
   section{padding:40px 0}
   .sec-eyebrow{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sg-teal);margin:0 0 10px}
   h2{font-family:var(--sg-font-display);font-weight:400;font-size:clamp(24px,5.4vw,32px);line-height:1.08;letter-spacing:-.015em;margin:0 0 14px}
@@ -79,7 +80,7 @@
     <p class="eyebrow">Le Veilleur · Pro</p>
     <h1>Quel est votre enjeu, ce matin, sur votre littoral ?</h1>
     <p class="lede">Une plage envahie un matin, c'est des clients déçus, des avis qui tombent, parfois des remboursements — et vous l'apprenez souvent en même temps qu'eux. Le même satellite qui veille pour le voyageur peut veiller votre rivage : vous prévenez avant l'arrivée des algues. Devenez celui qui connaît la fin de l'histoire avant ses clients — essai 30 jours gratuit, tout en ligne, sans rendez-vous.</p>
-    <p class="proofline"><b id="tr-clean">—</b> <span id="tr-line">de nos verdicts se vérifient, tous régimes confondus.</span> <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès auditable →</a></p>
+    <p class="proofline"><b id="tr-clean">—</b> <span id="tr-line" role="status" aria-live="polite" aria-atomic="true">de nos verdicts se vérifient, tous régimes confondus.</span> <a href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès auditable →</a></p>
   </div>
 </header>
 
@@ -168,15 +169,61 @@
 
 <script>
 (function(){
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
-    try{
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
-      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
-      document.getElementById('tr-clean').textContent=pct+'%';
-      document.getElementById('tr-line').textContent='de nos verdicts se sont vérifiés, tous régimes confondus (sur '+Number(n).toLocaleString('fr-FR')+' comparaisons).';
-    }catch(e){}
-  }).catch(function(){});
+  // The data pipeline runs every 6 hours; allow six missed cycles, but never
+  // present an old or explicitly stale percentage as current proof.
+  var MAX_TRACK_RECORD_AGE_MS = 36 * 60 * 60 * 1000;
+  var FUTURE_CLOCK_SKEW_MS = 5 * 60 * 1000;
+  var proof = document.querySelector('.proofline');
+
+  function markUnavailable(message){
+    document.getElementById('tr-clean').textContent = '—';
+    document.getElementById('tr-line').textContent = message;
+    if (proof) proof.classList.add('is-stale');
+  }
+
+  function showMetric(pct, count, label){
+    document.getElementById('tr-clean').textContent = Number(pct).toLocaleString('fr-FR') + '%';
+    document.getElementById('tr-line').textContent = label + ' (sur ' + Number(count).toLocaleString('fr-FR') + ' comparaisons).';
+    if (proof) proof.classList.remove('is-stale');
+  }
+
+  function validMetric(value, count){
+    return typeof value === 'number' && Number.isFinite(value)
+      && typeof count === 'number' && Number.isFinite(count) && count > 0;
+  }
+
+  fetch('/api/copernicus/track-record.json').then(function(r){
+    if (!r.ok) throw new Error('track-record HTTP ' + r.status);
+    return r.json();
+  }).then(function(d){
+    var generatedAt = Date.parse(d && d.generatedAt || '');
+    var ageMs = Date.now() - generatedAt;
+    var explicitlyStale = !!(d && d.freshness && d.freshness.stale === true);
+    if (explicitlyStale || !Number.isFinite(generatedAt)
+      || ageMs < -FUTURE_CLOCK_SKEW_MS || ageMs > MAX_TRACK_RECORD_AGE_MS) {
+      markUnavailable('Palmarès temporairement périmé : taux masqué jusqu’à la prochaine vérification.');
+      return;
+    }
+
+    var overallPct = d && d.overall && d.overall.statusHitRatePct;
+    var overallCount = d && d.sampleSize;
+    if (validMetric(overallPct, overallCount)) {
+      showMetric(overallPct, overallCount, 'de nos verdicts se sont vérifiés, tous régimes confondus');
+      return;
+    }
+
+    var calm = d && d.byRegime && d.byRegime.calm;
+    var cleanPct = calm && calm.cleanReliabilityPct;
+    var cleanCount = calm && calm.cleanSamples;
+    if (validMetric(cleanPct, cleanCount)) {
+      showMetric(cleanPct, cleanCount, 'de nos prévisions « mer propre » se sont vérifiées en saison calme');
+      return;
+    }
+
+    markUnavailable('Palmarès indisponible : données de fiabilité insuffisantes.');
+  }).catch(function(){
+    markUnavailable('Vérification du palmarès temporairement indisponible.');
+  });
 })();
 </script>
 </body>
