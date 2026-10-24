@@ -71,3 +71,26 @@ test("deux URL 404 différentes restent dédupliquées séparément", () => {
   const b = resourceHttpDefect("example.test", 404, "https://example.test/assets/b.js");
   assert.notEqual(dedupKey(a), dedupKey(b));
 });
+
+test("les chemins exclus restent ignorés même avec des paramètres", () => {
+  assert.equal(isIgnoredResource("https://example.test/api/referral.php?source=preview"), true);
+  assert.equal(resourceHttpDefect("example.test", 404, "https://example.test/api/b2b-partners?mode=preview"), null);
+});
+
+test("un paramètre UTM referral ne masque pas un 404 de ressource", () => {
+  const url = "https://example.test/assets/missing.js?utm_source=referral";
+  assert.equal(isIgnoredResource(url), false);
+  assert.equal(resourceHttpDefect("example.test", 404, url).detail, "404 https://example.test/assets/missing.js");
+});
+
+test("la déduplication préserve la casse des chemins sensibles à la casse", () => {
+  const upper = resourceHttpDefect("example.test", 404, "https://example.test/assets/Foo.js");
+  const lower = resourceHttpDefect("example.test", 404, "https://example.test/assets/foo.js");
+  assert.notEqual(dedupKey(upper), dedupKey(lower));
+});
+
+test("la déduplication ignore les query params expurgés", () => {
+  const a = resourceHttpDefect("example.test", 404, "https://example.test/assets/missing.js?utm_source=one");
+  const b = resourceHttpDefect("example.test", 404, "https://example.test/assets/missing.js?utm_source=two");
+  assert.equal(dedupKey(a), dedupKey(b));
+});
