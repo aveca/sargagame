@@ -65,7 +65,7 @@ const unavailable = resolveNextArrival({
   daysFull: daysEn,
 })
 assert.equal(unavailable, 'Forecast unavailable for Daytona Beach.')
-assert.doesNotMatch(unavailable, /\\{beach\\}|\\{day\\}|\\{date\\}/)
+assert.doesNotMatch(unavailable, /\{beach\}|\{day\}|\{date\}/)
 
 assert.ok(source.includes('Available forecast for {beach}: {forecastLine}. The number of days shown depends on available forecast data.'))
 assert.ok(source.includes('Pronóstico disponible para {beach}: {forecastLine}. El número de días mostrados depende de los datos de pronóstico disponibles.'))
