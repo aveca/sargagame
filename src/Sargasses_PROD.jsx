@@ -633,7 +633,8 @@ export function Veilleur({mood="serein",size=44,interactive=true}){
       </g>
     </svg>
   )
-}
+})
+Header.displayName = "Header"
 // Forecast Timeline 3D — animation de dessin au scroll (Wow Effect 4)
 // La timeline se dessine progressivement pendant le scroll, révélant chaque jour
 function ForecastTimeline3D({forecast,isPremium,weatherDaily,lang}){
@@ -7415,7 +7416,7 @@ function formatFreshness(updatedAt,lang){
   if(h>=12)return null
   return lang==="en"?`${h}h ago`:lang==="es"?`hace ${h}h`:`il y a ${h}h`
 }
-function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,republishedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
+const Header = React.memo(function Header({island,onIslandChange,lang,onLangToggle,theme,onThemeToggle,beachCount,dataSource,updatedAt,republishedAt,onHome,onEnableNotif,onAccess,isPremium,alertsOn,onToggleAlerts}){
   const LL=T[lang]||T.fr
   // « Mon accès » — entrée toujours visible (statut Pass + restauration self-serve, HORS
   // paywall). Répond au « aucun tracking de mon paiement sur mon site ». Flag rollback
@@ -14203,7 +14204,7 @@ export default function App(){
               in that band unclickable on both mobile and desktop. */}
           <div className="sg-header-chrome" style={{maxWidth:460,margin:"0 auto",pointerEvents:"none"}}>
             <style>{`.sg-header-chrome .sg-header-row{pointer-events:none}.sg-header-chrome .sg-header-row > *{pointer-events:auto}`}</style>
-            <Header island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
+            <Header key={island} island={island} onIslandChange={(id)=>{setIsland(id);setSelectedBeach(null)}}
               lang={lang} onLangToggle={toggleLang}
               theme={theme} onThemeToggle={toggleTheme}
               beachCount={allBeaches.length} dataSource={dataSource}
