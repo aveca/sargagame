@@ -326,20 +326,24 @@
            Visuel-only (pas de texte) → neutre pour les 5 domaines/langues. -->
       <div id="sg-boot" aria-hidden="true" style="display:none;position:fixed;inset:0;flex-direction:column;overflow:hidden;background:#0d1117;z-index:0;padding-top:env(safe-area-inset-top,0)">
         <style>
-          .sg-boot-header { padding: 14px 16px; text-align: center; color: #fff; }
-          .sg-boot-headline { font: clamp(24px,4vw,32px) "Anton",system-ui,sans-serif; margin: 8px 0; }
-          .sg-boot-subheadline { font: 14px/1.4 "Bricolage Grotesque",system-ui,sans-serif; opacity: 0.8; margin: 0 0 20px 0; }
-          .sg-boot-cta { display: inline-block; padding: 10px 20px; background: #FFC72C; color: #0d1117; text-decoration: none; font: 700 15px "Bricolage Grotesque",sans-serif; border-radius: 999px; margin: 10px 0; }
+          .sg-boot-header { padding: 18px 16px; text-align: center; color: #fff; }
+          .sg-boot-skeleton { display: block; margin-inline: auto; border-radius: 999px; background: linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 75%); background-size: 200% 100%; animation: sg-boot-shimmer 1.6s ease-in-out infinite; }
+          .sg-boot-skeleton-title { height: 28px; width: min(78%,320px); margin: 8px auto 12px; }
+          .sg-boot-skeleton-copy { height: 12px; width: min(92%,390px); margin: 0 auto 8px; }
+          .sg-boot-skeleton-cta { height: 42px; width: min(62%,240px); margin: 18px auto; border-radius: 999px; background: linear-gradient(90deg,rgba(255,199,44,.10) 25%,rgba(255,199,44,.25) 50%,rgba(255,199,44,.10) 75%); background-size: 200% 100%; }
           .sg-boot-links { padding: 0 16px; }
-          .sg-boot-link { display: block; padding: 8px 0; color: #aaa; font: 13px "Bricolage Grotesque",sans-serif; border-top: 1px solid #333; border-bottom: 1px solid #333; }
+          .sg-boot-skeleton-link { height: 30px; margin: 4px 0; border-radius: 8px; background: rgba(255,255,255,.05); border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); }
+          @keyframes sg-boot-shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+          @media (prefers-reduced-motion: reduce) { .sg-boot-skeleton { animation: none; } }
         </style>
         <div class="sg-boot-header">
-          <div class="sg-boot-headline">Plages Martinique aujourd'hui</div>
-          <div class="sg-boot-subheadline">53 plages notées en direct · Score 0-100 · Données Copernicus Marine</div>
-          <a href="/carte-sargasses/" class="sg-boot-cta">Voir la carte des plages</a>
+          <div class="sg-boot-skeleton sg-boot-skeleton-title"></div>
+          <div class="sg-boot-skeleton sg-boot-skeleton-copy"></div>
+          <div class="sg-boot-skeleton sg-boot-skeleton-copy" style="width:68%"></div>
+          <div class="sg-boot-skeleton sg-boot-skeleton-cta"></div>
           <div class="sg-boot-links">
-            <a href="/previsions/" class="sg-boot-link">Prévisions 7 jours</a>
-            <a href="/alertes/" class="sg-boot-link">Alertes push gratuites</a>
+            <div class="sg-boot-skeleton sg-boot-skeleton-link"></div>
+            <div class="sg-boot-skeleton sg-boot-skeleton-link"></div>
           </div>
         </div>
       </div>
