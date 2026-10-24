@@ -1,0 +1,109 @@
+name: Tulum SEO regional build
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "regions/seo-content/tulum.json"
+      - "regions/seo-content/tulum.en.json"
+      - "regions/tulum.json"
+      - "scripts/lib/region-seo-pages.cjs"
+      - "scripts/lib/region-langs.cjs"
+      - "scripts/prepare-ftp.cjs"
+      - "scripts/lib/slug-resolver.cjs"
+      - "vite.config.js"
+      - "tests/tulum-seo-content.test.cjs"
+      - ".github/workflows/tulum-seo-validation.yml"
+  push:
+    branches: [main]
+    paths:
+      - "regions/seo-content/tulum.json"
+      - "regions/seo-content/tulum.en.json"
+      - "regions/tulum.json"
+      - "scripts/lib/region-seo-pages.cjs"
+      - "scripts/lib/region-langs.cjs"
+      - "scripts/prepare-ftp.cjs"
+      - "scripts/lib/slug-resolver.cjs"
+      - "vite.config.js"
+      - "tests/tulum-seo-content.test.cjs"
+      - ".github/workflows/tulum-seo-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tulum-seo-regional-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-tulum:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - name: Build and prepare Tulum without deploying
+        env:
+          VITE_REGION: tulum
+        run: |
+          set -euo pipefail
+          npm run build
+          node scripts/prepare-ftp.cjs
+          node scripts/check-bundle-budget.cjs
+          node <<'NODE'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const region = require('./regions/tulum.json');
+          const { getCanonicalSlug } = require('./scripts/lib/slug-resolver.cjs');
+          const out = path.resolve('tulum-ftp');
+          const sitemapPath = path.join(out, 'sitemap.xml');
+          assert.ok(fs.existsSync(sitemapPath), 'Tulum sitemap must be generated');
+          const xml = fs.readFileSync(sitemapPath, 'utf8');
+          const urls = xml.split('<loc>').slice(1).map(part => part.split('</loc>')[0]);
+          assert.ok(urls.length >= 20, 'Expected regional SEO hubs plus beach pages; got ' + urls.length);
+          assert.ok(urls.every(url => url.startsWith('https://sargazotulum.com/')), 'Sitemap must contain only Tulum-domain URLs');
+          const required = [
+            '/',
+            '/pronostico-sargazo-tulum/',
+            '/sargazo-tulum-hoy/',
+            '/mapa-sargazo-tulum/',
+            '/temporada-sargazo-tulum/',
+            '/mejores-playas-sin-sargazo-tulum/',
+            '/sargazo-tulum-esta-semana/',
+            '/metodologia/',
+            '/press/',
+            '/en/',
+            '/en/tulum-sargassum-forecast/',
+            '/en/tulum-sargassum-today/',
+            '/en/tulum-sargassum-map/',
+            '/en/tulum-sargassum-season/',
+            '/en/best-beaches-without-sargassum-tulum/',
+            '/en/tulum-sargassum-this-week/',
+            '/en/methodology/',
+            '/en/press/'
+          ];
+          const localFile = route => path.join(out, ...route.split('/').filter(Boolean), 'index.html');
+          for (const route of required) {
+            assert.ok(urls.includes('https://sargazotulum.com' + route), 'Missing sitemap route ' + route);
+            assert.ok(fs.existsSync(localFile(route)), 'Missing generated HTML for ' + route);
+          }
+          assert.ok(fs.existsSync(path.join(out, 'index.html')), 'Spanish primary home must exist');
+          for (const beach of region.beaches || []) {
+            const slug = getCanonicalSlug(beach);
+            for (const route of ['/playas/' + slug + '/', '/en/beaches/' + slug + '/']) {
+              assert.ok(urls.includes('https://sargazotulum.com' + route), 'Missing beach route ' + route);
+              assert.ok(fs.existsSync(localFile(route)), 'Missing generated beach HTML ' + route);
+            }
+          }
+          const enHome = fs.readFileSync(path.join(out, 'en', 'index.html'), 'utf8');
+          assert.ok(enHome.includes('<html lang="en"'), 'English home must declare lang=en');
+          assert.ok(enHome.includes('rel="canonical" href="https://sargazotulum.com/en/"'), 'English home canonical must be self-referential');
+          assert.ok(enHome.includes('hreflang="es"'), 'English home must include Spanish hreflang');
+          assert.ok(enHome.includes('hreflang="en"'), 'English home must include English hreflang');
+          console.log('Tulum regional SEO build OK: ' + urls.length + ' same-domain sitemap URLs; ES/EN hubs and every configured beach page exist.');
+          NODE
