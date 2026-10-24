@@ -183,7 +183,7 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    → on doit re-spécifier ici pour la barre/nav/pill (cf. .sg-sortseg/.sg-fchip pattern). */
 @keyframes sg-live-pulse{0%,100%{opacity:1}50%{opacity:.45}}
 /* TOP RAIL — segment commun : contour ink 2.5px + pop-1 dure (0 blur) */
-.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.sg-rail{display:flex;align-items:center;gap:6px;flex-wrap:nowrap;position:relative;z-index:100}
 .sg-seg{height:44px;border:2.5px solid var(--sg-ink,#0d0b14)!important;background:var(--sg-card,#fff)!important;
   box-shadow:2px 2px 0 var(--sg-ink,#0d0b14)!important;border-radius:13px!important;
   display:flex;align-items:center;flex-shrink:0;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
