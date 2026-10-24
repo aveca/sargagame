@@ -62,6 +62,7 @@ const T = {
       ],
       nextArrivalRisk: 'The next landing risk at {beach} is {day} ({date}), based on sargassum mats currently tracked offshore.',
       nextArrivalNone: 'No significant sargassum arrival is indicated in the available forecast for {beach}. Check the live map for the latest update.',
+      nextArrivalUnavailable: 'No forecast data is available for {beach}. Check the live map for the latest update.',
     },
   },
   es: {
@@ -83,6 +84,7 @@ const T = {
       ],
       nextArrivalRisk: 'El próximo riesgo de recale en {beach} es el {day} ({date}), según los bancos de sargazo detectados mar adentro.',
       nextArrivalNone: 'No se indica una llegada significativa de sargazo en el pronóstico disponible para {beach}. Consulta el mapa en vivo para ver la última actualización.',
+      nextArrivalUnavailable: 'No hay datos de pronóstico disponibles para {beach}. Consulta el mapa en vivo para ver la última actualización.',
     },
   },
 }
@@ -185,8 +187,14 @@ function fmtDate(lang, d = new Date()) {
   return d.toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-function resolveNextArrival({ noneTemplate, riskTemplate, beachName, hit, lang, daysFull }) {
+function resolveNextArrival({ noneTemplate, unavailableTemplate, riskTemplate, beachName, hit, hasForecast, lang, daysFull }) {
   const withBeach = value => String(value || '').replace(/\{beach\}/g, beachName)
+  if (!hasForecast) {
+    const fallback = unavailableTemplate || (lang === 'es'
+      ? 'No hay datos de pronóstico disponibles para {beach}. Consulta el mapa en vivo para ver la última actualización.'
+      : 'No forecast data is available for {beach}. Check the live map for the latest update.')
+    return withBeach(fallback)
+  }
   if (!hit || !hit.date) return withBeach(noneTemplate)
   const d = new Date(hit.date + 'T12:00:00Z')
   if (Number.isNaN(d.getTime())) return withBeach(noneTemplate)
@@ -784,9 +792,11 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
       const hit = fc.find(f => f.status && f.status !== 'clean')
       const nextArrival = resolveNextArrival({
         noneTemplate: bf.nextArrivalNone,
+        unavailableTemplate: bf.nextArrivalUnavailable,
         riskTemplate: bf.nextArrivalRisk,
         beachName: b.name,
         hit,
+        hasForecast: fc.length > 0,
         lang,
         daysFull: t.daysFull,
       })
