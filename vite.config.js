@@ -1250,7 +1250,17 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               else if (!/\.[a-z0-9]+$/i.test(rel)) rel += '/index.html'
               return resolve(outDir, rel)
             }
-            const missing = locPaths.filter(p => !existsSync(toFile(p)))
+            // Une URL du sitemap peut être servie par SOIT <slug>/index.html
+            // (dossier) SOIT <slug>.html (fichier plat, cas des pages légales
+            // /mentions-legales /cgv /remboursement — réellement livrées et
+            // servies 200 en prod). Ne tester qu'une seule forme faisait
+            // échouer ce garde en FAUX POSITIF, throw → closeBundle() abandonné
+            // avant la génération des 136 fiches plage (tous les liens
+            // /plages/<slug>/ en 404). Le garde reste déterministe et
+            // bloquant : une URL réellement absente des DEUX formes throw.
+            const missing = locPaths.filter(p =>
+              !existsSync(toFile(p))
+              && !existsSync(resolve(outDir, p.replace(/^\//, '') + '.html')))
             let redirected = []
             try {
               const ht = readFileSync(resolve(outDir, '.htaccess'), 'utf-8')
