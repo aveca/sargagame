@@ -30,6 +30,8 @@ function validateContent(content, lang) {
   assert.ok(content.resortPageTpl && content.resortPageTpl.titlePattern.includes("{resort}") && content.resortPageTpl.introPattern.includes("{beach}"), lang + ": resort template tokens");
   assert.ok(content.beachFaq && Array.isArray(content.beachFaq.questions) && content.beachFaq.questions.length >= 2, lang + ": per-beach FAQ templates");
   for (const item of content.beachFaq.questions) assert.ok(item.q && item.a, lang + ": per-beach FAQ needs q/a");
+  assert.ok(typeof content.beachFaq.nextArrivalNone === "string" && content.beachFaq.nextArrivalNone.includes("{beach}"), lang + ": no-arrival fallback must be present and beach-specific");
+  assert.doesNotMatch(content.beachFaq.nextArrivalNone, /(?:next\\s+(?:seven|7)\\s+days|próximos\\s+(?:siete|7)\\s+días)/i, lang + ": no-arrival copy must not claim a fixed seven-day horizon when forecast coverage can be shorter");
   const blurbs = Object.keys(content.beachBlurbs || {}).sort();
   const beachIds = (region.beaches || []).map(b => b.id).sort();
   assert.deepEqual(blurbs, beachIds, lang + ": every configured Tulum beach must have a blurb and no foreign beach IDs");
