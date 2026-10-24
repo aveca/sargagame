@@ -12,15 +12,22 @@ const script = inlineScripts[inlineScripts.length - 1]
 async function runWidget(trackRecord, options = {}) {
   const nowMs = options.nowMs ?? Date.parse('2026-10-24T05:03:00.000Z')
   const elements = new Map()
-  const makeElement = () => ({
-    textContent: '',
-    setAttribute() {},
-    addEventListener() {},
-    classList: { add() {}, remove() {} }
-  })
+  const makeElement = () => {
+    const classes = new Set()
+    return {
+      textContent: '',
+      setAttribute() {},
+      addEventListener() {},
+      classList: {
+        add(...names) { names.forEach(name => classes.add(name)) },
+        remove(...names) { names.forEach(name => classes.delete(name)) },
+        contains(name) { return classes.has(name) }
+      }
+    }
+  }
   for (const id of [
     'demo-frame', 'snip', 'copy', 'fmt-full', 'fmt-compact',
-    'fresh', 'tr-clean', 'tr-headline'
+    'fresh', 'freshpill', 'tr-clean', 'tr-headline'
   ]) elements.set(id, makeElement())
   elements.get('tr-clean').textContent = '—'
   elements.get('tr-headline').textContent = 'Chargement du palmarès en direct…'
@@ -30,7 +37,14 @@ async function runWidget(trackRecord, options = {}) {
   }
   const fetch = url => {
     if (String(url).endsWith('/api/copernicus/sargassum.json')) {
-      return Promise.resolve({ json: () => Promise.resolve({ updatedAt: new Date(nowMs).toISOString() }) })
+      if (options.sargassumNetworkError) return Promise.reject(new Error('simulated sargassum network error'))
+      return Promise.resolve({
+        ok: options.sargassumHttpOk !== false,
+        status: options.sargassumHttpStatus ?? 200,
+        json: () => Promise.resolve({
+          updatedAt: options.sargassumUpdatedAt ?? new Date(nowMs).toISOString()
+        })
+      })
     }
     if (String(url).endsWith('/api/copernicus/track-record.json')) {
       if (options.networkError) return Promise.reject(new Error('simulated network error'))
@@ -64,7 +78,9 @@ async function runWidget(trackRecord, options = {}) {
   await new Promise(resolve => setTimeout(resolve, 0))
   return {
     metric: elements.get('tr-clean').textContent,
-    headline: elements.get('tr-headline').textContent
+    headline: elements.get('tr-headline').textContent,
+    freshnessLabel: elements.get('fresh').textContent,
+    freshnessState: ['is-fresh', 'is-stale', 'is-unavailable'].find(state => elements.get('freshpill').classList.contains(state)) || null
   }
 }
 
@@ -131,7 +147,41 @@ function record(overrides = {}) {
     assert.match(result.headline, /indisponible/i)
   }
 
-  console.log('OK: stale timestamps, explicit stale flag, current overall metric, calm-only fallback, zero rate and network failure')
+  {
+    const result = await runWidget(record(), { sargassumUpdatedAt: 'invalid-date' })
+    assert.equal(result.freshnessState, 'is-unavailable')
+    assert.match(result.freshnessLabel, /horodatage satellite invalide/i)
+  }
+
+  {
+    const result = await runWidget(record(), {
+      sargassumUpdatedAt: '2026-10-23T15:03:00.000Z'
+    })
+    assert.equal(result.freshnessState, 'is-stale')
+    assert.match(result.freshnessLabel, /vérification en cours/i)
+  }
+
+  {
+    const result = await runWidget(record(), {
+      sargassumUpdatedAt: '2026-10-24T06:03:00.000Z'
+    })
+    assert.equal(result.freshnessState, 'is-unavailable')
+    assert.match(result.freshnessLabel, /horodatage satellite incohérent/i)
+  }
+
+  {
+    const result = await runWidget(record(), { sargassumHttpOk: false, sargassumHttpStatus: 503 })
+    assert.equal(result.freshnessState, 'is-unavailable')
+    assert.match(result.freshnessLabel, /fraîcheur satellite indisponible/i)
+  }
+
+  {
+    const result = await runWidget(record(), { sargassumNetworkError: true })
+    assert.equal(result.freshnessState, 'is-unavailable')
+    assert.match(result.freshnessLabel, /fraîcheur satellite indisponible/i)
+  }
+
+  console.log('OK: track-record freshness plus satellite freshness success, stale timestamp, invalid/future timestamp, HTTP failure and network failure')
 })().catch(error => {
   console.error(error)
   process.exitCode = 1
