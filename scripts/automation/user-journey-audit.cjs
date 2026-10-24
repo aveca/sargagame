@@ -43,7 +43,15 @@ function safeResourceUrl(value) {
 }
 
 function isIgnoredResource(value) {
-  return /b2b-partners|referral/i.test(String(value || ''))
+  const raw = String(value || '')
+  let pathname
+  try {
+    pathname = new URL(raw).pathname
+  } catch (_) {
+    pathname = raw.split(/[?#]/, 1)[0].replace(/^[a-z][a-z\d+.-]*:\/\/[^/]+/i, '')
+  }
+  // Les exclusions historiques s'appliquent au chemin, jamais aux paramètres UTM.
+  return /(?:^|\/)(?:b2b-partners|referral)(?:\/|\.php$|$)/i.test(pathname)
 }
 
 function resourceHttpDefect(domain, status, url) {
@@ -69,9 +77,26 @@ function consoleDefect(domain, value) {
   return null
 }
 
-// Clé de déduplication stable : domaine + étape + type + URL/erreur précise.
+// Normalise les champs textuels, mais conserve la casse du chemin URL :
+// certains serveurs distinguent /Foo.js de /foo.js.
+function normalizeDedupDetail(value) {
+  const detail = String(value || '').slice(0, 220)
+  const match = /https?:\/\/[^\s]+/i.exec(detail)
+  if (!match) return detail.toLowerCase()
+  const before = detail.slice(0, match.index).toLowerCase()
+  const url = safeResourceUrl(match[0])
+  const after = detail.slice(match.index + match[0].length).toLowerCase()
+  return before + url + after
+}
+
+// Clé stable : casse neutralisée pour domaine/étape/type, préservée pour le chemin.
 function dedupKey(item) {
-  return [item.domain, item.step, item.type, String(item.detail || '').slice(0, 220)].join('|').toLowerCase()
+  return [
+    String(item.domain || '').toLowerCase(),
+    String(item.step || '').toLowerCase(),
+    String(item.type || '').toLowerCase(),
+    normalizeDedupDetail(item.detail)
+  ].join('|')
 }
 
 function classify(defects) {
