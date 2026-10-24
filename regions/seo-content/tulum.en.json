@@ -1,0 +1,141 @@
+{
+  "_note": "English SEO content for sargazotulum.com. Beach statuses, scores, dates and forecasts are read from regional data at build time; this file contains no live metrics or fixed predictions.",
+  "home": {
+    "title": "Tulum Sargassum Today — Live Beach Map & 7-Day Outlook",
+    "desc": "Check the latest available sargassum status for Tulum beaches, with per-beach updates, a Beach Score and forecast caveats."
+  },
+  "routes": {
+    "best": "best-beaches-without-sargassum-tulum",
+    "weekly": "tulum-sargassum-this-week"
+  },
+  "faq": [
+    {
+      "q": "Is there sargassum in Tulum today?",
+      "a": "Conditions can differ from one beach to the next and change from day to day. Check Tulum's live map, the latest update time and the confidence level before travelling. A satellite reading describes the available data; it does not guarantee that an entire beach is free of seaweed."
+    },
+    {
+      "q": "Which Tulum beaches have less sargassum?",
+      "a": "No beach can be considered permanently sargassum-free. Compare the latest entries for Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe and Playa Xcacel. Do not assume that a nearby beach has the same conditions."
+    },
+    {
+      "q": "When is sargassum season in Tulum?",
+      "a": "Across the Caribbean and tropical Atlantic, sargassum abundance often rises around the middle of the year, but timing and intensity vary by year and region. A regional seasonal trend is context, not a forecast for a particular Tulum beach."
+    },
+    {
+      "q": "What do the beach status and Beach Score mean?",
+      "a": "The status summarizes the latest available beach reading, while the Beach Score combines signals used by the site to describe conditions. Check the update time and confidence level too: an indicator is not an official safety notice or a guarantee of swimming conditions."
+    },
+    {
+      "q": "How reliable is a seven-day sargassum forecast?",
+      "a": "It is an estimate that can change as new observations arrive or wind and currents shift. The nearest days are generally more useful than the later part of the outlook. Recheck your chosen beach before leaving and treat the projection as guidance, not certainty."
+    },
+    {
+      "q": "Where does the sargassum information come from?",
+      "a": "The system uses available satellite observations and environmental signals to estimate conditions by beach. Clouds, satellite timing and local ocean dynamics can limit a reading, so check the date and confidence shown on each beach page."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "tulum-sargassum-forecast",
+      "title": "Tulum Sargassum Forecast — 7 Days by Beach",
+      "desc": "Review Tulum's beach-level sargassum outlook, recent status readings and the limits of a seven-day forecast.",
+      "h1": "Tulum sargassum forecast, beach by beach",
+      "intro": "Sargassum does not reach every stretch of coast in the same way. This page brings together the available outlook for beaches tracked on the Tulum map. Compare individual beach pages, check when the data was updated and look again before travelling: a forecast can change and cannot guarantee the exact condition of the sand.",
+      "method": "The system combines satellite observations of sargassum with available environmental signals and persistence of material already on shore. Projections are calculated by beach and refreshed as new data arrives. Clouds, currents and local changes can add uncertainty; farther-out days should be read as a trend rather than a certainty."
+    },
+    "today": {
+      "slug": "tulum-sargassum-today",
+      "title": "Tulum Sargassum Today — Beach Status",
+      "desc": "Check the latest available sargassum status for Tulum beaches before deciding where to go.",
+      "h1": "Is there sargassum in Tulum today?",
+      "intro": "Use the current list to compare the beaches tracked on this site. Conditions can differ between nearby locations and should not be treated as a fixed recommendation. Before leaving, check the update time, Beach Score and local notices."
+    },
+    "map": {
+      "slug": "tulum-sargassum-map",
+      "title": "Tulum Sargassum Map — Beach-by-Beach Status",
+      "desc": "Compare the available sargassum status and beach conditions across the Tulum map.",
+      "h1": "Tulum sargassum map, updated by beach",
+      "intro": "The map lets you compare tracked Tulum beaches without assuming the whole coastline has the same conditions. The color represents the status calculated from available data. Check the latest reading time and look again if conditions change."
+    },
+    "season": {
+      "slug": "tulum-sargassum-season",
+      "title": "Tulum Sargassum Season — A Practical Planning Guide",
+      "desc": "Understand seasonal sargassum patterns in Tulum without confusing regional trends with a particular beach's current status.",
+      "h1": "Tulum sargassum season: what the calendar can and cannot tell you",
+      "intro": "Seasonality helps with planning, but it cannot guarantee that a particular beach will be clear on a given date. Across the Caribbean and tropical Atlantic, abundance often rises around the middle of the year; timing and intensity vary by region and year. Pair the broad seasonal picture with the latest reading for the beach you plan to visit.",
+      "months": [
+        {
+          "period": "November–February",
+          "text": "Regional abundance is often lower in winter in many years, but events can occur outside the usual pattern. Do not use the calendar as a guarantee that a beach will be seaweed-free."
+        },
+        {
+          "period": "March–April",
+          "text": "Regional conditions can change as tropical Atlantic biomass develops and moves. That broad trend alone does not determine what will happen at a Tulum beach."
+        },
+        {
+          "period": "May–July",
+          "text": "The tropical Atlantic belt often reaches high abundance around June or July, but distribution varies by year and area. A regional peak cannot predict the exact status of an individual beach."
+        },
+        {
+          "period": "August–October",
+          "text": "Amounts may decline in some regions and remain elevated in others. Coastal events can persist or return, so check recent beach-level observations rather than relying on a fixed date."
+        }
+      ],
+      "tips": "If your trip spans several days, compare more than one beach and keep alternatives. Check the status and update time on the day you go, and revisit the map if clouds, winds or new observations change the picture. Regional outlooks are context, not a forecast for a specific beach."
+    }
+  },
+  "beachBlurbs": {
+    "tu001": "The Playa Paraíso page shows the status and outlook available for this part of the Tulum coast. Check the update time before travelling and compare it with other beaches; conditions are not uniform along the shoreline.",
+    "tu002": "Use the latest Playa Pescadores reading rather than assuming it represents the whole area. Satellite status and outlook can help with planning, but they cannot guarantee the exact conditions on the sand.",
+    "tu003": "The Playa Ruinas page lets you review the status calculated for this beach and compare it with other Tulum locations. Check again on the day of your visit, since an earlier reading may no longer represent current conditions.",
+    "tu004": "Use the Playa Santa Fe page to check the available status, its update time and the current outlook. Do not substitute a nearby beach's reading for this location-specific information.",
+    "tu005": "Playa Xcacel has its own entry on the Tulum map. Review recent data and keep an alternative in mind: sargassum and coastal conditions can vary between beaches and over time."
+  },
+  "beachFaq": {
+    "_doc": "Per-beach FAQ templates for Tulum. Status, score, date and forecast tokens are filled from the public regional data during build; no fixed predictions are stored here.",
+    "questions": [
+      {
+        "q": "Is there sargassum at {beach} today?",
+        "a": "On {today}, the available record for {beach} shows “{status}” and a Beach Score of {score}/100. Check the exact update time and confidence on the map; this indicator does not guarantee that the whole beach is seaweed-free."
+      },
+      {
+        "q": "When could sargassum reach {beach}?",
+        "a": "{nextArrival} The available outlook for {beach} is: {forecastLine}. Conditions can change as new observations arrive; farther-out days should be treated as a trend."
+      }
+    ],
+    "nextArrivalRisk": "The model indicates a possible arrival risk at {beach} on {day} ({date}); this is an estimate, not a certainty.",
+    "nextArrivalNone": "The available outlook does not indicate a significant arrival at {beach} over the next seven days; the absence of that signal does not guarantee a seaweed-free beach."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargassum at {resort} Today — Beach Status & Outlook",
+    "introPattern": "Before staying at {resort}, check the nearest beach ({beach}), its available status, update time and outlook. This reading applies to that beach, not all of Tulum, and can change."
+  },
+  "press": {
+    "_doc": "Press page generated from real regional data. Beach counts, date and backtest tokens are filled at build time; no fixed metrics belong here.",
+    "slug": "press",
+    "title": "Tulum Sargassum — Data and Press Resources",
+    "desc": "Press resources for Tulum sargassum monitoring, with beach-level information, methodology and forecast limitations.",
+    "h1": "Tulum sargassum data for press and research",
+    "intro": "We publish beach-level status and an inspectable methodology to help travellers, tourism professionals and journalists interpret coastal conditions. Observations and outlooks have limitations; figures are generated from available data and are not manually adjusted to favour a beach.",
+    "sections": [
+      {
+        "h2": "What we publish",
+        "text": "The site reports the available status for {beachCount} Tulum beaches as of {updatedDate}. {cleanToday} of those beaches show a clean status in the data used for this build; that count can change with the next update."
+      },
+      {
+        "h2": "Reading accuracy",
+        "text": "The network's published backtest reports a status match of {accuracyJ1Pct}% at one day and {accuracyJ3Pct}% at three days when those values are available. These are network-level results, not a guarantee of accuracy for each Tulum beach."
+      },
+      {
+        "h2": "Use and attribution",
+        "text": "When quoting a status or method, include the page URL and its update date. For interviews, integration or questions about the data, contact {contact}. Suggested source: {citation}."
+      },
+      {
+        "h2": "Scientific context",
+        "text": "Regional sargassum outlooks help explain large-scale trends but do not replace beach-level observations. Clouds, currents and local variability can change what a visitor finds on shore."
+      }
+    ],
+    "citation": "Source: sargazotulum.com — beach-level status and visible update date",
+    "contact": "support@sargazotulum.com"
+  }
+}
