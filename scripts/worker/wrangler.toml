@@ -1,0 +1,11 @@
+name = "sarga-email-receiver"
+main = "email-receiver.js"
+compatibility_date = "2026-10-22"
+
+[[kv_namespaces]]
+binding = "EMAIL_QUEUE"
+id = "4478b169e22c42f7b446c822c4520eeb"
+
+[vars]
+FACTORY_SITE = "sargagame"
+EMAIL_FROM = "alerte@sargasses-martinique.com"

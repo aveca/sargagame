@@ -1,0 +1,67 @@
+{
+  "$comment": "Base de connaissances Factory V4 pour les réponses email automatiques. Construite à partir du contenu réel des sites (pas inventée). Mise à jour à chaque audit.",
+  "updated_at": "2026-10-22",
+  "products": [
+    {
+      "id": "sargasses-guadeloupe",
+      "name": "Sargasses Guadeloupe",
+      "domain": "sargasses-guadeloupe.com",
+      "type": "service (B2C + B2B)",
+      "value_prop": "Carte temps réel des sargasses + score plages 0-100 (données satellite Copernicus, maj 4x/jour)",
+      "pricing": "Freemium B2C (premium Stripe MRR 69.86€, 14 abonnés) + B2B hôtels (onboarding)",
+      "features_confirmed": ["Carte temps réel sargasses", "Score plages 0-100 (sargasses, houle, vent, soleil, température eau)", "53 plages notées", "Mise à jour quotidienne", "Prévisions 7 jours", "Alertes sargasses"],
+      "limitations": ["Données satellite (pas de capteur terrain en temps réel)", "Couverture limitée aux zones cartographiées"],
+      "target_audience": "Touristes, résidents, hôteliers, professionnels du tourisme en Guadeloupe",
+      "languages": ["fr", "en"],
+      "official_links": ["https://sargasses-guadeloupe.com/", "https://sargasses-guadeloupe.com/carte-sargasses/"],
+      "support_email": "alerte@sargasses-martinique.com (centralisé)",
+      "faq": [
+        {"q": "Comment fonctionne la carte ?", "a": "Données satellite Copernicus mises à jour 4x/jour, score 0-100 par plage"},
+        {"q": "Les données sont-elles en temps réel ?", "a": "Mise à jour quotidienne, pas de temps réel absolu"},
+        {"q": "Comment s'abonner ?", "a": "Premium via Stripe (MRR), accès aux fonctionnalités avancées"}
+      ],
+      "do_not_claim": ["Temps réel absolu", "Prévisions garanties", "Couverture 100% des plages"]
+    },
+    {
+      "id": "sargasses-martinique",
+      "name": "Sargasses Martinique",
+      "domain": "sargasses-martinique.com",
+      "type": "service (B2C + B2B)",
+      "value_prop": "Carte temps réel des sargasses + score plages 0-100",
+      "pricing": "Freemium B2C (premium Stripe) + B2B hôtels",
+      "features_confirmed": ["Carte temps réel sargasses", "Score plages 0-100", "Mise à jour quotidienne", "Prévisions", "Alertes"],
+      "target_audience": "Touristes, résidents, hôteliers en Martinique",
+      "languages": ["fr", "en"],
+      "official_links": ["https://sargasses-martinique.com/", "https://sargasses-martinique.com/carte-sargasses/"],
+      "support_email": "alerte@sargasses-martinique.com",
+      "do_not_claim": ["Temps réel absolu", "Prévisions garanties"]
+    },
+    {
+      "id": "bot-wow",
+      "name": "BOT-WOW",
+      "domain": "bot-wow.com",
+      "type": "software (B2C)",
+      "value_prop": "Assistant de pêche pour WoW Classic (serveurs privés inclus) — détection flotteur par mesure, mémoire persistante des spots, optimisation des rotations",
+      "features_confirmed": ["Détection flotteur par mesure", "Mémoire persistante des spots", "Optimisation des rotations", "Multi-serveurs (WoW Classic + privés)"],
+      "target_audience": "Joueurs WoW Classic (fishing)",
+      "languages": ["fr", "en"],
+      "official_links": ["https://bot-wow.com/"],
+      "support_email": "alerte@sargasses-martinique.com (centralisé, à vérifier)",
+      "do_not_claim": ["Garantie de résultats", "Support 24/7", "Compatibilité non testée"]
+    }
+  ],
+  "auto_reply_rules": {
+    "common": [
+      "Toujours répondre dans la langue du destinataire si détectable, sinon français",
+      "Ne jamais inventer de fonctionnalité, de prix ou de garantie",
+      "Ne jamais promettre de délai de réponse ou de disponibilité",
+      "Rediriger vers les liens officiels pour les détails",
+      "Si la demande est hors scope (remboursement, litige, suppression données, sécurité), NE PAS répondre automatiquement — créer une tâche Factory"
+    ],
+    "escalation_triggers": ["remboursement", "litige", "suppression données", "sécurité", "compte", "engagement contractuel", "transaction inconnue"],
+    "max_auto_reply_length": 200
+  }
+}
+'@
+Set-Content -Path "C:\Users\user\Documents\GitHub\sargagame\.ai\autopilot\email-knowledge-base.json" -Value $kb -Encoding UTF8
+node -e "const k=require('C:/Users/user/Documents/GitHub/sargagame/.ai/autopilot/email-knowledge-base.json');console.log('KB valide —',k.products.length,'produits,',k.auto_reply_rules.common.length,'règles')"

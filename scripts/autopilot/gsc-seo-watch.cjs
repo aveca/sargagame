@@ -212,10 +212,10 @@ async function main() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// FUNNEL GA4 (P0.7/V4) — mesure de conversion directe, 5 régions.
+// FUNNEL GA4 (P0.7/V4) — mesure de conversion directe, toutes régions.
 // Le SA (analytics.readonly) accède aux 7 propriétés GA4 — y compris Miami/
 // PuntaCana/RivieraMaya bloquées dans GSC. Persistance: ga4-funnel-latest.json.
-// Étape "Mesurer" de la boucle: sans elle, aucun gain CRO n'est prouvable.
+// C'est l'étape "Mesurer" de la boucle: sans elle, aucun gain CRO n'est prouvable.
 // ─────────────────────────────────────────────────────────────────────────────
 const GA4_PROPS = [
   { region: 'gp', id: 'properties/530818426', name: 'Sargasses Guadeloupe' },
@@ -245,7 +245,9 @@ async function measureFunnelGA4(data) {
       const opens = ev.sg_premium_modal_open || 0;
       const cta = (ev.sg_pass_cta || 0) + (ev.sg_premium_modal_cta || 0);
       out.properties[p.region] = {
-        name: p.name, premium_open: opens, cta,
+        name: p.name,
+        premium_open: opens,
+        cta,
         checkout_started: ev.sg_checkout_started || 0,
         conversion: ev.sg_conversion || 0,
         payment_failed: ev.sg_payment_failed || 0,
@@ -260,16 +262,10 @@ async function measureFunnelGA4(data) {
   return out;
 }
 
-// --funnel : court-circuite main() — mesure GA4 seule (appelé par le runner)
+// Wrapper exécutable seul : node gsc-seo-watch.cjs --funnel
 if (process.argv.includes('--funnel')) {
   const path = require('path');
-  // googleapis : résolution multi-candidats (repo canonique en prod, fallback local)
-  let google = null;
-  for (const candidate of [
-    path.join(ROOT, 'node_modules', 'googleapis'),
-    'C:\\Users\\user\\Documents\\GitHub\\sargagame\\node_modules\\googleapis',
-  ]) { try { google = require(candidate).google; break; } catch (_) {} }
-  if (!google) { console.error('[gsc-watch] googleapis introuvable'); process.exit(1); }
+  const { google } = require(path.join(ROOT, 'node_modules', 'googleapis'));
   const saRaw = loadSaJson();
   if (!saRaw) { console.error('[gsc-watch] clé SA absente'); process.exit(1); }
   (async () => {
@@ -281,8 +277,8 @@ if (process.argv.includes('--funnel')) {
     const result = await measureFunnelGA4(data);
     const outFile = path.join(ROOT, '.ai', 'autopilot', 'ga4-funnel-latest.json');
     fs.writeFileSync(outFile, JSON.stringify(result, null, 2));
-    log('Funnel persisté: ' + outFile);
+    console.log('Funnel persisté:', outFile);
   })().catch(e => { console.error('[gsc-watch] funnel erreur:', e.message); process.exit(1); });
-} else {
-  main().catch(e => log('ERREUR non-fatale: ' + e.message));
 }
+
+main().catch(e => log('ERREUR non-fatale: ' + e.message));
