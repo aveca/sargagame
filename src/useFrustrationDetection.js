@@ -5,12 +5,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 
+// Décision d'auto-ouverture : logique pure isolée (testable sans React).
+export { FRUSTRATION_AUTO_OPEN_TYPES, shouldAutoOpenChat } from "./frustrationGuard.js"
+
 // Configurable thresholds
 const CONFIG = {
   rageClick: { threshold: 3, window: 5000 }, // 3 clics en 5s = rage
   scrollFrenzy: { threshold: 5, window: 3000 }, // 5 scrolls rapides en 3s
   mouseShake: { threshold: 10, window: 2000 }, // 10 mouvements erratiques en 2s
-  hesitation: { threshold: 10000 }, // 10s sans interaction
+  hesitation: { threshold: 10000 }, // 10s sans interaction (détection seule, n'ouvre plus le chat)
   triggerCooldown: 30000, // 30s entre 2 triggers (pas spam)
 }
 
