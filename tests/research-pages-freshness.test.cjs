@@ -5,9 +5,9 @@ const vm = require('node:vm');
 
 const ROOT = path.resolve(__dirname, '..');
 const pages = [
-  { path: 'public/recherche/index.html', canonical: 'https://sargasses-martinique.com/recherche/', horizon: 'J+', stale: /périmé|incomplet/i },
-  { path: 'public/research/index.html', canonical: 'https://sargasses-martinique.com/research/', horizon: 'D+', stale: /stale|incomplete/i },
-  { path: 'public/investigacion/index.html', canonical: 'https://sargasses-martinique.com/investigacion/', horizon: 'D+', stale: /obsoleto|incompleto/i }
+  { path: 'public/recherche/index.html', canonical: 'https://sargasses-martinique.com/recherche/', horizon: 'J+', stale: /périmé|incomplet|indisponible/i },
+  { path: 'public/research/index.html', canonical: 'https://sargasses-martinique.com/research/', horizon: 'D+', stale: /stale|incomplete|unavailable/i },
+  { path: 'public/investigacion/index.html', canonical: 'https://sargasses-martinique.com/investigacion/', horizon: 'D+', stale: /obsoleto|incompleto|no está disponible/i }
 ];
 
 class FakeElement {
