@@ -58,7 +58,7 @@ test("les annulations de requête ne deviennent pas de faux défauts", () => {
 
 test("le message console HTTP générique est remplacé par le défaut avec URL", () => {
   assert.equal(consoleDefect("example.test", "Failed to load resource: the server responded with a status of 404 ()"), null);
-  assert.equal(consoleDefect("example.test", "TypeError: cannot read property"), {
+  assert.deepEqual(consoleDefect("example.test", "TypeError: cannot read property"), {
     domain: "example.test",
     step: "any",
     type: "console-error",
