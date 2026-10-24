@@ -103,7 +103,7 @@ function assertFiguresHidden(document, page, reason) {
 (async () => {
   for (const page of pages) {
     const html = fs.readFileSync(path.join(ROOT, page.path), 'utf8');
-    assert.doesNotMatch(html, /(?:Ã[\u0080-\u00bf]|Â[\u0080-\u00bf]|â(?:€|[\u0080-\u00bf])|ðŸ|ï¸)/, page.path + ': no UTF-8 mojibake in page copy or metadata');
+    assert.doesNotMatch(html, /(?:[ÃÂ][^\s<]|â(?:[€”™œ–—]|[\u0080-\u00bf])|ðŸ|ï¸)/, page.path + ': no UTF-8 mojibake in page copy or metadata');
 
     // Initial HTML and structured data must not expose the old figures.
     assert.ok(html.includes('href="' + page.canonical + '"'), page.path + ': canonical preserved');
