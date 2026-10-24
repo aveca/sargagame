@@ -96,7 +96,7 @@
       }
     ],
     "nextArrivalRisk": "El modelo señala un posible riesgo de llegada a {beach} el {day} ({date}); es una estimación y no una certeza.",
-    "nextArrivalNone": "La proyección disponible no señala una llegada significativa a {beach} durante los próximos siete días; la ausencia de esa señal no garantiza que la playa esté libre de sargazo."
+    "nextArrivalNone": "Los datos de pronóstico disponibles para {beach} no señalan una llegada significativa; la ausencia de esa señal no garantiza que la playa esté libre de sargazo."
   },
   "resortPageTpl": {
     "titlePattern": "Sargazo en {resort} hoy — estado de la playa y pronóstico",
