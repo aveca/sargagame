@@ -93,6 +93,7 @@ const NETWORK = [
   { name: { en: 'Guadeloupe', es: 'Guadalupe' }, url: 'https://sargasses-guadeloupe.com/' },
   { name: { en: 'Punta Cana', es: 'Punta Cana' }, url: 'https://sargassumpuntacana.com/' },
   { name: { en: 'Cancún & Riviera Maya', es: 'Cancún y Riviera Maya' }, url: 'https://sargassumcancun.com/' },
+  { name: { en: 'Tulum', es: 'Tulum' }, url: 'https://sargazotulum.com/' },
   { name: { en: 'Miami & Florida', es: 'Miami y Florida' }, url: 'https://sargassummiami.com/' },
 ]
 
