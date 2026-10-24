@@ -58,6 +58,8 @@
     background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
     padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  .freshpill.is-stale .pulse{background:#e5ad44;box-shadow:none;animation:none}
+  .freshpill.is-unavailable .pulse{background:#9aa4a0;box-shadow:none;animation:none}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
 
@@ -154,7 +156,7 @@
       <a class="btn btn-gold" href="https://sargasses-martinique.com/widget/">Créer mon widget</a>
       <a class="btn btn-ghost" href="#demo">Voir une démo en direct</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">données satellite en direct</span></div>
+    <div class="freshpill" id="freshpill"><span class="pulse"></span><span id="fresh">vérification de la fraîcheur satellite…</span></div>
   </div>
 </header>
 
@@ -285,17 +287,37 @@
   });
   render();
 
-  // --- Fraîcheur du pill : sargassum.json (pas de timestamp figé) ---
+  // --- Fraîcheur du pill : aucune erreur ne doit ressembler à une donnée en direct ---
   function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'vérification en cours…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'satellite · il y a '+m+' min';}
-    return 'satellite · il y a '+Math.max(1,Math.round(h))+' h';
+    if(!iso) return {label:'horodatage satellite indisponible',state:'is-unavailable'};
+    var timestamp=Date.parse(iso);
+    if(!Number.isFinite(timestamp)) return {label:'horodatage satellite invalide',state:'is-unavailable'};
+    var h=(Date.now()-timestamp)/3.6e6;
+    if(h < -5/60) return {label:'horodatage satellite incohérent',state:'is-unavailable'};
+    if(h>=12) return {label:'vérification en cours…',state:'is-stale'};
+    if(h<1){
+      var m=Math.max(0,Math.round(h*60));
+      return {label:m<1?'satellite · à l’instant':'satellite · il y a '+m+' min',state:'is-fresh'};
+    }
+    return {label:'satellite · il y a '+Math.max(1,Math.round(h))+' h',state:'is-fresh'};
   }
-  fetch(ORIGIN+'/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
-    try{document.getElementById('fresh').textContent=relTime(d.updatedAt)||'données satellite en direct';}catch(e){}
-  }).catch(function(){});
+  function setFreshStatus(status){
+    var pill=document.getElementById('freshpill');
+    var label=document.getElementById('fresh');
+    if(pill && pill.classList){
+      pill.classList.remove('is-fresh','is-stale','is-unavailable');
+      pill.classList.add(status.state);
+    }
+    if(label) label.textContent=status.label;
+  }
+  fetch(ORIGIN+'/api/copernicus/sargassum.json').then(function(r){
+    if(!r.ok) throw new Error('sargassum HTTP '+r.status);
+    return r.json();
+  }).then(function(d){
+    setFreshStatus(relTime(d && d.updatedAt));
+  }).catch(function(){
+    setFreshStatus({label:'fraîcheur satellite indisponible',state:'is-unavailable'});
+  });
 
   // --- Preuve live : ne jamais présenter un palmarès périmé comme actuel ---
   var MAX_TRACK_RECORD_AGE_MS = 36 * 60 * 60 * 1000;
