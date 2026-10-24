@@ -19,7 +19,8 @@ const { execSync } = require('child_process');
 const ROOT = path.resolve(__dirname, '../../..');
 
 function run(cmd, cwd = ROOT) {
-  return execSync(cmd, { cwd, encoding: 'utf-8', stdio: 'pipe' }).trim();
+  return execSync(cmd, {
+        windowsHide: true, cwd, encoding: 'utf-8', stdio: 'pipe' }).trim();
 }
 
 function runSafe(cmd, cwd = ROOT) {

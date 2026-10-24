@@ -197,6 +197,7 @@ function openAutopilotPR() {
   try {
     const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
     const out = execFileSync(bin, ['pr', 'list', '--state', 'open', '--limit', '20', '--json', 'number,title,headRefName'], {
+        windowsHide: true,
       cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
     }).trim();
     const prs = JSON.parse(out || '[]');
@@ -214,6 +215,7 @@ function enableAutoMerge(wt, prUrl) {
   assertDeployCertified({ throwOnFail: true, label: 'auto-merge' });
   const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
   execFileSync(bin, ['pr', 'merge', prUrl, '--auto', '--squash'], {
+        windowsHide: true,
     cwd: wt, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
   });
 }
@@ -232,6 +234,7 @@ function getPrDetail(number) {
   try {
     const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
     const out = execFileSync(bin, ['pr', 'view', String(number), '--json', 'number,title,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,headRefOid,files'], {
+        windowsHide: true,
       cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
     }).trim();
     const j = JSON.parse(out || '{}');
@@ -254,6 +257,7 @@ function prState(prUrl) {
   try {
     const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
     const out = execFileSync(bin, ['pr', 'view', prUrl, '--json', 'state,mergeCommit,mergedAt'], {
+        windowsHide: true,
       cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
     }).trim();
     const j = JSON.parse(out || '{}');

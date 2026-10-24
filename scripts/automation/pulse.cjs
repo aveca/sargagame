@@ -18,8 +18,8 @@ const ROOT = path.resolve(__dirname, '..', '..')
 const NOW = Date.now()
 const rd = (p, fb) => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, p), 'utf8')) } catch { return fb } }
 const ageH = (iso) => { const t = Date.parse(iso); return isNaN(t) ? null : +(((NOW - t) / 3.6e6).toFixed(1)) }
-// execFileSync (PAS de shell, args en tableau → zéro injection) ; commandes 100% statiques.
-const git = (args) => { try { return cp.execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return '' } }
+// execFileSync (PAS de shell, args en tableau → zéro injection, windowsHide:true) ; commandes 100% statiques.
+const git = (args) => { try { return cp.execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true }).trim() } catch { return '' } }
 
 function getRegions() {
   const base = [{ id: 'mq', sub: '' }, { id: 'gp', sub: '' }]
@@ -50,7 +50,7 @@ function siteAxis() {
   // CI : santé des derniers runs GH Actions (« ce que fait le site » côté deploy).
   let ci = null
   try {
-    const raw = cp.execFileSync('gh', ['run', 'list', '--repo', 'aveca/sargagame', '--limit', '5', '--json', 'status,conclusion,workflowName'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 12000 })
+    const raw = cp.execFileSync('gh', ['run', 'list', '--repo', 'aveca/sargagame', '--limit', '5', '--json', 'status,conclusion,workflowName'], { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 12000, windowsHide: true })
     ci = JSON.parse(raw).map(r => ({ wf: r.workflowName, status: r.status, concl: r.conclusion }))
   } catch {}
   return {

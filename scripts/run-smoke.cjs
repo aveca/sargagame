@@ -33,6 +33,7 @@ async function main() {
         // Exécuter le smoke test avec timeout
         // execFileSync with encoding returns stdout as string, stderr is not captured
         const output = execFileSync(process.execPath, [SMOKE_SCRIPT], {
+        windowsHide: true,
           cwd: ROOT,
           encoding: 'utf8',
           timeout: TIMEOUT_MS,

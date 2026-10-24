@@ -425,7 +425,7 @@ async function executeLocalAgentTask(task, cfg, log) {
     
     // 8. Create PR
     const body = [
-      `## 🤖 Autonomous UX Improvement`,
+      `## ðŸ¤– Autonomous UX Improvement`,
       '',
       `**Task**: ${task.id} — ${task.title}`,
       `**Evidence**: ${task.evidence || 'N/A'}`,
@@ -527,8 +527,8 @@ async function runGateInline(worktreePath, files, log) {
     
     // 2. Bundle budget
     log('Gate: Checking bundle budget...');
-    execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], { 
-      cwd: ROOT, encoding: 'utf8', timeout: 60000 
+    execFileSync(process.execPath, [path.join(ROOT, 'scripts', 'check-bundle-budget.cjs')], {
+        windowsHide: true, cwd: ROOT, encoding: 'utf8', timeout: 60000
     });
     steps.push('bundle-budget');
     

@@ -101,9 +101,10 @@ const voParts = L.map((text, i) => {
   const hash = crypto.createHash('md5').update(VOICE + text).digest('hex').slice(0, 10)
   const mp3 = path.join(CACHE, `vo-${hash}.mp3`)
   if (!fs.existsSync(mp3)) {
-    execFileSync('python', ['-m', 'edge_tts', '--voice', VOICE, '--rate', '+8%', '--text', text, '--write-media', mp3], { stdio: 'pipe' })
+    execFileSync('python', ['-m', 'edge_tts', '--voice', VOICE, '--rate', '+8%', '--text', text, '--write-media', mp3], {
+        windowsHide: true, stdio: 'pipe' })
   }
-  const dur = parseFloat(execFileSync('ffprobe', ['-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp3]).toString())
+  const dur = parseFloat(execFileSync('ffprobe', ['-v', 'quiet', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp3], { windowsHide: true }).toString())
   return { text, mp3, dur }
 })
 
@@ -111,7 +112,8 @@ const voParts = L.map((text, i) => {
 // Scène 2 = screenshot LIVE de notre carte (vrai produit à l'écran)
 const mapShot = path.join(CACHE, `map-${REGION}.png`)
 try {
-  execFileSync('node', [path.join(__dirname, 'shoot-map.cjs'), DOMAIN, mapShot], { stdio: 'pipe', timeout: 90000 })
+  execFileSync('node', [path.join(__dirname, 'shoot-map.cjs'), DOMAIN, mapShot], {
+        windowsHide: true, stdio: 'pipe', timeout: 90000 })
 } catch (e) { console.log('  (screenshot carte indisponible — fallback photo)') }
 const scenes = [
   { img: photoOf(worst.id), grade: 'eq=saturation=0.42:brightness=-0.06:contrast=1.06', zoom: 'in' },
@@ -221,7 +223,8 @@ const args = [...inputs, '-i', metaFile,
   '-movflags', '+faststart', '-y', outMp4]
 console.log('Rendu ffmpeg…')
 try {
-  execFileSync('ffmpeg', args, { stdio: 'pipe', cwd: CACHE })
+  execFileSync('ffmpeg', args, {
+        windowsHide: true, stdio: 'pipe', cwd: CACHE })
 } catch (e) {
   const err = String(e.stderr)
   fs.writeFileSync(path.join(CACHE, 'ffmpeg-err.log'), err)
@@ -230,6 +233,7 @@ try {
   process.exit(1)
 }
 // Thumbnail = frame du reveal
-execFileSync('ffmpeg', ['-ss', String((scDur[0] + scDur[1] - 2 * XFADE + scDur[2] / 2).toFixed(2)), '-i', outMp4, '-frames:v', '1', '-y', path.join(OUT, base + '-thumb.jpg')], { stdio: 'pipe' })
+execFileSync('ffmpeg', ['-ss', String((scDur[0] + scDur[1] - 2 * XFADE + scDur[2] / 2).toFixed(2)), '-i', outMp4, '-frames:v', '1', '-y', path.join(OUT, base + '-thumb.jpg')], {
+        windowsHide: true, stdio: 'pipe' })
 const sz = (fs.statSync(outMp4).size / 1048576).toFixed(1)
 console.log(`OK → ${outMp4} (${sz} Mo, ${total.toFixed(1)}s) + .srt + thumb`)

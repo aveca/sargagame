@@ -60,7 +60,8 @@ function savePids(pids) { fs.writeFileSync(PID_FILE, JSON.stringify(pids, null, 
 function killProcessTree(pid, signal = 'SIGTERM') {
   if (IS_WIN) {
     const { spawnSync } = require('child_process');
-    const result = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], { encoding: 'utf8' });
+    const result = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+        windowsHide: true, encoding: 'utf8' });
     return result.status === 0;
   } else {
     try {

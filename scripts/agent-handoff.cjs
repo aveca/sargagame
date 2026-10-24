@@ -28,7 +28,8 @@ const STATUS = args.includes('--status');
 
 function readFile(p) { return fs.readFileSync(p, 'utf-8'); }
 function writeFile(p, c) { fs.writeFileSync(p, c, 'utf-8'); }
-function run(cmd) { return execSync(cmd, { encoding: 'utf-8', stdio: 'pipe' }).trim(); }
+function run(cmd) { return execSync(cmd, {
+        windowsHide: true, encoding: 'utf-8', stdio: 'pipe' }).trim(); }
 
 function parseTasks(content) {
   const lines = content.split('\n');

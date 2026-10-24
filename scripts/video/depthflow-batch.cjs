@@ -61,13 +61,15 @@ for (const p of picked) {
     // venait surtout du double encodage intermédiaire crf20 -> crops crf26.
     execFileSync(DF, ['input', '-i', path.join(ROOT, 'public/beaches', p.file), 'dolly',
       'main', '-o', src, '--time', '6', '--fps', '30', '--width', '2048', '--ssaa', '1.5', '--quality', '80'],
-      { stdio: ['ignore', 'ignore', 'ignore'], env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 120000 })
+      {
+        windowsHide: true, stdio: ['ignore', 'ignore', 'ignore'], env: { ...process.env, PYTHONIOENCODING: 'utf-8' }, timeout: 120000 })
     for (const c of CROPS) {
       execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', src,
         '-filter_complex', `[0:v]${c.vf},split[a][b];[b]reverse[r];[a][r]concat=n=2:v=1[v]`,
         '-map', '[v]', '-c:v', 'libx264', '-preset', c.preset, '-crf', c.crf,
         '-pix_fmt', 'yuv420p', '-movflags', '+faststart', '-an',
-        path.join(OUT, `${p.id}${c.suffix}.mp4`)], { stdio: ['ignore', 'ignore', 'pipe'], timeout: 180000 })
+        path.join(OUT, `${p.id}${c.suffix}.mp4`)], {
+        windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'], timeout: 180000 })
     }
     fs.rmSync(src, { force: true })
     done++

@@ -151,7 +151,8 @@ function getJobState() {
 // ============================================================
 async function gitFetch(repoPath) {
   try {
-    execSync('git fetch origin', { cwd: repoPath, encoding: 'utf8', timeout: 60000 });
+    execSync('git fetch origin', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 60000 });
     console.log(`[git] FETCH OK for ${repoPath}`);
     return true;
   } catch (e) {
@@ -162,7 +163,8 @@ async function gitFetch(repoPath) {
 
 async function gitPull(repoPath) {
   try {
-    execSync(`git pull origin ${globalJobState.branch || "main"}`, { cwd: repoPath, encoding: 'utf8', timeout: 60000 });
+    execSync(`git pull origin ${globalJobState.branch || "main"}`, {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 60000 });
     console.log(`[git] PULL OK for ${repoPath}`);
     return true;
   } catch (e) {
@@ -174,8 +176,10 @@ async function gitPull(repoPath) {
 // Vérifier divergence locale/remote
 async function checkDivergence(repoPath) {
   try {
-    const localHead = execSync('git rev-parse HEAD', { cwd: repoPath, encoding: 'utf8' }).trim();
-    const remoteHead = execSync(`git rev-parse origin/${globalJobState.branch || "main"}`, { cwd: repoPath, encoding: 'utf8' }).trim();
+    const localHead = execSync('git rev-parse HEAD', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' }).trim();
+    const remoteHead = execSync(`git rev-parse origin/${globalJobState.branch || "main"}`, {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' }).trim();
     return localHead !== remoteHead;
   } catch {
     return false;
@@ -205,7 +209,8 @@ function detectAndNormalizeReadOnly(filePath) {
 // ============================================================
 async function listLocalBranches(repoPath) {
   try {
-    const branches = execSync('git branch --format "%(refersname:short)"', { cwd: repoPath, encoding: 'utf8' }).trim();
+    const branches = execSync('git branch --format "%(refersname:short)"', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' }).trim();
     return branches ? branches.split('\n').filter(b => b.trim()) : [];
   } catch {
     return [];
@@ -438,7 +443,8 @@ async function captureBaseline(repoPath, repo) {
   if (repo === 'sargagame') {
     // Pour Sargagame: capturer état build, bundle, tests
     try {
-      const buildOutput = execSync('npm run build 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
+      const buildOutput = execSync('npm run build 2>&1', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 120000 });
       return { type: 'build', output: buildOutput.slice(0, 500) };
     } catch {
       return { type: 'build', error: 'Build failed' };
@@ -497,17 +503,20 @@ async function executeAgentTask(repoPath, repo, taskType, agent, job) {
 async function runTests(repoPath, repo) {
   try {
     if (repo === 'sargagame') {
-      const result = execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
+      const result = execSync('npm test 2>&1', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 120000 });
       return { passed: result.status === 0, output: result.stdout.slice(-200) };
     }
     if (repo === 'casinobabe') {
       // Tests Lua + diff --check
-      const result = execSync('git diff --check 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 30000 });
+      const result = execSync('git diff --check 2>&1', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 30000 });
       return { passed: result.status === 0, output: result.stdout };
     }
     if (repo === 'desktopagent') {
       // Tests pytest
-      const result = execSync('npm test 2>&1', { cwd: repoPath, encoding: 'utf8', timeout: 120000 });
+      const result = execSync('npm test 2>&1', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8', timeout: 120000 });
       return { passed: result.status === 0, output: result.stdout.slice(-200) };
     }
     return { passed: true };
@@ -520,18 +529,23 @@ async function runTests(repoPath, repo) {
 async function createPullRequest(repoPath, repo, jobId) {
   try {
     // Vérifier si on est sur une branche feature
-    const branchOutput = execSync('git branch --show-current', { cwd: repoPath, encoding: 'utf8' }).trim();
+    const branchOutput = execSync('git branch --show-current', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' }).trim();
     if (!branchOutput || branchOutput === 'main') {
       console.log(`[${jobId}] On main, creating temp branch`);
-      execSync('git checkout -b temp-fix-v3', { cwd: repoPath, encoding: 'utf8' });
+      execSync('git checkout -b temp-fix-v3', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     }
     
     // Commit des changements
-    execSync('git add -A', { cwd: repoPath, encoding: 'utf8' });
-    execSync(`git commit -m "chore: auto-factory v3 job ${jobId}"`, { cwd: repoPath, encoding: 'utf8' });
+    execSync('git add -A', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
+    execSync(`git commit -m "chore: auto-factory v3 job ${jobId}"`, {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     
     // Push
-    execSync('git push origin HEAD', { cwd: repoPath, encoding: 'utf8' });
+    execSync('git push origin HEAD', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     
     // Créer PR (simulé - nécessite gh CLI)
     console.log(`[${jobId}] PR creation simulated`);
@@ -554,11 +568,14 @@ async function waitForCI(repoPath, repo) {
 async function mergeToMain(repoPath, repo) {
   try {
     // Passer sur main
-    execSync('git checkout main', { cwd: repoPath, encoding: 'utf8' });
+    execSync('git checkout main', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     // Fusionner
-    execSync(`git merge --no-ff HEAD`, { cwd: repoPath, encoding: 'utf8' });
+    execSync(`git merge --no-ff HEAD`, {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     // Push
-    execSync('git push origin main', { cwd: repoPath, encoding: 'utf8' });
+    execSync('git push origin main', {
+        windowsHide: true, cwd: repoPath, encoding: 'utf8' });
     return { merged: true, timestamp: new Date().toISOString() };
   } catch (e) {
     console.log(`[merge] Failed: ${e.message}`);
