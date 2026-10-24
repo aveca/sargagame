@@ -31,9 +31,47 @@ function fetchVersion(domain) {
   } catch (_) { return { v: null, b: null } }
 }
 
-// Clé de déduplication stable : domaine + route + étape + type de défaut.
+// Les rapports ne conservent jamais les query params (jetons, e-mails, identifiants).
+function safeResourceUrl(value) {
+  const raw = String(value || '')
+  try {
+    const u = new URL(raw)
+    return `${u.origin}${u.pathname}`.slice(0, 180)
+  } catch (_) {
+    return raw.split(/[?#]/, 1)[0].slice(0, 180)
+  }
+}
+
+function isIgnoredResource(value) {
+  return /b2b-partners|referral/i.test(String(value || ''))
+}
+
+function resourceHttpDefect(domain, status, url) {
+  if (Number(status) < 400 || isIgnoredResource(url)) return null
+  const code = Number(status)
+  const type = code === 404 ? 'http-404' : code >= 500 ? 'server-error' : 'http-error'
+  return { domain, step: 'any', type, detail: `${code} ${safeResourceUrl(url)}` }
+}
+
+function resourceNetworkDefect(domain, url, errorText) {
+  const reason = String(errorText || '').trim()
+  if (!reason || isIgnoredResource(url) || /ERR_ABORTED|NS_BINDING_ABORTED/i.test(reason)) return null
+  return { domain, step: 'any', type: 'network-error', detail: `${reason} ${safeResourceUrl(url)}` }
+}
+
+function consoleDefect(domain, value) {
+  const detail = String(value || '').slice(0, 200)
+  // Les erreurs HTTP sont rapportées avec leur URL par resourceHttpDefect.
+  if (/Failed to load resource/i.test(detail)) return null
+  if (/Uncaught|TypeError|ReferenceError/i.test(detail)) {
+    return { domain, step: 'any', type: 'console-error', detail }
+  }
+  return null
+}
+
+// Clé de déduplication stable : domaine + étape + type + URL/erreur précise.
 function dedupKey(item) {
-  return [item.domain, item.step, item.type, String(item.detail || '').slice(0, 120)].join('|').toLowerCase()
+  return [item.domain, item.step, item.type, String(item.detail || '').slice(0, 220)].join('|').toLowerCase()
 }
 
 function classify(defects) {
@@ -53,7 +91,14 @@ async function runJourney(browser, region, viewport) {
   const consoleErrors = []
   page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 200)) })
   page.on('pageerror', e => { defects.push({ domain, step: 'any', type: 'fatal-js', detail: String(e.message || e).slice(0, 200) }) })
-  page.on('response', r => { if (r.status() >= 500) defects.push({ domain, step: 'any', type: 'server-error', detail: `${r.status()} ${r.url().slice(0, 120)}` }) })
+  page.on('response', r => {
+    const defect = resourceHttpDefect(domain, r.status(), r.url())
+    if (defect) defects.push(defect)
+  })
+  page.on('requestfailed', request => {
+    const defect = resourceNetworkDefect(domain, request.url(), request.failure() && request.failure().errorText)
+    if (defect) defects.push(defect)
+  })
 
   try {
     // 1. Accueil
@@ -139,11 +184,8 @@ async function runJourney(browser, region, viewport) {
     if (!closed) defects.push({ domain, step: 'close-fiche', type: 'nav-broken', detail: 'bouton fermeture fiche introuvable/inactif' })
 
     consoleErrors.slice(0, 10).forEach(txt => {
-      // 404 connus hors périmètre (mission #41) : b2b-partners + referral PHP en preview.
-      if (/b2b-partners|referral/i.test(txt)) return
-      if (/Failed to load resource.*404|Uncaught|TypeError|ReferenceError/i.test(txt)) {
-        defects.push({ domain, step: 'any', type: 'console-error', detail: txt })
-      }
+      const defect = consoleDefect(domain, txt)
+      if (defect) defects.push(defect)
     })
   } catch (e) {
     defects.push({ domain, step: 'journey', type: 'fatal-js', detail: String(e.message || e).slice(0, 220) })
@@ -197,4 +239,12 @@ async function main() {
 }
 
 if (require.main === module) main().catch(e => { console.error('ERREUR user-journey-audit :', e.message); process.exit(2) })
-module.exports = { dedupKey, classify }
+module.exports = {
+  dedupKey,
+  classify,
+  safeResourceUrl,
+  isIgnoredResource,
+  resourceHttpDefect,
+  resourceNetworkDefect,
+  consoleDefect
+}
