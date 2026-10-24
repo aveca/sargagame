@@ -1393,7 +1393,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // BELLES SANS JS. scripts/lib/scene-svg.cjs porte la géométrie VERBATIM
           // de BeachScene+Veilleur. SSR pur, déterministe (seed=beach.id, phase
           // figée). Lit le live sargassum.json pour le score réel + l'heure LIVE ;
-          // forecast déterministe via buildWeeklyBatch (clé = beach.id, 136/136).
+          // SEO : n'afficher une prévision que si le JSON satellite contient une entrée weekly réelle.
           let _heroLib = null
           try { _heroLib = _require('./scripts/lib/scene-svg.cjs') } catch (e) { console.warn('   → hero scene-svg non chargé:', e.message) }
           // Fiche-dive A/B assets (extracted from design/proto-plage-plongee.html)
@@ -1417,14 +1417,11 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // la source des barres de facteurs de la plongée (heroLv n'a PAS le breakdown).
             for (const [k, v] of Object.entries(_lj.scores || {})) { _heroLive.scoresBySarg[k] = v }
           } catch (e) { /* live absent → fallback déterministe, jamais bloquant */ }
-          // Forecast déterministe pour les 136 plages (clé = beaches-list id).
-          let _heroWeekly = {}
-          try { _heroWeekly = buildWeeklyBatch(SARGASSUM_REF) } catch (e) { _heroWeekly = {} }
           const _statusWordFR = { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter' }
           // Ligne forecast 7j lisible (jour: statut) pour la bande verdict.
           const heroForecastLine = (b) => {
             const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
-            const wk = _heroWeekly[b.id] || _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
+            const wk = _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
             const fc = wk && wk.forecast
             if (!fc || !fc.length) return ''
             return fc.slice(0, 7).map(f => `${f.day} ${_statusWordFR[f.status] || f.status}`).join(' · ')
@@ -2024,14 +2021,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // Éligibilité plongée : seulement les plages avec score+facteurs réels
                 // (~20/136). Ailleurs → contrôle (jamais de plongée avec données vides/MOCK).
                 const _fd_eligible = !!_fd_score
-                // Resolve the weekly entry, then NORMALIZE to a forecast array.
-                // _heroWeekly[b.id] is the wrapper {forecast:[…], drift,…} (see
-                // heroForecastLine l.957) — the old chain fed that object straight
-                // through, so the engine's DATA.forecast[0].afai threw on ~133/136
-                // beaches (frozen + blank journal). Unwrap .forecast → array | null.
+                // Resolve only a real satellite-pipeline weekly entry and normalize it.
+                // Missing forecast stays null: no deterministic/synthetic replacement.
                 const _fd_wk = (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[slugify(b.name)])
                   || (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[b.id])
-                  || _heroWeekly[b.id]
                   || null
                 const _fd_forecast = Array.isArray(_fd_wk) ? _fd_wk
                   : (_fd_wk && Array.isArray(_fd_wk.forecast) ? _fd_wk.forecast : null)
