@@ -104,7 +104,7 @@
       }
     ],
     "nextArrivalRisk": "The model indicates a possible arrival risk at {beach} on {day} ({date}); this is an estimate, not a certainty.",
-    "nextArrivalNone": "The available outlook does not indicate a significant arrival at {beach} over the next seven days; the absence of that signal does not guarantee a seaweed-free beach."
+    "nextArrivalNone": "The available forecast data for {beach} does not flag a significant arrival; the absence of that signal does not guarantee clear beach conditions."
   },
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Beach Status & Outlook",
