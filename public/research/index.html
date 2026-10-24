@@ -4,14 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Research space â€” open data & audited reliability of sargassum forecasts</title>
-<meta name="description" content="The public, auditable track record of our sargassum forecasts: 3,420 forecasts checked against satellite, Copernicus/NOAA method, frozen non-back-adjustable archive. Open data for researchers, institutions and tourism. Martinique & Guadeloupe."/>
+<meta name="description" content="The public, auditable track record of sargassum forecasts: published Copernicus/NOAA method, a frozen non-back-adjustable archive, and open data. Statistics appear only when a recent record is verified. Martinique & Guadeloupe."/>
 <link rel="canonical" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/recherche/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/investigacion/"/>
 <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/recherche/"/>
 <meta property="og:title" content="Research space â€” open data & audited reliability"/>
-<meta property="og:description" content="3,420 sargassum forecasts checked against satellite, published method, non-back-adjustable archive. Open data for research and tourism."/>
+<meta property="og:description" content="Published Copernicus/NOAA method, auditable archive and open sargassum forecast data. Statistics are hidden when the track record is stale."/>
 <meta property="og:url" content="https://sargasses-martinique.com/research/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
@@ -22,8 +22,8 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargassum Watch","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Research space","item":"https://sargasses-martinique.com/research/"}]}
 </script>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Dataset","name":"Auditable sargassum forecast track record â€” French West Indies","alternateName":"PalmarÃ¨s auditable des prÃ©visions sargasses â€” Antilles franÃ§aises","description":"Daily comparison between the issued sargassum forecast (D+1 to D+6, frozen at issue, append-only archive) and the actual satellite observation at the target date, for beaches in Martinique and Guadeloupe. Includes status accuracy by horizon and by regime (calm season / arrivals), AFAI mean absolute error, and false-alarm rate. Recomputed on every archive update; no figure is back-adjustable.","url":"https://sargasses-martinique.com/research/","keywords":["sargassum","sargasses","AFAI","Copernicus","Sentinel-3","forecast","Martinique","Guadeloupe","Caribbean","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Lesser Antilles)"},"temporalCoverage":"2026-05-17/2026-06-17","measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI via Copernicus Marine / ERDDAP; NOAA SIR thresholds (Wang & Hu 2016)","variableMeasured":["status hit rate (%)","AFAI MAE","false-alarm rate (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
+<script id="research-dataset-schema" type="application/ld+json">
+{"@context":"https://schema.org","@type":"Dataset","name":"Auditable sargassum forecast track record â€” French West Indies","alternateName":"PalmarÃ¨s auditable des prÃ©visions sargasses â€” Antilles franÃ§aises","description":"Daily comparison between the issued sargassum forecast (D+1 to D+6, frozen at issue, append-only archive) and the actual satellite observation at the target date, for beaches in Martinique and Guadeloupe. Includes status accuracy by horizon and by regime (calm season / arrivals), AFAI mean absolute error, and false-alarm rate. Recomputed on every archive update; no figure is back-adjustable.","url":"https://sargasses-martinique.com/research/","keywords":["sargassum","sargasses","AFAI","Copernicus","Sentinel-3","forecast","Martinique","Guadeloupe","Caribbean","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Lesser Antilles)"},"measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI via Copernicus Marine / ERDDAP; NOAA SIR thresholds (Wang & Hu 2016)","variableMeasured":["status hit rate (%)","AFAI MAE","false-alarm rate (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -64,6 +64,7 @@
   .meta .k{font-size:10.5px;color:var(--sg-mute);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
   .freshness{font-size:11.5px;color:var(--sg-mute);margin-top:14px;display:flex;align-items:center;gap:6px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--sg-clean);box-shadow:0 0 0 3px var(--sg-clean-bg)}
+  .freshness.stale .dot{background:#c96b3a;box-shadow:0 0 0 3px rgba(201,107,58,.15)}
   /* â”€â”€ TABLE â”€â”€ */
   table.hz{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
   table.hz th,table.hz td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--sg-border-m)}
@@ -130,23 +131,23 @@
 <section class="px"><div class="wrap">
   <div class="seclabel">The record</div>
   <h2 class="t">What our forecasts are worth</h2>
-  <p class="b">Period covered: <b id="r-window">May 30 â†’ Jun 28, 2026</b> Â· <span id="r-sample">3,180</span> forecasts checked against satellite Â· Martinique &amp; Guadeloupe (43 days of archive, <b>3,720</b> pairs in total).</p>
+  <p class="b">Period covered: <b id="r-window">—</b> · <span id="r-sample">—</span> forecasts checked against satellite · Martinique &amp; Guadeloupe.</p>
 
   <div class="stat">
     <div class="big">
-      <div class="num" id="r-clean-pct">100%</div>
+      <div class="num" id="r-clean-pct">—</div>
       <div>
         <div class="lab">of our â€œclean waterâ€ forecasts proved correct</div>
-        <div class="sub">over <span id="r-clean-n">2,362</span> â€œclean waterâ€ forecasts checked against satellite (calm season).</div>
+        <div class="sub">over <span id="r-clean-n">—</span> â€œclean waterâ€ forecasts checked against satellite (calm season).</div>
       </div>
     </div>
     <div class="metarow">
-      <div class="meta"><div class="v" id="r-overall">77%</div><div class="k">Overall accuracy*</div></div>
-      <div class="meta"><div class="v" id="r-mae">0.044</div><div class="k">AFAI MAE</div></div>
-      <div class="meta"><div class="v" id="r-pairs">3,420</div><div class="k">Pairs verified</div></div>
+      <div class="meta"><div class="v" id="r-overall">—</div><div class="k">Overall accuracy*</div></div>
+      <div class="meta"><div class="v" id="r-mae">—</div><div class="k">AFAI MAE</div></div>
+      <div class="meta"><div class="v" id="r-pairs">—</div><div class="k">Pairs verified</div></div>
       <div class="meta"><div class="v">MQÂ·GP</div><div class="k">Coverage</div></div>
     </div>
-    <div class="freshness"><span class="dot"></span> Figures as of <span id="r-gen">Jun 17, 2026</span> â€” recomputed on every archive update.</div>
+    <div id="r-freshness" class="freshness stale"><span class="dot"></span><span id="r-status">Figures stay hidden until a recent track record is verified.</span></div>
   </div>
   <p class="b" style="font-size:12px;margin-top:12px">* Overall accuracy aggregates all regimes; it <b>masks</b> that our calm-season alerts are far less reliable than our â€œclean waterâ€ forecasts. We refuse to headline it alone â€” see below.</p>
 </div></section>
@@ -158,14 +159,7 @@
   <p class="b">Status accuracy (clean / moderate / avoid) by number of days ahead.</p>
   <table class="hz">
     <thead><tr><th>Horizon</th><th>Accuracy</th><th></th><th>Pairs</th></tr></thead>
-    <tbody id="r-hz">
-      <tr><td>D+1</td><td class="n">76%</td><td><div class="bar"><span style="width:76%"></span></div></td><td class="n">620</td></tr>
-      <tr><td>D+2</td><td class="n">72%</td><td><div class="bar"><span style="width:72%"></span></div></td><td class="n">600</td></tr>
-      <tr><td>D+3</td><td class="n">72%</td><td><div class="bar"><span style="width:72%"></span></div></td><td class="n">580</td></tr>
-      <tr><td>D+4</td><td class="n">76%</td><td><div class="bar"><span style="width:76%"></span></div></td><td class="n">560</td></tr>
-      <tr><td>D+5</td><td class="n">82%</td><td><div class="bar"><span style="width:82%"></span></div></td><td class="n">540</td></tr>
-      <tr><td>D+6</td><td class="n">88%</td><td><div class="bar"><span style="width:88%"></span></div></td><td class="n">520</td></tr>
-    </tbody>
+    <tbody id="r-hz"></tbody>
   </table>
   <p class="b" style="font-size:12px;margin-top:12px">Accuracy <b>rises</b> at longer horizons because in calm season the sea stays clean: forecasting â€œstill cleanâ€ at D+6 is easy and verifies. This profile <b>will tighten</b> in arrival season, when bank dynamics dominate â€” and we'll republish it as-is.</p>
 </div></section>
@@ -176,9 +170,9 @@
     <h3>âš ï¸ What our figures don't say</h3>
     <p class="b" style="margin:0 0 6px">A model's transparency is judged by what it admits, not by what it displays.</p>
     <ul>
-      <li>Over the period, our <b>alerts</b> (sargassum expected) carry a false-alarm rate of about <b id="r-fa">23%</b> in calm season: the model â€œcries wolfâ€ more than it should. So we issue them at <b>cautious confidence</b> and flag them as such until satellite data confirms.</li>
+      <li>For the period shown, the calm-season false-alarm rate for <b>alerts</b> (sargassum expected) is <b id="r-fa">—</b>. The model can cry wolf; these alerts remain at <b>cautious confidence</b> until satellite data confirms them.</li>
       <li>Beyond <b>D+3</b>, reliability decreases: the forecast becomes indicative.</li>
-      <li>The headline figure (100% â€œclean waterâ€) holds <b>for this regime and this period</b> â€” it will be recomputed, up or down, on every update.</li>
+      <li>Clean-water accuracy applies only to the regime and period shown above; it stays hidden until the track record is verified as recent.</li>
     </ul>
   </div>
 </div></section>
@@ -255,39 +249,47 @@
 
 <script>
 (function(){
-  var EN_MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function fmt(n){try{return Number(n).toLocaleString('en-US')}catch(e){return String(n)}}
-  function enDate(iso){try{var d=new Date(iso);return EN_MONTHS[d.getUTCMonth()]+' '+d.getUTCDate()+', '+d.getUTCFullYear()}catch(e){return iso}}
-  function set(id,v){var el=document.getElementById(id);if(el!=null&&v!=null)el.textContent=v}
-  function cell(text,cls){var td=document.createElement('td');if(cls)td.className=cls;td.textContent=text;return td}
-  function barCell(pct){var td=document.createElement('td');var bar=document.createElement('div');bar.className='bar';
-    var span=document.createElement('span');span.style.width=pct+'%';bar.appendChild(span);td.appendChild(bar);return td}
-  fetch('/api/copernicus/track-record.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){
-    if(!d)return;
-    if(d.window){set('r-window',enDate(d.window.from)+' â†’ '+enDate(d.window.to))}
-    if(d.sampleSize){set('r-sample',fmt(d.sampleSize));set('r-pairs',fmt(d.sampleSize))}
-    if(d.generatedAt){set('r-gen',enDate(d.generatedAt))}
-    if(d.overall){set('r-overall',d.overall.statusHitRatePct+'%');set('r-mae',(d.overall.afaiMAE!=null?d.overall.afaiMAE.toFixed(3):''))}
-    if(d.byRegime){
-      var best=null;Object.keys(d.byRegime).forEach(function(k){var x=d.byRegime[k];if(x&&x.cleanSamples>0&&(!best||x.cleanSamples>best.cleanSamples))best=x});
-      if(best){set('r-clean-pct',best.cleanReliabilityPct+'%');set('r-clean-n',fmt(best.cleanSamples));
-        if(best.falseAlarmRatePct!=null)set('r-fa',best.falseAlarmRatePct+'%')}
-    }
-    if(Array.isArray(d.byHorizon)&&d.byHorizon.length){
-      var tb=document.getElementById('r-hz');
-      if(tb){
-        while(tb.firstChild)tb.removeChild(tb.firstChild);
-        d.byHorizon.forEach(function(h){
-          var tr=document.createElement('tr');
-          tr.appendChild(cell('D+'+h.day));
-          tr.appendChild(cell(h.hitRatePct+'%','n'));
-          tr.appendChild(barCell(h.hitRatePct));
-          tr.appendChild(cell(fmt(h.pairs),'n'));
-          tb.appendChild(tr);
-        });
-      }
-    }
-  }).catch(function(){/* fallback = static server-rendered figures */});
+  var MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  var MAX_AGE_MS=36*60*60*1000;
+  function fmt(n){try{return Number(n).toLocaleString("en-US")}catch(e){return String(n)}}
+  function localDate(iso){var d=new Date(iso);if(!Number.isFinite(d.getTime()))return '—';return MONTHS[d.getUTCMonth()]+' '+d.getUTCDate()+', '+d.getUTCFullYear();}
+  function set(id,v){var el=document.getElementById(id);if(el&&v!=null)el.textContent=String(v);}
+  function cell(text,cls){var td=document.createElement('td');if(cls)td.className=cls;td.textContent=String(text);return td;}
+  function barCell(pct){var td=document.createElement('td');var bar=document.createElement('div');bar.className='bar';var span=document.createElement('span');span.style.width=pct+'%';bar.appendChild(span);td.appendChild(bar);return td;}
+  function validPct(n){return typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100;}
+  function validDay(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;var ms=Date.parse(s+'T00:00:00Z');return Number.isFinite(ms)&&new Date(ms).toISOString().slice(0,10)===s;}
+  function validRecord(d){
+    if(!d||!d.freshness||d.freshness.stale!==false)return false;
+    var generatedMs=Date.parse(d.generatedAt);var age=Date.now()-generatedMs;
+    if(!Number.isFinite(generatedMs)||age < -5*60*1000||age>MAX_AGE_MS)return false;
+    if(!d.window||!validDay(d.window.from)||!validDay(d.window.to)||Date.parse(d.window.from+'T00:00:00Z')>Date.parse(d.window.to+'T00:00:00Z'))return false;
+    if(!Number.isInteger(d.sampleSize)||d.sampleSize<=0)return false;
+    if(!d.overall||!validPct(d.overall.statusHitRatePct)||typeof d.overall.afaiMAE!=='number'||!Number.isFinite(d.overall.afaiMAE)||d.overall.afaiMAE<0)return false;
+    if(!Array.isArray(d.byHorizon)||!d.byHorizon.length)return false;
+    for(var i=0;i<d.byHorizon.length;i++){var h=d.byHorizon[i];if(!h||!Number.isInteger(h.day)||h.day<1||h.day>7||!validPct(h.hitRatePct)||!Number.isInteger(h.pairs)||h.pairs<0)return false;}
+    var regimes=d.byRegime||{};
+    return Object.keys(regimes).some(function(k){var x=regimes[k];return x&&Number.isInteger(x.cleanSamples)&&x.cleanSamples>0&&validPct(x.cleanReliabilityPct);});
+  }
+  function clearRecord(){
+    ['r-window','r-sample','r-clean-pct','r-clean-n','r-overall','r-mae','r-pairs','r-fa'].forEach(function(id){set(id,'—');});
+    var tb=document.getElementById('r-hz');if(tb)while(tb.firstChild)tb.removeChild(tb.firstChild);
+    var schemaEl=document.getElementById('research-dataset-schema');
+    if(schemaEl){try{var schema=JSON.parse(schemaEl.textContent);delete schema.temporalCoverage;schemaEl.textContent=JSON.stringify(schema);}catch(e){}}
+  }
+  function setStatus(message,isStale){var box=document.getElementById('r-freshness');if(box)box.className=isStale?'freshness stale':'freshness';set('r-status',message);}
+  function updateSchema(d){var schemaEl=document.getElementById('research-dataset-schema');if(!schemaEl)return;try{var schema=JSON.parse(schemaEl.textContent);schema.temporalCoverage=d.window.from+'/'+d.window.to;schemaEl.textContent=JSON.stringify(schema);}catch(e){}}
+  function render(d){
+    set('r-window',localDate(d.window.from)+' → '+localDate(d.window.to));
+    set('r-sample',fmt(d.sampleSize));set('r-pairs',fmt(d.sampleSize));
+    set('r-overall',d.overall.statusHitRatePct+'%');set('r-mae',d.overall.afaiMAE.toFixed(3));
+    var best=null;Object.keys(d.byRegime||{}).forEach(function(k){var x=d.byRegime[k];if(x&&x.cleanSamples>0&&validPct(x.cleanReliabilityPct)&&(!best||x.cleanSamples>best.cleanSamples))best=x;});
+    set('r-clean-pct',best.cleanReliabilityPct+'%');set('r-clean-n',fmt(best.cleanSamples));
+    set('r-fa',best.falseAlarmRatePct!=null&&validPct(best.falseAlarmRatePct)?best.falseAlarmRatePct+'%':'—');
+    var tb=document.getElementById('r-hz');
+    if(tb){while(tb.firstChild)tb.removeChild(tb.firstChild);d.byHorizon.forEach(function(h){var tr=document.createElement('tr');tr.appendChild(cell('D+'+h.day));tr.appendChild(cell(h.hitRatePct+'%','n'));tr.appendChild(barCell(h.hitRatePct));tr.appendChild(cell(fmt(h.pairs),'n'));tb.appendChild(tr);});}
+    updateSchema(d);setStatus("Track record verified as current on "+localDate(d.generatedAt)+'.',false);
+  }
+  fetch('/api/copernicus/track-record.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(d){if(!validRecord(d)){clearRecord();setStatus("The track record is stale or incomplete; figures are hidden until a verifiable update is available.",true);return;}render(d);}).catch(function(){clearRecord();setStatus("The track record is unavailable; figures remain hidden.",true);});
 })();
 </script>
 </body>
