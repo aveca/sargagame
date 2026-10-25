@@ -155,6 +155,7 @@ jobs:
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
+            git stash --include-untracked || true
             if ! git rebase -X theirs "origin/$BRANCH"; then
               echo "::warning::git rebase -X theirs échoué (tentative $i/5)"
               git rebase --abort || true
@@ -168,6 +169,7 @@ jobs:
             if git diff --quiet "origin/$BRANCH" HEAD --; then
               echo "Données déjà publiées par une exécution concurrente — publication acquise."
               push_ok=1
+              git stash pop || true
               break
             fi
             if git push origin "HEAD:$BRANCH"; then
@@ -176,6 +178,7 @@ jobs:
               break
             fi
             echo "::warning::git push échoué (tentative $i/5), pause 20s"
+            git stash pop || true
             sleep 20
           done
           if [ "$push_ok" != "1" ]; then
