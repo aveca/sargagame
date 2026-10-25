@@ -10273,6 +10273,18 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </div>
           )
         })()}
+        )}
+        {/* Tendance J+1 (additif · rollback ?herotomo=0) */}
+        {!/[?&]herotomo=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&j1&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"j1"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:j1==="clean"?"#22C55E":j1==="moderate"?"#F59E0B":"#E8522A",flexShrink:0}}/>
+            <span style={{color:"#fff"}}>{_t(lang,"Demain","Tomorrow","Mañana")}</span>
+          </span>
+          <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{forecastLabel(j1,lang)}</span>
+          <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>{j1==="clean"?"▲":j1==="moderate"?"▬":"▼"}</span>
+        </div>
+        )}
         {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
