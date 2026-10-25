@@ -10117,6 +10117,17 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
   const statusShort=b=>b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
     :b.status==="moderate"?_t(lang,"Modéré","Moderate","Moderada"):_t(lang,"À éviter","Avoid","Evitar")
   const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
+  // Compteur live « coast » : plages propres / à éviter sur la sélection du hero.
+  // Aucune requête reseau : topBeaches est deja en memoire (passe par l appelant).
+  const liveCounts=(()=>{
+    const list=Array.isArray(topBeaches)?topBeaches:(Array.isArray(pickBeaches)?pickBeaches:[])
+    let clean=0,avoid=0
+    for(const b of list){if(!b||!b.status)continue
+      if(b.status==="clean")clean++
+      else if(b.status==="avoid")avoid++
+    }
+    return{clean,avoid,total:list.length}
+  })()
   const ovl={fontSize:11,fontWeight:700,letterSpacing:".16em",color:"#FFC72C",textTransform:"uppercase",marginBottom:10}
   const h2s={fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(28px,6.5vw,40px)",lineHeight:1.02,
     letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 10px",color:"#fff"}
@@ -10216,6 +10227,20 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <div onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
           <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
           {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
+        </div>
+        )}
+        {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
+        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
+            <span style={{color:"#fff"}}>{liveCounts.clean} {_t(lang,"propres","clean","limpias")}</span>
+          </span>
+          <span style={{opacity:.45}}>·</span>
+          <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+            <span style={{width:8,height:8,borderRadius:"50%",background:"#E8522A",flexShrink:0}}/>
+            <span style={{color:"rgba(255,255,255,.9)"}}>{liveCounts.avoid} {_t(lang,"àéviter","to avoid","a evitar")}</span>
+          </span>
         </div>
         )}
         {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
