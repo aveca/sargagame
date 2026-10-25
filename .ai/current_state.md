@@ -1,6 +1,52 @@
 ---
 
-## 2026-10-23 14:10 UTC - Agent: mission_agent (Factory V3 - lot 2 : P0 paywall, P1 canonicals, P2 lisibilite)
+## 2026-10-25 14:30 UTC · Agent: Principal Agent (Factory V3 — clôture PR #1045, #1043, #1044)
+
+### Travail effectué
+- **Résumé 1 ligne** : Trois PR closes — CI build avant tests, stash avant rebase Copernicus, et masquage des verdicts HeroVerdict quand satellite >12h — toutes les corrections implémentées, committées et pushées sur main (`95ea62e5`).
+
+### Détails par PR
+- **PR #1045** (CI) : `.github/workflows/ci-tests.yml` — `npm run build` deplace avant `npm test` pour que `tests/sitemap-guard-beach-pages.test.cjs` trouve `dist/`. Commit `dbf52e5d` déjà sur main.
+- **PR #1043** (Data) : `.github/workflows/daily-copernicus.yml` — `git stash --include-untracked || true` avant la boucle fetch/rebase, `git stash pop || true` sur chemins succes et echec. Tests `tests/track-record-publication-workflow.test.cjs` ajoutes (assertions ordre commit→nettoyage→fetch/rebase). Commits `3576c354`, `c5374b7c` déjà sur main.
+- **PR #1044** (UI) : `src/Sargasses_PROD.jsx` — `HeroVerdict` masque verdict/ score quand `isSatelliteFresh12h(sargData)=false` (affiche "Vérification en cours"), masque compteur de plages propres/à éviter et second screen quand satellite stale. Nouveau test `tests/unit/hero-stale-verdict.test.cjs` (15 assertions). Commit `95ea62e5`.
+
+### Tests reellement executes
+- `npm run build` : **exit 0** (vite build OK, 3.96s)
+- `node scripts/check-bundle-budget.cjs` : **208.0 Ko gzip ≤ 210 Ko** ✓
+- `node tests/unit/hero-stale-verdict.test.cjs` : **15/15 assertions OK**
+- `node tests/unit/satellite-freshness-12h.test.cjs` : **11/11 assertions OK** (pas de regression)
+
+### Verification des donnees de production (API live)
+- **Martinique** (sargasses-martinique.com) : `erddapTimestamp=2026-10-24T12:00:00Z` (~26h), `dataAgeMinutes=1713`, `stale=false` (figé incorrect) — confirme le bug P1
+- **Guadeloupe** (sargasses-guadeloupe.com) : identique
+- **Floride** (sargassummiami.com) : identique
+- Tous les 3 domaines servent des donnees satellite >12h avec `stale=false` — la correction PR #1044 est critique
+
+### Fichiers modifies (cette session)
+- `src/Sargasses_PROD.jsx` : masquage verdicts/scores/counters quand satellite stale (HeroVerdict)
+- `tests/unit/hero-stale-verdict.test.cjs` (nouveau) : 15 assertions fraicheur + masquage
+- `.github/workflows/daily-copernicus.yml` : stash avant rebase (déjà commit/push)
+- `.github/workflows/ci-tests.yml` : build avant tests (déjà commit/push)
+- `tests/track-record-publication-workflow.test.cjs` : assertions ordre stash (déjà commit/push)
+- `.ai/tasks.md` : lignes PR #1045/#1043/#1044 marquees [x] done
+
+### Livraison
+- Branche : `main` (push direct)
+- Commits pushes : `dbf52e5d`, `3576c354`, `c5374b7c`, `95ea62e5`
+- SHA head main : `95ea62e5` (sur origin/main)
+
+### Probleme restants / bloqueurs
+- [ ] PR #1045, #1043, #1044 encore ouvertes sur GitHub (impossible de les fermer via API — pas de token configure) : contenu deja sur main, fermeture manuelle requise
+- [ ] Phase 5 : verification live sur les 6 domaines restants (Punta Cana, Riviera Maya, Tulum non verifies via HTTP)
+- [ ] OpenRouter quota epuise (50 req/jour) : 3 missions en attente de `sargass-checkout-block`
+- [ ] Windows Task Scheduler auto-start : requiert droits admin (externe)
+
+### Prochaine action recommandee
+1. Fermer manuellement les PR #1045, #1043, #1044 sur GitHub (contenu déjà sur main)
+2. Verifier production sur Punta Cana, Riviera Maya, Tulum (HTTP, timestamp satellite, fraisheur)
+3. Traiter les 3 missions en attente une fois quota OpenRouter retabli (minuit UTC)
+
+---
 
 ### Travail effectue
 - **Resume 1 ligne** : 3 defauts fermes, reproduits avant correction, deployes et
@@ -361,16 +407,16 @@
 | 2026-07-31 | CTOs/OpenCode | Transformation AI-native | .ai/, AGENTS.md, tests/, CI |
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
-| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |Commande ECHO activ�e.
+| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |Commande ECHO activ�e.
 '## 2026-10-25 14:10 UTC - Agent: coding_agent (Factory V3 - UI/UX + payment paths)'  
 '### Travail effectue'  
-'- **Resume 1 ligne** : corrections paiement + gestion deep-link paywall + mise � jour navigation funnel'  
-'### Am�liorations UI et navigation'  
-'- **Puce fra�cheur observation + compteur live plages au hero** (it�rations pr�c�dentes : bob�e, skeleton, prochaine plage, J+1 tendance) - toutes valid�es build+tests+bundle=210Ko'  
-'- **Paiement 1?  1,00?** : montant de test dans walletAvail() pass� de 0,01 ? � 1,00 ? (1 cent  1 euro), plus coh�rent avec les prix passes (= 19,99 ?). Aucun impact pipeline paiement.'  
-'- **Deep-link ?paywall=1** : handler ajout� dans le useEffect de traitement des URL params. Appelle openPremium() et nettoie l'URL via eplaceState. R�sout le blocage du step 3 du funnel ux-smoke (cartefichepaywall). Token FUNNEL_REACHED d�sormais complet en incluant 'paywall'.'  
+'- **Resume 1 ligne** : corrections paiement + gestion deep-link paywall + mise � jour navigation funnel'  
+'### Am�liorations UI et navigation'  
+'- **Puce fra�cheur observation + compteur live plages au hero** (it�rations pr�c�dentes : bob�e, skeleton, prochaine plage, J+1 tendance) - toutes valid�es build+tests+bundle=210Ko'  
+'- **Paiement 1?  1,00?** : montant de test dans walletAvail() pass� de 0,01 ? � 1,00 ? (1 cent  1 euro), plus coh�rent avec les prix passes (= 19,99 ?). Aucun impact pipeline paiement.'  
+'- **Deep-link ?paywall=1** : handler ajout� dans le useEffect de traitement des URL params. Appelle openPremium() et nettoie l'URL via eplaceState. R�sout le blocage du step 3 du funnel ux-smoke (cartefichepaywall). Token FUNNEL_REACHED d�sormais complet en incluant 'paywall'.'  
 '### Fichiers modifies'  
 '- src/Sargasses_PROD.jsx : walletAvail() alue:" "0.01  alue:1.00 (Apple/Google Pay availability test amount)'  
 '- useEffect traitement URL params : ajout handler ?paywall=1 (openPremium + URL cleaning)'  
-'- .ai/current_state.md : mise � jour courant'  
-'### Tests r�alis�s'  
+'- .ai/current_state.md : mise � jour courant'  
+'### Tests r�alis�s'  

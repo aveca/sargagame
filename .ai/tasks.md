@@ -14,6 +14,10 @@
 - [x] P0 - Liens legaux in-app 404 (banniere cookies, paywall, pied de page) sur 4 regions + budget bundle 210.3>210 Ko (@mission_agent, 2026-10-23, branche agent/mission/v3-sargagame-20261022, PR #1016)
 - [x] P1 - Sitemap de secours Tulum : pages FR/MQ/GP retirees, 8 URLs regionales (@mission_agent, 2026-10-23, meme branche)
 
+- [x] P0 - PR #1045 CI build avant tests : `npm run build` deplace avant `npm test` dans `.github/workflows/ci-tests.yml` (commit dbf52e5d, push main)
+- [x] P1 - PR #1043 Copernicus rebase stash : `git stash --include-untracked` avant fetch/rebase + `git stash pop` sur chemins succes/echec (commits 3576c354, c5374b7c, push main)
+- [x] P1 - PR #1044 Protection verdicts stales HeroVerdict : masque verdict/score/compteur quand `isSatelliteFresh12h(sargData)`=false, affiche "Vérification en cours" (commit 95ea62e5, push main, tests 15/15 OK, bundle 208.0/210 Ko)
+
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
 
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
@@ -117,4 +121,4 @@
 5. **Marquer fini** : `[~] → [x] done by <agent>`
 6. **MAJ** `.ai/current_state.md`
 
-**Jamais** : prendre 2 tâches en même temps, skip le Gate de ship, merger sans test.
+**Jamais** : prendre 2 tâches en même temps, skip le Gate de ship, merger sans test. 
