@@ -49,4 +49,10 @@ assert.doesNotMatch(emailJob, /run: node scripts\/automation\/backtest-forecast\
 assert.doesNotMatch(emailJob, /run: node scripts\/automation\/build-track-record\.cjs/,
   "track-record is no longer built only in the non-publishing email job");
 
+const hasStashStep = fetchJob.includes("git stash --include-untracked");
+assert.ok(hasStashStep, "workflow includes git stash --include-untracked before rebase");
+
+const stashBeforeFetch = fetchJob.indexOf("git stash --include-untracked") < fetchJob.indexOf("git fetch origin");
+assert.ok(stashBeforeFetch, "git stash runs BEFORE git fetch origin in the publish step");
+
 console.log("OK — B2B track-record is generated or marked stale before publication");
