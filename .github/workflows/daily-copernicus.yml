@@ -81,25 +81,69 @@ jobs:
         continue-on-error: true
         run: node scripts/verify-ftp-ready.cjs
 
+      # The public B2B track record must be generated in THIS workspace, after
+      # fresh archive/history are fetched and before the data commit/deploy.
+      - name: Backtest forecast accuracy for public track record
+        id: public_track_record_backtest
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/backtest-forecast.cjs
+
+      - name: Build public track record before publication
+        id: public_track_record_build
+        if: steps.public_track_record_backtest.outcome == 'success'
+        continue-on-error: true
+        run: node scripts/automation/build-track-record.cjs
+
+      - name: Mark existing track record stale if regeneration fails
+        if: steps.src.outputs.source != 'none' && (steps.verify.outcome != 'success' || steps.public_track_record_backtest.outcome != 'success' || steps.public_track_record_build.outcome != 'success')
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const file = 'public/api/copernicus/track-record.json';
+          if (!fs.existsSync(file)) {
+            console.warn('No existing track-record artifact to mark stale; no forecast metrics created.');
+            process.exit(0);
+          }
+          const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+          data.freshness = {
+            ...(data.freshness || {}),
+            stale: true,
+            failureReason: 'Data integrity gate, backtest, or track-record build failed in the current publication run'
+          };
+          fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+          console.warn('Existing track record marked stale; its metrics were not changed.');
+          NODE
+
       - name: Commit + push des données Copernicus
         id: publish
-        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        if: steps.src.outputs.source != 'none'
+        env:
+          INTEGRITY_OUTCOME: ${{ steps.verify.outcome }}
         run: |
           set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json 2>/dev/null || true
-          for f in climatology.json forecast-archive.json track-record.json citizen-accuracy.json sentinel2-nearshore.json sentinel2-history.json sentinel2-calibration.json; do
-            if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
-          done
-          if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
-          if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
-          for p in public/api/copernicus/*/_private/forecast-full.json; do
-            if [ -f "$p" ]; then git add "$p"; fi
-          done
-          for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
-            git add "public/api/copernicus/*/$pat" 2>/dev/null || true
-          done
+          if [ "$INTEGRITY_OUTCOME" != "success" ]; then
+            # The integrity gate rejected this fetch: publish only the stale marker,
+            # never the satellite payload that failed validation.
+            if [ -f public/api/copernicus/track-record.json ]; then
+              git add public/api/copernicus/track-record.json
+            fi
+          else
+            git add public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json 2>/dev/null || true
+            for f in climatology.json forecast-archive.json track-record.json citizen-accuracy.json sentinel2-nearshore.json sentinel2-history.json sentinel2-calibration.json; do
+              if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
+            done
+            if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
+            if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
+            for p in public/api/copernicus/*/_private/forecast-full.json; do
+              if [ -f "$p" ]; then git add "$p"; fi
+            done
+            for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
+              git add "public/api/copernicus/*/$pat" 2>/dev/null || true
+            done
+          fi
           if git diff --cached --quiet; then
             echo "Aucune donnée à commit (déjà à jour)."
             exit 0
@@ -118,9 +162,10 @@ jobs:
               continue
             fi
             # Idempotence (exécutions concurrentes schedule/dispatch/veilleurs) :
-            # si main contient déjà ces données, la publication est acquise —
-            # inutile de pousser un doublon qui échouerait en boucle.
-            if git diff --quiet "origin/$BRANCH" -- public/api/copernicus/sargassum.json public/api/copernicus/history.json public/api/copernicus/sargassum-grid.json public/api/copernicus/sargassum-banks.json; then
+            # comparer l'arbre complet après rebase, pas seulement les quatre
+            # fichiers satellite : un run concurrent peut avoir les mêmes
+            # entrées satellite mais un track-record.json différent.
+            if git diff --quiet "origin/$BRANCH" HEAD --; then
               echo "Données déjà publiées par une exécution concurrente — publication acquise."
               push_ok=1
               break
@@ -223,20 +268,10 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/health-check.cjs
 
-      - name: Backtest forecast accuracy (archive vs observations)
-        if: github.event_name != 'push'
-        continue-on-error: true
-        run: node scripts/automation/backtest-forecast.cjs
-
       - name: Aggregate observed climatology (honest season trend)
         if: github.event_name != 'push'
         continue-on-error: true
         run: node scripts/automation/aggregate-climatology.cjs
-
-      - name: Build public track record (B2B proof artifact)
-        if: github.event_name != 'push'
-        continue-on-error: true
-        run: node scripts/automation/build-track-record.cjs
 
       - name: Check email delivery stats (opens, clicks, bounces)
         if: github.event_name != 'push'
