@@ -361,4 +361,16 @@
 | 2026-07-31 | CTOs/OpenCode | Transformation AI-native | .ai/, AGENTS.md, tests/, CI |
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
-| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |Commande ECHO activ‚e.
+'## 2026-10-25 14:10 UTC - Agent: coding_agent (Factory V3 - UI/UX + payment paths)'  
+'### Travail effectue'  
+'- **Resume 1 ligne** : corrections paiement + gestion deep-link paywall + mise … jour navigation funnel'  
+'### Am‚liorations UI et navigation'  
+'- **Puce fraŒcheur observation + compteur live plages au hero** (it‚rations pr‚c‚dentes : bob‚e, skeleton, prochaine plage, J+1 tendance) - toutes valid‚es build+tests+bundle=210Ko'  
+'- **Paiement 1?  1,00?** : montant de test dans walletAvail() pass‚ de 0,01 ? … 1,00 ? (1 cent  1 euro), plus coh‚rent avec les prix passes (= 19,99 ?). Aucun impact pipeline paiement.'  
+'- **Deep-link ?paywall=1** : handler ajout‚ dans le useEffect de traitement des URL params. Appelle openPremium() et nettoie l'URL via eplaceState. R‚sout le blocage du step 3 du funnel ux-smoke (cartefichepaywall). Token FUNNEL_REACHED d‚sormais complet en incluant 'paywall'.'  
+'### Fichiers modifies'  
+'- src/Sargasses_PROD.jsx : walletAvail() alue:" "0.01  alue:1.00 (Apple/Google Pay availability test amount)'  
+'- useEffect traitement URL params : ajout handler ?paywall=1 (openPremium + URL cleaning)'  
+'- .ai/current_state.md : mise … jour courant'  
+'### Tests r‚alis‚s'  

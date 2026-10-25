@@ -230,13 +230,13 @@ export function walletAvail(){
   const check=async()=>{
     const apple=await(async()=>{
       try{
-        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        const req=new window.PaymentRequest([{supportedMethods:"https://apple.com/apple-pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"1.00"}}})
         return await req.canMakePayment()
       }catch{return false}
     })()
     const google=await(async()=>{
       try{
-        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"0.01"}}})
+        const req=new window.PaymentRequest([{supportedMethods:"https://google.com/pay"}],{total:{label:"Test",amount:{currency:"EUR",value:"1.00"}}})
         return await req.canMakePayment()
       }catch{return false}
     })()
@@ -11646,6 +11646,11 @@ export default function App(){
         }
         params.delete("premium");params.delete("success");params.delete("session_id");params.delete("pass")
         {const qs=params.toString();window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
+        return true
+      }
+      if(params.get("paywall")==="1"){
+        openPremium("paywall_deeplink");
+        {const qs=params.toString().replace(/paywall/,"");window.history.replaceState({},"",window.location.pathname+(qs?"?"+qs:""))}
         return true
       }
     }catch(e){}
