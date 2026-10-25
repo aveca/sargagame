@@ -10,7 +10,7 @@
     },
     {
       "q": "How accurate is this sargassum tracker?",
-      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. When clouds delay a clear pass, we show the reading's data age and confidence level. It is the difference between a measurement and a guess."
+      "a": "We use the AFAI satellite index with Copernicus imagery, refreshed as new passes become available. Floating mats have a distinct spectral signature, but clouds can limit a clear reading. Every beach displays its data age and confidence level so you can judge the available evidence rather than assume a ground-report correction."
     },
     {
       "q": "Can you really forecast sargassum a week out?",
