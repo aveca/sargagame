@@ -10,7 +10,7 @@ const allContent = JSON.stringify(region)
 
 assert.doesNotMatch(
   allContent,
-  /3\\.5-day/i,
+  /3\.5-day/i,
   'Do not present an unvalidated 3.5-day beach-persistence half-life as an established fact'
 )
 assert.match(
