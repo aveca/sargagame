@@ -1,0 +1,38 @@
+/* sg-a11y-boost.css - P0 accessibility + mobile-touch refinements.
+   Additive, low-specificity layer imported AFTER sg-ux-2026.css.
+   Keyboard focus always visible, motion honours prefers-reduced-motion
+   (kills the looping score-pulse/glow), finger-sized form targets on
+   touch, brand selection. No overrides that could shrink existing controls. */
+:root { --sg-focus:#ffc72c; }
+
+/* 1. Keyboard focus - always visible, high contrast. */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--sg-focus);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+:where(a, button, [role="button"]):focus:not(:focus-visible) { outline: none; }
+::selection { background: var(--sg-focus); color: #10131a; }
+
+/* 2. Motion: honour the OS "reduce motion" setting. */
+@media (prefers-reduced-motion: reduce) {
+  .score-blob-pulse, .score-blob-glow { animation: none !important; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* 3. Touch comfort: finger-sized form targets on coarse pointers. */
+@media (pointer: coarse) {
+  :where(input[type="text"], input[type="email"], input[type="search"],
+         input[type="tel"], input[type="number"], select, textarea) { min-height: 44px; }
+}
+
+/* 4. Contrast: lift small/secondary text to AA on dark surfaces when the
+   user asks for more contrast. Low specificity so component colours win. */
+@media (prefers-contrast: more) {
+  :where(.small, .muted, .sub, .dim) { color: #d7dde6; }
+}
