@@ -4,14 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Espace recherche — données ouvertes & fiabilité auditée des prévisions sargasses</title>
-<meta name="description" content="Le palmarès public et auditable de nos prévisions sargasses : 3 420 prévisions comparées au satellite, méthode Copernicus/NOAA, archive figée non rétro-ajustable. Données ouvertes pour chercheurs, institutions et tourisme. Martinique & Guadeloupe."/>
+<meta name="description" content="Le palmarès public et auditable des prévisions sargasses : méthode Copernicus/NOAA, archive figée non rétro-ajustable et données ouvertes. Les statistiques ne sont affichées que lorsqu'un palmarès récent est vérifié. Martinique & Guadeloupe."/>
 <link rel="canonical" href="https://sargasses-martinique.com/recherche/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/recherche/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/investigacion/"/>
 <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/recherche/"/>
 <meta property="og:title" content="Espace recherche — données ouvertes & fiabilité auditée"/>
-<meta property="og:description" content="3 420 prévisions sargasses comparées au satellite, méthode publiée, archive non rétro-ajustable. Données ouvertes pour la recherche et le tourisme."/>
+<meta property="og:description" content="Méthode Copernicus/NOAA, archive auditable et données ouvertes sur les prévisions sargasses. Les statistiques sont masquées si le palmarès est périmé."/>
 <meta property="og:url" content="https://sargasses-martinique.com/recherche/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
@@ -22,8 +22,8 @@
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Espace recherche","item":"https://sargasses-martinique.com/recherche/"}]}
 </script>
-<script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Dataset","name":"Palmarès auditable des prévisions sargasses — Antilles françaises","alternateName":"Sargassum forecast track record — French West Indies","description":"Comparaison quotidienne entre la prévision sargasses émise (J+1 à J+6, figée à l'émission, archive append-only) et l'observation satellite réelle à l'échéance, pour les plages de Martinique et Guadeloupe. Inclut le taux de justesse par horizon et par régime (saison calme / arrivées), le MAE de l'indice AFAI et le taux de fausse alerte. Recalculé à chaque mise à jour de l'archive ; aucun chiffre n'est rétro-ajustable.","url":"https://sargasses-martinique.com/recherche/","keywords":["sargasses","sargassum","AFAI","Copernicus","Sentinel-3","prévision","Martinique","Guadeloupe","Caraïbes","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargasses Antilles","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Petites Antilles)"},"temporalCoverage":"2026-05-17/2026-06-17","measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI via Copernicus Marine / ERDDAP ; seuils NOAA SIR (Wang & Hu 2016)","variableMeasured":["taux de justesse du statut (%)","MAE AFAI","taux de fausse alerte (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
+<script id="research-dataset-schema" type="application/ld+json">
+{"@context":"https://schema.org","@type":"Dataset","name":"Palmarès auditable des prévisions sargasses — Antilles françaises","alternateName":"Sargassum forecast track record — French West Indies","description":"Comparaison quotidienne entre la prévision sargasses émise (J+1 à J+6, figée à l'émission, archive append-only) et l'observation satellite réelle à l'échéance, pour les plages de Martinique et Guadeloupe. Inclut le taux de justesse par horizon et par régime (saison calme / arrivées), le MAE de l'indice AFAI et le taux de fausse alerte. Recalculé à chaque mise à jour de l'archive ; aucun chiffre n'est rétro-ajustable.","url":"https://sargasses-martinique.com/recherche/","keywords":["sargasses","sargassum","AFAI","Copernicus","Sentinel-3","prévision","Martinique","Guadeloupe","Caraïbes","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargasses Antilles","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Petites Antilles)"},"measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI via Copernicus Marine / ERDDAP ; seuils NOAA SIR (Wang & Hu 2016)","variableMeasured":["taux de justesse du statut (%)","MAE AFAI","taux de fausse alerte (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -64,6 +64,7 @@
   .meta .k{font-size:10.5px;color:var(--sg-mute);text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
   .freshness{font-size:11.5px;color:var(--sg-mute);margin-top:14px;display:flex;align-items:center;gap:6px}
   .dot{width:7px;height:7px;border-radius:50%;background:var(--sg-clean);box-shadow:0 0 0 3px var(--sg-clean-bg)}
+  .freshness.stale .dot{background:#c96b3a;box-shadow:0 0 0 3px rgba(201,107,58,.15)}
   /* ── TABLE ── */
   table.hz{width:100%;border-collapse:collapse;margin-top:8px;font-size:13.5px}
   table.hz th,table.hz td{text-align:left;padding:11px 10px;border-bottom:1px solid var(--sg-border-m)}
@@ -130,23 +131,23 @@
 <section class="px"><div class="wrap">
   <div class="seclabel">Le palmarès</div>
   <h2 class="t">Ce que valent nos prévisions</h2>
-  <p class="b">Période couverte : <b id="r-window">30 mai → 28 juin 2026</b> · <span id="r-sample">3 180</span> prévisions comparées au satellite · Martinique &amp; Guadeloupe (43 jours d'archive, <b>3 720</b> paires au total).</p>
+  <p class="b">Période couverte : <b id="r-window">—</b> · <span id="r-sample">—</span> prévisions comparées au satellite · Martinique &amp; Guadeloupe.</p>
 
   <div class="stat">
     <div class="big">
-      <div class="num" id="r-clean-pct">100%</div>
+      <div class="num" id="r-clean-pct">—</div>
       <div>
         <div class="lab">de nos prévisions « mer propre » se sont vérifiées</div>
-        <div class="sub">sur <span id="r-clean-n">2 274</span> prévisions « mer propre » contrôlées au satellite (saison calme, faible confiance étiquetée sur les alertes).</div>
+        <div class="sub">sur <span id="r-clean-n">—</span> prévisions « mer propre » contrôlées au satellite (saison calme, faible confiance étiquetée sur les alertes).</div>
       </div>
     </div>
     <div class="metarow">
-      <div class="meta"><div class="v" id="r-overall">76%</div><div class="k">Justesse globale*</div></div>
-      <div class="meta"><div class="v" id="r-mae">0.047</div><div class="k">MAE AFAI</div></div>
-      <div class="meta"><div class="v" id="r-pairs">3 180</div><div class="k">Paires vérifiées</div></div>
+      <div class="meta"><div class="v" id="r-overall">—</div><div class="k">Justesse globale*</div></div>
+      <div class="meta"><div class="v" id="r-mae">—</div><div class="k">MAE AFAI</div></div>
+      <div class="meta"><div class="v" id="r-pairs">—</div><div class="k">Paires vérifiées</div></div>
       <div class="meta"><div class="v">MQ·GP</div><div class="k">Couverture</div></div>
     </div>
-    <div class="freshness"><span class="dot"></span> Données arrêtées au <span id="r-gen">17 juin 2026</span> — recalculées à chaque mise à jour de l'archive.</div>
+    <div id="r-freshness" class="freshness stale"><span class="dot"></span><span id="r-status">Les chiffres restent masqués jusqu'à la vérification d'un palmarès récent.</span></div>
   </div>
   <p class="b" style="font-size:12px;margin-top:12px">* La justesse globale agrège tous les régimes ; elle <b>masque</b> que nos alertes de saison calme sont bien moins fiables que nos prévisions « mer propre ». Nous refusons de la mettre en avant seule — voir ci-dessous.</p>
 </div></section>
@@ -158,14 +159,7 @@
   <p class="b">Taux de justesse du statut (mer propre / modéré / éviter) selon le nombre de jours d'avance.</p>
   <table class="hz">
     <thead><tr><th>Horizon</th><th>Justesse</th><th></th><th>Paires</th></tr></thead>
-    <tbody id="r-hz">
-      <tr><td>J+1</td><td class="n">76%</td><td><div class="bar"><span style="width:76%"></span></div></td><td class="n">620</td></tr>
-      <tr><td>J+2</td><td class="n">72%</td><td><div class="bar"><span style="width:72%"></span></div></td><td class="n">600</td></tr>
-      <tr><td>J+3</td><td class="n">72%</td><td><div class="bar"><span style="width:72%"></span></div></td><td class="n">580</td></tr>
-      <tr><td>J+4</td><td class="n">76%</td><td><div class="bar"><span style="width:76%"></span></div></td><td class="n">560</td></tr>
-      <tr><td>J+5</td><td class="n">82%</td><td><div class="bar"><span style="width:82%"></span></div></td><td class="n">540</td></tr>
-      <tr><td>J+6</td><td class="n">88%</td><td><div class="bar"><span style="width:88%"></span></div></td><td class="n">520</td></tr>
-    </tbody>
+    <tbody id="r-hz"></tbody>
   </table>
   <p class="b" style="font-size:12px;margin-top:12px">La justesse <b>remonte</b> aux horizons longs parce qu'en saison calme la mer reste propre : prévoir « toujours propre » à J+6 est facile et se vérifie. Ce profil <b>se resserrera</b> en saison d'arrivées, quand la dynamique des bancs domine — et nous le republierons tel quel.</p>
 </div></section>
@@ -176,9 +170,9 @@
     <h3>⚠️ Ce que nos chiffres ne disent pas</h3>
     <p class="b" style="margin:0 0 6px">La transparence d'un modèle se juge à ce qu'il avoue, pas à ce qu'il affiche.</p>
     <ul>
-      <li>Sur la période, nos <b>alertes</b> (sargasses attendues) ont un taux de fausse alerte d'environ <b id="r-fa">12%</b> en saison calme : le modèle « crie au loup » plus souvent qu'il ne devrait. Nous émettons donc ces alertes en <b>faible confiance, explicitement étiquetée</b>, tant que le satellite ne les confirme pas — on ne te les vend jamais comme certaines.</li>
+      <li>Sur la période affichée, le taux de fausse alerte des <b>alertes</b> (sargasses attendues) en saison calme est de <b id="r-fa">—</b>. Le modèle peut « crier au loup » ; ces alertes restent en <b>faible confiance, explicitement étiquetée</b> tant que le satellite ne les confirme pas.</li>
       <li>Au-delà de <b>J+3</b>, la fiabilité décroît : la prévision devient indicative.</li>
-      <li>Le chiffre fort (100% « mer propre ») vaut <b>pour ce régime et cette période</b> — il sera recalculé, à la hausse comme à la baisse, à chaque mise à jour.</li>
+      <li>Le taux de prévisions « mer propre » ne vaut que pour le régime et la période affichés ci-dessus ; il reste masqué tant que le palmarès n’est pas vérifié comme récent.</li>
     </ul>
   </div>
 </div></section>
@@ -255,39 +249,47 @@
 
 <script>
 (function(){
-  var FR_MONTHS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
-  function fmt(n){try{return Number(n).toLocaleString('fr-FR')}catch(e){return String(n)}}
-  function frDate(iso){try{var d=new Date(iso);return d.getUTCDate()+' '+FR_MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear()}catch(e){return iso}}
-  function set(id,v){var el=document.getElementById(id);if(el!=null&&v!=null)el.textContent=v}
-  function cell(text,cls){var td=document.createElement('td');if(cls)td.className=cls;td.textContent=text;return td}
-  function barCell(pct){var td=document.createElement('td');var bar=document.createElement('div');bar.className='bar';
-    var span=document.createElement('span');span.style.width=pct+'%';bar.appendChild(span);td.appendChild(bar);return td}
-  fetch('/api/copernicus/track-record.json',{cache:'no-cache'}).then(function(r){return r.json()}).then(function(d){
-    if(!d)return;
-    if(d.window){set('r-window',frDate(d.window.from)+' → '+frDate(d.window.to))}
-    if(d.sampleSize){set('r-sample',fmt(d.sampleSize));set('r-pairs',fmt(d.sampleSize))}
-    if(d.generatedAt){set('r-gen',frDate(d.generatedAt))}
-    if(d.overall){set('r-overall',d.overall.statusHitRatePct+'%');set('r-mae',(d.overall.afaiMAE!=null?d.overall.afaiMAE.toFixed(3):''))}
-    if(d.byRegime){
-      var best=null;Object.keys(d.byRegime).forEach(function(k){var x=d.byRegime[k];if(x&&x.cleanSamples>0&&(!best||x.cleanSamples>best.cleanSamples))best=x});
-      if(best){set('r-clean-pct',best.cleanReliabilityPct+'%');set('r-clean-n',fmt(best.cleanSamples));
-        if(best.falseAlarmRatePct!=null)set('r-fa',best.falseAlarmRatePct+'%')}
-    }
-    if(Array.isArray(d.byHorizon)&&d.byHorizon.length){
-      var tb=document.getElementById('r-hz');
-      if(tb){
-        while(tb.firstChild)tb.removeChild(tb.firstChild);
-        d.byHorizon.forEach(function(h){
-          var tr=document.createElement('tr');
-          tr.appendChild(cell('J+'+h.day));
-          tr.appendChild(cell(h.hitRatePct+'%','n'));
-          tr.appendChild(barCell(h.hitRatePct));
-          tr.appendChild(cell(fmt(h.pairs),'n'));
-          tb.appendChild(tr);
-        });
-      }
-    }
-  }).catch(function(){/* fallback = chiffres statiques rendus côté serveur */});
+  var MONTHS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+  var MAX_AGE_MS=36*60*60*1000;
+  function fmt(n){try{return Number(n).toLocaleString("fr-FR")}catch(e){return String(n)}}
+  function localDate(iso){var d=new Date(iso);if(!Number.isFinite(d.getTime()))return '—';return d.getUTCDate()+' '+MONTHS[d.getUTCMonth()]+' '+d.getUTCFullYear();}
+  function set(id,v){var el=document.getElementById(id);if(el&&v!=null)el.textContent=String(v);}
+  function cell(text,cls){var td=document.createElement('td');if(cls)td.className=cls;td.textContent=String(text);return td;}
+  function barCell(pct){var td=document.createElement('td');var bar=document.createElement('div');bar.className='bar';var span=document.createElement('span');span.style.width=pct+'%';bar.appendChild(span);td.appendChild(bar);return td;}
+  function validPct(n){return typeof n==='number'&&Number.isFinite(n)&&n>=0&&n<=100;}
+  function validDay(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;var ms=Date.parse(s+'T00:00:00Z');return Number.isFinite(ms)&&new Date(ms).toISOString().slice(0,10)===s;}
+  function validRecord(d){
+    if(!d||!d.freshness||d.freshness.stale!==false)return false;
+    var generatedMs=Date.parse(d.generatedAt);var age=Date.now()-generatedMs;
+    if(!Number.isFinite(generatedMs)||age < -5*60*1000||age>MAX_AGE_MS)return false;
+    if(!d.window||!validDay(d.window.from)||!validDay(d.window.to)||Date.parse(d.window.from+'T00:00:00Z')>Date.parse(d.window.to+'T00:00:00Z'))return false;
+    if(!Number.isInteger(d.sampleSize)||d.sampleSize<=0)return false;
+    if(!d.overall||!validPct(d.overall.statusHitRatePct)||typeof d.overall.afaiMAE!=='number'||!Number.isFinite(d.overall.afaiMAE)||d.overall.afaiMAE<0)return false;
+    if(!Array.isArray(d.byHorizon)||!d.byHorizon.length)return false;
+    for(var i=0;i<d.byHorizon.length;i++){var h=d.byHorizon[i];if(!h||!Number.isInteger(h.day)||h.day<1||h.day>7||!validPct(h.hitRatePct)||!Number.isInteger(h.pairs)||h.pairs<0)return false;}
+    var regimes=d.byRegime||{};
+    return Object.keys(regimes).some(function(k){var x=regimes[k];return x&&Number.isInteger(x.cleanSamples)&&x.cleanSamples>0&&validPct(x.cleanReliabilityPct);});
+  }
+  function clearRecord(){
+    ['r-window','r-sample','r-clean-pct','r-clean-n','r-overall','r-mae','r-pairs','r-fa'].forEach(function(id){set(id,'—');});
+    var tb=document.getElementById('r-hz');if(tb)while(tb.firstChild)tb.removeChild(tb.firstChild);
+    var schemaEl=document.getElementById('research-dataset-schema');
+    if(schemaEl){try{var schema=JSON.parse(schemaEl.textContent);delete schema.temporalCoverage;schemaEl.textContent=JSON.stringify(schema);}catch(e){}}
+  }
+  function setStatus(message,isStale){var box=document.getElementById('r-freshness');if(box)box.className=isStale?'freshness stale':'freshness';set('r-status',message);}
+  function updateSchema(d){var schemaEl=document.getElementById('research-dataset-schema');if(!schemaEl)return;try{var schema=JSON.parse(schemaEl.textContent);schema.temporalCoverage=d.window.from+'/'+d.window.to;schemaEl.textContent=JSON.stringify(schema);}catch(e){}}
+  function render(d){
+    set('r-window',localDate(d.window.from)+' → '+localDate(d.window.to));
+    set('r-sample',fmt(d.sampleSize));set('r-pairs',fmt(d.sampleSize));
+    set('r-overall',d.overall.statusHitRatePct+'%');set('r-mae',d.overall.afaiMAE.toFixed(3));
+    var best=null;Object.keys(d.byRegime||{}).forEach(function(k){var x=d.byRegime[k];if(x&&x.cleanSamples>0&&validPct(x.cleanReliabilityPct)&&(!best||x.cleanSamples>best.cleanSamples))best=x;});
+    set('r-clean-pct',best.cleanReliabilityPct+'%');set('r-clean-n',fmt(best.cleanSamples));
+    set('r-fa',best.falseAlarmRatePct!=null&&validPct(best.falseAlarmRatePct)?best.falseAlarmRatePct+'%':'—');
+    var tb=document.getElementById('r-hz');
+    if(tb){while(tb.firstChild)tb.removeChild(tb.firstChild);d.byHorizon.forEach(function(h){var tr=document.createElement('tr');tr.appendChild(cell('J+'+h.day));tr.appendChild(cell(h.hitRatePct+'%','n'));tr.appendChild(barCell(h.hitRatePct));tr.appendChild(cell(fmt(h.pairs),'n'));tb.appendChild(tr);});}
+    updateSchema(d);setStatus("Palmarès vérifié au "+localDate(d.generatedAt)+'.',false);
+  }
+  fetch('/api/copernicus/track-record.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(function(d){if(!validRecord(d)){clearRecord();setStatus("Palmarès périmé ou incomplet : les chiffres sont masqués jusqu'à une mise à jour vérifiable.",true);return;}render(d);}).catch(function(){clearRecord();setStatus("Palmarès indisponible : les chiffres restent masqués.",true);});
 })();
 </script>
 </body>
