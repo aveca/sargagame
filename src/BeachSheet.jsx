@@ -33,7 +33,6 @@ function stLabel(status,lang){const S={clean:{fr:"PROPRE",en:"CLEAN",es:"LIMPIA"
 function stLabelLong(status,lang){const S={clean:{fr:"GO - Baignade OK",en:"GO - Safe to swim",es:"IR A PLAYA - Baño OK"},moderate:{fr:"ATTENTION - À vérifier",en:"ATTENTION - Check first",es:"ATTENTION - A verificar"},avoid:{fr:"ÉVITER - Évite l'eau",en:"ÉVITER - Skip the swim",es:"ÉVITER - Evita el agua"}};return (S[status]||{fr:"…",en:"…",es:"…"})[lang]||(S[status]||{fr:"…"})["fr"]}
 export function explainBeachStatus(status,lang){const M={clean:{fr:"Eau dégagée au satellite — tu peux y aller.",en:"Clear water on satellite — good to go.",es:"Agua despejada en satélite — puedes ir."},moderate:{fr:"Dépôts possibles — jette un œil avant de teposer.",en:"Some deposits possible — look before settling in.",es:"Posibles restos — mira antes de instalarte."},avoid:{fr:"Sargasses vues au satellite — vise une plage propre à côté.",en:"Sargassum seen on satellite — try a clean beach nearby.",es:"Sargazo visto por satélite — prueba una playa limpia cercana."}};const e=M[status]||{fr:"Statut en vérification — reviens dans un moment.",en:"Status being checked — come back shortly.",es:"Estado en verificación — vuelve en un momento."};return e[lang]||e.fr}
 export function isStatusExplainOn(search){try{const s=typeof search==="string"?search:window.location.search;return !/[?&]statusexplain=0(?:&|$)/.test(s)}catch(_){return true}}
->>>>>>> 752480ffb70b40080a810956eb1b7537f530fa80
 function haversineKm(lat1,lon1,lat2,lon2){
   const R=6371,p=Math.PI/180,x=(lat2-lat1)*p,y=(lon2-lon1)*p,h=Math.sin(x/2)**2+Math.cos(lat1*p)*Math.cos(lat2*p)*Math.sin(y/2)**2
   return 2*R*Math.asin(Math.sqrt(Math.min(1,h)))
@@ -315,6 +314,32 @@ export default function BeachSheet({
             <span style={{font:"700 11px/1 'Bricolage Grotesque'",color:"#fff",letterSpacing:".3px"}}>{stLabel(status,lang)}</span>
           </div>
         </div>
+
+        {/* ── DECISION CARD (additive · rollback ?decisioncard=0) ── */}
+        {!/[?&]decisioncard=0(?:&|$)/.test(typeof window!=="undefined"?window.location.search:"")&&(
+        <div style={{padding:"0 20px",marginTop:14}}>
+          <div className="bs-card" style={{maxWidth:400,margin:"0 auto",padding:"14px 16px 12px",display:"flex",alignItems:"center",gap:14}}>
+            <div style={{flexShrink:0,width:58,height:58,borderRadius:"50%",border:`3px solid ${COMIC.ink}`,background:vmeta.color,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",color:status==="avoid"?"#fff":COMIC.ink}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:24,lineHeight:1}}>{hasScore?beach.score:"–"}</div>
+              <div style={{font:"800 7px/1 'Bricolage Grotesque'",letterSpacing:".08em",marginTop:2,opacity:.85}}>SCORE</div>
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(20px,5.4vw,26px)",lineHeight:1,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.2px"}}>{vmeta.emoji} {vmeta.verb}</div>
+              <div style={{font:"700 10px/1.3 'Bricolage Grotesque'",color:COMIC.sub,marginTop:5,letterSpacing:".04em"}}>{satLabel}</div>
+            </div>
+            <div style={{flexShrink:0,display:"flex",gap:5,alignItems:"flex-end"}} aria-label={_t(lang,"Prévisions 7 jours","7-day forecast","Previsión 7 días")} role="img">
+              {fcDays.length?fcDays.map((d,i)=>{
+                const dl=["D","L","M","M","J","V","S"];let L="?"
+                try{const dt=new Date(d.date+"T12:00:00Z");L=dl[dt.getUTCDay()]}catch(_){}
+                return(<div key={i} title={forecastLabel(d.status,lang)} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                  <span style={{width:13,height:13,borderRadius:4,background:forecastColor(d.status),border:`2px solid ${COMIC.ink}`}}/>
+                  <span style={{font:"800 8px/1 'Bricolage Grotesque'",color:COMIC.sub}}>{L}</span>
+                </div>)
+              }):<span style={{font:"700 10px/1 'Bricolage Grotesque'",color:COMIC.sub}}>—</span>}
+            </div>
+          </div>
+        </div>
+        )}
 
         {/* ── STORY SECTIONS (scroll-driven reveals) ── */}
         <div style={{padding:"0 0 4px"}}>
