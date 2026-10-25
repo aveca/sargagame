@@ -10211,6 +10211,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           {verdictTxt}
           {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
+        {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
+        {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
+        <div onClick={()=>{track("sg_hero_tap",{t:"fresh"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:11,fontWeight:700,letterSpacing:".05em",color:"rgba(255,255,255,.7)",textTransform:"uppercase"}}>
+          <span style={{width:7,height:7,borderRadius:"50%",background:updFresh?"#22C55E":"#B87A00",boxShadow:updFresh?"0 0 8px rgba(34,197,94,.75)":"none",flexShrink:0}}/>
+          {updFresh?<>{_t(lang,"Observation satellite","Satellite observation","Observación satelital")}{upd?` · ${upd}`:""}</>:<>{_t(lang,"Vérification en cours","Verification in progress","Verificación en curso")}</>}
+        </div>
+        )}
         {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
