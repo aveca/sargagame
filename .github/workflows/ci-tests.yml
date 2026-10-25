@@ -23,6 +23,8 @@ jobs:
           node-version: '24'
           cache: 'npm'
       - run: npm ci
+      - name: Verify Build
+        run: npm run build
       - name: Run tests (*.test.cjs)
         run: npm test
       # CONTRÔLE A (gouvernance) — intégrité du mécanisme de certification :
@@ -47,8 +49,6 @@ jobs:
       # 39383768675, SHA 4eea0367, branche agent/coding/TASK-P1-002).
       - name: Production trigger scope guard
         run: node scripts/check-production-trigger-scope.cjs
-      - name: Verify Build
-        run: npm run build
       - name: Check bundle budget (JS eager ≤ 210 Ko gzip)
         run: node scripts/check-bundle-budget.cjs
       - name: Install Playwright Chromium
