@@ -10256,6 +10256,23 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </span>
         </div>
         )}
+        {/* Navigation rapide plage suivante propre (additif · rollback ?heronext=0) */}
+        {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(()=>{
+          const list=Array.isArray(topBeaches)?topBeaches:(Array.isArray(pickBeaches)?pickBeaches:[])
+          const idx=list.findIndex(b=>b&&b.id===beach.id)
+          const next=list.slice(idx+1).find(b=>b&&b.status==="clean")||list.find(b=>b&&b.status==="clean"&&b.id!==beach.id)
+          if(!next)return null
+          return(
+          <div onClick={()=>{track("sg_hero_tap",{t:"next"});onOpenBeach&&onOpenBeach(next)}} style={{display:"inline-flex",alignItems:"center",gap:6,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
+            <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
+              <span style={{width:8,height:8,borderRadius:"50%",background:"#FFC72C",flexShrink:0}}/>
+              <span style={{color:"#fff"}}>{_t(lang,"Prochaine plage propre","Next clean beach","Playa limpia siguiente")}</span>
+            </span>
+            <span style={{fontSize:12,color:"#fff",fontWeight:800}}>{next.name}</span>
+            <span style={{marginLeft:6,color:"rgba(255,255,255,.5)"}}>▸</span>
+          </div>
+          )
+        })()}
         {sub&&<div onClick={()=>{track("sg_hero_tap",{t:"sub"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:13,color:"rgba(255,255,255,.62)",marginBottom:18,cursor:"pointer"}}>{sub}</div>}
         {/* Desktop (≥900px) : la carte est un bouton de PREMIER rang à côté du
             CTA — GSC 2026-06 : intent "carte" = 7% (MQ) / 2% (GP) des clics
