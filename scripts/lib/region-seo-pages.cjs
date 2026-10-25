@@ -58,10 +58,11 @@ const T = {
     beachFaq: {
       questions: [
         { q: 'Is there sargassum at {beach} today?', a: 'As of {today}, {beach} reads "{status}" on the latest satellite pass, with a Beach Score of {score}/100. The status is re-checked four times a day from Copernicus/NOAA AFAI imagery sampled directly offshore of this beach — open the live map for the exact update time and a confidence level.' },
-        { q: 'When is the next sargassum arrival expected at {beach}?', a: '{nextArrival} The full 7-day outlook for {beach}: {forecastLine}. Days 1–3 are the most reliable; days 4–7 show the trend. The forecast is recalculated with every satellite refresh, four times a day.' },
+        { q: 'When is the next sargassum arrival expected at {beach}?', a: '{nextArrival} Available forecast for {beach}: {forecastLine}. The number of days shown depends on available forecast data. Check the live map for the latest update and confidence.' },
       ],
       nextArrivalRisk: 'The next landing risk at {beach} is {day} ({date}), based on sargassum mats currently tracked offshore.',
-      nextArrivalNone: 'No significant sargassum arrival is forecast at {beach} over the next 7 days.',
+      nextArrivalNone: 'No significant sargassum arrival is indicated in the available forecast for {beach}. Check the live map for the latest update.',
+      nextArrivalUnavailable: 'No forecast data is available for {beach}. Check the live map for the latest update.',
     },
   },
   es: {
@@ -79,10 +80,11 @@ const T = {
     beachFaq: {
       questions: [
         { q: '¿Hay sargazo en {beach} hoy?', a: 'Hoy, {today}, {beach} está "{status}" según el último pase satelital, con un Beach Score de {score}/100. El estado se verifica cuatro veces al día con imágenes AFAI de Copernicus/NOAA muestreadas directamente frente a esta playa — abre el mapa en vivo para ver la hora exacta de actualización y el nivel de confianza.' },
-        { q: '¿Cuándo se espera la próxima llegada de sargazo a {beach}?', a: '{nextArrival} El pronóstico completo de 7 días para {beach}: {forecastLine}. Los días 1–3 son los más fiables; los días 4–7 muestran la tendencia. El pronóstico se recalcula con cada actualización satelital, cuatro veces al día.' },
+        { q: '¿Cuándo se espera la próxima llegada de sargazo a {beach}?', a: '{nextArrival} Pronóstico disponible para {beach}: {forecastLine}. El número de días mostrados depende de los datos de pronóstico disponibles. Consulta el mapa en vivo para ver la última actualización y la confianza.' },
       ],
       nextArrivalRisk: 'El próximo riesgo de recale en {beach} es el {day} ({date}), según los bancos de sargazo detectados mar adentro.',
-      nextArrivalNone: 'No se pronostica ninguna llegada significativa de sargazo a {beach} en los próximos 7 días.',
+      nextArrivalNone: 'No se indica una llegada significativa de sargazo en el pronóstico disponible para {beach}. Consulta el mapa en vivo para ver la última actualización.',
+      nextArrivalUnavailable: 'No hay datos de pronóstico disponibles para {beach}. Consulta el mapa en vivo para ver la última actualización.',
     },
   },
 }
@@ -183,6 +185,22 @@ function breadcrumb(domain, items) {
 
 function fmtDate(lang, d = new Date()) {
   return d.toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+function resolveNextArrival({ noneTemplate, unavailableTemplate, riskTemplate, beachName, hit, hasForecast, lang, daysFull }) {
+  const withBeach = value => String(value || '').replace(/\{beach\}/g, beachName)
+  if (!hasForecast) {
+    const fallback = unavailableTemplate || (lang === 'es'
+      ? 'No hay datos de pronóstico disponibles para {beach}. Consulta el mapa en vivo para ver la última actualización.'
+      : 'No forecast data is available for {beach}. Check the live map for the latest update.')
+    return withBeach(fallback)
+  }
+  if (!hit || !hit.date) return withBeach(noneTemplate)
+  const d = new Date(hit.date + 'T12:00:00Z')
+  if (Number.isNaN(d.getTime())) return withBeach(noneTemplate)
+  return withBeach(riskTemplate)
+    .replace(/\{day\}/g, daysFull[d.getUTCDay()] || '')
+    .replace(/\{date\}/g, fmtDate(lang, d))
 }
 
 function forecastLine(weekly, beachId, lang) {
@@ -772,13 +790,16 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
       const fLine = forecastLine(data.weekly, b.id, lang)
       const fc = (data.weekly?.[b.id]?.forecast || []).slice(1, 8)
       const hit = fc.find(f => f.status && f.status !== 'clean')
-      let nextArrival = String(bf.nextArrivalNone || '')
-      if (hit && hit.date) {
-        const d = new Date(hit.date + 'T12:00:00Z')
-        nextArrival = String(bf.nextArrivalRisk || '')
-          .replace(/\{day\}/g, t.daysFull[d.getUTCDay()])
-          .replace(/\{date\}/g, fmtDate(lang, d))
-      }
+      const nextArrival = resolveNextArrival({
+        noneTemplate: bf.nextArrivalNone,
+        unavailableTemplate: bf.nextArrivalUnavailable,
+        riskTemplate: bf.nextArrivalRisk,
+        beachName: b.name,
+        hit,
+        hasForecast: fc.length > 0,
+        lang,
+        daysFull: t.daysFull,
+      })
       const tokB = s => String(s ?? '')
         .replace(/\{beach\}/g, b.name).replace(/\{status\}/g, sw(b.lv.status))
         .replace(/\{score\}/g, b.lv.score).replace(/\{today\}/g, today)
@@ -965,4 +986,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages }
+module.exports = { generateRegionSeoPages, resolveNextArrival }
