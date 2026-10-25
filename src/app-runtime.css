@@ -668,3 +668,18 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
     padding-bottom:60px;
   }
 }
+
+/* Hero freshness status: preserve its text-only appearance under Comic/Soft button skins.
+   The repeated class selector intentionally outranks .theme-comic/.theme-soft button !important rules.
+   Keep this class name free of "cta": the freshness badge is informational, not a purchase CTA. */
+.theme-comic button.sg-hero-freshness.sg-hero-freshness,
+.theme-soft button.sg-hero-freshness.sg-hero-freshness{
+  background:transparent!important;border:0!important;border-radius:0!important;
+  box-shadow:none!important;color:rgba(255,255,255,.7)!important;
+  font-family:inherit!important;font-size:11px!important;font-weight:700!important;
+  text-shadow:none!important;text-transform:uppercase!important;letter-spacing:.05em!important;
+}
+.theme-comic button.sg-hero-freshness.sg-hero-freshness:active,
+.theme-soft button.sg-hero-freshness.sg-hero-freshness:active{
+  box-shadow:none!important;transform:none!important;opacity:1!important;
+}
