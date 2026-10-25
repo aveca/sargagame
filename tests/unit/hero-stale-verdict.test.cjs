@@ -37,9 +37,9 @@ const assert = require('node:assert/strict');
   assert.ok(hero.includes('OBSERVATION SATELLITE À VÉRIFIER'), 'stale state has a localized satellite-verification label');
   assert.ok(hero.includes('Les observations satellite ne sont pas assez récentes'), 'stale section explains why current statuses are not shown');
   assert.ok(hero.includes('updFresh?"Ouvrir la carte live":"Ouvrir la carte"'), 'map CTA stops claiming live data when stale');
-  assert.ok(hero.includes('updFresh&&upd?') && hero.includes('Données en retard'), 'stale section does not append a live timestamp');
+  assert.ok(hero.includes('updFresh&&upd?') && !hero.includes('{upd?(updFresh?'), 'stale section does not append a live timestamp');
 
-  console.log('HERO_STALE_VERDICT_TEST PASS (11 assertions)');
+  console.log('HERO_STALE_VERDICT_TEST PASS (12 assertions)');
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
