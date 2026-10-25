@@ -34,7 +34,7 @@ const ANTON_CSS = (() => {
   } catch (e) { console.error('WARN police Anton locale introuvable, fallback système:', e.message); return '' }
 })()
 
-const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, ...opts })
+const run = (cmd, args, opts = {}) => execFileSync(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], cwd: OUT, windowsHide: true, ...opts })
 const ffprobeDur = f => parseFloat(run('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', f]).toString().trim())
 
 // ── 1. Storyboard (garde-fou fraîcheur : skip PROPRE, exit 0, si donnée périmée) ──

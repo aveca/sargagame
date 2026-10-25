@@ -97,7 +97,7 @@ function satelliteAgeH(region) {
 // ── 0. Auto-update (git pull) ────────────────────────────────────────────────────
 function selfUpdate() {
   if (NO_PULL) { log('git.skip', { reason: PLAN ? 'plan' : 'SARGA_FACTORY_NO_PULL' }); return }
-  const r = spawnSync('git', ['pull', '--ff-only'], { cwd: ROOT, encoding: 'utf8', timeout: 120000 })
+  const r = spawnSync('git', ['pull', '--ff-only'], { cwd: ROOT, encoding: 'utf8', timeout: 120000, windowsHide: true })
   if (r.status === 0) log('git.pull.ok', { out: String(r.stdout || '').trim().split('\n').pop().slice(0, 160) })
   else log('git.pull.fail', { err: String((r.stderr || '') + (r.stdout || '')).trim().slice(0, 240) }) // non-fatal : on tourne sur le local
 }
@@ -116,7 +116,7 @@ function renderBriefs() {
     }
     log('render.start', { region })
     const r = spawnSync('node', [path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), region],
-      { cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000 })
+      { cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000, windowsHide: true })
     const out = String(r.stdout || '') + String(r.stderr || '')
     if (/BRIEF_SKIPPED_STALE/.test(out)) {
       const m = out.match(/BRIEF_SKIPPED_STALE[^\n]*/)
@@ -143,7 +143,7 @@ function publishFB(renderResults) {
     if (!FB_AUTO || PLAN) { log('fb.staged', { region, ageH: +(f.ageH || 0).toFixed(1), note: PLAN ? 'plan' : 'config.fbAutoPublish=false → aucune publication réelle' }); continue }
     log('fb.post.start', { region })
     const r = spawnSync('node', [path.join(ROOT, 'scripts', 'automation', 'fb-post-video.cjs'), `--region=${region}`, '--go', '--headless'],
-      { cwd: ROOT, encoding: 'utf8', timeout: 5 * 60000 })
+      { cwd: ROOT, encoding: 'utf8', timeout: 5 * 60000, windowsHide: true })
     const out = String(r.stdout || '') + String(r.stderr || '')
     if (r.status === 0) { fs.writeFileSync(dedup, new Date().toISOString()); posted++; log('fb.post.ok', { region }) }
     else { log('fb.post.fail', { region, code: r.status, err: out.trim().slice(-300) }) }
