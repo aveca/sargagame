@@ -10088,6 +10088,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
     :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
   const verdictBg=clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
+  // Gate 12h anti-fake-LIVE : masquer verdicts/scores/counters quand satellite vieille
+  const verdictFresh=updFresh
   // J+1 réel quand résolvable (weekly keyé par id sarg pour MQ/GP, id direct
   // pour les nouvelles régions) — sinon pas de promesse.
   const wkId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
@@ -10232,8 +10234,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </h1>
         <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
-          {verdictTxt}
-          {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
+          {updFresh?verdictTxt:"Vérification en cours"}
+          {beach.score!=null&&updFresh&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
         {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
@@ -10243,7 +10245,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </div>
         )}
         {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
-        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&(
+        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&updFresh&&(
         <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
@@ -10347,7 +10349,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             {upd?(updFresh?` · LIVE ${upd}`:` · ${_t(lang,"Données en retard","Data delayed","Datos desactualizados")}`):""}
           </p>
         </div>
-        {!!(topBeaches&&topBeaches.length)&&(
+        {updFresh && ((topBeaches&&topBeaches.length) && (
           <div className="sg-l-cards sg-rv">
             {topBeaches.map(b=>(
               <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
@@ -10365,7 +10367,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
               </button>
             ))}
           </div>
-        )}
+        ))}
         {/* SÉLECTEUR — choisis ta plage directement depuis l'accueil (recherche
             + liste live de toutes les plages, tap = fiche). Demande user 13/06. */}
         {!!(pickBeaches&&pickBeaches.length>3)&&(()=>{
