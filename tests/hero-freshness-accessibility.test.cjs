@@ -4,6 +4,7 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(ROOT, 'src/Sargasses_PROD.jsx'), 'utf8');
+const runtimeCss = fs.readFileSync(path.join(ROOT, 'src/app-runtime.css'), 'utf8');
 const start = source.indexOf('/* Fraîcheur de l\'observation au point de décision');
 assert.notEqual(start, -1, 'hero freshness badge block must exist');
 
@@ -20,5 +21,9 @@ assert.match(block, /herofresh=0/, 'existing rollback query parameter must be pr
 assert.match(block, /Observation satellite/);
 assert.match(block, /Satellite observation/);
 assert.match(block, /Observación satelital/);
+
+assert.match(block, /className="sg-hero-freshness"/, 'freshness button must opt into theme-safe styling');
+assert.match(runtimeCss, /\.theme-comic button\.sg-hero-freshness\.sg-hero-freshness,\s*\.theme-soft button\.sg-hero-freshness\.sg-hero-freshness\s*\{[^}]*background:transparent!important;[^}]*border:0!important;[^}]*box-shadow:none!important/s, 'Comic/Soft theme skins must not turn the informational badge into a boxed button');
+assert.match(runtimeCss, /\.theme-comic button\.sg-hero-freshness\.sg-hero-freshness:active,\s*\.theme-soft button\.sg-hero-freshness\.sg-hero-freshness:active\s*\{[^}]*transform:none!important/s, 'theme active styles must not shift the text-only badge');
 
 console.log('Hero freshness keyboard accessibility: OK');
