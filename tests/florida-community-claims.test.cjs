@@ -15,7 +15,7 @@ collect(content)
 
 // The documented production pipeline only integrates community reports for MQ/GP.
 // Florida SEO copy must not claim that ground reports correct or fill satellite gaps.
-const unsupportedGroundReportClaim = /(?:\\b(?:beachgoer|community|ground|on-the-ground)\\s+reports?\\b|\\breports?\\s+from\\s+people\\s+on\\s+the\\s+sand\\b|\\bpeople\\s+reporting\\s+from\\s+the\\s+sand\\b|cross-checked\\s+against\\s+reports\\s+from\\s+people\\s+on\\s+the\\s+sand|cross-checks\\s+against\\s+people\\s+reporting\\s+from\\s+the\\s+sand)/i
+const unsupportedGroundReportClaim = /(?:\b(?:beachgoer|community|ground|on-the-ground)\s+reports?\b|\breports?\s+from\s+people\s+on\s+the\s+sand\b|\bpeople\s+reporting\s+from\s+the\s+sand\b|cross-checked\s+against\s+reports\s+from\s+people\s+on\s+the\s+sand|cross-checks\s+against\s+people\s+reporting\s+from\s+the\s+sand)/i
 for (const text of strings) {
   assert.equal(unsupportedGroundReportClaim.test(text), false, 'Unsupported Florida ground-report claim: ' + text)
 }
