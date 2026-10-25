@@ -40,6 +40,17 @@ assert.ok(!integrityFailurePublish.includes("git add public/api/copernicus/sarga
   "failed integrity gate must not publish untrusted satellite data");
 assert.ok(integritySuccessPublish.includes("git add public/api/copernicus/sargassum.json"),
   "validated data is still published normally");
+
+// A failed integrity gate deliberately stages only track-record.json. The fetcher may
+// still have written rejected generated payloads into the worktree; clean those leftovers
+// after the allowlisted commit and before fetch/rebase, or Git refuses the rebase as dirty.
+const commitAt = publishStep.indexOf('git commit -m "chore(data): refresh Copernicus');
+const stashAt = publishStep.indexOf("git stash push --include-untracked");
+const fetchAt = publishStep.indexOf('git fetch origin "$BRANCH"');
+assert.ok(commitAt >= 0 && stashAt > commitAt && fetchAt > stashAt,
+  "residual generated artifacts must be stashed after the allowlisted commit and before rebase");
+assert.ok(publishStep.includes('if ! git diff --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then'),
+  "worktree cleanup runs only when tracked or untracked residual changes exist");
 assert.match(fetchJob, /if git diff --quiet "origin\/\$BRANCH" HEAD --; then/,
   "idempotence compares the entire rebased tree so track-record-only changes are published");
 assert.doesNotMatch(fetchJob, /git diff --quiet "origin\/\$BRANCH" -- public\/api\/copernicus\/sargassum\.json/,
