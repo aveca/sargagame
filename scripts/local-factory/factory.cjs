@@ -27,7 +27,7 @@
  *   SARGA_FACTORY_NO_PULL=1 node ... factory.cjs       # sans git pull (mode hors-ligne)
  */
 'use strict'
-const { spawnSync } = require('child_process')
+const { spawnSyncHidden } = require('../lib/process-runner.cjs')
 const fs = require('fs')
 const os = require('os')
 const path = require('path')
@@ -95,15 +95,15 @@ function satelliteAgeH(region) {
 }
 
 // ── 0. Auto-update (git pull) ────────────────────────────────────────────────────
-function selfUpdate() {
+async function selfUpdate() {
   if (NO_PULL) { log('git.skip', { reason: PLAN ? 'plan' : 'SARGA_FACTORY_NO_PULL' }); return }
-  const r = spawnSync('git', ['pull', '--ff-only'], { cwd: ROOT, encoding: 'utf8', timeout: 120000 })
+  const r = await spawnSyncHidden('git', ['pull', '--ff-only'], { cwd: ROOT, encoding: 'utf8', timeout: 120000 })
   if (r.status === 0) log('git.pull.ok', { out: String(r.stdout || '').trim().split('\n').pop().slice(0, 160) })
   else log('git.pull.fail', { err: String((r.stderr || '') + (r.stdout || '')).trim().slice(0, 240) }) // non-fatal : on tourne sur le local
 }
 
 // ── 1. Rendu des briefs (marker daté, per-région isolé, skip fraîcheur) ─────────
-function renderBriefs() {
+async function renderBriefs() {
   const results = []
   for (const region of RENDER_REGIONS) {
     const marker = path.join(OUT, `brief-${region}-${TODAY}.mp4`)
@@ -115,7 +115,7 @@ function renderBriefs() {
       log('render.plan', { region, ageH: f.ageH, decision: f.bad ? 'skip-stale' : 'render' }); continue
     }
     log('render.start', { region })
-    const r = spawnSync('node', [path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), region],
+    const r = await spawnSyncHidden('node', [path.join(ROOT, 'scripts', 'video', 'make-brief.cjs'), region],
       { cwd: ROOT, encoding: 'utf8', timeout: 8 * 60000 })
     const out = String(r.stdout || '') + String(r.stderr || '')
     if (/BRIEF_SKIPPED_STALE/.test(out)) {
@@ -130,7 +130,7 @@ function renderBriefs() {
 }
 
 // ── 2. Publication FB (OPT-IN, gardée : fraîcheur ≤24 h + dédup + cap) ───────────
-function publishFB(renderResults) {
+async function publishFB(renderResults) {
   const eligible = renderResults.filter(r => (r.status === 'rendered' || r.status === 'exists') && FB_REGIONS.includes(r.region))
   if (!eligible.length) { log('fb.none'); return }
   let posted = 0
@@ -142,7 +142,7 @@ function publishFB(renderResults) {
     if (f.bad || f.ageH > FB_MAX_AGE_H) { log('fb.skip.stale', { region, ageH: f.ageH, ceil: FB_MAX_AGE_H }); continue }
     if (!FB_AUTO || PLAN) { log('fb.staged', { region, ageH: +(f.ageH || 0).toFixed(1), note: PLAN ? 'plan' : 'config.fbAutoPublish=false → aucune publication réelle' }); continue }
     log('fb.post.start', { region })
-    const r = spawnSync('node', [path.join(ROOT, 'scripts', 'automation', 'fb-post-video.cjs'), `--region=${region}`, '--go', '--headless'],
+    const r = await spawnSyncHidden('node', [path.join(ROOT, 'scripts', 'automation', 'fb-post-video.cjs'), `--region=${region}`, '--go', '--headless'],
       { cwd: ROOT, encoding: 'utf8', timeout: 5 * 60000 })
     const out = String(r.stdout || '') + String(r.stderr || '')
     if (r.status === 0) { fs.writeFileSync(dedup, new Date().toISOString()); posted++; log('fb.post.ok', { region }) }
@@ -215,34 +215,43 @@ function drainQueue() {
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────────
-acquireLock()
-try {
-  if (SERVE) {
-    log('serve.start', { root: ROOT, plan: PLAN })
-    selfUpdate()   // ramène les queue/*.json commités depuis le phone/GitHub
-    drainQueue()
-    // Retente aussi le rendu du jour ici : le trigger quotidien 05:30 dépend du
-    // rattrapage StartWhenAvailable de Windows (pas fiable si le PC était éteint/
-    // verrouillé à cette heure-là, cf. AtLogOn qui échoue sans droits admin).
-    // Ce poll tourne déjà toutes les 30 min indépendamment du logon ; le marker
-    // daté rend l'appel gratuit une fois le jour rendu, et retente automatiquement
-    // tant que le satellite reste périmé (>36h).
-    const results = renderBriefs()
-    publishFB(results)
-    writeLastRun(results)
-    if (!PLAN) sendHeartbeat(results)
-  } else {
-    log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
-    selfUpdate()
-    const results = renderBriefs()
-    publishFB(results)
-    drainQueue()   // le run quotidien draine aussi les jobs à la demande en attente
-    writeLastRun(results)
-    if (!PLAN) sendHeartbeat(results)
-    log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
+async function runFactory() {
+  acquireLock()
+  try {
+    if (SERVE) {
+      log('serve.start', { root: ROOT, plan: PLAN })
+      await selfUpdate()   // ramène les queue/*.json commités depuis le phone/GitHub
+      drainQueue()
+      // Retente aussi le rendu du jour ici : le trigger quotidien 05:30 dépend du
+      // rattrapage StartWhenAvailable de Windows (pas fiable si le PC était éteint/
+      // verrouillé à cette heure-là, cf. AtLogOn qui échoue sans droits admin).
+      // Ce poll tourne déjà toutes les 30 min indépendamment du logon ; le marker
+      // daté rend l'appel gratuit une fois le jour rendu, et retente automatiquement
+      // tant que le satellite reste périmé (>36h).
+      const results = await renderBriefs()
+      await publishFB(results)
+      writeLastRun(results)
+      if (!PLAN) sendHeartbeat(results)
+    } else {
+      log('factory.start', { root: ROOT, regions: RENDER_REGIONS.join(','), fbAuto: FB_AUTO, plan: PLAN })
+      await selfUpdate()
+      const results = await renderBriefs()
+      await publishFB(results)
+      drainQueue()   // le run quotidien draine aussi les jobs à la demande en attente
+      writeLastRun(results)
+      if (!PLAN) sendHeartbeat(results)
+      log('factory.done', { summary: results.map(r => `${r.region}:${r.status}`).join(' ') })
+    }
+  } catch (e) {
+    log('factory.error', { err: String((e && e.stack) || e).slice(0, 500) })
+  } finally {
+    releaseLock()
   }
-} catch (e) {
-  log('factory.error', { err: String((e && e.stack) || e).slice(0, 500) })
-} finally {
-  releaseLock()
+}
+
+if (require.main === module) {
+  runFactory().catch((err) => {
+    console.error('[factory] fatal', err)
+    process.exit(1)
+  })
 }

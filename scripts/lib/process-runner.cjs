@@ -192,6 +192,47 @@ async function stopAllServers() {
   return results;
 }
 
+/**
+ * Spawn a child process with NO visible console window on Windows.
+ * Returns a Promise resolving to { status, stdout, stderr, code } —
+ * spawnSync-compatible shape but using spawn() so windowsHide: true applies.
+ */
+async function spawnSyncHidden(command, args, options = {}) {
+  const { spawn } = require('child_process');
+  const { cwd = process.cwd(), env = { ...process.env }, encoding = 'utf8', timeout } = options;
+
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd,
+      env,
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '', stderr = '';
+    child.stdout.on('data', (d) => { stdout += d; });
+    child.stderr.on('data', (d) => { stderr += d; });
+
+    let timer = null;
+    if (timeout) {
+      timer = setTimeout(() => {
+        try { child.kill('SIGKILL'); } catch (_) {}
+        reject(new Error(`Command timed out after ${timeout}ms: ${command} ${args.join(' ')}`));
+      }, timeout);
+    }
+
+    child.on('close', (code) => {
+      if (timer) clearTimeout(timer);
+      resolve({ status: code, code, stdout: Buffer.from(stdout, encoding).toString(encoding), stderr: Buffer.from(stderr, encoding).toString(encoding) });
+    });
+
+    child.on('error', (err) => {
+      if (timer) clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
 async function runBounded(command, args, options = {}) {
   const {
     cwd = process.cwd(),
@@ -264,6 +305,7 @@ module.exports = {
   loadPids,
   killProcessTree,
   resolveLocalBin,
+  spawnSyncHidden,
   VITE_BIN,
   NPM_CMD
 };
