@@ -26,6 +26,7 @@ const { spawn, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const lock = require('./lib/lock.cjs');
 const bridge = require('./bridge.cjs');
+const notify = require('./lib/notify.cjs');
 
 function rlog(msg) {
   const line = `${new Date().toISOString()} [runner] ${msg}`;
@@ -94,9 +95,18 @@ async function main() {
   if (!acq.ok) { rlog(`REFUSÉ second runner — ${acq.reason} (code ${acq.code || 'LOCKED'}) — arrêt propre`); process.exit(3); }
   rlog(`lock acquired — single runner active (pid ${process.pid}, token ${acq.entry.token.slice(0, 6)}…)`);
 
+  // Notification externe : démarrage du runner (Discord + ping /start healthchecks)
+  // Le routeur utilise en priorité les modèles FREE OpenCode (zéro quota NVIDIA) ;
+  // la clé NVIDIA n'est consommée qu'en fallback (429 sur tous les modèles free).
+  const modelSource = 'opencode-free → nvidia-fallback → ollama-local';
+  notify.runnerStarted(process.pid, modelSource);
+  notify.pingHealthchecks('/start');
+
   let cycleCount = 0;
   let consecutiveErrors = 0;
   const maxConsecutiveErrors = 5;
+  const notifiedPrs = new Map(); // anti-spam : une PR signalée une seule fois par cycle
+  let lastCycleError = '';
 
   // MAIN 24/7 LOOP
   while (!isShuttingDown && !fs.existsSync(C.paths.stopFile)) {
@@ -114,13 +124,64 @@ async function main() {
         rlog(`lock perdu (${hb.reason}) — un autre runner a pris le relais ? arrêt propre`);
         break;
       }
-      
+
+      // Statut externe (monitoring sans intervention humaine)
+      try {
+        const ls = lock.status();
+        const manualSession = require('./local-model-router.cjs').manualOpencodeSessionActive();
+        fs.writeFileSync(C.paths.statusFile, JSON.stringify({
+          alive: true,
+          pid: process.pid,
+          lockPid: ls.lock?.pid,
+          startedAt: ls.lock?.startedAt,
+          lastHeartbeat: ls.lock?.heartbeatAt,
+          cycleCount,
+          cycleSuccess,
+          consecutiveErrors,
+          autoMergeEnabled: true,
+          modelRouting: {
+            mode: manualSession ? 'quota-protect' : 'perf',
+            detail: manualSession
+              ? 'session OpenCode manuelle détectée → free/local (quota NVIDIA préservé)'
+              : 'aucune session manuelle → NVIDIA cloud (perf max)',
+            nvidiaKey: process.env.NVIDIA_API_KEY ? 'SET' : 'NOT SET',
+            openaiKey: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
+            openrouterKey: process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET',
+          },
+          notify: notify.channelsStatus(),
+          timestamp: new Date().toISOString()
+        }, null, 2));
+      } catch (_) {}
+
       // 1. BRIDGE: Import GitHub issues (non-blocking)
       try {
         const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
         rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.ignored} ignored`);
       } catch (e) {
         rlog(`bridge failed (non-fatal): ${e.message}`);
+      }
+
+      // 1.5 GSC SEO watch (P0.7) — toutes les 16 cycles (~8 h), lecture seule,
+      //     émet des opportunités dans la queue avec preuve + scope. Non-fatal.
+      if (cycleCount % 16 === 2) {
+        try {
+          execFileSync(process.execPath, [path.join(__dirname, 'gsc-seo-watch.cjs')], {
+            timeout: 120000, windowsHide: true, stdio: 'pipe',
+          });
+          rlog('gsc-seo-watch: opportunités SEO GSC vérifiées');
+        } catch (e) {
+          rlog(`gsc-seo-watch failed (non-fatal): ${String(e.message).slice(0, 80)}`);
+        }
+        // Funnel GA4 (P0.7/V4) : mesure de conversion 5 régions (dont hors GSC),
+        // persistée dans ga4-funnel-latest.json. Étape "Mesurer" de la boucle.
+        try {
+          execFileSync(process.execPath, [path.join(__dirname, 'gsc-seo-watch.cjs'), '--funnel'], {
+            timeout: 120000, windowsHide: true, stdio: 'pipe',
+          });
+          rlog('gsc-seo-watch --funnel: funnel GA4 mesuré (5 régions)');
+        } catch (e) {
+          rlog(`gsc-seo-watch --funnel failed (non-fatal): ${String(e.message).slice(0, 80)}`);
+        }
       }
 
       // 2. RUN ORCHESTRATOR
@@ -130,6 +191,21 @@ async function main() {
         cycleSuccess = true;
         consecutiveErrors = 0;
         rlog(`cycle ${cycleCount} completed successfully`);
+
+        // Monitoring externe : ping healthchecks (dead man's switch) + Discord si PR
+        notify.pingHealthchecks();
+        try {
+          const report = fs.readFileSync(C.paths.latestMd, 'utf8');
+          const pr = notify.detectPrInReport(report);
+          if (pr) {
+            const prKey = `cycle:${cycleCount}:pr:${pr.number}`;
+            if (notifiedPrs.get(prKey) !== true) {
+              notifiedPrs.set(prKey, true);
+              notify.prDetected(pr.number, pr.line);
+              rlog(`[notify] PR #${pr.number} signalée sur Discord`);
+            }
+          }
+        } catch (_) {}
       } else if (orchestratorCode === 2) {
         // Stop condition (STOP file, prod down, etc.) - clean exit
         rlog(`orchestrator stop-condition (code 2) — graceful shutdown`);
@@ -145,6 +221,13 @@ async function main() {
       rlog(e.stack);
       cycleSuccess = false;
       consecutiveErrors++;
+      lastCycleError = e.message;
+    }
+
+    // Alerte Discord sur échecs consécutifs (throttlé : à partir de 2) + ping /fail
+    if (!cycleSuccess && consecutiveErrors >= 2) {
+      notify.cycleFailed(cycleCount, consecutiveErrors, lastCycleError);
+      notify.pingHealthchecks('/fail');
     }
 
     // Cooldown between cycles
@@ -176,6 +259,8 @@ async function main() {
       else orchestratorProcess.kill('SIGKILL');
     } catch (_) {}
   }
+  const stopReason = fs.existsSync(C.paths.stopFile) ? 'STOP file détecté — arrêt propre demandé' : (isShuttingDown ? 'Signal d\'arrêt reçu (SIGINT/SIGTERM)' : `Condition d'arrêt orchestrator (dernier cycle ${cycleCount}, erreurs consécutives ${consecutiveErrors})`);
+  notify.runnerStopped(stopReason);
   lock.release();
   rlog('AUTOPILOT 24/7 STOPPED');
   process.exit(0);

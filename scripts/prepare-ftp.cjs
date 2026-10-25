@@ -276,9 +276,15 @@ for (const region of legacyRegions) {
   // GA4 GP intact). Exclut les EN/ES île-spécifiques (best-beaches-*, what-to-do-*)
   // déjà routées par MQ_ONLY/GP_ONLY. Clés = chemins sans /index.html.
   const GENERIC_INTL = new Set([
-    'en/sargassum-map', 'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
+    'en/best-beaches-no-sargassum', 'en/sargassum-season', 'en/sargassum-alerts', 'en/understanding-sargassum', 'en/satellite-sargassum-detection', 'en/sargassum-health',
     'es/mapa-sargazo', 'es/mejores-playas-sin-sargazo', 'es/temporada-sargazo', 'es/alertas-sargazo',
   ])
+  // P0.7 (2026-10-22) : 'en/sargassum-map' SORT de GENERIC_INTL -> self-canonical GP.
+  // Preuve GSC (28j vs 28j précédents) : la consolidation MQ faisait perdre -21 clics
+  // (-67,7 %) sur la page GP, exclue de l'index GP ; "sargassum map today" = 235 impr,
+  // pos 9.6, +20 clics potentiels non captés. Titres déjà différenciés GP-first via le
+  // swap ##GP_AMP_MQ## -> risque de cannibalisation cross-domain limité. Réversible :
+  // ré-ajouter la clé dans le Set suffit.
 
   const drops = region.id === 'gp' ? MQ_ONLY : (region.id === 'mq' ? GP_ONLY : new Set())
   let droppedCross = 0
@@ -894,6 +900,18 @@ function prepareNewRegion(region) {
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
 
+  // Pages partagees (public/about, /research, /investigacion, /for-hotels) :
+  // elles codent en dur l hote MQ dans leur canonical/og/hreflang. Livrees
+  // telles quelles sur un domaine USD, la page declarait un canonical
+  // martinique -> Google la consolidait cote MQ (domaine jamais indexe).
+  // On reecrit l hote vers le domaine de la region + on purge les hreflang
+  // orphelins. MQ/GP : ce bloc n est jamais atteint (chemin heritage).
+  {
+    const { rewriteSharedSeoHost } = require('./lib/rewrite-shared-seo.cjs')
+    const r = rewriteSharedSeoHost(out, region)
+    if (r.files) console.log(`   → canonical hote region (${title}) : ${r.files} fichier(s), ${r.droppedAlts} hreflang orphelin(s) retire(s)`)
+  }
+
   // og:image région-aware : remplace og-image.png (visuel FR "Martinique &
   // Guadeloupe") par le visuel de la région généré par generate-og-images.cjs.
   // URL stable /og-image.png — pas d'invalidation des caches FB/WhatsApp.
@@ -1020,7 +1038,32 @@ Sitemap: https://${domain}/sitemap.xml
     // le dossier déployé. Le fallback « racine seule » laissait /sitemap.xml
     // en 404 (0 URL) ou en 1 URL alors que robots.txt le publiait — c'était
     // précisément l'état de tulum le 07/10/2026.
-    const SKIP_DIRS = new Set([
+    // APPARTENANCE A LA REGION (fallback sitemap) : une page n entre dans le
+// sitemap que si (a) son canonical ne pointe pas vers un AUTRE domaine — les
+// pages FR heritees de public/ (about, research, for-hotels...) sont
+// canoniquees vers sargasses-martinique.com, Google les consolide cote MQ :
+// les annoncer ici = crawl gaspille + contenu etranger publie sur un domaine
+// EN/ES ; et (b) sa langue est emise par la region.
+// Constat live 2026-10-22 : le sitemap de secours de Tulum listait 21 URLs
+// dont 8 pages FR/MQ/GP et 2 articles d autres iles, et aucune fiche regionale.
+// Langues acceptees : celles emises par la region + en/es, car les
+// generateurs produisent volontairement /reliability/ (EN) et /fiabilidad/ (ES)
+// sur une region a primaire ES (ex. tulum). Seul le FR (et le reste) est
+// etranger : les pages FR heritees de public/ sont ainsi ecartees.
+const _regionLangs = new Set([...require('./lib/region-langs.cjs').emittedLangs(region), 'en', 'es'])
+const _pageBelongsToRegion = (html) => {
+  const canon = (html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || [])[1]
+    || (html.match(/<link[^>]+href=["']([^"']+)["'][^>]+rel=["']canonical["']/i) || [])[1]
+  // Page de redirection pure (meta refresh) : aucun contenu a indexer.
+  if (/<meta[^>]+http-equiv=["']?refresh/i.test(html)) return false
+  if (canon) {
+    try { if (new URL(canon).host !== domain) return false } catch (_) { return false }
+  }
+  const lang = (html.match(/<html[^>]+lang=["']([^"']+)["']/i) || [])[1]
+  if (lang) return _regionLangs.has(String(lang).toLowerCase().slice(0, 2))
+  return true
+}
+const SKIP_DIRS = new Set([
       'api', 'assets', 'config', 'data', 'fonts', 'images', 'img', 'audio',
       'confirme', 'pro', 'jeu', 'widget', 'videos', 'themes-lab',
       'cine-atlas', 'scene-atlas', 'veilleur-mvp', 'veilleur-studio',
@@ -1035,8 +1078,10 @@ Sitemap: https://${domain}/sitemap.xml
         if (SKIP_DIRS.has(entry.name)) continue
         const next = [...segs, entry.name]
         const child = path.join(dir, entry.name)
-        if (fs.existsSync(path.join(child, 'index.html'))) {
-          urls.push({ path: `/${next.join('/')}/`, depth: next.length })
+        const idx = path.join(child, 'index.html')
+        if (fs.existsSync(idx)) {
+          const html = fs.readFileSync(idx, 'utf8')
+          if (_pageBelongsToRegion(html)) urls.push({ path: `/${next.join('/')}/`, depth: next.length })
         }
         walk(child, next)
       }

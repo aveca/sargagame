@@ -7,6 +7,7 @@
 import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
+import { legalHref as _legalHref } from "./lib/legal-links.js"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -450,7 +451,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
           <div style={{font:"700 13px/1.4 'Bricolage Grotesque'",color:I.ink,marginBottom:13}}>{_t(lang,"Personne n'aime le découvrir dans un avis client.","No one likes finding out in a guest review.","A nadie le gusta descubrirlo en una reseña.")}</div>
           <button className="b2f-cta" onClick={()=>goStep(2)}>{bName
-            ?_t(lang,`Voir la semaine de ${bName} →`,`See the week for ${bName} →`,`Ver la semana de ${bName} →`)
+            ?_t(lang,`Voir la semaine propre de ${bName} →`,`See the clean week for ${bName} →`,`Ver la semana de ${bName} →`)
             :_t(lang,"Voir la semaine de vos plages →","See the week for your beaches →","Ver la semana de sus playas →")}</button>
           {priceChip}
         </div>:!sent&&step===2?<div key={2} className="sgseq-step">
@@ -1798,6 +1799,10 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     // fermeture. NON-capture uniquement (en capture, gap_freemium ci-dessus suffit —
     // évite le double submitLead qui gonflait les métriques de 2× par déblocage).
     try{submitLead(email,"onsite_checkout")}catch(_){}
+    // P0.7 (2026-10-22) : début réel du checkout ON-SITE, tous providers. Avant ce
+    // fix le funnel Apps Script ne comptait que sg_checkout_redirect (PayPal seul)
+    // → métrique checkout=0 malgré les PAID réels. Mesure réparée.
+    track("sg_checkout_started",{plan:payPlanRef.current||plan,source:source||"unknown",provider:PAY_PROVIDER})
     // ── Pont Mollie : hosted checkout ─────────────────────────────────────
     // Le Worker Cloudflare crée le paiement Mollie et renvoie l'URL de checkout.
     // Aucun token Mollie Components n'est nécessaire ici : le token était collecté
@@ -3454,7 +3459,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               Masquée si ?consent=1 (case explicite dormante affichée) → pas de doublon. */}
           {!consentFlag&&!PAY_CAPTURE_ONLY&&<div style={{textAlign:"center",marginTop:8,fontSize:10,lineHeight:1.45,color:"rgba(255,255,255,.34)"}}>
             {_t(lang,"Accès immédiat : en payant, vous demandez la livraison tout de suite — le droit de rétractation de 14 j ne s'applique plus une fois l'accès ouvert. En cas de problème, écrivez-nous.","Immediate access: by paying, you request delivery right away — the 14-day right of withdrawal no longer applies once access is open. If anything goes wrong, just email us.","Acceso inmediato: al pagar, solicitas la entrega de inmediato — el derecho de desistimiento de 14 días deja de aplicarse una vez abierto el acceso. Si hay algún problema, escríbenos.")}{" "}
-            <a href="/cgv.html" target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
+            <a href={_legalHref("terms",lang)||undefined} target="_blank" rel="noopener" style={{color:"rgba(255,255,255,.5)",textDecoration:"underline"}}>{_t(lang,"CGV","Terms","Términos")}</a>
           </div>}
           {/* 2026-06-17 — bouton off-site « continuer sur Stripe » RETIRÉ (checkout
               100% on-site). En cas d'échec de montage : bouton Réessayer (recharge

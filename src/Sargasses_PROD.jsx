@@ -9,6 +9,7 @@ import React,{useState,useEffect,useLayoutEffect,useRef,useMemo,useCallback,crea
 import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
+import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
@@ -152,7 +153,13 @@ const __R = (typeof __REGION__ !== "undefined" && __REGION__) || null
 export const __REL = (typeof __RELIABILITY__ !== "undefined" && __RELIABILITY__) || null
 // Taille communauté (plancher honnête leads email) injectée au build — preuve sociale paywall.
 export const __COMM = (typeof __COMMUNITY__ !== "undefined" && Number(__COMMUNITY__)) || 0
-export const IS_NEW_REGION = !!(__R && __R.id !== "mq" && __R.id !== "gp")
+// Littéral injecté au build (vite.config.js __IS_NEW_REGION__) : la branche
+// `IS_NEW_REGION ? [] : [plages MQ/GP]` ci-dessous doit être ÉLIMINÉE par le
+// bundler sur les régions USD (sinon 20 plages étrangères + ~1 Ko eager par
+// bundle). Repli runtime identique à l'ancien calcul si le define manque.
+export const IS_NEW_REGION = typeof __IS_NEW_REGION__ !== "undefined"
+  ? !!__IS_NEW_REGION__
+  : !!(__R && __R.id !== "mq" && __R.id !== "gp")
 export const REGION = IS_NEW_REGION ? __R : null
 // Email support région-aware (MQ/GP : littéral historique inchangé)
 export const SUPPORT_EMAIL = IS_NEW_REGION ? (REGION.emails?.support || ("support@" + REGION.domain)) : "alerte@sargasses-martinique.com"
@@ -1669,7 +1676,13 @@ export const T={
 /* ═══════════════════════════════════════════════════════════════════════════
    BEACH DATA — 20 inline fallback + runtime fetch for 190
    ═══════════════════════════════════════════════════════════════════════════ */
-export const BEACHES_FALLBACK=[
+/* Nouvelles regions (USD/ES) : plages inline dans __REGION__ (plus haut).
+   BEACHES_FALLBACK reste le repli MQ/GP historique — vide ici : (1) aucun code
+   nouveau-regime ne le lit, (2) il ne doit plus servir d affichage par defaut
+   avant le fetch (un visiteur Cancun voyait des plages de Martinique en plan B),
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins par bundle USD. */
+export const BEACHES_FALLBACK=IS_NEW_REGION?[]:[
+
   {id:"mq001",island:"mq",name:"Plage des Salines",commune:"Sainte-Anne",lat:14.3958521,lng:-60.8689802,kids:true,snorkel:false,parking:true,drive:52},
   {id:"mq011",island:"mq",name:"Anse Mitan",commune:"Les Trois-Îlets",lat:14.5522593,lng:-61.0552056,kids:true,snorkel:false,parking:true,drive:18},
   {id:"mq014",island:"mq",name:"Grande Anse d'Arlet",commune:"Les Anses-d'Arlet",lat:14.5027854,lng:-61.0856311,kids:true,snorkel:true,parking:true,drive:25},
@@ -1692,9 +1705,19 @@ export const BEACHES_FALLBACK=[
   {id:"gp021",island:"gp",name:"Plage de Grande Anse",commune:"Trois-Rivières",lat:15.9589717,lng:-61.6719389,kids:true,snorkel:true,parking:true,drive:45},
 ]
 
+
 const ISLAND_CENTER={mq:[14.64,-61.02],gp:[16.22,-61.55]}
 /* Nouvelles régions : centre injecté au build via __REGION__ (MQ/GP inchangés). */
 if(IS_NEW_REGION&&REGION.center)ISLAND_CENTER[REGION.id]=[REGION.center.lat,REGION.center.lng]
+/* Nouvelles regions (USD/ES) : leurs plages vivent DANS __REGION__ (inline, plus
+   haut). BEACHES_FALLBACK reste le repli MQ/GP historique — on le VIDE ici :
+   (1) aucun code nouveau-regime ne le lit (tous les acces sont gardes IS_NEW_REGION
+       ci-dessus, cf. PremiumModal _nameOf/_kidsOf et la construction de `beaches`) ;
+   (2) il ne doit PAS servir de repli d'affichage avant le fetch — un visiteur
+       Cancun/Tulum voyait des plages "propres" de Martinique en plan B ;
+   (3) ~1 Ko gzip eager de donnees etrangeres en moins dans chaque bundle USD.
+   Rollback : supprimer ce bloc (retour au repli MQ/GP partout). */
+
 
 // Mapping: sargassum.json / history.json IDs → beaches-list.json IDs
 export const SARG_TO_BEACH={"grande-anse":"mq014","anse-mitan":"mq011","anse-noire":"mq012","tartane":"mq034","anse-madame":"mq024","diamant":"mq016","pt-marin":"mq008","sainte-anne":"mq004","les-salines":"mq001","vauclin":"mq044","precheur":"mq033","gp-grande-anse":"gp021","gp-malendure":"gp031","gp-sainte-anne":"gp010","gp-pt-chateaux":"gp005","gp-gosier":"gp012","gp-caravelle":"gp009","gp-bas-du-fort":"gp014","gp-deshaies":"gp024","gp-moule":"gp080","gp-vieux-fort":"gp042"}
@@ -1792,6 +1815,12 @@ export const PAY_CUR=(IS_NEW_REGION&&REGION&&REGION.currency==="USD")?"usd":"eur
 // est mort depuis le retrait des redirects) : ces consts ne sont que des drapeaux.
 export const LINK_MONTHLY=REGION_PAY?(REGION_PAY.monthly||""):"onsite"
 export const LINK_ANNUAL=REGION_PAY?(REGION_PAY.yearly||""):"onsite"
+// Offre annuelle disponible (même source que PremiumModal : LINK_ANNUAL).
+// P0 2026-10-23 : openPremium() référençait `hasAnnual` sans que ce nom existe
+// dans CE module → ReferenceError à chaque clic sur un CTA premium
+// (VER LOS 7 DÍAS, Activar mi alerta…) : le paywall ne s'ouvrait pas,
+// sur les 6 domaines ( reproduit en production avant correction ).
+export const hasAnnual=!!LINK_ANNUAL
 export const LINK_PRO=REGION_PAY?"":STRIPE_LINK_PRO
 export const PAYWALL_READY=!REGION_PAY||!!LINK_MONTHLY
 // EUR (MQ/GP, REGION_PAY null) : fallback de prix non-null OBLIGATOIRE — depuis
@@ -1938,6 +1967,11 @@ const APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPc
 const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_map_open","sg_beach_open","sg_verdict_scan_view",  // Funnel B2C haut de漏 (top-funnel, 2026-08-04) : map→beach→verdict.
   // Funnel B2C bas (existant) : paywall→cta→checkout→conversion.
   "sg_premium_modal_open","sg_premium_modal_cta","sg_pass_cta","sg_conversion","sg_email_submit","sg_checkout_redirect",
+  // P0.7 (2026-10-22) : checkout 100% on-site — l'ancien funnel ne comptait que
+  // sg_checkout_redirect (PayPal uniquement) → checkout=0 en métrique alors que
+  // les PAID passent par le checkout on-site. sg_checkout_started = début réel
+  // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
+  "sg_checkout_started",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
@@ -10419,14 +10453,15 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         {/* Liens société/légaux — régions USD/ES (pages générées EN/ES, slugs
             localisés). Identité opérateur 97TECH visible partout, comme MQ/GP. */}
         {IS_NEW_REGION && (() => {
-          const sl = lang==="es"?{t:"terminos",p:"privacidad",r:"reembolso",rel:"fiabilidad"}:{t:"terms",p:"privacy",r:"refund",rel:"reliability"}
+          const lg = legalLinks(lang)
+          const relHref = reliabilityHref(lang)
           const ls={color:"rgba(255,255,255,.38)"}, lsd={color:"rgba(255,255,255,.3)"}
           return (
             <div style={{fontSize:11,color:"rgba(255,255,255,.3)",marginTop:9,lineHeight:1.8}}>
-              <a href={`/${sl.rel}/`} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
-              <a href={`/${sl.t}/`} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
-              <a href={`/${sl.p}/`} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
-              <a href={`/${sl.r}/`} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
+              <a href={relHref||undefined} style={ls}>{_t(lang,"Fiabilité","Reliability","Fiabilidad")}</a>{" · "}
+              <a href={lg.terms||undefined} style={lsd}>{_t(lang,"CGV","Terms","Términos")}</a>{" · "}
+              <a href={lg.privacy||undefined} style={lsd}>{_t(lang,"Confidentialité","Privacy","Privacidad")}</a>{" · "}
+              <a href={lg.refund||undefined} style={lsd}>{_t(lang,"Remboursement","Refund","Reembolso")}</a>
               <div style={{marginTop:6,color:"rgba(255,255,255,.26)"}}>{_t(lang,"Édité par","Operated by","Operado por")} 97TECH · SAS · RCS Paris 882&nbsp;370&nbsp;703</div>
             </div>
           )
@@ -14516,7 +14551,7 @@ export default function App(){
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
             className="sg-fab"
-            style={{position:"fixed",right:14,bottom:"calc(166px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
+            style={{position:"fixed",right:14,bottom:"calc(158px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
               alignItems:"center",justifyContent:"center",
@@ -14541,9 +14576,9 @@ export default function App(){
             <div style={{pointerEvents:"auto",maxWidth:400,margin:"0 auto"}}>
               <button onClick={()=>{track("sg_sos_map_click",{});setShowSOS(true)}}
                 className="sg-soscta"
-                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"14px 20px",borderRadius:14,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:15,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
+                style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"center",gap:10,padding:"9px 16px",borderRadius:12,border:"none",background:"linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317)",color:"#190c2c",fontWeight:800,fontSize:13.5,fontFamily:"inherit",cursor:"pointer",boxShadow:"0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",animation:"viewFadeIn .35s cubic-bezier(.22,1,.36,1) both"}}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/></svg>
-                <span style={{font:"800 14px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
+                <span style={{font:"800 13px/1 'Bricolage Grotesque',sans-serif",whiteSpace:"nowrap"}}>{_t(lang,"SOS PLAGE 24H — 1 €","SOS BEACH 24H — 1 €","SOS PLAYA 24H — 1 €")}</span>
               </button>
             </div>
           </div>
@@ -14857,7 +14892,7 @@ display:"flex",flexDirection:"column",gap:8,backdropFilter:"blur(12px)",WebkitBa
                 "Nous utilisons des cookies pour améliorer l'expérience et mesurer l'audience. Tu peux accepter ou refuser.",
                 "We use cookies to improve experience and measure analytics. You can accept or decline.",
                 "Usamos cookies para mejorar la experiencia y medir la audiencia. Puedes aceptar o rechazar.")}
-              {' '}<a href={lang==="en"?"/en/privacy/":lang==="es"?"/es/privacy/":"/confidentialite/"}
+              {' '}<a href={legalHref("privacy",lang)||undefined}
                 style={{color:"#FFC72C",textDecoration:"underline"}}>{_t(lang,"En savoir plus","Learn more","Saber más")}</a>
             </div>
             <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
