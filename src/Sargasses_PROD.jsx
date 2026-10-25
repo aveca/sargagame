@@ -10141,6 +10141,8 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       opacity:exiting?0:1,transform:exiting?"scale(1.04)":"none",
       transition:"opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1)"}}>
       <style>{`@keyframes sgHeroBob{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+@keyframes sgHeroShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes sgHeroPulse{0%,100%{opacity:.4}50%{opacity:1}}
 .sg-heroSec{position:relative;min-height:100vh}
 @supports(min-height:100svh){.sg-heroSec{min-height:100svh}}
 .sg-rv{opacity:0;transform:translateY(26px);transition:opacity .65s cubic-bezier(.22,.61,.36,1),transform .65s cubic-bezier(.22,.61,.36,1)}
@@ -10182,6 +10184,17 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
 
       {/* ── ÉCRAN 1 : le verdict plein cadre (vidéo) ── */}
       <section ref={heroRef} className="sg-heroSec">
+      {/* Hero skeleton pendant le chargement satellite (additif · rollback ?heroskel=0) */}
+      {!/[?&]heroskel=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(!sargData?.erddapTimestamp||beach.status==="_loading")&&(
+      <div style={{padding:"0 20px calc(10px + env(safe-area-inset-bottom))",maxWidth:560,margin:"0 auto",display:"flex",flexDirection:"column",gap:10,height:"min(480px,46svh)",justifyContent:"center"}}>
+        <div style={{height:60,borderRadius:30,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite"}}/>
+        <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{width:7,height:7,borderRadius:"50%",background:"#22C55E",animation:"sgHeroPulse 2s ease-in-out infinite"}}/>
+          <div style={{height:14,borderRadius:7,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite",flex:1}}/>
+        </div>
+        <div style={{height:10,borderRadius:5,background:"linear-gradient(90deg,#10231E 25%,#1a352E 50%,#10231E 75%)",backgroundSize:"200% 100%",animation:"sgHeroShimmer 1.6s ease-in-out infinite",width:"60%"}}/>
+      </div>
+      )}
       <HeroScene/>
       {/* Le voile média couvre la photo : c'est LUI qui reçoit les taps sur
           l'image. Clarity 2026-06 : 46 rage + 670 dead clicks home — les
