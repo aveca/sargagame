@@ -8,6 +8,17 @@ const faq = region.faq.find((item) => item.q === 'Can sargassum really be foreca
 const reliabilityFaq = region.faq.find((item) => item.q === 'How reliable is the sargassum data on this site?')
 const allContent = JSON.stringify(region)
 
+assert.doesNotMatch(
+  allContent,
+  /3\\.5-day/i,
+  'Do not present an unvalidated 3.5-day beach-persistence half-life as an established fact'
+)
+assert.match(
+  region.pages.forecast.method,
+  /persistence is described qualitatively rather than as a measured cleanup time/i,
+  'Explain beach persistence cautiously without promising a fixed cleanup time'
+)
+
 assert.ok(faq, 'Punta Cana 7-day forecast FAQ must remain available')
 assert.doesNotMatch(
   faq.a,
