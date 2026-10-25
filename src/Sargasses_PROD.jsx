@@ -640,8 +640,7 @@ export function Veilleur({mood="serein",size=44,interactive=true}){
       </g>
     </svg>
   )
-})
-Header.displayName = "Header"
+}
 // Forecast Timeline 3D — animation de dessin au scroll (Wow Effect 4)
 // La timeline se dessine progressivement pendant le scroll, révélant chaque jour
 function ForecastTimeline3D({forecast,isPremium,weatherDaily,lang}){
@@ -7566,7 +7565,9 @@ const Header = React.memo(function Header({island,onIslandChange,lang,onLangTogg
       </div>
     </div>
   )
-}
+})
+Header.displayName = "Header"
+
 
 /* ═══════════════════════════════════════════════════════════════════════════
    INLINE PUSH CTA — Contextual in beach sheet after 3rd beach view
