@@ -10083,19 +10083,23 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     return()=>{io1&&io1.disconnect();io2.disconnect()}
   },[])
   const scrollNext=()=>{try{wrapRef.current?.querySelector("#sg-s2")?.scrollIntoView({behavior:"smooth",block:"start"})}catch(_){}}
+  // Ne jamais présenter comme actuel un verdict fondé sur une observation satellite >12 h.
+  const updFresh=isSatelliteFresh12h(sargData)
   const clean=beach.status==="clean"
-  const verdictTxt=clean?_t(lang,"PROPRE AUJOURD'HUI","CLEAN TODAY","SIN SARGAZO HOY")
-    :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
-    :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
-  const verdictBg=clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
+  const verdictTxt=!updFresh
+    ? _t(lang,"VÉRIFICATION EN COURS","VERIFICATION IN PROGRESS","VERIFICACIÓN EN CURSO")
+    : clean?_t(lang,"PROPRE AUJOURD'HUI","CLEAN TODAY","SIN SARGAZO HOY")
+      :beach.status==="moderate"?_t(lang,"MODÉRÉ AUJOURD'HUI","MODERATE TODAY","MODERADA HOY")
+      :_t(lang,"À ÉVITER AUJOURD'HUI","AVOID TODAY","EVITAR HOY")
+  const verdictBg=!updFresh?"#6B7280":clean?"#FFC72C":beach.status==="moderate"?"#F59E0B":"#E8522A"
   // J+1 réel quand résolvable (weekly keyé par id sarg pour MQ/GP, id direct
   // pour les nouvelles régions) — sinon pas de promesse.
   const wkId=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id]
   const j1=sargData?.weekly?.[wkId]?.forecast?.[1]?.status||null
   const sub=(()=>{
     const parts=[]
-    if(clean&&j1&&j1!=="clean")parts.push(_t(lang,"⚠️ Banc prévu demain — on te dira où aller","⚠️ Mat forecast tomorrow — we'll tell you where to go","⚠️ Banco previsto mañana — te diremos adónde ir"))
-    else if(clean&&j1==="clean")parts.push(_t(lang,"Propre aussi demain","Clean tomorrow too","Limpia también mañana"))
+    if(updFresh&&clean&&j1&&j1!=="clean")parts.push(_t(lang,"⚠️ Banc prévu demain — on te dira où aller","⚠️ Mat forecast tomorrow — we'll tell you where to go","⚠️ Banco previsto mañana — te diremos adónde ir"))
+    else if(updFresh&&clean&&j1==="clean")parts.push(_t(lang,"Propre aussi demain","Clean tomorrow too","Limpia también mañana"))
     if(beach.commune)parts.push(beach.commune)
     if(userPos&&beach.lat){
       const km=haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)
@@ -10108,15 +10112,14 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
     const ts=sargData?.erddapTimestamp
     return ts?new Date(ts).toLocaleTimeString(lang==="fr"?"fr-FR":lang==="es"?"es-MX":"en-US",{hour:"2-digit",minute:"2-digit"}):""
   }catch(_){return""}})()
-  // Gate 12h anti-fake-LIVE (contrat produit) : seule l'observation satellite prouve la fraîcheur.
-  const updFresh=isSatelliteFresh12h(sargData)
   const dateLong=new Date().toLocaleDateString(lang==="es"?"es-MX":lang==="en"?"en-US":"fr-FR",{weekday:"long",day:"numeric",month:"long"})
   const wordmark=IS_NEW_REGION
     ?((lang==="es"?"SARGAZO ":"SARGASSUM ")+String(REGION.name||"").toUpperCase())
     :(island==="gp"?"SARGASSES GUADELOUPE":"SARGASSES MARTINIQUE")
-  const statusShort=b=>b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
+  const statusShort=b=>!updFresh?_t(lang,"À vérifier","Needs verification","Por verificar")
+    :b.status==="clean"?_t(lang,"Propre","Clean","Limpia")
     :b.status==="moderate"?_t(lang,"Modéré","Moderate","Moderada"):_t(lang,"À éviter","Avoid","Evitar")
-  const statusCol=b=>b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
+  const statusCol=b=>!updFresh?"#6B7280":b.status==="clean"?"#FFC72C":b.status==="moderate"?"#F59E0B":"#E8522A"
   // Compteur live « coast » : plages propres / à éviter sur la sélection du hero.
   // Aucune requête reseau : topBeaches est deja en memoire (passe par l appelant).
   const liveCounts=(()=>{
@@ -10223,17 +10226,19 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
           </div>
         )}
         <div onClick={()=>{track("sg_hero_tap",{t:"date"});onOpenBeach&&onOpenBeach(beach)}} style={{fontSize:11,fontWeight:600,letterSpacing:".14em",color:"rgba(255,255,255,.62)",marginBottom:6,textTransform:"uppercase",cursor:"pointer"}}>
-          {dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}
+          {updFresh
+            ? <>{dateLong} · {_t(lang,"SATELLITE COPERNICUS","COPERNICUS SATELLITE","SATÉLITE COPERNICUS")}</>
+            : _t(lang,"OBSERVATION SATELLITE À VÉRIFIER","SATELLITE OBSERVATION NEEDS VERIFICATION","OBSERVACIÓN SATELITAL POR VERIFICAR")}
         </div>
         <h1 onClick={()=>{track("sg_hero_tap",{t:"title"});onOpenBeach&&onOpenBeach(beach)}} style={{fontFamily:"'Anton',sans-serif",fontWeight:400,fontSize:"clamp(44px,12vw,72px)",lineHeight:.96,
           letterSpacing:".01em",textTransform:"uppercase",margin:"0 0 14px",color:"#fff",cursor:"pointer",
           textShadow:"0 2px 24px rgba(0,0,0,.35)"}}>
           {beach.name}
         </h1>
-        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:"#120821",
+        <div onClick={()=>{track("sg_hero_tap",{t:"verdict"});onOpenBeach&&onOpenBeach(beach)}} style={{display:"inline-flex",alignItems:"center",gap:10,background:verdictBg,color:updFresh?"#120821":"#fff",
           fontWeight:800,fontSize:15,letterSpacing:".02em",padding:"9px 16px",borderRadius:999,marginBottom:8,cursor:"pointer"}}>
           {verdictTxt}
-          {beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
+          {updFresh&&beach.score!=null&&<span style={{fontFamily:"'Anton',sans-serif",fontSize:17,letterSpacing:".03em"}}>{beach.score}/100</span>}
         </div>
         {/* Fraîcheur de l'observation au point de décision (additif · rollback ?herofresh=0) */}
         {!/[?&]herofresh=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(
@@ -10243,7 +10248,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </div>
         )}
         {/* Compteur live des plages propres / à éviter (additif · rollback ?herolive=0) */}
-        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&liveCounts.total>0&&(
+        {!/[?&]herolive=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&updFresh&&liveCounts.total>0&&(
         <div onClick={()=>{track("sg_hero_tap",{t:"coast"});onShowMap&&onShowMap()}} style={{display:"inline-flex",alignItems:"center",gap:8,marginBottom:14,cursor:"pointer",fontSize:10.5,fontWeight:700,letterSpacing:".06em",color:"rgba(255,255,255,.75)",textTransform:"uppercase"}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4}}>
             <span style={{width:8,height:8,borderRadius:"50%",background:"#22C55E",flexShrink:0}}/>
@@ -10257,7 +10262,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         </div>
         )}
         {/* Navigation rapide plage suivante propre (additif · rollback ?heronext=0) */}
-        {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&(()=>{
+        {!/[?&]heronext=0(?:&|$)/.test(typeof window!="undefined"?window.location.search:"")&&updFresh&&(()=>{
           const list=Array.isArray(topBeaches)?topBeaches:(Array.isArray(pickBeaches)?pickBeaches:[])
           const idx=list.findIndex(b=>b&&b.id===beach.id)
           const next=list.slice(idx+1).find(b=>b&&b.status==="clean")||list.find(b=>b&&b.status==="clean"&&b.id!==beach.id)
@@ -10304,9 +10309,9 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
             <button onClick={onShowMap} style={{flex:1,textAlign:"center",cursor:"pointer",fontFamily:"inherit",
               background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.35)",
               fontWeight:700,fontSize:15,padding:"16px 18px",borderRadius:18,backdropFilter:"blur(6px)"}}>
-              <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+              <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,updFresh?"Ouvrir la carte live":"Ouvrir la carte",updFresh?"Open the live map":"Open the map",updFresh?"Abrir el mapa en vivo":"Abrir el mapa")}
               <span style={{display:"block",fontWeight:500,fontSize:11.5,opacity:.7,marginTop:3}}>
-                {_t(lang,"toutes les plages, en direct","every beach, real time","todas las playas, en directo")}
+                {_t(lang,updFresh?"toutes les plages, en direct":"toutes les plages",updFresh?"every beach, real time":"every beach",updFresh?"todas las playas, en directo":"todas las playas")}
               </span>
             </button>
           </div>
@@ -10340,11 +10345,13 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
       {/* ── ÉCRAN 2 : le verdict du jour, plage par plage ── */}
       <section id="sg-s2" style={{...secPad,scrollMarginTop:54}}>
         <div className="sg-rv" data-s="verdict">
-          <div style={ovl}>{_t(lang,"Aujourd'hui","Today","Hoy")}</div>
-          <h2 style={h2s}>{_t(lang,"Le verdict, plage par plage","The verdict, beach by beach","El veredicto, playa por playa")}</h2>
+          <div style={ovl}>{updFresh?_t(lang,"Aujourd'hui","Today","Hoy"):_t(lang,"À vérifier","Needs verification","Por verificar")}</div>
+          <h2 style={h2s}>{updFresh?_t(lang,"Le verdict, plage par plage","The verdict, beach by beach","El veredicto, playa por playa"):_t(lang,"Les plages à vérifier","Beaches to verify","Playas por verificar")}</h2>
           <p style={{fontSize:14,lineHeight:1.55,color:"rgba(255,255,255,.62)",margin:"0 0 18px"}}>
-            {_t(lang,"Pas d'avis, pas de promesses : la mesure satellite du matin.","No opinions, no promises: this morning's satellite measurement.","Sin opiniones ni promesas: la medición satelital de esta mañana.")}
-            {upd?(updFresh?` · LIVE ${upd}`:` · ${_t(lang,"Données en retard","Data delayed","Datos desactualizados")}`):""}
+            {updFresh
+            ? _t(lang,"Pas d'avis, pas de promesses : la mesure satellite du matin.","No opinions, no promises: this morning's satellite measurement.","Sin opiniones ni promesas: la medición satelital de esta mañana.")
+            : _t(lang,"Les observations satellite ne sont pas assez récentes pour confirmer l’état actuel. Les statuts et scores sont masqués jusqu’à une mesure vérifiable.","Satellite observations are not recent enough to confirm current conditions. Statuses and scores are hidden until a verifiable reading is available.","Las observaciones satelitales no son lo bastante recientes para confirmar el estado actual. Los estados y puntuaciones se ocultan hasta disponer de una medición verificable.")}
+            {updFresh&&upd?` · LIVE ${upd}`:""}
           </p>
         </div>
         {!!(topBeaches&&topBeaches.length)&&(
@@ -10353,9 +10360,9 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
               <button key={b.id} className="sg-l-card" onClick={()=>onOpenBeach&&onOpenBeach(b)}>
                 <div style={{position:"relative",height:124,overflow:"hidden"}}>
                   <BeachScene beach={b}/>
-                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:"#120821",
+                  <span style={{position:"absolute",top:8,left:8,zIndex:2,background:statusCol(b),color:updFresh?"#120821":"#fff",
                     fontWeight:800,fontSize:11,padding:"4px 9px",borderRadius:999}}>
-                    {statusShort(b)}{b.score!=null?` · ${b.score}`:""}
+                    {statusShort(b)}{updFresh&&b.score!=null?` · ${b.score}`:""}
                   </span>
                 </div>
                 <div style={{padding:"10px 12px 12px"}}>
@@ -10431,7 +10438,7 @@ function HeroVerdict({beach,lang,island,sargData,userPos,onOpen,onShowMap,onPrem
         <button onClick={onShowMap} className="sg-rv" style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
           width:"100%",background:"rgba(10,23,20,.45)",color:"#fff",border:"1.5px solid rgba(255,255,255,.3)",
           cursor:"pointer",fontFamily:"inherit",fontWeight:700,fontSize:15,padding:"15px 18px",borderRadius:18,marginTop:14}}>
-          <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,"Ouvrir la carte live","Open the live map","Abrir el mapa en vivo")}
+          <BrandIcon name="map" size={15} accent="#120821" style={{verticalAlign:"-2px",marginRight:6,display:"inline-block"}}/>{_t(lang,updFresh?"Ouvrir la carte live":"Ouvrir la carte",updFresh?"Open the live map":"Open the map",updFresh?"Abrir el mapa en vivo":"Abrir el mapa")}
         </button>
       </section>
 
