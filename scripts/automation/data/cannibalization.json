@@ -1,359 +1,379 @@
 {
-  "generatedAt": "2026-10-19T17:37:42.782Z",
+  "generatedAt": "2026-10-26T17:32:33.457Z",
   "sites": {
     "mq": {
-      "queryCount": 286,
+      "queryCount": 283,
       "cannibalizedCount": 9,
       "cannibalized": [
         {
           "query": "sargasse martinique en temps réel",
-          "totalImpressions": 485,
-          "totalClicks": 62,
+          "totalImpressions": 507,
+          "totalClicks": 73,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 271,
-              "clicks": 51,
-              "share": 0.5587628865979382
+              "impressions": 297,
+              "clicks": 58,
+              "share": 0.5857988165680473
             },
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 214,
-              "clicks": 11,
-              "share": 0.44123711340206184
+              "impressions": 210,
+              "clicks": 15,
+              "share": 0.41420118343195267
             }
           ]
         },
         {
           "query": "sargasse martinique aujourd'hui",
-          "totalImpressions": 312,
-          "totalClicks": 27,
+          "totalImpressions": 374,
+          "totalClicks": 28,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 198,
-              "clicks": 21,
-              "share": 0.6346153846153846
+              "impressions": 206,
+              "clicks": 22,
+              "share": 0.5508021390374331
             },
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 114,
+              "impressions": 168,
               "clicks": 6,
-              "share": 0.36538461538461536
+              "share": 0.44919786096256686
             }
           ]
         },
         {
           "query": "carte sargasse martinique",
-          "totalImpressions": 205,
-          "totalClicks": 19,
+          "totalImpressions": 253,
+          "totalClicks": 25,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 105,
-              "clicks": 11,
-              "share": 0.5121951219512195
+              "impressions": 129,
+              "clicks": 15,
+              "share": 0.5098814229249012
             },
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 92,
-              "clicks": 8,
-              "share": 0.44878048780487806
+              "impressions": 116,
+              "clicks": 10,
+              "share": 0.45849802371541504
+            }
+          ]
+        },
+        {
+          "query": "meteo sargasse martinique",
+          "totalImpressions": 224,
+          "totalClicks": 41,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 187,
+              "clicks": 39,
+              "share": 0.8348214285714286
+            },
+            {
+              "url": "https://sargasses-martinique.com/meteo-sargasses-martinique/",
+              "impressions": 35,
+              "clicks": 2,
+              "share": 0.15625
             }
           ]
         },
         {
           "query": "carte sargasses martinique",
-          "totalImpressions": 129,
-          "totalClicks": 2,
+          "totalImpressions": 138,
+          "totalClicks": 3,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 59,
-              "clicks": 2,
-              "share": 0.4573643410852713
+              "impressions": 62,
+              "clicks": 3,
+              "share": 0.4492753623188406
             },
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 46,
+              "impressions": 50,
               "clicks": 0,
-              "share": 0.35658914728682173
-            }
-          ]
-        },
-        {
-          "query": "carte sargasse martinique 2026",
-          "totalImpressions": 101,
-          "totalClicks": 8,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 70,
-              "clicks": 6,
-              "share": 0.693069306930693
-            },
-            {
-              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 25,
-              "clicks": 2,
-              "share": 0.24752475247524752
+              "share": 0.36231884057971014
             }
           ]
         },
         {
           "query": "sargasse martinique 2026",
-          "totalImpressions": 97,
-          "totalClicks": 10,
+          "totalImpressions": 124,
+          "totalClicks": 17,
           "competitorCount": 2,
           "competitors": [
             {
-              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 51,
-              "clicks": 4,
-              "share": 0.5257731958762887
+              "url": "https://sargasses-martinique.com/",
+              "impressions": 68,
+              "clicks": 11,
+              "share": 0.5483870967741935
             },
             {
-              "url": "https://sargasses-martinique.com/",
-              "impressions": 46,
-              "clicks": 6,
-              "share": 0.4742268041237113
+              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
+              "impressions": 52,
+              "clicks": 5,
+              "share": 0.41935483870967744
             }
           ]
         },
         {
           "query": "martinique sargasses 2026",
-          "totalImpressions": 91,
-          "totalClicks": 17,
-          "competitorCount": 3,
+          "totalImpressions": 116,
+          "totalClicks": 20,
+          "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 53,
+              "impressions": 69,
               "clicks": 9,
-              "share": 0.5824175824175825
+              "share": 0.5948275862068966
             },
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 20,
-              "clicks": 6,
-              "share": 0.21978021978021978
-            },
-            {
-              "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 11,
-              "clicks": 1,
-              "share": 0.12087912087912088
+              "impressions": 28,
+              "clicks": 9,
+              "share": 0.2413793103448276
             }
           ]
         },
         {
           "query": "carte des sargasses martinique",
-          "totalImpressions": 81,
-          "totalClicks": 2,
+          "totalImpressions": 97,
+          "totalClicks": 3,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/",
-              "impressions": 43,
-              "clicks": 0,
-              "share": 0.5308641975308642
+              "impressions": 54,
+              "clicks": 1,
+              "share": 0.5567010309278351
             },
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 35,
+              "impressions": 40,
               "clicks": 2,
-              "share": 0.43209876543209874
+              "share": 0.41237113402061853
             }
           ]
         },
         {
-          "query": "carte des sargasses 2026",
-          "totalImpressions": 61,
-          "totalClicks": 0,
+          "query": "carte sargasse martinique 2026",
+          "totalImpressions": 96,
+          "totalClicks": 10,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-martinique.com/carte-sargasses/",
-              "impressions": 51,
-              "clicks": 0,
-              "share": 0.8360655737704918
+              "impressions": 67,
+              "clicks": 8,
+              "share": 0.6979166666666666
             },
             {
               "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-              "impressions": 7,
-              "clicks": 0,
-              "share": 0.11475409836065574
+              "impressions": 24,
+              "clicks": 2,
+              "share": 0.25
             }
           ]
         }
       ]
     },
     "gp": {
-      "queryCount": 338,
-      "cannibalizedCount": 11,
+      "queryCount": 328,
+      "cannibalizedCount": 10,
       "cannibalized": [
         {
           "query": "sargasse guadeloupe en direct",
-          "totalImpressions": 267,
-          "totalClicks": 61,
+          "totalImpressions": 326,
+          "totalClicks": 55,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 167,
-              "clicks": 45,
-              "share": 0.6254681647940075
+              "impressions": 173,
+              "clicks": 28,
+              "share": 0.5306748466257669
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 98,
-              "clicks": 15,
-              "share": 0.36704119850187267
+              "impressions": 151,
+              "clicks": 26,
+              "share": 0.46319018404907975
             }
           ]
         },
         {
           "query": "sargasse guadeloupe 2026",
-          "totalImpressions": 193,
-          "totalClicks": 22,
+          "totalImpressions": 214,
+          "totalClicks": 23,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 117,
-              "clicks": 11,
-              "share": 0.6062176165803109
+              "impressions": 161,
+              "clicks": 17,
+              "share": 0.7523364485981309
             },
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 76,
-              "clicks": 11,
-              "share": 0.39378238341968913
+              "impressions": 53,
+              "clicks": 6,
+              "share": 0.24766355140186916
+            }
+          ]
+        },
+        {
+          "query": "sargasses en guadeloupe aujourd'hui",
+          "totalImpressions": 198,
+          "totalClicks": 21,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargasses-guadeloupe.com/",
+              "impressions": 115,
+              "clicks": 14,
+              "share": 0.5808080808080808
+            },
+            {
+              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+              "impressions": 83,
+              "clicks": 7,
+              "share": 0.41919191919191917
             }
           ]
         },
         {
           "query": "meteo sargasse guadeloupe",
-          "totalImpressions": 156,
+          "totalImpressions": 186,
           "totalClicks": 13,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 126,
+              "impressions": 135,
               "clicks": 13,
-              "share": 0.8076923076923077
+              "share": 0.7258064516129032
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 30,
+              "impressions": 48,
               "clicks": 0,
-              "share": 0.19230769230769232
+              "share": 0.25806451612903225
             }
           ]
         },
         {
           "query": "guadeloupe sargasses",
-          "totalImpressions": 155,
-          "totalClicks": 14,
+          "totalImpressions": 174,
+          "totalClicks": 15,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 124,
+              "impressions": 131,
               "clicks": 13,
-              "share": 0.8
+              "share": 0.7528735632183908
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 28,
-              "clicks": 0,
-              "share": 0.18064516129032257
+              "impressions": 39,
+              "clicks": 1,
+              "share": 0.22413793103448276
             }
           ]
         },
         {
           "query": "guadeloupe sargasse",
-          "totalImpressions": 123,
-          "totalClicks": 7,
+          "totalImpressions": 132,
+          "totalClicks": 6,
           "competitorCount": 2,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 93,
-              "clicks": 6,
-              "share": 0.7560975609756098
+              "impressions": 91,
+              "clicks": 5,
+              "share": 0.6893939393939394
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 23,
+              "impressions": 29,
               "clicks": 0,
-              "share": 0.18699186991869918
+              "share": 0.2196969696969697
             }
           ]
         },
         {
           "query": "guadeloupe sargasse 2026",
-          "totalImpressions": 109,
-          "totalClicks": 8,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 67,
-              "clicks": 4,
-              "share": 0.6146788990825688
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 33,
-              "clicks": 4,
-              "share": 0.30275229357798167
-            }
-          ]
-        },
-        {
-          "query": "sargasses guadeloupe 2026",
-          "totalImpressions": 86,
+          "totalImpressions": 130,
           "totalClicks": 14,
-          "competitorCount": 2,
+          "competitorCount": 3,
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 55,
+              "impressions": 85,
               "clicks": 8,
-              "share": 0.6395348837209303
+              "share": 0.6538461538461539
             },
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 31,
-              "clicks": 6,
-              "share": 0.36046511627906974
+              "impressions": 26,
+              "clicks": 5,
+              "share": 0.2
+            },
+            {
+              "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+              "impressions": 19,
+              "clicks": 1,
+              "share": 0.14615384615384616
             }
           ]
         },
         {
           "query": "carte sargasse guadeloupe 2026",
-          "totalImpressions": 84,
-          "totalClicks": 8,
+          "totalImpressions": 112,
+          "totalClicks": 7,
           "competitorCount": 2,
           "competitors": [
             {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 43,
-              "clicks": 1,
-              "share": 0.5119047619047619
+              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+              "impressions": 58,
+              "clicks": 7,
+              "share": 0.5178571428571429
             },
             {
+              "url": "https://sargasses-guadeloupe.com/",
+              "impressions": 52,
+              "clicks": 0,
+              "share": 0.4642857142857143
+            }
+          ]
+        },
+        {
+          "query": "sargasses guadeloupe 2026",
+          "totalImpressions": 83,
+          "totalClicks": 12,
+          "competitorCount": 2,
+          "competitors": [
+            {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 41,
-              "clicks": 7,
-              "share": 0.4880952380952381
+              "impressions": 64,
+              "clicks": 8,
+              "share": 0.7710843373493976
+            },
+            {
+              "url": "https://sargasses-guadeloupe.com/",
+              "impressions": 19,
+              "clicks": 4,
+              "share": 0.2289156626506024
             }
           ]
         },
@@ -365,74 +385,201 @@
           "competitors": [
             {
               "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 63,
+              "impressions": 62,
               "clicks": 6,
-              "share": 0.8873239436619719
+              "share": 0.8732394366197183
             },
             {
               "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 8,
+              "impressions": 9,
               "clicks": 1,
-              "share": 0.11267605633802817
-            }
-          ]
-        },
-        {
-          "query": "carte des sargasses guadeloupe",
-          "totalImpressions": 57,
-          "totalClicks": 5,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 35,
-              "clicks": 1,
-              "share": 0.6140350877192983
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 22,
-              "clicks": 4,
-              "share": 0.38596491228070173
-            }
-          ]
-        },
-        {
-          "query": "carte des sargasses",
-          "totalImpressions": 53,
-          "totalClicks": 1,
-          "competitorCount": 2,
-          "competitors": [
-            {
-              "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-              "impressions": 45,
-              "clicks": 1,
-              "share": 0.8490566037735849
-            },
-            {
-              "url": "https://sargasses-guadeloupe.com/",
-              "impressions": 6,
-              "clicks": 0,
-              "share": 0.11320754716981132
+              "share": 0.1267605633802817
             }
           ]
         }
       ]
     },
     "florida": {
-      "queryCount": 0,
-      "cannibalizedCount": 0,
-      "cannibalized": []
+      "queryCount": 368,
+      "cannibalizedCount": 4,
+      "cannibalized": [
+        {
+          "query": "hay sargazo en miami hoy",
+          "totalImpressions": 140,
+          "totalClicks": 8,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargassummiami.com/es/",
+              "impressions": 123,
+              "clicks": 7,
+              "share": 0.8785714285714286
+            },
+            {
+              "url": "https://sargassummiami.com/es/mapa-sargazo/",
+              "impressions": 14,
+              "clicks": 1,
+              "share": 0.1
+            }
+          ]
+        },
+        {
+          "query": "miami beach sargassum today",
+          "totalImpressions": 95,
+          "totalClicks": 4,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargassummiami.com/",
+              "impressions": 71,
+              "clicks": 2,
+              "share": 0.7473684210526316
+            },
+            {
+              "url": "https://sargassummiami.com/miami-beach-seaweed-map-today/",
+              "impressions": 12,
+              "clicks": 0,
+              "share": 0.12631578947368421
+            }
+          ]
+        },
+        {
+          "query": "miami beach seaweed today",
+          "totalImpressions": 95,
+          "totalClicks": 3,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargassummiami.com/",
+              "impressions": 50,
+              "clicks": 1,
+              "share": 0.5263157894736842
+            },
+            {
+              "url": "https://sargassummiami.com/miami-beach-seaweed-map-today/",
+              "impressions": 38,
+              "clicks": 2,
+              "share": 0.4
+            }
+          ]
+        },
+        {
+          "query": "como esta el sargazo en miami hoy",
+          "totalImpressions": 53,
+          "totalClicks": 2,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargassummiami.com/es/",
+              "impressions": 35,
+              "clicks": 2,
+              "share": 0.660377358490566
+            },
+            {
+              "url": "https://sargassummiami.com/es/mapa-sargazo/",
+              "impressions": 18,
+              "clicks": 0,
+              "share": 0.33962264150943394
+            }
+          ]
+        }
+      ]
     },
     "puntacana": {
-      "queryCount": 0,
-      "cannibalizedCount": 0,
-      "cannibalized": []
+      "queryCount": 316,
+      "cannibalizedCount": 2,
+      "cannibalized": [
+        {
+          "query": "sargassum punta cana",
+          "totalImpressions": 799,
+          "totalClicks": 50,
+          "competitorCount": 2,
+          "competitors": [
+            {
+              "url": "https://sargassumpuntacana.com/",
+              "impressions": 713,
+              "clicks": 47,
+              "share": 0.8923654568210263
+            },
+            {
+              "url": "https://sargassumpuntacana.com/es/",
+              "impressions": 86,
+              "clicks": 3,
+              "share": 0.10763454317897372
+            }
+          ]
+        },
+        {
+          "query": "punta cana sargassum report",
+          "totalImpressions": 67,
+          "totalClicks": 4,
+          "competitorCount": 4,
+          "competitors": [
+            {
+              "url": "https://sargassumpuntacana.com/",
+              "impressions": 43,
+              "clicks": 4,
+              "share": 0.6417910447761194
+            },
+            {
+              "url": "https://sargassumpuntacana.com/barbade",
+              "impressions": 8,
+              "clicks": 0,
+              "share": 0.11940298507462686
+            },
+            {
+              "url": "https://sargassumpuntacana.com/haiti",
+              "impressions": 8,
+              "clicks": 0,
+              "share": 0.11940298507462686
+            },
+            {
+              "url": "https://sargassumpuntacana.com/sainte-lucie",
+              "impressions": 8,
+              "clicks": 0,
+              "share": 0.11940298507462686
+            }
+          ]
+        }
+      ]
     },
     "rivieramaya": {
-      "queryCount": 0,
-      "cannibalizedCount": 0,
-      "cannibalized": []
+      "queryCount": 356,
+      "cannibalizedCount": 1,
+      "cannibalized": [
+        {
+          "query": "sargasse mexique en direct",
+          "totalImpressions": 86,
+          "totalClicks": 0,
+          "competitorCount": 4,
+          "competitors": [
+            {
+              "url": "https://sargassumcancun.com/en/seaweed-map/",
+              "impressions": 22,
+              "clicks": 0,
+              "share": 0.2558139534883721
+            },
+            {
+              "url": "https://sargassumcancun.com/en/",
+              "impressions": 22,
+              "clicks": 0,
+              "share": 0.2558139534883721
+            },
+            {
+              "url": "https://sargassumcancun.com/",
+              "impressions": 20,
+              "clicks": 0,
+              "share": 0.23255813953488372
+            },
+            {
+              "url": "https://sargassumcancun.com/en/sargassum-forecast/",
+              "impressions": 17,
+              "clicks": 0,
+              "share": 0.19767441860465115
+            }
+          ]
+        }
+      ]
     }
   }
 }

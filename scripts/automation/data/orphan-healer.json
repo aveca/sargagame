@@ -1,12 +1,16 @@
 {
-  "generatedAt": "2026-10-19T17:37:50.260Z",
+  "generatedAt": "2026-10-26T17:32:42.881Z",
   "sites": {
     "mq": {
       "donorCount": 5,
-      "targetCount": 36,
+      "targetCount": 49,
       "injections": [
         {
           "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
           "targetCount": 8
         },
         {
@@ -18,11 +22,7 @@
           "targetCount": 8
         },
         {
-          "donor": "/alertes/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/comprendre-sargasses/",
+          "donor": "/conditions/",
           "targetCount": 8
         }
       ],
@@ -32,17 +32,21 @@
         "/agir/",
         "/bulletin-sargasses-martinique/",
         "/comic-cartes.html",
+        "/conditions/",
         "/confidentialite/",
-        "/confirme/",
-        "/expansion-survey/"
+        "/confirme/"
       ]
     },
     "gp": {
       "donorCount": 5,
-      "targetCount": 42,
+      "targetCount": 50,
       "injections": [
         {
           "donor": "/",
+          "targetCount": 8
+        },
+        {
+          "donor": "/plages/",
           "targetCount": 8
         },
         {
@@ -54,11 +58,7 @@
           "targetCount": 8
         },
         {
-          "donor": "/alertes/",
-          "targetCount": 8
-        },
-        {
-          "donor": "/comprendre-sargasses/",
+          "donor": "/conditions/",
           "targetCount": 8
         }
       ],
@@ -70,7 +70,7 @@
         "/algues-guadeloupe/",
         "/bulletin-sargasses-guadeloupe/",
         "/comic-cartes.html",
-        "/confidentialite/"
+        "/conditions/"
       ]
     }
   }

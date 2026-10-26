@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-19T17:37:42.684Z",
+  "generatedAt": "2026-10-26T17:32:33.329Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
@@ -12,13 +12,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 3578,
-          "clicks": 339
+          "impressions": 4054,
+          "clicks": 386
         },
         {
           "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1080,
-          "clicks": 84
+          "impressions": 1097,
+          "clicks": 92
         }
       ],
       "orphans": [
@@ -105,8 +105,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 4946,
-          "clicks": 489
+          "impressions": 4780,
+          "clicks": 444
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
+          "impressions": 1293,
+          "clicks": 126
         }
       ],
       "orphans": [
@@ -116,7 +121,8 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -125,7 +131,8 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -134,7 +141,8 @@
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -143,7 +151,8 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -152,7 +161,8 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -161,7 +171,8 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -170,7 +181,8 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         },
         {
@@ -179,7 +191,8 @@
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
-            "https://sargasses-guadeloupe.com/"
+            "https://sargasses-guadeloupe.com/",
+            "https://sargasses-guadeloupe.com/carte-sargasses/"
           ]
         }
       ]

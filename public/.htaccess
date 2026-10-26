@@ -220,6 +220,18 @@ RewriteRule ^plages/plage-du-diamant/?$ /plages/plage-du-diamant/ [R=301,L]
 RewriteRule ^plages/anse-gros-raisins/?$ /plages/anse-gros-raisins/ [R=301,L]
 RewriteRule ^plages/anse-collat/?$ /plages/anse-collat/ [R=301,L]
 RewriteRule ^plages/plage-de-saint-pierre/?$ /plages/plage-de-saint-pierre/ [R=301,L]
+
+# Auto-added 2026-10-26 by seo-fix-404
+RewriteRule ^plages/anse-caritan/?$ /plages/anse-caritan/ [R=301,L]
+RewriteRule ^plages/plage-de-sainte-luce/?$ /plages/plage-de-sainte-luce/ [R=301,L]
+RewriteRule ^plages/anse-turin/?$ /plages/anse-turin/ [R=301,L]
+RewriteRule ^plages/anse-belleville/?$ /plages/anse-belleville/ [R=301,L]
+RewriteRule ^plages/bourg-de-tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
+RewriteRule ^plages/les-raisiniers/?$ /plages/les-raisiniers/ [R=301,L]
+RewriteRule ^plages/anse-charpentier/?$ /plages/anse-charpentier/ [R=301,L]
+RewriteRule ^plages/plage-du-vetiver/?$ /plages/plage-du-vetiver/ [R=301,L]
+RewriteRule ^plages/plage-de-petit-bourg/?$ /plages/plage-de-petit-bourg/ [R=301,L]
+RewriteRule ^plages/plage-de-capesterre-mg/?$ /plages/plage-de-capesterre-mg/ [R=301,L]
 # CATCH-ALL — remaining old URLs that don't match specific rules → homepage
 # These MUST come AFTER all specific redirects above
 # =====================================================================

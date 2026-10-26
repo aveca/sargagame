@@ -1,94 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-07-27",
-      "sites": {
-        "mq": {
-          "combined": {
-            "LCP": {
-              "p75": 3650,
-              "good": null
-            },
-            "INP": {
-              "p75": 444,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 963,
-              "good": null
-            }
-          }
-        },
-        "gp": {
-          "combined": {
-            "LCP": {
-              "p75": 3637,
-              "good": null
-            },
-            "INP": {
-              "p75": 592,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.02,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 907,
-              "good": null
-            }
-          }
-        },
-        "florida": {
-          "combined": {
-            "LCP": {
-              "p75": 3206,
-              "good": null
-            },
-            "INP": {
-              "p75": 261,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 656,
-              "good": null
-            }
-          }
-        },
-        "puntacana": {
-          "combined": {
-            "LCP": {
-              "p75": 3432,
-              "good": null
-            },
-            "INP": {
-              "p75": 252,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 923,
-              "good": null
-            }
-          }
-        },
-        "rivieramaya": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-08-03",
       "sites": {
         "mq": {
@@ -433,6 +345,103 @@
         },
         "rivieramaya": {
           "combined": null
+        }
+      }
+    },
+    {
+      "date": "2026-10-26",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 2220,
+              "good": null
+            },
+            "INP": {
+              "p75": 418,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.08,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 461,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 2444,
+              "good": null
+            },
+            "INP": {
+              "p75": 415,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.54,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 450,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 2280,
+              "good": null
+            },
+            "INP": {
+              "p75": 251,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.19,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 442,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 1624,
+              "good": null
+            },
+            "INP": {
+              "p75": 232,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.05,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": {
+            "LCP": {
+              "p75": 1525,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.04,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 506,
+              "good": null
+            }
+          }
         }
       }
     }
