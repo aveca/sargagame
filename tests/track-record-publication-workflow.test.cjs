@@ -52,7 +52,35 @@ assert.doesNotMatch(emailJob, /run: node scripts\/automation\/build-track-record
 const hasStashStep = fetchJob.includes("git stash --include-untracked");
 assert.ok(hasStashStep, "workflow includes git stash --include-untracked before rebase");
 
-const stashBeforeFetch = fetchJob.indexOf("git stash --include-untracked") < fetchJob.indexOf("git fetch origin");
-assert.ok(stashBeforeFetch, "git stash runs BEFORE git fetch origin in the publish step");
+// Invariant réel : `git fetch origin "$BRANCH"` ne fait QUE mettre à jour les
+// remote-tracking refs — il ne touche JAMAIS le working tree. La seule
+// opération de la boucle qui MUTE le working tree est `git rebase -X theirs`,
+// lequel échoue (« untracked working tree files would be overwritten ») ou
+// écrase les artefacts régénérés par le pipeline si le working tree n'est pas
+// stashé. Exiger `stash` AVANT `fetch` ne protège donc rien et ne reflète pas
+// l'ordre du workflow (fetch → stash → rebase). Ce qui protège : le stash est
+// dans la boucle, APRÈS le fetch et AVANT le rebase.
+const fetchIdx = fetchJob.indexOf('git fetch origin "$BRANCH"');
+const stashIdx = fetchJob.indexOf("git stash --include-untracked");
+const rebaseIdx = fetchJob.indexOf('git rebase -X theirs "origin/$BRANCH"');
+assert.ok(fetchIdx >= 0, "publish loop fetches the remote branch");
+assert.ok(rebaseIdx >= 0, "publish loop rebases onto the remote branch");
+assert.ok(stashIdx >= 0, "publish loop stashes the working tree");
+// Le vrai garde-fou : le stash est AVANT le rebase (sinon le rebase casse).
+assert.ok(stashIdx < rebaseIdx,
+  "the worktree must be stashed BEFORE git rebase — rebase is the operation that mutates the worktree");
+// Ordre nominal de la boucle : fetch, puis stash, puis rebase (rebase sur origin/).
+assert.ok(fetchIdx < stashIdx,
+  "nominal loop order is fetch → stash → rebase (fetch only updates remote-tracking refs)");
+// Contre-régression : aucun rebase ne doit précéder le stash.
+const stashInPublishStep = publishStep.indexOf("git stash --include-untracked");
+assert.ok(stashInPublishStep >= 0, "publish loop includes the stash command");
+const preStashPublish = publishStep.slice(0, stashInPublishStep);
+assert.doesNotMatch(preStashPublish, /\bgit\s+rebase\b/,
+  "no git rebase may run before the working tree is stashed");
+// Le stash est bien bordé par deux `git stash pop` (chemins de sortie) pour
+// qu'un échec de boucle ne laisse pas le working tree vidé.
+assert.ok((fetchJob.match(/git stash pop/g) || []).length >= 2,
+  "both loop exit paths restore the stash (concurrent-run and push-failure paths)");
 
 console.log("OK — B2B track-record is generated or marked stale before publication");
