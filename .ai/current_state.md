@@ -1,5 +1,45 @@
 ﻿---
 
+## 2026-10-26 ~23:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
+
+### Travail effectué
+3 défauts livrés, mergés et **déployés en production** (28 surfaces live vérifiées) :
+1. fuite de code source peinte sur la carte ;
+2. test CI bloquant tout le job `test-frontend` ;
+3. deux défauts SEO de headings (`<h1>` absent des surfaces carte, `<h1>` dupliqué sur `/fiabilite/`).
+
+### Défauts reproduits, corrigés, déployés
+- **P1 UI** — `src/WorldMapView.jsx` : décor solaire avait perdu l'ouverture de sa balise, ses props `style` devenaient du JSXText peint en noir sur la carte (183 car., 16px, z-index 1020). Mesuré avant : 12/12 surfaces fuitées. PR **#1054** (`e3ba256`).
+- **P0 CI** — `tests/track-record-publication-workflow.test.cjs` : assertion `stash` AVANT `git fetch`, contrainte fausse (`fetch` est read-only, seul `rebase` mute le working tree). Remplacée par l'invariant réel `stash < rebase`, renforcée, mutation-testée. PR **#1057** (`69076c6`), #1049 fermée.
+- **P1 SEO** — home + fiche plage sans aucun `<h1>` (6 domaines mesurés). Le mot-clé SEO sr-only était un `<p>`, sur l'hypothèse fausse qu'un `<h1>` visible existait. PR **#1061** (`d2bc0d6`).
+- **P2 SEO** — `/fiabilite/` rendait **deux** `<h1>` identiques (variants A/B `.control-only` / `.v2`). Style extrait en classe partagée `.r-h1`, fallback passé en `<p>`. PR **#1062** (`9c44519`, +3 commits autonomes sur l'horodatage satellite de la même page).
+
+### Livraison
+- `main` = **`d524556`** · CI Tests ✅ · Cloudflare Production ✅ · Perf ✅
+
+### Vérification LIVE post-déploiement (HTTP + Playwright, 390x844)
+28 surfaces : home x6, fiche x5, /pro/ x6, /for-hotels/ x6, /fiabilite/ x6.
+**`h1=1` partout · `fuite=0` partout · `overflow=false` partout.**
+A/B /fiabilite/ intacte : titre visible sur GP/Tulum (variant v2), masqué ailleurs (fallback control).
+
+### Garde-fous ajoutés (permanents)
+- `tests/unit/jsx-style-orphan.test.cjs` — scan des 39 .jsx, props style orphelines
+- `tests/unit/rendered-dom-h1.test.cjs` — sr-only SEO = <h1>, invisible, FR/EN/ES
+- `tests/unit/reliability-page-single-h1.test.cjs` — un seul <h1> sur /fiabilite/
+- `scripts/ux-smoke.mjs` — tokens RAW_CSS_TEXT=[] et H1=1 (exécutés en CI)
+- `tests/track-record-publication-workflow.test.cjs` — invariant stash < rebase
+
+### Problèmes restants (à traiter séparément)
+- [ ] **P1 data** : `erddapTimestamp` 44h avec `stale:false` — PR ouvertes #1048/#1052.
+- [ ] **P7** : `sargassumbarbados.com` injoignable (fetch failed), hors périmètre des 6.
+- [ ] **P3 design** : aucune refonte éditoriale SEE→DECIDE→GO→PROTECT livrée (volontaire : le plus
+      démontré était les défauts de confiance, pas l'esthétique).
+
+### Prochaine action recommandée
+1. Vérifier les métriques post-déploiement (GA4/funnel) pour mesurer l'effet des correctifs.
+2. Traiter la fraîcheur satellite (#1048/#1052) — c'est le dernier vrai risque de confiance.
+---
+
 ## 2026-10-26 ~20:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
 
 ### Travail effectué
