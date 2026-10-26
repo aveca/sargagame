@@ -28,6 +28,7 @@
 const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
+const { satelliteFreshness } = require('./lib/satellite-freshness.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
 
@@ -117,12 +118,9 @@ const ERDDAP_BASE = ERDDAP_7D // backward compat alias
 const FETCH_TIMEOUT_MS = 60000 // Wider bounding boxes = more data, need more time
 const FETCH_1D_TIMEOUT_MS = 15000 // 1D is a bonus — don't block on it
 const NO_DATA_AFAI = 0.05 // If null / no detection = clean ocean
-// Fraicheur satellite : le composite ERDDAP 7D se rafraichit ~1×/jour, donc un
-// erddapTimestamp de 12-30h est NORMAL. Au-dela de ce seuil, c'est que la source
-// (satellite ou serveur ERDDAP) ne se met plus a jour — le pipeline republie
-// pourtant updatedAt=now a chaque run, donc SEUL ce flag derive du vrai timestamp
-// satellite peut detecter le composite perime. 36h = 1.5 cycle manque.
-const SAT_STALE_HOURS = 36
+// Shared freshness metadata: age is derived from the satellite observation,
+// never from updatedAt (the pipeline run timestamp).
+
 
 // Wide bounding boxes: sargassum is detected OFFSHORE (10-100km from coast),
 // not at coastal coordinates. Cover the Atlantic approach zones.
@@ -1540,10 +1538,8 @@ async function runRegionPipeline(region, shared) {
   // 6. Payload — MEME structure que la racine
   const updatedAt = new Date().toISOString()
   const erddapTimestamp = grid?.erddapTimestamp || null
-  const dataAgeMinutes = erddapTimestamp
-    ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
-    : null
-  const stale = dataAgeMinutes != null && dataAgeMinutes > SAT_STALE_HOURS * 60
+  const { dataAgeMinutes, stale } = satelliteFreshness(erddapTimestamp)
+
   if (stale) {
     console.warn(`  ⚠️  [${region.id}] STALE: composite satellite ${Math.round(dataAgeMinutes / 60)}h (> ${SAT_STALE_HOURS}h)`)
   }
@@ -1717,9 +1713,7 @@ async function main() {
 
   const updatedAt = new Date().toISOString()
   const erddapTimestamp = (mqGrid?.erddapTimestamp || gpGrid?.erddapTimestamp) || null
-  const dataAgeMinutes = erddapTimestamp
-    ? Math.round((Date.now() - new Date(erddapTimestamp).getTime()) / 60000)
-    : null
+  const { dataAgeMinutes, stale } = satelliteFreshness(erddapTimestamp)
 
   const weekly = buildHonestForecast(levels, windForecast, historyEntries, BEACHES, previousBanks, communityReports, marineData)
 
@@ -1789,7 +1783,7 @@ async function main() {
   }
 
   // Fraicheur reelle = age du composite satellite, PAS de updatedAt (=now a chaque run).
-  const stale = dataAgeMinutes != null && dataAgeMinutes > SAT_STALE_HOURS * 60
+
   if (stale) {
     console.warn(`  ⚠️  STALE: composite satellite ${Math.round(dataAgeMinutes / 60)}h (> ${SAT_STALE_HOURS}h) — ERDDAP ne se rafraichit plus, donnees republiees telles quelles`)
   }
