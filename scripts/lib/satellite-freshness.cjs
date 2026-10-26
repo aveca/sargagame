@@ -21,4 +21,15 @@ function satelliteFreshness(erddapTimestamp, now = Date.now()) {
   };
 }
 
-module.exports = { SAT_STALE_HOURS, satelliteFreshness };
+function refreshSatellitePayload(payload, now = Date.now()) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload) || payload.source !== 'erddap-live') {
+    return payload;
+  }
+
+  const freshness = satelliteFreshness(payload.erddapTimestamp, now);
+  payload.dataAgeMinutes = freshness.dataAgeMinutes;
+  payload.stale = freshness.stale;
+  return payload;
+}
+
+module.exports = { SAT_STALE_HOURS, satelliteFreshness, refreshSatellitePayload };
