@@ -1971,6 +1971,14 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // les PAID passent par le checkout on-site. sg_checkout_started = début réel
   // du paiement, tous providers confondus (Mollie/Stripe/PayPal).
   "sg_checkout_started",
+  // P0 mesure (2026-10-26) : le paiement SOS 1 € (src/SOSPlage.jsx) émettait
+  // `sg_sos_checkout_start`, ABSENT de cette allowlist → l'événement partait en
+  // GA4/beacon mais JAMAIS vers Supabase (`track()` : if(SG_FUNNEL_EVENTS.has(event))).
+  // Résultat mesuré : checkout.reached = 0 dans daily-metrics.json alors que des
+  // paiements réels avaient lieu — tout le funnel checkout était invisible, donc
+  // aucune optimisation CRO prouvable. `sg_sos_checkout_*` commençant par "sg_sos"
+  // et non "sg_checkout", il était aussi exclu de la file `critical`.
+  "sg_sos_checkout_start","sg_sos_checkout_error",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
@@ -2010,6 +2018,8 @@ export function track(event,params={}){
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
+    // SOS 1 € : même chemin critique que le checkout on-site (voir allowlist).
+    ||event.startsWith("sg_sos_checkout")
   if(critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{

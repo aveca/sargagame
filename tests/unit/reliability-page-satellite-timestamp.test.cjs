@@ -14,7 +14,9 @@ const src = fs.readFileSync(path.join(root, 'scripts', 'lib', 'reliability-page.
 
 const sectionStart = src.indexOf('function freshnessSection(lang, data, slug) {');
 assert.ok(sectionStart >= 0, 'freshnessSection must exist');
-const sectionEnd = src.indexOf('\n}\n\nfunction renderPage', sectionStart);
+// Frontière robuste : la prochaine fonction de premier niveau après
+// freshnessSection, quelle que soit la forme des lignes vides.
+const sectionEnd = src.indexOf('function renderPage', sectionStart);
 assert.ok(sectionEnd > sectionStart, 'freshnessSection boundaries must be found');
 const section = src.slice(sectionStart, sectionEnd);
 
