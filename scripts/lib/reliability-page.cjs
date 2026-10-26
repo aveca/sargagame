@@ -295,9 +295,10 @@ function precisionSection(lang, bt, regionName) {
   </section>`
 }
 
-/** Section fraîcheur — updatedAt du build + refresh client depuis /api/copernicus/sargassum.json. */
+/** Section fraîcheur — vraie observation satellite (erddapTimestamp), rafraîchie depuis /api/copernicus/sargassum.json. */
 function freshnessSection(lang, data, slug) {
-  if (!data || !data.updatedAt) return ''
+  const satelliteISO = data && typeof data.erddapTimestamp === 'string' ? data.erddapTimestamp : ''
+  if (!satelliteISO || !Number.isFinite(Date.parse(satelliteISO))) return ''
   const t = I18N[lang]
   const points = Array.isArray(data.levels) && data.levels.length ? `<span>${esc(t.fPoints(data.levels.length))}</span>` : ''
   return `<section>
@@ -305,7 +306,7 @@ function freshnessSection(lang, data, slug) {
     <h2>${esc(t.h2f)}</h2>
     <div class="fresh"><span class="dot"></span><div>
       <b>${esc(t.fUpd)}</b>
-      <span><span id="f-ts" data-iso="${esc(data.updatedAt)}">${esc(fmtDateTimeUTC(lang, data.updatedAt))}</span> · <span id="f-rel"></span></span><br/>
+      <span><span id="f-ts" data-iso="${esc(satelliteISO)}">${esc(fmtDateTimeUTC(lang, satelliteISO))}</span> · <span id="f-rel"></span></span><br/>
       ${points}
     </div></div>
     <a class="cta" href="/?utm_source=${esc(slug)}">${esc(t.cta)}</a>
@@ -422,7 +423,7 @@ if(ts){
   var h=Math.floor((Date.now()-d.getTime())/36e5);
   rel.textContent=h<1?LT1:TPL.replace('{h}',h)}
   show(ts.getAttribute('data-iso'));
-  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).catch(function(){})
+  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.erddapTimestamp&&Number.isFinite(Date.parse(d.erddapTimestamp))){ts.setAttribute('data-iso',d.erddapTimestamp);show(d.erddapTimestamp)}}).catch(function(){})
 }
 
 var VARIANT = document.documentElement.className.indexOf("rel-v2") !== -1 ? "v2" : "control";
