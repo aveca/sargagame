@@ -1233,7 +1233,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             } catch (_e) {}
             const _coverageFor = (isl) => ALL_BEACHES
               .filter(b => (b.island === 'gp' ? 'gp' : 'mq') === isl)
-              .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || 'unknown', score: typeof lv.score === 'number' ? lv.score : null } })
+              .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || 'unknown', score: _freshnessStatus === 'fresh' && typeof lv.score === 'number' ? lv.score : null } })
               .sort((a, b) => (b.score || 0) - (a.score || 0))
             const _mqLanding = buildHotelLandingFr({ islandId: 'mq', islandName: 'Martinique', domain: 'sargasses-martinique.com', coverage: _coverageFor('mq'), reliability: _rel, updatedRel: _updatedRel, freshnessStatus: _freshnessStatus })
             const _gpLanding = buildHotelLandingFr({ islandId: 'gp', islandName: 'Guadeloupe', domain: 'sargasses-guadeloupe.com', coverage: _coverageFor('gp'), reliability: _rel, updatedRel: _updatedRel, freshnessStatus: _freshnessStatus })
