@@ -10,7 +10,7 @@ const { referenceConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
 const { gateWeekly } = require('./lib/forecast-gate.cjs')
 const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
-const { satelliteFreshness } = require('./lib/satellite-freshness.cjs')
+const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
 
 // Gating J+2→J+7 : écrit la prévision FULL dans _private/forecast-full.json (+ Deny).
 // Idempotent : n'écrase le privé que si une vraie troncature a eu lieu.
