@@ -73,8 +73,11 @@ assert.ok(stashIdx < rebaseIdx,
 assert.ok(fetchIdx < stashIdx,
   "nominal loop order is fetch → stash → rebase (fetch only updates remote-tracking refs)");
 // Contre-régression : aucun rebase ne doit précéder le stash.
-const rebaseBeforeStash = /git rebase[\s\S]{0,400}?git stash --include-untracked/.test(fetchJob.slice(0, stashIdx));
-assert.ok(!rebaseBeforeStash, "no git rebase may run on an un-stashed working tree");
+const stashInPublishStep = publishStep.indexOf("git stash --include-untracked");
+assert.ok(stashInPublishStep >= 0, "publish loop includes the stash command");
+const preStashPublish = publishStep.slice(0, stashInPublishStep);
+assert.doesNotMatch(preStashPublish, /\bgit\s+rebase\b/,
+  "no git rebase may run before the working tree is stashed");
 // Le stash est bien bordé par deux `git stash pop` (chemins de sortie) pour
 // qu'un échec de boucle ne laisse pas le working tree vidé.
 assert.ok((fetchJob.match(/git stash pop/g) || []).length >= 2,
