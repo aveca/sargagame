@@ -1992,3 +1992,26 @@ PR: #810 (auto-merged)
   · build live **v221 / 2073d594** · vérifié live sur 6/6 domaines : `leaks=0`, décor peint,
   `overflow=false`, 0 erreur JS, labels 53/83/20/12/20/5.
 
+
+---
+
+## 2026-10-26 ~23:00 UTC · mission_agent (Factory V3 — 4 correctifs livres et deployes
+
+- **fix(ui)** : `src/WorldMapView.jsx` — restauration de la balise `<div style={{...}}` du décor
+  « Colonne de reflet solaire » qui fuitait son code source en JSXText peint sur la carte
+  (12/12 surfaces mesurées avant correctif, 6 domaines x 2 viewports, ~20 jours d'exposition).
+  Géométrie restaurée depuis le commit créateur 47fcc27. PR **#1054**, commit `e3ba256`, mergée.
+- **test(ci)** : `tests/track-record-publication-workflow.test.cjs` — assertion `stash` AVANT
+  `git fetch` remplacée par l'invariant réel `stash < reboot` (fetch est read-only, seul rebase
+  mute le working tree), renforcée de 2 contre-régressions, mutation-testée. PR **#1057**,
+  commit `69076c6`, mergée. #1049 fermée (doublon). Job `test-frontend` entièrement vert.
+- **fix(seo)** : `src/Sargasses_PROD.jsx` — le mot-clé SEO sr-only était un `<p>` (home + fiche
+  plage sans aucun `<h1>` sur les 6 domaines). Devenu `<h1>`, invisible (absolute + 1px + clip).
+  PR **#1061**, commit `d2bc0d6`, mergée. + token smoke `H1=`.
+- **fix(seo)** : `scripts/lib/reliability-page.cjs` — `/fiabilite/` rendait DEUX `<h1>` identiques
+  (variants A/B). Style extrait en classe `.r-h1`, fallback passé en `<p>`. PR **#1062**,
+  commit `9c44519`, mergée (avec 3 commits autonomes connexes sur l'horodatage satellite).
+- **Tests** : `jsx-style-orphan.test.cjs`, `rendered-dom-h1.test.cjs`,
+  `reliability-page-single-h1.test.cjs` (NOUVEAUX) + tokens `RAW_CSS_TEXT=[]` et `H1=1` (smoke).
+- **Déploiement** : merges `1c6d24a`, `6cb0086`, `d96a61c`, `d524556`. `main` = `d524556`,
+  CI verte. **Vérification live : 28 surfaces, h1=1 partout, fuite=0 partout, 0 overflow.**
