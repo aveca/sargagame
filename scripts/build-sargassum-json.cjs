@@ -10,6 +10,7 @@ const { referenceConfidence } = require('./lib/confidence.cjs')
 const { buildHonestForecast, statusFromAfai } = require('./lib/forecast.cjs')
 const { gateWeekly } = require('./lib/forecast-gate.cjs')
 const { phaseForRegion, monthsForRegion } = require('./lib/season-climatology.cjs')
+const { satelliteFreshness } = require('./lib/satellite-freshness.cjs')
 
 // Gating J+2→J+7 : écrit la prévision FULL dans _private/forecast-full.json (+ Deny).
 // Idempotent : n'écrase le privé que si une vraie troncature a eu lieu.
@@ -59,6 +60,13 @@ try {
 } catch (_) {}
 
 if (existing && existing.source === 'erddap-live') {
+  // Static JSON ages between publications: recompute freshness from the actual
+  // satellite observation, never from updatedAt (the pipeline run timestamp).
+  // This changes metadata only; beach levels, scores and forecasts remain untouched.
+  const freshness = satelliteFreshness(existing.erddapTimestamp)
+  existing.dataAgeMinutes = freshness.dataAgeMinutes
+  existing.stale = freshness.stale
+
   // On garde la donnée verdict telle quelle, mais on rafraîchit le repère de saison
   // (champ additif, mois courant). Ne touche jamais levels/scores.
   existing.seasonOutlook = seasonOutlook()
