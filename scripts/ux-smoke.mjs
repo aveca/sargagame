@@ -17,6 +17,8 @@
  *   RM_INFINITE=[]                   (animations infinies encore actives sous
  *                                     prefers-reduced-motion:reduce, doit = [],
  *                                     tronqué à 12 ; gate : grep -q 'RM_INFINITE=\[\]')
+ *   RAW_CSS_TEXT=[]                  (code source rendu comme TEXTE : balise JSX
+ *                                     perdue → props `style` en JSXText, doit = [])
  * Usage : `npx vite build && (npx vite preview --port 4173 &)` puis `node scripts/ux-smoke.mjs`.
  * Cf. AUTONOMOUS_BUILD.md (étape 3 : vérifier avant merge).
  */
@@ -106,6 +108,40 @@ const scanGhost = () => {
 };
 const whiteButtons = [];
 
+// Scan des FUITES DE CODE SOURCE RENDUES COMME TEXTE (régression prod réelle,
+// 2026-10-26) : une balise JSX perdue (ex. `pointerEvents:"none",…}}/>` sans
+// `<div style={{`) fait passer les props de style en JSXText → le code brut est
+// peint à l'écran. Silencieux : build vert, 0 exception JS. Détection : un nœud
+// texte portant ≥2 affectations de props de style React, ou le fragment `}}/>`
+// qui trahit l'objet de style sérialisé.
+// NB : exécuté dans le navigateur via page.evaluate → tout est inline (aucune
+// closure côté Node ne survit à la sérialisation).
+const scanRawCssText = () => {
+  const out = [];
+  const PROPS = /(pointerEvents|mixBlendMode|zIndex|backdropFilter|userSelect|contentVisibility|overscrollBehavior|transformOrigin|backgroundBlendMode)\s*:/;
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  let n;
+  while ((n = walker.nextNode())) {
+    const t = (n.nodeValue || '');
+    if (!PROPS.test(t)) continue;
+    const hits = t.match(new RegExp(PROPS.source, 'g')) || [];
+    const hasObjTail = /\}\}\/>/.test(t);
+    if (hits.length < 2 && !hasObjTail) continue;
+    const el = n.parentElement;
+    const cs = getComputedStyle(el);
+    const r = el.getBoundingClientRect();
+    out.push({
+      t: t.trim().slice(0, 60),
+      hits: hits.length,
+      cls: (el.className || '').toString().slice(0, 40),
+      fs: cs.fontSize, op: cs.opacity, vis: cs.visibility,
+      w: Math.round(r.width), h: Math.round(r.height),
+    });
+  }
+  return out;
+};
+const rawCss = [];
+
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
@@ -115,6 +151,7 @@ await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
 const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
 whiteButtons.push(...await p.evaluate(scanGhost));
+rawCss.push(...await p.evaluate(scanRawCssText));
 
 // ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
 //       car le pan de la carte peut voler le clic physique en émulation). Route
@@ -130,6 +167,7 @@ await p.waitForTimeout(1500);
 await p.screenshot({ path: '/tmp/j2-fiche.png' });
 const ficheOk = !!(await p.$('.lc-detail')) || !!(await p.$('.sheet'));
 whiteButtons.push(...await p.evaluate(scanGhost));
+rawCss.push(...await p.evaluate(scanRawCssText));
 
 // ── 3. Paywall : déclencher via deep-link ?paywall=1. Le handler nettoie l'URL (replaceState)
  // puis appelle openPremium → track sg_premium_modal_open + setShowPremium(true).
@@ -152,12 +190,16 @@ whiteButtons.push(...await p.evaluate(scanGhost));
  const urlCleaned = !(await p.evaluate(() => window.location.search.includes('paywall=1')));
  const modalVisible = await p.locator(PAYWALL_SEL).first().isVisible({ timeout: 2000 }).catch(() => false);
  const paywallOk = urlCleaned || modalVisible;
+ rawCss.push(...await p.evaluate(scanRawCssText).catch(() => []));
 
 // Dédup (le paywall re-scanne la surface carte en dessous) + tronque.
 const seen = new Set();
 const whiteOut = whiteButtons.filter(w => {
   const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
 }).slice(0, 25);
+const rawCssOut = rawCss.filter(w => {
+  const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
+}).slice(0, 12);
 
 // Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés)
     // et l'erreur PHP referral (côté serveur) et l'erreur rt TDZ — ne garder que les vraies erreurs JS
@@ -223,4 +265,8 @@ try {
   rmInfinite = ['RM_PASS_ERROR: ' + String(e && e.message ? e.message : e).slice(0, 160)];
 }
 console.log('RM_INFINITE=' + JSON.stringify(rmInfinite.slice(0, 12)));
+// Fuite de code source rendue comme texte : une balise JSX perdue fait passer
+// les props `style` en JSXText → peint à l'écran (régression prod 2026-10-26,
+// visible sur les 6 domaines). Doit = [].
+console.log('RAW_CSS_TEXT=' + JSON.stringify(rawCssOut, null, 1));
 await b.close();
