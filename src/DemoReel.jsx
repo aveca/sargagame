@@ -122,7 +122,7 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
     fetch("/api/copernicus/track-record.json").then(r => r.json()).then(d => {
       if (!ok) return
       try {
-        if (!d || !d.byRegime) { setProof(null); return }
+        if (!d || !d.byRegime || !d.freshness || d.freshness.stale !== false) { setProof(null); return }
         const ent = Object.entries(d.byRegime).filter(([, x]) => x && x.cleanSamples >= 20 && x.cleanReliabilityPct).sort((a, b) => b[1].cleanSamples - a[1].cleanSamples)[0]
         const w = d.window || {}
         const win = (w.days || w.rollingDays) ? { days: w.days || w.rollingDays } : (w.from && w.to ? { range: w.from + " → " + w.to } : null)
@@ -313,8 +313,8 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
           <div className="sgd-scene sgd-registre">
             <div className="sgd-stamp">{t("REGISTRE PUBLIC", "PUBLIC RECORD", "REGISTRO PÚBLICO")}</div>
             <h2 className="sgd-h2" style={{ color: PAPER }}>{t("On publie nos erreurs.", "We publish our misses.", "Publicamos nuestros errores.")}</h2>
-            <div className="sgd-floor">{t("76 % à 79 % de justesse", "76% to 79% accurate", "76 % a 79 % de acierto")}</div>
-            <div className="sgd-floor-sub">{t("selon la saison, tous régimes confondus", "depending on season, across all regimes", "según la temporada, en todos los regímenes")}</div>
+            <div className="sgd-floor">{t("Résultats mesurés", "Measured results", "Resultados medidos")}</div>
+            <div className="sgd-floor-sub">{t("Par régime, sur une période datée", "By regime, over a dated window", "Por régimen, en un período fechado")}</div>
             <p className="sgd-proof">{(() => {
               const win = proof.win.days
                 ? t(`sur les ${proof.win.days} derniers jours`, `over the last ${proof.win.days} days`, `en los últimos ${proof.win.days} días`)
