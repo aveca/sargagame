@@ -14,8 +14,8 @@
 // (brief matinal + alerte staff), JAMAIS « collez un widget algues sur votre
 // site » (tueur de conversion n°1) ; le badge public est OPT-IN. L'argent ne
 // touche jamais le verdict (badge = même verdict neutre public). Claims
-// fiabilité TOUJOURS hedgés (fenêtre datée + N + saison + ~76 % tous régimes +
-// faible confiance alertes) — jamais un « 100 % » nu.
+// fiabilité toujours datée et ventilée par régime/type de verdict, avec N ;
+// aucune valeur globale ni valeur de secours si la mesure manque.
 
 function esc(s) {
   return String(s == null ? '' : s)
@@ -45,7 +45,7 @@ function getSatelliteFreshness(erddapTimestamp, nowMs = Date.now(), staleAfterHo
  * @param {string} o.islandName            'Martinique' | 'Guadeloupe'
  * @param {string} o.domain                'sargasses-martinique.com'
  * @param {Array<{name,commune,status,score}>} o.coverage   plages LIVE de l'île
- * @param {object|null} o.reliability       { overallPct, calmPct, calmSamples, from, to } (backtest réel) ou null
+ * @param {object|null} o.reliability       mesures de fiabilité par régime/type de verdict, avec fenêtre et N, ou null
  * @param {string} o.updatedRel             ex. 'il y a 2 h' (fraîcheur du composite)
  */
 function buildHotelLandingFr(o) {
@@ -102,7 +102,7 @@ function buildHotelLandingFr(o) {
     ['Dois-je mettre « algues » ou un widget sur mon site ?',
      'Non. Par défaut, rien n\'est public — vous recevez le brief matinal et les alertes en privé, pour votre équipe. Le badge public « plage propre » est optionnel et 100 % à votre main : vous choisissez de l\'afficher, jamais ce qu\'il dit. La plupart des établissements ne montrent le badge que les bons jours.'],
     ['En quoi est-ce différent des données gratuites de Météo-France / NOAA ?',
-     'Les cartes publiques donnent un risque régional flou, pas un verdict pour VOTRE plage. Nous traduisons le satellite en une prévision par plage à 7 jours, avec un niveau de confiance, et nous publions notre taux d\'erreur daté (par régime et type de verdict, avec le nombre de cas mesurés). Les jours de faible confiance affichent « incertain », jamais un faux « propre » — vous êtes protégé, pas exposé.'],
+     'Les cartes publiques donnent un risque régional flou, pas un verdict pour VOTRE plage. Nous traduisons le satellite en une prévision par plage à 7 jours, avec un niveau de confiance, et nous publions un palmarès daté par régime et type de verdict, avec le nombre de cas mesurés. Les jours de faible confiance affichent « incertain », jamais un faux « propre » — vous êtes protégé, pas exposé.'],
   ]
   const faqHtml = faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }
@@ -119,7 +119,7 @@ function buildHotelLandingFr(o) {
 ${ld}
 <style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.55;padding:16px 0}.wrap{max-width:680px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:radial-gradient(130% 72% at 78% 2%,rgba(255,224,160,.22),transparent 52%),linear-gradient(158deg,#2e1a5e 0%,#6a2f9e 46%,#C97E3A 88%,#F2B05E);color:#fff;padding:32px 24px}.hd .k{font-size:11px;letter-spacing:.13em;text-transform:uppercase;opacity:.86;font-weight:800}.hd h1{font-size:26px;margin:10px 0 12px;line-height:1.16}.hd p{font-size:14.5px;opacity:.95}.fresh{display:inline-flex;align-items:center;gap:7px;margin-top:16px;background:rgba(8,18,16,.32);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:6px 13px;font-size:11px;font-weight:700}.fresh .dot{width:7px;height:7px;border-radius:50%;background:#6AC15A}.fresh.stale{border-color:rgba(245,158,11,.55)}.fresh.stale .dot{background:#F59E0B}.fresh.unknown .dot{background:#9CA3AF}.bd{padding:22px 24px}.bd h2{font-size:19px;margin:24px 0 6px;line-height:1.24}.bd p{font-size:15px;margin:0 0 8px}.lnk{color:#6a2f9e;font-weight:700;text-decoration:none;border-bottom:1px solid rgba(106,47,158,.35)}.cov{background:#FAF8F1;border:1px solid #eadfc6;border-radius:14px;padding:14px 16px;margin:18px 0}.cov h2{margin-top:2px}.cov ul{list-style:none;margin-top:8px}.cov li{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #eee}.cov .d{width:14px;height:14px;border-radius:50%;flex:none}.cov .n{flex:1}.cov .n small{color:#7a756c;font-size:12.5px}.price{background:#F3EEFB;border:1px solid #dfd0f2;border-radius:14px;padding:16px 18px;margin:20px 0}.price b{font-size:19px}.rel{background:#F0FbF4;border:1px solid #cdeBd7;border-radius:14px;padding:14px 16px;margin:18px 0;font-size:14px}.cta{display:block;text-align:center;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:14px 0;font-weight:800;font-size:15.5px}h3{font-size:15.5px;margin:16px 0 2px}.faq h3{color:#2e1a5e}.ft{font-size:11.5px;color:#8a857c;padding:8px 24px 24px}.ft a{color:#6a2f9e}</style></head>
 <body><div class="wrap">
-<div class="hd"><div class="k">${esc(islandName)} · pour les hôtels &amp; resorts</div><h1>${esc(h1)}</h1><p>Mesuré au satellite, pas deviné. Privé par défaut.</p><div class="fresh ${freshness}"><span class="dot"></span>${esc(freshnessLabel)}${updatedRel ? ` · ${esc(updatedRel)}` : ''}</div></div>
+<div class="hd"><div class="k">${esc(islandName)} · pour les hôtels &amp; resorts</div><h1>${esc(h1)}</h1><p>Mesuré au satellite, pas deviné. Privé par défaut.</p><div class="fresh ${freshness}"><span class="dot"></span>${esc(freshnessLabel)}</div></div>
 <div class="bd">
 <p>Une famille qui réserve ${esc(islandName)} ce week-end tape déjà « sargasses » — et ce qu'elle trouve, c'est la photo du pire jour d'un inconnu, sur une plage qui n'est peut-être même pas la vôtre. Vous ne pouvez pas empêcher vos clients de vérifier. Vous pouvez être celui qui <b>sait vraiment</b>. Nous mesurons au satellite la plage exacte devant votre établissement, quatre fois par jour, et vous envoyons le verdict chaque matin — en privé, avant qu'un client ne descende à l'eau.</p>
 <a class="cta" href="${pro('hero')}">Activer mon essai 30 j — voir ma plage en direct →</a>
