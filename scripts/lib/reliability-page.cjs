@@ -295,9 +295,10 @@ function precisionSection(lang, bt, regionName) {
   </section>`
 }
 
-/** Section fraîcheur — updatedAt du build + refresh client depuis /api/copernicus/sargassum.json. */
+/** Section fraîcheur — vraie observation satellite (erddapTimestamp), rafraîchie depuis /api/copernicus/sargassum.json. */
 function freshnessSection(lang, data, slug) {
-  if (!data || !data.updatedAt) return ''
+  const satelliteISO = data && typeof data.erddapTimestamp === 'string' ? data.erddapTimestamp : ''
+  if (!satelliteISO || !Number.isFinite(Date.parse(satelliteISO))) return ''
   const t = I18N[lang]
   const points = Array.isArray(data.levels) && data.levels.length ? `<span>${esc(t.fPoints(data.levels.length))}</span>` : ''
   return `<section>
@@ -305,7 +306,7 @@ function freshnessSection(lang, data, slug) {
     <h2>${esc(t.h2f)}</h2>
     <div class="fresh"><span class="dot"></span><div>
       <b>${esc(t.fUpd)}</b>
-      <span><span id="f-ts" data-iso="${esc(data.updatedAt)}">${esc(fmtDateTimeUTC(lang, data.updatedAt))}</span> · <span id="f-rel"></span></span><br/>
+      <span><span id="f-ts" data-iso="${esc(satelliteISO)}">${esc(fmtDateTimeUTC(lang, satelliteISO))}</span> · <span id="f-rel"></span></span><br/>
       ${points}
     </div></div>
     <a class="cta" href="/?utm_source=${esc(slug)}">${esc(t.cta)}</a>
@@ -422,7 +423,7 @@ if(ts){
   var h=Math.floor((Date.now()-d.getTime())/36e5);
   rel.textContent=h<1?LT1:TPL.replace('{h}',h)}
   show(ts.getAttribute('data-iso'));
-  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.updatedAt){ts.setAttribute('data-iso',d.updatedAt);show(d.updatedAt)}}).catch(function(){})
+  fetch('/api/copernicus/sargassum.json',{cache:'no-store'}).then(function(r){return r.ok?r.json():null}).then(function(d){if(d&&d.erddapTimestamp&&Number.isFinite(Date.parse(d.erddapTimestamp))){ts.setAttribute('data-iso',d.erddapTimestamp);show(d.erddapTimestamp)}}).catch(function(){})
 }
 
 var VARIANT = document.documentElement.className.indexOf("rel-v2") !== -1 ? "v2" : "control";
@@ -552,8 +553,11 @@ if (capForm) {
   .tb{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 0 14px}
   .tb a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;opacity:.85}
   .wordmark{font-weight:800;font-size:11px;letter-spacing:.16em;color:var(--mut)}
-  h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
-  h1 em{font-style:normal;color:var(--gold-d)}
+  /* Titre partagé : le variant ACTIF reste un <h1>, le fallback A/B porte la même classe.
+     Deux <h1> dans le HTML = anti-pattern SEO + a11y (le variant inactif est masqué au CSS,
+     mais reste dans le DOM et donc dans l index). */
+  .r-h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
+  .r-h1 em{font-style:normal;color:var(--gold-d)}
   .lead{color:var(--mut);font-size:15.5px;line-height:1.55;max-width:460px}
   section{margin-top:42px;padding-top:32px;border-top:1px solid var(--line)}
   .lbl{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
@@ -714,7 +718,7 @@ if (capForm) {
   <div class="tb"><a href="/">←&nbsp;${esc(t.back)}</a><span class="wordmark">${esc(siteName.toUpperCase())}</span></div>
 
   <div class="control-only">
-    <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+    <p class="r-h1">${esc(t.h1a)} <em>${esc(t.h1b)}</em></p>
     <p class="lead">${esc(t.lead)}</p>
   </div>
 
@@ -737,7 +741,7 @@ if (capForm) {
             </g>
           </svg>
         </div>
-        <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+        <h1 class="r-h1">${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
         <p class="lead">${esc(t.lead)}</p>
       </div>
       ${gaugeMarkup}
