@@ -2015,3 +2015,21 @@ PR: #810 (auto-merged)
   `reliability-page-single-h1.test.cjs` (NOUVEAUX) + tokens `RAW_CSS_TEXT=[]` et `H1=1` (smoke).
 - **Déploiement** : merges `1c6d24a`, `6cb0086`, `d96a61c`, `d524556`. `main` = `d524556`,
   CI verte. **Vérification live : 28 surfaces, h1=1 partout, fuite=0 partout, 0 overflow.**
+
+---
+
+## 2026-10-26 ~23:30 UTC · mission_agent (couche de mesure funnel)
+
+- **fix(data)** : `src/Sargasses_PROD.jsx` — `sg_sos_checkout_start` / `sg_sos_checkout_error` (émis par
+  le paiement SOS 1 €) étaient ABSENTS de `SG_FUNNEL_EVENTS` → l'événement partait en GA4/beacon
+  mais JAMAIS vers Supabase. Résultat mesuré : `checkout.reached = 0` sur 30 j alors que
+  `paymentsReal: 5` / `revenueReal: 41.95`. Second effet : exclus de la file `critical`
+  (`startsWith("sg_checkout")` ne matche pas `sg_sos_*`). Ajoutés à l'allowlist + à `critical`.
+  PR #1064, commit `c75036e`, mergée (`3c24417`), déployée. Vérifié live : bundle de production
+  contient les 3 événements.
+- **fix(test)** : `reliability-page-satellite-timestamp.test.cjs` — frontière `\n}\n\nfunction renderPage`
+  absente du fichier → test rouge sur `main` nu. Remplacée par la prochaine fonction de premier niveau.
+  13 assertions sur l'horodatage satellite intactes.
+- **test** : `tests/unit/funnel-checkout-events.test.cjs` (NOUVEAU) — verrouille l'allowlist + `critical`
+  et impose que tout composant de paiement émette un événement de checkout. Validé 2 sens.
+- **Tests** : `run-tests.cjs` 72/72 (main : 71/72) · build exit 0 · budget 208.0/210 Ko.
