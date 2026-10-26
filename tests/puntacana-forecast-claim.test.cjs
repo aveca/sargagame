@@ -38,4 +38,22 @@ assert.doesNotMatch(
 assert.match(region.pages.forecast.method, /community beach reports are not currently used to adjust Punta Cana readings/i)
 assert.match(region.pages.map.intro, /community beach reports are not currently used to adjust Punta Cana readings/i)
 
+
+const spanishSource = path.join(__dirname, '..', 'regions', 'seo-content', 'puntacana.es.json')
+const spanishRegion = JSON.parse(fs.readFileSync(spanishSource, 'utf8'))
+const spanishContent = JSON.stringify(spanishRegion)
+const spanishReliabilityFaq = spanishRegion.faq.find((item) => item.q === '¿Qué tan confiables son los datos de sargazo de este sitio?')
+const spanishForecastFaq = spanishRegion.faq.find((item) => item.q === '¿De verdad se puede pronosticar el sargazo con 7 días de anticipación?')
+
+assert.ok(spanishReliabilityFaq, 'Spanish Punta Cana reliability FAQ must remain available')
+assert.ok(spanishForecastFaq, 'Spanish Punta Cana forecast FAQ must remain available')
+assert.match(spanishReliabilityFaq.a, /los reportes comunitarios de playa no se utilizan actualmente para ajustar las lecturas de Punta Cana/i)
+assert.match(spanishRegion.pages.forecast.method, /los reportes comunitarios no se utilizan actualmente para ajustar las lecturas de Punta Cana/i)
+assert.match(spanishRegion.pages.map.intro, /los reportes comunitarios no se utilizan actualmente para ajustar las lecturas de Punta Cana/i)
+assert.doesNotMatch(
+  spanishContent,
+  /reportes de bañistas en la playa|reportes de la comunidad corrigen la vista satelital|reportes de gente que está parada en la arena|vida media de (?:unos )?3\.5 días|único pronóstico de sargazo a 7 días playa por playa publicado para Punta Cana/i,
+  'Spanish Punta Cana copy must not claim community-report corrections, unvalidated beach half-life, or unverified forecast exclusivity'
+)
+
 console.log('Punta Cana forecast claim: OK')
