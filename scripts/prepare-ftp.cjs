@@ -14,6 +14,7 @@ const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
+const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
