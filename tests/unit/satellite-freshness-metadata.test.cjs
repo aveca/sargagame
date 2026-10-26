@@ -1,7 +1,9 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { SAT_STALE_HOURS, satelliteFreshness } = require('../../scripts/lib/satellite-freshness.cjs');
+const fs = require('node:fs');
+const path = require('node:path');
+const { SAT_STALE_HOURS, satelliteFreshness, refreshSatellitePayload } = require('../../scripts/lib/satellite-freshness.cjs');
 
 const now = Date.parse('2026-10-26T00:00:00.000Z');
 let assertions = 0;
