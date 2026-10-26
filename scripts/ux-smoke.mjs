@@ -108,6 +108,16 @@ const scanGhost = () => {
 };
 const whiteButtons = [];
 
+// Structure de titres : la home DOIT rendre exactement un <h1> (ni zéro, ni
+// plusieurs). Défaut prod réel mesuré (2026-10-26) : `h1=false` sur la home ET
+// la fiche plage des 6 domaines — le mot-clé SEO de heading était rendu dans un
+// <p> sr-only, sur l'hypothèse fausse qu'un <h1> visible existait déjà.
+// ZERO <h1> = perte du signal SEO le plus fort + aucune structure de titres.
+const scanHeadings = () => ({
+  h1: document.querySelectorAll('h1').length,
+  h2: document.querySelectorAll('h2').length,
+});
+
 // Scan des FUITES DE CODE SOURCE RENDUES COMME TEXTE (régression prod réelle,
 // 2026-10-26) : une balise JSX perdue (ex. `pointerEvents:"none",…}}/>` sans
 // `<div style={{`) fait passer les props de style en JSXText → le code brut est
@@ -151,6 +161,7 @@ await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
 const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
 whiteButtons.push(...await p.evaluate(scanGhost));
+const homeHeadings = await p.evaluate(scanHeadings);
 rawCss.push(...await p.evaluate(scanRawCssText));
 
 // ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
@@ -269,4 +280,6 @@ console.log('RM_INFINITE=' + JSON.stringify(rmInfinite.slice(0, 12)));
 // les props `style` en JSXText → peint à l'écran (régression prod 2026-10-26,
 // visible sur les 6 domaines). Doit = [].
 console.log('RAW_CSS_TEXT=' + JSON.stringify(rawCssOut, null, 1));
+// Structure de titres de la home : H1=1 attendu (défaut prod mesuré = 0).
+console.log('H1=' + JSON.stringify({ home: homeHeadings, expectedHome: 1 }));
 await b.close();

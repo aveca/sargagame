@@ -13888,9 +13888,13 @@ export default function App(){
           (carte → fiche → alerte). Code dormant conservé, joignable seulement via ?hero=1
           pour une éventuelle réintroduction ; aucun bouton « Jouer » en prod. */}
       <AbDebug/>
-      {/* Mot-clé SEO sr-only — <p> (PAS <h1>) : la scène/route visible fournit déjà
-          l'unique <h1> ; deux <h1> = anti-pattern SEO + a11y. Texte reste crawlable. */}
-      <p style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</p>
+      {/* Mot-clé SEO sr-only — <h1> (était <p>, voir correctif) : la scène/route visible
+          ne fournit AUCUN <h1> dans le DOM rendu (mesuré sur les 6 domaines : home et
+          fiche plage, h1 absent). Le commentaire précédent supposait un <h1> visible qui
+          n'existe pas → home + fiche rendues sans aucun heading de niveau 1.
+          Ce sr-only est donc l'unique <h1> de la page : un seul h1, texte crawlable,
+          invisible par construction (position:absolute + clip + 1px). */}
+      <h1 style={{position:"absolute",width:"1px",height:"1px",overflow:"hidden",clip:"rect(0,0,0,0)",whiteSpace:"nowrap"}}>{IS_NEW_REGION?(REGION.primaryLang==="es"?`Sargazo en ${REGION.name} en vivo — mapa de playas hoy`:`${REGION.name} sargassum live — beach map today`):island==="mq"?"Sargasses Martinique en temps réel — carte et plages aujourd'hui":"Sargasses Guadeloupe en temps réel — carte et plages aujourd'hui"}</h1>
       {/* contentVisibility:hidden pendant l'attract → la carte (WorldMapView, statique au
           repos) n'est plus peinte/composée sous le reel opaque (perf bas de gamme). No-op si
           non supporté ; "visible" par défaut → zéro impact hors attract (smoke inchangé). */}
