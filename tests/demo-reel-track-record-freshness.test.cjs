@@ -8,10 +8,21 @@ const path = require("node:path");
 const root = path.resolve(__dirname, "..");
 const source = fs.readFileSync(path.join(root, "src", "DemoReel.jsx"), "utf8");
 
-assert.match(
-  source,
-  /if \(!d \|\| !d\.byRegime \|\| !d\.freshness \|\| d\.freshness\.stale !== false\)/,
-  "the public proof must fail closed when freshness metadata is missing or stale"
+assert.ok(
+  source.includes('d.freshness.stale !== false'),
+  "the public proof must fail closed when the stale marker is true or absent"
+);
+assert.ok(
+  source.includes('const computedAtMs = Date.parse(d?.freshness?.computedAt || "")') &&
+    source.includes("backtestAgeMs > 36 * 60 * 60 * 1000") &&
+    source.includes("backtestAgeMs < -5 * 60 * 1000"),
+  "the backtest calculation timestamp must be valid, recent, and not implausibly in the future"
+);
+assert.ok(
+  source.includes('const windowToMs = Date.parse(d?.window?.to ? `${d.window.to}T23:59:59Z` : "")') &&
+    source.includes("windowAgeMs > 2 * 24 * 60 * 60 * 1000") &&
+    source.includes("windowAgeMs < -24 * 60 * 60 * 1000"),
+  "the measurement window must be dated, recent, and not implausibly in the future"
 );
 assert.match(
   source,
