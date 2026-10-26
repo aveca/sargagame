@@ -28,7 +28,7 @@
 const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
-const { satelliteFreshness } = require('./lib/satellite-freshness.cjs')
+const { satelliteFreshness, SAT_STALE_HOURS } = require('./lib/satellite-freshness.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
 
