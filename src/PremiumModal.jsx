@@ -5,6 +5,7 @@
  * (track, _t, C, T, abVariant, startCheckout deps, loadMollieJs/Stripe/PayPal, pricing…)
  * sont importés depuis Sargasses_PROD.jsx via exports nommés (mêmes singletons). */
 import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
+import { isTrackRecordFresh } from "./lib/track-record-freshness.js"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
@@ -214,22 +215,23 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // Preuve auditée : fetch PROPRE (les closures _trackRec/_recordProof de PremiumModal
   // sont inaccessibles depuis ce composant frère — duplication ciblée assumée).
   const [trackRec,setTrackRec]=useState(null)
-  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
+  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)setTrackRec(isTrackRecordFresh(d)?d:null)}).catch(()=>{});return()=>{ok=false}},[])
   const proofLine=(()=>{
     try{
-      const r=trackRec;if(!r||!r.byRegime)return null
+      const r=trackRec;if(!isTrackRecordFresh(r))return null
       const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
-      if(!ent||!ent[1].cleanReliabilityPct)return null
+      if(!ent||ent[1].cleanReliabilityPct==null)return null
       const[reg,best]=ent
+      const from=r.window.from,to=r.window.to
       const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
       // Loi claim hedgé : un « 100 % » ne part JAMAIS nu — le régime est nommé quand
-      // c'est le calme (data-driven, jamais un label plaqué), et la bande tous-régimes
-      // 76-79 % + la mention confiance l'accompagnent toujours (ligne sous ce chiffre).
+      // c'est le calme (data-driven, jamais un label plaqué). La fenêtre de mesure datée
+      // et le lien vers le registre accompagnent toujours cette mesure.
       const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
       return _t(lang,
-        `${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
-        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
-        `${best.cleanReliabilityPct} % correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)
+        `${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées du ${from} au ${to} · registre public`,
+        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts checked from ${from} to ${to} · public record`,
+        `${best.cleanReliabilityPct} % correctos${calm} · ${nf} pronósticos “agua limpia” verificados del ${from} al ${to} · registro público`)
     }catch(_){return null}
   })()
   // Liens de paiement Mollie (self-service in-app) — chargés depuis le JSON publié par
@@ -479,7 +481,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
           </div>
           <div style={{padding:"11px 12px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`,marginBottom:12}}>
             {proofLine&&<div style={{font:"800 12.5px/1.4 'Bricolage Grotesque'",color:I.ink}}>{proofLine}</div>}
-            <div style={{font:"700 11px/1.45 'Bricolage Grotesque'",color:"#52525b",marginTop:proofLine?5:0}}>{_t(lang,"76 à 79 % tous régimes selon la saison · confiance affichée sur chaque alerte","76–79% across all regimes depending on season · confidence shown on every alert","76–79 % en todos los regímenes según la temporada · confianza visible en cada alerta")}</div>
+            <div style={{font:"700 11px/1.45 'Bricolage Grotesque'",color:"#52525b",marginTop:proofLine?5:0}}>{_t(lang,"Mesures datées, détaillées par régime dans le registre public.","Dated measurements, broken down by regime in the public record.","Mediciones fechadas y desglosadas por régimen en el registro público.")}</div>
             <a href={_relHref(lang)} target="_blank" rel="noopener" onClick={()=>{try{track("sg_b2b_rel_click",{step:2})}catch(_){}}} style={{display:"inline-block",font:"800 12px/1.4 'Bricolage Grotesque'",color:I.ink,textDecoration:"underline",marginTop:6}}>{_t(lang,"Vérifier le registre public →","Check the public record →","Ver el registro público →")}</a>
           </div>
           <button className="b2f-cta" onClick={()=>goStep(3)}>{_t(lang,"Voir l'offre Pro →","See the Pro offer →","Ver la oferta Pro →")}</button>
@@ -1158,7 +1160,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         }
         // BEAT variant — beat panel (from PanelStoryEngine)
         if(headerVariant==="beat"){
-          const rp=recordProof||_t(lang,"76-79% fiabilité · registre public","76-79% reliability · public record","76-79% fiabilidad · registro público")
+          const rp=recordProof||_t(lang,"Résultats mesurés · registre public","Measured results · public record","Resultados medidos · registro público")
           const beats=[
             {eyebrow:_t(lang,"LE VEILLEUR","THE WATCHER","EL VIGÍA"),heading:_t(lang,"Ton Pass","Your Pass","Tu Pase"),sub:_t(lang,"7 jours de prévision + alerte le jour où ça bascule","7-day forecast + alert the day it flips","7 días de pronóstico + alerta el día que cambia")},
             {eyebrow:_t(lang,"HONNÊTETÉ","HONESTY","HONESTIDAD"),heading:_t(lang,"On publie nos erreurs","We publish our misses","Publicamos nuestros errores"),sub:rp},
@@ -1335,7 +1337,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // PAR RÉGIME (le nombre fort qui ne s'auto-mutile jamais), JAMAIS le hit-rate
   // par plage (descend à 23% en saison calme = self-harm, cf reliability-badge).
   const[_trackRec,_setTrackRec]=useState(null)
-  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(d)}).catch(()=>{});return()=>{ok=false}},[])
+  useEffect(()=>{let ok=true;fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{if(ok)_setTrackRec(isTrackRecordFresh(d)?d:null)}).catch(()=>{});return()=>{ok=false}},[])
   const pwProof=(()=>{try{const q=window.location.search;if(/[?&]pwproof=1/.test(q))return true;if(/[?&]pwproof=0/.test(q))return false;return abVariant("pw_proof",["control","record"],[.5,.5])==="record"}catch(_){return false}})()
   // A/B preuve sociale (PassOffer) : badge communauté HONNÊTE (__COMM = plancher leads email).
   // PROMU EN DÉFAUT — preuve sociale honnête toujours visible. Rollback ?pwsocial=0.
@@ -1350,14 +1352,15 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // Régime au plus gros échantillon « mer propre » = nombre fort ET honnête.
   const _recordProof=(()=>{
     try{
-      const r=_trackRec;if(!r||!r.byRegime)return null
+      const r=_trackRec;if(!isTrackRecordFresh(r))return null
       const best=Object.values(r.byRegime).filter(x=>x&&x.cleanSamples>0).sort((a,b)=>b.cleanSamples-a.cleanSamples)[0]
-      if(!best||!best.cleanReliabilityPct)return null
+      if(!best||best.cleanReliabilityPct==null)return null
       const pct=best.cleanReliabilityPct,nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
+      const from=r.window.from,to=r.window.to
       return _t(lang,
-        `${pct}% justes · ${nf} prévisions « mer propre » vérifiées · registre public`,
-        `${pct}% correct · ${nf} “clean water” forecasts satellite-checked · public record`,
-        `${pct}% correctos · ${nf} pronósticos “agua limpia” verificados · registro público`)
+        `${pct}% justes · ${nf} prévisions « mer propre » vérifiées du ${from} au ${to} · registre public`,
+        `${pct}% correct · ${nf} “clean water” forecasts checked from ${from} to ${to} · public record`,
+        `${pct}% correctos · ${nf} pronósticos “agua limpia” verificados del ${from} al ${to} · registro público`)
     }catch(_){return null}
   })()
   const hasAnnual=!!LINK_ANNUAL
@@ -2227,14 +2230,14 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
     const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
     const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
-    const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
+    const proofLine=(()=>{try{const r=_trackRec;if(!isTrackRecordFresh(r))return null
       const ent=Object.entries(r.byRegime).filter(([,x])=>x&&x.cleanSamples>0).sort((a,b)=>b[1].cleanSamples-a[1].cleanSamples)[0]
-      if(!ent||!ent[1].cleanReliabilityPct)return null
-      const[reg,best]=ent;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
+      if(!ent||ent[1].cleanReliabilityPct==null)return null
+      const[reg,best]=ent;const from=r.window.from,to=r.window.to;const nf=best.cleanSamples.toLocaleString(lang==="en"?"en-US":lang==="es"?"es-ES":"fr-FR")
       const calm=reg==="calm"?_t(lang," (saison calme)"," (calm season)"," (temporada tranquila)"):""
-      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
-        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
-        `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)}catch(_){return null}})()
+      return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées du ${from} au ${to} · registre public`,
+        `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts checked from ${from} to ${to} · public record`,
+        `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados del ${from} al ${to} · registro público`)}catch(_){return null}})()
     const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
       const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
       return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
