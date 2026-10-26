@@ -552,8 +552,11 @@ if (capForm) {
   .tb{display:flex;align-items:center;justify-content:space-between;padding:calc(14px + env(safe-area-inset-top)) 0 14px}
   .tb a{color:var(--ink);text-decoration:none;font-size:13px;font-weight:700;opacity:.85}
   .wordmark{font-weight:800;font-size:11px;letter-spacing:.16em;color:var(--mut)}
-  h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
-  h1 em{font-style:normal;color:var(--gold-d)}
+  /* Titre partagé : le variant ACTIF reste un <h1>, le fallback A/B porte la même classe.
+     Deux <h1> dans le HTML = anti-pattern SEO + a11y (le variant inactif est masqué au CSS,
+     mais reste dans le DOM et donc dans l index). */
+  .r-h1{font-family:var(--font-display);font-size:clamp(32px,7.5vw,46px);line-height:.98;text-transform:uppercase;letter-spacing:-.005em;margin:34px 0 14px;font-weight:400;color:var(--ink)}
+  .r-h1 em{font-style:normal;color:var(--gold-d)}
   .lead{color:var(--mut);font-size:15.5px;line-height:1.55;max-width:460px}
   section{margin-top:42px;padding-top:32px;border-top:1px solid var(--line)}
   .lbl{font-size:10.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#00786C;margin-bottom:10px}
@@ -714,7 +717,7 @@ if (capForm) {
   <div class="tb"><a href="/">←&nbsp;${esc(t.back)}</a><span class="wordmark">${esc(siteName.toUpperCase())}</span></div>
 
   <div class="control-only">
-    <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+    <p class="r-h1">${esc(t.h1a)} <em>${esc(t.h1b)}</em></p>
     <p class="lead">${esc(t.lead)}</p>
   </div>
 
@@ -737,7 +740,7 @@ if (capForm) {
             </g>
           </svg>
         </div>
-        <h1>${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
+        <h1 class="r-h1">${esc(t.h1a)} <em>${esc(t.h1b)}</em></h1>
         <p class="lead">${esc(t.lead)}</p>
       </div>
       ${gaugeMarkup}
