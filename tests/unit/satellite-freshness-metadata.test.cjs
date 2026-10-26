@@ -42,4 +42,47 @@ check(
   'age is recalculated from erddapTimestamp rather than reusing a frozen production value'
 );
 
+const regionalPayload = {
+  source: 'erddap-live',
+  updatedAt: '2026-10-25T16:33:08.017Z',
+  erddapTimestamp: '2026-10-24T11:59:00.000Z',
+  dataAgeMinutes: 1713,
+  stale: false,
+  levels: [{ id: 'fl001', score: 69 }],
+  weekly: { fl001: [{ date: '2026-10-26', afai: 0.05 }] },
+  scores: { fl001: { score: 69 } },
+};
+const originalDecisionData = JSON.stringify({
+  updatedAt: regionalPayload.updatedAt,
+  levels: regionalPayload.levels,
+  weekly: regionalPayload.weekly,
+  scores: regionalPayload.scores,
+});
+refreshSatellitePayload(regionalPayload, now);
+check(regionalPayload.dataAgeMinutes === 2161, 'regional stale age is recomputed from the satellite timestamp');
+check(regionalPayload.stale === true, 'regional stale flag is recomputed at packaging time');
+check(
+  JSON.stringify({
+    updatedAt: regionalPayload.updatedAt,
+    levels: regionalPayload.levels,
+    weekly: regionalPayload.weekly,
+    scores: regionalPayload.scores,
+  }) === originalDecisionData,
+  'regional refresh changes freshness metadata only, preserving observation and forecast fields'
+);
+
+const referencePayload = { source: 'reference', dataAgeMinutes: null, stale: false };
+refreshSatellitePayload(referencePayload, now);
+check(
+  JSON.stringify(referencePayload) === JSON.stringify({ source: 'reference', dataAgeMinutes: null, stale: false }),
+  'reference fallback payload is not changed by the live-data refresher'
+);
+
+const prepareFtpSource = fs.readFileSync(path.join(__dirname, '../../scripts/prepare-ftp.cjs'), 'utf-8');
+check(
+  prepareFtpSource.includes("require('./lib/satellite-freshness.cjs')") &&
+    prepareFtpSource.includes('refreshSatellitePayload(payload)'),
+  'regional FTP packaging recalculates freshness before copying a live payload'
+);
+
 console.log(`SATELLITE_FRESHNESS_METADATA_TESTS PASS (${assertions} assertions)`);
