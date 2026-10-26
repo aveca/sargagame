@@ -1407,6 +1407,7 @@ export default function WorldMapView({
         pointerEvents:"none",zIndex:0,opacity:.5,mixBlendMode:"screen",
         background:"radial-gradient(60% 40% at 78% 16%, rgba(255,224,160,.5), transparent 70%)"}}/>
       {/* Colonne de reflet solaire descendant sur la mer */}
+      <div style={{position:"absolute",top:"4%",right:"14%",width:"22%",height:"66%",
         pointerEvents:"none",zIndex:0,opacity:.42,mixBlendMode:"screen",
         background:"radial-gradient(40% 100% at 50% 0%, rgba(255,228,168,.7), rgba(255,210,140,.18) 46%, transparent 78%)"}}/>
 
