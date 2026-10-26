@@ -1971,4 +1971,24 @@ PR: #810 (auto-merged)
 - Date JJJJ-MM
 - Agent name (code, QA, product, etc.)
 - List of changes with file names
-- Never delete previous entries — they satisfy AI pièe memory.
+- Never delete previous entries — they satisfy AI pièe memory.---
+
+## 2026-10-26 ~20:00 UTC · mission_agent (Factory V3)
+
+- **fix(ui)** : `src/WorldMapView.jsx` — restauration de la balise `<div style={{…}}` du décor
+  « Colonne de reflet solaire » qui fuitait son code source en JSXText peint sur la carte
+  (12/12 surfaces mesurées avant correctif, 6 domaines × 2 viewports, ~20 jours d'exposition).
+  Géométrie restaurée depuis le commit créateur `47fcc27`. PR **#1054**, commit `e3ba256`, mergée.
+- **test(unit)** : `tests/unit/jsx-style-orphan.test.cjs` (NOUVEAU) — scanne les 39 `.jsx`,
+  échoue si une ligne de props de style n'a pas de balise ouvrante. Commentaires/littéraux
+  neutralisés, 0 faux positif. Validé dans les deux sens.
+- **chore(ci)** : `scripts/ux-smoke.mjs` — nouveau token `RAW_CSS_TEXT=[]` (scan DOM du funnel
+  carte→fiche→paywall). Attrapait le défaut en CI (vérifié : non vide avec le bug réinjecté).
+- **test(ci)** : `tests/track-record-publication-workflow.test.cjs` — l'assertion `stash` AVANT
+  `git fetch` était une contrainte fausse (`fetch` est read-only, seul `rebase` mute le working
+  tree). Remplacée par l'invariant réel `stash < rebase`, renforcée de 2 contre-régressions.
+  Validé par mutation testing. PR **#1057**, commit `69076c6`, mergée. #1049 fermée (doublon).
+- **Déploiement** : merges `1c6d24a` (CI) puis `6cb0086` (UI) · `Cloudflare Production` ✅
+  · build live **v221 / 2073d594** · vérifié live sur 6/6 domaines : `leaks=0`, décor peint,
+  `overflow=false`, 0 erreur JS, labels 53/83/20/12/20/5.
+

@@ -7,6 +7,8 @@
 ---
 
 ## Récemment complété
+- [x] P1 - Fuite code source WorldMapView (décor solaire) : props style rendues comme texte sur les 6 domaines — restauration balise + test `jsx-style-orphan` + token smoke `RAW_CSS_TEXT` (@mission_agent, 2026-10-26, PR #1054, MERGEE, deploye + verifie live v221/2073d594, leaks=0 6/6)
+- [x] P0 - Test CI bloquant `track-record-publication-workflow` : assertion fausse `stash<fetch` remplacee par l invariant reel `stash<rebase`, renforcee, mutation-tested (@mission_agent, 2026-10-26, PR #1057, MERGEE, CI Tests vert, #1049 fermee doublon)
 - [x] P0 - Paywall ne s ouvrait pas (ReferenceError hasAnnual) sur les 6 domaines (@mission_agent, 2026-10-23, PR #1019, deploye + verifie live)
 - [x] P1 - Canonicals martinique sur /about /research /investigacion /for-hotels des domaines USD (@mission_agent, 2026-10-23, PR #1019)
 - [x] P2 - Lisibilite des puces de carte 9px -> 11.31px (mobile) / 12px (desktop) (@mission_agent, 2026-10-23, PR #1019)

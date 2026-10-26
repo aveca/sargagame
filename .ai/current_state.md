@@ -1,3 +1,48 @@
+﻿---
+
+## 2026-10-26 ~20:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
+
+### Travail effectué
+- **Résumé** : fuite de code source peinte à l'écran corrigée et **déployée en production** (6/6 domaines vérifiés live), + déblocage du test CI qui bloquait tout le job `test-frontend`.
+
+### Défauts reproduits et corrigés
+- **P1 UI — code source rendu comme texte** : `src/WorldMapView.jsx` avait perdu l'ouverture du `<div style={{…}}` du décor « Colonne de reflet solaire » → props devenues JSXText, peintes en noir (183 car., 16px, opacity 1, z-index 1020) sur la carte. Mesuré AVANT correction : 12/12 surfaces fuitées (6 domaines × 2 viewports). Exposé depuis `47fcc27` (2026-10-06). Fix : géométrie d'origine du commit créateur restaurée (aucune invention).
+- **P0 CI — test bloquant** : `tests/track-record-publication-workflow.test.cjs` exigeait `stash` AVANT `git fetch`, contrainte fausse (`fetch` ne touche jamais le working tree ; seul `rebase` le mute). Assertion remplacée par l'invariant réel `stash < rebase`, renforcée de 2 contre-régressions. Validé par mutation testing.
+
+### Livraison
+- Branches : `agent/ux/see-decide-go-20261026` (UI) · `fix/test-stash-before-rebase-20261026b` (CI)
+- PR : **#1054** (UI, mergée) · **#1057** (CI, mergée) · **#1049** fermée sans fusion (doublon #1057)
+- Commits : `69076c6` (CI) puis `e3ba256` (UI) · merges : `1c6d24a`, `6cb0086`
+- Déploiement : `Cloudflare Production` ✅ sur `6cb0086` · build live **v221 / 2073d594**
+
+### Vérification LIVE post-déploiement (HTTP + Playwright, 6 domaines, 390x844)
+| Domaine | leaks | h1 rendu | labels | overflow | décor | errs JS |
+|---|---|---|---|---|---|---|
+| sargasses-martinique.com | 0 | false | 53 | false | true | 0 |
+| sargasses-guadeloupe.com | 0 | false | 83 | false | true | 0 |
+| sargassummiami.com | 0 | false | 20 | false | true | 0 |
+| sargassumpuntacana.com | 0 | false | 12 | false | true | 0 |
+| sargassumcancun.com | 0 | false | 20 | false | true | 0 |
+| sargazotulum.com | 0 | false | 5 | false | true | 0 |
+
+### Tests réellement exécutés
+- `tests/unit/jsx-style-orphan.test.cjs` : 3/3 OK (39 .jsx scannés) ; KO sur bug réinjecté → validé 2 sens
+- `npm run build` exit 0 · `check-bundle-budget` 208.0/210 Ko
+- `ux-smoke.mjs` : 5/5 tokens verts dont `RAW_CSS_TEXT=[]` (token NOUVEAU ajouté)
+- `run-tests.cjs` : 67/68 sur main AVANT, **68/68** après correctif CI
+- Mutation testing sur assertion stash : 2 régressions attrapées
+- CI : `CI Tests` + `Cloudflare Production` ✅ sur `6cb0086` ; composition prouvée sur `34c7ccf`
+
+### Problèmes restants (à traiter séparément)
+- [ ] **P1 SEO** : aucun `<h1>` dans le DOM rendu (les 6 domaines). `index.html` en contient un, remplacé par un `<p>` sr-only. → PR dédiée requise.
+- [ ] **P1 data** : `erddapTimestamp` 44h avec `stale:false` — couvert par PR ouvertes #1048/#1052.
+- [ ] **P7** : `sargassumbarbados.com` injoignable (fetch failed), hors périmètre des 6.
+
+### Prochaine action recommandée
+1. Corriger le `<h1>` rendu en PR SEO isolée (après validation humaine).
+2. Vérifier les métriques post-déploiement (GA4/funnel) pour confirmer l'effet sur la confiance.
+3. Fermer les PR de doublon restantes (#1049 déjà faite).
+
 ---
 
 ## 2026-10-25 14:30 UTC · Agent: Principal Agent (Factory V3 — clôture PR #1045, #1043, #1044)
