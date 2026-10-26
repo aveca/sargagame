@@ -122,7 +122,16 @@ export default function DemoReel({ lang = "fr", src = "lobby", partner = null, a
     fetch("/api/copernicus/track-record.json").then(r => r.json()).then(d => {
       if (!ok) return
       try {
-        if (!d || !d.byRegime || !d.freshness || d.freshness.stale !== false) { setProof(null); return }
+        const computedAtMs = Date.parse(d?.freshness?.computedAt || "")
+        const windowToMs = Date.parse(d?.window?.to ? `${d.window.to}T23:59:59Z` : "")
+        const nowMs = Date.now()
+        const backtestAgeMs = nowMs - computedAtMs
+        const windowAgeMs = nowMs - windowToMs
+        if (
+          !d || !d.byRegime || !d.freshness || d.freshness.stale !== false ||
+          !Number.isFinite(computedAtMs) || backtestAgeMs < -5 * 60 * 1000 || backtestAgeMs > 36 * 60 * 60 * 1000 ||
+          !Number.isFinite(windowToMs) || windowAgeMs < -24 * 60 * 60 * 1000 || windowAgeMs > 2 * 24 * 60 * 60 * 1000
+        ) { setProof(null); return }
         const ent = Object.entries(d.byRegime).filter(([, x]) => x && x.cleanSamples >= 20 && x.cleanReliabilityPct).sort((a, b) => b[1].cleanSamples - a[1].cleanSamples)[0]
         const w = d.window || {}
         const win = (w.days || w.rollingDays) ? { days: w.days || w.rollingDays } : (w.from && w.to ? { range: w.from + " → " + w.to } : null)
