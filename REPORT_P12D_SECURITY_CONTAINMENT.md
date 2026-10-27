@@ -152,3 +152,36 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 - Réponses HTTP réelles des 6 domaines (capturées dans la mission P1.6 antérieure : `/.htaccess` = 200 avant correctif, 404 attendu après déploiement)
 - Réponses API GitHub (PR #1080, check-runs sur `c526d6f1`)
 - Fichier de test : `tests/unit/prepare-ftp-region.test.cjs` (dans le clone)
+
+
+---
+
+## 11. Addendum de vérification GitHub — 27 octobre 2026, 16:12 AST
+
+Cet addendum complète le compte rendu initial sans effacer les constats historiques.
+
+### État le plus récent vérifié
+
+- PR de correctif : https://github.com/aveca/sargagame/pull/1080 — toujours ouverte, non fusionnée.
+- HEAD actuel observé de `fix/assets-api-p12-20261027` : `719cd2fb5d93e50999b8b066d2f41086ffd40fe2` (différent du SHA initialement documenté `c526d6f1`).
+- CI Tests #3004 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40574694649
+- Perf Budget + Lighthouse #2283 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40574694119
+- Le job `test-frontend` est terminé en succès sur cette exécution.
+- Comparaison `main...fix/assets-api-p12-20261027` : branche divergente, 17 commits en avance et 1 commit en retard au moment du contrôle. Réconcilier ce décalage et refaire les contrôles avant toute proposition de fusion.
+- Aucun merge ni déploiement en production n'a été effectué par cette vérification.
+
+### Incident GitGuardian toujours à traiter
+
+Le commentaire GitGuardian visible dans la conversation de la PR conserve l'incident **39170333 — Generic Password — état “Triggered”**, référencé au commit `1afefc34de32b2c976c755b97e3f62844e650fe9`, dans `scripts/prepare-ftp.cjs`. Le commentaire décrit une détection liée à la chaîne `.htpasswd`. Les éléments examinés indiquent un nom de fichier Apache, et non une valeur de mot de passe ; cela soutient l'hypothèse d'un faux positif, mais seul le propriétaire/administrateur autorisé peut classer l'incident dans GitGuardian. Aucune preuve d'une classification ou d'une clôture n'a été trouvée dans les commentaires accessibles.
+
+Incident visible : https://github.com/aveca/sargagame/pull/1080#issuecomment-6451351117  
+Lien GitGuardian : https://dashboard.gitguardian.com/workspace/929969/incidents/39170333?occurrence=307607679
+
+### Suite autorisée
+
+1. Demander au propriétaire ayant accès à GitGuardian de vérifier l'occurrence et de la classer comme faux positif uniquement après confirmation que la chaîne est bien un nom de fichier et non un secret.
+2. Ne pas réécrire l'historique, désactiver le contrôle, contourner le scan ou prétendre que l'incident est résolu sans preuve.
+3. Après levée documentée du blocage, réconcilier le retard d'un commit avec `main`, relancer les contrôles et obtenir une revue humaine de la PR.
+4. Garder la production inchangée jusqu'à autorisation explicite. Après un éventuel déploiement autorisé, vérifier réellement `/.htaccess` sur les six domaines et archiver les réponses HTTP.
+
+**Verdict actualisé : BLOCKED_SECURITY.** Les deux workflows CI accessibles sont verts au HEAD observé ; la classification GitGuardian, la réconciliation avec `main`, la revue humaine et l'autorisation de déploiement restent des conditions distinctes.
