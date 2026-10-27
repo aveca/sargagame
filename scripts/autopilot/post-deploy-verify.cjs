@@ -32,6 +32,7 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 const { compareHtmlFingerprint } = require('./html-integrity.cjs');
+const { SAT_STALE_HOURS, satelliteFreshness } = require('../lib/satellite-freshness.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 
@@ -131,6 +132,34 @@ function resolveGa4Id(region) {
   return raw.trim();
 }
 
+function checkSatelliteFreshness(payload, now = Date.now()) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { status: 'FAILED', ageMinutes: null, detail: 'sargassum.json absent/invalide' };
+  }
+  if (payload.source !== 'erddap-live') {
+    return { status: 'NOT_VERIFIED', ageMinutes: null, detail: 'source non satellite live ; fraîcheur satellite non prouvée' };
+  }
+
+  const freshness = satelliteFreshness(payload.erddapTimestamp, now);
+  if (!Number.isFinite(freshness.dataAgeMinutes)) {
+    return { status: 'FAILED', ageMinutes: null, detail: 'erddapTimestamp satellite absent/invalide/futur' };
+  }
+
+  const limitMinutes = SAT_STALE_HOURS * 60;
+  if (freshness.stale) {
+    return {
+      status: 'FAILED',
+      ageMinutes: freshness.dataAgeMinutes,
+      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min > ${limitMinutes}min)`,
+    };
+  }
+  return {
+    status: 'VERIFIED',
+    ageMinutes: freshness.dataAgeMinutes,
+    detail: `âge satellite ${freshness.dataAgeMinutes}min (seuil ${limitMinutes}min)`,
+  };
+}
+
 async function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
@@ -155,7 +184,7 @@ async function verifyDomain(region, opts) {
     set('artifact_identity', idr.status, idr.detail);
   }
 
-  // 3. Fraîcheur données
+  // 3. Fraîcheur du payload/pipeline (updatedAt) — distincte de l'observation satellite.
   const sj = httpBody(`https://${domain}/api/copernicus/sargassum.json?pdv=${Date.now()}`);
   let sd = null;
   try { sd = JSON.parse(sj.body); } catch (_) {}
@@ -165,6 +194,11 @@ async function verifyDomain(region, opts) {
     R.dataAgeHours = +ageH.toFixed(1);
     set('data_freshness', ageH <= 26 ? 'VERIFIED' : 'FAILED', `âge ${ageH.toFixed(1)}h (seuil 26h)`);
   }
+
+  // 3bis. Fraîcheur réelle de l'observation satellite : un pipeline récent ne suffit pas.
+  const satelliteCheck = checkSatelliteFreshness(sd);
+  if (Number.isFinite(satelliteCheck.ageMinutes)) R.satelliteAgeMinutes = satelliteCheck.ageMinutes;
+  set('satellite_freshness', satelliteCheck.status, satelliteCheck.detail);
 
   // 4. Cohérence région ↔ plages
   if (sd && Array.isArray(sd.levels)) {
@@ -365,4 +399,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
