@@ -1,6 +1,22 @@
+# Livrable B2B embarqué : SEULES routes volontairement encadrables (iframe).
+# Anti-clickjacking global (`/*` ci-dessus) sauf /widget/embed, car le produit
+# vendu aux hôtels EST un <iframe> collé sur LEUR site (code fourni dans
+# /pro/espace/ et dans les emails B2B). Mesuré avant correctif : aperçu vierge
+# sur /pro/espace/ et widget bloqué chez tout client (« frame-ancestors 'none' »).
+# Sémantique Cloudflare Pages : `/*` pose le cadre global, puis les règles
+# DÉTACHENT (`! `) les en-têtes anti-framing sur /widget/embed. Aucun autre
+# chemin n'est embeddable.
 /*
   Content-Security-Policy: frame-ancestors 'none'
   X-Frame-Options: DENY
+
+/widget/embed
+  ! X-Frame-Options
+  ! Content-Security-Policy
+
+/widget/embed/*
+  ! X-Frame-Options
+  ! Content-Security-Policy
 
 /version.json
   Cache-Control: no-cache, no-store, must-revalidate
