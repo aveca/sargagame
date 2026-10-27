@@ -15,6 +15,7 @@ const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.c
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
 const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
+const { assertWorkerAssetIgnore } = require('./lib/worker-assetsignore.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -99,7 +100,8 @@ const SHARED_LEGACY_IDS = ['mq', 'gp']
 // GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
 // (where MQ wins in dist/) — it gets overlaid onto guadeloupe-ftp/ later
 // so the GP build ends up with GP-correct beach lists, not MQ ones.
-const COPY_SKIP_TOP = new Set(['_gp'])
+// .htpasswd is a password file that must never be served as an asset.
+const COPY_SKIP_TOP = new Set(['_gp', '_private', '.htpasswd'])
 
 // skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
 // copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
@@ -132,6 +134,7 @@ function copyRecursive(src, dest, skipRel = null, rel = '') {
     fs.mkdirSync(dest, { recursive: true })
     for (const name of fs.readdirSync(src)) {
       const childRel = rel ? `${rel}/${name}` : name
+      if (name === '_private') continue
       if (skipRel && skipRel.has(childRel)) continue
       copyRecursive(path.join(src, name), path.join(dest, name), skipRel, childRel)
     }
@@ -183,6 +186,7 @@ for (const region of legacyRegions) {
   const out = path.join(root, dir)
   if (fs.existsSync(out)) fs.rmSync(out, { recursive: true })
   copyRecursive(dist, out, COPY_SKIP_TOP)
+  assertWorkerAssetIgnore(out, 'MQ/GP Worker assets package')
 
   // Séparation régionale des DONNÉES sargasses (P0 MQ/GP) : le dist/ partagé
   // contient les 21 clés MQ+GP ; sans filtre, chaque domaine sert les plages
@@ -860,6 +864,7 @@ function prepareNewRegion(region) {
   // Exclusions : fichiers régénérés plus bas + artefacts des autres régions.
   const skip = new Set([
     ...COPY_SKIP_TOP,
+    '_private', // données premium J+2-7, protégées par .htaccess côté FTP, ne doivent jamais être des assets
     'robots.txt', // régénéré pour region.domain
     'sitemap.xml', // régénéré minimal (racine seule)
     '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
@@ -900,6 +905,7 @@ function prepareNewRegion(region) {
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
+  assertWorkerAssetIgnore(out, `${region.id} Worker assets package`)
 
   // Pages partagees (public/about, /research, /investigacion, /for-hotels) :
   // elles codent en dur l hote MQ dans leur canonical/og/hreflang. Livrees
