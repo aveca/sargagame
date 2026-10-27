@@ -10,6 +10,17 @@
 
 ---
 
+## 2026-10-27 - autonome (OpenCode) · branche agent/data/mission-3-freshness · commit 1f4d144e5
+
+**Mission 4/10 — Routes plages / index régionaux / sitemaps (issue #1068, PR #1072).**
+
+- Défaut prouvé : aucun index plage régional (`/{lang}/beaches/`, `/{lang}/playas/`) généré pour les régions USD → fiches plage dans le sitemap mais index parent 404.
+- Correctif : bloc `beachIndex` dans `scripts/lib/region-seo-pages.cjs` (émissions `emitLangPages`) avec canonical, hreflang, liens vers chaque fiche, CollectionPage JSON-LD, entrée sitemap. Pas d'index `plages/` en build USD.
+- Test : `tests/unit/regional-beach-directory-index.test.cjs`, 48 assertions PASS sur florida/puntacana/rivieramaya.
+- Duplique le contenu de PR #1072 (toujours ouverte sur main).
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**
