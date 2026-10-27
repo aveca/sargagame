@@ -2,9 +2,11 @@ name: Daily Copernicus + Deploy
 
 on:
   schedule:
-    # 4x/jour toutes les 6h — Copernicus publie 1x/jour, 6h freshness largement
-    # sous le seuil "< 12h OK" de CLAUDE.md. Heures MQ (UTC-4): 20h, 2h, 8h, 14h
-    - cron: '0 0,6,12,18 * * *'
+    # Refresh 4x/day; persist one canonical daily-metrics snapshot at 18:00 UTC (14:00 MQ).
+    - cron: '0 0 * * *'
+    - cron: '0 6 * * *'
+    - cron: '0 12 * * *'
+    - cron: '0 18 * * *'
   workflow_dispatch:
   push:
     branches:
@@ -372,9 +374,11 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/ux-daily.cjs --send
 
-      - name: Commit email state (immédiat, anti-doublon)
+      - name: Commit email state + daily metrics (anti-doublon)
         if: github.event_name != 'push'
         continue-on-error: true
+        env:
+          PUBLISH_DAILY_METRICS: ${{ github.event_name == 'schedule' && github.event.schedule == '0 18 * * *' }}
         # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
         # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
         timeout-minutes: 10
@@ -384,6 +388,23 @@ jobs:
           for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
+          # daily-stats-check runs 4x/day; persist one canonical snapshot at 18:00 UTC only.
+          if [ "$PUBLISH_DAILY_METRICS" = "true" ]; then
+            LAST_METRICS_COMMIT="$(git log -1 --format=%cI -- scripts/automation/data/daily-metrics.json || true)"
+            LAST_METRICS_DAY=""
+            if [ -n "$LAST_METRICS_COMMIT" ]; then
+              LAST_METRICS_DAY="$(date -u -d "$LAST_METRICS_COMMIT" +'%Y-%m-%d' 2>/dev/null || true)"
+            fi
+            TODAY_UTC="$(date -u +'%Y-%m-%d')"
+            if [ "$LAST_METRICS_DAY" != "$TODAY_UTC" ] && [ -f scripts/automation/data/daily-metrics.json ]; then
+              git add scripts/automation/data/daily-metrics.json
+              echo "Daily metrics snapshot staged for ${TODAY_UTC}."
+            else
+              echo "Daily metrics snapshot already published for ${TODAY_UTC}; skipping duplicate."
+            fi
+          else
+            echo "Daily metrics publication is reserved for the 18:00 UTC schedule."
+          fi
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
           git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
           BRANCH="${GITHUB_REF_NAME:-main}"
