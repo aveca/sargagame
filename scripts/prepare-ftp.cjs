@@ -14,6 +14,7 @@ const path = require('path')
 const { getAllRegions, getRegion, getBuildRegion } = require('../regions/index.cjs')
 const { zoneSlugsFor } = require('./lib/coast-zones.cjs')
 const CROSS_DOMAIN = require('./lib/cross-domain-drops.cjs')
+const { refreshSatellitePayload } = require('./lib/satellite-freshness.cjs')
 
 const root = path.join(__dirname, '..')
 const dist = path.join(root, 'dist')
@@ -1184,7 +1185,24 @@ ${entries.join('\n')}
     // gère toujours leur absence (catch → pas d'overlay) sans casser la carte.
     for (const f of ['sargassum.json', 'history.json', 'sargassum-banks.json', 'sargassum-grid.json']) {
       const src = path.join(regionDataDir, f)
-      if (fs.existsSync(src)) fs.copyFileSync(src, path.join(outCopernicus, f))
+      if (!fs.existsSync(src)) continue
+      const dest = path.join(outCopernicus, f)
+
+      // Regional static payloads are copied to the deployed root path. Refresh only
+      // freshness metadata at packaging time; never change levels, scores or forecasts.
+      if (f === 'sargassum.json') {
+        try {
+          const payload = JSON.parse(fs.readFileSync(src, 'utf-8'))
+          if (payload && payload.source === 'erddap-live') {
+            refreshSatellitePayload(payload)
+            fs.writeFileSync(dest, JSON.stringify(payload), 'utf-8')
+            continue
+          }
+        } catch (error) {
+          console.warn(`   ⚠ fraîcheur régionale non recalculée (${region.id}): ${error.message}`)
+        }
+      }
+      fs.copyFileSync(src, dest)
     }
     // Gating J+2→J+7 : le purge ci-dessus a supprimé le _private/ MQ venu de dist/.
     // On (re)pose le _private/ RÉGIONAL (prévision complète + .htaccess Deny) sinon
