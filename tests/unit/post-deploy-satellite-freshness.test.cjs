@@ -33,7 +33,7 @@ check(fresh.status === 'VERIFIED' && fresh.ageMinutes === 720, 'a 12-hour observ
 
 const boundary = PDV.checkSatelliteFreshness({
   ...payload,
-  erddapTimestamp: '2026-10-25T00:33:49.000Z',
+  erddapTimestamp: '2026-10-25T12:33:49.000Z',
 }, now);
 check(boundary.status === 'VERIFIED' && boundary.ageMinutes === 2160, 'exactly 36 hours preserves the existing non-stale boundary');
 
