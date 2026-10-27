@@ -16,6 +16,15 @@ console.log('PREPARE-FTP REGION - protections FTP vs assets Workers\n')
 
 // ── 1. Construire un dist/ factice avec les fixtures critiques ──
 const dist = path.join(ROOT, 'dist')
+const distBackup = path.join(ROOT, `.dist-prepare-ftp-region-backup-${process.pid}`)
+const hadOriginalDist = fs.existsSync(dist)
+// This integration test replaces and removes dist/. Preserve a real build so
+// later CI gates (notably the gzip budget) and local development remain intact.
+if (hadOriginalDist) fs.renameSync(dist, distBackup)
+process.on('exit', () => {
+  if (fs.existsSync(dist)) fs.rmSync(dist, { recursive: true, force: true })
+  if (hadOriginalDist && fs.existsSync(distBackup)) fs.renameSync(distBackup, dist)
+})
 fs.mkdirSync(dist, { recursive: true })
 
 // Fichiers de protection à CONSERVER dans le FTP (doivent survivre)
