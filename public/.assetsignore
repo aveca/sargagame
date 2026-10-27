@@ -5,4 +5,6 @@
 # .htaccess) : ne doit JAMAIS partir dans les assets Workers (pas de .htaccess
 # côté Workers — le fichier y serait public). Vérifié 2026-10-04 : servi en
 # clair sur *.workers.dev. Sans effet FTP (aucun script ne lit ce fichier).
+**/.htaccess
+**/.htpasswd
 **/_private/
