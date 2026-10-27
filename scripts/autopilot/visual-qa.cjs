@@ -91,9 +91,9 @@ const issues = [];
     await page.goto('${url}', { waitUntil: 'networkidle', timeout: 30000 });
     await page.waitForSelector('#root', { timeout: 10000 }).catch(() => {});
 
-    const shotDir = path.join('${SCREENSHOTS_DIR}', 'visual-qa');
+    const shotDir = path.join(process.cwd(), '.ai', 'autopilot', 'observations', 'screenshots', 'visual-qa');
     fs.mkdirSync(shotDir, { recursive: true });
-    const shotPath = path.join(shotDir, '${label}-${route.replace(/\\//g, '-')}-${viewport}-${Date.now()}.png');
+    const shotPath = path.join(shotDir, '${label}-${route.split('/').join('-')}-${viewport}-${Date.now()}.png');
     await page.screenshot({ path: shotPath, fullPage: true });
 
     console.log(JSON.stringify({ route: '${route}', viewport: '${viewport}', label: '${label}', path: shotPath, issues }));

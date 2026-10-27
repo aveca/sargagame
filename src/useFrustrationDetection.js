@@ -33,6 +33,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
   
   // Hesitation detection
   const lastInteraction = useRef(Date.now())
+  const hasInteracted = useRef(false)  // l'utilisateur a tenté le produit au moins une fois
   
   // Track frustration signals
   const trackSignal = useCallback((type, context) => {
@@ -200,13 +201,11 @@ export function useFrustrationDetection(onFrustration, options = {}) {
   useEffect(() => {
     if (!enabled) return
     
-    const updateInteraction = () => {
-      lastInteraction.current = Date.now()
-    }
-    
-    // Track all interactions
+    const updateInteraction = () => { lastInteraction.current = Date.now() }
+    const markIntent = () => { hasInteracted.current = true }
     const events = ['click', 'scroll', 'mousemove', 'keydown', 'touchstart']
     events.forEach(e => document.addEventListener(e, updateInteraction, { passive: true }))
+    ['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, markIntent, { passive: true }))
     
     // Check hesitation periodically
     const interval = setInterval(() => {
@@ -214,6 +213,9 @@ export function useFrustrationDetection(onFrustration, options = {}) {
       const idle = now - lastInteraction.current
       
       if (idle >= config.hesitation.threshold) {
+        // L'hésitation avant le 1er contact = lecture du premier écran, pas de l'errance :
+        // on n'ouvre jamais le chat par-dessus le choix de plage avant interaction.
+        if (!hasInteracted.current) { lastInteraction.current = now; return }
         if (shouldTrigger()) {
           const context = {
             type: 'hesitation',
@@ -232,6 +234,7 @@ export function useFrustrationDetection(onFrustration, options = {}) {
     return () => {
       clearInterval(interval)
       events.forEach(e => document.removeEventListener(e, updateInteraction))
+      ['click', 'keydown', 'touchstart'].forEach(e => document.removeEventListener(e, markIntent))
     }
   }, [enabled, config.hesitation, onFrustration, shouldTrigger, trackSignal])
   
