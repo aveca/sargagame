@@ -94,7 +94,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
               boxShadow: "0 4px 0 0 rgba(0,0,0,.30),0 8px 24px rgba(232,168,0,.28)",
               border: "none",
             }}>
-              {benefitCopy ? _t(lang, "Débloquer la prévision 7 jours →", "Unlock the 7-day forecast →", "Desbloquear el pronóstico de 7 días →") : _t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
+              {benefitCopy ? _t(lang, `Activer mon accès ${PASS.days} jours · ${money(cents, cur, lang)} →`, `Activate my ${PASS.days}-day access · ${money(cents, cur, lang)} →`, `Activar mi acceso ${PASS.days} días · ${money(cents, cur, lang)} →`) : _t(lang, "Commencer maintenant →", "Start now →", "Empezar ahora →")}
             </span>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 10, fontSize: 11, fontWeight: 700, color: "rgba(234,247,244,.55)" }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
