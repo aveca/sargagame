@@ -31,9 +31,10 @@ Le runner du dépôt, `scripts/run-tests.cjs`, découvre automatiquement les fic
 ## État des validations
 
 - Comparaison GitHub avant ajout de ce rapport : branche basée sur `main`, sans retard, avec seulement les trois fichiers de code/tests attendus.
-- **Exécution locale des tests par cette session : non effectuée.** L'accès GitHub permet de publier et d'inspecter le code, mais ne constitue pas une preuve d'exécution locale de Node.js.
+- **Exécution locale isolée :** copie temporaire du helper et du script de test exécutée sous Node.js ; `node --check` a réussi sur ces deux fichiers et les assertions du helper ont donné `4/4`. Cette exécution ne constitue pas un test du dépôt complet.
+- Le fichier de test du dépôt a également été renforcé pour exécuter `node --check` sur le vrai `scripts/autopilot/local-agent-executor.cjs`, afin de détecter notamment les déclarations `const` dupliquées.
+- Au dernier relevé du HEAD précédent (`66ac3972`), `npm ci` et `Verify Build` étaient réussis ; la suite `*.test.cjs` était encore en cours. Ces résultats ne peuvent pas être hérités automatiquement par le HEAD actuel après modification.
 - La validation décisive est la CI sur le HEAD courant de la PR #1082. Consulter les vérifications attachées à la PR ; ne pas fusionner tant que les contrôles requis ne sont pas verts.
-- Le test ajouté est un test de régression réel, mais il ne doit pas être décrit comme exécuté avant qu'une sortie de test vérifiable le confirme.
 
 ## Garde-fous
 
