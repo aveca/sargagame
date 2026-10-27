@@ -7,6 +7,8 @@
 ---
 
 ## Récemment complété
+- [x] P0 - Mesure funnel checkout morte : `checkout.reached=0` alors que `paymentsReal=5` — cause = `sg_sos_checkout_start` absent de `SG_FUNNEL_EVENTS` (jamais envoyé à Supabase) + exclu de la file `critical`. Allowlist + critical corrigées (@mission_agent, 2026-10-26, PR #1064, MERGEE, deploye + verifie live bundle contient les 3 evenements)
+- [x] P0 - CI rouge sur main : `reliability-page-satellite-timestamp.test.cjs` frontière introuvable → remplacée par la prochaine fonction de premier niveau, 13 assertions horodatage intactes (@mission_agent, 2026-10-26, meme PR #1064)
 - [x] P2 - /fiabilite/ rendait deux <h1> identiques (variants A/B control-only / v2) : style extrait en classe .r-h1, fallback passé en <p> (@mission_agent, 2026-10-26, PR #1062, MERGEE, deploye + verifie live h1=1 6/6)
 - [x] P1 - Home + fiche plage sans aucun <h1> dans le DOM rendu (mot-clé SEO sr-only en <p> sur hypothèse fausse) : devenu <h1> invisible + token smoke H1= (@mission_agent, 2026-10-26, PR #1061, MERGEE, deploye + verifie live h1=1 6/6, home+fiche+pro+hotels+fiab)
 - [x] P1 - Fuite code source WorldMapView (décor solaire) : props style rendues comme texte sur les 6 domaines — restauration balise + test `jsx-style-orphan` + token smoke `RAW_CSS_TEXT` (@mission_agent, 2026-10-26, PR #1054, MERGEE, deploye + verifie live v221/2073d594, leaks=0 6/6)

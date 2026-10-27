@@ -1,5 +1,42 @@
 ﻿---
 
+## 2026-10-26 ~23:30 UTC · Agent: mission_agent (Factory V3 — couche de mesure funnel)
+
+### Travail effectué
+- **Résumé** : trouvé et corrigé le **défaut de mesure P0** qui rendait tout le funnel de paiement invisible. `main` était redevenu rouge (test d'un autre agent) → corrigé aussi. Livré, mergé, déployé, vérifié live.
+
+### Défaut P0 — mesure du checkout
+- **Constat** : `daily-metrics.json` rapportait `checkout.reached = 0` sur 30 j, alors que le funnel de la même fenêtre rapportait `paymentsReal: 5`, `revenueReal: 41.95`.
+- **Cause racine** : `track()` n'envoie vers Supabase (→ `daily-metrics.json`) que les événements de `SG_FUNNEL_EVENTS`. Le paiement SOS 1 € (`src/SOSPlage.jsx`) émet `sg_sos_checkout_start`, **absent de l'allowlist** → l'événement partait en GA4/beacon mais jamais en base. Second effet : exclu de la file `critical` (`startsWith("sg_checkout")` ne matche pas `sg_sos_*`).
+- **Impact** : `checkout.reached = 0` → aucune optimisation CRO prouvable (rang 1 du business-backlog).
+
+### Défaut P0 — CI rouge sur main
+- `tests/unit/reliability-page-satellite-timestamp.test.cjs` cherchait une frontière `\n}\n\nfunction renderPage` absente du fichier → échec sur `main` nu. Frontière remplacée par la prochaine fonction de premier niveau. Les 13 assertions sur l'horodatage satellite intactes.
+
+### Livraison
+- Branche : `agent/data/funnel-checkout-tracking-20261026` · PR **#1064** · commit `c75036e` · merge `3c24417`
+- Déploiement : `Cloudflare Production` ✅ sur `3c24417`
+- **Vérification LIVE** : bundle déployé sur sargasses-martinique.com contient `sg_sos_checkout_start`, `sg_sos_checkout_error`, `sg_checkout_started` → mesure opérationnelle.
+
+### Garde-fou ajouté
+- `tests/unit/funnel-checkout-events.test.cjs` : verrouille les événements de checkout dans l'allowlist + `critical`, et impose que **tout composant appelant un paiement émette un événement de checkout**. Validé dans les deux sens.
+
+### Tests réellement exécutés
+- `funnel-checkout-events.test.cjs` : 4/4 OK (KO sans correctif)
+- `reliability-page-satellite-timestamp.test.cjs` : 13/13 OK (était KO sur main nu)
+- `npm run build` exit 0 · `check-bundle-budget` 208.0/210 Ko
+- `run-tests.cjs` : **72/72 OK** (main : 71/72)
+
+### Problèmes restants
+- [ ] **Feuille de route commerciale NON livrée** (attente autorisation explicite paiement/tarifs) :
+      offre 4,99 € complète, annual (`STRIPE_LINK_ANNUAL=""`), tier Pro 9,99 € (documenté, jamais activé), pousser B2B hostels.
+- [ ] **P1 data** : `erddapTimestamp` 44 h avec `stale:false` — PR #1048/#1052.
+
+### Prochaine action recommandée
+1. Autoriser explicite sur les tarifs/offres → livrer l'échelle 1 € / 4,99 € / annual / Pro 9,99 €.
+2. Observer `checkout.reached` sur 7 j (il ne doit plus être à 0) puis mesurer le `paywall_cta_rate` (0,37 % = le vrai goulot).
+---
+
 ## 2026-10-26 ~23:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
 
 ### Travail effectué
