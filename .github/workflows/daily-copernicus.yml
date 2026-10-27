@@ -2,9 +2,11 @@ name: Daily Copernicus + Deploy
 
 on:
   schedule:
-    # 4x/jour toutes les 6h — Copernicus publie 1x/jour, 6h freshness largement
-    # sous le seuil "< 12h OK" de CLAUDE.md. Heures MQ (UTC-4): 20h, 2h, 8h, 14h
-    - cron: '0 0,6,12,18 * * *'
+    # Refresh 4x/day; persist one canonical daily-metrics snapshot at 18:00 UTC (14:00 MQ).
+    - cron: '0 0 * * *'
+    - cron: '0 6 * * *'
+    - cron: '0 12 * * *'
+    - cron: '0 18 * * *'
   workflow_dispatch:
   push:
     branches:
@@ -372,11 +374,78 @@ jobs:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/ux-daily.cjs --send
 
-      - name: Commit email state (immédiat, anti-doublon)
+      - name: Publish daily metrics snapshot
+        # Responsabilité SÉPARÉE du commit email (qui garde son continue-on-error
+        # pour l'anti-doublon). PAS de continue-on-error ici : un échec définitif
+        # de publication DOIT faire échouer le workflow. Une annotation ::error
+        # sans code de sortie non nul ne suffisait pas.
+        if: github.event_name == 'schedule' && github.event.schedule == '0 18 * * *'
+        env:
+          BRANCH: ${{ github.ref_name }}
+        timeout-minutes: 10
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          M=scripts/automation/data/daily-metrics.json
+          # GARDE d'exploitabilité (consolidation #1070 + #1071) : JSON valide,
+          # non vide, porteur de clés de mesure. Formes acceptées : TABLEAU (le
+          # fichier réel du dépôt en est un, de 13 éléments) ET OBJET — une garde
+          # sur Object.keys() seul rendait les indices 0..12 d'un tableau.
+          # Absent / null / vide / invalide / incomplet => on SAUTE : on ne
+          # remplace JAMAIS une donnée valide par des zéros.
+          if [ ! -f "$M" ] || ! node -e "const fs=require('fs');const j=JSON.parse(fs.readFileSync(process.argv[1],'utf8'));const o=Array.isArray(j)?(j[0]||{}):j;const k=Object.keys(o);if(!k.length)process.exit(3);const has=(...n)=>n.some(x=>k.some(z=>z.toLowerCase().includes(x.toLowerCase())));if(!has('funnel','stripe','sessions','paywall','count'))process.exit(4)" "$M"; then
+            echo "::error title=Snapshot métrique non exploitable::$M absent, nul, vide, invalide ou sans clé de mesure — publication annulée (donnée valide préservée)."
+            exit 1
+          fi
+          # IDEMPOTENCE : une seule publication par date UTC.
+          LAST_COMMIT="$(git log -1 --format=%cI -- "$M" || true)"
+          LAST_DAY=""
+          if [ -n "$LAST_COMMIT" ]; then
+            LAST_DAY="$(date -u -d "$LAST_COMMIT" +'%Y-%m-%d' 2>/dev/null || true)"
+          fi
+          TODAY_UTC="$(date -u +'%Y-%m-%d')"
+          if [ "$LAST_DAY" = "$TODAY_UTC" ]; then
+            echo "Snapshot déjà publié pour ${TODAY_UTC} — doublon évité."
+            exit 0
+          fi
+          git add "$M"
+          git commit -m "chore: daily metrics snapshot ${TODAY_UTC}" || echo "Rien à committer (snapshot inchangé)."
+          push_ok=0
+          for i in 1 2 3 4 5; do
+            git fetch origin "$BRANCH"
+            if ! git rebase -X theirs "origin/$BRANCH"; then
+              echo "::warning::rebase échoué (tentative $i/5)"
+              git rebase --abort || true
+              sleep 10
+              continue
+            fi
+            if git diff --quiet "origin/$BRANCH"; then
+              echo "Snapshot déjà publié par une exécution concurrente — acquis."
+              push_ok=1
+              break
+            fi
+            if git push origin "HEAD:$BRANCH"; then
+              push_ok=1
+              echo "Snapshot publié (tentative $i)."
+              break
+            fi
+            echo "::warning::push échoué (tentative $i/5), pause 20s"
+            sleep 20
+          done
+          # ÉCHEC DÉFINITIF : exit non nul (pas une simple annotation).
+          if [ "$push_ok" != "1" ]; then
+            echo "::error title=Publication du snapshot métrique échouée::push refusé après 5 tentatives — le workflow ÉCHOUE."
+            exit 1
+          fi
+      - name: Commit email state (anti-doublon)
         if: github.event_name != 'push'
         continue-on-error: true
         # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
         # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
+        # `continue-on-error` reste volontaire ICI : l'email n'est pas critique.
+        # La publication du snapshot métrique est une responsabilité SÉPARÉE
+        # (step « Publish daily metrics snapshot` ci-dessous) car son échec
+        # définitif DOIT faire échouer le workflow.
         timeout-minutes: 10
         run: |
           git config user.name "github-actions[bot]"
@@ -384,6 +453,11 @@ jobs:
           for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
+          # NOTE : la publication du snapshot métrique quotidien est désormais une
+          # responsabilité SÉPARÉE (step « Publish daily metrics snapshot` ci-dessous),
+          # car un échec de publication doit faire ÉCHOUER le workflow — ce que
+          # `continue-on-error` interdisait sur ce step anti-doublon des emails.
+          # La garde d'exploitabilité et le test de cadence vivent dans ce step.
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
           git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
           BRANCH="${GITHUB_REF_NAME:-main}"
