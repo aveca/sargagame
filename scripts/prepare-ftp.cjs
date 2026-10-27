@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Copie dist/ vers les dossiers FTP par région (moteur regions/).
  *
  * Deux modes selon la région de build (env VITE_REGION/REGION, défaut mq) :
@@ -1263,3 +1263,4 @@ Généré par: VITE_REGION=${region.id} npm run build && VITE_REGION=${region.id
   console.log('')
   console.log(`   → ${title} : envoie le contenu de ${dir}/ sur le FTP (pas une vieille zip).`)
 }
+
