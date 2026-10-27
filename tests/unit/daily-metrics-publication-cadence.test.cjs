@@ -42,6 +42,28 @@ assert.match(daily, /if: github\.event_name == 'schedule' && github\.event\.sche
   "la publication est réservée au run planifié de 18:00 UTC")
 console.log('OK 2: snapshot publié uniquement sur le run 18:00 UTC')
 
+// La collecte doit précéder la publication, et le même artefact doit traverser
+// la garde, le staging, le commit puis le push. Cela vérifie le câblage réel,
+// pas seulement l'existence d'un step portant le bon nom.
+const statsStart = daily.indexOf('- name: Daily stats check (metrics + trend detection)')
+const statsRun = daily.indexOf('run: node scripts/automation/daily-stats-check.cjs', statsStart)
+const publishMarker = '- name: Publish daily metrics snapshot'
+assert.ok(statsStart >= 0 && statsRun > statsStart && statsRun < daily.indexOf(publishMarker),
+  'la collecte quotidienne doit précéder le step de publication')
+
+const publishStart = daily.indexOf(publishMarker)
+const publishEnd = daily.indexOf('- name: Commit email state', publishStart)
+const publishStep = daily.slice(publishStart, publishEnd)
+const guardIndex = publishStep.indexOf('if [ ! -f "$M" ] || ! node -e')
+const stageIndex = publishStep.indexOf('git add "$M"')
+const commitIndex = publishStep.indexOf('git commit -m "chore: daily metrics snapshot ${TODAY_UTC}"')
+const pushIndex = publishStep.indexOf('git push origin "HEAD:$BRANCH"')
+assert.ok(guardIndex >= 0 && guardIndex < stageIndex,
+  'le snapshot doit être validé avant tout staging')
+assert.ok(stageIndex < commitIndex && commitIndex < pushIndex,
+  'le snapshot validé doit être stage, committé puis poussé dans cet ordre')
+console.log('OK 2b: collecte → garde → staging → commit → push vérifiés')
+
 // ── 3. Responsabilité séparée + échec NON silencieux ───────────────────────
 // Le step de publication ne doit PAS avoir continue-on-error : sinon un échec
 // définitif de publication laisse le workflow VERT (annotation ::error seule).
