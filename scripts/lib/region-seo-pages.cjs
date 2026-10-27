@@ -534,6 +534,32 @@ function emitLangPages(ctx) {
   pushUrl(`${prefix}/`, { daily: true, priority: prefix === '' ? '1.0' : '0.9' })
 
 
+  const beachLink = b => `<a href="${prefix}/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
+  const hubLinks = (except) => {
+    const p = content.pages
+    const items = [
+      ['map', `${prefix}/${p.map.slug}/`, p.map.h1], ['forecast', `${prefix}/${p.forecast.slug}/`, p.forecast.h1],
+      ['today', `${prefix}/${p.today.slug}/`, p.today.h1], ['season', `${prefix}/${p.season.slug}/`, p.season.h1],
+    ]
+    // Maillage des pages générées HORS seo-content (étaient orphelines = crawl-starved) :
+    // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
+    if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
+    if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
+    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    // hotels : landing B2B intention d'achat (RÉCIF/live) — maillée depuis chaque hub.
+    if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
+    // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
+    if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
+    // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
+    // sont liées depuis chaque hub ET entre elles → aucune orpheline, autorité
+    // concentrée sur le cluster. Filtre par langue (slug propre à la langue).
+    for (const e of (content.extraPages || [])) {
+      if ((e.lang && e.lang !== lang) || !e.slug || e.inNav === false) continue
+      items.push([`extra:${e.slug}`, `${prefix}/${e.slug}/`, e.navLabel || smartTrim(e.h1 || e.title, 48)])
+    }
+    return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
+  }
+
   // Regional beach directory: emit a real parent index at the same localized
   // path as the detail pages, so sitemap-listed beaches have a crawlable hub.
   const beachIndexPath = `${prefix}/${slugIndex[lang].beachesDir}/`
@@ -589,31 +615,6 @@ function emitLangPages(ctx) {
   }).replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
   writePage(distDir, beachIndexPath, beachIndexHtml)
   pushUrl(beachIndexPath, { daily: true, priority: '0.8' })
-  const beachLink = b => `<a href="${prefix}/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
-  const hubLinks = (except) => {
-    const p = content.pages
-    const items = [
-      ['map', `${prefix}/${p.map.slug}/`, p.map.h1], ['forecast', `${prefix}/${p.forecast.slug}/`, p.forecast.h1],
-      ['today', `${prefix}/${p.today.slug}/`, p.today.h1], ['season', `${prefix}/${p.season.slug}/`, p.season.h1],
-    ]
-    // Maillage des pages générées HORS seo-content (étaient orphelines = crawl-starved) :
-    // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
-    if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
-    if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
-    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
-    // hotels : landing B2B intention d'achat (RÉCIF/live) — maillée depuis chaque hub.
-    if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
-    // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
-    if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
-    // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
-    // sont liées depuis chaque hub ET entre elles → aucune orpheline, autorité
-    // concentrée sur le cluster. Filtre par langue (slug propre à la langue).
-    for (const e of (content.extraPages || [])) {
-      if ((e.lang && e.lang !== lang) || !e.slug || e.inNav === false) continue
-      items.push([`extra:${e.slug}`, `${prefix}/${e.slug}/`, e.navLabel || smartTrim(e.h1 || e.title, 48)])
-    }
-    return `<p>${items.filter(([k]) => k !== except).map(([, href, label]) => `<a href="${href}">${esc(label)}</a>`).join(' · ')} · <a href="${prefix}/">${t.home}</a></p>`
-  }
 
   // ── 1. Pages hub (forecast, today, map, season) ──
   const hubs = []
