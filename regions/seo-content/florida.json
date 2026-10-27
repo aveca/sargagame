@@ -10,7 +10,7 @@
     },
     {
       "q": "How accurate is this sargassum tracker?",
-      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed four times a day. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Beachgoer reports fill the gaps. It is the difference between a measurement and a guess."
+      "a": "We use the AFAI satellite index with Copernicus imagery, refreshed as new passes become available. Floating mats have a distinct spectral signature, but clouds can limit a clear reading. Every beach displays its data age and confidence level so you can judge the available evidence rather than assume a ground-report correction."
     },
     {
       "q": "Can you really forecast sargassum a week out?",
@@ -32,7 +32,7 @@
       "desc": "7-day sargassum forecast for Florida beaches, updated daily from satellite data. Beach-level outlooks for Miami, the Keys, Fort Lauderdale and Daytona.",
       "h1": "Florida Sargassum Forecast — Next 7 Days, Beach by Beach",
       "intro": "Most sargassum information for Florida comes as a statewide bulletin or a monthly outlook — accurate in broad strokes, useless for deciding where to swim on Saturday. This forecast works at the level that actually matters: the individual beach. We track 12 of them, from Key West up to Daytona and across to Clearwater, and run a separate 7-day projection for each, because their realities diverge wildly — the Keys can be knee-deep in seaweed while Clearwater stays spotless. The model ingests fresh Copernicus satellite imagery daily, locates the mats drifting offshore, and projects what reaches which sand and when. You get a day-by-day outlook per beach, updated every morning. Check it before you commit to a beach weekend; the ocean does not read monthly bulletins.",
-      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; in Florida, the Gulf Stream does most of the steering. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, corrected by community reports when clouds block the view. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
+      "method": "Satellites detect floating sargassum through the AFAI spectral index — mats reflect near-infrared light in a way open water does not. We pull this imagery from Copernicus and NOAA four times a day, then project each detected mat forward along wind and current vectors; in Florida, the Gulf Stream does most of the steering. Beached seaweed decays on an exponential curve with a 3.5-day half-life unless new material lands. Each beach gets a daily score from clean to avoid, based on available satellite readings and modelled wind/current signals; cloud cover can reduce confidence. Days 1–3 carry the most confidence, and the whole forecast recomputes daily."
     },
     "today": {
       "slug": "beaches-without-sargassum-today",
@@ -46,7 +46,7 @@
       "title": "Florida Seaweed Map (Live) — Sargassum Beach Tracker",
       "desc": "Interactive seaweed map of Florida, updated 4 times a day from satellite imagery. Live sargassum status for Miami, the Keys, Palm Beach and the Gulf coast.",
       "h1": "Live Sargassum Map of Florida",
-      "intro": "An interactive, live seaweed map covering Florida's sargassum-prone coast — from Key West through Miami and Palm Beach up to Daytona, plus Clearwater on the Gulf. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, cross-checked against reports from people on the sand. Government maps show you the regional picture days late; this one shows your beach, today. An east wind or a Gulf Stream wobble can rewrite the coast overnight — check the map the morning you go."
+      "intro": "An interactive, live seaweed map covering Florida's sargassum-prone coast — from Key West through Miami and Palm Beach up to Daytona, plus Clearwater on the Gulf. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated four times a day, with each satellite reading's age and confidence shown clearly. Government maps show you the regional picture days late; this one shows your beach, today. An east wind or a Gulf Stream wobble can rewrite the coast overnight — check the map the morning you go."
     },
     "season": {
       "intro": "Planning a Florida beach trip and worried about sargassum? Here's the honest 2026 outlook — when the seaweed reaches the coast, when the sand stays clear, and how to time it. Short version: winter through early spring is the clean window; the Atlantic belt influences the coast from late spring through summer, with the heaviest weeks in June–August. Flexible dates? That single fact plans your trip.",
@@ -186,7 +186,7 @@
       "title": "Miami Beach Seaweed Map Today — Live Sargassum",
       "desc": "Miami Beach seaweed map today: live sargassum status for South Beach and the Miami coast, updated 4x/day from satellite. Beach Score, forecast, where to go.",
       "h1": "Miami Beach Seaweed Map — Today's Sargassum, Live",
-      "intro": "Here's the Miami Beach seaweed map for today: each stretch of the Miami coast carries a live status (clean, moderate, or avoid), a 0-100 Beach Score, and a 7-day outlook, refreshed four times a day. South Beach, mid-Beach and the full Miami sand show their current status today right on the map above — check it the morning you go, because an east wind can land sargassum overnight. What makes this different from a government bulletin: we work at the level of your actual beach, not the region. The map reads Copernicus and NOAA satellite imagery (the same AFAI index NOAA uses), then cross-checks against people reporting from the sand. It's measured, not guessed. When clouds block the satellite, each beach shows its data age and a confidence level instead of pretending — and a published backtest tells you how often we've been right. No averages, no seasonal hand-waving: just where the water is clean on Miami Beach right now.",
+      "intro": "Here's the Miami Beach seaweed map for today: each stretch of the Miami coast carries a live status (clean, moderate, or avoid), a 0-100 Beach Score, and a 7-day outlook, refreshed four times a day. South Beach, mid-Beach and the full Miami sand show their current status today right on the map above — check it the morning you go, because an east wind can land sargassum overnight. What makes this different from a government bulletin: we work at the level of your actual beach, not the region. The map reads Copernicus and NOAA satellite imagery (the same AFAI index NOAA uses), then displays the reading's data age and confidence level. It's measured, not guessed. When clouds block the satellite, each beach shows its data age and a confidence level instead of pretending — and a published backtest tells you how often we've been right. No averages, no seasonal hand-waving: just where the water is clean on Miami Beach right now.",
       "sections": [
         {
           "h2": "Which Miami beaches are clean today?",
@@ -212,7 +212,7 @@
         },
         {
           "q": "Is the South Beach seaweed map live?",
-          "a": "Yes. South Beach carries its own live status and Beach Score on the map, refreshed four times a day and cross-checked against people reporting from the sand. East-facing South Beach shares the Art Deco stretch's exposure, so they often move together. When clouds block the satellite, the beach shows its data age and confidence level rather than guessing."
+          "a": "Yes. South Beach carries its own live status and Beach Score on the map, refreshed as new satellite data arrives, with each reading's age and confidence shown. East-facing South Beach shares the Art Deco stretch's exposure, so they often move together. When clouds block the satellite, the beach shows its data age and confidence level rather than guessing."
         },
         {
           "q": "How accurate is the Miami sargassum forecast?",
@@ -294,7 +294,7 @@
       "sections": [
         {
           "h2": "Which Miami beaches are clean today?",
-          "text": "Miami is not one beach, and sargassum rarely lands evenly across it. On any given morning South Beach can be carpeted while Key Biscayne stays open, or the reverse — it comes down to wind angle and how the Gulf Stream nudges the mats inshore. That's why we score each beach separately rather than issuing one Miami-wide verdict. Open the live map and look at the status today for the exact beach you have in mind: South Beach, Mid-Beach, Sunny Isles, Haulover, Key Biscayne or Bal Harbour. Each carries its own Beach Score, refreshed four times a day from satellite imagery and corrected by on-the-ground reports when clouds get in the way. If your first choice reads avoid this morning, the map shows you the nearest beach reading clean — so you adjust the plan instead of canceling it."
+          "text": "Miami is not one beach, and sargassum rarely lands evenly across it. On any given morning South Beach can be carpeted while Key Biscayne stays open, or the reverse — it comes down to wind angle and how the Gulf Stream nudges the mats inshore. That's why we score each beach separately rather than issuing one Miami-wide verdict. Open the live map and look at the status today for the exact beach you have in mind: South Beach, Mid-Beach, Sunny Isles, Haulover, Key Biscayne or Bal Harbour. Each carries its own Beach Score, refreshed from satellite imagery, with data age and confidence shown when clouds limit coverage. If your first choice reads avoid this morning, the map shows you the nearest beach reading clean — so you adjust the plan instead of canceling it."
         },
         {
           "h2": "When will the sargassum clear?",
@@ -312,7 +312,7 @@
         },
         {
           "q": "Is there sargassum on South Beach right now?",
-          "a": "Check South Beach's live Beach Score on the map for its status today — clean, moderate, or avoid. We update it four times a day from Copernicus and NOAA satellite passes, and correct it with ground reports when clouds block the view, so the reading reflects conditions right now rather than a general Miami bulletin."
+          "a": "Check South Beach's live Beach Score on the map for its status today — clean, moderate, or avoid. We update it four times a day from Copernicus and NOAA satellite passes, and show its age and confidence when clouds block the view, so the reading reflects conditions right now rather than a general Miami bulletin."
         },
         {
           "q": "Which Miami beach has the least seaweed?",
@@ -336,7 +336,7 @@
       "title": "Fort Lauderdale Sargassum Today — Live Beach Status",
       "desc": "Sargassum in Fort Lauderdale and Sunny Isles today: live satellite Beach Score, clean/moderate/avoid status and a 7-day forecast, refreshed 4× daily.",
       "h1": "Sargassum in Fort Lauderdale & Sunny Isles Today",
-      "intro": "Is there sargassum in Fort Lauderdale today? Check the live status panel above: Fort Lauderdale Beach shows its current status today — clean, moderate or avoid — read straight from the latest satellite pass and updated today. Sunny Isles, just south, almost always tracks the same southeast-Atlantic pattern, so the map gives you a same-day read for both before you load the car. Most seaweed pages quote a monthly average; this one measures your sand. We pull Copernicus and NOAA AFAI imagery four times a day, score each beach 0–100, and project a per-beach 7-day forecast — measured, never guessed. When clouds block a satellite pass, the page says so and shows the data age and a confidence level rather than pretending. Beachgoer reports fill the gaps. In peak summer the coast can flip overnight on an east wind, so the honest answer is always the live one: check the Beach Score the morning you go, not last week's bulletin.",
+      "intro": "Is there sargassum in Fort Lauderdale today? Check the live status panel above: Fort Lauderdale Beach shows its current status today — clean, moderate or avoid — read straight from the latest satellite pass and updated today. Sunny Isles, just south, almost always tracks the same southeast-Atlantic pattern, so the map gives you a same-day read for both before you load the car. Most seaweed pages quote a monthly average; this one measures your sand. We pull Copernicus and NOAA AFAI imagery four times a day, score each beach 0–100, and project a per-beach 7-day forecast — measured, never guessed. When clouds block a satellite pass, the page says so and shows the data age and a confidence level rather than pretending. Cloud cover can limit a reading, so we show its data age and confidence level. In peak summer the coast can flip overnight on an east wind, so the honest answer is always the live one: check the Beach Score the morning you go, not last week's bulletin.",
       "sections": [
         {
           "h2": "Fort Lauderdale or Sunny Isles — which is cleaner today?",
@@ -382,7 +382,7 @@
       "title": "Daytona Beach Sargassum Today: Live Satellite Map",
       "desc": "Is there sargassum on Daytona Beach today? Check the live satellite Beach Score, status and 7-day seaweed forecast, refreshed 4x a day from Copernicus.",
       "h1": "Daytona Beach Sargassum Today: Live Satellite Map",
-      "intro": "Daytona Beach's sargassum status today is shown live on the map above: open it to see the current Beach Score (0-100) and whether the strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so you check the water before you load the car, not after you arrive. Most seaweed reports for northeast Florida are statewide bulletins that lump Daytona in with Miami and the Keys, beaches with completely different realities. This page works at the level that matters: the 23-mile hard-packed stretch you actually drive onto. We measure what the satellite sees, we never guess, and when clouds hide the coast we say so and lean on the forecast and community reports instead. No invented numbers, just today's reading.",
+      "intro": "Daytona Beach's sargassum status today is shown live on the map above: open it to see the current Beach Score (0-100) and whether the strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so you check the water before you load the car, not after you arrive. Most seaweed reports for northeast Florida are statewide bulletins that lump Daytona in with Miami and the Keys, beaches with completely different realities. This page works at the level that matters: the 23-mile hard-packed stretch you actually drive onto. We measure what the satellite sees, we never guess, and when clouds hide the coast we say so and show the forecast, data age and confidence instead of implying a ground confirmation. No invented numbers, just today's reading.",
       "sections": [
         {
           "h2": "Is there sargassum on Daytona Beach right now?",
@@ -404,7 +404,7 @@
         },
         {
           "q": "How often is the Daytona sargassum map updated?",
-          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, recompute the per-beach Beach Score, and refresh the forecast every morning. When clouds block the satellite view we flag it and rely on the forecast and community reports."
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, recompute the per-beach Beach Score, and refresh the forecast every morning. When clouds block the satellite view we flag it and show the forecast, data age and confidence instead of claiming a ground-report correction."
         },
         {
           "q": "Is sargassum worse in Daytona or Miami?",
@@ -428,7 +428,7 @@
       "title": "Sunny Isles Beach Sargassum Today: Live Map",
       "desc": "Sargassum on Sunny Isles Beach today? See the live satellite Beach Score, clean/moderate/avoid status and 7-day seaweed forecast, refreshed 4x daily.",
       "h1": "Sunny Isles Beach Sargassum Today: Live Map",
-      "intro": "Sunny Isles Beach's sargassum status today is on the live map above: open it to see the current Beach Score (0-100) and whether this North Miami-Dade strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so residents and visitors can check the sand before walking down to it. Sunny Isles sits on the Atlantic-facing barrier island between Haulover and Golden Beach, an area that can catch sargassum during peak bloom while a beach a few miles away stays clear. Statewide bulletins miss that. This page measures what the satellite actually sees over Sunny Isles, never guesses, and tells you plainly when clouds hide the coast so we lean on the forecast and community reports instead. No invented figures, just today's reading.",
+      "intro": "Sunny Isles Beach's sargassum status today is on the live map above: open it to see the current Beach Score (0-100) and whether this North Miami-Dade strip reads clean, moderate, or avoid right now. The score is updated today from Copernicus and NOAA satellite imagery refreshed four times a day, so residents and visitors can check the sand before walking down to it. Sunny Isles sits on the Atlantic-facing barrier island between Haulover and Golden Beach, an area that can catch sargassum during peak bloom while a beach a few miles away stays clear. Statewide bulletins miss that. This page measures what the satellite actually sees over Sunny Isles, never guesses, and tells you plainly when clouds hide the coast so we show the forecast, data age and confidence instead of implying a ground confirmation. No invented figures, just today's reading.",
       "sections": [
         {
           "h2": "Is there seaweed on Sunny Isles Beach now?",
@@ -450,7 +450,7 @@
         },
         {
           "q": "How often does the Sunny Isles sargassum map update?",
-          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, recompute the per-beach Beach Score, and refresh the 7-day forecast each morning. When clouds block the view we flag it and use the forecast and community reports."
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, recompute the per-beach Beach Score, and refresh the 7-day forecast each morning. When clouds block the view we flag it and show the forecast, data age and confidence instead of claiming a ground-report correction."
         },
         {
           "q": "Why does Sunny Isles get sargassum?",
@@ -546,7 +546,7 @@
         },
         {
           "q": "How often is the Pompano Beach sargassum reading updated?",
-          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, the same index NOAA uses to detect floating sargassum, and recompute Pompano Beach's score on each pass. Beachgoer reports fill the gaps when clouds delay a clear satellite view."
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI satellite imagery, the same index NOAA uses to detect floating sargassum, and recompute Pompano Beach's score on each pass. When clouds delay a clear satellite view, the page shows the reading's age and confidence instead of claiming a ground-report correction."
         },
         {
           "q": "When is sargassum season worst at Pompano Beach?",
@@ -596,7 +596,7 @@
         },
         {
           "q": "How is the Boca Raton sargassum map updated?",
-          "a": "From Copernicus and NOAA AFAI satellite imagery, refreshed four times a day. It is the same index NOAA uses to detect floating sargassum mats. Beachgoer reports fill the gaps when clouds delay a clear satellite reading."
+          "a": "From Copernicus and NOAA AFAI satellite imagery, refreshed four times a day. It is the same index NOAA uses to detect floating sargassum mats. When clouds delay a clear satellite reading, the page shows its age and confidence instead of claiming a ground-report correction."
         },
         {
           "q": "When is sargassum worst at Boca Raton?",
@@ -638,7 +638,7 @@
         },
         {
           "q": "How often is Delray Beach's sargassum reading updated?",
-          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, the same index NOAA uses to detect floating sargassum, and recompute Delray's Beach Score on each pass. Beachgoer reports fill the gaps when clouds delay a clear satellite view."
+          "a": "Four times a day. We pull Copernicus and NOAA AFAI imagery, the same index NOAA uses to detect floating sargassum, and recompute Delray's Beach Score on each pass. When clouds delay a clear satellite view, the page shows the reading's age and confidence instead of claiming a ground-report correction."
         },
         {
           "q": "When is sargassum season worst at Delray Beach?",
