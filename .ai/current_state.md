@@ -22,12 +22,18 @@
 - [ ] Vérification live des 6 domaines (accès réseau à confirmer)
 
 ### Prochaine action recommandée
-1. Mission 5/10 : parcours B2C jusqu'à Mollie (issue #781) — partie sensible, WAITING_FOR_APPROVAL pour déploiement
+1. Mission 5/10 : parcours B2C jusqu'à Mollie (issue #781) — déjà corrigé en partie (NEXT_SESSION 2026-07-30/31), webhook_secret en attente serveur (WAITING_FOR_APPROVAL)
+2. Mission 6/10 : B2B prix/widget (issue #1024) — vérifier cohérence widget vs 79€/690€, ne pas changer de prix arbitrairement
+3. Mission 7/10 : API partenaires B2B (issue #1029) — vérifier endpoint /api/b2b-partners.json sur régions USD (build montre 0 partenaire LIVE)
+4. Mission 8/10 : analytics partagés (issue #1084 CONFIRMÉ : tulum+rivieramaya mêmes IDs GA4/Clarity/OneSignal) — décider isolation vs intentionnel
+5. Mission 9/10 : SEO régional (Tulum reachability, mojibake #1035)
+6. Mission 10/10 : certification E2E six sites + rapport final
 
 ### Branche / PR
-- Branche : `agent/data/mission-3-freshness` (contient aussi Mission 2 et 4)
-- Commit head : en cours
-- PR : à créer pour Mission 4 (séparée de Mission 2 si possible)
+- Branche courante : `agent/data/mission-3-freshness` (contient Mission 2+3+4)
+- Commit head : `59ea7556e`
+- PR #1094 (Mission 2 sécurité Worker, WAITING_FOR_APPROVAL)
+- PR #1095 (Mission 4 index plages USD)
 
 ---
 
