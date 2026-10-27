@@ -57,7 +57,8 @@ assert.equal(app.includes('className="sg-soscta"'), true, 'le bouton SOS doit ut
 //    prod : 44,8 % d'occlusion mobile à t=12s, zéro interaction, CTA poussé
 //    sous la ligne de flottaison). Rollback existant : ?frustration=0.
 assert.equal(frustration.includes('const hasInteracted = useRef(false)'), true, 'marqueur d’intention présent (hasInteracted)')
-assert.equal(frustration.includes("['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, markIntent"), true, 'l’intention = clic/touche/clavier uniquement (pas le simple scroll)')
+assert.equal(frustration.includes('const intentEvents = [\'click\', \'keydown\', \'touchstart\']'), true, 'liste d’événements d’intention isolée')
+assert.equal(frustration.includes('for (const e of intentEvents) document.addEventListener(e, markIntent'), true, 'l’intention = clic/touche/clavier uniquement (pas le simple scroll)')
 assert.equal(frustration.includes('if (!hasInteracted.current) { lastInteraction.current = now; return }'), true, 'garde : l’hésitation avant le 1er contact n’ouvre jamais le chat')
 
 console.log('OK — CTA « Trouve ta plage » visible sans param URL, rollback documenté, bannière cookies non bloquante, SOS or restauré, chat anti-occlusion verrouillé')
