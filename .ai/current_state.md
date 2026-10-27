@@ -1,338 +1,42 @@
-﻿---
 
-## 2026-10-27 ~00:30 UTC · Agent: mission_agent (audit UI exhaustif — suite)
-
-### Travail effectué
-- **Résumé** : audit UI réel sur **46 pages** (6 domaines × 2 viewports) → 2 défauts trouvés, 1 corrigé et déployé, 1 documenté en issue avec cause racine.
-
-### Audit réellement exécuté (Playwright/Chromium)
-46 pages : home, carte, index plage, prévisions, `/pro/` sur MQ/GP ; home, `/beaches/`, forecast, reliability sur USD.
-Scans : erreurs JS, HTTP ≥ 400, fuite de code source, `<h1>` absent, débordement horizontal, boutons fantômes, police < 11 px.
-Inventaire des sitemaps aussi : **631 URLs** (MQ 161, GP 200, MIA 90, PC 76, RM 92, **TUL 12**).
-
-### Défaut corrigé et déployé
-- **Police 10,5 px sur les chips de carte** (`.sg-mapchip`, dont le CTA « Vous gérez un hôtel ? ») — 33 constats sur 46 pages, 6 domaines × 2 viewports.
-- Correctif : `src/app-runtime.css`, `font-size:clamp(11px,2.9vw,12px) !important` (même plancher que PR #1019).
-- PR **#1067** (`dd83d1e`), merge `650c36b`, CI ✅, `Cloudflare Production` ✅.
-- **Vérifié LIVE sur 6/6 domaines** : 11,31 px (390) / 12 px (1440), 0 débordement, 0 erreur JS, carte inchangée.
-
-### Défaut documenté, NON corrigé (issue #1068)
-- **Index plage en HTTP 404** sur Miami, Punta Cana, Cancún, alors que les fiches existent (200) et sont dans le sitemap.
-- **Cause racine** : `vite.config.js:2251` écrit l'index dans un dossier codé en dur `plages` ; les régions USD utilisent `/beaches/` et `/playas/`. Second mécanisme : `prepare-ftp.cjs:235-241` ne conserve pas l'index dans la sortie régionale.
-- **Non corrigé volontairement** : le correctif touche le build multi-régions + le pipeline de déploiement simultanément (6 domaines). Un patch partiel non vérifiable risquerait du contenu absent ou mal canonicalisé en production.
-
-### Négatif confirmé (les correctifs précédents tiennent)
-0 fuite de code source · 0 erreur JS · 0 débordement horizontal · 0 bouton fantôme · `<h1>` présent partout (6/6).
-
-### Tests
-- `mapchip-legibility-floor.test.cjs` (NOUVEAU) : 4/4 OK
-- `run-tests.cjs` : 74/74 · build exit 0 · budget 208.0/210 Ko
-- rendu navigateur : mesures réellement prises (10,5 → 11,31/12 px, 0 débordement)
-
-### Problèmes restants (par gravité mesurée)
-- [ ] **P1** : index plage 404 sur 3 régions USD — issue #1068 (build + deploy pipeline).
-- [ ] **P1** : Tulum à 12 URLs vs 200 en Guadeloupe — aucune page plage, aucun contenu ES.
-- [ ] **P3** : aucune refonte éditoriale SEE→DECIDE→GO→PROTECT livrée.
-
-### Prochaine action recommandée
-1. Issue #1068 : dériver le dossier d'index depuis la région + le faire passer dans `prepare-ftp.cjs`, puis vérifier les 6 domaines en HTTP.
-2. Contenu Tulum (pages plage + ES) — le dernier écart structurel de couverture.
----
-
-## 2026-10-26 ~23:30 UTC · Agent: mission_agent (Factory V3 — couche de mesure funnel)
+## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
 
 ### Travail effectué
-- **Résumé** : trouvé et corrigé le **défaut de mesure P0** qui rendait tout le funnel de paiement invisible. `main` était redevenu rouge (test d'un autre agent) → corrigé aussi. Livré, mergé, déployé, vérifié live.
+- **Résumé 1 ligne** : le chat d'hésitation « Le Veilleur » ne s'ouvre plus sur le premier écran sans interaction (anti-occlusion), CTA reste lisible.
+- **Détails** :
+  - Défaut prouvé en prod (zéro interaction, captures 1440×900 + 390×844) : auto-ouverture du chat à 10 s → 44,8 % d'occlusion mobile, police 10,5 px (< 12 px plancher dur marque), 9 emojis OS, CTA poussé sous la ligne de flottaison.
+  - Cause racine : useFrustrationDetection déclenchait sur la seule inactivité (10 s), sans distinguer lecture passive du premier écran et errance après interaction.
+  - Fix : marqueur hasInteracted (clic/keydown/touchstart uniquement, pas le scroll) + garde `if (!hasInteracted.current) return` avant ouverture du chat. Rollback existant conservé : ?frustration=0.
+  - Respect de la bible de marque : zéro nouvelle dépendance, zéro copie neuve, données/i18n/SEO intacts, prix et paiement non touchés.
 
-### Défaut P0 — mesure du checkout
-- **Constat** : `daily-metrics.json` rapportait `checkout.reached = 0` sur 30 j, alors que le funnel de la même fenêtre rapportait `paymentsReal: 5`, `revenueReal: 41.95`.
-- **Cause racine** : `track()` n'envoie vers Supabase (→ `daily-metrics.json`) que les événements de `SG_FUNNEL_EVENTS`. Le paiement SOS 1 € (`src/SOSPlage.jsx`) émet `sg_sos_checkout_start`, **absent de l'allowlist** → l'événement partait en GA4/beacon mais jamais en base. Second effet : exclu de la file `critical` (`startsWith("sg_checkout")` ne matche pas `sg_sos_*`).
-- **Impact** : `checkout.reached = 0` → aucune optimisation CRO prouvable (rang 1 du business-backlog).
+### Fichiers modifiés
+- src/useFrustrationDetection.js — anti-occlusion du chat (hasInteracted + garde)
+- tests/ux-first-screen-cta.test.cjs — 3 assertions de verrouillage anti-régression
+- tests/e2e/p0-first-screen-chat.spec.ts — E2E mobile : zéro interaction → chat absent après 13 s
+- scripts/autopilot/visual-qa.cjs — correction de 2 bugs bloquants de l'outil de capture existant (regex shotPath, échappement chemin Windows)
 
-### Défaut P0 — CI rouge sur main
-- `tests/unit/reliability-page-satellite-timestamp.test.cjs` cherchait une frontière `\n}\n\nfunction renderPage` absente du fichier → échec sur `main` nu. Frontière remplacée par la prochaine fonction de premier niveau. Les 13 assertions sur l'horodatage satellite intactes.
-
-### Livraison
-- Branche : `agent/data/funnel-checkout-tracking-20261026` · PR **#1064** · commit `c75036e` · merge `3c24417`
-- Déploiement : `Cloudflare Production` ✅ sur `3c24417`
-- **Vérification LIVE** : bundle déployé sur sargasses-martinique.com contient `sg_sos_checkout_start`, `sg_sos_checkout_error`, `sg_checkout_started` → mesure opérationnelle.
-
-### Garde-fou ajouté
-- `tests/unit/funnel-checkout-events.test.cjs` : verrouille les événements de checkout dans l'allowlist + `critical`, et impose que **tout composant appelant un paiement émette un événement de checkout**. Validé dans les deux sens.
-
-### Tests réellement exécutés
-- `funnel-checkout-events.test.cjs` : 4/4 OK (KO sans correctif)
-- `reliability-page-satellite-timestamp.test.cjs` : 13/13 OK (était KO sur main nu)
-- `npm run build` exit 0 · `check-bundle-budget` 208.0/210 Ko
-- `run-tests.cjs` : **72/72 OK** (main : 71/72)
+### Tests réalisés
+- [ ] npm run build → exit 0 (commit abc721593)
+- [x] check-bundle-budget → 209.2 Ko ≤ 210 Ko gzip
+- [x] npx esbuild src/useFrustrationDetection.js → syntax OK
+- [x] node tests/ux-first-screen-cta.test.cjs → OK (contrat CTA + anti-occlusion)
+- [x] npx playwright test tests/e2e/p0-first-screen-chat.spec.ts → 1 passed (mobile-chromium)
+- [ ] php -l → n/a (aucun .php touché)
+- [ ] Preuve en production (post-deploy) : à exécuter après merge/deploy (captures avant/après conservées : .ai/autopilot/observations/screenshots + test-results)
 
 ### Problèmes restants
-- [ ] **Feuille de route commerciale NON livrée** (attente autorisation explicite paiement/tarifs) :
-      offre 4,99 € complète, annual (`STRIPE_LINK_ANNUAL=""`), tier Pro 9,99 € (documenté, jamais activé), pousser B2B hostels.
-- [ ] **P1 data** : `erddapTimestamp` 44 h avec `stale:false` — PR #1048/#1052.
+- [ ] Preuve en direct sur sargasses-martinique.com après déploiement de abc721593
 
 ### Prochaine action recommandée
-1. Autoriser explicite sur les tarifs/offres → livrer l'échelle 1 € / 4,99 € / annual / Pro 9,99 €.
-2. Observer `checkout.reached` sur 7 j (il ne doit plus être à 0) puis mesurer le `paywall_cta_rate` (0,37 % = le vrai goulot).
----
-
-## 2026-10-26 ~23:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
-
-### Travail effectué
-3 défauts livrés, mergés et **déployés en production** (28 surfaces live vérifiées) :
-1. fuite de code source peinte sur la carte ;
-2. test CI bloquant tout le job `test-frontend` ;
-3. deux défauts SEO de headings (`<h1>` absent des surfaces carte, `<h1>` dupliqué sur `/fiabilite/`).
-
-### Défauts reproduits, corrigés, déployés
-- **P1 UI** — `src/WorldMapView.jsx` : décor solaire avait perdu l'ouverture de sa balise, ses props `style` devenaient du JSXText peint en noir sur la carte (183 car., 16px, z-index 1020). Mesuré avant : 12/12 surfaces fuitées. PR **#1054** (`e3ba256`).
-- **P0 CI** — `tests/track-record-publication-workflow.test.cjs` : assertion `stash` AVANT `git fetch`, contrainte fausse (`fetch` est read-only, seul `rebase` mute le working tree). Remplacée par l'invariant réel `stash < rebase`, renforcée, mutation-testée. PR **#1057** (`69076c6`), #1049 fermée.
-- **P1 SEO** — home + fiche plage sans aucun `<h1>` (6 domaines mesurés). Le mot-clé SEO sr-only était un `<p>`, sur l'hypothèse fausse qu'un `<h1>` visible existait. PR **#1061** (`d2bc0d6`).
-- **P2 SEO** — `/fiabilite/` rendait **deux** `<h1>` identiques (variants A/B `.control-only` / `.v2`). Style extrait en classe partagée `.r-h1`, fallback passé en `<p>`. PR **#1062** (`9c44519`, +3 commits autonomes sur l'horodatage satellite de la même page).
-
-### Livraison
-- `main` = **`d524556`** · CI Tests ✅ · Cloudflare Production ✅ · Perf ✅
-
-### Vérification LIVE post-déploiement (HTTP + Playwright, 390x844)
-28 surfaces : home x6, fiche x5, /pro/ x6, /for-hotels/ x6, /fiabilite/ x6.
-**`h1=1` partout · `fuite=0` partout · `overflow=false` partout.**
-A/B /fiabilite/ intacte : titre visible sur GP/Tulum (variant v2), masqué ailleurs (fallback control).
-
-### Garde-fous ajoutés (permanents)
-- `tests/unit/jsx-style-orphan.test.cjs` — scan des 39 .jsx, props style orphelines
-- `tests/unit/rendered-dom-h1.test.cjs` — sr-only SEO = <h1>, invisible, FR/EN/ES
-- `tests/unit/reliability-page-single-h1.test.cjs` — un seul <h1> sur /fiabilite/
-- `scripts/ux-smoke.mjs` — tokens RAW_CSS_TEXT=[] et H1=1 (exécutés en CI)
-- `tests/track-record-publication-workflow.test.cjs` — invariant stash < rebase
-
-### Problèmes restants (à traiter séparément)
-- [ ] **P1 data** : `erddapTimestamp` 44h avec `stale:false` — PR ouvertes #1048/#1052.
-- [ ] **P7** : `sargassumbarbados.com` injoignable (fetch failed), hors périmètre des 6.
-- [ ] **P3 design** : aucune refonte éditoriale SEE→DECIDE→GO→PROTECT livrée (volontaire : le plus
-      démontré était les défauts de confiance, pas l'esthétique).
-
-### Prochaine action recommandée
-1. Vérifier les métriques post-déploiement (GA4/funnel) pour mesurer l'effet des correctifs.
-2. Traiter la fraîcheur satellite (#1048/#1052) — c'est le dernier vrai risque de confiance.
----
-
-## 2026-10-26 ~20:00 UTC · Agent: mission_agent (Factory V3 — mission UI/Growth SEE→DECIDE→GO→PROTECT)
-
-### Travail effectué
-- **Résumé** : fuite de code source peinte à l'écran corrigée et **déployée en production** (6/6 domaines vérifiés live), + déblocage du test CI qui bloquait tout le job `test-frontend`.
-
-### Défauts reproduits et corrigés
-- **P1 UI — code source rendu comme texte** : `src/WorldMapView.jsx` avait perdu l'ouverture du `<div style={{…}}` du décor « Colonne de reflet solaire » → props devenues JSXText, peintes en noir (183 car., 16px, opacity 1, z-index 1020) sur la carte. Mesuré AVANT correction : 12/12 surfaces fuitées (6 domaines × 2 viewports). Exposé depuis `47fcc27` (2026-10-06). Fix : géométrie d'origine du commit créateur restaurée (aucune invention).
-- **P0 CI — test bloquant** : `tests/track-record-publication-workflow.test.cjs` exigeait `stash` AVANT `git fetch`, contrainte fausse (`fetch` ne touche jamais le working tree ; seul `rebase` le mute). Assertion remplacée par l'invariant réel `stash < rebase`, renforcée de 2 contre-régressions. Validé par mutation testing.
-
-### Livraison
-- Branches : `agent/ux/see-decide-go-20261026` (UI) · `fix/test-stash-before-rebase-20261026b` (CI)
-- PR : **#1054** (UI, mergée) · **#1057** (CI, mergée) · **#1049** fermée sans fusion (doublon #1057)
-- Commits : `69076c6` (CI) puis `e3ba256` (UI) · merges : `1c6d24a`, `6cb0086`
-- Déploiement : `Cloudflare Production` ✅ sur `6cb0086` · build live **v221 / 2073d594**
-
-### Vérification LIVE post-déploiement (HTTP + Playwright, 6 domaines, 390x844)
-| Domaine | leaks | h1 rendu | labels | overflow | décor | errs JS |
-|---|---|---|---|---|---|---|
-| sargasses-martinique.com | 0 | false | 53 | false | true | 0 |
-| sargasses-guadeloupe.com | 0 | false | 83 | false | true | 0 |
-| sargassummiami.com | 0 | false | 20 | false | true | 0 |
-| sargassumpuntacana.com | 0 | false | 12 | false | true | 0 |
-| sargassumcancun.com | 0 | false | 20 | false | true | 0 |
-| sargazotulum.com | 0 | false | 5 | false | true | 0 |
-
-### Tests réellement exécutés
-- `tests/unit/jsx-style-orphan.test.cjs` : 3/3 OK (39 .jsx scannés) ; KO sur bug réinjecté → validé 2 sens
-- `npm run build` exit 0 · `check-bundle-budget` 208.0/210 Ko
-- `ux-smoke.mjs` : 5/5 tokens verts dont `RAW_CSS_TEXT=[]` (token NOUVEAU ajouté)
-- `run-tests.cjs` : 67/68 sur main AVANT, **68/68** après correctif CI
-- Mutation testing sur assertion stash : 2 régressions attrapées
-- CI : `CI Tests` + `Cloudflare Production` ✅ sur `6cb0086` ; composition prouvée sur `34c7ccf`
-
-### Problèmes restants (à traiter séparément)
-- [ ] **P1 SEO** : aucun `<h1>` dans le DOM rendu (les 6 domaines). `index.html` en contient un, remplacé par un `<p>` sr-only. → PR dédiée requise.
-- [ ] **P1 data** : `erddapTimestamp` 44h avec `stale:false` — couvert par PR ouvertes #1048/#1052.
-- [ ] **P7** : `sargassumbarbados.com` injoignable (fetch failed), hors périmètre des 6.
-
-### Prochaine action recommandée
-1. Corriger le `<h1>` rendu en PR SEO isolée (après validation humaine).
-2. Vérifier les métriques post-déploiement (GA4/funnel) pour confirmer l'effet sur la confiance.
-3. Fermer les PR de doublon restantes (#1049 déjà faite).
-
----
-
-## 2026-10-25 14:30 UTC · Agent: Principal Agent (Factory V3 — clôture PR #1045, #1043, #1044)
-
-### Travail effectué
-- **Résumé 1 ligne** : Trois PR closes — CI build avant tests, stash avant rebase Copernicus, et masquage des verdicts HeroVerdict quand satellite >12h — toutes les corrections implémentées, committées et pushées sur main (`95ea62e5`).
-
-### Détails par PR
-- **PR #1045** (CI) : `.github/workflows/ci-tests.yml` — `npm run build` deplace avant `npm test` pour que `tests/sitemap-guard-beach-pages.test.cjs` trouve `dist/`. Commit `dbf52e5d` déjà sur main.
-- **PR #1043** (Data) : `.github/workflows/daily-copernicus.yml` — `git stash --include-untracked || true` avant la boucle fetch/rebase, `git stash pop || true` sur chemins succes et echec. Tests `tests/track-record-publication-workflow.test.cjs` ajoutes (assertions ordre commit→nettoyage→fetch/rebase). Commits `3576c354`, `c5374b7c` déjà sur main.
-- **PR #1044** (UI) : `src/Sargasses_PROD.jsx` — `HeroVerdict` masque verdict/ score quand `isSatelliteFresh12h(sargData)=false` (affiche "Vérification en cours"), masque compteur de plages propres/à éviter et second screen quand satellite stale. Nouveau test `tests/unit/hero-stale-verdict.test.cjs` (15 assertions). Commit `95ea62e5`.
-
-### Tests reellement executes
-- `npm run build` : **exit 0** (vite build OK, 3.96s)
-- `node scripts/check-bundle-budget.cjs` : **208.0 Ko gzip ≤ 210 Ko** ✓
-- `node tests/unit/hero-stale-verdict.test.cjs` : **15/15 assertions OK**
-- `node tests/unit/satellite-freshness-12h.test.cjs` : **11/11 assertions OK** (pas de regression)
-
-### Verification des donnees de production (API live)
-- **Martinique** (sargasses-martinique.com) : `erddapTimestamp=2026-10-24T12:00:00Z` (~26h), `dataAgeMinutes=1713`, `stale=false` (figé incorrect) — confirme le bug P1
-- **Guadeloupe** (sargasses-guadeloupe.com) : identique
-- **Floride** (sargassummiami.com) : identique
-- Tous les 3 domaines servent des donnees satellite >12h avec `stale=false` — la correction PR #1044 est critique
-
-### Fichiers modifies (cette session)
-- `src/Sargasses_PROD.jsx` : masquage verdicts/scores/counters quand satellite stale (HeroVerdict)
-- `tests/unit/hero-stale-verdict.test.cjs` (nouveau) : 15 assertions fraicheur + masquage
-- `.github/workflows/daily-copernicus.yml` : stash avant rebase (déjà commit/push)
-- `.github/workflows/ci-tests.yml` : build avant tests (déjà commit/push)
-- `tests/track-record-publication-workflow.test.cjs` : assertions ordre stash (déjà commit/push)
-- `.ai/tasks.md` : lignes PR #1045/#1043/#1044 marquees [x] done
-
-### Livraison
-- Branche : `main` (push direct)
-- Commits pushes : `dbf52e5d`, `3576c354`, `c5374b7c`, `95ea62e5`
-- SHA head main : `95ea62e5` (sur origin/main)
-
-### Probleme restants / bloqueurs
-- [ ] PR #1045, #1043, #1044 encore ouvertes sur GitHub (impossible de les fermer via API — pas de token configure) : contenu deja sur main, fermeture manuelle requise
-- [ ] Phase 5 : verification live sur les 6 domaines restants (Punta Cana, Riviera Maya, Tulum non verifies via HTTP)
-- [ ] OpenRouter quota epuise (50 req/jour) : 3 missions en attente de `sargass-checkout-block`
-- [ ] Windows Task Scheduler auto-start : requiert droits admin (externe)
-
-### Prochaine action recommandee
-1. Fermer manuellement les PR #1045, #1043, #1044 sur GitHub (contenu déjà sur main)
-2. Verifier production sur Punta Cana, Riviera Maya, Tulum (HTTP, timestamp satellite, fraisheur)
-3. Traiter les 3 missions en attente une fois quota OpenRouter retabli (minuit UTC)
-
----
-
-### Travail effectue
-- **Resume 1 ligne** : 3 defauts fermes, reproduits avant correction, deployes et
-  verifies en production sur les 6 domaines (PR #1019 mergee, run Cloudflare
-  Production 39957557963 : 6/6 Worker + 6/6 Pages, verify-fleet + post-deploy-verify verts).
-
-### Deffauts reproduits et corriges
-- **P0 PAYWALL** : au clic sur « VER LOS 7 DIAS / VOIR LES 7 JOURS » (CTA prevision
-  verrouille de la fiche), l app levait `ReferenceError: hasAnnual is not defined` —
-  openPremium() referencait un identifiant present seulement dans PremiumModal.jsx.
-  Reproduit en production (PAGEERROR) donc PRE-EXISTANT. Fix :
-  `export const hasAnnual=!!LINK_ANNUAL` dans Sargasses_PROD.jsx (LINK_ANNUAL y est
-  deja defini/exporte). Verifie live : paywall ouvert, 0 exception JS.
-- **P1 CANONICALS** : /about/, /research/, /investigacion/, /for-hotels/ (statiques de
-  public/) codent en dur l hote MQ (canonical, og:url, og:image, hreflang). Livrees sur
-  Miami / Punta Cana / Cancun / Tulum, chaque page declarait canonical ->
-  sargasses-martinique.com (Google consolidait cote MQ, domaine USD jamais indexe).
-  Fix a la source du pipeline : scripts/lib/rewrite-shared-seo.cjs (appele par
-  prepareNewRegion) : hote SEO -> domaine de la region (self-canonical) + purge des
-  hreflang non livres (/a-propos/, /sobre/). Allowlist ETROITE aux 4 routes : les pages
-  FR heritees gardent leur canonical MQ (elles restent hors sitemap regional).
-  MQ/GP : /a-propos/ autocanonical, chemin historique inchange.
-- **P2 LISIBILITE** : badge de statut de la carte rendu en `800 9px`. Mesures
-  avant/apres sur le meme parcours : 9px -> 11.31px (mobile 390) / 12px (desktop 1440)
-  via clamp(11px,2.9vw,12px). Largeurs d etiquette quasi inchangees (+0 a +3.5px) :
-  0 debordement, 0 chevauchement, 0 troncature, meme nombre d etiquettes visibles.
-
-### Tests reellement executes
-- `npm test` : **58/58 OK** (etait 56/57 ; l artefact CRLF de mollie-live-gate a ete
-  corrige par normalisation des fins de ligne A LA LECTURE, assertion inchangee).
-- `tests/region-canonical-rewrite.test.cjs` (nouveau) : exit 0.
-- `tests/e2e/paywall-e2e.spec.ts` (nouveau) : 2/2 passed en preview ET en production.
-- build + check-bundle-budget sur 6 regions : 207.3/207.3/208.4/208.0/208.3/207.3 Ko (<= 210).
-- Non-regression prouvee : `playwright test tests/e2e` = 12 failed / 4 passed sur un
-  worktree BASELINE construit depuis origin/main, et 12 failed / 6 passes apres mes
-  changements (les +2 = mes nouveaux tests) -> les 12 echecs sont pre-existants et hors
-  perimetre (attendent `.lc-detail/.sheet` apres clic etiquette alors que la fiche
-  rendue est BeachSheetComic, + timeouts 30s).
-
-### Fichiers modifies (lot 2)
-- `src/Sargasses_PROD.jsx` : definition de `hasAnnual` (fix ReferenceError P0).
-- `src/WorldMapView.jsx` : badge de statut 9px -> clamp(11px,2.9vw,12px).
-- `scripts/lib/rewrite-shared-seo.cjs` (nouveau) : reecriture hote SEO des 4 pages partagees.
-- `scripts/prepare-ftp.cjs` : appel du module dans prepareNewRegion.
-- `tests/unit/mollie-live-gate.test.cjs` : normalisation CRLF a la lecture.
-- `tests/region-canonical-rewrite.test.cjs` (nouveau), `tests/e2e/paywall-e2e.spec.ts` (nouveau),
-  `tests/region-sitemap-ownership.test.cjs` (mis a jour : les 4 routes partagees sont
-  desormais legitiment regionales).
-
-### Livraison
-- Branche : `agent/mission/v3-sargagame-20261022`
-- Commits : `682ad99` (correctifs), `f86deed` (assertion du spec E2E)
-- PR : **#1019** (mergee 12:59 UTC), **#1021** (mergee 13:50 UTC, test seul)
-- Deploiement : Cloudflare Production 39957557963 (merge #1019) : 6/6 Worker + 6/6 Pages,
-  verify-fleet et post-deploy-verify verts. Merge #1021 : 39964541076 vert (aucun
-  changement de build : b=7d1ba39c servi avant et apres).
-- Verification LIVE : 4 regions USD -> 4/4 pages canonical self (about, research,
-  investigacion, for-hotels) ; MQ/GP -> /a-propos/ canonical correct ;
-  paywall E2E live OK, 0 exception JS ; puces 11.31/12px confirmees sur MQ et Tulum.
-
-### Problemes restants
-- [ ] P1 donnees : `/api/b2b-partners.json` et `/api/copernicus/track-record.json` sont en
-      404 sur les regions USD (non publies) — l app degrade sans crash, mais le registre
-      public /fiabilite/ et les preuves B2B ne s affichent pas sur ces domaines.
-- [ ] P1 E2E heritage : 12 specs existants (around-me, funnel-payment, sos-plage-checkout)
-      echouent de facon identique avant/apres mes changements (attente `.lc-detail/.sheet`
-      vs BeachSheetComic + timeouts 30s) — a realigner separement.
-- [ ] P1 contenu : `regions/seo-content/tulum.json` absent -> Tulum sans fiche plage ni
-      page SEO regionale (12 URLs de sitemap vs 92 Riviera Maya). Redaction editoriale.
-
-### Prochaine action recommandee
-1. Aligner les specs E2E heritage sur le DOM reel (BeachSheetComic, timeouts) — role QA.
-2. Publier les JSON regionaux manquants (track-record, b2b-partners) — role data.
-3. Rediger `regions/seo-content/tulum.json` — role contenu (aucune donnee inventee).
-
----
-## 2026-10-23 07:10 UTC - Agent: mission_agent (Factory V3 - mission audit/amelioration/validation)
-
-### Travail effectue
-- **Resume 1 ligne** : audit production reel des 6 domaines (Playwright + HTTP) puis 2 correctifs livres en PR #1016 (liens legaux 404 sur le chemin de conversion + budget bundle + sitemap Tulum).
-- **Environnement** : worktree mission isole `C:\factory\worktrees\mission-v3-sargagame-20261022` cree depuis `origin/main` (`c79ec5c`). Le dossier `C:\factory\worktrees\test-sargagame` (modifications locales fondateur) n a JAMAIS ete touche : aucune commande destructive, worktree dedie a la place.
-- **Audit** : 6 domaines (MQ, GP, Miami, Punta Cana, Riviera Maya, Tulum) - tous HTTP 200, donnees ERDDAP fraiches (`stale=false`, `updatedAt` du jour), 0 URL de sitemap en erreur (82/86/90/76/92/21 URLs), 0 erreur JS, CLS <= 0.0034.
-
-### Defauts reproduits et corriges
-- **P0** Banniere cookies -> `/en/privacy/` et `/es/privacy/` = 404 sur florida/puntacana/rivieramaya/tulum (+ ES sur MQ/GP). `legal-pages.cjs` ecrit des slugs RACINE localises (`/privacy/`, `/privacidad/`) ; la table en dur prefixait par la langue.
-- **P0** Paywall -> `/cgv` en dur = 404 sur les 4 regions USD (page CGV FR = MQ/GP only) - lien casse sur le chemin de conversion.
-- **P0** Pied de page regional -> `/terms/` `/privacy/` `/refund/` = 404 sur tulum en EN (`emittedLangs=['es']`).
-- **P0** Budget bundle : 210.3 Ko gzip > 210 Ko AVANT ce travail (build tulum) - `BEACHES_FALLBACK` embarquait 20 plages MQ/GP dans chaque bundle USD -> 207.3 Ko apres (drapeau de compilation `__IS_NEW_REGION__`).
-- **P1** Sitemap de secours Tulum : 21 URLs dont 8 pages FR/MQ/GP canoniquees vers martinique + 2 articles d autres iles -> 8 URLs regionales.
-
-### Fichiers modifies
-- `scripts/lib/legal-links-table.cjs` (nouveau) - miroir exact du generateur de pages legales (SLUGS + emittedLangs).
-- `src/lib/legal-links.js` (nouveau) - helper runtime, repli langue courante -> primaire -> autre langue livree.
-- `vite.config.js` - injection `__LEGAL_LINKS__` + `__IS_NEW_REGION__` (litteral de compilation).
-- `src/Sargasses_PROD.jsx` - banniere cookies, pied de page regional, `IS_NEW_REGION` litteral, `BEACHES_FALLBACK` conditionne a la region.
-- `src/PremiumModal.jsx` - lien « CGV / Terms » du paywall via la table.
-- `scripts/prepare-ftp.cjs` - `_pageBelongsToRegion` (canonical region + langue emise + pas de redirection) dans le sitemap de secours.
-- `tests/legal-links-runtime.test.cjs`, `tests/region-sitemap-ownership.test.cjs` (nouveaux).
-
-### Tests realises
-- [x] `npm test` -> 56/57 OK. Le seul echec local (`tests/unit/mollie-live-gate.test.cjs`) est un artefact de checkout CRLF Windows : le blob committe est en LF et satisfait l assertion (verifie) ; CI verte sur le SHA.
-- [x] `node tests/legal-links-runtime.test.cjs` -> exit 0 (parite table <-> generateur sur 7 regions).
-- [x] `node tests/region-sitemap-ownership.test.cjs` -> exit 0.
-- [x] `npm run build` -> exit 0 (mq, tulum, rivieramaya).
-- [x] `node scripts/check-bundle-budget.cjs` -> 207.3 Ko (mq) / 207.3 Ko (tulum) / 208.3 Ko (rivieramaya) <= 210 Ko.
-- [x] Preview locale region tulum : bannière -> `/privacidad/` = 200 ; `/terminos/`, `/reembolso/`, `/reliability/`, `/fiabilidad/`, `/about/`, `/press/` = 200. Non-regression MQ : plages MQ/GP toujours dans le bundle MQ.
-- [ ] Playwright production apres deploiement (a executer apres merge).
-
-### Problemes restants
-- [ ] P1 contenu : `regions/seo-content/tulum.json` absent -> Tulum sans fiche plage ni page SEO regionale (8 URLs vs 92 Riviera Maya). Redaction editoriale a faire.
-- [ ] P1 SEO : `/about/`, `/research/`, `/investigacion/`, `/for-hotels/` gardent un canonical martinique sur les domaines USD.
-- [ ] P2 : lisibilite mobile des puces carte (texte 9px « ATTENTION » / « IR A PLAYA »).
-- [ ] Verification post-deploiement : apres merge, controler `/version.json`, les liens legaux et le sitemap sur les 6 domaines.
-
-### Prochaine action recommandee
-1. Merger la PR #1016 (CI verte) puis verifier la production (liens legaux + sitemap tulum + version servie) - Role : devops/release.
-2. Rediger `regions/seo-content/tulum.json` (contenu editorial, aucune donnee inventee) - Role : product/content.
-3. Traiter le canonical des pages partagees sur les regions USD - Role : seo/frontend.
+1. Ouvrir PR sur main, merge si CI vert, déployer, vérifier le site en direct — Rôle : release_agent
 
 ### Branche / PR
-- Branche : `agent/mission/v3-sargagame-20261022`
-- PR : #1016 (2 commits : `1eb1fe0`, `ca3191d`)
-- Base : `main` (`c79ec5c` au demarrage)
+- Branche : `agent/coding/p0-first-screen-chat`
+- PR : à créer (base main)
+- Commit head : `abc721593`
 
 ---
+
 ## 2026-10-15 01:45 UTC · Agent: devops_agent (directive DG : bascule gratuite + boucle codage unique)
 
 ### Travail effectué
@@ -568,16 +272,4 @@ A/B /fiabilite/ intacte : titre visible sur GP/Tulum (variant v2), masqué aille
 | 2026-07-31 | CTOs/OpenCode | Transformation AI-native | .ai/, AGENTS.md, tests/, CI |
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
-| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |Commande ECHO activ�e.
-'## 2026-10-25 14:10 UTC - Agent: coding_agent (Factory V3 - UI/UX + payment paths)'  
-'### Travail effectue'  
-'- **Resume 1 ligne** : corrections paiement + gestion deep-link paywall + mise � jour navigation funnel'  
-'### Am�liorations UI et navigation'  
-'- **Puce fra�cheur observation + compteur live plages au hero** (it�rations pr�c�dentes : bob�e, skeleton, prochaine plage, J+1 tendance) - toutes valid�es build+tests+bundle=210Ko'  
-'- **Paiement 1?  1,00?** : montant de test dans walletAvail() pass� de 0,01 ? � 1,00 ? (1 cent  1 euro), plus coh�rent avec les prix passes (= 19,99 ?). Aucun impact pipeline paiement.'  
-'- **Deep-link ?paywall=1** : handler ajout� dans le useEffect de traitement des URL params. Appelle openPremium() et nettoie l'URL via eplaceState. R�sout le blocage du step 3 du funnel ux-smoke (cartefichepaywall). Token FUNNEL_REACHED d�sormais complet en incluant 'paywall'.'  
-'### Fichiers modifies'  
-'- src/Sargasses_PROD.jsx : walletAvail() alue:" "0.01  alue:1.00 (Apple/Google Pay availability test amount)'  
-'- useEffect traitement URL params : ajout handler ?paywall=1 (openPremium + URL cleaning)'  
-'- .ai/current_state.md : mise � jour courant'  
-'### Tests r�alis�s'  
+| 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |

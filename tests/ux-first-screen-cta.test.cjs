@@ -17,6 +17,7 @@ const path = require('node:path')
 const app = fs.readFileSync(path.join(__dirname, '../src/Sargasses_PROD.jsx'), 'utf8')
 const map = fs.readFileSync(path.join(__dirname, '../src/WorldMapView.jsx'), 'utf8')
 const funnel = fs.readFileSync(path.join(__dirname, '../src/TrouvePlage.jsx'), 'utf8')
+const frustration = fs.readFileSync(path.join(__dirname, '../src/useFrustrationDetection.js'), 'utf8')
 
 // 1. CTA primaire sur la carte + i18n
 assert.equal(map.includes('data-testid="cta-trouve-ta-plage"'), true, 'le CTA principal « Trouve ta plage » doit exister sur la carte')
@@ -51,4 +52,13 @@ const css = fs.readFileSync(path.join(__dirname, '../src/app-runtime.css'), 'utf
 assert.equal(css.includes('.sg-soscta.sg-soscta.sg-soscta'), true, 'classe armurée .sg-soscta obligatoire (gradient or)')
 assert.equal(app.includes('className="sg-soscta"'), true, 'le bouton SOS doit utiliser .sg-soscta (pas .sg-fab)')
 
-console.log('OK — CTA « Trouve ta plage » visible sans param URL, rollback documenté, bannière cookies non bloquante, SOS or restauré')
+// 7. anti-régression P0 (2026-10-27) : le chat d'hésitation ne s'ouvre jamais
+//    avant le 1er contact — le premier écran reste dégagé (défaut mesuré en
+//    prod : 44,8 % d'occlusion mobile à t=12s, zéro interaction, CTA poussé
+//    sous la ligne de flottaison). Rollback existant : ?frustration=0.
+assert.equal(frustration.includes('const hasInteracted = useRef(false)'), true, 'marqueur d’intention présent (hasInteracted)')
+assert.equal(frustration.includes('const intentEvents = [\'click\', \'keydown\', \'touchstart\']'), true, 'liste d’événements d’intention isolée')
+assert.equal(frustration.includes('for (const e of intentEvents) document.addEventListener(e, markIntent'), true, 'l’intention = clic/touche/clavier uniquement (pas le simple scroll)')
+assert.equal(frustration.includes('if (!hasInteracted.current) { lastInteraction.current = now; return }'), true, 'garde : l’hésitation avant le 1er contact n’ouvre jamais le chat')
+
+console.log('OK — CTA « Trouve ta plage » visible sans param URL, rollback documenté, bannière cookies non bloquante, SOS or restauré, chat anti-occlusion verrouillé')
