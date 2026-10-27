@@ -98,6 +98,28 @@ const staleAge = new Date(NOW - 79 * 24 * 60 * 60 * 1000).toISOString();
   assert.match(unavailable.line, /indisponible/);
   assert.equal(unavailable.stale, true);
 
+  const impossibleHigh = await render({
+    generatedAt: recent,
+    freshness: { stale: false },
+    overall: { statusHitRatePct: 101 },
+    sampleSize: 1323,
+    byRegime: { calm: { cleanReliabilityPct: 101, cleanSamples: 1050 } },
+  });
+  assert.equal(impossibleHigh.value, "—", "percentages above 100 must never be published");
+  assert.match(impossibleHigh.line, /insuffisantes/);
+  assert.equal(impossibleHigh.stale, true);
+
+  const impossibleNegative = await render({
+    generatedAt: recent,
+    freshness: { stale: false },
+    overall: { statusHitRatePct: -1 },
+    sampleSize: 1323,
+    byRegime: { calm: { cleanReliabilityPct: -1, cleanSamples: 1050 } },
+  });
+  assert.equal(impossibleNegative.value, "—", "negative percentages must never be published");
+  assert.match(impossibleNegative.line, /insuffisantes/);
+  assert.equal(impossibleNegative.stale, true);
+
   console.log("OK — fresh metric, explicit stale, stale timestamp, honest regime label, and fetch failure");
 })().catch(error => {
   console.error(error);
