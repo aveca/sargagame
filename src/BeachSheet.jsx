@@ -582,12 +582,12 @@ export default function BeachSheet({
           </div>
         </div>
       </div>
-    </>
     {showSOS && (
       <Suspense fallback={null}>
         <SOSPlage lang={lang} sargData={sargData} region={beach?.island || "mq"} onClose={() => setShowSOS(false)} />
       </Suspense>
     )}
+    </>
   )
 }
 
