@@ -240,6 +240,11 @@ html.sg-standalone .sheet{bottom:calc(100dvh - var(--sg-vh,100dvh));padding-bott
    doublé-classe (0,2,0) et strippait les pastilles en texte nu (régression vue au smoke
    funnel 2026-07-01 — même leçon que le cluster perso plus bas, resté triple-classe). */
 .sg-mapchip.sg-mapchip.sg-mapchip{background:#190c2c !important;color:#fdfcf7 !important;
+  /* Plancher lisibilite 11px (audit UI 2026-10-26) : l inline JSX des chips
+     porte fontSize:10.5px, ecrit trop petit sur mobile comme sur desktop.
+     Meme plancher que le fix labels carte (PR #1019, 9px -> clamp(11px,2.9vw,12px)).
+     Triple classe (0,3,0) + !important battent l inline et le skin de theme. */
+  font-size:clamp(11px,2.9vw,12px) !important;
   border:2.5px solid #0d0b14 !important;box-shadow:3px 3px 0 #0d0b14 !important;
   text-shadow:0 1px 2px rgba(0,0,0,.55) !important;-webkit-text-fill-color:#fdfcf7 !important;border-radius:999px !important}
 .sg-mapchip.sg-mapchip svg{stroke:#fdfcf7 !important}
