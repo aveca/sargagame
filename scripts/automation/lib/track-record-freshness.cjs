@@ -8,7 +8,7 @@ const FUTURE_COMPUTED_SKEW_MS = 5 * 60 * 1000;
 const FUTURE_WINDOW_SKEW_MS = 24 * HOUR_MS;
 
 function parseUtcEndOfDay(value) {
-  if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return NaN;
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
   const startMs = Date.parse(value + 'T00:00:00.000Z');
   if (!Number.isFinite(startMs) || new Date(startMs).toISOString().slice(0, 10) !== value) return NaN;
   return startMs + DAY_MS - 1000;
