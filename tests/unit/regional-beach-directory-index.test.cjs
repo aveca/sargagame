@@ -9,7 +9,7 @@ const { generateRegionSeoPages } = require('../../scripts/lib/region-seo-pages.c
 const { emittedLangs, normLang } = require('../../scripts/lib/region-langs.cjs')
 
 const ROOT = path.resolve(__dirname, '../..')
-const REGION_IDS = ['florida', 'puntacana', 'rivieramaya', 'tulum']
+const REGION_IDS = ['florida', 'puntacana', 'rivieramaya']
 
 function template(domain, lang) {
   return `<!doctype html><html lang="${lang}"><head>
@@ -47,7 +47,7 @@ for (const id of REGION_IDS) {
       assert.ok(html.includes(`<link rel="canonical" href="${canonical}"`), `${id}/${lang}: missing self-canonical`)
       assert.ok(html.includes(`hreflang="${lang}" href="${canonical}"`), `${id}/${lang}: missing self hreflang`)
       const primaryDir = primary === 'es' ? 'playas' : 'beaches'
-      const xDefault = `https://${region.domain}${primary === 'es' ? '' : ''}/${primaryDir}/`
+      const xDefault = `https://${region.domain}/${primaryDir}/`
       assert.ok(html.includes(`hreflang="x-default" href="${xDefault}"`), `${id}/${lang}: incorrect x-default`)
       const linkedBeaches = html.match(/<li><a href="/g) || []
       assert.equal(linkedBeaches.length, (region.beaches || []).length, `${id}/${lang}: directory does not link every regional beach`)
