@@ -6,7 +6,8 @@
  *   1. Accessibilité HTTP (200)
  *   2. Identité d'artefact : version.json v/b servi == v/b construit (si fourni via
  *      --expect-v/--expect-b ; sinon les valeurs servies sont enregistrées)
- *   3. Fraîcheur des données Copernicus (sargassum.json)
+ *   3. Fraîcheur des données Copernicus (sargassum.json) et de l'observation satellite
+ *   3bis. Fraîcheur du registre public de fiabilité (track-record.json) sur MQ/GP
  *   4. Cohérence région ↔ plages : aucun niveau d'une autre région servi
  *   5. Paramètres régionaux : canonical/og:url = domaine de la région, et si
  *      regions/<id>.json définit un GA4 réel (!= TODO_GA4_ID) ⇒ présent dans le HTML.
@@ -164,7 +165,7 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
  * The public track record is a separate commercial proof from the satellite
  * payload. A recent generatedAt alone is insufficient: the scored window and
  * backtest computation must also be recent, with an explicit non-stale marker.
- * Thresholds match src/lib/track-record-freshness.js.
+ * Thresholds mirror the public record contract: computation <=36h, window <=2d.
  */
 function checkTrackRecordFreshness(record, now = Date.now()) {
   const fail = detail => ({
@@ -184,7 +185,7 @@ function checkTrackRecordFreshness(record, now = Date.now()) {
 
   const computedAtMs = Date.parse(record.freshness.computedAt || '');
   const parseUtcDay = value => {
-    if (typeof value !== 'string' || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return NaN;
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
     const ms = Date.parse(value + 'T00:00:00.000Z');
     return Number.isFinite(ms) && new Date(ms).toISOString().slice(0, 10) === value ? ms : NaN;
   };
