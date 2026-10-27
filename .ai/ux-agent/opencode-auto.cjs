@@ -92,8 +92,8 @@ function resolveExecutionPlan(options, env) {
       throw cliError('Cloud execution requested but NVIDIA_API_KEY is not configured.', 12);
     }
     const model = String(options.model || sourceEnv.SARGA_CLOUD_MODEL || '').trim();
-    if (!/^[^/\s]+\/[^/\s]+$/.test(model)) {
-      throw cliError('Cloud execution requires SARGA_CLOUD_MODEL or --model with an OpenCode provider/model ID.', 13);
+    if (!/^nvidia\/[^/\s]+$/.test(model)) {
+      throw cliError('Cloud execution is restricted to an NVIDIA model ID such as nvidia/model-name.', 13);
     }
     return { mode: 'cloud', model, taskType: options.taskType };
   }
