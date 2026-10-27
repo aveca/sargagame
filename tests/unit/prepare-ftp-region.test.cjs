@@ -29,7 +29,7 @@ fs.writeFileSync(path.join(dist, 'robots.txt'), 'User-agent: *\n')
 fs.writeFileSync(path.join(dist, 'sitemap.xml'), '<urlset></urlset>\n')
 fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify({ v: 'v221', b: 'abc123' }))
 fs.writeFileSync(path.join(dist, 'sw.js'), "CACHE_NAME = 'sargasses-v221-abc123'")
-fs.writeFileSync(path.join(dist, '.assetsignore'), '**/.htaccess\n**/.htpasswd\n**/_private/\n')
+fs.writeFileSync(path.join(dist, '.assetsignore'), '**/*.php\n**/*.php.*\n**/.env*\n**/.htaccess\n**/.htpasswd\n**/_private/\n')
 
 // Donnée privée à EXCLURE du FTP (doit disparaître)
 fs.mkdirSync(path.join(dist, '_private', 'nested'), { recursive: true })
@@ -81,5 +81,3 @@ fs.rmSync(dist, { recursive: true, force: true })
 
 console.log(`\n${passed}/13 assertions passed - packaging FTP protège .htaccess et exclut _private.\n`)
 process.exit(0)
-
-console.log(`\n${passed}/10 assertions passed - packaging FTP protège .htaccess et exclut _private.\n`)
