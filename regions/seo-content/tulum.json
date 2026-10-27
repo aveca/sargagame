@@ -1,0 +1,270 @@
+{
+  "faq": [
+    {
+      "q": "¿Cuándo es la temporada de sargazo en Tulum?",
+      "a": "La temporada va de abril a septiembre, con el pico entre mayo y julio. De noviembre a marzo las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como cada año varía, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuatro veces al día."
+    },
+    {
+      "q": "¿Qué playas de Tulum tienen menos sargazo?",
+      "a": "Playa Ruinas y Playa Santa Fe, al estar más resguardadas por la geografía de la costa, suelen recibir menos sargazo que Playa Paraíso o Playa Pescadores, que miran de frente al este. Playa Xcacel, al sur, también suele estar más limpia. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias hoy mismo."
+    },
+    {
+      "q": "¿Qué tan confiables son los datos de este sitio?",
+      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con imágenes de Copernicus actualizadas cuatro veces al día. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza."
+    },
+    {
+      "q": "¿Se puede pronosticar el sargazo con una semana de anticipación?",
+      "a": "Sí, con límites razonables. El sargazo deriva con el viento y las corrientes, así que cuando el satélite detecta una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante los siguientes siete días. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia."
+    },
+    {
+      "q": "¿Los hoteles limpian el sargazo de sus playas?",
+      "a": "Los resorts de Tulum rastrillan su frente de playa cada mañana y muchos instalan barreras antisargazo. Aun así, en días de arribazón fuerte el alga regresa en horas. Por eso conviene ver el flujo real por satélite: si no viene nada nuevo, la playa rastrillada aguanta limpia todo el día."
+    },
+    {
+      "q": "¿Qué hago si mi playa amaneció llena de sargazo?",
+      "a": "Muévete — la geografía te da opciones. Si Playa Paraíso amaneció mal, Playa Ruinas o Playa Santa Fe suelen estar más limpias; Akumal y Xpu-Ha al norte también son opciones cercanas. Con las alertas premium te avisamos en cuanto tu playa cambie de estado."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "pronostico-sargazo-tulum",
+      "title": "Pronóstico de Sargazo Tulum 2026 — 7 Días por Playa",
+      "desc": "Pronóstico de sargazo a 7 días para Tulum, actualizado a diario con datos satelitales. Mira qué playas estarán limpias esta semana.",
+      "h1": "Pronóstico de Sargazo en Tulum — Próximos 7 Días",
+      "intro": "Casi todos los pronósticos te dan un solo veredicto para toda la zona de Tulum, basado en imágenes oficiales con días de retraso. Aquí corremos un pronóstico independiente para cada una de las 5 playas que monitoreamos, porque la realidad cambia de una bahía a otra. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa.",
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
+    },
+    "today": {
+      "slug": "playas-sin-sargazo-hoy-tulum",
+      "title": "Playas sin Sargazo Hoy en Tulum (Lista en Vivo)",
+      "desc": "Lista en vivo de las playas sin sargazo hoy en Tulum. Verificada por satélite 4 veces al día.",
+      "h1": "Playas sin Sargazo Hoy en Tulum",
+      "intro": "¿Buscas una playa limpia de algas hoy mismo? Abajo está la lista del día, ordenada de la más limpia a la más afectada, con las playas que ahora mismo están libres de sargazo según la última pasada satelital — se actualiza cuatro veces al día. Como regla general, Playa Ruinas y Playa Santa Fe suelen estar más limpias que Playa Paraíso. Pero la regla general no importa cuando ya empacaste la hielera: importa el dato de hoy."
+    },
+    "map": {
+      "slug": "mapa-sargazo-tulum",
+      "title": "Mapa del Sargazo Tulum (En Vivo) — Playa por Playa",
+      "desc": "Mapa interactivo del sargazo en Tulum, actualizado 4 veces al día con imágenes satelitales.",
+      "h1": "Mapa del Sargazo en Vivo — Tulum",
+      "intro": "Este es un mapa interactivo y en vivo del sargazo en Tulum: cada playa aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan imágenes satelitales de Copernicus actualizadas cuatro veces al día, más los reportes de gente en la arena. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. Un giro de viento en la noche puede limpiar Playa Paraíso y cargar Playa Pescadores antes del mediodía. Revísalo la mañana que vayas."
+    },
+    "season": {
+      "intro": "¿Planeas un viaje a Tulum y te preocupan el sargazo y las algas? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planificar tu viaje. En corto: de noviembre a marzo es fiable y limpio; el cinturón atlántico llega de abril a octubre, más fuerte de mayo a agosto.",
+      "slug": "temporada-sargazo-tulum",
+      "title": "Temporada de Sargazo Tulum 2026 — Mes por Mes",
+      "desc": "¿Cuándo hay sargazo en Tulum? De abril a septiembre, con pico de mayo a julio. Calendario mes a mes y seguimiento satelital diario.",
+      "h1": "Temporada de Sargazo en Tulum — Guía 2026",
+      "months": [
+        {
+          "period": "Noviembre – Febrero",
+          "text": "La ventana confiable. Los arribos son raros y ligeros. Prácticamente todas las playas de Tulum se mantienen limpias semanas enteras. Si evitar el sargazo es tu prioridad, viaja en estos meses."
+        },
+        {
+          "period": "Marzo",
+          "text": "El mes de aviso. Los satélites empiezan a detectar las primeras manchas de la nueva floración. Las playas siguen limpias en general, pero pueden caer manchones sueltos en la costa abierta."
+        },
+        {
+          "period": "Abril",
+          "text": "Arranca la temporada. Los arribos se vuelven regulares en las playas que miran al este — Playa Paraíso, Playa Pescadores — aunque todavía con volúmenes moderados. Playa Ruinas y Playa Santa Fe suelen mantenerse más limpias."
+        },
+        {
+          "period": "Mayo – Julio",
+          "text": "El pico. El cinturón de sargazo entrega volumen constante y la costa expuesta puede amanecer cargada varias veces por semana. Las diferencias entre playas se vuelven enormes: el mismo día, Playa Paraíso puede estar café y Playa Ruinas transparente."
+        },
+        {
+          "period": "Agosto – Septiembre",
+          "text": "Sigue fuerte pero ya en descenso. Los arribos se vuelven episódicos. Los hoteles mantienen el ritmo de limpieza y las playas protegidas se recuperan rápido. El radar de 7 días te ayuda a esquivar los pulsos."
+        },
+        {
+          "period": "Octubre",
+          "text": "La cola de la temporada. Los volúmenes caen semana a semana y para finales de mes la mayoría de las playas vuelve a estar limpia de forma estable."
+        }
+      ],
+      "tips": "Si tus fechas son flexibles, reserva de noviembre a marzo y olvídate de las algas. ¿Viajas en pico de temporada? Prefiere hospedarte en Playa Ruinas o Playa Santa Fe — o elige un resort con limpieza diaria y barrera antisargazo. Revisa nuestro mapa la semana previa al vuelo y, ya aquí, planea las mañanas de playa y deja un cenote como plan B para los días cargados."
+    }
+  },
+  "beachBlurbs": {
+    "tu001": "La playa pública más famosa de Tulum, con las ruinas mayas como telón de fondo y clubes de playa icónicos. Mira de frente al este y tiene oleaje moderado, así que en temporada recibe sargazo de los primeros. Los clubes rastrillan su tramo a diario. Llega temprano: te toca la arena más limpia y el mejor lugar bajo la palapa.",
+    "tu002": "Playa de pescadores tradicional, con ambiente más local y menos clubs de playa que Paraíso. Está expuesta de lleno al este, así que en pico de temporada puede amanecer cargada. La limpieza depende de los hoteles y restaurantes del tramo. En día limpio, el agua es de un azul profundo espectacular.",
+    "tu003": "La playa junto a las ruinas: el tramo más protegido geográficamente de Tulum. La bahía que forman las ruinas frena parte del oleaje y del sargazo que castiga a las playas abiertas. Agua más calmada, ideal para familias, y la postal de Tulum con el templo maya al fondo.",
+    "tu004": "Playa ancha y larga al sur del centro, con hoteles boutique y ambiente más tranquilo que la zona hotelera norte. Está algo más resguardada que Paraíso, así que en temporada suele amanecer más limpia. Ideal para caminatas largas y atardeceres sin multitudes.",
+    "tu005": "Al sur de Tulum, ya en la reserva de Sian Ka'an. Arena blanca, agua bajita y ambiente casi virgen. Recibe sargazo variable según el viento, pero el tramo del malecón se limpia a diario y, fuera de días de crucero, la playa es casi privada. Para viajeros que quieren Caribe sin la escala del corredor."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
+    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia de algas y sargazo? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuatro veces al día. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
+  },
+  "press": {
+    "_doc": "Página de prensa renderizada en /press/ por region-seo-pages.cjs.",
+    "slug": "press",
+    "title": "Sargazo en Tulum — Kit de Prensa",
+    "desc": "Recursos de prensa sobre el sargazo en Tulum: estado satelital por playa actualizado 4× al día, pronóstico de 7 días y precisión publicada. Libre de citar.",
+    "h1": "Prensa y medios — datos de sargazo de Tulum",
+    "intro": "El Atlántico vive una temporada de sargazo de niveles récord. Lo que los titulares rara vez responden es la pregunta que de verdad hace tu audiencia: ¿se puede nadar en mi playa hoy? Publicamos esa respuesta para Tulum, playa por playa, a partir de datos satelitales — y es libre de citar con atribución.",
+    "sections": [
+      {
+        "h2": "Qué publicamos",
+        "text": "Estado del sargazo en vivo para {beachCount} playas de Tulum — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI de los programas satelitales Copernicus y NOAA, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuatro veces al día. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
+      },
+      {
+        "h2": "Precisión, publicada abiertamente",
+        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. Los días 1 a 3 son los más fiables. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
+      },
+      {
+        "h2": "Libre de usar, con atribución",
+        "text": "Periodistas, blogueros y medios pueden citar cualquier estado de playa, score o pronóstico con un enlace a la página de origen. Cita sugerida: {citation}. Para insertar el mapa en vivo, obtener datos por playa o un comentario, escribe a {contact} — respondemos rápido."
+      }
+    ],
+    "citation": "Fuente: sargazotulum.com — datos satelitales Copernicus/NOAA, actualizados 4× al día",
+    "contact": "support@sargazotulum.com"
+  },
+  "extraPages": [
+    {
+      "lang": "es",
+      "slug": "porque-hay-tanto-sargazo-tulum",
+      "title": "¿Por qué hay tanto sargazo en Tulum?",
+      "desc": "¿Por qué hay tanto sargazo en Tulum? Llega del Gran Cinturón Atlántico, empujado por corrientes y viento. Causas reales y mapa satelital por playa, 4× al día.",
+      "h1": "¿Por qué hay tanto sargazo en Tulum?",
+      "intro": "Hay tanto sargazo en Tulum porque las algas no nacen aquí: llegan flotando desde el Gran Cinturón de Sargazo del Atlántico, una enorme franja de alga que crece entre África y Brasil y que las corrientes marinas y los vientos del este empujan hasta el Caribe mexicano. Es un fenómeno oceánico, no local, y por eso ningún hotel puede impedir que llegue. Las causas de fondo se acumulan: más nutrientes en el océano (polvo del Sahara, descargas de ríos como el Amazonas), aguas más cálidas y corrientes que canalizan el alga directo hacia la costa de Quintana Roo. Por eso aquí no te damos un veredicto único: seguimos cada playa de Tulum con imágenes satelitales de Copernicus actualizadas cuatro veces al día, con un Beach Score de 0 a 100 y su estado de hoy.",
+      "sections": [
+        {
+          "h2": "¿De dónde viene el sargazo que llega a Tulum?",
+          "text": "El sargazo que invade Tulum viene del Gran Cinturón de Sargazo del Atlántico (GASB), una masa de alga flotante que se extiende miles de kilómetros desde la costa de África occidental hasta el Golfo de México. Allí el alga se reproduce en mar abierto y, arrastrada por la corriente ecuatorial del norte y los vientos alisios del este, cruza el Atlántico y entra al Caribe por el sur. La Corriente del Caribe la canaliza hacia la costa de Quintana Roo, donde topa con las playas que miran al este. No se origina frente a Tulum: llega de afuera."
+        },
+        {
+          "h2": "¿Por qué hay más sargazo unos años que otros?",
+          "text": "La cantidad varía muchísimo de un año a otro porque depende de cuánto alga produjo el Atlántico esa temporada. Más nutrientes en el agua — polvo rico en hierro que el Sahara sopla sobre el océano, y descargas de ríos como el Amazonas y el Congo — hacen que el cinturón crezca más. El agua más cálida acelera su reproducción. Y la dirección de las corrientes y el viento de cada año decide cuánto de ese alga termina en Tulum. Por eso una temporada puede ser leve y la siguiente récord."
+        },
+        {
+          "h2": "Por qué unas playas de Tulum reciben mucho y otras casi nada",
+          "text": "El sargazo no llega parejo: la geografía decide. Las playas que miran de frente al este — Playa Paraíso, Playa Pescadores — reciben el alga de primero porque están expuestas al flujo que viene del Atlántico. En cambio, las que quedan a sotavento o en bahías — Playa Ruinas, Playa Santa Fe, Playa Xcacel — se libran en buena parte. Por eso un mismo día Playa Paraíso puede amanecer café y Playa Ruinas transparente. No te guíes por la regla general: mira el estado de hoy de cada playa antes de salir."
+        },
+        {
+          "h2": "¿El sargazo es peligroso? ¿Qué hago si llega?",
+          "text": "El sargazo fresco flotando o recién varado no es peligroso para nadar. El problema aparece cuando se acumula y se pudre en la arena: al descomponerse libera sulfuro de hidrógeno (H2S), ese olor a huevo podrido que puede irritar ojos, nariz y garganta en montones grandes y mal ventilados. Si tu playa amaneció cargada, muévete: la geografía te da opciones. Playa Ruinas, Playa Santa Fe o Akumal al norte suelen estar más limpias. Con las alertas premium te avisamos en cuanto tu playa cambie de estado, para que decidas antes de cargar el coche."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Por qué hay tanto sargazo en Tulum?",
+          "a": "Porque llega flotando desde el Gran Cinturón de Sargazo del Atlántico, una franja de alga que crece entre África y Brasil. Las corrientes marinas y los vientos del este lo empujan hasta el Caribe mexicano. Es un fenómeno oceánico, no local: ningún hotel puede evitar que llegue, solo limpiarlo."
+        },
+        {
+          "q": "¿De dónde viene el sargazo de Tulum?",
+          "a": "Viene del Atlántico tropical, del Gran Cinturón de Sargazo, entre la costa de África occidental y Brasil. El alga crece en mar abierto y la corriente ecuatorial del norte, junto con los vientos alisios, la arrastra a través del Atlántico hasta el Caribe, donde topa con la costa de Quintana Roo."
+        },
+        {
+          "q": "¿Por qué hay más sargazo unos años que otros?",
+          "a": "Porque la producción del cinturón atlántico varía cada temporada. Más nutrientes en el agua — polvo del Sahara, descargas del Amazonas — y aguas más cálidas hacen crecer más alga. Luego, el viento y las corrientes de ese año deciden cuánto termina en Tulum. Por eso una temporada puede ser leve y la siguiente récord."
+        },
+        {
+          "q": "¿Por qué unas playas de Tulum tienen sargazo y otras no?",
+          "a": "Por su orientación y geografía. Las playas que miran al este reciben el alga primero. Las que quedan a sotavento o en bahías — Playa Ruinas, Playa Santa Fe, Playa Xcacel — casi siempre están limpias. Un mismo día, una playa puede estar café y otra transparente. Revisa el estado de hoy de cada playa en el mapa en vivo."
+        },
+        {
+          "q": "¿El sargazo de Tulum es peligroso?",
+          "a": "El sargazo fresco no es peligroso para nadar. El riesgo aparece cuando se acumula y se pudre: libera sulfuro de hidrógeno (H2S), con olor a azufre, que puede irritar ojos y garganta en montones grandes. En una playa rastrillada no es problema; conviene evitar los acumulos en descomposición. Si tu playa amaneció cargada, muévete a una protegida como Playa Ruinas o Playa Santa Fe."
+        }
+      ],
+      "priority": "0.7",
+      "daily": false
+    },
+    {
+      "lang": "es",
+      "slug": "sargazo-tulum-hoy",
+      "title": "Sargazo en Tulum Hoy: Mapa en Vivo por Satélite",
+      "desc": "¿Cómo está el sargazo en Tulum hoy? Mapa en vivo verificado por satélite 4 veces al día, con el estado de cada playa hoy y pronóstico a 7 días.",
+      "h1": "¿Cómo está el sargazo en Tulum hoy?",
+      "intro": "El estado del sargazo en Tulum hoy lo decide la última pasada satelital, no el rumor de ayer: arriba ves el mapa en vivo, actualizado hoy, con el Beach Score (0–100) y el status today —limpia, moderada o evitar— de cada playa de Tulum. Así de simple: mira el número junto a tu playa antes de cargar la hielera. El sargazo no llega parejo: una playa puede amanecer turquesa mientras la de al lado recibe arribazón. Por eso seguimos cada playa por separado con el índice AFAI de Copernicus/NOAA, refrescado cuatro veces al día.",
+      "sections": [
+        {
+          "h2": "¿Qué playas de Tulum están limpias hoy?",
+          "text": "La respuesta cambia cada día, por eso el mapa manda. Como regla general, Playa Ruinas, Playa Santa Fe y Playa Xcacel, al estar más resguardadas, reciben mucho menos sargazo que Playa Paraíso o Playa Pescadores, que miran de frente al este. Pero la regla general no sirve cuando ya estás en el coche: revisa el Beach Score y el status today de tu playa concreta en el mapa de arriba. Si la tuya aparece en rojo, ordena la lista de la más limpia a la más afectada y elige otra con agua turquesa de verdad para hoy."
+        },
+        {
+          "h2": "¿Cuándo se va a limpiar el sargazo?",
+          "text": "El sargazo deriva con el viento y las corrientes, así que cuando el satélite detecta una mancha mar adentro podemos proyectar hacia dónde va. Cada playa trae un pronóstico a 7 días: los días 1 a 3 son los más certeros, del 4 al 7 marcan la tendencia, y todo se recalcula con cada nueva pasada satelital. En la práctica, una playa que los hoteles rastrillaron al amanecer aguanta limpia el día entero si no viene arribazón nueva; al revés, un cambio de viento puede ensuciar en pocas horas una playa que estaba perfecta. Por eso mira el flujo real, no el calendario: el mapa te dice si lo de hoy es un manchón de paso o el inicio de varios días cargados."
+        },
+        {
+          "h2": "¿Es peligroso el sargazo? El olor a huevo podrido",
+          "text": "El sargazo fresco flotando no es tóxico y puedes bañarte cerca, aunque incomoda. El problema llega cuando se acumula en la arena y se pudre: al descomponerse libera ácido sulfhídrico (H2S), ese olor a huevo podrido que irrita ojos, nariz y garganta, sobre todo en montones grandes bajo el sol. No te metas entre las algas en descomposición y aléjate de los cúmulos densos si tienes problemas respiratorios, igual con niños pequeños y embarazadas. Si tu playa amaneció cargada, lo más sano —y lo más bonito— es usar el mapa para encontrar otra limpia hoy en lugar de quedarte junto a la putrefacción."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Hay sargazo en Tulum hoy?",
+          "a": "Depende de la playa, y eso es justo lo que muestra el mapa en vivo de arriba: cada playa de Tulum trae su Beach Score y su status today —limpia, moderada o evitar— según la última pasada satelital, actualizado hoy."
+        },
+        {
+          "q": "¿Cómo está el sargazo en Tulum ahora mismo?",
+          "a": "Mira el estado en tiempo casi real en el mapa de esta página: imágenes de Copernicus/NOAA con el índice AFAI, refrescadas cuatro veces al día. Cada playa muestra su Beach Score (0–100), su status today y la hora exacta de la última lectura."
+        },
+        {
+          "q": "¿Qué playa de Tulum tiene menos sargazo hoy?",
+          "a": "Suelen encabezar la lista Playa Ruinas, Playa Santa Fe y Playa Xcacel, porque están más resguardadas. Pero la única respuesta válida para hoy es la del mapa: ordena las playas de la más limpia a la más afectada según el status today y elige la que tenga mejor Beach Score ahora mismo."
+        },
+        {
+          "q": "¿Qué tan confiable es el sargazo de Tulum de este sitio?",
+          "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo desde satélite, con imágenes de Copernicus actualizadas cuatro veces al día. Cuando las nubes tapan una zona lo decimos: cada playa muestra su nivel de confianza y la hora de su última lectura."
+        },
+        {
+          "q": "¿El sargazo de hoy seguirá mañana en Tulum?",
+          "a": "No siempre. El sargazo se mueve con el viento, así que una playa cargada hoy puede amanecer limpia mañana, o al revés. Cada playa trae un pronóstico a 7 días recalculado con cada pasada satelital; los días 1 a 3 son los más certeros para saber si lo de hoy se queda o se va."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    },
+    {
+      "lang": "es",
+      "slug": "mapa-sargazo-tulum-hoy",
+      "title": "Mapa sargazo Tulum hoy | en vivo",
+      "desc": "Mapa de sargazo en Tulum hoy: imagen satelital actualizada 4 veces al día, Beach Score por playa, estado limpio/moderado/evitar y pronóstico 7 días.",
+      "h1": "Mapa de sargazo en Tulum hoy",
+      "intro": "El mapa de sargazo de Tulum hoy se actualiza con imagen satelital cada pocas horas y te muestra, playa por playa, dónde el agua está limpia y dónde hay recale. Abre el mapa en vivo, busca tu playa (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) y mira su Beach Score y su estado de hoy: limpio, moderado o evitar. A diferencia de las fotos de redes sociales, esto no es una opinión: es lo que ven los satélites Copernicus y NOAA (índice AFAI) refrescado 4 veces al día. También somos honestos con la incertidumbre: cuando una nube tapa la costa o el dato envejece, lo marcamos en vez de inventar. Consulta el Beach Score actualizado hoy y el pronóstico de 7 días por playa antes de decidir adónde ir.",
+      "sections": [
+        {
+          "h2": "¿Qué playas tienen sargazo hoy en Tulum?",
+          "text": "En el mapa en vivo cada playa tiene su propio Beach Score (0-100) y un estado de hoy: limpio, moderado o evitar. Las playas expuestas al este (Playa Paraíso, Playa Pescadores) suelen recibir más recale que las resguardadas (Playa Ruinas, Playa Santa Fe, Playa Xcacel). Por eso no publicamos un veredicto fijo: abre el mapa, toca tu playa y lee su estado de hoy y su Beach Score actualizado. Cada punto se calcula con la imagen satelital más reciente, no con reportes manuales que llegan tarde. Si una nube tapa un tramo de costa, verás ese tramo marcado como dato no confiable en lugar de un número inventado."
+        },
+        {
+          "h2": "¿Cuándo se limpia y cómo cambia el sargazo en Tulum?",
+          "text": "El sargazo llega en oleadas: una playa puede amanecer limpia, recibir un banco con el viento del este al mediodía y aclarar al día siguiente. Por eso el mapa se refresca 4 veces al día y ofrece un pronóstico de 7 días por playa, basado en la persistencia del recale observado vía satélite. La temporada alta suele ir de mayo a agosto, pero la variación local manda: dos playas a pocos kilómetros pueden tener estados opuestos el mismo día. Usa el pronóstico como tendencia, no como promesa: publicamos nuestra precisión (backtest) en lugar de prometer certezas. Si planeas con días de anticipación, revisa el pronóstico; si decides esta mañana, fíjate en el estado de hoy y el Beach Score más reciente."
+        },
+        {
+          "h2": "Seguridad: sargazo en descomposición y gas H2S",
+          "text": "El sargazo fresco en el agua es molesto pero el mayor riesgo aparece cuando se acumula y se pudre en la arena: libera ácido sulfhídrico (H2S), ese olor a huevo podrido. En concentraciones altas puede causar dolor de cabeza, náuseas e irritación de ojos y garganta, sobre todo para personas con problemas respiratorios, embarazadas, bebés y mascotas. Evita las pilas grandes de sargazo en descomposición y las zonas de olor fuerte. El mapa te ayuda a elegir de antemano una playa con estado limpio hoy, para no llegar a una bahía cargada de algas viejas. No nades entre bancos densos: reducen visibilidad y arrastran corrientes. Ante mal olor intenso, aléjate de la orilla y busca un tramo ventilado y abierto."
+        }
+      ],
+      "faq": [
+        {
+          "q": "¿Cómo veo el mapa de sargazo de Tulum hoy?",
+          "a": "Abre el mapa en vivo de esta página y busca tu playa: Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe o Playa Xcacel. Cada una muestra su Beach Score y su estado de hoy (limpio, moderado o evitar), calculado con imagen satelital actualizada hoy."
+        },
+        {
+          "q": "¿Cada cuánto se actualiza el mapa satelital de sargazo?",
+          "a": "Se actualiza 4 veces al día con imágenes de los satélites Copernicus y NOAA mediante el índice AFAI. Cuando una nube tapa la costa o el dato envejece, lo marcamos como no confiable en vez de mostrar un número inventado."
+        },
+        {
+          "q": "¿Qué playas de Tulum tienen menos sargazo?",
+          "a": "Varía cada día según corrientes y viento, por eso no damos un veredicto fijo. En general Playa Ruinas, Playa Santa Fe y Playa Xcacel suelen tener menos recale que Playa Paraíso o Playa Pescadores. Revisa el Beach Score de hoy de cada playa en el mapa."
+        },
+        {
+          "q": "¿El mapa predice el sargazo de los próximos días?",
+          "a": "Sí, ofrece un pronóstico de 7 días por playa basado en la persistencia del recale observado por satélite. Es una tendencia, no una promesa: publicamos nuestra precisión real (backtest) y marcamos la incertidumbre."
+        },
+        {
+          "q": "¿Es peligroso el sargazo acumulado en la playa?",
+          "a": "El sargazo fresco es molesto; el riesgo sube cuando se pudre en la arena y libera gas H2S (olor a huevo podrido). Puede irritar ojos y garganta y dar dolor de cabeza, sobre todo a personas sensibles. Evita las pilas grandes en descomposición y elige una playa con estado limpio hoy."
+        }
+      ],
+      "priority": "0.7",
+      "daily": true
+    }
+  ],
+  "routes": {
+    "best": "mejores-playas-sin-sargazo-tulum",
+    "weekly": "sargazo-tulum-esta-semana",
+    "season": "temporada-sargazo-tulum"
+  }
+}

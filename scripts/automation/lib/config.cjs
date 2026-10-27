@@ -35,7 +35,7 @@ const SITES = {
 //  - plages : regions/<id>.json .beaches, routes /beaches|playas/<slug>/ —
 //    PAS beaches-list.json ni /plages/, PAS de slugs éditoriaux FR
 const REGION_CONFIGS = {} // siteKey -> regions/<id>.json parsé (sites USD uniquement)
-for (const id of ['florida', 'puntacana', 'rivieramaya']) {
+for (const id of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
   try {
     const r = JSON.parse(readFileSync(resolve(__dirname, '..', '..', '..', 'regions', `${id}.json`), 'utf-8'))
     REGION_CONFIGS[id] = r
