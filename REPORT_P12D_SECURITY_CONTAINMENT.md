@@ -1,11 +1,11 @@
-# MISSION P1.2-D — Sécurité des assets et continuité du packaging FTP — Rapport final
+﻿# MISSION P1.2-D — Sécurité des assets et continuité du packaging FTP — Rapport final
 
 **Date :** 27/10/2026  
 **Verdict final : BLOCKED_SECURITY**  
 **Dépôt :** `aveca/sargagame` — PR #1080  
 **Branche :** `fix/assets-api-p12-20261027`  
 **SHA de départ (distant) :** `1afefc34de32b2c976c755b97e3f62844e650fe9`  
-**SHA du commit livré (distant) :** `c526d6f1a2cb68220ab8e23855396629becbe1e6` puis `c526d6f1` (après rebase) puis `719cd2fb` (après push du correctif de test)  
+**SHA du commit livré (distant) :** `53a0c274a2cb68220ab8e23855396629becbe1e6` puis `c526d6f1` (après rebase) puis `719cd2fb` (après push du correctif de test)  
 **SHA final poussé :** `c526d6f1`  
 **Clone de travail isolé :** `C:\Users\user\AppData\Local\Temp\opencode\sargagame-p12d`
 
@@ -27,7 +27,7 @@ La mission est donc **BLOCKED_SECURITY** : le code est corrigé, les preuves son
 | Dépôt local sargagame (non touché) | `C:\Users\user\Documents\GitHub\sargagame`, branche `fix/guard-false-success`, HEAD `b942a2d4` |
 | Branche de travail | `fix/assets-api-p12-20261027` |
 | SHA de départ (distant) | `1afefc34de32b2c976c755b97e3f62844e650fe9` |
-| SHA final poussé | `c526d6f1a2cb68220ab8e23855396629becbe1e6` |
+| SHA final poussé | `53a0c274a2cb68220ab8e23855396629becbe1e6` |
 
 Le dépôt local `C:\Users\user\Documents\GitHub\sargagame` n'a pas été touché.
 
