@@ -99,7 +99,7 @@ const SHARED_LEGACY_IDS = ['mq', 'gp']
 // GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
 // (where MQ wins in dist/) — it gets overlaid onto guadeloupe-ftp/ later
 // so the GP build ends up with GP-correct beach lists, not MQ ones.
-const COPY_SKIP_TOP = new Set(['_gp'])
+const COPY_SKIP_TOP = new Set(['_gp', '.htaccess', '.htpasswd', 'api/.htaccess'])
 
 // skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
 // copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
@@ -862,6 +862,10 @@ function prepareNewRegion(region) {
   const skip = new Set([
     ...COPY_SKIP_TOP,
     '_private', // données premium J+2-7, protégées par .htaccess côté FTP, ne doivent jamais être des assets
+    '.htaccess', // server config files - must not be served as assets
+    'api/.htaccess', // fichier .htaccess de l'API - ne doit jamais etre servi comme asset
+    '.htpasswd', // password files - must not be served as assets
+    'api/.htaccess', // API .htaccess - must not be served as asset
     'robots.txt', // régénéré pour region.domain
     'sitemap.xml', // régénéré minimal (racine seule)
     '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
