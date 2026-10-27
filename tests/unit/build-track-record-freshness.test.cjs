@@ -49,4 +49,4 @@ assert.equal(calculateTrackRecordFreshness({
   nowMs: now,
 }).stale, true, 'measurement window more than 24 hours in the future fails closed');
 
-console.log('BUILD_TRACK_RECORD_FRESHNESS_TESTS PASS (10 assertions)');
+console.log('BUILD_TRACK_RECORD_FRESHNESS_TESTS PASS (13 assertions)');
