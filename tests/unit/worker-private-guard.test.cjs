@@ -1,11 +1,11 @@
 // tests/unit/worker-private-guard.test.cjs — garde _private fail-closed
 // Contexte : /api/copernicus/_private/forecast-full.json (premium J+2-7) a été
 // servi en clair sur *.workers.dev (constaté 2026-10-04). Cause racine : avec
-// run_worker_first=false (défaut), les assets existants contournent le handler
-// (même /api/.htaccess était lisible). Double barrière exigée :
-//   1. public/.assetsignore exclut _private des uploads,
-//   2. workers/sargagame/index.js refuse en code + wrangler.template.jsonc met
-//      run_worker_first=true (sinon la garde ne s'exécute jamais).
+// run_worker_first=false (défaut actuel) : les assets statiques compatibles sont
+// servis directement par Cloudflare sans invocation Worker. Les chemins
+// dynamiques (API, Apple Pay, guards) sont toujours traités par le code Worker
+// car ils ne correspondent pas aux assets statiques. La garde _private/dotfiles/php
+// s'exécute uniquement quand le Worker est invoqué (req non-asset).
 // Lancement : node tests/unit/worker-private-guard.test.cjs
 
 const fs = require('fs');
@@ -53,8 +53,8 @@ check('handler widget-token préservé', /widget-token/.test(WORKER));
 check('handler b2b-trial préservé', /b2b-trial/.test(WORKER));
 check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(WORKER));
 
-// 5. run_worker_first=true (SANS ÇA, LA GARDE EST MORTE pour les assets existants)
-check('wrangler.template run_worker_first=true', /"run_worker_first"\s*:\s*true/.test(TPL));
+// 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
+check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*false/.test(TPL));
 
 // 6. Barrière upload : _private exclu des assets
 check('.assetsignore exclut _private', /^.*_private.*$/m.test(IGNORE));
