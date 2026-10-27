@@ -1,5 +1,44 @@
 ﻿---
 
+## 2026-10-27 ~00:30 UTC · Agent: mission_agent (audit UI exhaustif — suite)
+
+### Travail effectué
+- **Résumé** : audit UI réel sur **46 pages** (6 domaines × 2 viewports) → 2 défauts trouvés, 1 corrigé et déployé, 1 documenté en issue avec cause racine.
+
+### Audit réellement exécuté (Playwright/Chromium)
+46 pages : home, carte, index plage, prévisions, `/pro/` sur MQ/GP ; home, `/beaches/`, forecast, reliability sur USD.
+Scans : erreurs JS, HTTP ≥ 400, fuite de code source, `<h1>` absent, débordement horizontal, boutons fantômes, police < 11 px.
+Inventaire des sitemaps aussi : **631 URLs** (MQ 161, GP 200, MIA 90, PC 76, RM 92, **TUL 12**).
+
+### Défaut corrigé et déployé
+- **Police 10,5 px sur les chips de carte** (`.sg-mapchip`, dont le CTA « Vous gérez un hôtel ? ») — 33 constats sur 46 pages, 6 domaines × 2 viewports.
+- Correctif : `src/app-runtime.css`, `font-size:clamp(11px,2.9vw,12px) !important` (même plancher que PR #1019).
+- PR **#1067** (`dd83d1e`), merge `650c36b`, CI ✅, `Cloudflare Production` ✅.
+- **Vérifié LIVE sur 6/6 domaines** : 11,31 px (390) / 12 px (1440), 0 débordement, 0 erreur JS, carte inchangée.
+
+### Défaut documenté, NON corrigé (issue #1068)
+- **Index plage en HTTP 404** sur Miami, Punta Cana, Cancún, alors que les fiches existent (200) et sont dans le sitemap.
+- **Cause racine** : `vite.config.js:2251` écrit l'index dans un dossier codé en dur `plages` ; les régions USD utilisent `/beaches/` et `/playas/`. Second mécanisme : `prepare-ftp.cjs:235-241` ne conserve pas l'index dans la sortie régionale.
+- **Non corrigé volontairement** : le correctif touche le build multi-régions + le pipeline de déploiement simultanément (6 domaines). Un patch partiel non vérifiable risquerait du contenu absent ou mal canonicalisé en production.
+
+### Négatif confirmé (les correctifs précédents tiennent)
+0 fuite de code source · 0 erreur JS · 0 débordement horizontal · 0 bouton fantôme · `<h1>` présent partout (6/6).
+
+### Tests
+- `mapchip-legibility-floor.test.cjs` (NOUVEAU) : 4/4 OK
+- `run-tests.cjs` : 74/74 · build exit 0 · budget 208.0/210 Ko
+- rendu navigateur : mesures réellement prises (10,5 → 11,31/12 px, 0 débordement)
+
+### Problèmes restants (par gravité mesurée)
+- [ ] **P1** : index plage 404 sur 3 régions USD — issue #1068 (build + deploy pipeline).
+- [ ] **P1** : Tulum à 12 URLs vs 200 en Guadeloupe — aucune page plage, aucun contenu ES.
+- [ ] **P3** : aucune refonte éditoriale SEE→DECIDE→GO→PROTECT livrée.
+
+### Prochaine action recommandée
+1. Issue #1068 : dériver le dossier d'index depuis la région + le faire passer dans `prepare-ftp.cjs`, puis vérifier les 6 domaines en HTTP.
+2. Contenu Tulum (pages plage + ES) — le dernier écart structurel de couverture.
+---
+
 ## 2026-10-26 ~23:30 UTC · Agent: mission_agent (Factory V3 — couche de mesure funnel)
 
 ### Travail effectué
