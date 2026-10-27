@@ -5,7 +5,7 @@
 **Dépôt :** `aveca/sargagame` — PR #1080  
 **Branche :** `fix/assets-api-p12-20261027`  
 **SHA de départ (distant) :** `1afefc34de32b2c976c755b97e3f62844e650fe9`  
-**SHA du commit livré (distant) :** `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` puis `c526d6f1` (après rebase) puis `719cd2fb` (après push du correctif de test)  
+**Chronologie des commits distants vérifiés :** `c526d6f1a2cb68220ab8e23855396629becbe1e6` → `719cd2fb5d93e50999b8b066d2f41086ffd40fe2` → `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` (HEAD courant)  
 **HEAD distant actuellement vérifié :** `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9`  
 **Clone de travail isolé :** `C:\Users\user\AppData\Local\Temp\opencode\sargagame-p12d`
 
@@ -87,20 +87,18 @@ Résultat : **13/13 assertions passées** lorsque exécuté isolément.
 
 ---
 
-## 6. Tests et CI du commit `c526d6f1`
+## 6. Tests et CI — résultats vérifiés
 
 | Contrôle | Résultat | Preuve |
 |----------|----------|--------|
-| `worker-private-guard.test.cjs` | 17/17 PASS | Exécuté localement sur le clone |
-| `npm test` | 79/80 fichiers OK | Un fichier a échoué (probablement lié au nouveau test de préparation FTP ou à un test préexistant) |
-| Bundle (`check-bundle-budget.cjs`) | 208,0 Ko gzip ≤ 210 Ko | Mesuré sur le clone du SHA `c526d6f1`, région `mq` |
-| CI `perf` | success | GitHub check-run sur `c526d6f1` |
-| CI `lighthouse-report` | success | GitHub check-run sur `c526d6f1` |
+| `worker-private-guard.test.cjs` | 17/17 PASS (résultat local rapporté) | Compte rendu de mission |
+| `prepare-ftp-region.test.cjs` | 13 assertions PASS isolément (résultat local rapporté) | Compte rendu de mission ; distinct des exécutions CI ci-dessous |
+| Bundle | 208,0 Ko gzip ≤ 210 Ko (mesure locale historique) | Clone de travail, région MQ |
+| `CI Tests` | **SUCCESS** sur le HEAD distant exact | [Run #3006](https://github.com/aveca/sargagame/actions/runs/40578646840) — SHA `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` |
+| `Perf Budget + Lighthouse` | **SUCCESS** sur le HEAD distant exact | [Run #2285](https://github.com/aveca/sargagame/actions/runs/40578646822) — SHA `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` |
+| `GitGuardian Security Checks` | **BLOQUANT — incident encore Triggered** | [Commentaire GitGuardian sur la PR](https://github.com/aveca/sargagame/pull/1080#issuecomment-6451351117), incident `39170333`, occurrence du commit `1afefc34de32b2c976c755b97e3f62844e650fe9` |
 
-| CI `GitGuardian Security Checks` | failure | GitHub check-run sur `c526d6f1` — faux positif sur `.htpasswd` dans le nom de fichier du test de régression |
-
-
-
+Les deux workflows Actions verts ci-dessus sont vérifiés sur le HEAD courant. Ils ne démontrent ni la classification GitGuardian, ni la synchronisation avec `main`, ni une fusion ou un déploiement en production.
 ---
 
 ## 7. Incident GitGuardian — analyse
@@ -136,11 +134,10 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 
 ## 9. Prochaines actions (autorisation requise)
 
-1. **Investiguer l'échec GitGuardian** via le dashboard GitHub : classer comme faux positif (`.htpasswd` est un nom de fichier Apache standard, pas un mot de passe en clair ; le fichier n'existe pas dans le repo).
-
-3. Une fois GitGuardian classifié et la branche synchronisée, faire reviewer la PR humainement, puis envisager la fusion via GitHub.
-4. Après déploiement autorisé : revérifier en HTTP réel que `/.htaccess` retourne 404 sur les 6 domaines (prouvé précédemment qu'il retournait 200 avant le déploiement du correctif).
-
+1. **GitGuardian :** un maintainer ou administrateur ayant accès au dashboard doit examiner l’occurrence `39170333` et la classer comme faux positif uniquement après confirmation que la détection porte sur un nom de fichier, pas sur une vraie valeur secrète. Revérifier le statut ensuite.
+2. **Synchronisation Git :** la comparaison distante `main...fix/assets-api-p12-20261027` indique 18 commits en avance et 2 en retard. Réconcilier la branche sans réécriture forcée de l’historique, puis relancer les contrôles sur le nouveau HEAD exact.
+3. **Revue et fusion :** après classification GitGuardian, synchronisation, CI verte sur le HEAD final et revue humaine, envisager la fusion de la PR #1080 via GitHub.
+4. **Production :** aucun déploiement n’est autorisé par ce rapport. Après autorisation explicite et éventuel déploiement, vérifier réellement `/.htaccess` sur les six domaines, archiver les réponses HTTP et contrôler les assets servis.
 ---
 
 ## 10. Preuves disponibles
