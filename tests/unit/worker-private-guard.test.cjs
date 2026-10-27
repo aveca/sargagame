@@ -61,4 +61,4 @@ const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filt
 const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
 for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
 
-console.log(\`\\n\${passed} checks passed — private endpoint fail-closed, public paths intact.\`);
+console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');
