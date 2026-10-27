@@ -1,6 +1,8 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const { execFileSync } = require('node:child_process');
+const path = require('node:path');
 const { assertRequiredEditProducedDiff } = require('./edit-required-guard.cjs');
 
 assert.throws(
@@ -29,4 +31,6 @@ assert.throws(
   'missing/invalid diff must fail closed when an edit is required'
 );
 
+execFileSync(process.execPath, ['--check', path.resolve(__dirname, '..', 'local-agent-executor.cjs')], { stdio: 'pipe' });
+console.log('local-agent-executor syntax: PASS');
 console.log('edit-required-guard: 4/4 assertions passed');
