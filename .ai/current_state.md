@@ -1,4 +1,67 @@
 
+## 2026-10-27 · Agent: autonome (OpenCode) · Mission 4/10 — routes plages / index régionaux / sitemaps (#1068, PR #1072)
+
+### Travail effectué
+- **Résumé 1 ligne** : génération d'un index de plage régional réel (`/{lang}/beaches/` ou `/{lang}/playas/`) pour les 3 régions USD, avec canonical, hreflang, liens vers chaque fiche plage et entrée sitemap ; défaut #1068 (index 404 alors que fiches existent) corrigé.
+- **Défaut prouvé (#1068)** : le code actuel ne générait aucun index plage pour les régions USD (aucune chaîne `beachIndex` dans `scripts/lib/region-seo-pages.cjs`) → les fiches plage figuraient dans le sitemap mais leur index parent répondait 404.
+- **Correctif appliqué (contenu de PR #1072, non mergée sur main)** : bloc `beachIndex` dans `emitLangPages` de `scripts/lib/region-seo-pages.cjs` ; génère `/{prefix}/{beachesDir}/` avec CollectionPage JSON-LD, breadcrumb, hreflang alternates, et `pushUrl` au sitemap. Les plages FR (`plages/`) ne sont pas générées pour les builds USD (pas d'index FR orphelin).
+- **Test de régression ajouté** : `tests/unit/regional-beach-directory-index.test.cjs` — 48 assertions sur florida/puntacana/rivieramaya (index existant, canonical self, hreflang self+x-default, lien vers chaque plage, entrée sitemap, pas d'index plages_FR en USD). PASS.
+
+### Fichiers modifiés
+- `scripts/lib/region-seo-pages.cjs` — génération index plage régional (bloc beachIndex)
+- `tests/unit/regional-beach-directory-index.test.cjs` — nouveau test de régression (créé)
+
+### Tests réalisés
+- [x] node --check scripts/lib/region-seo-pages.cjs → syntaxe OK
+- [x] node tests/unit/regional-beach-directory-index.test.cjs → 48/48 PASS
+- [ ] npm run build → à lancer (build régional complet) avant merge
+- [ ] Vérification live sur les 6 domaines (/plages/, /playas/, sitemap) → à faire
+
+### Problèmes restants
+- [ ] PR #1072 reste ouverte sur GitHub, non mergée sur main — ce correctif la duplique partiellement
+- [ ] Vérification live des 6 domaines (accès réseau à confirmer)
+
+### Prochaine action recommandée
+1. Mission 5/10 : parcours B2C jusqu'à Mollie (issue #781) — partie sensible, WAITING_FOR_APPROVAL pour déploiement
+
+### Branche / PR
+- Branche : `agent/data/mission-3-freshness` (contient aussi Mission 2 et 4)
+- Commit head : en cours
+- PR : à créer pour Mission 4 (séparée de Mission 2 si possible)
+
+---
+
+## 2026-10-27 · Agent: autonome (OpenCode) · Mission 3/10 — fraîcheur Copernicus/ERDDAP (constat, aucun code à modifier)
+
+### Travail effectué
+- **Résumé 1 ligne** : la fraîcheur scientifique repose déjà sur `erddapTimestamp` (jamais `updatedAt` seul) ; le défaut #1048 (« EN DIRECT » sur updatedAt) est corrigé ; état actuel mesuré sur le build local.
+- **Défaut #1048** : déjà corrigé (PR #1044/#1038/#1039 selon l'historique). `format-freshness.mjs` `isSatelliteFresh12h` utilise exclusivement `sargData.erddapTimestamp` ; `updatedAt` (heure de republication pipeline) ne prouve rien. Tests existants : `satellite-freshness-12h.test.cjs` (12 assertions, dont le piège updatedAt frais + erddap vieux => false), `hero-stale-verdict.test.cjs` (masquage verdict/score/LIVE quand >12h).
+- **État actuel mesuré (build local, SHA d2b05adec)** : `public/api/copernicus/sargassum.json` source=erddap-live, updatedAt=2026-10-27T22:23Z, erddapTimestamp=2026-10-26T12:00Z, dataAgeMinutes=2133 (~35,5h), stale=false (seuil 36h=2160min). → pas « EN DIRECT » (>12h), statut « recent » (12-36h), pas stale (<36h). Cohérent avec le code.
+- **Appel Header** (Sargasses_PROD.jsx:14343) : `updatedAt={sargData?.erddapTimestamp||null}` — reçoit bien `erddapTimestamp`, pas de fallback sur `updatedAt` (re-publication). `republishedAt={sargData?.updatedAt||null}` transmis séparément, non utilisé pour la fraîcheur.
+
+### Fichiers modifiés
+- Aucun (défaut déjà corrigé, tests existants).
+
+### Tests réalisés
+- [x] node tests/unit/satellite-freshness-12h.test.cjs → PASS
+- [x] node tests/unit/hero-stale-verdict.test.cjs → PASS
+- [x] node tests/unit/worker-private-guard.test.cjs → 47/47 (Mission 2, toujours vert)
+- [x] npm run build → exit 0 ; budget 208.1 Ko ≤ 210 Ko
+
+### Problèmes restants
+- [ ] Vérifier la fraîcheur en production sur les 6 domaines (accès réseau à confirmer)
+- [ ] Le seuil de staleness est 36h ; l'observation actuelle à 35,5h est proche de la limite (surveiller)
+
+### Prochaine action recommandée
+1. Mission 4/10 : routes de plages / index régionaux / sitemaps (issue #1068, PR #1072) — Rôle : growth_agent / seo
+
+### Branche / PR
+- Branche : `agent/data/mission-3-freshness` (basée sur agent/security/mission-2-worker-assets)
+- Commit head : `c6f4fccf7` (Mission 2)
+- Mission 3 : aucun commit de code (défaut déjà corrigé)
+
+---
+
 ## 2026-10-27 · Agent: autonome (OpenCode) · Mission 2/10 — sécurité Worker/assets (#1076)
 
 ### Travail effectué
