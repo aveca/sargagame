@@ -122,7 +122,7 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 
 - Aucun merge de branche
 - Aucun push sur `main` (le push a été fait uniquement sur `fix/assets-api-p12-20261027`)
-- Aucun déclenchement de workflow GitHub Actions
+- Aucun workflow GitHub Actions déclenché manuellement par la mission ; les workflows automatiques déclenchés par les commits ont bien tourné, comme l’attestent les runs listés en section 6.
 - Aucun déploiement Cloudflare (wrangler deploy non exécuté)
 - Aucun secret réel, clé API ou jeton n’a été créé, modifié, affiché ou exporté. Le dernier commit ajoute une fixture de test synthétique représentant un fichier .htpasswd ; elle ne contient pas d’identifiant de production.
 - Aucun `git reset --hard`, `git clean -fd` ni destruction de travail existant
@@ -142,7 +142,7 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 
 ## 10. Preuves disponibles
 
-- Clone isolé : `C:\Users\user\AppData\Local\Temp\opencode\sargagame-p12d` (HEAD `c526d6f1`, poussé sur `fix/assets-api-p12-20261027`)
+- Clone isolé observé pendant la phase initiale : `C:\Users\user\AppData\Local\Temp\opencode\sargagame-p12d` (HEAD local `c526d6f1` à cette étape ; la branche distante a ensuite avancé jusqu’au SHA indiqué en section 12).
 - Sortie `check-bundle-budget.cjs` : 208,0 Ko gzip
 - Sortie `worker-private-guard.test.cjs` : 17/17
 - Sortie `prepare-ftp-region.test.cjs` : 13/13 assertions (exécuté isolément)
