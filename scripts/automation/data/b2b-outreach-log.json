@@ -339,8 +339,40 @@
     "mariegalante.fr": {
       "date": "2026-10-20T14:51:56.480Z",
       "status": "no-email"
+    },
+    "ville-portlouis.fr": {
+      "date": "2026-10-27T15:55:05.958Z",
+      "status": "no-email"
+    },
+    "mairie-petitbourg.fr": {
+      "date": "2026-10-27T15:55:06.474Z",
+      "status": "no-email"
+    },
+    "lemoule.fr": {
+      "date": "2026-10-27T15:55:11.968Z",
+      "status": "no-email"
+    },
+    "tourisme-saintfrancois.com": {
+      "date": "2026-10-27T15:55:12.438Z",
+      "status": "no-email"
+    },
+    "tourisme-deshaies.com": {
+      "date": "2026-10-27T15:55:14.732Z",
+      "status": "no-email"
+    },
+    "club-med-caravelle.com": {
+      "date": "2026-10-27T15:55:15.142Z",
+      "status": "no-email"
+    },
+    "la-toubana-spa.com": {
+      "date": "2026-10-27T15:55:15.598Z",
+      "status": "no-email"
+    },
+    "hotel-le-rotabas.com": {
+      "date": "2026-10-27T15:55:16.078Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-10-20T14:51:56.480Z",
+  "lastRun": "2026-10-27T15:55:16.078Z",
   "totalSent": 11
 }

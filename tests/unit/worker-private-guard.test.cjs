@@ -56,7 +56,9 @@ check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(W
 // 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
 check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*false/.test(TPL));
 
-// 6. Barrière upload : _private exclu des assets
-check('.assetsignore exclut _private', /^.*_private.*$/m.test(IGNORE));
+// 6. Garde assets: règles exactes, pas une simple présence du mot "_private".
+const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')));
+const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
+for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
 
-console.log(`\n${passed} checks passed — private endpoint fail-closed, public paths intact.`);
+console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');

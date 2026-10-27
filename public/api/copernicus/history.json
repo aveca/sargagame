@@ -2150,12 +2150,12 @@
         },
         {
           "id": "gp-grande-anse",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
           "id": "gp-malendure",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2180,7 +2180,7 @@
         },
         {
           "id": "gp-bas-du-fort",
-          "afai": 0.07,
+          "afai": 0.08,
           "status": "clean"
         },
         {
@@ -2190,7 +2190,7 @@
         },
         {
           "id": "gp-moule",
-          "afai": 0.06,
+          "afai": 0.07,
           "status": "clean"
         },
         {

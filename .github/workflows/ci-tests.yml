@@ -25,6 +25,10 @@ jobs:
       - run: npm ci
       - name: Verify Build
         run: npm run build
+      # Exécute le vrai packaging avant les tests : chaque répertoire configuré comme
+      # assets Wrangler doit transporter .assetsignore et ses exclusions de sécurité.
+      - name: Prepare MQ/GP packages and verify Worker asset exclusions
+        run: node scripts/prepare-ftp.cjs
       - name: Run tests (*.test.cjs)
         run: npm test
       # CONTRÔLE A (gouvernance) — intégrité du mécanisme de certification :
