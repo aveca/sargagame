@@ -102,104 +102,173 @@ function buildAgentPrompt(task, isUxTask = false) {
 /**
  * Run OpenCode agent on worktree with 429 retry and model fallback
  */
+function resolveAgentProvider(env) {
+  const source = env || process.env;
+  const requested = String(source.SARGA_AUTOPILOT_PROVIDER || 'local').trim().toLowerCase();
+  if (requested === '' || requested === 'local') {
+    return { ok: true, provider: 'local', maxAttempts: 3 };
+  }
+  if (requested !== 'nvidia') {
+    return { ok: false, provider: requested, reason: 'Unsupported provider; use local or nvidia.' };
+  }
+  if (source.SARGA_CLOUD_ENABLED !== '1') {
+    return { ok: false, provider: 'nvidia', reason: 'Cloud is not enabled; set SARGA_CLOUD_ENABLED=1 explicitly.' };
+  }
+  if (!source.NVIDIA_API_KEY) {
+    return { ok: false, provider: 'nvidia', reason: 'NVIDIA_API_KEY is missing.' };
+  }
+  const model = String(source.SARGA_CLOUD_MODEL || '').trim();
+  if (!/^nvidia\/[^/\s]+$/.test(model)) {
+    return { ok: false, provider: 'nvidia', reason: 'SARGA_CLOUD_MODEL must be an OpenCode NVIDIA model ID such as nvidia/model-name.' };
+  }
+  // Cloud attempts are single-shot; no implicit retries that could multiply API usage.
+  return { ok: true, provider: 'nvidia', model, maxAttempts: 1 };
+}
+
+/**
+ * Run OpenCode agent on worktree. Local is the default.
+ * Cloud is opt-in via SARGA_AUTOPILOT_PROVIDER=nvidia AND SARGA_CLOUD_ENABLED=1.
+ */
 async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = []) {
   return new Promise((resolve) => {
     const liveMode = process.env.SARGA_AUTOPILOT_LIVE === '1';
-    const maxRetries = 3;
+    const provider = resolveAgentProvider(process.env);
+    if (!provider.ok) {
+      log('OpenCode provider blocked: ' + provider.reason);
+      return resolve({ ok: false, code: -2, err: provider.reason, provider: provider.provider });
+    }
+
+    const cloudMode = provider.provider === 'nvidia';
+    const maxRetries = provider.maxAttempts;
     let attempt = 0;
     let currentExcludeModels = [...excludeModels];
 
     const runAttempt = async () => {
       attempt++;
-      
-      // Re-run model router with current exclude list to get a different model
-      const { routeModel } = require('./local-model-router.cjs');
-      const routeResult = await routeModel('coding', { exclude: currentExcludeModels });
-      
-      if (!routeResult.ok) {
-        if (liveMode) log(`[LIVE] No local model available after exclusions`);
-        else log(`No local model available after exclusions`);
-        return resolve({ ok: false, code: -1, err: 'No local model available', excludedModels: currentExcludeModels });
+      let selectedModel = provider.model || null;
+
+      if (!cloudMode) {
+        // Local routing only runs for the local provider. Cloud never probes Ollama.
+        const { routeModel } = require('./local-model-router.cjs');
+        const routeResult = await routeModel('coding', { exclude: currentExcludeModels });
+        if (!routeResult.ok) {
+          const message = 'No local model available after exclusions';
+          log(message);
+          return resolve({ ok: false, code: -1, err: message, excludedModels: currentExcludeModels });
+        }
+        selectedModel = routeResult.model;
       }
 
-      const selectedModel = routeResult.model;
-      log(`Agent attempt ${attempt}/${maxRetries} with model: ${selectedModel}`);
+      log((cloudMode ? 'NVIDIA cloud' : 'Local') + ' agent attempt ' + attempt + '/' + maxRetries + ' with model: ' + selectedModel);
 
-      const child = spawn(process.execPath, [OPENCODE_AUTO, 'run', '--model', 'ollama/' + selectedModel, prompt], {
+      const opencodeArgs = [
+        OPENCODE_AUTO, 'run',
+        ...(cloudMode ? ['--cloud'] : []),
+        '--model', cloudMode ? selectedModel : 'ollama/' + selectedModel,
+        prompt
+      ];
+
+      const childEnv = {
+        ...process.env,
+        OLLAMA_HOST: String(process.env.SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '')
+      };
+      const cloudKeyNames = [
+        'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY', 'COHERE_API_KEY',
+        'MISTRAL_API_KEY', 'OPENROUTER_API_KEY', 'GROQ_API_KEY', 'DEEPSEEK_API_KEY',
+        'TOGETHER_API_KEY', 'FIREWORKS_API_KEY', 'CEREBRAS_API_KEY', 'XAI_API_KEY',
+        'PERPLEXITY_API_KEY', 'HF_TOKEN'
+      ];
+      for (const key of cloudKeyNames) delete childEnv[key];
+
+      if (cloudMode) {
+        delete childEnv.SARGA_LOCAL_ONLY;
+        childEnv.SARGA_CLOUD_ENABLED = '1';
+        childEnv.SARGA_CLOUD_MODEL = selectedModel;
+      } else {
+        delete childEnv.NVIDIA_API_KEY;
+        childEnv.SARGA_LOCAL_ONLY = '1';
+      }
+
+      const child = spawn(process.execPath, opencodeArgs, {
         cwd: worktreePath,
         stdio: ['ignore', 'pipe', 'pipe'],
         windowsHide: true,
-        env: {
-          ...process.env,
-          SARGA_LOCAL_ONLY: '1',
-          OPENAI_API_KEY: undefined,
-          ANTHROPIC_API_KEY: undefined,
-          GOOGLE_API_KEY: undefined,
-          NVIDIA_API_KEY: undefined,
-          COHERE_API_KEY: undefined,
-          MISTRAL_API_KEY: undefined,
-          OLLAMA_HOST: String(process.env.SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, ''),
-        },
+        env: childEnv
       });
 
       let out = '', err = '';
-      if (child.stdout) {
-        child.stdout.on('data', d => { out += d; if (liveMode && out.length > 20000) out = out.slice(-15000); });
-      }
-      if (child.stderr) {
-        child.stderr.on('data', d => { err += d; if (liveMode && err.length > 10000) err = err.slice(-8000); });
-      }
-
-      const kill = setTimeout(() => { try { child.kill('SIGKILL'); } catch (_) {} }, cfg.policy.agentMaxMinutes * 60000);
-      
-      child.on('exit', async (code, signal) => {
-        clearTimeout(kill);
-        
-        if (liveMode) log(`[LIVE] OpenCode exited with code ${code}, model: ${selectedModel}`);
-        
-        if (signal) {
-          // Process was killed - retry if attempts remain
-          if (attempt < maxRetries) {
-            await new Promise(r => setTimeout(r, 5000 * attempt)); // backoff
-            return runAttempt();
-          }
-          return resolve({ ok: false, code: -1, signal, out: out.slice(-5000), err: err.slice(-3000), excludedModels: currentExcludeModels });
-        }
-
-        const output = out + '\n' + err;
-        const is429 = output.includes('429') || output.toLowerCase().includes('rate limit') || output.toLowerCase().includes('too many requests');
-        const isRateLimited = output.toLowerCase().includes('rate limit') || output.toLowerCase().includes('too many requests');
-
-        if (code === 0) {
-          resolve({ ok: true, code, out: out.slice(-5000), err: err.slice(-3000), model: selectedModel });
-        } else if ((is429 || isRateLimited) && attempt < maxRetries) {
-          // Rate limited - add model to exclude list and retry
-          log(`Rate limit (429) detected for model ${selectedModel}, adding to exclude list and retrying...`);
-          currentExcludeModels.push(selectedModel);
-          await new Promise(r => setTimeout(r, 5000 * attempt)); // exponential backoff
-          return runAttempt();
-        } else if (attempt < maxRetries) {
-          // Other error - retry once with same model (could be transient)
-          log(`Agent attempt ${attempt} failed (code ${code}): ${err.slice(-500) || out.slice(-500)}`);
-          await new Promise(r => setTimeout(r, 5000 * attempt));
-          return runAttempt();
-        } else {
-          resolve({ ok: false, code, out: out.slice(-5000), err: err.slice(-3000), excludedModels: currentExcludeModels, model: selectedModel, is429 });
-        }
+      child.stdout?.on('data', data => {
+        out += data;
+        if (liveMode && out.length > 20000) out = out.slice(-15000);
+      });
+      child.stderr?.on('data', data => {
+        err += data;
+        if (liveMode && err.length > 10000) err = err.slice(-8000);
       });
 
-      child.on('error', async (e) => { 
-        clearTimeout(kill); 
-        if (attempt < maxRetries) {
-          await new Promise(r => setTimeout(r, 5000 * attempt));
-          runAttempt();
-        } else {
-          resolve({ ok: false, code: -1, err: e.message, excludedModels: currentExcludeModels });
+      const kill = setTimeout(() => {
+        try { child.kill('SIGKILL'); } catch (_) {}
+      }, cfg.policy.agentMaxMinutes * 60000);
+
+      child.on('exit', async (code, signal) => {
+        clearTimeout(kill);
+        if (liveMode) log('[LIVE] OpenCode exited with code ' + code + ', model: ' + selectedModel);
+
+        if (signal) {
+          if (!cloudMode && attempt < maxRetries) {
+            await new Promise(wait => setTimeout(wait, 5000 * attempt));
+            return runAttempt();
+          }
+          return resolve({
+            ok: false, code: -1, signal, out: out.slice(-5000), err: err.slice(-3000),
+            excludedModels: currentExcludeModels, model: selectedModel, provider: provider.provider
+          });
         }
+
+        const combined = out + '\n' + err;
+        const is429 = combined.includes('429') ||
+          combined.toLowerCase().includes('rate limit') ||
+          combined.toLowerCase().includes('too many requests');
+
+        if (code === 0) {
+          return resolve({
+            ok: true, code, out: out.slice(-5000), err: err.slice(-3000),
+            model: selectedModel, provider: provider.provider
+          });
+        }
+
+        if (!cloudMode && is429 && attempt < maxRetries) {
+          log('Local model rate limit detected; excluding ' + selectedModel + ' and retrying.');
+          currentExcludeModels.push(selectedModel);
+          await new Promise(wait => setTimeout(wait, 5000 * attempt));
+          return runAttempt();
+        }
+
+        if (!cloudMode && attempt < maxRetries) {
+          log('Local agent attempt ' + attempt + ' failed (code ' + code + '): ' + (err.slice(-500) || out.slice(-500)));
+          await new Promise(wait => setTimeout(wait, 5000 * attempt));
+          return runAttempt();
+        }
+
+        return resolve({
+          ok: false, code, out: out.slice(-5000), err: err.slice(-3000),
+          excludedModels: currentExcludeModels, model: selectedModel, provider: provider.provider, is429
+        });
+      });
+
+      child.on('error', async error => {
+        clearTimeout(kill);
+        if (!cloudMode && attempt < maxRetries) {
+          await new Promise(wait => setTimeout(wait, 5000 * attempt));
+          return runAttempt();
+        }
+        resolve({ ok: false, code: -1, err: error.message, excludedModels: currentExcludeModels, provider: provider.provider });
       });
     };
 
-    runAttempt();
+    runAttempt().catch(error => {
+      resolve({ ok: false, code: -1, err: error.message, provider: provider.provider });
+    });
   });
 }
 
@@ -595,6 +664,7 @@ module.exports = {
   runBeforeValidation,
   runAfterValidation,
   runOpenCodeAgent,
+  resolveAgentProvider,
   buildAgentPrompt,
   runGateInline
 };
