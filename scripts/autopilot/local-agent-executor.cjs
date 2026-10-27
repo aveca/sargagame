@@ -125,6 +125,41 @@ function resolveAgentProvider(env) {
   return { ok: true, provider: 'nvidia', model, maxAttempts: 1 };
 }
 
+function buildOpenCodeArgs(prompt, provider, model) {
+  const cloudMode = (typeof provider === 'string' ? provider : provider.provider) === 'nvidia';
+  return [
+    OPENCODE_AUTO, 'run',
+    ...(cloudMode ? ['--cloud'] : []),
+    '--model', cloudMode ? model : 'ollama/' + model,
+    prompt
+  ];
+}
+
+function buildAgentChildEnv(sourceEnv, provider, model) {
+  const cloudMode = (typeof provider === 'string' ? provider : provider.provider) === 'nvidia';
+  const childEnv = {
+    ...(sourceEnv || process.env),
+    OLLAMA_HOST: String((sourceEnv || process.env).SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '')
+  };
+  const cloudKeyNames = [
+    'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY', 'COHERE_API_KEY',
+    'MISTRAL_API_KEY', 'OPENROUTER_API_KEY', 'GROQ_API_KEY', 'DEEPSEEK_API_KEY',
+    'TOGETHER_API_KEY', 'FIREWORKS_API_KEY', 'CEREBRAS_API_KEY', 'XAI_API_KEY',
+    'PERPLEXITY_API_KEY', 'HF_TOKEN'
+  ];
+  for (const key of cloudKeyNames) delete childEnv[key];
+
+  if (cloudMode) {
+    delete childEnv.SARGA_LOCAL_ONLY;
+    childEnv.SARGA_CLOUD_ENABLED = '1';
+    childEnv.SARGA_CLOUD_MODEL = model;
+  } else {
+    delete childEnv.NVIDIA_API_KEY;
+    childEnv.SARGA_LOCAL_ONLY = '1';
+  }
+  return childEnv;
+}
+
 /**
  * Run OpenCode agent on worktree. Local is the default.
  * Cloud is opt-in via SARGA_AUTOPILOT_PROVIDER=nvidia AND SARGA_CLOUD_ENABLED=1.
@@ -161,33 +196,8 @@ async function runOpenCodeAgent(worktreePath, prompt, cfg, log, excludeModels = 
 
       log((cloudMode ? 'NVIDIA cloud' : 'Local') + ' agent attempt ' + attempt + '/' + maxRetries + ' with model: ' + selectedModel);
 
-      const opencodeArgs = [
-        OPENCODE_AUTO, 'run',
-        ...(cloudMode ? ['--cloud'] : []),
-        '--model', cloudMode ? selectedModel : 'ollama/' + selectedModel,
-        prompt
-      ];
-
-      const childEnv = {
-        ...process.env,
-        OLLAMA_HOST: String(process.env.SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, '')
-      };
-      const cloudKeyNames = [
-        'OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY', 'COHERE_API_KEY',
-        'MISTRAL_API_KEY', 'OPENROUTER_API_KEY', 'GROQ_API_KEY', 'DEEPSEEK_API_KEY',
-        'TOGETHER_API_KEY', 'FIREWORKS_API_KEY', 'CEREBRAS_API_KEY', 'XAI_API_KEY',
-        'PERPLEXITY_API_KEY', 'HF_TOKEN'
-      ];
-      for (const key of cloudKeyNames) delete childEnv[key];
-
-      if (cloudMode) {
-        delete childEnv.SARGA_LOCAL_ONLY;
-        childEnv.SARGA_CLOUD_ENABLED = '1';
-        childEnv.SARGA_CLOUD_MODEL = selectedModel;
-      } else {
-        delete childEnv.NVIDIA_API_KEY;
-        childEnv.SARGA_LOCAL_ONLY = '1';
-      }
+      const opencodeArgs = buildOpenCodeArgs(prompt, provider, selectedModel);
+      const childEnv = buildAgentChildEnv(process.env, provider, selectedModel);
 
       const child = spawn(process.execPath, opencodeArgs, {
         cwd: worktreePath,
@@ -665,6 +675,8 @@ module.exports = {
   runAfterValidation,
   runOpenCodeAgent,
   resolveAgentProvider,
+  buildOpenCodeArgs,
+  buildAgentChildEnv,
   buildAgentPrompt,
   runGateInline
 };
