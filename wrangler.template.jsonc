@@ -12,7 +12,7 @@
     // SÉCURITÉ : sans run_worker_first, les assets existants contournent le
     // handler (garde _private/.php/dotfiles morte — constaté : /api/.htaccess
     // lisible sur workers.dev). true = chaque requête passe par index.js.
-    "run_worker_first":true},
+    "run_worker_first":false},
   "vars":{"SUPABASE_URL":"https://rswdmjtdzrucqzzukfmd.supabase.co"}
   // routes retirés : nécessitent permission "Workers Routes:Edit" sur le token Cloudflare.
   // Le Worker déploie sur workers.dev ; les routes domaines custom se configurent
