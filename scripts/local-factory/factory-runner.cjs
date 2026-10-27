@@ -678,8 +678,15 @@ async function processQueue() {
         
         const retryCount = (task.retryCount || 0) + 1;
         const maxRetries = task.maxRetries || 3;
+
+          // Un payload invalide est un defaut DU PRODUCTEUR, pas une panne passagere :
+          // le reessayer ne changera rien. On pare immediatement avec un motif explicite
+          // au lieu de bruler 3 tentatives (12 des 44 taches de la file). Aucune
+          // validation n'est relachee : la tache reste refusee, elle est juste classee juste.
+          const errMsg = String(error.message || '');
+          const permanent = /Invalid UX task payload|missing required fields/i.test(errMsg);
         
-        if (retryCount <= maxRetries) {
+        if (!permanent && retryCount <= maxRetries) {
           const backoff = Math.min(5000 * Math.pow(2, retryCount - 1), 300000); // Max 5 min
           task.retryCount = retryCount;
           task.lastError = error.message;
@@ -696,6 +703,9 @@ async function processQueue() {
           task.status = 'parked';
           task.finalError = error.message;
           task.parkedAt = new Date().toISOString();
+            task.quarantineReason = permanent
+              ? 'payload invalide cote producteur (title/files/evidence) - non reessayable'
+              : (task.quarantineReason || null);
           saveQueueItem(task);
           log('task.parked', { id: taskId, error: error.message });
         }
