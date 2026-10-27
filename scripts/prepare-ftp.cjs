@@ -862,10 +862,6 @@ function prepareNewRegion(region) {
   const skip = new Set([
     ...COPY_SKIP_TOP,
     '_private', // données premium J+2-7, protégées par .htaccess côté FTP, ne doivent jamais être des assets
-    '.htaccess', // server config files - must not be served as assets
-    'api/.htaccess', // fichier .htaccess de l'API - ne doit jamais etre servi comme asset
-    '.htpasswd', // password files - must not be served as assets
-    'api/.htaccess', // API .htaccess - must not be served as asset
     'robots.txt', // régénéré pour region.domain
     'sitemap.xml', // régénéré minimal (racine seule)
     '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
