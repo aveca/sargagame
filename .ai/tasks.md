@@ -25,6 +25,7 @@
 - [x] P1 - PR #1044 Protection verdicts stales HeroVerdict : masque verdict/score/compteur quand `isSatelliteFresh12h(sargData)`=false, affiche "Vérification en cours" (commit 95ea62e5, push main, tests 15/15 OK, bundle 208.0/210 Ko)
 
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
+- [x] P0 - Premier écran : chat d'hésitation n'occlut plus le premier écran sans interaction (@coding_agent, 2026-10-27, branche agent/coding/p0-first-screen-chat, commit abc721593)
 
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
 - [x] P0 - Mollie payment flow fixes (@coding_agent, 2026-07-30)
