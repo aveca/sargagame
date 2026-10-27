@@ -132,6 +132,7 @@ function copyRecursive(src, dest, skipRel = null, rel = '') {
     fs.mkdirSync(dest, { recursive: true })
     for (const name of fs.readdirSync(src)) {
       const childRel = rel ? `${rel}/${name}` : name
+      if (name === '_private') continue
       if (skipRel && skipRel.has(childRel)) continue
       copyRecursive(path.join(src, name), path.join(dest, name), skipRel, childRel)
     }
@@ -860,6 +861,7 @@ function prepareNewRegion(region) {
   // Exclusions : fichiers régénérés plus bas + artefacts des autres régions.
   const skip = new Set([
     ...COPY_SKIP_TOP,
+    '_private', // données premium J+2-7, protégées par .htaccess côté FTP, ne doivent jamais être des assets
     'robots.txt', // régénéré pour region.domain
     'sitemap.xml', // régénéré minimal (racine seule)
     '404.html', // régénéré région-aware (celui du build partagé est MQ/GP)
