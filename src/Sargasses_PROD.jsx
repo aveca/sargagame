@@ -13,6 +13,7 @@ import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
+import { shouldAutoOpenChat } from "./frustrationGuard.js"
 import PassOffer from "./PassOffer.jsx"
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
@@ -11680,11 +11681,21 @@ export default function App(){
   const[premiumTick,setPremiumTick]=useState(0)
   const fcRetryRef=useRef(0) // retry borné (1) de la prévision étendue si premium + forecast.php KO transitoire
   const _premWasTrue=useRef(isPremium) // snapshot initial (premium déjà connu au mount)
-  // Frustration detection : auto-open chat si rage-click/scroll/hesitation
-  // Flag rollback : ?frustration=0 désactive (doctrine : pas de flag = pas de merge)
+  // Frustration detection : auto-open chat UNIQUEMENT sur signal actif
+  // (rage-click / scroll-frenzy / mouse-shake). « hesitation » (lecture immobile
+  // 10 s) n'ouvre plus le chat : il masquait la carte sans demande utilisateur.
+  // Garde-fous : une seule auto-ouverture par session, jamais si chat déjà ouvert,
+  // jamais après une fermeture manuelle. Flag rollback : ?frustration=0 désactive.
   const frustrationEnabled=useMemo(()=>{try{return !/[?&]frustration=0(?:&|$)/.test(window.location.search)}catch(_){return true}},[])
+  const frustrationAutoOpenedRef=useRef(false) // une seule auto-ouverture / session
+  const frustrationDismissedRef=useRef(false) // fermeture manuelle → plus jamais d'auto-open
+  const showChatRef=useRef(false)
+  useEffect(()=>{showChatRef.current=showChat},[showChat])
   useFrustrationDetection((ctx)=>{
     if(!frustrationEnabled)return
+    const ok=shouldAutoOpenChat(ctx?.type,{alreadyAutoOpened:frustrationAutoOpenedRef.current,dismissed:frustrationDismissedRef.current,chatOpen:showChatRef.current})
+    if(!ok)return
+    frustrationAutoOpenedRef.current=true
     setFrustrationContext(ctx)
     setShowChat(true)
     track("sg_frustration_auto_open",{type:ctx.type,page:ctx.page})
@@ -14664,7 +14675,7 @@ export default function App(){
           </button>
         )}
         {showChat&&<ErrBound><Suspense fallback={null}><SargaChat lang={lang} allBeaches={allBeaches} island={island} sargData={sargData}
-          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
+          onOpenBeach={onBeachClick} onPremium={()=>openPremium("chat")} onClose={()=>{frustrationDismissedRef.current=true;setShowChat(false);setFrustrationContext(null)}} frustrationContext={frustrationContext}/></Suspense></ErrBound>}
 
         {/* DÉCOUVERTE — moteur StoryEngine (éducatif SVG). Entrée chip + overlay. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
