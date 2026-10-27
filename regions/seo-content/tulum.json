@@ -1,0 +1,133 @@
+{
+  "_note": "Contenido editorial SEO ES para sargazotulum.com. Los estados, scores, fechas y pronósticos se leen de los datos de playa durante el build; este archivo no contiene predicciones ni métricas en vivo.",
+  "faq": [
+    {
+      "q": "¿Hay sargazo en Tulum hoy?",
+      "a": "La situación puede cambiar de una playa a otra y de un día al siguiente. Consulta el mapa de Tulum, la hora de la última actualización y el nivel de confianza antes de desplazarte. Una lectura satelital describe los datos disponibles; no garantiza que toda la playa esté libre de sargazo."
+    },
+    {
+      "q": "¿Qué playas de Tulum tienen menos sargazo?",
+      "a": "No existe una playa que pueda considerarse libre de sargazo todo el año. Compara las fichas de Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe y Playa Xcacel con sus estados más recientes. No extrapoles el resultado de una playa a otra, aunque estén cerca."
+    },
+    {
+      "q": "¿Cuándo es la temporada de sargazo en Tulum?",
+      "a": "En el Caribe y el Atlántico tropical suele observarse más sargazo hacia la mitad del año, pero el calendario cambia según el año y la región, y pueden ocurrir episodios fuera de ese periodo. La tendencia regional sirve como contexto, no como pronóstico de una playa concreta."
+    },
+    {
+      "q": "¿Qué significa el estado y el Beach Score?",
+      "a": "El estado resume la lectura disponible para la playa y el Beach Score combina señales que el sitio utiliza para describir las condiciones. Revisa también la hora de actualización y la confianza: un indicador no sustituye los avisos locales ni garantiza condiciones de baño."
+    },
+    {
+      "q": "¿Se puede confiar en un pronóstico de siete días?",
+      "a": "Es una estimación que puede cambiar cuando llegan nuevas observaciones o cambian el viento y las corrientes. Los días más cercanos suelen ser más útiles que los más lejanos. Comprueba de nuevo la playa elegida antes de salir y no interpretes una proyección como una certeza."
+    },
+    {
+      "q": "¿De dónde vienen los datos de sargazo?",
+      "a": "El sistema utiliza observaciones satelitales y variables ambientales disponibles para estimar condiciones por playa. Las nubes, la hora de paso del satélite y la dinámica del mar pueden limitar una lectura; por eso conviene comprobar la fecha y la confianza que muestra cada ficha."
+    }
+  ],
+  "pages": {
+    "forecast": {
+      "slug": "pronostico-sargazo-tulum",
+      "title": "Pronóstico de sargazo en Tulum — 7 días por playa",
+      "desc": "Consulta el pronóstico de sargazo por playa en Tulum, con estado reciente, Beach Score y límites de la previsión.",
+      "h1": "Pronóstico de sargazo en Tulum, playa por playa",
+      "intro": "El sargazo no llega de forma uniforme a toda la costa. Esta página reúne las proyecciones disponibles para las playas incluidas en el mapa de Tulum. Compara cada ficha, comprueba cuándo se actualizaron los datos y vuelve a consultar antes de salir: una proyección puede cambiar y no garantiza las condiciones exactas de la arena.",
+      "method": "El sistema combina observaciones satelitales de sargazo con señales ambientales y persistencia del material ya varado. Las proyecciones se calculan por playa y se actualizan cuando llegan nuevos datos. La cobertura de nubes, las corrientes y los cambios locales pueden introducir incertidumbre; los horizontes más lejanos deben interpretarse como tendencia, no como certeza."
+    },
+    "today": {
+      "slug": "sargazo-tulum-hoy",
+      "title": "Sargazo en Tulum hoy — estado de las playas",
+      "desc": "Comprueba el estado más reciente del sargazo en las playas de Tulum antes de elegir dónde ir.",
+      "h1": "¿Cómo está el sargazo en Tulum hoy?",
+      "intro": "Usa la lista actual para comparar las playas incluidas en el seguimiento. Los estados pueden diferir incluso entre puntos cercanos y no deben convertirse en una recomendación fija. Antes de salir, revisa la hora de actualización, el Beach Score y cualquier aviso local."
+    },
+    "map": {
+      "slug": "mapa-sargazo-tulum",
+      "title": "Mapa de sargazo en Tulum — estado por playa",
+      "desc": "Mapa de Tulum para comparar el estado del sargazo y las condiciones disponibles por playa.",
+      "h1": "Mapa de sargazo de Tulum, actualizado por playa",
+      "intro": "El mapa permite comparar las playas de Tulum incluidas en este sitio sin asumir que toda la costa tiene las mismas condiciones. El color representa el estado calculado a partir de los datos disponibles. Comprueba la hora de la última lectura y vuelve a consultar si las condiciones cambian."
+    },
+    "season": {
+      "slug": "temporada-sargazo-tulum",
+      "title": "Temporada de sargazo en Tulum — guía para planificar",
+      "desc": "Cómo interpretar la temporada de sargazo en Tulum sin confundir las tendencias regionales con el estado de una playa concreta.",
+      "h1": "Temporada de sargazo en Tulum: qué puede y qué no puede decir el calendario",
+      "intro": "La estacionalidad ayuda a planificar, pero no permite asegurar que una playa estará limpia en una fecha concreta. En el Caribe y el Atlántico tropical, la abundancia suele aumentar hacia mitad de año; la intensidad y el momento varían por región y año. Combina esta orientación general con la lectura reciente de la playa que quieras visitar.",
+      "months": [
+        {
+          "period": "Noviembre–febrero",
+          "text": "En muchos años la abundancia regional es menor durante el invierno, pero pueden producirse episodios fuera del patrón habitual. No uses el calendario como garantía de una playa libre de sargazo."
+        },
+        {
+          "period": "Marzo–abril",
+          "text": "Las condiciones regionales pueden cambiar a medida que se desarrolla y desplaza la biomasa del Atlántico tropical. Esa tendencia no determina por sí sola lo que ocurrirá en una playa de Tulum."
+        },
+        {
+          "period": "Mayo–julio",
+          "text": "La abundancia del cinturón atlántico suele alcanzar niveles altos alrededor de junio o julio, aunque la distribución cambia entre años y zonas. Un máximo regional no predice el estado exacto de una playa."
+        },
+        {
+          "period": "Agosto–octubre",
+          "text": "La cantidad puede disminuir en algunas regiones y seguir elevada en otras. Los episodios costeros pueden persistir o reaparecer; revisa las observaciones recientes en lugar de depender de una fecha fija."
+        }
+      ],
+      "tips": "Si tu viaje tiene varias jornadas, compara más de una playa y conserva alternativas. Revisa el estado y la hora de actualización el mismo día; vuelve a comprobarlo si hay nubes, cambios de viento o nuevas observaciones. Los boletines regionales sirven como contexto, no como pronóstico de una playa específica."
+    }
+  },
+  "beachBlurbs": {
+    "tu001": "La ficha de Playa Paraíso muestra el estado y la proyección disponibles para este punto de la costa de Tulum. Comprueba la hora de actualización antes de desplazarte y compárala con otras playas: las condiciones no son uniformes a lo largo de la costa.",
+    "tu002": "Consulta la lectura reciente de Playa Pescadores en lugar de asumir que refleja lo que ocurre en toda la zona. El estado satelital y la proyección son una ayuda para planificar, no una garantía de las condiciones exactas en la arena.",
+    "tu003": "La página de Playa Ruinas permite revisar el estado calculado para esta playa y compararlo con otros puntos de Tulum. Vuelve a comprobar los datos el día de la visita; una observación anterior puede dejar de representar las condiciones actuales.",
+    "tu004": "Usa la ficha de Playa Santa Fe para consultar el estado disponible, su hora de actualización y la tendencia prevista. No tomes el resultado de una playa cercana como sustituto de esta lectura específica.",
+    "tu005": "Playa Xcacel cuenta con una ficha independiente en el mapa de Tulum. Revisa los datos recientes y conserva una alternativa: el sargazo y las condiciones costeras pueden variar entre playas y a lo largo del día."
+  },
+  "beachFaq": {
+    "_doc": "Plantillas FAQ por playa para Tulum. Los tokens de estado, score, fecha y pronóstico se rellenan desde el JSON regional público durante el build; no se incluyen predicciones fijas.",
+    "questions": [
+      {
+        "q": "¿Hay sargazo en {beach} hoy?",
+        "a": "El {today}, la ficha de {beach} indica «{status}» y un Beach Score de {score}/100 según los datos disponibles. Comprueba la hora exacta de actualización y el nivel de confianza en el mapa; el indicador no garantiza que toda la arena esté libre de sargazo."
+      },
+      {
+        "q": "¿Cuándo podría llegar sargazo a {beach}?",
+        "a": "{nextArrival} La proyección disponible para {beach} es: {forecastLine}. Las condiciones pueden cambiar cuando llegan nuevas observaciones; los días más lejanos deben leerse como tendencia."
+      }
+    ],
+    "nextArrivalRisk": "El modelo señala un posible riesgo de llegada a {beach} el {day} ({date}); es una estimación y no una certeza.",
+    "nextArrivalNone": "Los datos de pronóstico disponibles para {beach} no señalan una llegada significativa; la ausencia de esa señal no garantiza que la playa esté libre de sargazo."
+  },
+  "resortPageTpl": {
+    "titlePattern": "Sargazo en {resort} hoy — estado de la playa y pronóstico",
+    "introPattern": "Antes de alojarte en {resort}, consulta la playa más cercana ({beach}) y revisa el estado disponible, la hora de actualización y la proyección. La lectura corresponde a esa playa, no a todo Tulum, y puede cambiar."
+  },
+  "press": {
+    "_doc": "Página de prensa generada desde datos regionales reales. Los tokens de recuento, fecha y backtest se rellenan durante el build; no escribir cifras fijas aquí.",
+    "slug": "press",
+    "title": "Sargazo en Tulum — datos y recursos para medios",
+    "desc": "Información para medios sobre el seguimiento del sargazo en Tulum, con datos por playa, metodología y límites de las proyecciones.",
+    "h1": "Datos de sargazo en Tulum para prensa e investigación",
+    "intro": "Publicamos estados por playa y una metodología consultable para ayudar a viajeros, profesionales turísticos y periodistas a interpretar las condiciones costeras. Las observaciones y proyecciones pueden tener límites; las cifras se generan desde los datos disponibles y no se ajustan manualmente para favorecer una playa.",
+    "sections": [
+      {
+        "h2": "Qué se publica",
+        "text": "El sitio presenta el estado disponible para {beachCount} playas de Tulum y la fecha de actualización {updatedDate}. {cleanToday} de esas playas aparecen con estado limpio en los datos usados por este build; el recuento puede cambiar con la siguiente actualización."
+      },
+      {
+        "h2": "Cómo leer la precisión",
+        "text": "El backtest publicado para la red informa una coincidencia de estado de {accuracyJ1Pct}% a un día y {accuracyJ3Pct}% a tres días, cuando esos valores están disponibles. Son resultados de la red y no una garantía de precisión específica para cada playa de Tulum."
+      },
+      {
+        "h2": "Uso y atribución",
+        "text": "Puedes citar los estados y la metodología indicando la URL de la página consultada y su fecha de actualización. Para entrevistas, integración o aclaraciones sobre los datos, contacta con {contact}. Fuente sugerida: {citation}."
+      },
+      {
+        "h2": "Contexto científico",
+        "text": "Los boletines regionales de sargazo ayudan a comprender tendencias de mayor escala, pero no sustituyen la observación por playa. Las nubes, las corrientes y la variabilidad local pueden cambiar la situación que encuentra un visitante."
+      }
+    ],
+    "citation": "Fuente: sargazotulum.com — estado por playa y fecha de actualización visible",
+    "contact": "support@sargazotulum.com"
+  }
+}
