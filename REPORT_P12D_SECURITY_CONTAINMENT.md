@@ -5,15 +5,15 @@
 **Dépôt :** `aveca/sargagame` — PR #1080  
 **Branche :** `fix/assets-api-p12-20261027`  
 **SHA de départ (distant) :** `1afefc34de32b2c976c755b97e3f62844e650fe9`  
-**SHA du commit livré (distant) :** `53a0c274a2cb68220ab8e23855396629becbe1e6` puis `c526d6f1` (après rebase) puis `719cd2fb` (après push du correctif de test)  
-**SHA final poussé :** `c526d6f1`  
+**SHA du commit livré (distant) :** `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` puis `c526d6f1` (après rebase) puis `719cd2fb` (après push du correctif de test)  
+**HEAD distant actuellement vérifié :** `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9`  
 **Clone de travail isolé :** `C:\Users\user\AppData\Local\Temp\opencode\sargagame-p12d`
 
 ---
 
 ## 1. Verdict final : BLOCKED_SECURITY
 
-| CI `test-frontend` | success | GitHub check-run sur `53a0c274` |
+Les workflows GitHub Actions vérifiés sur le HEAD distant exact 53a0c2745bdb93c14e422a2c032eadd7cb15b2f9 sont verts : CI Tests #3006 et Perf Budget + Lighthouse #2285. L’incident GitGuardian 39170333 reste toutefois au statut Triggered dans le commentaire visible de la PR. La branche de correctif est divergente par rapport à main (18 commits en avance, 2 en retard lors de la vérification).
 
 La mission est donc **BLOCKED_SECURITY** : le code est corrigé, les preuves sont démontrées, mais un contrôle de sécurité externe ne peut pas être levé sans accès supplémentaire.
 
@@ -27,7 +27,7 @@ La mission est donc **BLOCKED_SECURITY** : le code est corrigé, les preuves son
 | Dépôt local sargagame (non touché) | `C:\Users\user\Documents\GitHub\sargagame`, branche `fix/guard-false-success`, HEAD `b942a2d4` |
 | Branche de travail | `fix/assets-api-p12-20261027` |
 | SHA de départ (distant) | `1afefc34de32b2c976c755b97e3f62844e650fe9` |
-| SHA final poussé | `53a0c274a2cb68220ab8e23855396629becbe1e6` |
+| SHA final poussé | `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9` |
 
 Le dépôt local `C:\Users\user\Documents\GitHub\sargagame` n'a pas été touché.
 
@@ -96,10 +96,10 @@ Résultat : **13/13 assertions passées** lorsque exécuté isolément.
 | Bundle (`check-bundle-budget.cjs`) | 208,0 Ko gzip ≤ 210 Ko | Mesuré sur le clone du SHA `c526d6f1`, région `mq` |
 | CI `perf` | success | GitHub check-run sur `c526d6f1` |
 | CI `lighthouse-report` | success | GitHub check-run sur `c526d6f1` |
-| CI `test-frontend` | success | GitHub check-run sur `53a0c274` |
+
 | CI `GitGuardian Security Checks` | failure | GitHub check-run sur `c526d6f1` — faux positif sur `.htpasswd` dans le nom de fichier du test de régression |
 
-| CI `test-frontend` | success | GitHub check-run sur `53a0c274` |
+
 
 ---
 
@@ -109,7 +109,7 @@ L'incident `39170333` est signalé sur le commit `1afefc34de32b2c976c755b97e3f62
 
 Dans le commit `1afefc34`, `COPY_SKIP_TOP` contenait `['_gp', '.htaccess', '.htpasswd', 'api/.htaccess']`. GitGuardian a détecté `.htpasswd` comme un mot de passe générique.
 
-Dans le commit `c526d6f1` (état actuel de la branche) :
+Dans le commit `c526d6f1` (état historique à cette étape ; voir la section 12 pour le HEAD actuel) :
 - `COPY_SKIP_TOP = ['_gp', '_private']` — `.htpasswd` n'est plus présent
 - `prepareNewRegion` ne contient aucune occurrence de `.htpasswd` (vérifié)
 - Le fichier `.htpasswd` n'existe pas dans le repo
@@ -126,7 +126,7 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 - Aucun push sur `main` (le push a été fait uniquement sur `fix/assets-api-p12-20261027`)
 - Aucun déclenchement de workflow GitHub Actions
 - Aucun déploiement Cloudflare (wrangler deploy non exécuté)
-- Aucun secret, clé API, jeton ou donnée privée créé, modifié, affiché ou exporté
+- Aucun secret réel, clé API ou jeton n’a été créé, modifié, affiché ou exporté. Le dernier commit ajoute une fixture de test synthétique représentant un fichier .htpasswd ; elle ne contient pas d’identifiant de production.
 - Aucun `git reset --hard`, `git clean -fd` ni destruction de travail existant
 - Le dépôt local `C:\Users\user\Documents\GitHub\sargagame` n'a pas été touché
 - `STOP-Autonomy` n'existe pas dans l'environnement et n'a pas été créé/désactivé
@@ -137,8 +137,8 @@ Comme je n'ai pas accès au dashboard GitGuardian pour classifier cet incident c
 ## 9. Prochaines actions (autorisation requise)
 
 1. **Investiguer l'échec GitGuardian** via le dashboard GitHub : classer comme faux positif (`.htpasswd` est un nom de fichier Apache standard, pas un mot de passe en clair ; le fichier n'existe pas dans le repo).
-| CI `test-frontend` | success | GitHub check-run sur `53a0c274` |
-3. Une fois GitGuardian levé : faire reviewer la PR humainement, puis merger via GitHub.
+
+3. Une fois GitGuardian classifié et la branche synchronisée, faire reviewer la PR humainement, puis envisager la fusion via GitHub.
 4. Après déploiement autorisé : revérifier en HTTP réel que `/.htaccess` retourne 404 sur les 6 domaines (prouvé précédemment qu'il retournait 200 avant le déploiement du correctif).
 
 ---
@@ -163,11 +163,11 @@ Cet addendum complète le compte rendu initial sans effacer les constats histori
 ### État le plus récent vérifié
 
 - PR de correctif : https://github.com/aveca/sargagame/pull/1080 — toujours ouverte, non fusionnée.
-- HEAD actuel observé de `fix/assets-api-p12-20261027` : `719cd2fb5d93e50999b8b066d2f41086ffd40fe2` (différent du SHA initialement documenté `c526d6f1`).
+- HEAD observé lors de cet addendum historique : `719cd2fb5d93e50999b8b066d2f41086ffd40fe2`. La section 12 contient la vérification plus récente du HEAD `53a0c2745bdb93c14e422a2c032eadd7cb15b2f9`.
 - CI Tests #3004 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40574694649
 - Perf Budget + Lighthouse #2283 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40574694119
-| CI `test-frontend` | success | GitHub check-run sur `53a0c274` |
-- Comparaison `main...fix/assets-api-p12-20261027` : branche divergente, 17 commits en avance et 1 commit en retard au moment du contrôle. Réconcilier ce décalage et refaire les contrôles avant toute proposition de fusion.
+
+- Comparaison historique `main...fix/assets-api-p12-20261027` : branche divergente, 17 commits en avance et 1 en retard à cet instant. La vérification plus récente en section 12 observe 18 en avance et 2 en retard.
 - Aucun merge ni déploiement en production n'a été effectué par cette vérification.
 
 ### Incident GitGuardian toujours à traiter
@@ -185,3 +185,37 @@ Lien GitGuardian : https://dashboard.gitguardian.com/workspace/929969/incidents/
 4. Garder la production inchangée jusqu'à autorisation explicite. Après un éventuel déploiement autorisé, vérifier réellement `/.htaccess` sur les six domaines et archiver les réponses HTTP.
 
 **Verdict actualisé : BLOCKED_SECURITY.** Les deux workflows CI accessibles sont verts au HEAD observé ; la classification GitGuardian, la réconciliation avec `main`, la revue humaine et l'autorisation de déploiement restent des conditions distinctes.
+
+
+---
+
+## 12. Correction de précision — vérification indépendante, 27 octobre 2026
+
+### SHA et CI vérifiés sur GitHub
+
+Le HEAD distant de la branche fix/assets-api-p12-20261027 est vérifié comme suit :
+
+- SHA exact : 53a0c2745bdb93c14e422a2c032eadd7cb15b2f9.
+- Le préfixe 53a0c274 est correct ; le SHA complet anciennement inscrit dans une version de ce rapport était erroné.
+- CI Tests #3006 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40578646840
+- Perf Budget + Lighthouse #2285 : **SUCCESS** — https://github.com/aveca/sargagame/actions/runs/40578646822
+- Le commit actuel ajoute .htpasswd à COPY_SKIP_TOP dans scripts/prepare-ftp.cjs et ajoute dans la fixture de régression un fichier de test synthétique afin de vérifier son exclusion des packages FTP. Cette fixture est une donnée de test et non un compte de production.
+
+### État de la PR et divergence
+
+- PR #1080 : toujours ouverte et non fusionnée — https://github.com/aveca/sargagame/pull/1080
+- Comparaison distante main...fix/assets-api-p12-20261027 : **18 commits en avance et 2 commits en retard** au moment de la vérification.
+- Les workflows verts ne démontrent ni la résolution de GitGuardian ni la synchronisation de la branche.
+
+### Incident GitGuardian
+
+L’incident 39170333 reste **Triggered** dans le commentaire visible de la PR : https://github.com/aveca/sargagame/pull/1080#issuecomment-6451351117. Le commentaire référence le commit 1afefc34de32b2c976c755b97e3f62844e650fe9 et le nom de fichier .htpasswd dans scripts/prepare-ftp.cjs. Les faits appuient l’hypothèse d’un faux positif, mais aucun élément consulté ne prouve la classification/dismissal dans le dashboard. Il faut examiner le scan après le commit courant et ne pas considérer l’incident résolu sans statut confirmé.
+
+### Suite
+
+1. Un maintainer disposant de l’accès GitGuardian doit examiner puis, uniquement après confirmation, classer l’occurrence comme faux positif.
+2. Réconcilier les deux commits de retard sur main sans force-push ; relancer les workflows sur le nouveau SHA exact.
+3. Obtenir une revue humaine avant toute fusion. Aucun merge ni déploiement n’a été effectué.
+4. Maintenir la production inchangée jusqu’à autorisation explicite. Après tout déploiement autorisé, vérifier réellement les réponses HTTP de /.htaccess sur les six domaines.
+
+**Verdict actualisé : BLOCKED_SECURITY.** Les deux workflows GitHub Actions sont verts sur le HEAD distant exact, mais la classification GitGuardian, la synchronisation avec main, la revue humaine et l’autorisation de production restent distinctes.
