@@ -402,7 +402,17 @@ async function executeLocalAgentTask(task, cfg, log) {
     }
     
     // 4. Policy checks on diff
-    const diff = gitops.diffStats(wt);
+    const scopeFiles = (task.files && task.files.length) ? task.files
+      : ((task.scope && task.scope.files) || []);
+    const editRequired = Array.isArray(scopeFiles) && scopeFiles.length > 0;
+    const producedDiff = gitops.diffStats(wt);
+    if (editRequired && producedDiff.files.length === 0) {
+      throw new Error(`Agent produced no modification: exit 0 but empty git diff. Edit was required on: ${scopeFiles.join(', ')}. Model: ${agentResult.model || 'unknown'}`);
+    }
+    log(`[diff-guard] editRequired=${editRequired} fichiersModifies=${producedDiff.files.length}`);
+
+    const diff = producedDiff;
+    const ev = policy.evaluateFiles(diff.files, cfg);
     const ev = policy.evaluateFiles(diff.files, cfg);
     if (!ev.allowed) {
       throw new Error(`Policy violation: ${ev.denied.join(', ')}`);
