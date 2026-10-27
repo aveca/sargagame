@@ -533,6 +533,62 @@ function emitLangPages(ctx) {
   // Home en tête du sitemap (ordre historique : '/' d'abord).
   pushUrl(`${prefix}/`, { daily: true, priority: prefix === '' ? '1.0' : '0.9' })
 
+
+  // Regional beach directory: emit a real parent index at the same localized
+  // path as the detail pages, so sitemap-listed beaches have a crawlable hub.
+  const beachIndexPath = `${prefix}/${slugIndex[lang].beachesDir}/`
+  const beachIndexTitle = smartTrim(lang === 'es'
+    ? `${t.allBeaches} de ${region.name} — sargazo hoy`
+    : `${t.allBeaches} in ${region.name} — live sargassum status`, 68)
+  const beachIndexDesc = trimDesc(lang === 'es'
+    ? `Consulta el estado satelital disponible de las playas de ${region.name} y abre cada ficha para ver sus detalles.`
+    : `Browse the available satellite status for beaches in ${region.name} and open each beach page for details.`)
+  const beachIndexH1 = lang === 'es' ? `${t.allBeaches} de ${region.name}` : `${t.allBeaches} in ${region.name}`
+  const beachIndexIntro = lang === 'es'
+    ? 'Consulta el estado disponible por playa y abre su ficha para ver los detalles.'
+    : 'Check each beach’s available status and open its page for details.'
+  const beachIndexItems = [...beaches]
+    .sort((a, b2) => (a.commune || '').localeCompare(b2.commune || '') || a.name.localeCompare(b2.name))
+    .map(b => {
+      const status = b.lv && b.lv.status
+      const statusLabel = status
+        ? (STATUS_WORD[lang][status] || status)
+        : (lang === 'es' ? 'Sin dato' : 'Unavailable')
+      const score = b.lv && typeof b.lv.score === 'number' ? ` · ${t.score} ${b.lv.score}/100` : ''
+      const commune = b.commune ? ` <small>· ${esc(b.commune)}</small>` : ''
+      return `<li><a href="${prefix}/${slugIndex[lang].beachesDir}/${b.slug}/">${esc(b.name)}</a>${commune} — ${esc(statusLabel)}${score}</li>`
+    }).join('')
+  const beachIndexNoscript = `<article><h1>${esc(beachIndexH1)}</h1><p><em>${esc(t.updated(today))}</em></p><p>${esc(beachIndexIntro)}</p><ul>${beachIndexItems}</ul>${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+  const beachIndexAlternates = useLangs.map(l => ({
+    lang: l,
+    href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].beachesDir}/`,
+    xDefault: l === primary,
+  }))
+  const beachIndexHtml = pageShell(tpl, {
+    title: beachIndexTitle,
+    desc: beachIndexDesc,
+    pathname: beachIndexPath,
+    domain,
+    lang,
+    noscript: beachIndexNoscript,
+    alternates: beachIndexAlternates,
+    jsonLd: [
+      {
+        '@context': 'https://schema.org',
+        '@type': 'CollectionPage',
+        name: beachIndexTitle,
+        description: beachIndexDesc,
+        url: `https://${domain}${beachIndexPath}`,
+        isPartOf: { '@type': 'WebApplication', name: region.name, url: `https://${domain}${prefix}/` },
+      },
+      breadcrumb(domain, [
+        { name: t.home, path: `${prefix}/` },
+        { name: beachIndexTitle, path: beachIndexPath },
+      ]),
+    ],
+  }).replace(/<html lang="[^"]*"/, `<html lang="${lang}"`)
+  writePage(distDir, beachIndexPath, beachIndexHtml)
+  pushUrl(beachIndexPath, { daily: true, priority: '0.8' })
   const beachLink = b => `<a href="${prefix}/${t.beachesDir}/${b.slug}/">${esc(b.name)}</a>`
   const hubLinks = (except) => {
     const p = content.pages
