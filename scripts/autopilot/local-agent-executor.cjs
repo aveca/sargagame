@@ -333,8 +333,22 @@ async function executeLocalAgentTask(task, cfg, log) {
   const startTime = Date.now();
   
   // Create worktree
+  // Branche UNIQUE par tentative : le nom doit etre deterministe par essai (lisible),
+  // mais JAMAIS rejoue a l'identique. Avant, `ux-<slug>` ne dependait que de task.id :
+  // un retry recollisionnait avec la branche deja creee par l'essai precedent, et la
+  // tache etait parquee definitivement (31 des 44 taches de la file).
   const slug = task.id.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40);
-  const branch = cfg.git.branchPrefix + 'ux-' + slug;
+  const attempt = Number(task.retryCount || 0);
+  let branch = cfg.git.branchPrefix + 'ux-' + slug;
+  if (attempt > 0) { branch += '-r' + attempt; }
+  // Ceinture de securite : si la branche existe malgre tout (rejeu manuel, tache
+  // reactivee, residu d'un cycle anterieur), on ajoute un suffixe unique. Aucune
+  // collision permanente n'est possible.
+  if (gitops.gitSafe(['rev-parse', '--verify', '--quiet', 'refs/heads/' + branch])) {
+    const suffix = '-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    log(`[branche] collision evitee : ${branch} -> ${branch}${suffix}`);
+    branch += suffix;
+  }
   
   log(`Creating worktree for ${task.id} on branch ${branch}...`);
   
