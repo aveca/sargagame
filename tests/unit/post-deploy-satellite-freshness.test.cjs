@@ -57,13 +57,13 @@ check(trackFresh.computedAgeHours === 0.6, 'track-record computation age is calc
 
 const staleTrackRecord = {
   ...trackRecord,
-  generatedAt: '2026-08-05T02:37:06.845Z',
-  freshness: { computedAt: '2026-08-05T02:37:06.739Z', stale: false },
+  generatedAt: '2026-10-27T00:30:00.000Z',
+  freshness: { computedAt: '2026-10-27T00:30:00.000Z', stale: false },
   window: { from: '2026-07-27', to: '2026-08-05' },
 };
 const staleRecordCheck = PDV.checkTrackRecordFreshness(staleTrackRecord, now);
-check(staleRecordCheck.status === 'FAILED', 'old track record fails even if its stale marker is incorrectly false');
-check(/36h|fenêtre/.test(staleRecordCheck.detail), 'stale track record explains whether computation or window is old');
+check(staleRecordCheck.status === 'FAILED', 'a recently republished record with an old measurement window fails even if stale=false');
+check(/fenêtre/.test(staleRecordCheck.detail), 'stale measurement window is the reported failure reason');
 check(PDV.checkTrackRecordFreshness({ ...trackRecord, freshness: { ...trackRecord.freshness, stale: true } }, now).status === 'FAILED', 'explicit stale marker fails closed');
 check(PDV.checkTrackRecordFreshness(null, now).status === 'FAILED', 'missing track record fails closed');
 check(PDV.checkTrackRecordFreshness({ ...trackRecord, window: { from: '2026-10-27', to: '2026-10-25' } }, now).status === 'FAILED', 'inverted measurement window fails closed');
