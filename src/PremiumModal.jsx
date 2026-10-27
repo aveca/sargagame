@@ -597,6 +597,24 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
    // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
    const pMo=REGION_PAY?PRICE_MO:(lang==="en"?"€4.99":"4,99 €")
   const pYr=REGION_PAY?PRICE_YR:(lang==="en"?"€49":"49 €")
+  // Economie annuelle EXACTE (mission « clarifier la valeur ») :
+  // 12 mensualites - prix annuel, en % du total mensuel. Calcule depuis les
+  // prix REELS de la region (MQ/GP 4,99 EUR -> 59,88 EUR vs 49 EUR = 10,88 EUR /
+  // 18,2 % ; regions USD 9,99 USD -> 119,88 USD vs 79 USD = 40,88 USD / 34,1 %).
+  // Jamais en dur : la valeur suit le pricing regional.
+  const saveYr=(()=>{
+    const mo=REGION_PAY?PRICE_MO:"4.99", yr=REGION_PAY?PRICE_YR:"49"
+    const nMo=parseFloat(String(mo).replace(/[^0-9.,]/g,"").replace(",","."))
+    const nYr=parseFloat(String(yr).replace(/[^0-9.,]/g,"").replace(",","."))
+    if(!nMo||!nYr)return null
+    const sym=(String(yr).match(/[€$£]/)||["€"])[0]
+    const base=nMo*12, save=base-nYr
+    if(save<=0)return null
+    const s1=save.toFixed(2).replace(".",lang==="fr"?",":".")
+    const pct=Math.round(save/base*1000)/10
+    const s3=String(pct).replace(".",lang==="fr"?",":".")
+    return _t(lang,`Économise ${s1} ${sym} · ${s3} %`,`Save ${sym}${s1} · ${s3}%`,`Ahorra ${sym}${s1} · ${s3}%`)
+  })()
   const eqMo=(()=>{const raw=REGION_PAY?PRICE_YR:"49";const n=parseFloat(String(raw).replace(/[^0-9.,]/g,"").replace(",","."));if(!n)return null;const sym=(String(raw).match(/[€$£]/)||["€"])[0];const e=(n/12).toFixed(2).replace(".",lang==="fr"?",":".");return _t(lang,`soit ${e} ${sym}/mois`,`${sym}${e}/mo`,`${sym}${e}/mes`)})()
   // « par jour » dérivé du prix réellement présélectionné (annuel si dispo, sinon mensuel).
   const perDay=(()=>{
@@ -619,7 +637,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   const today=new Date().getDay() // 0=Dim
   const dn=i=>{if(i===0)return _t(lang,"Auj","Today","Hoy");if(i===1)return _t(lang,"Dem","Tom","Mañ");return dayNames[(today+i)%7]}
   const previewDots=["ok","ok","mod","bad","bad","mod","ok"] // illustratif
-  const planBtn=(key,label,price,unit,slam,eq)=>(
+  const planBtn=(key,label,price,unit,slam,eq,save)=>(
     <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"world"})}catch(_){}}}
       className={"pww-plan"+(plan===key?" on":"")}>
       {slam&&<span className="pww-slam" aria-hidden="true">
@@ -630,6 +648,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       <span className="pww-pn">{label}</span>
       <span className="pww-pr">{price}<small>/{unit}</small></span>
       {eq?<span className="pww-eq">{eq}</span>:<span className="pww-none">—</span>}
+  {save?<span className="pww-save">{save}</span>:null}
     </button>
   )
   return(<>
@@ -677,7 +696,9 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pww-lockbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:center;gap:7px;padding:7px 10px;background:linear-gradient(180deg,var(--goldLL),var(--goldL));border-top:2.5px solid var(--ink);color:var(--ink)}
       .pww-lockbar b{font-size:10.5px;font-weight:800;color:var(--ink);letter-spacing:.2px}
       /* PERKS */
-      .pww-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+      /* Économie annuelle (mesurée, calculée depuis les prix réels de la région) */
+  .pww-save{display:block;margin-top:3px;font:800 10px/1.25 "Bricolage Grotesque",sans-serif;color:#0b6b3a;letter-spacing:.2px}
+  .pww-perks{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
       .pww-perk{display:flex;align-items:center;gap:10px;background:#fff;border:2.5px solid var(--ink);border-radius:13px;padding:9px 12px;box-shadow:3px 3px 0 var(--ink)}
       .pww-perk .pic{flex:0 0 auto;width:34px;height:34px;border-radius:9px;border:2.5px solid var(--ink);display:grid;place-items:center;box-shadow:2px 2px 0 var(--ink)}
       .pww-perk.a .pic{background:var(--goldLL)}.pww-perk.b .pic{background:var(--tealL)}.pww-perk.c .pic{background:#ffd0c2}
@@ -864,19 +885,19 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 
         {/* 3 PERKS */}
         <div className="pww-perks">
-          <div className="pww-perk a">
-            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M12 2 9.5 4.5M12 2l2.5 2.5"/><path d="M2 18h2M20 18h2M4.5 11.5 6 13M19.5 11.5 18 13M1 22h22"/></svg></span>
-            <span><b>{_t(lang,"Ton brief chaque matin · 7h","Your brief every morning · 7am","Tu resumen cada mañana · 7h")}</b><em>{_t(lang,"Ta meilleure plage du jour, prête avant ton café.","Your best beach of the day, ready before your coffee.","Tu mejor playa del día, lista antes de tu café.")}</em></span>
-          </div>
-          <div className="pww-perk b">
-            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
-            <span><b>{_t(lang,"Alerte le jour où ça bascule","Alert the day it flips","Alerta el día que cambia")}</b><em>{exSwitch?_t(lang,`Ta plage favorite change ? Va plutôt à ${exSwitch}.`,`Your favorite beach changes? Switch to ${exSwitch}.`,`¿Tu playa favorita cambia? Mejor ve a ${exSwitch}.`):_t(lang,"Ta plage favorite change ? Tu le sais avant d'y aller.","Your favorite beach changes? You know before you go.","¿Tu playa favorita cambia? Lo sabes antes de ir.")}</em></span>
-          </div>
           <div className="pww-perk c">
             <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="17" rx="2"/><path d="M3 9h18M8 2.5v4M16 2.5v4"/><path d="M7.5 14h3M13.5 14h3M7.5 18h3"/></svg></span>
             <span><b>{wkend?_t(lang,`Samedi : ${wkend.name}`,`Saturday: ${wkend.name}`,`El sábado: ${wkend.name}`):_t(lang,"Toute ta semaine, plage par plage","Your whole week, beach by beach","Toda tu semana, playa por playa")}</b><em>{_t(lang,"Cale ton weekend sur 7 jours vérifiés satellite.","Plan your weekend on 7 satellite-verified days.","Planifica tu finde con 7 días verificados por satélite.")}</em></span>
           </div>
         </div>
+<div className="pww-perk a">
+            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 18a5 5 0 0 0-10 0"/><path d="M12 9V2M12 2 9.5 4.5M12 2l2.5 2.5"/><path d="M2 18h2M20 18h2M4.5 11.5 6 13M19.5 11.5 18 13M1 22h22"/></svg></span>
+            <span><b>{_t(lang,"Ton brief chaque matin · 7h","Your brief every morning · 7am","Tu resumen cada mañana · 7h")}</b><em>{_t(lang,"Ta meilleure plage du jour, prête avant ton café.","Your best beach of the day, ready before your coffee.","Tu mejor playa del día, lista antes de tu café.")}</em></span>
+          </div>
+<div className="pww-perk b">
+            <span className="pic"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg></span>
+            <span><b>{_t(lang,"Alerte le jour où ça bascule","Alert the day it flips","Alerta el día que cambia")}</b><em>{exSwitch?_t(lang,`Ta plage favorite change ? Va plutôt à ${exSwitch}.`,`Your favorite beach changes? Switch to ${exSwitch}.`,`¿Tu playa favorita cambia? Mejor ve a ${exSwitch}.`):_t(lang,"Ta plage favorite change ? Tu le sais avant d'y aller.","Your favorite beach changes? You know before you go.","¿Tu playa favorita cambia? Lo sabes antes de ir.")}</em></span>
+          </div>
 
         {/* PREUVE — palmarès AUDITÉ prioritaire (le moat : « publie aussi ses erreurs »,
             doctrine storytelling temps #5), sinon repli sur le clean-count live. Miroir
@@ -893,7 +914,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             clic modal→CTA. Réversible avec tout le reste via ?pay_capture=0. */}
         {hasAnnual&&!captureMode&&<div className="pww-plans">
           {planBtn("monthly",_t(lang,"Pass 7 jours","7-day pass","Pase 7 días"),pMo,_t(lang,"7 j","7d","7d"),null,null)}
-          {planBtn("annual",_t(lang,"Pass 30 jours","30-day pass","Pase 30 días"),pYr,_t(lang,"30 j","30d","30d"),"★",eqMo)}
+          {planBtn("annual",_t(lang,"Pass 30 jours","30-day pass","Pase 30 días"),pYr,_t(lang,"30 j","30d","30d"),"★",eqMo,saveYr)}
         </div>}
 
         {/* CTA — en capture, framing GRATUIT (juste l'email, sans carte) = exactement ce
@@ -901,7 +922,9 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         <button type="button" className="pww-gobtn" onClick={()=>onStart()}>
           <span className="big pww-anton">{captureMode
             ?_t(lang,"Débloquer 7 jours — offert →","Unlock 7 days — on us →","Desbloquear 7 días — gratis →")
-            :_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+            :wkend&&wkend.name
+?_t(lang,`Vérifier ${wkend.name} pour ma plage →`,`Check ${wkend.name} for my beach →`,`Ver ${wkend.name} para mi playa →`)
+:_t(lang,"Vérifier la prévision de ma plage →","Check the forecast for my beach →","Ver el pronóstico de mi playa →")}</span>
           <span className="s1">{captureMode
             ?_t(lang,"Juste ton email · sans carte","Just your email · no card","Solo tu email · sin tarjeta")
             :ctaSub}</span>
@@ -1162,7 +1185,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           const beats=[
             {eyebrow:_t(lang,"LE VEILLEUR","THE WATCHER","EL VIGÍA"),heading:_t(lang,"Ton Pass","Your Pass","Tu Pase"),sub:_t(lang,"7 jours de prévision + alerte le jour où ça bascule","7-day forecast + alert the day it flips","7 días de pronóstico + alerta el día que cambia")},
             {eyebrow:_t(lang,"HONNÊTETÉ","HONESTY","HONESTIDAD"),heading:_t(lang,"On publie nos erreurs","We publish our misses","Publicamos nuestros errores"),sub:rp},
-            {eyebrow:_t(lang,"OFFRE","OFFER","OFERTA"),heading:_t(lang,"Débloque tout","Unlock everything","Desbloquea todo"),sub:_t(lang,"Prévision 7 j · Alerte · Brief matin · Pas d'abo","7-day forecast · Alert · Morning brief · No subscription","Pronóstico 7 d · Alerta · Brief matutino · Sin suscripción"),cta:_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")},
+            {eyebrow:_t(lang,"OFFRE","OFFER","OFERTA"),heading:_t(lang,"Débloque tout","Unlock everything","Desbloquea todo"),sub:_t(lang,"Prévision 7 j · Alerte · Brief matin · Pas d'abo","7-day forecast · Alert · Morning brief · No subscription","Pronóstico 7 d · Alerta · Brief matutino · Sin suscripción"),cta:_t(lang,"Vérifier la prévision de ma plage →","Check the forecast for my beach →","Ver el pronóstico de mi playa →")},
           ]
           return(
             <div className="pwx-hero" style={{height:"auto",minHeight:188,paddingBottom:16}}>
@@ -1226,7 +1249,9 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
                 <button type="button" className="pwx-beat-cta"
                   onClick={e=>{const b=e.currentTarget;b.classList.remove("pow");void b.offsetWidth;b.classList.add("pow");onStart(e)}}
                   onAnimationEnd={e=>{if(e.animationName==="pwxPow")e.currentTarget.classList.remove("pow")}}>
-                  <span className="big">{_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+                  <span className="big">{wkend&&wkend.name
+?_t(lang,`Vérifier ${wkend.name} pour ma plage →`,`Check ${wkend.name} for my beach →`,`Ver ${wkend.name} para mi playa →`)
+:_t(lang,"Vérifier la prévision de ma plage →","Check the forecast for my beach →","Ver el pronóstico de mi playa →")}</span>
                   <span className="sm">{ctaSub}</span>
                   <svg className="pwx-pow" viewBox="0 0 130 130" aria-hidden="true">
                     <polygon points="65,4 76,40 112,30 86,58 122,72 84,74 96,112 65,86 34,112 46,74 8,72 44,58 18,30 54,40" fill="var(--yel)" stroke="#0d0b14" strokeWidth="3" strokeLinejoin="round"/>
@@ -1282,7 +1307,9 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             onAnimationEnd={e=>{if(e.animationName==="pwxPow")e.currentTarget.classList.remove("pow")}}>
             <span className="big">{captureMode
               ?_t(lang,"Débloquer 7 jours — offert →","Unlock 7 days — on us →","Desbloquear 7 días — gratis →")
-              :_t(lang,"Je veux la prévision →","I want the forecast →","Quiero el pronóstico →")}</span>
+              :wkend&&wkend.name
+?_t(lang,`Vérifier ${wkend.name} pour ma plage →`,`Check ${wkend.name} for my beach →`,`Ver ${wkend.name} para mi playa →`)
+:_t(lang,"Vérifier la prévision de ma plage →","Check the forecast for my beach →","Ver el pronóstico de mi playa →")}</span>
             <span className="sm">{captureMode
               ?_t(lang,"Juste ton email · sans carte","Just your email · no card","Solo tu email · sin tarjeta")
               :ctaSub}</span>
