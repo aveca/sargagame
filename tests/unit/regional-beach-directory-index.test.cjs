@@ -54,7 +54,7 @@ for (const id of REGION_IDS) {
       const sitemap = fs.readFileSync(path.join(outDir, 'sitemap.xml'), 'utf8')
       assert.ok(sitemap.includes(`<loc>${canonical}</loc>`), `${id}/${lang}: index missing from sitemap`)
       assert.ok(!fs.existsSync(path.join(outDir, 'plages', 'index.html')), `${id}/${lang}: unexpected FR index in USD build`)
-      checks += 7
+      checks += 8
     }
   } finally {
     fs.rmSync(outDir, { recursive: true, force: true })
