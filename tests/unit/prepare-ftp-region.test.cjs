@@ -44,6 +44,10 @@ fs.writeFileSync(path.join(dist, '.assetsignore'), '**/*.php\n**/*.php.*\n**/.en
 fs.mkdirSync(path.join(dist, '_private', 'nested'), { recursive: true })
 fs.writeFileSync(path.join(dist, '_private', 'nested', 'secret.json'), JSON.stringify({ secret: 'do-not-copy' }))
 
+// .htpasswd factice à EXCLURE du FTP (doit disparaître) — simulate un fichier
+// de mots de passe Apache qui ne doit JAMAIS être publié comme asset Worker
+fs.writeFileSync(path.join(dist, '.htpasswd'), 'admin:$apr1$JhPq0d3L$xyz123\n')
+
 // ── 2. Exécuter prepare-ftp.cjs pour la région MQ (build partagé) ──
 execSync('node scripts/prepare-ftp.cjs', { cwd: ROOT, env: { ...process.env, VITE_REGION: 'mq' }, encoding: 'utf8' })
 
