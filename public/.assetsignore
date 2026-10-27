@@ -8,7 +8,3 @@
 **/.htaccess
 **/.htpasswd
 **/_private/
-# Fichiers de configuration serveur — ne doivent JAMAIS être servis comme assets statiques
-# (risque d'exposition de configuration CSP, headers de sécurité, etc.)
-**/.htaccess
-**/.htpasswd

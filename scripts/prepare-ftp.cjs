@@ -99,7 +99,7 @@ const SHARED_LEGACY_IDS = ['mq', 'gp']
 // GP-flavored mirror of pages whose vite generator runs in a GP→MQ loop
 // (where MQ wins in dist/) — it gets overlaid onto guadeloupe-ftp/ later
 // so the GP build ends up with GP-correct beach lists, not MQ ones.
-const COPY_SKIP_TOP = new Set(['_gp', '.htaccess', '.htpasswd', 'api/.htaccess'])
+const COPY_SKIP_TOP = new Set(['_gp', '_private'])
 
 // skipRel = Set de chemins relatifs POSIX (fichiers ou dossiers) à ne pas
 // copier. Un nom simple ('_gp') ne matche qu'à la racine, comme avant.
