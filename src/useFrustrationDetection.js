@@ -204,8 +204,9 @@ export function useFrustrationDetection(onFrustration, options = {}) {
     const updateInteraction = () => { lastInteraction.current = Date.now() }
     const markIntent = () => { hasInteracted.current = true }
     const events = ['click', 'scroll', 'mousemove', 'keydown', 'touchstart']
-    events.forEach(e => document.addEventListener(e, updateInteraction, { passive: true }))
-    ['click', 'keydown', 'touchstart'].forEach(e => document.addEventListener(e, markIntent, { passive: true }))
+    const intentEvents = ['click', 'keydown', 'touchstart']
+    for (const e of events) document.addEventListener(e, updateInteraction, { passive: true })
+    for (const e of intentEvents) document.addEventListener(e, markIntent, { passive: true })
     
     // Check hesitation periodically
     const interval = setInterval(() => {
@@ -233,8 +234,8 @@ export function useFrustrationDetection(onFrustration, options = {}) {
     
     return () => {
       clearInterval(interval)
-      events.forEach(e => document.removeEventListener(e, updateInteraction))
-      ['click', 'keydown', 'touchstart'].forEach(e => document.removeEventListener(e, markIntent))
+      for (const e of events) document.removeEventListener(e, updateInteraction)
+      for (const e of intentEvents) document.removeEventListener(e, markIntent)
     }
   }, [enabled, config.hesitation, onFrustration, shouldTrigger, trackSignal])
   
