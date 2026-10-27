@@ -374,9 +374,16 @@ RewriteCond %{REQUEST_URI} !\.
 RewriteRule ^(carte-sargasses|previsions|alertes|en|saison-sargasses-martinique|saison-sargasses-guadeloupe|plages-sans-sargasses|danger-sargasses-h2s|comprendre-sargasses|bilan-sargasses-2025|detection-satellite-sargasses|previsions-methode|nettoyer-sargasses|sargasses-record-2026)$ /$1/ [R=301,L]
 </IfModule>
 
+# Livrable B2B embarqué : le widget vendu aux hôtels EST un <iframe> collé sur
+# LEUR site → /widget/embed est la SEULE route volontairement encadrable.
+# Sans cette exemption, tout client qui colle le code fourni reçoit un cadre
+# vierge (« Refused to display … frame-ancestors 'none' »). Toutes les autres
+# surfaces restent non encadrables.
+SetEnvIf Request_URI "^/widget/embed(/|$|\?)" sg_widget_embed=1
+
 # Security headers (trust signals SEO + sécurité)
 <IfModule mod_headers.c>
-Header set X-Frame-Options "DENY"
+Header set X-Frame-Options "DENY" env=!sg_widget_embed
 Header set X-Content-Type-Options "nosniff"
 Header set Referrer-Policy "strict-origin-when-cross-origin"
 # HSTS — 2 ans, include subdomains, preload-ready. Actif uniquement si HTTPS détecté
@@ -391,7 +398,9 @@ Header set Permissions-Policy "geolocation=(self), camera=(), microphone=(), pay
 # CSP — défense anti-XSS. Mollie + Apps Script + Cloudflare autorisés. unsafe-inline nécessaire
 # pour les styles inline React (vite injecte des <style> inline). unsafe-eval NON autorisé.
 # Note: si la carte Leaflet/Mapbox ou un script tiers casse, ajuster 'script-src' ici.
-Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://script.google.com https://script.googleusercontent.com https://www.clarity.ms https://*.supabase.co wss:; frame-src 'self' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.mollie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com"
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.googletagmanager.com https://www.clarity.ms https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://api.mollie.com https://api.stripe.com https://www.mollie.com https://www.paypal.com https://www.google-analytics.com https://region1.analytics.google.com https://script.google.com https://script.googleusercontent.com https://www.clarity.ms https://*.supabase.co wss:; frame-src 'self' https://js.stripe.com https://js.mollie.com https://www.paypal.com https://www.mollie.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://www.mollie.com https://www.paypal.com" env=!sg_widget_embed
+# Widget B2B : même politique, sans l'interdiction d'encadrement (livrable iframe).
+Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; frame-ancestors *; base-uri 'self'" env=sg_widget_embed
 Header append Vary Accept-Encoding
 </IfModule>
 
