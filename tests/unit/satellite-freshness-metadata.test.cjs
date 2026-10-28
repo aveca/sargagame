@@ -26,16 +26,20 @@ check(
   '12-hour observation is not stale under the 36-hour pipeline threshold'
 );
 check(
-  JSON.stringify(satelliteFreshness(null, now)) === JSON.stringify({ dataAgeMinutes: null, stale: false }),
-  'missing observation timestamp is unknown, not fabricated'
+  JSON.stringify(satelliteFreshness(null, now)) === JSON.stringify({ dataAgeMinutes: null, stale: true }),
+  'missing observation timestamp fails closed: unknown age, stale/unverified'
 );
 check(
-  JSON.stringify(satelliteFreshness('not-a-date', now)) === JSON.stringify({ dataAgeMinutes: null, stale: false }),
-  'invalid observation timestamp is unknown'
+  JSON.stringify(satelliteFreshness('not-a-date', now)) === JSON.stringify({ dataAgeMinutes: null, stale: true }),
+  'invalid observation timestamp fails closed'
 );
 check(
-  JSON.stringify(satelliteFreshness('2026-10-26T01:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: null, stale: false }),
-  'future observation timestamp is not accepted as fresh'
+  JSON.stringify(satelliteFreshness('2026-10-26T01:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: null, stale: true }),
+  'future observation timestamp fails closed'
+);
+check(
+  JSON.stringify(satelliteFreshness('2026-10-25T12:00:00.000Z', Number.NaN)) === JSON.stringify({ dataAgeMinutes: null, stale: true }),
+  'invalid clock fails closed rather than implying freshness'
 );
 check(
   satelliteFreshness('2026-10-24T12:00:00.000Z', now).dataAgeMinutes !== 1713,
@@ -70,6 +74,19 @@ check(
   }) === originalDecisionData,
   'regional refresh changes freshness metadata only, preserving observation and forecast fields'
 );
+
+const unknownPayload = {
+  source: 'erddap-live',
+  updatedAt: '2026-10-25T23:59:00.000Z',
+  erddapTimestamp: null,
+  dataAgeMinutes: 5,
+  stale: false,
+  levels: [{ id: 'mq001', status: 'clean' }],
+};
+refreshSatellitePayload(unknownPayload, now);
+check(unknownPayload.dataAgeMinutes === null, 'unknown satellite age overwrites a misleading static age');
+check(unknownPayload.stale === true, 'unknown satellite timestamp is not published as fresh');
+check(unknownPayload.levels[0].status === 'clean', 'unknown freshness does not mutate beach decision data');
 
 const referencePayload = { source: 'reference', dataAgeMinutes: null, stale: false };
 refreshSatellitePayload(referencePayload, now);
