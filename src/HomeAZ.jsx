@@ -200,7 +200,7 @@ export function initHomeAZ(SR, HOST, opts){
     while(el.firstChild) el.removeChild(el.firstChild);
     el.appendChild(document.createTextNode(parts[0]));
     var dt=document.createElement("span"); dt.className="dt";
-    dt.textContent=fresh.live ? dateLabel() : observationDateLabel();
+    dt.textContent=fresh.live ? dateLabel() : fresh.state==="unknown" ? _t("INCONNU","UNKNOWN","DESCONOCIDO") : observationDateLabel();
     el.appendChild(dt);
     el.appendChild(document.createTextNode(parts[1]));
   }
