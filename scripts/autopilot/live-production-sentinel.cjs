@@ -16,7 +16,7 @@
 const fs = require('fs')
 const path = require('path')
 const { spawnSync } = require('child_process')
-const { satelliteFreshness, SAT_STALE_HOURS } = require('../lib/satellite-freshness.cjs')
+const { evaluateObservation, MAX_AGE_MINUTES } = require('./check-predeploy-satellite-freshness.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const REPO = 'aveca/sargagame'
@@ -68,14 +68,12 @@ async function checkDomain(domain, dataMaxAgeMinutes) {
 
         // updatedAt only proves that the JSON was republished. Independently check
         // the actual satellite observation so a fresh pipeline run cannot mask stale data.
-        const satellite = satelliteFreshness(data.erddapTimestamp)
-        if (satellite.dataAgeMinutes == null) {
-          d.errors.push('erddapTimestamp absent/invalide/futur')
+        const satellite = evaluateObservation(data.erddapTimestamp)
+        if (!satellite.ok) {
+          const age = Number.isFinite(satellite.ageMinutes) ? satellite.ageMinutes.toFixed(2) + 'min' : 'âge inconnu'
+          d.errors.push('observation satellite hors SLA (' + age + ' ; limite ' + MAX_AGE_MINUTES + 'min ; ' + satellite.reason + ')')
         } else {
-          d.satelliteAgeMinutes = satellite.dataAgeMinutes
-          if (satellite.stale) {
-            d.errors.push('composite satellite périmé (' + satellite.dataAgeMinutes + 'min > ' + (SAT_STALE_HOURS * 60) + 'min)')
-          }
+          d.satelliteAgeMinutes = Math.round(satellite.ageMinutes)
         }
       } catch { /* contenu non-JSON : déjà couvert par le status */ }
     }
