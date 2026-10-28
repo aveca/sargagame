@@ -64,4 +64,9 @@ const helper = fs.readFileSync(path.resolve(__dirname, '../../scripts/autopilot/
 check(helper.includes("payload.source !== 'erddap-live'"), 'non-live/reference payloads cannot satisfy the satellite gate');
 check(helper.includes("payload.erddapTimestamp"), 'gate reads the actual observation timestamp, not updatedAt');
 
+const sentinel = fs.readFileSync(path.resolve(__dirname, '../../scripts/autopilot/live-production-sentinel.cjs'), 'utf8');
+check(sentinel.includes("evaluateObservation, MAX_AGE_MINUTES } = require('./check-predeploy-satellite-freshness.cjs')"), 'live sentinel shares the strict operational freshness contract');
+check(sentinel.includes('evaluateObservation(data.erddapTimestamp)'), 'live sentinel evaluates the true observation timestamp');
+check(!sentinel.includes('satelliteFreshness(data.erddapTimestamp)'), 'live sentinel no longer treats the 36-hour public stale marker as the 15-hour operational SLA');
+
 console.log(`PREDEPLOY_SATELLITE_FRESHNESS_TESTS PASS (${assertions} assertions)`);
