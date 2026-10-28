@@ -1,6 +1,9 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const sentinel = require('../../scripts/autopilot/live-production-sentinel.cjs');
 
 const originalFetch = global.fetch;
@@ -37,6 +40,57 @@ function check(condition, message) {
     const fresh = await sentinel.checkDomain('example.test', 15);
     check(fresh.satelliteAgeMinutes < 12 * 60, 'recent satellite timestamp remains fresh');
     check(fresh.ok === true, 'fresh pipeline and fresh satellite produce a healthy result');
+
+    const tailDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sg-sentinel-tail-'));
+    try {
+      fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=1').join('\\n') + '\\n');
+      fs.writeFileSync(path.join(tailDir, 'tail-errors.txt'),
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => 'TAIL_COMMAND_ERROR=' + worker + ' exit=1').join('\\n') + '\\n');
+      for (const worker of sentinel.EXPECTED_TAIL_WORKERS) {
+        fs.writeFileSync(path.join(tailDir, worker + '.jsonl'), 'wrangler tail failed: unauthorized\\n');
+      }
+
+      const failedTail = sentinel.parseTailDir(tailDir);
+      check(failedTail.commandErrors.length === 6, 'non-zero Wrangler tail exits are recorded for all six workers');
+      check(failedTail.missing.length === 0, 'failed commands are distinct from missing evidence files');
+      const report = sentinel.buildReport({
+        domains: [{ domain: 'example.test', ok: true, errors: [], ts: '2026-10-28T00:00:00.000Z' }],
+        ciFailures: { ok: true, failures: [] },
+        tail: failedTail,
+        localErrors: [],
+        at: '2026-10-28T00:00:00.000Z',
+      });
+      check(report.sensor.ok === false, 'failed Wrangler commands cannot produce a healthy sensor');
+      check(report.sensor.status === 'NOT_PROVEN', 'failed sensor capture is explicitly NOT_PROVEN');
+      check(report.ok === true, 'sensor permission/CLI failure does not fabricate a live incident');
+      check(report.incidents.length === 0, 'sensor failure is not misclassified as a Worker exception');
+
+      fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=124').join('\\n') + '\\n');
+      fs.writeFileSync(path.join(tailDir, 'tail-errors.txt'), '');
+      for (const worker of sentinel.EXPECTED_TAIL_WORKERS) {
+        fs.writeFileSync(path.join(tailDir, worker + '.jsonl'), '');
+      }
+      const boundedTail = sentinel.parseTailDir(tailDir);
+      check(boundedTail.commandErrors.length === 0, 'expected bounded timeout exit 124 is not treated as command failure');
+      check(boundedTail.missing.length === 0, 'empty bounded no-event captures remain valid when status proves completion');
+      check(sentinel.buildReport({
+        domains: [{ domain: 'example.test', ok: true, errors: [], ts: '2026-10-28T00:00:00.000Z' }],
+        ciFailures: { ok: true, failures: [] },
+        tail: boundedTail,
+        localErrors: [],
+        at: '2026-10-28T00:00:00.000Z',
+      }).sensor.ok === true, 'bounded successful tail window can prove the sensor');
+
+      fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
+        sentinel.EXPECTED_TAIL_WORKERS.slice(1).map(worker => worker + '=124').join('\\n') + '\\n');
+      const missingStatus = sentinel.parseTailDir(tailDir);
+      check(missingStatus.missing.includes('status:' + sentinel.EXPECTED_TAIL_WORKERS[0]),
+        'missing per-worker exit status leaves sensor NOT_PROVEN');
+    } finally {
+      fs.rmSync(tailDir, { recursive: true, force: true });
+    }
 
     console.log(`LIVE_SATELLITE_FRESHNESS_SENTINEL_TESTS PASS (${assertions} assertions)`);
   } finally {
