@@ -100,7 +100,7 @@
 - **Rple** : coding_agent + UX_agent
 - **Description** : Animation compose BD (slide les bolting) pour transitions top niveau: echoin Euro ∈ payer from cert to
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [~] in_review — UI refactor poussée; CI Playwright réelle en validation
 
 ---
 

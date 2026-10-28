@@ -356,3 +356,15 @@ PR: #810 (auto-merged)
 - Agent name (code, QA, product, etc.)
 - List of changes with file names
 - Never delete previous entries — they satisfy AI pièe memory.
+
+---
+
+## 2026-10-28 — coding_agent — P2-004 UI refactor + Playwright
+
+- Ajout de l'écran de chargement conditionnel (désactivable avec `?sgload=0`), du focus visible doré sur cinq FAB et d'une cible tactile mobile de 48 px sur le CTA principal.
+- Ajout de neuf captures de référence (3 « avant », 6 « après ») pour desktop, tablette et mobile.
+- Le test navigateur « après » remplace l'assertion factice par des assertions sur le montage React, le rendu SVG, les contrôles focusables et la hauteur/visibilité du CTA mobile.
+- Ajout d'une configuration Playwright dédiée au serveur preview existant et intégration du test dans `ci-tests.yml`, avec upload des captures comme artefact CI.
+- Les erreurs HTTP POST 501 du preview et les sélecteurs FAB/SOS non détectés dans le diagnostic initial restent explicitement à examiner ; ils ne sont pas déclarés résolus.
+
+**Statut :** PR à valider par les contrôles GitHub. Aucun déploiement de production effectué.
