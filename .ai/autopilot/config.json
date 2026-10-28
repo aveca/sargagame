@@ -61,7 +61,7 @@
   "policy": {
     "maxFilesChanged": 8,
     "maxDiffLines": 400,
-    "autoMergeEnabled": false,
+    "autoMergeEnabled": true,
     "autoMergeWhitelist": [
       "docs/**",
       ".ai/**",
