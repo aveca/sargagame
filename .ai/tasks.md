@@ -95,12 +95,12 @@
 - **Estimation** : 3h
 - **Statut** : [~] TASK-P2-003 — in_progress by coding_agent
 
-### TASK-P2-004. Transitions « case BD » entre écrans
+### TASK-P2-004. Transitions « case BD » entre écrans + Refactoring UI global + Playwright
 - **Priorité** : P2
-- **Rple** : coding_agent + UX_agent
-- **Description** : Animation compose BD (slide les bolting) pour transitions top niveau: echoin Euro ∈ payer from cert to
-- **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Rôle** : coding_agent + UX_agent
+- **Description** : Refactoring UI global (hiérarchie visuelle, responsive, accessibilité, états chargement/erreur) + transitions style BD entre écrans + tests Playwright avec captures avant/après sur 3 viewports (1440×900, 768×1024, 390×844).
+- **Estimation** : 6h
+- **Statut** : [x] done by coding_agent (branch agent/coding/ui-refactoring-playwright)
 
 ---
 

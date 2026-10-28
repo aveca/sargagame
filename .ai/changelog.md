@@ -1,4 +1,17 @@
 ﻿
+## 2026-10-28 - coding_agent (OpenCode) · branche agent/coding/ui-refactoring-playwright
+
+**Mission P2-004 : Refactoring UI global + captures Playwright avant/après sur 3 viewports.**
+
+- Ajout écran de chargement `.sg-map-loading` (shimmer or) pendant le lazy-load de la carte SVG quand `!dataReady` — évite le "vide bleu nuit" au premier paint. Rollback : `?sgload=0`.
+- Ajout classe `.sg-focus-ring` (anneau or 3px, focus-visible) sur les 5 boutons FAB (chat, découverte, solutions, archipel, 10 postes) pour navigation clavier.
+- Nouveaux styles CSS dans `app-runtime.css` : focus-ring universel, map-loading, error-banner, card-loading, CTA mobile `min-height:48px` — zéro impact bundle JS eager.
+- Tests Playwright : `ui-refactor-before.spec.ts` + `ui-refactor-after.spec.ts` avec captures plein écran sur desktop (1440×900), tablette (768×1024), mobile (390×844).
+- Build : exit 0, bundle 208.2 Ko gzip ≤ 210 Ko. Smoke test : 4 tokens OK.
+- Prix, paiement, checkout, SEO, régions : non touchés.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**
