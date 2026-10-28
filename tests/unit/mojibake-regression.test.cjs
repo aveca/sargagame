@@ -21,7 +21,7 @@ const MOJIBAKE_PATTERNS = [
   /Ã /g, /Ã­/g, /Ã—/g, /Ã¢/g,
   /m¡s/g, /despleg¡ndose/g, /atl¡ntica/g,
   /Ã“/g, /â\u008f/g, /âœ/g,
-  /[A-Za-z]¡(?=[a-z\\s,.;:!?])/g, /¡mbar/g,
+  /[A-Za-z]¡(?=[a-z\s,.;:!?])/g, /¡mbar/g,
 ];
 
 let filesWithMojibake = 0;
