@@ -2,7 +2,7 @@
 
 // Shared freshness contract for static satellite payloads.
 // The observation timestamp (not updatedAt) is authoritative.
-const SAT_STALE_HOURS = 36;
+const SAT_STALE_HOURS = 15; // 900 minutes, seuil opérationnel strict de fraîcheur satellite
 
 function satelliteFreshness(erddapTimestamp, now = Date.now()) {
   const timestamp = typeof erddapTimestamp === 'number'
