@@ -3,7 +3,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 
 (async () => {
-  const { homeAzFreshness } = await import("../../src/lib/format-freshness.mjs");
+  const { homeAzFreshness, formatObservationTimestamp, nextHomeAzFreshnessBoundaryDelayMs } = await import("../../src/lib/format-freshness.mjs");
   const now = Date.parse("2026-10-28T21:50:00.000Z");
   let count = 0;
   const ok = (condition, message) => { count++; assert.ok(condition, message); };
@@ -43,6 +43,17 @@ const path = require("node:path");
     count += 2;
   }
 
+  const observationLabel = formatObservationTimestamp("2026-10-28T17:29:52.717Z", "en");
+  ok(/17:29/.test(observationLabel), "hero timestamp includes the actual source hour and minute");
+  ok(/UTC/.test(observationLabel), "hero timestamp explicitly labels UTC");
+  ok(nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp: new Date(now - (12 * 3600000 - 1000)).toISOString()}, now) === 1050,
+    "fresh state schedules a recheck just after the 12h boundary");
+  ok(nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp: new Date(now - 12 * 3600000).toISOString()}, now) === 3 * 3600000 + 50,
+    "at 12h the next recheck targets the 15h boundary");
+  ok(nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp: new Date(now - 15 * 3600000).toISOString()}, now) === null,
+    "at 15h no further timer is needed because the state is terminally stale");
+  ok(nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp: new Date(now + 60000).toISOString()}, now) === null,
+    "future timestamps do not schedule a transition to LIVE");
   const source = fs.readFileSync(path.join(__dirname, "..", "..", "src", "HomeAZ.jsx"), "utf8");
   ok(source.includes('import {homeAzFreshness} from "./lib/format-freshness.mjs"'), "HomeAZ consumes shared freshness helper");
   ok(source.includes("erddapTimestamp: (sargData&&sargData.erddapTimestamp) || null"), "HomeAZ passes the source observation timestamp");
@@ -54,6 +65,13 @@ const path = require("node:path");
   ok(source.includes('fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge'), "status pill is explicitly marked when not live");
   ok(!/4 fois par jour|4 times a day|4 pasadas al día|mise à jour en direct|updated live|actualizado en directo/.test(source), "HomeAZ does not promise an unsupported refresh frequency or live update");
   ok(source.includes('Data: Copernicus Marine · observation time shown'), "footer identifies observation time instead of claiming live updates");
+  ok(source.includes("scheduleFreshnessRefresh();"), "HomeAZ schedules freshness revalidation independently of animation");
+  ok(source.includes("nextHomeAzFreshnessBoundaryDelayMs"), "HomeAZ uses tested 12h/15h boundary calculation");
+  ok(source.includes("formatObservationTimestamp(HOME.erddapTimestamp, LANG)"), "HomeAZ formats the source timestamp rather than publication/current date");
+  ok(source.includes('on(document,"visibilitychange",function(){ if(!document.hidden) applyCopy(); });'), "HomeAZ rechecks freshness when a throttled tab becomes visible");
+  ok(source.includes("clearTimeout(freshnessTimer)"), "HomeAZ cancels the freshness timer on reschedule and teardown");
+  ok(source.includes('dt.textContent=fresh.state==="unknown" ? _t("INCONNU","UNKNOWN","DESCONOCIDO") : observationDateLabel();'), "the hero timestamp is sourced from erddapTimestamp in every verified state");
+  ok(!source.includes('dt.textContent=fresh.live ? dateLabel()'), "HomeAZ never substitutes the current date for the satellite observation date");
 
   console.log(`OK home-az-freshness: ${count} assertions`);
 })().catch(error => { console.error(error); process.exit(1); });

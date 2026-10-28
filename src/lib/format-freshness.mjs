@@ -230,3 +230,38 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
   return { state: "stale", live: false, badge: labels.staleBadge, label: labels.stale, ageHours };
 }
 
+
+
+/** Format the source observation timestamp explicitly in UTC for the HomeAZ hero. */
+export function formatObservationTimestamp(raw, lang = "fr") {
+  const timestamp = typeof raw === "number" ? raw : Date.parse(String(raw ?? ""));
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return lang === "en" ? "UNKNOWN" : lang === "es" ? "DESCONOCIDO" : "INCONNU";
+  }
+  const locale = lang === "en" ? "en-GB" : lang === "es" ? "es-ES" : "fr-FR";
+  const parts = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "UTC",
+  }).formatToParts(new Date(timestamp));
+  const part = type => parts.find(item => item.type === type)?.value || "";
+  return `${part("day")} ${part("month")} ${part("hour")}:${part("minute")} UTC`;
+}
+
+/**
+ * Milliseconds until the next HomeAZ freshness transition (12h or 15h).
+ * A small 50ms margin avoids evaluating just before a boundary due to timer
+ * scheduling precision. Invalid/future timestamps and terminal stale state
+ * require no timer; visibility and data updates still re-evaluate the state.
+ */
+export function nextHomeAzFreshnessBoundaryDelayMs(sargData, now = Date.now()) {
+  const raw = sargData?.erddapTimestamp;
+  const timestamp = typeof raw === "number" ? raw : Date.parse(String(raw ?? ""));
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now) || now < timestamp) return null;
+  const ageMs = now - timestamp;
+  const nextBoundary = [12, 15].map(hours => hours * 3_600_000).find(boundary => ageMs < boundary);
+  return nextBoundary == null ? null : Math.max(0, nextBoundary - ageMs + 50);
+}

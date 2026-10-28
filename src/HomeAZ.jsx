@@ -19,7 +19,7 @@
  */
 import React,{useRef,useEffect} from "react"
 import {HOME_AZ_CSS,HOME_AZ_MARKUP} from "./home-az-assets.js"
-import {homeAzFreshness} from "./lib/format-freshness.mjs"
+import {homeAzFreshness, formatObservationTimestamp, nextHomeAzFreshnessBoundaryDelayMs} from "./lib/format-freshness.mjs"
 
 /* ====================================================================
    MOTEUR — monté dans le shadow root SR, hôte/scroll-container HOST.
@@ -30,6 +30,7 @@ export function initHomeAZ(SR, HOST, opts){
   function on(el,ev,fn,o){ el.addEventListener(ev,fn,o); cleaners.push(function(){el.removeEventListener(ev,fn,o);}); }
   var dead=false, rafId=0;
   var timers=[];
+  var freshnessTimer=0;
   function later(fn,ms){ var t=setTimeout(function(){ if(!dead) fn(); },ms); timers.push(t); return t; }
 
   var $ = function(id){ return SR.querySelector('#'+id); };
@@ -143,9 +144,7 @@ export function initHomeAZ(SR, HOST, opts){
   }
   function dateLabel(){ return formatMonthDay(new Date(), false); }
   function observationDateLabel(){
-    var d=HOME.erddapTimestamp ? new Date(HOME.erddapTimestamp) : null;
-    if(!d || !isFinite(d.getTime())) return _t("INCONNU","UNKNOWN","DESCONOCIDO");
-    return formatMonthDay(d, true);
+    return formatObservationTimestamp(HOME.erddapTimestamp, LANG);
   }
 
   function setHeading(el, lines){
@@ -200,7 +199,7 @@ export function initHomeAZ(SR, HOST, opts){
     while(el.firstChild) el.removeChild(el.firstChild);
     el.appendChild(document.createTextNode(parts[0]));
     var dt=document.createElement("span"); dt.className="dt";
-    dt.textContent=fresh.live ? dateLabel() : fresh.state==="unknown" ? _t("INCONNU","UNKNOWN","DESCONOCIDO") : observationDateLabel();
+    dt.textContent=fresh.state==="unknown" ? _t("INCONNU","UNKNOWN","DESCONOCIDO") : observationDateLabel();
     el.appendChild(dt);
     el.appendChild(document.createTextNode(parts[1]));
   }
@@ -268,6 +267,21 @@ export function initHomeAZ(SR, HOST, opts){
     if($("scrollLab")) $("scrollLab").textContent=T.scrollLab[LANG];
     if($("touchHintTxt")) $("touchHintTxt").textContent=T.touchHint[LANG];
     initTop3();
+    scheduleFreshnessRefresh();
+  }
+
+  /* Revalidate the visible freshness badge when wall-clock age crosses 12h/15h.
+     Timers are independent of the demand-driven animation loop. */
+  function scheduleFreshnessRefresh(){
+    if(freshnessTimer){ clearTimeout(freshnessTimer); freshnessTimer=0; }
+    if(dead) return;
+    var delay=nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp:HOME.erddapTimestamp});
+    if(delay==null) return;
+    freshnessTimer=setTimeout(function(){
+      freshnessTimer=0;
+      if(dead) return;
+      applyCopy();
+    }, delay);
   }
 
   /* ====================================================================
@@ -583,6 +597,9 @@ export function initHomeAZ(SR, HOST, opts){
 
   /* premier état de la copie + tracking d'affichage */
   applyCopy();
+  // Background timers can be throttled; refresh the freshness state when the
+  // page becomes visible again, including reduced-motion mode.
+  on(document,"visibilitychange",function(){ if(!document.hidden) applyCopy(); });
   wireConversion();
   track("sg_hero_shown",{beach:HOME.beach, score:HOME.score, status:HOME.status, geoloc:false, variant:"home_az"});
 
@@ -715,6 +732,7 @@ export function initHomeAZ(SR, HOST, opts){
   function teardown(){
     if(dead) return; dead=true;
     try{ cancelAnimationFrame(rafId); }catch(e){}
+    if(freshnessTimer){ try{clearTimeout(freshnessTimer);}catch(e){} freshnessTimer=0; }
     for(var i=0;i<timers.length;i++){ try{ clearTimeout(timers[i]); }catch(e){} }
     for(var j=0;j<cleaners.length;j++){ try{ cleaners[j](); }catch(e){} }
   }
