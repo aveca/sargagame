@@ -53,16 +53,16 @@ function httpStatus(url, timeoutMs) {
   const devnull = process.platform === 'win32' ? 'NUL' : '/dev/null';
   const r = curl(['-sL', '-o', devnull, '-w', '%{http_code}', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', url], timeoutMs);
   const status = parseInt((r.out || '').trim(), 10) || 0;
-  return { ok: r.ok, status, error: r.ok ? null : String(r.error || 'curl exited non-zero').split('\\n')[0] };
+  return { ok: r.ok, status, error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
 }
 function httpBody(url, timeoutMs) {
   const r = curl(['-sL', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', url], timeoutMs);
-  return { ok: r.ok, body: r.out || '', error: r.ok ? null : String(r.error || 'curl exited non-zero').split('\\n')[0] };
+  return { ok: r.ok, body: r.out || '', error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
 }
 function describeHttpProbe(probe) {
   if (!probe.ok) {
     const status = Number(probe.status) > 0 ? ` after HTTP ${probe.status}` : '';
-    const error = String(probe.error || 'unknown transport error').split('\\n')[0];
+    const error = String(probe.error || 'unknown transport error').split(/\r?\n/)[0];
     return `curl exited non-zero${status}: ${error}`;
   }
   return Number(probe.status) === 200 ? '' : `HTTP ${Number(probe.status) || 0}`;
