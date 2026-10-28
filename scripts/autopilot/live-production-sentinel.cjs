@@ -173,8 +173,10 @@ function parseTailDir(dir) {
       } catch {
         // CLI failures are detected from exit codes and tail-errors.txt. Do not
         // silently treat non-JSON output containing an error as a proven capture.
-        if (/\b(error|failed|unauthorized|forbidden|permission denied|not authorized)\b/i.test(line)) {
-          result.commandErrors.push({ worker, exitCode: statusByWorker.get(worker) ?? null, detail: 'error text in non-JSON tail output' })
+        const exitCode = statusByWorker.get(worker)
+        if ((exitCode === 0 || exitCode === 124 || exitCode === undefined) &&
+          /\b(error|failed|unauthorized|forbidden|permission denied|not authorized)\b/i.test(line)) {
+          result.commandErrors.push({ worker, exitCode: exitCode ?? null, detail: 'error text in non-JSON tail output' })
         }
       }
     }
