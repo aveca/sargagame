@@ -184,6 +184,11 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      - name: Pre-deploy satellite freshness gate (all six regions)
+        if: github.ref == 'refs/heads/main'
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Validate prepared HTML CSP and bundle references
         env:
           VITE_REGION: ${{ matrix.id }}
@@ -331,6 +336,10 @@ jobs:
           DOMAIN: ${{ matrix.domain }}
         run: |
           node -e "const fs=require('fs');const ftp=String(require('./regions/index.cjs').getRegion(process.env.REGION).ftpDir).replace(/^.\//,'');if(!fs.existsSync(ftp+'/index.html')){console.error('assets dir missing '+ftp);process.exit(1)};let s=fs.readFileSync('wrangler.template.jsonc','utf8').replaceAll('__REGION__',process.env.REGION).replaceAll('__DOMAIN__',process.env.DOMAIN).replaceAll('__ASSETS_DIR__','./'+ftp);fs.writeFileSync('wrangler.jsonc',s)"
+      - name: Recheck satellite freshness immediately before Worker deploy
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Worker
         run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
       - name: Configure Worker secrets
@@ -542,6 +551,10 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: node scripts/check-regional-artifact.cjs --region "$VITE_REGION"
+      - name: Recheck satellite freshness immediately before Pages deploy
+        env:
+          VITE_REGION: ${{ matrix.region }}
+        run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Pages
         uses: cloudflare/wrangler-action@v4
         with:

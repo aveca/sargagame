@@ -72,11 +72,18 @@ jobs:
           if [ -f public/api/copernicus/sargassum.json ]; then
             SOURCE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).source)")
             UPDATED=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).updatedAt)")
+            ERDDAP_TS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).erddapTimestamp || '')")
+            SATELLITE_AGE_MINUTES=999999
+            if [ -n "$ERDDAP_TS" ]; then
+              SATELLITE_AGE_MINUTES=$(node -e "const t=Date.parse(process.argv[1]); const n=Date.now(); console.log(Number.isFinite(t) && t > 0 && t <= n ? (n-t)/60000 : 999999)" "$ERDDAP_TS")
+            fi
           else
-            SOURCE=none; UPDATED=n/a
+            SOURCE=none; UPDATED=n/a; ERDDAP_TS=''; SATELLITE_AGE_MINUTES=999999
           fi
           echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
-          echo "source=$SOURCE updatedAt=$UPDATED"
+          echo "erddap_timestamp=$ERDDAP_TS" >> "$GITHUB_OUTPUT"
+          echo "satellite_age_minutes=$SATELLITE_AGE_MINUTES" >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE updatedAt=$UPDATED erddapTimestamp=$ERDDAP_TS satelliteAgeMinutes=$SATELLITE_AGE_MINUTES"
 
       - name: Gate intégrité (refuse source dégradée / pic tout-vert)
         id: verify
@@ -117,9 +124,13 @@ jobs:
           console.warn('Existing track record marked stale; its metrics were not changed.');
           NODE
 
+      - name: Final source freshness gate before commit
+        id: commit_freshness
+        run: node scripts/autopilot/check-publish-satellite-freshness.cjs
+
       - name: Commit + push des données Copernicus
         id: publish
-        if: steps.src.outputs.source != 'none'
+        if: steps.src.outputs.source != 'none' && (steps.verify.outcome != 'success' || steps.commit_freshness.outputs.fresh == 'true')
         env:
           INTEGRITY_OUTCOME: ${{ steps.verify.outcome }}
         run: |
@@ -201,7 +212,7 @@ jobs:
       # publication sur une branche de développement ne doit jamais déclencher
       # un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.commit_freshness.outputs.fresh == 'true'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
@@ -211,6 +222,18 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           DEPLOY_REF: main
         run: node scripts/automation/trigger-production-deploy.cjs
+
+      - name: Déploiement différé — observation satellite hors SLA
+        if: steps.commit_freshness.outputs.fresh != 'true'
+        run: |
+          echo "::warning title=Publication différée::Observation ERDDAP absente, invalide ou hors SLA. Aucun payload satellite ne sera committé ni déployé."
+          {
+            echo "## Déploiement différé"
+            echo ""
+            echo "- Âge source ERDDAP : ${{ steps.commit_freshness.outputs.satellite_age_minutes }} minutes (999999 signifie inconnu/invalide)"
+            echo "- SLA opérationnel : 900 minutes (15 h)"
+            echo "- Action : publication et dispatch CI/production ignorés ; le prochain cycle réévaluera la source réelle."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'

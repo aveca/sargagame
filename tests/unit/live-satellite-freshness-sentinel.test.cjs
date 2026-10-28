@@ -41,13 +41,22 @@ check(!workflowSource.includes('--sampling-rate=1'), 'Sentinel never passes the 
     const stale = await sentinel.checkDomain('example.test', 15);
     check(stale.ageMinutes < 15, 'pipeline updatedAt is fresh');
     check(stale.satelliteAgeMinutes >= 36 * 60, 'satellite age is recalculated from erddapTimestamp');
-    check(stale.errors.some(error => error.startsWith('composite satellite périmé')), 'fresh pipeline cannot hide stale satellite data');
+    check(stale.errors.some(error => error.startsWith('observation satellite hors SLA')), 'fresh pipeline cannot hide an observation outside the 900-minute operational SLA');
     check(stale.ok === false, 'stale satellite makes the domain health check fail');
 
     payload.erddapTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
     const fresh = await sentinel.checkDomain('example.test', 15);
     check(fresh.satelliteAgeMinutes < 12 * 60, 'recent satellite timestamp remains fresh');
     check(fresh.ok === true, 'fresh pipeline and fresh satellite produce a healthy result');
+
+    global.fetch = async (url) => ({
+      status: 200,
+      text: async () => String(url).endsWith('/api/copernicus/sargassum.json') ? '{"source":' : 'ok',
+    });
+    const malformed = await sentinel.checkDomain('example.test', 900);
+    check(malformed.ok === false, 'HTTP 200 with malformed JSON cannot pass live health');
+    check(malformed.errors.some(error => error.startsWith('sargassum.json JSON invalide')),
+      'malformed JSON is reported as an explicit health-check failure');
 
     const tailDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sg-sentinel-tail-'));
     try {
