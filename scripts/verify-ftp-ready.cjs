@@ -141,7 +141,20 @@ function main() {
   // Same source and operational freshness contract for every required regional payload.
   const copDir = path.join(root, 'public', 'api', 'copernicus')
   const requiredRegionDirs = ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']
-  for (const dirName of requiredRegionDirs) {
+  let discoveredRegionDirs = []
+  try {
+    discoveredRegionDirs = fs.readdirSync(copDir, { withFileTypes: true })
+      .filter(entry => entry.isDirectory())
+      .map(entry => entry.name)
+      .filter(dirName => fs.existsSync(path.join(copDir, dirName, 'sargassum.json')))
+  } catch (e) {
+    console.error('❌ Répertoire Copernicus régional illisible — publication bloquée:', e.message)
+    ok = false
+  }
+  // Require the six production regions and also validate every additional regional
+  // payload already present (e.g. Barbados), so no stale side payload is skipped.
+  const regionDirs = [...new Set([...requiredRegionDirs, ...discoveredRegionDirs])]
+  for (const dirName of regionDirs) {
     const regPath = path.join(copDir, dirName, 'sargassum.json')
     if (!fs.existsSync(regPath)) {
       console.error(`❌ [${dirName}] payload régional absent — publication bloquée`)
