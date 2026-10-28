@@ -16,7 +16,7 @@
 const fs = require('fs')
 const path = require('path')
 const { spawnSync } = require('child_process')
-const { satelliteFreshness, SAT_STALE_HOURS } = require('../lib/satellite-freshness.cjs')
+const { evaluateObservation, MAX_AGE_MINUTES } = require('./check-predeploy-satellite-freshness.cjs')
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const REPO = 'aveca/sargagame'
@@ -66,21 +66,31 @@ async function checkDomain(domain, dataMaxAgeMinutes) {
           if (ageMin > dataMaxAgeMinutes) d.errors.push('sargassum.json périmé (' + ageMin + 'min > ' + dataMaxAgeMinutes + 'min)')
         }
 
-        // updatedAt only proves that the JSON was republished. Independently check
-        // the actual satellite observation so a fresh pipeline run cannot mask stale data.
-        const satellite = satelliteFreshness(data.erddapTimestamp)
-        if (satellite.dataAgeMinutes == null) {
-          d.errors.push('erddapTimestamp absent/invalide/futur')
+        // Publication age and observation age are separate contracts.
+        const satellite = evaluateObservation(data.erddapTimestamp)
+        if (satellite.ageMinutes == null || satellite.ageMinutes < 0) {
+          d.operationalFreshness = {
+            ok: false,
+            status: 'NOT_PROVEN',
+            reason: satellite.reason,
+            limitMinutes: MAX_AGE_MINUTES,
+          }
         } else {
-          d.satelliteAgeMinutes = satellite.dataAgeMinutes
-          if (satellite.stale) {
-            d.errors.push('composite satellite périmé (' + satellite.dataAgeMinutes + 'min > ' + (SAT_STALE_HOURS * 60) + 'min)')
+          d.satelliteAgeMinutes = Math.round(satellite.ageMinutes)
+          d.operationalFreshness = {
+            ok: satellite.ok,
+            status: satellite.ok ? 'WITHIN_SLA' : 'OPERATIONAL_SLA_BREACHED',
+            reason: satellite.reason,
+            limitMinutes: MAX_AGE_MINUTES,
           }
         }
-      } catch { /* contenu non-JSON : déjà couvert par le status */ }
+      } catch (error) {
+        d.errors.push('sargassum.json JSON invalide: ' + safeError(error))
+      }
     }
   }
-  d.ok = d.errors.length === 0
+  d.httpOk = d.errors.length === 0
+  d.ok = d.httpOk && d.operationalFreshness?.ok !== false
   d.ts = nowIso()
   return d
 }
@@ -192,7 +202,7 @@ function buildReport(input) {
   const { domains, ciFailures, tail, localErrors, at } = input
   const incidents = []
   for (const d of domains) {
-    if (!d.ok) incidents.push({ severity: 'high', subsystem: 'production-http', domain: d.domain, message: d.errors.join('; '), at: d.ts })
+    if ((d.errors || []).length > 0) incidents.push({ severity: 'high', subsystem: 'production-http', domain: d.domain, message: d.errors.join('; '), at: d.ts })
   }
   for (const x of tail.errors) {
     incidents.push({ severity: 'high', subsystem: 'cloudflare-worker', scriptName: x.scriptName, message: JSON.stringify(x).slice(0, 600), at })
@@ -200,6 +210,8 @@ function buildReport(input) {
   for (const x of (localErrors || [])) {
     incidents.push({ severity: 'high', subsystem: 'local-runner', file: x.file, message: String(x.line).slice(0, 600), at })
   }
+  const operationalSlaBreaches = domains.filter(d => d.operationalFreshness?.status === 'OPERATIONAL_SLA_BREACHED').length
+  const operationalFreshnessUnverified = domains.filter(d => d.operationalFreshness?.status === 'NOT_PROVEN').length
   const ok = incidents.length === 0
   return {
     at,
@@ -208,6 +220,12 @@ function buildReport(input) {
     // Empreinte = incidents live uniquement (messages exacts) — jamais les échecs CI.
     fingerprint: fingerprintOf(incidents.map(x => x.subsystem + '|' + String(x.message).split('|')[0]).join('\n')),
     domains,
+    operationalFreshness: {
+      limitMinutes: MAX_AGE_MINUTES,
+      breaches: operationalSlaBreaches,
+      unverified: operationalFreshnessUnverified,
+      status: operationalSlaBreaches > 0 ? 'OPERATIONAL_SLA_BREACHED' : operationalFreshnessUnverified > 0 ? 'NOT_PROVEN' : 'WITHIN_SLA',
+    },
     incidents,
     // CI distinct : rapportée dans `ciFailures`, jamais dans `incidents`.
     ciFailures: ciFailures || { ok: false, error: 'not-collected', failures: [] },
@@ -239,10 +257,13 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true })
   fs.writeFileSync(OUT, JSON.stringify(report, null, 2))
   console.log(JSON.stringify({
-    LIVE_HEALTH: report.ok ? 'OK' : 'FAIL',
+    LIVE_HEALTH: report.incidents.length > 0 ? 'FAIL' : (report.operationalFreshness.breaches > 0 || report.operationalFreshness.unverified > 0) ? 'DEGRADED' : 'OK',
     fingerprint: report.fingerprint,
     domains: report.domains.length,
     incidents: report.incidents.length,
+    operationalSlaBreaches: report.operationalFreshness.breaches,
+    operationalFreshnessUnverified: report.operationalFreshness.unverified,
+    operationalFreshnessStatus: report.operationalFreshness.status,
     // CI rapportée séparément — plus jamais mélangée avec les incidents live.
     ciFailures: report.ciFailures.failures.length,
     sensorOk: report.sensor.ok,
