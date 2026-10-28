@@ -41,6 +41,15 @@ function check(condition, message) {
     check(fresh.satelliteAgeMinutes < 12 * 60, 'recent satellite timestamp remains fresh');
     check(fresh.ok === true, 'fresh pipeline and fresh satellite produce a healthy result');
 
+    global.fetch = async (url) => ({
+      status: 200,
+      text: async () => String(url).endsWith('/api/copernicus/sargassum.json') ? '{"source":' : 'ok',
+    });
+    const malformed = await sentinel.checkDomain('example.test', 900);
+    check(malformed.ok === false, 'HTTP 200 with malformed JSON cannot pass live health');
+    check(malformed.errors.some(error => error.startsWith('sargassum.json JSON invalide')),
+      'malformed JSON is reported as an explicit health-check failure');
+
     const tailDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sg-sentinel-tail-'));
     try {
       fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
