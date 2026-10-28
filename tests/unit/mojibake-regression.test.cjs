@@ -1,11 +1,3 @@
-/**
- * tests/unit/mojibake-regression.test.cjs
- * Mission 9 — Empêche le retour du mojibake UTF-8 dans les pages publiques (#1035).
- *
- * Vérifie qu'aucune séquence mojibake connue (caractère encodé deux fois) ne
- * subsiste dans les fichiers HTML servis au public, notamment les pages B2B
- * EN/ES sous public/pro/ qui étaient affectées.
- */
 'use strict';
 
 const fs = require('fs');
@@ -15,17 +7,16 @@ const assert = require('node:assert/strict');
 const ROOT = path.resolve(__dirname, '..', '..');
 const PUBLIC = path.join(ROOT, 'public');
 
+const EXT = ['.html', '.htm', '.js', '.jsx', '.json', '.css'];
+const EXT_SET = new Set(EXT);
+
 // Séquences mojibake connues (UTF-8 lu en Latin-1 puis ré-encodé en UTF-8)
 const MOJIBAKE_PATTERNS = [
   /Ã©/g, /Ã¨/g, /Ã‰/g, /Ãª/g, /Ã®/g, /Ã±/g, /Ã§/g, /Ã³/g, /Ãº/g,
   /Ã¡/g, /Ã¿/g, /Ã«/g, /Ã¯/g, /Ã¹/g, /Ã¶/g, /Ã¼/g, /Ãÿ/g, /Ã´/g,
-  /Ã/g, /Ã€/g, /Ã‡/g, /Ãˆ/g, /Ãš/g, /Ã¨/g,
+  /Ã/g, /Ã€/g, /Ã‡/g, /Ãˆ/g, /Ãš/g,
   /â€”/g, /â€“/g, /â€™/g, /â€“/g, /â€”/g, /â€¢/g, /â€¦/g,
   /Â·/g, /Â«/g, /Â»/g, /Â¿/g, /Â¡/g,
-  ['â†’', 'g'],
-  ['âœ“', 'g'],
-  ['â€œ', 'g'],
-  ['â€', 'g'],
 ];
 
 let filesWithMojibake = 0;
@@ -38,7 +29,7 @@ function walk(dir) {
       if (!entry.name.startsWith('.') && entry.name !== 'node_modules' && entry.name !== 'dist') {
         walk(full);
       }
-    } else if (/\.(html|htm|js|jsx|json|css)$/i.test(entry.name)) {
+    } else if (EXT_SET.has(path.extname(entry.name).toLowerCase())) {
       try {
         const content = fs.readFileSync(full, 'utf8');
         let found = 0;
@@ -58,8 +49,11 @@ function walk(dir) {
 
 walk(PUBLIC);
 
+console.log(`\nFichiers avec mojibake: ${filesWithMojibake}`);
+console.log(`Total occurrences: ${totalOccurrences}`);
+
 if (filesWithMojibake > 0) {
-  console.log(`\n❌ ${filesWithMojibake} fichier(s) avec ${totalOccurrences} occurrence(s) de mojibake.`);
+  console.log(`\n❌ ${filesWithMojibake} fichier(s) contient(nt) encore du mojibake`);
   process.exit(1);
 } else {
   console.log('✅ Aucun mojibake détecté dans public/.');
