@@ -73,20 +73,20 @@ export function initHomeAZ(SR, HOST, opts){
     live:        {fr:"EN DIRECT", en:"LIVE", es:"EN DIRECTO"},
     eb0:         {fr:["EN DIRECT · "," · SATELLITE COPERNICUS"], en:["LIVE · "," · COPERNICUS SATELLITE"], es:["EN DIRECTO · "," · SATÉLITE COPERNICUS"]},
     s0:          {fr:"Le verdict sargasses du matin, mesuré au satellite — pas une supposition.", en:"This morning's sargassum verdict, measured by satellite — not a guess.", es:"El veredicto de sargazo de esta mañana, medido por satélite — no una suposición."},
-    ctaHeroT:    {fr:"Voir l'état maintenant", en:"See it right now", es:"Ver el estado ahora"},
+    ctaHeroT:    {fr:"Voir la dernière mesure", en:"See latest reading", es:"Ver la última medición"},
     ctaHeroS:    {fr:"verdict du jour · météo · 7 jours de prévisions", en:"today's verdict · weather · 7-day forecast", es:"veredicto de hoy · clima · pronóstico 7 días"},
-    mapLinkT:    {fr:"Ouvrir la carte en direct", en:"Open the live map", es:"Abrir el mapa en directo"},
+    mapLinkT:    {fr:"Ouvrir la carte des plages", en:"Open beach map", es:"Abrir mapa de playas"},
     eb1:         {fr:"CE MATIN, EN DIRECT", en:"THIS MORNING, LIVE", es:"ESTA MAÑANA, EN DIRECTO"},
     h1:          {fr:[["LE VERDICT,"],["PLAGE PAR PLAGE"]], en:[["THE VERDICT,"],["BEACH BY BEACH"]], es:[["EL VEREDICTO,"],["PLAYA POR PLAYA"]]},
     s1:          {fr:"Pas d'avis, pas de promesses : la mesure satellite de ce matin, plage par plage.", en:"No opinions, no promises: this morning's satellite reading, beach by beach.", es:"Sin opiniones ni promesas: la medición satelital de esta mañana, playa por playa."},
     ctaVerdictT: {fr:"Choisis ta plage", en:"Pick your beach", es:"Elige tu playa"},
     eb2:         {fr:"COMMENT ON LE SAIT", en:"HOW WE KNOW", es:"CÓMO LO SABEMOS"},
     h2:          {fr:[["ON VEILLE"],["LA MER POUR TOI"]], en:[["WE WATCH"],["THE SEA FOR YOU"]], es:[["VIGILAMOS"],["EL MAR POR TI"]]},
-    s2:          {fr:"Le satellite Copernicus passe 4 fois par jour : on traduit chaque passage en un verdict clair — mesuré, jamais deviné.", en:"The Copernicus satellite passes 4 times a day: we turn every pass into a clear verdict — measured, never guessed.", es:"El satélite Copernicus pasa 4 veces al día: convertimos cada pasada en un veredicto claro — medido, nunca adivinado."},
+    s2:          {fr:"On traduit la dernière observation satellite disponible en un statut clair, plage par plage. Si la mesure est retardée, on le signale.", en:"We turn the latest available satellite observation into a clear beach-by-beach status. If the reading is delayed, we say so.", es:"Convertimos la última observación satelital disponible en un estado claro, playa por playa. Si la medición se retrasa, lo indicamos."},
     m2b1t:       {fr:"Satellite Copernicus", en:"Copernicus satellite", es:"Satélite Copernicus"},
-    m2b1s:       {fr:"4 passages par jour, chaque plage — la donnée du matin, pas d'hier.", en:"4 passes a day, every beach — this morning's data, not yesterday's.", es:"4 pasadas al día, cada playa — el dato de esta mañana, no el de ayer."},
+    m2b1s:       {fr:"L'heure de la dernière observation est affichée ; une republication ne remplace pas une nouvelle mesure.", en:"The latest observation time is shown; republishing is not a new measurement.", es:"Se muestra la hora de la última observación; volver a publicar no equivale a una nueva medición."},
     m2b2t:       {fr:"Un score 0-100", en:"A 0-100 score", es:"Un puntaje 0-100"},
-    m2b2s:       {fr:"Recalculé à chaque passage : tu sais où ça en est, en temps réel.", en:"Recomputed on every pass: you know where it stands, in real time.", es:"Recalculado en cada pasada: sabes cómo está, en tiempo real."},
+    m2b2s:       {fr:"Le score résume les indicateurs disponibles ; la fraîcheur de la mesure est affichée séparément.", en:"The score summarizes available indicators; observation freshness is shown separately.", es:"El puntaje resume los indicadores disponibles; la frescura de la medición se muestra por separado."},
     m2b3t:       {fr:"7 jours devant", en:"7 days ahead", es:"7 días por delante"},
     m2b3s:       {fr:"7 jours de prévisions, baie par baie — et quand la confiance baisse, on te le dit.", en:"7-day forecast, bay by bay — and when confidence drops, we tell you.", es:"Pronóstico a 7 días, bahía por bahía — y cuando baja la confianza, te lo decimos."},
     eb3:         {fr:"PREMIUM", en:"PREMIUM", es:"PREMIUM"},
@@ -100,7 +100,7 @@ export function initHomeAZ(SR, HOST, opts){
     ctaPremiumT: {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     reassure:    {fr:"Pass unique, dès 7,99 € — pas d'abonnement, accès immédiat, rien à résilier.", en:"One-time Pass from $5.99 — no subscription, instant access, nothing to cancel.", es:"Pass único desde $5.99 — sin suscripción, acceso inmediato, nada que cancelar."},
     eb4:         {fr:"MESURÉ, PAS DEVINÉ", en:"MEASURED, NOT GUESSED", es:"MEDIDO, NO ADIVINADO"},
-    footCredit:  {fr:"Données : Copernicus Marine · mise à jour en direct", en:"Data: Copernicus Marine · updated live", es:"Datos: Copernicus Marine · actualizado en directo"},
+    footCredit:  {fr:"Données : Copernicus Marine · heure d'observation affichée", en:"Data: Copernicus Marine · observation time shown", es:"Datos: Copernicus Marine · hora de observación indicada"},
     aboutLink:   {fr:"À propos", en:"About", es:"Acerca de"},
     footPrem:    {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     notifT1:     {fr:"TA PLAGE CHANGE", en:"YOUR BEACH CHANGES", es:"TU PLAYA CAMBIA"},
@@ -232,18 +232,20 @@ export function initHomeAZ(SR, HOST, opts){
 
   function applyCopy(){
     var bn=beachName();
-    if($("liveTxt")) $("liveTxt").textContent=freshness().badge;
+    var fresh=freshness();
+    var statusNote=_t("Le statut reflète la dernière mesure disponible, pas une confirmation en direct.","Status reflects the latest available reading, not live confirmation.","El estado refleja la última medición disponible, no una confirmación en vivo.");
+    if($("liveTxt")) $("liveTxt").textContent=fresh.badge;
     if($("livePass")) $("livePass").textContent=" "+freshLabel();
     setEyebrow0(); setHeroHeading();
-    if($("s0")) $("s0").textContent=T.s0[LANG];
+    if($("s0")) $("s0").textContent=fresh.live ? T.s0[LANG] : fresh.label;
     if($("ctaHeroT")) $("ctaHeroT").textContent=T.ctaHeroT[LANG];
-    if($("ctaHeroS")) $("ctaHeroS").textContent=T.ctaHeroS[LANG];
+    if($("ctaHeroS")) $("ctaHeroS").textContent=fresh.live ? T.ctaHeroS[LANG] : statusNote;
     if($("mapLinkT")) $("mapLinkT").textContent=T.mapLinkT[LANG];
     var st=STATUS[HOME.status]||STATUS.clean;
-    if($("vTxt")){ $("vTxt").textContent=st[LANG][0]; $("vTxt").style.color=st.col; }
+    if($("vTxt")){ $("vTxt").textContent=fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge; $("vTxt").style.color=st.col; }
     var vbBadge=$("verdictBadge"); if(vbBadge){ var vbar=vbBadge.querySelector(".vbar"); if(vbar) vbar.style.background=st.col; }
     if($("vScore")) $("vScore").textContent=HOME.score;
-    if($("eb1")) $("eb1").textContent=T.eb1[LANG]; setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=T.s1[LANG];
+    if($("eb1")) $("eb1").textContent=fresh.live ? T.eb1[LANG] : fresh.badge+" · "+observationDateLabel(); setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=fresh.live ? T.s1[LANG] : statusNote;
     if($("ctaVerdictT")) $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
     if($("eb2")) $("eb2").textContent=T.eb2[LANG]; setHeading($("h2"),T.h2[LANG]); if($("s2")) $("s2").textContent=T.s2[LANG];
     if($("m2b1t")) $("m2b1t").textContent=T.m2b1t[LANG]; if($("m2b1s")) $("m2b1s").textContent=T.m2b1s[LANG];
