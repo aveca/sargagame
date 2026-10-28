@@ -49,18 +49,18 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
     'sans ce token, l\'API dispatch renvoie 403 et rien n\'est déployé');
   record(`${file} : GITHUB_REPOSITORY transmis au step`,
     /GITHUB_REPOSITORY:\s*\$\{\{\s*github\.repository\s*\}\}/.test(block));
-  const sourceIdx = t.search(/^[ \\t]*- name:\\s*Report source\\s*$/m);
+  const sourceIdx = t.search(/^[ \t]*- name:\s*Report source\s*$/m);
   const sourceBlock = sourceIdx >= 0 ? t.slice(sourceIdx, sourceIdx + 1800) : '';
   record(`${file} : âge réel ERDDAP exporté avec repli fail-closed`,
     /erddapTimestamp/.test(sourceBlock) &&
-    /satellite_age_minutes/.test(sourceBlock) && /999999/.test(sourceBlock) && /Date\\.now\\(\\)/.test(sourceBlock));
+    /satellite_age_minutes/.test(sourceBlock) && /999999/.test(sourceBlock) && /Date\.now\(\)/.test(sourceBlock));
   record(`${file} : dispatch main limité à une observation de 900 min max`,
-    /if:\\s*steps\\.publish\\.outcome\\s*==\\s*'success'\\s*&&\\s*steps\\.publish\\.outputs\\.branch\\s*==\\s*'main'\\s*&&\\s*fromJSON\\(steps\\.src\\.outputs\\.satellite_age_minutes\\)\\s*<=\\s*900/.test(block));
+    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'\s*&&\s*fromJSON\(steps\.src\.outputs\.satellite_age_minutes\)\s*<=\s*900/.test(block));
   record(`${file} : blocage explicite documenté au-delà de 900 min`,
-    /fromJSON\\(steps\\.src\\.outputs\\.satellite_age_minutes\\) > 900/.test(t) &&
+    /fromJSON\(steps\.src\.outputs\.satellite_age_minutes\) > 900/.test(t) &&
     /Déploiement différé/.test(t));
   record(`${file} : permissions actions: write déclarées`,
-    /^\\s*actions:\\s*write\\s*$/m.test(t));
+    /^\s*actions:\s*write\s*$/m.test(t));
 }
 
 // ── 4. Les trois workflows de la chaîne acceptent workflow_dispatch ───────
