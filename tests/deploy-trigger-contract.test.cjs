@@ -66,7 +66,7 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
     file === 'data-refresh.yml'
       ? /steps\.verify\.outcome == 'success' && steps\.commit_freshness\.outputs\.fresh == 'true'/.test(publishBlock)
       : /steps\.verify\.outcome != 'success' \|\| steps\.commit_freshness\.outputs\.fresh == 'true'/.test(publishBlock));
-  record(file + ' : dispatch main conditionné à l'intégrité ET au gate final frais',
+  record(file + " : dispatch main conditionné à l'intégrité ET au gate final frais",
     /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'\s*&&\s*steps\.verify\.outcome\s*==\s*'success'\s*&&\s*steps\.commit_freshness\.outputs\.fresh\s*==\s*'true'/.test(block));
   record(file + ' : blocage explicite documenté si source hors SLA',
     /steps\.commit_freshness\.outputs\.fresh != 'true'/.test(t) &&
