@@ -165,14 +165,25 @@ function main() {
     try {
       reg = JSON.parse(fs.readFileSync(regPath, 'utf-8'))
     } catch (e) {
-      console.error(`❌ [${dirName}] payload régional JSON invalide: ${e.message}`)
-      ok = false
+      if (requiredRegionDirs.includes(dirName)) {
+        console.error(`❌ [${dirName}] payload régional JSON invalide: ${e.message}`)
+        ok = false
+      } else {
+        console.warn(`   ⚠ [${dirName}] payload non-production illisible (fraîcheur non évaluée): ${e.message}`)
+      }
       continue
     }
     const regSource = reg && reg.source
     if (!LIVE_SOURCES.includes(regSource)) {
       console.error(`❌ [${dirName}] source="${regSource}" non-live — publication bloquée`)
       ok = false
+      continue
+    }
+    // The 900-minute deploy SLA applies to the six deployed domains only.
+    // Additional catalog payloads (e.g. Barbados) retain the existing source guard
+    // but must not block the six-domain release on an experimental region's age.
+    if (!requiredRegionDirs.includes(dirName)) {
+      console.log(`   région catalogue ${dirName}: source=${regSource} ✓ (hors SLA production six domaines)`)
       continue
     }
     const freshness = evaluateObservation(reg.erddapTimestamp)
