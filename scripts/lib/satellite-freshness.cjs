@@ -9,9 +9,11 @@ function satelliteFreshness(erddapTimestamp, now = Date.now()) {
     ? erddapTimestamp
     : Date.parse(String(erddapTimestamp ?? ''));
 
-  // Missing, invalid, future, or invalid-clock timestamps cannot prove age.
+  // Fail closed: missing, invalid, future, or invalid-clock timestamps cannot prove
+  // freshness. Keep age unknown, but mark the payload stale/unverified so callers
+  // that only inspect the boolean never mistake an unverifiable observation as fresh.
   if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now) || timestamp > now) {
-    return { dataAgeMinutes: null, stale: false };
+    return { dataAgeMinutes: null, stale: true };
   }
 
   const dataAgeMinutes = Math.round((now - timestamp) / 60_000);
