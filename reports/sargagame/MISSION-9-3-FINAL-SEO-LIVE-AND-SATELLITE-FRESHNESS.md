@@ -25,6 +25,12 @@ Il faut distinguer les contrats :
 - `tests/unit/satellite-freshness-metadata.test.cjs` garde les assertions historiques de 36 h intactes.
 - Le rapport ne modifie pas les artefacts de données : le rafraîchissement le plus récent sur `main` a déjà généré le snapshot de 05:01 UTC. Réintroduire la copie de 04:36 UTC de l'ancienne branche aurait fait reculer `updatedAt` sans fournir une observation plus récente.
 
+## Automatisation du garde-fou de déploiement
+
+Les workflows `.github/workflows/data-refresh.yml` et `.github/workflows/daily-copernicus.yml` recalculent maintenant l'âge à partir de `erddapTimestamp`. Le déclenchement de la chaîne CI/production n'est autorisé que si cet âge est connu et inférieur ou égal à 900 minutes ; une valeur absente, invalide ou future échoue par défaut. Au-delà, le run laisse un avertissement et une entrée dans son résumé, sans essayer un déploiement voué à échouer. Les calendriers de collecte restent actifs afin que le prochain cycle reteste automatiquement la source réelle.
+
+Ce garde-fou ne fabrique aucune observation et n'affaiblit pas la certification post-déploiement. Il réduit les actions inutiles en attendant qu'ERDDAP publie une observation assez récente.
+
 ## Tests et statut
 
 Le premier run de la PR #1107 a révélé l'incompatibilité entre le changement global à 15 h et les tests de contrat à 36 h. Cette correction sépare le SLA de déploiement du marqueur public sans réduire aucun seuil. Les contrôles CI doivent être jugés sur le HEAD courant de la PR ; aucun résultat vert n'est annoncé avant achèvement.
