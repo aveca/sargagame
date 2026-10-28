@@ -199,7 +199,7 @@ jobs:
       # production (`main`). Une publication sur une branche de développement
       # ne doit jamais déclencher un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
