@@ -50,7 +50,7 @@ const buildGate = build.indexOf('Pre-deploy satellite freshness gate (all six re
 const buildValidate = build.indexOf('Validate prepared HTML CSP and bundle references');
 check(buildPrep >= 0 && buildPrep < buildGate && buildGate < buildValidate, 'all six prepared payloads are freshness-gated before deploy jobs can start');
 const buildGateBlock = build.slice(buildGate, buildValidate);
-check(/if:\\s*github\\.ref == 'refs\\/heads\\/main'/.test(buildGateBlock), 'the global freshness gate runs only on the production main ref; non-production validation runs remain usable');
+check(buildGateBlock.includes("if: github.ref == 'refs/heads/main'"), 'the global freshness gate runs only on the production main ref; non-production validation runs remain usable');
 
 const workerGate = deploy.indexOf('Recheck satellite freshness immediately before Worker deploy');
 const workerDeploy = deploy.indexOf('- name: Deploy Worker');
