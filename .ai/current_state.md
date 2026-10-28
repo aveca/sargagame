@@ -37,8 +37,9 @@
 
 ### Branche / PR
 - Branche : `agent/coding/ui-refactoring-playwright`
-- PR : à créer (base main)
-- Commit head : à définir
+- PR : à créer sur https://github.com/aveca/sargagame/pull/new/agent/coding/ui-refactoring-playwright
+- Commit head : `fc2bdac7f` (poussé sur origin ✅)
+- Remote : nettoyé (token retiré de l'URL), push autorisé
 
 ---
 
