@@ -5,6 +5,7 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { evaluateObservation, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
 
 const root = path.join(__dirname, '..')
 // Allowlist des sources LIVE (partagée racine + régions) — cf. garde MOAT #1.
@@ -57,6 +58,16 @@ function main() {
       console.error(`❌ source="${data.source}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte sans données réelles. Le prochain run re-tentera la source live.`)
       ok = false
     }
+  }
+
+  // Operational SLA is separate from the public 36-hour stale marker.
+  // updatedAt proves publication time only; erddapTimestamp proves observation time.
+  const rootFreshness = evaluateObservation(data.erddapTimestamp)
+  if (!rootFreshness.ok) {
+    console.error(`❌ Observation satellite racine refusée : ${rootFreshness.reason} (SLA ${MAX_AGE_MINUTES} min)`)
+    ok = false
+  } else {
+    console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min (SLA ${MAX_AGE_MINUTES} min) ✓`)
   }
 
   // ── Garde MOAT #2 : pic "tout vert" suspect. Un bond brutal du taux de plages
@@ -127,34 +138,36 @@ function main() {
     }
   }
 
-  // ── Garde MOAT #1 bis : mêmes règles pour les sargassum.json RÉGIONAUX
-  // (public/api/copernicus/<region>/). Une source non-live (ex. 'erddap-fallback'
-  // = grille manquante masquée en clean) bloque la publication comme la racine.
-  // Fail-open sur dossier illisible / fichier absent (warn, pas de blocage) —
-  // même philosophie que la lecture historique de la garde #2.
+  // Same source and operational freshness contract for every required regional payload.
   const copDir = path.join(root, 'public', 'api', 'copernicus')
-  let regionDirs = []
-  try {
-    regionDirs = fs.readdirSync(copDir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name)
-  } catch (e) {
-    console.warn('   ⚠ Répertoire copernicus illisible (garde régionale inactive):', e.message)
-  }
-  for (const dirName of regionDirs) {
+  const requiredRegionDirs = ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']
+  for (const dirName of requiredRegionDirs) {
     const regPath = path.join(copDir, dirName, 'sargassum.json')
-    if (!fs.existsSync(regPath)) continue // dossier sans payload (ex. _private) — non-bloquant
+    if (!fs.existsSync(regPath)) {
+      console.error(`❌ [${dirName}] payload régional absent — publication bloquée`)
+      ok = false
+      continue
+    }
     let reg = null
     try {
       reg = JSON.parse(fs.readFileSync(regPath, 'utf-8'))
     } catch (e) {
-      console.warn(`   ⚠ ${dirName}/sargassum.json illisible (garde régionale inactive pour cette région):`, e.message)
+      console.error(`❌ [${dirName}] payload régional JSON invalide: ${e.message}`)
+      ok = false
       continue
     }
-    const regSource = reg && reg.source // reg peut être null (JSON valide mais vide)
+    const regSource = reg && reg.source
     if (!LIVE_SOURCES.includes(regSource)) {
-      console.error(`❌ [${dirName}] source="${regSource}" non-live (dégradée / référence) — publication FTP bloquée pour ne pas diffuser une carte régionale sans données réelles.`)
+      console.error(`❌ [${dirName}] source="${regSource}" non-live — publication bloquée`)
+      ok = false
+      continue
+    }
+    const freshness = evaluateObservation(reg.erddapTimestamp)
+    if (!freshness.ok) {
+      console.error(`❌ [${dirName}] observation refusée : ${freshness.reason} (SLA ${MAX_AGE_MINUTES} min)`)
       ok = false
     } else {
-      console.log(`   région ${dirName}: source=${regSource} ✓`)
+      console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min ✓`)
     }
   }
 
