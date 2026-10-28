@@ -69,11 +69,10 @@ async function checkDomain(domain, dataMaxAgeMinutes) {
         // updatedAt only proves that the JSON was republished. Independently check
         // the actual satellite observation so a fresh pipeline run cannot mask stale data.
         const satellite = evaluateObservation(data.erddapTimestamp)
+        if (Number.isFinite(satellite.ageMinutes)) d.satelliteAgeMinutes = Math.round(satellite.ageMinutes)
         if (!satellite.ok) {
           const age = Number.isFinite(satellite.ageMinutes) ? satellite.ageMinutes.toFixed(2) + 'min' : 'âge inconnu'
           d.errors.push('observation satellite hors SLA (' + age + ' ; limite ' + MAX_AGE_MINUTES + 'min ; ' + satellite.reason + ')')
-        } else {
-          d.satelliteAgeMinutes = Math.round(satellite.ageMinutes)
         }
       } catch { /* contenu non-JSON : déjà couvert par le status */ }
     }
