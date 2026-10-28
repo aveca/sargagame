@@ -50,5 +50,5 @@ const path = require("node:path");
   ok(source.includes("var live=fresh.badge;"), "hero badge follows verified freshness state");
   ok(source.includes('$("liveTxt").textContent=freshness().badge'), "secondary live pill follows verified freshness state");
 
-  console.log(`OK home-az-freshness: ${count + 5} assertions`);
+  console.log(`OK home-az-freshness: ${count} assertions`);
 })().catch(error => { console.error(error); process.exit(1); });
