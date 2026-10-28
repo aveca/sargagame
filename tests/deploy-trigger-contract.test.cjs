@@ -48,8 +48,8 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
     'sans ce token, l\'API dispatch renvoie 403 et rien n\'est déployé');
   record(`${file} : GITHUB_REPOSITORY transmis au step`,
     /GITHUB_REPOSITORY:\s*\$\{\{\s*github\.repository\s*\}\}/.test(block));
-  record(`${file} : dispatch conditionné à la publication sur main`,
-    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'/.test(block));
+  record(`${file} : dispatch conditionné à la publication vérifiée, au fetch ERDDAP réussi et à main`,
+    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'\s*&&\s*steps\.verify\.outcome\s*==\s*'success'\s*&&\s*steps\.erddap\.outcome\s*==\s*'success'/.test(block));
   record(`${file} : permissions actions: write déclarées`,
     /^\s*actions:\s*write\s*$/m.test(t));
 }
