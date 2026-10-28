@@ -16,7 +16,8 @@
  *      publication sur une branche de développement ne déploie jamais) ;
  *   3. les permissions `actions: write` sont déclarées ;
  *   4. les trois workflows de la chaîne acceptent `workflow_dispatch` ;
- *   5. la porte de certification reste fail-closed (checks requis intacts).
+ *   5. la porte de certification reste fail-closed (checks requis intacts) ;
+ *   6. aucun dispatch production n'est lancé si erddapTimestamp dépasse 900 min.
  */
 'use strict';
 
@@ -48,10 +49,16 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
     'sans ce token, l\'API dispatch renvoie 403 et rien n\'est déployé');
   record(`${file} : GITHUB_REPOSITORY transmis au step`,
     /GITHUB_REPOSITORY:\s*\$\{\{\s*github\.repository\s*\}\}/.test(block));
-  record(`${file} : dispatch conditionné à la publication sur main`,
-    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'/.test(block));
+  record(`${file} : âge réel ERDDAP exporté avec repli fail-closed`,
+    /erddapTimestamp/.test(t.slice(t.search(/^[ \\t]*- name:\\s*Report source\\s*$/m), t.search(/^[ \\t]*- name:\\s*Report source\\s*$/m) + 1800)) &&
+    /satellite_age_minutes/.test(t) && /999999/.test(t) && /Date\.now\(\)/.test(t));
+  record(`${file} : dispatch main limité à une observation de 900 min max`,
+    /if:\\s*steps\\.publish\\.outcome\\s*==\\s*'success'\\s*&&\\s*steps\\.publish\\.outputs\\.branch\\s*==\\s*'main'\\s*&&\\s*fromJSON\\(steps\\.src\\.outputs\\.satellite_age_minutes\\)\\s*<=\\s*900/.test(block));
+  record(`${file} : blocage explicite documenté au-delà de 900 min`,
+    /fromJSON\(steps\.src\.outputs\.satellite_age_minutes\) > 900/.test(t) &&
+    /Déploiement différé/.test(t));
   record(`${file} : permissions actions: write déclarées`,
-    /^\s*actions:\s*write\s*$/m.test(t));
+    /^\\s*actions:\\s*write\\s*$/m.test(t));
 }
 
 // ── 4. Les trois workflows de la chaîne acceptent workflow_dispatch ───────
