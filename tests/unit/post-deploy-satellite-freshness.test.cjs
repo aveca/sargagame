@@ -44,8 +44,8 @@ check(PDV.checkSatelliteFreshness({ source: 'reference', updatedAt: payload.upda
 check(source.includes("set('satellite_freshness', satelliteCheck.status, satelliteCheck.detail)"), 'post-deploy verifier wires satellite freshness into the per-domain gate');
 check(PDV.describeHttpProbe({ ok: true, status: 200 }) === '', 'HTTP 200 with successful curl is accepted');
 check(PDV.describeHttpProbe({ ok: true, status: 404 }) === 'HTTP 404', 'a completed HTTP 404 is reported as an HTTP response');
-check(PDV.describeHttpProbe({ ok: false, status: 200, error: 'Operation timed out\\nextra detail' }) === 'curl exited non-zero after HTTP 200: Operation timed out', 'curl transport failure is not mislabeled as an unavailable HTTP asset when a status was printed');
-check(PDV.describeHttpProbe({ ok: false, status: 0, error: 'Could not resolve host\\nextra detail' }) === 'curl exited non-zero: Could not resolve host', 'transport failure without an HTTP status preserves the curl error');
+check(PDV.describeHttpProbe({ ok: false, status: 200, error: 'Operation timed out\nextra detail' }) === 'curl exited non-zero after HTTP 200: Operation timed out', 'curl transport failure is not mislabeled as an unavailable HTTP asset when a status was printed');
+check(PDV.describeHttpProbe({ ok: false, status: 0, error: 'Could not resolve host\nextra detail' }) === 'curl exited non-zero: Could not resolve host', 'transport failure without an HTTP status preserves the curl error');
 check(source.includes('referenced asset probe failed:'), 'asset verification reports transport failure separately from HTTP status');
 
 console.log(`POST_DEPLOY_SATELLITE_FRESHNESS_TESTS PASS (${assertions} assertions)`);
