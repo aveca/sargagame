@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { isSatelliteStale36h, lcDetailFreshnessLabel } from "./lib/format-freshness.mjs"
+import { chasseMapCtaSummary, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -1705,7 +1705,7 @@ export default function ChasseHome(props){
         <span className="lc-gomap-ic">🗺️</span>
         <span className="lc-gomap-tx">
           <b>{_t({fr:"VOIR LA CARTE SARGASSES",en:"SEE THE SARGASSUM MAP",es:"VER EL MAPA DE SARGAZO"})}</b>
-          <small>{(()=>{const ok=(pickBeaches||[]).filter(b=>b&&b.status==="clean").length,tot=(pickBeaches||[]).filter(b=>b&&b.status&&b.score!=null).length;return _t({fr:ok+"/"+tot+" plages propres aujourd'hui · en direct",en:ok+"/"+tot+" clean beaches today · live",es:ok+"/"+tot+" playas limpias hoy · en directo"})})()}</small>
+          <small>{(()=>{const ok=(pickBeaches||[]).filter(b=>b&&b.status==="clean").length,tot=(pickBeaches||[]).filter(b=>b&&b.status&&b.score!=null).length;return chasseMapCtaSummary(ok,tot,satelliteAgeHours(sargData),lang)})()}</small>
         </span>
         <span className="lc-gomap-go">›</span>
       </button>
