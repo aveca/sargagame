@@ -28,7 +28,7 @@ test.describe("UI Refactoring — Captures APRÈS (avec améliorations)", () => 
       await page.waitForFunction(() => {
         const svg = document.querySelector("svg")
         return svg != null && svg.children.length > 0
-      }, { timeout: 8000 }).catch(() => console.log(`[${vp.name}] SVG non trouvé après 8s`))
+      }, undefined, { timeout: 8000 }).catch(() => console.log(`[${vp.name}] SVG non trouvé après 8s`))
 
       // Capture d'écran pleine page APRÈS
       await page.screenshot({
