@@ -49,6 +49,11 @@ const path = require("node:path");
   ok(!source.includes("sargData.updatedAt||sargData.erddapTimestamp"), "HomeAZ never prefers publication time over observation time");
   ok(source.includes("var live=fresh.badge;"), "hero badge follows verified freshness state");
   ok(source.includes('$("liveTxt").textContent=freshness().badge'), "secondary live pill follows verified freshness state");
+  ok(source.includes('fresh.live ? T.s0[LANG] : fresh.label'), "hero supporting copy is gated by observation freshness");
+  ok(source.includes('fresh.live ? T.s1[LANG] : statusNote'), "secondary supporting copy avoids a false live claim");
+  ok(source.includes('fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge'), "status pill is explicitly marked when not live");
+  ok(!/4 fois par jour|4 times a day|4 pasadas al día|mise à jour en direct|updated live|actualizado en directo/.test(source), "HomeAZ does not promise an unsupported refresh frequency or live update");
+  ok(source.includes('Data: Copernicus Marine · observation time shown'), "footer identifies observation time instead of claiming live updates");
 
   console.log(`OK home-az-freshness: ${count} assertions`);
 })().catch(error => { console.error(error); process.exit(1); });
