@@ -74,7 +74,11 @@ async function checkDomain(domain, dataMaxAgeMinutes) {
           const age = Number.isFinite(satellite.ageMinutes) ? satellite.ageMinutes.toFixed(2) + 'min' : 'âge inconnu'
           d.errors.push('observation satellite hors SLA (' + age + ' ; limite ' + MAX_AGE_MINUTES + 'min ; ' + satellite.reason + ')')
         }
-      } catch { /* contenu non-JSON : déjà couvert par le status */ }
+      } catch (error) {
+        // HTTP 200 does not prove the response is valid JSON. Fail closed so a
+        // malformed payload cannot silently leave the domain marked healthy.
+        d.errors.push('sargassum.json JSON invalide (' + safeError(error) + ')')
+      }
     }
   }
   d.ok = d.errors.length === 0
