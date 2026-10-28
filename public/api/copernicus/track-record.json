@@ -18,7 +18,8 @@
     "computedAt": "2026-10-28T17:29:56.698Z",
     "backtestAgeHours": 0,
     "observationLagDays": 0,
-    "stale": false
+    "stale": true,
+    "failureReason": "Data integrity gate, backtest, or track-record build failed in the current publication run"
   },
   "sampleSize": 2205,
   "regions": [
