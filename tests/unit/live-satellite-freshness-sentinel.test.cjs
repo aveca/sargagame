@@ -13,6 +13,14 @@ function check(condition, message) {
   assert.ok(condition, message);
 }
 
+
+const workflowPath = path.resolve(__dirname, '../../.github/workflows/live-production-sentinel.yml');
+const workflowSource = fs.readFileSync(workflowPath, 'utf8');
+check(workflowSource.includes('wrangler@latest tail'), 'Sentinel still captures bounded Wrangler tail sessions');
+check(workflowSource.includes('--status=error'), 'Sentinel keeps the error-only tail filter');
+check(!workflowSource.includes('--sampling-rate=1'), 'Sentinel never passes the invalid explicit sampling-rate=1 argument');
+
+
 (async () => {
   const payload = {
     source: 'erddap-live',
