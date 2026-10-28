@@ -48,7 +48,7 @@ const path = require("node:path");
   ok(source.includes("erddapTimestamp: (sargData&&sargData.erddapTimestamp) || null"), "HomeAZ passes the source observation timestamp");
   ok(!source.includes("sargData.updatedAt||sargData.erddapTimestamp"), "HomeAZ never prefers publication time over observation time");
   ok(source.includes("var live=fresh.badge;"), "hero badge follows verified freshness state");
-  ok(source.includes('$("liveTxt").textContent=freshness().badge'), "secondary live pill follows verified freshness state");
+  ok(source.includes('$("liveTxt").textContent=fresh.badge'), "secondary live pill follows verified freshness state");
   ok(source.includes('fresh.live ? T.s0[LANG] : fresh.label'), "hero supporting copy is gated by observation freshness");
   ok(source.includes('fresh.live ? T.s1[LANG] : statusNote'), "secondary supporting copy avoids a false live claim");
   ok(source.includes('fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge'), "status pill is explicitly marked when not live");
