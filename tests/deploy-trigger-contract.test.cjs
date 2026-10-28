@@ -54,11 +54,23 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
   record(`${file} : âge réel ERDDAP exporté avec repli fail-closed`,
     /erddapTimestamp/.test(sourceBlock) &&
     /satellite_age_minutes/.test(sourceBlock) && /999999/.test(sourceBlock) && /Date\.now\(\)/.test(sourceBlock));
-  record(`${file} : dispatch main limité à une observation de 900 min max`,
-    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'\s*&&\s*fromJSON\(steps\.src\.outputs\.satellite_age_minutes\)\s*<=\s*900/.test(block));
-  record(`${file} : blocage explicite documenté au-delà de 900 min`,
-    /fromJSON\(steps\.src\.outputs\.satellite_age_minutes\) > 900/.test(t) &&
-    /Déploiement différé/.test(t));
+  record(file + ' : âge source sans arrondi qui masque un dépassement fractionnaire',
+    !/Math\.floor\(\(n-t\)\/60000\)/.test(sourceBlock) && /\(n-t\)\/60000/.test(sourceBlock));
+  const commitGateIdx = t.search(/^[ \t]*- name:\s*Final source freshness gate before commit\s*$/m);
+  const publishIdx = t.search(/^[ \t]*- name:\s*Commit \+ push des données Copernicus\s*$/m);
+  const commitGateBlock = commitGateIdx >= 0 && publishIdx > commitGateIdx ? t.slice(commitGateIdx, publishIdx) : '';
+  record(file + ' : gate final ERDDAP exécuté avant le commit',
+    commitGateIdx >= 0 && publishIdx > commitGateIdx && /check-publish-satellite-freshness\.cjs/.test(commitGateBlock));
+  const publishBlock = publishIdx >= 0 ? t.slice(publishIdx, publishIdx + 500) : '';
+  record(file + ' : aucun payload satellite committé hors SLA',
+    file === 'data-refresh.yml'
+      ? /steps\.verify\.outcome == 'success' && steps\.commit_freshness\.outputs\.fresh == 'true'/.test(publishBlock)
+      : /steps\.verify\.outcome != 'success' \|\| steps\.commit_freshness\.outputs\.fresh == 'true'/.test(publishBlock));
+  record(file + ' : dispatch main conditionné au gate final frais',
+    /if:\s*steps\.publish\.outcome\s*==\s*'success'\s*&&\s*steps\.publish\.outputs\.branch\s*==\s*'main'\s*&&\s*steps\.commit_freshness\.outputs\.fresh\s*==\s*'true'/.test(block));
+  record(file + ' : blocage explicite documenté si source hors SLA',
+    /steps\.commit_freshness\.outputs\.fresh != 'true'/.test(t) &&
+    /Publication différée/.test(t));
   record(`${file} : permissions actions: write déclarées`,
     /^\s*actions:\s*write\s*$/m.test(t));
 }
