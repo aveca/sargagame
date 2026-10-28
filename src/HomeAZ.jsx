@@ -19,6 +19,7 @@
  */
 import React,{useRef,useEffect} from "react"
 import {HOME_AZ_CSS,HOME_AZ_MARKUP} from "./home-az-assets.js"
+import {homeAzFreshness} from "./lib/format-freshness.mjs"
 
 /* ====================================================================
    MOTEUR — monté dans le shadow root SR, hôte/scroll-container HOST.
@@ -42,6 +43,7 @@ export function initHomeAZ(SR, HOST, opts){
       status: h.status || "clean",              /* clean | mod | avoid */
       region: h.region || "fr",
       updatedAt: h.updatedAt || null,
+      erddapTimestamp: h.erddapTimestamp || null,
       freshLabel: h.freshLabel || null,
       top3: Array.isArray(h.top3) ? h.top3 : null
     };
@@ -124,26 +126,26 @@ export function initHomeAZ(SR, HOST, opts){
   function beachName(){ return LANG==="fr" ? HOME.beach : (HOME.beachDisplay || beachNoArticle(HOME.beach)); }
   function stLabel(s){ return s==="clean"?_t("Propre","Clean","Limpia") : s==="mod"?_t("Modéré","Moderate","Moderada") : _t("À éviter","Avoid","Evitar"); }
 
-  /* freshness HONNÊTE (jamais de faux chrono) */
+  /* Fraîcheur basée exclusivement sur l'observation ERDDAP, jamais sur la republication. */
+  function freshness(){
+    return homeAzFreshness({erddapTimestamp:HOME.erddapTimestamp}, LANG);
+  }
   function freshLabel(){
-    if(HOME.freshLabel) return (typeof HOME.freshLabel==="object" ? (HOME.freshLabel[LANG]||HOME.freshLabel.fr) : HOME.freshLabel);
-    if(HOME.updatedAt){
-      var age=(Date.now()-new Date(HOME.updatedAt).getTime())/60000;
-      if(isFinite(age) && age>=0 && age<12*60){
-        if(age<60) return _t("· il y a "+Math.max(1,Math.round(age))+" min","· "+Math.max(1,Math.round(age))+" min ago","· hace "+Math.max(1,Math.round(age))+" min");
-        var h=Math.round(age/60); return _t("· il y a "+h+" h","· "+h+"h ago","· hace "+h+" h");
-      }
-    }
-    return _t("· maj récente","· recently updated","· act. reciente");
+    return freshness().label;
   }
 
-  function dateLabel(){
-    var d=new Date();
+  function formatMonthDay(d, utc){
     var moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."];
     var moEN=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
     var moES=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
     var mo=LANG==="en"?moEN : LANG==="es"?moES : moFR;
-    return d.getDate()+" "+mo[d.getMonth()];
+    return (utc?d.getUTCDate():d.getDate())+" "+mo[utc?d.getUTCMonth():d.getMonth()];
+  }
+  function dateLabel(){ return formatMonthDay(new Date(), false); }
+  function observationDateLabel(){
+    var d=HOME.erddapTimestamp ? new Date(HOME.erddapTimestamp) : null;
+    if(!d || !isFinite(d.getTime())) return _t("INCONNU","UNKNOWN","DESCONOCIDO");
+    return formatMonthDay(d, true);
   }
 
   function setHeading(el, lines){
@@ -169,8 +171,9 @@ export function initHomeAZ(SR, HOST, opts){
     return ["SARGASSES À ", name];
   }
   function setHeroHeading(){
-    var l2word=_t("AUJOURD'HUI","TODAY","HOY");
-    var live=_t("EN DIRECT","LIVE","EN DIRECTO");
+    var fresh=freshness();
+    var l2word=fresh.live ? _t("AUJOURD'HUI","TODAY","HOY") : _t("DERNIÈRE MESURE","LAST READING","ÚLTIMA MEDICIÓN");
+    var live=fresh.badge;
     var st=HOME.status||"clean";
     var segs;
     if(st==="clean"){
@@ -188,10 +191,17 @@ export function initHomeAZ(SR, HOST, opts){
     var el=$("h0"); if(el){ var sp=document.createElement("span"); sp.className="b"; sp.textContent=live; el.appendChild(sp); }
   }
   function setEyebrow0(){
-    var el=$("eb0"); if(!el) return; var parts=T.eb0[LANG];
+    var el=$("eb0"); if(!el) return;
+    var fresh=freshness();
+    var parts=fresh.live ? T.eb0[LANG] : [
+      fresh.badge+" · ",
+      LANG==="fr" ? " · SATELLITE COPERNICUS" : LANG==="es" ? " · SATÉLITE COPERNICUS" : " · COPERNICUS SATELLITE"
+    ];
     while(el.firstChild) el.removeChild(el.firstChild);
     el.appendChild(document.createTextNode(parts[0]));
-    var dt=document.createElement("span"); dt.className="dt"; dt.textContent=dateLabel(); el.appendChild(dt);
+    var dt=document.createElement("span"); dt.className="dt";
+    dt.textContent=fresh.live ? dateLabel() : observationDateLabel();
+    el.appendChild(dt);
     el.appendChild(document.createTextNode(parts[1]));
   }
 
@@ -222,7 +232,7 @@ export function initHomeAZ(SR, HOST, opts){
 
   function applyCopy(){
     var bn=beachName();
-    if($("liveTxt")) $("liveTxt").textContent=T.live[LANG];
+    if($("liveTxt")) $("liveTxt").textContent=freshness().badge;
     if($("livePass")) $("livePass").textContent=" "+freshLabel();
     setEyebrow0(); setHeroHeading();
     if($("s0")) $("s0").textContent=T.s0[LANG];
@@ -731,7 +741,8 @@ export default function HomeAZ(props){
       score: beach&&beach.score!=null ? beach.score : 82,
       status: (beach&&ST_MAP[beach.status]) || "clean",
       region: island==="gp" ? "gp" : "fr",
-      updatedAt: (sargData&&(sargData.updatedAt||sargData.erddapTimestamp)) || null,
+      updatedAt: (sargData&&sargData.updatedAt) || null,
+      erddapTimestamp: (sargData&&sargData.erddapTimestamp) || null,
       top3: (topBeaches||[]).slice(0,3).map(b=>({name:b.name, status:ST_MAP[b.status]||"clean", score:b.score}))
     };
   }
@@ -765,7 +776,7 @@ export default function HomeAZ(props){
   /* sync données réelles (la plage du hero peut changer : géoloc tardive…) */
   useEffect(()=>{ if(engRef.current) engRef.current.update(buildHome());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[beach&&beach.name, beach&&beach.score, beach&&beach.status, sargData&&(sargData.updatedAt||sargData.erddapTimestamp), (topBeaches||[]).map(b=>b&&b.id).join(",")]);
+  },[beach&&beach.name, beach&&beach.score, beach&&beach.status, sargData&&sargData.updatedAt, sargData&&sargData.erddapTimestamp, (topBeaches||[]).map(b=>b&&b.id).join(",")]);
 
   /* sync langue app → moteur */
   useEffect(()=>{ if(engRef.current) engRef.current.setLang(lang||"fr");
