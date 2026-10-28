@@ -128,3 +128,43 @@ export function formatFreshnessAge(updatedAt, lang = "fr", now = Date.now()) {
   const age = locale === "fr" ? days + " j" : locale === "es" ? days + (days === 1 ? " día" : " días") : days + (days === 1 ? " day" : " days");
   return locale === "fr" ? "il y a " + age : locale === "es" ? "hace " + age : age + " ago";
 }
+
+
+// Copy contract for the ChasseHome map CTA. Beach counts are only called today/live
+// when the observation itself is less than 12 hours old; pipeline republication time is not evidence.
+const CHASSE_MAP_CTA_COPY = {
+  fr: {
+    unknown: "Horodatage satellite à vérifier · aucun statut en direct",
+    delayed: hours => `Dernière mesure satellite il y a ${hours} h · pas de statut en direct`,
+    stale: "Données satellite en retard · vérifie avant de choisir",
+    live: (clean, total) => `${clean}/${total} plages propres aujourd'hui · en direct`,
+  },
+  en: {
+    unknown: "Satellite timestamp needs checking · no live status",
+    delayed: hours => `Last satellite reading ${hours}h ago · no live status`,
+    stale: "Satellite data delayed · check before choosing",
+    live: (clean, total) => `${clean}/${total} clean beaches today · live`,
+  },
+  es: {
+    unknown: "Hora satelital por verificar · sin estado en vivo",
+    delayed: hours => `Última medición satelital hace ${hours} h · sin estado en vivo`,
+    stale: "Datos satelitales atrasados · verifica antes de elegir",
+    live: (clean, total) => `${clean}/${total} playas limpias hoy · en directo`,
+  },
+};
+
+/**
+ * Honest localized summary for the ChasseHome map CTA.
+ * Age must be derived from erddapTimestamp, not the pipeline updatedAt.
+ * At >=12 h or unknown age, never publish a count as today/live.
+ */
+export function chasseMapCtaSummary(cleanCount, totalCount, satelliteAgeHours, lang = "fr") {
+  const locale = Object.prototype.hasOwnProperty.call(CHASSE_MAP_CTA_COPY, lang) ? lang : "fr";
+  const copy = CHASSE_MAP_CTA_COPY[locale];
+  if (!Number.isFinite(satelliteAgeHours) || satelliteAgeHours < 0) return copy.unknown;
+  if (satelliteAgeHours >= 36) return copy.stale;
+  if (satelliteAgeHours >= 12) return copy.delayed(Math.floor(satelliteAgeHours));
+  const clean = Number.isFinite(cleanCount) ? Math.max(0, Math.floor(cleanCount)) : 0;
+  const total = Number.isFinite(totalCount) ? Math.max(0, Math.floor(totalCount)) : 0;
+  return copy.live(clean, total);
+}
