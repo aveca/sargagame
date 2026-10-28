@@ -286,12 +286,12 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // annuel = 2 mois offerts. PAS de widget gratuit (donner le hook gratis ne prouve
   // aucune WTP — c'est exactement ce qui a échoué). Le hook = l'essai 30j time-boxé.
   const TIERS=[
-    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
-      pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
-      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
     {id:"pro",icon:"🔔",name:_t(lang,"Pro","Pro","Pro"),price:_t(lang,"79 €/mois","€79/mo","79 €/mes"),featured:true,
       pitch:_t(lang,"Devenez LA référence sargasses de votre plage : mis en avant dans l'app au moment où le voyageur vérifie avant de réserver, brief du matin, alertes, prévision 7 j, et un encart à vos couleurs sur votre propre site. Pour hôtels & resorts.","Become THE sargassum reference for your beach: featured in the app right when travelers check before booking, morning brief, alerts, 7-day forecast, and a panel in your own colors on your website. For hotels & resorts.","Conviértase en LA referencia de sargazo de su playa: destacado en la app justo cuando el viajero comprueba antes de reservar, informe matinal, alertas, pronóstico 7 días, y un panel con sus colores en su propia web. Para hoteles y resorts."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_pro"},
+    {id:"brief",icon:"📩",name:_t(lang,"Brief","Brief","Brief"),price:_t(lang,"29 €/mois","€29/mo","29 €/mes"),
+      pitch:_t(lang,"Brief quotidien de vos plages + alerte échouage par email. Pour gîtes, restos, clubs plage.","Daily brief of your beaches + landing alert by email. For guesthouses, restaurants, beach clubs.","Informe diario de sus playas + alerta por email. Para alojamientos, restaurantes, clubes."),
+      cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_brief"},
     {id:"territoire",icon:"🏛️",name:_t(lang,"Territoire","Territory","Territorio"),price:_t(lang,"dès 199 €/mois HT","from €199/mo excl. tax","desde 199 €/mes sin IVA"),
       pitch:_t(lang,"Multi-plages + rapports + API + widget public. Pour communes & offices de tourisme.","Multi-beach + reports + API + public widget. For towns & tourism boards.","Multi-playa + informes + API + widget público. Para municipios y oficinas."),
       cta:_t(lang,"Démarrer l'essai 30 j","Start 30-day trial","Empezar prueba 30 días"),source:"b2b_territoire"},
