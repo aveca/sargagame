@@ -34,6 +34,9 @@ const { execFileSync } = require('child_process');
 const { compareHtmlFingerprint } = require('./html-integrity.cjs');
 const { SAT_STALE_HOURS, satelliteFreshness } = require('../lib/satellite-freshness.cjs');
 
+// Release certification is stricter than the public stale marker (>36h): require observations <=15h.
+const SATELLITE_OPERATIONAL_LIMIT_MINUTES = 900;
+
 const ROOT = path.resolve(__dirname, '..', '..');
 
 function getRegions() {
@@ -145,18 +148,29 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
     return { status: 'FAILED', ageMinutes: null, detail: 'erddapTimestamp satellite absent/invalide/futur' };
   }
 
-  const limitMinutes = SAT_STALE_HOURS * 60;
+  const staleLimitMinutes = SAT_STALE_HOURS * 60;
   if (freshness.stale) {
     return {
       status: 'FAILED',
       ageMinutes: freshness.dataAgeMinutes,
-      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min > ${limitMinutes}min)`,
+      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min > ${staleLimitMinutes}min)`,
     };
   }
+
+  // The public stale marker is a 36h UI/data contract. Release certification separately
+  // requires <=15h so a 12–36h neutral UI status cannot be mistaken for deploy readiness.
+  if (freshness.dataAgeMinutes > SATELLITE_OPERATIONAL_LIMIT_MINUTES) {
+    return {
+      status: 'FAILED',
+      ageMinutes: freshness.dataAgeMinutes,
+      detail: `observation satellite hors SLA opérationnel (${freshness.dataAgeMinutes}min > ${SATELLITE_OPERATIONAL_LIMIT_MINUTES}min; marqueur stale après ${staleLimitMinutes}min)`,
+    };
+  }
+
   return {
     status: 'VERIFIED',
     ageMinutes: freshness.dataAgeMinutes,
-    detail: `âge satellite ${freshness.dataAgeMinutes}min (seuil ${limitMinutes}min)`,
+    detail: `âge satellite ${freshness.dataAgeMinutes}min (SLA opérationnel ${SATELLITE_OPERATIONAL_LIMIT_MINUTES}min; seuil stale ${staleLimitMinutes}min)`,
   };
 }
 
