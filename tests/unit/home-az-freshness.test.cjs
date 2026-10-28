@@ -55,7 +55,7 @@ const path = require("node:path");
   ok(nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp: new Date(now + 60000).toISOString()}, now) === null,
     "future timestamps do not schedule a transition to LIVE");
   const source = fs.readFileSync(path.join(__dirname, "..", "..", "src", "HomeAZ.jsx"), "utf8");
-  ok(source.includes('import {homeAzFreshness} from "./lib/format-freshness.mjs"'), "HomeAZ consumes shared freshness helper");
+  ok(source.includes('import {homeAzFreshness, formatObservationTimestamp, nextHomeAzFreshnessBoundaryDelayMs} from "./lib/format-freshness.mjs"'), "HomeAZ consumes shared freshness helpers");
   ok(source.includes("erddapTimestamp: (sargData&&sargData.erddapTimestamp) || null"), "HomeAZ passes the source observation timestamp");
   ok(!source.includes("sargData.updatedAt||sargData.erddapTimestamp"), "HomeAZ never prefers publication time over observation time");
   ok(source.includes("var live=fresh.badge;"), "hero badge follows verified freshness state");
