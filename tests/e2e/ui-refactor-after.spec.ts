@@ -18,7 +18,7 @@ test.describe("UI Refactoring — Captures APRÈS (avec améliorations)", () => 
       page.on("console", (m) => {
         if (m.type() === "error") jsErrors.push(`[console:${m.type()}] ${m.text()}`)
       })
-      page.on("requestfailed", (req) => failedRequests.push(req.url))
+      page.on("requestfailed", (req) => failedRequests.push(req.url()))
 
       await page.setViewportSize({ width: vp.width, height: vp.height })
       await page.goto("/", { waitUntil: "domcontentloaded", timeout: 30000 })
