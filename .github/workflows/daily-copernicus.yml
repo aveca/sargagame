@@ -72,11 +72,18 @@ jobs:
           if [ -f public/api/copernicus/sargassum.json ]; then
             SOURCE=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).source)")
             UPDATED=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).updatedAt)")
+            ERDDAP_TS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('public/api/copernicus/sargassum.json','utf-8')).erddapTimestamp || '')")
+            SATELLITE_AGE_MINUTES=999999
+            if [ -n "$ERDDAP_TS" ]; then
+              SATELLITE_AGE_MINUTES=$(node -e "const t=Date.parse(process.argv[1]); const n=Date.now(); console.log(Number.isFinite(t) && t <= n ? Math.floor((n-t)/60000) : 999999)" "$ERDDAP_TS")
+            fi
           else
-            SOURCE=none; UPDATED=n/a
+            SOURCE=none; UPDATED=n/a; ERDDAP_TS=''; SATELLITE_AGE_MINUTES=999999
           fi
           echo "source=$SOURCE" >> "$GITHUB_OUTPUT"
-          echo "source=$SOURCE updatedAt=$UPDATED"
+          echo "erddap_timestamp=$ERDDAP_TS" >> "$GITHUB_OUTPUT"
+          echo "satellite_age_minutes=$SATELLITE_AGE_MINUTES" >> "$GITHUB_OUTPUT"
+          echo "source=$SOURCE updatedAt=$UPDATED erddapTimestamp=$ERDDAP_TS satelliteAgeMinutes=$SATELLITE_AGE_MINUTES"
 
       - name: Gate intégrité (refuse source dégradée / pic tout-vert)
         id: verify
@@ -201,7 +208,7 @@ jobs:
       # publication sur une branche de développement ne doit jamais déclencher
       # un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main'
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && fromJSON(steps.src.outputs.satellite_age_minutes) <= 900
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
@@ -211,6 +218,18 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           DEPLOY_REF: main
         run: node scripts/automation/trigger-production-deploy.cjs
+
+      - name: Déploiement différé — observation satellite hors SLA
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && fromJSON(steps.src.outputs.satellite_age_minutes) > 900
+        run: |
+          echo "::warning title=Déploiement différé::Observation ERDDAP trop ancienne (${{ steps.src.outputs.satellite_age_minutes }} min ; limite 900). Aucun timestamp source ne sera avancé artificiellement."
+          {
+            echo "## Déploiement différé"
+            echo ""
+            echo "- Âge source ERDDAP : ${{ steps.src.outputs.satellite_age_minutes }} minutes"
+            echo "- SLA opérationnel : 900 minutes (15 h)"
+            echo "- Action : dispatch CI/production ignoré ; le prochain cycle automatique réévaluera la fraîcheur."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'
