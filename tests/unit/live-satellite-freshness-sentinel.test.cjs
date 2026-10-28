@@ -44,11 +44,11 @@ function check(condition, message) {
     const tailDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sg-sentinel-tail-'));
     try {
       fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
-        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=1').join('\\n') + '\\n');
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=1').join('\n') + '\n');
       fs.writeFileSync(path.join(tailDir, 'tail-errors.txt'),
-        sentinel.EXPECTED_TAIL_WORKERS.map(worker => 'TAIL_COMMAND_ERROR=' + worker + ' exit=1').join('\\n') + '\\n');
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => 'TAIL_COMMAND_ERROR=' + worker + ' exit=1').join('\n') + '\n');
       for (const worker of sentinel.EXPECTED_TAIL_WORKERS) {
-        fs.writeFileSync(path.join(tailDir, worker + '.jsonl'), 'wrangler tail failed: unauthorized\\n');
+        fs.writeFileSync(path.join(tailDir, worker + '.jsonl'), 'wrangler tail failed: unauthorized\n');
       }
 
       const failedTail = sentinel.parseTailDir(tailDir);
@@ -67,7 +67,7 @@ function check(condition, message) {
       check(report.incidents.length === 0, 'sensor failure is not misclassified as a Worker exception');
 
       fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
-        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=124').join('\\n') + '\\n');
+        sentinel.EXPECTED_TAIL_WORKERS.map(worker => worker + '=124').join('\n') + '\n');
       fs.writeFileSync(path.join(tailDir, 'tail-errors.txt'), '');
       for (const worker of sentinel.EXPECTED_TAIL_WORKERS) {
         fs.writeFileSync(path.join(tailDir, worker + '.jsonl'), '');
@@ -84,7 +84,7 @@ function check(condition, message) {
       }).sensor.ok === true, 'bounded successful tail window can prove the sensor');
 
       fs.writeFileSync(path.join(tailDir, 'tail-status.txt'),
-        sentinel.EXPECTED_TAIL_WORKERS.slice(1).map(worker => worker + '=124').join('\\n') + '\\n');
+        sentinel.EXPECTED_TAIL_WORKERS.slice(1).map(worker => worker + '=124').join('\n') + '\n');
       const missingStatus = sentinel.parseTailDir(tailDir);
       check(missingStatus.missing.includes('status:' + sentinel.EXPECTED_TAIL_WORKERS[0]),
         'missing per-worker exit status leaves sensor NOT_PROVEN');
