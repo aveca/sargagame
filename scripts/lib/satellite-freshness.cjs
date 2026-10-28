@@ -2,7 +2,7 @@
 
 // Shared freshness contract for static satellite payloads.
 // The observation timestamp (not updatedAt) is authoritative.
-const SAT_STALE_HOURS = 36; // Contrat du marqueur stale; le SLA opérationnel strict est vérifié séparément à 900 min.
+const SAT_STALE_HOURS = 36;
 
 function satelliteFreshness(erddapTimestamp, now = Date.now()) {
   const timestamp = typeof erddapTimestamp === 'number'
