@@ -33,7 +33,7 @@ function check(condition, message) {
     const stale = await sentinel.checkDomain('example.test', 15);
     check(stale.ageMinutes < 15, 'pipeline updatedAt is fresh');
     check(stale.satelliteAgeMinutes >= 36 * 60, 'satellite age is recalculated from erddapTimestamp');
-    check(stale.errors.some(error => error.startsWith('composite satellite périmé')), 'fresh pipeline cannot hide stale satellite data');
+    check(stale.errors.some(error => error.startsWith('observation satellite hors SLA')), 'fresh pipeline cannot hide an observation outside the 900-minute operational SLA');
     check(stale.ok === false, 'stale satellite makes the domain health check fail');
 
     payload.erddapTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
