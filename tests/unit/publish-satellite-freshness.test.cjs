@@ -28,4 +28,4 @@ const missingRegion = sixRegions('2026-10-27T21:00:00.000Z');
 missingRegion[2].payload = null;
 assert.equal(evaluatePayloadSet(live('2026-10-27T21:00:00.000Z'), missingRegion, now).ok, false, 'missing regional JSON fails closed');
 
-console.log('PUBLISH_SATELLITE_FRESHNESS_TESTS PASS (12 assertions)');
+console.log('PUBLISH_SATELLITE_FRESHNESS_TESTS PASS');
