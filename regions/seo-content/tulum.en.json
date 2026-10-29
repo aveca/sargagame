@@ -2,7 +2,7 @@
   "_note": "EN secondary-language SEO content for Tulum (sargazotulum.com). Pages render under /en/. Primary (ES) lives at regions/seo-content/tulum.json. Same facts as the ES file, written natively for English-speaking (US/Canada) visitors — not machine-translated. Slugs are EN; routes here drive the /en/ best + weekly pages.",
   "home": {
     "title": "Tulum Sargassum & Seaweed Today — Live Beach Map & 7-Day Forecast 2026",
-    "desc": "Which Tulum beach is free of sargassum today? Live per-beach seaweed map, Beach Score 0-100 and a 7-day forecast. Updated when new satellite observations are available from satellite."
+    "desc": "Which Tulum beach is free of sargassum? Latest available per-beach satellite observations, Beach Score 0-100 and a 7-day forecast. Observation timing and confidence can vary."
   },
   "routes": {
     "best": "best-beaches-no-sargassum-tulum",
@@ -53,7 +53,7 @@
     "map": {
       "slug": "seaweed-map-tulum",
       "title": "Tulum Seaweed Map (Live) — Sargassum Tracker",
-      "desc": "Interactive live seaweed map of Tulum, updated when new satellite observations are available from satellite. Check every beach before you leave the room.",
+      "desc": "Interactive Tulum seaweed map based on the latest available satellite observations. Check the observation timestamp and confidence before deciding.",
       "h1": "Live Seaweed & Sargassum Map — Tulum",
       "intro": "This is an interactive, live map of the sargassum — the seaweed — across Tulum: every beach, from Playa Paraíso to Playa Xcacel, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed when new satellite observations are available, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Playa Paraíso and load Playa Pescadores by noon. Check it the morning you go."
     },
