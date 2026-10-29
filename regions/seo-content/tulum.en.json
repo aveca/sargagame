@@ -2,7 +2,7 @@
   "_note": "EN secondary-language SEO content for Tulum (sargazotulum.com). Pages render under /en/. Primary (ES) lives at regions/seo-content/tulum.json. Same facts as the ES file, written natively for English-speaking (US/Canada) visitors — not machine-translated. Slugs are EN; routes here drive the /en/ best + weekly pages.",
   "home": {
     "title": "Tulum Sargassum & Seaweed Today — Live Beach Map & 7-Day Forecast 2026",
-    "desc": "Which Tulum beach is free of sargassum today? Live per-beach seaweed map, Beach Score 0-100 and a 7-day forecast. Updated 4× a day from satellite."
+    "desc": "Which Tulum beach is free of sargassum today? Live per-beach seaweed map, Beach Score 0-100 and a 7-day forecast. Updated when new satellite observations are available from satellite."
   },
   "routes": {
     "best": "best-beaches-no-sargassum-tulum",
@@ -11,7 +11,7 @@
   "faq": [
     {
       "q": "When is sargassum season in Tulum?",
-      "a": "The season runs April through September, peaking from May to July. November through March the beaches are usually clean, though stray patches can land at any time. Because each year is different, we track every beach with Copernicus satellite imagery refreshed four times a day, so you see what is on the sand today rather than a historical average."
+      "a": "The season runs April through September, peaking from May to July. November through March the beaches are usually clean, though stray patches can land at any time. Because each year is different, we track every beach with Copernicus satellite imagery refreshed when new satellite observations are available, so you see what is on the sand today rather than a historical average."
     },
     {
       "q": "Which Tulum beaches get the least sargassum?",
@@ -19,7 +19,7 @@
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed four times a day. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
+      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed when new satellite observations are available. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
@@ -46,16 +46,16 @@
     "today": {
       "slug": "beaches-without-sargassum-today-tulum",
       "title": "Tulum Beaches Without Sargassum Today (Live List)",
-      "desc": "Live list of seaweed-free beaches in Tulum today. Satellite-checked 4× a day — find genuinely turquoise water right now.",
+      "desc": "Live list of seaweed-free beaches in Tulum today. Satellite-checked when new satellite observations are available — find genuinely turquoise water right now.",
       "h1": "Beaches Without Sargassum Today in Tulum",
-      "intro": "Looking for a seaweed-free beach in Tulum today? Below is the live list, ranked cleanest to most affected, showing which beaches are sargassum-free right now on the latest satellite pass — refreshed four times a day. As a rule of thumb, Playa Ruinas and Playa Santa Fe almost always top the list, while Playa Paraíso and Playa Pescadores rise and fall with the week's wind. But the rule of thumb isn't what matters once the cooler is packed: today's reading is. Check the number next to your beach and go."
+      "intro": "Looking for a seaweed-free beach in Tulum today? Below is the live list, ranked cleanest to most affected, showing which beaches are sargassum-free right now on the latest satellite pass — refreshed when new satellite observations are available. As a rule of thumb, Playa Ruinas and Playa Santa Fe almost always top the list, while Playa Paraíso and Playa Pescadores rise and fall with the week's wind. But the rule of thumb isn't what matters once the cooler is packed: today's reading is. Check the number next to your beach and go."
     },
     "map": {
       "slug": "seaweed-map-tulum",
       "title": "Tulum Seaweed Map (Live) — Sargassum Tracker",
-      "desc": "Interactive live seaweed map of Tulum, updated 4× a day from satellite. Check every beach before you leave the room.",
+      "desc": "Interactive live seaweed map of Tulum, updated when new satellite observations are available from satellite. Check every beach before you leave the room.",
       "h1": "Live Seaweed & Sargassum Map — Tulum",
-      "intro": "This is an interactive, live map of the sargassum — the seaweed — across Tulum: every beach, from Playa Paraíso to Playa Xcacel, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed four times a day, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Playa Paraíso and load Playa Pescadores by noon. Check it the morning you go."
+      "intro": "This is an interactive, live map of the sargassum — the seaweed — across Tulum: every beach, from Playa Paraíso to Playa Xcacel, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed when new satellite observations are available, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Playa Paraíso and load Playa Pescadores by noon. Check it the morning you go."
     },
     "season": {
       "intro": "Planning a Tulum trip and worried about sargassum and seaweed? Here's the honest 2026 picture — when the seaweed arrives, when the beaches stay clean, and how to time your trip. Short version: November through March is reliable and clean; the Atlantic belt arrives April through October, heaviest May to August. If your dates are flexible, that single fact plans the trip.",
@@ -101,19 +101,19 @@
   },
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Live Status & Forecast",
-    "introPattern": "Want to know if the beach at {resort} woke up clean of algae and sargassum? This page monitors {beach}, the stretch of sand in front of the hotel, with Copernicus satellite imagery refreshed four times a day. Here you see the current status, a 0–100 Beach Score, and the 7-day forecast, so you can plan your beach days — or pool days — before check-in. In season conditions change overnight: bookmark this page and check it every morning."
+    "introPattern": "Want to know if the beach at {resort} woke up clean of algae and sargassum? This page monitors {beach}, the stretch of sand in front of the hotel, with Copernicus satellite imagery refreshed when new satellite observations are available. Here you see the current status, a 0–100 Beach Score, and the 7-day forecast, so you can plan your beach days — or pool days — before check-in. In season conditions change overnight: bookmark this page and check it every morning."
   },
   "press": {
     "_note": "Press page rendered at /press/ by region-seo-pages.cjs. Tokens resolved at build from live data — never invented. Mirrors the press contract from puntacana.",
     "slug": "press",
     "title": "Sargassum in Tulum — Press Kit",
-    "desc": "Press resources on sargassum in Tulum: live per-beach satellite status updated 4× a day, 7-day forecast and published accuracy. Free to cite.",
+    "desc": "Press resources on sargassum in Tulum: live per-beach satellite status updated when new satellite observations are available, 7-day forecast and published accuracy. Free to cite.",
     "h1": "Press & media — Tulum sargassum data",
     "intro": "The Atlantic is seeing a record sargassum season, widely reported. What headlines rarely answer is the question your audience actually asks: can I swim at my beach today? We publish that answer for Tulum, beach by beach, from satellite data — and it's free to cite with attribution.",
     "sections": [
       {
         "h2": "What we publish",
-        "text": "Live sargassum status for {beachCount} Tulum beaches — each with a clean / moderate / avoid rating, a 0–100 Beach Score, and a beach-specific 7-day forecast. Detection uses the AFAI index from Copernicus and NOAA satellite programs, sampled pixel-by-pixel right off each beach — not a regional average — and refreshed four times a day. As of {updatedDate}, {cleanToday} of {beachCount} monitored beaches are clean."
+        "text": "Live sargassum status for {beachCount} Tulum beaches — each with a clean / moderate / avoid rating, a 0–100 Beach Score, and a beach-specific 7-day forecast. Detection uses the AFAI index from Copernicus and NOAA satellite programs, sampled pixel-by-pixel right off each beach — not a regional average — and refreshed when new satellite observations are available. As of {updatedDate}, {cleanToday} of {beachCount} monitored beaches are clean."
       },
       {
         "h2": "Accuracy, published openly",
@@ -134,7 +134,7 @@
       "title": "Why Is There So Much Sargassum in Tulum?",
       "desc": "Why is there so much sargassum in Tulum? It comes from the Great Atlantic Sargassum Belt, pushed by currents and wind. Real causes and satellite map by beach, 4× daily.",
       "h1": "Why Is There So Much Sargassum in Tulum?",
-      "intro": "There's so much sargassum in Tulum because the algae don't originate here: they arrive floating from the Great Atlantic Sargassum Belt, an enormous band of algae that grows between Africa and Brazil and that ocean currents and easterly winds push all the way to the Mexican Caribbean. It's an oceanic phenomenon, not a local one, and that's why no hotel can stop it from arriving. The root causes stack up: more nutrients in the ocean (Saharan dust, river discharges like the Amazon), warmer waters, and currents that funnel the algae straight to the Quintana Roo coast. The amount changes every year, every week, and every beach. That's why we don't give you a single verdict: we track each Tulum beach with Copernicus satellite imagery refreshed four times a day, with a 0–100 Beach Score and today's status. We're the satellite watching the sea while you sleep — we measure, we don't guess.",
+      "intro": "There's so much sargassum in Tulum because the algae don't originate here: they arrive floating from the Great Atlantic Sargassum Belt, an enormous band of algae that grows between Africa and Brazil and that ocean currents and easterly winds push all the way to the Mexican Caribbean. It's an oceanic phenomenon, not a local one, and that's why no hotel can stop it from arriving. The root causes stack up: more nutrients in the ocean (Saharan dust, river discharges like the Amazon), warmer waters, and currents that funnel the algae straight to the Quintana Roo coast. The amount changes every year, every week, and every beach. That's why we don't give you a single verdict: we track each Tulum beach with Copernicus satellite imagery refreshed when new satellite observations are available, with a 0–100 Beach Score and today's status. We're the satellite watching the sea while you sleep — we measure, we don't guess.",
       "sections": [
         {
           "h2": "Where does the sargassum reaching Tulum come from?",
@@ -182,9 +182,9 @@
       "lang": "en",
       "slug": "sargassum-tulum-today",
       "title": "Sargassum in Tulum Today: Live Satellite Map",
-      "desc": "How is the sargassum in Tulum today? Live satellite-verified map updated 4× a day, with each beach's status today and 7-day forecast.",
+      "desc": "How is the sargassum in Tulum today? Live satellite-verified map updated when new satellite observations are available, with each beach's status today and 7-day forecast.",
       "h1": "How Is the Sargassum in Tulum Today?",
-      "intro": "How is the sargassum in Tulum today? The live map tells you beach by beach: every stretch of Tulum's coast shows its status today — clean, moderate, or avoid — with a Beach Score calculated from Copernicus and NOAA satellite imagery refreshed 4 times a day. If you're planning a beach day or a photo session by the water, check first which zone is clear, from the hotel zone to the northern public beaches. We don't copy rumors or hand-written reports: we measure the algae directly from space with the AFAI index. We're The Watcher, the satellite watching the Caribbean while you sleep and telling you every morning where the water is clean. And when clouds block the image, we say so honestly instead of inventing a number.",
+      "intro": "How is the sargassum in Tulum today? The live map tells you beach by beach: every stretch of Tulum's coast shows its status today — clean, moderate, or avoid — with a Beach Score calculated from Copernicus and NOAA satellite imagery refreshed when new satellite observations are available. If you're planning a beach day or a photo session by the water, check first which zone is clear, from the hotel zone to the northern public beaches. We don't copy rumors or hand-written reports: we measure the algae directly from space with the AFAI index. We're The Watcher, the satellite watching the Caribbean while you sleep and telling you every morning where the water is clean. And when clouds block the image, we say so honestly instead of inventing a number.",
       "sections": [
         {
           "h2": "Which Tulum beaches are clean today?",
@@ -206,7 +206,7 @@
         },
         {
           "q": "How is the sargassum in Tulum right now?",
-          "a": "Check the near-real-time status on the map on this page: Copernicus/NOAA imagery with the AFAI index, refreshed four times a day. Every beach shows its Beach Score (0–100), its status today, and the exact time of the last reading, so you know how fresh the intel you're looking at really is."
+          "a": "Check the near-real-time status on the map on this page: Copernicus/NOAA imagery with the AFAI index, refreshed when new satellite observations are available. Every beach shows its Beach Score (0–100), its status today, and the exact time of the last reading, so you know how fresh the intel you're looking at really is."
         },
         {
           "q": "Which Tulum beach has the least sargassum today?",
@@ -214,7 +214,7 @@
         },
         {
           "q": "How reliable is Tulum sargassum data on this site?",
-          "a": "We use the AFAI index, the same standard NOAA uses to detect sargassum from satellite, with Copernicus imagery refreshed four times a day. When clouds block a zone we say so: every beach shows its confidence level and the time of its last reading. Measured, never guessed."
+          "a": "We use the AFAI index, the same standard NOAA uses to detect sargassum from satellite, with Copernicus imagery refreshed when new satellite observations are available. When clouds block a zone we say so: every beach shows its confidence level and the time of its last reading. Measured, never guessed."
         },
         {
           "q": "Will today's sargassum still be there tomorrow in Tulum?",
@@ -228,9 +228,9 @@
       "lang": "en",
       "slug": "seaweed-map-tulum-today",
       "title": "Tulum Seaweed Map Today | Live",
-      "desc": "Tulum seaweed map today: live satellite image updated 4× a day, Beach Score per beach, clean/moderate/avoid status and 7-day forecast.",
+      "desc": "Tulum seaweed map today: live satellite image updated when new satellite observations are available, Beach Score per beach, clean/moderate/avoid status and 7-day forecast.",
       "h1": "Tulum Seaweed Map Today",
-      "intro": "The Tulum seaweed map today updates with satellite imagery every few hours and shows you, beach by beach, where the water is clean and where there's a landing. Open the live map, find your beach (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) and check its Beach Score and today's status: clean, moderate, or avoid. Unlike social media photos, this isn't an opinion: it's what the Copernicus and NOAA satellites (AFAI index) see, refreshed 4 times a day. The Watcher is the satellite that watches the sea while you sleep and every morning tells you, measured not guessed, where the good water is. We're also honest about uncertainty: when a cloud blocks the coast or the data ages, we flag it instead of inventing. Check today's updated Beach Score and the 7-day forecast per beach before you decide where to go.",
+      "intro": "The Tulum seaweed map today updates with satellite imagery every few hours and shows you, beach by beach, where the water is clean and where there's a landing. Open the live map, find your beach (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) and check its Beach Score and today's status: clean, moderate, or avoid. Unlike social media photos, this isn't an opinion: it's what the Copernicus and NOAA satellites (AFAI index) see, refreshed when new satellite observations are available. The Watcher is the satellite that watches the sea while you sleep and every morning tells you, measured not guessed, where the good water is. We're also honest about uncertainty: when a cloud blocks the coast or the data ages, we flag it instead of inventing. Check today's updated Beach Score and the 7-day forecast per beach before you decide where to go.",
       "sections": [
         {
           "h2": "Which Tulum beaches have seaweed today?",
@@ -238,7 +238,7 @@
         },
         {
           "h2": "When does it clear and how does seaweed change?",
-          "text": "Sargassum arrives in pulses: a beach can wake up clean, get a mat with the easterly wind at noon, and clear by the next day. That's why the map refreshes 4 times a day and offers a 7-day forecast per beach, based on satellite-observed landing persistence. Peak season usually runs May through August, but local variation rules: two beaches a few kilometers apart can have opposite states on the same day. Use the forecast as a trend, not a promise: we publish our accuracy (backtest) instead of promising certainties. If you're planning days ahead, check the forecast; if you're deciding this morning, look at today's status and the latest Beach Score."
+          "text": "Sargassum arrives in pulses: a beach can wake up clean, get a mat with the easterly wind at noon, and clear by the next day. That's why the map refreshes when new satellite observations are available and offers a 7-day forecast per beach, based on satellite-observed landing persistence. Peak season usually runs May through August, but local variation rules: two beaches a few kilometers apart can have opposite states on the same day. Use the forecast as a trend, not a promise: we publish our accuracy (backtest) instead of promising certainties. If you're planning days ahead, check the forecast; if you're deciding this morning, look at today's status and the latest Beach Score."
         },
         {
           "h2": "Safety: rotting seaweed and H2S gas",
@@ -252,7 +252,7 @@
         },
         {
           "q": "How often is the satellite seaweed map updated?",
-          "a": "It refreshes 4 times a day with Copernicus and NOAA satellite imagery via the AFAI index. When a cloud blocks the coast or the data ages, we flag it as unreliable instead of showing an invented number, so you always know how fresh what you're seeing really is."
+          "a": "It refreshes when new satellite observations are available with Copernicus and NOAA satellite imagery via the AFAI index. When a cloud blocks the coast or the data ages, we flag it as unreliable instead of showing an invented number, so you always know how fresh what you're seeing really is."
         },
         {
           "q": "Which Tulum beaches have the least seaweed?",
