@@ -44,7 +44,7 @@
     "map": {
       "slug": "seaweed-map",
       "title": "Florida Seaweed Map (Live) — Sargassum Beach Tracker",
-      "desc": "Interactive seaweed map of Florida, updated when new satellite observations are available from satellite imagery. Live sargassum status for Miami, the Keys, Palm Beach and the Gulf coast.",
+      "desc": "Interactive seaweed map of Florida, updated as new satellite observations become available. Live sargassum status for Miami, the Keys, Palm Beach and the Gulf coast.",
       "h1": "Live Sargassum Map of Florida",
       "intro": "An interactive, live seaweed map covering Florida's sargassum-prone coast — from Key West through Miami and Palm Beach up to Daytona, plus Clearwater on the Gulf. Each beach carries a color-coded status (clean, moderate, avoid), a 0–100 Beach Score, and a 7-day outlook. Behind it sits Copernicus satellite imagery updated when new satellite observations are available, cross-checked against reports from people on the sand. Government maps show you the regional picture days late; this one shows your beach, today. An east wind or a Gulf Stream wobble can rewrite the coast overnight — check the map the morning you go."
     },
@@ -184,7 +184,7 @@
       "lang": "en",
       "slug": "miami-beach-seaweed-map-today",
       "title": "Miami Beach Seaweed Map Today — Live Sargassum",
-      "desc": "Miami Beach seaweed map today: live sargassum status for South Beach and the Miami coast, updated when new satellite observations are available from satellite. Beach Score, forecast, where to go.",
+      "desc": "Miami Beach seaweed map today: live sargassum status for South Beach and the Miami coast, updated as new satellite observations become available. Beach Score, forecast, where to go.",
       "h1": "Miami Beach Seaweed Map — Today's Sargassum, Live",
       "intro": "Here's the Miami Beach seaweed map for today: each stretch of the Miami coast carries a live status (clean, moderate, or avoid), a 0-100 Beach Score, and a 7-day outlook, refreshed when new satellite observations are available. South Beach, mid-Beach and the full Miami sand show their current status today right on the map above — check it the morning you go, because an east wind can land sargassum overnight. What makes this different from a government bulletin: we work at the level of your actual beach, not the region. The map reads Copernicus and NOAA satellite imagery (the same AFAI index NOAA uses), then cross-checks against people reporting from the sand. It's measured, not guessed. When clouds block the satellite, each beach shows its data age and a confidence level instead of pretending — and a published backtest tells you how often we've been right. No averages, no seasonal hand-waving: just where the water is clean on Miami Beach right now.",
       "sections": [
@@ -258,7 +258,7 @@
       "faq": [
         {
           "q": "Is there sargassum in Key West today?",
-          "a": "Check the live map at the top of this page: it shows each tracked Key West beach with its current Beach Score and a clean, moderate, or avoid status, refreshed when new satellite observations are available from satellite imagery. Smathers and Higgs can differ on the same morning, so the per-beach reading — not a citywide guess — tells you where the water is clean today."
+          "a": "Check the live map at the top of this page: it shows each tracked Key West beach with its current Beach Score and a clean, moderate, or avoid status, refreshed as new satellite observations become available. Smathers and Higgs can differ on the same morning, so the per-beach reading — not a citywide guess — tells you where the water is clean today."
         },
         {
           "q": "Does Smathers Beach have sargassum right now?",
@@ -294,7 +294,7 @@
       "sections": [
         {
           "h2": "Which Miami beaches are clean today?",
-          "text": "Miami is not one beach, and sargassum rarely lands evenly across it. On any given morning South Beach can be carpeted while Key Biscayne stays open, or the reverse — it comes down to wind angle and how the Gulf Stream nudges the mats inshore. That's why we score each beach separately rather than issuing one Miami-wide verdict. Open the live map and look at the status today for the exact beach you have in mind: South Beach, Mid-Beach, Sunny Isles, Haulover, Key Biscayne or Bal Harbour. Each carries its own Beach Score, refreshed when new satellite observations are available from satellite imagery and corrected by on-the-ground reports when clouds get in the way. If your first choice reads avoid this morning, the map shows you the nearest beach reading clean — so you adjust the plan instead of canceling it."
+          "text": "Miami is not one beach, and sargassum rarely lands evenly across it. On any given morning South Beach can be carpeted while Key Biscayne stays open, or the reverse — it comes down to wind angle and how the Gulf Stream nudges the mats inshore. That's why we score each beach separately rather than issuing one Miami-wide verdict. Open the live map and look at the status today for the exact beach you have in mind: South Beach, Mid-Beach, Sunny Isles, Haulover, Key Biscayne or Bal Harbour. Each carries its own Beach Score, refreshed as new satellite observations become available and corrected by on-the-ground reports when clouds get in the way. If your first choice reads avoid this morning, the map shows you the nearest beach reading clean — so you adjust the plan instead of canceling it."
         },
         {
           "h2": "When will the sargassum clear?",
@@ -308,7 +308,7 @@
       "faq": [
         {
           "q": "Is there sargassum in Miami today?",
-          "a": "It depends on the beach — Miami's coastline varies street by street on the same day. Open the live map and check the status today for your specific beach (South Beach, Key Biscayne, Sunny Isles and others each have their own Beach Score), refreshed when new satellite observations are available from satellite imagery so you see current conditions, not last week's."
+          "a": "It depends on the beach — Miami's coastline varies street by street on the same day. Open the live map and check the status today for your specific beach (South Beach, Key Biscayne, Sunny Isles and others each have their own Beach Score), refreshed as new satellite observations become available so you see current conditions, not last week's."
         },
         {
           "q": "Is there sargassum on South Beach right now?",
@@ -354,7 +354,7 @@
       "faq": [
         {
           "q": "Is there seaweed in Sunny Isles Beach today?",
-          "a": "Check the live panel above for today's status. Sunny Isles sits on the open Atlantic between Miami Beach and Fort Lauderdale, so it tracks the same southeast-Florida pattern, read when new satellite observations are available from satellite. In peak summer it can flip overnight on an east wind, so the only reliable answer is the same-day one — not a seasonal average."
+          "a": "Check the live panel above for today's status. Sunny Isles sits on the open Atlantic between Miami Beach and Fort Lauderdale, so it tracks the same southeast-Florida pattern, read as new satellite observations become available. In peak summer it can flip overnight on an east wind, so the only reliable answer is the same-day one — not a seasonal average."
         },
         {
           "q": "Does Fort Lauderdale Beach get raked of sargassum?",
@@ -486,7 +486,7 @@
         },
         {
           "h2": "How to stay safe and where to go",
-          "text": "Safety here is mostly about avoidance, and avoidance is easier when you know the conditions before you leave. Check the live Beach Score and status for your beach: clean, moderate, or avoid, updated when new satellite observations are available from satellite imagery. If your first choice reads avoid, compare nearby beaches on the same map and pick a cleaner one, since sargassum lands in patches and a beach a few miles away can be clear. Stay upwind of big piles, keep asthma medication handy if you're sensitive, and don't let kids play in decaying mats. We measure what the satellite sees and are honest about clouds and uncertainty, so you're working from data, not a guess."
+          "text": "Safety here is mostly about avoidance, and avoidance is easier when you know the conditions before you leave. Check the live Beach Score and status for your beach: clean, moderate, or avoid, updated as new satellite observations become available. If your first choice reads avoid, compare nearby beaches on the same map and pick a cleaner one, since sargassum lands in patches and a beach a few miles away can be clear. Stay upwind of big piles, keep asthma medication handy if you're sensitive, and don't let kids play in decaying mats. We measure what the satellite sees and are honest about clouds and uncertainty, so you're working from data, not a guess."
         }
       ],
       "faq": [
