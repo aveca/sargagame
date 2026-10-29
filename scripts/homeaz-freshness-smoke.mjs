@@ -162,6 +162,20 @@ try {
   try {
     await latest.page.locator("#ctaHero").click({ timeout: 20000 });
     await waitForHomeAzUnmount(latest.page);
+    await latest.page.waitForTimeout(300);
+    const ctaDebug = await latest.page.evaluate(() => ({
+      events: (window.__homeAzEvents || []).map((args) => ({kind: args[0], name: args[1], params: args[2]})),
+      dialogs: [...document.querySelectorAll('[role="dialog"]')].map((node) => ({
+        label: node.getAttribute("aria-label"),
+        cls: String(node.className || "").slice(0, 80),
+        text: (node.innerText || "").slice(0, 100),
+      })),
+      detailCount: document.querySelectorAll(".lc-detail, .sheet").length,
+      mapLabels: document.querySelectorAll(".sg-maplabel").length,
+      bodyText: (document.body.innerText || "").slice(0, 220),
+    }));
+    console.log("HOMEAZ_CTA_DEBUG=" + JSON.stringify(ctaDebug));
+    await latest.page.screenshot({ path: path.join(OUT, "after-cta-mobile.png"), animations: "disabled" });
     await latest.page.waitForFunction(() => {
       return (window.__homeAzEvents || []).some((args) =>
         args[0] === "event" && args[1] === "sg_beach_open");
