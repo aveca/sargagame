@@ -23,8 +23,8 @@ for (const [name, text] of [['daily-copernicus.yml', daily], ['data-refresh.yml'
   assert.ok(text.includes('continue-on-error: true') && text.includes('gate_status=BLOCKED_STALE_SOURCE'), name + ': gate must remain observable while marker handling runs');
 }
 
-assert.ok(daily.includes("needs.fetch-data.outputs.publication_status != 'BLOCKED_STALE_SOURCE'") && daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_VALIDATION'") && daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH'"), 'classified data-pipeline failures must not trigger new failure emails');
-assert.ok(daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH' && github.run_attempt == '1'"), 'classified data-pipeline failures must not cause an automatic retry/dispatch');
+assert.ok(daily.includes("needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'"), 'failure emails are limited to unrelated failures after an unclassified/successful data job or a push-only build');
+assert.ok(daily.includes("needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'") && daily.includes("github.run_attempt == '1'"), 'automatic retry is limited to unrelated failures after a successful/empty data refresh');
 
 const yamlCheck = spawnSync('ruby', [
   '-e',
