@@ -37,6 +37,9 @@ concurrency:
 jobs:
   # ── 1. DATA FETCH (rapide, < 5 min) ────────────────────────────────────────
   fetch-data:
+    outputs:
+      publication_status: ${{ steps.publication_status.outputs.status }}
+      gate_outcome: ${{ steps.publication_status.outputs.gate_outcome }}
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -81,7 +84,19 @@ jobs:
       - name: Gate intégrité (refuse source dégradée / pic tout-vert)
         id: verify
         continue-on-error: true
-        run: node scripts/verify-ftp-ready.cjs
+        shell: bash
+        run: |
+          set +e
+          node scripts/verify-ftp-ready.cjs 2>&1 | tee "$RUNNER_TEMP/verify-ftp-ready.log"
+          rc=${PIPESTATUS[0]}
+          if grep -q 'observation hors SLA' "$RUNNER_TEMP/verify-ftp-ready.log"; then
+            echo "gate_status=BLOCKED_STALE_SOURCE" >> "$GITHUB_OUTPUT"
+          elif [ "$rc" -ne 0 ]; then
+            echo "gate_status=FAILED_VALIDATION" >> "$GITHUB_OUTPUT"
+          else
+            echo "gate_status=PASS" >> "$GITHUB_OUTPUT"
+          fi
+          exit "$rc"
 
       # The public B2B track record must be generated in THIS workspace, after
       # fresh archive/history are fetched and before the data commit/deploy.
@@ -201,6 +216,7 @@ jobs:
       # publication sur une branche de développement ne doit jamais déclencher
       # un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
+        id: dispatch
         if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
@@ -214,7 +230,104 @@ jobs:
 
       - name: Alerte — données non publiées
         if: steps.verify.outcome == 'failure'
-        run: echo "::error title=Data refresh bloquée::verify-ftp-ready a refusé la publication. Prochain run (4x/j) re-tentera."
+        run: echo "::error title=Data refresh bloquée::verify-ftp-ready a refusé la publication."
+
+      - name: Report publication status
+        id: publication_status
+        if: always()
+        env:
+          SOURCE: ${{ steps.src.outputs.source }}
+          ERDDAP_OUTCOME: ${{ steps.erddap.outcome }}
+          GATE_OUTCOME: ${{ steps.verify.outcome }}
+          GATE_STATUS: ${{ steps.verify.outputs.gate_status }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
+          PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
+          DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const { execFileSync } = require('node:child_process');
+          let payload = {};
+          try { payload = JSON.parse(fs.readFileSync('public/api/copernicus/sargassum.json', 'utf8')); } catch {}
+          const sourceTimestamp = typeof payload.erddapTimestamp === 'string' ? payload.erddapTimestamp : null;
+          const sourceMs = sourceTimestamp ? Date.parse(sourceTimestamp) : NaN;
+          const nowMs = Date.now();
+          const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
+          const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
+          const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
+          let status;
+          if (gateStatus === 'BLOCKED_STALE_SOURCE') status = 'BLOCKED_STALE_SOURCE';
+          else if (process.env.ERDDAP_OUTCOME !== 'success' || process.env.SOURCE === 'none' || process.env.GATE_OUTCOME !== 'success') status = 'FAILED_VALIDATION';
+          else if (process.env.PUBLISH_OUTCOME === 'failure') status = 'FAILED_PUBLISH';
+          else if (process.env.PUBLISH_OUTCOME === 'skipped') status = 'NO_NEW_OBSERVATION';
+          else status = 'FRESH_AND_PUBLISHED';
+          let changedPayloadFiles = [];
+          try {
+            const sha = process.env.PUBLISH_SHA;
+            const raw = sha
+              ? execFileSync('git', ['show', '--format=', '--name-only', sha], { encoding: 'utf8' })
+              : execFileSync('git', ['diff', '--name-only', 'HEAD', '--', 'public/api/copernicus/'], { encoding: 'utf8' });
+            changedPayloadFiles = raw.split(/\r?\n/).map(x => x.trim()).filter(x => x.startsWith('public/api/copernicus/'));
+          } catch {}
+          const report = {
+            generatedAt: new Date(nowMs).toISOString(),
+            status,
+            source: process.env.SOURCE || null,
+            erddapFetchOutcome: process.env.ERDDAP_OUTCOME || null,
+            erddapTimestamp: sourceTimestamp,
+            sourceTimestampValid,
+            sourceAgeMinutes,
+            operationalSlaMinutes: 900,
+            publicStaleThresholdMinutes: 2160,
+            publicStale: sourceTimestampValid ? sourceAgeMinutes >= 2160 : null,
+            integrityGateOutcome: process.env.GATE_OUTCOME || null,
+            integrityGateClassification: gateStatus,
+            publishOutcome: process.env.PUBLISH_OUTCOME || null,
+            publishBranch: process.env.PUBLISH_BRANCH || null,
+            commitSha: process.env.PUBLISH_SHA || null,
+            deploymentDispatchOutcome: process.env.DISPATCH_OUTCOME || 'unknown',
+            changedPayloadFiles,
+            changedPayloadFields: null,
+            payloadFieldComparison: 'NOT_PERFORMED_BY_WORKFLOW_STATUS_PATCH',
+            sourceTimestampAdvancedAgainstLive: null
+          };
+          const out = process.env.RUNNER_TEMP + '/copernicus-publication-status.json';
+          fs.writeFileSync(out, JSON.stringify(report, null, 2) + '\n');
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, 'status=' + status + '\n' + 'gate_outcome=' + (process.env.GATE_OUTCOME || 'unknown') + '\n');
+          const summary = [
+            '## Copernicus publication status: ' + status,
+            '',
+            '- Source: ' + (report.source || 'unknown'),
+            '- ERDDAP fetch: ' + report.erddapFetchOutcome,
+            '- Observation timestamp: ' + (sourceTimestamp || 'UNVERIFIED'),
+            '- Computed candidate age (minutes): ' + (sourceAgeMinutes === null ? 'UNVERIFIED' : sourceAgeMinutes),
+            '- Operational SLA: 900 minutes',
+            '- Public stale threshold: 2160 minutes',
+            '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
+            '- Publish outcome: ' + report.publishOutcome,
+            '- Commit SHA: ' + (report.commitSha || 'none'),
+            '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
+            '- Changed payload files: ' + (changedPayloadFiles.length ? changedPayloadFiles.join(', ') : 'none detected'),
+            '- Field-level payload comparison: NOT PERFORMED by this status-only change',
+            '- Source timestamp advancement against live: NOT VERIFIED'
+          ].join('\n') + '\n';
+          fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
+          console.log(JSON.stringify(report, null, 2));
+          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH'].includes(status)) {
+            console.error('Copernicus publication status is ' + status);
+            process.exit(1);
+          }
+          NODE
+
+      - name: Upload publication status evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: copernicus-publication-status-${{ github.run_id }}
+          path: ${{ runner.temp }}/copernicus-publication-status.json
+          if-no-files-found: error
+          retention-days: 7
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
@@ -531,7 +644,7 @@ jobs:
   # ── 5. NOTIFY ON FAILURE ──────────────────────────────────────────────────
   notify-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure()
+    if: failure() && needs.fetch-data.outputs.gate_outcome != 'failure'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -548,7 +661,7 @@ jobs:
   # ── 6. RETRY ON FAILURE (once, after 5 min, schedule only) ───────────────
   retry-on-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && github.run_attempt == '1' && github.event_name == 'schedule'
+    if: failure() && needs.fetch-data.outputs.gate_outcome != 'failure' && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
