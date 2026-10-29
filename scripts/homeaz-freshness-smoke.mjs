@@ -75,6 +75,16 @@ async function openHome(browser, viewport, ageMs) {
       : /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/.test(text);
   }, expected, { timeout: 20000 });
 
+  // The app can mount HomeAZ before its image manifest resolves. Do not test
+  // a dead CTA against the component's defensive fallback beach; wait until
+  // the real hero candidate has been selected from the regional beach data.
+  await page.waitForFunction(() => {
+    const host = [...document.querySelectorAll('[role="dialog"]')]
+      .find((node) => node.shadowRoot && node.shadowRoot.querySelector("#liveTxt"));
+    const label = host && host.getAttribute("aria-label");
+    return !!label && label !== "Sargasses";
+  }, null, { timeout: 20000 });
+
   return { context, page, apiCalls: () => apiCalls };
 }
 
