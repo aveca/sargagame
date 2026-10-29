@@ -407,7 +407,7 @@ ${ld}
 <a class="cta" href="${pro('hero')}">${_('Start free — watch your beach', 'Empieza gratis — vigila tu playa')} →</a>
 ${secs}
 <div class="cov"><h2>${esc(covTitle)}</h2><p>${esc(covSub)}</p><ul>${covRows || `<li><span class="n"><small>${_('Coverage details may vary; check the observation time in the brief.', 'La cobertura puede variar; consulta la hora de observación en el boletín.')}</small></span></li>`}</ul></div>
-<a class="cta" href="${pro('coverage')}">${_('Check your beach's latest reading — start free', 'Consulta la última lectura de tu playa — empieza gratis')} →</a>
+<a class="cta" href="${pro('coverage')}">${_("Check your beach's latest reading — start free", 'Consulta la última lectura de tu playa — empieza gratis')} →</a>
 <div class="price"><h2>${esc(priceTitle)}</h2><p>${esc(priceBody)}</p><p><b>${_('$89/mo · $790/yr', '89 US$/mes · 790 US$/año')}</b> — ${_('30-day free trial, no card, no call.', 'prueba de 30 días, sin tarjeta, sin llamada.')}</p></div>
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
