@@ -16,10 +16,13 @@ function satelliteFreshness(erddapTimestamp, now = Date.now()) {
     return { dataAgeMinutes: null, stale: true };
   }
 
-  const dataAgeMinutes = Math.round((now - timestamp) / 60_000);
+  const ageMs = now - timestamp;
+  const dataAgeMinutes = Math.round(ageMs / 60_000);
   return {
     dataAgeMinutes,
-    stale: dataAgeMinutes > SAT_STALE_HOURS * 60,
+    // The public contract is stale at >=36h. Decide from exact elapsed time;
+    // rounded display minutes must never move an observation across the boundary.
+    stale: ageMs >= SAT_STALE_HOURS * 60 * 60 * 1000,
   };
 }
 
