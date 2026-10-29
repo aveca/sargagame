@@ -77,6 +77,16 @@ jobs:
           grep -q 'RM_INFINITE=\[\]' /tmp/smoke.log
       - name: Run B2B reliability freshness browser test
         run: node scripts/track-record-pricing-smoke.mjs
+      - name: Run HomeAZ freshness visual and interaction regression
+        run: node scripts/homeaz-freshness-smoke.mjs
+      - name: Upload HomeAZ freshness screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homeaz-freshness-visual-check
+          path: /tmp/homeaz-freshness/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Upload B2B reliability before/after screenshots
         if: always()
         uses: actions/upload-artifact@v4
