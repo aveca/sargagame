@@ -35,7 +35,8 @@ const boundary = PDV.checkSatelliteFreshness({
   ...payload,
   erddapTimestamp: '2026-10-25T12:33:49.000Z',
 }, now);
-check(boundary.status === 'VERIFIED' && boundary.ageMinutes === 2160, 'exactly 36 hours preserves the existing non-stale boundary');
+check(boundary.status === 'FAILED' && boundary.ageMinutes === 2160, 'exactly 36 hours is stale under the inclusive public boundary');
+check(boundary.detail.includes('>= 2160min'), 'post-deploy freshness failure reports the inclusive 36h boundary accurately');
 
 check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: null }, now).status === 'FAILED', 'missing satellite timestamp fails closed');
 check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: 'not-a-date' }, now).status === 'FAILED', 'invalid satellite timestamp fails closed');

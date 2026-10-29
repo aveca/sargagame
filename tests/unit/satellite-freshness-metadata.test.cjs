@@ -13,9 +13,18 @@ function check(condition, message) {
 }
 
 check(SAT_STALE_HOURS === 36, 'pipeline threshold remains 36 hours');
+const staleBoundaryMs = SAT_STALE_HOURS * 60 * 60 * 1000;
 check(
-  JSON.stringify(satelliteFreshness('2026-10-24T12:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 2160, stale: false }),
-  'exactly 36 hours retains the existing >36h stale boundary'
+  JSON.stringify(satelliteFreshness('2026-10-24T12:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 2160, stale: true }),
+  'exactly 36 hours is stale under the public >=36h contract'
+);
+check(
+  satelliteFreshness(now - staleBoundaryMs + 1, now).stale === false,
+  'one millisecond before the 36h boundary is not stale even if displayed minutes round to 2160'
+);
+check(
+  satelliteFreshness(now - staleBoundaryMs - 1, now).stale === true,
+  'one millisecond after the 36h boundary is stale even if displayed minutes round to 2160'
 );
 check(
   JSON.stringify(satelliteFreshness('2026-10-24T11:59:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 2161, stale: true }),
