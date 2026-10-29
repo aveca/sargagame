@@ -19,6 +19,7 @@
  */
 import React,{useRef,useEffect} from "react"
 import {HOME_AZ_CSS,HOME_AZ_MARKUP} from "./home-az-assets.js"
+import {homeAzFreshness, formatObservationTimestamp, nextHomeAzFreshnessBoundaryDelayMs} from "./lib/format-freshness.mjs"
 
 /* ====================================================================
    MOTEUR — monté dans le shadow root SR, hôte/scroll-container HOST.
@@ -29,6 +30,7 @@ export function initHomeAZ(SR, HOST, opts){
   function on(el,ev,fn,o){ el.addEventListener(ev,fn,o); cleaners.push(function(){el.removeEventListener(ev,fn,o);}); }
   var dead=false, rafId=0;
   var timers=[];
+  var freshnessTimer=0;
   function later(fn,ms){ var t=setTimeout(function(){ if(!dead) fn(); },ms); timers.push(t); return t; }
 
   var $ = function(id){ return SR.querySelector('#'+id); };
@@ -42,6 +44,7 @@ export function initHomeAZ(SR, HOST, opts){
       status: h.status || "clean",              /* clean | mod | avoid */
       region: h.region || "fr",
       updatedAt: h.updatedAt || null,
+      erddapTimestamp: h.erddapTimestamp || null,
       freshLabel: h.freshLabel || null,
       top3: Array.isArray(h.top3) ? h.top3 : null
     };
@@ -71,20 +74,20 @@ export function initHomeAZ(SR, HOST, opts){
     live:        {fr:"EN DIRECT", en:"LIVE", es:"EN DIRECTO"},
     eb0:         {fr:["EN DIRECT · "," · SATELLITE COPERNICUS"], en:["LIVE · "," · COPERNICUS SATELLITE"], es:["EN DIRECTO · "," · SATÉLITE COPERNICUS"]},
     s0:          {fr:"Le verdict sargasses du matin, mesuré au satellite — pas une supposition.", en:"This morning's sargassum verdict, measured by satellite — not a guess.", es:"El veredicto de sargazo de esta mañana, medido por satélite — no una suposición."},
-    ctaHeroT:    {fr:"Voir l'état maintenant", en:"See it right now", es:"Ver el estado ahora"},
+    ctaHeroT:    {fr:"Voir la dernière mesure", en:"See latest reading", es:"Ver la última medición"},
     ctaHeroS:    {fr:"verdict du jour · météo · 7 jours de prévisions", en:"today's verdict · weather · 7-day forecast", es:"veredicto de hoy · clima · pronóstico 7 días"},
-    mapLinkT:    {fr:"Ouvrir la carte en direct", en:"Open the live map", es:"Abrir el mapa en directo"},
+    mapLinkT:    {fr:"Ouvrir la carte des plages", en:"Open beach map", es:"Abrir mapa de playas"},
     eb1:         {fr:"CE MATIN, EN DIRECT", en:"THIS MORNING, LIVE", es:"ESTA MAÑANA, EN DIRECTO"},
     h1:          {fr:[["LE VERDICT,"],["PLAGE PAR PLAGE"]], en:[["THE VERDICT,"],["BEACH BY BEACH"]], es:[["EL VEREDICTO,"],["PLAYA POR PLAYA"]]},
     s1:          {fr:"Pas d'avis, pas de promesses : la mesure satellite de ce matin, plage par plage.", en:"No opinions, no promises: this morning's satellite reading, beach by beach.", es:"Sin opiniones ni promesas: la medición satelital de esta mañana, playa por playa."},
     ctaVerdictT: {fr:"Choisis ta plage", en:"Pick your beach", es:"Elige tu playa"},
     eb2:         {fr:"COMMENT ON LE SAIT", en:"HOW WE KNOW", es:"CÓMO LO SABEMOS"},
     h2:          {fr:[["ON VEILLE"],["LA MER POUR TOI"]], en:[["WE WATCH"],["THE SEA FOR YOU"]], es:[["VIGILAMOS"],["EL MAR POR TI"]]},
-    s2:          {fr:"Le satellite Copernicus passe 4 fois par jour : on traduit chaque passage en un verdict clair — mesuré, jamais deviné.", en:"The Copernicus satellite passes 4 times a day: we turn every pass into a clear verdict — measured, never guessed.", es:"El satélite Copernicus pasa 4 veces al día: convertimos cada pasada en un veredicto claro — medido, nunca adivinado."},
+    s2:          {fr:"On traduit la dernière observation satellite disponible en un statut clair, plage par plage. Si la mesure est retardée, on le signale.", en:"We turn the latest available satellite observation into a clear beach-by-beach status. If the reading is delayed, we say so.", es:"Convertimos la última observación satelital disponible en un estado claro, playa por playa. Si la medición se retrasa, lo indicamos."},
     m2b1t:       {fr:"Satellite Copernicus", en:"Copernicus satellite", es:"Satélite Copernicus"},
-    m2b1s:       {fr:"4 passages par jour, chaque plage — la donnée du matin, pas d'hier.", en:"4 passes a day, every beach — this morning's data, not yesterday's.", es:"4 pasadas al día, cada playa — el dato de esta mañana, no el de ayer."},
+    m2b1s:       {fr:"L'heure de la dernière observation est affichée ; une republication ne remplace pas une nouvelle mesure.", en:"The latest observation time is shown; republishing is not a new measurement.", es:"Se muestra la hora de la última observación; volver a publicar no equivale a una nueva medición."},
     m2b2t:       {fr:"Un score 0-100", en:"A 0-100 score", es:"Un puntaje 0-100"},
-    m2b2s:       {fr:"Recalculé à chaque passage : tu sais où ça en est, en temps réel.", en:"Recomputed on every pass: you know where it stands, in real time.", es:"Recalculado en cada pasada: sabes cómo está, en tiempo real."},
+    m2b2s:       {fr:"Le score résume les indicateurs disponibles ; la fraîcheur de la mesure est affichée séparément.", en:"The score summarizes available indicators; observation freshness is shown separately.", es:"El puntaje resume los indicadores disponibles; la frescura de la medición se muestra por separado."},
     m2b3t:       {fr:"7 jours devant", en:"7 days ahead", es:"7 días por delante"},
     m2b3s:       {fr:"7 jours de prévisions, baie par baie — et quand la confiance baisse, on te le dit.", en:"7-day forecast, bay by bay — and when confidence drops, we tell you.", es:"Pronóstico a 7 días, bahía por bahía — y cuando baja la confianza, te lo decimos."},
     eb3:         {fr:"PREMIUM", en:"PREMIUM", es:"PREMIUM"},
@@ -98,7 +101,7 @@ export function initHomeAZ(SR, HOST, opts){
     ctaPremiumT: {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     reassure:    {fr:"Pass unique, dès 7,99 € — pas d'abonnement, accès immédiat, rien à résilier.", en:"One-time Pass from $5.99 — no subscription, instant access, nothing to cancel.", es:"Pass único desde $5.99 — sin suscripción, acceso inmediato, nada que cancelar."},
     eb4:         {fr:"MESURÉ, PAS DEVINÉ", en:"MEASURED, NOT GUESSED", es:"MEDIDO, NO ADIVINADO"},
-    footCredit:  {fr:"Données : Copernicus Marine · mise à jour en direct", en:"Data: Copernicus Marine · updated live", es:"Datos: Copernicus Marine · actualizado en directo"},
+    footCredit:  {fr:"Données : Copernicus Marine · heure d'observation affichée", en:"Data: Copernicus Marine · observation time shown", es:"Datos: Copernicus Marine · hora de observación indicada"},
     aboutLink:   {fr:"À propos", en:"About", es:"Acerca de"},
     footPrem:    {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     notifT1:     {fr:"TA PLAGE CHANGE", en:"YOUR BEACH CHANGES", es:"TU PLAYA CAMBIA"},
@@ -124,26 +127,24 @@ export function initHomeAZ(SR, HOST, opts){
   function beachName(){ return LANG==="fr" ? HOME.beach : (HOME.beachDisplay || beachNoArticle(HOME.beach)); }
   function stLabel(s){ return s==="clean"?_t("Propre","Clean","Limpia") : s==="mod"?_t("Modéré","Moderate","Moderada") : _t("À éviter","Avoid","Evitar"); }
 
-  /* freshness HONNÊTE (jamais de faux chrono) */
+  /* Fraîcheur basée exclusivement sur l'observation ERDDAP, jamais sur la republication. */
+  function freshness(){
+    return homeAzFreshness({erddapTimestamp:HOME.erddapTimestamp}, LANG);
+  }
   function freshLabel(){
-    if(HOME.freshLabel) return (typeof HOME.freshLabel==="object" ? (HOME.freshLabel[LANG]||HOME.freshLabel.fr) : HOME.freshLabel);
-    if(HOME.updatedAt){
-      var age=(Date.now()-new Date(HOME.updatedAt).getTime())/60000;
-      if(isFinite(age) && age>=0 && age<12*60){
-        if(age<60) return _t("· il y a "+Math.max(1,Math.round(age))+" min","· "+Math.max(1,Math.round(age))+" min ago","· hace "+Math.max(1,Math.round(age))+" min");
-        var h=Math.round(age/60); return _t("· il y a "+h+" h","· "+h+"h ago","· hace "+h+" h");
-      }
-    }
-    return _t("· maj récente","· recently updated","· act. reciente");
+    return freshness().label;
   }
 
-  function dateLabel(){
-    var d=new Date();
+  function formatMonthDay(d, utc){
     var moFR=["JANV.","FÉVR.","MARS","AVR.","MAI","JUIN","JUIL.","AOÛT","SEPT.","OCT.","NOV.","DÉC."];
     var moEN=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
     var moES=["ENE","FEB","MAR","ABR","MAY","JUN","JUL","AGO","SEP","OCT","NOV","DIC"];
     var mo=LANG==="en"?moEN : LANG==="es"?moES : moFR;
-    return d.getDate()+" "+mo[d.getMonth()];
+    return (utc?d.getUTCDate():d.getDate())+" "+mo[utc?d.getUTCMonth():d.getMonth()];
+  }
+  function dateLabel(){ return formatMonthDay(new Date(), false); }
+  function observationDateLabel(){
+    return formatObservationTimestamp(HOME.erddapTimestamp, LANG);
   }
 
   function setHeading(el, lines){
@@ -169,8 +170,9 @@ export function initHomeAZ(SR, HOST, opts){
     return ["SARGASSES À ", name];
   }
   function setHeroHeading(){
-    var l2word=_t("AUJOURD'HUI","TODAY","HOY");
-    var live=_t("EN DIRECT","LIVE","EN DIRECTO");
+    var fresh=freshness();
+    var l2word=fresh.live ? _t("AUJOURD'HUI","TODAY","HOY") : _t("DERNIÈRE MESURE","LAST READING","ÚLTIMA MEDICIÓN");
+    var live=fresh.badge;
     var st=HOME.status||"clean";
     var segs;
     if(st==="clean"){
@@ -188,10 +190,17 @@ export function initHomeAZ(SR, HOST, opts){
     var el=$("h0"); if(el){ var sp=document.createElement("span"); sp.className="b"; sp.textContent=live; el.appendChild(sp); }
   }
   function setEyebrow0(){
-    var el=$("eb0"); if(!el) return; var parts=T.eb0[LANG];
+    var el=$("eb0"); if(!el) return;
+    var fresh=freshness();
+    var parts=fresh.live ? T.eb0[LANG] : [
+      fresh.badge+" · ",
+      LANG==="fr" ? " · SATELLITE COPERNICUS" : LANG==="es" ? " · SATÉLITE COPERNICUS" : " · COPERNICUS SATELLITE"
+    ];
     while(el.firstChild) el.removeChild(el.firstChild);
     el.appendChild(document.createTextNode(parts[0]));
-    var dt=document.createElement("span"); dt.className="dt"; dt.textContent=dateLabel(); el.appendChild(dt);
+    var dt=document.createElement("span"); dt.className="dt";
+    dt.textContent=fresh.state==="unknown" ? _t("INCONNU","UNKNOWN","DESCONOCIDO") : observationDateLabel();
+    el.appendChild(dt);
     el.appendChild(document.createTextNode(parts[1]));
   }
 
@@ -222,18 +231,20 @@ export function initHomeAZ(SR, HOST, opts){
 
   function applyCopy(){
     var bn=beachName();
-    if($("liveTxt")) $("liveTxt").textContent=T.live[LANG];
+    var fresh=freshness();
+    var statusNote=_t("Le statut reflète la dernière mesure disponible, pas une confirmation en direct.","Status reflects the latest available reading, not live confirmation.","El estado refleja la última medición disponible, no una confirmación en vivo.");
+    if($("liveTxt")) $("liveTxt").textContent=fresh.badge;
     if($("livePass")) $("livePass").textContent=" "+freshLabel();
     setEyebrow0(); setHeroHeading();
-    if($("s0")) $("s0").textContent=T.s0[LANG];
+    if($("s0")) $("s0").textContent=fresh.live ? T.s0[LANG] : fresh.label;
     if($("ctaHeroT")) $("ctaHeroT").textContent=T.ctaHeroT[LANG];
-    if($("ctaHeroS")) $("ctaHeroS").textContent=T.ctaHeroS[LANG];
+    if($("ctaHeroS")) $("ctaHeroS").textContent=fresh.live ? T.ctaHeroS[LANG] : statusNote;
     if($("mapLinkT")) $("mapLinkT").textContent=T.mapLinkT[LANG];
     var st=STATUS[HOME.status]||STATUS.clean;
-    if($("vTxt")){ $("vTxt").textContent=st[LANG][0]; $("vTxt").style.color=st.col; }
+    if($("vTxt")){ $("vTxt").textContent=fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge; $("vTxt").style.color=st.col; }
     var vbBadge=$("verdictBadge"); if(vbBadge){ var vbar=vbBadge.querySelector(".vbar"); if(vbar) vbar.style.background=st.col; }
     if($("vScore")) $("vScore").textContent=HOME.score;
-    if($("eb1")) $("eb1").textContent=T.eb1[LANG]; setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=T.s1[LANG];
+    if($("eb1")) $("eb1").textContent=fresh.live ? T.eb1[LANG] : fresh.badge+" · "+observationDateLabel(); setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=fresh.live ? T.s1[LANG] : statusNote;
     if($("ctaVerdictT")) $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
     if($("eb2")) $("eb2").textContent=T.eb2[LANG]; setHeading($("h2"),T.h2[LANG]); if($("s2")) $("s2").textContent=T.s2[LANG];
     if($("m2b1t")) $("m2b1t").textContent=T.m2b1t[LANG]; if($("m2b1s")) $("m2b1s").textContent=T.m2b1s[LANG];
@@ -256,6 +267,21 @@ export function initHomeAZ(SR, HOST, opts){
     if($("scrollLab")) $("scrollLab").textContent=T.scrollLab[LANG];
     if($("touchHintTxt")) $("touchHintTxt").textContent=T.touchHint[LANG];
     initTop3();
+    scheduleFreshnessRefresh();
+  }
+
+  /* Revalidate the visible freshness badge when wall-clock age crosses 12h/15h.
+     Timers are independent of the demand-driven animation loop. */
+  function scheduleFreshnessRefresh(){
+    if(freshnessTimer){ clearTimeout(freshnessTimer); freshnessTimer=0; }
+    if(dead) return;
+    var delay=nextHomeAzFreshnessBoundaryDelayMs({erddapTimestamp:HOME.erddapTimestamp});
+    if(delay==null) return;
+    freshnessTimer=setTimeout(function(){
+      freshnessTimer=0;
+      if(dead) return;
+      applyCopy();
+    }, delay);
   }
 
   /* ====================================================================
@@ -571,6 +597,9 @@ export function initHomeAZ(SR, HOST, opts){
 
   /* premier état de la copie + tracking d'affichage */
   applyCopy();
+  // Background timers can be throttled; refresh the freshness state when the
+  // page becomes visible again, including reduced-motion mode.
+  on(document,"visibilitychange",function(){ if(!document.hidden) applyCopy(); });
   wireConversion();
   track("sg_hero_shown",{beach:HOME.beach, score:HOME.score, status:HOME.status, geoloc:false, variant:"home_az"});
 
@@ -703,6 +732,7 @@ export function initHomeAZ(SR, HOST, opts){
   function teardown(){
     if(dead) return; dead=true;
     try{ cancelAnimationFrame(rafId); }catch(e){}
+    if(freshnessTimer){ try{clearTimeout(freshnessTimer);}catch(e){} freshnessTimer=0; }
     for(var i=0;i<timers.length;i++){ try{ clearTimeout(timers[i]); }catch(e){} }
     for(var j=0;j<cleaners.length;j++){ try{ cleaners[j](); }catch(e){} }
   }
@@ -731,7 +761,8 @@ export default function HomeAZ(props){
       score: beach&&beach.score!=null ? beach.score : 82,
       status: (beach&&ST_MAP[beach.status]) || "clean",
       region: island==="gp" ? "gp" : "fr",
-      updatedAt: (sargData&&(sargData.updatedAt||sargData.erddapTimestamp)) || null,
+      updatedAt: (sargData&&sargData.updatedAt) || null,
+      erddapTimestamp: (sargData&&sargData.erddapTimestamp) || null,
       top3: (topBeaches||[]).slice(0,3).map(b=>({name:b.name, status:ST_MAP[b.status]||"clean", score:b.score}))
     };
   }
@@ -765,7 +796,7 @@ export default function HomeAZ(props){
   /* sync données réelles (la plage du hero peut changer : géoloc tardive…) */
   useEffect(()=>{ if(engRef.current) engRef.current.update(buildHome());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[beach&&beach.name, beach&&beach.score, beach&&beach.status, sargData&&(sargData.updatedAt||sargData.erddapTimestamp), (topBeaches||[]).map(b=>b&&b.id).join(",")]);
+  },[beach&&beach.name, beach&&beach.score, beach&&beach.status, sargData&&sargData.updatedAt, sargData&&sargData.erddapTimestamp, (topBeaches||[]).map(b=>b&&b.id).join(",")]);
 
   /* sync langue app → moteur */
   useEffect(()=>{ if(engRef.current) engRef.current.setLang(lang||"fr");

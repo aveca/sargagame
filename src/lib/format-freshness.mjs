@@ -168,3 +168,100 @@ export function chasseMapCtaSummary(cleanCount, totalCount, satelliteAgeHours, l
   const total = Number.isFinite(totalCount) ? Math.max(0, Math.floor(totalCount)) : 0;
   return copy.live(clean, total);
 }
+
+/**
+ * HomeAZ freshness contract.
+ * Only erddapTimestamp proves observation freshness; updatedAt is publication time.
+ * LIVE is shown only under 12 h, 12–15 h is a dated reading, and >15 h is delayed.
+ */
+export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
+  const ageHours = satelliteAgeHours(sargData, now);
+  const locale = lang === "en" ? "en" : lang === "es" ? "es" : "fr";
+  const labels = {
+    fr: {
+      unknownBadge: "VÉRIFICATION",
+      unknown: "Vérification des données satellite en cours",
+      liveBadge: "EN DIRECT",
+      recentBadge: "MESURE SATELLITE",
+      staleBadge: "SATELLITE EN RETARD",
+      stale: "Données satellite en retard · vérifie avant de choisir",
+      recent: hours => `Dernière mesure satellite il y a ${hours} h · statut non en direct`,
+      minute: n => `· il y a ${n} min`,
+      hour: n => `· il y a ${n} h`,
+    },
+    en: {
+      unknownBadge: "VERIFICATION",
+      unknown: "Satellite verification in progress",
+      liveBadge: "LIVE",
+      recentBadge: "SATELLITE READING",
+      staleBadge: "SATELLITE DELAYED",
+      stale: "Satellite data delayed · check before choosing",
+      recent: hours => `Last satellite reading ${hours}h ago · not live`,
+      minute: n => `· ${n} min ago`,
+      hour: n => `· ${n}h ago`,
+    },
+    es: {
+      unknownBadge: "VERIFICACIÓN",
+      unknown: "Verificación de datos satelitales en curso",
+      liveBadge: "EN DIRECTO",
+      recentBadge: "MEDICIÓN SATELITAL",
+      staleBadge: "SATÉLITE ATRASADO",
+      stale: "Datos satelitales atrasados · verifica antes de elegir",
+      recent: hours => `Última medición satelital hace ${hours} h · sin estado en vivo`,
+      minute: n => `· hace ${n} min`,
+      hour: n => `· hace ${n} h`,
+    },
+  }[locale];
+
+  // Missing, invalid or future timestamps cannot prove a current status.
+  if (ageHours == null || ageHours < 0) {
+    return { state: "unknown", live: false, badge: labels.unknownBadge, label: labels.unknown, ageHours: null };
+  }
+  if (ageHours < 12) {
+    const label = ageHours < 1
+      ? labels.minute(Math.max(1, Math.round(ageHours * 60)))
+      : labels.hour(Math.max(1, Math.floor(ageHours)));
+    return { state: "live", live: true, badge: labels.liveBadge, label, ageHours };
+  }
+  if (ageHours < 15) {
+    const hours = Math.max(12, Math.floor(ageHours));
+    return { state: "recent", live: false, badge: labels.recentBadge, label: labels.recent(hours), ageHours };
+  }
+  return { state: "stale", live: false, badge: labels.staleBadge, label: labels.stale, ageHours };
+}
+
+
+
+/** Format the source observation timestamp explicitly in UTC for the HomeAZ hero. */
+export function formatObservationTimestamp(raw, lang = "fr") {
+  const timestamp = typeof raw === "number" ? raw : Date.parse(String(raw ?? ""));
+  if (!Number.isFinite(timestamp) || timestamp <= 0) {
+    return lang === "en" ? "UNKNOWN" : lang === "es" ? "DESCONOCIDO" : "INCONNU";
+  }
+  const locale = lang === "en" ? "en-GB" : lang === "es" ? "es-ES" : "fr-FR";
+  const parts = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+    timeZone: "UTC",
+  }).formatToParts(new Date(timestamp));
+  const part = type => parts.find(item => item.type === type)?.value || "";
+  return `${part("day")} ${part("month")} ${part("hour")}:${part("minute")} UTC`;
+}
+
+/**
+ * Milliseconds until the next HomeAZ freshness transition (12h or 15h).
+ * A small 50ms margin avoids evaluating just before a boundary due to timer
+ * scheduling precision. Invalid/future timestamps and terminal stale state
+ * require no timer; visibility and data updates still re-evaluate the state.
+ */
+export function nextHomeAzFreshnessBoundaryDelayMs(sargData, now = Date.now()) {
+  const raw = sargData?.erddapTimestamp;
+  const timestamp = typeof raw === "number" ? raw : Date.parse(String(raw ?? ""));
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now) || now < timestamp) return null;
+  const ageMs = now - timestamp;
+  const nextBoundary = [12, 15].map(hours => hours * 3_600_000).find(boundary => ageMs < boundary);
+  return nextBoundary == null ? null : Math.max(0, nextBoundary - ageMs + 50);
+}
