@@ -4,6 +4,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '../..');
 const daily = fs.readFileSync(path.join(root, '.github/workflows/daily-copernicus.yml'), 'utf8').replace(/\r\n/g, '\n');
@@ -24,5 +25,18 @@ for (const [name, text] of [['daily-copernicus.yml', daily], ['data-refresh.yml'
 
 assert.ok(daily.includes("needs.fetch-data.outputs.publication_status != 'BLOCKED_STALE_SOURCE'") && daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_VALIDATION'") && daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH'"), 'classified data-pipeline failures must not trigger new failure emails');
 assert.ok(daily.includes("needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH' && github.run_attempt == '1'"), 'classified data-pipeline failures must not cause an automatic retry/dispatch');
+
+const yamlCheck = spawnSync('ruby', [
+  '-e',
+  'require "yaml"; ARGV.each { |file| YAML.parse_file(file) }',
+  path.join(root, '.github/workflows/daily-copernicus.yml'),
+  path.join(root, '.github/workflows/data-refresh.yml')
+], { encoding: 'utf8' });
+if (yamlCheck.error && yamlCheck.error.code === 'ENOENT') {
+  console.log('YAML syntax parser unavailable locally; GitHub-hosted CI validation is still required');
+} else {
+  assert.equal(yamlCheck.status, 0, 'modified workflow YAML must parse: ' + (yamlCheck.stderr || yamlCheck.stdout));
+  console.log('WORKFLOW_YAML_SYNTAX PASS (Ruby Psych)');
+}
 
 console.log('COPERNICUS_WORKFLOW_STATUS_CONTRACT PASS');
