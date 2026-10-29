@@ -19,6 +19,9 @@ const unsupportedCadence = [
   /\b(?:cuatro|4)\s+veces\s+al\s+d[ií]a\b/i,
   /\bcada\s+(?:3|tres|4|cuatro|6|seis)\s+horas?\b/i,
   /\b(?:4|cuatro)\s*[×x]\s*(?:al\s+d[ií]a|por\s+d[ií]a)\b/i,
+  /available from satellite(?: imagery)?/i,
+  /recalculated with every satellite refresh\s*[—–-]\s*when new satellite observations are available/i,
+  /when new satellite observations are available,\s*each time new Copernicus\/NOAA AFAI imagery arrives/i,
 ]
 
 for (const relativePath of files) {
