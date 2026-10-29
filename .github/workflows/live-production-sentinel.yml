@@ -61,6 +61,15 @@ jobs:
           SG_TAIL_DIR=/tmp/sg-tail node scripts/autopilot/live-production-sentinel.cjs --skip-local
           rc=$?
           echo "rc=$rc" >> "$GITHUB_OUTPUT"
+          # Keep confirmed-incident notification separate from operational health.
+          # A freshness-only degradation must fail the run without spamming issues.
+          report=".ai/autopilot/observations/live-production-latest.json"
+          health_rc=1
+          if [ -f "$report" ]; then
+            health_rc=$(node -e "const fs=require('fs'); const x=JSON.parse(fs.readFileSync(process.argv[1], 'utf8')); process.stdout.write(x.ok === true ? '0' : '1')" "$report" 2>/dev/null || echo 1)
+          fi
+          if [ "$health_rc" != "0" ]; then health_rc=1; fi
+          echo "health_rc=$health_rc" >> "$GITHUB_OUTPUT"
           exit 0
 
       - name: Open or update deduplicated live incident
@@ -111,11 +120,10 @@ jobs:
           if-no-files-found: warn
           retention-days: 7
 
-      - name: Fail when live incident detected
-        # Uniquement sur incident LIVE confirmé (rc!=0). L'échec de la sonde
-        # (tail manquant ou permissions) n'est plus un incident de production ;
-        # il est rapporté NOT_PROVEN (cause visible dans le log, jamais masqué).
-        if: steps.scan.outputs.rc != '0'
+      - name: Fail when live health is degraded
+        # The issue/comment step above remains gated only by confirmed incidents (rc).
+        # Freshness-only degradation fails the workflow but does not create repeated issues.
+        if: steps.scan.outputs.rc != '0' || steps.scan.outputs.health_rc != '0'
         run: |
-          echo "::error::Live production incident detected; evidence and a deduplicated GitHub issue were created."
+          echo "::error::Sentinel health is degraded or a confirmed live incident was detected; inspect the uploaded sentinel evidence and any incident issue."
           exit 1
