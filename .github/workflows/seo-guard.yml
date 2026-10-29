@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: '0 2 * * *' # Every night at 2 AM
   workflow_dispatch:
+  pull_request:
+    paths:
+      - '.github/workflows/seo-guard.yml'
+      - 'scripts/autopilot/routes.cjs'
 
 jobs:
   link-checker:
@@ -12,14 +16,96 @@ jobs:
       - uses: actions/checkout@v4
       # lychee ne déplie pas les <loc> d'un sitemap XML distant (→ "0 links" + failIfEmpty=exit 1).
       # On extrait nous-mêmes les URLs du sitemap live et on les donne en liste à lychee.
-      - name: Extract URLs from live sitemap
+      - name: Extract URLs from all live regional domains
+        shell: bash
         run: |
-          curl -sSL https://sargasses-martinique.com/sitemap.xml \
-            | grep -oE '<loc>[^<]+</loc>' | sed -E 's@</?loc>@@g' > urls.txt
-          n=$(wc -l < urls.txt)
-          echo "Extracted $n URLs from sitemap"
-          if [ "$n" -eq 0 ]; then
-            echo "::error::Sitemap returned 0 URLs — site or sitemap unreachable"
+          set -euo pipefail
+          : > urls.txt
+          domains_file="$(mktemp)"
+          node - <<'NODE' > "$domains_file"
+          const { LIVE } = require('./scripts/autopilot/routes.cjs');
+          for (const [id, region] of Object.entries(LIVE)) {
+            console.log([id, region.domain, region.sitemap || ''].join('\t'));
+          }
+          NODE
+
+          collect_sitemap() {
+            local sitemap_url="$1"
+            local depth="$2"
+            if (( depth > 3 )); then
+              echo "::error::Sitemap nesting exceeds three levels at $sitemap_url"
+              return 1
+            fi
+            local sitemap_file
+            sitemap_file="$(mktemp)"
+            if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 1 --connect-timeout 10 --max-time 45 "$sitemap_url" -o "$sitemap_file"; then
+              echo "::error title=Sitemap unavailable::$sitemap_url could not be fetched"
+              return 1
+            fi
+
+            if grep -qi '<sitemapindex' "$sitemap_file"; then
+              local children=()
+              mapfile -t children < <(grep -oE '<loc>[^<]+</loc>' "$sitemap_file" | sed -E 's@</?loc>@@g' || true)
+              if (( ${#children[@]} == 0 )); then
+                echo "::error::Sitemap index has no child locations: $sitemap_url"
+                return 1
+              fi
+              local child
+              for child in "${children[@]}"; do
+                collect_sitemap "$child" "$((depth + 1))" || return 1
+              done
+            else
+              local page_urls
+              page_urls="$(mktemp)"
+              grep -oE '<loc>[^<]+</loc>' "$sitemap_file" | sed -E 's@</?loc>@@g' > "$page_urls" || true
+              local count
+              count="$(wc -l < "$page_urls" | tr -d ' ')"
+              if [[ "$count" -eq 0 ]]; then
+                echo "::error::Sitemap has no <loc> URLs: $sitemap_url"
+                return 1
+              fi
+              cat "$page_urls" >> urls.txt
+              echo "Extracted $count page URLs from $sitemap_url"
+            fi
+          }
+
+          while IFS=$'\t' read -r region domain configured_sitemap; do
+            [[ -n "$domain" ]] || continue
+            echo "::group::SEO coverage: $region ($domain)"
+            robots_file="$(mktemp)"
+            sitemaps=()
+            if curl --fail --silent --show-error --location --retry 1 --connect-timeout 10 --max-time 30 "https://$domain/robots.txt" -o "$robots_file"; then
+              mapfile -t sitemaps < <(grep -iE '^Sitemap:[[:space:]]*https?://' "$robots_file" | sed -E 's/^[^:]+:[[:space:]]*//' || true)
+            else
+              echo "robots.txt unavailable; using the configured fallback where applicable"
+            fi
+
+            if (( ${#sitemaps[@]} == 0 )); then
+              if [[ -z "$configured_sitemap" ]]; then
+                home_file="$(mktemp)"
+                if ! curl --fail --silent --show-error --location --retry 2 --retry-delay 1 --connect-timeout 10 --max-time 45 "https://$domain/" -o "$home_file"; then
+                  echo "::error title=Regional homepage unavailable::https://$domain/ could not be fetched"
+                  exit 1
+                fi
+                printf 'https://%s/\n' "$domain" >> urls.txt
+                echo "No sitemap configured in routes.cjs and none declared by robots.txt; homepage HTTP check only."
+                echo "::endgroup::"
+                continue
+              fi
+              sitemaps=("https://$domain/$configured_sitemap")
+            fi
+
+            for sitemap_url in "${sitemaps[@]}"; do
+              collect_sitemap "$sitemap_url" 0
+            done
+            echo "::endgroup::"
+          done < "$domains_file"
+
+          sort -u urls.txt -o urls.txt
+          total="$(wc -l < urls.txt | tr -d ' ')"
+          echo "Total unique URLs queued for Lychee across the configured live regions: $total"
+          if [[ "$total" -eq 0 ]]; then
+            echo "::error::No regional sitemap URLs or homepage URLs were collected"
             exit 1
           fi
       - name: Link Checker
