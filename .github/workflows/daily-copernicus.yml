@@ -496,7 +496,7 @@ jobs:
           SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
           SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/ux-daily.cjs --send
+        run: node scripts/ux-daily.cjs --send
 
       - name: Publish daily metrics snapshot
         # Responsabilité SÉPARÉE du commit email (qui garde son continue-on-error
