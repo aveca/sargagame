@@ -29,7 +29,7 @@ function base() {
 
 const workflowPath = path.join(ROOT, '.github', 'workflows', 'live-production-sentinel.yml')
 const workflowSource = fs.readFileSync(workflowPath, 'utf8')
-const incidentStep = workflowSource.match(/- name: Open or update deduplicated live incident[\\s\\S]*?\\n\\s+if: ([^\\n]+)/)
+const incidentStep = workflowSource.match(/- name: Open or update deduplicated live incident[\s\S]*?\n\s+if: ([^\n]+)/)
 t(workflowSource.includes('echo "health_rc=$health_rc" >> "$GITHUB_OUTPUT"'),
   'workflow exports operational health separately from confirmed incidents')
 t(workflowSource.includes("if: steps.scan.outputs.rc != '0' || steps.scan.outputs.health_rc != '0'"),
