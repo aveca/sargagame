@@ -36,4 +36,4 @@ assert.match(landing, /optgroup label="Martinique"/);
 assert.match(landing, /optgroup label="Guadeloupe"/);
 assert.match(landing, /function domain\(\).*sargasses-guadeloupe\.com/s);
 
-console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (14 assertions)');
+console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (17 assertions)');
