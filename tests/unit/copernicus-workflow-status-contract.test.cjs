@@ -21,6 +21,9 @@ for (const [name, text] of [['daily-copernicus.yml', daily], ['data-refresh.yml'
   assert.ok(text.includes('process.exit(1)'), name + ': blocked/failed status must fail the job');
   assert.ok(text.includes('id: dispatch') && text.includes("steps.verify.outcome == 'success'"), name + ': deploy dispatch must remain gated');
   assert.ok(text.includes('continue-on-error: true') && text.includes('gate_status=BLOCKED_STALE_SOURCE'), name + ': gate must remain observable while marker handling runs');
+  assert.ok(text.includes('echo "changed=false" >> "$GITHUB_OUTPUT"') && text.includes('echo "changed=true" >> "$GITHUB_OUTPUT"'), name + ': publication step must expose whether a commit was created');
+  assert.ok(text.includes('PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}'), name + ': publication-change output must reach status classifier');
+  assert.ok(text.includes('classifyPublicationStatus') && text.includes("publishChanged"), name + ': publication status must use the tested classifier');
 }
 
 assert.ok(daily.includes("needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION'"), 'failure emails are limited to unrelated failures after an unclassified/successful data job or a push-only build');
