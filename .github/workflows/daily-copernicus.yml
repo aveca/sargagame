@@ -644,7 +644,7 @@ jobs:
   # ── 5. NOTIFY ON FAILURE ──────────────────────────────────────────────────
   notify-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && needs.fetch-data.outputs.publication_status != 'BLOCKED_STALE_SOURCE' && needs.fetch-data.outputs.publication_status != 'FAILED_VALIDATION' && needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH'
+    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -661,7 +661,7 @@ jobs:
   # ── 6. RETRY ON FAILURE (once, after 5 min, schedule only) ───────────────
   retry-on-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && needs.fetch-data.outputs.publication_status != 'BLOCKED_STALE_SOURCE' && needs.fetch-data.outputs.publication_status != 'FAILED_VALIDATION' && needs.fetch-data.outputs.publication_status != 'FAILED_PUBLISH' && github.run_attempt == '1' && github.event_name == 'schedule'
+    if: failure() && (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION') && github.run_attempt == '1' && github.event_name == 'schedule'
     runs-on: ubuntu-latest
     permissions:
       actions: write
