@@ -149,10 +149,12 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "Aucune donnée à commit (déjà à jour)."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit -m "chore(data): refresh Copernicus $(date -u +'%Y-%m-%d %H:%M UTC')"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
 
           BRANCH="${GITHUB_REF_NAME:-main}"
           echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
@@ -239,6 +241,7 @@ jobs:
           GATE_OUTCOME: ${{ steps.verify.outcome }}
           GATE_STATUS: ${{ steps.verify.outputs.gate_status }}
           PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}
           PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
           PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
           DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
@@ -254,12 +257,18 @@ jobs:
           const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
           const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
           const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
-          let status;
-          if (gateStatus === 'BLOCKED_STALE_SOURCE') status = 'BLOCKED_STALE_SOURCE';
-          else if (process.env.ERDDAP_OUTCOME !== 'success' || process.env.SOURCE === 'none' || process.env.GATE_OUTCOME !== 'success') status = 'FAILED_VALIDATION';
-          else if (process.env.PUBLISH_OUTCOME === 'failure') status = 'FAILED_PUBLISH';
-          else if (process.env.PUBLISH_OUTCOME === 'skipped') status = 'NO_NEW_OBSERVATION';
-          else status = 'FRESH_AND_PUBLISHED';
+          const publishChanged = process.env.PUBLISH_CHANGED === 'true'
+            ? true
+            : process.env.PUBLISH_CHANGED === 'false' ? false : null;
+          const { classifyPublicationStatus } = require('./scripts/lib/copernicus-publication-status.cjs');
+          const status = classifyPublicationStatus({
+            gateStatus,
+            erddapOutcome: process.env.ERDDAP_OUTCOME,
+            source: process.env.SOURCE,
+            gateOutcome: process.env.GATE_OUTCOME,
+            publishOutcome: process.env.PUBLISH_OUTCOME,
+            publishChanged
+          });
           let changedPayloadFiles = [];
           try {
             const sha = process.env.PUBLISH_SHA;
@@ -282,6 +291,7 @@ jobs:
             integrityGateOutcome: process.env.GATE_OUTCOME || null,
             integrityGateClassification: gateStatus,
             publishOutcome: process.env.PUBLISH_OUTCOME || null,
+            publishChanged,
             publishBranch: process.env.PUBLISH_BRANCH || null,
             commitSha: process.env.PUBLISH_SHA || null,
             deploymentDispatchOutcome: process.env.DISPATCH_OUTCOME || 'unknown',
@@ -304,6 +314,7 @@ jobs:
             '- Public stale threshold: 2160 minutes',
             '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
             '- Publish outcome: ' + report.publishOutcome,
+            '- Commit changes detected: ' + (publishChanged === null ? 'UNVERIFIED' : publishChanged),
             '- Commit SHA: ' + (report.commitSha || 'none'),
             '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
             '- Changed payload files: ' + (changedPayloadFiles.length ? changedPayloadFiles.join(', ') : 'none detected'),
