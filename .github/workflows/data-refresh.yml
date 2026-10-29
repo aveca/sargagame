@@ -45,7 +45,7 @@ jobs:
   refresh:
     outputs:
       publication_status: ${{ steps.publication_status.outputs.status }}
-      gate_outcome: ${{ steps.publication_status.outputs.gate_outcome }}
+      gate_outcome: ${{ steps.verify.outcome }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
