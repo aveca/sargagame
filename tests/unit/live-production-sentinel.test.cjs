@@ -27,6 +27,18 @@ function base() {
   }
 }
 
+const workflowPath = path.join(ROOT, '.github', 'workflows', 'live-production-sentinel.yml')
+const workflowSource = fs.readFileSync(workflowPath, 'utf8')
+const incidentStep = workflowSource.match(/- name: Open or update deduplicated live incident[\\s\\S]*?\\n\\s+if: ([^\\n]+)/)
+t(workflowSource.includes('echo "health_rc=$health_rc" >> "$GITHUB_OUTPUT"'),
+  'workflow exports operational health separately from confirmed incidents')
+t(workflowSource.includes("if: steps.scan.outputs.rc != '0' || steps.scan.outputs.health_rc != '0'"),
+  'workflow fails when confirmed incidents or operational health degradation is present')
+t(workflowSource.includes('health_rc=1') && workflowSource.includes('if [ "$health_rc" != "0" ]; then health_rc=1; fi'),
+  'missing, malformed, or non-healthy report fails closed')
+t(incidentStep?.[1].trim() === "steps.scan.outputs.rc != '0'",
+  'freshness-only degradation does not open or comment a live-incident issue')
+
 // 1. échec CI seul → incident live AUCUN (dans le fingerprint/incidents).
 {
   const r = sentinel.buildReport(base())
