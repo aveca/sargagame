@@ -218,7 +218,7 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
 
     // 7 jours : jour 0 ancré sur le statut LIVE (évite la contradiction live≠forecast[0])
     var wk = (d.weekly && d.weekly[sargId] && d.weekly[sargId].forecast) || [];
-    if (showFc && wk.length){
+    if (fresh && showFc && wk.length){
       var fc = $("fc"); clear(fc);
       wk.forEach(function(f,i){
         var st = i===0 ? status : f.status;             // day0 = live
