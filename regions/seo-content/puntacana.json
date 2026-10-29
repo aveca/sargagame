@@ -302,7 +302,7 @@
       "lang": "en",
       "slug": "sargassum-macao-uvero-alto-today",
       "title": "Macao & Uvero Alto Sargassum Today — Live Status",
-      "desc": "Sargassum at Macao Beach and Uvero Alto today: live satellite status, per-beach Beach Score and 7-day forecast, refreshed 4x a day. Is there seaweed at Macao now?",
+      "desc": "Sargassum at Macao Beach and Uvero Alto today: live satellite status, per-beach Beach Score and 7-day forecast, refreshed when new satellite observations are available. Is there seaweed at Macao now?",
       "h1": "Macao Beach & Uvero Alto Sargassum Today",
       "intro": "Is there seaweed at Macao Beach or Uvero Alto right now? Check the Beach Score and status today at the top of this page — both stretches are tracked separately and updated this morning from the latest satellite pass. Macao (a wild, public surf beach) and Uvero Alto (the remote northern resort strip, ~40 minutes from the airport) both face the open Atlantic head-on, so they collect more sargassum than reef-sheltered Cap Cana in season. But that is exactly why a single regional verdict fails you here: a mat can bury Macao while Uvero Alto stays workable, or the reverse, on the same morning. We read Copernicus and NOAA AFAI imagery directly offshore of each beach, when new satellite observations are available, and publish a 0–100 Beach Score plus a 7-day forecast for each. We measure; we do not guess. When clouds delay a pass, every beach shows its exact update time and a confidence level, so you always know how fresh today's reading really is.",
       "sections": [
@@ -682,7 +682,7 @@
       "lang": "en",
       "slug": "sargassum-uvero-alto-today",
       "title": "Sargassum at Uvero Alto Today — Live Satellite Map",
-      "desc": "Check today's sargassum at Uvero Alto Beach with a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, refreshed 4x a day.",
+      "desc": "Check today's sargassum at Uvero Alto Beach with a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, refreshed when new satellite observations are available.",
       "h1": "Sargassum at Uvero Alto Beach Today — Live Satellite Map",
       "intro": "Want to know if Uvero Alto has sargassum today? Open the live map for Uvero Alto's Beach Score and current status (clean, moderate, or avoid) — measured this morning from satellite, not guessed from last week. Uvero Alto sits on Punta Cana's quieter north strip, and because wind and currents shift overnight, this beach can read very differently from Bavaro or Macao just down the coast. That's why we score Uvero Alto on its own. The Watcher is a satellite that watches the sea while you sleep and tells you each morning where the water is clean, using Copernicus and NOAA AFAI imagery refreshed when new satellite observations are available. You get a per-beach Beach Score (0-100), a plain status, and a 7-day forecast for Uvero Alto. When clouds block the view, we say so — we'd rather tell you we can't confirm today than invent a number.",
       "sections": [
@@ -724,7 +724,7 @@
       "lang": "en",
       "slug": "sargassum-juanillo-beach-today",
       "title": "Sargassum at Juanillo Beach (Cap Cana) Today — Map",
-      "desc": "Check today's sargassum at Juanillo Beach, Cap Cana, on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, updated 4x a day.",
+      "desc": "Check today's sargassum at Juanillo Beach, Cap Cana, on a live satellite map. Per-beach Beach Score, clean/moderate/avoid status, updated when new satellite observations are available.",
       "h1": "Sargassum at Juanillo Beach (Cap Cana) Today — Live Map",
       "intro": "Wondering if Juanillo Beach in Cap Cana has sargassum today? Open the live map for Juanillo's Beach Score and current status — clean, moderate, or avoid — measured this morning from satellite, not guessed from a seasonal average. Juanillo is Cap Cana's premium, partly sheltered cove, and that geometry means it often reads differently from the open beaches up the coast. So we score Juanillo on its own. The Watcher is a satellite that watches the sea while you sleep and tells you each morning where the water is clean, using Copernicus and NOAA AFAI imagery refreshed when new satellite observations are available. You get a per-beach Beach Score (0-100), a plain status, and a 7-day forecast for Juanillo. When clouds hide the cove in the latest pass, we tell you straight — we'd rather admit we can't confirm today than publish a number we didn't measure.",
       "sections": [
