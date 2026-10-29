@@ -39,7 +39,7 @@ jobs:
   fetch-data:
     outputs:
       publication_status: ${{ steps.publication_status.outputs.status }}
-      gate_outcome: ${{ steps.publication_status.outputs.gate_outcome }}
+      gate_outcome: ${{ steps.verify.outcome }}
     if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 10
