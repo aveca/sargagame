@@ -38,18 +38,22 @@ check(!workflowSource.includes('--sampling-rate=1'), 'Sentinel never passes the 
   });
 
   try {
-    const stale = await sentinel.checkDomain('example.test', 15);
-    check(stale.ageMinutes < 15, 'pipeline updatedAt is fresh');
+    const stale = await sentinel.checkDomain('example.test');
+    check(stale.publicationAgeMinutes < 15, 'fresh updatedAt is reported as publication age only');
     check(stale.satelliteAgeMinutes >= 36 * 60, 'satellite age is recalculated from erddapTimestamp');
-    check(stale.operationalFreshness.status === 'OPERATIONAL_SLA_BREACHED', 'fresh pipeline cannot hide a satellite observation beyond the 900-minute SLA');
-    check(stale.errors.length === 0, 'satellite SLA status is separated from HTTP/Worker incident notifications');
+    check(stale.operationalFreshness.status === 'OPERATIONAL_SLA_BREACHED', 'fresh publication cannot hide a satellite observation beyond the 900-minute SLA');
+    check(stale.errors.length === 0, 'stale satellite data is not misclassified as an HTTP error');
+    check(stale.httpOk === true, 'HTTP and JSON health remain true when the endpoint responds with valid JSON');
     check(stale.ok === false, 'overall domain status is degraded when satellite freshness fails');
 
+    payload.updatedAt = new Date(Date.now() - 20 * 60 * 60 * 1000).toISOString();
     payload.erddapTimestamp = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
-    const fresh = await sentinel.checkDomain('example.test', 15);
+    const fresh = await sentinel.checkDomain('example.test');
+    check(fresh.publicationAgeMinutes >= 20 * 60, 'old publication time remains visible for diagnosis');
     check(fresh.satelliteAgeMinutes < 12 * 60, 'recent satellite timestamp remains fresh');
     check(fresh.operationalFreshness.status === 'WITHIN_SLA', 'fresh observation is explicitly within the operational SLA');
-    check(fresh.ok === true, 'fresh pipeline and fresh satellite produce a healthy result');
+    check(fresh.errors.length === 0 && fresh.httpOk === true, 'old updatedAt alone does not make HTTP health fail');
+    check(fresh.ok === true, 'old publication time does not block a genuinely fresh satellite observation');
 
     global.fetch = async (url) => ({
       status: 200,

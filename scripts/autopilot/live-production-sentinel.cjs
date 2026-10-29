@@ -50,7 +50,7 @@ async function fetchCheck(url) {
   finally { clearTimeout(timeout) }
 }
 
-async function checkDomain(domain, dataMaxAgeMinutes) {
+async function checkDomain(domain) {
   const d = { domain, checks: [], errors: [] }
   for (const p of ['/', '/version.json', '/api/copernicus/sargassum.json']) {
     const r = await fetchCheck('https://' + domain + p)
@@ -59,12 +59,13 @@ async function checkDomain(domain, dataMaxAgeMinutes) {
     if (p.endsWith('sargassum.json') && r.ok) {
       try {
         const data = JSON.parse(r.body)
+        // Publication time is diagnostic metadata only; it cannot prove or
+        // disprove the age of the satellite observation.
         const updatedAt = Date.parse(String(data.updatedAt || ''))
-        if (Number.isFinite(updatedAt)) {
-          const ageMin = Math.round((Date.now() - updatedAt) / 60000)
-          d.ageMinutes = ageMin
-          if (ageMin > dataMaxAgeMinutes) d.errors.push('sargassum.json périmé (' + ageMin + 'min > ' + dataMaxAgeMinutes + 'min)')
-        }
+        d.publicationTimestampValid = Number.isFinite(updatedAt) && updatedAt > 0 && updatedAt <= Date.now()
+        d.publicationAgeMinutes = d.publicationTimestampValid
+          ? Math.round((Date.now() - updatedAt) / 60000)
+          : null
 
         // Publication age and observation age are separate contracts.
         const satellite = evaluateObservation(data.erddapTimestamp)
@@ -252,7 +253,7 @@ function buildReport(input) {
 async function main() {
   const domains = []
   for (const domain of ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassummiami.com', 'sargassumpuntacana.com', 'sargassumcancun.com', 'sargazotulum.com']) {
-    domains.push(await checkDomain(domain, 15 * 60 /* minutes */))
+    domains.push(await checkDomain(domain))
   }
   const ciFailures = collectWorkflowFailures()
   const tailDir = process.env.SG_TAIL_DIR || '/tmp/sg-tail'
