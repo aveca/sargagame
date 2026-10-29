@@ -5,35 +5,41 @@ const path = require('node:path')
 
 const file = path.resolve(__dirname, '../../public/sargasses-aujourdhui/index.html')
 const html = fs.readFileSync(file, 'utf8')
+const lower = html.toLowerCase()
 
-// This static acquisition page must not promise a satellite cadence or instant shoreline state.
-const unsupportedFreshnessClaims = [
-  /en temps réel/i,
-  /en direct/i,
-  /4 fois par jour/i,
-  /4×\\/jour/i,
-  /4×\\/day/i,
-  /four times a day/i,
-  /updated 4× daily/i,
-  /75\\s*à\\s*78\\s*%/i,
-  /recalculé 4 fois/i,
-  /chaque matin/i,
+// This acquisition page must not promise an unsupported satellite cadence or instant shoreline state.
+const unsupportedClaims = [
+  'en temps réel',
+  'en direct',
+  '4 fois par jour',
+  '4×/jour',
+  '4×/day',
+  'four times a day',
+  'updated 4× daily',
+  '75 à 78 %',
+  'recalculé 4 fois',
+  'chaque matin',
+  "l'état exact du jour",
 ]
-for (const pattern of unsupportedFreshnessClaims) {
-  assert.equal(pattern.test(html), false, `Unsupported freshness claim remains: ${pattern}`)
+for (const claim of unsupportedClaims) {
+  assert.equal(lower.includes(claim.toLowerCase()), false, `Unsupported freshness claim remains: ${claim}`)
 }
 
-// Preserve the canonical, existing language targets, and structured-data contracts.
-assert.match(html, /<link rel="canonical" href="https:\\/\\/sargasses-martinique\\.com\\/sargasses-aujourdhui\\/"\\/>/)
-assert.match(html, /hreflang="fr" href="https:\\/\\/sargasses-martinique\\.com\\/sargasses-aujourdhui\\/"\/>/)
-assert.match(html, /hreflang="en" href="https:\\/\\/sargasses-martinique\\.com\\/en\\/sargassum-map\\/"\/>/)
-assert.match(html, /hreflang="x-default"/)
-assert.match(html, /property="og:url" content="https:\\/\\/sargasses-martinique\\.com\\/sargasses-aujourdhui\\/"/)
+// Keep the page's canonical, language targets, OG URL, and structured-data contracts intact.
+assert.ok(html.includes('<link rel="canonical" href="https://sargasses-martinique.com/sargasses-aujourdhui/"/>'))
+assert.ok(html.includes('<link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/sargasses-aujourdhui/"/>'))
+assert.ok(html.includes('<link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/en/sargassum-map/"/>'))
+assert.ok(html.includes('<link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/sargasses-aujourdhui/"/>'))
+assert.ok(html.includes('<meta property="og:url" content="https://sargasses-martinique.com/sargasses-aujourdhui/"/>'))
+assert.ok(html.includes("Sargasses aujourd'hui"))
 
-const jsonLd = [...html.matchAll(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/g)]
-  .map(match => JSON.parse(match[1]))
-assert.ok(jsonLd.some(schema => schema['@type'] === 'WebPage'))
-assert.ok(jsonLd.some(schema => schema['@type'] === 'BreadcrumbList'))
-assert.ok(jsonLd.some(schema => schema['@type'] === 'FAQPage'))
-assert.match(html, /136 plages/)
-console.log('PASS: sargasses-aujourdhui copy is freshness-honest; canonical, hreflang, OG URL and JSON-LD preserved.')
+const blocks = html
+  .split('<script type="application/ld+json">')
+  .slice(1)
+  .map(block => block.split('</script>')[0].trim())
+const schemas = blocks.map(block => JSON.parse(block))
+assert.ok(schemas.some(schema => schema['@type'] === 'WebPage'))
+assert.ok(schemas.some(schema => schema['@type'] === 'BreadcrumbList'))
+assert.ok(schemas.some(schema => schema['@type'] === 'FAQPage'))
+assert.ok(html.includes('136 plages'))
+console.log('PASS: freshness-honest copy; canonical, hreflang, OG URL and JSON-LD preserved.')
