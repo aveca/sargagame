@@ -212,7 +212,11 @@ function buildReport(input) {
   }
   const operationalSlaBreaches = domains.filter(d => d.operationalFreshness?.status === 'OPERATIONAL_SLA_BREACHED').length
   const operationalFreshnessUnverified = domains.filter(d => d.operationalFreshness?.status === 'NOT_PROVEN').length
-  const ok = incidents.length === 0
+  const domainFailures = domains.filter(d => d.ok === false).length
+  const ok = incidents.length === 0 &&
+    domainFailures === 0 &&
+    operationalSlaBreaches === 0 &&
+    operationalFreshnessUnverified === 0
   return {
     at,
     repo: REPO,
@@ -220,6 +224,7 @@ function buildReport(input) {
     // Empreinte = incidents live uniquement (messages exacts) — jamais les échecs CI.
     fingerprint: fingerprintOf(incidents.map(x => x.subsystem + '|' + String(x.message).split('|')[0]).join('\n')),
     domains,
+    domainFailures,
     operationalFreshness: {
       limitMinutes: MAX_AGE_MINUTES,
       breaches: operationalSlaBreaches,
@@ -257,7 +262,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true })
   fs.writeFileSync(OUT, JSON.stringify(report, null, 2))
   console.log(JSON.stringify({
-    LIVE_HEALTH: report.incidents.length > 0 ? 'FAIL' : (report.operationalFreshness.breaches > 0 || report.operationalFreshness.unverified > 0) ? 'DEGRADED' : 'OK',
+    LIVE_HEALTH: report.incidents.length > 0 ? 'FAIL' : report.ok ? 'OK' : 'DEGRADED',
     fingerprint: report.fingerprint,
     domains: report.domains.length,
     incidents: report.incidents.length,
@@ -274,7 +279,11 @@ async function main() {
     localErrors: report.localErrors.length,
     output: OUT,
   }, null, 2))
-  process.exitCode = report.ok ? 0 : 2
+  // The scheduled workflow uses this exit code to decide whether to open/update
+  // a confirmed live-incident issue. Freshness degradation is represented by
+  // report.ok=false and LIVE_HEALTH=DEGRADED, but must not create a new issue
+  // comment every ten minutes while the same source observation remains stale.
+  process.exitCode = report.incidents.length > 0 ? 2 : 0
 }
 
 // Export testable : main() ne s'exécute QUE via l'entrée directe, jamais via require.
