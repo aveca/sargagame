@@ -20,6 +20,7 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { calculateTrackRecordFreshness } = require('./lib/track-record-freshness.cjs')
 
 const SRC = path.join(__dirname, 'data/backtest-results.json')
 const OUT = path.join(__dirname, '../../public/api/copernicus/track-record.json')
@@ -76,15 +77,16 @@ function main() {
   // never REFUSE to write (that would leave an even older artefact in place), but
   // we surface freshness in the artefact + WARN loudly so a stalled pipeline is
   // visible in CI and downstream pages can choose to hide a stale claim.
-  const nowMs = Date.now()
-  const computedMs = bt.computed ? new Date(bt.computed).getTime() : NaN
-  const ageHours = isFinite(computedMs) ? Math.round((nowMs - computedMs) / 36e5) : null
-  // Most recent observation the backtest scored against (its window end).
-  const archiveToMs = win.archiveTo ? new Date(win.archiveTo + 'T23:59:59Z').getTime() : NaN
-  const archiveToAgeDays = isFinite(archiveToMs) ? Math.round((nowMs - archiveToMs) / 864e5) : null
-  const stale = (ageHours != null && ageHours > 36) || (archiveToAgeDays != null && archiveToAgeDays > 2)
+  const freshness = calculateTrackRecordFreshness({
+    computedAt: bt.computed,
+    archiveTo: win.archiveTo,
+    nowMs: Date.now(),
+  })
+  const { ageHours, archiveToAgeDays, stale } = freshness
   if (stale) {
-    console.warn(`⚠️  Track-record source is STALE — backtest computed ${ageHours}h ago, window ends ${win.archiveTo} (${archiveToAgeDays}d behind). Publishing with freshness flag; investigate the backtest step.`)
+    const computedAge = ageHours == null ? 'âge de calcul inconnu' : `${ageHours}h ago`
+    const windowAge = freshness.windowAgeHours == null ? 'âge de fenêtre inconnu' : `${freshness.windowAgeHours}h depuis la fin de fenêtre`
+    console.warn(`⚠️  Track-record source is STALE — backtest ${computedAge}, window ends ${win.archiveTo || 'unknown'} (${windowAge}). Publishing with freshness flag; investigate the backtest step.`)
   }
 
   // byHorizon → tableau J+1..J+6 (justesse qui décroît puis remonte = la

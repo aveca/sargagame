@@ -6,7 +6,8 @@
  *   1. Accessibilité HTTP (200)
  *   2. Identité d'artefact : version.json v/b servi == v/b construit (si fourni via
  *      --expect-v/--expect-b ; sinon les valeurs servies sont enregistrées)
- *   3. Fraîcheur des données Copernicus (sargassum.json)
+ *   3. Fraîcheur des données Copernicus (sargassum.json) et de l'observation satellite
+ *   3bis. Fraîcheur du registre public de fiabilité (track-record.json) sur MQ/GP
  *   4. Cohérence région ↔ plages : aucun niveau d'une autre région servi
  *   5. Paramètres régionaux : canonical/og:url = domaine de la région, et si
  *      regions/<id>.json définit un GA4 réel (!= TODO_GA4_ID) ⇒ présent dans le HTML.
@@ -160,6 +161,64 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
   };
 }
 
+/**
+ * The public track record is a separate commercial proof from the satellite
+ * payload. A recent generatedAt alone is insufficient: the scored window and
+ * backtest computation must also be recent, with an explicit non-stale marker.
+ * Thresholds mirror the public record contract: computation <=36h, window <=2d.
+ */
+function checkTrackRecordFreshness(record, now = Date.now()) {
+  const fail = detail => ({
+    status: 'FAILED',
+    computedAgeHours: null,
+    windowAgeDays: null,
+    detail,
+  });
+  if (!record || typeof record !== 'object' || Array.isArray(record) ||
+      !record.freshness || record.freshness.stale !== false ||
+      !record.window || !record.byRegime || typeof record.byRegime !== 'object' ||
+      Array.isArray(record.byRegime) || Object.keys(record.byRegime).length === 0 ||
+      !Array.isArray(record.byHorizon) || record.byHorizon.length === 0 ||
+      !Number.isInteger(record.sampleSize) || record.sampleSize <= 0) {
+    return fail('track-record.json absent/invalide, incomplet ou freshness.stale != false');
+  }
+
+  const computedAtMs = Date.parse(record.freshness.computedAt || '');
+  const parseUtcDay = value => {
+    if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return NaN;
+    const ms = Date.parse(value + 'T00:00:00.000Z');
+    return Number.isFinite(ms) && new Date(ms).toISOString().slice(0, 10) === value ? ms : NaN;
+  };
+  const windowFromMs = parseUtcDay(record.window.from);
+  const windowToStartMs = parseUtcDay(record.window.to);
+  const windowToMs = Number.isFinite(windowToStartMs) ? windowToStartMs + 24 * 60 * 60 * 1000 - 1000 : NaN;
+
+  if (![now, computedAtMs, windowFromMs, windowToMs].every(Number.isFinite) || windowFromMs > windowToMs) {
+    return fail('track-record.json contient des dates absentes/invalides ou une fenêtre inversée');
+  }
+
+  const computedAgeMs = now - computedAtMs;
+  const windowAgeMs = now - windowToMs;
+  const MAX_COMPUTED_AGE_MS = 36 * 60 * 60 * 1000;
+  const FUTURE_COMPUTED_SKEW_MS = 5 * 60 * 1000;
+  const MAX_WINDOW_AGE_MS = 2 * 24 * 60 * 60 * 1000;
+  const FUTURE_WINDOW_SKEW_MS = 24 * 60 * 60 * 1000;
+
+  if (computedAgeMs < -FUTURE_COMPUTED_SKEW_MS || computedAgeMs > MAX_COMPUTED_AGE_MS) {
+    return fail(`backtest calculé il y a ${(computedAgeMs / 3600000).toFixed(1)}h (limite 36h)`);
+  }
+  if (windowAgeMs < -FUTURE_WINDOW_SKEW_MS || windowAgeMs > MAX_WINDOW_AGE_MS) {
+    return fail(`fenêtre terminée le ${record.window.to}, âge ${(windowAgeMs / 86400000).toFixed(1)}j (limite 2j)`);
+  }
+
+  return {
+    status: 'VERIFIED',
+    computedAgeHours: +(computedAgeMs / 3600000).toFixed(1),
+    windowAgeDays: +(windowAgeMs / 86400000).toFixed(1),
+    detail: `backtest ${(computedAgeMs / 3600000).toFixed(1)}h ; fenêtre terminée le ${record.window.to} (limite 2j)`,
+  };
+}
+
 async function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
@@ -199,6 +258,19 @@ async function verifyDomain(region, opts) {
   const satelliteCheck = checkSatelliteFreshness(sd);
   if (Number.isFinite(satelliteCheck.ageMinutes)) R.satelliteAgeMinutes = satelliteCheck.ageMinutes;
   set('satellite_freshness', satelliteCheck.status, satelliteCheck.detail);
+
+  // 3ter. Le registre public de fiabilité est une preuve commerciale distincte.
+  // Il ne couvre que MQ/GP : une fenêtre ancienne doit faire échouer la vérification
+  // post-déploiement, même si le fichier vient d'être republié avec generatedAt récent.
+  if (region.id === 'mq' || region.id === 'gp') {
+    const tr = httpBody(`https://${domain}/api/copernicus/track-record.json?pdv=${Date.now()}`);
+    let trackRecord = null;
+    try { trackRecord = JSON.parse(tr.body); } catch (_) {}
+    const recordCheck = tr.ok
+      ? checkTrackRecordFreshness(trackRecord)
+      : { status: 'FAILED', detail: 'track-record.json injoignable' };
+    set('track_record_freshness', recordCheck.status, recordCheck.detail);
+  }
 
   // 4. Cohérence région ↔ plages
   if (sd && Array.isArray(sd.levels)) {
@@ -399,4 +471,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness, checkTrackRecordFreshness };
