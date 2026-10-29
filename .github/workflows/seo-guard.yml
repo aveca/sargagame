@@ -92,7 +92,7 @@ jobs:
                 echo "::endgroup::"
                 continue
               fi
-              sitemaps=("https://$domain/sitemap.xml")
+              sitemaps=("https://$domain/$configured_sitemap")
             fi
 
             for sitemap_url in "${sitemaps[@]}"; do
