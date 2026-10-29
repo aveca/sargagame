@@ -8,16 +8,16 @@ const source = fs.readFileSync(
 )
 
 const unsupportedCadence = [
-  /\\b4\\s*[×x]\\s*(?:\\/\\s*(?:day|j)|per\\s*day|a\\s*day|daily)\\b/i,
-  /\\b(?:four|4)\\s+times\\s+(?:a|per)\\s+day\\b/i,
-  /\\b4\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\bcuatro\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\bevery\\s+4\\s+hours\\b/i,
-  /\\bcada\\s+4\\s+horas\\b/i,
-  /\\bevery\\s+3\\s+hours\\b/i,
-  /\\bthree\\s+hours\\b/i,
-  /\\btoutes?\\s+les?\\s+3\\s+heures\\b/i,
-  /\\bcada\\s+3\\s+horas\\b/i,
+  /\b4\s*[×x]\s*(?:\/\s*(?:day|j)|per\s*day|a\s*day|daily)\b/i,
+  /\b(?:four|4)\s+times\s+(?:a|per)\s+day\b/i,
+  /\b4\s+veces\s+al\s+d[ií]a\b/i,
+  /\bcuatro\s+veces\s+al\s+d[ií]a\b/i,
+  /\bevery\s+4\s+hours\b/i,
+  /\bcada\s+4\s+horas\b/i,
+  /\bevery\s+3\s+hours\b/i,
+  /\bthree\s+hours\b/i,
+  /\btoutes?\s+les?\s+3\s+heures\b/i,
+  /\bcada\s+3\s+horas\b/i,
 ]
 
 for (const pattern of unsupportedCadence) {
