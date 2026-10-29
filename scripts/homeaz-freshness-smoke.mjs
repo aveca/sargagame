@@ -123,7 +123,7 @@ try {
       const sourceLabel = await shadowText(stale.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "stale state must show the actual source observation time");
       const support = await shadowText(stale.page, "#ctaHeroS");
-      assert.ok(support && /non en direct|not live|sin confirmación en vivo/i.test(support),
+      assert.ok(support && /pas une confirmation en direct|not live|no una confirmación en vivo/i.test(support),
         "stale state must not promise a live verdict");
       await stale.page.screenshot({
         path: path.join(OUT, "stale-" + viewport.name + ".png"),
@@ -141,6 +141,13 @@ try {
   try {
     await latest.page.locator("#ctaHero").click({ timeout: 20000 });
     await waitForHomeAzUnmount(latest.page);
+    await latest.page.waitForFunction(() => {
+      const node = document.querySelector(".lc-detail, .sheet");
+      if (!node) return false;
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return style.display !== "none" && style.visibility !== "hidden" && rect.width > 0 && rect.height > 0;
+    }, null, { timeout: 15000 });
     console.log("PASS latest-reading CTA opens the beach flow");
   } finally {
     await latest.context.close();
