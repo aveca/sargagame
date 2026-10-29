@@ -157,9 +157,19 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
     }catch(_){}
   }
 
-  function relAge(updatedAt){
-    var ms = Date.now() - new Date(updatedAt).getTime();
-    if (!(ms>=0)) return null;
+  function satelliteAgeMs(timestamp, now){
+    var parsed = Date.parse(String(timestamp || ""));
+    var reference = Number.isFinite(now) ? now : Date.now();
+    if (!Number.isFinite(parsed) || parsed <= 0 || parsed > reference) return null;
+    return reference - parsed;
+  }
+  function isSatelliteFresh(timestamp, now){
+    var ageMs = satelliteAgeMs(timestamp, now);
+    return ageMs !== null && ageMs < 12 * 3.6e6;
+  }
+  function relAge(timestamp){
+    var ms = satelliteAgeMs(timestamp, Date.now());
+    if (ms === null) return null;
     var h = ms/3.6e6;
     if (h < 1) return Math.max(1,Math.round(ms/6e4))+" min";
     if (h < 36) return Math.round(h)+" h";
@@ -184,15 +194,21 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
     if (!lv){ fail(); return; }
     var status = lv.status;
     var label = customName || NAMES[sargId] || sargId;
-    var stColor = ST[status]||"#999";
+    // Satellite observation time is authoritative; updatedAt only dates pipeline publication.
+    var fresh = isSatelliteFresh(d.erddapTimestamp);
+    var age = fresh ? relAge(d.erddapTimestamp) : null;
+    var stColor = fresh ? (ST[status]||"#999") : "var(--moderate)";
     $("dot").style.setProperty("--st", stColor);
     $("pill").style.setProperty("--st", stColor);
     $("name").textContent = label;
-    $("pill").textContent = T[status]||status;
-    $("pill").style.display = "";
+    if (fresh) {
+      $("pill").textContent = T[status]||status;
+      $("pill").style.display = "";
+    } else {
+      // Never present a stale satellite verdict as current.
+      $("pill").style.display = "none";
+    }
 
-    var age = relAge(d.updatedAt);
-    var fresh = age && (Date.now()-new Date(d.updatedAt).getTime()) < 12*3.6e6;
     var wsp = T.whisper && T.whisper[status];
     if (fresh) setSub(el("span","live",T.live), el("span",null,"· "+T.updated(age)), wsp?el("span","wsp","· "+wsp):document.createTextNode(""));
     else setSub(el("span",null,T.stale));
@@ -214,8 +230,12 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
         cell.appendChild(dd); fc.appendChild(cell);
       });
       fc.style.display = "";
+    } else {
+      $("fc").style.display = "none";
     }
-    $("card").setAttribute("aria-label", label+" : "+(T[status]||status)+(fresh?(", "+T.live):""));
+    $("card").setAttribute("aria-label", fresh
+      ? label+" : "+(T[status]||status)+", "+T.live
+      : label+" : "+T.stale);
     pingInstall(sargId);   // signal d'adoption B2B (1×/session)
   }
 
