@@ -19,8 +19,8 @@ function extractFunction(name) {
 }
 
 const helpers = vm.runInNewContext(
-  extractFunction('satelliteAgeMs') + '\\n' +
-  extractFunction('isSatelliteFresh') + '\\n' +
+  extractFunction('satelliteAgeMs') + '\n' +
+  extractFunction('isSatelliteFresh') + '\n' +
   '({ satelliteAgeMs, isSatelliteFresh })'
 );
 
