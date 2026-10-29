@@ -226,7 +226,7 @@ const _BRIEF_T = {
     guestAvoid: 'Sargassum expected — keep a backup activity ready for affected days.',
     cta: 'Hotel team? Get this brief in your inbox every morning',
     ctaSub: 'Free daily sargassum brief for your beach — activate it yourself in 10 seconds, no call.',
-    foot: 'Independent Copernicus / NOAA satellite data · refreshed 4× a day',
+    foot: 'Satellite observations are intermittent; check observation time and confidence before advising guests',
     cleaner: n => `↪ Cleaner right now: ${n}`, cleanerNote: 'A good backup to point your guests to today.' },
   es: { brief: 'Boletín de sargazo', beachOf: 'Playa', today: 'Hoy', week: 'Pronóstico 7 días', clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar',
     cleanDays: n => `${n} día${n === 1 ? '' : 's'} de playa limpia esta semana.`,
@@ -235,7 +235,7 @@ const _BRIEF_T = {
     guestAvoid: 'Se espera sargazo — ten una actividad alternativa lista.',
     cta: '¿Equipo del hotel? Recibe este boletín cada mañana',
     ctaSub: 'Boletín diario de sargazo gratis para tu playa — actívalo tú mismo en 10 segundos, sin llamada.',
-    foot: 'Datos satelitales independientes Copernicus / NOAA · 4 veces al día',
+    foot: 'Las observaciones satelitales no son continuas; revisa la hora y la confianza antes de orientar a tus huéspedes',
     cleaner: n => `↪ Más limpia ahora: ${n}`, cleanerNote: 'Un buen plan B para tus huéspedes hoy.' },
 }
 function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
