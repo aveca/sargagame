@@ -262,7 +262,7 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true })
   fs.writeFileSync(OUT, JSON.stringify(report, null, 2))
   console.log(JSON.stringify({
-    LIVE_HEALTH: report.incidents.length > 0 ? 'FAIL' : (report.operationalFreshness.breaches > 0 || report.operationalFreshness.unverified > 0) ? 'DEGRADED' : 'OK',
+    LIVE_HEALTH: report.incidents.length > 0 ? 'FAIL' : report.ok ? 'OK' : 'DEGRADED',
     fingerprint: report.fingerprint,
     domains: report.domains.length,
     incidents: report.incidents.length,
