@@ -21,13 +21,23 @@ function classifyPublicationStatus(input = {}) {
   if (gateStatus === STATUSES.BLOCKED_STALE_SOURCE) {
     return STATUSES.BLOCKED_STALE_SOURCE;
   }
-  if (erddapOutcome !== 'success' || source === 'none' || gateOutcome !== 'success') {
+  if (
+    erddapOutcome !== 'success' ||
+    !['erddap-live', 'copernicus'].includes(source) ||
+    gateOutcome !== 'success'
+  ) {
     return STATUSES.FAILED_VALIDATION;
   }
   if (publishOutcome === 'failure') {
     return STATUSES.FAILED_PUBLISH;
   }
-  if (publishOutcome === 'skipped' || publishChanged === false) {
+  if (publishOutcome === 'skipped') {
+    return STATUSES.NO_NEW_OBSERVATION;
+  }
+  if (publishOutcome !== 'success') {
+    return STATUSES.FAILED_VALIDATION;
+  }
+  if (publishChanged === false) {
     return STATUSES.NO_NEW_OBSERVATION;
   }
   if (publishChanged !== true) {
