@@ -150,7 +150,7 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
     return {
       status: 'FAILED',
       ageMinutes: freshness.dataAgeMinutes,
-      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min > ${limitMinutes}min)`,
+      detail: `observation satellite périmée (${freshness.dataAgeMinutes}min >= ${limitMinutes}min)`,
     };
   }
   return {
