@@ -79,9 +79,9 @@ function buildRichNoscript({ beach, fullRecord, neighbors, history, island, doma
       : pctAvoid >= 40 ? 'régulièrement impactée par les sargasses'
       : pctMod >= 40 ? 'fluctuante avec des épisodes modérés'
       : 'variable selon les vents dominants'
-    histNarrative = `Sur les ${history.total} derniers jours surveillés par satellite, <strong>${beach.name}</strong> a été ${dominant} : ${history.clean} jours en statut propre (${pctClean}%), ${history.moderate} jours en statut modéré (${pctMod}%), et ${history.avoid} jours en statut d'alerte sargasses (${pctAvoid}%). Ces observations continues permettent d'anticiper les fenêtres favorables pour planifier une baignade ou une sortie famille.`
+    histNarrative = `Sur les ${history.total} derniers jours surveillés par satellite, <strong>${beach.name}</strong> a été ${dominant} : ${history.clean} jours en statut propre (${pctClean}%), ${history.moderate} jours en statut modéré (${pctMod}%), et ${history.avoid} jours en statut d'alerte sargasses (${pctAvoid}%). Cet historique aide à repérer des tendances, mais ne garantit pas l'état actuel du rivage.`
   } else {
-    histNarrative = `La plage de <strong>${beach.name}</strong> est surveillée en continu par les satellites Sentinel-3 du programme européen Copernicus. L'historique des observations est actualisé chaque jour, ce qui permet de repérer rapidement les fenêtres de baignade favorables et d'anticiper l'arrivée éventuelle de sargasses sur la côte.`
+    histNarrative = `La plage de <strong>${beach.name}</strong> peut être observée par satellite Sentinel-3 du programme européen Copernicus. La disponibilité dépend des passages, de la couverture nuageuse et des mises à jour de la source. L'historique disponible aide à repérer des tendances, mais ne garantit pas l'état actuel du rivage.`
   }
 
   const amenityText = amenities.length > 0
@@ -104,20 +104,20 @@ function buildRichNoscript({ beach, fullRecord, neighbors, history, island, doma
     <noscript>
       <article>
         <header>
-          <h1>Sargasses à ${beach.name} — état en temps réel (${island})</h1>
-          <p><em>Prévisions sargasses pour ${beach.name}, ${commune}, ${island}. Données satellite Sentinel-3 mises à jour quotidiennement.</em></p>
+          <h1>Sargasses à ${beach.name} — dernières observations satellite (${island})</h1>
+          <p><em>Prévisions sargasses pour ${beach.name}, ${commune}, ${island}. Observations satellite Sentinel-3 non continues ; consultez l'heure de l'observation disponible sur la carte.</em></p>
         </header>
 
         <section>
           <h2>État actuel et surveillance satellite</h2>
-          <p>La plage de <strong>${beach.name}</strong>, située à ${commune} en ${island}, fait l'objet d'une surveillance satellite continue dans le cadre de notre service de prévisions sargasses. L'indice AFAI (Alternative Floating Algae Index), dérivé des images Sentinel-3 du programme Copernicus Marine, permet de détecter la présence et la densité des radeaux de sargasses flottantes jusqu'à 40 km au large de la côte. ${amenityText} ${driveText}</p>
-          <p>Les données sont mises à jour toutes les 3 heures via notre pipeline automatisé, ce qui permet aux visiteurs de ${beach.name} de consulter l'état le plus récent avant de se déplacer. La carte interactive affiche les plages propres, modérément touchées et en alerte, avec un code couleur conforme aux seuils NOAA/AOML (Wang & Hu 2016).</p>
+          <p>La plage de <strong>${beach.name}</strong>, située à ${commune} en ${island}, peut être observée par satellite dans le cadre de notre service de suivi des sargasses. La disponibilité dépend des passages, de la couverture nuageuse et des mises à jour de la source. L'indice AFAI (Alternative Floating Algae Index), dérivé des images Sentinel-3 du programme Copernicus Marine, permet de détecter la présence et la densité des radeaux de sargasses flottantes jusqu'à 40 km au large de la côte. ${amenityText} ${driveText}</p>
+          <p>La fréquence des observations n'est pas continue. Avant de vous déplacer, consultez l'heure de l'observation disponible, le niveau de confiance et les informations locales. La carte interactive affiche les plages propres, modérément touchées et en alerte, avec un code couleur conforme aux seuils NOAA/AOML (Wang & Hu 2016).</p>
         </section>
 
         <section>
           <h2>Historique récent des sargasses à ${beach.name}</h2>
           <p>${histNarrative}</p>
-          <p>Les sargasses suivent des cycles saisonniers marqués par les courants du Gulf Stream et les vents d'alizé. En ${island}, la saison principale s'étend typiquement d'avril à septembre, avec des pics d'échouage souvent observés entre mai et juillet. Toutefois, l'évolution du climat et la variabilité des courants peuvent décaler ces fenêtres : c'est précisément pour cette raison que nous proposons une surveillance 365 jours par an plutôt qu'une information saisonnière figée.</p>
+          <p>Les sargasses suivent des cycles saisonniers marqués par les courants du Gulf Stream et les vents d'alizé. En ${island}, la saison principale s'étend typiquement d'avril à septembre, avec des pics d'échouage souvent observés entre mai et juillet. Toutefois, l'évolution du climat et la variabilité des courants peuvent décaler ces fenêtres : c'est pourquoi nous privilégions un suivi tout au long de l'année plutôt qu'une information saisonnière figée, en tenant compte des limites de chaque observation.</p>
         </section>
 
         <section>
@@ -128,7 +128,7 @@ function buildRichNoscript({ beach, fullRecord, neighbors, history, island, doma
             <li><strong>Modéré (orange)</strong> — AFAI entre 0,15 et 0,40. Présence variable, vigilance recommandée surtout pour les enfants et les personnes sensibles aux émanations de sulfure d'hydrogène.</li>
             <li><strong>Alerte (rouge)</strong> — AFAI supérieur à 0,40. Échouage significatif probable ou en cours. Baignade déconseillée tant que la situation n'est pas revenue à la normale.</li>
           </ul>
-          <p>Notre système combine plusieurs signaux pour chaque prévision : observation satellite du jour, indice AFAI continu (qui différencie 0,05 de 0,14, tous deux classés « propre »), prévision à J+1 et J+3, détection de bancs en approche dans un rayon de 40 km, et mémoire des plages régulièrement impactées. Le Beach Score 0-100 synthétise ces facteurs pour permettre une comparaison rapide entre plages voisines.</p>
+          <p>Notre système combine plusieurs signaux pour chaque prévision : dernière observation satellite disponible, indice AFAI continu (qui différencie 0,05 de 0,14, tous deux classés « propre »), prévision à J+1 et J+3, détection de bancs en approche dans un rayon de 40 km, et mémoire des plages régulièrement impactées. Le Beach Score 0-100 synthétise ces facteurs pour permettre une comparaison rapide entre plages voisines.</p>
         </section>
 
         <section>
@@ -245,7 +245,7 @@ function main() {
           name: `Y a-t-il des sargasses à ${beach.name} aujourd'hui ?`,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: `Consultez l'état en temps réel des sargasses à ${beach.name} (${beach.commune}, ${island}) sur notre carte interactive. Données satellite mises à jour quotidiennement.`
+            text: `Consultez la dernière observation satellite disponible sur notre carte interactive. Vérifiez l'heure de l'observation et le niveau de confiance lorsqu'ils sont disponibles.`
           }
         },
         {
@@ -253,7 +253,7 @@ function main() {
           name: `${beach.name} est-elle adaptée aux enfants ?`,
           acceptedAnswer: {
             '@type': 'Answer',
-            text: `Retrouvez toutes les informations sur ${beach.name} : accès, parking, activités et état des sargasses en temps réel pour planifier votre sortie en famille.`
+            text: `Retrouvez toutes les informations sur ${beach.name} : accès, parking, activités et la dernière observation satellite disponible pour préparer votre sortie en famille. Vérifiez son heure et son niveau de confiance avant de vous déplacer.`
           }
         },
         {
@@ -282,14 +282,14 @@ function main() {
       const days = history.total
       if (pctClean >= 60) {
         metaTitle = `${beach.name}: propre ${pctClean}% du temps (${days}j) — Sargasses ${island}`
-        metaDesc = `Sur ${days} jours surveillés, ${beach.name} (${beach.commune}) a été propre ${pctClean}% du temps. État en temps réel, prévisions 7 jours, carte interactive ${island}.`
+        metaDesc = `Sur ${days} jours surveillés, ${beach.name} (${beach.commune}) a été propre ${pctClean}% du temps. Consultez la dernière observation satellite disponible et les prévisions 7 jours lorsque des données sont disponibles pour ${island}.`
       } else if (pctAvoid >= 40) {
         metaTitle = `${beach.name}: ${pctAvoid}% en alerte sargasses (${days}j) — Alternatives`
-        metaDesc = `${beach.name} a connu ${pctAvoid}% de jours en alerte sargasses sur ${days} jours. Consultez l'état en temps réel, les prévisions, et les plages propres à proximité (${island}).`
+        metaDesc = `${beach.name} a connu ${pctAvoid}% de jours en alerte sargasses sur ${days} jours. Consultez la dernière observation satellite disponible, les prévisions selon les données disponibles et les plages voisines (${island}).`
       } else {
         const pctMod = Math.round((history.moderate / history.total) * 100)
         metaTitle = `${beach.name}: ${pctMod}% modéré, ${pctClean}% propre (${days}j) — ${island}`
-        metaDesc = `Historique sargasses ${beach.name} (${beach.commune}): ${pctClean}% propre, ${pctMod}% modéré, ${pctAvoid}% alerte sur ${days} jours. Prévisions 7 jours en temps réel.`
+        metaDesc = `Historique sargasses ${beach.name} (${beach.commune}): ${pctClean}% propre, ${pctMod}% modéré, ${pctAvoid}% alerte sur ${days} jours. Consultez les prévisions 7 jours lorsqu'elles sont disponibles et vérifiez l'heure de l'observation source.`
       }
     }
 
