@@ -77,15 +77,21 @@ console.log('sos-modal : certification fonctionnelle (mission finale)\n');
   record('S4 deep-link ?sos=1 => setShowSOS(true) + nettoyage URL', openOk && urlOk);
 }
 
-// S5 — overlay fixe (le modal nu se retrouvait SOUS la carte : invisible,
-// boutons non cliquables ; le live MQ montrait la carte seule).
+// S5 — backdrop fixe centré + panneau dialog borné et accessible.
 {
   const i = appSrc.indexOf('<LazySOSPlage lang=');
   const open = appSrc.lastIndexOf('{showSOS&&', i);
   const wrap = appSrc.slice(open, i);
-  record('S5 overlay fixe z1080 + backdrop autour du rendu unique',
-    wrap.includes('position:"fixed"') && wrap.includes('zIndex:1080') && wrap.includes('rgba(11,7,22,.62)'),
-    'wrapper vérifié');
+  record('S5a overlay fixe z1080 + backdrop centré autour du rendu unique',
+    wrap.includes('position:"fixed"') && wrap.includes('zIndex:1080') &&
+      wrap.includes('display:"flex"') && wrap.includes('alignItems:"center"') &&
+      wrap.includes('justifyContent:"center"') && wrap.includes('rgba(11,7,22,.72)'),
+    'wrapper responsive vérifié');
+  record('S5b panneau SOS borné + accessible + focus trap attaché',
+    sosSrc.includes('ref={panelRef}') && sosSrc.includes('role="dialog"') &&
+      sosSrc.includes('aria-modal="true"') && sosSrc.includes('width: "min(100%, 640px)"') &&
+      sosSrc.includes('maxHeight: "min(90dvh, 820px)"'),
+    'panneau dialog vérifié');
 }
 
 // S6 — état vide refermable (ex-impasse sans bouton sur USD).
