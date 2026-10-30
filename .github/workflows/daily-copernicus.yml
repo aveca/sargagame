@@ -585,7 +585,8 @@ jobs:
             exit 1
           fi
       - name: Commit email state (anti-doublon)
-        if: github.event_name != 'push'
+        # Persister les marqueurs des emails déjà envoyés même si la publication métrique échoue.
+        if: always() && github.event_name != 'push'
         continue-on-error: true
         # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
         # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
