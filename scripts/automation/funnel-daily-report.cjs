@@ -165,7 +165,7 @@ function formatReport(report, windowHours) {
   lines.push('')
 
   // Funnel vertical
-  lines.push('  Funnel (visitors → paid):')
+  lines.push('  Funnel (verified production events):')
   lines.push('  ─────────────────────────')
   const maxCount = Math.max(...report.funnel.map(s => s.count), 1)
   for (const step of report.funnel) {
@@ -197,6 +197,8 @@ function formatReport(report, windowHours) {
   lines.push(`    Paywall viewed:     ${eng.paywall_view || 0}`)
   lines.push(`    Feature clicks:     ${eng.premium_feature_click || 0}`)
   lines.push(`    Payment failed:     ${eng.payment_failed || 0}`)
+  lines.push(`    On-site checkout started: ${eng.checkout_started || 0}`)
+  lines.push(`    SOS checkout start / redirect / paid: ${eng.sos_checkout_start || 0} / ${eng.sos_checkout_redirect || 0} / ${eng.sos_checkout_paid || 0}`)
   lines.push('')
 
   // Par île
@@ -206,7 +208,7 @@ function formatReport(report, windowHours) {
     for (const isl of islands) {
       const data = report.by_island[isl]
       const total = data.conversion || 0
-      lines.push(`    ${isl}: ${total} paid (map: ${data.map_open || 0}, paywall: ${data.premium_modal_open || 0})`)
+      lines.push(`    ${isl}: ${total} conversion events (map: ${data.map_open || 0}, paywall: ${data.premium_modal_open || 0})`)
     }
     lines.push('')
   }
