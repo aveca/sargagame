@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, follow">
-<title>Sargasses — conditions en direct</title>
+<title>Sargasses — observation des plages</title>
 <style>
 :root{
   --acc:#009E8E;           /* accent (overridable via ?accent=) */
@@ -163,8 +163,12 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
     if (!Number.isFinite(parsed) || parsed <= 0 || parsed > reference) return null;
     return reference - parsed;
   }
-  function isSatelliteFresh(timestamp, now){
-    var ageMs = satelliteAgeMs(timestamp, now);
+  function isSatelliteFresh(payload, status, now){
+    // Fail closed unless the API explicitly identifies a live ERDDAP source,
+    // explicitly clears its stale flag, and provides a known beach status.
+    if (!payload || payload.source !== "erddap-live" || payload.stale !== false) return false;
+    if (!Object.prototype.hasOwnProperty.call(ST, status)) return false;
+    var ageMs = satelliteAgeMs(payload.erddapTimestamp, now);
     return ageMs !== null && ageMs < 12 * 3.6e6;
   }
   function relAge(timestamp){
@@ -195,7 +199,7 @@ body.dark{--card:#10202b;--ink:#fff;--mid:#9fb2bd;--line:rgba(255,255,255,.12)}
     var status = lv.status;
     var label = customName || NAMES[sargId] || sargId;
     // Satellite observation time is authoritative; updatedAt only dates pipeline publication.
-    var fresh = isSatelliteFresh(d.erddapTimestamp);
+    var fresh = isSatelliteFresh(d, status);
     var age = fresh ? relAge(d.erddapTimestamp) : null;
     var stColor = fresh ? (ST[status]||"#999") : "var(--moderate)";
     $("dot").style.setProperty("--st", stColor);

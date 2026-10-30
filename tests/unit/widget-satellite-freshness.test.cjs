@@ -20,6 +20,7 @@ function extractFunction(name) {
 }
 
 const helpers = vm.runInNewContext(
+  'var ST = { clean: true, moderate: true, avoid: true };\n' +
   extractFunction('satelliteAgeMs') + '\n' +
   extractFunction('isSatelliteFresh') + '\n' +
   '({ satelliteAgeMs, isSatelliteFresh })'
@@ -27,9 +28,15 @@ const helpers = vm.runInNewContext(
 
 const now = Date.parse('2026-10-29T21:30:00.000Z');
 const stalePayload = {
+  source: 'erddap-live',
   updatedAt: '2026-10-29T21:00:00.000Z',
   erddapTimestamp: '2026-10-27T12:00:00Z',
   dataAgeMinutes: 1772,
+  stale: false
+};
+const freshPayload = {
+  source: 'erddap-live',
+  erddapTimestamp: '2026-10-29T15:30:00.000Z',
   stale: false
 };
 
@@ -38,29 +45,56 @@ assert.ok(
   'the observation is stale even when updatedAt is recent'
 );
 assert.equal(
-  helpers.isSatelliteFresh(stalePayload.erddapTimestamp, now),
+  helpers.isSatelliteFresh(stalePayload, 'clean', now),
   false,
   'a recent publication timestamp cannot make an old observation fresh'
 );
 assert.equal(
-  helpers.isSatelliteFresh('2026-10-29T15:30:00.000Z', now),
+  helpers.isSatelliteFresh(freshPayload, 'clean', now),
   true,
   'observation younger than 12h is fresh'
 );
 assert.equal(
-  helpers.isSatelliteFresh('2026-10-29T09:30:00.000Z', now),
+  helpers.isSatelliteFresh({ ...freshPayload, erddapTimestamp: '2026-10-29T09:30:00.000Z' }, 'clean', now),
   false,
   'exactly 12h is not fresh'
 );
-assert.equal(helpers.isSatelliteFresh('', now), false, 'missing timestamp fails closed');
-assert.equal(helpers.isSatelliteFresh('not-a-date', now), false, 'invalid timestamp fails closed');
+assert.equal(helpers.isSatelliteFresh({ ...freshPayload, erddapTimestamp: '' }, 'clean', now), false, 'missing timestamp fails closed');
+assert.equal(helpers.isSatelliteFresh({ ...freshPayload, erddapTimestamp: 'not-a-date' }, 'clean', now), false, 'invalid timestamp fails closed');
 assert.equal(
-  helpers.isSatelliteFresh('2026-10-29T22:00:00.000Z', now),
+  helpers.isSatelliteFresh({ ...freshPayload, erddapTimestamp: '2026-10-29T22:00:00.000Z' }, 'clean', now),
   false,
   'future timestamp fails closed'
 );
+assert.equal(
+  helpers.isSatelliteFresh({ ...freshPayload, stale: true }, 'clean', now),
+  false,
+  'an explicit stale flag overrides a recent timestamp'
+);
+assert.equal(
+  helpers.isSatelliteFresh({ ...freshPayload, source: 'cached-fallback' }, 'clean', now),
+  false,
+  'a non-live source cannot produce a live verdict'
+);
+assert.equal(
+  helpers.isSatelliteFresh({ erddapTimestamp: freshPayload.erddapTimestamp, stale: false }, 'clean', now),
+  false,
+  'a missing source identifier fails closed'
+);
+assert.equal(
+  helpers.isSatelliteFresh({ source: 'erddap-live', erddapTimestamp: freshPayload.erddapTimestamp }, 'clean', now),
+  false,
+  'a missing explicit stale=false flag fails closed'
+);
+assert.equal(
+  helpers.isSatelliteFresh(freshPayload, 'unknown', now),
+  false,
+  'an unknown beach status cannot produce a verdict'
+);
 
-assert.match(html, /isSatelliteFresh\(d\.erddapTimestamp\)/, 'render uses satellite timestamp');
+assert.match(html, /<title>Sargasses — observation des plages<\/title>/, 'document title makes no unconditional live claim');
+assert.match(html, /isSatelliteFresh\(d,\s*status\)/, 'render validates the complete payload and beach status');
+assert.doesNotMatch(html, /isSatelliteFresh\(d\.erddapTimestamp/, 'render does not bypass source/stale validation');
 assert.match(html, /relAge\(d\.erddapTimestamp\)/, 'displayed age uses satellite timestamp');
 const partnerLanding = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.match(partnerLanding, /setFreshStatus\(relTime\(d && d\.erddapTimestamp\)\)/,
@@ -72,4 +106,4 @@ assert.match(html, /if \(fresh && showFc && wk\.length\)/, 'forecast is gated by
 assert.match(html, /\$\("fc"\)\.style\.display = "none"/, 'stale forecast is hidden');
 assert.match(html, /label\+" : "\+T\.stale/, 'accessible label reports verification instead of stale verdict');
 
-console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (13 assertions)');
+console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (24 assertions)');

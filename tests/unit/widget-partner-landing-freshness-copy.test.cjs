@@ -31,8 +31,13 @@ for (const [name, page] of [['hotels', hotels], ['collectivites', collectivites]
     `${name} landing must not claim the stale demo is live/current`);
 }
 
-// The embed uses the observation timestamp and hides its verdict/forecast when stale.
-assert.match(embed, /isSatelliteFresh\(d\.erddapTimestamp\)/);
+// The embed validates the full API provenance/state contract before showing a verdict.
+assert.match(embed, /function isSatelliteFresh\(payload, status, now\)/);
+assert.match(embed, /payload\.source !== "erddap-live"/);
+assert.match(embed, /payload\.stale !== false/);
+assert.match(embed, /Object\.prototype\.hasOwnProperty\.call\(ST, status\)/);
+assert.match(embed, /isSatelliteFresh\(d, status\)/);
+assert.doesNotMatch(embed, /isSatelliteFresh\(d\.erddapTimestamp\)/);
 assert.match(embed, /if \(fresh && showFc && wk\.length\)/);
 assert.match(embed, /\$\("fc"\)\.style\.display = "none"/);
 
@@ -47,4 +52,4 @@ assert.match(landing, /optgroup label="Martinique"/);
 assert.match(landing, /optgroup label="Guadeloupe"/);
 assert.match(landing, /function domain\(\).*sargasses-guadeloupe\.com/s);
 
-console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (23 assertions)');
+console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (29 assertions)');
