@@ -31,6 +31,7 @@ for (const item of pages) {
   assert.match(html, /hreflang="en"/, item.path + ': EN alternate must remain');
   assert.match(html, /hreflang="es"/, item.path + ': ES alternate must remain');
   assert.match(html, /id="freshpill"/, item.path + ': freshness pill must have a state target');
+  assert.equal((html.match(/var STATUS_COLOR=/g) || []).length, 1, item.path + ': exactly one localized status color map must exist');
   assert.match(html, /is-stale \.pulse/, item.path + ': stale state must not keep the green pulse');
   assert.match(html, /is-unknown \.pulse/, item.path + ': unknown state must not keep the green pulse');
   assert.match(html, /erddapTimestamp/, item.path + ': source observation timestamp must be used');
