@@ -20,16 +20,6 @@ export function isSatelliteFresh12h(sargData, now = Date.now()) {
 }
 
 /**
- * A current satellite payload must be explicitly live, explicitly non-stale,
- * and backed by a recent ERDDAP observation. Publication time is never used.
- */
-export function isSatellitePayloadCurrent(sargData, now = Date.now()) {
-  return sargData?.source === 'erddap-live' &&
-    sargData?.stale === false &&
-    isSatelliteFresh12h(sargData, now)
-}
-
-/**
  * Âge satellite en heures à l'instant du rendu (temps servi, jamais figé).
  * Remplace les lectures directes du champ statique `dataAgeMinutes`, qui est un
  * instantané à l'heure du run pipeline et pourrit en place (ex : 2048 figé
@@ -95,20 +85,21 @@ export function lcDetailFreshnessLabel(sargData, lang = 'fr', now = Date.now()) 
       : lang === 'en' ? 'Satellite observation being verified — no current verdict is published.'
       : 'Mesure satellite en cours de vérification — aucun verdict actuel publié.';
   }
-  if (isSatellitePayloadCurrent(sargData, now)) {
-    return lang === 'es' ? 'Última observación satelital reciente — no adivinada.'
-      : lang === 'en' ? 'Recent satellite observation — not guessed.'
-      : 'Observation satellite récente — pas devinée.';
+  const payloadCurrent = sargData?.source === 'erddap-live' && sargData?.stale === false && isSatelliteFresh12h(sargData, now);
+  if (payloadCurrent) {
+    return lang === 'es' ? 'Observación satelital reciente.'
+      : lang === 'en' ? 'Recent satellite observation.'
+      : 'Observation satellite récente.';
   }
   if (ageH < 12) {
-    return lang === 'es' ? 'Observación satelital no validada — estado por verificar.'
-      : lang === 'en' ? 'Satellite observation is not validated — status needs checking.'
-      : 'Observation satellite non validée — statut à vérifier.';
+    return lang === 'es' ? 'Observación no validada — estado por verificar.'
+      : lang === 'en' ? 'Unvalidated observation — status to check.'
+      : 'Observation non validée — statut à vérifier.';
   }
   const h = Math.round(ageH);
-  return lang === 'es' ? `Última observación satelital hace ${h} h — dato histórico, no es un veredicto actual.`
-    : lang === 'en' ? `Last satellite observation ${h}h ago — historical data, not a current verdict.`
-    : `Dernière observation satellite il y a ${h} h — donnée historique, pas un verdict actuel.`;
+  return lang === 'es' ? `Observación hace ${h} h: dato histórico, no es un veredicto actual.`
+    : lang === 'en' ? `Observation ${h}h ago: historical, not a current verdict.`
+    : `Observation il y a ${h} h : historique, pas un verdict actuel.`;
 }
 
 /**
