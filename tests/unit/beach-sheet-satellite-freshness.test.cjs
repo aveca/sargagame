@@ -53,7 +53,7 @@ assert.doesNotMatch(proofBlock, /donnée vérifiée|verified data|dato verificad
   assert.equal(isSatelliteFresh12h({ erddapTimestamp: '2026-10-30T11:00:00Z' }, now), false,
     'a future timestamp must not be treated as fresh')
 
-  console.log('BEACH_SHEET_SATELLITE_FRESHNESS_TESTS PASS (13 assertions)')
+  console.log('BEACH_SHEET_SATELLITE_FRESHNESS_TESTS PASS (14 assertions)')
 })().catch(error => {
   console.error(error)
   process.exitCode = 1
