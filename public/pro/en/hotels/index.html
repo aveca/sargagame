@@ -20,13 +20,13 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/a-propos/colors_and_type.css"/>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Service","serviceType":"Sargassum forecasting and alerts for hotels","provider":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/"},"areaServed":["Martinique","Guadeloupe","Caribbean"],"description":"Per-beach satellite forecasting of sargassum landings, alerts for hotel waterfronts, and reliability that is published and audited daily. Validated in the French Antilles, rolling out across the Caribbean.","audience":{"@type":"BusinessAudience","audienceType":"Beachfront hotels and resorts"}}
+{"@context":"https://schema.org","@type":"Service","serviceType":"Sargassum forecasting and alerts for hotels","provider":{"@type":"Organization","name":"Sargasses Pro","url":"https://sargasses-martinique.com/"},"areaServed":["Martinique","Guadeloupe","Caribbean"],"description":"Per-beach sargassum forecasting and alerts, with a dated public validation record that shows its region scope and freshness. No current accuracy percentage is displayed when the record is stale or out of scope.","audience":{"@type":"BusinessAudience","audienceType":"Beachfront hotels and resorts"}}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Hotels (EN)","item":"https://sargasses-martinique.com/pro/en/hotels/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free Météo-France or USF maps?","acceptedAnswer":{"@type":"Answer","text":"Public maps give a regional risk. We give a 7-day forecast beach by beach, alerts targeted at your waterfront, and above all a reliability figure that we publish and audit every day against real observation — something no free source does."}},{"@type":"Question","name":"How reliable is the forecast, really?","acceptedAnswer":{"@type":"Answer","text":"We publish a dated, auditable track record on /fiabilite/. Our reliability is validated in the French Antilles (Martinique and Guadeloupe) and the figure is shown with its sample size. Coverage is rolling out across the Caribbean; we do not claim validated accuracy on coasts we have not yet measured. Alerts are issued cautiously until the satellite confirms them."}},{"@type":"Question","name":"Which beaches and regions are covered?","acceptedAnswer":{"@type":"Answer","text":"Every monitored beach in Martinique and Guadeloupe, each with a dated per-beach history. Other Caribbean markets are being added; reliability is published as it is validated, market by market."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our cleaning contractor?","acceptedAnswer":{"@type":"Answer","text":"Yes. A live-conditions badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free Météo-France or USF maps?","acceptedAnswer":{"@type":"Answer","text":"Public maps give a regional risk. We give a 7-day forecast beach by beach, alerts targeted at your waterfront, and above all a dated public validation record with its region scope and freshness; no current percentage is shown when the record is stale or out of scope."}},{"@type":"Question","name":"How reliable is the forecast, really?","acceptedAnswer":{"@type":"Answer","text":"The public record identifies its date range, region scope and freshness. It currently covers only the regions listed in that record; it does not establish accuracy on other Caribbean coasts. No current percentage is displayed while the record is stale."}},{"@type":"Question","name":"Which beaches and regions are covered?","acceptedAnswer":{"@type":"Answer","text":"Every monitored beach in Martinique and Guadeloupe, each with a dated per-beach history. Other Caribbean markets are being added; reliability is published as it is validated, market by market."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our cleaning contractor?","acceptedAnswer":{"@type":"Answer","text":"Yes. A live-conditions badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -235,18 +235,18 @@
 <!-- PROOF / MOAT -->
 <section class="proof px"><div class="wrap">
   <p class="sec-eyebrow">Why trust this forecast</p>
-  <h2>We publish our reliability. Nobody else does.</h2>
-  <p class="sub">Every day, our forecast is frozen and then compared against real satellite observation. The track record is dated, per beach, and auditable — validated in the French Antilles (Martinique &amp; Guadeloupe), now rolling out across the Caribbean. Not a marketing promise.</p>
+  <h2>A dated validation record, with its scope and limits.</h2>
+  <p class="sub">The public record compares forecasts with available observations. It shows its date range, regional scope and freshness; no current accuracy percentage is displayed when the record is stale or out of scope.</p>
   <div class="gauge">
     <div class="big" id="tr-clean">—</div>
-    <div class="cap" id="tr-headline">Loading the live track record…</div>
+    <div class="cap" id="tr-headline">Checking the public validation record…</div>
   </div>
   <table class="trtable" id="tr-table" hidden>
     <caption style="text-align:left;font-size:11px;color:rgba(255,255,255,.55);padding:0 10px 8px;caption-side:top">Our lowest-scoring beaches (French Antilles) — we show the hardest cases, not the easy wins.</caption>
     <thead><tr><th>Beach</th><th style="text-align:right">Forecasts right</th></tr></thead>
     <tbody id="tr-body"></tbody>
   </table>
-  <p class="bench">Published drift models top out around 70% accuracy at ±3 days (Lesser Antilles, Ifremer). We show our real, dated figure with its sample size — and we publish our limits too (alerts in the calm season are issued cautiously until the satellite confirms them). We do not claim validated accuracy on coasts we have not yet measured.</p>
+  <p class="bench">Validation statistics are displayed only when the public record is current and covers the relevant region. Historical results are not a guarantee for any individual beach; no accuracy percentage is claimed for unvalidated coasts.</p>
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">See the full track record and method →</a></p>
 </div></section>
 
@@ -254,7 +254,7 @@
 <section class="px"><div class="wrap">
   <p class="sec-eyebrow">Live demo</p>
   <h2>This is exactly what your guests would see.</h2>
-  <p class="sub">Real data, right now, on a beach in the French Antilles. The same badge, in your colors, on your site.</p>
+  <p class="sub">The latest available source observation, with its timestamp and age. When it is stale or unknown, no current score or verdict is shown.</p>
   <div class="demo-frame" id="demo">
     <svg class="vc" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(50 50) scale(0.9)">
@@ -291,8 +291,8 @@
         <input type="email" id="m-email" name="email" placeholder="you@hotel.com" required autocomplete="email" aria-label="Work email"/>
         <button type="submit" class="btn btn-gold">Get my free brief</button>
       </form>
-      <p class="trust-row" id="m-trust">Free · no card · one-click unsubscribe · Copernicus satellite data.</p>
-      <div class="form-ok" id="magnet-ok">Done — your first brief is on its way by email. Meanwhile, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">see your beach live now →</a></div>
+      <p class="trust-row" id="m-trust">Free · no card · one-click unsubscribe · NOAA/AOML ERDDAP AFAI observations.</p>
+      <div class="form-ok" id="magnet-ok">Done — your first brief is on its way by email. Meanwhile, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">see the latest observation for your beach →</a></div>
     </div>
   </div>
 </div></section>
@@ -302,7 +302,7 @@
   <p class="sec-eyebrow">How it works</p>
   <h2>From satellite to your front desk, in three steps.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-referenced with wind and currents — refreshed 4× a day.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>AFAI observations distributed through NOAA/AOML ERDDAP, complemented by Copernicus Marine currents and Open-Meteo wind. The pipeline checks sources several times a day; a new AFAI observation is not guaranteed at every check.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>We localize it on your beach</h3><p>Our drift + persistence model turns the open ocean into a per-beach forecast, over 7 days, with a confidence level.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Your team is alerted</h3><p>Daily brief + an alert when the state changes. You schedule cleanup and guest communication in advance.</p></div></div>
   </div>
@@ -343,7 +343,7 @@
     </div>
     <div><label for="msg">Your beach / need (optional)</label><textarea id="msg" name="note" placeholder="Beachfront, number of rooms, main need…"></textarea></div>
     <button type="submit" class="btn btn-gold" style="justify-content:center">Get the free brief</button>
-    <p class="trust-row">No card required. One-click unsubscribe. Copernicus satellite data.</p>
+    <p class="trust-row">No card required. One-click unsubscribe. NOAA/AOML ERDDAP AFAI observations.</p>
   </form>
   <div class="form-ok" id="form-ok">Done — Le Veilleur is now watching your beach. Your first brief goes out at the next satellite update, automatically — no call. 🌅</div>
 </div></section>
@@ -357,6 +357,7 @@
   <div style="margin-top:10px">Satellite sargassum forecast · Martinique &amp; Guadeloupe</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
@@ -371,15 +372,13 @@
   var QH=(Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
 
-  // Use the ERDDAP observation timestamp; updatedAt can change on republication.
-  var PUBLIC_STALE_AFTER_MS = 36 * 60 * 60 * 1000;
   function getObservationFreshness(data){
-    var observedAt=Date.parse(data && data.erddapTimestamp || '');
-    if(!Number.isFinite(observedAt) || observedAt>Date.now()) return {status:'unknown',label:'Satellite freshness unknown'};
-    var ageMs=Date.now()-observedAt, ageHours=ageMs/3600000;
-    var ageLabel=ageHours<1?'less than an hour ago':Math.max(1,Math.round(ageHours))+' h ago';
-    var status=(data.stale===true || ageMs>PUBLIC_STALE_AFTER_MS)?'stale':'fresh';
-    return {status:status,label:(status==='stale'?'Satellite observation is old':'Satellite observation')+' · '+ageLabel};
+    return window.SargagameB2BFreshness.getObservationFreshness(data,'en');
+  }
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
   }
   function setFreshnessPill(status,label){
     var pill=document.getElementById('freshpill');
@@ -388,51 +387,50 @@
   }
 
 
-  // --- Proof live: track-record.json ---
-  // HONESTY: the hero number is the OVERALL status hit rate (all regimes) — the same
-  // figure /fiabilite/ leads with. We do NOT headline the clean-only calm slice, which
-  // can momentarily read 100% and looks like puffery next to the 70% benchmark. The
-  // clean-sea detail stays in the caption, scoped, with its sample size.
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+  // Render validation metrics only for a fresh public record that covers this page.
+  fetch('/api/copernicus/track-record.json').then(function(r){if(!r.ok)throw new Error('track-record HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var overall=(d.overall&&d.overall.statusHitRatePct!=null)?d.overall.statusHitRatePct:null;
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var cleanPct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:null);
-      var cleanN=calm&&calm.cleanSamples?calm.cleanSamples:0;
-      var totalN=d.sampleSize||0;
-      // Hero = overall measured hit rate; fall back to clean-sea figure only if absent.
-      var hero=overall!=null?overall:cleanPct;
-      if(hero==null) throw new Error('no figure');
-      document.getElementById('tr-clean').textContent=hero+'%';
-      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      var cap='of our verdicts held against satellite observation, all regimes'+win+
-        (totalN?(' — across '+Number(totalN).toLocaleString('en-US')+' dated comparisons in the French Antilles'):'')+'.';
-      if(cleanPct!=null&&cleanN){
-        cap+=' Our “clean sea” calls verify at '+cleanPct+'% ('+Number(cleanN).toLocaleString('en-US')+
-          ' samples); calm-season alerts are the harder case, and we publish that too.';
+      var state=window.SargagameB2BFreshness.getTrackRecordState(d,'mq');
+      var clean=document.getElementById('tr-clean'),headline=document.getElementById('tr-headline');
+      var table=document.getElementById('tr-table'),body=document.getElementById('tr-body');
+      if(body)body.textContent='';
+      if(!state.available){
+        if(clean)clean.textContent='—';
+        if(table)table.hidden=true;
+        var meta=[];
+        if(state.scopeLabel)meta.push('published scope: '+state.scopeLabel);
+        if(state.windowLabel)meta.push('period: '+state.windowLabel);
+        var message=state.reason==='region-not-covered'?'The published record does not cover this page’s region.':(state.reason==='missing-record'?'Public validation record unavailable; no current accuracy percentage is displayed.':'Validation record is stale or out of scope; no current accuracy percentage is displayed.');
+        if(headline)headline.textContent=message+(meta.length?' '+meta.join(' · ')+'.':'');
+        return;
       }
-      document.getElementById('tr-headline').textContent=cap;
-      // Per-beach: show the WEAKEST beaches first (credibility, not cherry-picking).
-      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number';})
-        ;
-      if(beaches.length){
-        var body=document.getElementById('tr-body');
+      var pct=d.overall&&d.overall.statusHitRatePct;
+      if(typeof pct!=='number'||!Number.isFinite(pct)||pct<0||pct>100){
+        if(clean)clean.textContent='—';if(table)table.hidden=true;if(headline)headline.textContent='The record has no valid overall rate; no percentage is displayed.';return;
+      }
+      if(clean)clean.textContent=pct+'%';
+      if(headline)headline.textContent='Network-wide status hit rate for '+state.scopeLabel+' ('+state.windowLabel+') — '+Number(state.sampleSize).toLocaleString('en-US')+' dated comparisons.';
+      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number'&&Number.isFinite(b.hitRatePct)&&b.hitRatePct>=0&&b.hitRatePct<=100&&Number(b.samples)>0;});
+      if(beaches.length&&body){
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+Number(b.samples).toLocaleString('en-US')+')';
           if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
-        document.getElementById('tr-table').hidden=false;
+        if(table)table.hidden=false;
       }
     }catch(e){
-      document.getElementById('tr-headline').textContent='Full dated track record on our reliability page.';
+      var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+      var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+      var table=document.getElementById('tr-table');if(table)table.hidden=true;
     }
   }).catch(function(){
-    document.getElementById('tr-headline').textContent='Full dated track record on our reliability page.';
+    var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+    var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+    var table=document.getElementById('tr-table');if(table)table.hidden=true;
   });
-
   // --- Per-beach observation: hide verdicts and scores when source data is stale ---
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{
