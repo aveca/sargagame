@@ -39,8 +39,8 @@ function resolvePublicAccuracy(record, regionId) {
   const horizons = Array.isArray(record.byHorizon) ? record.byHorizon : []
   const day1 = horizons.find(item => Number(item?.day) === 1)
   const day3 = horizons.find(item => Number(item?.day) === 3)
-  const validRate = value => Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100
-  const validPairs = value => Number.isFinite(Number(value)) && Number(value) > 0
+  const validRate = value => value !== null && value !== undefined && Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= 100
+  const validPairs = value => value !== null && value !== undefined && Number.isFinite(Number(value)) && Number(value) > 0
   if (!sampleSize || !day1 || !day3 ||
       !validRate(day1.hitRatePct) || !validRate(day3.hitRatePct) ||
       !validPairs(day1.pairs) || !validPairs(day3.pairs) ||
