@@ -14,6 +14,9 @@ const republishedOld = freshness.getObservationFreshness({ erddapTimestamp: old,
 assert.equal(republishedOld.status, 'stale', 'recent republication must not make an old observation fresh')
 assert.equal(Math.round(republishedOld.ageMs / 60000), 4405)
 assert.match(republishedOld.label, /ancienne/)
+const spanishOld = freshness.getObservationFreshness({ erddapTimestamp: old, updatedAt: new Date(now).toISOString(), stale: false }, 'es', now)
+assert.equal(spanishOld.status, 'stale')
+assert.match(spanishOld.label, /antigua/)
 assert.equal(freshness.getObservationFreshness({ updatedAt: new Date(now).toISOString(), stale: false }, 'en', now).status, 'unknown')
 assert.equal(freshness.getObservationFreshness({ erddapTimestamp: new Date(now + 60000).toISOString(), stale: false }, 'fr', now).status, 'unknown')
 assert.equal(freshness.getObservationFreshness({ erddapTimestamp: recent, stale: true }, 'en', now).status, 'stale')
@@ -40,15 +43,17 @@ const root = path.resolve(__dirname, '../..')
 const pages = [
   ['public/pro/hotels/index.html', 'fr'],
   ['public/pro/en/hotels/index.html', 'en'],
+  ['public/pro/es/hotels/index.html', 'es'],
   ['public/pro/collectivites/index.html', 'fr'],
-  ['public/pro/en/collectivites/index.html', 'en']
+  ['public/pro/en/collectivites/index.html', 'en'],
+  ['public/pro/es/collectivites/index.html', 'es']
 ]
 for (const [relative, locale] of pages) {
   const html = fs.readFileSync(path.join(root, relative), 'utf8')
   assert.ok(html.includes('/b2b-data-freshness.js'), relative + ' must load the shared freshness contract')
   assert.ok(html.includes("getTrackRecordState(d,'mq')"), relative + ' must gate the record on region and freshness')
   assert.ok(html.includes("getObservationFreshness(data,'"+locale+"')"), relative + ' must use the ERDDAP timestamp helper')
-  assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy)|76\s*%\s*(?:to|à)\s*79\s*%|4×\s*\/\s*(?:jour|day)/i, relative + ' must not publish unsupported accuracy or sampling claims')
+  assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)/i, relative + ' must not publish unsupported accuracy or sampling claims')
 }
 const pricing = fs.readFileSync(path.join(root, 'public/pro/pricing/index.html'), 'utf8')
 assert.ok(pricing.includes('/b2b-data-freshness.js'), 'pricing page must load the shared freshness contract')
@@ -56,8 +61,8 @@ assert.ok(pricing.includes("getTrackRecordState(d, 'mq')"), 'pricing page must s
 assert.doesNotMatch(pricing, /Fiabilité publiée et auditée|4×\s*\/\s*jour|4×\s*\/\s*day/i, 'pricing page must not publish stale proof or promise four AFAI observations per day')
 assert.ok(pricing.includes('79 €/mois') && pricing.includes('690 €/an'), 'existing canonical Pro prices must remain unchanged')
 
-
+const api = fs.readFileSync(path.join(root, 'public/api/index.html'), 'utf8')
 assert.ok(api.includes('Alternate Floating Algae Index'), 'API docs must use the verified AFAI expansion')
 assert.doesNotMatch(api, /Algae Floating Area Index/, 'API docs must not use the incorrect AFAI expansion')
 
-console.log('PASS: B2B observation freshness, scoped track-record gating, source cadence copy and canonical pricing invariance')
+console.log('PASS: six B2B locales, observation freshness, scoped track-record gating, source cadence copy and canonical pricing invariance')
