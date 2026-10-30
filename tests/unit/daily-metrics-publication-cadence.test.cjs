@@ -64,11 +64,12 @@ assert.ok(stageIndex < commitIndex && commitIndex < pushIndex,
   'le snapshot validé doit être stage, committé puis poussé dans cet ordre')
 const stashIndex = publishStep.indexOf('git stash push --include-untracked')
 const rebaseIndex = publishStep.indexOf('git rebase -X theirs')
-const restoreIndex = publishStep.indexOf('git stash pop --index')
+const restoreDefinitionIndex = publishStep.indexOf('restore_generated_changes() {')
+const restoreCallIndex = publishStep.lastIndexOf('restore_generated_changes')
 const failureIndex = publishStep.indexOf('if [ "$push_ok" != "1" ]')
-assert.ok(commitIndex < stashIndex && stashIndex < rebaseIndex && rebaseIndex < restoreIndex,
-  'les sorties générées doivent être mises à l’abri après le commit snapshot, avant le rebase, puis restaurées')
-assert.ok(restoreIndex < failureIndex,
+assert.ok(commitIndex < stashIndex && stashIndex < restoreDefinitionIndex && restoreDefinitionIndex < rebaseIndex && rebaseIndex < restoreCallIndex,
+  'les sorties générées doivent être mises à l’abri après le commit snapshot, puis restaurées après le rebase')
+assert.ok(restoreCallIndex < failureIndex,
   'les fichiers générés doivent être restaurés même lorsque la boucle de push échoue')
 assert.match(publishStep, /restore_generated_changes/,
   'la restauration des fichiers générés doit être centralisée et explicite')
@@ -109,8 +110,9 @@ assert.match(emailStep, /continue-on-error: true/,
   "le step email conserve son continue-on-error (l'email n'est pas critique)")
 const emailStashIndex = emailStep.indexOf('git stash push --include-untracked')
 const emailRebaseIndex = emailStep.indexOf('git rebase -X theirs')
-const emailRestoreIndex = emailStep.indexOf('git stash pop --index')
-assert.ok(emailStashIndex >= 0 && emailStashIndex < emailRebaseIndex && emailRebaseIndex < emailRestoreIndex,
+const emailRestoreDefinitionIndex = emailStep.indexOf('restore_email_generated_changes() {')
+const emailRestoreCallIndex = emailStep.lastIndexOf('restore_email_generated_changes')
+assert.ok(emailStashIndex >= 0 && emailStashIndex < emailRestoreDefinitionIndex && emailRestoreDefinitionIndex < emailRebaseIndex && emailRebaseIndex < emailRestoreCallIndex,
   'les marqueurs email doivent être poussés sans perdre les autres sorties générées du worktree')
 assert.doesNotMatch(emailStep, /git add scripts\/automation\/data\/daily-metrics\.json/,
   "le step email ne doit PLUS committer le snapshot — responsabilité séparée")
