@@ -50,9 +50,29 @@ const path = require("node:path");
   assert.doesNotMatch(frustration, /sg_email|event_type:|email:|SUPABASE_ANON_KEY|fetch\(/,
     "frustration telemetry must not send email or use a direct ad-hoc writer");
 
-  const assets = path.join(root, "dist", "assets");
-  if (fs.existsSync(assets)) {
-    const stack = [assets];
+  const staticClientPaths = [
+    "public/veille/index.html",
+    "public/a-propos/index.html",
+    "scripts/lib/reliability-page.cjs",
+  ];
+  for (const relativePath of staticClientPaths) {
+    const source = fs.readFileSync(path.join(root, relativePath), "utf8");
+    assert.ok(!/api_secret|google-analytics\\.com\\/mp\\/collect/i.test(source),
+      relativePath + " must not ship a GA4 Measurement Protocol secret or endpoint");
+  }
+  const veille = fs.readFileSync(path.join(root, "public/veille/index.html"), "utf8");
+  const about = fs.readFileSync(path.join(root, "public/a-propos/index.html"), "utf8");
+  const reliability = fs.readFileSync(path.join(root, "scripts/lib/reliability-page.cjs"), "utf8");
+  assert.ok(veille.includes("navigator.sendBeacon&&navigator.sendBeacon(APPS,"),
+    "veille landing must retain its Apps Script event transport");
+  assert.ok(about.includes("navigator.sendBeacon(APPS_SCRIPT_URL"),
+    "about page must retain its Apps Script event transport");
+  assert.ok(reliability.includes("navigator.sendBeacon(APPS_SCRIPT_URL"),
+    "generated reliability pages must retain their Apps Script event transport");
+
+  const dist = path.join(root, "dist");
+  if (fs.existsSync(dist)) {
+    const stack = [dist];
     while (stack.length) {
       const current = stack.pop();
       for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
@@ -61,7 +81,7 @@ const path = require("node:path");
         else if (/\.(?:m?js|cjs|html|map)$/i.test(entry.name)) {
           const content = fs.readFileSync(target, "utf8");
           assert.doesNotMatch(content, /api_secret|google-analytics\.com\/mp\/collect/i,
-            "built client asset contains no Measurement Protocol secret marker: " + path.relative(root, target));
+            "built client output contains no Measurement Protocol secret marker: " + path.relative(root, target));
         }
       }
     }
