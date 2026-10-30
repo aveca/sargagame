@@ -14,6 +14,7 @@ const path = require('node:path')
 const { satelliteFreshness, SAT_STALE_HOURS } = require('../../scripts/lib/satellite-freshness.cjs')
 const {
   extractFirstErddapTimestamp,
+  getErddapGridAge,
   get1DGridFreshness,
 } = require('../../scripts/lib/erddap-grid-freshness.cjs')
 
@@ -33,6 +34,21 @@ assert.equal(extractFirstErddapTimestamp([[1, 2, 3]], 3), null)
 assert.equal(extractFirstErddapTimestamp([[1, 2, 3, null], [1, 2, 3, '2026-10-30T07:00:00Z']], 3), '2026-10-30T07:00:00Z')
 assert.equal(extractFirstErddapTimestamp([[1, 2, 3, 'not-a-date']], 3), 'not-a-date')
 assert.equal(extractFirstErddapTimestamp([[1, 2, 3, '2026-10-30T07:00:00Z']], -1), null)
+
+console.log('=== Production 7D grid timestamp contract ===')
+const valid7D = getErddapGridAge('2026-10-30T08:00:00Z', now)
+assert.equal(valid7D.ok, true)
+assert.equal(valid7D.dataAgeHours, 0, 'a fresh zero-age grid must stay zero, not fall back to 24h')
+
+const old7D = getErddapGridAge('2026-10-28T12:00:00Z', now)
+assert.equal(old7D.ok, true)
+assert.equal(old7D.dataAgeHours, 44, 'valid old observations retain their actual age for the separate release gate')
+
+assert.equal(getErddapGridAge(null, now).reason, 'missing-timestamp')
+assert.equal(getErddapGridAge('', now).reason, 'missing-timestamp')
+assert.equal(getErddapGridAge('not-a-date', now).reason, 'invalid-timestamp')
+assert.equal(getErddapGridAge(new Date(now + HOUR).toISOString(), now).reason, 'future-timestamp')
+assert.equal(getErddapGridAge('2026-10-30T07:00:00Z', NaN).reason, 'invalid-clock')
 
 console.log('=== Production 1D correction freshness gate ===')
 assert.equal(get1DGridFreshness(null, now).fresh, false)
@@ -64,6 +80,9 @@ console.log('=== Production wiring contract ===')
 const source = fs.readFileSync(path.join(__dirname, '../../scripts/fetch-sargassum-live.cjs'), 'utf8')
 assert.ok(source.includes('extractFirstErddapTimestamp(rows, timeIdx)'))
 assert.ok(source.includes('get1DGridFreshness(grid1D)'))
+assert.ok(source.includes('getErddapGridAge(erddapTimestamp)'))
+assert.ok(source.includes('if (!gridAge.ok)'))
+assert.ok(source.includes('Number.isFinite(grid.dataAgeHours) && grid.dataAgeHours >= 0'))
 
 console.log('=== Shared freshness contract ===')
 assert.equal(SAT_STALE_HOURS, 36)
