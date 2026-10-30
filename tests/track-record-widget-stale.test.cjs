@@ -149,16 +149,18 @@ function record(overrides = {}) {
   }
 
   {
-    const result = await runWidget(record(), { sargassumUpdatedAt: 'invalid-date' })
+    const result = await runWidget(record(), { sargassumErddapTimestamp: 'invalid-date' })
     assert.equal(result.freshnessState, 'is-unavailable')
     assert.match(result.freshnessLabel, /horodatage satellite invalide/i)
   }
 
   {
     const result = await runWidget(record(), {
-      sargassumUpdatedAt: '2026-10-23T15:03:00.000Z'
+      sargassumUpdatedAt: '2026-10-30T12:26:00.000Z',
+      sargassumErddapTimestamp: '2026-10-23T15:03:00.000Z'
     })
-    assert.equal(result.freshnessState, 'is-stale')
+    assert.equal(result.freshnessState, 'is-stale',
+      'a recent publication timestamp cannot make an old satellite observation fresh')
     assert.match(result.freshnessLabel, /vérification en cours/i)
   }
   {
@@ -174,7 +176,7 @@ function record(overrides = {}) {
 
   {
     const result = await runWidget(record(), {
-      sargassumUpdatedAt: '2026-10-24T06:03:00.000Z'
+      sargassumErddapTimestamp: '2026-10-24T06:03:00.000Z'
     })
     assert.equal(result.freshnessState, 'is-unavailable')
     assert.match(result.freshnessLabel, /horodatage satellite incohérent/i)
