@@ -33,7 +33,7 @@ assert.equal(fresh.fresh, true, '899 minutes with a valid live observation is el
 assert.equal(fresh.status, 'clean')
 assert.equal(fresh.score, 82)
 const freshSvg = buildOgSvg(beach, fresh)
-assert.match(freshSvg, /Observation du 2026-10-30 13:15 UTC · PROPRE/)
+assert.match(freshSvg, /Observation du 2026-10-29 22:31 UTC · PROPRE/)
 assert.doesNotMatch(freshSvg, /LIVE|aujourd'hui/, 'share image uses a dated observation, never a live/today claim')
 
 const atBoundary = getOgObservationState({
