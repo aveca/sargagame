@@ -3,7 +3,7 @@ const path = require('path');
 const assert = require('assert');
 
 const pages = [
-  { file: '../public/pro/en/hotels/index.html', locale: 'en', expected: ['Météo-France', 'Latest-observation badge', '7-day forecast'] },
+  { file: '../public/pro/en/hotels/index.html', locale: 'en', expected: ['Météo-France', 'timestamped last-observation badge', '7-day forecast'] },
   { file: '../public/pro/es/hotels/index.html', locale: 'es', expected: ['El Vigía', 'Pronóstico', 'huéspedes', 'MÁS DÉBILES'] },
 ];
 const mojibake = /(?:[ÃÂ][\u0080-\u00ff]|Ã[^\s]|Â[^\s]|â(?:€|ˆ|–|—|™|œ|…|‡|†|‹|›|˜)|ðŸ)/u;
