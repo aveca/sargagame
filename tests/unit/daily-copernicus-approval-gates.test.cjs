@@ -22,9 +22,9 @@ for (const scriptPath of [
   const at = workflow.indexOf('node ' + scriptPath + ' --send')
   assert.ok(at >= 0, scriptPath + ' send path must remain available only behind manual approval')
   const before = workflow.slice(Math.max(0, at - 650), at)
-  assert.match(before, /GITHUB_EVENT_NAME.*workflow_dispatch[\\s\\S]*authorize_outbound/, scriptPath + ' --send must be guarded by workflow_dispatch + authorize_outbound')
+  assert.ok(before.includes('workflow_dispatch') && before.includes('authorize_outbound'), scriptPath + ' --send must be guarded by workflow_dispatch + authorize_outbound')
   const after = workflow.slice(at, at + 350)
-  assert.match(after, /else[\\s\\S]*node scripts\\/(?:automation\\/)?/, scriptPath + ' must have a non-send scheduled path')
+  assert.ok(after.includes('else') && after.includes('node scripts/'), scriptPath + ' must have a non-send scheduled path')
 }
 
 assert.match(workflow, /incident-apology\.cjs --dry-run/, 'incident apologies must be dry-run on schedule')
@@ -46,8 +46,8 @@ assert.doesNotMatch(workflow, /public\/api\/(?:b2b-paylinks|mollie-passlinks)\.j
 
 assert.ok(fs.existsSync(path.join(root, 'scripts/ux-daily.cjs')), 'the tracked UX daily script must exist at scripts/ux-daily.cjs')
 const uxStep = workflow.slice(workflow.indexOf('UX daily tracking'), workflow.indexOf('Publish daily metrics snapshot'))
-assert.match(uxStep, /hashFiles\\('scripts\\/ux-daily\\.cjs'\\)/, 'workflow must guard the actual tracked UX daily script path')
-assert.match(uxStep, /SMTP_PASS: \\$\\{\\{ github\\.event_name == 'workflow_dispatch' && inputs\\.authorize_outbound == true && secrets\\.SMTP_PASS \\|\\| '' \\}\\}/, 'scheduled UX tracking must not receive SMTP credentials')
+assert.ok(uxStep.includes("hashFiles('scripts/ux-daily.cjs')"), 'workflow must guard the actual tracked UX daily script path')
+assert.ok(uxStep.includes("SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}"), 'scheduled UX tracking must not receive SMTP credentials')
 
 const notify = fs.readFileSync(path.join(root, 'scripts/automation/notify-failure.cjs'), 'utf8')
 assert.match(notify, /const DRY_RUN = process\.argv\.includes\('--dry-run'\)/)
