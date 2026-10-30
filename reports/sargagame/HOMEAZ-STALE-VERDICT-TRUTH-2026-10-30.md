@@ -26,7 +26,7 @@ Branch: `fix/homeaz-stale-verdict-truth-20261030`
 Base: `main@68d59a33aed871b3d3f937355d42588594a1d360`
 
 - Stale/unknown HomeAZ verdicts are explicitly labelled as the last observed status.
-- Stale/unknown hero and top-three numeric scores are suppressed.
+- Stale/unknown hero and top-three numeric scores are suppressed; the complete hero score capsule (label and denominator included) is hidden.
 - Stale/unknown verdict styling is neutral rather than green/amber status coloring.
 - Fresh (<12h) copy now says “recent observation”, not “LIVE / EN DIRECT”.
 - “This morning” and “today” labels were removed from the observation status.
