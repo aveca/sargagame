@@ -60,7 +60,8 @@ for (const [relative, locale] of pages) {
   assert.ok(html.includes('/b2b-data-freshness.js'), relative + ' must load the shared freshness contract')
   assert.ok(html.includes("getTrackRecordState(d,'mq')"), relative + ' must gate the record on region and freshness')
   assert.ok(html.includes("getObservationFreshness(data,'"+locale+"')"), relative + ' must use the ERDDAP timestamp helper')
-  assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)/i, relative + ' must not publish unsupported accuracy or sampling claims')
+  assert.match(html, /class="freshpill is-unknown"/, relative + ' must start in an unknown state before the observation is checked')
+  assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)|live conditions badge|live demo|live snapshot|demo en vivo|datos reales, al instante/i, relative + ' must not publish unsupported accuracy, sampling or live-data claims')
 }
 const pricingPages = [
   { path: 'public/pro/pricing/index.html', prices: ['79 €/mois', '690 €/an'] },
