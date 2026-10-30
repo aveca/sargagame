@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 "use strict";
 // Behavioral regression test for the public B2B reliability proof.
-// Runs the inline pricing-page script in a tiny DOM/fetch sandbox (no network).
+// Runs the inline pricing-page script with the shared freshness contract and a tiny DOM/fetch sandbox.
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
+const freshness = require("../public/b2b-data-freshness.js");
 
 const html = fs.readFileSync(path.join(__dirname, "../public/pro/pricing/index.html"), "utf8");
-const match = html.match(/<script>\s*\(function\(\)\{\s*\/\/ The data pipeline runs every 6 hours[\s\S]*?<\/script>/);
-assert.ok(match, "pricing page contains the tested track-record script");
+const match = html.match(/<script>\s*\(function\(\)\{\s*\/\/ A public rate is shown only for a fresh record that explicitly covers MQ\.[\s\S]*?<\/script>/);
+assert.ok(match, "pricing page contains the shared-helper track-record script");
 const script = match[0].replace(/^<script>\s*/, "").replace(/<\/script>\s*$/, "");
 
 const NOW = Date.parse("2026-10-23T16:00:00.000Z");
@@ -17,11 +18,23 @@ class FixedDate extends Date {
   static now() { return NOW; }
 }
 
+function record(overrides = {}) {
+  return {
+    generatedAt: new Date(NOW - 2 * 60 * 60 * 1000).toISOString(),
+    freshness: { stale: false },
+    regions: ["mq", "gp"],
+    window: { from: "2026-10-01", to: "2026-10-23" },
+    sampleSize: 1323,
+    overall: { statusHitRatePct: 96 },
+    ...overrides
+  };
+}
+
 async function render(payload, failFetch = false) {
   const classes = new Set();
   const nodes = {
     "tr-clean": { textContent: "—" },
-    "tr-line": { textContent: "de nos verdicts se vérifient, tous régimes confondus." },
+    "tr-line": { textContent: "Taux global du palmarès public, affiché uniquement si le record est frais et couvre la région." },
   };
   const proof = {
     classList: {
@@ -36,6 +49,7 @@ async function render(payload, failFetch = false) {
   vm.runInNewContext(script, {
     fetch,
     Date: FixedDate,
+    window: { SargagameB2BFreshness: freshness },
     document: {
       getElementById(id) { return nodes[id] || null; },
       querySelector(selector) { return selector === ".proofline" ? proof : null; },
@@ -45,82 +59,58 @@ async function render(payload, failFetch = false) {
   return { value: nodes["tr-clean"].textContent, line: nodes["tr-line"].textContent, stale: classes.has("is-stale") };
 }
 
-const recent = new Date(NOW - 2 * 60 * 60 * 1000).toISOString();
-const staleAge = new Date(NOW - 79 * 24 * 60 * 60 * 1000).toISOString();
-
 (async () => {
-  const freshOverall = await render({
-    generatedAt: recent,
-    freshness: { stale: false },
-    overall: { statusHitRatePct: 96 },
-    sampleSize: 1323,
-    byRegime: { calm: { cleanReliabilityPct: 100, cleanSamples: 1050 } },
-  });
+  const freshOverall = await render(record());
   assert.equal(freshOverall.value, "96%");
-  assert.match(freshOverall.line, /tous régimes confondus/);
-  assert.match(freshOverall.line, /comparaisons/);
+  assert.match(freshOverall.line, /périmètre MQ \+ GP/);
+  assert.match(freshOverall.line, /comparaisons datées/);
   assert.equal(freshOverall.stale, false);
 
-  const explicitStale = await render({
-    generatedAt: recent,
-    freshness: { stale: true },
-    overall: { statusHitRatePct: 96 },
-    sampleSize: 819,
-  });
+  const explicitStale = await render(record({ freshness: { stale: true } }));
   assert.equal(explicitStale.value, "—", "explicitly stale percentages must be hidden");
   assert.match(explicitStale.line, /périmé/);
   assert.equal(explicitStale.stale, true);
 
-  const oldButMislabelledFresh = await render({
-    generatedAt: staleAge,
-    freshness: { stale: false },
-    overall: { statusHitRatePct: 96 },
-    sampleSize: 819,
-  });
+  const oldButMislabelledFresh = await render(record({ generatedAt: new Date(NOW - 79 * 24 * 60 * 60 * 1000).toISOString() }));
   assert.equal(oldButMislabelledFresh.value, "—", "an old timestamp must override a false stale flag");
   assert.match(oldButMislabelledFresh.line, /périmé/);
   assert.equal(oldButMislabelledFresh.stale, true);
 
-  const cleanOnlyFallback = await render({
-    generatedAt: recent,
-    freshness: { stale: false },
+  const outOfScope = await render(record({ regions: ["gp"] }));
+  assert.equal(outOfScope.value, "—", "a record that does not cover MQ must not be shown on the MQ page");
+  assert.match(outOfScope.line, /no cubre la región/);
+  assert.equal(outOfScope.stale, true);
+
+  const cleanOnlyFallback = await render(record({
     overall: { statusHitRatePct: null },
-    sampleSize: null,
     byRegime: { calm: { cleanReliabilityPct: 100, cleanSamples: 1050 } },
-  });
+  }));
   assert.equal(cleanOnlyFallback.value, "100%");
   assert.match(cleanOnlyFallback.line, /mer propre/);
   assert.match(cleanOnlyFallback.line, /saison calme/);
-  assert.doesNotMatch(cleanOnlyFallback.line, /tous régimes confondus/);
 
   const unavailable = await render(null, true);
   assert.equal(unavailable.value, "—");
   assert.match(unavailable.line, /indisponible/);
   assert.equal(unavailable.stale, true);
 
-  const impossibleHigh = await render({
-    generatedAt: recent,
-    freshness: { stale: false },
+  const impossibleHigh = await render(record({
     overall: { statusHitRatePct: 101 },
-    sampleSize: 1323,
     byRegime: { calm: { cleanReliabilityPct: 101, cleanSamples: 1050 } },
-  });
+  }));
   assert.equal(impossibleHigh.value, "—", "percentages above 100 must never be published");
-  assert.match(impossibleHigh.line, /insuffisantes/);
+  assert.match(impossibleHigh.line, /sans métrique exploitable/);
   assert.equal(impossibleHigh.stale, true);
 
-  const impossibleNegative = await render({
-    generatedAt: recent,
-    freshness: { stale: false },
+  const impossibleNegative = await render(record({
     overall: { statusHitRatePct: -1 },
-    sampleSize: 1323,
     byRegime: { calm: { cleanReliabilityPct: -1, cleanSamples: 1050 } },
-  });
+  }));
   assert.equal(impossibleNegative.value, "—", "negative percentages must never be published");
-  assert.match(impossibleNegative.line, /insuffisantes/);
+  assert.match(impossibleNegative.line, /sans métrique exploitable/);
   assert.equal(impossibleNegative.stale, true);
 
-  console.log("OK — fresh metric, explicit stale, stale timestamp, honest regime label, and fetch failure");
+  console.log("OK — fresh, stale, expired, out-of-scope, regime fallback, fetch failure and invalid percentage cases");
 })().catch(error => {
   console.error(error);
   process.exitCode = 1;
