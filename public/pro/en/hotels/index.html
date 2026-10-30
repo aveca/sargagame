@@ -26,7 +26,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Hotels (EN)","item":"https://sargasses-martinique.com/pro/en/hotels/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free Météo-France or USF maps?","acceptedAnswer":{"@type":"Answer","text":"Public maps give a regional risk. We give a 7-day forecast beach by beach, alerts targeted at your waterfront, and above all a dated public validation record with its region scope and freshness; no current percentage is shown when the record is stale or out of scope."}},{"@type":"Question","name":"How reliable is the forecast, really?","acceptedAnswer":{"@type":"Answer","text":"The public record identifies its date range, region scope and freshness. It currently covers only the regions listed in that record; it does not establish accuracy on other Caribbean coasts. No current percentage is displayed while the record is stale."}},{"@type":"Question","name":"Which beaches and regions are covered?","acceptedAnswer":{"@type":"Answer","text":"Every monitored beach in Martinique and Guadeloupe, each with a dated per-beach history. Other Caribbean markets are being added; reliability is published as it is validated, market by market."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our cleaning contractor?","acceptedAnswer":{"@type":"Answer","text":"Yes. A live-conditions badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free Météo-France or USF maps?","acceptedAnswer":{"@type":"Answer","text":"Public maps give a regional risk. We give a 7-day forecast beach by beach, alerts targeted at your waterfront, and above all a dated public validation record with its region scope and freshness; no current percentage is shown when the record is stale or out of scope."}},{"@type":"Question","name":"How reliable is the forecast, really?","acceptedAnswer":{"@type":"Answer","text":"The public record identifies its date range, region scope and freshness. It currently covers only the regions listed in that record; it does not establish accuracy on other Caribbean coasts. No current percentage is displayed while the record is stale."}},{"@type":"Question","name":"Which beaches and regions are covered?","acceptedAnswer":{"@type":"Answer","text":"Every monitored beach in Martinique and Guadeloupe, each with a dated per-beach history. Other Caribbean markets are being added; reliability is published as it is validated, market by market."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our cleaning contractor?","acceptedAnswer":{"@type":"Answer","text":"Yes. A timestamped last-observation badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -228,7 +228,7 @@
   <div class="cards">
     <div class="card"><div class="ic">📍</div><h3>7-day forecast, beach by beach</h3><p>Status (clean / moderate / avoid), score and trend for the exact waterfront of your property — not an island average.</p></div>
     <div class="card"><div class="ic">🔔</div><h3>Automatic alerts</h3><p>Email or SMS the moment your beach changes state. Your team and your cleaning contractor know before your guests do.</p></div>
-    <div class="card"><div class="ic">🪟</div><h3>“Live conditions” badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk.</p></div>
+    <div class="card"><div class="ic">🪟</div><h3>Last-observation badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk.</p></div>
   </div>
 </div></section>
 
@@ -250,9 +250,9 @@
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">See the full track record and method →</a></p>
 </div></section>
 
-<!-- LIVE DEMO -->
+<!-- WIDGET PREVIEW -->
 <section class="px"><div class="wrap">
-  <p class="sec-eyebrow">Live demo</p>
+  <p class="sec-eyebrow">Widget preview</p>
   <h2>This is exactly what your guests would see.</h2>
   <p class="sub">The latest available source observation, with its timestamp and age. When it is stale or unknown, no current score or verdict is shown.</p>
   <div class="demo-frame" id="demo">
@@ -352,7 +352,7 @@
   <a href="https://sargasses-martinique.com/pro/">Sargasses Pro</a> ·
   <a href="https://sargasses-martinique.com/fiabilite/">Reliability</a> ·
   <a href="https://sargasses-martinique.com/a-propos/">About</a> ·
-  <a href="https://sargasses-martinique.com/">Live map</a> ·
+  <a href="https://sargasses-martinique.com/">Beach map</a> ·
   <a href="https://sargasses-martinique.com/pro/hotels/" hreflang="fr">Version française</a>
   <div style="margin-top:10px">Satellite sargassum forecast · Martinique &amp; Guadeloupe</div>
 </footer>
@@ -366,7 +366,7 @@
 
   // --- Prospect personalization: ?beach=<sarg id> & ?hotel=<name> ---
   // A rep sends /pro/en/hotels/?beach=diamant&hotel=Hotel%20X → the hotel sees
-  // THEIR beach live + their track-record row highlighted + the form prefilled.
+  // THEIR beach preview + their track-record row highlighted + the form prefilled.
   var Q=new URLSearchParams(location.search);
   var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
   var QH=(Q.get('hotel')||'').trim();
