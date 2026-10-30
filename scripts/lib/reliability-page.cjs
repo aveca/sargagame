@@ -19,6 +19,7 @@
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
 const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie réelle du modèle (5,0 j) — jamais re-coder en dur
+const { resolvePublicAccuracy } = require('./regional-track-record.cjs') // validation d'exactitude publique par région
 const path = require('path')
 const HL_FR = String(HALF_LIFE_DAYS).replace('.', ',') // 5,0 → "5"
 const HL_NUM = String(HALF_LIFE_DAYS)
@@ -845,7 +846,9 @@ function buildMeta(lang, bt, regionLabel) {
  * sinon build mono-région (florida / puntacana / rivieramaya).
  */
 function generateReliabilityPages(region, distDir) {
-  const bt = readBacktest()
+  // resolvePublicAccuracy rejette les régions non couvertes (Florida, Punta Cana,
+  // Riviera Maya, Tulum) et les données périmées/incomplètes — aucun chiffre inventé.
+  const bt = resolvePublicAccuracy(readBacktest(), region && region.id)
   const isNewRegion = !!(region && region.id !== 'mq' && region.id !== 'gp')
 
   if (!isNewRegion) {
