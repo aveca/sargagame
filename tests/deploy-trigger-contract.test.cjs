@@ -57,7 +57,13 @@ for (const file of ['data-refresh.yml', 'daily-copernicus.yml']) {
 // ── 4. Les trois workflows de la chaîne acceptent workflow_dispatch ───────
 for (const file of ['ci-tests.yml', 'perf-budget.yml', 'cloudflare-production.yml']) {
   const t = read(file);
-  const onBlock = t.slice(t.indexOf('\non:'), t.indexOf('\npermissions:'));
+  // Extract on: until the next top-level YAML key. This remains correct
+  // whether permissions appears before or after the trigger block.
+  const onHeader = t.match(/^on:\s*(?:#.*)?\r?\n/m);
+  const onStart = onHeader ? onHeader.index + onHeader[0].length : -1;
+  const onRest = onStart >= 0 ? t.slice(onStart) : '';
+  const nextRootKey = onRest.search(/^(?!\s)[A-Za-z_][A-Za-z0-9_-]*:\s*(?:#.*)?$/m);
+  const onBlock = nextRootKey >= 0 ? onRest.slice(0, nextRootKey) : onRest;
   record(`${file} : déclencheur workflow_dispatch présent`,
     /^\s*workflow_dispatch:\s*$/m.test(onBlock));
 }

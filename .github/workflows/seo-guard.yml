@@ -9,11 +9,14 @@ on:
       - '.github/workflows/seo-guard.yml'
       - 'scripts/autopilot/routes.cjs'
 
+permissions:
+  contents: read
+
 jobs:
   link-checker:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # lychee ne déplie pas les <loc> d'un sitemap XML distant (→ "0 links" + failIfEmpty=exit 1).
       # On extrait nous-mêmes les URLs du sitemap live et on les donne en liste à lychee.
       - name: Extract URLs from all live regional domains
@@ -110,7 +113,7 @@ jobs:
           fi
       - name: Link Checker
         id: lychee
-        uses: lycheeverse/lychee-action@v2
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
         with:
           args: --no-progress --max-concurrency 4 urls.txt
           fail: false

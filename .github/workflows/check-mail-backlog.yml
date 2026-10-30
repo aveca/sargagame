@@ -34,6 +34,9 @@ on:
         required: false
         default: "newest"
 
+permissions:
+  contents: read
+
 jobs:
   backlog:
     runs-on: ubuntu-latest

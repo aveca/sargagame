@@ -27,11 +27,9 @@ on:
 # Le deploy est géré par cloudflare-production.yml (Workers + Pages).
 
 permissions:
-  contents: write
-  # `actions: write` autorise le dispatch de la chaîne CI + production après la
-  # publication des données (le push est fait avec le GITHUB_TOKEN, or un push
-  # GITHUB_TOKEN ne déclenche aucun workflow `push`).
-  actions: write
+  # Least privilege by default. Only jobs that publish repository state or
+  # dispatch follow-up workflows receive write permissions below.
+  contents: read
 
 # Sérialise les runs sur main pour éliminer les conflits rebase
 concurrency:
@@ -41,6 +39,9 @@ concurrency:
 jobs:
   # ── 1. DATA FETCH (rapide, < 5 min) ────────────────────────────────────────
   fetch-data:
+    permissions:
+      contents: write
+      actions: write
     outputs:
       publication_status: ${{ steps.publication_status.outputs.status }}
       gate_outcome: ${{ steps.verify.outcome }}
@@ -50,11 +51,11 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
@@ -337,7 +338,7 @@ jobs:
 
       - name: Upload publication status evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: copernicus-publication-status-${{ github.run_id }}
           path: ${{ runner.temp }}/copernicus-publication-status.json
@@ -346,6 +347,8 @@ jobs:
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
+    permissions:
+      contents: write
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
@@ -358,10 +361,10 @@ jobs:
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'
           cache: npm
@@ -657,10 +660,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - name: Health check (uptime + staleness)
@@ -683,8 +686,8 @@ jobs:
           - id: rivieramaya
           - id: tulum
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - run: node -e "require('./regions/index.cjs').assertAllRegionsValid()"
@@ -699,8 +702,8 @@ jobs:
     if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with: { node-version: '24', cache: npm }
       - run: npm ci
       - name: Send failure alert email

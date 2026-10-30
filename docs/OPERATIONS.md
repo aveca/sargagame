@@ -44,23 +44,15 @@ Ne **jamais** inverser ces deux rôles :
 
 Raison : isoler le risque (un ban FB ne touche pas les sessions Google/Stripe) et garder les cookies FB hors du profil principal. `.fb-session-edge/` est local et gitignoré.
 
-## 3. Workflows GitHub Actions (11)
+## 3. Workflows GitHub Actions (38 — audit du 2026-10-30)
 
-| Workflow | Déclencheurs | Rôle |
-|---|---|---|
-| `daily-copernicus.yml` | cron `0 0,6,12,18 * * *` + push main + dispatch | **Le pipeline principal de données et de déploiement principal. Fetch ERDDAP (+fallback Copernicus), météo Open-Meteo, notifications push/email, pipeline emails (bounces→subscribers→weekend/welcome/drip), health-check, backtest, stats. Full build 4 builds Vite (3 nouvelles régions + MQ/GP) à 06/18 UTC (+1 h de tolérance), sur dispatch et sur push humain ; data-only sinon. Commit des JSON (rebase `-X theirs`, 5 retries), deploy FTPS des 5 régions principales, health-check final sur tous les domaines, et mécanismes de retry/alerte existants. |
-| `content-generation.yml` | cron lun/mer/ven 8h UTC + dispatch | Génération de contenu SEO via API Anthropic (payante), redeploy FTP MQ/GP. |
-| `morning-brief.yml` | cron `57 11 * * *` (07:57 Antilles) | Push OneSignal quotidien "morning brief" — top plage du jour par région (F3). |
-| `weekly-seo-automation.yml` | cron lun 11h UTC | Le gros workflow SEO (~22 étapes, ~12 min) : GSC, analyzers, rapports, redeploy. |
-| `weekly-optimize.yml` | cron mar/mer/ven 10h + ven 14h UTC | Tâches d'optimisation par jour (A/B, funnel Apps Script, GA4, weekend prep). `day_override` en dispatch. |
-| `weekly-outreach.yml` | cron mar 10h UTC | Backlinks + social outreach (emails via SMTP boîte `alerte@`). |
-| `weekly-ux-report.yml` | cron ven 11h UTC | Rapport UX hebdo depuis GA4. |
-| `provision-gsc.yml` | dispatch (input `regions`) | Crée/vérifie les propriétés Google Search Console des nouvelles régions (vérification via fichier déposé en FTP), délègue à `GSC_HUMAN_OWNER`. |
-| `provision-ga4.yml` | dispatch (input `regions`) | Crée les propriétés GA4 des nouvelles régions sous `GA4_ACCOUNT`. |
-| `ga4-diagnose.yml` | dispatch | Diagnostic GA4 MQ/GP (manuel). |
-| `push-debug.yml` | dispatch (modes `count-subscribers` / `test-fav-alert`) | Diagnostic OneSignal human-in-the-loop. Jamais schedulé. |
+L'inventaire exhaustif et les garde-fous sont documentés dans [GITHUB_ACTIONS_AUDIT_2026-10-30.md](GITHUB_ACTIONS_AUDIT_2026-10-30.md). Il remplace l'ancienne liste partielle de 11 workflows.
 
-Règles : concurrency guard sur daily-copernicus / content-generation / weekly-optimize / weekly-seo-automation ; **jamais** de `workflow_dispatch` sur un step d'envoi email/notif schedule-only (le retry-on-failure re-dispatche → spam) ; quota = repo public, minutes illimitées.
+- 38 workflows présents ; 127 références d'actions sur 8 actions externes, toutes épinglées sur des SHA complets.
+- Les actions JavaScript ont été modernisées pour Node 24 ; les workflows qui installaient encore Node 20 ont été migrés.
+- Les workflows read-only sont explicitement limités à contents: read ; les droits d'écriture sont limités aux jobs qui publient des données ou états.
+- Les gates de fraîcheur restent fail-closed : aucune donnée ERDDAP hors SLA (900 min) ne doit être publiée ni déployée.
+- Les workflows d'envoi, de suppression de données et de mutation de la base live sont répertoriés comme opérations sensibles ; voir les décisions requérant validation dans l'audit.
 
 ## 4. Deploy manuel (sans GitHub Actions)
 

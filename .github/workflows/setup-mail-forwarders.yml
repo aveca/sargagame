@@ -27,6 +27,9 @@ on:
         required: false
         default: "2083"
 
+permissions:
+  contents: read
+
 jobs:
   forwarders:
     runs-on: ubuntu-latest
