@@ -47,11 +47,19 @@ function headers(extra) {
 export function logAnalyticsEvent(event, params, island) {
   if (!supabaseConfigured() || !event) return
   try {
+    const payloadParams = params && typeof params === "object" && !Array.isArray(params) ? { ...params } : {}
+    // Hostname is a public, non-PII dimension needed to separate regional domains
+    // that intentionally share analytics properties. Keep it in Supabase params,
+    // not in the event's business payload or a new database column.
+    try {
+      const hostname = typeof window !== "undefined" ? String(window.location?.hostname || "").toLowerCase() : ""
+      if (hostname && !payloadParams.hostname) payloadParams.hostname = hostname
+    } catch (_) {}
     fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
       method: "POST",
       keepalive: true,
       headers: headers({ "Content-Type": "application/json", Prefer: "return=minimal" }),
-      body: JSON.stringify({ event: String(event), params: params || {}, island: island || null }),
+      body: JSON.stringify({ event: String(event), params: payloadParams, island: island || null }),
     }).catch(() => {})
   } catch (_) {}
 }
