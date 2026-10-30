@@ -84,23 +84,20 @@ try {
       console.warn('HOTEL_BEFORE_SCREENSHOT_UNAVAILABLE_' + viewport.name + '=' + String(error.message || error).slice(0, 180));
     }
 
-    const staleSourceTime = new Date(Date.now() - 63 * 60 * 60 * 1000).toISOString();
-    const recentPublishTime = new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString();
+    const staleSourceTime = '2026-10-27T12:00:00Z';
+    const recentPublishTime = '2026-10-28T17:29:52.717Z';
     let hotelFixture = {
       source: 'erddap-live',
       updatedAt: recentPublishTime,
       erddapTimestamp: staleSourceTime,
-      dataAgeMinutes: 600,
+      dataAgeMinutes: 1772,
       stale: false,
       levels: [{ id: 'les-salines', status: 'clean', confidence: 60, score: 98, label: 'EXCEPTIONNEL' }]
     };
     await hotelPage.route('**/api/copernicus/sargassum.json', route => route.fulfill({
       status: 200, contentType: 'application/json', body: JSON.stringify(hotelFixture)
     }));
-    await hotelPage.route('**/api/copernicus/track-record.json', route => route.fulfill({
-      status: 200, contentType: 'application/json',
-      body: JSON.stringify({ overall: { statusHitRatePct: 72 }, sampleSize: 12, window: { from: '2026-10-01', to: '2026-10-29' }, byBeach: [] })
-    }));
+    await hotelPage.route('**/api/copernicus/track-record.json', route => route.abort());
 
     await hotelPage.goto(PREVIEW + '/pro/hotels/', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await hotelPage.waitForFunction(() => (document.querySelector('#d-fresh')?.textContent || '').includes('Observation satellite'));
