@@ -81,19 +81,25 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
 export function lcDetailFreshnessLabel(sargData, lang = 'fr', now = Date.now()) {
   const ageH = satelliteAgeHours(sargData, now);
   if (ageH == null) {
-    return lang === 'es' ? 'Medición satelital en verificación — no adivinado.'
-      : lang === 'en' ? 'Satellite reading being verified — not guessed.'
-      : 'Mesure satellite en cours de vérification — pas deviné.';
+    return lang === 'es' ? 'Medición satelital en verificación — no se publica un veredicto actual.'
+      : lang === 'en' ? 'Satellite observation being verified — no current verdict is published.'
+      : 'Mesure satellite en cours de vérification — aucun verdict actuel publié.';
   }
-  if (isSatelliteFresh12h(sargData, now)) {
-    return lang === 'es' ? 'Medido por satélite esta mañana — no adivinado.'
-      : lang === 'en' ? 'Measured by satellite this morning — not guessed.'
-      : 'Mesuré au satellite ce matin — pas deviné.';
+  const payloadCurrent = sargData?.source === 'erddap-live' && sargData?.stale === false && isSatelliteFresh12h(sargData, now);
+  if (payloadCurrent) {
+    return lang === 'es' ? 'Observación satelital reciente.'
+      : lang === 'en' ? 'Recent satellite observation.'
+      : 'Observation satellite récente.';
+  }
+  if (ageH < 12) {
+    return lang === 'es' ? 'Observación no validada — estado por verificar.'
+      : lang === 'en' ? 'Unvalidated observation — status to check.'
+      : 'Observation non validée — statut à vérifier.';
   }
   const h = Math.round(ageH);
-  return lang === 'es' ? `Última medición satelital hace ${h} h — verificado, no adivinado.`
-    : lang === 'en' ? `Last satellite reading ${h}h ago — verified, not guessed.`
-    : `Dernière mesure satellite il y a ${h} h — vérifié, pas deviné.`;
+  return lang === 'es' ? `Observación hace ${h} h: dato histórico, no es un veredicto actual.`
+    : lang === 'en' ? `Observation ${h}h ago: historical, not a current verdict.`
+    : `Observation il y a ${h} h : historique, pas un verdict actuel.`;
 }
 
 /**
