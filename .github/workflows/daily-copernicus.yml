@@ -8,6 +8,17 @@ on:
     - cron: '0 12 * * *'
     - cron: '0 18 * * *'
   workflow_dispatch:
+    inputs:
+      authorize_outbound:
+        description: 'Explicitly authorize real email and push sends for this run only'
+        required: true
+        type: boolean
+        default: false
+      authorize_data_cleanup:
+        description: 'Explicitly authorize bounced-email cleanup and analytics deletion for this run only'
+        required: true
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -20,10 +31,12 @@ on:
 #   • push            → build des 6 régions + health-check UNIQUEMENT.
 #                       Pas de vidéo ffmpeg, pas d'emails, pas de fetch data,
 #                       pas de submit SEO, pas de commit.
-#   • schedule        → data fetch + email automation + health-check.
+#   • schedule        → data fetch + email automation en DRY-RUN + health-check.
 #                       Build/deploy délégué à cloudflare-production.yml.
-#   • workflow_dispatch → comme schedule MAIS sans les envois email
-#                       ni la vidéo : refresh data + health-check à la demande.
+#   • workflow_dispatch → refresh data + health-check à la demande.
+#                       Envois : authorize_outbound=true uniquement.
+#                       Nettoyage/déletion : authorize_data_cleanup=true uniquement.
+#                       Les deux inputs sont false par défaut.
 # Le deploy est géré par cloudflare-production.yml (Workers + Pages).
 
 permissions:
@@ -346,7 +359,7 @@ jobs:
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
-    if: github.event_name == 'schedule'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (inputs.authorize_outbound == true || inputs.authorize_data_cleanup == true))
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
     # était de 30 min — trop juste : un seul appel bloqué annulait le job, donc
@@ -369,11 +382,17 @@ jobs:
 
       - name: Push win-back dormant users
         env:
-          ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
-          ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
-        run: node scripts/automation/push-winback.cjs --send
+          ONESIGNAL_API_KEY_MQ: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.ONESIGNAL_API_KEY_MQ || '' }}
+          ONESIGNAL_API_KEY_GP: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.ONESIGNAL_API_KEY_GP || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/push-winback.cjs --send
+          else
+            node scripts/automation/push-winback.cjs
+          fi
 
-      - name: Clean bounced emails from Sheet
+      - name: Clean bounced emails from Sheet (approval-gated mutation)
+        if: github.event_name == 'workflow_dispatch' && inputs.authorize_data_cleanup == true
         run: |
           echo "Calling clean_bounces on Apps Script..."
           RESULT=$(curl -sL --max-time 30 "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=clean_bounces")
@@ -391,15 +410,25 @@ jobs:
 
       - name: Send incident apologies (if any pending)
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/incident-apology.cjs
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/incident-apology.cjs
+          else
+            node scripts/automation/incident-apology.cjs --dry-run
+          fi
 
       - name: Health check (uptime monitoring + staleness alerts)
         if: github.event_name != 'push'
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/health-check.cjs
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/health-check.cjs --send
+          else
+            node scripts/automation/health-check.cjs --dry-run
+          fi
 
       - name: Aggregate observed climatology (honest season trend)
         if: github.event_name != 'push'
@@ -424,13 +453,18 @@ jobs:
         run: node scripts/automation/daily-stats-check.cjs
 
       - name: Revenue watch (alerte mouvements Stripe)
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true)
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/revenue-watch.cjs --send
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/revenue-watch.cjs --send
+          else
+            node scripts/automation/revenue-watch.cjs
+          fi
 
-      - name: Mollie MRR tracker
+      - name: Mollie MRR tracker (read-only API; --send writes local report JSON)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
@@ -438,29 +472,44 @@ jobs:
         run: node scripts/automation/mollie-mrr.cjs --send
 
       - name: UX watch (alerte criticals rage/dead-click)
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true)
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/ux-watch.cjs --send
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/ux-watch.cjs --send
+          else
+            node scripts/automation/ux-watch.cjs
+          fi
 
       - name: Deliverability watch (alerte pic de rebonds)
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true)
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/deliverability-watch.cjs --send
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/deliverability-watch.cjs --send
+          else
+            node scripts/automation/deliverability-watch.cjs
+          fi
 
       - name: Factory heartbeat watch (alerte usine locale silencieuse)
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true)
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/automation/factory-heartbeat-watch.cjs --send
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/factory-heartbeat-watch.cjs --send
+          else
+            node scripts/automation/factory-heartbeat-watch.cjs
+          fi
 
-      - name: Purge analytics_events (> 90j)
-        if: github.event_name == 'schedule'
+      - name: Purge analytics_events (> 90j, approval-gated)
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_data_cleanup == true)
         continue-on-error: true
         # Budget d'étape : un blocage réseau ne doit plus consommer le budget
         # du JOB (30 min), car l'annulation du job ANNULAIT le run entier et
@@ -473,7 +522,12 @@ jobs:
         timeout-minutes: 10
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/automation/purge-analytics.cjs
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_data_cleanup }}" == "true" ]]; then
+            node scripts/automation/purge-analytics.cjs
+          else
+            node scripts/automation/purge-analytics.cjs --dry
+          fi
 
       - name: Funnel from Supabase (complementary)
         if: github.event_name == 'schedule'
@@ -490,7 +544,7 @@ jobs:
         run: node scripts/automation/funnel-daily-report.cjs
 
       - name: UX daily tracking (diff jour-à-jour first-party)
-        if: github.event_name == 'schedule'
+        if: hashFiles('scripts/ux-daily.cjs') != '' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true))
         continue-on-error: true
         env:
           SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
@@ -499,8 +553,13 @@ jobs:
           SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
           SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
           SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/ux-daily.cjs --send
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/ux-daily.cjs --send
+          else
+            node scripts/ux-daily.cjs
+          fi
 
       - name: Publish daily metrics snapshot
         # Responsabilité SÉPARÉE du commit email (qui garde son continue-on-error
@@ -598,7 +657,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json; do
             [ -f "$f" ] && git add "$f"
           done
           # NOTE : la publication du snapshot métrique quotidien est désormais une
@@ -696,7 +755,7 @@ jobs:
   # ── 5. NOTIFY ON FAILURE ──────────────────────────────────────────────────
   notify-failure:
     needs: [fetch-data, email-automation, health-check, build]
-    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
+    if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION') && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -705,10 +764,15 @@ jobs:
       - run: npm ci
       - name: Send failure alert email
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
           WORKFLOW_NAME: 'Daily Copernicus + Deploy'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        run: node scripts/automation/notify-failure.cjs
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/notify-failure.cjs --send
+          else
+            node scripts/automation/notify-failure.cjs --dry-run
+          fi
 
   # ── 6. RETRY ON FAILURE (once, after 5 min, schedule only) ───────────────
   retry-on-failure:

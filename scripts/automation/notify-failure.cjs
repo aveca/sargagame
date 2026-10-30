@@ -8,7 +8,7 @@
  *   RUN_URL        — GitHub Actions run URL
  *   FAILURE_STEP   — (optional) name of the step that failed
  *
- * Usage: node scripts/automation/notify-failure.cjs
+ * Usage: node scripts/automation/notify-failure.cjs [--dry-run]
  */
 const fs = require('fs')
 const path = require('path')
@@ -46,6 +46,12 @@ const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses Pipeline <alerte@sargasses-martinique.com>'
 
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+
+const DRY_RUN = process.argv.includes('--dry-run')
+if (DRY_RUN) {
+  console.log('DRY RUN: failure notification suppressed; no SMTP call performed.')
+  process.exit(0)
+}
 
 if (!mailReady()) {
   console.log('No SMTP_PASS — skipping failure notification')
