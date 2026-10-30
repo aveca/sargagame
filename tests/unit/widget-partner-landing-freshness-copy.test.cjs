@@ -39,7 +39,7 @@ assert.match(embed, /Object\.prototype\.hasOwnProperty\.call\(ST, status\)/);
 assert.match(embed, /isSatelliteFresh\(d, status\)/);
 assert.doesNotMatch(embed, /isSatelliteFresh\(d\.erddapTimestamp\)/);
 assert.match(embed, /if \(fresh && showFc && wk\.length\)/);
-assert.match(embed, /\$\("fc"\)\.style\.display = "none"\);
+assert.match(embed, /\$\("fc"\)\.style\.display = "none"/);
 
 // Preserve the existing partner setup and commercial route.
 assert.match(landing, /rel="canonical"/);
