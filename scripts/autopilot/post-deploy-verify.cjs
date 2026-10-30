@@ -52,11 +52,20 @@ function curl(args, timeoutMs) {
 function httpStatus(url, timeoutMs) {
   const devnull = process.platform === 'win32' ? 'NUL' : '/dev/null';
   const r = curl(['-sL', '-o', devnull, '-w', '%{http_code}', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', '-H', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', url], timeoutMs);
-  return { ok: r.ok, status: parseInt((r.out || '').trim(), 10) || 0 };
+  const status = parseInt((r.out || '').trim(), 10) || 0;
+  return { ok: r.ok, status, error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
 }
 function httpBody(url, timeoutMs) {
   const r = curl(['-sL', '--max-time', String(Math.ceil((timeoutMs || 25000) / 1000)), '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', url], timeoutMs);
-  return { ok: r.ok, body: r.out || '' };
+  return { ok: r.ok, body: r.out || '', error: r.ok ? null : String(r.error || 'curl exited non-zero').split(/\r?\n/)[0] };
+}
+function describeHttpProbe(probe) {
+  if (!probe.ok) {
+    const status = Number(probe.status) > 0 ? ` after HTTP ${probe.status}` : '';
+    const error = String(probe.error || 'unknown transport error').split(/\r?\n/)[0];
+    return `curl exited non-zero${status}: ${error}`;
+  }
+  return Number(probe.status) === 200 ? '' : `HTTP ${Number(probe.status) || 0}`;
 }
 
 /**
@@ -177,7 +186,7 @@ async function verifyDomain(region, opts) {
   const ver = httpBody(`https://${domain}/version.json?pdv=${Date.now()}`);
   let vj = null;
   try { vj = JSON.parse(ver.body); } catch (_) {}
-  if (!ver.ok || !vj || !vj.v) { set('artifact_identity', 'FAILED', 'version.json absent/invalide'); }
+  if (!ver.ok || !vj || !vj.v) { set('artifact_identity', 'FAILED', !ver.ok ? `version.json curl failed: ${ver.error || 'curl exited non-zero'}` : 'version.json absent/invalide'); }
   else {
     R.served = { v: vj.v, b: vj.b || null };
     const idr = checkArtifactIdentity(vj, opts.expectV, opts.expectB);
@@ -188,7 +197,7 @@ async function verifyDomain(region, opts) {
   const sj = httpBody(`https://${domain}/api/copernicus/sargassum.json?pdv=${Date.now()}`);
   let sd = null;
   try { sd = JSON.parse(sj.body); } catch (_) {}
-  if (!sj.ok || !sd || !sd.updatedAt) { set('data_freshness', 'FAILED', 'sargassum.json absent/invalide'); }
+  if (!sj.ok || !sd || !sd.updatedAt) { set('data_freshness', 'FAILED', !sj.ok ? `sargassum.json curl failed: ${sj.error || 'curl exited non-zero'}` : 'sargassum.json absent/invalide'); }
   else {
     const ageH = (Date.now() - new Date(sd.updatedAt).getTime()) / 3.6e6;
     R.dataAgeHours = +ageH.toFixed(1);
@@ -255,10 +264,11 @@ async function verifyDomain(region, opts) {
       for (const ref of assets) {
         const assetUrl = new URL(ref, `https://${domain}/`).href;
         const assetStatus = httpStatus(assetUrl, 20000);
-        if (!assetStatus.ok || assetStatus.status !== 200) failedAssets.push(ref + ' HTTP ' + assetStatus.status);
+        const probeDetail = describeHttpProbe(assetStatus);
+        if (probeDetail) failedAssets.push(`${ref} ${probeDetail}`);
       }
       set('live_html_integrity', failedAssets.length ? 'FAILED' : 'VERIFIED',
-        failedAssets.length ? 'CSP/bundle paths matched but referenced asset unavailable: ' + failedAssets.join(', ') :
+        failedAssets.length ? 'CSP/bundle paths matched but referenced asset probe failed: ' + failedAssets.join(', ') :
           comparison.reason + '; bundle JS/CSS répondent HTTP 200' + (purgeDetail ? '; ' + purgeDetail : ''));
     }
   }
@@ -399,4 +409,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
