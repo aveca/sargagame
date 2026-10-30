@@ -416,7 +416,7 @@ ${secs}
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
 </div>
-<div class="ft">${_('Independent Copernicus / NOAA observations · check observation time and confidence', 'Observaciones Copernicus / NOAA · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Accuracy', 'Precisión')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
+<div class="ft">${_('Independent satellite observations · check observation time and confidence', 'Observaciones satelitales independientes · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Validation scope', 'Alcance de validación')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
 </div></body></html>`
 }
 
@@ -539,7 +539,7 @@ function emitLangPages(ctx) {
     // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
     if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
     if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
-    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y alcance de validación' : 'Methodology & validation scope'])
     // hotels : landing B2B intention d'achat (RÉCIF/live) — maillée depuis chaque hub.
     if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
