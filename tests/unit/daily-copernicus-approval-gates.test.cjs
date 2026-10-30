@@ -11,20 +11,20 @@ assert.match(workflow, /authorize_outbound:[\s\S]{0,220}default: false/, 'outbou
 assert.match(workflow, /authorize_data_cleanup:[\s\S]{0,240}default: false/, 'destructive cleanup approval must default to false')
 assert.match(workflow, /email-automation:[\s\S]{0,260}inputs\.authorize_outbound == true \|\| inputs\.authorize_data_cleanup == true/, 'manual email job must require an explicit approval input')
 
-for (const script of [
-  'push-winback.cjs',
-  'revenue-watch.cjs',
-  'ux-watch.cjs',
-  'deliverability-watch.cjs',
-  'factory-heartbeat-watch.cjs',
-  'ux-daily.cjs'
+for (const scriptPath of [
+  'scripts/automation/push-winback.cjs',
+  'scripts/automation/revenue-watch.cjs',
+  'scripts/automation/ux-watch.cjs',
+  'scripts/automation/deliverability-watch.cjs',
+  'scripts/automation/factory-heartbeat-watch.cjs',
+  'scripts/ux-daily.cjs'
 ]) {
-  const at = workflow.indexOf('node scripts/automation/' + script + ' --send')
-  assert.ok(at >= 0, script + ' send path must remain available only behind manual approval')
+  const at = workflow.indexOf('node ' + scriptPath + ' --send')
+  assert.ok(at >= 0, scriptPath + ' send path must remain available only behind manual approval')
   const before = workflow.slice(Math.max(0, at - 650), at)
-  assert.match(before, /GITHUB_EVENT_NAME.*workflow_dispatch[\s\S]*authorize_outbound/, script + ' --send must be guarded by workflow_dispatch + authorize_outbound')
+  assert.match(before, /GITHUB_EVENT_NAME.*workflow_dispatch[\\s\\S]*authorize_outbound/, scriptPath + ' --send must be guarded by workflow_dispatch + authorize_outbound')
   const after = workflow.slice(at, at + 350)
-  assert.match(after, /else[\s\S]*node scripts\/automation\//, script + ' must have a non-send scheduled path')
+  assert.match(after, /else[\\s\\S]*node scripts\\/(?:automation\\/)?/, scriptPath + ' must have a non-send scheduled path')
 }
 
 assert.match(workflow, /incident-apology\.cjs --dry-run/, 'incident apologies must be dry-run on schedule')
@@ -43,6 +43,11 @@ assert.match(workflow, /Clean bounced emails from Sheet \(approval-gated mutatio
 assert.match(workflow, /purge-analytics\.cjs --dry/, 'scheduled analytics purge must be dry-run')
 assert.match(workflow, /Purge analytics_events[\s\S]{0,240}authorize_data_cleanup/, 'real analytics purge must require data-cleanup approval')
 assert.doesNotMatch(workflow, /public\/api\/(?:b2b-paylinks|mollie-passlinks)\.json/, 'payment-link files must not be auto-committed by the email-state job')
+
+assert.ok(fs.existsSync(path.join(root, 'scripts/ux-daily.cjs')), 'the tracked UX daily script must exist at scripts/ux-daily.cjs')
+const uxStep = workflow.slice(workflow.indexOf('UX daily tracking'), workflow.indexOf('Publish daily metrics snapshot'))
+assert.match(uxStep, /hashFiles\\('scripts\\/ux-daily\\.cjs'\\)/, 'workflow must guard the actual tracked UX daily script path')
+assert.match(uxStep, /SMTP_PASS: \\$\\{\\{ github\\.event_name == 'workflow_dispatch' && inputs\\.authorize_outbound == true && secrets\\.SMTP_PASS \\|\\| '' \\}\\}/, 'scheduled UX tracking must not receive SMTP credentials')
 
 const notify = fs.readFileSync(path.join(root, 'scripts/automation/notify-failure.cjs'), 'utf8')
 assert.match(notify, /const DRY_RUN = process\.argv\.includes\('--dry-run'\)/)
