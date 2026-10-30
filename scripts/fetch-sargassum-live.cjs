@@ -29,7 +29,7 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { satelliteFreshness, SAT_STALE_HOURS } = require('./lib/satellite-freshness.cjs')
-const { extractFirstErddapTimestamp, get1DGridFreshness } = require('./lib/erddap-grid-freshness.cjs')
+const { extractFirstErddapTimestamp, getErddapGridAge, get1DGridFreshness } = require('./lib/erddap-grid-freshness.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
 
@@ -264,19 +264,17 @@ async function fetchErddapGrid(region) {
     return null
   }
 
-  // Extract ERDDAP data timestamp (first non-null time value)
-  let erddapTimestamp = null
-  if (timeIdx >= 0) {
-    for (const row of rows) {
-      if (row[timeIdx]) { erddapTimestamp = row[timeIdx]; break }
-    }
+  // A 7D grid without a valid source timestamp is not a usable observation.
+  // Never substitute a guessed 24h age: the release gate and confidence model
+  // must receive a candidate whose source time is actually verifiable.
+  const erddapTimestamp = extractFirstErddapTimestamp(rows, timeIdx)
+  const gridAge = getErddapGridAge(erddapTimestamp)
+  if (!gridAge.ok) {
+    console.warn(`  ERDDAP 7D timestamp ${gridAge.reason}; refusing grid`)
+    return null
   }
-  const dataAgeHours = erddapTimestamp
-    ? Math.max(0, (Date.now() - new Date(erddapTimestamp).getTime()) / (1000 * 60 * 60))
-    : 24 // assume 24h if unknown
-  if (erddapTimestamp) {
-    console.log(`  ERDDAP data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
-  }
+  const dataAgeHours = gridAge.dataAgeHours
+  console.log(`  ERDDAP data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
 
   // Parse into structured array
   const points = []
@@ -471,7 +469,7 @@ function extractBeachAfai(beach, grid) {
   if (!grid || !grid.points || grid.points.length === 0) {
     return { afai: NO_DATA_AFAI, method: 'no-grid', nearbyPts: 0, offshorePts: 0, confidence: 8 }
   }
-  const dataAgeHours = grid.dataAgeHours || 24
+  const dataAgeHours = Number.isFinite(grid.dataAgeHours) && grid.dataAgeHours >= 0 ? grid.dataAgeHours : 24
 
   // Bande "shore" 0-10km — NOUVELLES RÉGIONS UNIQUEMENT (mq/gp gardent leur
   // calibration backtestée 86% J+1 inchangée, byte-identique).
