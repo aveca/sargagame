@@ -67,6 +67,9 @@ for (const file of files) {
   const lines = fs.readFileSync(fullPath, 'utf8').split(/\r?\n/);
 
   lines.forEach((line, index) => {
+    if (/^\s*node-version:\s*['"]?20(?:\.x)?['"]?\s*(?:#.*)?$/.test(line)) {
+      fail(`${file}:${index + 1} setup-node must target Node.js 24, not EOL Node.js 20`);
+    }
     const match = line.match(/^\s*(?:-\s*)?uses:\s*([^\s#]+)(?:\s+#\s*(v[^\s]+))?\s*$/);
     if (!match) return;
 

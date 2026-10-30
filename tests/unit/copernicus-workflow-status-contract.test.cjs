@@ -17,7 +17,7 @@ for (const [name, text] of [['daily-copernicus.yml', daily], ['data-refresh.yml'
   assert.ok(text.includes('operationalSlaMinutes: 900'), name + ': operational SLA missing from evidence');
   assert.ok(text.includes('publicStaleThresholdMinutes: 2160'), name + ': public stale threshold missing from evidence');
   assert.ok(text.includes("payloadFieldComparison: 'NOT_PERFORMED_BY_WORKFLOW_STATUS_PATCH'"), name + ': must not claim a field-level comparison');
-  assert.ok(text.includes('name: Upload publication status evidence') && text.includes('actions/upload-artifact@v4'), name + ': status artifact missing');
+  assert.ok(text.includes('name: Upload publication status evidence') && /uses: actions\/upload-artifact@[a-f0-9]{40} # v7\.0\.2/.test(text), name + ': status artifact missing');
   assert.ok(text.includes('process.exit(1)'), name + ': blocked/failed status must fail the job');
   assert.ok(text.includes('id: dispatch') && text.includes("steps.verify.outcome == 'success'"), name + ': deploy dispatch must remain gated');
   assert.ok(text.includes('continue-on-error: true') && text.includes('gate_status=BLOCKED_STALE_SOURCE'), name + ': gate must remain observable while marker handling runs');
