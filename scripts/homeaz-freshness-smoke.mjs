@@ -102,7 +102,7 @@ async function shadowDisplay(page, selector) {
     const host = [...document.querySelectorAll('[role="dialog"]')]
       .find((node) => node.shadowRoot && node.shadowRoot.querySelector("#liveTxt"));
     const node = host && host.shadowRoot.querySelector(sel);
-    const target = selector === "#vScore" && node ? node.parentElement : node;
+    const target = sel === "#vScore" && node ? node.parentElement : node;
     return target ? getComputedStyle(target).display : null;
   }, selector);
 }
