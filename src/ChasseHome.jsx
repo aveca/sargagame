@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { chasseMapCtaSummary, isSatellitePayloadCurrent, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
+import { chasseMapCtaSummary, isSatelliteFresh12h, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -519,7 +519,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
-  const satelliteDecisionCurrent=isSatellitePayloadCurrent(sargData)&&["clean","moderate","avoid"].includes(beach?.status)
+  const satelliteDecisionCurrent=sargData?.source==="erddap-live"&&sargData?.stale===false&&isSatelliteFresh12h(sargData)&&["clean","moderate","avoid"].includes(beach?.status)
   const rel=satelliteDecisionCurrent?(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3):[]
   const planB=useMemo(()=>satelliteDecisionCurrent&&planbOn()?cleanNearby(beach,pool):[],[satelliteDecisionCurrent,beach,pool])
   /* A stale/unknown source cannot authorize a current forecast or recommendation. */
