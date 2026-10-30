@@ -49,13 +49,13 @@ const uxStep = workflow.slice(workflow.indexOf('UX daily tracking'), workflow.in
 assert.ok(uxStep.includes("hashFiles('scripts/ux-daily.cjs')"), 'workflow must guard the actual tracked UX daily script path')
 assert.ok(uxStep.includes("SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}"), 'scheduled UX tracking must not receive SMTP credentials')
 
-const outboundCredentialLines = workflow.split('\\n').filter(line => /(?:SMTP_PASS|ONESIGNAL_API_KEY_(?:MQ|GP)):\\s*\\$\\{\\{/.test(line))
+const outboundCredentialLines = workflow.split('\n').filter(line => line.includes('SMTP_PASS:') || line.includes('ONESIGNAL_API_KEY_MQ:') || line.includes('ONESIGNAL_API_KEY_GP:'))
 assert.ok(outboundCredentialLines.length >= 7, 'all outbound credentials must be explicitly scoped in the workflow')
 for (const line of outboundCredentialLines) {
   assert.ok(line.includes('workflow_dispatch') && line.includes('authorize_outbound') && line.includes("|| ''"), 'outbound credentials must be absent unless this manual run explicitly authorizes outbound delivery')
 }
-assert.doesNotMatch(workflow, /SMTP_PASS:\\s*\\$\\{\\{\\s*secrets\\.SMTP_PASS\\s*\\}\\}/, 'no workflow step may expose SMTP_PASS directly to scheduled dry-runs')
-assert.doesNotMatch(workflow, /ONESIGNAL_API_KEY_(?:MQ|GP):\\s*\\$\\{\\{\\s*secrets\\.ONESIGNAL_API_KEY_/, 'no workflow step may expose OneSignal API keys directly to scheduled dry-runs')
+assert.ok(!workflow.includes('SMTP_PASS: ${{ secrets.SMTP_PASS }}'), 'no workflow step may expose SMTP_PASS directly to scheduled dry-runs')
+assert.ok(!workflow.includes('ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}') && !workflow.includes('ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}'), 'no workflow step may expose OneSignal API keys directly to scheduled dry-runs')
 
 const notify = fs.readFileSync(path.join(root, 'scripts/automation/notify-failure.cjs'), 'utf8')
 assert.match(notify, /const DRY_RUN = process\.argv\.includes\('--dry-run'\)/)
