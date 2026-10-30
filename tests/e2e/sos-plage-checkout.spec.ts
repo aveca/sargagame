@@ -4,6 +4,13 @@ const BASE_URL = (process.env.PREVIEW_URL || "http://127.0.0.1:4173").replace(/\
 const PAYMENT_ID = "tr_SOSmock20261029"
 
 test.describe("SOS Plage — modal and payment funnel (Mollie mocked)", () => {
+  // The app embeds a public Supabase publishable key. Never let a mocked CI
+  // checkout write synthetic conversion/payment events into production analytics.
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/rest/v1/analytics_events**", async route => {
+      await route.fulfill({ status: 201, body: "" })
+    })
+  })
   test("modal renders semantic HTML in a centered, bounded panel", async ({ page }, testInfo) => {
     await page.goto(BASE_URL + "/?sos=1", { waitUntil: "domcontentloaded", timeout: 60000 })
 
