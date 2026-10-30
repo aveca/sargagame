@@ -11,6 +11,7 @@ import { chromium } from 'playwright';
 
 const PREVIEW = process.env.SMOKE_BASE || 'http://127.0.0.1:4173';
 const LIVE = 'https://sargasses-martinique.com/pro/pricing/';
+const LIVE_HOTELS = 'https://sargasses-martinique.com/pro/hotels/';
 const OUT = process.env.TRACK_RECORD_SCREENSHOT_DIR || '/tmp/track-record-pricing';
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -71,6 +72,61 @@ try {
     await fetchAndCheck(PREVIEW + '/pro/pricing/', freshChecks);
     await page.goto(PREVIEW + '/pro/pricing/', { waitUntil: 'domcontentloaded', timeout: 30000 });
     await page.screenshot({ path: path.join(OUT, 'after-fresh-' + viewport.name + '.png'), fullPage: true });
+
+    // B2B hotel landing: compare the public page with the PR preview at the same viewport.
+    const hotelPage = await context.newPage();
+    try {
+      await hotelPage.goto(LIVE_HOTELS, { waitUntil: 'domcontentloaded', timeout: 20000 });
+      await hotelPage.locator('#demo').scrollIntoViewIfNeeded().catch(() => {});
+      await hotelPage.screenshot({ path: path.join(OUT, 'hotel-before-' + viewport.name + '.png'), fullPage: false });
+      console.log('HOTEL_BEFORE_' + viewport.name + '=' + ((await hotelPage.locator('#d-fresh').textContent().catch(() => 'unavailable')) || '').trim());
+    } catch (error) {
+      console.warn('HOTEL_BEFORE_SCREENSHOT_UNAVAILABLE_' + viewport.name + '=' + String(error.message || error).slice(0, 180));
+    }
+
+    const staleSourceTime = new Date(Date.now() - 63 * 60 * 60 * 1000).toISOString();
+    const recentPublishTime = new Date(Date.now() - 10 * 60 * 60 * 1000).toISOString();
+    let hotelFixture = {
+      source: 'erddap-live',
+      updatedAt: recentPublishTime,
+      erddapTimestamp: staleSourceTime,
+      dataAgeMinutes: 600,
+      stale: false,
+      levels: [{ id: 'les-salines', status: 'clean', confidence: 60, score: 98, label: 'EXCEPTIONNEL' }]
+    };
+    await hotelPage.route('**/api/copernicus/sargassum.json', route => route.fulfill({
+      status: 200, contentType: 'application/json', body: JSON.stringify(hotelFixture)
+    }));
+    await hotelPage.route('**/api/copernicus/track-record.json', route => route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ overall: { statusHitRatePct: 72 }, sampleSize: 12, window: { from: '2026-10-01', to: '2026-10-29' }, byBeach: [] })
+    }));
+
+    await hotelPage.goto(PREVIEW + '/pro/hotels/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await hotelPage.waitForFunction(() => (document.querySelector('#d-fresh')?.textContent || '').includes('Observation satellite'));
+    assert.equal((await hotelPage.locator('#d-verdict').textContent() || '').trim(), 'À VÉRIFIER', 'stale source must not show a clean verdict');
+    assert.equal((await hotelPage.locator('#d-score').textContent() || '').trim(), '', 'stale source score must be hidden');
+    assert.match((await hotelPage.locator('#d-fresh').textContent()) || '', /Observation satellite ancienne/, 'source observation age must be explicit');
+    await hotelPage.locator('#demo').scrollIntoViewIfNeeded();
+    await hotelPage.screenshot({ path: path.join(OUT, 'hotel-after-stale-' + viewport.name + '.png'), fullPage: false });
+
+    hotelFixture = {
+      source: 'erddap-live',
+      updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      erddapTimestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      dataAgeMinutes: 120,
+      stale: false,
+      levels: [{ id: 'les-salines', status: 'clean', confidence: 60, score: 82, label: 'EXCEPTIONNEL' }]
+    };
+    await hotelPage.goto(PREVIEW + '/pro/hotels/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await hotelPage.waitForFunction(() => (document.querySelector('#d-fresh')?.textContent || '').includes('Observation satellite'));
+    assert.equal((await hotelPage.locator('#d-verdict').textContent() || '').trim(), 'PROPRE', 'fresh source should show its beach verdict');
+    assert.equal((await hotelPage.locator('#d-score').textContent() || '').trim(), 'score 82/100', 'fresh source score should remain visible');
+    assert.match((await hotelPage.locator('#d-fresh').textContent()) || '', /Observation satellite ·/, 'fresh source timestamp must be shown');
+    await hotelPage.locator('#demo').scrollIntoViewIfNeeded();
+    await hotelPage.screenshot({ path: path.join(OUT, 'hotel-after-fresh-' + viewport.name + '.png'), fullPage: false });
+    console.log('PASS_HOTEL_' + viewport.name + '=source timestamp freshness, stale masking and fresh verdict verified; before/after screenshots captured');
+    await hotelPage.close();
 
     console.log('PASS_' + viewport.name + '=stale/fresh verified via server-rendered HTML; screenshots captured');
     await context.close();
