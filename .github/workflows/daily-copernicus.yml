@@ -422,8 +422,13 @@ jobs:
         if: github.event_name != 'push'
         continue-on-error: true
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/health-check.cjs
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
+        run: |
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
+            node scripts/automation/health-check.cjs --send
+          else
+            node scripts/automation/health-check.cjs --dry-run
+          fi
 
       - name: Aggregate observed climatology (honest season trend)
         if: github.event_name != 'push'
