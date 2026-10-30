@@ -172,7 +172,7 @@ export function chasseMapCtaSummary(cleanCount, totalCount, satelliteAgeHours, l
 /**
  * HomeAZ freshness contract.
  * Only erddapTimestamp proves observation freshness; updatedAt is publication time.
- * LIVE is shown only under 12 h, 12–15 h is a dated reading, and >15 h is delayed.
+ * A recent-observation label is shown only under 12 h, 12–15 h is a dated reading, and >15 h is delayed.
  */
 export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
   const ageHours = satelliteAgeHours(sargData, now);
@@ -181,7 +181,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     fr: {
       unknownBadge: "VÉRIFICATION",
       unknown: "Vérification des données satellite en cours",
-      liveBadge: "EN DIRECT",
+      freshBadge: "OBSERVATION RÉCENTE",
       recentBadge: "MESURE SATELLITE",
       staleBadge: "SATELLITE EN RETARD",
       stale: "Données satellite en retard · vérifie avant de choisir",
@@ -192,7 +192,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     en: {
       unknownBadge: "VERIFICATION",
       unknown: "Satellite verification in progress",
-      liveBadge: "LIVE",
+      freshBadge: "RECENT OBSERVATION",
       recentBadge: "SATELLITE READING",
       staleBadge: "SATELLITE DELAYED",
       stale: "Satellite data delayed · check before choosing",
@@ -203,7 +203,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     es: {
       unknownBadge: "VERIFICACIÓN",
       unknown: "Verificación de datos satelitales en curso",
-      liveBadge: "EN DIRECTO",
+      freshBadge: "OBSERVACIÓN RECIENTE",
       recentBadge: "MEDICIÓN SATELITAL",
       staleBadge: "SATÉLITE ATRASADO",
       stale: "Datos satelitales atrasados · verifica antes de elegir",
@@ -221,7 +221,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     const label = ageHours < 1
       ? labels.minute(Math.max(1, Math.round(ageHours * 60)))
       : labels.hour(Math.max(1, Math.floor(ageHours)));
-    return { state: "live", live: true, badge: labels.liveBadge, label, ageHours };
+    return { state: "live", live: true, badge: labels.freshBadge, label, ageHours };
   }
   if (ageHours < 15) {
     const hours = Math.max(12, Math.floor(ageHours));

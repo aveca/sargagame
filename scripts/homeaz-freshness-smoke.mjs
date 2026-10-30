@@ -71,7 +71,7 @@ async function openHome(browser, viewport, ageMs) {
     const badge = host && host.shadowRoot.querySelector("#liveTxt");
     const text = badge ? badge.textContent.trim() : "";
     return state === "fresh"
-      ? /^(EN DIRECT|LIVE|EN DIRECTO)$/.test(text)
+      ? /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/.test(text)
       : /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/.test(text);
   }, expected, { timeout: 20000 });
 
@@ -97,6 +97,16 @@ async function shadowText(page, selector) {
   }, selector);
 }
 
+async function shadowDisplay(page, selector) {
+  return page.evaluate((sel) => {
+    const host = [...document.querySelectorAll('[role="dialog"]')]
+      .find((node) => node.shadowRoot && node.shadowRoot.querySelector("#liveTxt"));
+    const node = host && host.shadowRoot.querySelector(sel);
+    const target = sel === "#vScore" && node ? node.parentElement : node;
+    return target ? getComputedStyle(target).display : null;
+  }, selector);
+}
+
 async function waitForHomeAzUnmount(page) {
   await page.waitForFunction(() => {
     return ![...document.querySelectorAll('[role="dialog"]')]
@@ -112,7 +122,14 @@ try {
     try {
       const sourceLabel = await shadowText(fresh.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "fresh state must show the source observation date and UTC time");
-      assert.match(await shadowText(fresh.page, "#liveTxt"), /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+      assert.match(await shadowText(fresh.page, "#liveTxt"), /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
+      const freshEyebrow = await shadowText(fresh.page, "#eb0");
+      assert.doesNotMatch(freshEyebrow || "", /COPERNICUS/i,
+        "fresh generic ERDDAP payload must not be mislabeled as Copernicus");
+      assert.notEqual(await shadowText(fresh.page, "#vScore"), "—",
+        "fresh state may show the current score");
+      assert.notEqual(await shadowDisplay(fresh.page, "#vScore"), "none",
+        "fresh state may show the score label and denominator");
       for (const selector of ["#ctaHero", "#mapLink", "#ctaPremium"]) {
         assert.equal(await fresh.page.locator(selector).count(), 1, "expected HomeAZ control " + selector);
       }
@@ -129,12 +146,26 @@ try {
     try {
       const badge = await shadowText(stale.page, "#liveTxt");
       assert.match(badge, /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/);
-      assert.doesNotMatch(badge, /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+      assert.doesNotMatch(badge, /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
       const sourceLabel = await shadowText(stale.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "stale state must show the actual source observation time");
       const support = await shadowText(stale.page, "#ctaHeroS");
       assert.ok(support && /pas une confirmation en direct|not live|no una confirmación en vivo/i.test(support),
         "stale state must not promise a live verdict");
+      const staleVerdict = await shadowText(stale.page, "#vTxt");
+      assert.match(staleVerdict || "", /Dernier statut observé|Last observed status|Último estado observado/i,
+        "stale verdict must be explicitly historical");
+      assert.equal(await shadowText(stale.page, "#vScore"), "—",
+        "stale state must suppress the numeric hero score");
+      assert.equal(await shadowDisplay(stale.page, "#vScore"), "none",
+        "stale state must hide the entire score label and denominator");
+      const staleTop3Score = await shadowText(stale.page, "#top3 .pf");
+      if (staleTop3Score) assert.match(staleTop3Score, /score masqué|score hidden|puntaje oculto/i,
+        "stale state must suppress top-three numeric scores");
+      const staleEyebrow = await shadowText(stale.page, "#eb0");
+      assert.doesNotMatch(staleEyebrow || "", /COPERNICUS/i,
+        "generic ERDDAP payload must not be mislabeled as Copernicus");
+
       await stale.page.screenshot({
         path: path.join(OUT, "stale-" + viewport.name + ".png"),
         animations: "disabled",
@@ -193,7 +224,7 @@ try {
   // change the badge from LIVE to a dated reading on its own.
   const transition = await openHome(browser, mobile, 12 * HOUR - 8000);
   try {
-    assert.match(await shadowText(transition.page, "#liveTxt"), /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+    assert.match(await shadowText(transition.page, "#liveTxt"), /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
     const callsBefore = transition.apiCalls();
     await transition.page.waitForFunction(() => {
       const host = [...document.querySelectorAll('[role="dialog"]')]
