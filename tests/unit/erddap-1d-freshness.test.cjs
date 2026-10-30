@@ -3,8 +3,9 @@
 
 /**
  * Tests the actual production helpers used by fetch-sargassum-live.cjs.
- * Thresholds remain defined by satellite-freshness.cjs:
- * 900 min operational release SLA; 2160 min public stale threshold.
+ * The 1D helper uses the shared 36h public freshness cutoff from
+ * satellite-freshness.cjs. The separate 900 min operational release gate
+ * remains unchanged and is covered by the pre-deploy freshness tests.
  */
 
 const assert = require('node:assert/strict')
