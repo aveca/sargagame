@@ -90,7 +90,7 @@ curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
     <table>
       <tr><th>Champ</th><th>Type</th><th>Sens</th></tr>
       <tr><td><b>status</b></td><td>string</td><td><span class="dot" style="background:var(--green)"></span><code>clean</code> · <span class="dot" style="background:var(--orange)"></span><code>moderate</code> · <span class="dot" style="background:var(--red)"></span><code>avoid</code> — le verdict baignade.</td></tr>
-      <tr><td><b>afai</b></td><td>number</td><td>Indice AFAI (Algae Floating Area Index) mesuré au large, 0 → ~1. La matière première du statut.</td></tr>
+      <tr><td><b>afai</b></td><td>number</td><td>Indice AFAI (Alternate Floating Algae Index, indice alternatif d’algues flottantes) mesuré au large, 0 → ~1. La matière première du statut.</td></tr>
       <tr><td><b>confidence</b></td><td>0–100</td><td>Fiabilité de la lecture du jour (fraîcheur satellite + concordance des sources).</td></tr>
       <tr><td><b>h2s</b></td><td>object</td><td>Indice de risque H2S (gaz de décomposition) dérivé de la masse accumulée — <code>level</code> = low/moderate/high. <em>Pas</em> une mesure de gaz in situ.</td></tr>
       <tr><td><b>weekly[id].forecast[]</b></td><td>array</td><td>7 entrées (J0→J6) : <code>date</code>, <code>status</code>, <code>afai</code>, <code>confidence</code>, <code>regime</code>.</td></tr>
