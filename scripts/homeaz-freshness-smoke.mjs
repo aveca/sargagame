@@ -113,6 +113,11 @@ try {
       const sourceLabel = await shadowText(fresh.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "fresh state must show the source observation date and UTC time");
       assert.match(await shadowText(fresh.page, "#liveTxt"), /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
+      const freshEyebrow = await shadowText(fresh.page, "#eb0");
+      assert.doesNotMatch(freshEyebrow || "", /COPERNICUS/i,
+        "fresh generic ERDDAP payload must not be mislabeled as Copernicus");
+      assert.notEqual(await shadowText(fresh.page, "#vScore"), "—",
+        "fresh state may show the current score");
       for (const selector of ["#ctaHero", "#mapLink", "#ctaPremium"]) {
         assert.equal(await fresh.page.locator(selector).count(), 1, "expected HomeAZ control " + selector);
       }
@@ -146,13 +151,7 @@ try {
       const staleEyebrow = await shadowText(stale.page, "#eb0");
       assert.doesNotMatch(staleEyebrow || "", /COPERNICUS/i,
         "generic ERDDAP payload must not be mislabeled as Copernicus");
-      const freshEyebrow = await shadowText(fresh.page, "#eb0");
-      assert.doesNotMatch(freshEyebrow || "", /COPERNICUS/i,
-        "fresh generic ERDDAP payload must not be mislabeled as Copernicus");
-      assert.match(await shadowText(fresh.page, "#liveTxt") || "", /OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE/,
-        "fresh state must say recent observation rather than live");
-      assert.notEqual(await shadowText(fresh.page, "#vScore"), "—",
-        "fresh state may show the current score");
+
       await stale.page.screenshot({
         path: path.join(OUT, "stale-" + viewport.name + ".png"),
         animations: "disabled",
