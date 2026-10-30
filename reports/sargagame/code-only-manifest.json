@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-10-30T18:17:20.581Z",
+  "files": {
+    "public/api/copernicus/sargassum.json": "d290f5f69c9252db53ba2611e82df752b14546eb8492663fb25b26e955b56359",
+    "public/api/copernicus/history.json": "8a2639fa0a6aca7ad9b1151c2a70bf21e6bf77e7b3ff5395f982278c6c3458a3",
+    "public/api/copernicus/forecast-full.json": "MISSING",
+    "public/api/copernicus/forecast-archive.json": "dc66d56747c15471ec0b88faad9289f7c53029c4a08b62dc550d0b23363a49c5",
+    "public/api/copernicus/sargassum-grid.json": "7c1e1959230f45dd662432cdc41b05314b9f1eb1981e27ef54a97da512d019f7",
+    "public/api/copernicus/sargassum-banks.json": "516ea761b7ea453dbc4ed48e2a1e53d6abba98b1e67d5028878030efb19d7ee8",
+    "public/api/copernicus/caribbean-afai.json": "60e7e0fc41ecebf5d42cc865bdb1dea12ac0f242cde373606d7006e3a8826b63",
+    "public/api/copernicus/track-record.json": "80398b7628eb9b5dda100404a469836fef7ee9a19e111d95c7eb9fc91097674d",
+    "public/api/copernicus/forecast-accuracy.json": "a9cbc49e4da4579900ce478f8a9fdc06526e763605632adfb6d879e0151e69f2",
+    "public/api/copernicus/climatology.json": "ba39e225df0b1051db0aa645621d59c15480d904eae125491da4123061eada17",
+    "public/api/copernicus/mq/sargassum.json": "1b5b1e40119a82e55ab2666f0eb9e663c9bd252ae363e283ac65c54c7bed9740",
+    "public/api/copernicus/mq/history.json": "412e160be3202158b951cdaf7302413cae16933f0e8d8163952bf4b5e085ab73",
+    "public/api/copernicus/gp/sargassum.json": "3b06ed6923489ec5bff6331518a8e0faf24ba728da9d9a10a72be42425a70780",
+    "public/api/copernicus/gp/history.json": "493fcaeb3b89d79d659832ec337902a9eb7af1a2a9bdc68dd0953cc51b57177b"
+  },
+  "dirs": {
+    "public/api/copernicus/_private": {
+      ".htaccess": "feee35c918f64764d1879889df1b6f30de0fb58735bb3d9dd0d94d13f88ac675",
+      "forecast-full.json": "f44b0457a796548bda0c6ec0c28069b6818e58d1cf4e915216337801a6b28ab7"
+    }
+  }
+}
