@@ -1,3 +1,4 @@
+import { shouldSendRemoteAnalytics } from "./lib/remote-analytics.mjs"
 /**
  * supabasePhotos — backend PHOTOS VISITEURS sur Supabase (100 % gérable au mobile).
  *
@@ -25,6 +26,17 @@ export const SUPABASE_ANON_KEY = "sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz
 
 const BUCKET = "beach-photos"
 
+export function isRemoteAnalyticsEnabled() {
+  try {
+    if (import.meta.env.VITE_DISABLE_REMOTE_ANALYTICS === "true") return false
+    if (import.meta.env.VITE_ALLOW_LOCAL_ANALYTICS === "true") return true
+    if (typeof window === "undefined") return false
+    return shouldSendRemoteAnalytics(window.location.hostname)
+  } catch (_) {
+    return false
+  }
+}
+
 export function supabaseConfigured() {
   return !!(SUPABASE_URL && SUPABASE_ANON_KEY)
 }
@@ -45,7 +57,7 @@ function headers(extra) {
  * l'unload (comme un sendBeacon). Pas de PII (event + params non-nominatifs).
  */
 export function logAnalyticsEvent(event, params, island) {
-  if (!supabaseConfigured() || !event) return
+  if (!isRemoteAnalyticsEnabled() || !supabaseConfigured() || !event) return
   try {
     const payloadParams = params && typeof params === "object" && !Array.isArray(params) ? { ...params } : {}
     // Hostname is a public, non-PII dimension needed to separate regional domains

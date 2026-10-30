@@ -14,7 +14,7 @@ import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./l
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
-import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent } from "./supabasePhotos.js"
+import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, isRemoteAnalyticsEnabled } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
 import "./app-runtime.css"
@@ -1996,16 +1996,17 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
 export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
+  const remoteEnabled=isRemoteAnalyticsEnabled()
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
-  if(SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
-  try{window.gtag("event",event,p)}catch(e){}
+  if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
   // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
   //  et beaconner ici polluerait les stats MQ/GP)
-  if(!IS_NEW_REGION)try{
+  if(remoteEnabled&&!IS_NEW_REGION)try{
     const isGP=window.location.hostname.includes("guadeloupe")
     const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
     const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
@@ -2021,7 +2022,7 @@ export function track(event,params={}){
     ||event==="sg_referral_share"
     // SOS 1 € : même chemin critique que le checkout on-site (voir allowlist).
     ||event.startsWith("sg_sos_checkout")
-  if(critical){
+  if(remoteEnabled&&critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
       const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
@@ -2039,7 +2040,7 @@ export function track(event,params={}){
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
   try{
-    if(!window.gtag)return
+    if(!isRemoteAnalyticsEnabled()||!window.gtag)return
     const q=JSON.parse(localStorage.getItem(TRACK_QUEUE_KEY)||"[]")
     if(!q.length)return
     // Send top 50 oldest events, clear them
