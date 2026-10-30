@@ -142,7 +142,7 @@ try {
       await fresh.context.close();
     }
 
-    const stale = await openHome(browser, viewport, 16 * HOUR);
+    const stale = await openHome(browser, viewport, 70 * HOUR);
     try {
       const badge = await shadowText(stale.page, "#liveTxt");
       assert.match(badge, /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/);
@@ -171,6 +171,37 @@ try {
         animations: "disabled",
       });
       console.log("PASS stale screenshot " + viewport.name);
+
+      // The stale HomeAZ CTA still opens the beach detail, but the detail must
+      // describe the source observation age and must not claim verified-current data.
+      await stale.page.locator("#ctaHero").click({ timeout: 20000 });
+      await waitForHomeAzUnmount(stale.page);
+      const detail = stale.page.locator(".bsc-fiche").first();
+      await detail.waitFor({ state: "visible", timeout: 15000 });
+      const detailText = await detail.innerText();
+      assert.match(detailText, /Dernière observation satellite il y a 70 h/,
+        "beach detail must use the 70h ERDDAP observation, not the recent updatedAt");
+      assert.doesNotMatch(detailText, /donnée vérifiée|verified data|dato verificado/i,
+        "stale beach detail must not claim verified-current data");
+      await stale.page.screenshot({
+        path: path.join(OUT, "beach-sheet-stale-" + viewport.name + ".png"),
+        animations: "disabled",
+      });
+      const freshnessDot = await detail.evaluate((node) => {
+        const row = [...node.querySelectorAll("div")].find(
+          (el) => el.textContent.trim() === "Dernière observation satellite il y a 70 h"
+        );
+        const dot = row && row.querySelector("span");
+        return dot ? getComputedStyle(dot).backgroundColor : null;
+      });
+      assert.ok(freshnessDot, "beach detail freshness indicator must be visible");
+      assert.notEqual(freshnessDot, "rgb(34, 197, 94)",
+        "stale observation must not keep the green fresh indicator");
+      console.log("PASS stale beach-sheet freshness " + viewport.name);
+
+      await detail.locator('button[aria-label="Fermer"]').click({ timeout: 10000 });
+      await detail.waitFor({ state: "hidden", timeout: 10000 });
+      console.log("PASS beach-sheet close interaction " + viewport.name);
     } finally {
       await stale.context.close();
     }
