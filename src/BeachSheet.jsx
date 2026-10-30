@@ -389,7 +389,11 @@ export default function BeachSheet({
                 {_t(lang,"SOS PLAGE 24H","SOS BEACH 24H","SOS PLAYA 24H")}
               </div>
               <h3 style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(22px,5vw,28px)",lineHeight:1,color:"#fff",margin:"4px 0 8px",letterSpacing:"-.01em"}}>
-                {_t(lang,"Quelle plage choisir <span style='color:#FFC72C'>demain</span> ?","Which beach to pick <span style='color:#FFC72C'>tomorrow</span>?","¿Qué playa elegir <span style='color:#FFC72C'>mañana</span>?")}
+                {{lang==="en"
+                  ? <>Which beach to pick <span style={{color:"#FFC72C"}}>tomorrow</span>?</>
+                  : lang==="es"
+                    ? <>¿Qué playa elegir <span style={{color:"#FFC72C"}}>mañana</span>?</>
+                    : <>Quelle plage choisir <span style={{color:"#FFC72C"}}>demain</span> ?</>}}
               </h3>
               <p style={{fontSize:13,lineHeight:1.5,fontWeight:600,color:"rgba(234,247,244,.70)",margin:"0 0 16px"}}>
                 {_t(lang,"Prévision sargasses personnalisée · Satellite 4×/jour · Décision immédiate.","Personalized sargassum forecast · Satellite 4×/day · Instant decision.","Previsión sargazo personalizada · Satélite 4×/día · Decisión inmediata.")}

@@ -31,7 +31,7 @@ function svcHeaders(extra) {
 const FUNNEL_KEYS = [
   'session_start', 'forecast_lock_click', 'premium_modal_open', 'premium_modal_cta',
   'pass_cta', 'conversion', 'email_submit', 'checkout_started', 'checkout_redirect',
-  'payment_failed', 'sos_checkout_start', 'sos_checkout_error',
+  'payment_failed', 'sos_checkout_start', 'sos_checkout_redirect', 'sos_checkout_paid', 'sos_checkout_error',
   // Funnel B2B séquentiel (2026-07-02) — miroir de SG_FUNNEL_EVENTS.
   'b2b_offer_view', 'b2b_step', 'b2b_intent', 'b2b_trial_activated',
 ]
@@ -165,6 +165,9 @@ function computeFunnel(rows) {
     cta_to_checkout_started: pct(f.checkout_started, ctaTotal),
     checkout_started_to_conversion: pct(f.conversion, f.checkout_started),
     cta_to_redirect: pct(f.checkout_redirect, ctaTotal),
+    sos_checkout_start_to_redirect: pct(f.sos_checkout_redirect, f.sos_checkout_start),
+    sos_checkout_redirect_to_paid: pct(f.sos_checkout_paid, f.sos_checkout_redirect),
+    sos_checkout_start_to_paid: pct(f.sos_checkout_paid, f.sos_checkout_start),
     cta_to_conversion: pct(f.conversion, ctaTotal),
   }
   const distinctSessionsByRegion = Object.fromEntries(

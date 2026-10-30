@@ -1979,7 +1979,7 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // paiements réels avaient lieu — tout le funnel checkout était invisible, donc
   // aucune optimisation CRO prouvable. `sg_sos_checkout_*` commençant par "sg_sos"
   // et non "sg_checkout", il était aussi exclu de la file `critical`.
-  "sg_sos_checkout_start","sg_sos_checkout_error",
+  "sg_sos_checkout_start","sg_sos_checkout_redirect","sg_sos_checkout_paid","sg_sos_checkout_error",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.
@@ -2020,7 +2020,7 @@ export function track(event,params={}){
     ||event==="sg_push_accept"||event==="sg_push_primer_accept"||event==="sg_push_primer_dismiss"
     ||event==="sg_referral_share"
     // SOS 1 € : même chemin critique que le checkout on-site (voir allowlist).
-    ||event.startsWith("sg_sos_checkout")
+    ||event.startsWith("sg_sos_checkout")||event==="sg_sos_checkout_redirect"
   if(critical){
     const entry={e:event,p,t:Date.now(),island:IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"}
     try{
@@ -11761,8 +11761,14 @@ export default function App(){
             else{localStorage.setItem("sg_premium","1");if(ctx.email)localStorage.setItem("sg_premium_email",ctx.email)}
             localStorage.setItem("sg_premium_welcome","1")
             localStorage.setItem("sg_mollie_done_"+ctx.paymentId,"1")}catch(_){}
+          if(ctx.pass==="sos" && ctx.source==="sos_plage") {
+            track("sg_sos_checkout_paid",{session_id:ctx.paymentId,beach:ctx.beachId||"",beachName:ctx.beachName||""})
+          }
           track("sg_conversion",{session_id:ctx.paymentId,method:ctx.pass?"mollie_pass":"mollie_plan",plan:ctx.pass||ctx.plan})
         } else {
+          if(ctx.pass==="sos" && ctx.source==="sos_plage") {
+            track("sg_sos_checkout_error",{paymentId:ctx.paymentId,beach:ctx.beachId||"",reason:"not_paid"})
+          }
           try{sessionStorage.removeItem("sg_mollie_pending");const failUrl="/?payment_failed=1"+(ctx.email?"&email="+encodeURIComponent(ctx.email):"")+(ctx.plan?"&plan="+encodeURIComponent(ctx.plan):"");window.location.replace(failUrl);return}catch(_){}
         }
         clean()
@@ -14696,7 +14702,18 @@ export default function App(){
           </button>
         )}
         {showDiscovery&&<ErrBound><Suspense fallback={null}><DiscoveryStory lang={lang} onClose={()=>setShowDiscovery(false)} onShowMap={()=>setShowDiscovery(false)}/></Suspense></ErrBound>}
-        {showSOS&&<div style={{position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",background:"rgba(11,7,22,.62)",backdropFilter:"blur(2px)",WebkitBackdropFilter:"blur(2px)",WebkitOverflowScrolling:"touch"}}><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
+        {showSOS&&<div
+          role="presentation"
+          onClick={e=>{if(e.target===e.currentTarget)setShowSOS(false)}}
+          style={{
+            position:"fixed",inset:0,zIndex:1080,overflowY:"auto",overflowX:"hidden",
+            display:"flex",alignItems:"center",justifyContent:"center",
+            padding:"max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom))",
+            boxSizing:"border-box",background:"rgba(11,7,22,.72)",
+            backdropFilter:"blur(5px)",WebkitBackdropFilter:"blur(5px)",
+            WebkitOverflowScrolling:"touch"
+          }}
+        ><ErrBound><Suspense fallback={null}><LazySOSPlage lang={lang} sargData={sargData} region={IS_NEW_REGION?REGION.id:"mq"} beaches={(typeof REGION!=="undefined"&&REGION&&REGION.beaches)||[]} onClose={()=>setShowSOS(false)}/></Suspense></ErrBound></div>}
         
         {showStation && stationSlug && (
           <ErrBound><Suspense fallback={null}><StationStory slug={stationSlug} lang={lang}

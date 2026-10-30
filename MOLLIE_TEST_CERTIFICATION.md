@@ -1,4 +1,11 @@
-# MOLLIE TEST CERTIFICATION — SOS PLAGE 24H
+# MOLLIE TEST CERTIFICATION — SOS PLAGE 24H (TEST ONLY)
+
+> **MISE À JOUR DU 29 OCTOBRE 2026 — TEST ONLY, PAS DE CERTIFICATION LIVE**
+>
+> Ce document certifie uniquement des scénarios en mode test. Il ne prouve pas qu'un paiement réel fonctionne. La page de checkout publique a été observée avec le message Mollie « this is a testmode payment ». Le runtime Worker \`/api/mollie\` utilise le secret Cloudflare \`MOLLIE_API_KEY\`; sur les domaines de production il doit être configuré avec une clé commençant par \`live_\`. Le code fail-closed ajouté dans le Worker et le fallback PHP refuse désormais les appels si le mode n'est pas LIVE. Le secret doit être configuré dans Cloudflare, jamais committé.
+>
+> **Ne pas annoncer le go-live et ne pas vendre le Pass SOS 24H tant que le checkout hébergé ne présente plus le mode test et qu'un paiement LIVE réel avec webhook + grant Supabase n'a pas été vérifié.**
+
 
 **Date**: 2026-10-08  
 **Mode**: TEST (Mollie TEST API key)  
