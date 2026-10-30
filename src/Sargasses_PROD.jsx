@@ -2048,13 +2048,21 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
 // pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
+  // Keep attribution in function scope: the Supabase sink runs after the transport try.
+  let island="MQ"
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // Apps Script delivery is best-effort and independent from first-party funnel logging.
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
+    let beaconQueued=false
+    try{if(navigator.sendBeacon)beaconQueued=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}
+    if(!beaconQueued){
+      fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    }
+  }catch{}
+  // Always record the non-PII lead event in Supabase, whether sendBeacon queued or fetch fell back.
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
