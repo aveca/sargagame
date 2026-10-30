@@ -314,7 +314,7 @@
     if(!r.ok) throw new Error('sargassum HTTP '+r.status);
     return r.json();
   }).then(function(d){
-    setFreshStatus(relTime(d && d.updatedAt));
+    setFreshStatus(relTime(d && d.erddapTimestamp));
   }).catch(function(){
     setFreshStatus({label:'fraîcheur satellite indisponible',state:'is-unavailable'});
   });

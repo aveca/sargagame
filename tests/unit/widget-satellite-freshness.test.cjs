@@ -61,6 +61,11 @@ assert.equal(
 
 assert.match(html, /isSatelliteFresh\(d\.erddapTimestamp\)/, 'render uses satellite timestamp');
 assert.match(html, /relAge\(d\.erddapTimestamp\)/, 'displayed age uses satellite timestamp');
+const partnerLanding = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
+assert.match(partnerLanding, /setFreshStatus\(relTime\(d && d\.erddapTimestamp\)\)/,
+  'partner landing freshness pill must use the observation timestamp')
+assert.doesNotMatch(partnerLanding, /relTime\(d && d\.updatedAt\)/,
+  'publication time must not drive partner landing satellite freshness')
 assert.match(html, /\$\("pill"\)\.style\.display = "none"/, 'stale verdict pill is hidden');
 assert.match(html, /if \(fresh && showFc && wk\.length\)/, 'forecast is gated by satellite freshness');
 assert.match(html, /\$\("fc"\)\.style\.display = "none"/, 'stale forecast is hidden');
