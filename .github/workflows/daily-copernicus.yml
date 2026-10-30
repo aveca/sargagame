@@ -11,6 +11,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'AGENTS.md'
+      - '.github/workflows/daily-copernicus.yml'
+      - '.github/workflows/cloudflare-production.yml'
 
 # Gating par événement — un push de code doit être RAPIDE :
 #   • push            → build des 6 régions + health-check UNIQUEMENT.

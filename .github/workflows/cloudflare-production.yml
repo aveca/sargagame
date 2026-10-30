@@ -30,6 +30,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - 'AGENTS.md'
+      - '.github/workflows/daily-copernicus.yml'
+      - '.github/workflows/cloudflare-production.yml'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
