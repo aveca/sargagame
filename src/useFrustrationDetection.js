@@ -4,6 +4,7 @@
 // Track : events Supabase pour apprentissage funnel
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { isRemoteAnalyticsEnabled } from './supabasePhotos.js'
 
 // Configurable thresholds
 const CONFIG = {
@@ -262,6 +263,7 @@ function describeElement(el) {
 if (typeof window !== 'undefined') {
   window.trackFrustration = async (type, context) => {
     // Track to Supabase analytics_events table
+    if (!isRemoteAnalyticsEnabled()) return
     try {
       const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.__SG_ENV__ || {}
       if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return
