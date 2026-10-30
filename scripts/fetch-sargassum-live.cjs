@@ -29,6 +29,7 @@ const fs = require('fs')
 const path = require('path')
 const { satelliteConfidence, memoryConfidence } = require('./lib/confidence.cjs')
 const { satelliteFreshness, SAT_STALE_HOURS } = require('./lib/satellite-freshness.cjs')
+const { extractFirstErddapTimestamp, get1DGridFreshness } = require('./lib/erddap-grid-freshness.cjs')
 const { buildHonestForecast, statusFromAfai: statusFromAfaiForecast, DAYS: FDAYS } = require('./lib/forecast.cjs')
 const { gateWeekly, assertPrivateComplete } = require('./lib/forecast-gate.cjs')
 
@@ -329,15 +330,11 @@ async function fetchErddapGrid1D(region) {
   const points = rows.map(row => ({ latitude: row[latIdx], longitude: row[lngIdx], AFAI: row[afaiIdx] }))
 
   // Extract ERDDAP data timestamp from 1D response (same logic as 7D)
-  let erddapTimestamp = null
-  if (timeIdx >= 0) {
-    for (const row of rows) {
-      if (row[timeIdx]) { erddapTimestamp = row[timeIdx]; break }
-    }
-  }
-  const dataAgeHours = erddapTimestamp
-    ? Math.max(0, (Date.now() - new Date(erddapTimestamp).getTime()) / (1000 * 60 * 60))
-    : 12 // fallback only if timestamp unavailable
+  const erddapTimestamp = extractFirstErddapTimestamp(rows, timeIdx)
+  const timestampMs = erddapTimestamp ? new Date(erddapTimestamp).getTime() : NaN
+  const dataAgeHours = Number.isFinite(timestampMs)
+    ? Math.max(0, (Date.now() - timestampMs) / (1000 * 60 * 60))
+    : 12 // display-only fallback; freshness gate rejects missing/invalid timestamps
   if (erddapTimestamp) {
     console.log(`  ERDDAP 1D data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
   }
@@ -353,16 +350,13 @@ function compute1DCorrection(beach, grid7D, grid1D) {
   if (!grid1D || !grid1D.points || grid1D.points.length === 0) return 0
   if (!grid7D || !grid7D.points || grid7D.points.length === 0) return 0
   
-  // Check 1D data freshness before applying correction
-  // If 1D data is stale (per SAT_STALE_HOURS), skip correction entirely
-  if (grid1D.erddapTimestamp) {
-    const freshness1D = satelliteFreshness(grid1D.erddapTimestamp)
-    if (freshness1D.stale || freshness1D.dataAgeMinutes === null) {
-      console.log(`  [1D] Skipping correction for ${beach.id}: 1D data is stale (age: ${freshness1D.dataAgeMinutes ? Math.round(freshness1D.dataAgeMinutes / 60) + 'h' : 'unknown'})`)
-      return 0
-    }
-  } else {
-    console.log(`  [1D] Skipping correction for ${beach.id}: 1D data has no timestamp`)
+  // Fail closed unless the real 1D source timestamp passes the shared freshness contract.
+  const freshness1D = get1DGridFreshness(grid1D)
+  if (!freshness1D.fresh) {
+    const ageLabel = freshness1D.dataAgeMinutes === null
+      ? 'unknown'
+      : `${Math.round(freshness1D.dataAgeMinutes / 60)}h`
+    console.log(`  [1D] Skipping correction for ${beach.id}: ${freshness1D.reason} (age: ${ageLabel})`)
     return 0
   }
 
