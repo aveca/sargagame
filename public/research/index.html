@@ -4,14 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Research space — open data & audited reliability of sargassum forecasts</title>
-<meta name="description" content="The public, auditable track record of sargassum forecasts: published Copernicus/NOAA method, a frozen non-back-adjustable archive, and open data. Statistics appear only when a recent record is verified. Martinique & Guadeloupe."/>
+<meta name="description" content="The public, auditable track record of sargassum forecasts: published NOAA/AOML AFAI method, a frozen non-back-adjustable archive, and open data. Statistics appear only when a recent record is verified. Martinique & Guadeloupe."/>
 <link rel="canonical" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/recherche/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/investigacion/"/>
 <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/recherche/"/>
 <meta property="og:title" content="Research space — open data & audited reliability"/>
-<meta property="og:description" content="Published Copernicus/NOAA method, auditable archive and open sargassum forecast data. Statistics are hidden when the track record is stale."/>
+<meta property="og:description" content="Published NOAA/AOML AFAI method, auditable archive and open sargassum forecast data. Statistics are hidden when the track record is stale."/>
 <meta property="og:url" content="https://sargasses-martinique.com/research/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
@@ -23,7 +23,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargassum Watch","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Research space","item":"https://sargasses-martinique.com/research/"}]}
 </script>
 <script id="research-dataset-schema" type="application/ld+json">
-{"@context":"https://schema.org","@type":"Dataset","name":"Auditable sargassum forecast track record — French West Indies","alternateName":"Palmarès auditable des prévisions sargasses — Antilles françaises","description":"Daily comparison between the issued sargassum forecast (D+1 to D+6, frozen at issue, append-only archive) and the actual satellite observation at the target date, for beaches in Martinique and Guadeloupe. Includes status accuracy by horizon and by regime (calm season / arrivals), AFAI mean absolute error, and false-alarm rate. Recomputed on every archive update; no figure is back-adjustable.","url":"https://sargasses-martinique.com/research/","keywords":["sargassum","sargasses","AFAI","Copernicus","Sentinel-3","forecast","Martinique","Guadeloupe","Caribbean","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Lesser Antilles)"},"measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI via Copernicus Marine / ERDDAP; NOAA SIR thresholds (Wang & Hu 2016)","variableMeasured":["status hit rate (%)","AFAI MAE","false-alarm rate (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
+{"@context":"https://schema.org","@type":"Dataset","name":"Auditable sargassum forecast track record — French West Indies","alternateName":"Palmarès auditable des prévisions sargasses — Antilles françaises","description":"Daily comparison between the issued sargassum forecast (D+1 to D+6, frozen at issue, append-only archive) and the actual satellite observation at the target date, for beaches in Martinique and Guadeloupe. Includes status accuracy by horizon and by regime (calm season / arrivals), AFAI mean absolute error, and false-alarm rate. Recomputed on every archive update; no figure is back-adjustable.","url":"https://sargasses-martinique.com/research/","keywords":["sargassum","sargasses","AFAI","NOAA/AOML ERDDAP","USF Optical Oceanography Laboratory","forecast","Martinique","Guadeloupe","Caribbean","forecast verification"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinique & Guadeloupe (Lesser Antilles)"},"measurementTechnique":"Alternative Floating Algae Index (AFAI) observations distributed through NOAA/AOML ERDDAP, with source data from the USF Optical Oceanography Laboratory; NOAA SIR thresholds (Wang & Hu 2016)","variableMeasured":["status hit rate (%)","AFAI MAE","false-alarm rate (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -118,7 +118,7 @@
     <h1>Verifiable, not marketing.</h1>
     <p class="lede">Every morning, The Watcher looks at the sea by satellite; then we <b>freeze the forecast at issue</b> and check it against what the satellite actually saw at the target date. The result — wins and limits alike — is public, dated and recomputable. <b>Measured by satellite, not guessed. Nothing magic — and when we're wrong, we say so.</b> Not a claim: an auditable record.</p>
     <div class="herofoot">
-      <span class="chip">🛰️ Copernicus / Sentinel-3</span>
+      <span class="chip">🛰️ NOAA/AOML AFAI</span>
       <span class="chip">📐 NOAA SIR thresholds</span>
       <span class="chip">🔒 Non-back-adjustable archive</span>
     </div>
@@ -184,7 +184,7 @@
   <div class="grid">
     <div class="mcard">
       <div class="h">🛰️ Satellite source</div>
-      <p><b>AFAI</b> (Alternative Floating Algae Index) derived from <b>Sentinel-3 OLCI</b> via Copernicus Marine / ERDDAP, sampled <b>4×/day</b> per beach.</p>
+      <p><b>AFAI</b> (Alternative Floating Algae Index) observations are distributed through <b>NOAA/AOML ERDDAP</b>, with source data from the <b>USF Optical Oceanography Laboratory</b>. The source is intermittent rather than a four-times-daily feed; each beach result is tied to the latest available observation timestamp.</p>
     </div>
     <div class="mcard">
       <div class="h">📐 Thresholds</div>

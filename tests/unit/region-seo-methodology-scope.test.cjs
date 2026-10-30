@@ -6,10 +6,55 @@ const os = require('node:os')
 const path = require('node:path')
 
 const { resolvePublicAccuracy } = require('../../scripts/lib/regional-track-record.cjs')
+const {
+  getSatelliteObservationFreshness,
+  formatSatelliteObservationLabel,
+} = require('../../scripts/lib/region-seo-pages.cjs')
 const { getRegion } = require('../../regions/index.cjs')
 const { generateRegionSeoPages } = require('../../scripts/lib/region-seo-pages.cjs')
 
 const ROOT = path.resolve(__dirname, '../..')
+
+const freshnessNow = Date.parse('2026-10-30T12:27:00.000Z')
+const republishedOldObservation = {
+  erddapTimestamp: '2026-10-27T12:00:00.000Z',
+  updatedAt: '2026-10-30T12:26:00.000Z',
+  dataAgeMinutes: 1772,
+  stale: false,
+}
+const oldObservationState = getSatelliteObservationFreshness(republishedOldObservation, freshnessNow)
+assert.equal(oldObservationState.state, 'delayed',
+  'a recent republication and stale dataAgeMinutes must never make an old source observation current')
+assert.equal(oldObservationState.ageMinutes, 4347)
+assert.equal(formatSatelliteObservationLabel(republishedOldObservation, 'en', freshnessNow),
+  'Latest satellite observation: 2026-10-27 12:00 UTC · delayed')
+assert.equal(formatSatelliteObservationLabel(republishedOldObservation, 'es', freshnessNow),
+  'Última observación satelital: 2026-10-27 12:00 UTC · retrasada')
+assert.equal(formatSatelliteObservationLabel(republishedOldObservation, 'fr', freshnessNow),
+  'Dernière observation satellite: 2026-10-27 12:00 UTC · en retard')
+
+const withinSla = getSatelliteObservationFreshness({
+  erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
+  stale: false,
+}, freshnessNow)
+assert.equal(withinSla.state, 'fresh', '899 minutes remains inside the 900-minute operational SLA')
+const atSla = getSatelliteObservationFreshness({
+  erddapTimestamp: new Date(freshnessNow - 900 * 60000).toISOString(),
+  stale: false,
+}, freshnessNow)
+assert.equal(atSla.state, 'delayed', 'the exact 900-minute SLA boundary is delayed')
+assert.equal(getSatelliteObservationFreshness({
+  erddapTimestamp: new Date(freshnessNow - 1 * 60000).toISOString(),
+  stale: true,
+}, freshnessNow).state, 'delayed', 'an explicit stale flag must never be overridden')
+
+for (const raw of [undefined, null, '', 'not-a-date', new Date(freshnessNow + 60000).toISOString()]) {
+  assert.equal(getSatelliteObservationFreshness({ erddapTimestamp: raw }, freshnessNow).state, 'unknown',
+    'missing, invalid and future source timestamps fail closed')
+}
+assert.equal(formatSatelliteObservationLabel({}, 'en', freshnessNow),
+  'Satellite observation timestamp unavailable · status to verify')
+
 const currentRecord = JSON.parse(fs.readFileSync(
   path.join(ROOT, 'public/api/copernicus/track-record.json'),
   'utf8'
@@ -96,6 +141,16 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       assert.doesNotMatch(html, /status is correct 99%|estado a 1 día acierta el 99%/)
     }
 
+    const pressPages = generatedFiles.filter(file => /(?:press|prensa|media)[^/]*\/index\.html$/i.test(file))
+    assert.ok(pressPages.length > 0, regionId + ': press page must remain generated')
+    for (const file of pressPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, /Validation scope|Alcance de validación/i, regionId + ': press page must publish its validation scope')
+      assert.match(html, /does not cover this region|no cubre esta región/i, regionId + ': out-of-scope validation must be explicit')
+      assert.doesNotMatch(html, /—%|\{accuracyJ[13]Pct\}|across our Caribbean network|en toda nuestra red del Caribe/i,
+        regionId + ': press page must not render an unscoped or empty accuracy percentage')
+    }
+
   } finally {
     fs.rmSync(distDir, { recursive: true, force: true })
   }
@@ -106,6 +161,11 @@ assert.match(generatorSource, /track-record\.json/)
 assert.doesNotMatch(generatorSource, /backtest-results\.json/, 'raw backtest input has no public regional freshness contract')
 assert.match(generatorSource, /No separately validated accuracy percentage is published/)
 assert.doesNotMatch(generatorSource, /Measured accuracy across our Caribbean network|Precisión medida en nuestra red Caribe/)
+assert.match(generatorSource, /getSatelliteObservationFreshness\(data\)/)
+assert.match(generatorSource, /formatSatelliteObservationLabel\(data, lang\)/)
+assert.match(generatorSource, /updatedAt: observationFreshness\.state === 'fresh' \? data\.erddapTimestamp : null/)
+assert.doesNotMatch(generatorSource, /LIVE · satellite \$\{liveHHMM\}/,
+  'generated beach pages must not label publication time as a LIVE satellite observation')
 
 console.log('PASS: stale and unsupported regional track-record metrics are never published as current methodology accuracy')
 console.log('PASS: methodology pages remain generated for Florida, Punta Cana, Riviera Maya and Tulum')

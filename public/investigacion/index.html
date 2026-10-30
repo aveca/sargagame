@@ -4,14 +4,14 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Espacio de investigación — datos abiertos y fiabilidad auditada de los pronósticos de sargazo</title>
-<meta name="description" content="Historial público y auditable de pronósticos de sargazo: método Copernicus/NOAA, archivo congelado no reajustable y datos abiertos. Las estadísticas solo aparecen cuando se verifica un historial reciente. Martinica y Guadalupe."/>
+<meta name="description" content="Historial público y auditable de pronósticos de sargazo: observaciones AFAI NOAA/AOML ERDDAP y corrientes Copernicus Marine, archivo congelado no reajustable y datos abiertos. Las estadísticas solo aparecen cuando se verifica un historial reciente. Martinica y Guadalupe."/>
 <link rel="canonical" href="https://sargasses-martinique.com/investigacion/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/recherche/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/research/"/>
 <link rel="alternate" hreflang="es" href="https://sargasses-martinique.com/investigacion/"/>
 <link rel="alternate" hreflang="x-default" href="https://sargasses-martinique.com/recherche/"/>
 <meta property="og:title" content="Espacio de investigación — datos abiertos y fiabilidad auditada"/>
-<meta property="og:description" content="Método Copernicus/NOAA, archivo auditable y datos abiertos sobre los pronósticos de sargazo. Las estadísticas se ocultan si el historial está obsoleto."/>
+<meta property="og:description" content="observaciones AFAI NOAA/AOML ERDDAP y corrientes Copernicus Marine, archivo auditable y datos abiertos sobre los pronósticos de sargazo. Las estadísticas se ocultan si el historial está obsoleto."/>
 <meta property="og:url" content="https://sargasses-martinique.com/investigacion/"/>
 <meta property="og:type" content="website"/>
 <meta property="og:image" content="https://sargasses-martinique.com/social-share.png"/>
@@ -23,7 +23,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargazo","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Espacio de investigación","item":"https://sargasses-martinique.com/investigacion/"}]}
 </script>
 <script id="research-dataset-schema" type="application/ld+json">
-{"@context":"https://schema.org","@type":"Dataset","name":"Historial auditable de pronósticos de sargazo — Antillas Francesas","alternateName":"Auditable sargassum forecast track record — French West Indies","description":"Comparación diaria entre el pronóstico de sargazo emitido (D+1 a D+6, congelado al emitirse, archivo append-only) y la observación real por satélite en la fecha objetivo, para las playas de Martinica y Guadalupe. Incluye el acierto del estado por horizonte y por régimen (temporada tranquila / llegadas), el MAE del índice AFAI y la tasa de falsa alarma. Se recalcula en cada actualización del archivo; ninguna cifra es reajustable.","url":"https://sargasses-martinique.com/investigacion/","keywords":["sargazo","sargassum","AFAI","Copernicus","Sentinel-3","pronóstico","Martinica","Guadalupe","Caribe","verificación de pronósticos"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinica y Guadalupe (Antillas Menores)"},"measurementTechnique":"Alternative Floating Algae Index (AFAI), Sentinel-3 OLCI vía Copernicus Marine / ERDDAP; umbrales NOAA SIR (Wang & Hu 2016)","variableMeasured":["acierto del estado (%)","MAE AFAI","tasa de falsa alarma (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
+{"@context":"https://schema.org","@type":"Dataset","name":"Historial auditable de pronósticos de sargazo — Antillas Francesas","alternateName":"Auditable sargassum forecast track record — French West Indies","description":"Comparación diaria entre el pronóstico de sargazo emitido (D+1 a D+6, congelado al emitirse, archivo append-only) y la observación real por satélite en la fecha objetivo, para las playas de Martinica y Guadalupe. Incluye el acierto del estado por horizonte y por régimen (temporada tranquila / llegadas), el MAE del índice AFAI y la tasa de falsa alarma. Se recalcula en cada actualización del archivo; ninguna cifra es reajustable.","url":"https://sargasses-martinique.com/investigacion/","keywords":["sargazo","sargassum","AFAI","NOAA/AOML ERDDAP","USF Optical Oceanography Laboratory","pronóstico","Martinica","Guadalupe","Caribe","verificación de pronósticos"],"license":"https://creativecommons.org/licenses/by/4.0/","creator":{"@type":"Organization","name":"Sargassum Watch","url":"https://sargasses-martinique.com/"},"spatialCoverage":{"@type":"Place","name":"Martinica y Guadalupe (Antillas Menores)"},"measurementTechnique":"AFAI observations distributed via NOAA/AOML ERDDAP, with source data from the USF Optical Oceanography Laboratory; NOAA SIR thresholds (Wang and Hu 2016)","variableMeasured":["acierto del estado (%)","MAE AFAI","tasa de falsa alarma (%)"],"distribution":[{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/copernicus/track-record.json"},{"@type":"DataDownload","encodingFormat":"application/json","contentUrl":"https://sargasses-martinique.com/api/reliability.json"}],"isAccessibleForFree":true}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -118,7 +118,7 @@
     <h1>Verificable, no marketing.</h1>
     <p class="lede">Cada mañana, El Vigía mira el mar por satélite; luego <b>congelamos el pronóstico al emitirse</b> y lo contrastamos con lo que el satélite vio realmente en la fecha objetivo. El resultado — aciertos y límites por igual — es público, fechado y recalculable. <b>Medido por satélite, no adivinado. Nada de magia — y cuando nos equivocamos, lo escribimos.</b> No es marketing: un registro auditable.</p>
     <div class="herofoot">
-      <span class="chip">🛰️ Copernicus / Sentinel-3</span>
+      <span class="chip">🛰️ NOAA/AOML AFAI</span>
       <span class="chip">📐 Umbrales NOAA SIR</span>
       <span class="chip">🔒 Archivo no reajustable</span>
     </div>
@@ -184,7 +184,7 @@
   <div class="grid">
     <div class="mcard">
       <div class="h">🛰️ Fuente satelital</div>
-      <p>Índice <b>AFAI</b> (Alternative Floating Algae Index) derivado de <b>Sentinel-3 OLCI</b> vía Copernicus Marine / ERDDAP, muestreado <b>4×/día</b> por playa.</p>
+      <p>Las observaciones <b>AFAI</b> (Alternative Floating Algae Index) se distribuyen mediante <b>NOAA/AOML ERDDAP</b>, con datos fuente del <b>USF Optical Oceanography Laboratory</b>. La fuente es intermitente: cada resultado debe leerse junto con la hora de la última observación disponible, no como un flujo cuatro veces al día.</p>
     </div>
     <div class="mcard">
       <div class="h">📐 Umbrales</div>

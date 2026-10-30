@@ -40,6 +40,51 @@ const STATUS_WORD = {
   // Accord féminin avec "playa" (Limpia/Moderada) — aligné avec T.es.moderate de l'app.
   es: { clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar' },
 }
+const REGIONAL_OBSERVATION_SLA_MINUTES = 900;
+
+function getSatelliteObservationFreshness(data, now = Date.now()) {
+  const raw = data && data.erddapTimestamp;
+  const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''));
+  if (!Number.isFinite(now) || !Number.isFinite(timestamp) || timestamp <= 0 || timestamp > now) {
+    return { state: 'unknown', timestamp: null, ageMinutes: null };
+  }
+  const ageMinutes = (now - timestamp) / 60000;
+  if (data?.stale === true || ageMinutes >= REGIONAL_OBSERVATION_SLA_MINUTES) {
+    return { state: 'delayed', timestamp, ageMinutes };
+  }
+  return { state: 'fresh', timestamp, ageMinutes };
+}
+
+function formatSatelliteObservationLabel(data, lang = 'en', now = Date.now()) {
+  const freshness = getSatelliteObservationFreshness(data, now);
+  const locale = lang === 'es' ? 'es' : lang === 'fr' ? 'fr' : 'en';
+  const copy = {
+    en: {
+      latest: 'Latest satellite observation',
+      delayed: ' · delayed',
+      unknown: 'Satellite observation timestamp unavailable · status to verify',
+    },
+    es: {
+      latest: 'Última observación satelital',
+      delayed: ' · retrasada',
+      unknown: 'Hora de observación satelital no disponible · estado por verificar',
+    },
+    fr: {
+      latest: 'Dernière observation satellite',
+      delayed: ' · en retard',
+      unknown: 'Horodatage satellite indisponible · statut à vérifier',
+    },
+  }[locale];
+  if (freshness.state === 'unknown') return copy.unknown;
+  const date = new Date(freshness.timestamp);
+  const stamp = [
+    String(date.getUTCFullYear()).padStart(4, '0'),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+  ].join('-') + ' ' + String(date.getUTCHours()).padStart(2, '0') + ':' + String(date.getUTCMinutes()).padStart(2, '0');
+  return copy.latest + ': ' + stamp + ' UTC' + (freshness.state === 'delayed' ? copy.delayed : '');
+}
+
 const T = {
   en: {
     beachesDir: 'beaches', resortsDir: 'resorts',
@@ -50,7 +95,7 @@ const T = {
     network: 'Sargassum network', home: 'Map',
     methodTitle: r => `Our Methodology & Validation Scope — ${r} Sargassum Data`,
     methodH1: 'Methodology & validation scope',
-    methodDesc: r => `How the ${r} sargassum map works: available Copernicus/NOAA AFAI observations, per-beach sampling, and a 7-day forecast when data are available. Observation time and confidence may vary.`,
+    methodDesc: r => `How the ${r} sargassum map works: AFAI observations distributed through NOAA/AOML ERDDAP, with Copernicus Marine currents and Open-Meteo wind as transport inputs, per-beach sampling, and a 7-day forecast when data are available. Observation time and confidence may vary.`,
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysFull: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     // Fallback FAQPage par plage pour les régions sans content.beachFaq —
@@ -74,7 +119,7 @@ const T = {
     network: 'Red sargazo', home: 'Mapa',
     methodTitle: r => `Metodología y alcance de validación — Datos de sargazo ${r}`,
     methodH1: 'Metodología y alcance de validación',
-    methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: observaciones AFAI disponibles de Copernicus/NOAA, muestreo por playa y pronóstico de 7 días cuando hay datos. La hora de observación y la confianza pueden variar.`,
+    methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: observaciones AFAI distribuidas por NOAA/AOML ERDDAP, con corrientes de Copernicus Marine y viento de Open-Meteo como datos de transporte, muestreo por playa y pronóstico de 7 días cuando hay datos. La hora de observación y la confianza pueden variar.`,
     days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     daysFull: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
     beachFaq: {
@@ -356,8 +401,8 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
        `La conversación sobre tu playa ocurre en Google y TripAdvisor, participes o no. Cuando quieras, añade el último estado publicado de tu playa a tu propia página de reservas — el mismo veredicto honesto, bajo tu techo en lugar de la foto de un desconocido. Es opcional: tú eliges si lo muestras, nunca lo que dice. En un día de baja confianza dice "incierto" en vez de una promesa, así nunca te pillan afirmando "limpia" cuando el mar dice lo contrario. Verde es verde porque lo dice el satélite, no porque venda habitaciones.`)],
     [_('Measured, not guessed — and we publish when we’re wrong',
        'Medido, no adivinado — y publicamos cuándo fallamos'),
-     _(`Raw NOAA/Copernicus imagery is a basin-wide ocean-color picture with no verdict for your sand. We turn it into a per-beach, 7-day call with a confidence level — and we publish the dated record with its scope and limitations. The public dated validation record currently covers Martinique and Guadeloupe; it does not establish an accuracy rate for ${region.name}. Check the methodology and each forecast's data age and confidence before acting. We publish hits and misses, not guarantees. He watches the sea, never your guests — and never his own scoreboard.`,
-       `Las imágenes en bruto de NOAA/Copernicus son una foto de color del océano a escala de cuenca, sin veredicto para tu arena. Las convertimos en un pronóstico por playa a 7 días con nivel de confianza — y publicamos el historial fechado con su alcance y limitaciones. El registro público de validación cubre actualmente Martinica y Guadalupe; no establece una tasa de acierto para ${region.name}. Consulta la metodología y la antigüedad y confianza de cada pronóstico antes de actuar. Publicamos aciertos y fallos, no garantías. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
+     _(`Raw AFAI observations distributed through NOAA/AOML ERDDAP are basin-wide inputs, not a verdict for a specific beach. Copernicus Marine currents and Open-Meteo wind add transport context. We turn the available inputs into a per-beach, 7-day forecast with confidence — and publish the dated validation record with its scope and limitations. The public dated validation record currently covers Martinique and Guadeloupe; it does not establish an accuracy rate for ${region.name}. Check the methodology and each forecast's data age and confidence before acting. We publish hits and misses, not guarantees. He watches the sea, never your guests — and never his own scoreboard.`,
+       `Las observaciones AFAI distribuidas por NOAA/AOML ERDDAP son datos de escala oceánica, no un veredicto para una playa concreta. Las corrientes de Copernicus Marine y el viento de Open-Meteo aportan contexto de transporte. Combinamos los datos disponibles en un pronóstico por playa a 7 días con confianza — y publicamos el historial fechado con su alcance y limitaciones. El registro público de validación cubre actualmente Martinica y Guadalupe; no establece una tasa de acierto para ${region.name}. Consulta la metodología y la antigüedad y confianza de cada pronóstico antes de actuar. Publicamos aciertos y fallos, no garantías. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
   ].map(([h, b], i) => `<h2>${esc(h)}</h2><p>${esc(b)}</p>${i === 2 ? `<p><a class="lnk" href="${methodHref}">${_('See our published accuracy record', 'Ver nuestro historial de precisión publicado')} →</a></p>` : ''}`).join('')
   const accuracyFaq = _(
     `We do not yet publish a separately validated accuracy percentage for ${region.name}. The public dated record currently covers Martinique and Guadeloupe, so it should not be read as a measured result for this market. Each forecast shows its data age and confidence; see the methodology for the limits.`,
@@ -679,8 +724,9 @@ ${hubLinks('season')}${networkFooter(region, t, lang)}</article>`,
         ? 'No publicamos un porcentaje de precisión validado para ' + region.name + '. El registro público disponible cubre únicamente el alcance ' + scopeText + windowText + ' y no constituye un resultado medido para este mercado.' + staleText
         : 'No separately validated accuracy percentage is published for ' + region.name + '. The available public record covers only the ' + scopeText + ' scope' + windowText + ' and is not a measured result for this market.' + staleText)
     const body = lang === 'es'
-      ? `<p>Usamos las observaciones AFAI disponibles de Copernicus/NOAA, píxel por píxel frente a cada playa — no un promedio regional. Los pasos satelitales son intermitentes y la antigüedad y confianza pueden variar. Una corrección ponderada y una memoria de playa (vida media de varios días) ayudan a producir el estado publicado. El pronóstico de 7 días combina persistencia, viento y detección de bancos en el mar.</p><p>Nuestros datos nunca se editan a mano, nunca se filtran por hoteles y nunca se borran. Fuentes: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
-      : `<p>We use available Copernicus/NOAA AFAI observations, pixel by pixel offshore of each beach — not a regional average. Satellite passes are intermittent, and observation age and confidence can vary. A weighted correction and beach memory (multi-day half-life) help produce the published status. The 7-day forecast combines persistence, wind and offshore sargassum-bank detection.</p><p>Our data is never hand-edited, never filtered for resorts, never deleted. Sources: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
+      ? '<p>Usamos observaciones AFAI (Alternative Floating Algae Index) distribuidas por NOAA/AOML ERDDAP, con datos fuente del Laboratorio de Oceanografía Óptica de la Universidad del Sur de Florida (USF). La fuente es intermitente; cada resultado muestra la hora de la última observación disponible y su confianza. Para las balsas flotantes, el modelo usa una vida media de persistencia de 5 días; el material ya varado utiliza un término de persistencia provisional separado, que no representa un tiempo medido de limpieza. El pronóstico de 7 días combina persistencia, viento y detección de bancos en el mar.</p><p>Fuente AFAI: NOAA/AOML ERDDAP (datos fuente de USF). La hora de observación se muestra; los datos ausentes o antiguos no deben interpretarse como un estado actual.</p>'
+      : '<p>We use AFAI (Alternative Floating Algae Index) observations distributed through NOAA/AOML ERDDAP, with source data from the USF Optical Oceanography Laboratory. The source is intermittent; each result shows the latest available observation timestamp and confidence. For floating mats, the model uses a 5-day persistence half-life; material already stranded on a beach uses a separate provisional persistence term, not a measured clearance time. The 7-day forecast combines persistence, wind and offshore sargassum-bank detection.</p><p>AFAI source: NOAA/AOML ERDDAP (source data from USF). Observation time is displayed; missing or old data should not be interpreted as a current beach state.</p>'
+
     hubs.push({
       kind: 'methodology', sm: { daily: true, priority: '0.5' },
       slug: methodSlug, title: smartTrim(t.methodTitle(region.name), 65), desc: t.methodDesc(region.name),
@@ -711,22 +757,67 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
   if (content.press && content.press.slug) {
     const pr = content.press
     const cleanToday = (data.levels || []).filter(l => l.status === 'clean').length
-    const accJ1 = accuracy?.horizons?.['J+1']?.statusMatchPct
-    const accJ3 = accuracy?.horizons?.['J+3']?.statusMatchPct
     const tok = s => String(s ?? '')
       .replace(/\{beachCount\}/g, beaches.length)
       .replace(/\{cleanToday\}/g, cleanToday)
       .replace(/\{updatedDate\}/g, today)
-      .replace(/\{accuracyJ1Pct\}/g, accJ1 ?? '—')
-      .replace(/\{accuracyJ3Pct\}/g, accJ3 ?? '—')
       .replace(/\{contact\}/g, pr.contact || region.emails?.support || '')
       .replace(/\{citation\}/g, pr.citation || '')
+
+    // Source press copy contained network-wide accuracy tokens. Replace every
+    // accuracy/backtest section with the same fresh, region-scoped contract
+    // used by methodology pages; never render an em dash followed by "%".
+    const validationSection = accuracy?.available
+      ? {
+          h2: lang === 'es' ? 'Resultados de validación' : 'Validation results',
+          text: lang === 'es'
+            ? 'Dentro del alcance declarado ' + accuracy.scopeLabel + ' (' + accuracy.window.from + ' a ' + accuracy.window.to + '), el estado previsto coincidió con el observado en ' + accuracy.horizons['J+1'].statusMatchPct + '% a J+1 (' + accuracy.horizons['J+1'].pairs + ' pares) y ' + accuracy.horizons['J+3'].statusMatchPct + '% a J+3 (' + accuracy.horizons['J+3'].pairs + ' pares). El registro contiene ' + accuracy.sampleSize + ' pares archivados en total. Son métricas agregadas del alcance indicado, no precisión por playa.'
+            : 'Within the declared validation scope ' + accuracy.scopeLabel + ' (' + accuracy.window.from + ' to ' + accuracy.window.to + '), the issued beach-status forecast matched the later observed status in ' + accuracy.horizons['J+1'].statusMatchPct + '% at J+1 (' + accuracy.horizons['J+1'].pairs + ' pairs) and ' + accuracy.horizons['J+3'].statusMatchPct + '% at J+3 (' + accuracy.horizons['J+3'].pairs + ' pairs). The record contains ' + accuracy.sampleSize + ' archived pairs overall. These are aggregate scope metrics, not per-beach accuracy.',
+        }
+      : {
+          h2: lang === 'es' ? 'Alcance de validación' : 'Validation scope',
+          text: lang === 'es'
+            ? (accuracy?.reason === 'region-not-covered'
+                ? 'El registro público de validación no cubre esta región; no se publica un porcentaje de precisión regional.'
+                : accuracy?.reason === 'stale'
+                  ? 'El registro público de validación está obsoleto; no se publica un porcentaje de precisión actual.'
+                  : 'El registro público de validación está ausente o incompleto; no se publica un porcentaje de precisión regional.')
+            : (accuracy?.reason === 'region-not-covered'
+                ? 'The public validation record does not cover this region; no regional accuracy percentage is published.'
+                : accuracy?.reason === 'stale'
+                  ? 'The public validation record is stale; no current accuracy percentage is published.'
+                  : 'The public validation record is missing or incomplete; no regional accuracy percentage is published.'),
+        }
+
+    const pressSections = (pr.sections || [])
+      .filter(section => {
+        const heading = String(section.h2 || '')
+        const body = String(section.text || '')
+        return !/(?:accuracy|precision|precisión|backtest)/i.test(heading + ' ' + body)
+          && !/\{accuracyJ[13]Pct\}/i.test(body)
+      })
+      .map(section => ({ ...section, text: tok(section.text) }))
+    pressSections.push(validationSection)
+
+    const rawDesc = String(pr.desc || '')
+    const pressDesc = trimDesc(/(?:accuracy|precision|precisión|backtest|\{accuracyJ)/i.test(rawDesc)
+      ? (lang === 'es'
+          ? 'Recursos para prensa sobre el sargazo en ' + region.name + ': metodología, fuentes de datos y alcance de validación disponible.'
+          : 'Press resources about sargassum in ' + region.name + ': methodology, data sources and the available validation scope.')
+      : tok(rawDesc))
+    const rawIntro = String(pr.intro || '')
+    const pressIntro = /(?:accuracy|precision|precisión|backtest|\{accuracyJ)/i.test(rawIntro)
+      ? (lang === 'es'
+          ? 'Esta página resume las fuentes de datos, la metodología y el alcance de validación disponible para esta región.'
+          : 'This page summarizes the data sources, methodology and available validation scope for this region.')
+      : tok(rawIntro)
+
     hubs.push({
       kind: 'press', sm: { priority: '0.5' },
-      slug: pr.slug, title: smartTrim(pr.title, 70), desc: trimDesc(pr.desc),
-      noscript: `<article><h1>${esc(pr.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(tok(pr.intro))}</p>
-${(pr.sections || []).map(s => `<h2>${esc(s.h2)}</h2><p>${esc(tok(s.text))}</p>`).join('')}
-${hubLinks('press')}${networkFooter(region, t, lang)}</article>`,
+      slug: pr.slug, title: smartTrim(pr.title, 70), desc: pressDesc,
+      noscript: '<article><h1>' + esc(pr.h1) + '</h1><p><em>' + t.updated(today) + '</em></p><p>' + esc(pressIntro) + '</p>' +
+        pressSections.map(section => '<h2>' + esc(section.h2) + '</h2><p>' + esc(tok(section.text)) + '</p>').join('') +
+        hubLinks('press') + networkFooter(region, t, lang) + '</article>',
     })
   }
 
@@ -904,15 +995,21 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     if (_heroLib) {
       try {
         const lvH = { status: b.lv.status || 'clean', score: typeof b.lv.score === 'number' ? b.lv.score : undefined, afai: typeof b.lv.afai === 'number' ? b.lv.afai : (typeof b.afai === 'number' ? b.afai : 0.2) }
-        const heroSvg = _heroLib.buildHeroSvg(b, lvH, { updatedAt: data.updatedAt }, {})
+        const observationFreshness = getSatelliteObservationFreshness(data)
+        const observationLabel = formatSatelliteObservationLabel(data, lang)
+        const heroSvg = _heroLib.buildHeroSvg(
+          b,
+          lvH,
+          { updatedAt: observationFreshness.state === 'fresh' ? data.erddapTimestamp : null },
+          { label: 'OBSERVATION' },
+        )
         const fline = forecastLine(data.weekly, b.id, lang)
         const scoreTxt = typeof lvH.score === 'number' ? ` · <span class="sg-stat">${lvH.score}/100</span>` : ''
-        const liveHHMM = data.updatedAt ? (() => { try { const d = new Date(data.updatedAt); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') } catch (_) { return '' } })() : ''
-        const liveTxt = liveHHMM ? `<div class="sg-live">LIVE · satellite ${liveHHMM} UTC</div>` : ''
+        const observationTxt = `<div class="sg-live sg-observation sg-observation--${observationFreshness.state}">${esc(observationLabel)}</div>`
         const verdict = `<div class="sg-verdict"><h1>${esc(b.name)}</h1>`
           + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(b.lv.status))}${scoreTxt}</div>`
           + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
-          + liveTxt
+          + observationTxt
           + `</div>`
         noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${heroClipEl}${verdict}</div>${articleHtml}</div>`
       } catch (e) { noscript = articleHtml }
@@ -1049,4 +1146,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages, resolveNextArrival }
+module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, formatSatelliteObservationLabel }
