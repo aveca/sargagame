@@ -8,7 +8,7 @@ const ROOT = path.resolve(__dirname, '../..')
 const helper = fs.readFileSync(path.join(ROOT, 'public/b2b-data-freshness.js'), 'utf8')
 assert.match(helper, /data && data\.erddapTimestamp/, 'shared helper must use the source observation timestamp')
 assert.match(helper, /OBSERVATION_STALE_AFTER_MS = 36 \* 60 \* 60 \* 1000/, 'shared public stale threshold must remain 36 hours')
-assert.match(helper, /data\.stale === true \|\| ageMs > OBSERVATION_STALE_AFTER_MS/, 'explicit stale and computed age must both be respected')
+assert.match(helper, /data\.stale === true \|\| ageMs >= OBSERVATION_STALE_AFTER_MS/, 'explicit stale and computed age must both be respected')
 assert.match(helper, /Satellite observation is old/, 'English stale label must exist')
 assert.match(helper, /Observación satelital antigua/, 'Spanish stale label must exist')
 
