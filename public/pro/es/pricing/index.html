@@ -98,7 +98,7 @@
   <div class="matrix" style="display:grid;grid-template-columns:1fr;gap:12px;margin:0 0 30px">
     <a href="#plan-pro" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">🥟</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Pierdo reservas cuando la playa cambia.»</b><span style="font-size:13px;color:var(--sg-mid)">→ Quieres la alerta «la mañana en que cambia», playa por playa, antes que tus huéspedes. <b style="color:var(--sg-ink)">Ver Pro Alertas ↓</b></span></span></a>
     <a href="#plan-territoire" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">🔐</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Tengo que gestionar un presupuesto y cuadrillas de limpieza.»</b><span style="font-size:13px;color:var(--sg-mid)">→ Quieres anticipar D+1→D+7 en todo un litoral, con datos que lo respalden. <b style="color:var(--sg-ink)">Ver Litoral ↓</b></span></span></a>
-    <a href="#plan-widget" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">💍</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Solo quiero tranquilizar a mis huéspedes en mi sitio.»</b><span style="font-size:13px;color:var(--sg-mid)">→ El widget gratuito muestra el estado real de tus playas, actualizado 4×/día. <b style="color:var(--sg-ink)">Ver el Widget ↓</b></span></span></a>
+    <a href="#plan-widget" style="text-decoration:none;display:flex;gap:14px;align-items:flex-start;background:var(--sg-card);border:1px solid var(--sg-border-m);border-radius:var(--sg-r-xl);padding:16px 18px;box-shadow:var(--sg-shadow-sm)"><span aria-hidden="true" style="font-size:22px">💍</span><span><b style="display:block;color:var(--sg-ink);font-size:15px">«Solo quiero tranquilizar a mis huéspedes en mi sitio.»</b><span style="font-size:13px;color:var(--sg-mid)">→ El widget gratuito muestra el estado real de tus playas, muestra la fecha de la última observación disponible. <b style="color:var(--sg-ink)">Ver el Widget ↓</b></span></span></a>
   </div>
   <div class="plans">
 
@@ -109,7 +109,7 @@
       <p class="pnote">Se integra en 2 minutos</p>
       <ul>
         <li>Recuadro «estado del sargazo en directo» en tu sitio</li>
-        <li>Medido por satélite, 4×/día — no adivinado</li>
+        <li>Medido por satélite, última observación disponible — no adivinado</li>
         <li>Tranquiliza al huésped antes de reservar: ve el estado real, no una promesa</li>
         <li>Tu logo, tus colores</li>
       </ul>
@@ -175,17 +175,65 @@
   <div style="margin-top:10px">Mira el mar, nunca a tus clientes · Pronóstico satelital de sargazo</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
-    try{
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
-      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
-      document.getElementById('tr-clean').textContent=pct+'%';
-      document.getElementById('tr-line').textContent='de nuestros veredictos se confirmaron frente a la observación satelital, en todos los regímenes (sobre '+Number(n).toLocaleString('es')+' comparaciones).';
-    }catch(e){}
-  }).catch(function(){});
+  // A public rate is shown only for a fresh record that explicitly covers MQ.
+  var proof = document.querySelector('.proofline');
+
+  function markUnavailable(message){
+    document.getElementById('tr-clean').textContent = '—';
+    document.getElementById('tr-line').textContent = message;
+    if (proof) proof.classList.add('is-stale');
+  }
+
+  function showMetric(pct, count, label){
+    document.getElementById('tr-clean').textContent = Number(pct).toLocaleString('es-ES') + '%';
+    document.getElementById('tr-line').textContent = label + ' (sobre ' + Number(count).toLocaleString('es-ES') + ' comparaciones).';
+    if (proof) proof.classList.remove('is-stale');
+  }
+
+  function validMetric(value, count){
+    // Reliability is a percentage: reject malformed values instead of publishing impossible proof.
+    return typeof value === 'number' && Number.isFinite(value)
+      && value >= 0 && value <= 100
+      && typeof count === 'number' && Number.isFinite(count) && count > 0;
+  }
+
+  fetch('/api/copernicus/track-record.json').then(function(r){
+    if (!r.ok) throw new Error('track-record HTTP ' + r.status);
+    return r.json();
+  }).then(function(d){
+    var state = window.SargagameB2BFreshness.getTrackRecordState(d, 'mq');
+    if (!state.available) {
+      var message = state.reason === 'region-not-covered'
+        ? 'El historial publicado no cubre la región de esta página; no se muestra una tasa regional.'
+        : 'El historial está desactualizado o incompleto; la tasa permanece oculta hasta que haya un registro actualizado.';
+      if (state.scopeLabel) message += ' Ámbito publicado: ' + state.scopeLabel + '.';
+      if (state.windowLabel) message += ' Último período: ' + state.windowLabel + '.';
+      markUnavailable(message);
+      return;
+    }
+
+    var overallPct = d && d.overall && d.overall.statusHitRatePct;
+    var overallCount = d && d.sampleSize;
+    if (validMetric(overallPct, overallCount)) {
+      showMetric(overallPct, overallCount, 'Tasa global de acierto del ámbito ' + state.scopeLabel + ' (' + state.windowLabel + ')');
+      return;
+    }
+
+    var calm = d && d.byRegime && d.byRegime.calm;
+    var cleanPct = calm && calm.cleanReliabilityPct;
+    var cleanCount = calm && calm.cleanSamples;
+    if (validMetric(cleanPct, cleanCount)) {
+      showMetric(cleanPct, cleanCount, 'Predicciones de mar limpio en temporada tranquila — ámbito ' + state.scopeLabel + ' (' + state.windowLabel + ')');
+      return;
+    }
+
+    markUnavailable('El historial está disponible, pero no contiene una métrica utilizable para este ámbito.');
+  }).catch(function(){
+    markUnavailable('Historial temporalmente no disponible.');
+  });
 })();
 </script>
 </body>
