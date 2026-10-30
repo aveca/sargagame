@@ -30,6 +30,7 @@ assert.equal(freshness.getTrackRecordState(freshRecord, 'mq', now).available, tr
 assert.equal(freshness.getTrackRecordState(freshRecord, 'MQ', now).scopeLabel, 'MQ + GP')
 assert.equal(freshness.getTrackRecordState(freshRecord, 'tulum', now).reason, 'region-not-covered')
 assert.equal(freshness.getTrackRecordState({ ...freshRecord, freshness: { stale: true } }, 'mq', now).reason, 'stale-record')
+assert.equal(freshness.getTrackRecordState({ ...freshRecord, freshness: undefined }, 'mq', now).reason, 'stale-record')
 assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: new Date(now - 37 * 60 * 60 * 1000).toISOString() }, 'mq', now).reason, 'expired-record')
 assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: new Date(now + 60000).toISOString() }, 'mq', now).reason, 'invalid-generated-at')
 assert.equal(freshness.getTrackRecordState({ ...freshRecord, generatedAt: undefined }, 'mq', now).reason, 'invalid-generated-at')
@@ -50,9 +51,12 @@ for (const [relative, locale] of pages) {
   assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy)|76\s*%\s*(?:to|à)\s*79\s*%|4×\s*\/\s*(?:jour|day)/i, relative + ' must not publish unsupported accuracy or sampling claims')
 }
 const pricing = fs.readFileSync(path.join(root, 'public/pro/pricing/index.html'), 'utf8')
-assert.doesNotMatch(pricing, /4×\s*\/\s*jour|4×\s*\/\s*day/i, 'pricing page must not promise four AFAI observations per day')
+assert.ok(pricing.includes('/b2b-data-freshness.js'), 'pricing page must load the shared freshness contract')
+assert.ok(pricing.includes("getTrackRecordState(d, 'mq')"), 'pricing page must scope the public record to MQ')
+assert.doesNotMatch(pricing, /Fiabilité publiée et auditée|4×\s*\/\s*jour|4×\s*\/\s*day/i, 'pricing page must not publish stale proof or promise four AFAI observations per day')
 assert.ok(pricing.includes('79 €/mois') && pricing.includes('690 €/an'), 'existing canonical Pro prices must remain unchanged')
-const api = fs.readFileSync(path.join(root, 'public/api/index.html'), 'utf8')
+
+
 assert.ok(api.includes('Alternate Floating Algae Index'), 'API docs must use the verified AFAI expansion')
 assert.doesNotMatch(api, /Algae Floating Area Index/, 'API docs must not use the incorrect AFAI expansion')
 
