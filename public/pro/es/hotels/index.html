@@ -62,6 +62,7 @@
     background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
     padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  .freshpill.is-stale .pulse{background:#F59E0B;box-shadow:none;animation:none}.freshpill.is-unknown .pulse{background:#9CA3AF;box-shadow:none;animation:none}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
   .perso{display:none;margin-top:18px;background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);border-radius:var(--sg-r-lg);padding:12px 16px;font-size:14px;font-weight:700;color:#fff}
@@ -200,9 +201,9 @@
     <p class="lede">El Vigía observa el mar mientras sus huéspedes duermen — mira el agua, nunca a ellos. Pronóstico satelital playa por playa, una alerta la mañana en que cambia, y una cifra de fiabilidad que publicamos y auditamos cada día. Medido por satélite, no adivinado. Programe la limpieza, tranquilice a sus huéspedes, proteja sus reservas.</p>
     <div class="ctas">
       <a class="btn btn-gold" href="#request">Activar el resumen gratuito</a>
-      <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Ver el pronóstico en vivo</a>
+      <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Ver las observaciones disponibles</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">datos satelitales en vivo</span></div>
+    <div class="freshpill is-unknown" id="freshpill"><span class="pulse"></span><span id="fresh" aria-live="polite">Comprobando la antigüedad de la observación…</span></div>
     <div class="perso" id="perso"></div>
   </div>
 </header>
@@ -359,7 +360,8 @@
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
-  var STATUS_WORD={clean:'LIMPIA',moderate:'MODERADA',avoid:'A EVITAR'};
+  var STATUS_WORD={clean:'LIMPIA',moderate:'MODERADA',avoid:'A EVITAR',unknown:'POR VERIFICAR'};
+  var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A',unknown:'#9CA3AF'};
   var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A'};
 
   // --- Personalización del prospecto: ?beach=<id sarg> & ?hotel=<nombre> ---
@@ -370,13 +372,22 @@
   var QH=(Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
 
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'verificación en curso…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'EN VIVO · hace '+m+' min';}
-    return 'EN VIVO · hace '+Math.max(1,Math.round(h))+' h';
+  // Use the ERDDAP observation timestamp; updatedAt can change on republication.
+  var PUBLIC_STALE_AFTER_MS = 36 * 60 * 60 * 1000;
+  function getObservationFreshness(data){
+    var observedAt=Date.parse(data && data.erddapTimestamp || '');
+    if(!Number.isFinite(observedAt) || observedAt>Date.now()) return {status:'unknown',label:'Antigüedad satelital desconocida'};
+    var ageMs=Date.now()-observedAt, ageHours=ageMs/3600000;
+    var ageLabel=ageHours<1?'hace menos de una hora':'hace '+Math.max(1,Math.round(ageHours))+' h;
+    var status=(data.stale===true || ageMs>PUBLIC_STALE_AFTER_MS)?'stale':'fresh';
+    return {status:status,label:(status==='stale'?'Observación satelital antigua':'Observación satelital')+' · '+ageLabel};
   }
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
+  }
+
 
   // --- Prueba en vivo: track-record.json ---
   // HONESTIDAD: la cifra principal es la tasa de acierto GLOBAL (todos los regímenes) — la misma
@@ -423,37 +434,32 @@
     document.getElementById('tr-headline').textContent='Historial completo y fechado en nuestra página de fiabilidad.';
   });
 
-  // --- Demo en vivo: sargassum.json (playa real, ahora mismo) ---
+  // --- Per-beach observation: hide verdicts and scores when source data is stale ---
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{
-      var lv=(d.levels||[]);
+      var freshness=getObservationFreshness(d), lv=(d.levels||[]);
       var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
-      if(!pick) return;
-      var col=STATUS_COLOR[pick.status]||'#22C55E';
+      var vd=document.getElementById('d-verdict'), score=document.getElementById('d-score');
+      var freshEnough=freshness.status==='fresh';
+      setFreshnessPill(freshness.status,freshness.label);
+      document.getElementById('d-fresh').textContent=freshness.label;
+      if(!pick){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;score.textContent='';return;}
+      var col=freshEnough?(STATUS_COLOR[pick.status]||STATUS_COLOR.unknown):STATUS_COLOR.unknown;
       document.getElementById('d-name').textContent=prettyBeach(pick.id);
-      var vd=document.getElementById('d-verdict');
-      vd.textContent=STATUS_WORD[pick.status]||'LIMPIA';vd.style.color=col;
-      document.getElementById('d-score').textContent=pick.score!=null?('puntuación '+pick.score+'/100'):'';
-      document.getElementById('d-fresh').textContent=relTime(d.updatedAt);
-      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){
-        var el=document.getElementById(id);if(!el)return;
-        if(id==='d-halo'||id==='d-tip'){el.setAttribute('fill',col);}
-        else{el.setAttribute('stroke',col);}
-      });
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'datos satelitales en vivo';
-      // Banner de personalización: muestra que la demo está enfocada en la playa/hotel solicitado
-      if(QB||QH){
-        var pe=document.getElementById('perso');
-        if(pe){
-          pe.textContent='';
-          pe.appendChild(document.createTextNode(QH?('Demo para '+QH+' · '):'Demo personalizada · '));
-          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' en vivo';
-          pe.appendChild(bb);
-          pe.style.display='block';
-        }
-      }
-    }catch(e){}
-  }).catch(function(){});
+      vd.textContent=freshEnough?(STATUS_WORD[pick.status]||STATUS_WORD.unknown):STATUS_WORD.unknown;
+      vd.style.color=col;
+      score.textContent=freshEnough&&pick.score!=null?('puntuación '+pick.score+'/100'):'';
+      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(id==='d-halo'||id==='d-tip')el.setAttribute('fill',col);else el.setAttribute('stroke',col);});
+      // Vista personalizada: indica la playa y si su estado requiere verificación.
+      if(QB||QH){var pe=document.getElementById('perso');if(pe){pe.textContent='';pe.appendChild(document.createTextNode(QH?('Demo para '+QH+' · '):('Vista personalizada · ')));var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+(freshEnough?(' · observación disponible'):(' · estado por verificar'));pe.appendChild(bb);pe.style.display='block';}}
+    }catch(e){
+      document.getElementById('d-verdict').textContent=STATUS_WORD.unknown;document.getElementById('d-score').textContent='';
+      document.getElementById('d-fresh').textContent='Observación satelital no disponible';setFreshnessPill('unknown','Observación satelital no disponible');
+    }
+  }).catch(function(){
+    document.getElementById('d-verdict').textContent=STATUS_WORD.unknown;document.getElementById('d-score').textContent='';
+    document.getElementById('d-fresh').textContent='Observación satelital no disponible';setFreshnessPill('unknown','Observación satelital no disponible');
+  });
 
   // --- Captura de lead B2B → Apps Script (fuente dedicada) ---
   var form=document.getElementById('b2b-form');
