@@ -66,7 +66,7 @@ try {
     // AFTER FRESH: PR preview - verify server-rendered fresh state
     const freshChecks = {
       'has proofline': (html) => html.includes('class="proofline"'),
-      'has fresh indicator': (html) => html.includes('tous r\u00e9gimes confondus') || html.includes('98%'),
+      'has fresh-state target': (html) => html.includes('id="tr-clean"') && html.includes('id="tr-line"'),
       'has B2B trial CTA': (html) => html.includes('/pro/espace/'),
     };
     await fetchAndCheck(PREVIEW + '/pro/pricing/', freshChecks);
