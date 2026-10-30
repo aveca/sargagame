@@ -135,6 +135,17 @@ try {
       const support = await shadowText(stale.page, "#ctaHeroS");
       assert.ok(support && /pas une confirmation en direct|not live|no una confirmación en vivo/i.test(support),
         "stale state must not promise a live verdict");
+      const staleVerdict = await shadowText(stale.page, "#vTxt");
+      assert.match(staleVerdict || "", /Dernier statut observé|Last observed status|Último estado observado/i,
+        "stale verdict must be explicitly historical");
+      assert.equal(await shadowText(stale.page, "#vScore"), "—",
+        "stale state must suppress the numeric hero score");
+      const staleTop3Score = await shadowText(stale.page, "#top3 .pf");
+      if (staleTop3Score) assert.match(staleTop3Score, /score masqué|score hidden|puntaje oculto/i,
+        "stale state must suppress top-three numeric scores");
+      const staleEyebrow = await shadowText(stale.page, "#eb0");
+      assert.doesNotMatch(staleEyebrow || "", /COPERNICUS/i,
+        "generic ERDDAP payload must not be mislabeled as Copernicus");
       await stale.page.screenshot({
         path: path.join(OUT, "stale-" + viewport.name + ".png"),
         animations: "disabled",
