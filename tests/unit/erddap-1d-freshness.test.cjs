@@ -3,9 +3,9 @@
 
 /**
  * Tests the actual production helpers used by fetch-sargassum-live.cjs.
- * The 1D helper uses the shared 36h public freshness cutoff from
- * satellite-freshness.cjs. The separate 900 min operational release gate
- * remains unchanged and is covered by the pre-deploy freshness tests.
+ * The 1D correction uses the shared 36h public freshness cutoff. The 7D grid
+ * requires a valid observation timestamp and preserves its real age. The
+ * separate 900 min operational release gate remains unchanged.
  */
 
 const assert = require('node:assert/strict')
@@ -89,4 +89,4 @@ assert.equal(SAT_STALE_HOURS, 36)
 assert.equal(satelliteFreshness(now - 15 * 60 * 1000, now).stale, false)
 assert.equal(satelliteFreshness(now - 36 * HOUR, now).stale, true)
 
-console.log('ALL PRODUCTION ERDDAP 1D FRESHNESS TESTS PASSED')
+console.log('ALL PRODUCTION ERDDAP 1D/7D FRESHNESS TESTS PASSED')
