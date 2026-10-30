@@ -2003,18 +2003,8 @@ export function track(event,params={}){
   if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
-  // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
-  //  et beaconner ici polluerait les stats MQ/GP)
-  if(remoteEnabled&&!IS_NEW_REGION)try{
-    const isGP=window.location.hostname.includes("guadeloupe")
-    const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
-    const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
-    const cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/)?.[1]||"a."+Date.now()
-    navigator.sendBeacon&&navigator.sendBeacon(
-      `https://www.google-analytics.com/mp/collect?measurement_id=${mid}&api_secret=${sec}`,
-      JSON.stringify({client_id:cid,events:[{name:event,params:p}]}))
-  }catch{}
+  // Measurement Protocol credentials are private and must never ship to browsers.
+  // Keep the configured Google tag and first-party Supabase funnel as client analytics paths.
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
