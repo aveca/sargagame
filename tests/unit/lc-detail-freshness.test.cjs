@@ -23,7 +23,7 @@ let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
 async function main() {
-  const { lcDetailFreshnessLabel, isSatelliteFresh12h, isSatellitePayloadCurrent, isCurrentSatelliteDecision } = await import('../../src/lib/format-freshness.mjs')
+  const { lcDetailFreshnessLabel, isSatelliteFresh12h, isSatellitePayloadCurrent } = await import('../../src/lib/format-freshness.mjs')
 
   // 1. Observation récente (3h) : source live explicite et payload non stale.
   const fresh = { source: 'erddap-live', stale: false, erddapTimestamp: '2026-10-13T01:00:00.000Z' }
@@ -71,15 +71,13 @@ async function main() {
 
   // 9. A current decision requires live provenance, stale=false, a valid beach status and <12h.
   t(isSatellitePayloadCurrent(fresh, now), 'live source + stale=false + recent ERDDAP timestamp is current')
-  t(isCurrentSatelliteDecision(fresh, 'clean', now), 'fresh payload plus recognized status authorizes a current decision')
-  t(!isCurrentSatelliteDecision(stale, 'clean', now), 'old observation cannot authorize a current decision')
-  t(!isCurrentSatelliteDecision({ ...fresh, stale: true }, 'clean', now), 'explicit stale=true blocks a current decision')
-  t(!isCurrentSatelliteDecision({ ...fresh, source: 'cached-fallback' }, 'clean', now), 'non-live source blocks a current decision')
-  t(!isCurrentSatelliteDecision({ ...fresh, source: undefined }, 'clean', now), 'missing source provenance blocks a current decision')
-  t(!isCurrentSatelliteDecision(fresh, 'unknown', now), 'unknown beach status cannot authorize a current decision')
+  t(!isSatellitePayloadCurrent(stale, now), 'old observation cannot authorize a current decision')
+  t(!isSatellitePayloadCurrent({ ...fresh, stale: true }, now), 'explicit stale=true blocks a current decision')
+  t(!isSatellitePayloadCurrent({ ...fresh, source: 'cached-fallback' }, now), 'non-live source blocks a current decision')
+  t(!isSatellitePayloadCurrent({ ...fresh, source: undefined }, now), 'missing source provenance blocks a current decision')
 
   const chasse = fs.readFileSync(path.join(ROOT, 'src', 'ChasseHome.jsx'), 'utf8')
-  t(/isCurrentSatelliteDecision\(sargData,beach\?\.status\)/.test(chasse), 'ChasseDetail uses the complete source/status freshness contract')
+  t(/isSatellitePayloadCurrent\(sargData\)&&\["clean","moderate","avoid"\]\.includes\(beach\?\.status\)/.test(chasse), 'ChasseDetail uses the complete source/status freshness contract')
   t(/const sc=satelliteDecisionCurrent&&beach\.score!=null/.test(chasse), 'stale score is never passed to the current score display')
   t(/data-testid="lc-detail-stale"/.test(chasse), 'stale detail announces historical-only state')
   t(/data-testid="lc-detail-score-paused"/.test(chasse), 'stale detail explicitly suppresses current score')
