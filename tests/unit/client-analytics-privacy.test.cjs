@@ -57,7 +57,7 @@ const path = require("node:path");
   ];
   for (const relativePath of staticClientPaths) {
     const source = fs.readFileSync(path.join(root, relativePath), "utf8");
-    assert.ok(!/api_secret|google-analytics\\.com\\/mp\\/collect/i.test(source),
+    assert.ok(!source.includes("api_secret") && !source.includes("google-analytics.com/mp/collect"),
       relativePath + " must not ship a GA4 Measurement Protocol secret or endpoint");
   }
   const veille = fs.readFileSync(path.join(root, "public/veille/index.html"), "utf8");
@@ -80,7 +80,7 @@ const path = require("node:path");
         if (entry.isDirectory()) stack.push(target);
         else if (/\.(?:m?js|cjs|html|map)$/i.test(entry.name)) {
           const content = fs.readFileSync(target, "utf8");
-          assert.doesNotMatch(content, /api_secret|google-analytics\.com\/mp\/collect/i,
+          assert.ok(!content.includes("api_secret") && !content.includes("google-analytics.com/mp/collect"),
             "built client output contains no Measurement Protocol secret marker: " + path.relative(root, target));
         }
       }
