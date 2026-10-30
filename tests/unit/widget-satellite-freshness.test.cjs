@@ -11,7 +11,6 @@ const html = fs.readFileSync(
   path.resolve(__dirname, '../../public/widget/embed/index.html'),
   'utf8'
 );
-const ROOT = path.resolve(__dirname, '../..');
 
 function extractFunction(name) {
   const re = new RegExp('function ' + name + '\\([^)]*\\)\\s*\\{[\\s\\S]*?\\n  \\}');
