@@ -319,7 +319,8 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
 // essai 30 j). Cible « sargassum monitoring/widget/alerts for hotels <region> » :
 // requêtes que TOUTES nos ~125 pages/région ignoraient (100 % intention voyageur).
 // Contenu anti-thin = tableau de couverture RÉ-LOCALISÉ (vraies plages + hôtels
-// qu'on surveille déjà) + chiffre de fiabilité hedgé → distinct des pages B2C.
+// qu'on surveille déjà) + périmètre de validation explicite ; aucun taux global
+// n'est attribué à une région sans backtest régional publié.
 // Lead = usage PRIVÉ (brief + alertes, zéro dev, zéro expo publique) puis badge
 // public OPT-IN — l'argent ne touche jamais le verdict (le badge n'affiche que le
 // MÊME verdict neutre ; « tu choisis de le montrer, jamais ce qu'il dit »). CTA →
@@ -354,9 +355,13 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
        `La conversación sobre tu playa ocurre en Google y TripAdvisor, participes o no. Cuando quieras, añade el último estado publicado de tu playa a tu propia página de reservas — el mismo veredicto honesto, bajo tu techo en lugar de la foto de un desconocido. Es opcional: tú eliges si lo muestras, nunca lo que dice. En un día de baja confianza dice "incierto" en vez de una promesa, así nunca te pillan afirmando "limpia" cuando el mar dice lo contrario. Verde es verde porque lo dice el satélite, no porque venda habitaciones.`)],
     [_('Measured, not guessed — and we publish when we’re wrong',
        'Medido, no adivinado — y publicamos cuándo fallamos'),
-     _(`Raw NOAA/Copernicus imagery is a basin-wide ocean-color picture with no verdict for your sand. We turn it into a per-beach, 7-day call with a confidence level — and we publish our full dated track record, hits and misses. Across all regimes over 24 hours the verdict runs about 76% accurate; we’re strongest calling clean water in calm season and least confident on the rare fast-moving alerts, and we say so on low-confidence days. He watches the sea, never your guests — and never his own scoreboard.`,
-       `Las imágenes en bruto de NOAA/Copernicus son una foto de color del océano a escala de cuenca, sin veredicto para tu arena. Las convertimos en un pronóstico por playa a 7 días con nivel de confianza — y publicamos nuestro historial fechado completo, aciertos y fallos. En todos los regímenes a 24 horas el veredicto ronda el 76% de acierto; somos más fuertes anunciando agua limpia en temporada tranquila y menos seguros en las raras alertas rápidas, y lo decimos en los días de baja confianza. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
+     _(`Raw NOAA/Copernicus imagery is a basin-wide ocean-color picture with no verdict for your sand. We turn it into a per-beach, 7-day call with a confidence level — and we publish the dated record with its scope and limitations. The public dated validation record currently covers Martinique and Guadeloupe; it does not establish an accuracy rate for ${region.name}. Check the methodology and each forecast's data age and confidence before acting. We publish hits and misses, not guarantees. He watches the sea, never your guests — and never his own scoreboard.`,
+       `Las imágenes en bruto de NOAA/Copernicus son una foto de color del océano a escala de cuenca, sin veredicto para tu arena. Las convertimos en un pronóstico por playa a 7 días con nivel de confianza — y publicamos el historial fechado con su alcance y limitaciones. El registro público de validación cubre actualmente Martinica y Guadalupe; no establece una tasa de acierto para ${region.name}. Consulta la metodología y la antigüedad y confianza de cada pronóstico antes de actuar. Publicamos aciertos y fallos, no garantías. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
   ].map(([h, b], i) => `<h2>${esc(h)}</h2><p>${esc(b)}</p>${i === 2 ? `<p><a class="lnk" href="${methodHref}">${_('See our published accuracy record', 'Ver nuestro historial de precisión publicado')} →</a></p>` : ''}`).join('')
+  const accuracyFaq = _(
+    `We do not yet publish a separately validated accuracy percentage for ${region.name}. The public dated record currently covers Martinique and Guadeloupe, so it should not be read as a measured result for this market. Each forecast shows its data age and confidence; see the methodology for the limits.`,
+    `Aún no publicamos un porcentaje de precisión validado por separado para ${region.name}. El historial público fechado cubre actualmente Martinica y Guadalupe, por lo que no debe interpretarse como un resultado medido para este mercado. Cada pronóstico muestra la antigüedad de los datos y su confianza; consulta la metodología para conocer los límites.`
+  )
   const faq = [
     [_('How much is it, and is there really no sales call?', '¿Cuánto cuesta y de verdad no hay llamada de ventas?'),
      _('$89/month or $790/year — about two months free on the annual plan. No setup fee, no per-booking cut, no upsell call. You start on a 30-day free trial with no credit card, so you can see it work before you decide.',
@@ -364,14 +369,12 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
     [_('Do I have to put "seaweed" on my website?', '¿Tengo que poner "sargazo" en mi web?'),
      _('No. By default nothing is public — you get the morning brief and staff alerts privately. The public clean-beach badge is opt-in and entirely yours to switch on or off. Most properties run it staff-only and only show the badge on good days.',
        'No. Por defecto nada es público — recibes el boletín matinal y las alertas en privado. La insignia pública de playa limpia es opcional y tú la enciendes o apagas. La mayoría lo usa solo para el equipo y muestra la insignia solo en los días buenos.')],
-    [_('How is this different from free NOAA data — and what if it’s wrong in front of a guest?', '¿En qué se diferencia de los datos gratis de NOAA — y si falla delante de un huésped?'),
-     _('NOAA/Copernicus give you a basin-wide image, not a verdict for your beach. We turn it into a per-beach 7-day call with a confidence level, and publish every dated hit and miss (~76% across all regimes). On low-confidence days it reads "uncertain," never a false "clean" — so you’re protected, not exposed.',
-       'NOAA/Copernicus te dan una imagen a escala de cuenca, no un veredicto para tu playa. La convertimos en un pronóstico por playa a 7 días con nivel de confianza, y publicamos cada acierto y fallo fechado (~76% en todos los regímenes). En días de baja confianza dice "incierto", nunca un falso "limpia" — así estás protegido, no expuesto.')],
+    [_('How is this different from free NOAA data — and what if it’s wrong in front of a guest?', '¿En qué se diferencia de los datos gratis de NOAA — y si falla delante de un huésped?'), accuracyFaq],
   ].map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: [
     [_('How much is it, and is there really no sales call?', '¿Cuánto cuesta y de verdad no hay llamada de ventas?'), _('$89/month or $790/year, about two months free on the annual plan. No setup fee, no per-booking cut, no upsell call. Start on a 30-day free trial with no credit card.', '89 US$/mes o 790 US$/año, unos dos meses gratis al año. Sin cuota de alta ni comisión por reserva. Prueba de 30 días sin tarjeta.')],
     [_('Do I have to put seaweed on my website?', '¿Tengo que poner sargazo en mi web?'), _('No. By default the morning brief and staff alerts stay private. The public clean-beach badge is opt-in and yours to switch on or off.', 'No. Por defecto el boletín y las alertas son privados. La insignia pública es opcional, tú la enciendes o apagas.')],
-    [_('How accurate is it?', '¿Qué precisión tiene?'), _('About 76% across all regimes over 24 hours, with the full dated record published; low-confidence days read "uncertain," never a false clean.', 'Cerca del 76% en todos los regímenes a 24 horas, con el historial fechado publicado; los días de baja confianza dicen "incierto".')],
+    [_('How accurate is it?', '¿Qué precisión tiene?'), accuracyFaq],
   ].map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }
   const slug = es ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
   const canonical = `https://${domain}${prefix}/${slug}/`
