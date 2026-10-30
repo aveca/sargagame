@@ -61,11 +61,14 @@ async function runJourney(browser, region, viewport) {
   page.on('pageerror', e => { defects.push({ domain, step: 'any', type: 'fatal-js', detail: String(e.message || e).slice(0, 200) }) })
   page.on('response', r => {
     if (r.status() >= 400) {
-      defects.push({ domain, step: 'any', type: r.status() >= 500 ? 'server-error' : 'http-404', detail: r.status() + ' ' + r.url().slice(0, 220) })
+      const type = r.status() >= 500 ? 'server-error' : r.status() === 404 ? 'http-404' : 'http-client-error'
+      defects.push({ domain, step: 'any', type, detail: r.status() + ' ' + r.url().slice(0, 220) })
     }
   })
   page.on('requestfailed', req => {
-    defects.push({ domain, step: 'any', type: 'request-failed', detail: (req.failure()?.errorText || 'request failed') + ' ' + req.url().slice(0, 220) })
+    const reason = req.failure()?.errorText || 'request failed'
+    if (/ERR_ABORTED|NS_BINDING_ABORTED|ERR_CANCELED/i.test(reason)) return
+    defects.push({ domain, step: 'any', type: 'request-failed', detail: reason + ' ' + req.url().slice(0, 220) })
   })
 
   try {
