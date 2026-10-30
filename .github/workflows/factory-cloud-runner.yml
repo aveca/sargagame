@@ -39,7 +39,7 @@ jobs:
       CF_D1_DATABASE_ID: 3e7179cd-8058-4881-9eea-c58527dfb3a3
     steps:
       - name: Checkout Sargagame
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: main
           persist-credentials: true
@@ -52,7 +52,7 @@ jobs:
 
       - name: Cache local coding model
         if: steps.claim.outputs.has_job == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ runner.temp }}/ollama-models
           key: ollama-qwen2.5-coder-7b-v1
