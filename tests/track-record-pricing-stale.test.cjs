@@ -6,7 +6,11 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
-const freshness = require("../public/b2b-data-freshness.js");
+const helperSource = fs.readFileSync(path.join(__dirname, "../public/b2b-data-freshness.js"), "utf8");
+const helperWindow = {};
+vm.runInNewContext(helperSource, { window: helperWindow });
+const freshness = helperWindow.SargagameB2BFreshness;
+assert.ok(freshness && typeof freshness.getTrackRecordState === "function", "browser helper must expose its public contract");
 
 const html = fs.readFileSync(path.join(__dirname, "../public/pro/pricing/index.html"), "utf8");
 const match = html.match(/<script>\s*\(function\(\)\{\s*\/\/ A public rate is shown only for a fresh record that explicitly covers MQ\.[\s\S]*?<\/script>/);
