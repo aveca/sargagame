@@ -24,7 +24,7 @@ async function main() {
   assert.match(supabase, /!isRemoteAnalyticsEnabled\(\).*supabaseConfigured/)
   assert.match(app, /const remoteEnabled=isRemoteAnalyticsEnabled\(\)/)
   assert.match(app, /if\(remoteEnabled\)try\{window\.gtag/)
-  assert.doesNotMatch(app, /api_secret|google-analytics\\.com\\/mp\\/collect/i, "browser source must not contain a client-side Measurement Protocol credential")
+  assert.doesNotMatch(app, /api_secret|mp.collect/i, "browser source must not contain a client-side Measurement Protocol credential")
   assert.match(app, /if\(remoteEnabled&&critical\)\{/)
   assert.match(app, /if\(!isRemoteAnalyticsEnabled\(\)\|\|!window\.gtag\)return/)
   assert.match(frustration, /if \(!isRemoteAnalyticsEnabled\(\)\) return/)
