@@ -159,7 +159,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // vous recontacte sous 24h »), sans appel à l'endpoint. Loi : pas de flag = pas de merge.
   // (Lit QS et plus location.search : l'angle mort deeplink ?pro=1&b2btrial=0 est réparé.)
   const instantTrial=!/[?&]b2btrial=0/.test(QS)
-  const valid=/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
+  const valid = !email.trim() || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())
   const I=COMIC
   // ── Étape courante de la SÉQUENCE (1 constat/cadeau → 2 renversement/preuve →
   //    3 offre → 4 ask). Succès/24h = états sent/token existants, inchangés.

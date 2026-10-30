@@ -1997,6 +1997,10 @@ export function track(event,params={}){
   const ab=g("sg_ab",{})
   const p={...params}
   const remoteEnabled=isRemoteAnalyticsEnabled()
+  // Capture hostname for funnel attribution — critical so checkout events
+  // can be attributed to a production domain (not "unknown_host").
+  const hostname = typeof window !== "undefined" ? String(window.location?.hostname || "").toLowerCase() : ""
+  if (hostname && !p.hostname) p.hostname = hostname
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
