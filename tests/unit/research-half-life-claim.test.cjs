@@ -21,6 +21,11 @@ assert.doesNotMatch(research, /Sentinel-3 OLCI|Copernicus Marine|4×\s*\/day|4×
 const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.match(widget, /NOAA\/AOML ERDDAP/)
 assert.match(widget, /Université de Floride du Sud/)
+const widgetTitle = widget.match(/<title>([\\s\\S]*?)<\\/title>/i)?.[1] || ''
+const widgetDescription = widget.match(/<meta name=\"description\" content=\"([^\"]*)\"/i)?.[1] || ''
+assert.doesNotMatch(widgetTitle, /en direct/i, 'widget title must not promise a live observation')
+assert.doesNotMatch(widgetDescription, /en direct/i, 'widget description must not promise a live observation')
+assert.match(widgetTitle + widgetDescription, /dernière observation disponible/i)
 assert.doesNotMatch(widget, /Copernicus Marine|4× par jour|4×\/jour|quatre fois par jour/i,
   'hotel widget landing must not claim an unverified source or satellite cadence')
 
