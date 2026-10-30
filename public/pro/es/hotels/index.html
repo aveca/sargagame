@@ -377,7 +377,7 @@
     var observedAt=Date.parse(data && data.erddapTimestamp || '');
     if(!Number.isFinite(observedAt) || observedAt>Date.now()) return {status:'unknown',label:'Antigüedad satelital desconocida'};
     var ageMs=Date.now()-observedAt, ageHours=ageMs/3600000;
-    var ageLabel=ageHours<1?'hace menos de una hora':'hace '+Math.max(1,Math.round(ageHours))+' h;
+    var ageLabel=ageHours<1?'hace menos de una hora':'hace '+Math.max(1,Math.round(ageHours))+' h';
     var status=(data.stale===true || ageMs>PUBLIC_STALE_AFTER_MS)?'stale':'fresh';
     return {status:status,label:(status==='stale'?'Observación satelital antigua':'Observación satelital')+' · '+ageLabel};
   }
