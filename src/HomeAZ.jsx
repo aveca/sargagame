@@ -171,7 +171,7 @@ export function initHomeAZ(SR, HOST, opts){
   }
   function setHeroHeading(){
     var fresh=freshness();
-    var l2word=fresh.live ? _t("AUJOURD'HUI","TODAY","HOY") : _t("DERNIÈRE MESURE","LAST READING","ÚLTIMA MEDICIÓN");
+    var l2word=fresh.live ? _t("AUJOURD'HUI","TODAY","HOY") : _t("DERNIER STATUT OBSERVÉ","LAST OBSERVED STATUS","ÚLTIMO ESTADO OBSERVADO");
     var live=fresh.badge;
     var st=HOME.status||"clean";
     var segs;
@@ -194,7 +194,7 @@ export function initHomeAZ(SR, HOST, opts){
     var fresh=freshness();
     var parts=fresh.live ? T.eb0[LANG] : [
       fresh.badge+" · ",
-      LANG==="fr" ? " · SATELLITE COPERNICUS" : LANG==="es" ? " · SATÉLITE COPERNICUS" : " · COPERNICUS SATELLITE"
+      LANG==="fr" ? " · OBSERVATION SATELLITE" : LANG==="es" ? " · OBSERVACIÓN SATELITAL" : " · SATELLITE OBSERVATION"
     ];
     while(el.firstChild) el.removeChild(el.firstChild);
     el.appendChild(document.createTextNode(parts[0]));
@@ -206,13 +206,36 @@ export function initHomeAZ(SR, HOST, opts){
 
   /* top-3 : reconstruit en DOM depuis les VRAIES plages (HOME.top3) ;
      sinon traduit simplement les cartes par défaut du markup. */
+  function historicalStatusLabel(status){
+    return _t("Dernier statut observé : "+stLabel(status),
+      "Last observed status: "+stLabel(status),
+      "Último estado observado: "+stLabel(status));
+  }
+
   function initTop3(){
     var wrap=$("top3"); if(!wrap) return;
+    var fresh=freshness();
+    var neutralColor="var(--muted, #8b8b8b)";
     var arr=HOME.top3;
     if(!arr||!arr.length){
       var cards=wrap.querySelectorAll(".pcard");
-      for(var k=0;k<cards.length;k++){ var s=cards[k].getAttribute("data-status")||"clean";
-        var ps=cards[k].querySelector(".ps"); if(ps && ps.lastChild) ps.lastChild.textContent=stLabel(s); }
+      for(var k=0;k<cards.length;k++){
+        var s=cards[k].getAttribute("data-status")||"clean";
+        var ps=cards[k].querySelector(".ps");
+        if(ps){
+          if(ps.lastChild) ps.lastChild.textContent=fresh.live ? stLabel(s) : historicalStatusLabel(s);
+          if(!fresh.live){
+            ps.style.color=neutralColor;
+            var oldDot=ps.querySelector(".d");
+            if(oldDot) oldDot.style.backgroundColor=neutralColor;
+          }
+        }
+        var oldScore=cards[k].querySelector(".pf");
+        if(oldScore&&!fresh.live){
+          oldScore.textContent=_t("score masqué","score hidden","puntaje oculto");
+          oldScore.style.color=neutralColor;
+        }
+      }
       return;
     }
     while(wrap.firstChild) wrap.removeChild(wrap.firstChild);
@@ -221,10 +244,15 @@ export function initHomeAZ(SR, HOST, opts){
       var card=document.createElement("div"); card.className="pcard";
       card.setAttribute("data-idx", String(i)); card.setAttribute("data-status", b.status||"clean");
       var pn=document.createElement("div"); pn.className="pn"; pn.textContent=b.name||"";
-      var psd=document.createElement("div"); psd.className="ps "+st.cls;
-      var dot=document.createElement("span"); dot.className="d"; psd.appendChild(dot);
-      psd.appendChild(document.createTextNode(stLabel(b.status)));
-      var pf=document.createElement("div"); pf.className="pf"; pf.textContent="score "+(b.score!=null?b.score:"—");
+      var psd=document.createElement("div"); psd.className="ps "+(fresh.live?st.cls:"stale");
+      var dot=document.createElement("span"); dot.className="d";
+      if(!fresh.live) dot.style.backgroundColor=neutralColor;
+      psd.appendChild(dot);
+      psd.appendChild(document.createTextNode(fresh.live ? stLabel(b.status) : historicalStatusLabel(b.status)));
+      if(!fresh.live) psd.style.color=neutralColor;
+      var pf=document.createElement("div"); pf.className="pf";
+      pf.textContent=fresh.live ? "score "+(b.score!=null?b.score:"—") : _t("score masqué","score hidden","puntaje oculto");
+      if(!fresh.live) pf.style.color=neutralColor;
       card.appendChild(pn); card.appendChild(psd); card.appendChild(pf); wrap.appendChild(card);
     }
   }
@@ -241,9 +269,18 @@ export function initHomeAZ(SR, HOST, opts){
     if($("ctaHeroS")) $("ctaHeroS").textContent=fresh.live ? T.ctaHeroS[LANG] : statusNote;
     if($("mapLinkT")) $("mapLinkT").textContent=T.mapLinkT[LANG];
     var st=STATUS[HOME.status]||STATUS.clean;
-    if($("vTxt")){ $("vTxt").textContent=fresh.live ? st[LANG][0] : stLabel(HOME.status)+" · "+fresh.badge; $("vTxt").style.color=st.col; }
-    var vbBadge=$("verdictBadge"); if(vbBadge){ var vbar=vbBadge.querySelector(".vbar"); if(vbar) vbar.style.background=st.col; }
-    if($("vScore")) $("vScore").textContent=HOME.score;
+    var neutralColor="var(--muted, #8b8b8b)";
+    if($("vTxt")){
+      $("vTxt").textContent=fresh.live ? st[LANG][0] : historicalStatusLabel(HOME.status);
+      $("vTxt").style.color=fresh.live ? st.col : neutralColor;
+    }
+    var vbBadge=$("verdictBadge"); if(vbBadge){ var vbar=vbBadge.querySelector(".vbar"); if(vbar) vbar.style.background=fresh.live ? st.col : neutralColor; }
+    if($("vScore")){
+      $("vScore").textContent=fresh.live ? HOME.score : "—";
+      $("vScore").style.color=fresh.live ? st.col : neutralColor;
+      if(!fresh.live) $("vScore").setAttribute("aria-label",_t("Score masqué : observation satellite ancienne ou inconnue","Score hidden: satellite observation is old or unknown","Puntaje oculto: observación satelital antigua o desconocida"));
+      else $("vScore").removeAttribute("aria-label");
+    }
     if($("eb1")) $("eb1").textContent=fresh.live ? T.eb1[LANG] : fresh.badge+" · "+observationDateLabel(); setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=fresh.live ? T.s1[LANG] : statusNote;
     if($("ctaVerdictT")) $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
     if($("eb2")) $("eb2").textContent=T.eb2[LANG]; setHeading($("h2"),T.h2[LANG]); if($("s2")) $("s2").textContent=T.s2[LANG];
