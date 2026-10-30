@@ -50,6 +50,7 @@ for (const item of pages) {
   assert.notEqual(handlerStart, -1, item.path + ': freshness handler must exist');
   const handler = html.slice(handlerStart, handlerStart + 3500);
   assert.doesNotMatch(handler, /d\.updatedAt/, item.path + ': source freshness handler must not read updatedAt');
+  assert.doesNotMatch(handler, /dataAgeMinutes/, item.path + ': display age must be recomputed from erddapTimestamp');
 }
 
 console.log('PASS: FR/EN/ES hotel pages use erddapTimestamp, mask stale verdicts and scores, preserve canonical, hreflang and lead forms.');
