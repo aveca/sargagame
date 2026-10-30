@@ -2,7 +2,7 @@
 /**
  * Browser regression for the B2B reliability proof.
  * Captures before/after screenshots at 390x844 and 1440x900.
- * Verifies server-rendered HTML content for stale vs fresh track-record states.
+ * Verifies the browser-rendered stale and fresh track-record states with deterministic API fixtures.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -15,7 +15,7 @@ const LIVE_HOTELS = 'https://sargasses-martinique.com/pro/hotels/';
 const OUT = process.env.TRACK_RECORD_SCREENSHOT_DIR || '/tmp/track-record-pricing';
 fs.mkdirSync(OUT, { recursive: true });
 
-// Helper to fetch HTML and check for expected content
+// Helper to fetch static page structure; freshness values are asserted in the browser below.
 async function fetchAndCheck(url, checks) {
   const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
   assert.equal(res.status, 200, `Expected 200 for ${url}`);
@@ -42,7 +42,7 @@ try {
     });
     const page = await context.newPage();
 
-    // BEFORE: live site - verify it loads and capture screenshot
+    // BEFORE: live site - verify it loads and capture screenshot.
     try {
       await page.goto(LIVE, { waitUntil: 'domcontentloaded', timeout: 20000 });
       await page.waitForTimeout(250);
@@ -53,24 +53,59 @@ try {
       console.warn('BEFORE_SCREENSHOT_UNAVAILABLE_' + viewport.name + '=' + String(error.message || error).slice(0, 180));
     }
 
-    // AFTER STALE: PR preview - verify server-rendered stale state
-    const staleChecks = {
+    const staticChecks = {
       'has proofline': (html) => html.includes('class="proofline"'),
-      'has stale indicator': (html) => html.includes('is-stale') || html.includes('p\u00e9rim\u00e9') || html.includes('taux masqu\u00e9'),
+      'has dynamic metric targets': (html) => html.includes('id="tr-clean"') && html.includes('id="tr-line"'),
+      'loads shared freshness contract': (html) => html.includes('src="/b2b-data-freshness.js"'),
       'has B2B trial CTA': (html) => html.includes('/pro/espace/'),
     };
-    await fetchAndCheck(PREVIEW + '/pro/pricing/', staleChecks);
+    await fetchAndCheck(PREVIEW + '/pro/pricing/', staticChecks);
+
+    // The pricing page computes its proof asynchronously. Serve deterministic fixtures
+    // so the test validates the actual DOM after the shared freshness helper runs,
+    // rather than searching the initial HTML for a percentage that must not be hardcoded.
+    let pricingRecordFixture = {
+      generatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      freshness: { stale: true },
+      regions: ['mq', 'gp'],
+      window: { from: '2026-10-01', to: '2026-10-30' },
+      sampleSize: 123,
+      overall: { statusHitRatePct: 98 },
+    };
+    await page.route('**/api/copernicus/track-record.json', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(pricingRecordFixture),
+    }));
+
+    // AFTER STALE: a fresh generation timestamp must not override freshness.stale=true.
     await page.goto(PREVIEW + '/pro/pricing/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForFunction(() => {
+      const line = document.querySelector('#tr-line')?.textContent || '';
+      return document.querySelector('#tr-clean')?.textContent?.trim() === '—' && line.includes('périmé');
+    });
+    assert.equal((await page.locator('#tr-clean').textContent() || '').trim(), '—', 'stale track record must hide its percentage');
+    assert.match((await page.locator('#tr-line').textContent()) || '', /périmé/i, 'stale state must explain why the rate is hidden');
+    assert.ok(await page.locator('.proofline').evaluate(el => el.classList.contains('is-stale')), 'stale proofline must receive its stale visual state');
     await page.screenshot({ path: path.join(OUT, 'after-stale-' + viewport.name + '.png'), fullPage: true });
 
-    // AFTER FRESH: PR preview - verify server-rendered fresh state
-    const freshChecks = {
-      'has proofline': (html) => html.includes('class="proofline"'),
-      'has fresh-state target': (html) => html.includes('id="tr-clean"') && html.includes('id="tr-line"'),
-      'has B2B trial CTA': (html) => html.includes('/pro/espace/'),
+    // AFTER FRESH: same page, valid regional scope and a fresh public record.
+    pricingRecordFixture = {
+      generatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      freshness: { stale: false },
+      regions: ['mq', 'gp'],
+      window: { from: '2026-10-01', to: '2026-10-30' },
+      sampleSize: 123,
+      overall: { statusHitRatePct: 98 },
     };
-    await fetchAndCheck(PREVIEW + '/pro/pricing/', freshChecks);
     await page.goto(PREVIEW + '/pro/pricing/', { waitUntil: 'domcontentloaded', timeout: 30000 });
+    await page.waitForFunction(() => document.querySelector('#tr-clean')?.textContent?.trim() === '98%');
+    assert.equal((await page.locator('#tr-clean').textContent() || '').trim(), '98%', 'fresh in-scope record should render its validated percentage');
+    const freshLine = (await page.locator('#tr-line').textContent()) || '';
+    assert.match(freshLine, /MQ \+ GP/, 'fresh proof must display the declared regional scope');
+    assert.match(freshLine, /2026-10-01 → 2026-10-30/, 'fresh proof must display its validation window');
+    assert.doesNotMatch(freshLine, /tous régimes confondus/i, 'fresh proof must not claim an unscoped all-regimes result');
+    assert.equal(await page.locator('.proofline').evaluate(el => el.classList.contains('is-stale')), false, 'fresh proofline must clear the stale visual state');
     await page.screenshot({ path: path.join(OUT, 'after-fresh-' + viewport.name + '.png'), fullPage: true });
 
     // B2B hotel landing: compare the public page with the PR preview at the same viewport.
@@ -125,7 +160,7 @@ try {
     console.log('PASS_HOTEL_' + viewport.name + '=source timestamp freshness, stale masking and fresh verdict verified; before/after screenshots captured');
     await hotelPage.close();
 
-    console.log('PASS_' + viewport.name + '=stale/fresh verified via server-rendered HTML; screenshots captured');
+    console.log('PASS_' + viewport.name + '=stale/fresh pricing proof and hotel freshness verified; screenshots captured');
     await context.close();
   }
 } finally {
