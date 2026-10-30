@@ -102,7 +102,19 @@ test.describe("SOS Plage — modal and payment funnel (Mollie mocked)", () => {
       await route.continue()
     })
 
+    const statusRequest = page.waitForRequest(request => {
+      if (request.method() !== "POST" || !request.url().includes("/api/mollie.php")) return false
+      try { return request.postDataJSON().action === "payment_status" } catch { return false }
+    }, { timeout: 15000 })
     await page.goto(BASE_URL + "/?mollie_return=1", { waitUntil: "domcontentloaded", timeout: 60000 })
+    const statusCall = await statusRequest
+    expect(statusCall.postDataJSON()).toMatchObject({ action: "payment_status", paymentId: PAYMENT_ID })
+
+    // The real return handler calls location.replace("/") after writing the grant.
+    // Wait for that deliberate URL cleanup before reading storage (avoids racing navigation).
+    await page.waitForURL(url => url.pathname === "/" && !url.searchParams.has("mollie_return"), { timeout: 15000 })
+    await page.waitForLoadState("domcontentloaded")
+
     await expect.poll(
       () => page.evaluate(() => Number(localStorage.getItem("sg_premium_pass_end") || 0)),
       { timeout: 15000 },
@@ -112,8 +124,11 @@ test.describe("SOS Plage — modal and payment funnel (Mollie mocked)", () => {
       { timeout: 15000 },
     ).toBe("1")
     await expect.poll(
-      () => page.evaluate(() => localStorage.getItem("sg_mollie_pending")),
+      () => page.evaluate(() => ({
+        session: sessionStorage.getItem("sg_mollie_pending"),
+        local: localStorage.getItem("sg_mollie_pending"),
+      })),
       { timeout: 15000 },
-    ).toBeNull()
+    ).toEqual({ session: null, local: null })
   })
 })
