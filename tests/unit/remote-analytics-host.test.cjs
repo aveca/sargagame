@@ -27,7 +27,8 @@ async function main() {
   assert.doesNotMatch(app, /api_secret|mp.collect/i, "browser source must not contain a client-side Measurement Protocol credential")
   assert.match(app, /if\(remoteEnabled&&critical\)\{/)
   assert.match(app, /if\(!isRemoteAnalyticsEnabled\(\)\|\|!window\.gtag\)return/)
-  assert.match(frustration, /if \(!isRemoteAnalyticsEnabled\(\)\) return/)
+  assert.match(frustration, /logAnalyticsEvent\('sg_frustration_detected', params, island\)/)
+  assert.match(frustration, /sanitizeFrustrationAnalytics/)
 
   console.log("PASS: loopback/local preview never sends remote analytics; production hosts remain enabled")
 }
