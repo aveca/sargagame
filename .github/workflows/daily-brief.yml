@@ -21,7 +21,7 @@ on:
   workflow_dispatch:        # envoi manuel de secours (dédup daily_last empêche le doublon)
 
 permissions:
-  contents: write
+  contents: read
 
 # Deux déclenchements le même jour (double-fire cron rare, ou dispatch manuel pendant
 # que le cron tourne) se sérialisent ; la dédup daily_last du script saute le 2e.
@@ -31,6 +31,8 @@ concurrency:
 
 jobs:
   send:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

@@ -27,11 +27,9 @@ on:
 # Le deploy est géré par cloudflare-production.yml (Workers + Pages).
 
 permissions:
-  contents: write
-  # `actions: write` autorise le dispatch de la chaîne CI + production après la
-  # publication des données (le push est fait avec le GITHUB_TOKEN, or un push
-  # GITHUB_TOKEN ne déclenche aucun workflow `push`).
-  actions: write
+  # Least privilege by default. Only jobs that publish repository state or
+  # dispatch follow-up workflows receive write permissions below.
+  contents: read
 
 # Sérialise les runs sur main pour éliminer les conflits rebase
 concurrency:
@@ -41,6 +39,9 @@ concurrency:
 jobs:
   # ── 1. DATA FETCH (rapide, < 5 min) ────────────────────────────────────────
   fetch-data:
+    permissions:
+      contents: write
+      actions: write
     outputs:
       publication_status: ${{ steps.publication_status.outputs.status }}
       gate_outcome: ${{ steps.verify.outcome }}
@@ -346,6 +347,8 @@ jobs:
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
+    permissions:
+      contents: write
     if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget

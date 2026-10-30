@@ -1,12 +1,12 @@
 name: Factory Cloud Runner (Sargagame — NEUTRALISÉ)
 
 on:
-  # NEUTRALISÉ 2026-10-15 (directive : boucle de codage UNIQUE = Factory locale PC1,
-  # Ollama + OpenCode, zéro appel de modèle payant). Ce runner GitHub hébergé constituait
-  # une seconde boucle d'implémentation concurrente (cron 15 min + push) : suppressée.
-  # Les déclencheurs push/schedule sont retirés. L'exécution reste possible UNIQUEMENT
-  # en workflow_dispatch avec confirmation explicite ET variable de repo
-  # FACTORY_CLOUD_RUNNER_ENABLED=true (désactivée par défaut) — garde-fou double opt-in.
+  # NEUTRALISÉ 2026-10-15 : ce runner GitHub hébergé est une implémentation legacy
+  # fondée sur Ollama local, désormais hors de l'infrastructure active (les agents
+  # utilisent les API NVIDIA et les quotas cloud gratuits via le routeur Factory).
+  # Les déclencheurs push/schedule ont été retirés. Ne pas réactiver ce chemin legacy :
+  # il reste seulement dispatchable avec confirmation explicite ET variable repo
+  # FACTORY_CLOUD_RUNNER_ENABLED=true (désactivée par défaut) — double opt-in.
   # Ne touche PAS à ci-tests, perf-budget, user-journey-audit (Playwright), ni
   # cloudflare-production, daily-copernicus, live-production-sentinel (CI/data/vérifs conservés).
   workflow_dispatch:

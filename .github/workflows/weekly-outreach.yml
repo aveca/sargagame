@@ -14,10 +14,12 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   outreach:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     # Bug 2026-06-30 (run 28443080616) : timeout-minutes:10 était trop juste pour les
     # 3 scripts d'outreach séquentiels (auto ~3m20 + curated ~3m40 + b2b >3m, encore

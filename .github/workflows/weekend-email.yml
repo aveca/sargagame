@@ -30,7 +30,7 @@ on:
   workflow_dispatch:        # envoi manuel de secours (script + dedup empêchent le doublon)
 
 permissions:
-  contents: write
+  contents: read
 
 # Deux déclenchements le même vendredi (double-livraison cron rare, ou dispatch
 # manuel pendant que le cron tourne) se sérialisent : le 2e voit le marqueur
@@ -41,6 +41,8 @@ concurrency:
 
 jobs:
   send:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 15   # généreux : l'envoi est rapide ; marge pour la latence Apps Script
     steps:

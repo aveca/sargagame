@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   orchestrator:
@@ -76,6 +76,8 @@ jobs:
           retention-days: 14
 
   synthesis:
+    permissions:
+      contents: write
     name: Synthèse
     needs: [orchestrator, veilleur]
     if: always() && needs.orchestrator.result == 'success'
