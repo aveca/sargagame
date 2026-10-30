@@ -764,12 +764,12 @@ jobs:
       - run: npm ci
       - name: Send failure alert email
         env:
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
           WORKFLOW_NAME: 'Daily Copernicus + Deploy'
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
-            node scripts/automation/notify-failure.cjs
+            node scripts/automation/notify-failure.cjs --send
           else
             node scripts/automation/notify-failure.cjs --dry-run
           fi
