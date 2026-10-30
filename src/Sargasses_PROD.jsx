@@ -4729,6 +4729,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Les prévisions dépendent de la fraîcheur de l'observation source. */}
         {satelliteDecisionCurrent ? (
+          <>
         {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4765,6 +4766,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             ?cadran=1, barre plate sinon), mêmes composants que l'ancienne BeachSheet.
             Alimenté par les données hebdo RÉELLES de cette plage + sargData courant ;
             fraîcheur via prédicats partagés (erddap seul), jamais updatedAt. */}
+          </>
         ) : (
           <div data-testid="beach-sheet-forecast-paused" className="bsc-card" role="status" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
             <div style={{font:"800 12px/1.3 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Prévisions suspendues","Forecasts paused","Pronóstico suspendido")}</div>
