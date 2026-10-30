@@ -23,7 +23,7 @@ let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
 async function main() {
-  const { lcDetailFreshnessLabel, isSatelliteFresh12h, isSatellitePayloadCurrent } = await import('../../src/lib/format-freshness.mjs')
+  const { lcDetailFreshnessLabel, isSatelliteFresh12h } = await import('../../src/lib/format-freshness.mjs')
 
   // 1. Observation récente (3h) : source live explicite et payload non stale.
   const fresh = { source: 'erddap-live', stale: false, erddapTimestamp: '2026-10-13T01:00:00.000Z' }
@@ -70,14 +70,13 @@ async function main() {
 
 
   // 9. A current decision requires live provenance, stale=false, a valid beach status and <12h.
-  t(isSatellitePayloadCurrent(fresh, now), 'live source + stale=false + recent ERDDAP timestamp is current')
-  t(!isSatellitePayloadCurrent(stale, now), 'old observation cannot authorize a current decision')
-  t(!isSatellitePayloadCurrent({ ...fresh, stale: true }, now), 'explicit stale=true blocks a current decision')
-  t(!isSatellitePayloadCurrent({ ...fresh, source: 'cached-fallback' }, now), 'non-live source blocks a current decision')
-  t(!isSatellitePayloadCurrent({ ...fresh, source: undefined }, now), 'missing source provenance blocks a current decision')
+  t(!isSatelliteFresh12h(stale, now), 'old observation cannot authorize a current decision')
+  t(lcDetailFreshnessLabel({ ...fresh, stale: true }, 'fr', now).includes('non validée'), 'explicit stale=true blocks a current freshness label')
+  t(lcDetailFreshnessLabel({ ...fresh, source: 'cached-fallback' }, 'fr', now).includes('non validée'), 'non-live source blocks a current freshness label')
+  t(lcDetailFreshnessLabel({ ...fresh, source: undefined }, 'fr', now).includes('non validée'), 'missing source provenance blocks a current freshness label')
 
   const chasse = fs.readFileSync(path.join(ROOT, 'src', 'ChasseHome.jsx'), 'utf8')
-  t(/isSatellitePayloadCurrent\(sargData\)&&\["clean","moderate","avoid"\]\.includes\(beach\?\.status\)/.test(chasse), 'ChasseDetail uses the complete source/status freshness contract')
+  t(/sargData\?\.source==="erddap-live"&&sargData\?\.stale===false&&isSatelliteFresh12h\(sargData\)&&\["clean","moderate","avoid"\]\.includes\(beach\?\.status\)/.test(chasse), 'ChasseDetail uses the complete source/status freshness contract')
   t(/const sc=satelliteDecisionCurrent&&beach\.score!=null/.test(chasse), 'stale score is never passed to the current score display')
   t(/data-testid="lc-detail-stale"/.test(chasse), 'stale detail announces historical-only state')
   t(/data-testid="lc-detail-score-paused"/.test(chasse), 'stale detail explicitly suppresses current score')
