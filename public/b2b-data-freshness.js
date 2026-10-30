@@ -23,7 +23,7 @@
     }
     var ageMs = now - observedAt
     var ageHours = Math.max(1, Math.round(ageMs / 3600000))
-    var stale = data.stale === true || ageMs > OBSERVATION_STALE_AFTER_MS
+    var stale = data.stale === true || ageMs >= OBSERVATION_STALE_AFTER_MS
     var label = locale === 'fr'
       ? (stale ? 'Observation satellite ancienne' : 'Observation satellite') + ' · il y a ' + ageHours + ' h'
       : (locale === 'es'
