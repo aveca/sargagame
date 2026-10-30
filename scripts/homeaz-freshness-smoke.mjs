@@ -71,7 +71,7 @@ async function openHome(browser, viewport, ageMs) {
     const badge = host && host.shadowRoot.querySelector("#liveTxt");
     const text = badge ? badge.textContent.trim() : "";
     return state === "fresh"
-      ? /^(EN DIRECT|LIVE|EN DIRECTO)$/.test(text)
+      ? /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/.test(text)
       : /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/.test(text);
   }, expected, { timeout: 20000 });
 
@@ -112,7 +112,7 @@ try {
     try {
       const sourceLabel = await shadowText(fresh.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "fresh state must show the source observation date and UTC time");
-      assert.match(await shadowText(fresh.page, "#liveTxt"), /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+      assert.match(await shadowText(fresh.page, "#liveTxt"), /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
       for (const selector of ["#ctaHero", "#mapLink", "#ctaPremium"]) {
         assert.equal(await fresh.page.locator(selector).count(), 1, "expected HomeAZ control " + selector);
       }
@@ -129,7 +129,7 @@ try {
     try {
       const badge = await shadowText(stale.page, "#liveTxt");
       assert.match(badge, /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/);
-      assert.doesNotMatch(badge, /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+      assert.doesNotMatch(badge, /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
       const sourceLabel = await shadowText(stale.page, "#eb0 .dt");
       assert.ok(sourceLabel && /UTC/.test(sourceLabel), "stale state must show the actual source observation time");
       const support = await shadowText(stale.page, "#ctaHeroS");
@@ -146,6 +146,13 @@ try {
       const staleEyebrow = await shadowText(stale.page, "#eb0");
       assert.doesNotMatch(staleEyebrow || "", /COPERNICUS/i,
         "generic ERDDAP payload must not be mislabeled as Copernicus");
+      const freshEyebrow = await shadowText(fresh.page, "#eb0");
+      assert.doesNotMatch(freshEyebrow || "", /COPERNICUS/i,
+        "fresh generic ERDDAP payload must not be mislabeled as Copernicus");
+      assert.match(await shadowText(fresh.page, "#liveTxt") || "", /OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE/,
+        "fresh state must say recent observation rather than live");
+      assert.notEqual(await shadowText(fresh.page, "#vScore"), "—",
+        "fresh state may show the current score");
       await stale.page.screenshot({
         path: path.join(OUT, "stale-" + viewport.name + ".png"),
         animations: "disabled",
@@ -204,7 +211,7 @@ try {
   // change the badge from LIVE to a dated reading on its own.
   const transition = await openHome(browser, mobile, 12 * HOUR - 8000);
   try {
-    assert.match(await shadowText(transition.page, "#liveTxt"), /^(EN DIRECT|LIVE|EN DIRECTO)$/);
+    assert.match(await shadowText(transition.page, "#liveTxt"), /^(OBSERVATION RÉCENTE|RECENT OBSERVATION|OBSERVACIÓN RECIENTE)$/);
     const callsBefore = transition.apiCalls();
     await transition.page.waitForFunction(() => {
       const host = [...document.querySelectorAll('[role="dialog"]')]
