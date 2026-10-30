@@ -54,6 +54,7 @@ const path = require("node:path");
     "public/veille/index.html",
     "public/a-propos/index.html",
     "scripts/lib/reliability-page.cjs",
+    "vite.config.js",
   ];
   for (const relativePath of staticClientPaths) {
     const source = fs.readFileSync(path.join(root, relativePath), "utf8");
@@ -63,12 +64,15 @@ const path = require("node:path");
   const veille = fs.readFileSync(path.join(root, "public/veille/index.html"), "utf8");
   const about = fs.readFileSync(path.join(root, "public/a-propos/index.html"), "utf8");
   const reliability = fs.readFileSync(path.join(root, "scripts/lib/reliability-page.cjs"), "utf8");
+  const viteConfig = fs.readFileSync(path.join(root, "vite.config.js"), "utf8");
   assert.ok(veille.includes("navigator.sendBeacon&&navigator.sendBeacon(APPS,"),
     "veille landing must retain its Apps Script event transport");
   assert.ok(about.includes("navigator.sendBeacon(APPS_SCRIPT_URL"),
     "about page must retain its Apps Script event transport");
   assert.ok(reliability.includes("navigator.sendBeacon(APPS_SCRIPT_URL"),
     "generated reliability pages must retain their Apps Script event transport");
+  assert.ok(viteConfig.includes('window.gtag("event",ev,params||{})'),
+    "generated beach pages must use the consent-aware Google tag");
 
   const dist = path.join(root, "dist");
   if (fs.existsSync(dist)) {
