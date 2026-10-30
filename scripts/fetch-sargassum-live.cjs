@@ -310,6 +310,7 @@ async function fetchErddapGrid(region) {
  * Fetch the 1-day AFAI composite (rapid change detection).
  * Same structure as 7D but shorter integration period → detects arrivals ~24h earlier.
  * Non-critical: returns null on any failure (used as bonus signal, never blocks pipeline).
+ * Extracts the real ERDDAP timestamp from the 1D response for freshness tracking.
  */
 async function fetchErddapGrid1D(region) {
   const { latMin, latMax, lngMin, lngMax } = region
@@ -323,18 +324,48 @@ async function fetchErddapGrid1D(region) {
   const latIdx = colNames.indexOf('latitude')
   const lngIdx = colNames.indexOf('longitude')
   const afaiIdx = colNames.indexOf('AFAI')
+  const timeIdx = colNames.indexOf('time')
   if (latIdx < 0 || lngIdx < 0 || afaiIdx < 0) return null
   const points = rows.map(row => ({ latitude: row[latIdx], longitude: row[lngIdx], AFAI: row[afaiIdx] }))
-  return { points, dataAgeHours: 12 } // assume ~12h since 1D composites are daily
+
+  // Extract ERDDAP data timestamp from 1D response (same logic as 7D)
+  let erddapTimestamp = null
+  if (timeIdx >= 0) {
+    for (const row of rows) {
+      if (row[timeIdx]) { erddapTimestamp = row[timeIdx]; break }
+    }
+  }
+  const dataAgeHours = erddapTimestamp
+    ? Math.max(0, (Date.now() - new Date(erddapTimestamp).getTime()) / (1000 * 60 * 60))
+    : 12 // fallback only if timestamp unavailable
+  if (erddapTimestamp) {
+    console.log(`  ERDDAP 1D data timestamp: ${erddapTimestamp} (${Math.round(dataAgeHours)}h ago)`)
+  }
+  return { points, erddapTimestamp, dataAgeHours }
 }
 
 /**
  * Compare 1D vs 7D AFAI for a beach to detect rapid changes.
  * Returns a correction factor: positive = recent arrival, negative = recent clearance.
+ * Only applies correction if 1D data is fresh (not stale per SAT_STALE_HOURS).
  */
 function compute1DCorrection(beach, grid7D, grid1D) {
   if (!grid1D || !grid1D.points || grid1D.points.length === 0) return 0
   if (!grid7D || !grid7D.points || grid7D.points.length === 0) return 0
+  
+  // Check 1D data freshness before applying correction
+  // If 1D data is stale (per SAT_STALE_HOURS), skip correction entirely
+  if (grid1D.erddapTimestamp) {
+    const freshness1D = satelliteFreshness(grid1D.erddapTimestamp)
+    if (freshness1D.stale || freshness1D.dataAgeMinutes === null) {
+      console.log(`  [1D] Skipping correction for ${beach.id}: 1D data is stale (age: ${freshness1D.dataAgeMinutes ? Math.round(freshness1D.dataAgeMinutes / 60) + 'h' : 'unknown'})`)
+      return 0
+    }
+  } else {
+    console.log(`  [1D] Skipping correction for ${beach.id}: 1D data has no timestamp`)
+    return 0
+  }
+
   // Taille d'echantillon 1D minimale pour une correction a pleine force.
   // Pourquoi : le 2026-06-09, la grille 1D MQ n'avait que 58 pixels valides
   // sur toute la boite — chaque plage n'en attrapait que ~8 en zone nearby
