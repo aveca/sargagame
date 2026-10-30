@@ -106,6 +106,10 @@ jobs:
     needs: [orchestrator, veilleur, synthesis]
     if: failure()
     runs-on: ubuntu-latest
+    env:
+      # DRY-RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

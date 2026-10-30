@@ -43,6 +43,10 @@ jobs:
   send:
     runs-on: ubuntu-latest
     timeout-minutes: 15   # généreux : l'envoi est rapide ; marge pour la latence Apps Script
+    env:
+      # DRY-RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

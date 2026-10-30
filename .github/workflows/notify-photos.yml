@@ -20,6 +20,10 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      # DRY-RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
