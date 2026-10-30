@@ -20,6 +20,22 @@ export function isSatelliteFresh12h(sargData, now = Date.now()) {
 }
 
 /**
+ * A current satellite payload must be explicitly live, explicitly non-stale,
+ * and backed by a recent ERDDAP observation. Publication time is never used.
+ */
+export function isSatellitePayloadCurrent(sargData, now = Date.now()) {
+  return sargData?.source === 'erddap-live' &&
+    sargData?.stale === false &&
+    isSatelliteFresh12h(sargData, now)
+}
+
+/** A beach decision additionally requires a recognized, measured status. */
+export function isCurrentSatelliteDecision(sargData, status, now = Date.now()) {
+  return ['clean', 'moderate', 'avoid'].includes(status) &&
+    isSatellitePayloadCurrent(sargData, now)
+}
+
+/**
  * Âge satellite en heures à l'instant du rendu (temps servi, jamais figé).
  * Remplace les lectures directes du champ statique `dataAgeMinutes`, qui est un
  * instantané à l'heure du run pipeline et pourrit en place (ex : 2048 figé
@@ -81,19 +97,24 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
 export function lcDetailFreshnessLabel(sargData, lang = 'fr', now = Date.now()) {
   const ageH = satelliteAgeHours(sargData, now);
   if (ageH == null) {
-    return lang === 'es' ? 'Medición satelital en verificación — no adivinado.'
-      : lang === 'en' ? 'Satellite reading being verified — not guessed.'
-      : 'Mesure satellite en cours de vérification — pas deviné.';
+    return lang === 'es' ? 'Medición satelital en verificación — no se publica un veredicto actual.'
+      : lang === 'en' ? 'Satellite observation being verified — no current verdict is published.'
+      : 'Mesure satellite en cours de vérification — aucun verdict actuel publié.';
   }
-  if (isSatelliteFresh12h(sargData, now)) {
-    return lang === 'es' ? 'Medido por satélite esta mañana — no adivinado.'
-      : lang === 'en' ? 'Measured by satellite this morning — not guessed.'
-      : 'Mesuré au satellite ce matin — pas deviné.';
+  if (isSatellitePayloadCurrent(sargData, now)) {
+    return lang === 'es' ? 'Última observación satelital reciente — no adivinada.'
+      : lang === 'en' ? 'Recent satellite observation — not guessed.'
+      : 'Observation satellite récente — pas devinée.';
+  }
+  if (ageH < 12) {
+    return lang === 'es' ? 'Observación satelital no validada — estado por verificar.'
+      : lang === 'en' ? 'Satellite observation is not validated — status needs checking.'
+      : 'Observation satellite non validée — statut à vérifier.';
   }
   const h = Math.round(ageH);
-  return lang === 'es' ? `Última medición satelital hace ${h} h — verificado, no adivinado.`
-    : lang === 'en' ? `Last satellite reading ${h}h ago — verified, not guessed.`
-    : `Dernière mesure satellite il y a ${h} h — vérifié, pas deviné.`;
+  return lang === 'es' ? `Última observación satelital hace ${h} h — dato histórico, no es un veredicto actual.`
+    : lang === 'en' ? `Last satellite observation ${h}h ago — historical data, not a current verdict.`
+    : `Dernière observation satellite il y a ${h} h — donnée historique, pas un verdict actuel.`;
 }
 
 /**
