@@ -538,6 +538,23 @@ jobs:
           fi
           git add "$M"
           git commit -m "chore: daily metrics snapshot ${TODAY_UTC}" || echo "Rien à committer (snapshot inchangé)."
+          # Les étapes précédentes génèrent aussi des rapports et états non commités.
+          # Les isoler temporairement évite que git rebase refuse le worktree sale ;
+          # ils sont restaurés avant le step séparé « Commit email state ».
+          STASHED_GENERATED_CHANGES=0
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "daily-metrics-snapshot-${GITHUB_RUN_ID:-local}"
+            STASHED_GENERATED_CHANGES=1
+          fi
+          restore_generated_changes() {
+            if [ "$STASHED_GENERATED_CHANGES" = "1" ]; then
+              if ! git stash pop --index; then
+                echo "::error::Impossible de restaurer les fichiers générés ; le stash reste conservé."
+                return 1
+              fi
+              STASHED_GENERATED_CHANGES=0
+            fi
+          }
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
@@ -560,13 +577,16 @@ jobs:
             echo "::warning::push échoué (tentative $i/5), pause 20s"
             sleep 20
           done
+          # Restaurer les sorties des étapes précédentes avant le commit email anti-doublon.
+          restore_generated_changes
           # ÉCHEC DÉFINITIF : exit non nul (pas une simple annotation).
           if [ "$push_ok" != "1" ]; then
             echo "::error title=Publication du snapshot métrique échouée::push refusé après 5 tentatives — le workflow ÉCHOUE."
             exit 1
           fi
       - name: Commit email state (anti-doublon)
-        if: github.event_name != 'push'
+        # Persister les marqueurs des emails déjà envoyés même si la publication métrique échoue.
+        if: always() && github.event_name != 'push'
         continue-on-error: true
         # Étape critique : c'est elle qui fige l'anti-doublon des envois. Elle
         # ne doit JAMAIS être sautée par l'annulation d'une étape précédente.
@@ -588,6 +608,22 @@ jobs:
           # La garde d'exploitabilité et le test de cadence vivent dans ce step.
           if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
           git commit -m "chore: email state $(date -u +'%Y-%m-%d %H:%M UTC')"
+          # Les rapports/fichiers générés hors marqueurs email restent hors du commit.
+          # Les mettre à l’abri pendant le rebase, puis les restaurer sans les perdre.
+          STASHED_GENERATED_CHANGES=0
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "email-state-${GITHUB_RUN_ID:-local}"
+            STASHED_GENERATED_CHANGES=1
+          fi
+          restore_email_generated_changes() {
+            if [ "$STASHED_GENERATED_CHANGES" = "1" ]; then
+              if ! git stash pop --index; then
+                echo "::error::Impossible de restaurer les sorties après le commit email ; le stash reste conservé."
+                return 1
+              fi
+              STASHED_GENERATED_CHANGES=0
+            fi
+          }
           BRANCH="${GITHUB_REF_NAME:-main}"
           push_ok=0
           for i in 1 2 3 4 5; do
@@ -613,6 +649,7 @@ jobs:
             echo "::warning::git push échoué (tentative $i/5), pause 20s"
             sleep 20
           done
+          restore_email_generated_changes
           [ "$push_ok" = "1" ] || echo "::error title=Email state non persisté::markers anti-doublon non poussés après 5 tentatives"
 
   # ── 3. HEALTH CHECK (rapide, parallèle) ───────────────────────────────────
