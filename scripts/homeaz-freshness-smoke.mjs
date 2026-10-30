@@ -97,6 +97,15 @@ async function shadowText(page, selector) {
   }, selector);
 }
 
+async function shadowDisplay(page, selector) {
+  return page.evaluate((sel) => {
+    const host = [...document.querySelectorAll('[role="dialog"]')]
+      .find((node) => node.shadowRoot && node.shadowRoot.querySelector("#liveTxt"));
+    const node = host && host.shadowRoot.querySelector(sel);
+    return node ? getComputedStyle(node).display : null;
+  }, selector);
+}
+
 async function waitForHomeAzUnmount(page) {
   await page.waitForFunction(() => {
     return ![...document.querySelectorAll('[role="dialog"]')]
@@ -118,6 +127,8 @@ try {
         "fresh generic ERDDAP payload must not be mislabeled as Copernicus");
       assert.notEqual(await shadowText(fresh.page, "#vScore"), "—",
         "fresh state may show the current score");
+      assert.notEqual(await shadowDisplay(fresh.page, "#vScore"), "none",
+        "fresh state may show the score label and denominator");
       for (const selector of ["#ctaHero", "#mapLink", "#ctaPremium"]) {
         assert.equal(await fresh.page.locator(selector).count(), 1, "expected HomeAZ control " + selector);
       }
@@ -145,6 +156,8 @@ try {
         "stale verdict must be explicitly historical");
       assert.equal(await shadowText(stale.page, "#vScore"), "—",
         "stale state must suppress the numeric hero score");
+      assert.equal(await shadowDisplay(stale.page, "#vScore"), "none",
+        "stale state must hide the entire score label and denominator");
       const staleTop3Score = await shadowText(stale.page, "#top3 .pf");
       if (staleTop3Score) assert.match(staleTop3Score, /score masqué|score hidden|puntaje oculto/i,
         "stale state must suppress top-three numeric scores");
