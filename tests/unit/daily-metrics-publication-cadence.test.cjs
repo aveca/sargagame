@@ -62,7 +62,17 @@ assert.ok(guardIndex >= 0 && guardIndex < stageIndex,
   'le snapshot doit être validé avant tout staging')
 assert.ok(stageIndex < commitIndex && commitIndex < pushIndex,
   'le snapshot validé doit être stage, committé puis poussé dans cet ordre')
-console.log('OK 2b: collecte → garde → staging → commit → push vérifiés')
+const stashIndex = publishStep.indexOf('git stash push --include-untracked')
+const rebaseIndex = publishStep.indexOf('git rebase -X theirs')
+const restoreIndex = publishStep.indexOf('git stash pop --index')
+const failureIndex = publishStep.indexOf('if [ "$push_ok" != "1" ]')
+assert.ok(commitIndex < stashIndex && stashIndex < rebaseIndex && rebaseIndex < restoreIndex,
+  'les sorties générées doivent être mises à l’abri après le commit snapshot, avant le rebase, puis restaurées')
+assert.ok(restoreIndex < failureIndex,
+  'les fichiers générés doivent être restaurés même lorsque la boucle de push échoue')
+assert.match(publishStep, /restore_generated_changes/,
+  'la restauration des fichiers générés doit être centralisée et explicite')
+console.log('OK 2b: collecte → garde → staging → commit → stash → rebase/push → restauration vérifiés')
 
 // ── 3. Responsabilité séparée + échec NON silencieux ───────────────────────
 // Le step de publication ne doit PAS avoir continue-on-error : sinon un échec
