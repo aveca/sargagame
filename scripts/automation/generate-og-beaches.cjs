@@ -10,7 +10,6 @@ const sceneSvg = require('../lib/scene-svg.cjs')
 
 const OUT_DIR = path.join(L.ROOT, 'public', 'images', 'og')
 const OPERATIONAL_SLA_MINUTES = 900
-fs.mkdirSync(OUT_DIR, { recursive: true })
 
 function parseObservationTimestamp(value) {
   const timestamp = typeof value === 'number' ? value : Date.parse(String(value ?? ''))
