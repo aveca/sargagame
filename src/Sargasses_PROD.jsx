@@ -4519,10 +4519,15 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   },[beach?.id,beach?.score])
 
   // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+  // Seule l'observation ERDDAP fait foi : updatedAt date la republication du pipeline.
+  // Sans timestamp source valide, ne jamais afficher « récent » par défaut.
+  const satAge = satelliteAgeHours(sargData)
+  const satFresh = isSatelliteFresh12h(sargData)
+  const satLabel = satAge == null
+    ? _t(lang,"Observation satellite à vérifier","Satellite observation needs checking","Medición satelital por verificar")
+    : satAge < 1
+      ? _t(lang,"Dernière observation satellite il y a <1 h","Last satellite observation <1h ago","Última observación satelital hace <1 h")
+      : _t(lang,`Dernière observation satellite il y a ${Math.round(satAge)} h`,`Last satellite observation ${Math.round(satAge)}h ago`,`Última observación satelital hace ${Math.round(satAge)} h`)
 
   // ── Distance / lieu
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
@@ -4713,7 +4718,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Preuve fraîcheur satellite */}
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
+          <span style={{width:7,height:7,borderRadius:"50%",background:satFresh?COMIC.clean:COMIC.orange,boxShadow:`0 0 0 3px ${(satFresh?COMIC.clean:COMIC.orange)}33`}}/>{satLabel}
         </div>
 
         {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
