@@ -38,7 +38,7 @@ const failureStep = workflow.slice(workflow.indexOf('Send failure alert email'),
 assert.match(failureStep, /notify-failure\.cjs --dry-run/, 'scheduled failure notifications must be dry-run')
 assert.match(failureStep, /workflow_dispatch/, 'failure email send path must be manual-dispatch only')
 assert.match(failureStep, /authorize_outbound/, 'failure email send path must require outbound approval')
-assert.match(failureStep, /notify-failure\\.cjs --send/, 'failure email must use explicit --send after approval')
+assert.match(failureStep, /notify-failure\.cjs --send/, 'failure email must use explicit --send after approval')
 assert.match(workflow, /Clean bounced emails from Sheet \(approval-gated mutation\)[\s\S]{0,180}inputs\.authorize_data_cleanup == true/i, 'Apps Script cleanup must require data-cleanup approval')
 assert.match(workflow, /purge-analytics\.cjs --dry/, 'scheduled analytics purge must be dry-run')
 assert.match(workflow, /Purge analytics_events[\s\S]{0,240}authorize_data_cleanup/, 'real analytics purge must require data-cleanup approval')
