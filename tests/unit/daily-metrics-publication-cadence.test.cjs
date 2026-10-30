@@ -103,6 +103,8 @@ assert.match(step, /if \[ ! -f "\$M" \] \|\| ! node -e/, 'la garde doit vérifie
 const emailStart = daily.indexOf('- name: Commit email state')
 const emailEnd = daily.indexOf('- name: ', emailStart + 10)
 const emailStep = daily.slice(emailStart, emailEnd)
+assert.match(emailStep, /if: always\(\) && github\.event_name != 'push'/,
+  'le commit des états email doit rester exécuté même si la publication métrique échoue')
 assert.match(emailStep, /continue-on-error: true/,
   "le step email conserve son continue-on-error (l'email n'est pas critique)")
 assert.doesNotMatch(emailStep, /git add scripts\/automation\/data\/daily-metrics\.json/,
