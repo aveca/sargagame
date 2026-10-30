@@ -3,7 +3,12 @@
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
-const freshness = require('../../public/b2b-data-freshness.js')
+const vm = require('node:vm')
+const helperSource = fs.readFileSync(path.join(__dirname, '../../public/b2b-data-freshness.js'), 'utf8')
+const helperWindow = {}
+vm.runInNewContext(helperSource, { window: helperWindow })
+const freshness = helperWindow.SargagameB2BFreshness
+assert.ok(freshness && typeof freshness.getObservationFreshness === 'function', 'browser helper must expose its public contract')
 
 const now = Date.parse('2026-10-30T13:26:57.000Z')
 const recent = new Date(now - 2 * 60 * 60 * 1000).toISOString()
