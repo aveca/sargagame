@@ -66,25 +66,25 @@ export function initHomeAZ(SR, HOST, opts){
      i18n — copie (verbatim du proto)
      ==================================================================== */
   var STATUS = {
-    clean: {fr:["PROPRE AUJOURD'HUI","CLEAN"], en:["CLEAN TODAY","CLEAN"], es:["LIMPIA HOY","CLEAN"], col:"var(--green)", cls:"st-clean"},
-    mod:   {fr:["MODÉRÉ AUJOURD'HUI","MOD"],   en:["MODERATE TODAY","MOD"], es:["MODERADA HOY","MOD"], col:"#E8B23A", cls:"st-mod"},
-    avoid: {fr:["À ÉVITER AUJOURD'HUI","AVOID"],en:["AVOID TODAY","AVOID"], es:["EVITAR HOY","AVOID"], col:"var(--coral)", cls:"st-avoid"}
+    clean: {fr:["PROPRE","CLEAN"], en:["CLEAN","CLEAN"], es:["LIMPIA","CLEAN"], col:"var(--green)", cls:"st-clean"},
+    mod:   {fr:["MODÉRÉ","MOD"],   en:["MODERATE","MOD"], es:["MODERADA","MOD"], col:"#E8B23A", cls:"st-mod"},
+    avoid: {fr:["À ÉVITER","AVOID"],en:["AVOID","AVOID"], es:["EVITAR","AVOID"], col:"var(--coral)", cls:"st-avoid"}
   };
   var T = {
-    live:        {fr:"EN DIRECT", en:"LIVE", es:"EN DIRECTO"},
-    eb0:         {fr:["EN DIRECT · "," · SATELLITE COPERNICUS"], en:["LIVE · "," · COPERNICUS SATELLITE"], es:["EN DIRECTO · "," · SATÉLITE COPERNICUS"]},
-    s0:          {fr:"Le verdict sargasses du matin, mesuré au satellite — pas une supposition.", en:"This morning's sargassum verdict, measured by satellite — not a guess.", es:"El veredicto de sargazo de esta mañana, medido por satélite — no una suposición."},
+    live:        {fr:"OBSERVATION RÉCENTE", en:"RECENT OBSERVATION", es:"OBSERVACIÓN RECIENTE"},
+    eb0:         {fr:["OBSERVATION RÉCENTE · "," · OBSERVATION SATELLITE"], en:["RECENT OBSERVATION · "," · SATELLITE OBSERVATION"], es:["OBSERVACIÓN RECIENTE · "," · OBSERVACIÓN SATELITAL"]},
+    s0:          {fr:"La dernière observation satellite disponible, horodatée — pas une supposition.", en:"The latest available satellite observation, timestamped — not a guess.", es:"La última observación satelital disponible, con hora indicada — no una suposición."},
     ctaHeroT:    {fr:"Voir la dernière mesure", en:"See latest reading", es:"Ver la última medición"},
-    ctaHeroS:    {fr:"verdict du jour · météo · 7 jours de prévisions", en:"today's verdict · weather · 7-day forecast", es:"veredicto de hoy · clima · pronóstico 7 días"},
+    ctaHeroS:    {fr:"dernière mesure · météo · prévisions 7 jours", en:"latest reading · weather · 7-day forecast", es:"última medición · clima · pronóstico de 7 días"},
     mapLinkT:    {fr:"Ouvrir la carte des plages", en:"Open beach map", es:"Abrir mapa de playas"},
-    eb1:         {fr:"CE MATIN, EN DIRECT", en:"THIS MORNING, LIVE", es:"ESTA MAÑANA, EN DIRECTO"},
+    eb1:         {fr:"DERNIÈRE OBSERVATION SATELLITE", en:"LATEST SATELLITE OBSERVATION", es:"ÚLTIMA OBSERVACIÓN SATELITAL"},
     h1:          {fr:[["LE VERDICT,"],["PLAGE PAR PLAGE"]], en:[["THE VERDICT,"],["BEACH BY BEACH"]], es:[["EL VEREDICTO,"],["PLAYA POR PLAYA"]]},
-    s1:          {fr:"Pas d'avis, pas de promesses : la mesure satellite de ce matin, plage par plage.", en:"No opinions, no promises: this morning's satellite reading, beach by beach.", es:"Sin opiniones ni promesas: la medición satelital de esta mañana, playa por playa."},
+    s1:          {fr:"Pas d'avis, pas de promesses : la dernière observation satellite, plage par plage.", en:"No opinions, no promises: the latest satellite observation, beach by beach.", es:"Sin opiniones ni promesas: la última observación satelital, playa por playa."},
     ctaVerdictT: {fr:"Choisis ta plage", en:"Pick your beach", es:"Elige tu playa"},
     eb2:         {fr:"COMMENT ON LE SAIT", en:"HOW WE KNOW", es:"CÓMO LO SABEMOS"},
     h2:          {fr:[["ON VEILLE"],["LA MER POUR TOI"]], en:[["WE WATCH"],["THE SEA FOR YOU"]], es:[["VIGILAMOS"],["EL MAR POR TI"]]},
     s2:          {fr:"On traduit la dernière observation satellite disponible en un statut clair, plage par plage. Si la mesure est retardée, on le signale.", en:"We turn the latest available satellite observation into a clear beach-by-beach status. If the reading is delayed, we say so.", es:"Convertimos la última observación satelital disponible en un estado claro, playa por playa. Si la medición se retrasa, lo indicamos."},
-    m2b1t:       {fr:"Satellite Copernicus", en:"Copernicus satellite", es:"Satélite Copernicus"},
+    m2b1t:       {fr:"Observation satellite", en:"Satellite observation", es:"Observación satelital"},
     m2b1s:       {fr:"L'heure de la dernière observation est affichée ; une republication ne remplace pas une nouvelle mesure.", en:"The latest observation time is shown; republishing is not a new measurement.", es:"Se muestra la hora de la última observación; volver a publicar no equivale a una nueva medición."},
     m2b2t:       {fr:"Un score 0-100", en:"A 0-100 score", es:"Un puntaje 0-100"},
     m2b2s:       {fr:"Le score résume les indicateurs disponibles ; la fraîcheur de la mesure est affichée séparément.", en:"The score summarizes available indicators; observation freshness is shown separately.", es:"El puntaje resume los indicadores disponibles; la frescura de la medición se muestra por separado."},
@@ -101,7 +101,7 @@ export function initHomeAZ(SR, HOST, opts){
     ctaPremiumT: {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     reassure:    {fr:"Pass unique, dès 7,99 € — pas d'abonnement, accès immédiat, rien à résilier.", en:"One-time Pass from $5.99 — no subscription, instant access, nothing to cancel.", es:"Pass único desde $5.99 — sin suscripción, acceso inmediato, nada que cancelar."},
     eb4:         {fr:"MESURÉ, PAS DEVINÉ", en:"MEASURED, NOT GUESSED", es:"MEDIDO, NO ADIVINADO"},
-    footCredit:  {fr:"Données : Copernicus Marine · heure d'observation affichée", en:"Data: Copernicus Marine · observation time shown", es:"Datos: Copernicus Marine · hora de observación indicada"},
+    footCredit:  {fr:"Données : observation satellite · heure UTC affichée", en:"Data: satellite observation · UTC time shown", es:"Datos: observación satelital · hora UTC indicada"},
     aboutLink:   {fr:"À propos", en:"About", es:"Acerca de"},
     footPrem:    {fr:"Activer mon veilleur", en:"Turn on my watcher", es:"Activar mi vigía"},
     notifT1:     {fr:"TA PLAGE CHANGE", en:"YOUR BEACH CHANGES", es:"TU PLAYA CAMBIA"},
@@ -171,7 +171,7 @@ export function initHomeAZ(SR, HOST, opts){
   }
   function setHeroHeading(){
     var fresh=freshness();
-    var l2word=fresh.live ? _t("AUJOURD'HUI","TODAY","HOY") : _t("DERNIER STATUT OBSERVÉ","LAST OBSERVED STATUS","ÚLTIMO ESTADO OBSERVADO");
+    var l2word=fresh.live ? _t("MESURE RÉCENTE","RECENT READING","MEDICIÓN RECIENTE") : _t("DERNIER STATUT OBSERVÉ","LAST OBSERVED STATUS","ÚLTIMO ESTADO OBSERVADO");
     var live=fresh.badge;
     var st=HOME.status||"clean";
     var segs;
