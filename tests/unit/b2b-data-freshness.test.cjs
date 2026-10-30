@@ -18,6 +18,8 @@ assert.equal(freshness.getObservationFreshness({ erddapTimestamp: recent, update
 const republishedOld = freshness.getObservationFreshness({ erddapTimestamp: old, updatedAt: new Date(now).toISOString(), stale: false }, 'fr', now)
 assert.equal(republishedOld.status, 'stale', 'recent republication must not make an old observation fresh')
 assert.equal(Math.round(republishedOld.ageMs / 60000), 4405)
+const exactThreshold = freshness.getObservationFreshness({ erddapTimestamp: new Date(now - 36 * 60 * 60 * 1000).toISOString(), stale: false }, 'en', now)
+assert.equal(exactThreshold.status, 'stale', 'the exact 36-hour boundary must be stale')
 assert.match(republishedOld.label, /ancienne/)
 const spanishOld = freshness.getObservationFreshness({ erddapTimestamp: old, updatedAt: new Date(now).toISOString(), stale: false }, 'es', now)
 assert.equal(spanishOld.status, 'stale')
@@ -60,11 +62,18 @@ for (const [relative, locale] of pages) {
   assert.ok(html.includes("getObservationFreshness(data,'"+locale+"')"), relative + ' must use the ERDDAP timestamp helper')
   assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)/i, relative + ' must not publish unsupported accuracy or sampling claims')
 }
-const pricing = fs.readFileSync(path.join(root, 'public/pro/pricing/index.html'), 'utf8')
-assert.ok(pricing.includes('/b2b-data-freshness.js'), 'pricing page must load the shared freshness contract')
-assert.ok(pricing.includes("getTrackRecordState(d, 'mq')"), 'pricing page must scope the public record to MQ')
-assert.doesNotMatch(pricing, /Fiabilité publiée et auditée|4×\s*\/\s*jour|4×\s*\/\s*day/i, 'pricing page must not publish stale proof or promise four AFAI observations per day')
-assert.ok(pricing.includes('79 €/mois') && pricing.includes('690 €/an'), 'existing canonical Pro prices must remain unchanged')
+const pricingPages = [
+  { path: 'public/pro/pricing/index.html', prices: ['79 €/mois', '690 €/an'] },
+  { path: 'public/pro/en/pricing/index.html', prices: ['$89/month', '$790/year'] },
+  { path: 'public/pro/es/pricing/index.html', prices: ['$89/mes', '$790/año'] }
+]
+for (const item of pricingPages) {
+  const pricing = fs.readFileSync(path.join(root, item.path), 'utf8')
+  assert.ok(pricing.includes('/b2b-data-freshness.js'), item.path + ' must load the shared freshness contract')
+  assert.ok(pricing.includes("getTrackRecordState(d, 'mq')"), item.path + ' must scope the public record to MQ')
+  assert.doesNotMatch(pricing, /Fiabilité publiée et auditée|4×\s*\/\s*jour|4×\s*\/\s*day|4×\s*\/\s*día/i, item.path + ' must not publish stale proof or promise four AFAI observations per day')
+  assert.ok(item.prices.every(price => pricing.includes(price)), item.path + ' must preserve its existing prices without selecting a new offer')
+}
 
 const api = fs.readFileSync(path.join(root, 'public/api/index.html'), 'utf8')
 assert.ok(api.includes('Alternate Floating Algae Index'), 'API docs must use the verified AFAI expansion')
