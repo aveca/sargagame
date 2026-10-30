@@ -21,6 +21,7 @@ const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.s
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const OUT_PATH = path.join(__dirname, 'data', 'funnel-daily-report.json')
 const PAGE = 1000
+const { parseEventParams, normalizeEvent, classifyAnalyticsHost } = require('./funnel-analytics-classification.cjs')
 
 // Funnel steps dans l'ordre (top → bottom)
 const FUNNEL_STEPS = [
@@ -41,7 +42,7 @@ function svcHeaders(extra) {
 async function fetchAll(cutoffIso) {
   const rows = []
   for (let from = 0; ; from += PAGE) {
-    const q = `select=event,island,ts&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
+    const q = `select=event,island,params,ts&ts=gte.${encodeURIComponent(cutoffIso)}&order=ts.asc`
     let res
     try {
       res = await fetch(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
@@ -60,72 +61,97 @@ async function fetchAll(cutoffIso) {
 
 function pct(n, d) { return d > 0 ? Math.round((n / d) * 1000) / 10 : 0 }
 
+const ENGAGEMENT_EVENTS = [
+  'verdict_expand', 'forecast_view', 'paywall_view', 'payment_failed',
+  'premium_feature_click', 'checkout_started', 'sos_checkout_start',
+  'sos_checkout_redirect', 'sos_checkout_paid',
+]
+
 function computeReport(rows) {
-  // Comptage par step
   const counts = {}
-  for (const s of FUNNEL_STEPS) counts[s.key] = 0
-  for (const r of rows) {
-    const evt = String(r.event || '')
-    if (counts[evt] !== undefined) counts[evt]++
-    // pass_cta + premium_modal_cta = CTA total
+  const observedCounts = {}
+  const unverifiedCounts = {}
+  for (const step of FUNNEL_STEPS) {
+    counts[step.key] = 0
+    observedCounts[step.key] = 0
+    unverifiedCounts[step.key] = 0
   }
 
-  // Agrégation CTA = pass_cta + premium_modal_cta
+  const engagement = Object.fromEntries(ENGAGEMENT_EVENTS.map(key => [key, 0]))
+  const observedEngagement = Object.fromEntries(ENGAGEMENT_EVENTS.map(key => [key, 0]))
+  const byIsland = {}
+  const unverifiedByIsland = {}
+  const hostClassCounts = { production: 0, local_test: 0, preview: 0, unknown_host: 0 }
+
+  for (const row of rows) {
+    const params = parseEventParams(row.params)
+    const attribution = classifyAnalyticsHost(params, row.island)
+    const island = String(attribution.region || 'unknown').toUpperCase()
+    const evt = normalizeEvent(row.event)
+    hostClassCounts[attribution.hostClass]++
+
+    if (Object.prototype.hasOwnProperty.call(observedCounts, evt)) {
+      observedCounts[evt]++
+      if (attribution.hostClass !== 'production') {
+        unverifiedCounts[evt]++
+        unverifiedByIsland[island] = unverifiedByIsland[island] || {}
+        unverifiedByIsland[island][evt] = (unverifiedByIsland[island][evt] || 0) + 1
+      } else {
+        counts[evt]++
+        byIsland[island] = byIsland[island] || {}
+        byIsland[island][evt] = (byIsland[island][evt] || 0) + 1
+      }
+    }
+
+    if (Object.prototype.hasOwnProperty.call(observedEngagement, evt)) {
+      observedEngagement[evt]++
+      if (attribution.hostClass === 'production') engagement[evt]++
+    }
+  }
+
   const ctaTotal = counts.premium_modal_cta + counts.pass_cta
-
-  // Taux de conversion entre étapes consécutives
-  const steps = FUNNEL_STEPS.map((s, i) => {
-    const count = s.key === 'premium_modal_cta' || s.key === 'pass_cta' ? undefined : counts[s.key]
-    return { ...s, count }
-  })
-
-  // Remplacer les 2 lignes CTA par une seule
+  const observedCtaTotal = observedCounts.premium_modal_cta + observedCounts.pass_cta
   const funnelView = [
-    { key: 'map_open',          label: 'Map opened',       icon: '🗺️', count: counts.map_open },
-    { key: 'beach_open',        label: 'Beach selected',   icon: '🏖️', count: counts.beach_open },
-    { key: 'verdict_scan_view', label: 'Verdict viewed',   icon: '📊', count: counts.verdict_scan_view },
-    { key: 'premium_modal_open',label: 'Paywall seen',     icon: '🔒', count: counts.premium_modal_open },
-    { key: 'cta',               label: 'CTA clicked',      icon: '👆', count: ctaTotal },
-    { key: 'checkout_redirect', label: 'Checkout clicked', icon: '💳', count: counts.checkout_redirect },
-    { key: 'conversion',        label: 'Paid',             icon: '✅', count: counts.conversion },
+    { key: 'map_open', label: 'Map opened', icon: '🗺️', count: counts.map_open },
+    { key: 'beach_open', label: 'Beach selected', icon: '🏖️', count: counts.beach_open },
+    { key: 'verdict_scan_view', label: 'Verdict viewed', icon: '📊', count: counts.verdict_scan_view },
+    { key: 'premium_modal_open', label: 'Paywall seen', icon: '🔒', count: counts.premium_modal_open },
+    { key: 'cta', label: 'CTA clicked', icon: '👆', count: ctaTotal },
+    { key: 'checkout_redirect', label: 'Hosted checkout redirect', icon: '💳', count: counts.checkout_redirect },
+    { key: 'conversion', label: 'Conversion event (not payment proof)', icon: '📥', count: counts.conversion },
   ]
 
-  // Taux de conversion étape→étape
   const rates = []
   for (let i = 1; i < funnelView.length; i++) {
     const from = funnelView[i - 1]
     const to = funnelView[i]
-    rates.push({
-      from: from.label,
-      to: to.label,
-      rate: pct(to.count, from.count),
-    })
+    rates.push({ from: from.label, to: to.label, rate: pct(to.count, from.count) })
   }
 
-  // Taux global (top→bottom)
   const globalRate = pct(counts.conversion, counts.map_open)
-
-  // Engagement events (diagnostic)
-  const ENGAGEMENT_EVENTS = ['verdict_expand', 'forecast_view', 'paywall_view', 'payment_failed', 'premium_feature_click']
-  const engagement = {}
-  for (const k of ENGAGEMENT_EVENTS) engagement[k] = 0
-  for (const r of rows) {
-    const evt = String(r.event || '').replace(/^sg_/, '')
-    if (engagement[evt] !== undefined) engagement[evt]++
+  const verifiedRows = hostClassCounts.production
+  return {
+    funnel: funnelView,
+    rates,
+    global_rate: globalRate,
+    counts,
+    observed_counts: observedCounts,
+    unverified_counts: unverifiedCounts,
+    cta_total: ctaTotal,
+    observed_cta_total: observedCtaTotal,
+    engagement,
+    observed_engagement: observedEngagement,
+    by_island: byIsland,
+    unverified_by_island: unverifiedByIsland,
+    data_quality: {
+      total_rows: rows.length,
+      verified_production_rows: verifiedRows,
+      local_test_rows: hostClassCounts.local_test,
+      preview_rows: hostClassCounts.preview,
+      unknown_host_rows: hostClassCounts.unknown_host,
+      unverified_rows: rows.length - verifiedRows,
+    },
   }
-
-  // Par île
-  const byIsland = {}
-  for (const r of rows) {
-    const isl = (r.island || 'MQ').toUpperCase()
-    const evt = String(r.event || '')
-    if (counts[evt] !== undefined) {
-      byIsland[isl] = byIsland[isl] || {}
-      byIsland[isl][evt] = (byIsland[isl][evt] || 0) + 1
-    }
-  }
-
-  return { funnel: funnelView, rates, global_rate: globalRate, counts, cta_total: ctaTotal, engagement, by_island: byIsland }
 }
 
 function formatReport(report, windowHours) {
@@ -133,6 +159,9 @@ function formatReport(report, windowHours) {
   const now = new Date()
   lines.push(`📊 Funnel Report — ${now.toISOString().slice(0, 10)}`)
   lines.push(`   Window: ${windowHours}h · Source: Supabase analytics_events`)
+  const quality = report.data_quality || {}
+  lines.push(`   Verified production rows: ${quality.verified_production_rows || 0}/${quality.total_rows || 0}`)
+  lines.push(`   Excluded from production funnel: local=${quality.local_test_rows || 0}, preview=${quality.preview_rows || 0}, unknown-host=${quality.unknown_host_rows || 0}`)
   lines.push('')
 
   // Funnel vertical
@@ -156,7 +185,7 @@ function formatReport(report, windowHours) {
   lines.push('')
 
   // Taux global
-  lines.push(`  🎯 Global: map_open → paid = ${report.global_rate}%`)
+  lines.push(`  🎯 Global: map_open → conversion event (not revenue) = ${report.global_rate}%`)
   lines.push('')
 
   // Engagement events (diagnostic)
@@ -184,8 +213,10 @@ function formatReport(report, windowHours) {
 
   // Diagnosis hints
   lines.push('  💡 Diagnosis:')
-  if (report.funnel[0].count === 0) {
-    lines.push('    ⚠️ No map_open events — check frontend tracking or analytics config')
+  if ((report.data_quality?.verified_production_rows || 0) === 0 && (report.data_quality?.total_rows || 0) > 0) {
+    lines.push('    ⚠️ No rows have a verified production hostname; do not infer production conversion from this window')
+  } else if (report.funnel[0].count === 0) {
+    lines.push('    ⚠️ No production-attributed map_open events — check frontend tracking or analytics config')
   } else if (report.rates.length > 0 && report.rates[0].rate < 30) {
     lines.push(`    ⚠️ Low map→beach (${report.rates[0].rate}%) — UX friction on map?`)
   } else if (report.rates.length > 2 && report.rates[2].rate < 10) {
@@ -219,4 +250,8 @@ async function main() {
   console.log(`\n[funnel-report] ${rows.length} events → ${OUT_PATH}`)
 }
 
-main().catch((e) => { console.error('[funnel-report] erreur non fatale:', e && e.message); process.exit(0) })
+if (require.main === module) {
+  main().catch((e) => { console.error('[funnel-report] erreur non fatale:', e && e.message); process.exit(0) })
+}
+
+module.exports = { FUNNEL_STEPS, ENGAGEMENT_EVENTS, computeReport, formatReport }
