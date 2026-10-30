@@ -9,8 +9,10 @@ const root = path.resolve(__dirname, '../..');
 const mqHtml = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const prepareFtp = fs.readFileSync(path.join(root, 'scripts/prepare-ftp.cjs'), 'utf8');
 
-const gpStart = prepareFtp.indexOf('  const gpIndex = `');
-const gpEnd = prepareFtp.indexOf("\n`\n  fs.writeFileSync(path.join(out, 'index.html'), gpIndex", gpStart);
+const gpStart = prepareFtp.indexOf('const gpIndex = `');
+// Find the closing backtick of the template literal (handles both LF and CRLF)
+let gpEnd = prepareFtp.indexOf("`\n", gpStart);
+if (gpEnd < 0) gpEnd = prepareFtp.indexOf("`\r\n", gpStart);
 assert.ok(gpStart >= 0 && gpEnd > gpStart, 'Guadeloupe static homepage template must remain discoverable');
 const gpHtml = prepareFtp.slice(gpStart, gpEnd);
 

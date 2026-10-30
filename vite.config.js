@@ -121,11 +121,15 @@ try {
   console.warn('vite.config.js: daily-metrics (communauté) non chargé:', e.message)
 }
 
-// Données de référence sargasses par plage (fallback si API Copernicus indisponible) — sync avec beaches-list.json
+// Données de référence sargasses par plage (fallback si API Copernicus indisponible) — sync avec beaches-list.json.
+// NE JAMAIS injecter de valeurs fictives (afai=0.2, status='clean') qui créeraient
+// une fausse apparence de données actuelles quand l'observation satellite est absente.
+// Les champs afai et status restent null quand non disponibles ; le code aval doit
+// vérifier l'observation réelle via observation-freshness.cjs avant d'afficher quoi que ce soit.
 const SARGASSUM_REF = ALL_BEACHES.map(b => ({
   id: b.id,
-  afai: b.afai ?? 0.2,
-  status: b.status ?? 'clean',
+  afai: b.afai != null ? b.afai : null,
+  status: b.status != null ? b.status : null,
 }))
 
 const DAYS = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
@@ -1414,10 +1418,11 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           try { _widgetRenderer = _require('./scripts/lib/widget-embed.cjs') } catch (e) { console.warn('   ⚠ widget-embed non chargé:', e.message) }
           // Backtest reader for fiche-dive reliability data
           const readBacktestFD = () => { try { return JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8')) } catch { return null } }
-          let _heroLive = { updatedAt: null, levelsBySlug: {}, weeklyBySlug: {}, scoresBySarg: {} }
+          let _heroLive = { updatedAt: null, erddapTimestamp: null, levelsBySlug: {}, weeklyBySlug: {}, scoresBySarg: {} }
           try {
             const _lj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
             _heroLive.updatedAt = _lj.updatedAt || null
+            _heroLive.erddapTimestamp = _lj.erddapTimestamp || null
             // Le live est clé par slug-id legacy (ex. "diamant") ≠ beaches-list id
             // ("mq016"). On ré-indexe par slug(name)/id pour matcher le score réel
             // quand il existe ; sinon on dégrade proprement (mood depuis status).
@@ -1427,14 +1432,20 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             // la source des barres de facteurs de la plongée (heroLv n'a PAS le breakdown).
             for (const [k, v] of Object.entries(_lj.scores || {})) { _heroLive.scoresBySarg[k] = v }
           } catch (e) { /* live absent → fallback déterministe, jamais bloquant */ }
-          // Forecast déterministe pour les 136 plages (clé = beaches-list id).
+          // Forecast 7j : UNIQUEMENT depuis les données live réelles (erddapTimestamp).
+          // Jamais généré depuis SARGASSUM_REF de référence qui contient des valeurs
+          // nulles quand l'observation satellite est absente.
           let _heroWeekly = {}
-          try { _heroWeekly = buildWeeklyBatch(SARGASSUM_REF) } catch (e) { _heroWeekly = {} }
+          if (_heroLive.erddapTimestamp) {
+            try { _heroWeekly = buildWeeklyBatch((_lj.levels || []).map(l => ({ id: l.id, afai: l.afai, status: l.status }))) } catch (e) { _heroWeekly = {} }
+          }
           const _statusWordFR = { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter' }
           // Ligne forecast 7j lisible (jour: statut) pour la bande verdict.
           const heroForecastLine = (b) => {
             const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
-            const wk = _heroWeekly[b.id] || _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id]
+            // Priorité aux données live réelles ; _heroWeekly est un fallback
+            // synthétique qui ne doit JAMAIS être présenté comme actuel.
+            const wk = _heroLive.weeklyBySlug[sargId] || _heroLive.weeklyBySlug[b.id] || _heroWeekly[b.id]
             const fc = wk && wk.forecast
             if (!fc || !fc.length) return ''
             return fc.slice(0, 7).map(f => `${f.day} ${_statusWordFR[f.status] || f.status}`).join(' · ')
@@ -1444,9 +1455,9 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             const sargId = BEACH_TO_SARG[b.id] || slugify(b.name)
             const lvLive = _heroLive.levelsBySlug[sargId] || _heroLive.levelsBySlug[b.id]
             return {
-              status: (lvLive && lvLive.status) || b.status || 'clean',
+              status: (lvLive && lvLive.status != null) ? lvLive.status : null,
               score: lvLive && typeof lvLive.score === 'number' ? lvLive.score : undefined,
-              afai: lvLive && typeof lvLive.afai === 'number' ? lvLive.afai : (typeof b.afai === 'number' ? b.afai : 0.2),
+              afai: lvLive && typeof lvLive.afai === 'number' ? lvLive.afai : null,
             }
           }
           // Score RÉEL complet (score + breakdown 7 facteurs + forces) depuis la map
@@ -2027,7 +2038,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               try {
                 // Real data for window.__SG_BEACH__
                 const _fd_lv = heroLv(b)
-                const _fd_liveStatus = (_fd_lv && _fd_lv.status) || b.status || 'clean'
+                const _fd_liveStatus = (_fd_lv && _fd_lv.status != null) ? _fd_lv.status : (b.status != null ? b.status : null)
                 // Score RÉEL (score + breakdown 7 facteurs + forces) depuis la map scores,
                 // pas heroLv (qui n'a que le score sans breakdown). null si non couvert.
                 const _fd_score = heroScore(b)
@@ -2041,7 +2052,9 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // beaches (frozen + blank journal). Unwrap .forecast → array | null.
                 const _fd_wk = (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[slugify(b.name)])
                   || (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[b.id])
-                  || _heroWeekly[b.id]
+                  // _heroWeekly est un fallback synthétique : utilisé seulement si
+                  // des données live réelles existent (erddapTimestamp présent).
+                  || (_heroLive.erddapTimestamp && _heroWeekly[b.id])
                   || null
                 const _fd_forecast = Array.isArray(_fd_wk) ? _fd_wk
                   : (_fd_wk && Array.isArray(_fd_wk.forecast) ? _fd_wk.forecast : null)
@@ -2089,12 +2102,13 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   calm: _fd_rr.regimeReliability?.regimes?.calm?.cleanReliabilityPct ?? null,
                   peak: _fd_rr.regimeReliability?.regimes?.high?.cleanReliabilityPct ?? null,
                   sample: _fd_rr.totalPairs || 0
-                } : { overall: 77, calm: 79, peak: 76, sample: 0 }
-                // Freshness: honest (null if >12h)
+                } : null
+                // Freshness: honest — uses erddapTimestamp (observation time), never updatedAt (publication time).
+                // Null if missing/invalid/future or if data is stale (>12h for current verdict).
                 const _fd_updatedAt = (() => {
-                  if (!_heroLive.updatedAt) return null
-                  const ageMin = (Date.now() - new Date(_heroLive.updatedAt).getTime()) / 60000
-                  return ageMin > 720 ? null : _heroLive.updatedAt
+                  if (!_heroLive.erddapTimestamp) return null
+                  const ageMin = (Date.now() - new Date(_heroLive.erddapTimestamp).getTime()) / 60000
+                  return ageMin > 720 ? null : _heroLive.erddapTimestamp
                 })()
                 const sgBeachData = JSON.stringify({
                   beach: { id: b.id, island: b.island, name: b.name, commune: b.commune,
@@ -2185,9 +2199,9 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             if (_widgetRenderer) {
               try {
                 const _w_lv = heroLv(b)
-                const _w_status = _w_lv.status || 'clean'
+                const _w_status = _w_lv && _w_lv.status != null ? _w_lv.status : null
                 const _w_score = typeof _w_lv.score === 'number' ? _w_lv.score : null
-                const _w_updatedAt = _heroLive.updatedAt || new Date().toISOString()
+                const _w_updatedAt = _heroLive.erddapTimestamp || null
                 const widgetHtmlFR = _widgetRenderer.renderWidget(b, _w_status, _w_score, _w_updatedAt, 'fr', b.island)
                 const widgetDir = resolve(outDir, 'widget', 'embed', b.slug)
                 mkdirSync(widgetDir, { recursive: true })
