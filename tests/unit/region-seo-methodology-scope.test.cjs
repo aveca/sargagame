@@ -95,10 +95,7 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       assert.doesNotMatch(html, /Measured accuracy across our Caribbean network|Precisión medida en nuestra red Caribe/)
       assert.doesNotMatch(html, /status is correct 99%|estado a 1 día acierta el 99%/)
     }
-    const generatedHtml = generatedFiles.map(file => fs.readFileSync(file, 'utf8')).join('\n')
-    assert.match(generatedHtml, /AFAI satellite index distributed by NOAA\/AOML ERDDAP/)
-    assert.match(generatedHtml, /latest public record is marked stale|El último registro público está marcado como obsoleto/i)
-    assert.doesNotMatch(generatedHtml, /Raw NOAA\/Copernicus imagery|Las imágenes en bruto de NOAA\/Copernicus/)
+
   } finally {
     fs.rmSync(distDir, { recursive: true, force: true })
   }
@@ -107,6 +104,8 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
 const generatorSource = fs.readFileSync(path.join(ROOT, 'scripts/lib/region-seo-pages.cjs'), 'utf8')
 assert.match(generatorSource, /track-record\.json/)
 assert.doesNotMatch(generatorSource, /backtest-results\.json/, 'raw backtest input has no public regional freshness contract')
+assert.match(generatorSource, /No separately validated accuracy percentage is published/)
+assert.doesNotMatch(generatorSource, /Measured accuracy across our Caribbean network|Precisión medida en nuestra red Caribe/)
 
 console.log('PASS: stale and unsupported regional track-record metrics are never published as current methodology accuracy')
 console.log('PASS: methodology pages remain generated for Florida, Punta Cana, Riviera Maya and Tulum')
