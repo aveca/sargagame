@@ -29,12 +29,6 @@ export function isSatellitePayloadCurrent(sargData, now = Date.now()) {
     isSatelliteFresh12h(sargData, now)
 }
 
-/** A beach decision additionally requires a recognized, measured status. */
-export function isCurrentSatelliteDecision(sargData, status, now = Date.now()) {
-  return ['clean', 'moderate', 'avoid'].includes(status) &&
-    isSatellitePayloadCurrent(sargData, now)
-}
-
 /**
  * Âge satellite en heures à l'instant du rendu (temps servi, jamais figé).
  * Remplace les lectures directes du champ statique `dataAgeMinutes`, qui est un
