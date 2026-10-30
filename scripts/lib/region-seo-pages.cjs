@@ -50,7 +50,7 @@ const T = {
     network: 'Sargassum network', home: 'Map',
     methodTitle: r => `Our Methodology & Validation Scope — ${r} Sargassum Data`,
     methodH1: 'Methodology & validation scope',
-    methodDesc: r => `How the ${r} sargassum map works: available Copernicus/NOAA AFAI observations, per-beach sampling, and a 7-day forecast when data are available. Observation time and confidence may vary.`,
+    methodDesc: r => `How the ${r} sargassum map works: AFAI observations distributed through NOAA/AOML ERDDAP, with Copernicus Marine currents and Open-Meteo wind as transport inputs, per-beach sampling, and a 7-day forecast when data are available. Observation time and confidence may vary.`,
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysFull: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
     // Fallback FAQPage par plage pour les régions sans content.beachFaq —
@@ -74,7 +74,7 @@ const T = {
     network: 'Red sargazo', home: 'Mapa',
     methodTitle: r => `Metodología y alcance de validación — Datos de sargazo ${r}`,
     methodH1: 'Metodología y alcance de validación',
-    methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: observaciones AFAI disponibles de Copernicus/NOAA, muestreo por playa y pronóstico de 7 días cuando hay datos. La hora de observación y la confianza pueden variar.`,
+    methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: observaciones AFAI distribuidas por NOAA/AOML ERDDAP, con corrientes de Copernicus Marine y viento de Open-Meteo como datos de transporte, muestreo por playa y pronóstico de 7 días cuando hay datos. La hora de observación y la confianza pueden variar.`,
     days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     daysFull: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
     beachFaq: {
@@ -356,8 +356,8 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
        `La conversación sobre tu playa ocurre en Google y TripAdvisor, participes o no. Cuando quieras, añade el último estado publicado de tu playa a tu propia página de reservas — el mismo veredicto honesto, bajo tu techo en lugar de la foto de un desconocido. Es opcional: tú eliges si lo muestras, nunca lo que dice. En un día de baja confianza dice "incierto" en vez de una promesa, así nunca te pillan afirmando "limpia" cuando el mar dice lo contrario. Verde es verde porque lo dice el satélite, no porque venda habitaciones.`)],
     [_('Measured, not guessed — and we publish when we’re wrong',
        'Medido, no adivinado — y publicamos cuándo fallamos'),
-     _(`Raw NOAA/Copernicus imagery is a basin-wide ocean-color picture with no verdict for your sand. We turn it into a per-beach, 7-day call with a confidence level — and we publish the dated record with its scope and limitations. The public dated validation record currently covers Martinique and Guadeloupe; it does not establish an accuracy rate for ${region.name}. Check the methodology and each forecast's data age and confidence before acting. We publish hits and misses, not guarantees. He watches the sea, never your guests — and never his own scoreboard.`,
-       `Las imágenes en bruto de NOAA/Copernicus son una foto de color del océano a escala de cuenca, sin veredicto para tu arena. Las convertimos en un pronóstico por playa a 7 días con nivel de confianza — y publicamos el historial fechado con su alcance y limitaciones. El registro público de validación cubre actualmente Martinica y Guadalupe; no establece una tasa de acierto para ${region.name}. Consulta la metodología y la antigüedad y confianza de cada pronóstico antes de actuar. Publicamos aciertos y fallos, no garantías. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
+     _(`Raw AFAI observations distributed through NOAA/AOML ERDDAP are basin-wide inputs, not a verdict for a specific beach. Copernicus Marine currents and Open-Meteo wind add transport context. We turn the available inputs into a per-beach, 7-day forecast with confidence — and publish the dated validation record with its scope and limitations. The public dated validation record currently covers Martinique and Guadeloupe; it does not establish an accuracy rate for ${region.name}. Check the methodology and each forecast's data age and confidence before acting. We publish hits and misses, not guarantees. He watches the sea, never your guests — and never his own scoreboard.`,
+       `Las observaciones AFAI distribuidas por NOAA/AOML ERDDAP son datos de escala oceánica, no un veredicto para una playa concreta. Las corrientes de Copernicus Marine y el viento de Open-Meteo aportan contexto de transporte. Combinamos los datos disponibles en un pronóstico por playa a 7 días con confianza — y publicamos el historial fechado con su alcance y limitaciones. El registro público de validación cubre actualmente Martinica y Guadalupe; no establece una tasa de acierto para ${region.name}. Consulta la metodología y la antigüedad y confianza de cada pronóstico antes de actuar. Publicamos aciertos y fallos, no garantías. Mira el mar, nunca a tus huéspedes — ni su propio marcador.`)],
   ].map(([h, b], i) => `<h2>${esc(h)}</h2><p>${esc(b)}</p>${i === 2 ? `<p><a class="lnk" href="${methodHref}">${_('See our published accuracy record', 'Ver nuestro historial de precisión publicado')} →</a></p>` : ''}`).join('')
   const accuracyFaq = _(
     `We do not yet publish a separately validated accuracy percentage for ${region.name}. The public dated record currently covers Martinique and Guadeloupe, so it should not be read as a measured result for this market. Each forecast shows its data age and confidence; see the methodology for the limits.`,

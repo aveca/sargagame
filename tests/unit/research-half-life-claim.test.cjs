@@ -6,6 +6,10 @@ const path = require('node:path')
 
 const ROOT = path.resolve(__dirname, '../..')
 const research = fs.readFileSync(path.join(ROOT, 'public', 'research', 'index.html'), 'utf8')
+const frResearch = fs.readFileSync(path.join(ROOT, 'public', 'recherche', 'index.html'), 'utf8')
+const esResearch = fs.readFileSync(path.join(ROOT, 'public', 'investigacion', 'index.html'), 'utf8')
+const apiDocs = fs.readFileSync(path.join(ROOT, 'public', 'api', 'index.html'), 'utf8')
+const regionalSeo = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'region-seo-pages.cjs'), 'utf8')
 
 assert.equal(research.includes('3.5-day</b> half-life'), false,
   'the obsolete 3.5-day half-life claim must not return')
@@ -19,6 +23,17 @@ assert.ok(research.includes('USF Optical Oceanography Laboratory'),
   'research must identify the source laboratory')
 assert.doesNotMatch(research, /Sentinel-3 OLCI|Copernicus Marine|4×.{0,8}day/i,
   'research must not claim an unverified sensor or four-times-daily AFAI feed')
+for (const [name, html] of [['French research', frResearch], ['Spanish research', esResearch]]) {
+  assert.ok(html.includes('NOAA/AOML ERDDAP'), name + ' must identify the AFAI distribution source')
+  assert.doesNotMatch(html, /Sentinel-3 OLCI|Copernicus Marine \/ ERDDAP|4×\/jour|4×\/día/i,
+    name + ' must not claim an unsupported AFAI sensor or four-times-daily sampling')
+}
+assert.ok(apiDocs.includes('NOAA/AOML ERDDAP'), 'API docs must identify the AFAI source')
+assert.ok(apiDocs.includes('erddapTimestamp'), 'API docs must distinguish observation time from publication time')
+assert.doesNotMatch(apiDocs, /Sentinel-3 \/ MODIS \(Copernicus Marine\)|Mise à jour 4×\/jour · ERDDAP-live/i,
+  'API docs must not claim an unsupported sensor or guaranteed four-times-daily observations')
+assert.doesNotMatch(regionalSeo, /Copernicus\/NOAA AFAI|NOAA\/Copernicus imagery/i,
+  'regional SEO copy must distinguish NOAA/AOML AFAI from Copernicus current inputs')
 
 const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.ok(widget.includes('NOAA/AOML ERDDAP'),

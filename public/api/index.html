@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>API Le Veilleur — l'état des plages en JSON, données publiques (gratuit, satellite)</title>
-<meta name="description" content="API publique gratuite : l'état des sargasses plage par plage (Martinique, Guadeloupe et 5 régions) en JSON, mesuré au satellite Copernicus & NOAA — pas deviné. Pour tableaux de bord d'hôtels, embeds média, recherche. Endpoints, champs, exemples.">
+<meta name="description" content="API publique gratuite : l'état des sargasses plage par plage (Martinique, Guadeloupe et 5 régions) en JSON, fondé sur les observations AFAI NOAA/AOML ERDDAP, les courants Copernicus Marine et le vent Open-Meteo — pas deviné. Pour tableaux de bord d'hôtels, embeds média, recherche. Endpoints, champs, exemples.">
 <link rel="canonical" href="https://sargasses-martinique.com/api/">
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
@@ -51,8 +51,8 @@
 <div class="wrap">
   <span class="eyebrow">🛰️ Le Veilleur · API publique</span>
   <h1>L'état des plages,<br>en JSON.</h1>
-  <p class="lede">L'état des sargasses plage par plage, mesuré au satellite Copernicus & NOAA (indice AFAI), avec la prévision 7 jours. Données publiques, lecture seule, <strong>gratuites</strong> — ta prévision, sans lock-in : branche-la sur ton tableau de bord d'hôtel, ton embed média ou ton notebook de recherche.</p>
-  <span class="pill">● Mise à jour 4×/jour · ERDDAP-live</span>
+  <p class="lede">L'état des sargasses plage par plage, fondé sur les observations AFAI distribuées via NOAA/AOML ERDDAP, complétées par les courants Copernicus Marine et le vent Open-Meteo, avec la prévision 7 jours. Données publiques, lecture seule, <strong>gratuites</strong> — ta prévision, sans lock-in : branche-la sur ton tableau de bord d'hôtel, ton embed média ou ton notebook de recherche.</p>
+  <span class="pill">● AFAI NOAA/AOML · observations intermittentes · heure source visible</span>
 
   <!-- DÉMARRAGE -->
   <div class="card">
@@ -63,7 +63,7 @@ curl -s https://sargasses-martinique.com/api/copernicus/sargassum.json
 
 <span class="c"># Guadeloupe</span>
 curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
-    <p>CORS ouvert en lecture : utilisable depuis un navigateur, un script, ou un tableau de bord. Soyez raisonnable sur la fréquence (la donnée ne bouge que 4×/jour — un cache d'1 h suffit largement).</p>
+    <p>CORS ouvert en lecture : utilisable depuis un navigateur, un script, ou un tableau de bord. Soyez raisonnable sur la fréquence (la source AFAI peut rester identique entre deux contrôles — un cache d'1 h est adapté à la lecture de l'API, mais affichez toujours l'heure de l'observation</p>
   </div>
 
   <!-- ENDPOINT 1 -->
@@ -94,7 +94,7 @@ curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
       <tr><td><b>confidence</b></td><td>0–100</td><td>Fiabilité de la lecture du jour (fraîcheur satellite + concordance des sources).</td></tr>
       <tr><td><b>h2s</b></td><td>object</td><td>Indice de risque H2S (gaz de décomposition) dérivé de la masse accumulée — <code>level</code> = low/moderate/high. <em>Pas</em> une mesure de gaz in situ.</td></tr>
       <tr><td><b>weekly[id].forecast[]</b></td><td>array</td><td>7 entrées (J0→J6) : <code>date</code>, <code>status</code>, <code>afai</code>, <code>confidence</code>, <code>regime</code>.</td></tr>
-      <tr><td><b>updatedAt</b> / <b>dataAgeMinutes</b></td><td>iso / int</td><td>Fraîcheur. Affichez toujours l'âge : ne servez jamais une donnée muette.</td></tr>
+      <tr><td><b>updatedAt</b> / <b>erddapTimestamp</b> / <b>dataAgeMinutes</b></td><td>iso / iso / int</td><td><code>updatedAt</code> est l'heure de publication. Recalculez l'âge actuel depuis <code>erddapTimestamp</code> ; <code>dataAgeMinutes</code> et <code>stale</code> peuvent dater de la dernière publication. Timestamp absent, invalide ou futur = état inconnu.</td></tr>
     </table>
   </div>
 
@@ -128,10 +128,10 @@ curl -s https://sargasses-guadeloupe.com/api/copernicus/sargassum.json</pre>
     <a class="btn ghost" href="mailto:contact@sargasses-martinique.com?subject=Veille%20côtière%20B2B">Parlons-en →</a>
   </div>
 
-  <div class="note">⚠️ Stabilité &amp; bon usage — la donnée vient des satellites Sentinel-3 / MODIS (Copernicus Marine) et NOAA, recalculée 4×/jour. Si le composite satellite a plus de 36h, le flag <code>stale</code> passe à <code>true</code> : Le Veilleur l'avoue plutôt que de faire semblant de tout voir en direct — vérifiez-le avant d'afficher. Les champs ci-dessus sont stables ; tout changement cassant serait annoncé. Mentionnez la source « Le Veilleur · Copernicus & NOAA » si vous réutilisez la donnée. Ce n'est pas une mesure sanitaire : suivez toujours les consignes ARS/HCSP.</div>
+  <div class="note">⚠️ Stabilité &amp; bon usage — les observations AFAI sont distribuées via NOAA/AOML ERDDAP et proviennent du USF Optical Oceanography Laboratory ; les courants marins utilisent Copernicus Marine et le vent Open-Meteo. Le pipeline vérifie les sources quatre fois par jour, mais une nouvelle observation AFAI n’est pas garantie à chaque passage. <code>updatedAt</code> décrit la publication ; recalculez l’âge actuel depuis <code>erddapTimestamp</code> et traitez tout timestamp absent, invalide ou futur comme inconnu. Ne vous fiez pas au seul champ <code>stale</code> ou à <code>dataAgeMinutes</code> entre deux publications. Ce n’est pas une mesure sanitaire : suivez toujours les consignes ARS/HCSP.</div>
 
   <footer>
-    Le Veilleur · données satellite Copernicus Marine<br>
+    Le Veilleur · observations AFAI NOAA/AOML · courants Copernicus Marine<br>
     <a href="/">Carte temps réel</a> · <a href="/fiabilite/">Fiabilité</a> · <a href="/a-propos/">€ propos</a> · <a href="/widget/">Widget</a>
   </footer>
 </div>
