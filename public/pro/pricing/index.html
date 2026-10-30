@@ -181,7 +181,7 @@
 
   function showMetric(pct, count, label){
     document.getElementById('tr-clean').textContent = Number(pct).toLocaleString('fr-FR') + '%';
-    document.getElementById('tr-line').textContent = label + ' (sur ' + Number(count).toLocaleString('fr-FR') + ' comparaisons).';
+    document.getElementById('tr-line').textContent = label + ' (sur ' + Number(count).toLocaleString('fr-FR') + ' comparaisons datées).';
     if (proof) proof.classList.remove('is-stale');
   }
 
