@@ -27,3 +27,19 @@ Run: [Daily Copernicus + Deploy #41051511726](https://github.com/aveca/sargagame
 This PR changes workflow/code guards only. It does not send an email or push, delete production analytics, clean the external subscriber sheet, modify payment links, change checkout, or touch secrets. It is intentionally a draft pending CI and operator review. No production action was triggered by this PR.
 
 The guard covers `.github/workflows/daily-copernicus.yml` and its failure-notification path. Other independent notification workflows (for example, visitor-photo/report notifications) still require separate verification before claiming all outbound paths are approval-gated.
+
+## Additional root cause found during review
+
+The first draft did not cover two SMTP paths in the same workflow:
+
+- The `health-check.cjs` step inside `email-automation` received `SMTP_PASS` and called `sendEmail()` without an approval gate.
+- The separate `notify-failure` job invoked `notify-failure.cjs` without `--dry-run`, so a scheduled failure could send an email even though the other watch steps were dry-run.
+
+The PR branch now:
+- makes `health-check.cjs` require explicit `--send` (dry-run by default);
+- passes SMTP credentials only for a manually dispatched run with `authorize_outbound=true`;
+- runs the health-check email path with `--dry-run` on schedule;
+- runs failure notifications with `--dry-run` on schedule and `--send` only for the approved manual dispatch;
+- adds regression assertions for both callers and the script-level guard.
+
+This remains a draft and is not merged or activated in production.
