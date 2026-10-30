@@ -544,7 +544,7 @@ jobs:
         run: node scripts/automation/funnel-daily-report.cjs
 
       - name: UX daily tracking (diff jour-à-jour first-party)
-        if: hashFiles('scripts/automation/ux-daily.cjs') != '' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true))
+        if: hashFiles('scripts/ux-daily.cjs') != '' && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true))
         continue-on-error: true
         env:
           SG_STATS_KEY: ${{ secrets.SG_STATS_KEY }}
@@ -553,12 +553,12 @@ jobs:
           SG_STATS_KEY_FLORIDA: ${{ secrets.SG_STATS_KEY_FLORIDA }}
           SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
           SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
-          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SMTP_PASS: ${{ github.event_name == 'workflow_dispatch' && inputs.authorize_outbound == true && secrets.SMTP_PASS || '' }}
         run: |
           if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && "${{ inputs.authorize_outbound }}" == "true" ]]; then
-            node scripts/automation/ux-daily.cjs --send
+            node scripts/ux-daily.cjs --send
           else
-            node scripts/automation/ux-daily.cjs
+            node scripts/ux-daily.cjs
           fi
 
       - name: Publish daily metrics snapshot
