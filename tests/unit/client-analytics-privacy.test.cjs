@@ -37,6 +37,27 @@ const path = require("node:path");
     idleTime: 0,
   });
 
+  const epochNow = Date.UTC(2026, 9, 30, 5, 45, 0);
+  const epochTimestamp = epochNow - 1234;
+  const epochSafe = sanitizeFrustrationAnalytics(
+    "rage-click",
+    { timestamp: epochTimestamp, count: 2 },
+    "/home",
+    epochNow,
+  );
+  assert.equal(epochSafe.timestamp, epochTimestamp,
+    "realistic Date.now() epoch milliseconds must not be clamped like interaction counters");
+  assert.equal(epochSafe.count, 2);
+
+  const futureTimestamp = sanitizeFrustrationAnalytics(
+    "hesitation",
+    { timestamp: epochNow + 60_000 },
+    "/home",
+    epochNow,
+  );
+  assert.equal(futureTimestamp.timestamp, epochNow,
+    "future event timestamps must fall back to the trusted current timestamp");
+
   const app = fs.readFileSync(path.join(root, "src/Sargasses_PROD.jsx"), "utf8");
   const frustration = fs.readFileSync(path.join(root, "src/useFrustrationDetection.js"), "utf8");
   assert.doesNotMatch(app, /api_secret|google-analytics\.com\/mp\/collect/i,
