@@ -11,7 +11,7 @@
  *   regions/seo-content/<id>.json  (copy EN/ES : faq, pages, beachBlurbs, resortPageTpl)
  *   regions/resorts/<id>.json      (long-tail hôtels → plage la plus proche)
  *   public/api/copernicus/<id>/sargassum.json (scores/statuts/forecast du jour)
- *   public/api/copernicus/forecast-accuracy.json (backtests réels → méthodologie)
+ *   public/api/copernicus/track-record.json (périmètre et fraîcheur de la validation publiée)
  *   public/data/beaches-images.json (photos gplace)
  *
  * Sorties dans dist/ : <hub-pages>/, beaches|playas/<slug>/, resorts|hoteles/<slug>/,
@@ -26,6 +26,7 @@ try { _heroLib = require('./scene-svg.cjs') } catch (e) { /* hero optionnel */ }
 
 const ROOT = path.resolve(__dirname, '..', '..')
 const { getCanonicalSlug } = require('./slug-resolver.cjs')
+const { resolvePublicAccuracy } = require('./regional-track-record.cjs')
 const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 // Video-as-SEO (rail hero-loops prouvé) : ids des plages disposant d'un clip d'ambiance
@@ -47,8 +48,8 @@ const T = {
     viewMap: 'View the map', allBeaches: 'All beaches', nearby: 'Nearby beaches',
     resortsAt: 'Resorts on this beach', beachOf: r => `The beach at ${r}`,
     network: 'Sargassum network', home: 'Map',
-    methodTitle: r => `Our Methodology & Forecast Accuracy — ${r} Sargassum Data`,
-    methodH1: 'Methodology & measured forecast accuracy',
+    methodTitle: r => `Our Methodology & Validation Scope — ${r} Sargassum Data`,
+    methodH1: 'Methodology & validation scope',
     methodDesc: r => `How the ${r} sargassum map works: available Copernicus/NOAA AFAI observations, per-beach sampling, and a 7-day forecast when data are available. Observation time and confidence may vary.`,
     days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
     daysFull: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
@@ -71,8 +72,8 @@ const T = {
     viewMap: 'Ver el mapa', allBeaches: 'Todas las playas', nearby: 'Playas cercanas',
     resortsAt: 'Hoteles en esta playa', beachOf: r => `La playa de ${r}`,
     network: 'Red sargazo', home: 'Mapa',
-    methodTitle: r => `Metodología y precisión del pronóstico — Datos de sargazo ${r}`,
-    methodH1: 'Metodología y precisión medida del pronóstico',
+    methodTitle: r => `Metodología y alcance de validación — Datos de sargazo ${r}`,
+    methodH1: 'Metodología y alcance de validación',
     methodDesc: r => `Cómo funciona el mapa de sargazo de ${r}: observaciones AFAI disponibles de Copernicus/NOAA, muestreo por playa y pronóstico de 7 días cuando hay datos. La hora de observación y la confianza pueden variar.`,
     days: ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
     daysFull: ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'],
@@ -415,7 +416,7 @@ ${secs}
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
 <div class="faq"><h2>${_('Questions', 'Preguntas')}</h2>${faq}</div>
 </div>
-<div class="ft">${_('Independent Copernicus / NOAA observations · check observation time and confidence', 'Observaciones Copernicus / NOAA · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Accuracy', 'Precisión')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
+<div class="ft">${_('Independent satellite observations · check observation time and confidence', 'Observaciones satelitales independientes · consulta la hora y la confianza')} · <a href="${methodHref}">${_('Validation scope', 'Alcance de validación')}</a> · <a href="${prefix}/">${_('Map', 'Mapa')}</a> · ${esc(domain)}</div>
 </div></body></html>`
 }
 
@@ -438,19 +439,10 @@ function generateRegionSeoPages(region, distDir) {
   // ── Données partagées (indépendantes de la langue) ──
   const resorts = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), [])
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), { levels: [], weekly: {} })
-  // Précision réelle : backtest-results.json (régénéré CHAQUE JOUR par
-  // backtest-forecast.cjs avant les builds) — PLUS l'ancien forecast-accuracy.json
-  // qui était figé au 2026-04-10 (audit 2026-06-12 : les pages méthodologie
-  // publiaient « 86 % » d'avril comme du présent). Adapté au format horizons
-  // attendu plus bas ; fallback sur l'ancien fichier si le backtest manque.
-  const _bt = loadJSON(path.join(ROOT, 'scripts', 'automation', 'data', 'backtest-results.json'), null)
-  const accuracy = (_bt && _bt.byHorizon && _bt.byHorizon.day1) ? {
-    computedAt: _bt.computed || null,
-    horizons: {
-      'J+1': { statusMatchPct: _bt.byHorizon.day1.statusHitRate, meanAbsErr: _bt.byHorizon.day1.afaiMAE },
-      'J+3': _bt.byHorizon.day3 ? { statusMatchPct: _bt.byHorizon.day3.statusHitRate, meanAbsErr: _bt.byHorizon.day3.afaiMAE } : undefined,
-    },
-  } : loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'forecast-accuracy.json'), null)
+  // Public accuracy claims must come from the dated track record, never the raw
+  // backtest input (which has no reliable region scope and can be stale).
+  const trackRecord = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'track-record.json'), null)
+  const accuracy = resolvePublicAccuracy(trackRecord, region.id)
   const photos = loadJSON(path.join(ROOT, 'public', 'data', 'beaches-images.json'), {})
   const tpl = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
   const isoToday = new Date().toISOString().slice(0, 10)
@@ -547,7 +539,7 @@ function emitLangPages(ctx) {
     // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
     if (routes.best) items.push(['best', `${prefix}/${routes.best}/`, lang === 'es' ? 'Mejores playas sin sargazo' : 'Best beaches without sargassum'])
     if (routes.weekly) items.push(['weekly', `${prefix}/${routes.weekly}/`, lang === 'es' ? 'Sargazo esta semana' : 'Sargassum this week'])
-    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y precisión' : 'Methodology & accuracy'])
+    items.push(['method', `${prefix}/${lang === 'es' ? 'metodologia' : 'methodology'}/`, lang === 'es' ? 'Metodología y alcance de validación' : 'Methodology & validation scope'])
     // hotels : landing B2B intention d'achat (RÉCIF/live) — maillée depuis chaque hub.
     if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
@@ -666,14 +658,26 @@ ${(p.season.months || []).map(m => `<h2>${esc(m.period)}</h2><p>${esc(m.text)}</
 ${hubLinks('season')}${networkFooter(region, t, lang)}</article>`,
   })
 
-  // methodology — backtests réels (différenciateur : le #1 EN vend du Math.random)
-  if (accuracy && accuracy.horizons) {
-    const h1d = accuracy.horizons['J+1'] || {}
-    const h3d = accuracy.horizons['J+3'] || {}
+  // methodology — keep the page indexable even when no current regional
+  // accuracy percentage is supported by the public, fresh validation record.
+  {
+    const h1d = accuracy?.available ? accuracy.horizons['J+1'] : null
+    const h3d = accuracy?.available ? accuracy.horizons['J+3'] : null
     const methodSlug = lang === 'es' ? 'metodologia' : 'methodology'
-    const accLine = lang === 'es'
-      ? `Precisión medida en nuestra red Caribe (backtests publicados): el estado a 1 día acierta el ${h1d.statusMatchPct ?? '—'}% de las veces (error medio AFAI ${h1d.meanAbsErr ?? '—'}), a 3 días el ${h3d.statusMatchPct ?? '—'}%. Nadie más en este mercado publica la precisión de su pronóstico.`
-      : `Measured accuracy across our Caribbean network (published backtests): next-day status is correct ${h1d.statusMatchPct ?? '—'}% of the time (mean AFAI error ${h1d.meanAbsErr ?? '—'}), 3-day status ${h3d.statusMatchPct ?? '—'}%. Nobody else in this market publishes their forecast accuracy.`
+    const scopeText = accuracy?.scopeLabel || (accuracy?.scopeRegions?.length ? accuracy.scopeRegions.map(x => String(x).toUpperCase()).join(' + ') : 'MQ + GP')
+    const windowText = accuracy?.window?.from && accuracy?.window?.to
+      ? ' (' + accuracy.window.from + ' → ' + accuracy.window.to + (accuracy.sampleSize ? ', n=' + accuracy.sampleSize : '') + ')'
+      : ''
+    const staleText = accuracy?.recordStale
+      ? (lang === 'es' ? ' El último registro público está marcado como obsoleto.' : ' The latest public record is marked stale.')
+      : ''
+    const accLine = accuracy?.available
+      ? (lang === 'es'
+        ? 'Validación publicada para el alcance ' + scopeText + windowText + ': J+1 ' + h1d.statusMatchPct + '% y J+3 ' + h3d.statusMatchPct + '%. Es una métrica del alcance indicado, no una medición independiente de cada playa.'
+        : 'Published validation for the ' + scopeText + ' scope' + windowText + ': J+1 ' + h1d.statusMatchPct + '% and J+3 ' + h3d.statusMatchPct + '%. This is a metric for the stated scope, not an independent measurement for every beach.')
+      : (lang === 'es'
+        ? 'No publicamos un porcentaje de precisión validado para ' + region.name + '. El registro público disponible cubre únicamente el alcance ' + scopeText + windowText + ' y no constituye un resultado medido para este mercado.' + staleText
+        : 'No separately validated accuracy percentage is published for ' + region.name + '. The available public record covers only the ' + scopeText + ' scope' + windowText + ' and is not a measured result for this market.' + staleText)
     const body = lang === 'es'
       ? `<p>Usamos las observaciones AFAI disponibles de Copernicus/NOAA, píxel por píxel frente a cada playa — no un promedio regional. Los pasos satelitales son intermitentes y la antigüedad y confianza pueden variar. Una corrección ponderada y una memoria de playa (vida media de varios días) ayudan a producir el estado publicado. El pronóstico de 7 días combina persistencia, viento y detección de bancos en el mar.</p><p>Nuestros datos nunca se editan a mano, nunca se filtran por hoteles y nunca se borran. Fuentes: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
       : `<p>We use available Copernicus/NOAA AFAI observations, pixel by pixel offshore of each beach — not a regional average. Satellite passes are intermittent, and observation age and confidence can vary. A weighted correction and beach memory (multi-day half-life) help produce the published status. The 7-day forecast combines persistence, wind and offshore sargassum-bank detection.</p><p>Our data is never hand-edited, never filtered for resorts, never deleted. Sources: Copernicus Marine, NOAA ERDDAP (AFAI), Open-Meteo.</p>`
