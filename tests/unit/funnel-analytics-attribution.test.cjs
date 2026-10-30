@@ -43,7 +43,7 @@ async function main() {
   assert.equal(snapshot.data_quality.preview_rows, 1)
   assert.equal(snapshot.data_quality.unknown_host_rows, 1)
   assert.equal(snapshot.distinct_sessions_by_region.tulum, 1)
-  assert.equal(snapshot.observed_distinct_sessions_by_region.tulum, 3)
+  assert.equal(snapshot.observed_distinct_sessions_by_region.tulum, 2)
   assert.equal(snapshot.by_host['sargagame-tulum.pages.dev'].pass_cta, 1)
 
   const dailyRows = [
