@@ -1,20 +1,25 @@
-// Regression guard: public research copy must distinguish floating mats from beached stock.
-'use strict';
+const assert = require('node:assert/strict')
+const fs = require('node:fs')
+const path = require('node:path')
 
-const fs = require('node:fs');
-const path = require('node:path');
-const assert = require('node:assert/strict');
+const ROOT = path.resolve(__dirname, '../..')
+const research = fs.readFileSync(path.join(ROOT, 'public', 'research', 'index.html'), 'utf8')
+const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 
-const ROOT = path.resolve(__dirname, '..', '..');
-const html = fs.readFileSync(path.join(ROOT, 'public', 'research', 'index.html'), 'utf8');
+assert.equal(research.includes('3.5-day</b> half-life'), false,
+  'the obsolete 3.5-day half-life claim must not return')
+assert.ok(research.includes('For floating mats, the model uses a <b>5-day</b> persistence half-life'),
+  'the five-day half-life must be scoped to floating mats')
+assert.ok(research.includes('provisional persistence prior'),
+  'beached material must remain explicitly provisional')
+assert.match(research, /NOAA\\/AOML ERDDAP/)
+assert.match(research, /USF Optical Oceanography Laboratory/)
+assert.doesNotMatch(research, /Sentinel-3 OLCI|Copernicus Marine|4×\\s*\\/day|4×\\s*daily/i,
+  'research must not claim an unverified sensor or four-times-daily AFAI feed')
 
-assert.equal(html.includes('3.5-day</b> half-life'), false,
-  'the obsolete 3.5-day half-life claim must not return');
-assert.ok(html.includes('For floating mats, the model uses a <b>5-day</b> persistence half-life'),
-  'the five-day half-life must be scoped to floating mats');
-assert.ok(html.includes('Material already stranded on a beach is handled separately'),
-  'beached stock must be described separately from floating mats');
-assert.ok(html.includes('provisional persistence prior that has not yet been calibrated against active-season ground truth'),
-  'the beached-stock prior must be described as provisional and uncalibrated');
+assert.match(widget, /NOAA\\/AOML ERDDAP/)
+assert.match(widget, /Universit[eé] de Floride du Sud/)
+assert.doesNotMatch(widget, /Copernicus Marine|4× par jour|4×\\/jour|quatre fois par jour/i,
+  'hotel widget landing must not claim an unverified source or satellite cadence')
 
-console.log('OK — research page distinguishes floating-mat persistence from provisional beached-stock persistence');
+console.log('PASS: research and B2B widget source/cadence copy matches NOAA/AOML AFAI provenance')

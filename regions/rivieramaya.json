@@ -63,7 +63,7 @@
   "differentiators": [
     "Community real-time reports",
     "Personal beach alerts (premium)",
-    "Confidence-weighted forecast (3.5-day half-life)",
+    "Confidence-weighted forecast with separate floating and beached-material persistence assumptions",
     "Year-round Beach Score (not just sargassum)"
   ],
   "beaches": [

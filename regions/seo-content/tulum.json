@@ -10,7 +10,7 @@
     },
     {
       "q": "¿Qué tan confiables son los datos de este sitio?",
-      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con imágenes de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza."
+      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con observaciones AFAI distribuidas por NOAA/AOML ERDDAP actualizadas cuando hay nuevas observaciones satelitales disponibles. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza."
     },
     {
       "q": "¿Se puede pronosticar el sargazo con una semana de anticipación?",
@@ -32,7 +32,7 @@
       "desc": "Pronóstico de sargazo a 7 días para Tulum, actualizado a diario con datos satelitales. Mira qué playas estarán limpias esta semana.",
       "h1": "Pronóstico de Sargazo en Tulum — Próximos 7 Días",
       "intro": "Casi todos los pronósticos te dan un solo veredicto para toda la zona de Tulum, basado en imágenes oficiales con días de retraso. Aquí corremos un pronóstico independiente para cada una de las 5 playas que monitoreamos, porque la realidad cambia de una bahía a otra. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa.",
-      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los conjunto AFAI distribuido por NOAA/AOML ERDDAP detectan sargazo desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial. El material ya varado en la playa usa un término de persistencia provisional separado; no representa un tiempo medido de limpieza y aún no está calibrado con observaciones de temporada activa. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La incertidumbre del pronóstico aumenta con el horizonte; solo se publican porcentajes de precisión cuando existe un registro de validación reciente y específico de la región."
     },
     "today": {
       "slug": "playas-sin-sargazo-hoy-tulum",
@@ -98,17 +98,17 @@
     "_doc": "Página de prensa renderizada en /press/ por region-seo-pages.cjs.",
     "slug": "press",
     "title": "Sargazo en Tulum — Kit de Prensa",
-    "desc": "Recursos de prensa sobre el sargazo en Tulum: estado satelital por playa actualizado cuando hay nuevas observaciones satelitales disponibles, pronóstico de 7 días y precisión publicada. Libre de citar.",
+    "desc": "Recursos de prensa sobre el sargazo en Tulum: estado satelital por playa actualizado cuando hay nuevas observaciones satelitales disponibles, pronóstico de 7 días y alcance de validación publicado. Libre de citar.",
     "h1": "Prensa y medios — datos de sargazo de Tulum",
     "intro": "El Atlántico vive una temporada de sargazo de niveles récord. Lo que los titulares rara vez responden es la pregunta que de verdad hace tu audiencia: ¿se puede nadar en mi playa hoy? Publicamos esa respuesta para Tulum, playa por playa, a partir de datos satelitales — y es libre de citar con atribución.",
     "sections": [
       {
         "h2": "Qué publicamos",
-        "text": "Estado del sargazo en vivo para {beachCount} playas de Tulum — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI de los programas satelitales Copernicus y NOAA, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuando hay nuevas observaciones satelitales disponibles. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
+        "text": "Estado del sargazo en vivo para {beachCount} playas de Tulum — cada una con una clasificación limpia / moderado / evitar, un Beach Score de 0 a 100 y un pronóstico de 7 días específico por playa. La detección usa el índice AFAI de los programas satelitales NOAA/AOML ERDDAP, muestreado píxel por píxel justo frente a cada playa — no un promedio regional — y actualizado cuando hay nuevas observaciones satelitales disponibles. Al {updatedDate}, {cleanToday} de {beachCount} playas monitoreadas están limpias."
       },
       {
         "h2": "Precisión, publicada abiertamente",
-        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. Los días 1 a 3 son los más fiables. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
+        "text": "Comparamos el pronóstico con lo que los satélites observaron después, y publicamos los resultados: en toda nuestra red, el estado de la playa a un día se verifica el {accuracyJ1Pct}% de las veces, y a tres días el {accuracyJ3Pct}%. La incertidumbre del pronóstico aumenta con el horizonte; solo se publican porcentajes de precisión cuando existe un registro de validación reciente y específico de la región. Los datos nunca se editan a mano, nunca se filtran para los hoteles, nunca se borran."
       },
       {
         "h2": "Libre de usar, con atribución",
@@ -175,7 +175,7 @@
       "title": "Sargazo en Tulum Hoy: Mapa en Vivo por Satélite",
       "desc": "¿Cómo está el sargazo en Tulum hoy? Mapa en vivo verificado por satélite cuando hay nuevas observaciones satelitales disponibles, con el estado de cada playa hoy y pronóstico a 7 días.",
       "h1": "¿Cómo está el sargazo en Tulum hoy?",
-      "intro": "El estado del sargazo en Tulum hoy lo decide la última pasada satelital, no el rumor de ayer: arriba ves el mapa en vivo, actualizado hoy, con el Beach Score (0–100) y el status today —limpia, moderada o evitar— de cada playa de Tulum. Así de simple: mira el número junto a tu playa antes de cargar la hielera. El sargazo no llega parejo: una playa puede amanecer turquesa mientras la de al lado recibe arribazón. Por eso seguimos cada playa por separado con el índice AFAI de Copernicus/NOAA, refrescado cuando hay nuevas observaciones satelitales disponibles.",
+      "intro": "El estado del sargazo en Tulum hoy lo decide la última pasada satelital, no el rumor de ayer: arriba ves el mapa en vivo, actualizado hoy, con el Beach Score (0–100) y el status today —limpia, moderada o evitar— de cada playa de Tulum. Así de simple: mira el número junto a tu playa antes de cargar la hielera. El sargazo no llega parejo: una playa puede amanecer turquesa mientras la de al lado recibe arribazón. Por eso seguimos cada playa por separado con el índice AFAI de NOAA/AOML ERDDAP, refrescado cuando hay nuevas observaciones satelitales disponibles.",
       "sections": [
         {
           "h2": "¿Qué playas de Tulum están limpias hoy?",
@@ -197,7 +197,7 @@
         },
         {
           "q": "¿Cómo está el sargazo en Tulum ahora mismo?",
-          "a": "Mira el estado en tiempo casi real en el mapa de esta página: imágenes de Copernicus/NOAA con el índice AFAI, refrescadas cuando hay nuevas observaciones satelitales disponibles. Cada playa muestra su Beach Score (0–100), su status today y la hora exacta de la última lectura."
+          "a": "Mira el estado en tiempo casi real en el mapa de esta página: imágenes de NOAA/AOML ERDDAP con el índice AFAI, refrescadas cuando hay nuevas observaciones satelitales disponibles. Cada playa muestra su Beach Score (0–100), su status today y la hora exacta de la última lectura."
         },
         {
           "q": "¿Qué playa de Tulum tiene menos sargazo hoy?",
@@ -205,7 +205,7 @@
         },
         {
           "q": "¿Qué tan confiable es el sargazo de Tulum de este sitio?",
-          "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo desde satélite, con imágenes de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles. Cuando las nubes tapan una zona lo decimos: cada playa muestra su nivel de confianza y la hora de su última lectura."
+          "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo desde satélite, con observaciones AFAI distribuidas por NOAA/AOML ERDDAP actualizadas cuando hay nuevas observaciones satelitales disponibles. Cuando las nubes tapan una zona lo decimos: cada playa muestra su nivel de confianza y la hora de su última lectura."
         },
         {
           "q": "¿El sargazo de hoy seguirá mañana en Tulum?",
@@ -221,7 +221,7 @@
       "title": "Mapa sargazo Tulum hoy | en vivo",
       "desc": "Mapa de sargazo en Tulum hoy: imagen satelital actualizada cuando hay nuevas observaciones satelitales disponibles, Beach Score por playa, estado limpio/moderado/evitar y pronóstico 7 días.",
       "h1": "Mapa de sargazo en Tulum hoy",
-      "intro": "El mapa de sargazo de Tulum hoy se actualiza con imagen satelital cada pocas horas y te muestra, playa por playa, dónde el agua está limpia y dónde hay recale. Abre el mapa en vivo, busca tu playa (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) y mira su Beach Score y su estado de hoy: limpio, moderado o evitar. A diferencia de las fotos de redes sociales, esto no es una opinión: es lo que ven los satélites Copernicus y NOAA (índice AFAI) refrescado cuando hay nuevas observaciones satelitales disponibles. También somos honestos con la incertidumbre: cuando una nube tapa la costa o el dato envejece, lo marcamos en vez de inventar. Consulta el Beach Score actualizado hoy y el pronóstico de 7 días por playa antes de decidir adónde ir.",
+      "intro": "El mapa de sargazo de Tulum hoy se actualiza con imagen satelital cuando hay nuevas observaciones satelitales disponibles y te muestra, playa por playa, dónde el agua está limpia y dónde hay recale. Abre el mapa en vivo, busca tu playa (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) y mira su Beach Score y su estado de hoy: limpio, moderado o evitar. A diferencia de las fotos de redes sociales, esto no es una opinión: es lo que ven los conjunto AFAI distribuido por NOAA/AOML ERDDAP (índice AFAI) refrescado cuando hay nuevas observaciones satelitales disponibles. También somos honestos con la incertidumbre: cuando una nube tapa la costa o el dato envejece, lo marcamos en vez de inventar. Consulta el Beach Score actualizado hoy y el pronóstico de 7 días por playa antes de decidir adónde ir.",
       "sections": [
         {
           "h2": "¿Qué playas tienen sargazo hoy en Tulum?",
@@ -243,7 +243,7 @@
         },
         {
           "q": "¿Cada cuánto se actualiza el mapa satelital de sargazo?",
-          "a": "Se actualiza cuando hay nuevas observaciones satelitales disponibles con imágenes de los satélites Copernicus y NOAA mediante el índice AFAI. Cuando una nube tapa la costa o el dato envejece, lo marcamos como no confiable en vez de mostrar un número inventado."
+          "a": "Se actualiza cuando hay nuevas observaciones satelitales disponibles con imágenes de los conjunto AFAI distribuido por NOAA/AOML ERDDAP mediante el índice AFAI. Cuando una nube tapa la costa o el dato envejece, lo marcamos como no confiable en vez de mostrar un número inventado."
         },
         {
           "q": "¿Qué playas de Tulum tienen menos sargazo?",
