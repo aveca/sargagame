@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { chasseMapCtaSummary, isCurrentSatelliteDecision, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
+import { chasseMapCtaSummary, isSatellitePayloadCurrent, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -519,8 +519,7 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
-  const satelliteDecisionCurrent=isCurrentSatelliteDecision(sargData,beach?.status)
-  const lastObservedVerdict=beach?.status&&VERDICT[beach.status]?VERDICT[beach.status]:null
+  const satelliteDecisionCurrent=isSatellitePayloadCurrent(sargData)&&["clean","moderate","avoid"].includes(beach?.status)
   const rel=satelliteDecisionCurrent?(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3):[]
   const planB=useMemo(()=>satelliteDecisionCurrent&&planbOn()?cleanNearby(beach,pool):[],[satelliteDecisionCurrent,beach,pool])
   /* A stale/unknown source cannot authorize a current forecast or recommendation. */
@@ -585,9 +584,9 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
       ? _t({fr:beach.name+" — "+_t(head)+" ce matin. Vérifié au satellite par Le Veilleur 🛰️",
             en:beach.name+" — "+_t(head)+" this morning. Satellite-checked by Le Veilleur 🛰️",
             es:beach.name+" — "+_t(head)+" esta mañana. Verificado por satélite 🛰️"})
-      : _t({fr:beach.name+" — dernier statut historique. "+lcDetailFreshnessLabel(sargData,lang)+". Aucun verdict actuel.",
-            en:beach.name+" — last status is historical. "+lcDetailFreshnessLabel(sargData,lang)+". No current verdict.",
-            es:beach.name+" — último estado histórico. "+lcDetailFreshnessLabel(sargData,lang)+". Sin veredicto actual."})
+      : _t({fr:beach.name+" — état historique. "+lcDetailFreshnessLabel(sargData,lang)+".",
+            en:beach.name+" — historical state. "+lcDetailFreshnessLabel(sargData,lang)+".",
+            es:beach.name+" — estado histórico. "+lcDetailFreshnessLabel(sargData,lang)+"."})
     try{
       if(navigator.share){ navigator.share({title:"Le Veilleur",text:txt,url}).catch(()=>{}) }
       else if(navigator.clipboard){ navigator.clipboard.writeText(txt+" "+url); setShared(true); setTimeout(()=>setShared(false),1800) }
@@ -627,8 +626,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </button>}
         </div>
         {!satelliteDecisionCurrent&&<p className="lc-detail-stale" data-testid="lc-detail-stale" role="status" style={{margin:"8px 0 12px",padding:"10px 12px",border:"1px solid #d97706",borderRadius:12,background:"#fff7ed",fontSize:13,lineHeight:1.4}}>
-          {_t({fr:"Observation trop ancienne ou non validée : aucun verdict actuel, score ou prévision n'est affiché.",en:"The observation is too old or unvalidated: no current verdict, score or forecast is displayed.",es:"La observación es demasiado antigua o no está validada: no se muestra ningún veredicto, puntuación ni pronóstico actual."})}
-          {lastObservedVerdict&&<> {_t({fr:"Dernier statut observé",en:"Last observed status",es:"Último estado observado"})} : {_t(lastObservedVerdict)}.</>}
+          {_t({fr:"Observation ancienne ou non validée : aucun verdict, score ou prévision actuelle.",en:"Old or unvalidated observation: no current verdict, score or forecast.",es:"Observación antigua o no validada: sin veredicto, puntuación ni pronóstico actual."})}
+
         </p>}
         {why&&whyOpen&&(
           <section className="lc-why" aria-label={_t({fr:"Pourquoi ce verdict",en:"Why this verdict",es:"Por qué este veredicto"})}>
@@ -656,7 +655,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
           </div>
         ) : (
           <div className="lc-detail-score-paused" data-testid="lc-detail-score-paused" role="status" style={{margin:"8px 0 14px",padding:"10px 12px",borderRadius:12,background:"#f3f1f7",fontSize:13,fontWeight:700}}>
-            {_t({fr:"Score actuel masqué jusqu'à une observation satellite validée.",en:"Current score hidden until a validated satellite observation is available.",es:"Puntuación actual oculta hasta disponer de una observación satelital validada."})}
+            {_t({fr:"Score masqué : observation non validée.",en:"Score hidden: observation not validated.",es:"Puntuación oculta: observación no validada."})}
           </div>
         )}
         <div className="lc-detail-facts">
@@ -757,7 +756,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
         ) : (
           <div className="lc-detail-fc" data-testid="lc-detail-forecast-paused" role="status">
             <div className="lc-detail-fc-h">{_t({fr:"PRÉVISION SUSPENDUE",en:"FORECAST PAUSED",es:"PRONÓSTICO EN PAUSA"})}</div>
-            <p>{_t({fr:"La dernière observation ne permet pas de publier une prévision actuelle. Reviens après une nouvelle mesure validée.",en:"The latest observation does not support a current forecast. Check back after a new validated reading.",es:"La última observación no permite publicar un pronóstico actual. Vuelve cuando haya una nueva lectura validada."})}</p>
+            <p>{_t({fr:"Prévision suspendue jusqu'à une nouvelle observation validée.",en:"Forecast paused until a new validated observation.",es:"Pronóstico en pausa hasta una nueva observación validada."})}</p>
           </div>
         )}
 
