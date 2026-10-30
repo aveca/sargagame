@@ -34,7 +34,18 @@ const cases = [
   },
 ]
 
-const unsupportedFreshness = /\b(?:today|live|in real time|real-time|updated\s+(?:4|four)|four times (?:a|per) day|4\s*[×x]\s*daily|daily satellite updates|right now)\b/i
+const unsupportedFreshness = [
+  /\btoday\b/i,
+  /\blive\b/i,
+  /\bin real time\b/i,
+  /\breal-time\b/i,
+  /\bupdated\s+daily\b/i,
+  /\bupdated\s+4\s*[×x]?\s*(?:times\s+)?daily\b/i,
+  /\b4\s*[×x]\s*daily\b/i,
+  /\b(?:four|4)\s+times\s+(?:a|per)\s+day\b/i,
+  /\bevery\s+4\s+hours\b/i,
+  /\bright now\b/i,
+]
 
 for (const item of cases) {
   const file = path.join(root, 'regions', item.id + '.json')
@@ -48,11 +59,17 @@ for (const item of cases) {
   assert.deepEqual(region.routes, item.routes, item.id + ' canonical route slugs are preserved')
   assert.equal(region.seo.homeTitle, item.title, item.id + ' title uses evidence-based copy')
   assert.equal(region.seo.homeDesc, item.description, item.id + ' description uses evidence-based copy')
-  assert.doesNotMatch(region.seo.homeTitle, unsupportedFreshness, item.id + ' title must not promise current/live data')
-  assert.doesNotMatch(region.seo.homeDesc, unsupportedFreshness, item.id + ' description must not promise current/live data')
+
+  for (const pattern of unsupportedFreshness) {
+    assert.doesNotMatch(region.seo.homeTitle, pattern, item.id + ' title must not promise unsupported freshness: ' + pattern)
+    assert.doesNotMatch(region.seo.homeDesc, pattern, item.id + ' description must not promise unsupported freshness: ' + pattern)
+  }
+
   assert.match(region.seo.homeDesc, /latest available satellite observations/i)
   assert.match(region.seo.homeDesc, /observation date/i)
   assert.match(region.seo.homeDesc, /confidence/i)
+  assert.doesNotMatch(region.seo.homeDesc, /\b\d+\s+beaches\b/i, item.id + ' meta description must not hard-code a beach count')
+  assert.ok(region.seo.homeTitle.length <= 60, item.id + ' title remains concise')
   assert.ok(region.seo.homeDesc.length <= 160, item.id + ' meta description remains concise')
   assert.equal(region.seo.freshTitles, true, item.id + ' title pipeline flag is preserved')
   assert.equal(region.seo.dateModifiedFromPipeline, true, item.id + ' dateModified pipeline flag is preserved')
