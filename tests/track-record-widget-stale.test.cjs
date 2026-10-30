@@ -42,6 +42,7 @@ async function runWidget(trackRecord, options = {}) {
         ok: options.sargassumHttpOk !== false,
         status: options.sargassumHttpStatus ?? 200,
         json: () => Promise.resolve({
+          erddapTimestamp: options.sargassumErddapTimestamp ?? options.sargassumUpdatedAt ?? new Date(nowMs).toISOString(),
           updatedAt: options.sargassumUpdatedAt ?? new Date(nowMs).toISOString()
         })
       })
@@ -160,6 +161,16 @@ function record(overrides = {}) {
     assert.equal(result.freshnessState, 'is-stale')
     assert.match(result.freshnessLabel, /vérification en cours/i)
   }
+  {
+    const result = await runWidget(record(), {
+      sargassumUpdatedAt: '2026-10-24T05:02:00.000Z',
+      sargassumErddapTimestamp: '2026-10-23T15:03:00.000Z'
+    })
+    assert.equal(result.freshnessState, 'is-stale',
+      'a recent publication timestamp must not override an older ERDDAP observation')
+    assert.match(result.freshnessLabel, /vérification en cours/i)
+  }
+
 
   {
     const result = await runWidget(record(), {
