@@ -28,6 +28,15 @@ for (const script of [
 }
 
 assert.match(workflow, /incident-apology\.cjs --dry-run/, 'incident apologies must be dry-run on schedule')
+const healthStep = workflow.slice(workflow.indexOf('Health check (uptime monitoring'), workflow.indexOf('Aggregate observed climatology'))
+assert.match(healthStep, /health-check\.cjs --dry-run/, 'scheduled health-check alerts must be dry-run')
+assert.match(healthStep, /authorize_outbound[\s\S]*health-check\.cjs --send/, 'health-check email requires explicit manual outbound approval')
+const health = fs.readFileSync(path.join(root, 'scripts/automation/health-check.cjs'), 'utf8')
+assert.match(health, /const SEND_ALERTS = process\.argv\.includes\('--send'\)/, 'health-check must require --send')
+assert.ok(health.indexOf('if (!SEND_ALERTS)') < health.indexOf('await sendAlertMail('), 'health-check dry-run must exit before SMTP')
+const failureStep = workflow.slice(workflow.indexOf('Send failure alert email'), workflow.indexOf('RETRY ON FAILURE'))
+assert.match(failureStep, /notify-failure\.cjs --dry-run/, 'scheduled failure notifications must be dry-run')
+assert.match(failureStep, /authorize_outbound[\s\S]*notify-failure\.cjs --send/, 'failure email requires explicit manual outbound approval')
 assert.match(workflow, /Clean bounced emails from Sheet \(approval-gated mutation\)[\s\S]{0,180}inputs\.authorize_data_cleanup == true/i, 'Apps Script cleanup must require data-cleanup approval')
 assert.match(workflow, /purge-analytics\.cjs --dry/, 'scheduled analytics purge must be dry-run')
 assert.match(workflow, /Purge analytics_events[\s\S]{0,240}authorize_data_cleanup/, 'real analytics purge must require data-cleanup approval')
