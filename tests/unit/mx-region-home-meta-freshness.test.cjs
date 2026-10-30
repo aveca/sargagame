@@ -35,16 +35,16 @@ const cases = [
 ]
 
 const unsupportedFreshness = [
-  /\\bhoy\\b/i,
-  /\\ben vivo\\b/i,
-  /\\btiempo real\\b/i,
-  /\\blive\\b/i,
-  /\\btoday\\b/i,
-  /\\breal[- ]?time\\b/i,
-  /\\bpron[oó]stico(?:\\s+de)?\\s+7\\s+d[ií]as\\b/i,
-  /\\bactualizad[oa]\\s+4\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\b4\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\bcuatro\\s+veces\\s+al\\s+d[ií]a\\b/i,
+  /\bhoy\b/i,
+  /\ben vivo\b/i,
+  /\btiempo real\b/i,
+  /\blive\b/i,
+  /\btoday\b/i,
+  /\breal[- ]?time\b/i,
+  /\bpron[oó]stico(?:\s+de)?\s+7\s+d[ií]as\b/i,
+  /\bactualizad[oa]\s+4\s+veces\s+al\s+d[ií]a\b/i,
+  /\b4\s+veces\s+al\s+d[ií]a\b/i,
+  /\bcuatro\s+veces\s+al\s+d[ií]a\b/i,
 ]
 
 for (const item of cases) {
@@ -76,7 +76,7 @@ for (const item of cases) {
   assert.match(region.seo.homeDesc, /observaciones satelitales disponibles/i)
   assert.match(region.seo.homeDesc, /fecha de observación/i)
   assert.match(region.seo.homeDesc, /confianza/i)
-  assert.doesNotMatch(region.seo.homeDesc, /\\b\\d+\\s+playas\\b/i, item.id + ' meta description must not hard-code beach counts')
+  assert.doesNotMatch(region.seo.homeDesc, /\b\d+\s+playas\b/i, item.id + ' meta description must not hard-code beach counts')
 }
 
 for (const marker of [
