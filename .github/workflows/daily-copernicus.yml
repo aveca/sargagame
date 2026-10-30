@@ -538,6 +538,23 @@ jobs:
           fi
           git add "$M"
           git commit -m "chore: daily metrics snapshot ${TODAY_UTC}" || echo "Rien à committer (snapshot inchangé)."
+          # Les étapes précédentes génèrent aussi des rapports et états non commités.
+          # Les isoler temporairement évite que git rebase refuse le worktree sale ;
+          # ils sont restaurés avant le step séparé « Commit email state ».
+          STASHED_GENERATED_CHANGES=0
+          if [ -n "$(git status --porcelain)" ]; then
+            git stash push --include-untracked -m "daily-metrics-snapshot-${GITHUB_RUN_ID:-local}"
+            STASHED_GENERATED_CHANGES=1
+          fi
+          restore_generated_changes() {
+            if [ "$STASHED_GENERATED_CHANGES" = "1" ]; then
+              if ! git stash pop --index; then
+                echo "::error::Impossible de restaurer les fichiers générés ; le stash reste conservé."
+                return 1
+              fi
+              STASHED_GENERATED_CHANGES=0
+            fi
+          }
           push_ok=0
           for i in 1 2 3 4 5; do
             git fetch origin "$BRANCH"
@@ -560,6 +577,8 @@ jobs:
             echo "::warning::push échoué (tentative $i/5), pause 20s"
             sleep 20
           done
+          # Restaurer les sorties des étapes précédentes avant le commit email anti-doublon.
+          restore_generated_changes
           # ÉCHEC DÉFINITIF : exit non nul (pas une simple annotation).
           if [ "$push_ok" != "1" ]; then
             echo "::error title=Publication du snapshot métrique échouée::push refusé après 5 tentatives — le workflow ÉCHOUE."
