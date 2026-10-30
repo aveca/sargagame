@@ -40,6 +40,51 @@ const STATUS_WORD = {
   // Accord féminin avec "playa" (Limpia/Moderada) — aligné avec T.es.moderate de l'app.
   es: { clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar' },
 }
+const REGIONAL_OBSERVATION_SLA_MINUTES = 900;
+
+function getSatelliteObservationFreshness(data, now = Date.now()) {
+  const raw = data && data.erddapTimestamp;
+  const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''));
+  if (!Number.isFinite(now) || !Number.isFinite(timestamp) || timestamp <= 0 || timestamp > now) {
+    return { state: 'unknown', timestamp: null, ageMinutes: null };
+  }
+  const ageMinutes = (now - timestamp) / 60000;
+  if (data?.stale === true || ageMinutes >= REGIONAL_OBSERVATION_SLA_MINUTES) {
+    return { state: 'delayed', timestamp, ageMinutes };
+  }
+  return { state: 'fresh', timestamp, ageMinutes };
+}
+
+function formatSatelliteObservationLabel(data, lang = 'en', now = Date.now()) {
+  const freshness = getSatelliteObservationFreshness(data, now);
+  const locale = lang === 'es' ? 'es' : lang === 'fr' ? 'fr' : 'en';
+  const copy = {
+    en: {
+      latest: 'Latest satellite observation',
+      delayed: ' · delayed',
+      unknown: 'Satellite observation timestamp unavailable · status to verify',
+    },
+    es: {
+      latest: 'Última observación satelital',
+      delayed: ' · retrasada',
+      unknown: 'Hora de observación satelital no disponible · estado por verificar',
+    },
+    fr: {
+      latest: 'Dernière observation satellite',
+      delayed: ' · en retard',
+      unknown: 'Horodatage satellite indisponible · statut à vérifier',
+    },
+  }[locale];
+  if (freshness.state === 'unknown') return copy.unknown;
+  const date = new Date(freshness.timestamp);
+  const stamp = [
+    String(date.getUTCFullYear()).padStart(4, '0'),
+    String(date.getUTCMonth() + 1).padStart(2, '0'),
+    String(date.getUTCDate()).padStart(2, '0'),
+  ].join('-') + ' ' + String(date.getUTCHours()).padStart(2, '0') + ':' + String(date.getUTCMinutes()).padStart(2, '0');
+  return copy.latest + ': ' + stamp + ' UTC' + (freshness.state === 'delayed' ? copy.delayed : '');
+}
+
 const T = {
   en: {
     beachesDir: 'beaches', resortsDir: 'resorts',
@@ -950,15 +995,21 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     if (_heroLib) {
       try {
         const lvH = { status: b.lv.status || 'clean', score: typeof b.lv.score === 'number' ? b.lv.score : undefined, afai: typeof b.lv.afai === 'number' ? b.lv.afai : (typeof b.afai === 'number' ? b.afai : 0.2) }
-        const heroSvg = _heroLib.buildHeroSvg(b, lvH, { updatedAt: data.updatedAt }, {})
+        const observationFreshness = getSatelliteObservationFreshness(data)
+        const observationLabel = formatSatelliteObservationLabel(data, lang)
+        const heroSvg = _heroLib.buildHeroSvg(
+          b,
+          lvH,
+          { updatedAt: observationFreshness.state === 'fresh' ? data.erddapTimestamp : null },
+          { label: 'OBSERVATION' },
+        )
         const fline = forecastLine(data.weekly, b.id, lang)
         const scoreTxt = typeof lvH.score === 'number' ? ` · <span class="sg-stat">${lvH.score}/100</span>` : ''
-        const liveHHMM = data.updatedAt ? (() => { try { const d = new Date(data.updatedAt); return String(d.getUTCHours()).padStart(2, '0') + ':' + String(d.getUTCMinutes()).padStart(2, '0') } catch (_) { return '' } })() : ''
-        const liveTxt = liveHHMM ? `<div class="sg-live">LIVE · satellite ${liveHHMM} UTC</div>` : ''
+        const observationTxt = `<div class="sg-live sg-observation sg-observation--${observationFreshness.state}">${esc(observationLabel)}</div>`
         const verdict = `<div class="sg-verdict"><h1>${esc(b.name)}</h1>`
           + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(b.lv.status))}${scoreTxt}</div>`
           + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
-          + liveTxt
+          + observationTxt
           + `</div>`
         noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${heroClipEl}${verdict}</div>${articleHtml}</div>`
       } catch (e) { noscript = articleHtml }
@@ -1095,4 +1146,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages, resolveNextArrival }
+module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, formatSatelliteObservationLabel }
