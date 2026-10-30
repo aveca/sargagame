@@ -181,7 +181,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     fr: {
       unknownBadge: "VÉRIFICATION",
       unknown: "Vérification des données satellite en cours",
-      liveBadge: "EN DIRECT",
+      liveBadge: "OBSERVATION RÉCENTE",
       recentBadge: "MESURE SATELLITE",
       staleBadge: "SATELLITE EN RETARD",
       stale: "Données satellite en retard · vérifie avant de choisir",
@@ -192,7 +192,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     en: {
       unknownBadge: "VERIFICATION",
       unknown: "Satellite verification in progress",
-      liveBadge: "LIVE",
+      liveBadge: "RECENT OBSERVATION",
       recentBadge: "SATELLITE READING",
       staleBadge: "SATELLITE DELAYED",
       stale: "Satellite data delayed · check before choosing",
@@ -203,7 +203,7 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
     es: {
       unknownBadge: "VERIFICACIÓN",
       unknown: "Verificación de datos satelitales en curso",
-      liveBadge: "EN DIRECTO",
+      liveBadge: "OBSERVACIÓN RECIENTE",
       recentBadge: "MEDICIÓN SATELITAL",
       staleBadge: "SATÉLITE ATRASADO",
       stale: "Datos satelitales atrasados · verifica antes de elegir",
