@@ -184,13 +184,13 @@ try {
       assert.doesNotMatch(detailText, /donnée vérifiée|verified data|dato verificado/i,
         "stale beach detail must not claim verified-current data");
 
-      const staleVerdict = detail.locator('[data-testid="beach-sheet-verdict"]');
-      const staleVerdictText = await staleVerdict.innerText();
-      assert.match(staleVerdictText, /À vérifier|Check before deciding|Verificar antes de decidir/i,
+      const detailVerdictElement = detail.locator('[data-testid="beach-sheet-verdict"]');
+      const detailVerdictText = await detailVerdictElement.innerText();
+      assert.match(detailVerdictText, /À vérifier|Check before deciding|Verificar antes de decidir/i,
         "stale satellite data must not retain a current beach verdict");
-      assert.match(staleVerdictText, /Dernier statut observé|Last observed status|Último estado observado/i,
+      assert.match(detailVerdictText, /Dernier statut observé|Last observed status|Último estado observado/i,
         "the prior status must be explicitly historical");
-      assert.doesNotMatch(staleVerdictText, /Baignade OK|Safe to swim|Baño OK/i,
+      assert.doesNotMatch(detailVerdictText, /Baignade OK|Safe to swim|Baño OK/i,
         "stale satellite data must not claim that swimming is currently safe");
       assert.equal(await detail.locator(".score-blob-glow, .score-blob-pulse").count(), 0,
         "stale satellite data must suppress the numeric beach score");
