@@ -6,6 +6,13 @@ function boundedNumber(value) {
   return Number.isFinite(number) ? Math.max(0, Math.min(MAX_METRIC, number)) : null;
 }
 
+function validEventTimestamp(value, now) {
+  const timestamp = Number(value);
+  return Number.isFinite(timestamp) && timestamp > 0 && timestamp <= now
+    ? timestamp
+    : null;
+}
+
 /**
  * Build a minimal frustration event payload.
  * Never forward arbitrary DOM text, email, query strings or caller-supplied objects.
@@ -16,11 +23,11 @@ export function sanitizeFrustrationAnalytics(type, context = {}, pathname = "/",
   const rawPath = String(pathname ?? "/").split(/[?#]/, 1)[0];
   const page = (rawPath.startsWith("/") ? rawPath : "/" + rawPath).slice(0, 200) || "/";
   const fallbackNow = Number.isFinite(now) && now > 0 ? now : Date.now();
-  const suppliedTimestamp = boundedNumber(context?.timestamp);
+  const suppliedTimestamp = validEventTimestamp(context?.timestamp, fallbackNow);
   const params = {
     type: safeType,
     page,
-    timestamp: suppliedTimestamp !== null && suppliedTimestamp > 0 ? suppliedTimestamp : fallbackNow,
+    timestamp: suppliedTimestamp ?? fallbackNow,
   };
 
   for (const key of SAFE_NUMERIC_FIELDS) {
