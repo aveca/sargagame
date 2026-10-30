@@ -4499,11 +4499,11 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
   // cleanup baisse), sinon le satellite. Provenance nommée dans le bandeau ci-dessous → jamais
   // « mesuré au satellite » sur un niveau terrain. Forecast J+1-7 (fcDays) reste 100 % satellite.
   const _terrainStatus=terrainDisplayStatus(beach?.status,terrainEvents)
-  const status=_terrainStatus||_satStatus
-  const sc=comicStatusColor(status)
-  const hasScore=typeof beach?.score==="number"
+  const satelliteDecisionCurrent = isSatelliteFresh12h(sargData)
+  const status = _terrainStatus || (satelliteDecisionCurrent ? _satStatus : "_loading")
+  const sc = comicStatusColor(status)
+  const hasScore = satelliteDecisionCurrent && typeof beach?.score === "number"
   const daypart=(()=>{try{const h=new Date().getHours();return h<12?"matin":h<18?"aprem":"soir"}catch(_){return "matin"}})()
-  const V=comicVerdict(status,lang,daypart)
 
   // ── Score count-up « tally » cartoon — anime 0 → score à l'ouverture de la fiche
   const [scoreAnim,setScoreAnim]=useState(0)
@@ -4518,13 +4518,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     return()=>{try{cancelAnimationFrame(raf)}catch(_){}}
   },[beach?.id,beach?.score])
 
-  // ── Fraîcheur satellite (confiance) — preuve « mesuré, pas deviné »
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+    // ── Fraîcheur satellite (confiance) — seule l'observation ERDDAP fait foi.
+  const satAge = satelliteAgeHours(sargData)
+  const satFresh = satelliteDecisionCurrent
+  const satLabel = satAge == null
+    ? _t(lang,"Observation satellite à vérifier","Satellite observation needs checking","Medición satelital por verificar")
+    : satAge < 1
+      ? _t(lang,"Dernière observation satellite il y a <1 h","Last satellite observation <1h ago","Última observación satelital hace <1 h")
+      : _t(lang,`Dernière observation satellite il y a ${Math.round(satAge)} h`,`Last satellite observation ${Math.round(satAge)}h ago`,`Última observación satelital hace ${Math.round(satAge)} h`)
+  const lastObservedStatusLabel = (ST[_satStatus] || ST._loading)[lang === "en" ? "le" : lang === "es" ? "les" : "l"]
+  const V = status === "_loading"
+    ? { big: _t(lang,"À vérifier","Check before deciding","Verificar antes de decidir"), when: satLabel, hl: _t(lang,"À vérifier","Check","Verificar") }
+    : _terrainStatus && !satelliteDecisionCurrent
+      ? { ...comicVerdict(status, lang, daypart), when: _t(lang,"signalement terrain récent","recent on-site report","reporte reciente en playa") }
+      : comicVerdict(status, lang, daypart)
 
-  // ── Distance / lieu
+// ── Distance / lieu
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversine(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
   const locLine=[beach?.commune||null, distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
 
@@ -4535,7 +4544,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
     // + bleu pour l'info neutre (température). Plus de rainbow vert/ambre/rouge sous le
     // bandeau verdict (retour fondateur « trop de couleurs sur la carte plage »).
     const sgLvl=status==="clean"?{t:_t(lang,"Sargasses faibles","Low sargassum","Sargazo bajo"),c:COMIC.clean}:status==="moderate"?{t:_t(lang,"Sargasses modérées","Moderate sargassum","Sargazo moderado"),c:COMIC.orange}:status==="avoid"?{t:_t(lang,"Sargasses fortes","Heavy sargassum","Sargazo fuerte"),c:COMIC.orange}:null
-    if(sgLvl)out.push(sgLvl)
+    if(sgLvl && status !== "_loading") out.push(sgLvl)
     if(weather){
       if(weather.waveHeight!=null){const w=weather.waveHeight;out.push({t:w<.6?_t(lang,"Houle calme","Calm swell","Mar calmo"):w<1.2?_t(lang,"Houle modérée","Moderate swell","Mar moderado"):_t(lang,"Houle forte","Strong swell","Mar fuerte"),c:w<.6?COMIC.clean:COMIC.orange})}
       if(weather.wind!=null){const v=weather.wind;out.push({t:v<20?_t(lang,"Vent léger","Light wind","Viento leve"):v<35?_t(lang,"Vent modéré","Moderate wind","Viento moderado"):_t(lang,"Vent fort","Strong wind","Viento fuerte"),c:v<20?COMIC.clean:COMIC.orange})}
@@ -4546,7 +4555,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
   // ── Plan B : si avoid/moderate, plages PROPRES proches (réduit la frustration + maille SEO)
   const planB=useMemo(()=>{
-    if(!beach||!allBeaches||status==="clean"||status==="_loading")return[]
+    if(!satelliteDecisionCurrent||!beach||!allBeaches||status==="clean"||status==="_loading")return[]
     // Plafond de distance : « plutôt y aller » n'a de sens que si c'est ATTEIGNABLE.
     // Sur un grand marché (Floride : plages à 390 km), suggérer une plage à l'autre
     // bout de l'État est inutile → on cache au-delà de 60 km (les petites îles MQ/GP
@@ -4555,7 +4564,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
       .map(b=>({...b,_d:haversine(beach.lat,beach.lng,b.lat,b.lng)}))
       .filter(b=>b._d<=60)
       .sort((a,b)=>a._d-b._d).slice(0,3)
-  },[beach?.id,allBeaches,status])
+  },[beach?.id,allBeaches,status,satelliteDecisionCurrent])
 
   const requestClose=()=>{
     if(closingRef.current)return; closingRef.current=true
@@ -4653,20 +4662,22 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:23,lineHeight:.96,color:COMIC.ink,textTransform:"uppercase",letterSpacing:"-.3px",wordBreak:"break-word"}}>{beach.name}</div>
             {locLine&&<div style={{font:"700 11.5px/1.2 'Bricolage Grotesque'",color:COMIC.sub,marginTop:4,display:"flex",alignItems:"center",gap:5}}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{locLine}{!userPos&&beach?.lat&&onRequestGeo&&<GeoSoftAsk lang={lang} onAsk={onRequestGeo} src="beach_dive" style={{padding:"2px 8px",fontSize:11,marginLeft:2}}/>}</div>}
           </div>
-          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
+          <span style={{font:"800 11px/1 'Bricolage Grotesque'",padding:"7px 11px",borderRadius:999,border:`2.5px solid ${COMIC.ink}`,boxShadow:`2px 2px 0 ${COMIC.ink}`,background:sc,color:status==="avoid"?"#fff":COMIC.ink,whiteSpace:"nowrap",display:"inline-flex",alignItems:"center",gap:5}}><ComicStatusGlyph status={status} size={13} color={status==="avoid"?"#fff":COMIC.ink}/>{status==="_loading"?_t(lang,"À vérifier","Check first","Verificar"):(ST[status]||ST._loading)[lang==="en"?"le":lang==="es"?"les":"l"]}</span>
         </div>
 
         {/* VERDICT — bandeau couleur haute lisibilité (traffic-light + mot, le pattern
             le plus scannable de la recherche). Fini le blanc-sur-crème illisible :
             mot sombre net sur aplat de couleur = la réponse se lit en 0,2 s. */}
-        <div className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
+        <div data-testid="beach-sheet-verdict" className={status==="avoid"?"urgency-alert":""} style={{display:"flex",alignItems:"center",gap:13,padding:"16px 18px",margin:"14px 0 12px",
           background:status==="avoid"?"linear-gradient(135deg, #FF3B30 0%, #C70000 100%)":sc,border:`3px solid ${COMIC.ink}`,borderRadius:18,boxShadow:status==="avoid"?"0 8px 24px rgba(255,59,48,0.4), 4px 4px 0 #8B0000":`4px 4px 0 ${COMIC.ink}`,
           animation:"bscPop .5s .1s cubic-bezier(.16,1,.3,1) both",position:"relative",zIndex:1}}>
           <div aria-hidden style={{flexShrink:0,filter:status==="avoid"?"drop-shadow(0 0 12px rgba(255,255,255,0.5))":"none"}}><Veilleur mood={hasScore?moodFromScore(beach.score):"scan"} size={52}/></div>
           <div style={{minWidth:0}}>
             {/* Verdict-line en Bricolage 800 (BIBLE : un SEUL Anton/écran = le nom de plage). */}
             <div style={{font:"800 26px/.95 'Bricolage Grotesque'",textTransform:"uppercase",letterSpacing:"-.3px",color:status==="avoid"?"#fff":COMIC.ink,textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.big}</div>
-            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {_terrainStatus
+            <div style={{font:"800 12.5px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,0.95)":COMIC.ink,opacity:status==="avoid"?1:.8,marginTop:5,textTransform:"uppercase",letterSpacing:".6px",textShadow:status==="avoid"?"0 1px 2px rgba(0,0,0,0.3)":"none"}}>{V.when} · {status==="_loading"
+              ? _t(lang,`Dernier statut observé : ${lastObservedStatusLabel} · pas une confirmation actuelle`,`Last observed status: ${lastObservedStatusLabel} · not a current confirmation`,`Último estado observado: ${lastObservedStatusLabel} · no es una confirmación actual`)
+              : _terrainStatus
               ? ({clean:0,moderate:1,avoid:2}[_terrainStatus]>{clean:0,moderate:1,avoid:2}[_satStatus]
                   ? _t(lang,`relevé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`raised on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`elevado in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`)
                   : _t(lang,`corrigé sur place · satellite : ${(ST[_satStatus]||ST._loading).l}`,`corrected on-site · satellite: ${(ST[_satStatus]||ST._loading).le}`,`corregido in situ · satélite: ${(ST[_satStatus]||ST._loading).les}`))
@@ -4689,7 +4700,7 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
         )}
 
         {/* Score + facteurs (carte) */}
-        <div className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
+        <div data-testid="beach-sheet-score" className="bsc-card elevation-3" style={{display:"flex",alignItems:"center",gap:14,padding:"16px 18px",marginBottom:12,background:"linear-gradient(135deg, #FFFFFF 0%, #FAF9F6 100%)"}}>
           {hasScore&&<div style={{flexShrink:0,textAlign:"center",position:"relative"}}>
             {/* Score-vedette avec halo animé - WOW effect */}
             <div className={status==="clean"?"score-blob-glow":"score-blob-pulse"} style={{
@@ -4713,9 +4724,12 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 
         {/* Preuve fraîcheur satellite */}
         <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-          <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>{satLabel} · {_t(lang,"donnée vérifiée","verified data","dato verificado")}
+          <span style={{width:7,height:7,borderRadius:"50%",background:satFresh?COMIC.clean:COMIC.orange,boxShadow:`0 0 0 3px ${(satFresh?COMIC.clean:COMIC.orange)}33`}}/>{satLabel}
         </div>
 
+        {/* Les prévisions dépendent de la fraîcheur de l'observation source. */}
+        {satelliteDecisionCurrent ? (
+          <>
         {/* PRÉVISIONS 7 j — la « valeur future » : aujourd'hui visible, le reste FLOUTÉ/verrouillé (teaser gate) */}
         <div style={{marginBottom:14}}>
           <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:7}}>
@@ -4752,8 +4766,16 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
             ?cadran=1, barre plate sinon), mêmes composants que l'ancienne BeachSheet.
             Alimenté par les données hebdo RÉELLES de cette plage + sargData courant ;
             fraîcheur via prédicats partagés (erddap seul), jamais updatedAt. */}
-        {weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
-
+          </>
+        ) : (
+          <div data-testid="beach-sheet-forecast-paused" className="bsc-card" role="status" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
+            <div style={{font:"800 12px/1.3 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:6}}>{_t(lang,"Prévisions suspendues","Forecasts paused","Pronóstico suspendido")}</div>
+            <div style={{font:"600 12px/1.45 'Bricolage Grotesque'",color:COMIC.sub}}>{satAge==null
+              ? _t(lang,"Horodatage satellite inconnu : les prévisions sont masquées.","Satellite timestamp unknown: forecasts are hidden.","Hora satelital desconocida: el pronóstico está oculto.")
+              : _t(lang,"Observation satellite trop ancienne : les prévisions sont masquées jusqu'à une nouvelle mesure.","Satellite observation is too old: forecasts are hidden until a new reading.","La observación satelital es demasiado antigua: el pronóstico se oculta hasta una nueva medición.")}</div>
+          </div>
+        )}
+        {satelliteDecisionCurrent&&weeklyData&&<ForecastCred weeklyData={weeklyData} lang={lang} sargData={sargData}/>}
         {/* Plan B — où aller maintenant (avoid/moderate) */}
         {planB.length>0&&<div className="bsc-card" style={{padding:"12px 14px",marginBottom:14,background:COMIC.cream}}>
           <div style={{font:"800 12px/1 'Bricolage Grotesque'",color:COMIC.ink,marginBottom:9,display:"flex",alignItems:"center",gap:6}}><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={COMIC.clean} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{flexShrink:0}}><path d="M12 22V12"/><path d="M12 12c0-4-3-7-8-6 2-3 8-4 8 1 0-5 6-4 8-1-5-1-8 2-8 6z"/><path d="M12 12c2-2 5-2 7 0M12 12c-2-2-5-2-7 0"/></svg>{_t(lang,"Plutôt y aller maintenant","Go here instead","Mejor ve aquí ahora")}</div>
