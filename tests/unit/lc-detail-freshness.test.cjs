@@ -34,7 +34,7 @@ async function main() {
   const delayedFr = lcDetailFreshnessLabel(delayed, 'fr', now)
   t(!delayedFr.includes('ce matin'), '16h => « ce matin » supprimé')
   t(delayedFr.includes('il y a 16 h'), '16h => « il y a 16 h » = cohérence avec le panneau Pourquoi')
-  t(/Dernière observation satellite/.test(delayedFr), '16h : formulation relative honnête (pas de fréquence)')
+  t(/Observation il y a 16 h/.test(delayedFr), '16h : formulation relative honnête (pas de fréquence)')
 
   // 3. Dépassement seuil stale (40h) : âge réel s'affiche, jamais « ce matin ».
   const stale = { source: 'erddap-live', stale: false, erddapTimestamp: new Date(now - 40 * 3.6e6).toISOString() }
