@@ -9,7 +9,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
   const t=(fr,en,es)=>_t(lang,fr,en,es)
   // Honnêteté fraîcheur (contrat produit 12h) : seule l'observation satellite
   // (erddapTimestamp) prouve la fraîcheur — updatedAt seul ne prouve jamais rien.
-  const dataFresh12h=isSatelliteFresh12h(sargData)
+  const dataFresh12h=sargData?.source==="erddap-live"&&sargData?.stale===false&&isSatelliteFresh12h(sargData)
   const helloToday=t(
     "Salut ! Je réponds avec les données satellite du jour — rien d'inventé. Tu veux savoir quoi ?",
     "Hi! I answer with today's satellite data — nothing made up. What do you want to know?",
@@ -79,6 +79,11 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
   useEffect(()=>{if(bodyRef.current)bodyRef.current.scrollTop=bodyRef.current.scrollHeight},[msgs,typing])
   const answer=k=>{
     if(k==="where"){
+      if(!dataFresh12h)return{text:t(
+        "Je ne peux pas recommander une plage pour aujourd'hui : la dernière observation satellite n'est pas assez récente ou vérifiée. Vérifie l'heure de la mesure avant de te déplacer.",
+        "I can't recommend a beach for today: the latest satellite observation is not recent or verified enough. Check its timestamp before travelling.",
+        "No puedo recomendar una playa para hoy: la última observación satelital no es lo bastante reciente o verificada. Comprueba su hora antes de desplazarte."
+      ),chips:[{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
       if(cleans.length){
         const top=cleans.slice(0,3)
         return{text:t(
@@ -95,6 +100,11 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
         chips:[...(best?[{k:"open:"+best.id,label:t("Voir "+best.name+" →","See "+best.name+" →","Ver "+best.name+" →")}]:[]),{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     }
     if(k==="tomorrow"){
+      if(!dataFresh12h)return{text:t(
+        "Je ne publie pas de prévision pour demain à partir d'une observation ancienne ou non vérifiée. Reviens lorsque la prochaine observation aura été validée.",
+        "I won't publish a forecast for tomorrow from an old or unverified observation. Check again when the next observation has been validated.",
+        "No publico un pronóstico para mañana a partir de una observación antigua o no verificada. Vuelve cuando se haya validado la próxima observación."
+      ),chips:[{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
       const wk=sargData?.weekly||{}
       let stay=0,turn=0
       for(const b of cleans){
@@ -119,9 +129,9 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
       "Premium es tu vigía personal: la playa recomendada cada mañana en tu correo, una alerta si TU playa cambia, y el pronóstico de 7 días playa por playa. "+(PAY_CAPTURE_ONLY?"Ahora son 7 días gratis, solo tu email.":"Cancela en 2 clics.")),
       chips:[{k:"cta",label:t("Voir l'offre ⭐","See the offer ⭐","Ver la oferta ⭐")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     if(k==="trust")return{text:t(
-      "Données satellite Copernicus (programme spatial européen), actualisées 4×/jour, croisées avec la météo marine et les signalements locaux — plage par plage, pas de moyenne d'île. Quand on ne sait pas, on le dit.",
-      "Copernicus satellite data (the EU space programme), refreshed 4×/day, cross-checked with marine weather and local reports — beach by beach, no island-wide averages. When we don't know, we say so.",
-      "Datos del satélite Copernicus (programa espacial europeo), actualizados 4 veces al día, cruzados con meteo marina y reportes locales — playa por playa. Cuando no sabemos, lo decimos."),
+      "Nous utilisons les observations satellite Copernicus disponibles, plage par plage. L'heure affichée est celle de l'observation, pas celle de la republication du site. Si elle est trop ancienne ou non vérifiée, le Veilleur ne donne pas de verdict actuel.",
+      "We use the available Copernicus satellite observations beach by beach. The displayed time is the observation time, not the site republication time. If it is too old or unverified, the Watchman does not give a current verdict.",
+      "Usamos las observaciones satelitales Copernicus disponibles, playa por playa. La hora mostrada corresponde a la observación, no a la republicación del sitio. Si es demasiado antigua o no está verificada, el Vigía no emite un veredicto actual."),
       chips:[{k:"about",label:t("La page confiance →","The trust page →","La página de confianza →")},{k:"root",label:t("← Autre question","← Another question","← Otra pregunta")}]}
     return null
   }
@@ -253,7 +263,7 @@ export default function SargaChat({lang,allBeaches,island,sargData,onOpenBeach,o
             <div style={{minWidth:0}}>
               <strong style={{fontSize:13.5,color:"#fff",lineHeight:1.2,display:"block"}}>{t("Le Veilleur","The Watchman","El Vigía")}</strong>
               <span style={{display:"inline-flex",alignItems:"center",gap:5,marginTop:2,fontSize:10.5,fontWeight:800,letterSpacing:".04em",color:dataFresh12h?"#1EC8B0":"#B87A00",textTransform:"uppercase"}}>
-                <span style={{width:6,height:6,borderRadius:"50%",background:dataFresh12h?"#009E8E":"#B87A00"}}/>{dataFresh12h?t("En direct","Live","En vivo"):t("Vérification en cours","Verification in progress","Verificación en curso")}
+                <span style={{width:6,height:6,borderRadius:"50%",background:dataFresh12h?"#009E8E":"#B87A00"}}/>{dataFresh12h?t("En direct","Live","En vivo"):t("Pas de statut actuel","No current status","Sin estado actual")}
               </span>
             </div>
           </div>
