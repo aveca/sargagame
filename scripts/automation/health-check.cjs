@@ -151,7 +151,12 @@ async function checkRealPages() {
 
 // Send staleness/downtime alert via SMTP (boîte alerte@)
 const { sendEmail: sendAlertMail, mailReady } = require('./lib/email-send.cjs')
+const SEND_ALERTS = process.argv.includes('--send') && !process.argv.includes('--dry-run')
 async function sendAlert(subject, issues) {
+  if (!SEND_ALERTS) {
+    console.log(`[DRY-RUN] Alert email suppressed: ${subject}`)
+    return
+  }
   if (!mailReady()) return
   const html = `<div style="font-family:system-ui;max-width:500px;padding:20px">
     <h2 style="color:#dc2626;margin:0 0 12px">${subject}</h2>
