@@ -189,7 +189,7 @@
 
   function showMetric(pct, count, label){
     document.getElementById('tr-clean').textContent = Number(pct).toLocaleString('es-ES') + '%';
-    document.getElementById('tr-line').textContent = label + ' (sobre ' + Number(count).toLocaleString('es-ES') + ' comparaciones).';
+    document.getElementById('tr-line').textContent = label + ' (sobre ' + Number(count).toLocaleString('es-ES') + ' comparaciones fechadas).';
     if (proof) proof.classList.remove('is-stale');
   }
 
