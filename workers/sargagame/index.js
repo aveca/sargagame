@@ -1,3 +1,5 @@
+import { isMollieModeAllowed } from "./mollie-mode.js";
+
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
@@ -79,6 +81,8 @@ export default {
     };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
+      if(!env.MOLLIE_API_KEY) return out({error:"payment_backend_not_configured"},503);
+      if(!isMollieModeAllowed(u.hostname,env.MOLLIE_API_KEY)) return out({error:"payment_provider_not_live"},503);
       const raw=await request.text();
       const contentType=request.headers.get("content-type")||"";
       // This endpoint is for Mollie's classic Payments webhook: form-encoded id.
@@ -116,6 +120,7 @@ export default {
       if(request.method!=="POST") return out({error:"POST only"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
       if(!env.MOLLIE_API_KEY)return out({error:"payment_backend_not_configured"},503);
+      if(!isMollieModeAllowed(u.hostname,env.MOLLIE_API_KEY))return out({error:"payment_provider_not_live"},503);
       try{
         if(d.action==="payment_status"){
           const paymentId=String(d.paymentId||"").trim();

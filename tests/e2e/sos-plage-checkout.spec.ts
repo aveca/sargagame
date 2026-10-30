@@ -1,204 +1,141 @@
-import { test, expect, type Page } from "@playwright/test"
+import { test, expect } from "@playwright/test"
 
-const BASE_URL = "https://sargasses-martinique.com"
+const BASE_URL = (process.env.PREVIEW_URL || "http://127.0.0.1:4173").replace(/\/$/, "")
+const PAYMENT_ID = "tr_SOSmock20261029"
 
-async function captureNetwork(page: Page) {
-  const requests: Array<{ url: string; method: string; postData?: string; status?: number; response?: any }> = []
-  page.on('request', request => {
-    if (request.url().includes('/api/mollie')) {
-      requests.push({ 
-        url: request.url(), 
-        method: request.method(),
-        postData: request.postData() 
-      })
-    }
-  })
-  page.on('response', async response => {
-    if (response.url().includes('/api/mollie')) {
-      const req = requests.find(r => r.url === response.url())
-      if (req) {
-        req.status = response.status()
-        try { req.response = await response.json() } catch {}
-      }
-    }
-  })
-  page.on('console', msg => {
-    if (msg.type() === 'log' && msg.text().includes('[SOSPlage]')) {
-      console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`)
-    }
-  })
-  page.on('pageerror', e => {
-    console.log(`[BROWSER ERROR] ${e.message}`)
-  })
-  return requests
-}
-
-test.describe("SOS Plage Checkout — Browser Diagnostics", () => {
-  test("PHASE 1: Full browser flow ?sos=1 → beach select → CTA → checkout", async ({ page }) => {
-    const networkCalls = await captureNetwork(page)
-    const errors: string[] = []
-    page.on('pageerror', e => errors.push(e.message))
-    page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })
-
-    // 1. HTTP 200
-    const response = await page.goto(BASE_URL + "/?sos=1", { waitUntil: "load", timeout: 60000 })
-    expect(response?.status()).toBe(200)
-    console.log("✅ HTTP 200")
-
-    // 2. App loaded - wait for React root
-    await page.waitForSelector('#root', { timeout: 15000 })
-    console.log("✅ React root mounted")
-
-    // 3. Check if SOS mode is active - look for SOSPlage component
-    // The component should render a beach selector
-    await page.waitForTimeout(3000) // Let lazy chunk load
-
-// 3. Check if SOS mode is active - look for SOSPlage component
-    // The component should render a beach selector
-    await page.waitForTimeout(3000) // Let lazy chunk load
-
-    // Check if SOSPlage component is rendered
-    const sosRoot = page.locator('[data-sos-plage="true"]').first()
-    const sosRootVisible = await sosRoot.isVisible({ timeout: 10000 }).catch(() => false)
-    console.log("🔍 SOSPlage root visible:", sosRootVisible)
-
-    // Check showSOS state by looking at localStorage or any global flag
-    const sosState = await page.evaluate(() => {
-      // Check if showSOS is set in any global state
-      return {
-        urlSearch: window.location.search,
-        sosInUrl: new URLSearchParams(window.location.search).get('sos'),
-        localStorageShowSOS: localStorage.getItem('showSOS'),
-        sessionStorageShowSOS: sessionStorage.getItem('showSOS')
-      }
+test.describe("SOS Plage — modal and payment funnel (Mollie mocked)", () => {
+  // The app embeds a public Supabase publishable key. Never let a mocked CI
+  // checkout write synthetic conversion/payment events into production analytics.
+  test.beforeEach(async ({ page }) => {
+    await page.route("**/rest/v1/analytics_events**", async route => {
+      await route.fulfill({ status: 201, body: "" })
     })
-    console.log("🔍 SOS state:", JSON.stringify(sosState))
+  })
+  test("modal renders semantic HTML in a centered, bounded panel", async ({ page }, testInfo) => {
+    await page.goto(BASE_URL + "/?sos=1", { waitUntil: "domcontentloaded", timeout: 60000 })
 
-    // 4. Beach selector visible
-    const beachSelect = page.locator('select').first()
-    await expect(beachSelect).toBeVisible({ timeout: 15000 })
-    console.log("✅ Beach selector visible")
+    const panel = page.locator('[data-sos-plage="true"]')
+    await expect(panel).toBeVisible({ timeout: 20000 })
+    await expect(panel).toHaveAttribute("role", "dialog")
+    await expect(panel).toHaveAttribute("aria-modal", "true")
 
-    // 5. Select "Plage des Salines" (mq001)
-    await beachSelect.selectOption('mq001')
-    console.log("✅ Selected Plage des Salines")
+    const title = page.locator("#sos-plage-title")
+    await expect(title).toContainText("demain")
+    expect(await title.innerText()).not.toContain("<span")
 
-    await page.waitForTimeout(1000)
+    const benefits = page.locator('[data-testid="sos-benefits"]')
+    await expect(benefits).toBeVisible()
+    expect(await benefits.innerText()).not.toContain("<br")
 
-    // 6. Find CTA button with exact text - use ID selector
-    const cta = page.locator('#sos-plage-cta').first()
-    await expect(cta).toBeVisible({ timeout: 10000 })
-    console.log("✅ CTA 'Voir mon rapport — 1 €' visible")
+    const rect = await panel.boundingBox()
+    expect(rect).not.toBeNull()
+    expect(rect!.width).toBeLessThanOrEqual(640)
+    expect(rect!.x).toBeGreaterThanOrEqual(0)
+    expect(rect!.y).toBeGreaterThanOrEqual(0)
 
-    // 7. CTA clickable
-    await expect(cta).toBeEnabled()
-    console.log("✅ CTA enabled")
+    const cta = page.locator("#sos-plage-cta")
+    await expect(cta).toBeVisible()
+    const ctaRect = await cta.boundingBox()
+    expect(ctaRect?.height ?? 0).toBeGreaterThanOrEqual(48)
 
-    // 8. Click CTA and capture network - use force click to bypass intercepting elements
-    await cta.click({ force: true })
-    console.log("✅ CTA clicked")
-
-    // 9-11. Wait for network response
-    await page.waitForTimeout(3000)
-
-    // Also check for any fetch to /api/mollie (worker endpoint)
-    const allMollieCalls = networkCalls.filter(c => c.url.includes('/api/mollie') && !c.url.includes('mollie.com'))
-    console.log("📡 All /api/mollie* calls:", allMollieCalls.length)
-    for (const call of allMollieCalls) {
-      console.log(`  ${call.method} ${call.url}`)
-      if (call.postData) {
-        console.log(`  Request body: ${call.postData}`)
-      }
-      if (call.response) {
-        console.log(`  Response:`, JSON.stringify(call.response, null, 2))
-      }
-    }
-
-    // Check if handleBuy was called by evaluating in browser
-    const handleBuyCalled = await page.evaluate(() => {
-      return window.__sosHandleBuyCalled || false
-    })
-    console.log("🔍 handleBuy called:", handleBuyCalled)
-
-    // Debug: Check if the button has onClick handler
-    const buttonInfo = await page.evaluate(() => {
-      const btn = document.getElementById('sos-plage-cta')
-      if (!btn) return { found: false }
-      const allKeys = Object.keys(btn)
-      const reactKeys = allKeys.filter(k => k.startsWith('__react') || k.startsWith('__reactFiber') || k.startsWith('__reactInternal'))
-      return {
-        found: true,
-        onclick: btn.onclick ? 'present' : 'missing',
-        hasReactProps: reactKeys.length > 0,
-        reactKeys: reactKeys,
-        allKeysCount: allKeys.length,
-        tagName: btn.tagName,
-        disabled: btn.disabled,
-        style: btn.style.cssText
-      }
-    })
-    console.log("🔍 Button info:", JSON.stringify(buttonInfo, null, 2))
-
-    // Try clicking via JS evaluation to trigger React handler
-    if (!handleBuyCalled) {
-      console.log("🔧 Attempting JS click to trigger React handler...")
-      await page.evaluate(() => {
-        const btn = document.getElementById('sos-plage-cta')
-        if (btn && btn.onclick) {
-          btn.onclick({ type: 'click', target: btn, currentTarget: btn, preventDefault: () => {}, stopPropagation: () => {} })
-        } else if (btn) {
-          btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }))
-        }
-      })
-      await page.waitForTimeout(2000)
-      
-      // Check again
-      const handleBuyCalled2 = await page.evaluate(() => {
-        return window.__sosHandleBuyCalled || false
-      })
-      console.log("🔍 handleBuy called after JS click:", handleBuyCalled2)
-    }
-
-    // Wait longer for potential redirect (Mollie checkout can take a few seconds)
-    await page.waitForTimeout(8000)
-
-    // 12. Check if redirected to Mollie
-    const currentUrl = page.url()
-    console.log("📍 Current URL after click:", currentUrl)
-    
-    const isMollie = currentUrl.includes('mollie.com')
-    console.log("🔗 Redirected to Mollie:", isMollie)
-
-    // 13. Summary
-    console.log("\n=== PHASE 1 SUMMARY ===")
-    console.log("Errors:", errors.length > 0 ? errors : "None")
-    console.log("Mollie API calls:", allMollieCalls.length)
-    console.log("Redirected to Mollie:", isMollie)
-    console.log("Final URL:", currentUrl)
+    await page.screenshot({ path: testInfo.outputPath("sos-plage-modal.png"), fullPage: true })
   })
 
-  test("PHASE 1b: Direct API test - POST /api/mollie", async ({ page }) => {
-    const response = await page.request.post(`${BASE_URL}/api/mollie`, {
-      data: {
-        action: "create_payment",
+  test("checkout persists context and the Mollie return unlocks the SOS pass", async ({ page }) => {
+    let createPaymentBody: any = null
+
+    await page.route("**/api/mollie", async route => {
+      createPaymentBody = route.request().postDataJSON()
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          checkoutUrl: BASE_URL + "/__mollie_checkout_mock",
+          paymentId: PAYMENT_ID,
+        }),
+      })
+    })
+    await page.route("**/__mollie_checkout_mock", async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: "text/html",
+        body: "<!doctype html><title>Mock Mollie checkout</title><main>Mock checkout — no real payment</main>",
+      })
+    })
+
+    await page.goto(BASE_URL + "/?sos=1", { waitUntil: "domcontentloaded", timeout: 60000 })
+    const selector = page.locator('[data-sos-plage="true"] select')
+    await expect(selector).toBeVisible({ timeout: 20000 })
+    await selector.selectOption("mq001")
+
+    await page.locator("#sos-plage-cta").click()
+    await page.waitForURL("**/__mollie_checkout_mock", { timeout: 15000 })
+
+    expect(createPaymentBody).toMatchObject({
+      action: "create_payment",
+      pass: "sos",
+      cents: 100,
+      cur: "eur",
+      source: "sos_plage",
+    })
+    expect(createPaymentBody.redirectUrl).toBe(BASE_URL + "/?mollie_return=1")
+    expect(createPaymentBody.metadata.beach).toBe("mq001")
+
+    const pending = await page.evaluate(() => ({
+      session: JSON.parse(sessionStorage.getItem("sg_mollie_pending") || "null"),
+      local: JSON.parse(localStorage.getItem("sg_mollie_pending") || "null"),
+    }))
+    for (const context of [pending.session, pending.local]) {
+      expect(context).toMatchObject({
+        paymentId: PAYMENT_ID,
         pass: "sos",
-        cents: 100,
-        cur: "eur",
+        days: 1,
         source: "sos_plage",
-        lang: "fr",
-        metadata: {
-          beach: "mq001",
-          beachName: "Plage des Salines"
-        }
+        beachId: "mq001",
+      })
+    }
+
+    await page.route("**/api/mollie.php", async route => {
+      const body = route.request().postDataJSON()
+      if (body.action === "payment_status") {
+        expect(body.paymentId).toBe(PAYMENT_ID)
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({ paid: true, status: "paid", paymentId: PAYMENT_ID, granted: true }),
+        })
+        return
       }
+      await route.continue()
     })
-    
-    console.log("Status:", response.status())
-    const body = await response.json()
-    console.log("Response:", JSON.stringify(body, null, 2))
-    
-    expect(response.ok()).toBeTruthy()
-    expect(body.checkoutUrl).toBeTruthy()
-    expect(body.paymentId).toBeTruthy()
+
+    const statusRequest = page.waitForRequest(request => {
+      if (request.method() !== "POST" || !request.url().includes("/api/mollie.php")) return false
+      try { return request.postDataJSON().action === "payment_status" } catch { return false }
+    }, { timeout: 15000 })
+    await page.goto(BASE_URL + "/?mollie_return=1", { waitUntil: "domcontentloaded", timeout: 60000 })
+    const statusCall = await statusRequest
+    expect(statusCall.postDataJSON()).toMatchObject({ action: "payment_status", paymentId: PAYMENT_ID })
+
+    // The real return handler calls location.replace("/") after writing the grant.
+    // Wait for that deliberate URL cleanup before reading storage (avoids racing navigation).
+    await page.waitForURL(url => url.pathname === "/" && !url.searchParams.has("mollie_return"), { timeout: 15000 })
+    await page.waitForLoadState("domcontentloaded")
+
+    await expect.poll(
+      () => page.evaluate(() => Number(localStorage.getItem("sg_premium_pass_end") || 0)),
+      { timeout: 15000 },
+    ).toBeGreaterThan(Date.now())
+    await expect.poll(
+      () => page.evaluate(() => localStorage.getItem("sg_mollie_done_tr_SOSmock20261029")),
+      { timeout: 15000 },
+    ).toBe("1")
+    await expect.poll(
+      () => page.evaluate(() => ({
+        session: sessionStorage.getItem("sg_mollie_pending"),
+        local: localStorage.getItem("sg_mollie_pending"),
+      })),
+      { timeout: 15000 },
+    ).toEqual({ session: null, local: null })
   })
 })

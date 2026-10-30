@@ -5,6 +5,21 @@
  */
 
 require_once __DIR__ . '/mollie-lib.php';
+$cfg = require __DIR__ . '/mollie-config.php';
+if (!is_array($cfg)) $cfg = [];
+$paymentHost = strtolower(preg_replace('/^www\./', '', preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '')));
+$productionPaymentHosts = [
+    'sargasses-martinique.com', 'sargasses-guadeloupe.com',
+    'sargassummiami.com', 'sargassumpuntacana.com',
+    'sargassumcancun.com', 'sargazotulum.com',
+];
+$paymentApiKey = trim((string)($cfg['api_key'] ?? ''));
+if (in_array($paymentHost, $productionPaymentHosts, true) && strpos($paymentApiKey, 'live_') !== 0) {
+    http_response_code(503);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['error' => 'payment_provider_not_live']);
+    exit;
+}
 
 // Vérifie qu'un paiement Mollie correspond à un montant/devise autorisés (anti-tampering).
 function validateMollieAmountPHP($payment){

@@ -29,6 +29,19 @@ $data = json_decode($raw, true) ?? [];
 
 $action = $data['action'] ?? '';
 
+$paymentHost = strtolower(preg_replace('/^www\./', '', preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '')));
+$productionPaymentHosts = [
+    'sargasses-martinique.com', 'sargasses-guadeloupe.com',
+    'sargassummiami.com', 'sargassumpuntacana.com',
+    'sargassumcancun.com', 'sargazotulum.com',
+];
+$paymentApiKey = trim((string)($cfg['api_key'] ?? ''));
+if (in_array($paymentHost, $productionPaymentHosts, true) && strpos($paymentApiKey, 'live_') !== 0) {
+    http_response_code(503);
+    echo json_encode(['error' => 'payment_provider_not_live']);
+    exit;
+}
+
 // Rate limiting anti-abus (fail-open, même infra que create-checkout.php)
 sg_rate_limit('mol_' . $action, 20);
 

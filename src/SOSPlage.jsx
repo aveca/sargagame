@@ -122,20 +122,40 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
             beach: selectedBeach.id,
             beachName: selectedBeach.name,
           },
-          redirectUrl: origin + "/?sos_success=1",
+          redirectUrl: origin + "/?mollie_return=1",
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Erreur paiement")
+      if (typeof data.paymentId !== "string" || !/^tr_[A-Za-z0-9]+$/.test(data.paymentId)) {
+        throw new Error("Identifiant de paiement Mollie invalide")
+      }
       if (data.checkoutUrl) {
-        track("sg_sos_redirect", { beach: selectedBeach.id, paymentId: data.paymentId })
+        const pending = {
+          paymentId: data.paymentId,
+          email: "",
+          pass: "sos",
+          days: 1,
+          source: "sos_plage",
+          beachId: selectedBeach.id,
+          beachName: selectedBeach.name,
+          createdAt: Date.now(),
+        }
+        let stored = false
+        try { sessionStorage.setItem("sg_mollie_pending", JSON.stringify(pending)); stored = true } catch (_) {}
+        try { localStorage.setItem("sg_mollie_pending", JSON.stringify(pending)); stored = true } catch (_) {}
+        if (!stored) throw new Error("Impossible de mémoriser le paiement avant la redirection")
+        track("sg_sos_checkout_redirect", { beach: selectedBeach.id, paymentId: data.paymentId })
         window.location.href = data.checkoutUrl
       } else {
         throw new Error("URL de paiement non reçue")
       }
     } catch (e) {
       track("sg_sos_checkout_error", { beach: selectedBeach.id, error: e.message })
-      alert(_t(lang, "Erreur lors de l'ouverture du paiement. Réessayez.", "Error opening payment. Please try again.", "Error al abrir el pago. Inténtalo de nuevo."))
+      const message = e?.message === "payment_provider_not_live"
+        ? _t(lang, "Le paiement en direct est temporairement indisponible. Réessayez plus tard.", "Live payments are temporarily unavailable. Please try again later.", "Los pagos en directo no están disponibles temporalmente. Inténtalo más tarde.")
+        : _t(lang, "Erreur lors de l'ouverture du paiement. Réessayez.", "Error opening payment. Please try again.", "Error al abrir el pago. Inténtalo de nuevo.")
+      alert(message)
     } finally {
       setCheckoutLoading(false)
     }
@@ -185,14 +205,40 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
   const recommendationColor = statusMeta.color
 
   return (
-    <div data-sos-plage="true" style={{ color: "#FDFCF7", fontFamily: "'Bricolage Grotesque',system-ui,sans-serif" }}>
+    <div
+      ref={panelRef}
+      data-sos-plage="true"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="sos-plage-title"
+      tabIndex={-1}
+      style={{
+        width: "min(100%, 640px)",
+        maxHeight: "min(90dvh, 820px)",
+        overflowY: "auto",
+        boxSizing: "border-box",
+        margin: "auto",
+        padding: "clamp(18px, 4vw, 28px)",
+        border: "2px solid rgba(255,199,44,.4)",
+        borderRadius: 22,
+        background: "rgba(21, 15, 35, .98)",
+        boxShadow: "0 24px 80px rgba(0,0,0,.58)",
+        color: "#FDFCF7",
+        fontFamily: "'Bricolage Grotesque',system-ui,sans-serif",
+        outline: "none",
+      }}
+    >
       <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 11, fontWeight: 800, letterSpacing: ".14em", textTransform: "uppercase", color: "#FFC72C", marginBottom: 8 }}>
         <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />
         {_t(lang, "SOS PLAGE 24H", "SOS BEACH 24H", "SOS PLAYA 24H")}
       </div>
 
-      <h2 style={{ fontFamily: "'Anton',sans-serif", fontSize: "clamp(22px,6vw,28px)", lineHeight: 1.0, color: "#fff", margin: "8px 0 4px", letterSpacing: "-.01em" }}>
-        {_t(lang, "Quelle plage choisir <span style='color:#FFC72C'>demain</span> ?", "Which beach to pick <span style='color:#FFC72C'>tomorrow</span>?", "¿Qué playa elegir <span style='color:#FFC72C'>mañana</span>?")}
+      <h2 id="sos-plage-title" style={{ fontFamily: "'Anton',sans-serif", fontSize: "clamp(22px,6vw,28px)", lineHeight: 1.0, color: "#fff", margin: "8px 0 4px", letterSpacing: "-.01em" }}>
+        {lang === "en"
+          ? <>Which beach to pick <span style={{ color: "#FFC72C" }}>tomorrow</span>?</>
+          : lang === "es"
+            ? <>¿Qué playa elegir <span style={{ color: "#FFC72C" }}>mañana</span>?</>
+            : <>Quelle plage choisir <span style={{ color: "#FFC72C" }}>demain</span> ?</>}
       </h2>
 
       <p style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 600, color: "rgba(253,252,247,.7)", margin: "0 0 16px" }}>
@@ -327,11 +373,32 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
           {_t(lang, "Ce que vous recevez après paiement", "What you get after payment", "Lo que recibes tras pagar")}
         </div>
         <div style={{ fontSize: 12, lineHeight: 1.6, color: "rgba(253,252,247,.85)" }}>
-          {_t(lang,
-            "• Niveau de risque sargasses (Propre / Attention / Éviter)<br/>• Prévision demain + tendance 3 jours<br/>• Recommandation claire : GO / ATTENTION / ÉVITER<br/>• Meilleure alternative si votre plage est risquée<br/>• Date/heure de la prévision + sources Copernicus/ERDDAP",
-            "• Sargassum risk level (Clean / Caution / Avoid)<br/>• Tomorrow forecast + 3-day trend<br/>• Clear recommendation: GO / CAUTION / AVOID<br/>• Best alternative if your beach is risky<br/>• Forecast timestamp + Copernicus/ERDDAP sources",
-            "• Nivel de riesgo sargazo (Limpia / Precaución / Evitar)<br/>• Previsión mañana + tendencia 3 días<br/>• Recomendación clara: GO / PRECAUCIÓN / EVITAR<br/>• Mejor alternativa si tu playa es riesgosa<br/>• Fecha/hora de la previsión + fuentes Copernicus/ERDDAP"
-          )}
+          <ul data-testid="sos-benefits" style={{ listStyle: "disc", margin: 0, paddingLeft: 20, display: "grid", gap: 6 }}>
+            {(lang === "en"
+              ? [
+                  "Sargassum risk level (Clean / Caution / Avoid)",
+                  "Tomorrow forecast + 3-day trend",
+                  "Clear recommendation: GO / CAUTION / AVOID",
+                  "Best alternative if your beach is risky",
+                  "Forecast timestamp + Copernicus/ERDDAP sources",
+                ]
+              : lang === "es"
+                ? [
+                    "Nivel de riesgo sargazo (Limpia / Precaución / Evitar)",
+                    "Previsión mañana + tendencia 3 días",
+                    "Recomendación clara: GO / PRECAUCIÓN / EVITAR",
+                    "Mejor alternativa si tu playa es riesgosa",
+                    "Fecha/hora de la previsión + fuentes Copernicus/ERDDAP",
+                  ]
+                : [
+                    "Niveau de risque sargasses (Propre / Attention / Éviter)",
+                    "Prévision demain + tendance 3 jours",
+                    "Recommandation claire : GO / ATTENTION / ÉVITER",
+                    "Meilleure alternative si votre plage est risquée",
+                    "Date/heure de la prévision + sources Copernicus/ERDDAP",
+                  ]
+            ).map((item) => <li key={item}>{item}</li>)}
+          </ul>
         </div>
       </div>
 
