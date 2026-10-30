@@ -183,6 +183,21 @@ try {
         "beach detail must use the 70h ERDDAP observation, not the recent updatedAt");
       assert.doesNotMatch(detailText, /donnée vérifiée|verified data|dato verificado/i,
         "stale beach detail must not claim verified-current data");
+
+      const staleVerdict = detail.locator('[data-testid="beach-sheet-verdict"]');
+      const staleVerdictText = await staleVerdict.innerText();
+      assert.match(staleVerdictText, /À vérifier|Check before deciding|Verificar antes de decidir/i,
+        "stale satellite data must not retain a current beach verdict");
+      assert.match(staleVerdictText, /Dernier statut observé|Last observed status|Último estado observado/i,
+        "the prior status must be explicitly historical");
+      assert.doesNotMatch(staleVerdictText, /Baignade OK|Safe to swim|Baño OK/i,
+        "stale satellite data must not claim that swimming is currently safe");
+      assert.equal(await detail.locator(".score-blob-glow, .score-blob-pulse").count(), 0,
+        "stale satellite data must suppress the numeric beach score");
+      assert.equal(await detail.locator(".bsc-bar").count(), 0,
+        "stale satellite data must suppress forecast bars");
+      assert.equal(await detail.locator('[data-testid="beach-sheet-forecast-paused"]').count(), 1,
+        "stale satellite data must explain why forecasts are paused");
       await stale.page.screenshot({
         path: path.join(OUT, "beach-sheet-stale-" + viewport.name + ".png"),
         animations: "disabled",
@@ -217,6 +232,12 @@ try {
       const text = document.body.innerText || "";
       return /BAIGNADE OK|SWIM OK|BAÑO OK/i.test(text);
     }, null, { timeout: 15000 });
+    const freshDetail = latest.page.locator(".bsc-fiche").first();
+    await freshDetail.waitFor({ state: "visible", timeout: 10000 });
+    assert.ok(await freshDetail.locator(".score-blob-glow, .score-blob-pulse").count() > 0,
+      "a fresh observation may show the numeric beach score");
+    assert.equal(await freshDetail.locator('[data-testid="beach-sheet-forecast-paused"]').count(), 0,
+      "a fresh observation must not show the paused-forecast notice");
     console.log("PASS latest-reading CTA opens a beach detail");
   } finally {
     await latest.context.close();
