@@ -22,6 +22,12 @@ function extract(html, tag) {
   return html.slice(start, end);
 }
 
+function extractAfter(html, marker, tag) {
+  const markerIndex = html.indexOf(marker);
+  assert.ok(markerIndex >= 0, 'expected marker before <' + tag + '>');
+  return extract(html.slice(markerIndex), tag);
+}
+
 const forbiddenFreshnessClaims = /en temps réel|temps réel|en direct|4 fois par jour|4× par jour|toutes les 3 heures|mis à jour 4 fois|mise à jour quotidienne|notées en direct|suivies en direct|updated 4 times|four times a day|updated live|in real time|real-time|en vivo|4 veces al día/i;
 
 for (const [region, html, canonical, count] of [
@@ -29,7 +35,7 @@ for (const [region, html, canonical, count] of [
   ['Guadeloupe', gpHtml, 'https://sargasses-guadeloupe.com/', '83'],
 ]) {
   const head = extract(html, 'head');
-  const noscript = extract(html, 'noscript');
+  const noscript = extractAfter(html, '<!-- Révélé par JS uniquement', 'noscript');
   assert.doesNotMatch(head, forbiddenFreshnessClaims, region + ' head must not promise live or fixed satellite cadence');
   assert.doesNotMatch(noscript, forbiddenFreshnessClaims, region + ' no-JS SEO content must not promise live or fixed satellite cadence');
   assert.ok(head.includes('<link rel="canonical" href="' + canonical + '"'), region + ' canonical is preserved');
