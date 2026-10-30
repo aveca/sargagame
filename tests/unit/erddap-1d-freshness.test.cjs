@@ -61,8 +61,8 @@ assert.equal(future.reason, 'invalid-or-future-timestamp')
 
 console.log('=== Production wiring contract ===')
 const source = fs.readFileSync(path.join(__dirname, '../../scripts/fetch-sargassum-live.cjs'), 'utf8')
-assert.match(source, /extractFirstErddapTimestamp(rows, timeIdx)/)
-assert.match(source, /get1DGridFreshness(grid1D)/)
+assert.ok(source.includes('extractFirstErddapTimestamp(rows, timeIdx)'))
+assert.ok(source.includes('get1DGridFreshness(grid1D)'))
 
 console.log('=== Shared freshness contract ===')
 assert.equal(SAT_STALE_HOURS, 36)
