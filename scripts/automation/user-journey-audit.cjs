@@ -51,9 +51,22 @@ async function runJourney(browser, region, viewport) {
   const context = await browser.newContext({ viewport: viewport === 'mobile' ? { width: 390, height: 844, isMobile: true, hasTouch: true } : { width: 1280, height: 800 }, locale: region.primaryLang === 'es' ? 'es' : region.primaryLang === 'en' ? 'en' : 'fr' })
   const page = await context.newPage()
   const consoleErrors = []
-  page.on('console', m => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 200)) })
+  page.on('console', m => {
+    if (m.type() !== 'error') return
+    const message = m.text()
+    // 404 console messages omit the URL; the response listener below records it.
+    if (/server responded with a status of 404/i.test(message)) return
+    consoleErrors.push(message.slice(0, 200))
+  })
   page.on('pageerror', e => { defects.push({ domain, step: 'any', type: 'fatal-js', detail: String(e.message || e).slice(0, 200) }) })
-  page.on('response', r => { if (r.status() >= 500) defects.push({ domain, step: 'any', type: 'server-error', detail: `${r.status()} ${r.url().slice(0, 120)}` }) })
+  page.on('response', r => {
+    if (r.status() >= 400) {
+      defects.push({ domain, step: 'any', type: r.status() >= 500 ? 'server-error' : 'http-404', detail: r.status() + ' ' + r.url().slice(0, 220) })
+    }
+  })
+  page.on('requestfailed', req => {
+    defects.push({ domain, step: 'any', type: 'request-failed', detail: (req.failure()?.errorText || 'request failed') + ' ' + req.url().slice(0, 220) })
+  })
 
   try {
     // 1. Accueil
@@ -118,13 +131,48 @@ async function runJourney(browser, region, viewport) {
       const fiche = await page.evaluate(() => {
         const t = document.body.innerText
         return {
-          hasVerdict: /PROPRE|MODÉRÉ|À ÉVITER|CLEAN|MODERATE|AVOID|LIMPIA|EVITAR|ATTENTION|ÉVITER/i.test(t),
-          hasFreshness: /Mesuré au satellite|Dernière mesure|ce matin|il y a|vérification|DATA DELAYED|DONNÉE EN RETARD|EN DIRECT|LIVE|EN VIVO|Verificación/i.test(t)
+          hasVerdict: /PROPRE|MODÉRÉ|À ÉVITER|CLEAN|MODERATE|AVOID|LIMPIA|EVITAR|ATTENTION|ÉVITER|À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(t),
+          hasFreshness: /Mesuré au satellite|Dernière mesure|Dernier statut observé|ce matin|il y a|vérification|DATA DELAYED|DONNÉE EN RETARD|EN DIRECT|LIVE|EN VIVO|Verificación/i.test(t)
+        }
+      })
+      let observation = { ok: false, current: false, reason: 'API unavailable' }
+      try {
+        observation = await page.evaluate(async () => {
+          const response = await fetch('/api/copernicus/sargassum.json', { cache: 'no-store' })
+          if (!response.ok) return { ok: false, current: false, reason: 'HTTP ' + response.status }
+          const payload = await response.json()
+          const timestamp = Date.parse(payload.erddapTimestamp || '')
+          const ageMinutes = Number.isFinite(timestamp) ? (Date.now() - timestamp) / 60000 : null
+          const current = payload.source === 'erddap-live' && payload.stale === false &&
+            ageMinutes !== null && ageMinutes >= 0 && ageMinutes < 720
+          return { ok: true, current, ageMinutes, source: payload.source, stale: payload.stale }
+        })
+      } catch (error) {
+        observation = { ok: false, current: false, reason: String(error?.message || error).slice(0, 160) }
+      }
+      const decisionUi = await page.evaluate(() => {
+        const head = document.querySelector('.lc-detail-head')?.textContent?.trim() || ''
+        const score = document.querySelector('[data-testid="lc-detail-score"]')
+        const scoreValue = score?.querySelector('.lc-detail-scnum')?.textContent?.trim() || ''
+        return {
+          head,
+          hasCurrentScore: !!score && /\d/.test(scoreValue),
+          scorePaused: !!document.querySelector('[data-testid="lc-detail-score-paused"]'),
+          staleNotice: !!document.querySelector('[data-testid="lc-detail-stale"]'),
+          hasForecast: !!document.querySelector('.lc-detail-fc-row'),
+          forecastPaused: !!document.querySelector('[data-testid="lc-detail-forecast-paused"]')
         }
       })
       if (!fiche.hasVerdict) defects.push({ domain, step: 'fiche', type: 'ux', detail: 'verdict absent de la fiche' })
       if (!fiche.hasFreshness) defects.push({ domain, step: 'fiche', type: 'misleading-state', detail: 'aucune mention de fraîcheur sur la fiche (état satellite trompeur)' })
+      if (observation.ok && !observation.current) {
+        const staleContractOk = !decisionUi.hasCurrentScore && decisionUi.scorePaused &&
+          decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused &&
+          /À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(decisionUi.head)
+        if (!staleContractOk) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) })
+      }
       steps.push({ step: 'fiche', ok: fiche.hasVerdict && fiche.hasFreshness, verdict: fiche.hasVerdict, freshness: fiche.hasFreshness })
+      steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || (!decisionUi.hasCurrentScore && decisionUi.scorePaused && decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused)), observation, decisionUi })
       await page.screenshot({ path: path.join(shotsDir, `journey-${region.id}-${viewport}.png`) }).catch(() => {})
     }
 
