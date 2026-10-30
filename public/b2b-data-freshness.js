@@ -15,18 +15,20 @@
   }
 
   function getObservationFreshness(data, locale, now) {
-    locale = locale === 'fr' ? 'fr' : 'en'
+    locale = locale === 'fr' || locale === 'es' ? locale : 'en'
     now = Number.isFinite(now) ? now : Date.now()
     var observedAt = parseTimestamp(data && data.erddapTimestamp)
     if (!Number.isFinite(observedAt) || observedAt <= 0 || observedAt > now) {
-      return { status: 'unknown', timestamp: null, ageMs: null, label: locale === 'fr' ? 'Fraîcheur satellite inconnue' : 'Satellite freshness unknown' }
+      return { status: 'unknown', timestamp: null, ageMs: null, label: locale === 'fr' ? 'Fraîcheur satellite inconnue' : (locale === 'es' ? 'Frescura satelital desconocida' : 'Satellite freshness unknown') }
     }
     var ageMs = now - observedAt
     var ageHours = Math.max(1, Math.round(ageMs / 3600000))
     var stale = data.stale === true || ageMs > OBSERVATION_STALE_AFTER_MS
     var label = locale === 'fr'
       ? (stale ? 'Observation satellite ancienne' : 'Observation satellite') + ' · il y a ' + ageHours + ' h'
-      : (stale ? 'Satellite observation is old' : 'Satellite observation') + ' · ' + ageHours + ' h ago'
+      : (locale === 'es'
+        ? (stale ? 'Observación satelital antigua' : 'Observación satelital') + ' · hace ' + ageHours + ' h'
+        : (stale ? 'Satellite observation is old' : 'Satellite observation') + ' · ' + ageHours + ' h ago')
     return { status: stale ? 'stale' : 'fresh', timestamp: observedAt, ageMs: ageMs, label: label }
   }
 
@@ -34,7 +36,7 @@
     var region = String(regionId || '').trim().toLowerCase()
     now = Number.isFinite(now) ? now : Date.now()
     var regions = Array.isArray(record && record.regions)
-      ? Array.from(new Set(record.regions.map(function (value) { return String(value || '').trim().toLowerCase() }).filter(Boolean))
+      ? Array.from(new Set(record.regions.map(function (value) { return String(value || '').trim().toLowerCase() }).filter(Boolean)))
       : []
     var generatedAt = parseTimestamp(record && record.generatedAt)
     var window = record && record.window && typeof record.window === 'object' ? record.window : null
