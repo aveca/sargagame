@@ -1,0 +1,7 @@
+{
+  "_note": "GÉNÉRÉ par scripts/automation/gen-b2b-partners.cjs depuis b2b-partner-meta.json (région=puntacana) — NE PAS éditer à la main. `partners` = LIVE (active:true uniquement, région scropée). `preview` = démo (?preview_partner=<slug>). Verdict sargasses = 100% data ERDDAP, jamais influencé.",
+  "region": "puntacana",
+  "updatedAt": "2026-10-30",
+  "partners": [],
+  "preview": []
+}
