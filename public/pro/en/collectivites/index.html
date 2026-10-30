@@ -148,7 +148,7 @@
       <a class="btn btn-gold" href="#request">Start the free brief</a>
       <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">See the live forecast</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">live Copernicus satellite data</span></div>
+    <div class="freshpill"><span class="pulse"></span><span id="fresh">live NOAA/AOML ERDDAP AFAI observations</span></div>
     <div class="perso" id="perso"></div>
   </div>
 </header>
@@ -159,10 +159,10 @@
   <p class="sub">The resources exist — efficiency comes down to anticipation and proof of effort. With The Watcher, you know how the story ends before your residents do: the alert arrives before the sargassum, not with it.</p>
   <div class="tiles">
     <div class="tile"><div class="n">7 days</div><div class="t">per-beach forecast horizon to plan crews and equipment ahead</div></div>
-    <div class="tile"><div class="n">4×/day</div><div class="t">satellite refresh — you see it turn before the beach does</div></div>
+    <div class="tile"><div class="n">Timestamped</div><div class="t">latest available AFAI observation, with its age shown</div></div>
     <div class="tile"><div class="n">Dated</div><div class="t">auditable per-beach history to document effort and report to funders</div></div>
   </div>
-  <p class="src">Source: live Copernicus / ERDDAP satellite data, AFAI index, cross-checked with wind and currents.</p>
+  <p class="src">Source: AFAI observations distributed through NOAA/AOML ERDDAP; currents from Copernicus Marine; wind from Open-Meteo. Observation time is shown.</p>
 </div></section>
 
 <section class="px" style="padding-top:8px"><div class="wrap">
@@ -178,23 +178,23 @@
 <section class="proof px"><div class="wrap">
   <p class="sec-eyebrow">Why trust this forecast</p>
   <h2>We publish our reliability — and when we're wrong, we write it down.</h2>
-  <p class="sub">Every day, our forecast is frozen and then compared against real satellite observation. The track record is dated, per beach, and auditable — the transparency expected of a public-facing tool.</p>
+  <p class="sub">The public record compares forecasts with available observations. It shows its date range, regional scope and freshness; no current accuracy percentage is displayed when the record is stale or out of scope.</p>
   <div class="gauge">
     <div class="big" id="tr-clean">—</div>
-    <div class="cap" id="tr-headline">Loading the live track record…</div>
+    <div class="cap" id="tr-headline">Checking the public validation record…</div>
   </div>
   <table class="trtable" id="tr-table" hidden>
     <thead><tr><th>Beach (Caribbean)</th><th style="text-align:right">Correct forecasts</th></tr></thead>
     <tbody id="tr-body"></tbody>
   </table>
-  <p class="bench">Published drift models top out around 70% accuracy at Â±3 days (Lesser Antilles, Ifremer). We show our real figure, dated, with its sample size — and we publish our limits too. Roughly 76% to 79% across all regimes, depending on the season.</p>
+  <p class="bench">Validation statistics are displayed only when the public record is current and covers the relevant region. Historical results are not a guarantee for any individual beach; no accuracy percentage is claimed for unvalidated coasts.</p>
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">See the full track record and method →</a></p>
 </div></section>
 
 <section class="px"><div class="wrap">
   <p class="sec-eyebrow">Live snapshot</p>
-  <h2>The state of a beach, right now.</h2>
-  <p class="sub">Real data, this instant, on a Caribbean beach — the same reading, replicated for every beach in your jurisdiction.</p>
+  <h2>The latest available observation for a beach.</h2>
+  <p class="sub">A timestamped source observation with its age. When it is stale or unknown, the current score and verdict are withheld.</p>
   <div class="demo-frame" id="demo">
     <svg class="vc" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(50 50) scale(0.9)">
@@ -230,8 +230,8 @@
         <input type="email" id="m-email" name="email" placeholder="you@town.gov" required autocomplete="email" aria-label="Work email"/>
         <button type="submit" class="btn btn-gold">Get my free brief</button>
       </form>
-      <p class="trust-row" id="m-trust">Free · no commitment · one-click unsubscribe · Copernicus satellite data.</p>
-      <div class="form-ok" id="magnet-ok">Perfect — your first brief is on its way by email. In the meantime, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">see your beaches live now →</a></div>
+      <p class="trust-row" id="m-trust">Free · no commitment · one-click unsubscribe · NOAA/AOML ERDDAP AFAI observations.</p>
+      <div class="form-ok" id="magnet-ok">Perfect — your first brief is on its way by email. In the meantime, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">see the latest observations for your beaches →</a></div>
     </div>
   </div>
 </div></section>
@@ -240,7 +240,7 @@
   <p class="sec-eyebrow">How it works</p>
   <h2>From satellite to a field decision.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-checked with wind and currents — refreshed 4×/day.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>AFAI observations distributed through NOAA/AOML ERDDAP, complemented by Copernicus Marine currents and Open-Meteo wind. A new AFAI observation is not guaranteed at every pipeline check.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>We localize it on your beaches</h3><p>Drift model + persistence: one forecast per beach in your jurisdiction, 7 days out, with a confidence level.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>You decide and document</h3><p>Plan your resources, get alerted when conditions change, and keep a dated history for tracking and reporting.</p></div></div>
   </div>
@@ -267,7 +267,7 @@
     </div>
     <div><label for="msg">Your beaches / needs (optional)</label><textarea id="msg" name="note" placeholder="Beaches concerned, scope, main need…"></textarea></div>
     <button type="submit" class="btn btn-gold" style="justify-content:center">Get the free brief</button>
-    <p class="trust-row">No commitment. Copernicus satellite data. One-click unsubscribe.</p>
+    <p class="trust-row">No commitment. NOAA/AOML ERDDAP AFAI observations. One-click unsubscribe.</p>
   </form>
   <div class="form-ok" id="form-ok">Thank you! Your brief goes out at the next update — automatic, no call. 🌅</div>
 </div></section>
@@ -280,74 +280,100 @@
   <div style="margin-top:10px">Satellite sargassum forecast · validated in the French Antilles, rolling out across the Caribbean · He watches the sea, never your guests.</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
-  var STATUS_WORD={clean:'CLEAN',moderate:'MODERATE',avoid:'AVOID'};
-  var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A'};
+  var STATUS_WORD={clean:'CLEAN',moderate:'MODERATE',avoid:'AVOID',unknown:'CHECK REQUIRED'};
+  var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A',unknown:'#9CA3AF'};
   // Prospect personalization: ?beach=<id> & ?org=<name> (or ?hotel=) →
   // demo framed on the town's beach + highlighted track record + prefilled form.
   var Q=new URLSearchParams(location.search);
   var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
   var QH=(Q.get('org')||Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'checking…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'LIVE · '+m+' min ago';}
-    return 'LIVE · '+Math.max(1,Math.round(h))+' h ago';
+  function getObservationFreshness(data){
+    return window.SargagameB2BFreshness.getObservationFreshness(data,'en');
   }
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
+  }
+  // Render validation metrics only for a fresh public record that covers this page.
+  fetch('/api/copernicus/track-record.json').then(function(r){if(!r.ok)throw new Error('track-record HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
-      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
-      document.getElementById('tr-clean').textContent=pct+'%';
-      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      document.getElementById('tr-headline').textContent='of our verdicts held up, all regimes combined'+win+' — across '+Number(n).toLocaleString('en-US')+' comparisons.';
-      var beaches=(d.byBeach||[]);
-      if(beaches.length){
-        var body=document.getElementById('tr-body');
+      var state=window.SargagameB2BFreshness.getTrackRecordState(d,'mq');
+      var clean=document.getElementById('tr-clean'),headline=document.getElementById('tr-headline');
+      var table=document.getElementById('tr-table'),body=document.getElementById('tr-body');
+      if(body)body.textContent='';
+      if(!state.available){
+        if(clean)clean.textContent='—';
+        if(table)table.hidden=true;
+        var meta=[];
+        if(state.scopeLabel)meta.push('published scope: '+state.scopeLabel);
+        if(state.windowLabel)meta.push('period: '+state.windowLabel);
+        var message=state.reason==='region-not-covered'?'The published record does not cover this page’s region.':(state.reason==='missing-record'?'Public validation record unavailable; no current accuracy percentage is displayed.':'Validation record is stale or out of scope; no current accuracy percentage is displayed.');
+        if(headline)headline.textContent=message+(meta.length?' '+meta.join(' · ')+'.':'');
+        return;
+      }
+      var pct=d.overall&&d.overall.statusHitRatePct;
+      if(typeof pct!=='number'||!Number.isFinite(pct)||pct<0||pct>100){
+        if(clean)clean.textContent='—';if(table)table.hidden=true;if(headline)headline.textContent='The record has no valid overall rate; no percentage is displayed.';return;
+      }
+      if(clean)clean.textContent=pct+'%';
+      if(headline)headline.textContent='Network-wide status hit rate for '+state.scopeLabel+' ('+state.windowLabel+') — '+Number(state.sampleSize).toLocaleString('en-US')+' dated comparisons.';
+      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number'&&Number.isFinite(b.hitRatePct)&&b.hitRatePct>=0&&b.hitRatePct<=100&&Number(b.samples)>0;});
+      if(beaches.length&&body){
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+Number(b.samples).toLocaleString('en-US')+')';
           if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
-        document.getElementById('tr-table').hidden=false;
+        if(table)table.hidden=false;
       }
-    }catch(e){}
-  }).catch(function(){document.getElementById('tr-headline').textContent='Full dated track record on our reliability page.';});
+    }catch(e){
+      var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+      var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+      var table=document.getElementById('tr-table');if(table)table.hidden=true;
+    }
+  }).catch(function(){
+    var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+    var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+    var table=document.getElementById('tr-table');if(table)table.hidden=true;
+  });
 
-  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
+
+  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('sargassum HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var lv=(d.levels||[]);
+      var freshness=getObservationFreshness(d),lv=Array.isArray(d.levels)?d.levels:[];
       var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
-      if(!pick) return;
-      var col=STATUS_COLOR[pick.status]||'#22C55E';
-      document.getElementById('d-name').textContent=prettyBeach(pick.id);
-      var vd=document.getElementById('d-verdict');vd.textContent=STATUS_WORD[pick.status]||'CLEAN';vd.style.color=col;
-      document.getElementById('d-score').textContent=pick.score!=null?('score '+pick.score+'/100'):'';
-      document.getElementById('d-fresh').textContent=relTime(d.updatedAt);
-      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){
-        var el=document.getElementById(id);if(!el)return;
-        if(id==='d-halo'||id==='d-tip'){el.setAttribute('fill',col);}else{el.setAttribute('stroke',col);}
-      });
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'live Copernicus satellite data';
-      if(QB||QH){
-        var pe=document.getElementById('perso');
-        if(pe){
-          pe.textContent='';
-          pe.appendChild(document.createTextNode(QH?('Demo for '+QH+' · '):'Custom demo · '));
-          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' live';
-          pe.appendChild(bb);
-          pe.style.display='block';
-        }
-      }
-    }catch(e){}
-  }).catch(function(){});
+      var vd=document.getElementById('d-verdict'),score=document.getElementById('d-score');
+      var freshEnough=freshness.status==='fresh';
+      setFreshnessPill(freshness.status,freshness.label);
+      var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent=freshness.label;
+      if(!pick){if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}if(score)score.textContent='';return;}
+      var col=freshEnough?(STATUS_COLOR[pick.status]||STATUS_COLOR.unknown):STATUS_COLOR.unknown;
+      var dName=document.getElementById('d-name');if(dName)dName.textContent=prettyBeach(pick.id);
+      if(vd){vd.textContent=freshEnough?(STATUS_WORD[pick.status]||STATUS_WORD.unknown):STATUS_WORD.unknown;vd.style.color=col;}
+      if(score)score.textContent=freshEnough&&pick.score!=null?('score '+pick.score+'/100'):'';
+      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(id==='d-halo'||id==='d-tip')el.setAttribute('fill',col);else el.setAttribute('stroke',col);});
+      if(QB||QH){var pe=document.getElementById('perso');if(pe){pe.textContent='';pe.appendChild(document.createTextNode(QH?'Demo for '+QH+' · ':'Personalized preview · '));var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' · '+(freshEnough?'observation available':'status needs review');pe.appendChild(bb);pe.style.display='block';}}
+    }catch(e){
+      var vd=document.getElementById('d-verdict');if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}
+      var score=document.getElementById('d-score');if(score)score.textContent='';
+      var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent='Satellite observation unavailable';
+      setFreshnessPill('unknown','Satellite observation unavailable');
+    }
+  }).catch(function(){
+    var vd=document.getElementById('d-verdict');if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}
+    var score=document.getElementById('d-score');if(score)score.textContent='';
+    var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent='Satellite observation unavailable';
+    setFreshnessPill('unknown','Satellite observation unavailable');
+  });
+
 
   var form=document.getElementById('b2b-form');
   if(QH){var oi=document.getElementById('org');if(oi)oi.value=QH;}
