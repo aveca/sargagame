@@ -82,7 +82,7 @@ async function render(payload, failFetch = false) {
 
   const outOfScope = await render(record({ regions: ["gp"] }));
   assert.equal(outOfScope.value, "—", "a record that does not cover MQ must not be shown on the MQ page");
-  assert.match(outOfScope.line, /no cubre la región/);
+  assert.match(outOfScope.line, /ne couvre pas la région/);
   assert.equal(outOfScope.stale, true);
 
   const cleanOnlyFallback = await render(record({
