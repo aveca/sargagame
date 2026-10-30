@@ -21,7 +21,7 @@
 import React,{useState,useEffect,useRef,useMemo,useCallback} from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { beachPageUrl } from "./lib/slug-resolver.js"
-import { chasseMapCtaSummary, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
+import { chasseMapCtaSummary, isCurrentSatelliteDecision, isSatelliteStale36h, lcDetailFreshnessLabel, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { resolveBeachPhoto } from "./lib/beach-photo.js"
 
 /* ---- persistance locale (série + collection) ---- */
@@ -519,10 +519,12 @@ function SeasonRepere({beach,sargData,lang,followed,onFollow,track}){
 
 export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool=[],track,sargData,isPremium=false,favorites=[],onToggleFav,ReportComp,HeroVideoComp,communityReports={}}){
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
-  const rel=(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3)
-  const planB=useMemo(()=>planbOn()?cleanNearby(beach,pool):[],[beach,pool])
-  /* prévision 7 j RÉELLE (item 09) — null si plage non couverte ou kill-switch */
-  const fc7=useMemo(()=>fc7On()?resolveForecast(beach,sargData):null,[beach,sargData])
+  const satelliteDecisionCurrent=isCurrentSatelliteDecision(sargData,beach?.status)
+  const lastObservedVerdict=beach?.status&&VERDICT[beach.status]?VERDICT[beach.status]:null
+  const rel=satelliteDecisionCurrent?(pool||[]).filter(b=>b&&b.id&&b.id!==beach.id&&b.status&&b.score!=null).slice(0,3):[]
+  const planB=useMemo(()=>satelliteDecisionCurrent&&planbOn()?cleanNearby(beach,pool):[],[satelliteDecisionCurrent,beach,pool])
+  /* A stale/unknown source cannot authorize a current forecast or recommendation. */
+  const fc7=useMemo(()=>satelliteDecisionCurrent&&fc7On()?resolveForecast(beach,sargData):null,[satelliteDecisionCurrent,beach,sargData])
   const fcTrendKey=useMemo(()=>fc7?fcTrend(fc7):"alert",[fc7])
   const fcConfJ1=fc7&&fc7[1]&&fc7[1].confidence!=null?Math.round(fc7[1].confidence):null
   const _t=(o)=>(o&&(o[lang]||o.fr))||""
@@ -551,11 +553,13 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
   },[whyOn,sargData,beach,fcConfJ1,lang])
   const toggleWhy=()=>{const n=!whyOpen;setWhyOpen(n)
     if(n&&track)try{track("sg_detail_verdict_why",{beach_id:beach.id,stale:why&&why.stale?1:0,interp:why&&why.interp?1:0})}catch(_){}}
-  const v=vof(beach.status), r=rarity(beach.score)
-  const sc=beach.score!=null?Math.round(beach.score):null
-  const openFc=()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
-  const pw=powers(beach,lang)
-  const head = beach.status==="avoid" ? {fr:"ÉVITE CE MATIN",en:"AVOID THIS MORNING",es:"EVITA HOY"}
+  const v=satelliteDecisionCurrent?vof(beach.status):{st:"mod",mood:"scan"}
+  const r=satelliteDecisionCurrent?rarity(beach.score):{lbl:{fr:"HISTORIQUE",en:"HISTORICAL",es:"HISTÓRICO"},stars:""}
+  const sc=satelliteDecisionCurrent&&beach.score!=null?Math.round(beach.score):null
+  const openFc=()=>{ if(!satelliteDecisionCurrent)return; if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"fcstrip",fc:fc7?1:0})}catch(_){}; onPremium&&onPremium("chasse_detail_fc") }
+  const pw=satelliteDecisionCurrent?powers(beach,lang):[]
+  const head = !satelliteDecisionCurrent ? {fr:"À VÉRIFIER",en:"CHECK REQUIRED",es:"POR VERIFICAR"}
+    : beach.status==="avoid" ? {fr:"ÉVITE CE MATIN",en:"AVOID THIS MORNING",es:"EVITA HOY"}
     : beach.status==="moderate" ? {fr:"À SURVEILLER",en:"KEEP AN EYE",es:"A VIGILAR"}
     : {fr:"BAIGNADE OK",en:"SWIM OK",es:"BAÑO OK"}
   useEffect(()=>{ try{ document.body.style.overflow="hidden" }catch(_){}; return ()=>{ try{ document.body.style.overflow="" }catch(_){} } },[])
@@ -577,15 +581,19 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
     // domaine partenaire si plage de l'autre île), jamais l'accueil. Rollback : ?sharelink=0.
     let url=origin
     try{if(!/[?&]sharelink=0/.test(window.location.search)){const link=beachPageUrl(beach);if(link)url=link}}catch(_){}
-    const txt=_t({fr:`${beach.name} — ${_t(head)} ce matin. Vérifié au satellite par Le Veilleur 🛰️`,
-                  en:`${beach.name} — ${_t(head)} this morning. Satellite-checked by Le Veilleur 🛰️`,
-                  es:`${beach.name} — ${_t(head)} esta mañana. Verificado por satélite 🛰️`})
+    const txt=satelliteDecisionCurrent
+      ? _t({fr:beach.name+" — "+_t(head)+" ce matin. Vérifié au satellite par Le Veilleur 🛰️",
+            en:beach.name+" — "+_t(head)+" this morning. Satellite-checked by Le Veilleur 🛰️",
+            es:beach.name+" — "+_t(head)+" esta mañana. Verificado por satélite 🛰️"})
+      : _t({fr:beach.name+" — dernier statut historique. "+lcDetailFreshnessLabel(sargData,lang)+". Aucun verdict actuel.",
+            en:beach.name+" — last status is historical. "+lcDetailFreshnessLabel(sargData,lang)+". No current verdict.",
+            es:beach.name+" — último estado histórico. "+lcDetailFreshnessLabel(sargData,lang)+". Sin veredicto actual."})
     try{
       if(navigator.share){ navigator.share({title:"Le Veilleur",text:txt,url}).catch(()=>{}) }
       else if(navigator.clipboard){ navigator.clipboard.writeText(txt+" "+url); setShared(true); setTimeout(()=>setShared(false),1800) }
     }catch(_){}
     if(track)try{track("sg_chasse_share",{beach_id:beach.id})}catch(_){}
-  },[beach,head,track]) // eslint-disable-line
+  },[beach,head,track,satelliteDecisionCurrent,sargData,lang]) // eslint-disable-line
   return (
     <div className="lc-detail" role="dialog" aria-modal="true" aria-label={beach.name}
       ref={lcSwipe.ref} onTouchStart={lcSwipe.onTouchStart} onTouchMove={lcSwipe.onTouchMove} onTouchEnd={lcSwipe.onTouchEnd}
@@ -618,6 +626,10 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             {_t({fr:"Pourquoi ce verdict ?",en:"Why this verdict?",es:"¿Por qué este veredicto?"})} <span aria-hidden="true">{whyOpen?"−":"+"}</span>
           </button>}
         </div>
+        {!satelliteDecisionCurrent&&<p className="lc-detail-stale" data-testid="lc-detail-stale" role="status" style={{margin:"8px 0 12px",padding:"10px 12px",border:"1px solid #d97706",borderRadius:12,background:"#fff7ed",fontSize:13,lineHeight:1.4}}>
+          {_t({fr:"Observation trop ancienne ou non validée : aucun verdict actuel, score ou prévision n'est affiché.",en:"The observation is too old or unvalidated: no current verdict, score or forecast is displayed.",es:"La observación es demasiado antigua o no está validada: no se muestra ningún veredicto, puntuación ni pronóstico actual."})}
+          {lastObservedVerdict&&<> {_t({fr:"Dernier statut observé",en:"Last observed status",es:"Último estado observado"})} : {_t(lastObservedVerdict)}.</>}
+        </p>}
         {why&&whyOpen&&(
           <section className="lc-why" aria-label={_t({fr:"Pourquoi ce verdict",en:"Why this verdict",es:"Por qué este veredicto"})}>
             <div className="lc-season-body">
@@ -637,20 +649,26 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             </div>
           </section>
         )}
-        <div className="lc-detail-score">
-          <span className="lc-detail-scnum">{sc!=null?sc:"—"}<small>/100</small></span>
-          <span className="lc-hp"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
-        </div>
+        {satelliteDecisionCurrent ? (
+          <div className="lc-detail-score" data-testid="lc-detail-score">
+            <span className="lc-detail-scnum">{sc!=null?sc:"—"}<small>/100</small></span>
+            <span className="lc-hp"><span className={`lc-hpfill s-${v.st}`} style={{width:(sc||0)+"%"}}/></span>
+          </div>
+        ) : (
+          <div className="lc-detail-score-paused" data-testid="lc-detail-score-paused" role="status" style={{margin:"8px 0 14px",padding:"10px 12px",borderRadius:12,background:"#f3f1f7",fontSize:13,fontWeight:700}}>
+            {_t({fr:"Score actuel masqué jusqu'à une observation satellite validée.",en:"Current score hidden until a validated satellite observation is available.",es:"Puntuación actual oculta hasta disponer de una observación satelital validada."})}
+          </div>
+        )}
         <div className="lc-detail-facts">
           {pw.map(([e,t],i)=><span className="lc-detail-fact" key={i}><b>{e}</b> {t}</span>)}
           {beach.commune&&<span className="lc-detail-fact">📍 {beach.commune}</span>}
         </div>
 
         {/* REPÈRE SANTÉ H₂S — n'apparaît que sur les plages à éviter / à surveiller */}
-        {v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+        {satelliteDecisionCurrent&&v2Enabled&&!isPremium&&<button type="button" className="lc-cta yel lc-v2-early-cta" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id,from:"early_cta"})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
-        <H2sNote status={beach.status} lang={lang}/>
+        {satelliteDecisionCurrent&&<H2sNote status={beach.status} lang={lang}/>}
 
         {/* 7 PROCHAINS JOURS — J0 réel ; le reste = aperçu honnête de la prévision RÉELLE
             (teinte du statut + cadenas + confiance), calqué sur la frontière de ForecastChart.
@@ -707,7 +725,7 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
               : fcTrendKey==="improve" ? _t({fr:"Ça devrait se dégager — débloque le jour où la mer revient propre.",en:"It should clear up — unlock the day the water comes back clean.",es:"Debería despejarse — desbloquea el día en que el agua vuelve limpia."})
               : _t({fr:"Le Veilleur t'alerte le jour exact où ça bascule.",en:"The Watcher alerts you the exact day it flips.",es:"El Vigía te avisa el día exacto en que cambia."})}</div>
           </div>
-        ) : (
+        ) : satelliteDecisionCurrent ? (
           <div className="lc-detail-fc">
             <div className="lc-detail-fc-h">{_t({fr:"7 PROCHAINS JOURS",en:"NEXT 7 DAYS",es:"PRÓXIMOS 7 DÍAS"})}</div>
             <div className="lc-detail-fc-row" onClick={isPremium?undefined:openFc}>
@@ -736,15 +754,20 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
             </div>
             {isPremium&&<div className="lc-fc-line ok">{_t({fr:"Estimation jour par jour — confiance basse, jamais de trou. On affine chaque matin.",en:"Day-by-day estimate — low confidence, never blank. We sharpen it each morning.",es:"Estimación día a día — confianza baja, nunca en blanco. La afinamos cada mañana."})}</div>}
           </div>
+        ) : (
+          <div className="lc-detail-fc" data-testid="lc-detail-forecast-paused" role="status">
+            <div className="lc-detail-fc-h">{_t({fr:"PRÉVISION SUSPENDUE",en:"FORECAST PAUSED",es:"PRONÓSTICO EN PAUSA"})}</div>
+            <p>{_t({fr:"La dernière observation ne permet pas de publier une prévision actuelle. Reviens après une nouvelle mesure validée.",en:"The latest observation does not support a current forecast. Check back after a new validated reading.",es:"La última observación no permite publicar un pronóstico actual. Vuelve cuando haya una nueva lectura validada."})}</p>
+          </div>
         )}
 
-        {!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
+        {satelliteDecisionCurrent&&!isPremium&&<button type="button" className="lc-cta yel" onClick={()=>{ if(track)try{track("sg_chasse_detail_premium",{beach_id:beach.id})}catch(_){}; onPremium&&onPremium("chasse_detail") }}>
           {_t({fr:"VOIR LES 7 PROCHAINS JOURS →",en:"SEE THE NEXT 7 DAYS →",es:"VER LOS 7 DÍAS →"})}
         </button>}
         {/* Premium : CTA détail jour-par-jour proéminent (retour julien neveu). onFull
             ouvre la fiche data complète. Flag ?fulldetail=0 → retombe sur l'ancien
             bouton discret de la rangée d'actions ci-dessous. */}
-        {isPremium&&fullDetailOn()&&onFull&&<button type="button" className="lc-cta yel lc-detail-detailcta" onClick={()=>{ if(track)try{track("sg_chasse_full_detail",{beach_id:beach.id})}catch(_){}; onFull() }}>
+        {satelliteDecisionCurrent&&isPremium&&fullDetailOn()&&onFull&&<button type="button" className="lc-cta yel lc-detail-detailcta" onClick={()=>{ if(track)try{track("sg_chasse_full_detail",{beach_id:beach.id})}catch(_){}; onFull() }}>
           {_t({fr:"VOIR LE DÉTAIL JOUR PAR JOUR →",en:"SEE THE DAY-BY-DAY DETAIL →",es:"VER EL DETALLE DÍA A DÍA →"})}
         </button>}
         {/* Signalement citoyen « note le niveau de sargasses » DIRECTEMENT sur la preview
@@ -800,8 +823,8 @@ export function ChasseDetail({beach,lang,onClose,onPremium,onFull,onRelated,pool
 
         {/* REPÈRE DE SAISON — DERNIER bloc, sous le verdict + la prévision : orientation
             réservation 2-3 sem, muette, repliée. Jamais sur la preview/le verdict. */}
-        <SeasonRepere beach={beach} sargData={sargData} lang={lang} track={track}
-          followed={favorites.includes(beach.id)} onFollow={onToggleFav}/>
+        {satelliteDecisionCurrent&&<SeasonRepere beach={beach} sargData={sargData} lang={lang} track={track}
+          followed={favorites.includes(beach.id)} onFollow={onToggleFav}/>}
       </div>
     </div>
   )
