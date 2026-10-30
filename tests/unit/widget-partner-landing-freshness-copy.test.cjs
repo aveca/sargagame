@@ -8,6 +8,9 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '../..');
 const landing = fs.readFileSync(path.join(root, 'public/widget/index.html'), 'utf8');
 const embed = fs.readFileSync(path.join(root, 'public/widget/embed/index.html'), 'utf8');
+const hotels = fs.readFileSync(path.join(root, 'public/pro/hotels/index.html'), 'utf8');
+const collectivites = fs.readFileSync(path.join(root, 'public/pro/collectivites/index.html'), 'utf8');
+
 
 // Marketing copy must describe the same freshness gate that the embed actually enforces.
 assert.doesNotMatch(
@@ -19,6 +22,14 @@ assert.match(landing, /dernière observation satellite disponible/i);
 assert.match(landing, /le widget masque le verdict et la prévision/i);
 assert.match(landing, /Données satellite par/);
 assert.doesNotMatch(landing, /Conditions en direct par/i);
+
+// B2B demo pages must not promise current/live data when their embedded observation can be stale.
+for (const [name, page] of [['hotels', hotels], ['collectivites', collectivites]]) {
+  assert.match(page, /Aperçu du widget/i, `${name} landing identifies the section as an example`);
+  assert.match(page, /dernière observation/i, `${name} landing explains the observation timestamp`);
+  assert.doesNotMatch(page, /Aperçu en direct|Données réelles,? en ce moment|Données réelles,? à l'instant|L'état d'une plage, en ce moment/i,
+    `${name} landing must not claim the stale demo is live/current`);
+}
 
 // The embed uses the observation timestamp and hides its verdict/forecast when stale.
 assert.match(embed, /isSatelliteFresh\(d\.erddapTimestamp\)/);
@@ -36,4 +47,4 @@ assert.match(landing, /optgroup label="Martinique"/);
 assert.match(landing, /optgroup label="Guadeloupe"/);
 assert.match(landing, /function domain\(\).*sargasses-guadeloupe\.com/s);
 
-console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (17 assertions)');
+console.log('WIDGET_PARTNER_LANDING_FRESHNESS_COPY PASS (23 assertions)');
