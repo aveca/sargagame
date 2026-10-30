@@ -171,7 +171,7 @@ export function initHomeAZ(SR, HOST, opts){
   }
   function setHeroHeading(){
     var fresh=freshness();
-    var l2word=fresh.live ? _t("MESURE RÉCENTE","RECENT READING","MEDICIÓN RECIENTE") : _t("DERNIER STATUT OBSERVÉ","LAST OBSERVED STATUS","ÚLTIMO ESTADO OBSERVADO");
+    var l2word=fresh.live ? _t("SELON LA DERNIÈRE MESURE","BASED ON THE LAST READING","SEGÚN LA ÚLTIMA MEDICIÓN") : _t("DERNIER STATUT OBSERVÉ","LAST OBSERVED STATUS","ÚLTIMO ESTADO OBSERVADO");
     var live=fresh.badge;
     var st=HOME.status||"clean";
     var segs;
@@ -276,10 +276,12 @@ export function initHomeAZ(SR, HOST, opts){
     }
     var vbBadge=$("verdictBadge"); if(vbBadge){ var vbar=vbBadge.querySelector(".vbar"); if(vbar) vbar.style.background=fresh.live ? st.col : neutralColor; }
     if($("vScore")){
-      $("vScore").textContent=fresh.live ? HOME.score : "—";
-      $("vScore").style.color=fresh.live ? st.col : neutralColor;
-      if(!fresh.live) $("vScore").setAttribute("aria-label",_t("Score masqué : observation satellite ancienne ou inconnue","Score hidden: satellite observation is old or unknown","Puntaje oculto: observación satelital antigua o desconocida"));
-      else $("vScore").removeAttribute("aria-label");
+      var scoreEl=$("vScore");
+      scoreEl.textContent=fresh.live ? HOME.score : "—";
+      scoreEl.style.color=fresh.live ? st.col : neutralColor;
+      if(scoreEl.parentElement) scoreEl.parentElement.style.display=fresh.live ? "" : "none";
+      if(!fresh.live) scoreEl.setAttribute("aria-label",_t("Score masqué : observation satellite ancienne ou inconnue","Score hidden: satellite observation is old or unknown","Puntaje oculto: observación satelital antigua o desconocida"));
+      else scoreEl.removeAttribute("aria-label");
     }
     if($("eb1")) $("eb1").textContent=fresh.live ? T.eb1[LANG] : fresh.badge+" · "+observationDateLabel(); setHeading($("h1"),T.h1[LANG]); if($("s1")) $("s1").textContent=fresh.live ? T.s1[LANG] : statusNote;
     if($("ctaVerdictT")) $("ctaVerdictT").textContent=T.ctaVerdictT[LANG];
