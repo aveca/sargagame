@@ -96,6 +96,16 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       assert.doesNotMatch(html, /status is correct 99%|estado a 1 día acierta el 99%/)
     }
 
+    const pressPages = generatedFiles.filter(file => /(?:press|prensa|media)[^/]*\/index\.html$/i.test(file))
+    assert.ok(pressPages.length > 0, regionId + ': press page must remain generated')
+    for (const file of pressPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, /Validation scope|Alcance de validación/i, regionId + ': press page must publish its validation scope')
+      assert.match(html, /does not cover this region|no cubre esta región/i, regionId + ': out-of-scope validation must be explicit')
+      assert.doesNotMatch(html, /—%|\{accuracyJ[13]Pct\}|across our Caribbean network|en toda nuestra red del Caribe/i,
+        regionId + ': press page must not render an unscoped or empty accuracy percentage')
+    }
+
   } finally {
     fs.rmSync(distDir, { recursive: true, force: true })
   }
