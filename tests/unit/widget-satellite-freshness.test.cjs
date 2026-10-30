@@ -106,4 +106,4 @@ assert.match(html, /if \(fresh && showFc && wk\.length\)/, 'forecast is gated by
 assert.match(html, /\$\("fc"\)\.style\.display = "none"/, 'stale forecast is hidden');
 assert.match(html, /label\+" : "\+T\.stale/, 'accessible label reports verification instead of stale verdict');
 
-console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (19 assertions)');
+console.log('WIDGET_SATELLITE_FRESHNESS_TESTS PASS (24 assertions)');
