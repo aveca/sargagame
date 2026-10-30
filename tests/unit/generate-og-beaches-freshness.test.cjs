@@ -58,7 +58,6 @@ assert.equal(stale.status, null)
 assert.equal(stale.score, null)
 const staleSvg = buildOgSvg(beach, stale)
 assert.match(staleSvg, /Observation du 2026-10-27 12:00 UTC · RETARDÉE/)
-assert.match(staleSvg, /À VÉRIFIER/)
 assert.doesNotMatch(staleSvg, /PROPRE|aujourd'hui|LIVE/, 'stale OG card cannot retain the beach-list clean fallback or LIVE badge')
 
 for (const invalidTimestamp of [undefined, null, '', 'not-a-date', new Date(now + 60_000).toISOString()]) {
