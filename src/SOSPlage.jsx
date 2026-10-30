@@ -152,7 +152,10 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
       }
     } catch (e) {
       track("sg_sos_checkout_error", { beach: selectedBeach.id, error: e.message })
-      alert(_t(lang, "Erreur lors de l'ouverture du paiement. Réessayez.", "Error opening payment. Please try again.", "Error al abrir el pago. Inténtalo de nuevo."))
+      const message = e?.message === "payment_provider_not_live"
+        ? _t(lang, "Le paiement en direct est temporairement indisponible. Réessayez plus tard.", "Live payments are temporarily unavailable. Please try again later.", "Los pagos en directo no están disponibles temporalmente. Inténtalo más tarde.")
+        : _t(lang, "Erreur lors de l'ouverture du paiement. Réessayez.", "Error opening payment. Please try again.", "Error al abrir el pago. Inténtalo de nuevo.")
+      alert(message)
     } finally {
       setCheckoutLoading(false)
     }
