@@ -7,10 +7,6 @@ const fs = require("node:fs");
 const path = require("node:path");
 const vm = require("node:vm");
 const helperSource = fs.readFileSync(path.join(__dirname, "../public/b2b-data-freshness.js"), "utf8");
-const helperWindow = {};
-vm.runInNewContext(helperSource, { window: helperWindow });
-const freshness = helperWindow.SargagameB2BFreshness;
-assert.ok(freshness && typeof freshness.getTrackRecordState === "function", "browser helper must expose its public contract");
 
 const html = fs.readFileSync(path.join(__dirname, "../public/pro/pricing/index.html"), "utf8");
 const match = html.match(/<script>\s*\(function\(\)\{\s*\/\/ A public rate is shown only for a fresh record that explicitly covers MQ\.[\s\S]*?<\/script>/);
@@ -50,15 +46,19 @@ async function render(payload, failFetch = false) {
     ? Promise.reject(new Error("offline"))
     : Promise.resolve({ ok: true, json: () => Promise.resolve(payload) });
 
-  vm.runInNewContext(script, {
+  const sandbox = {
     fetch,
     Date: FixedDate,
-    window: { SargagameB2BFreshness: freshness },
+    window: {},
     document: {
       getElementById(id) { return nodes[id] || null; },
       querySelector(selector) { return selector === ".proofline" ? proof : null; },
     },
-  });
+  };
+  // Load the browser helper in the same realm so its Date.now() uses FixedDate.
+  vm.runInNewContext(helperSource, sandbox);
+  assert.ok(sandbox.window.SargagameB2BFreshness && typeof sandbox.window.SargagameB2BFreshness.getTrackRecordState === "function", "browser helper must expose its public contract");
+  vm.runInNewContext(script, sandbox);
   await new Promise(resolve => setImmediate(resolve));
   return { value: nodes["tr-clean"].textContent, line: nodes["tr-line"].textContent, stale: classes.has("is-stale") };
 }
