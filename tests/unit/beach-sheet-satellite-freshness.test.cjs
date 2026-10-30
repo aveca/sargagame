@@ -9,7 +9,7 @@ const source = fs.readFileSync(
   'utf8'
 )
 
-const freshnessStart = source.indexOf('// ── Fraîcheur satellite (confiance) — preuve')
+const freshnessStart = source.indexOf('// ── Fraîcheur satellite (confiance) — seule l\'observation ERDDAP fait foi.')
 const freshnessEnd = source.indexOf('// ── Distance / lieu', freshnessStart)
 assert.ok(freshnessStart >= 0 && freshnessEnd > freshnessStart, 'beach-sheet freshness block exists')
 const freshnessBlock = source.slice(freshnessStart, freshnessEnd)
