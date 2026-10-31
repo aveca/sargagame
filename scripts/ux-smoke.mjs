@@ -23,7 +23,9 @@
  * Cf. AUTONOMOUS_BUILD.md (étape 3 : vérifier avant merge).
  */
 import { chromium } from 'playwright';
+import { mkdir } from 'node:fs/promises';
 const BASE = process.env.SMOKE_BASE || 'http://localhost:4173';
+await mkdir('/tmp/worldmap-freshness', { recursive: true });
 const b = await chromium.launch();
 const ctx = await b.newContext({
   viewport: { width: 390, height: 844 }, deviceScaleFactor: 2,
@@ -156,22 +158,22 @@ const rawCss = [];
 //       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
 //       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
 await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
-await p.waitForSelector('.sg-maplabel', { timeout: 30000 }).catch(() => {});
+await p.waitForSelector('[data-map-pin]', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
-const mapOk = await p.evaluate(() => document.querySelectorAll('.sg-maplabel').length >= 3);
+const mapOk = await p.evaluate(() => {
+  const root = document.querySelector('[data-map-decision-state]');
+  return !!root && document.querySelectorAll('[data-map-pin]').length >= 3;
+});
 whiteButtons.push(...await p.evaluate(scanGhost));
 const homeHeadings = await p.evaluate(scanHeadings);
 rawCss.push(...await p.evaluate(scanRawCssText));
 
-// ── 2. Détail plage : tap sur un label VISIBLE (vrai geste utilisateur ; clic JS
-//       car le pan de la carte peut voler le clic physique en émulation). Route
-//       par défaut = ComicDetail (.lc-detail, flag mapdetail) ; fallback fiche
-//       data (.sheet) si le flag change — les deux comptent comme « fiche ».
+// ── 2. Détail plage : tap sur un pin (les pins neutres restent navigables quand
+//       le verdict est suspendu ; aucun label de statut périmé n'est nécessaire).
 await p.evaluate(() => {
-  const l = [...document.querySelectorAll('.sg-maplabel')]
-    .find(el => getComputedStyle(el).visibility !== 'hidden');
-  if (l) l.click();
+  const pin = document.querySelector('[data-map-pin]');
+  if (pin) pin.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 });
 await p.waitForSelector('.lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
 await p.waitForTimeout(1500);
@@ -211,6 +213,75 @@ const whiteOut = whiteButtons.filter(w => {
 const rawCssOut = rawCss.filter(w => {
   const k = w.t + '|' + w.cls; if (seen.has(k)) return false; seen.add(k); return true;
 }).slice(0, 12);
+
+// ── Vérification freshness fail-closed : le fixture simule une republication récente
+//    (updatedAt + dataAgeMinutes récents, stale=false) avec une observation satellite
+//    réellement vieille de 48h. Les décisions, couleurs, frises et couches live doivent
+//    être suspendues. Captures after à 390×844 et 1440×900 pour revue visuelle.
+const staleApiPattern = '**/api/copernicus/sargassum.json';
+const staleApiHandler = async route => {
+  try {
+    const response = await route.fetch();
+    const payload = await response.json();
+    const now = Date.now();
+    payload.erddapTimestamp = new Date(now - 48 * 3_600_000).toISOString();
+    payload.updatedAt = new Date(now - 60 * 60_000).toISOString();
+    payload.dataAgeMinutes = 60; // volontairement trompeur : âge de build, pas âge satellite
+    payload.stale = false;       // volontairement trompeur : le client doit recalculer depuis ERDDAP
+    await route.fulfill({ response, body: JSON.stringify(payload) });
+  } catch (error) {
+    errs.push('STALE_API_FIXTURE_ERROR ' + String(error?.message || error).slice(0, 160));
+    await route.continue().catch(() => {});
+  }
+};
+const runStaleMapCheck = async (viewport, name, mobile) => {
+  const staleCtx = await b.newContext({
+    viewport,
+    deviceScaleFactor: mobile ? 2 : 1,
+    isMobile: mobile,
+    hasTouch: mobile,
+    serviceWorkers: 'block',
+  });
+  const stalePage = await staleCtx.newPage();
+  stalePage.setDefaultNavigationTimeout(60000);
+  stalePage.setDefaultTimeout(30000);
+  stalePage.on('pageerror', e => errs.push('STALE_PAGEERROR ' + e.message));
+  await stalePage.route(staleApiPattern, staleApiHandler);
+  await stalePage.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
+  await stalePage.waitForFunction(
+    () => document.querySelector('[data-map-decision-state]') &&
+      document.querySelectorAll('[data-map-pin]').length >= 3,
+    {},
+    { timeout: 30000 }
+  ).catch(() => {});
+  await stalePage.waitForTimeout(900);
+  const result = await stalePage.evaluate(() => {
+    const root = document.querySelector('[data-map-decision-state]');
+    const pinStatuses = [...document.querySelectorAll('[data-map-pin]')]
+      .map(pin => pin.getAttribute('data-map-status'));
+    const body = document.body.innerText;
+    return {
+      state: root?.getAttribute('data-map-decision-state'),
+      reason: root?.getAttribute('data-map-decision-reason'),
+      pinCount: pinStatuses.length,
+      pinStatuses,
+      labels: document.querySelectorAll('.sg-maplabel').length,
+      summary: /Statuts indisponibles|Statuses unavailable|Estados no disponibles/i.test(body),
+      stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
+    };
+  });
+  const ok = result.state === 'unavailable' && result.reason === 'stale' &&
+    result.pinCount >= 3 && result.pinStatuses.every(status => status === 'unknown') &&
+    result.labels === 0 && result.summary && result.stalePill;
+  if (!ok) errs.push('STALE_MAP_DECISION_LEAK (' + name + ') ' + JSON.stringify(result));
+  await stalePage.screenshot({ path: '/tmp/worldmap-freshness/' + name + '.png' })
+    .catch(error => errs.push('STALE_SCREENSHOT_ERROR ' + String(error?.message || error).slice(0, 120)));
+  await staleCtx.close();
+  return result;
+};
+const staleMobile = await runStaleMapCheck({ width: 390, height: 844 }, 'mobile-390x844', true);
+const staleDesktop = await runStaleMapCheck({ width: 1440, height: 900 }, 'desktop-1440x900', false);
+console.log('WORLD_MAP_STALE_CHECK=' + JSON.stringify({ mobile: staleMobile, desktop: staleDesktop }));
 
 // Filtrer les erreurs CSP (attendues en CI sans domaines allowlistés)
     // et l'erreur PHP referral (côté serveur) et l'erreur rt TDZ — ne garder que les vraies erreurs JS
