@@ -49,15 +49,22 @@ async function renderRegion(regionId) {
   assert.ok(webApp && organization && localBusiness, regionId + ': web-app, organization and local-business JSON-LD remain present');
   assert.ok(noscript, regionId + ': localized no-JavaScript SEO content remains present');
 
+  const questionText = faq.mainEntity.map((item) => item.name || '').join(' ');
   const answerText = faq.mainEntity.map((item) => item.acceptedAnswer && item.acceptedAnswer.text || '').join(' ');
-  const seoSurface = [title, description, webApp.name, answerText, organization.description, localBusiness.description, noscript].join('\n');
+  const seoSurface = [title, description, webApp.name, questionText, answerText, organization.description, localBusiness.description, noscript].join('\n');
+  const unsupportedCurrentQuestions = /\\b(?:today|right now|hoy|ahora mismo)\\b/i;
+  assert.doesNotMatch(questionText, unsupportedCurrentQuestions, regionId + ': FAQ questions do not imply current/today conditions');
   const unsupportedClaims = /updated\s+4×\s*daily|updated\s+4\s*times\s+a\s*day|4\s*times\s+a\s*day|4\s*veces\s+al\s+d[ií]a|actualizado\s+4\s*veces|en\s+vivo|live\s+(?:beach\s+)?map|live\s+status|live\s+monitoring|real[- ]time|in\s+real\s+time|refreshed\s+four\s+times|refreshes\s+several\s+times|\bdaily\b|a\s+diario|diariamente/i;
   assert.doesNotMatch(seoSurface, unsupportedClaims, regionId + ': no unsupported live/four-times-daily promise');
 
   if (region.primaryLang === 'es') {
+    assert.match(questionText, /última observación publicada/i, regionId + ': Spanish FAQ asks about the latest published observation');
+    assert.match(questionText, /observaciones publicadas/i, regionId + ': Spanish FAQ asks about published beach observations');
     assert.match(seoSurface, /hora de la última observación satelital/i, regionId + ': observation timestamp is explained in Spanish');
     assert.match(seoSurface, /la fuente se retrasa/i, regionId + ': delayed-source limitation is explained in Spanish');
   } else {
+    assert.match(questionText, /latest published sargassum observation/i, regionId + ': English FAQ asks about the latest published observation');
+    assert.match(questionText, /published observations/i, regionId + ': English FAQ asks about published beach observations');
     assert.match(seoSurface, /latest available satellite observation time/i, regionId + ': observation timestamp is explained in English');
     assert.match(seoSurface, /source is delayed/i, regionId + ': delayed-source limitation is explained in English');
   }
