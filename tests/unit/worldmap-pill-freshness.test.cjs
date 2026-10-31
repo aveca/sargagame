@@ -59,13 +59,13 @@ async function main() {
 
   // 4. Contrat de la carte : source live obligatoire, transitions 12h puis 36h.
   const mapFresh = worldMapFreshness('erddap-live', fresh.erddapTimestamp, 'fr', now)
-  t(mapFresh[0] && mapFresh[1] && mapFresh[4] === 9 * 3.6e6 + 50, 'carte <12h : décision autorisée, point vert, prochain cutoff 12h')
+  t(mapFresh[0] && mapFresh[1] === '#00786C' && mapFresh[4] === 9 * 3.6e6 + 50, 'carte <12h : décision autorisée, point vert, prochain cutoff 12h')
   const mapRecent = worldMapFreshness('erddap-live', delayed.erddapTimestamp, 'en', now)
-  t(!mapRecent[0] && mapRecent[1] && mapRecent[4] === 19 * 3.6e6 + 50, 'carte 12–36h : décision limitée, âge visible, point neutre')
+  t(mapRecent[0] && mapRecent[1] === '#667085' && mapRecent[4] === 19 * 3.6e6 + 50, 'carte 12–36h : décision limitée, âge visible, point neutre')
   const mapOld = worldMapFreshness('erddap-live', old.erddapTimestamp, 'es', now)
-  t(!mapOld[1] && mapOld[4] === null, 'carte >=36h : décisions suspendues, alerte ambre')
+  t(!mapOld[0] && mapOld[1] === '#B87A00' && mapOld[4] === null, 'carte >=36h : décisions suspendues, alerte ambre')
   const mapNonLive = worldMapFreshness('cached', fresh.erddapTimestamp, 'fr', now)
-  t(!mapNonLive[1] && mapNonLive[2] === 'Vérification' && mapNonLive[3] === '···' && mapNonLive[4] === null, 'carte source non-live : fail closed, aucune fraîcheur inventée')
+  t(!mapNonLive[0] && mapNonLive[1] === '#B87A00' && mapNonLive[2] === 'Vérification' && mapNonLive[3] === '···' && mapNonLive[4] === null, 'carte source non-live : fail closed, aucune fraîcheur inventée')
 
   // 5. Horodatage absent : aucun LIVE inventé.
   t(isSatelliteFresh12h({}, now) === false, 'absent => isSatelliteFresh12h false (fallback honnête)')
@@ -83,19 +83,18 @@ async function main() {
   // 8. Câblage source : la pill consomme la prop erddapTimestamp (venue de l'appelant),
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
-  const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
   const mapLib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'world-map-freshness.mjs'), 'utf8')
   t(wm.includes('worldMapFreshness(source, erddapTimestamp, lang)') && wm.includes('wmFreshDelay') && wm.includes('wmDecisionAvailable'), 'WorldMapView utilise le contrat partagé de fraîcheur carte')
   t(wm.includes('wmSatLbl') && wm.includes('wmSatAge'), 'label et âge proviennent du contrat partagé')
   t(wm.includes('wmSatLbl'), 'label pill précise la fraîcheur de la seule source satellite validée')
-  t(/wmSatColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
-  t(wm.includes('const wmSatColor = !wmDecisionAvailable ?'), 'couleur de warning lorsque la décision est indisponible')
-  t(wm.includes('wmSatLbl, wmSatAge') && wm.includes('const wmSatColor = !wmDecisionAvailable ?'), 'âge pill = observation satellite validée, jamais updatedAt seul')
+  t(wm.includes('const [wmDecisionAvailable, wmSatColor, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang)'), 'la pill reçoit couleur, label, âge et cutoff du helper carte')
+  t(mapLib.includes('const color = !available ? "#B87A00" : age < 12 ? "#00786C" : "#667085"'), 'couleur ambre fail-closed, vert <12h, neutre 12–36h')
+  t(wm.includes('wmSatLbl, wmSatAge') && wm.includes('background:wmSatColor'), 'âge pill = observation satellite validée, jamais updatedAt seul')
   t(mapLib.includes('export function worldMapFreshness') && mapLib.includes('source === "erddap-live"'), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\}/.test(caller) && /source=\{sargData\?\.source\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('wmFreshDelay') && wm.includes('setMapFreshnessTick(tick=>!tick)') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
-  t(mapLib.includes('return [fresh, available') && mapLib.includes('available ? ((fresh ? 12 : 36) - age) * 36e5 + 50 : null'), 'helper : transitions planifiées à 12h puis 36h')
+  t(mapLib.includes('return [available, color') && mapLib.includes('available ? ((age < 12 ? 12 : 36) - age) * 36e5 + 50 : null'), 'helper : transitions planifiées à 12h puis 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
   t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
   t(wm.includes('{wmDecisionAvailable && <div') && wm.includes('wmSatLbl'), 'compteurs masqués quand la source ne permet plus une décision, pill satellite conservée')
