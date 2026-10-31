@@ -88,7 +88,7 @@ async function main() {
   t(wm.includes('wmSatLbl'), 'label pill précise la fraîcheur de la seule source satellite validée')
   t(/wmSatColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
   t(wm.includes('wmSatColor'), 'couleurs de la pill centralisées dans le helper')
-  t(wm.includes('const wmSatAge = wmFresh.age'), 'âge pill = formatFreshnessAge(observation satellite validée), jamais updatedAt seul')
+  t(wm.includes('wmSatLbl, wmSatAge, wmSatColor'), 'âge pill = observation satellite validée, jamais updatedAt seul')
   t(lib.includes('export function worldMapFreshness') && lib.includes("source === 'erddap-live'"), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
