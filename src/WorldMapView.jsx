@@ -203,8 +203,7 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const [wmSatFresh, wmDecisionAvailable, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
-  const wmSatColor = !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const [wmDecisionAvailable, wmSatColor, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
   const [, setMapFreshnessTick] = useState(false);
   useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>!tick),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
@@ -1697,7 +1696,6 @@ export default function WorldMapView({
           }}>
             <div style={{
               width:8,height:8,borderRadius:"50%",background:wmSatColor,border:`1.5px solid ${INK}`,
-              animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
             <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatColor,marginLeft:2}}>
