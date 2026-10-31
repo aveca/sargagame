@@ -206,10 +206,11 @@ export default function WorldMapView({
   const wmSatT = Date.parse(erddapTimestamp || "");
   const wmPubT = Date.parse(updatedAt || "");
   const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== wmPubT;
-  const wmSatFresh = wmSatValid && isSatelliteFresh12h({erddapTimestamp});
-  const wmSatStale = wmSatValid && isSatelliteStale36h({erddapTimestamp});
+  const wmSatData = {erddapTimestamp:wmSatValid?erddapTimestamp:null};
+  const wmSatFresh = isSatelliteFresh12h(wmSatData);
+  const wmSatStale = isSatelliteStale36h(wmSatData);
   const wmDecisionAvailable = wmSatValid && !wmSatStale;
-  const wmSatLbl = satelliteFreshnessStatus({erddapTimestamp:wmSatValid?erddapTimestamp:null},lang);
+  const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   // Re-vérifie le cutoff après 36 h et au retour d'onglet.
   const [, setMapFreshnessTick] = useState(0);
@@ -1523,7 +1524,7 @@ export default function WorldMapView({
             if(pinTier[b.id]==="dot"&&!isSel){
               const dotCol=st==="clean"?"#22C55E":st==="moderate"?"#B87A00":st==="avoid"?"#E8522A":"#9aa0a8"
               return(
-                <g key={b.id} data-map-pin="1" data-map-status={st||"unknown"} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
+                <g key={b.id} data-map-pin={st||"unknown"} transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`} style={{cursor:"pointer"}}
                   onClick={e=>{ e.stopPropagation(); selectBeach(b); if(onOpenBeach){ try{track&&track("sg_beach_open",{from:"map_dot"})}catch(_){}; onOpenBeach(b) } }}>
                   <circle r={mapPinHitOff?"8":"12"} fill="transparent"/>
                   <circle r="3.2" fill={dotCol} stroke={INK} strokeWidth="1"/>
@@ -1533,7 +1534,7 @@ export default function WorldMapView({
             const fill=st==="clean"?"url(#wmPinClean)":st==="moderate"?"url(#wmPinMod)":st==="avoid"?"url(#wmPinAvoid)":"#9aa0a8"
             const s=isSel?1.18:1
             return(
-              <g key={b.id} data-map-pin="1" data-map-status={st||"unknown"}
+              <g key={b.id} data-map-pin={st||"unknown"}
                 transform={`translate(${b.vx.toFixed(1)} ${b.vy.toFixed(1)})`}
                 style={{cursor:"pointer"}}
                 onClick={e=>{ e.stopPropagation();
@@ -1833,7 +1834,7 @@ export default function WorldMapView({
                 {_t(lang,"à éviter","to avoid","a evitar")}
               </span>
             </> : (
-              <span role="status">{_t(lang,"Observation à vérifier","Observation to verify","Observación por verificar")}</span>
+              <span role="status">{wmSatLbl}</span>
             )}
           </div>
           </>)}
