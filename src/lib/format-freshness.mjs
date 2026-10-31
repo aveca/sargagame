@@ -66,13 +66,6 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
 }
 
 /**
- * Freshness contract for the live beach map.
- * Only ERDDAP-live observations can authorize decisions. The map stays usable
- * with an explicit observation age for 12–36h, then fails closed at 36h.
- * A timer schedules both visible-state transitions while the page remains open.
- */
-
-/**
  * Libellé de fraîcheur du détail de plage (lc-detail) — correction
  * SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001 : le libellé principal annonçait
  * « Mesuré au satellite ce matin » quelle que soit l'âge réel (baseline live :
