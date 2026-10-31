@@ -89,6 +89,7 @@ async function main() {
   t(wm.includes('wmSatLbl') && wm.includes('wmSatAge'), 'label et âge proviennent du contrat partagé')
   t(wm.includes('wmSatLbl'), 'label pill précise la fraîcheur de la seule source satellite validée')
   t(wm.includes('const [wmDecisionAvailable, wmSatColor, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang)'), 'la pill reçoit couleur, label, âge et cutoff du helper carte')
+  t(!wm.includes('wmPulse'), 'aucune keyframe de pulsation orpheline ne reste dans le bundle')
   t(mapLib.includes('const color = !available ? "#B87A00" : age < 12 ? "#00786C" : "#667085"'), 'couleur ambre fail-closed, vert <12h, neutre 12–36h')
   t(wm.includes('wmSatLbl, wmSatAge') && wm.includes('background:wmSatColor'), 'âge pill = observation satellite validée, jamais updatedAt seul')
   t(mapLib.includes('export function worldMapFreshness') && mapLib.includes('source === "erddap-live"'), 'helper carte rejette les sources absentes/non-live')
