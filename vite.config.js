@@ -2136,11 +2136,9 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   `</div>`,
                   `<script>`,
                   `window.__SG_BEACH__=${sgBeachData};`,
+                  // Reuse the page's consent-aware Google tag; never expose Measurement Protocol credentials.
                   `window.__sgTrack=function(ev,params){`,
-                  `  try{var mid="${isMQ ? 'G-V8JGMDZZ2Y' : 'G-Q31VV3LLM9'}",sec="${isMQ ? 'eFHMRr4tQ-2B-JYidixOSA' : 'eWAv3vACT6uVzcrAi7JgYQ'}";`,
-                  `  var cid=document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);cid=cid?cid[1]:"a."+Date.now();`,
-                  `  if(navigator.sendBeacon)navigator.sendBeacon("https://www.google-analytics.com/mp/collect?measurement_id="+mid+"&api_secret="+sec,JSON.stringify({client_id:cid,events:[{name:ev,params:params||{}}]}));`,
-                  `  }catch(e){}`,
+                  `  try{if(typeof window.gtag==="function")window.gtag("event",ev,params||{});}catch(e){}`,
                   `};`,
                   `(function(){`,
                   `  var RM=matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;`,

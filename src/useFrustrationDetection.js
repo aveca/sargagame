@@ -4,7 +4,8 @@
 // Track : events Supabase pour apprentissage funnel
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { isRemoteAnalyticsEnabled } from './supabasePhotos.js'
+import { logAnalyticsEvent } from './supabasePhotos.js'
+import { sanitizeFrustrationAnalytics } from './lib/frustration-analytics.mjs'
 
 // Configurable thresholds
 const CONFIG = {
@@ -259,32 +260,13 @@ function describeElement(el) {
   return `${tag}${id}${classes}${text ? ` "${text}"` : ''}`
 }
 
-// Expose tracking function globally for use in components
+// Expose a privacy-safe, first-party tracking function globally for components.
 if (typeof window !== 'undefined') {
-  window.trackFrustration = async (type, context) => {
-    // Track to Supabase analytics_events table
-    if (!isRemoteAnalyticsEnabled()) return
-    try {
-      const { SUPABASE_URL, SUPABASE_ANON_KEY } = window.__SG_ENV__ || {}
-      if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return
-      
-      await fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal',
-        },
-        body: JSON.stringify({
-          event_type: 'sg_frustration_detected',
-          email: localStorage.getItem('sg_email') || '',
-          island: localStorage.getItem('sg_region') || '',
-          props: { type, ...context },
-        }),
-      })
-    } catch (e) {
-      // Silent fail
-    }
-  }
+  window.trackFrustration = (type, context = {}) => {
+    const params = sanitizeFrustrationAnalytics(type, context, window.location.pathname);
+    let island = '';
+    try { island = localStorage.getItem('sg_region') || ''; } catch (_) {}
+    // Shared writer enforces the local-host policy and analytics_events schema.
+    logAnalyticsEvent('sg_frustration_detected', params, island);
+  };
 }

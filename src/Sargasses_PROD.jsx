@@ -2003,18 +2003,8 @@ export function track(event,params={}){
   if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
-  // Measurement Protocol direct beacon — bypasses gtag.js DMA block
-  // (MQ/GP uniquement : les nouvelles régions n'ont pas encore de propriété GA4 dédiée,
-  //  et beaconner ici polluerait les stats MQ/GP)
-  if(remoteEnabled&&!IS_NEW_REGION)try{
-    const isGP=window.location.hostname.includes("guadeloupe")
-    const mid=isGP?"G-Q31VV3LLM9":"G-V8JGMDZZ2Y"
-    const sec=isGP?"eWAv3vACT6uVzcrAi7JgYQ":"eFHMRr4tQ-2B-JYidixOSA"
-    const cid=document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/)?.[1]||"a."+Date.now()
-    navigator.sendBeacon&&navigator.sendBeacon(
-      `https://www.google-analytics.com/mp/collect?measurement_id=${mid}&api_secret=${sec}`,
-      JSON.stringify({client_id:cid,events:[{name:event,params:p}]}))
-  }catch{}
+  // Measurement Protocol credentials are private and must never ship to browsers.
+  // Keep the configured Google tag and first-party Supabase funnel as client analytics paths.
   // Backup: queue critical conversion events to localStorage + beacon to Apps Script
   const critical=event.startsWith("sg_checkout")||event.startsWith("sg_premium")||event==="sg_conversion"
     ||event==="sg_email_submit"||event==="sg_forecast_lock_click"||event==="sg_session_start"||event==="sg_friction"
@@ -2058,13 +2048,21 @@ try{if(typeof window!=="undefined")setTimeout(flushTrackQueue,5000)}catch{}
 // MIGRATION 2026-07 : écrit AUSSI sur Supabase analytics_events (RLS insert-only)
 // pour ne plus dépendre de Apps Script/clasp push pour le funnel.
 export function submitLead(email,source){
+  // Keep attribution in function scope: the Supabase sink runs after the transport try.
+  let island="MQ"
   try{
-    const island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
-    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
-    if(navigator.sendBeacon){try{if(navigator.sendBeacon(APPS_SCRIPT_URL,body))return}catch{}}
-    fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    island=IS_NEW_REGION?REGION.id.toUpperCase():window.location.hostname.includes("guadeloupe")?"GP":"MQ"
   }catch{}
-  // Supabase funnel sink (write-only, anon, RLS insert-only) — fire-and-forget
+  // Apps Script delivery is best-effort and independent from first-party funnel logging.
+  try{
+    const body=JSON.stringify({email,island,source,date:new Date().toISOString()})
+    let beaconQueued=false
+    try{if(navigator.sendBeacon)beaconQueued=navigator.sendBeacon(APPS_SCRIPT_URL,body)}catch{}
+    if(!beaconQueued){
+      fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body}).catch(()=>{})
+    }
+  }catch{}
+  // Always record the non-PII lead event in Supabase, whether sendBeacon queued or fetch fell back.
   try{logAnalyticsEvent("sg_email_submit",{source,island},island)}catch(_){}
 }
 
