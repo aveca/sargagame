@@ -92,7 +92,7 @@ async function main() {
   t(lib.includes('export function worldMapFreshness') && lib.includes("source === 'erddap-live'"), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
-  t(wm.includes('wmFresh.delay') && wm.includes('wmFresh.next') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
+  t(wm.includes('wmFresh.delay') && wm.includes('wmFresh.next') && wm.includes('setMapFreshnessTick(tick=>tick+1)') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
   t(lib.includes('const next = fresh ? 12 : available ? 36 : null') && lib.includes('delay: next == null ? null : (next - age) * 36e5 + 50'), 'helper : transitions planifiées à 12h puis 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
   t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
