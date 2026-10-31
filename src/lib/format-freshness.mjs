@@ -76,7 +76,7 @@ export function worldMapFreshness(source, erddapTimestamp, lang, now = Date.now(
   const data = source === 'erddap-live' && { erddapTimestamp }
   const age = satelliteAgeHours(data, now)
   const valid = age != null, fresh = valid && age < 12, available = valid && age < 36
-  return [fresh, available, satelliteFreshnessStatus(data, lang, now), valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···', fresh ? (12 - age) * 36e5 + 50 : available ? (36 - age) * 36e5 + 50 : null]
+  return [fresh, available, satelliteFreshnessStatus(data, lang, now), valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···', available ? ((fresh ? 12 : 36) - age) * 36e5 + 50 : null]
 }
 /**
  * Libellé de fraîcheur du détail de plage (lc-detail) — correction
