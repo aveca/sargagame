@@ -28,7 +28,8 @@ let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
 async function main() {
-  const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus, worldMapFreshness } = await import('../../src/lib/format-freshness.mjs')
+  const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } = await import('../../src/lib/format-freshness.mjs')
+  const { worldMapFreshness } = await import('../../src/lib/world-map-freshness.mjs')
 
   // 1. Mesure récente <12h : LIVE autorisé.
   const fresh = { erddapTimestamp: new Date(now - 3 * 3.6e6).toISOString() }
@@ -83,13 +84,14 @@ async function main() {
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
   const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
+  const mapLib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'world-map-freshness.mjs'), 'utf8')
   t(wm.includes('worldMapFreshness(source, erddapTimestamp, lang)') && wm.includes('wmFreshDelay') && wm.includes('wmDecisionAvailable'), 'WorldMapView utilise le contrat partagé de fraîcheur carte')
   t(wm.includes('wmSatLbl') && wm.includes('wmSatAge'), 'label et âge proviennent du contrat partagé')
   t(wm.includes('wmSatLbl'), 'label pill précise la fraîcheur de la seule source satellite validée')
   t(/wmSatColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
   t(wm.includes('const wmSatColor = !wmDecisionAvailable ?'), 'couleur de warning lorsque la décision est indisponible')
   t(wm.includes('wmSatLbl, wmSatAge') && wm.includes('const wmSatColor = !wmDecisionAvailable ?'), 'âge pill = observation satellite validée, jamais updatedAt seul')
-  t(lib.includes('export function worldMapFreshness') && lib.includes("source === 'erddap-live'"), 'helper carte rejette les sources absentes/non-live')
+  t(mapLib.includes('export function worldMapFreshness') && mapLib.includes('source === "erddap-live"'), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\}/.test(caller) && /source=\{sargData\?\.source\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('wmFreshDelay') && wm.includes('setMapFreshnessTick(tick=>!tick)') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
