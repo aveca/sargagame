@@ -83,6 +83,7 @@ async function main() {
   // 8. Câblage source : la pill consomme la prop erddapTimestamp (venue de l'appelant),
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
+  const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
   const mapLib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'world-map-freshness.mjs'), 'utf8')
   t(wm.includes('worldMapFreshness(source, erddapTimestamp, lang)') && wm.includes('wmFreshDelay') && wm.includes('wmDecisionAvailable'), 'WorldMapView utilise le contrat partagé de fraîcheur carte')
   t(wm.includes('wmSatLbl') && wm.includes('wmSatAge'), 'label et âge proviennent du contrat partagé')
