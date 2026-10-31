@@ -7,7 +7,8 @@ const path = require('node:path')
 
 const root = path.resolve(__dirname, '../..')
 const html = fs.readFileSync(path.join(root, 'public/en/index.html'), 'utf8')
-const sitemap = fs.readFileSync(path.join(root, 'public/sitemap-martinique.xml'), 'utf8')
+const mqSitemap = fs.readFileSync(path.join(root, 'public/sitemap-martinique.xml'), 'utf8')
+const gpSitemap = fs.readFileSync(path.join(root, 'public/sitemap-guadeloupe.xml'), 'utf8')
 const lower = html.toLowerCase()
 
 // The English fallback must describe published observations, not imply a live feed.
@@ -42,7 +43,8 @@ assert.ok(html.includes('<meta property="og:url" content="https://sargasses-mart
 const cta = html.match(/<a\b[^>]*class="cta"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i)
 assert.ok(cta, 'English landing CTA must exist')
 assert.equal(cta[1], '/en/sargassum-map/', 'CTA must open the English map, not loop back to /en/')
-assert.ok(sitemap.includes('https://sargasses-martinique.com/en/sargassum-map/'), 'CTA destination must remain in the published sitemap')
+assert.ok(mqSitemap.includes('https://sargasses-martinique.com/en/sargassum-map/'), 'MQ CTA destination must remain in the published sitemap')
+assert.ok(gpSitemap.includes('https://sargasses-guadeloupe.com/en/sargassum-map/'), 'GP CTA destination must remain in the published sitemap')
 assert.match(cta[2], /Explore the beach map/i)
 
-console.log('PASS: English fallback freshness copy, canonical/hreflang and non-looping map CTA.')
+console.log('PASS: English fallback freshness copy, canonical/hreflang and non-looping map CTA for MQ/GP.')
