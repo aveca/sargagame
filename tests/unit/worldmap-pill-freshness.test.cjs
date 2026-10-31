@@ -75,7 +75,7 @@ async function main() {
   const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
   t(wm.includes('satelliteFreshnessStatus') && wm.includes('format-freshness.mjs'), 'WorldMapView utilise le statut partagé de fraîcheur satellite')
   t(!/function isStale\(/.test(wm), 'prédicat local isStale(36h) supprimé de WorldMapView')
-  t(/wmSatLbl\s*=\s*satelliteFreshnessStatus\(\{\s*erddapTimestamp:\s*wmSatObservationTimestamp\s*\},\s*lang\)/.test(wm), 'label pill précise la fraîcheur de la seule source satellite validée')
+  t(/wmSatLbl\\s*=\\s*satelliteFreshnessStatus\\(wmSatData,\\s*lang\\)/.test(wm), 'label pill précise la fraîcheur de la seule source satellite validée')
   t(/wmSatDotColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
   t(/wmSatAgeColor\s*=\s*wmSatStale\s*\?\s*"#B87A00"\s*:\s*wmSatFresh\s*\?\s*"#00786C"\s*:\s*"#667085"/.test(wm), 'couleur neutre entre 12h et 36h, ambre uniquement après 36h')
   t(/formatFreshnessAge\(wmSatObservationTimestamp,\s*lang\)/.test(wm), 'âge pill = formatFreshnessAge(observation satellite validée), jamais updatedAt seul')
