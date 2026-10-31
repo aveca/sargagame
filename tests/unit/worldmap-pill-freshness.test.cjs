@@ -83,7 +83,7 @@ async function main() {
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('const wmSatData = source === "erddap-live" && wmSatT > 0 && wmSatT <= Date.now() ? {erddapTimestamp} : null;') && wm.includes('!!wmSatData && !isSatelliteStale36h(wmSatData)'), 'WorldMapView exige une source ERDDAP live et un timestamp valide')
-  t(wm.includes('setTimeout(()=>setMapFreshnessTick(Date.now())') && wm.includes('clearTimeout(timer)'), 'carte : le cutoff stale est recalculé au seuil 36h')
+  t(wm.includes('setTimeout(()=>setMapFreshnessTick(1)') && wm.includes('clearTimeout(timer)'), 'carte : le cutoff stale est recalculé au seuil 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
   t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
   t(wm.includes('{wmDecisionAvailable && <div') && wm.includes('wmSatLbl'), 'compteurs masqués quand la source ne permet plus une décision, pill satellite conservée')
