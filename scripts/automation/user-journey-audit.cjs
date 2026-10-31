@@ -37,7 +37,7 @@ function fetchVersion(domain) {
 function dedupKey(item) {
   const detail = String(item.detail || '')
     .replace(/\bageMinutes=-?\d+(?:\.\d+)?/gi, 'ageMinutes=<age>')
-    .slice(0, 120)
+    .slice(0, 320)
   return [item.domain, item.step, item.type, detail].join('|').toLowerCase()
 }
 
