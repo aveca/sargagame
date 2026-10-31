@@ -207,23 +207,20 @@ export default function WorldMapView({
   const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== Date.parse(updatedAt || "");
   const wmSatData = {erddapTimestamp:wmSatValid?erddapTimestamp:null};
   const wmSatFresh = isSatelliteFresh12h(wmSatData);
-  const wmSatStale = isSatelliteStale36h(wmSatData);
-  const wmDecisionAvailable = wmSatValid && !wmSatStale;
+  const wmDecisionAvailable = wmSatValid && !isSatelliteStale36h(wmSatData);
   const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   // Re-vérifie le cutoff après 36 h et au retour d'onglet.
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{
     if(!wmDecisionAvailable) return;
-    const recheck=()=>setMapFreshnessTick(Date.now());
-    const timer=setTimeout(recheck,Math.max(0,36*3_600_000-(Date.now()-wmSatT)+50));
-    document.addEventListener("visibilitychange",recheck);
-    return()=>{clearTimeout(timer);document.removeEventListener("visibilitychange",recheck)};
+    const timer=setTimeout(()=>setMapFreshnessTick(Date.now()),Math.max(0,36*3_600_000-(Date.now()-wmSatT)+50));
+    return()=>clearTimeout(timer);
   },[wmDecisionAvailable,wmSatT]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
-  const wmSatDotColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
+  const wmSatAgeColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const wmSatDotColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
