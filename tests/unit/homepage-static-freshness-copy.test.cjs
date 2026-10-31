@@ -78,7 +78,7 @@ const manifestEnd = prepareFtp.indexOf('lang: region.primaryLang', manifestStart
 assert.ok(manifestStart >= 0 && manifestEnd > manifestStart, 'regional PWA manifest description must remain discoverable');
 const manifestDescription = prepareFtp.slice(manifestStart, manifestEnd);
 assert.doesNotMatch(manifestDescription, forbiddenFreshnessClaims, 'regional PWA manifest must not promise live or fixed satellite cadence');
-assert.doesNotMatch(manifestDescription, /\\b(?:daily|diario|diaria)\\b|actualizaciones? diarias/i, 'regional PWA manifest must not promise daily updates');
+assert.doesNotMatch(manifestDescription, /\b(?:daily|diario|diaria)\b|actualizaciones? diarias/i, 'regional PWA manifest must not promise daily updates');
 for (const phrase of [
   'Dernières observations satellitaires publiées',
   'Últimas observaciones satelitales publicadas',
