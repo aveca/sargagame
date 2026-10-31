@@ -210,7 +210,7 @@ export default function WorldMapView({
   const wmSatAge = wmFresh.age;
   const wmSatColor = wmFresh.color;
   const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(wmFresh.delay!=null){const timer=setTimeout(()=>setMapFreshnessTick(1),wmFresh.delay);return()=>clearTimeout(timer)}},[wmFresh.next,erddapTimestamp,source]);
+  useEffect(()=>{if(wmFresh.delay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>tick+1),wmFresh.delay);return()=>clearTimeout(timer)}},[wmFresh.next,erddapTimestamp,source]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
