@@ -45,10 +45,11 @@ t(k1 === k1.toLowerCase(), 'clé normalisée en minuscules')
 // 2. Classification bloquant/ux.
 const cls = classify([
   { type: 'fatal-js' }, { type: 'blank-page' }, { type: 'nav-broken' },
-  { type: 'misleading-state' }, { type: 'primary-cta-dead' },
+  { type: 'misleading-state' }, { type: 'stale-current-decision' }, { type: 'primary-cta-dead' },
   { type: 'ux' }, { type: 'console-error' }, { type: 'server-error' }
 ])
-t(cls.blocking.length === 5, '5 types bloquants classés (fatal, blank, nav, misleading, cta-dead)')
+t(cls.blocking.length === 6, '6 types bloquants classés, dont stale-current-decision')
+t(cls.blocking.some(d => d.type === 'stale-current-decision'), 'une décision périmée est bloquante')
 t(cls.ux.length === 3, 'types non-bloquants classés ux (recommandations)')
 
 // 3. Matrice de domaines officielle : regions/index.cjs live!==false.
