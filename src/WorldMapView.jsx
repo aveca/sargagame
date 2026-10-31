@@ -483,7 +483,7 @@ export default function WorldMapView({
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
         return{
           ...b,
-          ...(!wmDecisionAvailable?{status:null,score:null,afai:null,confidence:null,reason:null,breakdown:null,h2s:null,label:null,color:null}:{}),
+          ...(!wmDecisionAvailable?{status:null,score:null,afai:null}:{}),
           status:currentStatus,vx,vy,days,conf,fc:fc||null,
           drift:(entry&&entry.drift)||null,
           firstHit,
