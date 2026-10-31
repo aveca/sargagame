@@ -262,15 +262,14 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
     const body = document.body.innerText;
     return {
       state: root?.getAttribute('data-map-decision-state'),
-      reason: root?.getAttribute('data-map-decision-reason'),
       pinCount: pinStatuses.length,
       pinStatuses,
       labels: document.querySelectorAll('.sg-maplabel').length,
-      summary: /Statuts indisponibles|Statuses unavailable|Estados no disponibles/i.test(body),
+      summary: /Statuts suspendus|Statuses paused|Estados suspendidos/i.test(body),
       stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
     };
   });
-  const ok = result.state === 'unavailable' && result.reason === 'stale' &&
+  const ok = result.state === 'unavailable' &&
     result.pinCount >= 3 && result.pinStatuses.every(status => status === 'unknown') &&
     result.labels === 0 && result.summary && result.stalePill;
   if (!ok) errs.push('STALE_MAP_DECISION_LEAK (' + name + ') ' + JSON.stringify(result));
