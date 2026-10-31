@@ -1381,7 +1381,7 @@ export default function WorldMapView({
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes wmHalo{0%,100%{opacity:.45}50%{opacity:.8}}
         @keyframes wmAvoidPulse{0%{opacity:.55;transform:scale(.7)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
-        @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
+        
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
         @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
         @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
