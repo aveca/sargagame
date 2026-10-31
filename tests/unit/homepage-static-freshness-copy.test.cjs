@@ -71,4 +71,23 @@ while (true) {
 assert.ok(jsonLdBlocks.length >= 3, 'Martinique JSON-LD blocks remain present');
 for (const block of jsonLdBlocks) assert.doesNotThrow(() => JSON.parse(block), 'Martinique JSON-LD remains valid');
 
+// The regional PWA manifest is also user-facing metadata. It must describe
+// published observations, not imply a continuous/live feed or a fixed cadence.
+const manifestStart = prepareFtp.indexOf("description: region.primaryLang === 'fr'");
+const manifestEnd = prepareFtp.indexOf('lang: region.primaryLang', manifestStart);
+assert.ok(manifestStart >= 0 && manifestEnd > manifestStart, 'regional PWA manifest description must remain discoverable');
+const manifestDescription = prepareFtp.slice(manifestStart, manifestEnd);
+assert.doesNotMatch(manifestDescription, forbiddenFreshnessClaims, 'regional PWA manifest must not promise live or fixed satellite cadence');
+assert.doesNotMatch(manifestDescription, /\\b(?:daily|diario|diaria)\\b|actualizaciones? diarias/i, 'regional PWA manifest must not promise daily updates');
+for (const phrase of [
+  'Dernières observations satellitaires publiées',
+  'Últimas observaciones satelitales publicadas',
+  'Latest published satellite observations',
+  'horodatage',
+  'hora de observación',
+  'observation time',
+]) {
+  assert.ok(manifestDescription.includes(phrase), 'regional PWA manifest must retain transparent freshness wording: ' + phrase);
+}
+
 console.log('HOMEPAGE_STATIC_FRESHNESS_COPY PASS');
