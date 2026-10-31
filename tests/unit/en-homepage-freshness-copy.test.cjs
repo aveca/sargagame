@@ -40,7 +40,7 @@ assert.ok(html.includes('<link rel="alternate" hreflang="x-default" href="https:
 assert.ok(html.includes('<meta property="og:url" content="https://sargasses-martinique.com/en/" />'))
 
 // The primary CTA must leave the fallback page for the real English map route.
-const cta = html.match(/<a\b[^>]*class="cta"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i)
+const cta = html.match(/<a\b(?=[^>]*\bclass="cta")(?=[^>]*\bhref="([^"]+)")[^>]*>([\s\S]*?)<\/a>/i)
 assert.ok(cta, 'English landing CTA must exist')
 assert.equal(cta[1], '/en/sargassum-map/', 'CTA must open the English map, not loop back to /en/')
 assert.ok(mqSitemap.includes('https://sargasses-martinique.com/en/sargassum-map/'), 'MQ CTA destination must remain in the published sitemap')
