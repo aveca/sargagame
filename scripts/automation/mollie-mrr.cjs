@@ -22,9 +22,22 @@ const path = require('path')
 
 const OUT_PATH = path.join(__dirname, 'data', 'mollie-mrr.json')
 const SEND = process.argv.includes('--send')
+const MOLLIE_API_BASE = new URL('https://api.mollie.com/v2/')
+
+function resolveMollieApiUrl(input) {
+  let url
+  try { url = new URL(input, MOLLIE_API_BASE) } catch (_) {
+    throw new Error('Invalid Mollie API URL')
+  }
+  if (url.origin !== MOLLIE_API_BASE.origin || !url.pathname.startsWith('/v2/')) {
+    throw new Error('Refusing Mollie request outside https://api.mollie.com/v2/')
+  }
+  return url.toString()
+}
 
 async function mollieGet(url, key) {
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
+  const requestUrl = resolveMollieApiUrl(url)
+  const res = await fetch(requestUrl, { headers: { Authorization: 'Bearer ' + key } })
   const j = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(`Mollie ${url}: ${j.detail || res.status}`)
   return j
@@ -37,7 +50,7 @@ async function listAll(basePath, key, cap = 500) {
     const pg = await mollieGet(url, key)
     const items = pg._embedded ? pg._embedded[Object.keys(pg._embedded)[0]] : []
     out.push(...(items || []))
-    url = pg._links?.next?.href ? pg._links.next.href.replace('https://api.mollie.com/v2/', '') : null
+    url = pg._links?.next?.href || null
   }
   return out
 }
@@ -169,4 +182,8 @@ async function main() {
   }
 }
 
-main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+if (require.main === module) {
+  main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+}
+
+module.exports = { resolveMollieApiUrl, mollieGet, listAll }
