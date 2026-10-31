@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
+import { formatFreshnessAge, satelliteAgeHours, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -203,18 +203,15 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmSatT = Date.parse(erddapTimestamp || "");
-  const wmSatData = source === "erddap-live" && wmSatT > 0 && wmSatT <= Date.now() && {erddapTimestamp};
-  const wmSatFresh = isSatelliteFresh12h(wmSatData);
-  const wmDecisionAvailable = !!wmSatData && !isSatelliteStale36h(wmSatData);
+  const wmSatData = source === "erddap-live" ? {erddapTimestamp} : null;
+  const wmSatAgeH = satelliteAgeHours(wmSatData);
+  const wmSatFresh = wmSatAgeH != null && wmSatAgeH < 12;
+  const wmDecisionAvailable = wmSatAgeH != null && wmSatAgeH < 36;
   const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
-  const wmSatAge = wmSatData ? formatFreshnessAge(erddapTimestamp,lang) : "···";
-  // Re-vérifie le cutoff après 36 h et au retour d'onglet.
+  const wmSatAge = wmSatAgeH != null ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(wmSatT>0&&wmSatT<=Date.now()){const timer=setTimeout(()=>setMapFreshnessTick(1),129600050+wmSatT-Date.now());return()=>clearTimeout(timer)}},[wmSatT]);
-  // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
-  // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatColor = wmSatData && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  useEffect(()=>{if(wmSatAgeH!=null&&wmSatAgeH<36){const timer=setTimeout(()=>setMapFreshnessTick(1),(36-wmSatAgeH)*36e5+50);return()=>clearTimeout(timer)}},[erddapTimestamp,source]);
+  const wmSatColor = wmSatAgeH >= 36 ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
