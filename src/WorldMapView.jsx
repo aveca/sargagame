@@ -12,7 +12,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallba
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { formatFreshnessAge, isSatelliteFresh12h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
-import { mapDecisionFreshness, nextMapDecisionStaleDelayMs } from "./lib/map-decision-freshness.mjs"
+import { mapDecisionFreshness } from "./lib/map-decision-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -216,18 +216,16 @@ export default function WorldMapView({
   // Le focus/retour d'onglet force aussi un recalcul après throttling navigateur.
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{
-    const delay=nextMapDecisionStaleDelayMs(erddapTimestamp,updatedAt);
-    if(delay==null) return;
+    if(!wmDecisionAvailable||!wmSatValid) return;
+    const observationMs=typeof wmSatObservationTimestamp==="number"?wmSatObservationTimestamp:Date.parse(String(wmSatObservationTimestamp??""));
+    if(!Number.isFinite(observationMs)) return;
+    const delay=Math.max(0,36*3_600_000-(Date.now()-observationMs)+50);
     const timer=window.setTimeout(()=>setMapFreshnessTick(value=>value+1),delay);
-    const recheck=()=>{ if(!document.hidden) setMapFreshnessTick(value=>value+1) };
+    const recheck=()=>{if(!document.hidden)setMapFreshnessTick(value=>value+1)};
     document.addEventListener("visibilitychange",recheck);
     window.addEventListener("focus",recheck);
-    return()=>{
-      window.clearTimeout(timer);
-      document.removeEventListener("visibilitychange",recheck);
-      window.removeEventListener("focus",recheck);
-    };
-  },[erddapTimestamp,updatedAt]);
+    return()=>{window.clearTimeout(timer);document.removeEventListener("visibilitychange",recheck);window.removeEventListener("focus",recheck)};
+  },[wmDecisionAvailable,wmSatValid,wmSatObservationTimestamp]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
   const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
@@ -500,16 +498,8 @@ export default function WorldMapView({
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
         return{
           ...b,
-          status:currentStatus,
-          score:wmDecisionAvailable?b.score:null,
-          afai:wmDecisionAvailable?b.afai:null,
-          confidence:wmDecisionAvailable?b.confidence:null,
-          reason:wmDecisionAvailable?b.reason:null,
-          breakdown:wmDecisionAvailable?b.breakdown:null,
-          h2s:wmDecisionAvailable?b.h2s:null,
-          label:wmDecisionAvailable?b.label:null,
-          color:wmDecisionAvailable?b.color:null,
-          vx,vy,days,conf,fc:fc||null,
+          ...(!wmDecisionAvailable?{status:null,score:null,afai:null,confidence:null,reason:null,breakdown:null,h2s:null,label:null,color:null}:{}),
+          status:currentStatus,vx,vy,days,conf,fc:fc||null,
           drift:wmDecisionAvailable?(entry&&entry.drift)||null:null,
           firstHit:wmDecisionAvailable?firstHit:null,
         }
@@ -1390,7 +1380,7 @@ export default function WorldMapView({
   )
 
   return(
-    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1" data-map-decision-state={wmDecisionAvailable?"available":"unavailable"} data-map-decision-reason={wmDecisionFreshness.reason}
+    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1" data-map-decision-state={wmDecisionAvailable?"available":"unavailable"}
       onClick={e=>{ if(e.target===e.currentTarget){ try{track&&track("sg_map_bg_tap",{})}catch(_){}; e.stopPropagation() }}}
       style={{
       // Safari : inset:0 atteint le vrai bas (au-dessus de la toolbar) → on le garde.
@@ -1864,7 +1854,7 @@ export default function WorldMapView({
                 font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",
                 letterSpacing:".04em",textTransform:"uppercase",
               }}>
-                {_t(lang,"Statuts indisponibles · observation à vérifier","Statuses unavailable · observation needs verification","Estados no disponibles · observación por verificar")}
+                {_t(lang,"Statuts suspendus · observation à vérifier","Statuses paused · observation to check","Estados suspendidos · observación por verificar")}
               </span>
             )}
           </div>
@@ -2201,7 +2191,7 @@ export default function WorldMapView({
               <div style={{width:8,height:8,borderRadius:"50%",background:wmDecisionAvailable?(STATUS_C[selected.days[day]]||"#9aa0a8"):"#9aa0a8",border:`1.5px solid ${INK}`}}/>
               <span>{wmDecisionAvailable?ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"]):_t(lang,"À vérifier","To verify","Por verificar")}</span>
             </div>
-            {!wmDecisionAvailable&&<div role="status" style={{font:"700 9.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif",color:"#8b5b00",marginTop:6,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Verdict suspendu : observation satellite trop ancienne ou non vérifiée.","Verdict paused: satellite observation is stale or unverified.","Veredicto suspendido: observación satelital antigua o sin verificar.")}</div>}
+            {!wmDecisionAvailable&&<div role="status" style={{font:"700 9.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif",color:"#8b5b00",marginTop:6,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Verdict suspendu · observation à vérifier.","Verdict paused · observation to check.","Veredicto suspendido · observación por verificar.")}</div>}
             {selected.commune&&<div style={{font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
             {/* ── LA FRISE (Premium) : 7 jours d'un coup d'œil, sans slider. Statut RÉEL par jour
                 (gris hachuré si non mesuré, jamais inventé) + point de confiance (plein/demi/creux
