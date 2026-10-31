@@ -67,6 +67,30 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
 }
 
 /**
+ * Freshness contract for the live beach map.
+ * Only ERDDAP-live observations can authorize decisions. The map stays usable
+ * with an explicit observation age for 12–36h, then fails closed at 36h.
+ * A timer schedules both visible-state transitions while the page remains open.
+ */
+export function worldMapFreshness(source, erddapTimestamp, lang = 'fr', now = Date.now()) {
+  const data = source === 'erddap-live' && { erddapTimestamp }
+  const age = satelliteAgeHours(data, now)
+  const valid = age != null
+  const fresh = valid && age < 12
+  const available = valid && age < 36
+  const next = fresh ? 12 : available ? 36 : null
+  return {
+    fresh,
+    available,
+    label: satelliteFreshnessStatus(data, lang, now),
+    age: valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···',
+    color: valid && !available ? '#B87A00' : fresh ? '#00786C' : '#667085',
+    next,
+    delay: next == null ? null : (next - age) * 36e5 + 50,
+  }
+}
+
+/**
  * Libellé de fraîcheur du détail de plage (lc-detail) — correction
  * SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001 : le libellé principal annonçait
  * « Mesuré au satellite ce matin » quelle que soit l'âge réel (baseline live :
