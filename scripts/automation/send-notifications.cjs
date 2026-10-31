@@ -12,6 +12,7 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const { operationalSatelliteFreshness, OPERATIONAL_SLA_MINUTES } = require('../lib/satellite-freshness.cjs')
 
 // ── Paths ────────────────────────────────────────────────────
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -815,6 +816,21 @@ async function sendMorningBriefPush(sargassum) {
       console.log(`[MORNING-BRIEF] No data for ${island} — skipping.`)
       continue
     }
+    const freshness = operationalSatelliteFreshness(data)
+    if (!freshness.fresh) {
+      console.warn(
+        `[MORNING-BRIEF] ${island.toUpperCase()}: skipped — ${freshness.reason}; age=${freshness.ageMinutes ?? 'unknown'} min, SLA=${OPERATIONAL_SLA_MINUTES} min.`
+      )
+      results.push({
+        type: 'morning-brief',
+        island,
+        sent: false,
+        reason: 'observation-not-operationally-fresh',
+        ageMinutes: freshness.ageMinutes,
+      })
+      continue
+    }
+
     const pick = pickTopForBrief(data, island)
     if (!pick || !pick.top) {
       console.log(`[MORNING-BRIEF] No pick for ${island} — skipping.`)
