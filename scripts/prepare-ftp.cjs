@@ -1142,10 +1142,10 @@ ${entries.join('\n')}
       name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
       short_name: es ? `Sargazo ${title}` : `Sargassum ${title}`,
       description: region.primaryLang === 'fr'
-        ? `Carte des sargasses en temps réel. Où se baigner aujourd'hui à ${title}.`
+        ? `Dernières observations satellitaires publiées pour les plages de ${title}. Vérifiez l'horodatage et le niveau de confiance avant de vous déplacer.`
         : es
-          ? `Mapa de sargazo en vivo y estado diario de las playas de ${title}.`
-          : `Live sargassum map and daily beach status for ${title}.`,
+          ? `Últimas observaciones satelitales publicadas para las playas de ${title}. Comprueba la hora de observación y el nivel de confianza antes de desplazarte.`
+          : `Latest published satellite observations for ${title} beaches. Check the observation time and confidence before travelling.`,
       lang: region.primaryLang || 'en',
       // Chrome de l'app = TOUJOURS sombre #0d1117 (= html + #sg-chin + background_color + meta
       // theme-color posé en JS). On NE prend PAS brand.primary : sinon la barre système mobile
