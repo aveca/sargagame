@@ -204,7 +204,7 @@ export default function WorldMapView({
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const wmSatT = Date.parse(erddapTimestamp || "");
-  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && erddapTimestamp !== updatedAt;
+  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now();
   const wmSatData = {erddapTimestamp:wmSatValid?erddapTimestamp:null};
   const wmSatFresh = isSatelliteFresh12h(wmSatData);
   const wmDecisionAvailable = wmSatValid && !isSatelliteStale36h(wmSatData);
