@@ -11,8 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
-import { mapDecisionFreshness } from "./lib/map-decision-freshness.mjs"
+import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -204,12 +203,14 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmDecisionFreshness = mapDecisionFreshness(erddapTimestamp, updatedAt);
-  const wmSatObservationTimestamp = wmDecisionFreshness.timestamp;
-  const wmSatValid = wmSatObservationTimestamp != null;
+  const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
+  const wmPubT = updatedAt ? Date.parse(updatedAt) : NaN;
+  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now() &&
+    !(Number.isFinite(wmPubT) && wmPubT === wmSatT);
+  const wmSatObservationTimestamp = wmSatValid ? erddapTimestamp : null;
   const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: wmSatObservationTimestamp });
-  const wmSatStale = wmDecisionFreshness.reason === "stale";
-  const wmDecisionAvailable = wmDecisionFreshness.available;
+  const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: wmSatObservationTimestamp });
+  const wmDecisionAvailable = wmSatValid && !wmSatStale;
   const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: wmSatObservationTimestamp }, lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(wmSatObservationTimestamp, lang) : "···";
   // Re-vérifie le cutoff 36h même si l'utilisateur laisse la carte ouverte sans reload.
