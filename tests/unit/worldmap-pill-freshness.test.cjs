@@ -87,7 +87,7 @@ async function main() {
   t(/data-map-decision-state=\{wmDecisionAvailable\?"available":"unavailable"\}/.test(wm), 'état décision exposé pour tests et diagnostic')
   t(/data-map-pin="1" data-map-status=\{st\|\|"unknown"\}/.test(wm), 'chaque pin expose un statut neutre vérifiable')
   t(wm.includes('Statuts suspendus') && wm.includes('Statuses paused') && wm.includes('Estados suspendidos'), 'résumé map suspendu traduit FR/EN/ES')
-  t(wm.includes('À vérifier') && wm.includes('wmDecisionAvailable&&selected'), 'tooltip sélectionné est neutralisé lorsque les décisions deviennent stale')
+  t(wm.includes('À vérifier') && wm.includes('setSelected(current)'), 'tooltip sélectionné reprend l'objet plage assaini lorsque les décisions deviennent stale')
   t(wm.includes('{wmDecisionAvailable&&(<div style={{'), 'scrubber de prévisions masqué lorsque la source ne permet pas de décision')
   t(/const friseOn = mapForecastAvailable && !mapFriseOff/.test(wm), 'frise et claims de prévision masqués si la source ne permet pas de décision')
   t(/if\(!wmDecisionAvailable\|\|!toVB\|\|!afaiGrid/.test(wm), 'couche AFAI masquée lorsque la source est stale/inconnue')
