@@ -22,6 +22,24 @@ const k4 = dedupKey({ domain: 'x.com', step: 'home', type: 'ux', detail: 'label'
 t(k1 === k2, 'même défaut => même clé de déduplication')
 t(k1 !== k3, 'domaine différent => clé différente')
 t(k1 !== k4, 'étape différente => clé différente')
+const staleMobile = {
+  domain: 'sargazotulum.com',
+  step: 'fiche',
+  type: 'stale-current-decision',
+  detail: 'observation stale/unknown (ageMinutes=4863.513283333334) mais UI non fail-closed: {"head":"A VIGILAR","hasCurrentScore":false,"scorePaused":false,"staleNotice":false,"hasForecast":true,"forecastPaused":false}'
+}
+const staleDesktop = {
+  ...staleMobile,
+  detail: staleMobile.detail.replace('4863.513283333334', '4863.906983333333')
+}
+t(dedupKey(staleMobile) === dedupKey(staleDesktop),
+  'même défaut stale sur mobile/desktop => âge mesuré variable ignoré')
+const distinctUi = {
+  ...staleMobile,
+  detail: staleMobile.detail.replace('"hasForecast":true', '"hasForecast":false')
+}
+t(dedupKey(staleMobile) !== dedupKey(distinctUi),
+  'état UI matériel différent => incident distinct conservé')
 t(k1 === k1.toLowerCase(), 'clé normalisée en minuscules')
 
 // 2. Classification bloquant/ux.
