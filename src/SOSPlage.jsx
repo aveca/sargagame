@@ -122,7 +122,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
             beach: selectedBeach.id,
             beachName: selectedBeach.name,
           },
-          redirectUrl: origin + "/?sos_success=1",
+          redirectUrl: origin + "/?mollie_return=1",
         }),
       })
       const data = await res.json()
