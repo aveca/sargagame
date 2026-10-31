@@ -95,7 +95,7 @@ async function main() {
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\}/.test(caller) && /source=\{sargData\?\.source\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('wmFreshDelay') && wm.includes('setMapFreshnessTick(tick=>!tick)') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
-  t(lib.includes('return [fresh, available') && lib.includes('available ? ((fresh ? 12 : 36) - age) * 36e5 + 50 : null'), 'helper : transitions planifiées à 12h puis 36h')
+  t(mapLib.includes('return [fresh, available') && mapLib.includes('available ? ((fresh ? 12 : 36) - age) * 36e5 + 50 : null'), 'helper : transitions planifiées à 12h puis 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
   t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
   t(wm.includes('{wmDecisionAvailable && <div') && wm.includes('wmSatLbl'), 'compteurs masqués quand la source ne permet plus une décision, pill satellite conservée')
