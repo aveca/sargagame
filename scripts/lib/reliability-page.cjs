@@ -82,14 +82,14 @@ const I18N = {
     faNote: 'En saison calme, presque aucun échouage réel à confirmer : ce taux compte des pixels propres faussement signalés, ce n’est pas une fiabilité d’alerte de 76 %.',
     capConsent: '1 email/jour max · désinscription en 1 clic · voir Confidentialité',
     h1a: 'Nos prévisions,', h1b: 'vérifiées',
-    lead: "Aucune promesse, des mesures : chaque jour, la prévision de la veille est comparée à ce que le satellite observe réellement. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
+    lead: "Aucune promesse, des mesures : les prévisions archivées sont comparées aux observations satellite disponibles. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
     l1: 'La méthode', h2m: 'Comment naît une prévision',
-    m1t: 'Satellite Copernicus / NOAA, 4 passages par jour',
+    m1t: 'Satellite Copernicus / NOAA',
     m1s: "L'indice AFAI (algues flottantes) est échantillonné au large de chaque plage, pixel par pixel — jamais une moyenne régionale.",
     m2t: 'Un modèle de dérive, pas une boule de cristal',
-    m2s: `Persistance des échouages (demi-vie ${HL_FR} jours), vent et bancs détectés au large : la prévision 7 jours est recalculée à chaque passage satellite.`,
-    m3t: 'Un backtest automatique, tous les jours',
-    m3s: "Chaque prévision est archivée puis confrontée à l'observation satellite du jour J. Le calcul est automatique — personne ne retouche les chiffres.",
+    m2s: `Persistance des échouages (demi-vie ${HL_FR} jours), vent et bancs détectés au large : ces éléments alimentent la prévision à 7 jours à partir des observations disponibles.`,
+    m3t: 'Un backtest automatique',
+    m3s: "Les prévisions archivées sont confrontées aux observations satellite disponibles. Le calcul est automatique — personne ne retouche les chiffres.",
     m4t: "Quand la donnée manque, on n'affiche rien",
     m4s: "Pas de chiffre inventé : si une mesure n'existe pas, la section disparaît plutôt que de deviner.",
     l2: 'La précision, mesurée', h2p: 'Ce que valent nos prévisions',
@@ -106,8 +106,8 @@ const I18N = {
     l3: 'Fraîcheur', h2f: 'La donnée que vous regardez',
     fUpd: 'Dernière mesure satellite',
     agoLt1: "il y a moins d'1 h", agoTpl: 'il y a {h} h',
-    fPoints: n => `${n} points de mesure suivis · donnée revalidée 4 fois par jour · cette page est régénérée à chaque mise à jour.`,
-    cta: 'Voir la carte en direct →',
+    fPoints: n => `${n} points de mesure suivis · horodatage de l'observation satellite affiché ci-dessus.`,
+    cta: 'Voir la carte des plages →',
     fdata: 'Données : Copernicus Marine & NOAA ERDDAP · backtest recalculé automatiquement',
     caribNote: null,
     rgClean: 'Prévisions « Propre »',
@@ -124,14 +124,14 @@ const I18N = {
     faNote: 'In calm season there is almost no real beaching to confirm: this rate counts clean pixels wrongly flagged, not a 76% alert reliability.',
     capConsent: '1 email/day max · 1-click unsubscribe · see Privacy',
     h1a: 'Our forecasts,', h1b: 'verified',
-    lead: 'No promises — measurements. Every day, yesterday’s forecast is compared with what the satellite actually observed. Here is the method, and the numbers — including the ones we miss.',
+    lead: 'No promises — measurements. Archived forecasts are compared with the satellite observations available. Here is the method, and the numbers — including the ones we miss.',
     l1: 'The method', h2m: 'How a forecast is made',
-    m1t: 'Copernicus / NOAA satellite, 4 passes a day',
+    m1t: 'Copernicus / NOAA satellite observations',
     m1s: 'The AFAI floating-algae index is sampled offshore of every beach, pixel by pixel — never a regional average.',
     m2t: 'A drift model, not a crystal ball',
-    m2s: `Beaching persistence (${HL_NUM}-day half-life), wind and offshore mats: the 7-day forecast is recomputed at every satellite pass.`,
-    m3t: 'An automatic backtest, every single day',
-    m3s: 'Every forecast is archived, then checked against the satellite observation on the target day. Fully automatic — nobody edits the numbers.',
+    m2s: `Beaching persistence (${HL_NUM}-day half-life), wind and offshore mats feed the 7-day forecast using the available observations.`,
+    m3t: 'An automatic backtest',
+    m3s: 'Archived forecasts are checked against the available satellite observations. The process is automatic — nobody edits the numbers.',
     m4t: 'When data is missing, we show nothing',
     m4s: 'No invented figures: if a measurement does not exist, the section disappears rather than guessing.',
     l2: 'Accuracy, measured', h2p: 'How good are our forecasts',
@@ -148,8 +148,8 @@ const I18N = {
     l3: 'Freshness', h2f: 'The data you are looking at',
     fUpd: 'Latest satellite measurement',
     agoLt1: 'less than 1 h ago', agoTpl: '{h} h ago',
-    fPoints: n => `${n} monitored sampling points · data re-checked 4 times a day · this page is regenerated with every update.`,
-    cta: 'See the live map →',
+    fPoints: n => `${n} monitored sampling points · the satellite observation timestamp is shown above.`,
+    cta: 'See the beach map →',
     fdata: 'Data: Copernicus Marine & NOAA ERDDAP · backtest recomputed automatically',
     caribNote: region => `Accuracy is measured on our longest-running network — 20 Caribbean beaches (Martinique & Guadeloupe), where the verification archive is deepest. The exact same model (pipeline v3) powers the ${region} forecasts.`,
     rgClean: '"Clean" Forecasts',
@@ -166,14 +166,14 @@ const I18N = {
     faNote: 'En temporada tranquila casi no hay recales reales que confirmar: esta tasa cuenta píxeles limpios mal señalados, no es una fiabilidad de alerta del 76%.',
     capConsent: '1 email/día máx · baja en 1 clic · ver Privacidad',
     h1a: 'Nuestros pronósticos,', h1b: 'verificados',
-    lead: 'Sin promesas — mediciones. Cada día, el pronóstico de ayer se compara con lo que el satélite observó realmente. Este es el método, y las cifras — incluidas las que fallamos.',
+    lead: 'Sin promesas — mediciones. Los pronósticos archivados se comparan con las observaciones satelitales disponibles. Este es el método, y las cifras — incluidas las que fallamos.',
     l1: 'El método', h2m: 'Cómo se hace un pronóstico',
-    m1t: 'Satélite Copernicus / NOAA, 4 pasadas al día',
+    m1t: 'Observaciones satelitales Copernicus / NOAA',
     m1s: 'El índice AFAI (algas flotantes) se muestrea frente a cada playa, píxel por píxel — nunca un promedio regional.',
     m2t: 'Un modelo de deriva, no una bola de cristal',
-    m2s: `Persistencia de los recales (vida media de ${HL_FR} días), viento y bancos detectados mar adentro: el pronóstico de 7 días se recalcula en cada pasada satelital.`,
-    m3t: 'Un backtest automático, todos los días',
-    m3s: 'Cada pronóstico se archiva y luego se compara con la observación satelital del día previsto. Todo automático — nadie retoca las cifras.',
+    m2s: `La persistencia de los recales (vida media de ${HL_FR} días), el viento y los bancos detectados mar adentro alimentan el pronóstico de 7 días a partir de las observaciones disponibles.`,
+    m3t: 'Un backtest automático',
+    m3s: 'Los pronósticos archivados se comparan con las observaciones satelitales disponibles. El proceso es automático — nadie retoca las cifras.',
     m4t: 'Cuando falta el dato, no mostramos nada',
     m4s: 'Ninguna cifra inventada: si una medición no existe, la sección desaparece antes que adivinar.',
     l2: 'La precisión, medida', h2p: 'Cuánto valen nuestros pronósticos',
@@ -190,8 +190,8 @@ const I18N = {
     l3: 'Frescura', h2f: 'El dato que estás viendo',
     fUpd: 'Última medición satelital',
     agoLt1: 'hace menos de 1 h', agoTpl: 'hace {h} h',
-    fPoints: n => `${n} puntos de medición monitoreados · dato verificado 4 veces al día · esta página se regenera con cada actualización.`,
-    cta: 'Ver el mapa en vivo →',
+    fPoints: n => `${n} puntos de medición monitoreados · la hora de la observación satelital se muestra arriba.`,
+    cta: 'Ver el mapa de playas →',
     fdata: 'Datos: Copernicus Marine & NOAA ERDDAP · backtest recalculado automáticamente',
     caribNote: region => `La precisión se mide en nuestra red más antigua — 20 playas del Caribe (Martinica y Guadalupe), donde el archivo de verificación es más profundo. El mismo modelo exacto (pipeline v3) genera los pronósticos de ${region}.`,
     rgClean: 'Pronósticos «Limpia»',
@@ -781,7 +781,7 @@ if (capForm) {
   </div>
 
   <div class="foot"><div class="foot-sig">${esc(t.sig)}</div>${esc(siteName.toUpperCase())} · ${esc(t.fdata)}${lang === 'fr' ? `
-    <nav class="foot-nav"><a href="/">Carte en temps réel</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
+    <nav class="foot-nav"><a href="/">Carte des plages</a><a href="/previsions/">Prévisions 7 jours</a><a href="/offres/">Offres</a><a href="/a-propos/">À propos</a></nav>
     <nav class="foot-nav legal"><a href="/cgv.html">CGV</a><a href="/remboursement.html">Remboursement</a><a href="/confidentialite.html">Confidentialité</a><a href="/mentions-legales.html">Mentions légales</a></nav>
     <div class="foot-co">97TECH — SAS au capital de 1 € · RCS Paris 882&nbsp;370&nbsp;703 · SIRET 882&nbsp;370&nbsp;703&nbsp;00010 · <a href="mailto:alerte@sargasses-martinique.com">alerte@sargasses-martinique.com</a> · © 2026 97TECH</div>` : ''}</div>
 </div>
@@ -821,7 +821,7 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all} % de prévisions sargasses justes, vérifié — ${regionLabel}` : `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Prévision vs observation satellite : ${j1} % de réussite à J+1, ${all} % global sur ${pairs} comparaisons (${days} jours). Méthode et chiffres réels, jamais retouchés.`
-        : 'Comment nos prévisions sargasses sont calculées et vérifiées : satellite Copernicus/NOAA 4 passages par jour, modèle de dérive, backtest automatique quotidien.',
+        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations satellite Copernicus/NOAA, modèle de dérive et backtest automatique.',
     }
   }
   if (lang === 'es') {
@@ -829,14 +829,14 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all}% de pronósticos de sargazo acertados, verificado — ${regionLabel}` : `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Pronóstico vs observación satelital: ${j1}% de acierto a 1 día, ${all}% global en ${pairs} comparaciones (${days} días). Método y cifras reales, nunca retocadas.`
-        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: satélite Copernicus/NOAA 4 veces al día, modelo de deriva, backtest automático diario.',
+        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones satelitales Copernicus/NOAA, modelo de deriva y backtest automático.',
     }
   }
   return {
     title: all != null ? `${all}% Accurate Sargassum Forecasts, Verified — ${regionLabel}` : `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
     desc: j1 != null && all != null && pairs && days
       ? `Forecast vs satellite observation: ${j1}% next-day hit rate, ${all}% overall across ${pairs} checks (${days} days). Full method, real numbers, never edited.`
-      : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite 4 passes a day, drift model, automatic daily backtest.',
+      : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite observations, drift model and automatic backtest.',
   }
 }
 
