@@ -41,16 +41,17 @@ async function renderRegion(regionId) {
     .map((match) => JSON.parse(match[1]));
   const faq = jsonLd.find((item) => item['@type'] === 'FAQPage');
   const organization = jsonLd.find((item) => item['@type'] === 'Organization');
+  const webApp = jsonLd.find((item) => item['@type'] === 'WebApplication');
   const localBusiness = jsonLd.find((item) => item['@type'] === 'LocalBusiness');
   const noscript = (html.match(/<noscript>\s*<h1>[\s\S]*?<\/noscript>/) || [])[0] || '';
 
   assert.ok(faq && Array.isArray(faq.mainEntity), regionId + ': FAQ JSON-LD remains valid');
-  assert.ok(organization && localBusiness, regionId + ': organization and local-business JSON-LD remain present');
+  assert.ok(webApp && organization && localBusiness, regionId + ': web-app, organization and local-business JSON-LD remain present');
   assert.ok(noscript, regionId + ': localized no-JavaScript SEO content remains present');
 
   const answerText = faq.mainEntity.map((item) => item.acceptedAnswer && item.acceptedAnswer.text || '').join(' ');
-  const seoSurface = [title, description, answerText, organization.description, localBusiness.description, noscript].join('\n');
-  const unsupportedClaims = /updated\s+4×\s*daily|updated\s+4\s*times\s+a\s*day|4\s*times\s+a\s*day|4\s*veces\s+al\s+d[ií]a|actualizado\s+4\s*veces|en\s+vivo|live\s+(?:beach\s+)?map|live\s+status|live\s+monitoring|real[- ]time|in\s+real\s+time|refreshed\s+four\s+times|refreshes\s+several\s+times/i;
+  const seoSurface = [title, description, webApp.name, answerText, organization.description, localBusiness.description, noscript].join('\n');
+  const unsupportedClaims = /updated\s+4×\s*daily|updated\s+4\s*times\s+a\s*day|4\s*times\s+a\s*day|4\s*veces\s+al\s+d[ií]a|actualizado\s+4\s*veces|en\s+vivo|live\s+(?:beach\s+)?map|live\s+status|live\s+monitoring|real[- ]time|in\s+real\s+time|refreshed\s+four\s+times|refreshes\s+several\s+times|\bdaily\b|a\s+diario|diariamente/i;
   assert.doesNotMatch(seoSurface, unsupportedClaims, regionId + ': no unsupported live/four-times-daily promise');
 
   if (region.primaryLang === 'es') {
