@@ -31,11 +31,3 @@ export function mapDecisionFreshness(erddapTimestamp, updatedAt, now = Date.now(
   };
 }
 
-/** Schedule a re-render at the public 36h decision cutoff while a tab stays open. */
-export function nextMapDecisionStaleDelayMs(erddapTimestamp, updatedAt, now = Date.now()) {
-  const freshness = mapDecisionFreshness(erddapTimestamp, updatedAt, now);
-  if (!freshness.available || freshness.timestamp == null) return null;
-  const observationMs = timestampMs(freshness.timestamp);
-  const delay = 36 * 3_600_000 - (now - observationMs);
-  return Number.isFinite(delay) && delay > 0 ? Math.ceil(delay) + 50 : null;
-}
