@@ -2109,7 +2109,7 @@ export default function WorldMapView({
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
                 background:day===i?"#ff7a2f":(mapForecastAvailable&&i>=1?"rgba(255,199,44,.18)":"transparent"),
                 color:INK,
-                opacity:unavailable?.48:1,
+                opacity:unavailable ? .48 : 1,
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
                 padding:"7px 10px",borderRadius:999,cursor:unavailable?"not-allowed":"pointer",
               }} onClick={()=>{
