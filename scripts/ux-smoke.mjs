@@ -258,14 +258,14 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
   const result = await stalePage.evaluate(() => {
     const root = document.querySelector('[data-map-decision-state]');
     const pinStatuses = [...document.querySelectorAll('[data-map-pin]')]
-      .map(pin => pin.getAttribute('data-map-status'));
+      .map(pin => pin.getAttribute('data-map-pin'));
     const body = document.body.innerText;
     return {
       state: root?.getAttribute('data-map-decision-state'),
       pinCount: pinStatuses.length,
       pinStatuses,
       labels: document.querySelectorAll('.sg-maplabel').length,
-      summary: /Statuts suspendus|Statuses paused|Estados suspendidos/i.test(body),
+      summary: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
       stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
     };
   });
