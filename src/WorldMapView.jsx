@@ -507,8 +507,8 @@ export default function WorldMapView({
       })
   },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
 
-  // Une fiche déjà ouverte reprend toujours l'objet plage assaini courant.
-  useLayoutEffect(()=>{if(selected){const current=beachList.find(b=>b.id===selected.id);if(current&&current!==selected)setSelected(current)}},[beachList,selected])
+  // Retire le tooltip si le modèle cesse de pouvoir justifier une décision.
+  useLayoutEffect(()=>{if(!wmDecisionAvailable&&selected)setSelected(null)},[wmDecisionAvailable])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -1843,7 +1843,7 @@ export default function WorldMapView({
               </span>
             </> : (
               <span role="status" aria-live="polite" style={{
-                font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5861",letterSpacing:".04em",textTransform:"uppercase",
+                font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5861",
               }}>
                 {_t(lang,"Statuts suspendus · observation à vérifier","Statuses paused · observation to check","Estados suspendidos · observación por verificar")}
               </span>
@@ -2176,8 +2176,8 @@ export default function WorldMapView({
             <div style={{font:"400 14px/1.1 'AntonLC','Anton',sans-serif",letterSpacing:".01em",color:INK}}>{selected.name}</div>
             <div style={{font:"800 10.5px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
               textTransform:"uppercase",marginTop:4,display:"flex",alignItems:"center",gap:5,color:INK}}>
-              <div style={{width:8,height:8,borderRadius:"50%",background:wmDecisionAvailable?(STATUS_C[selected.days[day]]||"#9aa0a8"):"#9aa0a8",border:`1.5px solid ${INK}`}}/>
-              <span>{wmDecisionAvailable?ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"]):_t(lang,"À vérifier","To verify","Por verificar")}</span>
+              <div style={{width:8,height:8,borderRadius:"50%",background:STATUS_C[selected.days[day]]||"#9aa0a8",border:`1.5px solid ${INK}`}}/>
+              <span>{ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"])}</span>
             </div>
             {selected.commune&&<div style={{font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
             {/* ── LA FRISE (Premium) : 7 jours d'un coup d'œil, sans slider. Statut RÉEL par jour
