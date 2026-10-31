@@ -1,4 +1,45 @@
 
+## 2026-10-27 · Agent: autonome (OpenCode) · Mission 8/10 — isolation analytics par domaine (#1084)
+
+### Travail effectué
+- **Résumé 1 ligne** : IDs GA4/Clarity/OneSignal partagés Tulum/Riviera Maya remplacés par TBD-* en attente de provisionnement dédié ; test anti-doublon ajouté ; PR #1096 ouverte.
+- **Défaut prouvé (#1084)** : `regions/tulum.json` et `regions/rivieramaya.json` partageaient exactement `ga4Id=G-YHCQGRPG8G`, `clarityProjectId=x4ox737k79`, `onesignalAppId=02cdb926-...`. Preuve : lecture des fichiers régions + test `analytics-domain-isolation.test.cjs`.
+- **Correction appliquée** : les 3 IDs passés à `TBD-tulum` / `TBD-rivieramaya` sur chaque région. Aucun nouvel ID créé (provisionnement = action fondateur).
+- **Test de régression** : `tests/unit/analytics-domain-isolation.test.cjs` détecte tout doublon d'ID analytics entre domaines (TBD ignorés, vrais IDs vérifiés uniques). PASS.
+- **Build** : `npm run build` exit 0, budget 208.1 Ko ≤ 210 Ko gzip (OK).
+- **Régions valides** : `assertAllRegionsValid()` passe.
+
+### Fichiers modifiés
+- `regions/tulum.json` — 3 IDs analytics → TBD-tulum
+- `regions/rivieramaya.json` — 3 IDs analytics → TBD-rivieramaya
+- `tests/unit/analytics-domain-isolation.test.cjs` — nouveau test anti-doublon (créé)
+- `reports/sargagame/EXECUTION-EVIDENCE-20261027.md` — journal de preuves (créé)
+
+### Tests réalisés
+- [x] node tests/unit/analytics-domain-isolation.test.cjs → PASS
+- [x] node -e "require('./regions/index.cjs').assertAllRegionsValid()" → Régions valides
+- [x] npm run build → exit 0 ; budget 208.1 Ko ≤ 210 Ko
+- [x] node tests/unit/worker-private-guard.test.cjs → 47/47 (Mission 2, toujours vert)
+- [x] node tests/unit/regional-beach-directory-index.test.cjs → 48/48 (Mission 4, toujours vert)
+
+### Problèmes restants
+- [ ] Provisionnement des vrais IDs GA4/Clarity/OneSignal pour tulum + rivieramaya (action fondateur, comptes tiers)
+- [ ] PR #1094 (sécurité run_worker_first=true) en WAITING_FOR_APPROVAL, conflit avec PR #1074 qui veut false
+- [ ] PR #1095 mélange sécurité+SEO ; PR #1072 est le correctif SEO isolé (MERGEABLE)
+
+### Prochaine action recommandée
+1. Résoudre le conflit #1094 vs #1074 sur run_worker_first (décision sécurité)
+2. Fermer #1095 (doublon mélangé), s'appuyer sur #1072 (SEO isolé)
+3. Poursuivre Mission 6 (B2B prix/widget #1024) et Mission 7 (API partenaires #1029)
+
+### Branche / PR
+- Branche : `agent/analytics/mission-8-clean`
+- PR : #1096 (base main) — https://github.com/aveca/sargagame/pull/1096
+- Commit head : `bd61d2f0c`
+- Base : `d2b05adec` (main)
+
+---
+
 ## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
 
 ### Travail effectué
