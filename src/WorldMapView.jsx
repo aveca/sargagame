@@ -858,7 +858,7 @@ export default function WorldMapView({
     const onVis=()=>{ if(document.hidden){ if(raf){cancelAnimationFrame(raf);raf=0} } else if(!raf){ raf=requestAnimationFrame(loop) } }
     document.addEventListener("visibilitychange",onVis)
     return ()=>{ if(raf)cancelAnimationFrame(raf); document.removeEventListener("visibilitychange",onVis); while(layer.firstChild) layer.removeChild(layer.firstChild) }
-  },[sargCells,day,mapPremium,mapDriftOff]) // eslint-disable-line
+  },[sargCells,day,mapForecastAvailable,mapDriftOff]) // eslint-disable-line
 
   const writeCam=useCallback(()=>{
     const g=worldRef.current; if(!g) return
