@@ -204,9 +204,9 @@ export default function WorldMapView({
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const [wmSatFresh, wmDecisionAvailable, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
-  const wmSatColor = wmDecisionAvailable ? (wmSatFresh ? "#00786C" : "#667085") : "#B87A00";
-  const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>tick+1),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
+  const wmSatColor = !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const [, setMapFreshnessTick] = useState(false);
+  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>!tick),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -483,7 +483,7 @@ export default function WorldMapView({
   },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
 
   // Retire le tooltip si le modèle cesse de pouvoir justifier une décision.
-  useLayoutEffect(()=>{if(!wmDecisionAvailable&&selected)setSelected(null)},[wmDecisionAvailable])
+  useLayoutEffect(()=>{if(!wmDecisionAvailable)setSelected(null)},[wmDecisionAvailable])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -718,7 +718,7 @@ export default function WorldMapView({
   useEffect(()=>{
     const layer=fxRef.current
     if(!layer) return
-    while(layer.firstChild) layer.removeChild(layer.firstChild)
+    layer.replaceChildren()
     if(!wmDecisionAvailable||!beachList.length) return
     let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
     const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
@@ -1177,7 +1177,7 @@ export default function WorldMapView({
       if(d<bestD){bestD=d;best=b}
     }
     return best?{beach:best,km:bestD}:null
-  },[wmDecisionAvailable,mapDecideOff,selected,day,beachList])
+  },[mapDecideOff,selected,day,beachList])
 
   // Partage de la plage sélectionnée — délègue à shareBeachCard (parent). Forecast = 3 jours
   // (statut + libellé), statut du jour = days[0]. Spoiler-free, data réelle.
@@ -1229,7 +1229,7 @@ export default function WorldMapView({
       if(fh!=null && fh<=REL){ flips++; if(flipDay<0||fh<flipDay) flipDay=fh }
     }
     return {bestDay,bestN,safe:safeK>=2?safe:null,safeK,calm,flips,flipDay}
-  },[wmDecisionAvailable,mapDecideOff,mapPremium,beachList])
+  },[mapDecideOff,mapPremium,beachList])
 
   // ─── RENDER ────────────────────────────────────────────────────────────────
   if(loadErr) return null  // laisse l'ArchipelView control se montrer (ErrBound parent)
@@ -1241,8 +1241,8 @@ export default function WorldMapView({
   const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
   const dayStatus = summarizeBeachStatuses(beachList, day)
-  const cleanCnt  = wmDecisionAvailable ? dayStatus.clean : null // inconnu ≠ propre (anti-flash)
-  const avoidCnt  = wmDecisionAvailable ? dayStatus.avoid : null
+  const cleanCnt  = dayStatus.clean // rendu uniquement si la source permet une décision
+  const avoidCnt  = dayStatus.avoid
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
   const vant      = wmDecisionAvailable ? vantColor(beachList,day) : "#9aa0a8"
   const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
