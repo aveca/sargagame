@@ -507,8 +507,8 @@ export default function WorldMapView({
       })
   },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
 
-  // Ferme le tooltip sélectionné au moment où les décisions deviennent indisponibles.
-  useLayoutEffect(()=>{if(!wmDecisionAvailable&&selected){setSelected(null);setTagPos(null)}},[wmDecisionAvailable])
+  // Une fiche déjà ouverte reprend toujours l'objet plage assaini courant.
+  useLayoutEffect(()=>{if(selected){const current=beachList.find(b=>b.id===selected.id);if(current&&current!==selected)setSelected(current)}},[beachList,selected])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
