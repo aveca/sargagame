@@ -85,7 +85,7 @@ async function main() {
   t(wm.includes('erddapTimestamp !== updatedAt') && wm.includes('isSatelliteStale36h'), 'WorldMapView rejette le fallback updatedAt et réutilise le seuil stale partagé')
   t(wm.includes('setTimeout(()=>setMapFreshnessTick(Date.now())') && wm.includes('clearTimeout(timer)'), 'carte : le cutoff stale est recalculé au seuil 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-map-pin'), 'décisions stale bloquées et pins neutres exposés pour le smoke')
-  t(/data-map-pin=\{st\|\|"unknown"\}/.test(wm), 'chaque pin expose un statut neutre vérifiable')
+  t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
   t(wm.includes('{wmDecisionAvailable && <div') && wm.includes('wmSatLbl'), 'compteurs masqués quand la source ne permet plus une décision, pill satellite conservée')
   t(wm.includes('if(!wmDecisionAvailable&&selected)setSelected(null)'), 'tooltip sélectionné fermé lorsque les décisions deviennent stale')
   t(wm.includes('{wmDecisionAvailable&&(<div style={{'), 'scrubber de prévisions masqué lorsque la source ne permet pas de décision')
