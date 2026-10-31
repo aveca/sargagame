@@ -91,7 +91,7 @@ async function main() {
   t(wm.includes('wmSatLbl, wmSatAge') && wm.includes('const wmSatColor = wmDecisionAvailable ?'), 'âge pill = observation satellite validée, jamais updatedAt seul')
   t(lib.includes('export function worldMapFreshness') && lib.includes("source === 'erddap-live'"), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
-  t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
+  t(/updatedAt=\\{sargData\\?\\.updatedAt\\}/.test(caller) && /erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\}/.test(caller) && /source=\\{sargData\\?\\.source\\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('wmFreshDelay') && wm.includes('setMapFreshnessTick(tick=>tick+1)') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
   t(lib.includes('return [fresh, available') && lib.includes('fresh ? (12 - age) * 36e5 + 50 : available ? (36 - age) * 36e5 + 50 : null'), 'helper : transitions planifiées à 12h puis 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
