@@ -14026,6 +14026,16 @@ export default function App(){
           </div>
         )})()}
 
+        {/* ÉCRAN DE CHARGEMENT — affiché tant que la carte SVG n'est pas montée (dataReady=false)
+            Évite le "vide bleu nuit" au premier paint. Rollback via ?sgload=0 si nécessaire. */}
+        {!/[?&]sgload=0/.test(typeof window!=="undefined"?window.location.search:"")&&!dataReady&&(
+          <div className="sg-map-loading" role="status" aria-live="polite" aria-label={_t(lang,"Chargement","Loading","Cargando")}>
+            <div className="sg-load-dot"></div>
+            <div className="sg-load-dot"></div>
+            <div className="sg-load-dot"></div>
+            <div className="sg-load-label">{_t(lang,"Chargement…","Loading…","Cargando…")}</div>
+          </div>
+        )}
         {/* MAP, LIST or GAME — both rendered, visibility toggled for instant switch */}
         <div style={{position:"absolute",inset:0,opacity:view==="map"?1:0,
           transform:view==="map"?"scale(1)":"scale(1.03)",transformOrigin:"50% 42%",
@@ -14670,7 +14680,7 @@ export default function App(){
         {/* SARGACHAT — assistant guidé statique (réponses = donnée live, arbre fermé) */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&(
           <button onClick={()=>{setShowChat(true);track("sg_chat_open",{})}} aria-label={_t(lang,"Demander au Veilleur","Ask the Watchman","Preguntar al Vigía")}
-            className="sg-fab"
+            className="sg-fab sg-focus-ring"
             style={{position:"fixed",right:14,bottom:"calc(158px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",
@@ -14705,7 +14715,7 @@ export default function App(){
         )}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowDiscovery(true);track("sg_discovery_open",{})}} aria-label={_t(lang,"Comprendre les sargasses","Understand sargassum","Entender el sargazo")}
-            className="sg-fab"
+            className="sg-fab sg-focus-ring"
             style={{position:"fixed",right:14,bottom:"calc(220px + var(--sg-consent-h,0px) + env(safe-area-inset-bottom))",zIndex:1030,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
@@ -14737,7 +14747,7 @@ export default function App(){
         {/* SOLUTIONS — pages SVG (problème→on voit→on agit→on transforme→on sort). Escapable. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowSolutions(true);track("sg_solutions_open",{})}} aria-label={_t(lang,"Les solutions sargasses","Sargassum solutions","Soluciones al sargazo")}
-            className="sg-fab"
+            className="sg-fab sg-focus-ring"
             style={{position:"fixed",right:14,bottom:"calc(328px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
@@ -14755,7 +14765,7 @@ export default function App(){
         {/* L'ARCHIPEL DU VEILLEUR — monde SVG libre pan/zoom (tournoi gagnant). v0 QA. */}
         {!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showArchipel&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>{setShowArchipel(true);track("sg_archipel_open",{from:"fab"})}} aria-label={_t(lang,"L'archipel du Veilleur","The Watcher's archipelago","El archipiélago")}
-            className="sg-fab"
+            className="sg-fab sg-focus-ring"
             style={{position:"fixed",right:14,bottom:"calc(382px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",
@@ -14773,7 +14783,7 @@ export default function App(){
             Rollback ?verticals=0 → VERTICALES_OFF cache l'entrée + l'overlay. */}
         {!VERTICALES_OFF&&!showHero&&!showPrevLanding&&!showPremium&&!showChat&&!showDiscovery&&!showSolutions&&!showWorld&&!showVerticals&&!selectedBeach&&view==="map"&&(
           <button onClick={()=>setShowVerticals(true)} aria-label={_t(lang,"Jusqu'où on descend — nos 10 postes","How deep we go — our 10 posts","Hasta dónde bajamos — nuestros 10 puestos")}
-            className="sg-fab"
+            className="sg-fab sg-focus-ring"
             style={{position:"fixed",right:14,bottom:"calc(436px + env(safe-area-inset-bottom))",zIndex:960,
               width:46,height:46,borderRadius:"50%",background:"#190c2c",border:"2.5px solid #0d0b14",
               cursor:"pointer",boxShadow:"2px 2px 0 #0d0b14",display:"flex",alignItems:"center",justifyContent:"center",

@@ -100,3 +100,15 @@ jobs:
           path: /tmp/track-record-pricing/*.png
           if-no-files-found: warn
           retention-days: 7
+
+      - name: Run UI refactor Playwright (desktop, tablet, mobile)
+        run: npx playwright test --config=playwright.ui-refactor.config.ts
+
+      - name: Upload UI refactor before/after screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sargagame-ui-refactor-before-after
+          path: tests/e2e/screenshots/*.png
+          if-no-files-found: warn
+          retention-days: 14

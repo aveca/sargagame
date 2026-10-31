@@ -673,3 +673,41 @@ button.sg-fab,.sg-fab[role],.theme-comic .sg-fab,.theme-soft .sg-fab,.theme-mang
     padding-bottom:60px;
   }
 }
+
+/* ══════════ UI REFACTOR V2 — améliorations accessibilité, chargement, erreur ══════════
+   CSS uniquement : zéro impact bundle JS eager. Rollback via ?sguxv2=0 si nécessaire.
+   ═════════════════════════════════════════════════════════════════════════════════════════ */
+
+/* Focus-visible universel pour navigation clavier — anneau or 3px sur tous les
+   éléments interactifs (boutons, liens, rôles button, inputs). Triple-classe
+   (0,3,0) + !important pour battre .theme-comic button et le reset onink. */
+button.sg-focus-ring.sg-focus-ring.sg-focus-ring:focus-visible,
+a.sg-focus-ring.sg-focus-ring.sg-focus-ring:focus-visible,
+[role="button"].sg-focus-ring.sg-focus-ring.sg-focus-ring:focus-visible{
+  outline:3px solid #FFC72C !important;
+  outline-offset:3px !important;
+  box-shadow:0 0 0 3px rgba(255,199,44,.4) !important;
+  z-index:10 !important;
+}
+
+/* Écran de chargement carte — affiché pendant le lazy-load de WorldMapView/ArchipelView.
+   Pas de texte, juste un shimmer or sur fond sombre pour masquer le "vide bleu nuit"
+   au premier paint. Monté via dataReady=false → display:none quand prêt. */
+.sg-map-loading{position:fixed;inset:0;z-index:1018;background:#0d1117;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.sg-map-loading .sg-load-dot{width:14px;height:14px;border-radius:50%;background:#FFC72C;animation:sgLoadPulse 1.4s ease-in-out infinite}
+.sg-load-dot:nth-child(2){animation-delay:.2s}.sg-load-dot:nth-child(3){animation-delay:.4s}
+@keyframes sgLoadPulse{0%,100%{transform:scale(.8);opacity:.5}50%{transform:scale(1.2);opacity:1}}
+.sg-map-loading .sg-load-label{color:#fdfcf7;font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+
+/* CTA primaire mobile — s'assurer que le CTA "Trouve ta plage" reste dans la
+   zone accessible du pouce (bottom zone) et ait une cible ≥44px sur tous breakpoints. */
+@media(max-width:430px){
+  .sg-mapfind.sg-mapfind.sg-mapfind{min-height:48px !important;padding:12px 20px !important;font-size:15px !important}
+  .sg-mapfind.sg-mapfind.sg-mapfind svg{width:22px !important;height:22px !important}
+}
+
+/* Reduced motion — désactiver les animations de chargement si l'utilisateur le demande */
+@media(prefers-reduced-motion:reduce){
+  .sg-map-loading .sg-load-dot{animation:none !important;opacity:1 !important;transform:scale(1) !important}
+  .sg-card-loading::after{animation:none !important;display:none !important}
+}
