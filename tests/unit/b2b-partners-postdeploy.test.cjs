@@ -59,4 +59,4 @@ assert.ok(verifierSource.includes("set('b2b_partners_api'"),
 assert.ok(verifierSource.includes('checkB2BPartnersPayload(b2bPayload)'),
   'the live response must be validated, not only fetched');
 
-console.log('B2B_PARTNERS_POSTDEPLOY_TESTS PASS (10 assertions)');
+console.log('B2B_PARTNERS_POSTDEPLOY_TESTS PASS (12 assertions)');
