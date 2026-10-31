@@ -12,7 +12,7 @@ import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallba
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { formatFreshnessAge, isSatelliteFresh12h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
-import { mapDecisionFreshness } from "./lib/map-decision-freshness.mjs"
+import { mapDecisionFreshness, nextMapDecisionStaleDelayMs } from "./lib/map-decision-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -212,6 +212,22 @@ export default function WorldMapView({
   const wmDecisionAvailable = wmDecisionFreshness.available;
   const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: wmSatObservationTimestamp }, lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(wmSatObservationTimestamp, lang) : "···";
+  // Re-vérifie le cutoff 36h même si l'utilisateur laisse la carte ouverte sans reload.
+  // Le focus/retour d'onglet force aussi un recalcul après throttling navigateur.
+  const [, setMapFreshnessTick] = useState(0);
+  useEffect(()=>{
+    const delay=nextMapDecisionStaleDelayMs(erddapTimestamp,updatedAt);
+    if(delay==null) return;
+    const timer=window.setTimeout(()=>setMapFreshnessTick(value=>value+1),delay);
+    const recheck=()=>{ if(!document.hidden) setMapFreshnessTick(value=>value+1) };
+    document.addEventListener("visibilitychange",recheck);
+    window.addEventListener("focus",recheck);
+    return()=>{
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange",recheck);
+      window.removeEventListener("focus",recheck);
+    };
+  },[erddapTimestamp,updatedAt]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
   const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
