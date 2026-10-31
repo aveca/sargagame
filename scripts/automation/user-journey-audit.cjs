@@ -42,7 +42,7 @@ function dedupKey(item) {
 }
 
 function classify(defects) {
-  const blocking = defects.filter(d => ['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'primary-cta-dead'].includes(d.type))
+  const blocking = defects.filter(d => ['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'stale-current-decision', 'primary-cta-dead'].includes(d.type))
   const ux = defects.filter(d => !blocking.includes(d))
   return { blocking, ux }
 }
