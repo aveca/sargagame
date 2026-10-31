@@ -203,16 +203,14 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
-  const wmPubT = updatedAt ? Date.parse(updatedAt) : NaN;
-  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== wmPubT;
-  const wmSatObservationTimestamp = wmSatValid ? erddapTimestamp : null;
-  const wmSatData = { erddapTimestamp: wmSatObservationTimestamp };
-  const wmSatFresh = isSatelliteFresh12h(wmSatData);
-  const wmSatStale = isSatelliteStale36h(wmSatData);
+  const wmSatT = Date.parse(erddapTimestamp || "");
+  const wmPubT = Date.parse(updatedAt || "");
+  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== wmPubT;
+  const wmSatFresh = wmSatValid && isSatelliteFresh12h({erddapTimestamp});
+  const wmSatStale = wmSatValid && isSatelliteStale36h({erddapTimestamp});
   const wmDecisionAvailable = wmSatValid && !wmSatStale;
-  const wmSatLbl = satelliteFreshnessStatus(wmSatData, lang);
-  const wmSatAge = wmSatValid ? formatFreshnessAge(wmSatObservationTimestamp, lang) : "···";
+  const wmSatLbl = satelliteFreshnessStatus({erddapTimestamp:wmSatValid?erddapTimestamp:null},lang);
+  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   // Re-vérifie le cutoff après 36 h et au retour d'onglet.
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{
@@ -741,7 +739,7 @@ export default function WorldMapView({
     if(!wmDecisionAvailable||!beachList.length) return
     let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
     const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
-    const arr=b=>wmDecisionAvailable&&arrivals&&arrivals[b.id]
+    const arr=b=>arrivals&&arrivals[b.id]
     // GATE RÉALISME : plage `avoid` au jour affiché OU arrivée prévue (arrivalDetected). Jamais de
     // fausse éclaboussure sur une plage propre.
     let hits=beachList.filter(b=>b.days[day]==="avoid" || (day===0 && arr(b)))
@@ -1138,11 +1136,10 @@ export default function WorldMapView({
   },[selected,onOpenBeach])
 
   const nearMe=useCallback(()=>{
-    if(!wmDecisionAvailable) return
     const c=beachList.find(b=>b.days[day]==="clean") // inconnu ≠ propre : ne pas filer sur une plage non chargée
     if(c) selectBeach(c)
     try{ track&&track("sg_map_near_me",{island}) }catch(_){}
-  },[beachList,day,selectBeach,track,island,wmDecisionAvailable])
+  },[beachList,day,selectBeach,track,island])
 
   // Clic sur le FOND de carte (le SVG lui-même : océan, île, taches de sargasses — tout en
   // pointer-events:none ; les pins/labels stoppent la propagation en amont). Trois cas :
@@ -1186,7 +1183,7 @@ export default function WorldMapView({
   // affiché. Calcul pur sur lat/lng réels (haversine), zéro fabrication. Null si la plage
   // tapée n'est pas moderate/avoid, ou si aucune plage propre connue ailleurs.
   const planB = useMemo(()=>{
-    if(!wmDecisionAvailable||mapDecideOff||!selected) return null
+    if(mapDecideOff||!selected) return null
     const st=selected.days&&selected.days[day]
     if(st!=="moderate"&&st!=="avoid") return null
     if(selected.lat==null||selected.lng==null) return null
@@ -1215,7 +1212,7 @@ export default function WorldMapView({
   // propre le plus de jours. Glanceable, 1 carte, affichée seulement hors sélection (pas
   // de superposition avec le tooltip). Rollback ?mapdecide=0 (couche décision).
   const weekDigest = useMemo(()=>{
-    if(!wmDecisionAvailable||mapDecideOff||!mapPremium||!beachList.length) return null
+    if(mapDecideOff||!mapPremium||!beachList.length) return null
     const D=[0,1,2,3,4,5]
     let bestDay=-1,bestN=-1
     D.forEach(d=>{
@@ -1519,7 +1516,7 @@ export default function WorldMapView({
               pas prête → apparition UNIQUE et définitive (jamais gris→couleur). Le fond
               de carte baké reste visible en attendant (pas de cul-de-sac). */}
           {(dataReady?beachList:[]).map(b=>{
-            const st=wmDecisionAvailable?b.days[day]:null // stale/unknown => pin GRIS, jamais un ancien verdict
+            const st=b.days[day] // beachList is sanitized before rendering
             const isSel=selected?.id===b.id
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
             // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
