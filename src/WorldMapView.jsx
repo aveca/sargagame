@@ -197,21 +197,21 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, erddapTimestamp, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  beaches, island, updatedAt, erddapTimestamp, source, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
   onFind=null,
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const wmSatT = Date.parse(erddapTimestamp || "");
-  const wmSatData = wmSatT > 0 && wmSatT <= Date.now() ? {erddapTimestamp} : null;
+  const wmSatData = source === "erddap-live" && wmSatT > 0 && wmSatT <= Date.now() ? {erddapTimestamp} : null;
   const wmSatFresh = isSatelliteFresh12h(wmSatData);
   const wmDecisionAvailable = !!wmSatData && !isSatelliteStale36h(wmSatData);
   const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
   const wmSatAge = wmSatData ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   // Re-vérifie le cutoff après 36 h et au retour d'onglet.
   const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(!wmDecisionAvailable)return;const timer=setTimeout(()=>setMapFreshnessTick(Date.now()),Math.max(0,129600050+wmSatT-Date.now()));return()=>clearTimeout(timer)},[wmDecisionAvailable,wmSatT]);
+  useEffect(()=>{if(!wmDecisionAvailable)return;const timer=setTimeout(()=>setMapFreshnessTick(1),129600050+wmSatT-Date.now());return()=>clearTimeout(timer)},[wmDecisionAvailable,wmSatT]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
   const wmSatColor = wmSatData && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
