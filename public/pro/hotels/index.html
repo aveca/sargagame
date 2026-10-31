@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Prévision sargasses pour hôtels — alertes par plage, fiabilité publiée · Sargasses Pro</title>
-<meta name="description" content="Anticipez les échouages de sargasses sur votre plage 7 jours à l'avance. Prévision satellite par plage, alertes pour votre front de mer, fiabilité auditée chaque jour. Pour hôtels et resorts en Martinique et Guadeloupe."/>
+<meta name="description" content="Anticipez les échouages de sargasses sur votre plage 7 jours à l'avance. Prévision par plage, alertes pour votre front de mer, palmarès daté avec son périmètre et sa fraîcheur. Pour hôtels et resorts en Martinique et Guadeloupe."/>
 <link rel="canonical" href="https://sargasses-martinique.com/pro/hotels/"/>
 <link rel="alternate" hreflang="fr" href="https://sargasses-martinique.com/pro/hotels/"/>
 <link rel="alternate" hreflang="en" href="https://sargasses-martinique.com/pro/en/hotels/"/>
@@ -26,7 +26,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Hôtels","item":"https://sargasses-martinique.com/pro/hotels/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"En quoi est-ce différent de la carte gratuite de Météo-France ou de l'USF ?","acceptedAnswer":{"@type":"Answer","text":"Les cartes publiques donnent un risque régional. Nous donnons une prévision plage par plage sur 7 jours, des alertes ciblées sur votre front de mer, et surtout une fiabilité que nous publions et auditons chaque jour contre l'observation réelle — ce qu'aucune source gratuite ne fait."}},{"@type":"Question","name":"Quelle est la fiabilité réelle de la prévision ?","acceptedAnswer":{"@type":"Answer","text":"Nous publions le palmarès daté et auditable sur /fiabilite/. Sur la période en cours, nos prévisions « mer propre » se vérifient à un taux que nous affichons avec la taille d'échantillon. Les alertes sont émises avec prudence tant que le satellite ne les confirme pas."}},{"@type":"Question","name":"Quelles plages et quelles régions sont couvertes ?","acceptedAnswer":{"@type":"Answer","text":"Toutes les plages suivies de Martinique et de Guadeloupe, avec un historique daté par plage. D'autres marchés des Caraïbes sont en cours d'extension."}},{"@type":"Question","name":"Peut-on l'intégrer à notre site de réservation et le partager avec notre prestataire de nettoyage ?","acceptedAnswer":{"@type":"Answer","text":"Oui. Un encart « conditions en direct » s'intègre à votre site, et un brief quotidien peut être envoyé à la réception comme à votre équipe ou prestataire de ramassage."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"En quoi est-ce différent de la carte gratuite de Météo-France ou de l'USF ?","acceptedAnswer":{"@type":"Answer","text":"Les cartes publiques donnent un risque régional. Nous donnons une prévision plage par plage sur 7 jours, des alertes ciblées sur votre front de mer, et surtout une palmarès public daté, avec son périmètre et sa fraîcheur ; aucun taux actuel n'est affiché lorsque le record est périmé."}},{"@type":"Question","name":"Quelle est la fiabilité réelle de la prévision ?","acceptedAnswer":{"@type":"Answer","text":"Nous publions le palmarès daté et auditable sur /fiabilite/. Sur la période en cours, nos prévisions « mer propre » se vérifient à un taux que nous affichons avec la taille d'échantillon. Les alertes sont émises avec prudence tant que le satellite ne les confirme pas."}},{"@type":"Question","name":"Quelles plages et quelles régions sont couvertes ?","acceptedAnswer":{"@type":"Answer","text":"Toutes les plages suivies de Martinique et de Guadeloupe, avec un historique daté par plage. D'autres marchés des Caraïbes sont en cours d'extension."}},{"@type":"Question","name":"Peut-on l'intégrer à notre site de réservation et le partager avec notre prestataire de nettoyage ?","acceptedAnswer":{"@type":"Answer","text":"Oui. Un encart « conditions en direct » s'intègre à votre site, et un brief quotidien peut être envoyé à la réception comme à votre équipe ou prestataire de ramassage."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -225,17 +225,17 @@
 <!-- PREUVE / MOAT -->
 <section class="proof px"><div class="wrap">
   <p class="sec-eyebrow">Pourquoi faire confiance à cette prévision</p>
-  <h2>Nous publions notre fiabilité. Personne d'autre ne le fait.</h2>
-  <p class="sub">Chaque jour, notre prévision est figée puis comparée à l'observation satellite réelle. Le palmarès est daté, par plage, et auditable — pas une promesse marketing.</p>
+  <h2>Un palmarès daté, avec son périmètre et ses limites.</h2>
+  <p class="sub">Le palmarès public compare les prévisions aux observations disponibles. Il indique sa période, son périmètre régional et son état de fraîcheur ; aucun taux actuel n’est affiché lorsque le record est périmé ou hors périmètre.</p>
   <div class="gauge">
     <div class="big" id="tr-clean">—</div>
-    <div class="cap" id="tr-headline">Chargement du palmarès en direct…</div>
+    <div class="cap" id="tr-headline">Vérification du palmarès public…</div>
   </div>
   <table class="trtable" id="tr-table" hidden>
     <thead><tr><th>Plage (Antilles)</th><th style="text-align:right">Prévisions justes</th></tr></thead>
     <tbody id="tr-body"></tbody>
   </table>
-  <p class="bench">Les modèles de dérive publiés plafonnent autour de 70 % de justesse à ±3 jours (Lesser Antilles, Ifremer). Nous affichons notre chiffre réel, daté, avec sa taille d'échantillon — et nous publions aussi nos limites (les alertes en saison calme sont émises avec prudence tant que le satellite ne les confirme pas).</p>
+  <p class="bench">Les statistiques de validation ne sont affichées que lorsque le palmarès est à jour et que son périmètre couvre la région concernée. Un résultat historique ne garantit pas le résultat d’une plage donnée.</p>
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès complet et la méthode →</a></p>
 </div></section>
 
@@ -287,8 +287,8 @@
         <input type="email" id="m-email" name="email" placeholder="vous@hotel.com" required autocomplete="email" aria-label="Email professionnel"/>
         <button type="submit" class="btn btn-gold">Recevoir mon brief gratuit</button>
       </form>
-      <p class="trust-row" id="m-trust">Gratuit · sans carte · désinscription en un clic · données satellite Copernicus.</p>
-      <div class="form-ok" id="magnet-ok">Parfait — votre premier brief part par email. En attendant, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">voyez votre plage en direct maintenant →</a></div>
+      <p class="trust-row" id="m-trust">Gratuit · sans carte · désinscription en un clic · observations AFAI NOAA/AOML ERDDAP.</p>
+      <div class="form-ok" id="magnet-ok">Parfait — votre premier brief part par email. En attendant, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">consultez la dernière observation de votre plage →</a></div>
     </div>
   </div>
 </div></section>
@@ -298,7 +298,7 @@
   <p class="sec-eyebrow">Comment ça marche</p>
   <h2>Du satellite à votre réception, en trois étapes.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>Le satellite repère les bancs</h3><p>Données Copernicus / ERDDAP, indice AFAI, croisées avec vent et courants — mises à jour 4×/jour.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>Le satellite repère les bancs</h3><p>Observations AFAI distribuées via NOAA/AOML ERDDAP, complétées par les courants Copernicus Marine et le vent Open-Meteo. Le pipeline vérifie les sources plusieurs fois par jour ; une nouvelle observation AFAI n’est pas garantie à chaque passage.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>On localise sur votre plage</h3><p>Notre modèle de dérive + persistance traduit le large en prévision par plage, sur 7 jours, avec un niveau de confiance.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Votre équipe est alertée</h3><p>Brief quotidien + alerte au changement d'état. Vous planifiez le nettoyage et la communication client en avance.</p></div></div>
   </div>
@@ -308,7 +308,7 @@
 <section class="px" style="padding-top:8px"><div class="wrap">
   <p class="sec-eyebrow">Questions fréquentes</p>
   <h2>Ce que les hôteliers nous demandent.</h2>
-  <details><summary>En quoi est-ce différent de la carte gratuite de Météo-France / USF ?</summary><p>Les cartes publiques donnent un risque régional. Nous donnons une prévision plage par plage sur 7 jours, des alertes ciblées sur votre front de mer, et une fiabilité publiée et auditée chaque jour — ce qu'aucune source gratuite ne fait.</p></details>
+  <details><summary>En quoi est-ce différent de la carte gratuite de Météo-France / USF ?</summary><p>Les cartes publiques donnent un risque régional. Nous donnons une prévision plage par plage sur 7 jours, des alertes ciblées sur votre front de mer, et une palmarès public daté, avec son périmètre et sa fraîcheur — ce qu'aucune source gratuite ne fait.</p></details>
   <details><summary>Quelle est la fiabilité réelle ?</summary><p>Nous la publions sur la page fiabilité, datée et par plage. Nos prévisions « mer propre » se vérifient à un taux élevé (affiché avec la taille d'échantillon). Les alertes sont émises avec prudence tant que le satellite ne les confirme pas — et nous publions cette limite aussi.</p></details>
   <details><summary>Quelles plages et régions sont couvertes ?</summary><p>Toutes les plages suivies de Martinique et de Guadeloupe, avec un historique daté. D'autres marchés des Caraïbes sont en cours d'extension.</p></details>
   <details><summary>Peut-on l'intégrer à notre site et le partager avec notre prestataire de nettoyage ?</summary><p>Oui. L'encart « conditions en direct » s'intègre à votre site de réservation, et le brief quotidien peut partir à la réception comme à votre équipe ou prestataire de ramassage.</p></details>
@@ -340,6 +340,7 @@
   <div style="margin-top:10px">Prévision satellite des sargasses · Martinique &amp; Guadeloupe</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
@@ -354,15 +355,13 @@
   var QH=(Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
 
-  // Use the ERDDAP observation timestamp; updatedAt can change on republication.
-  var PUBLIC_STALE_AFTER_MS = 36 * 60 * 60 * 1000;
   function getObservationFreshness(data){
-    var observedAt=Date.parse(data && data.erddapTimestamp || '');
-    if(!Number.isFinite(observedAt) || observedAt>Date.now()) return {status:'unknown',label:'Fraîcheur satellite inconnue'};
-    var ageMs=Date.now()-observedAt, ageHours=ageMs/3600000;
-    var ageLabel=ageHours<1?'il y a moins d’une heure':'il y a '+Math.max(1,Math.round(ageHours))+' h';
-    var status=(data.stale===true || ageMs>PUBLIC_STALE_AFTER_MS)?'stale':'fresh';
-    return {status:status,label:(status==='stale'?'Observation satellite ancienne':'Observation satellite')+' · '+ageLabel};
+    return window.SargagameB2BFreshness.getObservationFreshness(data,'fr');
+  }
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
   }
   function setFreshnessPill(status,label){
     var pill=document.getElementById('freshpill');
@@ -371,33 +370,50 @@
   }
 
 
-  // --- Preuve live : track-record.json ---
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+  // Render validation metrics only for a fresh public record that covers this page.
+  fetch('/api/copernicus/track-record.json').then(function(r){if(!r.ok)throw new Error('track-record HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
-      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
-      document.getElementById('tr-clean').textContent=pct+'%';
-      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      document.getElementById('tr-headline').textContent=
-        'de nos verdicts se sont vérifiés, tous régimes confondus'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
-      var beaches=(d.byBeach||[]);
-      if(beaches.length){
-        var body=document.getElementById('tr-body');
+      var state=window.SargagameB2BFreshness.getTrackRecordState(d,'mq');
+      var clean=document.getElementById('tr-clean'),headline=document.getElementById('tr-headline');
+      var table=document.getElementById('tr-table'),body=document.getElementById('tr-body');
+      if(body)body.textContent='';
+      if(!state.available){
+        if(clean)clean.textContent='—';
+        if(table)table.hidden=true;
+        var meta=[];
+        if(state.scopeLabel)meta.push('périmètre publié : '+state.scopeLabel);
+        if(state.windowLabel)meta.push('période : '+state.windowLabel);
+        var message=state.reason==='region-not-covered'?'Le palmarès publié ne couvre pas la région de cette page.':(state.reason==='missing-record'?'Palmarès public indisponible ; aucun taux actuel n’est affiché.':'Palmarès périmé ou hors périmètre ; aucun taux actuel n’est affiché.');
+        if(headline)headline.textContent=message+(meta.length?' '+meta.join(' · ')+'.':'');
+        return;
+      }
+      var pct=d.overall&&d.overall.statusHitRatePct;
+      if(typeof pct!=='number'||!Number.isFinite(pct)||pct<0||pct>100){
+        if(clean)clean.textContent='—';if(table)table.hidden=true;if(headline)headline.textContent='Le palmarès ne contient pas de taux global valide ; aucun pourcentage n’est affiché.';return;
+      }
+      if(clean)clean.textContent=pct+'%';
+      if(headline)headline.textContent='Taux global du périmètre '+state.scopeLabel+' ('+state.windowLabel+') — '+Number(state.sampleSize).toLocaleString('fr-FR')+' comparaisons datées.';
+      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number'&&Number.isFinite(b.hitRatePct)&&b.hitRatePct>=0&&b.hitRatePct<=100&&Number(b.samples)>0;});
+      if(beaches.length&&body){
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+Number(b.samples).toLocaleString('fr-FR')+')';
           if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
-        document.getElementById('tr-table').hidden=false;
+        if(table)table.hidden=false;
       }
-    }catch(e){}
+    }catch(e){
+      var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+      var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Palmarès indisponible ; aucun taux actuel n’est affiché.';
+      var table=document.getElementById('tr-table');if(table)table.hidden=true;
+    }
   }).catch(function(){
-    document.getElementById('tr-headline').textContent='Palmarès consultable sur la page fiabilité.';
+    var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+    var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Palmarès indisponible ; aucun taux actuel n’est affiché.';
+    var table=document.getElementById('tr-table');if(table)table.hidden=true;
   });
-
   // --- Per-beach observation: hide verdicts and scores when source data is stale ---
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{

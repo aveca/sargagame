@@ -3,8 +3,8 @@ const path = require('path');
 const assert = require('assert');
 
 const pages = [
-  { file: '../public/pro/en/hotels/index.html', locale: 'en', expected: ['Météo-France', 'Live conditions', '7-day forecast'] },
-  { file: '../public/pro/es/hotels/index.html', locale: 'es', expected: ['El Vigía', 'Pronóstico', 'huéspedes', 'MÁS DÉBILES'] },
+  { file: '../public/pro/en/hotels/index.html', locale: 'en', expected: ['Météo-France', 'timestamped last-observation badge', '7-day forecast'] },
+  { file: '../public/pro/es/hotels/index.html', locale: 'es', expected: ['El Vigía', 'Pronóstico', 'huéspedes', 'Nuestras playas con peor puntuación'] },
 ];
 const mojibake = /(?:[ÃÂ][\u0080-\u00ff]|Ã[^\s]|Â[^\s]|â(?:€|ˆ|–|—|™|œ|…|‡|†|‹|›|˜)|ðŸ)/u;
 for (const page of pages) {

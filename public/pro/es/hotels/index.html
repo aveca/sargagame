@@ -26,7 +26,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargasses","item":"https://sargasses-martinique.com/"},{"@type":"ListItem","position":2,"name":"Pro","item":"https://sargasses-martinique.com/pro/"},{"@type":"ListItem","position":3,"name":"Hoteles (ES)","item":"https://sargasses-martinique.com/pro/es/hotels/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿En qué se diferencia de los mapas gratuitos de Météo-France o de la USF?","acceptedAnswer":{"@type":"Answer","text":"Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico a 7 días playa por playa, alertas dirigidas a su frente de mar y, sobre todo, una fiabilidad que publicamos y auditamos cada día contra la observación real — algo que ninguna fuente gratuita hace."}},{"@type":"Question","name":"¿Qué tan fiable es el pronóstico, de verdad?","acceptedAnswer":{"@type":"Answer","text":"Publicamos un historial fechado y auditable en /fiabilite/. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cifra se muestra con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma."}},{"@type":"Question","name":"¿Qué playas y regiones están cubiertas?","acceptedAnswer":{"@type":"Answer","text":"Todas las playas monitoreadas de Martinica y Guadalupe, cada una con un historial fechado por playa. Se están añadiendo otros mercados del Caribe; la fiabilidad se publica a medida que se valida, mercado por mercado."}},{"@type":"Question","name":"¿Podemos integrarlo en nuestra web de reservas y compartirlo con nuestro contratista de limpieza?","acceptedAnswer":{"@type":"Answer","text":"Sí. Un distintivo de «condiciones en vivo» se integra en su web, y un resumen diario puede enviarse a la recepción así como a su equipo o a su contratista de limpieza de playa."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿En qué se diferencia de los mapas gratuitos de Météo-France o de la USF?","acceptedAnswer":{"@type":"Answer","text":"Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico a 7 días playa por playa, alertas dirigidas a su frente de mar y, sobre todo, una fiabilidad que publicamos y auditamos cada día contra la observación real — algo que ninguna fuente gratuita hace."}},{"@type":"Question","name":"¿Qué tan fiable es el pronóstico, de verdad?","acceptedAnswer":{"@type":"Answer","text":"Publicamos un historial fechado y auditable en /fiabilite/. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cifra se muestra con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma."}},{"@type":"Question","name":"¿Qué playas y regiones están cubiertas?","acceptedAnswer":{"@type":"Answer","text":"Todas las playas monitoreadas de Martinica y Guadalupe, cada una con un historial fechado por playa. Se están añadiendo otros mercados del Caribe; la fiabilidad se publica a medida que se valida, mercado por mercado."}},{"@type":"Question","name":"¿Podemos integrarlo en nuestra web de reservas y compartirlo con nuestro contratista de limpieza?","acceptedAnswer":{"@type":"Answer","text":"Sí. Un distintivo de «estado de la última observación disponible» se integra en su web, y un resumen diario puede enviarse a la recepción así como a su equipo o a su contratista de limpieza de playa."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -228,7 +228,7 @@
   <div class="cards">
     <div class="card"><div class="ic">📍</div><h3>Pronóstico a 7 días, playa por playa</h3><p>Estado (limpia / moderada / a evitar), puntuación y tendencia para el frente de mar exacto de su establecimiento — no un promedio de isla.</p></div>
     <div class="card"><div class="ic">🔔</div><h3>Alertas automáticas</h3><p>Email o SMS en el momento en que su playa cambia de estado. Su equipo y su contratista de limpieza lo saben antes que sus huéspedes.</p></div>
-    <div class="card"><div class="ic">🪟</div><h3>Distintivo «condiciones en vivo» + resumen para el equipo</h3><p>Un widget para integrar en su web de reservas y tranquilizar a los huéspedes con transparencia, y un resumen diario para la recepción.</p></div>
+    <div class="card"><div class="ic">🪟</div><h3>Distintivo «estado de la última observación disponible» + resumen para el equipo</h3><p>Un widget para integrar en su web de reservas y tranquilizar a los huéspedes con transparencia, y un resumen diario para la recepción.</p></div>
   </div>
 </div></section>
 
@@ -239,22 +239,22 @@
   <p class="sub">Cada día, nuestro pronóstico se congela y luego se compara con la observación satelital real. El historial está fechado, por playa, y es auditable — validado en las Antillas Francesas (Martinica y Guadalupe), ahora en expansión por el Caribe. No es una promesa de marketing.</p>
   <div class="gauge">
     <div class="big" id="tr-clean">—</div>
-    <div class="cap" id="tr-headline">Cargando el historial en vivo…</div>
+    <div class="cap" id="tr-headline">Verificando el historial público…</div>
   </div>
   <table class="trtable" id="tr-table" hidden>
     <caption style="text-align:left;font-size:11px;color:rgba(255,255,255,.55);padding:0 10px 8px;caption-side:top">Nuestras playas con peor puntuación (Antillas Francesas) — mostramos los casos más difíciles, no las victorias fáciles.</caption>
     <thead><tr><th>Playa</th><th style="text-align:right">Pronósticos acertados</th></tr></thead>
     <tbody id="tr-body"></tbody>
   </table>
-  <p class="bench">Los modelos de deriva publicados llegan como máximo a ~70 % de acierto a ±3 días (Antillas Menores, Ifremer). Mostramos nuestra cifra real y fechada con su tamaño de muestra — y publicamos también nuestros límites (las alertas en temporada calma se emiten con prudencia hasta que el satélite las confirma). No afirmamos una precisión validada en costas que aún no hemos medido.</p>
+  <p class="bench">El historial de validación se publica con fechas, regiones y tamaño de muestra. Solo mostramos un porcentaje cuando el registro está actualizado y cubre la región de esta página; si no, indicamos que no hay una tasa actual disponible.</p>
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Ver el historial completo y el método →</a></p>
 </div></section>
 
-<!-- DEMO EN VIVO -->
+<!-- VISTA PREVIA DEL WIDGET -->
 <section class="px"><div class="wrap">
-  <p class="sec-eyebrow">Demo en vivo</p>
+  <p class="sec-eyebrow">Vista previa del widget</p>
   <h2>Esto es exactamente lo que verían sus huéspedes.</h2>
-  <p class="sub">Datos reales, en este momento, en una playa de las Antillas Francesas. El mismo distintivo, en sus colores, en su web.</p>
+  <p class="sub">Ejemplo de presentación para una playa de las Antillas Francesas. El estado y la fecha de la última observación se muestran en el widget.</p>
   <div class="demo-frame" id="demo">
     <svg class="vc" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(50 50) scale(0.9)">
@@ -292,7 +292,7 @@
         <button type="submit" class="btn btn-gold">Recibir mi resumen gratuito</button>
       </form>
       <p class="trust-row" id="m-trust">Gratis · sin tarjeta · baja en un clic · datos satelitales Copernicus.</p>
-      <div class="form-ok" id="magnet-ok">Listo — su primer resumen va de camino por email. Mientras tanto, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">vea su playa en vivo ahora →</a></div>
+      <div class="form-ok" id="magnet-ok">Listo — su primer resumen va de camino por email. Mientras tanto, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">consulte la última observación de su playa →</a></div>
     </div>
   </div>
 </div></section>
@@ -302,7 +302,7 @@
   <p class="sec-eyebrow">Cómo funciona</p>
   <h2>Del satélite a su recepción, en tres pasos.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>El satélite detecta los bancos</h3><p>Datos Copernicus / ERDDAP, índice AFAI, cruzados con viento y corrientes — actualizados 4× al día.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>El satélite detecta los bancos</h3><p>Datos Copernicus / ERDDAP, índice AFAI, cruzados con viento y corrientes — con la fecha de la última observación visible.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Lo localizamos en su playa</h3><p>Nuestro modelo de deriva + persistencia traduce el mar abierto en un pronóstico por playa, a 7 días, con un nivel de confianza.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Su equipo recibe la alerta</h3><p>Resumen diario + una alerta cuando cambia el estado. Usted programa la limpieza y la comunicación con los huéspedes con antelación.</p></div></div>
   </div>
@@ -315,7 +315,7 @@
   <details><summary>¿En qué se diferencia de los mapas gratuitos de Météo-France / USF?</summary><p>Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico a 7 días playa por playa, alertas dirigidas a su frente de mar, y una fiabilidad publicada y auditada cada día — algo que ninguna fuente gratuita hace.</p></details>
   <details><summary>¿Qué tan fiable es, de verdad?</summary><p>La publicamos en la página de fiabilidad, fechada y por playa. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y se muestra con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma — y publicamos ese límite también.</p></details>
   <details><summary>¿Qué playas y regiones están cubiertas?</summary><p>Todas las playas monitoreadas de Martinica y Guadalupe, cada una con un historial fechado. Se están añadiendo otros mercados del Caribe, con la fiabilidad publicada a medida que se valida, mercado por mercado.</p></details>
-  <details><summary>¿Podemos integrarlo en nuestra web y compartirlo con nuestro contratista de limpieza?</summary><p>Sí. El distintivo de «condiciones en vivo» se integra en su web de reservas, y el resumen diario puede ir a la recepción así como a su equipo o a su contratista de limpieza de playa.</p></details>
+  <details><summary>¿Podemos integrarlo en nuestra web y compartirlo con nuestro contratista de limpieza?</summary><p>Sí. El distintivo de «estado de la última observación disponible» se integra en su web de reservas, y el resumen diario puede ir a la recepción así como a su equipo o a su contratista de limpieza de playa.</p></details>
 </div></section>
 
 <!-- RELACIONADOS / ENLACES INTERNOS -->
@@ -352,34 +352,33 @@
   <a href="https://sargasses-martinique.com/pro/">Sargasses Pro</a> ·
   <a href="https://sargasses-martinique.com/fiabilite/">Fiabilidad</a> ·
   <a href="https://sargasses-martinique.com/a-propos/">Acerca de</a> ·
-  <a href="https://sargasses-martinique.com/">Mapa en vivo</a> ·
+  <a href="https://sargasses-martinique.com/">Mapa de playas</a> ·
   <a href="https://sargasses-martinique.com/pro/hotels/" hreflang="fr">Version française</a>
   <div style="margin-top:10px">Pronóstico satelital de sargazo · Martinica y Guadalupe</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
-  var STATUS_WORD={clean:'LIMPIA',moderate:'MODERADA',avoid:'A EVITAR',unknown:'POR VERIFICAR'};
+  var STATUS_WORD={clean:'LIMPIA',moderate:'MODERADO',avoid:'EVITAR',unknown:'POR VERIFICAR'};
   var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A',unknown:'#9CA3AF'};
 
-  // --- Personalización del prospecto: ?beach=<id sarg> & ?hotel=<nombre> ---
-  // Un comercial envía /pro/es/hotels/?beach=diamant&hotel=Hotel%20X → el hotel ve
-  // SU playa en vivo + su fila de historial resaltada + el formulario prerrellenado.
+  // --- Prospect personalization: ?beach=<sarg id> & ?hotel=<name> ---
+  // A rep sends /pro/en/hotels/?beach=diamant&hotel=Hotel%20X → the hotel sees
+  // THEIR beach live + their track-record row highlighted + the form prefilled.
   var Q=new URLSearchParams(location.search);
   var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
   var QH=(Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
 
-  // Use the ERDDAP observation timestamp; updatedAt can change on republication.
-  var PUBLIC_STALE_AFTER_MS = 36 * 60 * 60 * 1000;
   function getObservationFreshness(data){
-    var observedAt=Date.parse(data && data.erddapTimestamp || '');
-    if(!Number.isFinite(observedAt) || observedAt>Date.now()) return {status:'unknown',label:'Antigüedad satelital desconocida'};
-    var ageMs=Date.now()-observedAt, ageHours=ageMs/3600000;
-    var ageLabel=ageHours<1?'hace menos de una hora':'hace '+Math.max(1,Math.round(ageHours))+' h';
-    var status=(data.stale===true || ageMs>PUBLIC_STALE_AFTER_MS)?'stale':'fresh';
-    return {status:status,label:(status==='stale'?'Observación satelital antigua':'Observación satelital')+' · '+ageLabel};
+    return window.SargagameB2BFreshness.getObservationFreshness(data,'es');
+  }
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
   }
   function setFreshnessPill(status,label){
     var pill=document.getElementById('freshpill');
@@ -388,51 +387,50 @@
   }
 
 
-  // --- Prueba en vivo: track-record.json ---
-  // HONESTIDAD: la cifra principal es la tasa de acierto GLOBAL (todos los regímenes) — la misma
-  // cifra que /fiabilite/ destaca. NO encabezamos con el tramo de mar-limpia en calma, que
-  // puede leerse momentáneamente como 100% y parece exagerado junto al referente del 70%. El
-  // detalle de mar limpia se queda en el pie, acotado, con su tamaño de muestra.
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+  // Render validation metrics only for a fresh public record that covers this page.
+  fetch('/api/copernicus/track-record.json').then(function(r){if(!r.ok)throw new Error('track-record HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var overall=(d.overall&&d.overall.statusHitRatePct!=null)?d.overall.statusHitRatePct:null;
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var cleanPct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct!=null?calm.cleanReliabilityPct:null);
-      var cleanN=calm&&calm.cleanSamples?calm.cleanSamples:0;
-      var totalN=d.sampleSize||0;
-      // Principal = tasa de acierto global medida; recurre a la cifra de mar-limpia solo si falta.
-      var hero=overall!=null?overall:cleanPct;
-      if(hero==null) throw new Error('no figure');
-      document.getElementById('tr-clean').textContent=hero+'%';
-      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      var cap='de nuestros veredictos se sostuvieron frente a la observación satelital, todos los regímenes'+win+
-        (totalN?(' — sobre '+Number(totalN).toLocaleString('es-ES')+' comparaciones fechadas en las Antillas Francesas'):'')+'.';
-      if(cleanPct!=null&&cleanN){
-        cap+=' Nuestras predicciones de «mar limpia» se verifican al '+cleanPct+'% ('+Number(cleanN).toLocaleString('es-ES')+
-          ' muestras); las alertas en temporada calma son el caso más difícil, y eso también lo publicamos.';
+      var state=window.SargagameB2BFreshness.getTrackRecordState(d,'mq');
+      var clean=document.getElementById('tr-clean'),headline=document.getElementById('tr-headline');
+      var table=document.getElementById('tr-table'),body=document.getElementById('tr-body');
+      if(body)body.textContent='';
+      if(!state.available){
+        if(clean)clean.textContent='—';
+        if(table)table.hidden=true;
+        var meta=[];
+        if(state.scopeLabel)meta.push('ámbito publicado: '+state.scopeLabel);
+        if(state.windowLabel)meta.push('período: '+state.windowLabel);
+        var message=state.reason==='region-not-covered'?'El historial publicado no cubre la región de esta página.':(state.reason==='missing-record'?'Historial público no disponible; no se muestra ningún porcentaje actual.':'Historial desactualizado o fuera de alcance; no se muestra ningún porcentaje actual.');
+        if(headline)headline.textContent=message+(meta.length?' '+meta.join(' · ')+'.':'');
+        return;
       }
-      document.getElementById('tr-headline').textContent=cap;
-      // Por playa: mostrar primero las playas MÁS DÉBILES (credibilidad, no selección interesada).
-      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number';})
-        ;
-      if(beaches.length){
-        var body=document.getElementById('tr-body');
+      var pct=d.overall&&d.overall.statusHitRatePct;
+      if(typeof pct!=='number'||!Number.isFinite(pct)||pct<0||pct>100){
+        if(clean)clean.textContent='—';if(table)table.hidden=true;if(headline)headline.textContent='El historial no contiene una tasa global válida; no se muestra ningún porcentaje.';return;
+      }
+      if(clean)clean.textContent=pct+'%';
+      if(headline)headline.textContent='Tasa global de acierto del ámbito '+state.scopeLabel+' ('+state.windowLabel+') — '+Number(state.sampleSize).toLocaleString('es-ES')+' dated comparisons.';
+      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number'&&Number.isFinite(b.hitRatePct)&&b.hitRatePct>=0&&b.hitRatePct<=100&&Number(b.samples)>0;});
+      if(beaches.length&&body){
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+Number(b.samples).toLocaleString('es-ES')+')';
           if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
-        document.getElementById('tr-table').hidden=false;
+        if(table)table.hidden=false;
       }
     }catch(e){
-      document.getElementById('tr-headline').textContent='Historial completo y fechado en nuestra página de fiabilidad.';
+      var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+      var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+      var table=document.getElementById('tr-table');if(table)table.hidden=true;
     }
   }).catch(function(){
-    document.getElementById('tr-headline').textContent='Historial completo y fechado en nuestra página de fiabilidad.';
+    var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+    var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Validation record unavailable; no current accuracy percentage is displayed.';
+    var table=document.getElementById('tr-table');if(table)table.hidden=true;
   });
-
   // --- Per-beach observation: hide verdicts and scores when source data is stale ---
   fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
     try{
@@ -449,8 +447,8 @@
       vd.style.color=col;
       score.textContent=freshEnough&&pick.score!=null?('puntuación '+pick.score+'/100'):'';
       ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(id==='d-halo'||id==='d-tip')el.setAttribute('fill',col);else el.setAttribute('stroke',col);});
-      // Vista personalizada: indica la playa y si su estado requiere verificación.
-      if(QB||QH){var pe=document.getElementById('perso');if(pe){pe.textContent='';pe.appendChild(document.createTextNode(QH?('Demo para '+QH+' · '):('Vista personalizada · ')));var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+(freshEnough?(' · observación disponible'):(' · estado por verificar'));pe.appendChild(bb);pe.style.display='block';}}
+      // Personalized preview: identify the beach and whether its estado por verificar.
+      if(QB||QH){var pe=document.getElementById('perso');if(pe){pe.textContent='';pe.appendChild(document.createTextNode(QH?('Demostración para '+QH+' · '):('Vista previa personalizada · ')));var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+(freshEnough?(' · observación disponible'):(' · estado por verificar'));pe.appendChild(bb);pe.style.display='block';}}
     }catch(e){
       document.getElementById('d-verdict').textContent=STATUS_WORD.unknown;document.getElementById('d-score').textContent='';
       document.getElementById('d-fresh').textContent='Observación satelital no disponible';setFreshnessPill('unknown','Observación satelital no disponible');
@@ -460,14 +458,14 @@
     document.getElementById('d-fresh').textContent='Observación satelital no disponible';setFreshnessPill('unknown','Observación satelital no disponible');
   });
 
-  // --- Captura de lead B2B → Apps Script (fuente dedicada) ---
+  // --- B2B lead capture → Apps Script (dedicated source) ---
   var form=document.getElementById('b2b-form');
   if(QH){var hi=document.getElementById('hotel');if(hi)hi.value=QH;}
   form.addEventListener('submit',function(e){
     e.preventDefault();
     var fd=new FormData(form);
     var zone=fd.get('zone')||'';
-    var island=zone==='Guadalupe'?'GP':'MQ';
+    var island=zone==='Guadeloupe'?'GP':'MQ';
     var payload={
       email:(fd.get('email')||'').trim(),
       island:island,
@@ -485,14 +483,14 @@
     document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
   });
 
-  // --- Lead magnet: resumen gratuito por email (baja fricción, MISMA fuente B2B que la
-  // solicitud de demo → entra en la secuencia drip-b2b que entrega el contenido) ---
+  // --- Lead magnet: free brief by email (low-friction, SAME B2B source as the demo
+  // request → enters the drip-b2b sequence that delivers the content) ---
   var mform=document.getElementById('magnet-form');
   if(mform){
     var mIsland=/^gp-/.test(QB)?'GP':'MQ';
     var ml=document.getElementById('m-live');
     if(ml&&mIsland==='GP')ml.href='https://sargasses-guadeloupe.com/';
-    if(QB){var mt2=document.getElementById('m-title');if(mt2)mt2.textContent='Reciba cada mañana el resumen de sargazo de '+prettyBeach(QB)+'.';}
+    if(QB){var mt2=document.getElementById('m-title');if(mt2)mt2.textContent="Get "+prettyBeach(QB)+"'s sargassum brief, every morning.";}
     mform.addEventListener('submit',function(e){
       e.preventDefault();
       var em=(document.getElementById('m-email').value||'').trim();
@@ -500,8 +498,8 @@
       var payload={
         email:em,island:mIsland,source:'b2b_hotel_request',
         hotel_name:QH||'',beach:QB||'',
-        note:'Lead magnet — resumen gratuito'+(QB?(' · playa '+QB):''),
-        zone:mIsland==='GP'?'Guadalupe':'Martinica',
+        note:'Resumen gratuito por email'+(QB?(' · beach '+QB):''),
+        zone:mIsland==='GP'?'Guadeloupe':'Martinique',
         capture:'leadmagnet_brief',lang:'es',date:new Date().toISOString()
       };
       fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});

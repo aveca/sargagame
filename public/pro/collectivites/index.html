@@ -146,9 +146,9 @@
     <p class="lede">Le même satellite qui veille la mer pour le voyageur veille votre rivage : prévision par plage sur 7 jours pour anticiper les moyens, alerte le matin où ça bascule, et un historique daté et auditable pour le suivi. En appui de votre plan sargasses — mesuré au satellite, pas deviné.</p>
     <div class="ctas">
       <a class="btn btn-gold" href="#demande">Activer le brief gratuit</a>
-      <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Voir la prévision en direct</a>
+      <a class="btn btn-ghost" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">Voir la dernière observation</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">données satellite Copernicus</span></div>
+    <div class="freshpill is-unknown" id="freshpill"><span class="pulse"></span><span id="fresh" aria-live="polite">Vérification de la fraîcheur satellite…</span></div>
     <div class="perso" id="perso"></div>
   </div>
 </header>
@@ -178,16 +178,16 @@
 <section class="proof px"><div class="wrap">
   <p class="sec-eyebrow">Pourquoi faire confiance à cette prévision</p>
   <h2>Nous publions notre fiabilité — et quand on se trompe, on l'écrit.</h2>
-  <p class="sub">Chaque jour, notre prévision est figée puis comparée à l'observation satellite réelle. Le palmarès est daté, par plage, et auditable — la transparence attendue d'un outil public.</p>
+  <p class="sub">Le palmarès public compare les prévisions aux observations disponibles. Il indique sa période, son périmètre régional et son état de fraîcheur ; aucun taux actuel n'est affiché lorsque le record est périmé ou hors périmètre.</p>
   <div class="gauge">
     <div class="big" id="tr-clean">—</div>
-    <div class="cap" id="tr-headline">Chargement du palmarès en direct…</div>
+    <div class="cap" id="tr-headline">Vérification du palmarès public…</div>
   </div>
   <table class="trtable" id="tr-table" hidden>
     <thead><tr><th>Plage (Antilles)</th><th style="text-align:right">Prévisions justes</th></tr></thead>
     <tbody id="tr-body"></tbody>
   </table>
-  <p class="bench">Les modèles de dérive publiés plafonnent autour de 70 % de justesse à ±3 jours (Lesser Antilles, Ifremer). Nous affichons notre chiffre réel, daté, avec sa taille d'échantillon — et nous publions aussi nos limites.</p>
+  <p class="bench">Les statistiques de validation ne sont affichées que lorsque le palmarès est à jour et que son périmètre couvre la région concernée. Un résultat historique ne garantit pas le résultat d’une plage donnée.</p>
   <p style="margin-top:16px"><a class="link" href="https://sargasses-martinique.com/fiabilite/" target="_blank" rel="noopener">Voir le palmarès complet et la méthode →</a></p>
 </div></section>
 
@@ -230,8 +230,8 @@
         <input type="email" id="m-email" name="email" placeholder="vous@collectivite.fr" required autocomplete="email" aria-label="Email professionnel"/>
         <button type="submit" class="btn btn-gold">Recevoir mon brief gratuit</button>
       </form>
-      <p class="trust-row" id="m-trust">Gratuit · sans engagement · désinscription en un clic · données satellite Copernicus.</p>
-      <div class="form-ok" id="magnet-ok">Parfait — votre premier brief part par email. En attendant, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">voyez vos plages en direct maintenant →</a></div>
+      <p class="trust-row" id="m-trust">Gratuit · sans engagement · désinscription en un clic · observations AFAI NOAA/AOML ERDDAP.</p>
+      <div class="form-ok" id="magnet-ok">Parfait — votre premier brief part par email. En attendant, <a id="m-live" href="https://sargasses-martinique.com/" target="_blank" rel="noopener">consultez la dernière observation de vos plages →</a></div>
     </div>
   </div>
 </div></section>
@@ -240,7 +240,7 @@
   <p class="sec-eyebrow">Comment ça marche</p>
   <h2>Du satellite à la décision de terrain.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>Le satellite repère les bancs</h3><p>Données Copernicus / ERDDAP, indice AFAI, croisées avec vent et courants — mises à jour 4×/jour.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>Le satellite repère les bancs</h3><p>Observations AFAI distribuées via NOAA/AOML ERDDAP, complétées par les courants Copernicus Marine et le vent Open-Meteo. Le pipeline vérifie les sources plusieurs fois par jour ; une nouvelle observation AFAI n'est pas garantie à chaque passage.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>On localise sur vos plages</h3><p>Modèle de dérive + persistance : une prévision par plage de votre territoire, sur 7 jours, avec niveau de confiance.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Vous décidez et documentez</h3><p>Anticipation des moyens, alerte au changement d'état, et historique daté pour le suivi et le reporting.</p></div></div>
   </div>
@@ -280,74 +280,100 @@
   <div style="margin-top:10px">Prévision satellite des sargasses · Martinique &amp; Guadeloupe</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
-  var STATUS_WORD={clean:'PROPRE',moderate:'MODÉRÉ',avoid:'À ÉVITER'};
-  var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A'};
+  var STATUS_WORD={clean:'PROPRE',moderate:'MODÉRÉ',avoid:'À ÉVITER',unknown:'À VÉRIFIER'};
+  var STATUS_COLOR={clean:'#22C55E',moderate:'#FFC72C',avoid:'#E8522A',unknown:'#9CA3AF'};
   // Personnalisation prospect : ?beach=<id> & ?org=<nom> (ou ?hotel=) →
   // démo cadrée sur la plage de la commune + palmarès surligné + form prérempli.
   var Q=new URLSearchParams(location.search);
   var QB=(Q.get('beach')||Q.get('b')||'').toLowerCase().trim();
   var QH=(Q.get('org')||Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'vérification en cours…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'EN DIRECT · il y a '+m+' min';}
-    return 'EN DIRECT · il y a '+Math.max(1,Math.round(h))+' h';
+  function getObservationFreshness(data){
+    return window.SargagameB2BFreshness.getObservationFreshness(data,'fr');
   }
-  fetch('/api/copernicus/track-record.json').then(function(r){return r.json()}).then(function(d){
+  function setFreshnessPill(status,label){
+    var pill=document.getElementById('freshpill');
+    if(pill){pill.classList.remove('is-stale','is-unknown');if(status==='stale')pill.classList.add('is-stale');else if(status!=='fresh')pill.classList.add('is-unknown');}
+    var fresh=document.getElementById('fresh');if(fresh)fresh.textContent=label;
+  }
+  // Render validation metrics only for a fresh public record that covers this page.
+  fetch('/api/copernicus/track-record.json').then(function(r){if(!r.ok)throw new Error('track-record HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var calm=(d.byRegime&&d.byRegime.calm)||null;
-      var pct=(d.overall&&d.overall.statusHitRatePct)||(calm&&calm.cleanReliabilityPct);
-      var n=(d.sampleSize||(calm&&calm.cleanSamples)||0);
-      document.getElementById('tr-clean').textContent=pct+'%';
-      var win=d.window&&d.window.from?(' ('+d.window.from+' → '+d.window.to+')'):'';
-      document.getElementById('tr-headline').textContent='de nos verdicts se sont vérifiés, tous régimes confondus'+win+' — sur '+Number(n).toLocaleString('fr-FR')+' comparaisons.';
-      var beaches=(d.byBeach||[]);
-      if(beaches.length){
-        var body=document.getElementById('tr-body');
+      var state=window.SargagameB2BFreshness.getTrackRecordState(d,'mq');
+      var clean=document.getElementById('tr-clean'),headline=document.getElementById('tr-headline');
+      var table=document.getElementById('tr-table'),body=document.getElementById('tr-body');
+      if(body)body.textContent='';
+      if(!state.available){
+        if(clean)clean.textContent='—';
+        if(table)table.hidden=true;
+        var meta=[];
+        if(state.scopeLabel)meta.push('périmètre publié : '+state.scopeLabel);
+        if(state.windowLabel)meta.push('période : '+state.windowLabel);
+        var message=state.reason==='region-not-covered'?'Le palmarès publié ne couvre pas la région de cette page.':(state.reason==='missing-record'?'Palmarès public indisponible ; aucun taux actuel n’est affiché.':'Palmarès périmé ou hors périmètre ; aucun taux actuel n’est affiché.');
+        if(headline)headline.textContent=message+(meta.length?' '+meta.join(' · ')+'.':'');
+        return;
+      }
+      var pct=d.overall&&d.overall.statusHitRatePct;
+      if(typeof pct!=='number'||!Number.isFinite(pct)||pct<0||pct>100){
+        if(clean)clean.textContent='—';if(table)table.hidden=true;if(headline)headline.textContent='Le palmarès ne contient pas de taux global valide ; aucun pourcentage n’est affiché.';return;
+      }
+      if(clean)clean.textContent=pct+'%';
+      if(headline)headline.textContent='Taux global du périmètre '+state.scopeLabel+' ('+state.windowLabel+') — '+Number(state.sampleSize).toLocaleString('fr-FR')+' comparaisons datées.';
+      var beaches=(d.byBeach||[]).filter(function(b){return b&&b.name&&typeof b.hitRatePct==='number'&&Number.isFinite(b.hitRatePct)&&b.hitRatePct>=0&&b.hitRatePct<=100&&Number(b.samples)>0;});
+      if(beaches.length&&body){
         beaches.forEach(function(b){
           var tr=document.createElement('tr');
           var td1=document.createElement('td');td1.textContent=b.name;
-          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+(b.samples||0)+')';
+          var td2=document.createElement('td');td2.className='pct';td2.textContent=b.hitRatePct+'% ('+Number(b.samples).toLocaleString('fr-FR')+')';
           if(QB&&String(b.id).toLowerCase()===QB){tr.style.background='rgba(255,199,44,.14)';td1.style.fontWeight='800';td2.style.color='#FFC72C';}
           tr.appendChild(td1);tr.appendChild(td2);body.appendChild(tr);
         });
-        document.getElementById('tr-table').hidden=false;
+        if(table)table.hidden=false;
       }
-    }catch(e){}
-  }).catch(function(){document.getElementById('tr-headline').textContent='Palmarès consultable sur la page fiabilité.';});
+    }catch(e){
+      var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+      var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Palmarès indisponible ; aucun taux actuel n’est affiché.';
+      var table=document.getElementById('tr-table');if(table)table.hidden=true;
+    }
+  }).catch(function(){
+    var clean=document.getElementById('tr-clean');if(clean)clean.textContent='—';
+    var headline=document.getElementById('tr-headline');if(headline)headline.textContent='Palmarès indisponible ; aucun taux actuel n’est affiché.';
+    var table=document.getElementById('tr-table');if(table)table.hidden=true;
+  });
 
-  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
+
+  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('sargassum HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var lv=(d.levels||[]);
+      var freshness=getObservationFreshness(d),lv=Array.isArray(d.levels)?d.levels:[];
       var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
-      if(!pick) return;
-      var col=STATUS_COLOR[pick.status]||'#22C55E';
-      document.getElementById('d-name').textContent=prettyBeach(pick.id);
-      var vd=document.getElementById('d-verdict');vd.textContent=STATUS_WORD[pick.status]||'PROPRE';vd.style.color=col;
-      document.getElementById('d-score').textContent=pick.score!=null?('score '+pick.score+'/100'):'';
-      document.getElementById('d-fresh').textContent=relTime(d.updatedAt);
-      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){
-        var el=document.getElementById(id);if(!el)return;
-        if(id==='d-halo'||id==='d-tip'){el.setAttribute('fill',col);}else{el.setAttribute('stroke',col);}
-      });
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'données satellite Copernicus';
-      if(QB||QH){
-        var pe=document.getElementById('perso');
-        if(pe){
-          pe.textContent='';
-          pe.appendChild(document.createTextNode(QH?('Démo pour '+QH+' · '):'Démo personnalisée · '));
-          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' en direct';
-          pe.appendChild(bb);
-          pe.style.display='block';
-        }
-      }
-    }catch(e){}
-  }).catch(function(){});
+      var vd=document.getElementById('d-verdict'),score=document.getElementById('d-score');
+      var freshEnough=freshness.status==='fresh';
+      setFreshnessPill(freshness.status,freshness.label);
+      var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent=freshness.label;
+      if(!pick){if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}if(score)score.textContent='';return;}
+      var col=freshEnough?(STATUS_COLOR[pick.status]||STATUS_COLOR.unknown):STATUS_COLOR.unknown;
+      var dName=document.getElementById('d-name');if(dName)dName.textContent=prettyBeach(pick.id);
+      if(vd){vd.textContent=freshEnough?(STATUS_WORD[pick.status]||STATUS_WORD.unknown):STATUS_WORD.unknown;vd.style.color=col;}
+      if(score)score.textContent=freshEnough&&pick.score!=null?('score '+pick.score+'/100'):'';
+      ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){var el=document.getElementById(id);if(!el)return;if(id==='d-halo'||id==='d-tip')el.setAttribute('fill',col);else el.setAttribute('stroke',col);});
+      if(QB||QH){var pe=document.getElementById('perso');if(pe){pe.textContent='';pe.appendChild(document.createTextNode(QH?'Démo pour '+QH+' · ':'Démo personnalisée · '));var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' · '+(freshEnough?'observation disponible':'statut à vérifier');pe.appendChild(bb);pe.style.display='block';}}
+    }catch(e){
+      var vd=document.getElementById('d-verdict');if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}
+      var score=document.getElementById('d-score');if(score)score.textContent='';
+      var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent='Observation satellite indisponible';
+      setFreshnessPill('unknown','Observation satellite indisponible');
+    }
+  }).catch(function(){
+    var vd=document.getElementById('d-verdict');if(vd){vd.textContent=STATUS_WORD.unknown;vd.style.color=STATUS_COLOR.unknown;}
+    var score=document.getElementById('d-score');if(score)score.textContent='';
+    var dFresh=document.getElementById('d-fresh');if(dFresh)dFresh.textContent='Observation satellite indisponible';
+    setFreshnessPill('unknown','Observation satellite indisponible');
+  });
+
 
   var form=document.getElementById('b2b-form');
   if(QH){var oi=document.getElementById('org');if(oi)oi.value=QH;}
