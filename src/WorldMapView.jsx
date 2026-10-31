@@ -219,8 +219,7 @@ export default function WorldMapView({
   },[wmDecisionAvailable,wmSatT]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatAgeColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
-  const wmSatDotColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
+  const wmSatColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -1710,11 +1709,11 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:wmSatDotColor,border:`1.5px solid ${INK}`,
+              width:8,height:8,borderRadius:"50%",background:wmSatColor,border:`1.5px solid ${INK}`,
               animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatColor,marginLeft:2}}>
               {wmSatAge}
             </span>
             {/* Couleur verte = satellite <12h ; neutre = 12–36h ; ambre = >=36h. */}
