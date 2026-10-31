@@ -44,7 +44,6 @@ export function isSatelliteStale36h(sargData, now = Date.now()) {
   return age >= 36;
 }
 
-
 /**
  * Statut précis de la source satellite pour la pill de carte.
  * Ne confond pas la fraîcheur de l'observation satellite avec la date de
@@ -134,7 +133,6 @@ export function formatFreshnessAge(updatedAt, lang = "fr", now = Date.now()) {
   const age = locale === "fr" ? days + " j" : locale === "es" ? days + (days === 1 ? " día" : " días") : days + (days === 1 ? " day" : " days");
   return locale === "fr" ? "il y a " + age : locale === "es" ? "hace " + age : age + " ago";
 }
-
 
 // Copy contract for the ChasseHome map CTA. Beach counts are only called today/live
 // when the observation itself is less than 12 hours old; pipeline republication time is not evidence.
@@ -235,8 +233,6 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
   }
   return { state: "stale", live: false, badge: labels.staleBadge, label: labels.stale, ageHours };
 }
-
-
 
 /** Format the source observation timestamp explicitly in UTC for the HomeAZ hero. */
 export function formatObservationTimestamp(raw, lang = "fr") {
