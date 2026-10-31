@@ -204,8 +204,7 @@ export default function WorldMapView({
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const wmSatT = Date.parse(erddapTimestamp || "");
-  const wmPubT = Date.parse(updatedAt || "");
-  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== wmPubT;
+  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== Date.parse(updatedAt || "");
   const wmSatData = {erddapTimestamp:wmSatValid?erddapTimestamp:null};
   const wmSatFresh = isSatelliteFresh12h(wmSatData);
   const wmSatStale = isSatelliteStale36h(wmSatData);
@@ -216,7 +215,7 @@ export default function WorldMapView({
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{
     if(!wmDecisionAvailable) return;
-    const recheck=()=>setMapFreshnessTick(value=>value+1);
+    const recheck=()=>setMapFreshnessTick(Date.now());
     const timer=setTimeout(recheck,Math.max(0,36*3_600_000-(Date.now()-wmSatT)+50));
     document.addEventListener("visibilitychange",recheck);
     return()=>{clearTimeout(timer);document.removeEventListener("visibilitychange",recheck)};
@@ -1808,13 +1807,13 @@ export default function WorldMapView({
           }}>
             {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
-          <div {...(!mapCleanTapOff&&wmDecisionAvailable?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
+          {wmDecisionAvailable && <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
             marginTop:9,display:"inline-flex",flexWrap:"wrap",alignItems:"center",gap:9,rowGap:6,maxWidth:"calc(100vw - 36px)",pointerEvents:"auto",
-            cursor:mapCleanTapOff||!wmDecisionAvailable?undefined:"pointer",
+            cursor:mapCleanTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
-            {wmDecisionAvailable ? <>
+
               <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 13px 8px",background:"#eafaf1",
                 border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`}}>
                 <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:26,lineHeight:1,color:"#177A42"}}>{cleanCnt}</b>
@@ -1833,10 +1832,8 @@ export default function WorldMapView({
                 <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:22,lineHeight:1}}>{avoidCnt}</b>
                 {_t(lang,"à éviter","to avoid","a evitar")}
               </span>
-            </> : (
-              <span role="status">{wmSatLbl}</span>
-            )}
-          </div>
+
+          </div>}
           </>)}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
