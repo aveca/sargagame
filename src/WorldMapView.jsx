@@ -204,18 +204,17 @@ export default function WorldMapView({
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const wmSatT = Date.parse(erddapTimestamp || "");
-  const wmSatValid = wmSatT > 0 && wmSatT <= Date.now();
-  const wmSatData = {erddapTimestamp:wmSatValid?erddapTimestamp:null};
+  const wmSatData = wmSatT > 0 && wmSatT <= Date.now() ? {erddapTimestamp} : null;
   const wmSatFresh = isSatelliteFresh12h(wmSatData);
-  const wmDecisionAvailable = wmSatValid && !isSatelliteStale36h(wmSatData);
+  const wmDecisionAvailable = !!wmSatData && !isSatelliteStale36h(wmSatData);
   const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
-  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp,lang) : "···";
+  const wmSatAge = wmSatData ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   // Re-vérifie le cutoff après 36 h et au retour d'onglet.
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{if(!wmDecisionAvailable)return;const timer=setTimeout(()=>setMapFreshnessTick(Date.now()),Math.max(0,129600050+wmSatT-Date.now()));return()=>clearTimeout(timer)},[wmDecisionAvailable,wmSatT]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatColor = wmSatValid && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  const wmSatColor = wmSatData && !wmDecisionAvailable ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
