@@ -155,15 +155,15 @@ const scanRawCssText = () => {
 const rawCss = [];
 
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
-//       chaque visiteur). Les pins [data-map-pin] prouvent que la carte est montée
+//       chaque visiteur). Le SVG live et ses groupes cliquables prouvent que la carte est montée
 //       et que les localisations sont chargées, même si les verdicts sont suspendus.
 await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
-await p.waitForSelector('[data-map-pin]', { timeout: 30000 }).catch(() => {});
+await p.waitForSelector('svg[data-sg-live="1"] g[style*="cursor"]', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
 await p.screenshot({ path: '/tmp/j1-map.png' });
 const mapOk = await p.evaluate(() => {
-  const root = document.querySelector('[data-map-decision-state]');
-  return !!root && document.querySelectorAll('[data-map-pin]').length >= 3;
+  const root = document.querySelector('svg[data-sg-live="1"]');
+  return !!root && root.querySelectorAll('g[style*="cursor"]').length >= 3;
 });
 whiteButtons.push(...await p.evaluate(scanGhost));
 const homeHeadings = await p.evaluate(scanHeadings);
@@ -172,7 +172,7 @@ rawCss.push(...await p.evaluate(scanRawCssText));
 // ── 2. Détail plage : tap sur un pin (les pins neutres restent navigables quand
 //       le verdict est suspendu ; aucun label de statut périmé n'est nécessaire).
 await p.evaluate(() => {
-  const pin = document.querySelector('[data-map-pin]');
+  const pin = document.querySelector('svg[data-sg-live="1"] g[style*="cursor"]');
   if (pin) pin.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 });
 await p.waitForSelector('.lc-detail, .sheet', { timeout: 12000 }).catch(() => {});
@@ -255,8 +255,12 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
   ).catch(() => {});
   await stalePage.waitForTimeout(900);
   const result = await stalePage.evaluate(() => {
-    const pinColors = [...document.querySelectorAll('svg g[style*="cursor"] circle:last-child')]
-      .map(pin => pin.getAttribute('fill'));
+    const pinColors = [...document.querySelectorAll('svg[data-sg-live="1"] g[style*="cursor"]')].map(pin => {
+      const path = pin.querySelector('path');
+      if (path) return path.getAttribute('fill');
+      const dot = [...pin.querySelectorAll('circle')].find(circle => circle.getAttribute('r') === '3.2');
+      return dot?.getAttribute('fill') || null;
+    });
     const body = document.body.innerText;
     return {
       pinCount: pinColors.length,
