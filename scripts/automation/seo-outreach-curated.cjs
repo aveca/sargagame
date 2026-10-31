@@ -34,6 +34,10 @@ const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve, dirname } = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, normalizeFrom } = require('./lib/email-send.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 const DRY_RUN = process.env.DRY_RUN === '1'
 const OUTREACH_INTL = process.env.OUTREACH_INTL === '1'

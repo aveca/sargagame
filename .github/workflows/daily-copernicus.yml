@@ -359,6 +359,9 @@ jobs:
     timeout-minutes: 45
     continue-on-error: true
     env:
+      # DRY_RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -701,6 +704,10 @@ jobs:
     needs: [fetch-data, email-automation, health-check, build]
     if: failure() && (needs.fetch-data.result == 'skipped' || needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
+    env:
+      # DRY_RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0

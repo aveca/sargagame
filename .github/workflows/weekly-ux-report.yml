@@ -26,6 +26,9 @@ jobs:
     # déclenchait jamais). Repo public = minutes GH illimitées, donc large.
     timeout-minutes: 50
     env:
+      # DRY_RUN par défaut pour les déclencheurs schedule.
+      # L'envoi réel (DRY_RUN=0) nécessite une approbation d'Environment GitHub.
+      DRY_RUN: '1'
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:

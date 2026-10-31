@@ -20,13 +20,17 @@
  *   node scripts/automation/beached-calibrate.cjs --write   # écrit le JSON (pas d'email)
  *   node scripts/automation/beached-calibrate.cjs --send    # écrit + email si SMTP prêt
  */
-const fs = require('fs')
-const path = require('path')
+const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
+const { resolve } = require('path')
 const { buildHonestForecast } = require('../lib/forecast.cjs')
 const {
   BEACHES_META, HISTORY_PATH, BANKS_PATH, loadJSON,
 } = require('./backtest-forecast.cjs')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {

@@ -12,6 +12,10 @@
 const fs = require('fs')
 const path = require('path')
 const https = require('https')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 // ── Paths ────────────────────────────────────────────────────
 const ROOT = path.resolve(__dirname, '..', '..')
