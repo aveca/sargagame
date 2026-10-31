@@ -55,6 +55,110 @@ async function listAll(basePath, key, cap = 500) {
   return out
 }
 
+
+function normalizeCurrency(amount) {
+  const currency = typeof amount?.currency === 'string'
+    ? amount.currency.trim().toUpperCase()
+    : ''
+  return /^[A-Z]{3}$/.test(currency) ? currency : 'UNKNOWN'
+}
+
+function roundMoney(value) {
+  return Math.round((Number(value) + Number.EPSILON) * 100) / 100
+}
+
+/**
+ * Keep financial totals separated by Mollie transaction currency.
+ * Legacy *_eur fields are EUR-only; no implicit FX conversion is performed.
+ */
+function calculateMollieMetrics(activeSubs = [], paid = []) {
+  const groups = new Map()
+  const ensureCurrency = currency => {
+    if (!groups.has(currency)) {
+      groups.set(currency, {
+        subscriptions: 0,
+        passes_month: 0,
+        b2b_month: 0,
+        revenue_month: 0,
+        payments: 0,
+      })
+    }
+    return groups.get(currency)
+  }
+
+  // Keep the legacy EUR-only fields present even when there is no EUR activity.
+  ensureCurrency('EUR')
+
+  for (const subscription of activeSubs) {
+    const amount = Number.parseFloat(subscription.amount?.value || '0')
+    if (!Number.isFinite(amount)) continue
+
+    const interval = String(subscription.interval || '1 month').toLowerCase()
+    const monthlyAmount = interval.includes('12') || interval.includes('year')
+      ? amount / 12
+      : amount
+    ensureCurrency(normalizeCurrency(subscription.amount)).subscriptions += monthlyAmount
+  }
+
+  for (const payment of paid) {
+    const amount = Number.parseFloat(payment.amount?.value || '0')
+    if (!Number.isFinite(amount)) continue
+
+    const group = ensureCurrency(normalizeCurrency(payment.amount))
+    group.payments += 1
+    group.revenue_month += amount
+
+    if ((payment.metadata?.pass || '').startsWith('p') ||
+        (payment.metadata?.plan || '').startsWith('pass')) {
+      group.passes_month += amount
+    }
+
+    const description = (payment.description || '').toLowerCase()
+    if (description.includes('pro') || description.includes('brief')) {
+      group.b2b_month += amount
+    }
+  }
+
+  const byCurrency = {}
+  for (const [currency, group] of [...groups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+    byCurrency[currency] = {
+      subscriptions: roundMoney(group.subscriptions),
+      passes_month: roundMoney(group.passes_month),
+      b2b_month: roundMoney(group.b2b_month),
+      total: roundMoney(group.subscriptions + group.b2b_month / 12),
+      revenue_month: roundMoney(group.revenue_month),
+      payments: group.payments,
+    }
+  }
+
+  const eur = byCurrency.EUR
+  const currencyBreakdown = {}
+  const revenueByCurrency = {}
+  for (const [currency, totals] of Object.entries(byCurrency)) {
+    if (totals.payments === 0) continue
+    currencyBreakdown[currency] = {
+      count: totals.payments,
+      total_amount: totals.revenue_month,
+    }
+    revenueByCurrency[currency] = totals.revenue_month
+  }
+
+  return {
+    mrr: {
+      // Backward-compatible EUR fields now contain EUR transactions only.
+      total_eur: eur.total,
+      subscriptions_eur: eur.subscriptions,
+      passes_month_eur: eur.passes_month,
+      b2b_month_eur: eur.b2b_month,
+      by_currency: byCurrency,
+    },
+    payments_this_month: paid.length,
+    revenue_this_month_eur: eur.revenue_month,
+    revenue_this_month_by_currency: revenueByCurrency,
+    currency_breakdown: currencyBreakdown,
+  }
+}
+
 async function main() {
   const key = (process.env.MOLLIE_API_KEY || '').trim()
   if (!key) { console.log('MOLLIE_API_KEY absent — skip'); process.exit(0) }
@@ -79,24 +183,8 @@ async function main() {
   const payments = await listAll(`payments?limit=250&createdFrom=${encodeURIComponent(monthStart)}`, key)
   const paid = payments.filter(p => p.status === 'paid')
 
-  // 3. Calculs
-  const monthlySubMRR = activeSubs.reduce((sum, s) => {
-    const amount = parseFloat(s.amount?.value || '0')
-    const interval = s.interval || '1 month'
-    // Annualize monthly, then divide by 12
-    if (interval.includes('12') || interval.includes('year')) return sum + (amount / 12)
-    return sum + amount
-  }, 0)
-
-  const monthlyPassRevenue = paid
-    .filter(p => (p.metadata?.pass || '').startsWith('p') || (p.metadata?.plan || '').startsWith('pass'))
-    .reduce((sum, p) => sum + parseFloat(p.amount?.value || '0'), 0)
-
-  const monthlyB2BRevenue = paid
-    .filter(p => (p.description || '').toLowerCase().includes('pro') || (p.description || '').toLowerCase().includes('brief'))
-    .reduce((sum, p) => sum + parseFloat(p.amount?.value || '0'), 0)
-
-  const totalMRR = monthlySubMRR + (monthlyB2BRevenue / 12) // annualized B2B one-time
+  // 3. Calculs séparés par devise (aucune conversion FX implicite).
+  const metrics = calculateMollieMetrics(activeSubs, paid)
 
   const uniquePayers = new Set()
   const uniquePayersAll = new Set()
@@ -104,38 +192,22 @@ async function main() {
   for (const p of paid) { if (p.customerId) uniquePayersAll.add(p.customerId) }
 
   const report = {
+    schema_version: 2,
     date: now.toISOString().split('T')[0],
     timestamp: now.toISOString(),
     source: 'mollie-api',
-    // MRR core
-    mrr: {
-      total_eur: Math.round(totalMRR * 100) / 100,
-      subscriptions_eur: Math.round(monthlySubMRR * 100) / 100,
-      passes_month_eur: Math.round(monthlyPassRevenue * 100) / 100,
-      b2b_month_eur: Math.round(monthlyB2BRevenue * 100) / 100,
-    },
+    mrr: metrics.mrr,
     // Clients
     customers: {
       active_subs: activeSubs.length,
       paid_this_month: paid.length,
       unique_payers_all: uniquePayersAll.size,
     },
-    // Paiements du mois
-    payments_this_month: paid.length,
-    revenue_this_month_eur: Math.round(paid.reduce((s, p) => s + parseFloat(p.amount?.value || '0'), 0) * 100) / 100,
-    currency_breakdown: {},
-  }
-
-  // Currency breakdown
-  const byCurrency = {}
-  for (const p of paid) {
-    const c = p.amount?.currency || 'EUR'
-    if (!byCurrency[c]) byCurrency[c] = { count: 0, total: 0 }
-    byCurrency[c].count++
-    byCurrency[c].total += parseFloat(p.amount?.value || '0')
-  }
-  for (const [c, v] of Object.entries(byCurrency)) {
-    report.currency_breakdown[c] = { count: v.count, total_eur: Math.round(v.total * 100) / 100 }
+    // Paiements du mois : les champs EUR sont EUR-only ; les autres devises restent séparées.
+    payments_this_month: metrics.payments_this_month,
+    revenue_this_month_eur: metrics.revenue_this_month_eur,
+    revenue_this_month_by_currency: metrics.revenue_this_month_by_currency,
+    currency_breakdown: metrics.currency_breakdown,
   }
 
   // Lire l'historique et append
@@ -150,30 +222,60 @@ async function main() {
   // Éviter les doublons du jour
   const today = now.toISOString().split('T')[0]
   history = history.filter(h => h.date !== today)
-  history.push({ date: today, mrr: report.mrr, customers: report.customers, revenue: report.revenue_this_month_eur })
+  history.push({
+    schema_version: 2,
+    date: today,
+    mrr: report.mrr,
+    customers: report.customers,
+    revenue: report.revenue_this_month_eur,
+    revenue_by_currency: report.revenue_this_month_by_currency,
+  })
   // Garder 90 jours
   history.sort((a, b) => a.date.localeCompare(b.date))
   if (history.length > 90) history = history.slice(-90)
 
   report.history = history
-  report.trend = history.length >= 2 ? {
-    mrr_7d: history.length >= 7 ? history.slice(-7)[0].mrr.total_eur : null,
-    mrr_30d: history.length >= 30 ? history[history.length - 30].mrr.total_eur : null,
+  // Ignore pre-v2 history: its EUR-labelled totals mixed raw EUR and USD amounts.
+  const versionedHistory = history.filter(entry => entry.schema_version === 2)
+  const historicalMrr = (currency, days) => {
+    if (versionedHistory.length < days) return null
+    const entry = versionedHistory[versionedHistory.length - days]
+    return entry.mrr?.by_currency?.[currency]?.total ?? 0
+  }
+  report.trend = versionedHistory.length >= 2 ? {
+    mrr_7d: historicalMrr('EUR', 7),
+    mrr_30d: historicalMrr('EUR', 30),
     current: report.mrr.total_eur,
+    by_currency: Object.fromEntries(
+      Object.entries(report.mrr.by_currency).map(([currency, totals]) => [currency, {
+        mrr_7d: historicalMrr(currency, 7),
+        mrr_30d: historicalMrr(currency, 30),
+        current: totals.total,
+      }])
+    ),
   } : null
 
-  console.log(`\n📊 Mollie MRR: €${report.mrr.total_eur}`)
-  console.log(`   Abonnements: €${report.mrr.subscriptions_eur} (${report.customers.active_subs} actifs)`)
-  console.log(`   Passes B2C ce mois: €${report.mrr.passes_month_eur} (${report.payments_this_month} paiements)`)
-  console.log(`   B2B ce mois: €${report.mrr.b2b_month_eur}`)
-  console.log(`   Paiements ce mois: ${report.payments_this_month} · Revenu: €${report.revenue_this_month_eur}`)
-  console.log(`   Période MRR: ${history.length} jours`)
+  console.log(`\n📊 Mollie MRR EUR (EUR uniquement): €${report.mrr.total_eur}`)
+  console.log(`   Abonnements EUR: €${report.mrr.subscriptions_eur} (${report.customers.active_subs} actifs au total)`)
+  console.log(`   Passes B2C EUR ce mois: €${report.mrr.passes_month_eur}`)
+  console.log(`   B2B EUR ce mois: €${report.mrr.b2b_month_eur}`)
+  console.log(`   Revenu EUR ce mois: €${report.revenue_this_month_eur}`)
+  for (const [currency, totals] of Object.entries(report.mrr.by_currency)) {
+    if (currency === 'EUR') continue
+    console.log(`   MRR ${currency} (non converti): ${totals.total}`)
+  }
+  for (const [currency, revenue] of Object.entries(report.revenue_this_month_by_currency)) {
+    if (currency === 'EUR') continue
+    console.log(`   Revenu ${currency} ce mois (non converti): ${revenue}`)
+  }
+  console.log(`   Paiements ce mois: ${report.payments_this_month}`)
+  console.log(`   Période MRR v2: ${versionedHistory.length} jours`)
 
-  // Target €1000
+  // Target €1000 — EUR only; USD and unknown currencies are not converted.
   const target = 1000
   const pct = Math.round((report.mrr.total_eur / target) * 10000) / 100
-  console.log(`\n🎯 Target €${target}/mois: ${pct}% atteint`)
-  console.log(`   Il reste €${Math.round((target - report.mrr.total_eur) * 100) / 100} à générer`)
+  console.log(`\n🎯 Cible EUR €${target}/mois: ${pct}% atteint`)
+  console.log(`   Il reste €${Math.round((target - report.mrr.total_eur) * 100) / 100} à générer en EUR`)
 
   if (SEND) {
     fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
@@ -186,4 +288,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
 }
 
-module.exports = { resolveMollieApiUrl, mollieGet, listAll }
+module.exports = { resolveMollieApiUrl, mollieGet, listAll, normalizeCurrency, calculateMollieMetrics }
