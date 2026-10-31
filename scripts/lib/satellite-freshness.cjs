@@ -3,6 +3,7 @@
 // Shared freshness contract for static satellite payloads.
 // The observation timestamp (not updatedAt) is authoritative.
 const SAT_STALE_HOURS = 36;
+const OPERATIONAL_SLA_MINUTES = 900;
 
 function satelliteFreshness(erddapTimestamp, now = Date.now()) {
   const timestamp = typeof erddapTimestamp === 'number'
@@ -37,4 +38,45 @@ function refreshSatellitePayload(payload, now = Date.now()) {
   return payload;
 }
 
-module.exports = { SAT_STALE_HOURS, satelliteFreshness, refreshSatellitePayload };
+/**
+ * Validate a live ERDDAP observation for customer-facing scheduled briefs.
+ * This operational gate is stricter than the 36h public stale marker.
+ * Cached dataAgeMinutes, stale, and updatedAt are deliberately ignored.
+ */
+function operationalSatelliteFreshness(payload, now = Date.now()) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload) || payload.source !== 'erddap-live') {
+    return { fresh: false, ageMinutes: null, reason: 'non-live-source' };
+  }
+
+  const timestamp = typeof payload.erddapTimestamp === 'number'
+    ? payload.erddapTimestamp
+    : Date.parse(String(payload.erddapTimestamp ?? ''));
+
+  if (!Number.isFinite(timestamp) || timestamp <= 0 || !Number.isFinite(now) || timestamp > now) {
+    return {
+      fresh: false,
+      ageMinutes: null,
+      reason: payload.erddapTimestamp == null
+        ? 'missing-observation-timestamp'
+        : 'invalid-or-future-observation-timestamp',
+    };
+  }
+
+  const ageMs = now - timestamp;
+  const ageMinutes = Math.floor(ageMs / 60_000);
+  const fresh = ageMs <= OPERATIONAL_SLA_MINUTES * 60_000;
+
+  return {
+    fresh,
+    ageMinutes,
+    reason: fresh ? 'within-operational-sla' : 'observation-outside-operational-sla',
+  };
+}
+
+module.exports = {
+  SAT_STALE_HOURS,
+  OPERATIONAL_SLA_MINUTES,
+  satelliteFreshness,
+  refreshSatellitePayload,
+  operationalSatelliteFreshness,
+};
