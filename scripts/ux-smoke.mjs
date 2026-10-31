@@ -155,8 +155,8 @@ const scanRawCssText = () => {
 const rawCss = [];
 
 // ── 1. Atterrissage réel : la carte-monde (CARTE-FIRST — URL nue, ce que voit
-//       chaque visiteur). Les labels de plage .sg-maplabel prouvent que la carte
-//       est montée ET nourrie en data (declutter n'en révèle qu'un sous-ensemble).
+//       chaque visiteur). Les pins [data-map-pin] prouvent que la carte est montée
+//       et que les localisations sont chargées, même si les verdicts sont suspendus.
 await p.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
 await p.waitForSelector('[data-map-pin]', { timeout: 30000 }).catch(() => {});
 await p.waitForTimeout(2000);
