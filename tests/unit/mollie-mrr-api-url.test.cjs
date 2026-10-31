@@ -78,7 +78,7 @@ async function main() {
     global.fetch = originalFetch
   }
 
-  console.log('MOLLIE_MRR_API_URL_TESTS PASS (10 assertions)')
+  console.log('MOLLIE_MRR_API_URL_TESTS PASS (11 assertions)')
 }
 
 main().catch(error => {
