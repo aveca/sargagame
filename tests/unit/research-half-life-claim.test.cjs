@@ -17,6 +17,20 @@ assert.ok(research.includes('For floating mats, the model uses a <b>5-day</b> pe
   'the five-day half-life must be scoped to floating mats')
 assert.ok(research.includes('provisional persistence prior'),
   'beached material must remain explicitly provisional')
+
+assert.ok(frResearch.includes('Pour les bancs flottants, le modèle utilise une <b>demi-vie de persistance de 5 jours</b>'),
+  'French research must scope the five-day half-life to floating mats')
+assert.ok(frResearch.includes('hypothèse provisoire de persistance'),
+  'French research must keep beached-material persistence explicitly provisional')
+assert.doesNotMatch(frResearch, /demi-vie <b>3,5/i,
+  'French research must not publish the obsolete 3.5-day half-life')
+
+assert.ok(esResearch.includes('Para los bancos flotantes, el modelo utiliza una <b>semivida de persistencia de 5 días</b>'),
+  'Spanish research must scope the five-day half-life to floating mats')
+assert.ok(esResearch.includes('hipótesis provisional de persistencia'),
+  'Spanish research must keep beached-material persistence explicitly provisional')
+assert.doesNotMatch(esResearch, /vida media <b>3,5/i,
+  'Spanish research must not publish the obsolete 3.5-day half-life')
 assert.ok(research.includes('NOAA/AOML ERDDAP'),
   'research must identify the verified NOAA/AOML distribution source')
 assert.ok(research.includes('USF Optical Oceanography Laboratory'),
