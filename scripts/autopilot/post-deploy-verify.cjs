@@ -169,6 +169,47 @@ function checkSatelliteFreshness(payload, now = Date.now()) {
   };
 }
 
+/**
+ * Validate the public B2B partner catalogue consumed by ChasseHome.
+ * Empty partner/preview arrays are valid; missing or malformed assets are not.
+ */
+function checkB2BPartnersPayload(payload) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { status: 'FAILED', detail: 'b2b-partners.json absent/invalide' };
+  }
+  if (typeof payload.updatedAt !== 'string' || !Number.isFinite(Date.parse(payload.updatedAt))) {
+    return { status: 'FAILED', detail: 'updatedAt absent/invalide' };
+  }
+  for (const key of ['partners', 'preview']) {
+    if (!Array.isArray(payload[key])) {
+      return { status: 'FAILED', detail: key + ' absent ou non-tableau' };
+    }
+  }
+  const required = ['beachId', 'slug', 'name', 'tagline', 'url', 'area'];
+  for (const key of ['partners', 'preview']) {
+    for (let index = 0; index < payload[key].length; index++) {
+      const partner = payload[key][index];
+      if (!partner || typeof partner !== 'object' || Array.isArray(partner)) {
+        return { status: 'FAILED', detail: key + '[' + index + '] invalide' };
+      }
+      for (const field of required) {
+        if (typeof partner[field] !== 'string' || !partner[field].trim()) {
+          return { status: 'FAILED', detail: key + '[' + index + '].' + field + ' absent/invalide' };
+        }
+      }
+      let url;
+      try { url = new URL(partner.url); } catch (_) {}
+      if (!url || !['http:', 'https:'].includes(url.protocol)) {
+        return { status: 'FAILED', detail: key + '[' + index + '].url invalide' };
+      }
+    }
+  }
+  return {
+    status: 'VERIFIED',
+    detail: 'updatedAt=' + payload.updatedAt + '; partners=' + payload.partners.length + '; preview=' + payload.preview.length,
+  };
+}
+
 async function verifyDomain(region, opts) {
   const domain = region.domain;
   const R = { domain, region: region.id, checks: {}, errors: [], notes: [] };
@@ -220,6 +261,26 @@ async function verifyDomain(region, opts) {
     });
     set('region_beaches_coherence', foreign.length === 0 ? 'VERIFIED' : 'FAILED', foreign.length === 0 ? `${sd.levels.length} niveaux, aucun niveau d'une autre région` : `${foreign.length} niveaux étrangers : ${foreign.slice(0, 3).map(l => l.id).join(',')}`);
   } else set('region_beaches_coherence', 'NOT_VERIFIED', 'levels absents du sargassum.json');
+
+
+  // 4bis. Catalogue partenaires B2B consommé par ChasseHome.
+  // Un 404 ou un JSON incomplet masque silencieusement les cartes partenaires.
+  const b2bUrl = `https://${domain}/api/b2b-partners.json?pdv=${Date.now()}`;
+  const b2bStatus = httpStatus(b2bUrl);
+  if (!b2bStatus.ok || b2bStatus.status !== 200) {
+    set('b2b_partners_api', 'FAILED',
+      !b2bStatus.ok ? `b2b-partners.json curl failed: ${b2bStatus.error || 'curl exited non-zero'}` : `b2b-partners.json HTTP ${b2bStatus.status}`);
+  } else {
+    const b2bResponse = httpBody(b2bUrl);
+    let b2bPayload = null;
+    try { b2bPayload = JSON.parse(b2bResponse.body); } catch (_) {}
+    if (!b2bResponse.ok) {
+      set('b2b_partners_api', 'FAILED', `b2b-partners.json body unavailable: ${b2bResponse.error || 'curl exited non-zero'}`);
+    } else {
+      const b2bCheck = checkB2BPartnersPayload(b2bPayload);
+      set('b2b_partners_api', b2bCheck.status, b2bCheck.detail);
+    }
+  }
 
   // 5. HTML servi vs empreinte construite (CSP + bundle JS/CSS exacts)
   // Toute divergence déclenche au plus une purge ciblée, suivie d'une nouvelle lecture.
@@ -409,4 +470,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR post-deploy-verify :', e.message); process.exit(1); });
 }
 
-module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness };
+module.exports = { verifyDomain, getRegions, httpStatus, httpBody, describeHttpProbe, checkArtifactIdentity, resolveGa4Id, checkSatelliteFreshness, checkB2BPartnersPayload };
