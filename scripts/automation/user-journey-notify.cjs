@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const BLOCKING = new Set(['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'primary-cta-dead']);
+const BLOCKING = new Set(['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'stale-current-decision', 'primary-cta-dead']);
 const INCIDENT_LABEL = 'autopilot-journey-alert';
 const BLOCKING_LABEL = 'autopilot-blocking';
 const UX_LABEL = 'autopilot-ux';
