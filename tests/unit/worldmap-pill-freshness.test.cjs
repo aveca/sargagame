@@ -79,7 +79,7 @@ async function main() {
   t(/wmSatColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
   t(/wmSatColor\s*=\s*wmSatValid\s*&&\s*wmSatAgeH\s*>=\s*36\s*\?\s*"#B87A00"\s*:\s*wmSatFresh\s*\?\s*"#00786C"\s*:\s*"#667085"/.test(wm), 'couleur neutre entre 12h et 36h, ambre uniquement après 36h')
   t(/formatFreshnessAge\(erddapTimestamp,\s*lang\)/.test(wm), 'âge pill = formatFreshnessAge(observation satellite validée), jamais updatedAt seul')
-  t(/wmSatAge\s*=\s*wmSatAgeH\s*!=\s*null\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
+  t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
   t(wm.includes('const wmSatData = source === "erddap-live" && {erddapTimestamp};') && wm.includes('satelliteAgeHours(wmSatData)') && wm.includes('wmSatValid && wmSatAgeH < 36'), 'WorldMapView exige une source ERDDAP live et un timestamp valide')
