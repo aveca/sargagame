@@ -507,14 +507,8 @@ export default function WorldMapView({
       })
   },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
 
-  // La sélection conserve un objet plage : la rebinder au modèle assaini évite
-  // qu'une fiche déjà ouverte garde un ancien score après le passage en stale.
-  useLayoutEffect(()=>{
-    if(!selected) return
-    const current=beachList.find(b=>b.id===selected.id)
-    if(current&&current!==selected) setSelected(current)
-    else if(!current&&beachList.length){ setSelected(null); setTagPos(null) }
-  },[beachList,selected])
+  // Ferme le tooltip sélectionné au moment où les décisions deviennent indisponibles.
+  useLayoutEffect(()=>{if(!wmDecisionAvailable&&selected){setSelected(null);setTagPos(null)}},[wmDecisionAvailable])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -1849,11 +1843,7 @@ export default function WorldMapView({
               </span>
             </> : (
               <span role="status" aria-live="polite" style={{
-                display:"inline-flex",alignItems:"center",gap:7,whiteSpace:"normal",
-                padding:"8px 12px",background:"#f0eee8",color:"#5b5861",
-                border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,
-                font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",
-                letterSpacing:".04em",textTransform:"uppercase",
+                font:"800 11px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#5b5861",letterSpacing:".04em",textTransform:"uppercase",
               }}>
                 {_t(lang,"Statuts suspendus · observation à vérifier","Statuses paused · observation to check","Estados suspendidos · observación por verificar")}
               </span>
@@ -2102,25 +2092,22 @@ export default function WorldMapView({
               ⭐ {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
             </div>
           )}
-          <div style={{
+          {wmDecisionAvailable&&(<div style={{
             pointerEvents:"auto",display:"flex",gap:4,
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:4,
           }}>
             {DAY_LBL.map((lbl,i)=>{
-              const unavailable = i>=1 && !wmDecisionAvailable
-              const locked = i>=1 && !mapPremium && !unavailable
+              const locked = i>=1 && !mapPremium
               return(
-              <button type="button" key={i} disabled={unavailable} aria-label={ti(lang,lbl)+(locked?" 🔒":unavailable?" · "+_t(lang,"données indisponibles","data unavailable","datos no disponibles"):"")} style={{
+              <button type="button" key={i} aria-label={ti(lang,lbl)+(locked?" 🔒":"")} style={{
                 WebkitAppearance:"none",appearance:"none",
                 border:day===i?`2px solid ${INK}`:"2px solid transparent",position:"relative",
                 background:day===i?"#ff7a2f":(mapForecastAvailable&&i>=1?"rgba(255,199,44,.18)":"transparent"),
                 color:INK,
-                opacity:unavailable ? .48 : 1,
                 font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",
-                padding:"7px 10px",borderRadius:999,cursor:unavailable?"not-allowed":"pointer",
+                padding:"7px 10px",borderRadius:999,cursor:"pointer",
               }} onClick={()=>{
-                if(unavailable) return
                 if(locked){ try{track&&track("sg_map_scrub_locked",{day:i})}catch(_){}; onPremium&&onPremium("map_scrub_forecast"); return }
                 setDay(i)
                 if(i>=1&&mapForecastAvailable&&mapFriseOff){ setPremiumHint(true); try{clearTimeout(hintTimerRef.current)}catch(_){}; hintTimerRef.current=setTimeout(()=>setPremiumHint(false),3200) }
@@ -2138,7 +2125,7 @@ export default function WorldMapView({
                 )})()}
               </button>
             )})}
-          </div>
+          </div>)}
         </div>
 
         {/* Dock bas — label « Carte » inerte (cursor:default, sans onClick) RETIRÉ :
@@ -2192,7 +2179,6 @@ export default function WorldMapView({
               <div style={{width:8,height:8,borderRadius:"50%",background:wmDecisionAvailable?(STATUS_C[selected.days[day]]||"#9aa0a8"):"#9aa0a8",border:`1.5px solid ${INK}`}}/>
               <span>{wmDecisionAvailable?ti(lang,STATUS_LBL[selected.days[day]]||["—","—","—"]):_t(lang,"À vérifier","To verify","Por verificar")}</span>
             </div>
-            {!wmDecisionAvailable&&<div role="status" style={{font:"700 9.5px/1.3 'Bricolage Grotesque',system-ui,sans-serif",color:"#8b5b00",marginTop:6,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Verdict suspendu · observation à vérifier.","Verdict paused · observation to check.","Veredicto suspendido · observación por verificar.")}</div>}
             {selected.commune&&<div style={{font:"700 10px/1 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:4}}>{selected.commune}</div>}
             {/* ── LA FRISE (Premium) : 7 jours d'un coup d'œil, sans slider. Statut RÉEL par jour
                 (gris hachuré si non mesuré, jamais inventé) + point de confiance (plein/demi/creux
