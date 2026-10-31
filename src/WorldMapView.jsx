@@ -203,9 +203,9 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const [wmSatFresh, wmDecisionAvailable, wmSatLbl, wmSatAge, wmSatColor, wmFreshNext, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
+  const [wmSatFresh, wmDecisionAvailable, wmSatLbl, wmSatAge, wmSatColor, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
   const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>tick+1),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshNext,erddapTimestamp,source]);
+  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>tick+1),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
