@@ -44,7 +44,6 @@ export function isSatelliteStale36h(sargData, now = Date.now()) {
   return age >= 36;
 }
 
-
 /**
  * Statut précis de la source satellite pour la pill de carte.
  * Ne confond pas la fraîcheur de l'observation satellite avec la date de
@@ -72,12 +71,7 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
  * with an explicit observation age for 12–36h, then fails closed at 36h.
  * A timer schedules both visible-state transitions while the page remains open.
  */
-export function worldMapFreshness(source, erddapTimestamp, lang, now = Date.now()) {
-  const data = source === 'erddap-live' && { erddapTimestamp }
-  const age = satelliteAgeHours(data, now)
-  const valid = age != null, fresh = valid && age < 12, available = valid && age < 36
-  return [fresh, available, satelliteFreshnessStatus(data, lang, now), valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···', available ? ((fresh ? 12 : 36) - age) * 36e5 + 50 : null]
-}
+
 /**
  * Libellé de fraîcheur du détail de plage (lc-detail) — correction
  * SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001 : le libellé principal annonçait
@@ -146,7 +140,6 @@ export function formatFreshnessAge(updatedAt, lang = "fr", now = Date.now()) {
   const age = locale === "fr" ? days + " j" : locale === "es" ? days + (days === 1 ? " día" : " días") : days + (days === 1 ? " day" : " days");
   return locale === "fr" ? "il y a " + age : locale === "es" ? "hace " + age : age + " ago";
 }
-
 
 // Copy contract for the ChasseHome map CTA. Beach counts are only called today/live
 // when the observation itself is less than 12 hours old; pipeline republication time is not evidence.
@@ -247,8 +240,6 @@ export function homeAzFreshness(sargData, lang = "fr", now = Date.now()) {
   }
   return { state: "stale", live: false, badge: labels.staleBadge, label: labels.stale, ageHours };
 }
-
-
 
 /** Format the source observation timestamp explicitly in UTC for the HomeAZ hero. */
 export function formatObservationTimestamp(raw, lang = "fr") {
