@@ -29,7 +29,6 @@ const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + l
 
 async function main() {
   const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } = await import('../../src/lib/format-freshness.mjs')
-  const { mapDecisionFreshness } = await import('../../src/lib/map-decision-freshness.mjs')
 
   // 1. Mesure récente <12h : LIVE autorisé.
   const fresh = { erddapTimestamp: new Date(now - 3 * 3.6e6).toISOString() }
@@ -70,26 +69,7 @@ async function main() {
   // 7. Horodatage futur.
   t(isSatelliteFresh12h({ erddapTimestamp: new Date(now + 3.6e6).toISOString() }, now) === false, 'futur => pas de LIVE')
 
-  // 8. Carte : un verdict n'est disponible que si l'horodatage satellite est
-  //    prouvé et <36h. Un updatedAt identique signale le fallback historique du parent.
-  const mapNow = Date.parse('2026-10-31T14:30:00.000Z')
-  const atAge = hours => new Date(mapNow - hours * 3.6e6).toISOString()
-  const mapFresh = mapDecisionFreshness(atAge(3), atAge(2), mapNow)
-  t(mapFresh.available === true && mapFresh.reason === 'available', 'carte : observation 3h + publication distincte => décisions disponibles')
-  const mapRecent = mapDecisionFreshness(atAge(20), atAge(1), mapNow)
-  t(mapRecent.available === true, 'carte : 12–36h conserve les statuts avec âge explicite')
-  const mapEdge = mapDecisionFreshness(atAge(36), atAge(1), mapNow)
-  t(mapEdge.available === false && mapEdge.reason === 'stale', 'carte : seuil 36h exact => décisions suspendues')
-  const mapOld = mapDecisionFreshness(atAge(98), atAge(1), mapNow)
-  t(mapOld.available === false && mapOld.reason === 'stale', 'carte : observation 98h => décisions suspendues')
-
-  const mapFallback = mapDecisionFreshness(atAge(3), atAge(3), mapNow)
-  t(mapFallback.available === false && mapFallback.reason === 'publication-fallback' && mapFallback.timestamp === null, 'carte : updatedAt réutilisé comme erddapTimestamp => inconnu, fail-closed')
-  t(mapDecisionFreshness(null, atAge(1), mapNow).reason === 'unknown', 'carte : observation absente malgré publication récente => inconnue')
-  t(mapDecisionFreshness('invalid', atAge(1), mapNow).available === false, 'carte : horodatage invalide => aucune décision')
-  t(mapDecisionFreshness(atAge(-1), atAge(-2), mapNow).available === false, 'carte : horodatage futur => aucune décision')
-
-  // 9. Câblage source : la pill consomme la prop erddapTimestamp (venue de l'appelant),
+  // 8. Câblage source : la pill consomme la prop erddapTimestamp (venue de l'appelant),
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
   const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
@@ -102,7 +82,7 @@ async function main() {
   t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(wmSatObservationTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\|\\|sargData\\?\\.updatedAt\\|\\|null\\}/.test(caller), 'appelant : prop erddapTimestamp (observation erddap, fallback updatedAt = valeur de l ancien affichage)')
-  t(wm.includes('mapDecisionFreshness') && wm.includes('map-decision-freshness.mjs'), 'WorldMapView utilise le gate fail-closed des décisions')
+  t(wm.includes('wmPubT') && wm.includes('wmPubT === wmSatT') && wm.includes('isSatelliteStale36h'), 'WorldMapView rejette le fallback updatedAt et réutilise le seuil stale partagé')
   t(wm.includes('setMapFreshnessTick') && wm.includes('window.setTimeout') && wm.includes('visibilitychange') && wm.includes('window.addEventListener("focus"'), 'carte : le cutoff stale est recalculé après 36h et au retour d’onglet')
   t(/data-map-decision-state=\{wmDecisionAvailable\?"available":"unavailable"\}/.test(wm), 'état décision exposé pour tests et diagnostic')
   t(/data-map-pin="1" data-map-status=\{st\|\|"unknown"\}/.test(wm), 'chaque pin expose un statut neutre vérifiable')
@@ -111,7 +91,7 @@ async function main() {
   t(/const friseOn = mapForecastAvailable && !mapFriseOff/.test(wm), 'frise et claims de prévision masqués si la source ne permet pas de décision')
   t(/if\(!wmDecisionAvailable\|\|!toVB\|\|!afaiGrid/.test(wm), 'couche AFAI masquée lorsque la source est stale/inconnue')
   t(wm.includes('if(!wmDecisionAvailable) return') && wm.includes('if(!wmDecisionAvailable||mapDecideOff||!selected) return null'), 'near-me et plan B ne proposent pas de plage sur données périmées')
-  t(wm.includes('status:currentStatus') && wm.includes('score:wmDecisionAvailable?b.score:null'), 'objet plage transmis à la fiche est assaini en mode stale')
+  t(wm.includes('status:currentStatus') && wm.includes('...(!wmDecisionAvailable?{status:null,score:null,afai:null'), 'objet plage transmis à la fiche est assaini en mode stale')
   t(wm.includes('erddapTimestamp') && !/updatedAt&&isStale\(updatedAt\)/.test(wm), 'ancien câblage updatedAt&&isStale supprimé')
 
   // 9. Traductions FR/EN/ES de la pill conservées.
