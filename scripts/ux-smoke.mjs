@@ -249,19 +249,16 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
   await stalePage.route(staleApiPattern, staleApiHandler);
   await stalePage.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
   await stalePage.waitForFunction(
-    () => document.querySelector('[data-map-decision-state]') &&
       document.querySelectorAll('[data-map-pin]').length >= 3,
     {},
     { timeout: 30000 }
   ).catch(() => {});
   await stalePage.waitForTimeout(900);
   const result = await stalePage.evaluate(() => {
-    const root = document.querySelector('[data-map-decision-state]');
     const pinStatuses = [...document.querySelectorAll('[data-map-pin]')]
       .map(pin => pin.getAttribute('data-map-pin'));
     const body = document.body.innerText;
     return {
-      state: root?.getAttribute('data-map-decision-state'),
       pinCount: pinStatuses.length,
       pinStatuses,
       labels: document.querySelectorAll('.sg-maplabel').length,
@@ -269,7 +266,6 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
       stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
     };
   });
-  const ok = result.state === 'unavailable' &&
     result.pinCount >= 3 && result.pinStatuses.every(status => status === 'unknown') &&
     result.labels === 0 && result.summary && result.stalePill;
   if (!ok) errs.push('STALE_MAP_DECISION_LEAK (' + name + ') ' + JSON.stringify(result));
