@@ -102,7 +102,7 @@ async function main() {
   t(/const friseOn = mapPremium && !mapFriseOff/.test(wm), 'frise et claims de prévision masqués si la source ne permet pas de décision')
   t(/if\(!wmDecisionAvailable\|\|!toVB\|\|!afaiGrid/.test(wm), 'couche AFAI masquée lorsque la source est stale/inconnue')
   t(wm.includes('const mapPremium = !!isPremium && !mapForecastOff && wmDecisionAvailable') && wm.includes('if(mapDecideOff||!selected) return null'), 'prévisions et plan B bloqués lorsque la source ne permet pas de décision')
-  t(wm.includes('status:currentStatus') && wm.includes('...(!wmDecisionAvailable?{status:null,score:null,afai:null'), 'objet plage transmis à la fiche est assaini en mode stale')
+  t(wm.includes('const currentStatus=wmDecisionAvailable&&b.status||null') && wm.includes('status:currentStatus') && wm.includes('...(!wmDecisionAvailable?{score:null,afai:null}:{})'), 'objet plage transmis à la fiche est assaini en mode stale')
   t(wm.includes('erddapTimestamp') && !/updatedAt&&isStale\(updatedAt\)/.test(wm), 'ancien câblage updatedAt&&isStale supprimé')
 
   // 9. Traductions FR/EN/ES de la pill conservées.
