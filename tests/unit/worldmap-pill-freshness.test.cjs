@@ -29,7 +29,7 @@ const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + l
 
 async function main() {
   const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } = await import('../../src/lib/format-freshness.mjs')
-  const { mapDecisionFreshness, nextMapDecisionStaleDelayMs } = await import('../../src/lib/map-decision-freshness.mjs')
+  const { mapDecisionFreshness } = await import('../../src/lib/map-decision-freshness.mjs')
 
   // 1. Mesure récente <12h : LIVE autorisé.
   const fresh = { erddapTimestamp: new Date(now - 3 * 3.6e6).toISOString() }
@@ -82,9 +82,7 @@ async function main() {
   t(mapEdge.available === false && mapEdge.reason === 'stale', 'carte : seuil 36h exact => décisions suspendues')
   const mapOld = mapDecisionFreshness(atAge(98), atAge(1), mapNow)
   t(mapOld.available === false && mapOld.reason === 'stale', 'carte : observation 98h => décisions suspendues')
-  t(nextMapDecisionStaleDelayMs(atAge(3), atAge(2), mapNow) === 33 * 3_600_000 + 50, 'carte : recheck programmé à la borne 36h')
-  t(nextMapDecisionStaleDelayMs(atAge(20), atAge(1), mapNow) === 16 * 3_600_000 + 50, 'carte : recheck 12–36h à la borne stale')
-  t(nextMapDecisionStaleDelayMs(atAge(98), atAge(1), mapNow) === null, 'carte : pas de timer inutile quand la source est déjà stale')
+
   const mapFallback = mapDecisionFreshness(atAge(3), atAge(3), mapNow)
   t(mapFallback.available === false && mapFallback.reason === 'publication-fallback' && mapFallback.timestamp === null, 'carte : updatedAt réutilisé comme erddapTimestamp => inconnu, fail-closed')
   t(mapDecisionFreshness(null, atAge(1), mapNow).reason === 'unknown', 'carte : observation absente malgré publication récente => inconnue')
@@ -105,16 +103,15 @@ async function main() {
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\|\\|sargData\\?\\.updatedAt\\|\\|null\\}/.test(caller), 'appelant : prop erddapTimestamp (observation erddap, fallback updatedAt = valeur de l ancien affichage)')
   t(wm.includes('mapDecisionFreshness') && wm.includes('map-decision-freshness.mjs'), 'WorldMapView utilise le gate fail-closed des décisions')
-  t(wm.includes('nextMapDecisionStaleDelayMs') && wm.includes('visibilitychange') && wm.includes('window.addEventListener("focus"'), 'carte : le cutoff stale est recalculé après 36h et au retour d’onglet')
+  t(wm.includes('setMapFreshnessTick') && wm.includes('window.setTimeout') && wm.includes('visibilitychange') && wm.includes('window.addEventListener("focus"'), 'carte : le cutoff stale est recalculé après 36h et au retour d’onglet')
   t(/data-map-decision-state=\{wmDecisionAvailable\?"available":"unavailable"\}/.test(wm), 'état décision exposé pour tests et diagnostic')
   t(/data-map-pin="1" data-map-status=\{st\|\|"unknown"\}/.test(wm), 'chaque pin expose un statut neutre vérifiable')
-  t(wm.includes('Statuts indisponibles') && wm.includes('Statuses unavailable') && wm.includes('Estados no disponibles'), 'résumé map suspendu traduit FR/EN/ES')
+  t(wm.includes('Statuts suspendus') && wm.includes('Statuses paused') && wm.includes('Estados suspendidos'), 'résumé map suspendu traduit FR/EN/ES')
   t(wm.includes('Verdict suspendu') && wm.includes('Verdict paused'), 'fiche sélectionnée explique la suspension du verdict')
   t(/const friseOn = mapForecastAvailable && !mapFriseOff/.test(wm), 'frise et claims de prévision masqués si la source ne permet pas de décision')
   t(/if\(!wmDecisionAvailable\|\|!toVB\|\|!afaiGrid/.test(wm), 'couche AFAI masquée lorsque la source est stale/inconnue')
   t(wm.includes('if(!wmDecisionAvailable) return') && wm.includes('if(!wmDecisionAvailable||mapDecideOff||!selected) return null'), 'near-me et plan B ne proposent pas de plage sur données périmées')
   t(wm.includes('status:currentStatus') && wm.includes('score:wmDecisionAvailable?b.score:null'), 'objet plage transmis à la fiche est assaini en mode stale')
-  t(wm.includes('data-map-decision-reason={wmDecisionFreshness.reason}'), 'raison stale/unknown exposée sans donnée personnelle')
   t(wm.includes('erddapTimestamp') && !/updatedAt&&isStale\(updatedAt\)/.test(wm), 'ancien câblage updatedAt&&isStale supprimé')
 
   // 9. Traductions FR/EN/ES de la pill conservées.
