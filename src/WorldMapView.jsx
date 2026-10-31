@@ -205,28 +205,23 @@ export default function WorldMapView({
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
   const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
   const wmPubT = updatedAt ? Date.parse(updatedAt) : NaN;
-  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now() &&
-    !(Number.isFinite(wmPubT) && wmPubT === wmSatT);
+  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now() && wmSatT !== wmPubT;
   const wmSatObservationTimestamp = wmSatValid ? erddapTimestamp : null;
-  const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: wmSatObservationTimestamp });
-  const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: wmSatObservationTimestamp });
+  const wmSatFresh = isSatelliteFresh12h({ erddapTimestamp: wmSatObservationTimestamp });
+  const wmSatStale = isSatelliteStale36h({ erddapTimestamp: wmSatObservationTimestamp });
   const wmDecisionAvailable = wmSatValid && !wmSatStale;
   const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: wmSatObservationTimestamp }, lang);
   const wmSatAge = wmSatValid ? formatFreshnessAge(wmSatObservationTimestamp, lang) : "···";
-  // Re-vérifie le cutoff 36h même si l'utilisateur laisse la carte ouverte sans reload.
-  // Le focus/retour d'onglet force aussi un recalcul après throttling navigateur.
+  // Re-vérifie le cutoff même si la carte reste ouverte ; focus/visibilité couvrent le throttling.
   const [, setMapFreshnessTick] = useState(0);
   useEffect(()=>{
-    if(!wmDecisionAvailable||!wmSatValid) return;
-    const observationMs=typeof wmSatObservationTimestamp==="number"?wmSatObservationTimestamp:Date.parse(String(wmSatObservationTimestamp??""));
-    if(!Number.isFinite(observationMs)) return;
-    const delay=Math.max(0,36*3_600_000-(Date.now()-observationMs)+50);
-    const timer=window.setTimeout(()=>setMapFreshnessTick(value=>value+1),delay);
-    const recheck=()=>{if(!document.hidden)setMapFreshnessTick(value=>value+1)};
+    if(!wmDecisionAvailable) return;
+    const recheck=()=>setMapFreshnessTick(value=>value+1);
+    const timer=setTimeout(recheck,Math.max(0,36*3_600_000-(Date.now()-wmSatT)+50));
     document.addEventListener("visibilitychange",recheck);
     window.addEventListener("focus",recheck);
-    return()=>{window.clearTimeout(timer);document.removeEventListener("visibilitychange",recheck);window.removeEventListener("focus",recheck)};
-  },[wmDecisionAvailable,wmSatValid,wmSatObservationTimestamp]);
+    return()=>{clearTimeout(timer);document.removeEventListener("visibilitychange",recheck);window.removeEventListener("focus",recheck)};
+  },[wmDecisionAvailable,wmSatT]);
   // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
   // >=36 h : alerte explicite sur la seule observation satellite.
   const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
@@ -501,8 +496,8 @@ export default function WorldMapView({
           ...b,
           ...(!wmDecisionAvailable?{status:null,score:null,afai:null,confidence:null,reason:null,breakdown:null,h2s:null,label:null,color:null}:{}),
           status:currentStatus,vx,vy,days,conf,fc:fc||null,
-          drift:wmDecisionAvailable?(entry&&entry.drift)||null:null,
-          firstHit:wmDecisionAvailable?firstHit:null,
+          drift:(entry&&entry.drift)||null,
+          firstHit,
         }
       })
   },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
