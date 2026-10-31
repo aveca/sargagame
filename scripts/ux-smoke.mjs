@@ -249,24 +249,24 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
   await stalePage.route(staleApiPattern, staleApiHandler);
   await stalePage.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
   await stalePage.waitForFunction(
-    () => document.querySelectorAll('[data-map-pin]').length >= 3,
+    () => document.querySelectorAll('svg g[style*="cursor"] circle:last-child').length >= 3,
     {},
     { timeout: 30000 }
   ).catch(() => {});
   await stalePage.waitForTimeout(900);
   const result = await stalePage.evaluate(() => {
-    const pinStatuses = [...document.querySelectorAll('[data-map-pin]')]
-      .map(pin => pin.getAttribute('data-map-pin'));
+    const pinColors = [...document.querySelectorAll('svg g[style*="cursor"] circle:last-child')]
+      .map(pin => pin.getAttribute('fill'));
     const body = document.body.innerText;
     return {
-      pinCount: pinStatuses.length,
-      pinStatuses,
+      pinCount: pinColors.length,
+      pinColors,
       labels: document.querySelectorAll('.sg-maplabel').length,
       stalePill: /SATELLITE EN RETARD|SATELLITE DELAYED|SATÉLITE ATRASADO/i.test(body),
     };
   });
   const ok = result.pinCount >= 3 &&
-    result.pinStatuses.every(status => status === 'unknown') &&
+    result.pinColors.every(fill => fill === '#9aa0a8') &&
     result.labels === 0 && result.stalePill;
   if (!ok) errs.push('STALE_MAP_DECISION_LEAK (' + name + ') ' + JSON.stringify(result));
   await stalePage.screenshot({ path: '/tmp/worldmap-freshness/' + name + '.png' })
