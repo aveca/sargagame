@@ -249,7 +249,7 @@ const runStaleMapCheck = async (viewport, name, mobile) => {
   await stalePage.route(staleApiPattern, staleApiHandler);
   await stalePage.goto(BASE + '/', { waitUntil: 'load', timeout: 60000 });
   await stalePage.waitForFunction(
-    () => document.querySelectorAll('svg g[style*="cursor"] circle:last-child').length >= 3,
+    () => document.querySelectorAll('svg[data-sg-live="1"] g[style*="cursor"]').length >= 3,
     {},
     { timeout: 30000 }
   ).catch(() => {});
