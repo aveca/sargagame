@@ -14848,8 +14848,8 @@ export default function App(){
                   openPremium={openPremium}
                 />
                 <LazyWorldMapView
-                  beaches={allBeaches} island={island} updatedAt={sargData?.erddapTimestamp||sargData?.updatedAt||null}
-                  erddapTimestamp={sargData?.erddapTimestamp||sargData?.updatedAt||null}
+                  beaches={allBeaches} island={island} updatedAt={sargData?.updatedAt||null}
+                  erddapTimestamp={sargData?.erddapTimestamp||null}
                   lang={lang} onOpenBeach={onMapBeach} onPremium={openPremium} isPremium={isPremium}
                   rootMode={navWorld} track={track} initialZone={initialZone} warm={mapWarm==="warm"} dataReady={dataReady}
                   arrivals={mapArrivals}
