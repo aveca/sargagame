@@ -1366,7 +1366,7 @@ export default function WorldMapView({
   )
 
   return(
-    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1" data-map-decision-state={wmDecisionAvailable?"available":"unavailable"}
+    <div ref={wrapRef} className="sg-onink-scope" data-sg-live="1"
       onClick={e=>{ if(e.target===e.currentTarget){ try{track&&track("sg_map_bg_tap",{})}catch(_){}; e.stopPropagation() }}}
       style={{
       // Safari : inset:0 atteint le vrai bas (au-dessus de la toolbar) → on le garde.
