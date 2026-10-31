@@ -31,9 +31,14 @@ function fetchVersion(domain) {
   } catch (_) { return { v: null, b: null } }
 }
 
-// Clé de déduplication stable : domaine + route + étape + type de défaut.
+// Clé de déduplication stable : domaine + route + étape + type + détail normalisé.
+// L'âge mesuré varie entre mobile et desktop pendant un même audit ; il ne définit
+// pas un nouveau défaut et ne doit pas créer un second incident pour le même état UI.
 function dedupKey(item) {
-  return [item.domain, item.step, item.type, String(item.detail || '').slice(0, 120)].join('|').toLowerCase()
+  const detail = String(item.detail || '')
+    .replace(/\bageMinutes=-?\d+(?:\.\d+)?/gi, 'ageMinutes=<age>')
+    .slice(0, 320)
+  return [item.domain, item.step, item.type, detail].join('|').toLowerCase()
 }
 
 function classify(defects) {
