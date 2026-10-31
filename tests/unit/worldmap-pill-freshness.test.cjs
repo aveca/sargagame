@@ -82,7 +82,7 @@ async function main() {
   t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/erddapTimestamp=\\{sargData\\?\\.erddapTimestamp\\|\\|sargData\\?\\.updatedAt\\|\\|null\\}/.test(caller), 'appelant : prop erddapTimestamp (observation erddap, fallback updatedAt = valeur de l ancien affichage)')
-  t(wm.includes('Date.parse(updatedAt || "")') && wm.includes('wmSatT !== Date.parse(updatedAt || "")') && wm.includes('isSatelliteStale36h'), 'WorldMapView rejette le fallback updatedAt et réutilise le seuil stale partagé')
+  t(wm.includes('erddapTimestamp !== updatedAt') && wm.includes('isSatelliteStale36h'), 'WorldMapView rejette le fallback updatedAt et réutilise le seuil stale partagé')
   t(wm.includes('setTimeout(()=>setMapFreshnessTick(Date.now())') && wm.includes('clearTimeout(timer)'), 'carte : le cutoff stale est recalculé au seuil 36h')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-map-pin'), 'décisions stale bloquées et pins neutres exposés pour le smoke')
   t(/data-map-pin=\{st\|\|"unknown"\}/.test(wm), 'chaque pin expose un statut neutre vérifiable')
