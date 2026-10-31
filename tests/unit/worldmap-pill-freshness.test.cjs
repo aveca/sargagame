@@ -28,7 +28,7 @@ let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
 async function main() {
-  const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } = await import('../../src/lib/format-freshness.mjs')
+  const { isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus, worldMapFreshness } = await import('../../src/lib/format-freshness.mjs')
 
   // 1. Mesure récente <12h : LIVE autorisé.
   const fresh = { erddapTimestamp: new Date(now - 3 * 3.6e6).toISOString() }
@@ -56,6 +56,16 @@ async function main() {
   t(satelliteFreshnessStatus(old, 'en', now) === 'SATELLITE DELAYED', '>=36h => label retard anglais')
   t(satelliteFreshnessStatus(old, 'es', now) === 'SATÉLITE ATRASADO', '>=36h => label retard espagnol')
 
+  // 4. Contrat de la carte : source live obligatoire, transitions 12h puis 36h.
+  const mapFresh = worldMapFreshness('erddap-live', fresh.erddapTimestamp, 'fr', now)
+  t(mapFresh.fresh && mapFresh.available && mapFresh.next === 12 && mapFresh.color === '#00786C', 'carte <12h : décision autorisée, point vert, prochain cutoff 12h')
+  const mapRecent = worldMapFreshness('erddap-live', delayed.erddapTimestamp, 'en', now)
+  t(!mapRecent.fresh && mapRecent.available && mapRecent.next === 36 && mapRecent.color === '#667085', 'carte 12–36h : décision limitée, âge visible, point neutre')
+  const mapOld = worldMapFreshness('erddap-live', old.erddapTimestamp, 'es', now)
+  t(!mapOld.available && mapOld.next === null && mapOld.color === '#B87A00', 'carte >=36h : décisions suspendues, alerte ambre')
+  const mapNonLive = worldMapFreshness('cached', fresh.erddapTimestamp, 'fr', now)
+  t(!mapNonLive.available && mapNonLive.label === 'Vérification' && mapNonLive.age === '···' && mapNonLive.delay === null, 'carte source non-live : fail closed, aucune fraîcheur inventée')
+
   // 5. Horodatage absent : aucun LIVE inventé.
   t(isSatelliteFresh12h({}, now) === false, 'absent => isSatelliteFresh12h false (fallback honnête)')
   t(isSatelliteStale36h({}, now) === false, 'absent => isSatelliteStale36h false (fallback honnête)')
@@ -73,16 +83,16 @@ async function main() {
   //    les prédicats partagés, et le prédicat local isStale(36h) est supprimé.
   const wm = fs.readFileSync(path.join(ROOT, 'src', 'WorldMapView.jsx'), 'utf8')
   const lib = fs.readFileSync(path.join(ROOT, 'src', 'lib', 'format-freshness.mjs'), 'utf8')
-  t(wm.includes('satelliteFreshnessStatus') && wm.includes('format-freshness.mjs'), 'WorldMapView utilise le statut partagé de fraîcheur satellite')
-  t(!/function isStale\(/.test(wm), 'prédicat local isStale(36h) supprimé de WorldMapView')
+  t(wm.includes('worldMapFreshness(source, erddapTimestamp, lang)') && wm.includes('wmDecisionAvailable = wmFresh.available'), 'WorldMapView utilise le contrat partagé de fraîcheur carte')
+  t(wm.includes('const wmSatLbl = wmFresh.label') && wm.includes('const wmSatAge = wmFresh.age'), 'label et âge proviennent du contrat partagé')
   t(wm.includes('satelliteFreshnessStatus(wmSatData,lang)'), 'label pill précise la fraîcheur de la seule source satellite validée')
   t(/wmSatColor/.test(wm) && /animation:\(!wmSatFresh\|\|noAnim\)\?"none"/.test(wm), 'point vert animé uniquement quand le satellite a moins de 12h')
-  t(/wmSatColor\s*=\s*wmSatValid\s*&&\s*wmSatAgeH\s*>=\s*36\s*\?\s*"#B87A00"\s*:\s*wmSatFresh\s*\?\s*"#00786C"\s*:\s*"#667085"/.test(wm), 'couleur neutre entre 12h et 36h, ambre uniquement après 36h')
+  t(wm.includes('const wmSatColor = wmFresh.color'), 'couleurs de la pill centralisées dans le helper')
   t(/formatFreshnessAge\(erddapTimestamp,\s*lang\)/.test(wm), 'âge pill = formatFreshnessAge(observation satellite validée), jamais updatedAt seul')
-  t(/wmSatAge\s*=\s*wmSatValid\s*\?\s*formatFreshnessAge\(erddapTimestamp,\s*lang\)\s*:\s*"···"/.test(wm), 'fallback âge absent/invalide = « ··· » (aucun âge inventé)')
+  t(lib.includes('export function worldMapFreshness') && lib.includes("source === 'erddap-live'"), 'helper carte rejette les sources absentes/non-live')
   const caller = fs.readFileSync(path.join(ROOT, 'src', 'Sargasses_PROD.jsx'), 'utf8')
   t(/updatedAt=\{sargData\?\.updatedAt\|\|null\}/.test(caller) && /erddapTimestamp=\{sargData\?\.erddapTimestamp\|\|null\}/.test(caller) && /source=\{sargData\?\.source\|\|null\}/.test(caller), 'appelant : transmet séparément publication, observation ERDDAP et provenance')
-  t(wm.includes('const wmSatData = source === "erddap-live" && {erddapTimestamp};') && wm.includes('satelliteAgeHours(wmSatData)') && wm.includes('wmSatValid && wmSatAgeH < 36'), 'WorldMapView exige une source ERDDAP live et un timestamp valide')
+  t(wm.includes('wmFresh.delay') && wm.includes('wmFresh.next') && wm.includes('clearTimeout(timer)'), 'timer partagé : transition 12h puis 36h pendant une page ouverte')
   t(wm.includes('setTimeout(()=>setMapFreshnessTick(1)') && wm.includes('(wmSatFresh?12:36)-wmSatAgeH') && wm.includes('clearTimeout(timer)'), 'carte : le cutoff passe de 12h à 36h sans rester vert')
   t(wm.includes('wmDecisionAvailable') && wm.includes('data-sg-live="1"'), 'décisions stale bloquées et SVG carte identifié pour le smoke')
   t(wm.includes('const st=b.days[day]') && (wm.match(/"#9aa0a8"/g)||[]).length>=2, 'pins stale rendus en gris neutre sans statut de décision')
