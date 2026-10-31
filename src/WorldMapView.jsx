@@ -450,7 +450,7 @@ export default function WorldMapView({
         const[vx,vy]=toVB(b.lat,b.lng)
         const entry=wmDecisionAvailable&&forecastByBeach&&forecastByBeach[b.id]
         const fc=entry&&entry.d // série jour-par-jour [{st,c,date}]
-        const currentStatus=wmDecisionAvailable?(b.status||null):null
+        const currentStatus=wmDecisionAvailable&&b.status||null
         const days=[currentStatus]
         const conf=[null]
         // PERSISTANCE (décision fondateur 2026-06-30) : un jour sans prévision NE reste
@@ -474,7 +474,7 @@ export default function WorldMapView({
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
         return{
           ...b,
-          ...(!wmDecisionAvailable?{status:null,score:null,afai:null}:{}),
+          ...(!wmDecisionAvailable?{score:null,afai:null}:{}),
           status:currentStatus,vx,vy,days,conf,fc:fc||null,
           drift:(entry&&entry.drift)||null,
           firstHit,
