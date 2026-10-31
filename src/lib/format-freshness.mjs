@@ -75,21 +75,10 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
 export function worldMapFreshness(source, erddapTimestamp, lang = 'fr', now = Date.now()) {
   const data = source === 'erddap-live' && { erddapTimestamp }
   const age = satelliteAgeHours(data, now)
-  const valid = age != null
-  const fresh = valid && age < 12
-  const available = valid && age < 36
+  const valid = age != null, fresh = valid && age < 12, available = valid && age < 36
   const next = fresh ? 12 : available ? 36 : null
-  return {
-    fresh,
-    available,
-    label: satelliteFreshnessStatus(data, lang, now),
-    age: valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···',
-    color: valid && !available ? '#B87A00' : fresh ? '#00786C' : '#667085',
-    next,
-    delay: next == null ? null : (next - age) * 36e5 + 50,
-  }
+  return [fresh, available, satelliteFreshnessStatus(data, lang, now), valid ? formatFreshnessAge(erddapTimestamp, lang, now) : '···', valid && !available ? '#B87A00' : fresh ? '#00786C' : '#667085', next, next == null ? null : (next - age) * 36e5 + 50]
 }
-
 /**
  * Libellé de fraîcheur du détail de plage (lc-detail) — correction
  * SG-PRODUCT-FRESHNESS-LCDETAIL-20261013-001 : le libellé principal annonçait
