@@ -12,6 +12,10 @@ const { resolve } = require('path')
 const { getIndexing, getSearchConsole } = require('./lib/google-auth.cjs')
 const { SITES } = require('./lib/config.cjs')
 const { DRY_RUN, LIMITS, readLog, appendLog } = require('./lib/safety.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 const DIST_DIR = resolve(__dirname, '..', '..', 'dist')
 const AUDIT_PATH = resolve(__dirname, 'data', 'audit-full.json')

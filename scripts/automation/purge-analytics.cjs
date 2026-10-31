@@ -32,6 +32,13 @@
  *        [--batch=5000] [--max-batches=200] [--budget-seconds=480]
  */
 
+const fs = require('fs')
+const path = require('path')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
+
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const DAYS = (() => {

@@ -30,6 +30,10 @@ const FROM = 'Sargasses Terrain <alerte@sargasses-martinique.com>'
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})

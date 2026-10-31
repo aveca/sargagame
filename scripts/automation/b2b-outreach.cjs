@@ -36,6 +36,10 @@ const { readFileSync, writeFileSync, existsSync, mkdirSync } = require('fs')
 const { resolve } = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail: sendMail, mailReady } = require('./lib/email-send.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 const DRY_RUN = process.env.DRY_RUN === '1'
 const MAX_EMAILS_PER_RUN = 4

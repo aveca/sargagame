@@ -23,6 +23,10 @@
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {

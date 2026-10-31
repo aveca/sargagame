@@ -21,9 +21,12 @@ const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
 
 const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 // --daily-only : n'exécute QUE le verdict quotidien (skip les étapes drip J3/7/14/21),
 // pour le workflow dédié daily-brief.yml qui le cale à ~7h MQ (la promesse de marque).
 // Bypass aussi la fenêtre 10-20 UTC : le cron dédié EST l'horloge.

@@ -12,6 +12,10 @@
  */
 const fs = require('fs')
 const path = require('path')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 const WORKFLOW = process.env.WORKFLOW_NAME || 'Unknown workflow'
 const RUN_URL = process.env.RUN_URL || ''

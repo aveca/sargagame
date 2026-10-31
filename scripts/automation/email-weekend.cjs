@@ -20,6 +20,10 @@ const https = require('https')
 const nodemailer = require('nodemailer')
 const { injectPreheader, applyBrand, htmlToText } = require('./lib/email-send.cjs')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+const { outboundContext } = require('../../lib/outbound-security.cjs')
+
+const ctx = outboundContext()
+ctx.assertSendAllowed() // DRY_RUN par défaut sur schedule/workflow_dispatch
 
 // SMTP — boîte alerte@ (cPanel). Envoi depuis le VRAI alerte@sargasses-martinique.com
 // (plus de MailApp/gmail). Lit process.env (CI) OU le .env local (comme welcome-paid.cjs).
