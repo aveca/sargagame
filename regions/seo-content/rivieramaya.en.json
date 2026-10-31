@@ -19,7 +19,7 @@
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed four times a day. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
+      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed four times a day. When clouds obscure an area, we show the reading timestamp and confidence level; beachgoer reports are not used to correct satellite observations for this region. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
@@ -41,7 +41,7 @@
       "desc": "7-day sargassum forecast for Cancún, Playa del Carmen and Tulum, updated daily from satellite. See which Riviera Maya beaches will be clean this week.",
       "h1": "Sargassum Forecast for Cancún & the Riviera Maya — Next 7 Days",
       "intro": "Most sargassum forecasts for the Mexican Caribbean hand you one verdict for all of Quintana Roo, built from official imagery that's already days old by the time it's published. This works differently: we run a separate forecast for each of the 12 beaches we monitor, from Holbox to Mahahual, because reality changes from one bay to the next — the same mat that buries Playa Delfines can slide right past Puerto Morelos. Every morning the model ingests the latest Copernicus satellite pass, locates the mats drifting inbound, and projects landings for the next seven days, beach by beach. The result updates daily — four satellite reads a day feed it — so you can pick your beach day before the sargassum picks it for you.",
-      "method": "We start from the AFAI (Alternative Floating Algae Index), the spectral signature Copernicus and NOAA satellites use to detect floating sargassum from orbit. Each detected mat is projected forward with wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on the sand we apply exponential persistence with a 3.5-day half-life: it decays unless fresh material arrives. Community reports correct the satellite when clouds get in the way. Accuracy is highest on days 1 to 3, and everything recomputes daily."
+      "method": "We start from the AFAI (Alternative Floating Algae Index), the spectral signature Copernicus and NOAA satellites use to detect floating sargassum from orbit. Each detected mat is projected forward with wind and surface-current data — sargassum drifts at roughly 2.5% of wind speed plus the local current. For seaweed already on the sand we apply exponential persistence with a 3.5-day half-life: it decays unless fresh material arrives. When clouds interfere, the satellite reading may be limited; we show its timestamp and confidence instead of claiming a correction from community reports. Accuracy is highest on days 1 to 3, and everything recomputes daily."
     },
     "today": {
       "slug": "beaches-without-sargassum-today",
@@ -55,7 +55,7 @@
       "title": "Cancún Seaweed Map (Live) — Riviera Maya Sargassum Tracker",
       "desc": "Interactive live seaweed map of Cancún and the Riviera Maya, updated 4× a day from satellite. Check every beach before you leave the room.",
       "h1": "Live Seaweed & Sargassum Map — Cancún and the Riviera Maya",
-      "intro": "This is an interactive, live map of the sargassum — the seaweed — across the Mexican Caribbean: every beach, from Holbox to Mahahual, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed four times a day, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Cancún and load Tulum by noon. Check it the morning you go."
+      "intro": "This is an interactive, live map of the sargassum — the seaweed — across the Mexican Caribbean: every beach, from Holbox to Mahahual, shown with a color-coded status (clean, moderate, or avoid). It's fed by Copernicus satellite imagery refreshed four times a day, with each reading's timestamp and confidence level. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Cancún and load Tulum by noon. Check it the morning you go."
     },
     "season": {
       "intro": "Planning a Riviera Maya trip and worried about sargassum and seaweed? Here's the honest 2026 picture — when the seaweed arrives, when the beaches stay clean, and how to time your trip. Short version: November through March is reliable and clean; the Atlantic belt arrives April through October, heaviest May to August. If your dates are flexible, that single fact plans the trip.",
@@ -161,7 +161,7 @@
         },
         {
           "h2": "How the 2026 map is measured — not guessed",
-          "text": "Detection starts from the AFAI (Alternative Floating Algae Index), the same spectral signature NOAA and Copernicus satellites use to spot floating sargassum from orbit. We sample it directly offshore of each beach — not a regional average — four times a day, then project each detected mat forward using wind and surface-current data, since sargassum drifts at roughly 2.5% of wind speed plus the local current. Seaweed already on the sand decays by exponential persistence unless fresh material lands. Reports from people standing on the beach correct the satellite when clouds get in the way. We backtest the forecast against what satellites later observed and publish the accuracy openly: days 1–3 verify best, days 4–7 show the trend, and we say so on every page. The data is never hand-edited or filtered for resorts."
+          "text": "Detection starts from the AFAI (Alternative Floating Algae Index), the same spectral signature NOAA and Copernicus satellites use to spot floating sargassum from orbit. We sample it directly offshore of each beach — not a regional average — four times a day, then project each detected mat forward using wind and surface-current data, since sargassum drifts at roughly 2.5% of wind speed plus the local current. Seaweed already on the sand decays by exponential persistence unless fresh material lands. When clouds interfere, we show the satellite reading's timestamp and confidence level rather than claiming community reports correct it. We backtest the forecast against what satellites later observed and publish the accuracy openly: days 1–3 verify best, days 4–7 show the trend, and we say so on every page. The data is never hand-edited or filtered for resorts."
         },
         {
           "h2": "Where to go instead on a bad day — and how to get alerts",
