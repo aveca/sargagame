@@ -72,7 +72,7 @@ export function satelliteFreshnessStatus(sargData, lang = 'fr', now = Date.now()
  * with an explicit observation age for 12–36h, then fails closed at 36h.
  * A timer schedules both visible-state transitions while the page remains open.
  */
-export function worldMapFreshness(source, erddapTimestamp, lang = 'fr', now = Date.now()) {
+export function worldMapFreshness(source, erddapTimestamp, lang, now = Date.now()) {
   const data = source === 'erddap-live' && { erddapTimestamp }
   const age = satelliteAgeHours(data, now)
   const valid = age != null, fresh = valid && age < 12, available = valid && age < 36
