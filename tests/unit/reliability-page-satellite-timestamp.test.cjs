@@ -73,4 +73,4 @@ assert.ok(src.includes('the satellite observation timestamp is shown above'), 'E
 assert.ok(src.includes('la hora de la observación satelital se muestra arriba'), 'Spanish freshness copy must point to the displayed observation timestamp');
 assert.ok(src.includes('Voir la carte des plages →') && src.includes('See the beach map →') && src.includes('Ver el mapa de playas →'), 'all localized CTAs must avoid an unsupported live-map promise');
 
-console.log('RELIABILITY_PAGE_SATELLITE_TIMESTAMP_TESTS PASS (35 assertions)');
+console.log('RELIABILITY_PAGE_SATELLITE_TIMESTAMP_TESTS PASS (freshness and localized copy)');
