@@ -203,15 +203,15 @@ export default function WorldMapView({
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmSatData = source === "erddap-live" ? {erddapTimestamp} : null;
-  const wmSatAgeH = satelliteAgeHours(wmSatData);
-  const wmSatFresh = wmSatAgeH != null && wmSatAgeH < 12;
-  const wmDecisionAvailable = wmSatAgeH != null && wmSatAgeH < 36;
+  const wmSatData = source === "erddap-live" && {erddapTimestamp};
+  const wmSatAgeH = satelliteAgeHours(wmSatData), wmSatValid = wmSatAgeH != null;
+  const wmSatFresh = wmSatValid && wmSatAgeH < 12;
+  const wmDecisionAvailable = wmSatValid && wmSatAgeH < 36;
   const wmSatLbl = satelliteFreshnessStatus(wmSatData,lang);
-  const wmSatAge = wmSatAgeH != null ? formatFreshnessAge(erddapTimestamp,lang) : "···";
+  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp,lang) : "···";
   const [, setMapFreshnessTick] = useState(0);
-  useEffect(()=>{if(wmSatAgeH!=null&&wmSatAgeH<36){const timer=setTimeout(()=>setMapFreshnessTick(1),(36-wmSatAgeH)*36e5+50);return()=>clearTimeout(timer)}},[erddapTimestamp,source]);
-  const wmSatColor = wmSatAgeH >= 36 ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
+  useEffect(()=>{if(wmDecisionAvailable){const timer=setTimeout(()=>setMapFreshnessTick(1),((wmSatFresh?12:36)-wmSatAgeH)*36e5+50);return()=>clearTimeout(timer)}},[erddapTimestamp,source,wmSatFresh]);
+  const wmSatColor = wmSatValid && wmSatAgeH >= 36 ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
