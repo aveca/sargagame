@@ -295,7 +295,7 @@ export default defineConfig({
 
         // ── 5) JSON-LD : remplace les 4 blocs MQ par 3 blocs région (pas de
         //      SiteNavigationElement : aucune sous-page générée pour l'instant). ──
-        const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Daily Beach Status`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
+        const ldWebApp = JSON.stringify({ '@context': 'https://schema.org', '@type': 'WebApplication', name: `${siteName} · Beach Conditions & Satellite Observations`, description: desc, url: `https://${domain}/`, applicationCategory: 'TravelApplication', operatingSystem: 'Web', inLanguage: [lang, ...(REGION.secondaryLangs || [])], dateModified: today, datePublished: today, publisher: { '@type': 'Organization', name: siteName, logo: `https://${domain}/icon-512.png` } })
         const ldFaq = JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: es ? [
           { '@type': 'Question', name: `¿Hay sargazo o algas en ${name} ahora mismo?`, acceptedAnswer: { '@type': 'Answer', text: `Abre el mapa de playas para consultar la información publicada más reciente de cada playa de ${name}. Cada ficha muestra la hora de la última observación satelital cuando está disponible. Si la fuente se retrasa, el estado publicado puede no reflejar las condiciones actuales.` } },
           { '@type': 'Question', name: `¿Qué playas de ${name} están sin sargazo hoy?`, acceptedAnswer: { '@type': 'Answer', text: `Las condiciones varían de una playa a otra: ${communes.join(', ')} no reciben el mismo impacto. El mapa muestra la información publicada más reciente para cada playa; consulta la hora de observación satelital antes de planificar tu salida.` } },
@@ -315,7 +315,7 @@ export default defineConfig({
 
         // ── 6) noscript SEO : contenu région en langue primaire, SANS liens internes
         //      (aucune sous-page générée → zéro phantom href, cf. bug seo-link-graph). ──
-        const byCommune = communes.map(c => `<h2>${c} — ${es ? 'playas monitoreadas a diario' : 'beaches monitored daily'}</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
+        const byCommune = communes.map(c => `<h2>${c} — ${es ? 'playas con observaciones disponibles' : 'beaches with available observations'}</h2>\n        <p>${beaches.filter(b => b.commune === c).map(b => b.name).join(', ')}.</p>`).join('\n        ')
         const noscriptRegion = es ? `<noscript>
         <h1>Sargazo y algas en ${name} — información disponible por playa (2026)</h1>
         <p>Consulta la información disponible para ${beaches.length} playas (${beachNames.slice(0, 6).join(', ')}…) a partir de observaciones satelitales de NOAA. La hora de la última observación se muestra cuando está disponible; si la fuente se retrasa, los datos pueden no reflejar las condiciones actuales.</p>
