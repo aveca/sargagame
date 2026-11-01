@@ -81,17 +81,33 @@ function dataHook(c, type) {
   return { beach: main.name, avoidDays: avoidDaysLastWeek(main.id, c.island) }
 }
 
-// Preuve LIVE de la MÉTHODE (même pipeline toutes régions) — jamais un chiffre figé.
-function liveProof() {
-  const tr = load('public/api/copernicus/track-record.json', null)
-  if (!tr) return null
+// Résout une preuve B2B uniquement si le registre est frais et strictement régional.
+// Un agrégat MQ+GP ne devient jamais une preuve propre à MQ ou GP ; une région absente
+// du registre ne reçoit aucun chiffre. Le caller doit afficher le périmètre et la fenêtre.
+function resolveLiveProof(tr, regionId) {
+  const region = norm(regionId)
+  if (!tr || typeof tr !== 'object' || tr.freshness?.stale !== false || !region) return null
+
+  const regions = Array.isArray(tr.regions)
+    ? [...new Set(tr.regions.map(value => norm(value)).filter(Boolean))]
+    : []
+  if (regions.length !== 1 || regions[0] !== region) return null
+
   const calm = tr.byRegime && tr.byRegime.calm
-  const pct = calm && calm.cleanReliabilityPct != null ? calm.cleanReliabilityPct
-    : (tr.overall && tr.overall.statusHitRatePct) || (tr.lifetime && tr.lifetime.statusHitRatePct)
-  const n = (calm && calm.cleanSamples) || (tr.window && tr.window.sampleSize) || (tr.lifetime && tr.lifetime.sampleSize)
+  const pct = Number(calm && calm.cleanReliabilityPct)
+  const n = Number(calm && calm.cleanSamples)
   const w = tr.window || tr.lifetime || {}
-  if (pct == null) return null
-  return { pct, n: n || null, from: w.from || null, to: w.to || null }
+  const from = typeof w.from === 'string' ? w.from : ''
+  const to = typeof w.to === 'string' ? w.to : ''
+  if (!Number.isFinite(pct) || pct < 0 || pct > 100 ||
+      !Number.isFinite(n) || n <= 0 || !from || !to) return null
+
+  return { pct, n, from, to, region }
 }
 
-module.exports = { inferType, beachesForCommune, avoidDaysLastWeek, dataHook, liveProof, regionOf }
+function liveProof(regionId) {
+  const tr = load('public/api/copernicus/track-record.json', null)
+  return resolveLiveProof(tr, regionId)
+}
+
+module.exports = { inferType, beachesForCommune, avoidDaysLastWeek, dataHook, liveProof, resolveLiveProof, regionOf }
