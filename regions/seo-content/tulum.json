@@ -2,19 +2,19 @@
   "faq": [
     {
       "q": "¿Cuándo es la temporada de sargazo en Tulum?",
-      "a": "La temporada va de abril a septiembre, con el pico entre mayo y julio. De noviembre a marzo las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como cada año varía, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles."
+      "a": "La temporada de sargazo en Tulum suele ir de abril a septiembre, con picos entre mayo y julio. De noviembre a marzo las playas suelen recibir menos, aunque pueden llegar manchas aisladas. Las observaciones satelitales son intermitentes; consulta la última lectura disponible y su fecha, sin asumir una cadencia fija."
     },
     {
       "q": "¿Qué playas de Tulum tienen menos sargazo?",
-      "a": "Playa Ruinas y Playa Santa Fe, al estar más resguardadas por la geografía de la costa, suelen recibir menos sargazo que Playa Paraíso o Playa Pescadores, que miran de frente al este. Playa Xcacel, al sur, también suele estar más limpia. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias hoy mismo."
+      "a": "Playa Ruinas y Playa Santa Fe suelen estar más resguardadas por la forma de la costa; Playa Paraíso y Playa Pescadores miran más al este, y Xcacel puede presentar condiciones distintas. Son patrones generales, no un estado para hoy: revisa la última observación publicada y su hora; si el dato está retrasado, no se publica un estado actual de playa limpia."
     },
     {
       "q": "¿Qué tan confiables son los datos de este sitio?",
-      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con imágenes de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza."
+      "a": "Usamos el índice AFAI en imágenes satelitales públicas para detectar sargazo flotante. Las observaciones útiles son intermitentes y las nubes pueden retrasar una lectura. Cada playa muestra la hora de observación y la confianza; el estado actual solo se publica cuando la lectura supera los controles de frescura. Los reportes de bañistas pueden aportar contexto cuando están disponibles, pero no sustituyen una nueva observación satelital."
     },
     {
       "q": "¿Se puede pronosticar el sargazo con una semana de anticipación?",
-      "a": "Sí, con límites razonables. El sargazo deriva con el viento y las corrientes, así que cuando el satélite detecta una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante los siguientes siete días. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia."
+      "a": "El pronóstico de siete días solo se muestra cuando hay una observación reciente y datos de viento y corrientes validados. Los primeros días son la ventana más útil; los días 4–7 indican tendencia, no certeza. Si faltan datos válidos, el pronóstico no se publica como una decisión actual."
     },
     {
       "q": "¿Los hoteles limpian el sargazo de sus playas?",
@@ -22,7 +22,7 @@
     },
     {
       "q": "¿Qué hago si mi playa amaneció llena de sargazo?",
-      "a": "Muévete — la geografía te da opciones. Si Playa Paraíso amaneció mal, Playa Ruinas o Playa Santa Fe suelen estar más limpias; Akumal y Xpu-Ha al norte también son opciones cercanas. Con las alertas premium te avisamos en cuanto tu playa cambie de estado."
+      "a": "Si Playa Paraíso está afectada, Playa Ruinas o Playa Santa Fe pueden presentar condiciones distintas; comprueba la última observación de la playa alternativa antes de desplazarte. Revisa su fecha y confianza; si el dato está retrasado, no se publica una recomendación actual de playa limpia. Las alertas Premium se envían cuando una nueva observación validada cambia el estado de tu playa guardada."
     }
   ],
   "pages": {
