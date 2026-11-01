@@ -265,7 +265,7 @@ async function verifyDomain(region, opts) {
 
   // 4bis. Catalogue partenaires B2B consommé par ChasseHome.
   // Un 404 ou un JSON incomplet masque silencieusement les cartes partenaires.
-  const b2bUrl = `https://${domain}/api/b2b-partners.json?pdv=${Date.now()}`;
+  const b2bUrl = `https://${domain}/data/b2b-partners.json?pdv=${Date.now()}`;
   const b2bStatus = httpStatus(b2bUrl);
   if (!b2bStatus.ok || b2bStatus.status !== 200) {
     set('b2b_partners_api', 'FAILED',

@@ -362,7 +362,7 @@ function fcTrend(fc){
      1) label « Partenaire » explicite (jamais déguisé en reco éditoriale) ;
      2) le VERDICT sargasses reste 100% data ERDDAP — l'argent ne le touche JAMAIS ;
         un partenaire sur une plage envahie reste affiché « à éviter », point ;
-     3) source = public/api/b2b-partners.json, tableau `partners` généré UNIQUEMENT
+     3) source = public/data/b2b-partners.json, tableau `partners` généré UNIQUEMENT
         depuis les hôtels paid:true du funnel (aucune auto-insertion possible).
    Outil de vente : ?preview_partner=<slug> force l'affichage d'UNE fiche (tableau
    `preview`, étiquetée « aperçu ») sans qu'elle soit publique — pour montrer à un
@@ -372,7 +372,7 @@ let _partnersCache=null
 function loadPartners(){
   if(_partnersCache) return _partnersCache
   _partnersCache=(typeof fetch!=="undefined"
-    ? fetch("/api/b2b-partners.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>({partners:(d&&d.partners)||[],preview:(d&&d.preview)||[]})).catch(()=>({partners:[],preview:[]}))
+    ? fetch("/data/b2b-partners.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>({partners:(d&&d.partners)||[],preview:(d&&d.preview)||[]})).catch(()=>({partners:[],preview:[]}))
     : Promise.resolve({partners:[],preview:[]}))
   return _partnersCache
 }
