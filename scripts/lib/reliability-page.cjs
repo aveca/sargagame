@@ -6,10 +6,10 @@
  *   - Régions: dist/reliability/ (EN) ou dist/fiabilidad/ (ES) + ajout au
  *              sitemap.xml régional écrit par region-seo-pages.cjs.
  *
- * RÈGLE D'OR : aucun chiffre inventé. Tout vient de :
- *   scripts/automation/data/backtest-results.json   (précision réelle prévision vs observé)
- *   public/api/copernicus[/<region>]/sargassum.json (updatedAt, points de mesure)
- * Donnée absente → la section saute, on n'écrit RIEN à la place.
+ * RÈGLE D'OR : aucun chiffre inventé. Les métriques viennent uniquement du
+ * registre public daté public/api/copernicus/track-record.json, après contrôle
+ * de fraîcheur et de périmètre régional. Les observations restent horodatées
+ * par erddapTimestamp. Donnée absente ou périmètre inadéquat → aucun chiffre.
  *
  * Design « Le Veilleur » : papier crème #FDFCF7, or signal #FFC72C, polices Anton
  * (titres) + Bricolage Grotesque (corps), panneaux golden-hour sombres (#10231E /
@@ -18,6 +18,7 @@
  */
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
+const { resolvePublicAccuracy } = require('./regional-track-record.cjs')
 const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie réelle du modèle (5,0 j) — jamais re-coder en dur
 const path = require('path')
 const HL_FR = String(HALF_LIFE_DAYS).replace('.', ',') // 5,0 → "5"
@@ -109,7 +110,7 @@ const I18N = {
     fPoints: n => `${n} points de mesure suivis · horodatage de l'observation satellite affiché ci-dessus.`,
     cta: 'Voir la carte des plages →',
     fdata: 'Données : Copernicus Marine & NOAA ERDDAP · backtest recalculé automatiquement',
-    caribNote: null,
+    scopeNote: scope => `Périmètre de validation publié : ${scope}. Résultats agrégés dans ce périmètre, pas une garantie plage par plage.`,
     rgClean: 'Prévisions « Propre »',
     rgFalse: 'Taux Fausses Alertes',
     capTitle: 'Recevez le verdict du matin',
@@ -151,7 +152,7 @@ const I18N = {
     fPoints: n => `${n} monitored sampling points · the satellite observation timestamp is shown above.`,
     cta: 'See the beach map →',
     fdata: 'Data: Copernicus Marine & NOAA ERDDAP · backtest recomputed automatically',
-    caribNote: region => `Accuracy is measured on our longest-running network — 20 Caribbean beaches (Martinique & Guadeloupe), where the verification archive is deepest. The exact same model (pipeline v3) powers the ${region} forecasts.`,
+    scopeNote: scope => `Published validation scope: ${scope}. Results are aggregated for that scope, not a per-beach guarantee.`,
     rgClean: '"Clean" Forecasts',
     rgFalse: 'False Alarm Rate',
     capTitle: 'Get the morning verdict',
@@ -193,7 +194,7 @@ const I18N = {
     fPoints: n => `${n} puntos de medición monitoreados · la hora de la observación satelital se muestra arriba.`,
     cta: 'Ver el mapa de playas →',
     fdata: 'Datos: Copernicus Marine & NOAA ERDDAP · backtest recalculado automáticamente',
-    caribNote: region => `La precisión se mide en nuestra red más antigua — 20 playas del Caribe (Martinica y Guadalupe), donde el archivo de verificación es más profundo. El mismo modelo exacto (pipeline v3) genera los pronósticos de ${region}.`,
+    scopeNote: scope => `Alcance de validación publicado: ${scope}. Los resultados son agregados para ese alcance, no una garantía por playa.`,
     rgClean: 'Pronósticos «Limpia»',
     rgFalse: 'Tasa Falsas Alertas',
     capTitle: 'Recibe el veredicto de la mañana',
@@ -204,11 +205,57 @@ const I18N = {
   },
 }
 
-/** Lit le backtest réel ; null si rien d'exploitable (→ la section saute). */
-function readBacktest() {
-  const bt = loadJSON(path.join(ROOT, 'scripts', 'automation', 'data', 'backtest-results.json'), null)
-  if (!bt || !bt.byHorizon || !bt.overall || typeof bt.overall.statusHitRate !== 'number' || !(bt.totalPairs > 0)) return null
-  return bt
+/**
+ * Lit uniquement un registre public frais et strictement régional.
+ * Un backtest global interne ne constitue jamais une preuve pour une région.
+ */
+function readBacktest(regionId, root = ROOT) {
+  const record = loadJSON(path.join(root, 'public', 'api', 'copernicus', 'track-record.json'), null)
+  const accuracy = resolvePublicAccuracy(record, regionId)
+  const normalizedRegion = String(regionId ?? '').trim().toLowerCase()
+  if (!accuracy.available || accuracy.scopeRegions.length !== 1 || accuracy.scopeRegions[0] !== normalizedRegion) return null
+
+  const overallRate = Number(record.overall?.statusHitRatePct)
+  if (!Number.isFinite(overallRate) || overallRate < 0 || overallRate > 100) return null
+
+  const byHorizon = {}
+  for (const item of Array.isArray(record.byHorizon) ? record.byHorizon : []) {
+    const day = Number(item?.day)
+    const rate = Number(item?.hitRatePct)
+    const pairs = Number(item?.pairs)
+    if (!Number.isInteger(day) || day < 1 || day > 7 ||
+        !Number.isFinite(rate) || rate < 0 || rate > 100 ||
+        !Number.isFinite(pairs) || pairs <= 0) continue
+    const confidence = Number(item?.avgConfidence)
+    byHorizon[`day${day}`] = {
+      pairs,
+      statusHitRate: rate,
+      avgConfidence: Number.isFinite(confidence) && confidence >= 0 && confidence <= 100 ? confidence : null,
+    }
+  }
+  if (!byHorizon.day1 || !byHorizon.day3) return null
+
+  const byBeach = {}
+  for (const beach of Array.isArray(record.byBeach) ? record.byBeach : []) {
+    const id = String(beach?.id ?? '').trim()
+    const rate = Number(beach?.hitRatePct)
+    const pairs = Number(beach?.samples)
+    if (!id || !Number.isFinite(rate) || rate < 0 || rate > 100 ||
+        !Number.isFinite(pairs) || pairs <= 0) continue
+    byBeach[id] = { statusHitRate: rate, pairs }
+  }
+
+  const archiveDays = Number(record.window?.days)
+  return {
+    overall: { statusHitRate: overallRate, afaiMAE: accuracy.horizons['J+1'].meanAbsErr },
+    byHorizon,
+    totalPairs: accuracy.sampleSize,
+    dateRange: { archiveFrom: accuracy.window.from, archiveTo: accuracy.window.to },
+    archiveDays: Number.isFinite(archiveDays) && archiveDays > 0 ? archiveDays : null,
+    byBeach,
+    regimeReliability: record.byRegime && record.headline ? { regimes: record.byRegime, headline: record.headline } : null,
+    scopeLabel: accuracy.scopeLabel,
+  }
 }
 
 function beachLabel(lang, id) {
@@ -217,7 +264,7 @@ function beachLabel(lang, id) {
   return `${b.name} (${ISLAND_LABEL[lang][b.island] || b.island})`
 }
 
-/** Section précision — uniquement depuis backtest-results.json, gardée champ par champ. */
+/** Section précision — uniquement depuis un registre public frais et mono-région. */
 function precisionSection(lang, bt, regionName) {
   if (!bt) return ''
   const t = I18N[lang]
@@ -233,8 +280,10 @@ function precisionSection(lang, bt, regionName) {
     }
   }
 
-  // Note réseau Caraïbe (régions USD uniquement — le backtest est mesuré sur MQ+GP)
-  const carib = t.caribNote && regionName ? `<p class="note">${esc(t.caribNote(regionName))}</p>` : ''
+  // Le périmètre est explicite : aucun résultat agrégé n'est attribué à une autre région.
+  const scopeNote = bt.scopeLabel && t.scopeNote
+    ? `<p class="note">${esc(t.scopeNote(bt.scopeLabel))}</p>`
+    : ''
 
   // Stats clés J+1 / J+3 / global
   const stats = []
@@ -287,7 +336,7 @@ function precisionSection(lang, bt, regionName) {
     <div class="lbl">${esc(t.l2)}</div>
     <h2>${esc(t.h2p)}</h2>
     ${regimeLead}
-    ${intro}${carib}
+    ${intro}${scopeNote}
     <div class="stats">${stats.join('')}</div>
     ${hitDef}
     ${table}
@@ -845,24 +894,25 @@ function buildMeta(lang, bt, regionLabel) {
  * sinon build mono-région (florida / puntacana / rivieramaya).
  */
 function generateReliabilityPages(region, distDir) {
-  const bt = readBacktest()
   const isNewRegion = !!(region && region.id !== 'mq' && region.id !== 'gp')
 
   if (!isNewRegion) {
     const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'sargassum.json'), null)
-    // MQ — canonical martinique
-    const mqMeta = buildMeta('fr', bt, 'Martinique')
+    // MQ — canonical Martinique : métrique uniquement si le registre couvre MQ seul.
+    const mqBt = readBacktest('mq')
+    const mqMeta = buildMeta('fr', mqBt, 'Martinique')
     writePage(distDir, 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-martinique.com', siteName: 'Sargasses Martinique',
-      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt, islandCode: 'MQ'
+      slug: 'fiabilite', title: mqMeta.title, desc: mqMeta.desc, data, bt: mqBt, islandCode: 'MQ'
     }))
-    // GP — miroir dist/_gp/ (prepare-ftp l'overlay sur guadeloupe-ftp en dernier)
-    const gpMeta = buildMeta('fr', bt, 'Guadeloupe')
+    // GP — miroir dist/_gp/ : métrique uniquement si le registre couvre GP seul.
+    const gpBt = readBacktest('gp')
+    const gpMeta = buildMeta('fr', gpBt, 'Guadeloupe')
     writePage(path.join(distDir, '_gp'), 'fiabilite', renderPage({
       lang: 'fr', domain: 'sargasses-guadeloupe.com', siteName: 'Sargasses Guadeloupe',
-      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt, islandCode: 'GP'
+      slug: 'fiabilite', title: gpMeta.title, desc: gpMeta.desc, data, bt: gpBt, islandCode: 'GP'
     }))
-    console.log(`   → /fiabilite/ générée (MQ + miroir GP)${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+    console.log(`   → /fiabilite/ générée (MQ + miroir GP) · précision régionale ${mqBt || gpBt ? 'disponible selon le registre' : 'masquée (registre absent, périmé ou multi-régions)'}`)
     return
   }
 
@@ -878,6 +928,7 @@ function generateReliabilityPages(region, distDir) {
   const langs = [region.primaryLang, ...(region.secondaryLangs || [])]
     .map(norm).filter((l, i, a) => a.indexOf(l) === i) // dédupe, primaire d'abord
   const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), null)
+  const bt = readBacktest(region.id)
   const alternates = langs.map(l => ({ lang: l, href: `https://${region.domain}/${SLUG[l]}/`, xDefault: l === primary }))
   const done = []
   for (const l of langs) {
@@ -911,7 +962,7 @@ function generateReliabilityPages(region, distDir) {
 `
   writePage(distDir, 'fiabilite', legacyHtml)
   done.push(`/fiabilite/ (redirect → ${legacyTarget})`)
-  console.log(`   → ${done.join(' + ')} générée(s) (${region.id})${bt ? ` — backtest ${bt.overall.statusHitRate}% global, ${bt.totalPairs} paires` : ' — SANS section précision (backtest indisponible)'}`)
+  console.log(`   → ${done.join(' + ')} générée(s) (${region.id}) · précision régionale ${bt ? 'disponible selon le registre' : 'masquée (registre absent, périmètre invalide ou périmé)'}`)
 }
 
-module.exports = { generateReliabilityPages }
+module.exports = { generateReliabilityPages, readBacktest }
