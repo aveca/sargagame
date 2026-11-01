@@ -67,6 +67,10 @@ assert.ok(vite.includes('const isConditionsFresh = conditionsFreshness.selection
 assert.ok(vite.includes('const matching = !isConditionsFresh ? [] : enrichedBeaches'));
 assert.ok(vite.includes('conditionsFreshness.satelliteLabel'));
 assert.ok(vite.includes('conditionsFreshness.weatherLabel'));
+assert.ok(vite.includes('const pageTitle = isConditionsFresh ? pageTitleBase : suspendConditionTitle(pageTitleBase)'));
+assert.ok(vite.includes('const pageH1 = isConditionsFresh ? pageH1Base : suspendConditionTitle(pageH1Base)'));
+assert.ok(vite.includes('const hubTitle = isConditionsFresh ? hubTitleBase : suspendConditionTitle(hubTitleBase)'));
+assert.ok(vite.includes('suspendConditionTitle(isMQ ? p.h1Mq : p.h1Gp)'), 'stale hub links must not promise current conditions');
 assert.ok(vite.includes('Sélection suspendue'));
 assert.ok(vite.includes('pageResultsHeading'));
 assert.ok(vite.includes('rel="canonical"'), 'condition-page canonical generation remains present');
