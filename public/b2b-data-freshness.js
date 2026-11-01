@@ -18,7 +18,7 @@
     locale = locale === 'fr' || locale === 'es' ? locale : 'en'
     now = Number.isFinite(now) ? now : Date.now()
     var observedAt = parseTimestamp(data && data.erddapTimestamp)
-    if (!Number.isFinite(observedAt) || observedAt <= 0 || observedAt > now) {
+    if (!data || data.source !== 'erddap-live' || !Number.isFinite(observedAt) || observedAt <= 0 || observedAt > now) {
       return { status: 'unknown', timestamp: null, ageMs: null, label: locale === 'fr' ? 'Fraîcheur satellite inconnue' : (locale === 'es' ? 'Frescura satelital desconocida' : 'Satellite freshness unknown') }
     }
     var ageMs = now - observedAt
