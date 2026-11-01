@@ -13,6 +13,7 @@
 // ruban clavier ←/→, prefers-reduced-motion (fallback statique). Flags ?weekhub=0 / ?weekhubseason=0.
 import React, { useEffect, useRef, useMemo, useState, useCallback } from "react"
 import { useSwipeClose } from "./useSwipeClose"
+import { isTrackRecordFresh } from "./lib/track-record-freshness.js"
 
 const DAY_LBL = [["Auj","Today","Hoy"],["+1j","+1d","+1d"],["+2j","+2d","+2d"],["+3j","+3d","+3d"],["+4j","+4d","+4d"],["+5j","+5d","+5d"]]
 const ti = (lang, a) => lang === "en" ? a[1] : lang === "es" ? a[2] : a[0]
@@ -143,7 +144,7 @@ export default function WeekHub({
   useEffect(()=>{ let ok=true
     fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{
       try{ const c=d&&d.byRegime&&d.byRegime.calm
-        if(ok&&c&&c.cleanReliabilityPct!=null&&c.cleanSamples>=20) setCalmProof({pct:c.cleanReliabilityPct, n:c.cleanSamples, fa:c.falseAlarmRatePct})
+        if(ok&&isTrackRecordFresh(d)&&c&&c.cleanReliabilityPct!=null&&c.cleanSamples>=20) setCalmProof({pct:c.cleanReliabilityPct, n:c.cleanSamples, fa:c.falseAlarmRatePct, from:d.window.from, to:d.window.to})
       }catch(_){}
     }).catch(()=>{})
     return ()=>{ ok=false }
@@ -452,9 +453,9 @@ export default function WeekHub({
                   <div style={{font:"500 12px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:5}}>{_t(lang,"On surveille la mer pour toi — alerte à la seconde où ça bascule.","We watch the sea for you — alerted the second it shifts.","Vigilamos el mar por ti — aviso en cuanto cambie.")}</div>
                   {calmProof && (
                     <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>{_t(lang,
-                      `En saison calme, ${calmProof.pct}% de nos « mer propre » se sont vérifiées (${calmProof.n.toLocaleString("fr-FR")} cas). Les rares alertes, on les donne à faible confiance — on ne crie pas au loup. 76-79% tous régimes confondus, détail sur /fiabilite/.`,
-                      `In calm season, ${calmProof.pct}% of our “clean water” calls held up (${calmProof.n.toLocaleString("en-US")} cases). The rare alerts we give low-confidence — we don't cry wolf. 76-79% across all regimes, details on /reliability/.`,
-                      `En temporada calma, ${calmProof.pct}% de nuestros “agua limpia” se cumplieron (${calmProof.n.toLocaleString("es-ES")} casos). Las raras alertas las damos con baja confianza — no gritamos lobo. 76-79% en todos los regímenes, detalle en /fiabilidad/.`)}</div>
+                      `En saison calme, ${calmProof.pct}% de nos « mer propre » se sont vérifiées (${calmProof.n.toLocaleString("fr-FR")} cas, du ${calmProof.from} au ${calmProof.to}). Les rares alertes, on les donne à faible confiance — on ne crie pas au loup. Détails par régime et horizon sur /fiabilite/.`,
+                      `In calm season, ${calmProof.pct}% of our “clean water” calls held up (${calmProof.n.toLocaleString("en-US")} cases, ${calmProof.from} to ${calmProof.to}). The rare alerts we give low-confidence — we don't cry wolf. Details by regime and forecast horizon at /reliability/.`,
+                      `En temporada calma, ${calmProof.pct}% de nuestros “agua limpia” se cumplieron (${calmProof.n.toLocaleString("es-ES")} casos, del ${calmProof.from} al ${calmProof.to}). Las raras alertas las damos con baja confianza — no gritamos lobo. Detalles por régimen y horizonte en /fiabilidad/.`)}</div>
                   )}
                 </>
               ) : hero.safe ? (
@@ -728,7 +729,7 @@ export default function WeekHub({
           {/* PIED honnêteté */}
           <div style={{textAlign:"center", padding:"2px 4px 0"}}>
             <a href="/fiabilite/" style={{font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, textDecoration:"underline"}}>{_t(lang,"Va voir ce qu'on vaut vraiment →","See what we're really worth →","Mira lo que valemos de verdad →")}</a>
-            <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"76 à 79 % de justesse selon la saison · confiance forte J0-J3, indicative au-delà.","76-79% accuracy by season · strong confidence D0-D3, indicative beyond.","76-79 % de acierto según temporada · confianza alta D0-D3, indicativa más allá.")}</div>
+            <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"Résultats publiés et datés ; la fiabilité varie selon le régime et l’horizon.","Results are published with dates; reliability varies by regime and forecast horizon.","Resultados publicados y fechados; la fiabilidad varía según el régimen y el horizonte.")}</div>
           </div>
 
         </div>
