@@ -21,7 +21,8 @@ const assert = require('assert');
 const path = require('path');
 
 const MOD = path.join(__dirname, '..', 'scripts', 'automation', 'purge-analytics.cjs');
-const { countRows, purgeInBatches } = require(MOD);
+process.env.SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || 'unit-test-key';
+const { countRows, purgeInBatches, main: runPurge, DRY } = require(MOD);
 
 let failures = 0;
 function record(name, ok, extra) {
@@ -43,6 +44,19 @@ function resp(status, contentRange) {
 }
 
 async function main() {
+  // ── 0. La vraie entrée main reste strictement en lecture seule ─────────
+  {
+    const methods = [];
+    const fetchImpl = async (_url, opts = {}) => {
+      methods.push(opts.method || 'GET');
+      return resp(200, '0-0/770');
+    };
+    await runPurge({ now: Date.parse('2026-11-01T00:00:00Z'), fetchImpl });
+    record('purge désactivée par défaut', DRY === true);
+    record('main ne lance jamais DELETE en dry-run', methods.length === 1 && methods[0] === 'GET',
+      'methods=' + methods.join(','));
+  }
+
   // ── 1. Le comptage se fait en UNE requête (plus de boucle par lot) ──────
   {
     let calls = 0;
