@@ -1,8 +1,8 @@
 {
   "_note": "Contenu SEO en ES (langue secondaire) pour Florida / Miami (sargassummiami.com). Les pages /es/ s'activent automatiquement dès que ce fichier existe (cf. scripts/lib/region-langs.cjs). Le primaire EN vit dans regions/seo-content/florida.json — mêmes faits, écrit nativement en espagnol neutro/LatAm pour la audiencia hispanohablante de Miami (no traducción literal). EN secondary lives nowhere; this is the ES set. ES SEO content for Florida (secondary language).",
   "home": {
-    "title": "Sargazo en Miami Hoy — Mapa de Playas en Vivo y Pronóstico de 7 Días 2026",
-    "desc": "¿Qué playa de Miami o Florida está libre de sargazo hoy? Mapa de algas en vivo por playa, Beach Score de 0 a 100 y pronóstico a 7 días. Actualizado 4 veces al día por satélite."
+    "title": "Sargazo en Florida — Últimas observaciones satelitales",
+    "desc": "Últimas observaciones satelitales por playa en Florida. Revisa la fecha y la confianza; el estado actual se suspende si los datos están retrasados."
   },
   "routes": {
     "best": "mejores-playas-sin-sargazo-florida",
@@ -11,27 +11,27 @@
   "faq": [
     {
       "q": "¿Cuándo es la temporada de sargazo en Florida?",
-      "a": "La ventana de sargazo en Florida va más o menos de mayo a agosto, con el pico en junio y julio. Los Cayos y la costa atlántica del sureste — de Miami hasta Jupiter — son los más afectados; en invierno prácticamente no hay algas en todo el estado. La cantidad varía muchísimo de un año a otro según la floración del Atlántico, y por eso seguimos las condiciones con datos satelitales actualizados cuatro veces al día en lugar de citar promedios de temporada."
+      "a": "La temporada de sargazo en Florida suele ir de mayo a agosto, con picos en junio y julio, pero cambia de un año a otro. Las observaciones satelitales son intermitentes; no prometemos una frecuencia fija de actualización. Cada playa muestra la fecha de la última lectura y su nivel de confianza para que puedas valorar qué tan reciente es."
     },
     {
       "q": "¿Qué playas de Florida tienen menos sargazo?",
-      "a": "Las playas de la costa del Golfo, como Clearwater, casi nunca reciben sargazo en cantidades notables — las corrientes rara vez lo llevan hasta allá. Del lado atlántico, Daytona y la costa central reciben mucho menos que los Cayos o Miami. Dentro del sur de Florida, las condiciones pueden cambiar de una playa a otra en un mismo día, así que revisa el mapa en vivo: nuestros datos satelitales, actualizados a diario, muestran exactamente qué playas están limpias ahora mismo."
+      "a": "Las playas del Golfo, como Clearwater, suelen recibir menos sargazo porque las corrientes rara vez lo llevan hasta allí. En la costa atlántica, Daytona y la costa central suelen recibir menos que los Cayos o Miami. Son patrones generales, no un veredicto para hoy: el mapa muestra la última observación publicada por playa y su fecha de observación; el estado de playa limpia se suspende cuando la lectura está retrasada o no se puede validar."
     },
     {
       "q": "¿Qué tan preciso es este rastreador de sargazo?",
-      "a": "Usamos el mismo índice satelital AFAI en el que se apoya la NOAA, a partir de imágenes de Copernicus y la NOAA actualizadas cuatro veces al día. Las manchas flotantes tienen una firma espectral característica que los satélites detectan de forma confiable cuando el cielo está despejado; las nubes pueden retrasar las lecturas, así que cada playa muestra la antigüedad de sus datos y un nivel de confianza. Los reportes de los bañistas completan los huecos. Es la diferencia entre una medición y una adivinanza."
+      "a": "Usamos el índice satelital AFAI en imágenes públicas de Copernicus/NOAA. Las observaciones útiles son intermitentes y las nubes pueden retrasar una lectura. Cada playa muestra la hora de observación y la confianza; el estado actual solo se publica cuando la observación supera los controles de frescura. Los reportes de bañistas pueden aportar contexto cuando están disponibles, pero no sustituyen una nueva observación satelital."
     },
     {
       "q": "¿De verdad se puede pronosticar el sargazo con una semana de anticipación?",
-      "a": "Hasta cierto punto útil, sí. Una vez que los satélites detectan las manchas mar adentro, su deriva queda determinada en gran medida por el viento y la Corriente del Golfo, que modelamos a diario para cada playa. Los días 1 a 3 son los más fiables; del 4 al 7 muestran la dirección del movimiento. El alga que ya tocó la arena se degrada con una vida media de 3.5 días salvo que llegue material nuevo. El pronóstico se vuelve a correr todos los días conforme entran nuevas pasadas satelitales."
+      "a": "El pronóstico de siete días solo se muestra cuando la última observación y los datos del modelo superan la validación. Los primeros días son la ventana más útil; los días 4–7 indican tendencia, no certeza. Se recalcula cuando hay observaciones y datos de transporte validados; no se promete una cadencia fija."
     },
     {
       "q": "¿Limpian las playas de Florida el sargazo?",
-      "a": "La mayoría de las playas turísticas sí. Miami Beach hace rastrillado mecánico diario, y las cuadrillas de hoteles y municipios trabajan cada mañana las principales playas de los Cayos. Las playas más pequeñas y naturales se limpian poco o nunca. La limpieza reinicia la arena, pero si los satélites muestran manchas nuevas en camino, el alga regresa en horas — por eso combinar el calendario de limpieza con nuestro pronóstico satelital diario te dice más que cualquiera de los dos por separado."
+      "a": "Las prácticas de limpieza varían según el municipio, el resort y la playa. La retirada mecánica puede quitar el sargazo de la arena, pero pueden llegar nuevas manchas durante un arribo fuerte. Consulta la última observación publicada de esa playa y su fecha; si la lectura está retrasada o no se puede validar, la página suspende la recomendación de playa limpia. Una lectura satelital no confirma que el personal haya limpiado la arena."
     },
     {
       "q": "¿Qué hago si mi playa amaneció cubierta de sargazo?",
-      "a": "Maneja — Florida te da opciones. Si Miami Beach está tapada, lo más seguro es que Daytona o el lado del Golfo en Clearwater no lo estén, y nuestro mapa en vivo te muestra al instante la arena limpia más cercana. Las cantidades pequeñas son inofensivas para quienes nadan; los montones grandes en descomposición huelen a azufre y conviene evitarlos. Las alertas premium te avisan en cuanto una playa guardada cambia de estado, para que dejes de adivinar y empieces a desviar la ruta."
+      "a": "Si Miami Beach está afectada, otras playas pueden presentar condiciones distintas, pero no supongas que Daytona o Clearwater están limpias. Revisa la última lectura publicada y su hora antes de desplazarte. Si el dato está retrasado o no se puede validar, la página suspende la recomendación de playa limpia. Las alertas Premium se envían cuando una nueva observación validada cambia el estado de una playa guardada."
     }
   ],
   "pages": {

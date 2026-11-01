@@ -2,27 +2,27 @@
   "faq": [
     {
       "q": "¿Cuándo es la temporada de sargazo en Cancún y la Riviera Maya?",
-      "a": "La temporada va de abril a septiembre, con el pico entre mayo y julio. De noviembre a marzo las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como cada año varía — y mucho —, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuatro veces al día, para que veas lo que hay en la arena hoy y no un promedio histórico."
+      "a": "La temporada de sargazo en Cancún y la Riviera Maya suele ir de abril a septiembre, con picos entre mayo y julio. De noviembre a marzo las playas suelen recibir menos, aunque pueden llegar manchas aisladas. Como cada año cambia, consulta la última observación disponible por playa y su fecha; no hay una frecuencia fija de actualización garantizada."
     },
     {
       "q": "¿Qué playas tienen menos sargazo en la Riviera Maya?",
-      "a": "Las que no miran al este: Playa Norte en Isla Mujeres, Holbox al norte de la península y la costa oeste de Cozumel (Palancar) casi nunca reciben sargazo. En el corredor Cancún–Tulum, las playas protegidas por bahía o arrecife — Akumal, Puerto Morelos — acumulan menos que las abiertas. Revisa el mapa en vivo: los datos satelitales diarios muestran cuáles están limpias de algas hoy mismo."
+      "a": "Las playas que no miran al este — Playa Norte en Isla Mujeres, Holbox y la costa oeste de Cozumel (Palancar) — suelen estar más resguardadas. En el corredor Cancún–Tulum, las bahías y arrecifes también influyen. Son patrones geográficos, no un veredicto actual: revisa la última observación publicada y su hora; si el dato está retrasado, no se publica un estado actual de playa limpia."
     },
     {
       "q": "¿Qué tan confiables son los datos de este sitio?",
-      "a": "Usamos el índice AFAI, el mismo estándar con el que la NOAA detecta sargazo flotante desde satélite, con imágenes de Copernicus actualizadas cuatro veces al día. Los reportes de bañistas en la playa corrigen lo que las nubes alcanzan a tapar. Cada playa muestra la hora exacta de su última actualización y un nivel de confianza, para que sepas qué tan fresca es la lectura que estás viendo."
+      "a": "Usamos el índice AFAI en imágenes satelitales públicas para detectar sargazo flotante. Las observaciones útiles son intermitentes y las nubes pueden retrasar una lectura. Cada playa muestra la hora de observación y la confianza; el estado actual solo se publica cuando la lectura supera los controles de frescura. Los reportes de bañistas pueden aportar contexto cuando están disponibles, pero no sustituyen una nueva observación satelital."
     },
     {
       "q": "¿Se puede pronosticar el sargazo con una semana de anticipación?",
-      "a": "Sí, con límites razonables. El sargazo deriva con el viento y las corrientes, así que cuando el satélite detecta una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante los siguientes siete días. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. El pronóstico se recalcula todos los días con cada nueva pasada satelital."
+      "a": "El pronóstico de siete días solo se muestra cuando la última observación y los datos de viento y corrientes están disponibles y validados. Los primeros días son la ventana más útil; los días 4–7 indican tendencia, no certeza. Se recalcula cuando llegan datos validados; no se promete una cadencia fija."
     },
     {
       "q": "¿Los hoteles limpian el sargazo de sus playas?",
-      "a": "Los grandes resorts de Cancún, Playa del Carmen y Tulum rastrillan su frente de playa cada mañana, y muchos instalan barreras antisargazo mar adentro; los municipios y la Marina también recogen toneladas en temporada. Aun así, en días de arribazón fuerte el alga regresa en horas. Por eso conviene ver el flujo real por satélite: si no viene nada nuevo, la playa rastrillada aguanta limpia todo el día."
+      "a": "Las prácticas de limpieza varían entre los hoteles, las playas públicas y los municipios del corredor Cancún–Tulum. La retirada mecánica puede ayudar, pero el sargazo puede regresar durante un arribo fuerte. Consulta la última observación publicada de esa playa y su fecha; si el dato está retrasado o no se puede validar, la página suspende la recomendación de playa limpia. Una lectura satelital no confirma que la arena haya sido limpiada."
     },
     {
       "q": "¿Qué hago si mi playa amaneció llena de sargazo?",
-      "a": "Muévete — la geografía te da opciones. Si la zona hotelera de Cancún amaneció mal, Playa Norte en Isla Mujeres suele estar limpia; desde Playa del Carmen, el ferry te deja a media hora de Palancar, en Cozumel. El sargazo fresco no es peligroso, pero los montones en descomposición huelen a azufre y es mejor evitarlos. Con las alertas premium te avisamos en cuanto tu playa cambie de estado."
+      "a": "Si la zona hotelera de Cancún está afectada, Isla Mujeres o Cozumel pueden ofrecer condiciones distintas, pero comprueba la última observación de la playa alternativa antes de desplazarte. Revisa su fecha y confianza; si el dato está retrasado, no se publica una recomendación actual de playa limpia. Las alertas Premium se envían cuando una nueva observación validada cambia el estado de tu playa guardada."
     }
   ],
   "pages": {

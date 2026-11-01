@@ -1,8 +1,8 @@
 {
   "_note": "Contenido SEO en español (lengua secundaria) para Punta Cana (sargassumpuntacana.com). Las páginas se renderizan bajo /es/. El primario (EN) vive en regions/seo-content/puntacana.json. Mismos hechos que el archivo EN, escritos de forma nativa para visitantes hispanohablantes (neutro/dominicano) — no traducción automática. Los slugs son en español; las rutas aquí alimentan las páginas best + weekly de /es/.",
   "home": {
-    "title": "Sargazo en Punta Cana Hoy — Mapa de Playas en Vivo y Pronóstico a 7 Días 2026",
-    "desc": "¿Hay sargazo en Punta Cana hoy? Mapa en vivo de 12 playas — Bávaro, Macao, Cap Cana — actualizado 4× al día por satélite, con pronóstico a 7 días por playa."
+    "title": "Sargazo en Punta Cana — Últimas observaciones satelitales",
+    "desc": "Últimas observaciones satelitales por playa en Punta Cana. Revisa fecha y confianza; el estado actual se suspende si los datos están retrasados."
   },
   "routes": {
     "best": "mejores-playas-sin-sargazo-punta-cana",
@@ -11,27 +11,27 @@
   "faq": [
     {
       "q": "¿Cuándo es la temporada de sargazo en Punta Cana?",
-      "a": "La temporada de sargazo en Punta Cana va de abril a octubre, con los arribos más fuertes entre mayo y agosto. Fuera de esos meses las playas suelen estar limpias, aunque pueden llegar manchones aislados en cualquier momento. Como las condiciones cambian de una semana a otra, seguimos cada playa con imágenes satelitales de Copernicus actualizadas cuatro veces al día — para que veas lo que de verdad hay en la arena hoy, no un promedio de temporada."
+      "a": "La temporada de sargazo en Punta Cana suele ir de abril a octubre, con arribos más fuertes entre mayo y agosto. El calendario cambia cada año. Usamos la última observación satelital disponible y no prometemos una frecuencia fija; revisa la fecha y la confianza de cada playa antes de planificar."
     },
     {
       "q": "¿Qué playas tienen menos sargazo en Punta Cana?",
-      "a": "Ninguna playa es inmune, pero Playa Blanca y Juanillo en Cap Cana, además de Cabeza de Toro, suelen salir mejor libradas gracias a la protección del arrecife y a la limpieza intensiva de los resorts. La franja abierta Bávaro–Macao–Uvero Alto mira de frente al Atlántico y acumula más alga en los meses pico. Revisa nuestro mapa en vivo antes de elegir: las actualizaciones satelitales diarias muestran qué playas están limpias ahora mismo, no el mes pasado."
+      "a": "Playa Blanca y Juanillo en Cap Cana, además de Cabeza de Toro, pueden estar menos expuestas por la protección del arrecife y la limpieza de los resorts. La franja Bávaro–Macao–Uvero Alto mira al Atlántico y puede acumular más alga en temporada alta. Son patrones generales, no un veredicto para hoy: consulta la última observación publicada y su fecha; no se muestra un estado actual de playa limpia cuando el dato está retrasado o no se puede validar."
     },
     {
       "q": "¿Qué tan confiables son los datos de sargazo de este sitio?",
-      "a": "Nuestros datos provienen de los programas satelitales Copernicus y NOAA, que detectan el sargazo flotante con el índice espectral AFAI. Los actualizamos cuatro veces al día y los combinamos con reportes de bañistas en la playa. La nubosidad puede retrasar ocasionalmente una lectura, por eso cada playa muestra su hora exacta de actualización y un nivel de confianza — siempre sabes qué tan fresca es la información."
+      "a": "Usamos el índice espectral AFAI en imágenes satelitales públicas para detectar sargazo flotante. Las observaciones útiles son intermitentes y las nubes pueden retrasarlas. Cada playa muestra la hora de observación y la confianza; el estado actual solo se publica cuando la lectura supera los controles de frescura. Los reportes de bañistas aportan contexto cuando están disponibles, pero no sustituyen una nueva observación satelital."
     },
     {
       "q": "¿De verdad se puede pronosticar el sargazo con 7 días de anticipación?",
-      "a": "Sí, con límites. El sargazo deriva con el viento y las corrientes marinas, así que en cuanto los satélites detectan una mancha mar adentro podemos proyectar su trayectoria hacia cada playa durante la semana siguiente. El alga que ya está en una playa se degrada con una vida media de unos 3.5 días, salvo que llegue material nuevo. Los días 1 a 3 son los más certeros; del 4 al 7 marcan la tendencia. El pronóstico se recalcula con cada actualización satelital — cuatro veces al día — y es el único pronóstico de sargazo a 7 días playa por playa publicado para Punta Cana. Publicamos su precisión medida de forma abierta en nuestra página de metodología."
+      "a": "El pronóstico de siete días solo se muestra cuando la última observación satelital y los datos del modelo están disponibles y superan la validación. Los primeros días son la ventana más útil; los días 4–7 indican tendencia, no certeza. Se recalcula cuando llegan observaciones y datos de transporte validados; no se promete una cadencia fija."
     },
     {
       "q": "¿Los resorts de Punta Cana limpian el sargazo de sus playas?",
-      "a": "La mayoría de los grandes resorts de Bávaro, Cap Cana y Uvero Alto rastrillan su frente de playa cada mañana, y algunos despliegan barreras mar adentro. La limpieza ayuda, pero durante arribos fuertes el alga puede regresar en horas. Por eso seguimos el flujo real mar adentro por satélite, actualizado a diario: si no viene nada nuevo, la playa rastrillada aguanta limpia todo el día; si se aproxima una mancha grande, hasta las mejores cuadrillas se quedan atrás."
+      "a": "Las prácticas de limpieza varían según el establecimiento en Bávaro, Cap Cana y Uvero Alto. La retirada mecánica puede ayudar, pero el sargazo puede regresar durante un arribo fuerte. Consulta la última observación publicada de esa playa y su fecha; si la lectura está retrasada o no se puede validar, la página suspende la recomendación de playa limpia. Una lectura satelital no confirma que el resort haya limpiado la arena."
     },
     {
       "q": "¿Qué debo hacer si mi playa tiene sargazo hoy?",
-      "a": "Revisa el mapa en vivo para encontrar la playa limpia más cercana — las condiciones suelen variar muchísimo a poca distancia en carro, y Cap Cana o Cabeza de Toro pueden estar bien mientras Bávaro está cubierta. Nadar cerca de cantidades pequeñas es inofensivo, aunque los montones en descomposición huelen a azufre y conviene evitarlos. Los usuarios premium reciben alertas push en cuanto una playa guardada cambia de estado, además del pronóstico a 7 días para planear alrededor de los días cargados."
+      "a": "Consulta la última lectura publicada de la playa que planeas visitar, incluida su hora y confianza. Las playas cercanas pueden diferir, pero no des por limpia a Cap Cana o Cabeza de Toro sin un estado actual validado. Si el dato está retrasado o no disponible, no se publica una recomendación de playa limpia. Las alertas Premium se envían cuando una nueva observación validada cambia el estado de una playa guardada."
     }
   ],
   "pages": {

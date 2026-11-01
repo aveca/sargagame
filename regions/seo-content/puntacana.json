@@ -2,27 +2,27 @@
   "faq": [
     {
       "q": "When is sargassum season in Punta Cana?",
-      "a": "Sargassum season in Punta Cana runs from April through October, with the heaviest landings between May and August. Outside those months the beaches are mostly clear, though stray patches can arrive any time. Because conditions shift week to week, we track every beach with Copernicus satellite imagery updated when new satellite observations are available — so you see what is actually on the sand today, not a seasonal average."
+      "a": "Sargassum season in Punta Cana usually runs April through October, with heavier landings often between May and August. Timing varies each year. We use the latest available satellite observations rather than promise a fixed refresh schedule; check each beach's observation time and confidence before planning."
     },
     {
       "q": "Which Punta Cana beaches have the least sargassum?",
-      "a": "No beach is immune, but Playa Blanca and Juanillo in Cap Cana, plus Cabeza de Toro, tend to fare better thanks to reef protection and intensive resort cleaning. The open Bávaro–Macao–Uvero Alto strip faces the Atlantic head-on and collects more seaweed in peak months. Check our live map before choosing: daily satellite updates show which beaches are clean right now, not last month."
+      "a": "Playa Blanca and Juanillo in Cap Cana, plus Cabeza de Toro, can be less exposed because of reef protection and resort cleaning. The open Bávaro–Macao–Uvero Alto strip faces the Atlantic and can collect more seaweed in peak months. These are general patterns, not today's verdict: check the latest published observation and timestamp for each beach; no current clean status is shown when the reading is delayed or unverified."
     },
     {
       "q": "How reliable is the sargassum data on this site?",
-      "a": "Our data comes from the Copernicus and NOAA satellite programs, which detect floating sargassum using the AFAI spectral index. We refresh it when new satellite observations are available and blend in on-the-ground reports from beachgoers. Cloud cover can occasionally delay a reading, which is why every beach shows its exact update time and a confidence level — you always know how fresh the information is."
+      "a": "We use the AFAI spectral index on public satellite imagery to detect floating sargassum. Usable observations are intermittent and cloud cover can delay them. Each beach shows the observation time and confidence; a current status is published only when the reading passes freshness checks. Beachgoer reports can add context when available, but do not replace a new satellite observation."
     },
     {
       "q": "Can sargassum really be forecast 7 days ahead?",
-      "a": "Yes, within limits. Sargassum drifts with wind and ocean currents, so once satellites spot a mat offshore we can project its track toward each beach over the coming week. Seaweed already on a beach decays with a roughly 3.5-day half-life unless new material lands. Days 1–3 are the most accurate; days 4–7 show the trend. The forecast is recalculated as new satellite observations become available and it is the only beach-by-beach 7-day sargassum forecast published for Punta Cana. We publish its measured accuracy openly on our methodology page."
+      "a": "A seven-day outlook is shown only when the latest satellite observation and forecast inputs are available and pass validation. The first few days are the near-term outlook; days 4–7 show a broader trend, not certainty. The outlook is recalculated when validated observations and transport inputs arrive; no fixed refresh cadence is promised."
     },
     {
       "q": "Do Punta Cana resorts clean sargassum off their beaches?",
-      "a": "Most large resorts in Bávaro, Cap Cana and Uvero Alto rake their beachfront every morning, and some deploy offshore barriers. Cleaning helps, but during heavy landings seaweed can return within hours. That is why we track the actual offshore flow by satellite, updated daily: if nothing new is inbound, a raked beach stays clean all day; if a large mat is approaching, even the best crews fall behind."
+      "a": "Cleaning practices vary by property across Bávaro, Cap Cana and Uvero Alto. Mechanical removal can help, but sargassum may return during a heavy landing. Check the latest published observation for the specific beach and its timestamp; if the reading is delayed or unverified, the page withholds a current clean-beach recommendation. A satellite reading does not confirm that a resort has cleaned the sand."
     },
     {
       "q": "What should I do if my beach has sargassum today?",
-      "a": "Check the live map for the nearest clean beach — conditions often differ dramatically a short drive away, and Cap Cana or Cabeza de Toro may be fine while Bávaro is covered. Swimming near small amounts is harmless, though decomposing piles smell of sulfur and are best avoided. Premium users get push alerts the moment a saved beach changes status, plus the 7-day outlook to plan around heavy days."
+      "a": "Check the latest published reading for the beach you plan to visit, including its observation time and confidence. Nearby beaches can differ, but do not assume Cap Cana or Cabeza de Toro is clear without a current validated status. If the reading is delayed or unavailable, no current clean-beach recommendation is published. Premium alerts are sent when a new validated observation changes a saved beach's status."
     }
   ],
   "pages": {
