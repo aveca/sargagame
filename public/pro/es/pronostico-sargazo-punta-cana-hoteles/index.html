@@ -25,7 +25,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Pro","item":"https://sargasses-martinique.com/pro/es/"},{"@type":"ListItem","position":2,"name":"Hoteles","item":"https://sargasses-martinique.com/pro/es/hotels/"},{"@type":"ListItem","position":3,"name":"Pronóstico de sargazo en Punta Cana","item":"https://sargasses-martinique.com/pro/es/pronostico-sargazo-punta-cana-hoteles/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Cubren ya las playas de Punta Cana y Bávaro?","acceptedAnswer":{"@type":"Answer","text":"El pronóstico en vivo de Punta Cana está disponible en sargassumpuntacana.com. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido, y publicamos cada cifra con su tamaño de muestra a medida que se valida."}},{"@type":"Question","name":"¿En qué se diferencia de los mapas regionales gratuitos?","acceptedAnswer":{"@type":"Answer","text":"Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico playa por playa, alertas dirigidas a su frente de mar y, sobre todo, una fiabilidad que publicamos y auditamos cada día contra la observación real — algo que ninguna fuente gratuita hace."}},{"@type":"Question","name":"¿Qué tan fiable es el pronóstico, de verdad?","acceptedAnswer":{"@type":"Answer","text":"Publicamos un historial fechado y auditable en /fiabilite/. Nuestra fiabilidad global es de aproximadamente 76% en todas las condiciones, validada en las Antillas Francesas y mostrada con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma."}},{"@type":"Question","name":"¿Podemos integrarlo en nuestra web de reservas y compartirlo con nuestro equipo?","acceptedAnswer":{"@type":"Answer","text":"Sí. Un distintivo de «condiciones en vivo» se integra en su web, y un resumen diario puede enviarse a la recepción así como a su equipo o a su contratista de limpieza de playa."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"¿Cubren ya las playas de Punta Cana y Bávaro?","acceptedAnswer":{"@type":"Answer","text":"El mapa público de Punta Cana está disponible en sargassumpuntacana.com. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido, y publicamos cada cifra con su tamaño de muestra a medida que se valida."}},{"@type":"Question","name":"¿En qué se diferencia de los mapas regionales gratuitos?","acceptedAnswer":{"@type":"Answer","text":"Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico playa por playa, alertas dirigidas a su frente de mar y, sobre todo, una fiabilidad que publicamos y auditamos cada día contra la observación real — algo que ninguna fuente gratuita hace."}},{"@type":"Question","name":"¿Qué tan fiable es el pronóstico, de verdad?","acceptedAnswer":{"@type":"Answer","text":"Publicamos un historial fechado y auditable en /fiabilite/. Nuestra fiabilidad global es de aproximadamente 76% en todas las condiciones, validada en las Antillas Francesas y mostrada con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma."}},{"@type":"Question","name":"¿Podemos integrarlo en nuestra web de reservas y compartirlo con nuestro equipo?","acceptedAnswer":{"@type":"Answer","text":"Sí. Un distintivo de estado con frescura visible se integra en su web, y un resumen diario puede enviarse a la recepción así como a su equipo o a su contratista de limpieza de playa."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -61,6 +61,8 @@
     background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
     padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  .freshpill.is-stale .pulse{background:#F59E0B;box-shadow:none;animation:none}
+  .freshpill.is-unknown .pulse{background:#9CA3AF;box-shadow:none;animation:none}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
 
@@ -171,20 +173,20 @@
     <h1>El Vigía cuida su frente de mar en <em>Punta Cana</em>: sepa dónde llega el sargazo a su playa, antes que sus huéspedes.</h1>
     <p class="lede">De Bávaro a Cabeza de Toro, el sargazo no avisa — pero el satélite sí. El Vigía observa el mar mientras sus huéspedes duermen: mira el agua, nunca a ellos. Pronóstico satelital playa por playa, una alerta la mañana en que cambia, y una cifra de fiabilidad que publicamos y auditamos cada día. Medido por satélite, no adivinado. Programe la limpieza, tranquilice a sus huéspedes, proteja sus reservas.</p>
     <div class="ctas">
-      <a class="btn btn-gold" href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Ver el pronóstico en vivo playa por playa de Punta Cana →</a>
+      <a class="btn btn-gold" href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Ver las últimas observaciones publicadas de Punta Cana →</a>
       <a class="btn btn-ghost" href="#request">Activar el resumen gratuito</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">datos satelitales en vivo</span></div>
+    <div class="freshpill is-unknown" id="freshpill"><span class="pulse"></span><span id="fresh" aria-live="polite">Comprobando la frescura de la observación satelital…</span></div>
   </div>
 </header>
 
 <!-- PRONÓSTICO EN VIVO — Punta Cana -->
 <section class="live px"><div class="wrap">
-  <p class="sec-eyebrow" style="color:#3fd07f">En vivo, ahora mismo</p>
-  <h2>El pronóstico de Punta Cana, playa por playa, ya está en línea.</h2>
-  <p>De Playa Bávaro a Uvero Alto, consulte el estado del sargazo actualizado varias veces al día — el mismo dato satelital que alimenta las alertas de su hotel. Gratis, sin registro.</p>
+  <p class="sec-eyebrow" style="color:#3fd07f">Mapa público de observaciones</p>
+  <h2>Consulte las últimas observaciones publicadas de Punta Cana, playa por playa.</h2>
+  <p>De Playa Bávaro a Uvero Alto, consulte la última observación satelital publicada y su antigüedad. Los veredictos actuales solo se muestran cuando la frescura puede confirmarse. Gratis, sin registro.</p>
   <div class="ctas">
-    <a class="btn btn-gold" href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Ver el pronóstico en vivo playa por playa de Punta Cana →</a>
+    <a class="btn btn-gold" href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Ver las últimas observaciones publicadas de Punta Cana →</a>
   </div>
 </div></section>
 
@@ -195,7 +197,7 @@
   <div class="cards">
     <div class="card"><div class="ic">📍</div><h3>Pronóstico por playa, no un promedio de la costa</h3><p>Estado (limpia / moderada / a evitar), puntuación y tendencia para el frente de mar exacto de su resort en Bávaro o Punta Cana — no una media de toda la costa este dominicana.</p></div>
     <div class="card"><div class="ic">🎭</div><h3>Alertas automáticas</h3><p>Email o SMS en el momento en que su playa cambia de estado. Su equipo y su contratista de limpieza lo saben antes que sus huéspedes.</p></div>
-    <div class="card"><div class="ic">🪐</div><h3>Distintivo «condiciones en vivo» + resumen para el equipo</h3><p>Un widget para integrar en su web de reservas y tranquilizar a los huéspedes con transparencia, y un resumen diario para la recepción.</p></div>
+    <div class="card"><div class="ic">🪐</div><h3>Distintivo de estado con frescura visible + resumen para el equipo</h3><p>Un widget para integrar en su web de reservas y tranquilizar a los huéspedes con transparencia, y un resumen diario para la recepción.</p></div>
   </div>
 </div></section>
 
@@ -222,7 +224,7 @@
   <p class="sec-eyebrow">Cómo funciona</p>
   <h2>Del satélite a su recepción, en tres pasos.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>El satélite detecta los bancos</h3><p>Datos Copernicus / ERDDAP, índice AFAI, cruzados con viento y corrientes — actualizados varias veces al día.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>El satélite detecta los bancos</h3><p>Datos Copernicus / ERDDAP, índice AFAI, cruzados con viento y corrientes — basados en la última observación satelital publicada; su antigüedad se muestra aquí.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Lo localizamos en su playa</h3><p>Nuestro modelo de deriva + persistencia traduce el mar abierto en un pronóstico por playa, con un nivel de confianza.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Su equipo recibe la alerta</h3><p>Resumen diario + una alerta cuando cambia el estado. Usted programa la limpieza y la comunicación con los huéspedes con antelación.</p></div></div>
   </div>
@@ -232,7 +234,7 @@
 <section class="px" style="padding-top:8px"><div class="wrap">
   <p class="sec-eyebrow">Preguntas frecuentes</p>
   <h2>Lo que nos preguntan los hoteleros de Punta Cana.</h2>
-  <details><summary>¿Cubren ya las playas de Punta Cana y Bávaro?</summary><p>El pronóstico en vivo de Punta Cana está disponible en <a href="https://sargassumpuntacana.com" target="_blank" rel="noopener">sargassumpuntacana.com</a>. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cobertura se está extendiendo por el Caribe. No afirmamos una precisión validada en costas que aún no hemos medido, y publicamos cada cifra con su tamaño de muestra a medida que se valida.</p></details>
+  <details><summary>¿Cubren ya las playas de Punta Cana y Bávaro?</summary><p>El mapa público de Punta Cana está disponible en <a href="https://sargassumpuntacana.com" target="_blank" rel="noopener">sargassumpuntacana.com</a>. Nuestra fiabilidad está validada en las Antillas Francesas (Martinica y Guadalupe) y la cobertura se está extendiendo por el Caribe. No afirmamos una precisión validada en costas que aún no hemos medido, y publicamos cada cifra con su tamaño de muestra a medida que se valida.</p></details>
   <details><summary>¿En qué se diferencia de los mapas regionales gratuitos?</summary><p>Los mapas públicos dan un riesgo regional. Nosotros damos un pronóstico playa por playa, alertas dirigidas a su frente de mar, y una fiabilidad publicada y auditada cada día — algo que ninguna fuente gratuita hace.</p></details>
   <details><summary>¿Qué tan fiable es, de verdad?</summary><p>La publicamos en la página de fiabilidad, fechada y por playa. Nuestra fiabilidad global ronda el ~76 % en todas las condiciones, validada en las Antillas Francesas y mostrada con su tamaño de muestra. La cobertura se está extendiendo por el Caribe; no afirmamos una precisión validada en costas que aún no hemos medido. Las alertas se emiten con prudencia hasta que el satélite las confirma — y publicamos ese límite también.</p></details>
   <details><summary>¿Podemos integrarlo en nuestra web y compartirlo con nuestro equipo?</summary><p>Sí. El distintivo de «condiciones en vivo» se integra en su web de reservas, y el resumen diario puede ir a la recepción así como a su equipo o a su contratista de limpieza de playa.</p></details>
@@ -243,7 +245,7 @@
   <p class="sec-eyebrow">Ir más all¡</p>
   <h2>Planifique la temporada, no solo el día.</h2>
   <div class="related">
-    <a href="https://sargassumpuntacana.com"><div class="rt">Pronóstico en vivo de sargazo — Punta Cana</div><div class="rd">Playa por playa, actualizado varias veces al día. Gratis, sin registro.</div></a>
+    <a href="https://sargassumpuntacana.com"><div class="rt">Últimas observaciones de sargazo — Punta Cana</div><div class="rd">Playa por playa, con fecha de la última observación publicada. Gratis, sin registro.</div></a>
     <a href="https://sargasses-martinique.com/pro/es/hotels/"><div class="rt">Pronóstico y alertas de sargazo para hoteles</div><div class="rd">La oferta completa para hoteles y resorts frente al mar.</div></a>
     <a href="https://sargasses-martinique.com/fiabilite/"><div class="rt">Nuestro historial de fiabilidad publicado</div><div class="rd">Fechado, por playa, auditable — vea exactamente con qué frecuencia acertamos.</div></a>
     <a href="https://sargasses-martinique.com/pro/es/"><div class="rt">Sargazo Pro — todas las soluciones</div><div class="rd">Hoteles, resorts y entidades locales. Un pronóstico que se convierte en decisiones.</div></a>
@@ -269,22 +271,41 @@
   <a href="https://sargasses-martinique.com/pro/es/">Sargazo Pro</a> ·
   <a href="https://sargasses-martinique.com/pro/es/hotels/">Hoteles</a> ·
   <a href="https://sargasses-martinique.com/fiabilite/">Fiabilidad</a> ·
-  <a href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Pronóstico en vivo Punta Cana</a> ·
+  <a href="https://sargassumpuntacana.com" target="_blank" rel="noopener">Últimas observaciones Punta Cana</a> ·
   <a href="https://sargasses-martinique.com/pro/en/sargassum-forecast-punta-cana-hotels/" hreflang="en">English version</a>
   <div style="margin-top:10px">Pronóstico satelital de sargazo · validado en las Antillas Francesas, en expansión por el Caribe</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
 
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'verificación en curso…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'EN VIVO · hace '+m+' min';}
-    return 'EN VIVO · hace '+Math.max(1,Math.round(h))+' h';
+  function getObservationFreshness(data) {
+    return window.SargagameB2BFreshness.getObservationFreshness(data, 'es');
   }
+  function setFreshnessPill(status, label) {
+    var pill = document.getElementById('freshpill');
+    if (pill) {
+      pill.classList.remove('is-stale', 'is-unknown');
+      if (status === 'stale') pill.classList.add('is-stale');
+      else if (status !== 'fresh') pill.classList.add('is-unknown');
+    }
+    var fresh = document.getElementById('fresh');
+    if (fresh) fresh.textContent = label;
+  }
+  function setUnknownFreshness() {
+    var unknown = getObservationFreshness(null);
+    setFreshnessPill(unknown.status, unknown.label);
+    var detail = document.getElementById('d-fresh');
+    if (detail) detail.textContent = unknown.label;
+    var verdict = document.getElementById('d-verdict');
+    if (verdict) { verdict.textContent = 'ESTADO NO DISPONIBLE'; verdict.style.color = '#9CA3AF'; }
+    var score = document.getElementById('d-score');
+    if (score) score.textContent = '';
+    return unknown;
+  }
+
 
   // --- Prueba en vivo: track-record.json ---
   // HONESTIDAD: la cifra principal es la tasa de acierto GLOBAL (todos los regímenes) — la misma
@@ -327,12 +348,15 @@
     document.getElementById('tr-headline').textContent='Historial completo y fechado en nuestra página de fiabilidad.';
   });
 
-  // --- Píldora de frescura: sargassum.json (sin marca de tiempo fija) ---
-  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
-    try{
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'datos satelitales en vivo';
-    }catch(e){}
-  }).catch(function(){});
+  // --- Freshness pill: use the satellite observation clock, never updatedAt ---
+  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
+    var freshness = getObservationFreshness(d);
+    setFreshnessPill(freshness.status, freshness.label);
+  }).catch(function(){
+    var unknown = getObservationFreshness(null);
+    setFreshnessPill(unknown.status, unknown.label);
+  });
+
 
   // --- Captura de lead B2B → Apps Script (fuente dedicada) ---
   var form=document.getElementById('b2b-form');
