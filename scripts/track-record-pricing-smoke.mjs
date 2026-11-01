@@ -12,6 +12,11 @@ import { chromium } from 'playwright';
 const PREVIEW = process.env.SMOKE_BASE || 'http://127.0.0.1:4173';
 const LIVE = 'https://sargasses-martinique.com/pro/pricing/';
 const LIVE_HOTELS = 'https://sargasses-martinique.com/pro/hotels/';
+const LIVE_HUBS = [
+  { locale: 'fr', preview: '/pro/', live: 'https://sargasses-martinique.com/pro/', staleToken: 'périmé' },
+  { locale: 'en', preview: '/pro/en/', live: 'https://sargasses-martinique.com/pro/en/', staleToken: 'stale' },
+  { locale: 'es', preview: '/pro/es/', live: 'https://sargasses-martinique.com/pro/es/', staleToken: 'desactualizado' },
+];
 const OUT = process.env.TRACK_RECORD_SCREENSHOT_DIR || '/tmp/track-record-pricing';
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -64,6 +69,18 @@ try {
     // The pricing page computes its proof asynchronously. Serve deterministic fixtures
     // so the test validates the actual DOM after the shared freshness helper runs,
     // rather than searching the initial HTML for a percentage that must not be hardcoded.
+    // BEFORE: capture the three public Pro hubs at the same viewport before stubbing the record API.
+    for (const hub of LIVE_HUBS) {
+      try {
+        await page.goto(hub.live, { waitUntil: 'domcontentloaded', timeout: 20000 });
+        await page.waitForTimeout(250);
+        await page.screenshot({ path: path.join(OUT, 'hub-' + hub.locale + '-before-' + viewport.name + '.png'), fullPage: true });
+        console.log('BEFORE_HUB_' + hub.locale + '_' + viewport.name + '=' + ((await page.locator('#tr-clean').textContent().catch(() => 'unavailable')) || '').trim());
+      } catch (error) {
+        console.warn('BEFORE_HUB_SCREENSHOT_UNAVAILABLE_' + hub.locale + '_' + viewport.name + '=' + String(error.message || error).slice(0, 180));
+      }
+    }
+
     let pricingRecordFixture = {
       generatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
       freshness: { stale: true },
@@ -107,6 +124,45 @@ try {
     assert.doesNotMatch(freshLine, /tous régimes confondus/i, 'fresh proof must not claim an unscoped all-regimes result');
     assert.equal(await page.locator('.proofline').evaluate(el => el.classList.contains('is-stale')), false, 'fresh proofline must clear the stale visual state');
     await page.screenshot({ path: path.join(OUT, 'after-fresh-' + viewport.name + '.png'), fullPage: true });
+
+    // Pro acquisition hubs: no global accuracy percentage may render until the
+    // shared helper confirms freshness and the MQ+GP scope.
+    for (const hub of LIVE_HUBS) {
+      pricingRecordFixture = {
+        generatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        freshness: { stale: true },
+        regions: ['mq', 'gp'],
+        window: { from: '2026-10-01', to: '2026-10-30' },
+        sampleSize: 123,
+        overall: { statusHitRatePct: 98 },
+      };
+      await page.goto(PREVIEW + hub.preview, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForFunction((token) => {
+        const line = (document.querySelector('#tr-line')?.textContent || '').toLowerCase();
+        return document.querySelector('#tr-clean')?.textContent?.trim() === '—' && line.includes(token);
+      }, hub.staleToken);
+      assert.equal((await page.locator('#tr-clean').textContent() || '').trim(), '—', hub.locale + ' stale record must hide its percentage');
+      const staleLine = (await page.locator('#tr-line').textContent()) || '';
+      assert.doesNotMatch(staleLine, /98%/, hub.locale + ' stale record must not leak the fixture percentage');
+      await page.screenshot({ path: path.join(OUT, 'hub-' + hub.locale + '-after-stale-' + viewport.name + '.png'), fullPage: true });
+
+      pricingRecordFixture = {
+        generatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+        freshness: { stale: false },
+        regions: ['mq', 'gp'],
+        window: { from: '2026-10-01', to: '2026-10-30' },
+        sampleSize: 123,
+        overall: { statusHitRatePct: 98 },
+      };
+      await page.goto(PREVIEW + hub.preview, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      await page.waitForFunction(() => document.querySelector('#tr-clean')?.textContent?.trim() === '98%');
+      assert.equal((await page.locator('#tr-clean').textContent() || '').trim(), '98%', hub.locale + ' fresh in-scope record should render its validated percentage');
+      const hubFreshLine = (await page.locator('#tr-line').textContent()) || '';
+      assert.match(hubFreshLine, /MQ \+ GP/, hub.locale + ' fresh proof must display its regional scope');
+      assert.match(hubFreshLine, /2026-10-01 → 2026-10-30/, hub.locale + ' fresh proof must display its validation window');
+      await page.screenshot({ path: path.join(OUT, 'hub-' + hub.locale + '-after-fresh-' + viewport.name + '.png'), fullPage: true });
+      console.log('PASS_HUB_' + hub.locale + '_' + viewport.name + '=stale/fresh scoped track record verified; before/after screenshots captured');
+    }
 
     // B2B hotel landing: compare the public page with the PR preview at the same viewport.
     const hotelPage = await context.newPage();

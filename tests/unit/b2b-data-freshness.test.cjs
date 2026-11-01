@@ -65,6 +65,35 @@ for (const [relative, locale] of pages) {
   assert.match(html, /class="freshpill is-unknown"/, relative + ' must start in an unknown state before the observation is checked')
   assert.doesNotMatch(html, /70\s*%\s*(?:de justesse|accuracy|de acierto)|76\s*%\s*(?:to|à|a)\s*79\s*%|4×\s*\/\s*(?:jour|day|día)|live conditions badge|live demo|live snapshot|demo en vivo|datos reales, al instante/i, relative + ' must not publish unsupported accuracy, sampling or live-data claims')
 }
+const proHubPages = [
+  'public/pro/index.html',
+  'public/pro/en/index.html',
+  'public/pro/es/index.html'
+]
+for (const relative of proHubPages) {
+  const html = fs.readFileSync(path.join(root, relative), 'utf8')
+  assert.ok(html.includes('<script src="/b2b-data-freshness.js"></script>'), relative + ' must load the shared track-record freshness contract')
+  const gate = html.indexOf("getTrackRecordState(d,'mq')")
+  const unavailable = html.indexOf('if(!state.available)', gate)
+  const percentage = html.indexOf('var pct=', gate)
+  assert.ok(gate >= 0 && unavailable > gate && percentage > unavailable, relative + ' must reject stale/out-of-scope records before reading accuracy')
+  assert.doesNotMatch(html, /76\s*%?\s*(?:to|à|a)\s*79\s*%|76\s*%.*79\s*%|76\s*% a 79\s*%/i, relative + ' must not hardcode a historical accuracy range')
+}
+
+const b2bTrustPages = [
+  'public/pro/index.html',
+  'public/pro/en/index.html',
+  'public/pro/es/index.html',
+  'public/pro/hotels/index.html',
+  'public/pro/en/hotels/index.html',
+  'public/pro/es/hotels/index.html'
+]
+const unsupportedDailyProof = /auditons? chaque jour|auditée? chaque jour|auditée? quotidiennement|audited (?:daily|every day)|publish(?:ed)? and audit(?:ed)? daily|auditada cada día|auditado cada día|auditada a diario|auditado a diario|4\s*(?:×|x)\s*\/\s*(?:jour|day|día)|4\s*(?:times|passes|pasadas)\s+(?:per day|a day|por día)/i
+for (const relative of b2bTrustPages) {
+  const html = fs.readFileSync(path.join(root, relative), 'utf8')
+  assert.doesNotMatch(html, unsupportedDailyProof, relative + ' must not promise a daily audit or four AFAI observations per day')
+}
+
 const pricingPages = [
   { path: 'public/pro/pricing/index.html', prices: ['79 €/mois', '690 €/an'] },
   { path: 'public/pro/en/pricing/index.html', prices: ['$89/month', '$790/year'] },
