@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { SATELLITE_SLA_MS, WEATHER_SLA_MS, evaluateConditionsFreshness } = require('../../scripts/lib/conditions-freshness.cjs');
+const { SATELLITE_SLA_MS, WEATHER_SLA_MS, evaluateConditionsFreshness, suspendConditionTitle } = require('../../scripts/lib/conditions-freshness.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const vite = fs.readFileSync(path.join(root, 'vite.config.js'), 'utf8');
@@ -13,6 +13,22 @@ const satellite = (ageMinutes, extra = {}) => ({ source: 'erddap-live', erddapTi
 
 assert.equal(SATELLITE_SLA_MS, 900 * 60_000);
 assert.equal(WEATHER_SLA_MS, 12 * 60 * 60_000);
+assert.equal(
+  suspendConditionTitle('Plages adaptées aux enfants aujourd\\u2019hui — Martinique'),
+  'Plages adaptées aux enfants — Martinique — sélection suspendue',
+  'stale page title must not promise current conditions'
+);
+assert.equal(
+  suspendConditionTitle('Plages idéales pour les enfants en Guadeloupe aujourd\\u2019hui'),
+  'Plages idéales pour les enfants en Guadeloupe — sélection suspendue',
+  'stale H1 must preserve search intent without claiming today'
+);
+assert.equal(
+  suspendConditionTitle('Conditions des plages aujourd\\u2019hui — Martinique'),
+  'Conditions des plages — Martinique — sélection suspendue',
+  'stale hub title must be neutral'
+);
+assert.equal(suspendConditionTitle(''), 'Sélection suspendue');
 const exactBoundary = evaluateConditionsFreshness(satellite(900), atAge(720), now);
 assert.equal(exactBoundary.satelliteFresh, true, 'exactly 900 minutes remains within the operational SLA');
 assert.equal(exactBoundary.weatherFresh, true, 'exactly 12 hours remains within the weather freshness window');
