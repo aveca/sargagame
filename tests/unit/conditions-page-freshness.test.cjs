@@ -62,7 +62,7 @@ const weatherOnlyStale = evaluateConditionsFreshness(satellite(1), atAge(721), n
 assert.equal(weatherOnlyStale.satelliteFresh, true);
 assert.equal(weatherOnlyStale.selectionFresh, false, 'fresh satellite cannot mask stale weather');
 
-assert.ok(vite.includes("const { evaluateConditionsFreshness } = _require('./scripts/lib/conditions-freshness.cjs')"));
+assert.ok(vite.includes("const { evaluateConditionsFreshness, suspendConditionTitle } = _require('./scripts/lib/conditions-freshness.cjs')"));
 assert.ok(vite.includes('const isConditionsFresh = conditionsFreshness.selectionFresh'));
 assert.ok(vite.includes('const matching = !isConditionsFresh ? [] : enrichedBeaches'));
 assert.ok(vite.includes('conditionsFreshness.satelliteLabel'));
