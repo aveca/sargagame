@@ -209,6 +209,54 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
         regionId + ': stale beach page must not render the clean-default decision hero')
     }
 
+    const unavailableDecision = /Unavailable — decision paused until a fresh satellite observation is available|No disponible — decisión suspendida hasta que haya una observación satelital reciente/
+    const resortDirectoryPages = generatedFiles.filter(file => /\/(?:resorts|hoteles)\/index\.html$/i.test(file.replace(/\\/g, '/')))
+    const hotelLandingPages = generatedFiles.filter(file => /\/(?:sargassum-for-hotels|sargazo-para-hoteles)\/index\.html$/i.test(file.replace(/\\/g, '/')))
+    const resortDetailPages = generatedFiles.filter(file => /\/(?:resorts|hoteles)\/[^/]+\/index\.html$/i.test(file.replace(/\\/g, '/')))
+    const resortBriefPages = generatedFiles.filter(file => /\/(?:resorts|hoteles)\/[^/]+\/brief\/index\.html$/i.test(file.replace(/\\/g, '/')))
+    assert.ok(resortDirectoryPages.length > 0, regionId + ': B2B resort directory must remain generated')
+    assert.ok(hotelLandingPages.length > 0, regionId + ': B2B hotel landing must remain generated')
+    assert.ok(resortDetailPages.length > 0, regionId + ': resort detail pages must remain generated')
+    assert.ok(resortBriefPages.length > 0, regionId + ': resort briefs must remain generated')
+    for (const file of resortDirectoryPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, unavailableDecision, regionId + ': resort directory must pause stale beach decisions')
+      assert.match(html, /Latest satellite observation: 2026-10-27 12:00 UTC · delayed|Última observación satelital: 2026-10-27 12:00 UTC · retrasada/,
+        regionId + ': resort directory must expose the source observation timestamp')
+      assert.doesNotMatch(html, /<small>[^<]* · (?:Clean|Moderate|Avoid|Limpia|Moderada|Evitar)<\/small>/,
+        regionId + ': resort directory must not display stale beach status')
+    }
+    for (const file of hotelLandingPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, unavailableDecision, regionId + ': hotel coverage must pause stale beach decisions')
+      assert.match(html, /Latest satellite observation: 2026-10-27 12:00 UTC · delayed|Última observación satelital: 2026-10-27 12:00 UTC · retrasada/,
+        regionId + ': hotel landing must expose the source observation timestamp')
+      assert.doesNotMatch(html, /<b>[^<]+<\/b> · (?:Clean|Moderate|Avoid|Limpia|Moderada|Evitar)<br>/,
+        regionId + ': hotel landing must not display stale beach status')
+      assert.match(html, /When a fresh satellite observation is available|Cuando hay una observación satelital reciente/,
+        regionId + ': B2B morning-brief promise must be conditional on fresh data')
+      assert.match(html, /never repeats a stale verdict|nunca repite un veredicto antiguo/,
+        regionId + ': B2B landing must explain stale-data behavior')
+    }
+    for (const file of resortDetailPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, unavailableDecision, regionId + ': resort detail must pause stale beach decisions')
+      assert.doesNotMatch(html, /Published status: (?:Clean|Moderate|Avoid)|Estado publicado: (?:Limpia|Moderada|Evitar)/,
+        regionId + ': resort detail must not publish a stale verdict')
+      assert.doesNotMatch(html, /<h2>7-day forecast<\/h2>|<h2>Pronóstico de 7 días<\/h2>/,
+        regionId + ': resort detail must not publish a stale forecast')
+    }
+    for (const file of resortBriefPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, /Latest reading: Unavailable|Última lectura: No disponible/,
+        regionId + ': hotel brief must show an unavailable current reading')
+      assert.match(html, unavailableDecision, regionId + ': hotel brief must explain why the decision is paused')
+      assert.doesNotMatch(html, /<h2[^>]*>7-day outlook<\/h2>|<h2[^>]*>Pronóstico 7 días<\/h2>/,
+        regionId + ': hotel brief must not publish a stale forecast')
+      assert.doesNotMatch(html, /\d+ clean beach day|\d+ día(?:s)? de playa limpia/,
+        regionId + ': hotel brief must not make stale guest recommendations')
+    }
+
     for (const file of pressPages) {
       const html = fs.readFileSync(file, 'utf8')
       assert.match(html, /Validation scope|Alcance de validación/i, regionId + ': press page must publish its validation scope')
@@ -220,6 +268,37 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
   } finally {
     fs.rmSync(distDir, { recursive: true, force: true })
   }
+}
+
+// Fresh data must keep the existing B2B status and forecast presentation.
+const freshRegionId = 'florida'
+const freshDistDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sargagame-b2b-fresh-'))
+try {
+  fs.writeFileSync(path.join(freshDistDir, 'index.html'), template)
+  const sourceData = JSON.parse(fs.readFileSync(
+    path.join(ROOT, 'public', 'api', 'copernicus', freshRegionId, 'sargassum.json'),
+    'utf8'
+  ))
+  const freshData = {
+    ...sourceData,
+    source: 'erddap-live',
+    erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
+    stale: false,
+  }
+  generateRegionSeoPages(getRegion(freshRegionId), freshDistDir, { data: freshData, now: freshnessNow })
+  const freshFiles = walk(freshDistDir).filter(file => file.endsWith('.html'))
+  const freshLanding = freshFiles.find(file => /sargassum-for-hotels\/index\.html$/i.test(file.replace(/\\/g, '/')))
+  const freshDirectory = freshFiles.find(file => /resorts\/index\.html$/i.test(file.replace(/\\/g, '/')))
+  const freshBriefs = freshFiles.filter(file => /resorts\/[^/]+\/brief\/index\.html$/i.test(file.replace(/\\/g, '/')))
+  assert.ok(freshLanding && freshDirectory && freshBriefs.length > 0, 'fresh B2B landing, directory and briefs must remain generated')
+  assert.match(fs.readFileSync(freshLanding, 'utf8'), /<b>[^<]+<\/b> · (?:Clean|Moderate|Avoid)<br>/,
+    'a fresh valid observation must preserve the hotel coverage status')
+  assert.match(fs.readFileSync(freshDirectory, 'utf8'), /<small>[^<]* · (?:Clean|Moderate|Avoid)<\/small>/,
+    'a fresh valid observation must preserve the resort directory status')
+  assert.match(freshBriefs.map(file => fs.readFileSync(file, 'utf8')).join('\n'), /Latest reading: (?:Clean|Moderate|Avoid)/,
+    'a fresh valid observation must preserve a hotel brief status')
+} finally {
+  fs.rmSync(freshDistDir, { recursive: true, force: true })
 }
 
 const generatorSource = fs.readFileSync(path.join(ROOT, 'scripts/lib/region-seo-pages.cjs'), 'utf8')
