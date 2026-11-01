@@ -18,7 +18,7 @@ assert.match(
 );
 assert.doesNotMatch(card[1], /zéro risque|pour toujours/i);
 
-const lifetimeFreeClaim = /(?:et\\s+restera\\s+gratuit|ça\\s+reste\\s+gratuit|gratuit\\s+à\\s+vie|free\\s+forever|free\\s+for\\s+life|will\\s+remain\\s+free)/i;
+const lifetimeFreeClaim = /(?:et\s+restera\s+gratuit|ça\s+reste\s+gratuit|gratuit\s+à\s+vie|free\s+forever|free\s+for\s+life|will\s+remain\s+free)/i;
 assert.doesNotMatch(html, lifetimeFreeClaim, 'the current free offer must not be presented as a lifetime guarantee');
 assert.match(html, /Le widget est actuellement proposé gratuitement/, 'the current free offer remains explicit without a lifetime promise');
 
