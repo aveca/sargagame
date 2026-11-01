@@ -8,6 +8,7 @@ const path = require('node:path')
 const { resolvePublicAccuracy } = require('../../scripts/lib/regional-track-record.cjs')
 const {
   getSatelliteObservationFreshness,
+  getPublishableBeachDecision,
   formatSatelliteObservationLabel,
 } = require('../../scripts/lib/region-seo-pages.cjs')
 const { getRegion } = require('../../regions/index.cjs')
@@ -17,6 +18,7 @@ const ROOT = path.resolve(__dirname, '../..')
 
 const freshnessNow = Date.parse('2026-10-30T12:27:00.000Z')
 const republishedOldObservation = {
+  source: 'erddap-live',
   erddapTimestamp: '2026-10-27T12:00:00.000Z',
   updatedAt: '2026-10-30T12:26:00.000Z',
   dataAgeMinutes: 1772,
@@ -34,16 +36,19 @@ assert.equal(formatSatelliteObservationLabel(republishedOldObservation, 'fr', fr
   'Dernière observation satellite: 2026-10-27 12:00 UTC · en retard')
 
 const withinSla = getSatelliteObservationFreshness({
+  source: 'erddap-live',
   erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
   stale: false,
 }, freshnessNow)
 assert.equal(withinSla.state, 'fresh', '899 minutes remains inside the 900-minute operational SLA')
 const atSla = getSatelliteObservationFreshness({
+  source: 'erddap-live',
   erddapTimestamp: new Date(freshnessNow - 900 * 60000).toISOString(),
   stale: false,
 }, freshnessNow)
 assert.equal(atSla.state, 'delayed', 'the exact 900-minute SLA boundary is delayed')
 assert.equal(getSatelliteObservationFreshness({
+  source: 'erddap-live',
   erddapTimestamp: new Date(freshnessNow - 1 * 60000).toISOString(),
   stale: true,
 }, freshnessNow).state, 'delayed', 'an explicit stale flag must never be overridden')
@@ -54,6 +59,39 @@ for (const raw of [undefined, null, '', 'not-a-date', new Date(freshnessNow + 60
 }
 assert.equal(formatSatelliteObservationLabel({}, 'en', freshnessNow),
   'Satellite observation timestamp unavailable · status to verify')
+
+const verifiedLevel = { status: 'clean', score: 75, afai: 0.2 }
+const staleDecision = getPublishableBeachDecision(republishedOldObservation, verifiedLevel, freshnessNow)
+assert.equal(staleDecision.available, false, 'stale ERDDAP observations must not publish a beach decision')
+assert.equal(staleDecision.status, null)
+assert.equal(staleDecision.score, null)
+assert.equal(staleDecision.afai, null)
+assert.equal(staleDecision.freshness.state, 'delayed')
+
+const freshDecision = getPublishableBeachDecision({
+  source: 'erddap-live',
+  erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
+  stale: false,
+}, verifiedLevel, freshnessNow)
+assert.equal(freshDecision.available, true, 'a valid level is publishable only inside the source SLA')
+assert.equal(freshDecision.status, 'clean')
+assert.equal(freshDecision.score, 75)
+assert.equal(freshDecision.afai, 0.2)
+
+const nonLiveDecision = getPublishableBeachDecision({
+  source: 'static-fallback',
+  erddapTimestamp: new Date(freshnessNow - 1 * 60000).toISOString(),
+  stale: false,
+}, verifiedLevel, freshnessNow)
+assert.equal(nonLiveDecision.available, false, 'a fresh-looking non-ERDDAP source must fail closed')
+assert.equal(nonLiveDecision.freshness.state, 'unknown')
+
+const missingLevelDecision = getPublishableBeachDecision({
+  source: 'erddap-live',
+  erddapTimestamp: new Date(freshnessNow - 1 * 60000).toISOString(),
+  stale: false,
+}, {}, freshnessNow)
+assert.equal(missingLevelDecision.available, false, 'fresh source data without an explicit beach status must not invent one')
 
 const currentRecord = JSON.parse(fs.readFileSync(
   path.join(ROOT, 'public/api/copernicus/track-record.json'),
@@ -128,7 +166,17 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
   const distDir = fs.mkdtempSync(path.join(os.tmpdir(), 'sargagame-methodology-' + regionId + '-'))
   try {
     fs.writeFileSync(path.join(distDir, 'index.html'), template)
-    generateRegionSeoPages(getRegion(regionId), distDir)
+    const sourceData = JSON.parse(fs.readFileSync(
+      path.join(ROOT, 'public', 'api', 'copernicus', regionId, 'sargassum.json'),
+      'utf8'
+    ))
+    const staleData = {
+      ...sourceData,
+      source: 'erddap-live',
+      erddapTimestamp: '2026-10-27T12:00:00.000Z',
+      stale: false,
+    }
+    generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, now: freshnessNow })
     const generatedFiles = walk(distDir).filter(file => file.endsWith('.html'))
     const methodPages = generatedFiles.filter(file => /(?:methodology|metodologia)\/index\.html$/i.test(file))
     assert.ok(methodPages.length > 0, regionId + ': methodology page must remain generated')
@@ -143,6 +191,24 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
 
     const pressPages = generatedFiles.filter(file => /(?:press|prensa|media)[^/]*\/index\.html$/i.test(file))
     assert.ok(pressPages.length > 0, regionId + ': press page must remain generated')
+    const beachPages = generatedFiles.filter(file => /(?:beaches|playas)\/[^/]+\/index\.html$/i.test(file.replace(/\\/g, '/')))
+    assert.ok(beachPages.length > 0, regionId + ': beach detail pages must remain generated')
+    for (const file of beachPages) {
+      const html = fs.readFileSync(file, 'utf8')
+      assert.match(html, /Latest satellite observation: 2026-10-27 12:00 UTC · delayed|Última observación satelital: 2026-10-27 12:00 UTC · retrasada/,
+        regionId + ': beach page must expose the actual delayed observation timestamp')
+      assert.match(html, /Unavailable — decision paused until a fresh satellite observation is available|No disponible — decisión suspendida hasta que haya una observación satelital reciente/,
+        regionId + ': beach page must suspend the decision when the observation is stale')
+      assert.doesNotMatch(html, /Published status: (?:Clean|Moderate|Avoid)|Estado publicado: (?:Limpia|Moderada|Evitar)/,
+        regionId + ': stale beach status must not be published')
+      assert.doesNotMatch(html, /Beach Score \d+\/100/,
+        regionId + ': stale Beach Score must not be published')
+      assert.doesNotMatch(html, /<h2>7-day forecast<\/h2>|<h2>Pronóstico de 7 días<\/h2>/,
+        regionId + ': stale forecast section must be suspended')
+      assert.doesNotMatch(html, /class="sg-hero"/,
+        regionId + ': stale beach page must not render the clean-default decision hero')
+    }
+
     for (const file of pressPages) {
       const html = fs.readFileSync(file, 'utf8')
       assert.match(html, /Validation scope|Alcance de validación/i, regionId + ': press page must publish its validation scope')
@@ -162,7 +228,12 @@ assert.doesNotMatch(generatorSource, /backtest-results\.json/, 'raw backtest inp
 assert.match(generatorSource, /No separately validated accuracy percentage is published/)
 assert.doesNotMatch(generatorSource, /Measured accuracy across our Caribbean network|Precisión medida en nuestra red Caribe/)
 assert.match(generatorSource, /getSatelliteObservationFreshness\(data\)/)
-assert.match(generatorSource, /formatSatelliteObservationLabel\(data, lang\)/)
+assert.match(generatorSource, /formatSatelliteObservationLabel\(data, lang, now\)/)
+assert.match(generatorSource, /getPublishableBeachDecision\(data, b\.lv, now\)/)
+assert.doesNotMatch(generatorSource, /status: b\.lv\.status \|\| 'clean'/,
+  'generated beach pages must never default an unavailable observation to clean')
+assert.doesNotMatch(generatorSource, /typeof b\.lv\.afai === 'number' \? b\.lv\.afai : \(typeof b\.afai === 'number' \? b\.afai : 0\.2\)/,
+  'generated beach pages must never fabricate a fallback AFAI value')
 assert.match(generatorSource, /updatedAt: observationFreshness\.state === 'fresh' \? data\.erddapTimestamp : null/)
 assert.doesNotMatch(generatorSource, /LIVE · satellite \$\{liveHHMM\}/,
   'generated beach pages must not label publication time as a LIVE satellite observation')
