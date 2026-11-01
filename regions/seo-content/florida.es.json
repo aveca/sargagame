@@ -15,7 +15,7 @@
     },
     {
       "q": "¿Qué playas de Florida tienen menos sargazo?",
-      "a": "Las playas del Golfo, como Clearwater, suelen recibir menos sargazo porque las corrientes rara vez lo llevan hasta allí. En la costa atlántica, Daytona y la costa central suelen recibir menos que los Cayos o Miami. Son patrones generales, no un veredicto para hoy: el mapa muestra la última observación publicada por playa y suspende el estado de playa limpia cuando la lectura está retrasada o no se puede validar."
+      "a": "Las playas del Golfo, como Clearwater, suelen recibir menos sargazo porque las corrientes rara vez lo llevan hasta allí. En la costa atlántica, Daytona y la costa central suelen recibir menos que los Cayos o Miami. Son patrones generales, no un veredicto para hoy: el mapa muestra la última observación publicada por playa y su fecha de observación; el estado de playa limpia se suspende cuando la lectura está retrasada o no se puede validar."
     },
     {
       "q": "¿Qué tan preciso es este rastreador de sargazo?",
