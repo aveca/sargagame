@@ -14,17 +14,17 @@ const satellite = (ageMinutes, extra = {}) => ({ source: 'erddap-live', erddapTi
 assert.equal(SATELLITE_SLA_MS, 900 * 60_000);
 assert.equal(WEATHER_SLA_MS, 12 * 60 * 60_000);
 assert.equal(
-  suspendConditionTitle('Plages adaptées aux enfants aujourd\\u2019hui — Martinique'),
+  suspendConditionTitle('Plages adaptées aux enfants aujourd’hui — Martinique'),
   'Plages adaptées aux enfants — Martinique — sélection suspendue',
   'stale page title must not promise current conditions'
 );
 assert.equal(
-  suspendConditionTitle('Plages idéales pour les enfants en Guadeloupe aujourd\\u2019hui'),
+  suspendConditionTitle('Plages idéales pour les enfants en Guadeloupe aujourd’hui'),
   'Plages idéales pour les enfants en Guadeloupe — sélection suspendue',
   'stale H1 must preserve search intent without claiming today'
 );
 assert.equal(
-  suspendConditionTitle('Conditions des plages aujourd\\u2019hui — Martinique'),
+  suspendConditionTitle('Conditions des plages aujourd’hui — Martinique'),
   'Conditions des plages — Martinique — sélection suspendue',
   'stale hub title must be neutral'
 );
