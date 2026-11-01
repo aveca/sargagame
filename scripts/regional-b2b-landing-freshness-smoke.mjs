@@ -6,11 +6,11 @@ import { chromium } from 'playwright'
 const baseUrl = process.env.PREVIEW_BASE_URL || 'http://127.0.0.1:4173'
 const outputDir = '/tmp/regional-b2b-landing-freshness'
 const pages = [
-  { path: '/pro/en/sargassum-forecast-miami-hotels/', locale: 'en', demo: true },
-  { path: '/pro/en/sargassum-forecast-cancun-hotels/', locale: 'en', demo: false },
-  { path: '/pro/en/sargassum-forecast-punta-cana-hotels/', locale: 'en', demo: true },
-  { path: '/pro/es/pronostico-sargazo-cancun-hoteles/', locale: 'es', demo: true },
-  { path: '/pro/es/pronostico-sargazo-punta-cana-hoteles/', locale: 'es', demo: false }
+  { path: '/pro/en/sargassum-forecast-miami-hotels/', endpoint: '/api/copernicus/florida/sargassum.json', locale: 'en', demo: true },
+  { path: '/pro/en/sargassum-forecast-cancun-hotels/', endpoint: '/api/copernicus/rivieramaya/sargassum.json', locale: 'en', demo: false },
+  { path: '/pro/en/sargassum-forecast-punta-cana-hotels/', endpoint: '/api/copernicus/puntacana/sargassum.json', locale: 'en', demo: true },
+  { path: '/pro/es/pronostico-sargazo-cancun-hoteles/', endpoint: '/api/copernicus/rivieramaya/sargassum.json', locale: 'es', demo: true },
+  { path: '/pro/es/pronostico-sargazo-punta-cana-hoteles/', endpoint: '/api/copernicus/puntacana/sargassum.json', locale: 'es', demo: false }
 ]
 const viewports = [
   { width: 390, height: 844 },
@@ -54,8 +54,16 @@ try {
       const page = await context.newPage()
       let currentPayload = observationPayload(48)
 
-      await page.route('**/api/copernicus/sargassum.json', route =>
+      let observedEndpoint = null
+      await page.on('request', request => {
+        const url = new URL(request.url())
+        if (url.pathname.startsWith('/api/copernicus/') && url.pathname.endsWith('/sargassum.json')) observedEndpoint = url.pathname
+      })
+      await page.route('**' + item.endpoint, route =>
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(currentPayload) })
+      )
+      await page.route('**/api/copernicus/sargassum.json', route =>
+        route.fulfill({ status: 404, contentType: 'application/json', body: JSON.stringify({ error: 'wrong regional endpoint' }) })
       )
       await page.route('**/api/copernicus/track-record.json', route =>
         route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) })
@@ -63,6 +71,7 @@ try {
 
       await page.goto(baseUrl + item.path, { waitUntil: 'domcontentloaded' })
       await waitForPill(page, 'stale')
+      assert.equal(observedEndpoint, item.endpoint, item.path + ': page fetched the wrong regional payload')
       if (item.demo) await assertWithheld(page, item.locale)
       const slug = item.path.replaceAll('/', '-').replace(/^-|-$/g, '')
       const size = viewport.width + 'x' + viewport.height
