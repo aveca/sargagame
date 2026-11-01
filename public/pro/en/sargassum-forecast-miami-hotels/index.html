@@ -24,7 +24,7 @@
 {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Sargassum Pro","item":"https://sargasses-martinique.com/pro/en/"},{"@type":"ListItem","position":2,"name":"Hotels","item":"https://sargasses-martinique.com/pro/en/hotels/"},{"@type":"ListItem","position":3,"name":"Miami & South Florida hotels","item":"https://sargasses-martinique.com/pro/en/sargassum-forecast-miami-hotels/"}]}
 </script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free USF / NOAA sargassum outlooks?","acceptedAnswer":{"@type":"Answer","text":"Public outlooks give a basin-wide or regional risk. We give a 7-day forecast beach by beach, alerts targeted at your South Florida waterfront, and a reliability figure that we publish and audit every day against real observation — something no free source does."}},{"@type":"Question","name":"How reliable is the forecast on Florida beaches?","acceptedAnswer":{"@type":"Answer","text":"We publish a dated, auditable track record on our reliability page. Our reliability is validated in the French Antilles (Martinique and Guadeloupe) and shown with its sample size. Coverage is rolling out across the Caribbean, including Florida; we do not claim validated accuracy on coasts we have not yet measured. Alerts are issued cautiously until the satellite confirms them."}},{"@type":"Question","name":"Do sargassum arrivals even reach South Florida?","acceptedAnswer":{"@type":"Answer","text":"Florida sargassum arrivals are seasonal and variable — some stretches and some seasons see far more than others. That is exactly why a per-beach, day-by-day forecast beats a broad regional advisory: it tells you which waterfront is affected and when, instead of a blanket warning."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our beach crew?","acceptedAnswer":{"@type":"Answer","text":"Yes. A live-conditions badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"How is this different from the free USF / NOAA sargassum outlooks?","acceptedAnswer":{"@type":"Answer","text":"Public outlooks give a basin-wide or regional risk. We give a 7-day forecast beach by beach, alerts targeted at your South Florida waterfront, and a reliability figure that we publish and audit every day against real observation — something no free source does."}},{"@type":"Question","name":"How reliable is the forecast on Florida beaches?","acceptedAnswer":{"@type":"Answer","text":"We publish a dated, auditable track record on our reliability page. Our reliability is validated in the French Antilles (Martinique and Guadeloupe) and shown with its sample size. Coverage is rolling out across the Caribbean, including Florida; we do not claim validated accuracy on coasts we have not yet measured. Alerts are issued cautiously until the satellite confirms them."}},{"@type":"Question","name":"Do sargassum arrivals even reach South Florida?","acceptedAnswer":{"@type":"Answer","text":"Florida sargassum arrivals are seasonal and variable — some stretches and some seasons see far more than others. That is exactly why a per-beach, day-by-day forecast beats a broad regional advisory: it tells you which waterfront is affected and when, instead of a blanket warning."}},{"@type":"Question","name":"Can we embed it on our booking site and share it with our beach crew?","acceptedAnswer":{"@type":"Answer","text":"Yes. A freshness-aware status badge embeds on your site, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor."}}]}
 </script>
 <style>
   html,body{margin:0;background:var(--sg-bg);color:var(--sg-ink);font-family:var(--sg-font-sans)}
@@ -60,6 +60,8 @@
     background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
     padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  .freshpill.is-stale .pulse{background:#F59E0B;box-shadow:none;animation:none}
+  .freshpill.is-unknown .pulse{background:#9CA3AF;box-shadow:none;animation:none}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
   .perso{display:none;margin-top:18px;background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);border-radius:var(--sg-r-lg);padding:12px 16px;font-size:14px;font-weight:700;color:#fff}
@@ -194,9 +196,9 @@
     <p class="lede">Le Veilleur — The Watcher — watches the sea while your guests sleep, and looks at the water, never at them. A per-beach satellite forecast for Miami, the South Florida coast and the Keys, an alert the morning conditions turn, and a reliability figure we publish and audit every day. Measured by satellite, not guessed. Schedule the cleanup, reassure your guests, protect your bookings.</p>
     <div class="ctas">
       <a class="btn btn-gold" href="#request">Start the free brief</a>
-      <a class="btn btn-ghost" href="https://sargassummiami.com" target="_blank" rel="noopener">See the live South Florida forecast</a>
+      <a class="btn btn-ghost" href="https://sargassummiami.com" target="_blank" rel="noopener">See the latest South Florida beach observations</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">live satellite data</span></div>
+    <div class="freshpill is-unknown" id="freshpill"><span class="pulse"></span><span id="fresh" aria-live="polite">Checking satellite observation freshness…</span></div>
     <div class="perso" id="perso"></div>
   </div>
 </header>
@@ -215,7 +217,7 @@
   <div class="cards">
     <div class="card"><div class="ic">📍</div><h3>7-day forecast, beach by beach</h3><p>Status (clean / moderate / avoid), score and trend for the exact waterfront of your South Florida property — not a basin-wide average.</p></div>
     <div class="card"><div class="ic">🎭</div><h3>Automatic alerts</h3><p>Email or SMS the moment your beach changes state. Your team and your cleaning contractor know before your guests do.</p></div>
-    <div class="card"><div class="ic">🪐</div><h3>«Live conditions” badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk.</p></div>
+    <div class="card"><div class="ic">🪐</div><h3>Freshness-aware status badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk.</p></div>
   </div>
 </div></section>
 
@@ -239,17 +241,17 @@
 
 <!-- LIVE FORECAST FOR SOUTH FLORIDA -->
 <section class="liveband px"><div class="wrap">
-  <p class="sec-eyebrow">Already live for South Florida</p>
+  <p class="sec-eyebrow">Public beach map for South Florida</p>
   <h2>See the same forecast your guests can already check.</h2>
-  <p class="sub">The consumer forecast for South Florida is live right now — beach by beach, updated from satellite. It's the exact data behind your alerts and your on-site badge.</p>
-  <div style="text-align:center;margin-top:6px"><a class="btn btn-gold" href="https://sargassummiami.com" target="_blank" rel="noopener">See the live beach-by-beach forecast for South Florida →</a></div>
+  <p class="sub">The public beach-by-beach map is available for South Florida. Each beach shows the latest published satellite observation and its age; when freshness cannot be confirmed, no current verdict is shown.</p>
+  <div style="text-align:center;margin-top:6px"><a class="btn btn-gold" href="https://sargassummiami.com" target="_blank" rel="noopener">See the latest South Florida beach observations →</a></div>
 </div></section>
 
 <!-- LIVE DEMO -->
 <section class="px"><div class="wrap">
-  <p class="sec-eyebrow">Live demo</p>
+  <p class="sec-eyebrow">Latest observation demo</p>
   <h2>This is exactly what your guests would see.</h2>
-  <p class="sub">Real data, right now, on a monitored beach. The same badge, in your colors, on your site.</p>
+  <p class="sub">The demo uses the latest published observation from a monitored beach. If it is stale or unknown, the current verdict and score are withheld.</p>
   <div class="demo-frame" id="demo">
     <svg class="vc" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(50 50) scale(0.9)">
@@ -287,7 +289,7 @@
         <button type="submit" class="btn btn-gold">Get my free brief</button>
       </form>
       <p class="trust-row" id="m-trust">Free · no card · one-click unsubscribe · Copernicus satellite data.</p>
-      <div class="form-ok" id="magnet-ok">Done — your first brief is on its way by email. Meanwhile, <a id="m-live" href="https://sargassummiami.com" target="_blank" rel="noopener">see your beach live now →</a></div>
+      <div class="form-ok" id="magnet-ok">Done — your first brief is on its way by email. Meanwhile, <a id="m-live" href="https://sargassummiami.com" target="_blank" rel="noopener">see your latest published beach observation →</a></div>
     </div>
   </div>
 </div></section>
@@ -297,7 +299,7 @@
   <p class="sec-eyebrow">How it works</p>
   <h2>From satellite to your front desk, in three steps.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-referenced with wind and currents — refreshed 4× a day.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-referenced with wind and currents — based on the latest published satellite observation; its age is shown here.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>We localize it on your beach</h3><p>Our drift + persistence model turns the open ocean into a per-beach forecast, over 7 days, with a confidence level.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Your team is alerted</h3><p>Daily brief + an alert when the state changes. You schedule cleanup and guest communication in advance.</p></div></div>
   </div>
@@ -319,7 +321,7 @@
   <h2>Plan the season, not just the day.</h2>
   <div class="related">
     <a href="https://sargasses-martinique.com/pro/en/hotels/"><div class="rt">Sargassum forecast &amp; alerts for hotels</div><div class="rd">The full offer for beachfront hotels — per-beach forecast, alerts and audited reliability.</div></a>
-    <a href="https://sargassummiami.com" target="_blank" rel="noopener"><div class="rt">Live South Florida forecast</div><div class="rd">The consumer forecast, beach by beach — the same data behind your alerts and badge.</div></a>
+    <a href="https://sargassummiami.com" target="_blank" rel="noopener"><div class="rt">Latest South Florida observations</div><div class="rd">The consumer forecast, beach by beach — the same data behind your alerts and badge.</div></a>
     <a href="https://sargasses-martinique.com/fiabilite/"><div class="rt">Our published reliability track record</div><div class="rd">Dated, per beach, auditable — see exactly how often we are right.</div></a>
     <a href="https://sargasses-martinique.com/pro/en/"><div class="rt">Sargassum Pro — all solutions</div><div class="rd">Hotels, resorts and local authorities. Forecasting that converts into decisions.</div></a>
   </div>
@@ -347,10 +349,11 @@
   <a href="https://sargasses-martinique.com/pro/en/">Sargassum Pro</a> ·
   <a href="https://sargasses-martinique.com/pro/en/hotels/">Hotels</a> ·
   <a href="https://sargasses-martinique.com/fiabilite/">Reliability</a> ·
-  <a href="https://sargassummiami.com" target="_blank" rel="noopener">Live South Florida forecast</a>
+  <a href="https://sargassummiami.com" target="_blank" rel="noopener">Latest South Florida observations</a>
   <div style="margin-top:10px">Satellite sargassum forecast · Miami &amp; South Florida · validated in the French Antilles, rolling out across the Caribbean including Florida</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
@@ -363,13 +366,31 @@
   var QH=(Q.get('hotel')||'').trim();
   function prettyBeach(id){return String(id||'').replace(/^gp-/,'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase()});}
 
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'verification in progress…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'LIVE · '+m+' min ago';}
-    return 'LIVE · '+Math.max(1,Math.round(h))+' h ago';
+  function getObservationFreshness(data) {
+    return window.SargagameB2BFreshness.getObservationFreshness(data, 'en');
   }
+  function setFreshnessPill(status, label) {
+    var pill = document.getElementById('freshpill');
+    if (pill) {
+      pill.classList.remove('is-stale', 'is-unknown');
+      if (status === 'stale') pill.classList.add('is-stale');
+      else if (status !== 'fresh') pill.classList.add('is-unknown');
+    }
+    var fresh = document.getElementById('fresh');
+    if (fresh) fresh.textContent = label;
+  }
+  function setUnknownFreshness() {
+    var unknown = getObservationFreshness(null);
+    setFreshnessPill(unknown.status, unknown.label);
+    var detail = document.getElementById('d-fresh');
+    if (detail) detail.textContent = unknown.label;
+    var verdict = document.getElementById('d-verdict');
+    if (verdict) { verdict.textContent = 'STATUS WITHHELD'; verdict.style.color = '#9CA3AF'; }
+    var score = document.getElementById('d-score');
+    if (score) score.textContent = '';
+    return unknown;
+  }
+
 
   // --- Proof live: track-record.json ---
   // HONESTY: the hero number is the OVERALL status hit rate (all regimes) — the same
@@ -411,36 +432,51 @@
     document.getElementById('tr-headline').textContent='Full dated track record on our reliability page.';
   });
 
-  // --- Live demo: sargassum.json (real beach, right now) ---
-  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
+  // --- Regional demo: only publish a verdict from a fresh LIVE observation ---
+  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
     try{
-      var lv=(d.levels||[]);
-      var pick=(QB&&lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0])||lv.filter(function(x){return x.status==='clean'})[0]||lv[0];
-      if(!pick) return;
-      var col=STATUS_COLOR[pick.status]||'#22C55E';
-      document.getElementById('d-name').textContent=prettyBeach(pick.id);
-      var vd=document.getElementById('d-verdict');
-      vd.textContent=STATUS_WORD[pick.status]||'CLEAN';vd.style.color=col;
-      document.getElementById('d-score').textContent=pick.score!=null?('score '+pick.score+'/100'):'';
-      document.getElementById('d-fresh').textContent=relTime(d.updatedAt);
+      var freshness = getObservationFreshness(d);
+      setFreshnessPill(freshness.status, freshness.label);
+      var freshEnough = freshness.status === 'fresh';
+      var lv = Array.isArray(d.levels) ? d.levels : [];
+      var pick = (QB && lv.filter(function(x){return String(x.id).toLowerCase()===QB})[0]) ||
+        lv.filter(function(x){return x.status==='clean'})[0] || lv[0];
+      var vd = document.getElementById('d-verdict');
+      var scoreNode = document.getElementById('d-score');
+      var detail = document.getElementById('d-fresh');
+      if (detail) detail.textContent = freshness.label;
+      if (!pick) {
+        if (vd) { vd.textContent = 'STATUS WITHHELD'; vd.style.color = '#9CA3AF'; }
+        if (scoreNode) scoreNode.textContent = '';
+        return;
+      }
+      var decisionValid = freshEnough && Object.prototype.hasOwnProperty.call(STATUS_WORD, pick.status);
+      var col = decisionValid ? (STATUS_COLOR[pick.status] || '#9CA3AF') : '#9CA3AF';
+      var name = document.getElementById('d-name');
+      if (name) name.textContent = prettyBeach(pick.id);
+      if (vd) { vd.textContent = decisionValid ? STATUS_WORD[pick.status] : 'STATUS WITHHELD'; vd.style.color = col; }
+      if (scoreNode) scoreNode.textContent = decisionValid && pick.score != null && Number.isFinite(Number(pick.score))
+        ? 'score '+pick.score+'/100' : '';
       ['d-halo','d-body','d-lens','d-tip'].forEach(function(id){
-        var el=document.getElementById(id);if(!el)return;
-        if(id==='d-halo'||id==='d-tip'){el.setAttribute('fill',col);}
-        else{el.setAttribute('stroke',col);}
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (id === 'd-halo' || id === 'd-tip') el.setAttribute('fill', col);
+        else el.setAttribute('stroke', col);
       });
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'live satellite data';
-      if(QB||QH){
-        var pe=document.getElementById('perso');
-        if(pe){
-          pe.textContent='';
-          pe.appendChild(document.createTextNode(QH?('Demo for '+QH+' · '):'Personalized demo · '));
-          var bb=document.createElement('b');bb.textContent=prettyBeach(pick.id)+' live';
+      if (QB || QH) {
+        var pe = document.getElementById('perso');
+        if (pe) {
+          pe.textContent = '';
+          pe.appendChild(document.createTextNode(QH ? (QH+' · ') : ''));
+          var bb = document.createElement('b');
+          bb.textContent = prettyBeach(pick.id) + (decisionValid ? ' · observation verified' : ' · status withheld');
           pe.appendChild(bb);
-          pe.style.display='block';
+          pe.style.display = 'block';
         }
       }
-    }catch(e){}
-  }).catch(function(){});
+    } catch (e) { setUnknownFreshness(); }
+  }).catch(function(){ setUnknownFreshness(); });
+
 
   // --- B2B lead capture → Apps Script (dedicated source) ---
   var form=document.getElementById('b2b-form');
