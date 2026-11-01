@@ -88,6 +88,18 @@ async function assertWithheld(page, locale) {
   assert.equal((await page.locator('#d-score').textContent()).trim(), '')
 }
 
+async function assertNoHorizontalOverflow(page, item, viewport, state) {
+  const dimensions = await page.evaluate(() => ({
+    viewportWidth: document.documentElement.clientWidth,
+    documentWidth: document.documentElement.scrollWidth,
+    bodyWidth: document.body.scrollWidth
+  }))
+  assert.ok(
+    dimensions.documentWidth <= dimensions.viewportWidth && dimensions.bodyWidth <= dimensions.viewportWidth,
+    item.path + ' @ ' + viewport.width + 'x' + viewport.height + ' (' + state + '): horizontal overflow ' + JSON.stringify(dimensions)
+  )
+}
+
 await fs.mkdir(outputDir, { recursive: true })
 const browser = await chromium.launch({ headless: true })
 try {
@@ -117,6 +129,7 @@ try {
       await waitForPill(page, 'stale')
       await waitForTrackRecord(page, false)
       await assertTrackRecordWithheld(page, item.locale)
+      await assertNoHorizontalOverflow(page, item, viewport, 'stale')
       assert.equal(observedEndpoint, item.endpoint, item.path + ': page fetched the wrong regional payload')
       if (item.demo) await assertWithheld(page, item.locale)
       const slug = item.path.replaceAll('/', '-').replace(/^-|-$/g, '')
@@ -127,6 +140,7 @@ try {
       await page.reload({ waitUntil: 'domcontentloaded' })
       await waitForPill(page, 'stale')
       await waitForTrackRecord(page, true)
+      await assertNoHorizontalOverflow(page, item, viewport, 'fresh')
       assert.equal((await page.locator('#tr-clean').textContent()).trim(), '90%')
       assert.equal(await page.locator('#tr-body tr').count(), 2)
       assert.equal((await page.locator('#tr-body tr:first-child td:first-child').textContent()).trim(), 'Regional demo beach — lower')
@@ -149,6 +163,7 @@ try {
       await page.reload({ waitUntil: 'domcontentloaded' })
       await waitForPill(page, 'unknown')
       await waitForTrackRecord(page, false)
+      await assertNoHorizontalOverflow(page, item, viewport, 'non-LIVE')
       await assertTrackRecordWithheld(page, item.locale)
       if (item.demo) await assertWithheld(page, item.locale)
 
