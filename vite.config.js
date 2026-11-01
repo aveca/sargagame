@@ -7,7 +7,7 @@ import { conditionPages } from './src/lib/conditions-filters.js'
 // Chargé en lazy via createRequire : un import statique fait bundler le module
 // CJS dans la config ESM ("Dynamic require of fs is not supported").
 const _require = createRequire(import.meta.url)
-const { evaluateConditionsFreshness } = _require('./scripts/lib/conditions-freshness.cjs')
+const { evaluateConditionsFreshness, suspendConditionTitle } = _require('./scripts/lib/conditions-freshness.cjs')
 
 // Borne une meta description à la limite d'affichage SERP (~155 ch) SANS couper un mot :
 // garde le maximum de PHRASES complètes qui rentrent ; sinon coupe au dernier mot + « … ».
@@ -2367,8 +2367,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   .map(b => ({ ...b, _w: _weather[b.id] }))
                   .sort((a, b) => (a.drive || 99) - (b.drive || 99))
                   .slice(0, 30)
-                const pageTitle = isMQ ? page.titleMq : page.titleGp
-                const pageH1 = isMQ ? page.h1Mq : page.h1Gp
+                const pageTitleBase = isMQ ? page.titleMq : page.titleGp
+                const pageH1Base = isMQ ? page.h1Mq : page.h1Gp
+                const pageTitle = isConditionsFresh ? pageTitleBase : suspendConditionTitle(pageTitleBase)
+                const pageH1 = isConditionsFresh ? pageH1Base : suspendConditionTitle(pageH1Base)
                 const pageUrl = `https://${domain}/conditions/${page.slug}/`
                 const pageIntro = isConditionsFresh ? page.intro : suspendedSelectionCopy
                 const pageDesc = clampDesc(isConditionsFresh
@@ -2420,10 +2422,11 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 else sitemapGPBeaches += condSitemapEntry
               }
               // /conditions/ landing (hub) — lists all sub-pages
-              const hubTitle = `Conditions des plages aujourd\u2019hui \u2014 ${island}`
+              const hubTitleBase = `Conditions des plages aujourd’hui — ${island}`
+              const hubTitle = isConditionsFresh ? hubTitleBase : suspendConditionTitle(hubTitleBase)
               const hubDesc = `Plages de ${island} classées selon les critères météo et les dernières observations satellite. Les dates des deux sources sont affichées séparément; les sélections sont suspendues si une source dépasse son seuil de fraîcheur.`
               const hubUrl = `https://${domain}/conditions/`
-              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isMQ ? p.h1Mq : p.h1Gp}</a><br><span style="color:#686868;font-size:14px">${isConditionsFresh ? p.intro.slice(0, 140) : suspendedSelectionCopy}\u2026</span></li>`).join('')
+              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isConditionsFresh ? (isMQ ? p.h1Mq : p.h1Gp) : suspendConditionTitle(isMQ ? p.h1Mq : p.h1Gp)}</a><br><span style="color:#686868;font-size:14px">${isConditionsFresh ? p.intro.slice(0, 140) : suspendedSelectionCopy}\u2026</span></li>`).join('')
               const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">${hubFreshnessCopy} ${conditionsFreshness.satelliteLabel}. ${conditionsFreshness.weatherLabel}. Vérifiez les dates des sources avant de décider.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
               const hubSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":hubTitle,"description":hubDesc,"url":hubUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
               const hubDir = resolve(outDir, 'conditions')

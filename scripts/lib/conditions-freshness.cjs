@@ -43,4 +43,18 @@ function evaluateConditionsFreshness(satellitePayload, weatherUpdatedAt, now = D
   return { satelliteFresh, satelliteTimestamp, satelliteLabel, weatherFresh, weatherTimestamp, weatherLabel, selectionFresh: satelliteFresh && weatherFresh };
 }
 
-module.exports = { SATELLITE_SLA_MS, WEATHER_SLA_MS, evaluateConditionsFreshness };
+// Remove current-day claims from SEO headings whenever the underlying selection is suspended.
+function suspendConditionTitle(value) {
+  const title = String(value ?? '').trim();
+  const base = title
+    .replace(/\s+aujourd’hui\b/gi, '')
+    .replace(/\s+aujourd'hui\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+—\s+/g, ' — ')
+    .replace(/[—–-]\s*$/, '')
+    .trim();
+  if (!base) return 'Sélection suspendue';
+  return /sélection suspendue/i.test(base) ? base : base + ' — sélection suspendue';
+}
+
+module.exports = { SATELLITE_SLA_MS, WEATHER_SLA_MS, evaluateConditionsFreshness, suspendConditionTitle };
