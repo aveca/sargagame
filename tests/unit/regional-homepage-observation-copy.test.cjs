@@ -42,7 +42,7 @@ for (const [relativePath, lang] of files) {
 
   assert.ok(Array.isArray(content.faq) && content.faq.length >= 6, relativePath + ' keeps its homepage FAQ contract')
 
-  for (const index of [0, 1, 2, 3, 5]) {
+  for (const index of content.faq.keys()) {
     const answer = content.faq[index].a
     assert.equal(typeof answer, 'string', relativePath + ' FAQ ' + index + ' remains text')
     for (const pattern of unsupportedCadence) {
