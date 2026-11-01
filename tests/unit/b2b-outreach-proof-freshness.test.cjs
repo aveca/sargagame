@@ -23,6 +23,7 @@ assert.strictEqual(resolveLiveProof({ ...freshRegionalRecord, regions: ['mq', 'g
 assert.strictEqual(resolveLiveProof({ ...freshRegionalRecord, byRegime: {} }, 'mq'), null)
 assert.strictEqual(resolveLiveProof({ ...freshRegionalRecord, byRegime: { calm: { cleanReliabilityPct: 101, cleanSamples: 120 } } }, 'mq'), null)
 assert.strictEqual(resolveLiveProof({ ...freshRegionalRecord, byRegime: { calm: { cleanReliabilityPct: 97, cleanSamples: 0 } } }, 'mq'), null)
+assert.strictEqual(resolveLiveProof({ ...freshRegionalRecord, byRegime: { calm: { cleanReliabilityPct: null, cleanSamples: 120 } } }, 'mq'), null)
 
 // Current main record is stale and aggregates MQ+GP: it must not be reused for either market.
 assert.strictEqual(liveProof('mq'), null)
