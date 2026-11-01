@@ -11,7 +11,7 @@
 import React, { useState, useEffect, useLayoutEffect, useRef, useMemo, useCallback, Suspense } from "react"
 import { createPortal } from "react-dom"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
-import { formatFreshnessAge, isSatelliteFresh12h, isSatelliteStale36h, satelliteFreshnessStatus } from "./lib/format-freshness.mjs"
+import { worldMapFreshness } from "./lib/world-map-freshness.mjs"
 import { summarizeBeachStatuses } from "./lib/map-day-summary.mjs"
 
 // Hub prévision premium « Ma semaine » — lazy (hors budget eager) ; ouvert au tap sur l'encart digest.
@@ -197,22 +197,15 @@ function _spawnBeaching(layer, ax, ay, cx, cy, S, seed, eta){
 const MQ_RELIEF = [[14.79,-61.10,24],[14.74,-61.10,18],[14.70,-61.07,20],[14.52,-61.06,15],[14.47,-60.92,12]]
 
 export default function WorldMapView({
-  beaches, island, updatedAt, erddapTimestamp, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
+  beaches, island, updatedAt, erddapTimestamp, source, lang, onOpenBeach, onPremium, onClose, rootMode, track, initialZone, warm, onCaptureEmail, arrivals, topInset=0, onOpenPro, isPremium=false, forecastByBeach=null, onShare=null, seasonOutlook=null,
   onAccess=null, onEnableNotif=null, alertsOn=null, dataReady=true, previewBeach=null,
   onFind=null,
 }){
   // Fraîcheur satellite (mission #39) : prédicats partagés 12h/36h sur l'observation erddap —
   // plus de prédicat local divergent ; âge affiché = observation satellite uniquement.
-  const wmSatT = erddapTimestamp ? Date.parse(erddapTimestamp) : NaN;
-  const wmSatValid = Number.isFinite(wmSatT) && wmSatT > 0 && wmSatT <= Date.now();
-  const wmSatFresh = wmSatValid && isSatelliteFresh12h({ erddapTimestamp: erddapTimestamp });
-  const wmSatStale = wmSatValid && isSatelliteStale36h({ erddapTimestamp: erddapTimestamp });
-  const wmSatLbl = satelliteFreshnessStatus({ erddapTimestamp: erddapTimestamp }, lang);
-  const wmSatAge = wmSatValid ? formatFreshnessAge(erddapTimestamp, lang) : "···";
-  // 12–36 h : afficher l'âge sans présenter l'ensemble des données comme périmées.
-  // >=36 h : alerte explicite sur la seule observation satellite.
-  const wmSatAgeColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#00786C" : "#667085";
-  const wmSatDotColor = wmSatStale ? "#B87A00" : wmSatFresh ? "#009E8E" : "#7A8491";
+  const [wmDecisionAvailable, wmSatColor, wmSatLbl, wmSatAge, wmFreshDelay] = worldMapFreshness(source, erddapTimestamp, lang);
+  const [, setMapFreshnessTick] = useState(false);
+  useEffect(()=>{if(wmFreshDelay!=null){const timer=setTimeout(()=>setMapFreshnessTick(tick=>!tick),wmFreshDelay);return()=>clearTimeout(timer)}},[wmFreshDelay]);
   // V2 est reversible sans redeploy: le holdout conserve la surface historique.
   const mapV2=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   // Entrée B2B discrète sur la carte (découvrabilité Pro). Rollback : ?promap=0.
@@ -222,7 +215,7 @@ export default function WorldMapView({
   // verrouillé pour TOUT le monde. La donnée affichée reste 100% RÉELLE (forecastByBeach,
   // composite ERDDAP+forecast) ou absente (pin gris) — JAMAIS fabriquée (loi du moat).
   const mapForecastOff = (()=>{try{return /[?&]mapforecast=0/.test(window.location.search)}catch(_){return false}})()
-  const mapPremium = !!isPremium && !mapForecastOff
+  const mapPremium = !!isPremium && !mapForecastOff && wmDecisionAvailable
   // Contrôles compte + notifications VISIBLES sur l'accueil-carte. Avant : le Header
   // standard (cloche + « Mon accès ») était rendu SOUS la chrome fixed de la carte
   // (zIndex 10) → invisible ; on ne pouvait ni activer les alertes ni gérer/résilier
@@ -454,9 +447,10 @@ export default function WorldMapView({
       .filter(b=>b&&b.lat!=null&&b.lng!=null&&(isEUR?b.island===island:true))
       .map(b=>{
         const[vx,vy]=toVB(b.lat,b.lng)
-        const entry=forecastByBeach&&forecastByBeach[b.id]
+        const entry=wmDecisionAvailable&&forecastByBeach&&forecastByBeach[b.id]
         const fc=entry&&entry.d // série jour-par-jour [{st,c,date}]
-        const days=[b.status||null]
+        const currentStatus=wmDecisionAvailable&&b.status||null
+        const days=[currentStatus]
         const conf=[null]
         // PERSISTANCE (décision fondateur 2026-06-30) : un jour sans prévision NE reste
         // PLUS gris muet — on reporte le dernier statut connu (« on s'attend à la même
@@ -477,9 +471,18 @@ export default function WorldMapView({
         let firstHit=null
         for(let d=0;d<days.length;d++){ if(days[d]==="avoid"){ firstHit=d; break } }
         if(firstHit==null&&entry&&entry.arrivalDay!=null&&entry.arrivalDay>=1&&entry.arrivalDay<6) firstHit=entry.arrivalDay
-        return{...b,vx,vy,days,conf,fc:fc||null,drift:(entry&&entry.drift)||null,firstHit}
+        return{
+          ...b,
+          ...(!wmDecisionAvailable?{score:null,afai:null}:{}),
+          status:currentStatus,vx,vy,days,conf,fc:fc||null,
+          drift:(entry&&entry.drift)||null,
+          firstHit,
+        }
       })
-  },[beaches,island,toVB,forecastByBeach])
+  },[beaches,island,toVB,forecastByBeach,wmDecisionAvailable])
+
+  // Retire le tooltip si le modèle cesse de pouvoir justifier une décision.
+  useLayoutEffect(()=>{if(!wmDecisionAvailable)setSelected(null)},[wmDecisionAvailable])
 
   // Couche sargasses : points satellite AFAI projetés sur la scène SVG, colorés par
   // intensité. Même filtre île que la carte Leaflet (split lat 15.5 = grille Caraïbe
@@ -490,7 +493,7 @@ export default function WorldMapView({
   // Seuil 0.10. Cull SERRÉ-ÎLE : on ne montre QUE le sargasse PROCHE de la côte/île — pas les bancs
   // au large « inutiles » (fondateur 22/06 soir). `near` = LOD détaillé. Cap = anti-clutter.
   const sargCells = useMemo(()=>{
-    if(!toVB||!afaiGrid||!afaiGrid.points) return []
+    if(!wmDecisionAvailable||!toVB||!afaiGrid||!afaiGrid.points) return []
     const isMQGP=island==="mq"||island==="gp"
     const pts=isMQGP?afaiGrid.points.filter(p=>island==="gp"?p[0]>=15.5:p[0]<15.5):afaiGrid.points
     const out=[]
@@ -502,7 +505,7 @@ export default function WorldMapView({
     }
     out.sort((a,b)=>b.afai-a.afai)
     return out.slice(0,48)
-  },[afaiGrid,island,toVB])
+  },[afaiGrid,island,toVB,wmDecisionAvailable])
 
   // P7 — recherche : plages dont le nom matche la requête (max 6).
   const matches = useMemo(()=>{
@@ -713,8 +716,9 @@ export default function WorldMapView({
   // aquarium). Override debug `?beachfx=1` (force les 3 pires plages quand tout est propre).
   useEffect(()=>{
     const layer=fxRef.current
-    if(!layer||!beachList.length) return
-    while(layer.firstChild) layer.removeChild(layer.firstChild)
+    if(!layer) return
+    layer.replaceChildren()
+    if(!wmDecisionAvailable||!beachList.length) return
     let cx=0,cy=0; for(const b of beachList){cx+=b.vx;cy+=b.vy}; cx/=beachList.length; cy/=beachList.length
     const force=(()=>{try{return /[?&]beachfx=1/.test(window.location.search)}catch(_){return false}})()
     const arr=b=>arrivals&&arrivals[b.id]
@@ -1236,10 +1240,10 @@ export default function WorldMapView({
   const driftFuture = mapPremium && day>=1 && !mapDriftOff && !noAnim
   const regionName= outline?.name||(island==="mq"?"Martinique":island==="gp"?"Guadeloupe":island)
   const dayStatus = summarizeBeachStatuses(beachList, day)
-  const cleanCnt  = dayStatus.clean // inconnu ≠ propre (anti-flash)
+  const cleanCnt  = dayStatus.clean // rendu uniquement si la source permet une décision
   const avoidCnt  = dayStatus.avoid
   const dayLbl    = day===0?_t(lang,"aujourd'hui","today","hoy"):_t(lang,`dans ${day}j`,`in ${day}d`,`en ${day}d`)
-  const vant      = vantColor(beachList,day)
+  const vant      = wmDecisionAvailable ? vantColor(beachList,day) : "#9aa0a8"
   const sunPos = useMemo(()=>{const h=new Date(),hr=h.getHours()+h.getMinutes()/60,a=((hr-6)/12)*Math.PI;return{x:400+Math.cos(a)*280,y:300+Math.sin(a)*160,visible:hr>=6&&hr<=18}},[])
 
   // Defs partagés (gradients + 2 filtres flous) — rendus à l'identique dans le SVG de bake ET le
@@ -1377,7 +1381,7 @@ export default function WorldMapView({
         @keyframes wmSun{0%,100%{opacity:.9;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
         @keyframes wmHalo{0%,100%{opacity:.45}50%{opacity:.8}}
         @keyframes wmAvoidPulse{0%{opacity:.55;transform:scale(.7)}70%{opacity:0;transform:scale(1.9)}100%{opacity:0;transform:scale(1.9)}}
-        @keyframes wmPulse{0%{box-shadow:0 0 0 0 rgba(232,50,42,.55)}70%{box-shadow:0 0 0 9px rgba(232,50,42,0)}100%{box-shadow:0 0 0 0 rgba(232,50,42,0)}}
+        
         @keyframes wmSlide{from{opacity:0;transform:translateX(-50%) translateY(16px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
         @keyframes wmTapPing{0%{opacity:.85;transform:translate(-50%,-50%) scale(.3)}65%{opacity:.16;transform:translate(-50%,-50%) scale(1.7)}100%{opacity:0;transform:translate(-50%,-50%) scale(2.1)}}
         @keyframes wmTapCore{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}55%{opacity:.9;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.15)}}
@@ -1494,7 +1498,7 @@ export default function WorldMapView({
               pas prête → apparition UNIQUE et définitive (jamais gris→couleur). Le fond
               de carte baké reste visible en attendant (pas de cul-de-sac). */}
           {(dataReady?beachList:[]).map(b=>{
-            const st=b.days[day] // null tant que le statut n'est pas chargé → pin GRIS, pas vert
+            const st=b.days[day] // beachList is sanitized before rendering
             const isSel=selected?.id===b.id
             // Rétrogradé en point dans un cluster dense (sauf le sélectionné) → petit point cliquable,
             // hit-zone élargie, pas de label. Tap → ouvre la fiche (funnel préservé).
@@ -1691,11 +1695,10 @@ export default function WorldMapView({
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,
           }}>
             <div style={{
-              width:8,height:8,borderRadius:"50%",background:wmSatDotColor,border:`1.5px solid ${INK}`,
-              animation:(!wmSatFresh||noAnim)?"none":"wmPulse 2.4s ease-out infinite",
+              width:8,height:8,borderRadius:"50%",background:wmSatColor,border:`1.5px solid ${INK}`,
             }}/>
             <span style={{font:"800 11px/1 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".06em",textTransform:"uppercase",color:INK}}>{wmSatLbl}</span>
-            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatAgeColor,marginLeft:2}}>
+            <span style={{font:"700 11px/1 'JetBrains Mono',monospace",color:wmSatColor,marginLeft:2}}>
               {wmSatAge}
             </span>
             {/* Couleur verte = satellite <12h ; neutre = 12–36h ; ambre = >=36h. */}
@@ -1785,36 +1788,33 @@ export default function WorldMapView({
           }}>
             {regionName} <span style={{color:"#ffd23f"}}>{dayLbl}</span>
           </h2>
-          <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
+          {wmDecisionAvailable && <div {...(!mapCleanTapOff?{role:"button",tabIndex:0,"aria-label":_t(lang,`Voir les statuts des plages près de moi : ${cleanCnt} propres, ${avoidCnt} à éviter`,`See nearby beach status: ${cleanCnt} clean, ${avoidCnt} to avoid`,`Ver el estado de playas cercanas: ${cleanCnt} limpias, ${avoidCnt} a evitar`),onClick:()=>{try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()},onKeyDown:e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();try{track&&track("sg_map_cleancount_tap",{island})}catch(_){};nearMe()}}}:{})} style={{
             marginTop:9,display:"inline-flex",flexWrap:"wrap",alignItems:"center",gap:9,rowGap:6,maxWidth:"calc(100vw - 36px)",pointerEvents:"auto",
             cursor:mapCleanTapOff?undefined:"pointer",
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:12,padding:"8px 13px",
           }}>
-            {/* REFONTE 2026-10-23 — badge encré remplace la barre de progression.
-                Avant : barre 104x8 gradient vert->brun (lisait comme une alerte alors que
-                5/5 = propre) + texte 12.5px. Désormais la QUANTITÉ se lit dans le chiffre
-                (Anton 26px), la SÉCURITÉ dans la couleur du cadre. */}
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 13px 8px",background:"#eafaf1",
-              border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`}}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:26,lineHeight:1,color:"#177A42"}}>{cleanCnt}</b>
-              <span style={{font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
-                textTransform:"uppercase",color:"#177A42"}}>{_t(lang,"plages propres","clean beaches","playas limpias")}<br/>
-              <span style={{opacity:.72,fontWeight:700,letterSpacing:".02em",textTransform:"none"}}>{dayLbl}</span></span>
-            </div>
-            <span
-              aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
-              style={{
-                display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
-                padding:"7px 11px 8px",border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`,
-                background:avoidCnt>0?"#ffe0db":"#e5f8eb",
-                color:avoidCnt>0?"#a62b20":"#177A42",font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",textTransform:"uppercase",
-                font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
-              }}>
-              <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:22,lineHeight:1}}>{avoidCnt}</b>
-              {_t(lang,"à éviter","to avoid","a evitar")}
-            </span>
-          </div>
+
+              <div style={{display:"inline-flex",alignItems:"center",gap:8,padding:"7px 13px 8px",background:"#eafaf1",
+                border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`}}>
+                <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:26,lineHeight:1,color:"#177A42"}}>{cleanCnt}</b>
+                <span style={{font:"800 10px/1.15 'Bricolage Grotesque',system-ui,sans-serif",letterSpacing:".04em",
+                  textTransform:"uppercase",color:"#177A42"}}>{_t(lang,"plages propres","clean beaches","playas limpias")}<br/>
+                  <span style={{opacity:.72,fontWeight:700,letterSpacing:".02em",textTransform:"none"}}>{dayLbl}</span></span>
+              </div>
+              <span aria-label={_t(lang,`${avoidCnt} plages à éviter ${dayLbl}`,`${avoidCnt} beaches to avoid ${dayLbl}`,`${avoidCnt} playas que evitar ${dayLbl}`)}
+                style={{
+                  display:"inline-flex",alignItems:"center",gap:4,whiteSpace:"nowrap",
+                  padding:"7px 11px 8px",border:`2.5px solid ${INK}`,borderRadius:12,boxShadow:`3px 3px 0 ${INK}`,
+                  background:avoidCnt>0?"#ffe0db":"#e5f8eb",
+                  color:avoidCnt>0?"#a62b20":"#177A42",font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif",
+                  letterSpacing:".04em",textTransform:"uppercase",
+                }}>
+                <b style={{fontFamily:"'AntonLC','Anton',sans-serif",fontWeight:400,fontSize:22,lineHeight:1}}>{avoidCnt}</b>
+                {_t(lang,"à éviter","to avoid","a evitar")}
+              </span>
+
+          </div>}
           </>)}
 
           {/* Capture email — sticker compact, VISIBLE PAR DÉFAUT sur la carte, dismissable 1×.
@@ -2058,7 +2058,7 @@ export default function WorldMapView({
               ⭐ {_t(lang,"Premium actif — fais glisser les jours, la prévision est à toi.","Premium active — slide through the days, the forecast is yours.","Premium activo — desliza los días, el pronóstico es tuyo.")}
             </div>
           )}
-          <div style={{
+          {wmDecisionAvailable&&(<div style={{
             pointerEvents:"auto",display:"flex",gap:4,
             background:"#fdf6e3",
             border:`2.5px solid ${INK}`,boxShadow:`3px 3px 0 ${INK}`,borderRadius:999,padding:4,
@@ -2091,7 +2091,7 @@ export default function WorldMapView({
                 )})()}
               </button>
             )})}
-          </div>
+          </div>)}
         </div>
 
         {/* Dock bas — label « Carte » inerte (cursor:default, sans onClick) RETIRÉ :
