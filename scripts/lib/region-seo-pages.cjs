@@ -103,6 +103,18 @@ function formatSatelliteObservationLabel(data, lang = 'en', now = Date.now()) {
   return copy.latest + ': ' + stamp + ' UTC' + (freshness.state === 'delayed' ? copy.delayed : '');
 }
 
+function unavailableBeachDecisionLabel(data, lang = 'en', now = Date.now()) {
+  const freshness = getSatelliteObservationFreshness(data, now)
+  if (freshness.state === 'fresh') {
+    return lang === 'es'
+      ? 'Estado no disponible — no hay un estado de playa válido para publicar'
+      : 'Status unavailable — no valid beach status is available to publish'
+  }
+  return lang === 'es'
+    ? 'No disponible — decisión suspendida hasta que haya una observación satelital reciente'
+    : 'Unavailable — decision paused until a fresh satellite observation is available'
+}
+
 const T = {
   en: {
     beachesDir: 'beaches', resortsDir: 'resorts',
@@ -291,6 +303,8 @@ const _BRIEF_T = {
     guestAvoid: 'Sargassum expected — keep a backup activity ready for affected days.',
     cta: 'Hotel team? Get this brief in your inbox every morning',
     ctaSub: 'Free daily sargassum brief for your beach — activate it yourself in 10 seconds, no call.',
+    forecastUnavailable: 'The 7-day outlook is unavailable because no publishable beach decision is available.',
+    guestPaused: 'No current beach recommendation is published because a valid beach decision is unavailable.',
     foot: 'Satellite observations are intermittent; check observation time and confidence before advising guests',
     cleaner: n => `↪ Alternative to check: ${n}`, cleanerNote: 'A possible alternative to verify before advising guests.' },
   es: { brief: 'Boletín de sargazo', beachOf: 'Playa', today: 'Última lectura', week: 'Pronóstico 7 días', clean: 'Limpia', moderate: 'Moderada', avoid: 'Evitar',
@@ -300,24 +314,33 @@ const _BRIEF_T = {
     guestAvoid: 'Se espera sargazo — ten una actividad alternativa lista.',
     cta: '¿Equipo del hotel? Recibe este boletín cada mañana',
     ctaSub: 'Boletín diario de sargazo gratis para tu playa — actívalo tú mismo en 10 segundos, sin llamada.',
+    forecastUnavailable: 'El pronóstico de 7 días no está disponible porque no hay una decisión de playa publicable.',
+    guestPaused: 'No se publica una recomendación actual porque no hay una decisión de playa válida.',
     foot: 'Las observaciones satelitales no son continuas; revisa la hora y la confianza antes de orientar a tus huéspedes',
     cleaner: n => `↪ Alternativa para revisar: ${n}`, cleanerNote: 'Una posible alternativa que conviene verificar antes de orientar a los huéspedes.' },
 }
-function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
+function buildResortBrief(region, r, b, data, lang, today, domain, beaches, now = Date.now()) {
   const L = _BRIEF_T[lang] || _BRIEF_T.en
   const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
   const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
-  const days = (((data.weekly || {})[b.id] || {}).forecast || []).slice(0, 7)
+  const decision = getPublishableBeachDecision(data, b.lv, now)
+  const days = decision.available ? (((data.weekly || {})[b.id] || {}).forecast || []).slice(0, 7) : []
   const cleanDays = days.filter(d => d.status === 'clean').length
-  const todayStatus = b.lv.status || (days[0] && days[0].status) || 'clean'
-  const guest = todayStatus === 'avoid' ? L.guestAvoid : (cleanDays >= 5 ? L.guestClean : L.guestWatch)
+  const todayStatus = decision.available ? decision.status : null
+  const guest = !decision.available
+    ? L.guestPaused
+    : days.length
+      ? (todayStatus === 'avoid' ? L.guestAvoid : (cleanDays >= 5 ? L.guestClean : L.guestWatch))
+      : L.forecastUnavailable
   // Plage de repli PROPRE la plus proche — la vraie valeur duty-manager : rediriger
   // les clients quand la plage de l'hôtel n'est pas clean aujourd'hui.
   let altHtml = ''
-  if (todayStatus !== 'clean' && Array.isArray(beaches) && b.lat != null) {
+  if (decision.available && todayStatus !== 'clean' && Array.isArray(beaches) && b.lat != null) {
     const km = (la1, lo1, la2, lo2) => { const R = 6371, toR = x => x * Math.PI / 180, dLa = toR(la2 - la1), dLo = toR(lo2 - lo1), a = Math.sin(dLa / 2) ** 2 + Math.cos(toR(la1)) * Math.cos(toR(la2)) * Math.sin(dLo / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(a)) }
-    const alt = beaches.filter(x => x.id !== b.id && x.lv && x.lv.status === 'clean' && x.lat != null)
-      .map(x => ({ x, d: km(b.lat, b.lng, x.lat, x.lng) })).sort((a, c) => a.d - c.d)[0]
+    const alt = beaches.filter(x => x.id !== b.id && x.lat != null)
+      .map(x => ({ x, decision: getPublishableBeachDecision(data, x.lv, now), d: km(b.lat, b.lng, x.lat, x.lng) }))
+      .filter(x => x.decision.available && x.decision.status === 'clean')
+      .sort((a, c) => a.d - c.d)[0]
     if (alt) altHtml = `<div class="tip" style="background:#E8F6EC;border-color:#9FD9B0">${L.cleaner(esc(alt.x.name))}${alt.d ? ' · ~' + Math.round(alt.d) + ' km' : ''}<br><span style="color:#3a6b4a">${esc(L.cleanerNote)}</span></div>`
   }
   const cells = days.map(d => {
@@ -327,34 +350,40 @@ function buildResortBrief(region, r, b, data, lang, today, domain, beaches) {
   }).join('')
   // Self-serve (pivot « zéro appel ») : la cible active le brief elle-même via ?pro=1.
   const proLink = `https://${domain}/?pro=1`
-  const scoreTxt = b.lv.score != null ? ` · ${b.lv.score}/100` : ''
+  const scoreTxt = decision.available && decision.score != null ? ` · ${decision.score}/100` : ''
+  const statusLabel = decision.available ? W[todayStatus] : unavailableBeachDecisionLabel(data, lang, now)
+  const statusColor = C[todayStatus] || '#777'
+  const observationLabel = formatSatelliteObservationLabel(data, lang, now)
+  const forecastBlock = days.length
+    ? `<h2 style="font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b66;margin:18px 0 0;font-weight:700">${L.week}</h2><div class="row">${cells}</div>`
+    : `<p class="tip">${L.forecastUnavailable}</p>`
   return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,follow">
 <title>${esc(r.name)} — ${L.brief}</title>
-<meta property="og:title" content="${esc(r.name)} — ${esc(L.brief)}"><meta property="og:description" content="${esc(b.name)} · ${esc(W[todayStatus] || todayStatus)} · ${esc(L.foot)}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
+<meta property="og:title" content="${esc(r.name)} — ${esc(L.brief)}"><meta property="og:description" content="${esc(b.name)} · ${esc(statusLabel)} · ${esc(observationLabel)}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
 <style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.5;padding:16px 0}.wrap{max-width:560px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#2e1a5e,#6a2f9e 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:26px 22px}.hd .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;opacity:.85}.hd h1{font-size:24px;margin:6px 0 2px;line-height:1.15}.hd .b{font-size:13px;opacity:.92}.bd{padding:22px}.pill{display:inline-block;padding:6px 14px;border-radius:999px;color:#fff;font-weight:700;font-size:14px}.row{display:flex;gap:6px;margin:14px 0}.tip{background:#FAF3E2;border:1px solid #E6D8B0;border-radius:12px;padding:12px 14px;font-size:14px;margin:14px 0}.cta{display:block;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:16px 18px;margin:18px 0 6px}.cta b{font-size:15px}.cta span{display:block;font-size:12.5px;opacity:.85;margin-top:3px}.ft{font-size:11px;color:#8a857c;padding:14px 22px 20px}</style></head>
 <body><div class="wrap">
 <div class="hd"><div class="k">${esc(region.name)} · ${L.brief}</div><h1>${esc(r.name)}</h1><div class="b">${L.beachOf}: ${esc(b.name)}${r.area ? ' · ' + esc(r.area) : ''}</div></div>
 <div class="bd">
-<div><span class="pill" style="background:${C[todayStatus] || '#999'}">${L.today}: ${W[todayStatus] || todayStatus}${scoreTxt}</span></div>
-<h2 style="font-size:13px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b66;margin:18px 0 0;font-weight:700">${L.week}</h2>
-<div class="row">${cells}</div>
-<div class="tip">${L.cleanDays(cleanDays)} ${guest}</div>${altHtml}
+<div><span class="pill" style="background:${statusColor}">${L.today}: ${statusLabel}${scoreTxt}</span></div>
+${forecastBlock}
+<div class="tip">${days.length ? L.cleanDays(cleanDays) + ' ' + guest : guest}</div>${altHtml}
 <a class="cta" href="${proLink}"><b>${L.cta}</b><span>${L.ctaSub}</span></a>
 </div>
-<div class="ft">${L.foot} · ${esc(today)} · ${esc(domain)}</div>
+<div class="ft">${L.foot} · ${esc(observationLabel)} · ${esc(today)} · ${esc(domain)}</div>
 </div></body></html>`
 }
 
 // Annuaire B2B : page /resorts/ listant TOUS les hôtels d'une région + statut de
 // leur plage + lien brief. Asset de prospection (« état sargasses de tous les
 // hôtels de Bávaro ») ET hub SEO indexable (maille les pages resort).
-function buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix = '') {
+function buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix = '', now = Date.now()) {
   const L = _BRIEF_T[lang] || _BRIEF_T.en
   const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
   const W = { clean: L.clean, moderate: L.moderate, avoid: L.avoid }
+  const observationLabel = formatSatelliteObservationLabel(data, lang, now)
   const D = {
-    en: { h: 'resorts — sargassum status', sub: n => `Published beach status for ${n} resorts; observation times and confidence vary. Open a resort brief for the latest available reading.`, brief: 'Daily brief', cta: 'Hotel team? Get the daily brief for your property', map: 'Map', title: r => `${r} Resorts — Published Sargassum Status (All Hotels)`, desc: r => `Published sargassum status for resorts in ${r}, beach by beach. Observation times and forecast availability vary.` },
-    es: { h: 'hoteles — estado del sargazo', sub: n => `Estado publicado de las playas de ${n} hoteles; la hora de observación y la confianza pueden variar. Abre el boletín del hotel para la última lectura disponible.`, brief: 'Boletín diario', cta: '¿Equipo del hotel? Recibe el boletín diario de tu propiedad', map: 'Mapa', title: r => `Hoteles de ${r} — Estado publicado del sargazo`, desc: r => `Estado publicado del sargazo para hoteles de ${r}, playa por playa. La hora de observación y la disponibilidad del pronóstico pueden variar.` },
+    en: { h: 'resorts — sargassum status', sub: n => `A current beach decision is shown only when its satellite observation is within the freshness window; otherwise it is paused. Open a resort brief for details across ${n} resorts.`, brief: 'Daily brief', cta: 'Hotel team? Get the daily brief for your property', map: 'Map', title: r => `${r} Resorts — Published Sargassum Status (All Hotels)`, desc: r => `Published sargassum status for resorts in ${r}, beach by beach. Observation times and forecast availability vary.` },
+    es: { h: 'hoteles — estado del sargazo', sub: n => `La decisión actual de cada playa solo se muestra cuando la observación satelital está dentro de la ventana de vigencia; de lo contrario queda suspendida. Abre el boletín para ver los detalles de ${n} hoteles.`, brief: 'Boletín diario', cta: '¿Equipo del hotel? Recibe el boletín diario de tu propiedad', map: 'Mapa', title: r => `Hoteles de ${r} — Estado publicado del sargazo`, desc: r => `Estado publicado del sargazo para hoteles de ${r}, playa por playa. La hora de observación y la disponibilidad del pronóstico pueden variar.` },
   }[lang] || null
   const T2 = D || { h: 'resorts', sub: () => '', brief: 'brief', cta: '', map: 'map', title: r => r, desc: r => r }
   const byId = {}; for (const x of beaches) byId[x.id] = x
@@ -362,8 +391,10 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
   const sections = Object.keys(groups).sort().map(area => {
     const items = groups[area].map(r => {
       const b = byId[r.beachId]; if (!b) return ''
-      const st = (b.lv && b.lv.status) || 'clean'
-      return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(r.name)}</b><br><small>${esc(b.name)} · ${W[st] || st}</small></span><a href="${prefix}/${t.resortsDir}/${r.slug}/brief/">${esc(T2.brief)} →</a></li>`
+      const decision = getPublishableBeachDecision(data, b.lv, now)
+      const st = decision.available ? decision.status : null
+      const label = decision.available ? W[st] : unavailableBeachDecisionLabel(data, lang, now)
+      return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(r.name)}</b><br><small>${esc(b.name)} · ${esc(label)}</small></span><a href="${prefix}/${t.resortsDir}/${r.slug}/brief/">${esc(T2.brief)} →</a></li>`
     }).join('')
     return `<h2>${esc(area)}</h2><ul>${items}</ul>`
   }).join('')
@@ -373,7 +404,7 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
 <meta property="og:title" content="${esc(T2.title(region.name))}"><meta property="og:description" content="${esc(T2.desc(region.name))}"><meta property="og:image" content="https://${domain}/og-image.png"><meta property="og:type" content="website"><meta name="twitter:card" content="summary_large_image">
 <style>*{box-sizing:border-box;margin:0}body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:#F7F5EF;color:#15110d;line-height:1.5;padding:16px 0}.wrap{max-width:620px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.08)}.hd{background:linear-gradient(135deg,#2e1a5e,#6a2f9e 45%,#C97E3A 85%,#F2B05E);color:#fff;padding:24px 22px}.hd h1{font-size:22px;line-height:1.2}.hd p{font-size:13px;opacity:.92;margin-top:6px}.bd{padding:14px 22px}h2{font-size:13px;letter-spacing:.03em;text-transform:uppercase;color:#6b6b66;margin:18px 0 4px}ul{list-style:none}li{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee}.d{width:14px;height:14px;border-radius:50%;flex:none}.n{flex:1}.n small{font-size:12px;color:#7a756c}li a{font-size:12.5px;color:#6a2f9e;font-weight:700;white-space:nowrap;text-decoration:none}.cta{display:block;background:linear-gradient(135deg,#2e1a5e,#6a2f9e);color:#fff;text-decoration:none;border-radius:14px;padding:15px 18px;margin:20px 0 4px;font-weight:700;font-size:14.5px}.ft{font-size:11px;color:#8a857c;padding:8px 22px 20px}.ft a{color:#6a2f9e}</style></head>
 <body><div class="wrap">
-<div class="hd"><h1>${esc(region.name)} ${esc(T2.h)}</h1><p>${esc(T2.sub(resorts.length))} · ${esc(today)}</p></div>
+<div class="hd"><h1>${esc(region.name)} ${esc(T2.h)}</h1><p>${esc(T2.sub(resorts.length))} · ${esc(observationLabel)} · ${esc(today)}</p></div>
 <div class="bd">${sections}
 <a class="cta" href="${mailto}">${esc(T2.cta)} →</a></div>
 <div class="ft">${esc(L.foot)} · <a href="https://${domain}${prefix}/">${esc(T2.map)}</a> · ${esc(domain)}</div>
@@ -391,11 +422,13 @@ function buildResortDirectory(region, resorts, beaches, data, lang, t, today, do
 // public OPT-IN — l'argent ne touche jamais le verdict (le badge n'affiche que le
 // MÊME verdict neutre ; « tu choisis de le montrer, jamais ce qu'il dit »). CTA →
 // /?pro=1 avec UTM (utm_campaign=b2b_widget_<id>) pour que sg_b2b_visit attribue.
-function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix = '') {
+function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix = '', now = Date.now()) {
   const es = lang === 'es'
   const _ = (en, esT) => (es ? esT : en)
   const C = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626' }
   const W = { clean: _('Clean', 'Limpia'), moderate: _('Moderate', 'Moderada'), avoid: _('Avoid', 'Evitar') }
+  const observationLabel = formatSatelliteObservationLabel(data, lang, now)
+  const unavailable = unavailableBeachDecisionLabel(data, lang, now)
   const rn = esc(region.name)
   const methodHref = `${prefix}/${es ? 'metodologia' : 'methodology'}/`
   const pro = (pos) => `https://${domain}/?pro=1&amp;utm_source=organic&amp;utm_medium=landing&amp;utm_campaign=b2b_widget_${region.id}&amp;utm_content=${pos}`
@@ -404,11 +437,13 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
   const byBeach = {}
   for (const r of resorts) (byBeach[r.beachId] = byBeach[r.beachId] || []).push(r)
   const covRows = beaches.filter(b => (byBeach[b.id] || []).length).map(b => {
-    const st = (b.lv && b.lv.status) || 'clean'
+    const decision = getPublishableBeachDecision(data, b.lv, now)
+    const st = decision.available ? decision.status : null
+    const label = decision.available ? W[st] : unavailable
     const rs = byBeach[b.id]
     const names = rs.slice(0, 3).map(r => esc(r.name)).join(', ')
     const more = rs.length > 3 ? ` +${rs.length - 3}` : ''
-    return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(b.name)}</b> · ${W[st] || st}<br><small>${names}${more}</small></span></li>`
+    return `<li><span class="d" style="background:${C[st] || '#999'}"></span><span class="n"><b>${esc(b.name)}</b> · ${esc(label)}<br><small>${names}${more}</small></span></li>`
   }).join('')
   const secs = [
     [_('Start private: a morning brief and staff alerts — no widget, no developer',
@@ -452,8 +487,8 @@ function buildHotelLanding(region, resorts, beaches, data, lang, today, domain, 
   const lede = _(`A family booking ${region.name} this weekend is already searching "sargassum" — and the answer they find is a stranger’s worst-day photo of a beach that may not even be yours. You can’t stop guests from checking. You can be the one who actually knows. We use the latest available satellite observation for the beach in front of your property and send a morning brief when data are available — privately, before a guest ever walks down to the water.`,
                  `Una familia que reserva ${region.name} este fin de semana ya está buscando "sargazo" — y lo que encuentra es la foto del peor día de un desconocido, de una playa que quizá ni es la tuya. No puedes impedir que miren. Sí puedes ser quien de verdad sabe. Consultamos la última observación satelital disponible para la playa frente a tu propiedad y enviamos un boletín matinal cuando hay datos — en privado, antes de que un huésped baje al agua.`)
   const covTitle = _(`The ${region.name} beaches we already watch`, `Las playas de ${region.name} que ya vigilamos`)
-  const covSub = _(`Published status for each monitored stretch, including coverage near these properties. Observation time and confidence may vary.`,
-                   `Estado publicado para cada tramo vigilado, incluida la cobertura cercana a estas propiedades. La hora de observación y la confianza pueden variar.`)
+  const covSub = _(`A current beach decision is shown only when the satellite observation is within the freshness window; otherwise it is paused. Coverage near these properties is listed below.`,
+                   `La decisión actual de una playa solo se muestra cuando la observación satelital está dentro de la ventana de vigencia; de lo contrario queda suspendida. La cobertura cercana a estas propiedades se muestra a continuación.`)
   const priceTitle = _('Start free in two minutes — no card, no call', 'Empieza gratis en dos minutos — sin tarjeta, sin llamada')
   const priceBody = _(`Pricing is stated up front: $89/month or $790/year. Start a 30-day free trial — no credit card, no sales call. You set it up yourself, and you decide what stays private and what, if anything, goes public. If it doesn’t earn its place next to your room rates, you walk having spent nothing.`,
                       `El precio va por delante: 89 US$/mes o 790 US$/año. Empieza una prueba de 30 días — sin tarjeta, sin llamada de venta. Lo configuras tú, y decides qué queda privado y qué, si acaso, se hace público. Si no se gana su sitio junto a tus tarifas, te vas sin haber gastado nada.`)
@@ -475,7 +510,7 @@ ${ld}
 <p>${esc(lede)}</p>
 <a class="cta" href="${pro('hero')}">${_('Start free — watch your beach', 'Empieza gratis — vigila tu playa')} →</a>
 ${secs}
-<div class="cov"><h2>${esc(covTitle)}</h2><p>${esc(covSub)}</p><ul>${covRows || `<li><span class="n"><small>${_('Coverage details may vary; check the observation time in the brief.', 'La cobertura puede variar; consulta la hora de observación en el boletín.')}</small></span></li>`}</ul></div>
+<div class="cov"><h2>${esc(covTitle)}</h2><p>${esc(covSub)} · ${esc(observationLabel)}</p><ul>${covRows || `<li><span class="n"><small>${_('Coverage details may vary; check the observation time in the brief.', 'La cobertura puede variar; consulta la hora de observación en el boletín.')}</small></span></li>`}</ul></div>
 <a class="cta" href="${pro('coverage')}">${_("Check your beach's latest reading — start free", 'Consulta la última lectura de tu playa — empieza gratis')} →</a>
 <div class="price"><h2>${esc(priceTitle)}</h2><p>${esc(priceBody)}</p><p><b>${_('$89/mo · $790/yr', '89 US$/mes · 790 US$/año')}</b> — ${_('30-day free trial, no card, no call.', 'prueba de 30 días, sin tarjeta, sin llamada.')}</p></div>
 <a class="cta" href="${pro('pricing')}">${_('Start your 30-day trial', 'Empieza tu prueba de 30 días')} →</a>
@@ -1089,25 +1124,61 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     const pathname = `${prefix}/${t.resortsDir}/${r.slug}/`
     // Noms d'hôtels longs : templates de repli de plus en plus courts plutôt
     // qu'une coupe en plein mot (SERP "…Live Beach St" sur 35 pages).
-    let title = (content.resortPageTpl?.titlePattern || (lang === 'es' ? 'Sargazo en {resort} — última observación y pronóstico' : 'Sargassum at {resort} — Latest Satellite Status & Forecast')).replace('{resort}', r.name)
-    if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} — pronóstico` : `Sargassum at ${r.name} — Forecast`
-    if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} — última observación` : `${r.name} Sargassum — Latest Status`
-    if (title.length > 70) title = smartTrim(title, 70)
-    const intro = (content.resortPageTpl?.introPattern || '').replace(/\{resort\}/g, r.name).replace(/\{beach\}/g, b.name)
+    const beachDecision = getPublishableBeachDecision(data, b.lv, now)
+    const observationLabel = formatSatelliteObservationLabel(data, lang, now)
+    let title
+    let intro
+    let desc
+    if (beachDecision.available) {
+      title = (content.resortPageTpl?.titlePattern || (lang === 'es' ? 'Sargazo en {resort} — última observación y pronóstico' : 'Sargassum at {resort} — Latest Satellite Status & Forecast')).replace('{resort}', r.name)
+      if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} — pronóstico` : `Sargassum at ${r.name} — Forecast`
+      if (title.length > 70) title = lang === 'es' ? `Sargazo en ${r.name} — última observación` : `${r.name} Sargassum — Latest Status`
+      if (title.length > 70) title = smartTrim(title, 70)
+      intro = (content.resortPageTpl?.introPattern || '').replace(/\{resort\}/g, r.name).replace(/\{beach\}/g, b.name)
+    } else {
+      const delayed = beachDecision.freshness.state === 'delayed'
+      const unavailableTitle = lang === 'es'
+        ? (delayed ? 'observación satelital retrasada' : 'estado no disponible')
+        : (delayed ? 'satellite observation delayed' : 'status unavailable')
+      title = smartTrim(lang === 'es'
+        ? `Sargazo en ${r.name} — ${unavailableTitle}`
+        : `Sargassum at ${r.name} — ${unavailableTitle}`, 68)
+      intro = beachDecision.freshness.state === 'fresh'
+        ? (lang === 'es'
+            ? 'No hay un estado de playa válido disponible para esta propiedad. La ficha permanece suspendida hasta que se pueda publicar una decisión verificable.'
+            : 'No valid beach status is available for this property. This page remains paused until a verifiable decision can be published.')
+        : (lang === 'es'
+            ? 'Esta ficha está suspendida hasta que haya una observación satelital reciente y verificable. La hora de la última observación disponible se muestra a continuación.'
+            : 'This resort beach page is paused until a fresh, verifiable satellite observation is available. The last observation time is shown below.')
+    }
     // Même garde anti double-parenthésage que le noscript : certains noms de
     // plages contiennent déjà des parenthèses ("Juanillo Beach (Cap Cana)").
     const beachNameDesc = b.name.includes('(') ? `— ${b.name} —` : `(${b.name})`
-    const desc = trimDesc(lang === 'es'
-      ? `¿Hay sargazo en ${r.name} hoy? La playa del hotel ${beachNameDesc} figura como "${sw(b.lv.status)}" según la última observación satelital disponible. Score ${b.lv.score ?? ''}/100, pronóstico 7 días y alertas cuando hay datos.`
-      : `Is there sargassum at ${r.name} today? The resort beach ${beachNameDesc} is listed as "${sw(b.lv.status)}" in the latest available satellite observation. Score ${b.lv.score ?? ''}/100, 7-day forecast and alerts where data are available.`)
+    const unavailableReason = beachDecision.freshness.state === 'fresh'
+      ? (lang === 'es' ? 'no hay un estado de playa válido disponible' : 'no valid beach status is available')
+      : (lang === 'es' ? 'la observación satelital está retrasada o no se puede verificar' : 'the satellite observation is delayed or cannot be verified')
+    desc = trimDesc(beachDecision.available
+      ? (lang === 'es'
+          ? `¿Hay sargazo en ${r.name} hoy? La playa del hotel ${beachNameDesc} figura como "${sw(beachDecision.status)}" según la última observación satelital disponible. Score ${beachDecision.score ?? ''}/100, pronóstico 7 días y alertas cuando hay datos.`
+          : `Is there sargassum at ${r.name} today? The resort beach ${beachNameDesc} is listed as "${sw(beachDecision.status)}" in the latest available satellite observation. Score ${beachDecision.score ?? ''}/100, 7-day forecast and alerts where data are available.`)
+      : (lang === 'es'
+          ? `No se publica una decisión actual para la playa de ${r.name}: ${unavailableReason}. ${observationLabel}.`
+          : `No current beach decision is published for ${r.name}: ${unavailableReason}. ${observationLabel}.`))
     // Garde anti double-parenthésage : si la zone contient déjà '(', ne pas
     // re-wrapper ("Cap Cana (Juanillo)" → "— Cap Cana (Juanillo)").
     const areaTxt = r.area || b.commune || ''
     const areaHtml = areaTxt ? (areaTxt.includes('(') ? ` — ${esc(areaTxt)}` : ` (${esc(areaTxt)})`) : ''
+    const statusHtml = beachDecision.available
+      ? `<p><strong>${esc(t.status)}: ${esc(sw(beachDecision.status))}</strong>${beachDecision.score != null ? ` · ${esc(t.score)} ${beachDecision.score}/100` : ''}${areaHtml}</p>`
+      : `<p class="sg-status-unavailable"><strong>${esc(t.status)}: ${esc(unavailableBeachDecisionLabel(data, lang, now))}</strong></p><p class="sg-observation">${esc(observationLabel)}</p>`
+    const forecastHtml = beachDecision.available
+      ? `<h2>${esc(t.forecast7)}</h2><p>${esc(forecastLine(data.weekly, b.id, lang))}</p>`
+      : ''
     const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>
 <p>${esc(intro)}</p>
-<p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong>: ${sw(b.lv.status)} · ${t.score} ${b.lv.score ?? '—'}/100${areaHtml}</p>
-<h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
+<p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong></p>
+${statusHtml}
+${forecastHtml}
 ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     // Doorway risk : plusieurs resorts d'une même plage partagent le MÊME pixel
     // satellite → corps quasi byte-identique (nom seul échangé). On passe ces
@@ -1122,14 +1193,14 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
       jsonLd: [breadcrumb(domain, [{ name: t.home, path: `${prefix}/` }, { name: b.name, path: `${prefix}/${t.beachesDir}/${b.slug}/` }, { name: r.name, path: pathname }])],
     }))
     // B2B brief standalone (lead-magnet envoyable, noindex, HORS sitemap)
-    try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches)) } catch (e) { /* brief best-effort */ }
+    try { writePage(distDir, `${pathname}brief/`, buildResortBrief(region, r, b, data, lang, today, domain, beaches, now)) } catch (e) { /* brief best-effort */ }
   }
   // Annuaire B2B + hub SEO : 1 page /resorts/ listant tous les hôtels (statut + brief).
   if (resorts.length) {
-    try { writePage(distDir, `${prefix}/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix)); pushUrl(`${prefix}/${t.resortsDir}/`, { priority: '0.5' }) } catch (e) { /* directory best-effort */ }
+    try { writePage(distDir, `${prefix}/${t.resortsDir}/`, buildResortDirectory(region, resorts, beaches, data, lang, t, today, domain, prefix, now)); pushUrl(`${prefix}/${t.resortsDir}/`, { priority: '0.5' }) } catch (e) { /* directory best-effort */ }
     // Landing B2B hôtels (INDEXABLE, intention d'achat pro) : la 1re surface SEO
     // qui vise « sargassum for hotels <region> » → funnel /?pro=1 (sg_b2b_visit).
-    try { writePage(distDir, `${prefix}/${hotelsSlug}/`, buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix)); pushUrl(`${prefix}/${hotelsSlug}/`, { priority: '0.7' }) } catch (e) { /* landing best-effort */ }
+    try { writePage(distDir, `${prefix}/${hotelsSlug}/`, buildHotelLanding(region, resorts, beaches, data, lang, today, domain, prefix, now)); pushUrl(`${prefix}/${hotelsSlug}/`, { priority: '0.7' }) } catch (e) { /* landing best-effort */ }
   }
 
   // ── 4. Home : langue PRIMAIRE = patch dist/index.html en place (inchangé) ;
