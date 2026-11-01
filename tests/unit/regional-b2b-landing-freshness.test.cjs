@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, '../..')
 const pages = [
   {
     path: 'public/pro/en/sargassum-forecast-miami-hotels/index.html',
+    endpoint: '/api/copernicus/florida/sargassum.json',
     locale: 'en',
     canonical: 'https://sargasses-martinique.com/pro/en/sargassum-forecast-miami-hotels/',
     alternates: ['hreflang="en"', 'hreflang="x-default"'],
@@ -16,6 +17,7 @@ const pages = [
   },
   {
     path: 'public/pro/en/sargassum-forecast-cancun-hotels/index.html',
+    endpoint: '/api/copernicus/rivieramaya/sargassum.json',
     locale: 'en',
     canonical: 'https://sargasses-martinique.com/pro/en/sargassum-forecast-cancun-hotels/',
     alternates: ['hreflang="en"', 'hreflang="es"', 'hreflang="x-default"'],
@@ -24,6 +26,7 @@ const pages = [
   },
   {
     path: 'public/pro/en/sargassum-forecast-punta-cana-hotels/index.html',
+    endpoint: '/api/copernicus/puntacana/sargassum.json',
     locale: 'en',
     canonical: 'https://sargasses-martinique.com/pro/en/sargassum-forecast-punta-cana-hotels/',
     alternates: ['hreflang="en"', 'hreflang="es"', 'hreflang="x-default"'],
@@ -32,6 +35,7 @@ const pages = [
   },
   {
     path: 'public/pro/es/pronostico-sargazo-cancun-hoteles/index.html',
+    endpoint: '/api/copernicus/rivieramaya/sargassum.json',
     locale: 'es',
     canonical: 'https://sargasses-martinique.com/pro/es/pronostico-sargazo-cancun-hoteles/',
     alternates: ['hreflang="en"', 'hreflang="es"', 'hreflang="x-default"'],
@@ -40,6 +44,7 @@ const pages = [
   },
   {
     path: 'public/pro/es/pronostico-sargazo-punta-cana-hoteles/index.html',
+    endpoint: '/api/copernicus/puntacana/sargassum.json',
     locale: 'es',
     canonical: 'https://sargasses-martinique.com/pro/es/pronostico-sargazo-punta-cana-hoteles/',
     alternates: ['hreflang="en"', 'hreflang="es"', 'hreflang="x-default"'],
@@ -55,6 +60,8 @@ for (const page of pages) {
   assert.ok(html.includes('class="freshpill is-unknown" id="freshpill"'), page.path + ': pill must start unknown')
   assert.ok(html.includes('.freshpill.is-stale .pulse') && html.includes('.freshpill.is-unknown .pulse'), page.path + ': stale/unknown visual states missing')
   assert.ok(html.includes("getObservationFreshness(d)"), page.path + ': API response not checked through shared helper')
+  assert.ok(html.includes("fetch('" + page.endpoint + "')"), page.path + ': wrong regional observation endpoint')
+  assert.ok(!html.includes("fetch('/api/copernicus/sargassum.json')"), page.path + ': must not use the Martinique root payload for another market')
   assert.ok(!html.includes('relTime(d.updatedAt)'), page.path + ': updatedAt must not drive freshness')
   assert.ok(!/refreshed 4× a day|actualizados 4× al día|actualizados varias veces al día/i.test(html), page.path + ': unsupported fixed cadence remains')
   assert.ok(!/live-conditions badge|condiciones en vivo|real state of every monitored beach, right now|real state of your beachfront|estado real de su frente de mar|en vivo ahora/i.test(html), page.path + ': unsupported current-status copy remains')
