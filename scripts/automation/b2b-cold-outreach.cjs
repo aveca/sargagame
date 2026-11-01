@@ -122,13 +122,13 @@ function buildC0(c, key) {
   // Les agrégats MQ+GP et les preuves d'une autre région ne sont pas transposés au prospect.
   const proofFr = pf
     ? `Registre de validation public pour ${pf.region.toUpperCase()}, sur la période ${pf.from} → ${pf.to} : <strong>${pf.pct} %</strong> des prévisions « mer propre » vérifiées en saison calme (${Number(pf.n).toLocaleString('fr-FR')} comparaisons). Ce résultat porte uniquement sur cet échantillon ; ce n'est pas une garantie plage par plage.`
-    : `Aucun taux de fiabilité n'est avancé dans ce message : le registre disponible n'est pas à la fois frais, complet et strictement régional. La page publique n'affiche des chiffres que lorsque ces conditions sont réunies.`
+    : `Aucun taux de fiabilité n'est avancé dans ce message : le registre disponible n'est pas à la fois frais, complet et strictement régional. Nous pourrons partager un relevé daté lorsque ces preuves seront disponibles.`
   const proofEn = pf
     ? `Public validation record for ${pf.region.toUpperCase()}, covering ${pf.from} → ${pf.to}: <strong>${pf.pct}%</strong> of calm-season "clean-sea" forecasts verified (${Number(pf.n).toLocaleString('en-US')} comparisons). This result applies only to that sample; it is not a beach-by-beach guarantee.`
-    : `No reliability rate is quoted in this message: the available record is not both fresh, complete and strictly regional. The public page displays figures only when those conditions are met.`
+    : `No reliability rate is quoted in this message: the available record is not both fresh, complete and strictly regional. We can share a dated readout when that evidence is available.`
   const proofEs = pf
     ? `Registro público de validación para ${pf.region.toUpperCase()}, del ${pf.from} al ${pf.to}: <strong>${pf.pct} %</strong> de los pronósticos de "mar limpio" verificados en temporada calmada (${Number(pf.n).toLocaleString('es-ES')} comparaciones). El resultado se limita a esa muestra; no garantiza cada playa.`
-    : `Este mensaje no cita una tasa de fiabilidad: el registro disponible no es a la vez reciente, completo y estrictamente regional. La página pública solo muestra cifras cuando se cumplen esas condiciones.`
+    : `Este mensaje no cita una tasa de fiabilidad: el registro disponible no es a la vez reciente, completo y estrictamente regional. Podemos compartir un informe fechado cuando esas pruebas estén disponibles.`
 
   const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
     : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
