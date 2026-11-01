@@ -47,11 +47,11 @@ function evaluateConditionsFreshness(satellitePayload, weatherUpdatedAt, now = D
 function suspendConditionTitle(value) {
   const title = String(value ?? '').trim();
   const base = title
-    .replace(/\\s+aujourd’hui\\b/gi, '')
-    .replace(/\\s+aujourd'hui\\b/gi, '')
-    .replace(/\\s+/g, ' ')
-    .replace(/\\s+—\\s+/g, ' — ')
-    .replace(/[—–-]\\s*$/, '')
+    .replace(/\s+aujourd’hui\b/gi, '')
+    .replace(/\s+aujourd'hui\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .replace(/\s+—\s+/g, ' — ')
+    .replace(/[—–-]\s*$/, '')
     .trim();
   if (!base) return 'Sélection suspendue';
   return /sélection suspendue/i.test(base) ? base : base + ' — sélection suspendue';
