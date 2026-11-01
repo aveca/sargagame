@@ -7,6 +7,7 @@ import { conditionPages } from './src/lib/conditions-filters.js'
 // Chargé en lazy via createRequire : un import statique fait bundler le module
 // CJS dans la config ESM ("Dynamic require of fs is not supported").
 const _require = createRequire(import.meta.url)
+const { evaluateConditionsFreshness } = _require('./scripts/lib/conditions-freshness.cjs')
 
 // Borne une meta description à la limite d'affichage SERP (~155 ch) SANS couper un mot :
 // garde le maximum de PHRASES complètes qui rentrent ; sinon coupe au dernier mot + « … ».
@@ -2338,11 +2339,16 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // (Open-Meteo) + beach status so content is unique per build, per island.
           {
             const statusByIdCond = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
-            const weatherAgeMs = _weatherFreshness ? (Date.now() - new Date(_weatherFreshness).getTime()) : Infinity
-            const isWeatherStale = weatherAgeMs > 12 * 60 * 60 * 1000
-            const weatherFreshnessLabel = isWeatherStale || !_weatherFreshness
-              ? 'Vérification des conditions météo en cours'
-              : `Données rafraîchies il y a ${Math.round(weatherAgeMs / 3600000)}h`
+            let conditionsSatellitePayload = null
+            try {
+              conditionsSatellitePayload = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+            } catch {}
+            const conditionsFreshness = evaluateConditionsFreshness(conditionsSatellitePayload, _weatherFreshness)
+            const isConditionsFresh = conditionsFreshness.selectionFresh
+            const suspendedSelectionCopy = 'Sélection suspendue : l’observation satellite et la météo marine ne satisfont pas toutes deux les seuils de fraîcheur.'
+            const hubFreshnessCopy = isConditionsFresh
+              ? 'Sélections calculées au build à partir des dernières données disponibles.'
+              : suspendedSelectionCopy
 
             // Same GP-first/MQ-last ordering as /plages/ — see comment there.
             for (const islandCode of ['gp', 'mq']) {
@@ -2356,7 +2362,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   ...b,
                   status: statusByIdCond[b.id] || b.status,
                 }))
-                const matching = isWeatherStale ? [] : enrichedBeaches
+                const matching = !isConditionsFresh ? [] : enrichedBeaches
                   .filter(b => page.filter(b, _weather[b.id]))
                   .map(b => ({ ...b, _w: _weather[b.id] }))
                   .sort((a, b) => (a.drive || 99) - (b.drive || 99))
@@ -2364,9 +2370,14 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 const pageTitle = isMQ ? page.titleMq : page.titleGp
                 const pageH1 = isMQ ? page.h1Mq : page.h1Gp
                 const pageUrl = `https://${domain}/conditions/${page.slug}/`
-                const pageDesc = clampDesc(`${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd\u2019hui en ${island}.` : 'Aucune plage ne correspond aujourd\u2019hui.'} ${page.intro.slice(0, 120)}`, 155)
-                const beachListHtml = matching.length > 0
-                  ? matching.map(b => {
+                const pageIntro = isConditionsFresh ? page.intro : suspendedSelectionCopy
+                const pageDesc = clampDesc(isConditionsFresh
+                  ? `${matching.length > 0 ? `${matching.length} plage${matching.length > 1 ? 's' : ''} correspond${matching.length > 1 ? 'ent' : ''} aujourd’hui en ${island}.` : 'Aucune plage ne correspond aujourd’hui.'} ${page.intro.slice(0, 120)}`
+                  : `Sélection suspendue en ${island} : observation satellite ou météo à vérifier. Dernières dates des sources affichées.`, 155)
+                const beachListHtml = !isConditionsFresh
+                  ? `<li style="padding:10px 0;color:#686868">${suspendedSelectionCopy}</li>`
+                  : matching.length > 0
+                    ? matching.map(b => {
                       const w = b._w
                       const wTxt = w && w.waveHeight != null ? `vagues ${w.waveHeight}m` : ''
                       const sTxt = w && w.sst != null ? `eau ${w.sst}\u00b0C` : ''
@@ -2376,7 +2387,8 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                       return `<li style="padding:10px 0;border-bottom:1px solid #eee"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600">${b.name}</a><br><span style="color:#686868;font-size:14px">${b.commune}${driveTxt}${details ? ' \u00b7 ' + details : ''}</span></li>`
                     }).join('')
                   : `<li style="padding:10px 0;color:#686868">${page.fallback}</li>`
-                const pageNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a> \u203a <a href="/plages/" style="color:#686868">Plages</a> \u203a Conditions</nav><h1 style="font-size:26px;margin-bottom:8px">${pageH1}</h1><p style="color:#444;margin-bottom:12px;font-size:15px">${page.intro}</p><p style="color:#686868;font-size:13px;margin-bottom:20px">${weatherFreshnessLabel}. Sources\u00a0: Copernicus Sentinel-3 (sargasses) + Open-Meteo Marine (vagues, temp\u00e9rature, UV).</p><h2 style="font-size:18px;margin:24px 0 12px">Plages correspondantes (${matching.length})</h2><ul style="list-style:none;padding:0;margin:0">${beachListHtml}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:14px"><a href="/conditions/baignade-ideale/" style="color:#E8A800;font-weight:600;margin-right:16px">Baignade id\u00e9ale</a><a href="/conditions/mer-calme/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer calme</a><a href="/conditions/mer-agitee/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer agit\u00e9e</a><a href="/conditions/uv-fort/" style="color:#E8A800;font-weight:600;margin-right:16px">UV fort</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte</a></nav></article>`
+                const pageResultsHeading = isConditionsFresh ? `Plages correspondantes (${matching.length})` : 'Sélection suspendue'
+                const pageNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><nav style="font-size:13px;color:#686868;margin-bottom:12px"><a href="/" style="color:#686868">Accueil</a> \u203a <a href="/plages/" style="color:#686868">Plages</a> \u203a Conditions</nav><h1 style="font-size:26px;margin-bottom:8px">${pageH1}</h1><p style="color:#444;margin-bottom:12px;font-size:15px">${pageIntro}</p><p style="color:#686868;font-size:13px;margin-bottom:20px">${conditionsFreshness.satelliteLabel}. ${conditionsFreshness.weatherLabel}. Sources\u00a0: Copernicus Sentinel-3 (sargasses) + Open-Meteo Marine (vagues, temp\u00e9rature, UV).</p><h2 style="font-size:18px;margin:24px 0 12px">${pageResultsHeading}</h2><ul style="list-style:none;padding:0;margin:0">${beachListHtml}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee;font-size:14px"><a href="/conditions/baignade-ideale/" style="color:#E8A800;font-weight:600;margin-right:16px">Baignade id\u00e9ale</a><a href="/conditions/mer-calme/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer calme</a><a href="/conditions/mer-agitee/" style="color:#E8A800;font-weight:600;margin-right:16px">Mer agit\u00e9e</a><a href="/conditions/uv-fort/" style="color:#E8A800;font-weight:600;margin-right:16px">UV fort</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte</a></nav></article>`
                 const pageSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":pageTitle,"description":pageDesc,"url":pageUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
                 const breadcrumbCond = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":`https://${domain}/plages/`},{"@type":"ListItem","position":3,"name":"Conditions","item":`https://${domain}/conditions/`},{"@type":"ListItem","position":4,"name":pageH1,"item":pageUrl}]})
                 const condDir = resolve(outDir, 'conditions', page.slug)
@@ -2395,7 +2407,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                   .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${pageUrl}" />`)
                   .replace(/<meta name="twitter:title"[^>]*>/, `<meta name="twitter:title" content="${pageTitle}" />`)
                   .replace(/<meta name="twitter:description"[^>]*>/, `<meta name="twitter:description" content="${pageDesc}" />`)
-                  .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: page.slug, beaches: matching.map(b => ({ id: b.id, name: b.name, commune: b.commune, slug: b.slug, lat: b.lat, lng: b.lng, drive: b.drive, kids: b.kids, snorkel: b.snorkel, status: b.status })) })}</script>\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
+                  .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: page.slug, freshness: { selectionFresh: isConditionsFresh, satelliteLabel: conditionsFreshness.satelliteLabel, weatherLabel: conditionsFreshness.weatherLabel }, beaches: matching.map(b => ({ id: b.id, name: b.name, commune: b.commune, slug: b.slug, lat: b.lat, lng: b.lng, drive: b.drive, kids: b.kids, snorkel: b.snorkel, status: b.status })) })}</script>\n    <script type="application/ld+json">\n    ${pageSchema}\n    </script>\n    <script type="application/ld+json">\n    ${breadcrumbCond}\n    </script>\n</head>`)
                   .replace('</body>', `\n    <noscript>${pageNoscript}</noscript>\n</body>`)
                 writeFileSync(resolve(condDir, 'index.html'), condHtml)
                 if (!isMQ) {
@@ -2409,10 +2421,10 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               }
               // /conditions/ landing (hub) — lists all sub-pages
               const hubTitle = `Conditions des plages aujourd\u2019hui \u2014 ${island}`
-              const hubDesc = `Plages de ${island} class\u00e9es par conditions du jour\u00a0: baignade id\u00e9ale, mer calme, mer agit\u00e9e, UV fort, plages enfants, snorkeling. Donn\u00e9es satellite + Open-Meteo rafra\u00eechies quotidiennement.`
+              const hubDesc = `Plages de ${island} classées selon les critères météo et les dernières observations satellite. Les dates des deux sources sont affichées séparément; les sélections sont suspendues si une source dépasse son seuil de fraîcheur.`
               const hubUrl = `https://${domain}/conditions/`
-              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isMQ ? p.h1Mq : p.h1Gp}</a><br><span style="color:#686868;font-size:14px">${p.intro.slice(0, 140)}\u2026</span></li>`).join('')
-              const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">S\u00e9lections de plages mises \u00e0 jour chaque jour selon la météo et les sargasses. Choisissez le crit\u00e8re qui compte pour vous aujourd\u2019hui.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
+              const hubLinks = conditionPages.map(p => `<li style="padding:12px 0;border-bottom:1px solid #eee"><a href="/conditions/${p.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:600;font-size:16px">${isMQ ? p.h1Mq : p.h1Gp}</a><br><span style="color:#686868;font-size:14px">${isConditionsFresh ? p.intro.slice(0, 140) : suspendedSelectionCopy}\u2026</span></li>`).join('')
+              const hubNoscript = `<article style="max-width:720px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">${hubTitle}</h1><p style="color:#686868;margin-bottom:20px;font-size:15px">${hubFreshnessCopy} ${conditionsFreshness.satelliteLabel}. ${conditionsFreshness.weatherLabel}. Vérifiez les dates des sources avant de décider.</p><ul style="list-style:none;padding:0;margin:0">${hubLinks}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:16px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte sargasses</a></nav></article>`
               const hubSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":hubTitle,"description":hubDesc,"url":hubUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
               const hubDir = resolve(outDir, 'conditions')
               mkdirSync(hubDir, { recursive: true })
@@ -2428,7 +2440,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 .replace(/<meta property="og:title"[^>]*>/, `<meta property="og:title" content="${hubTitle}" />`)
                 .replace(/<meta property="og:description"[^>]*>/, `<meta property="og:description" content="${hubDesc}" />`)
                 .replace(/<meta property="og:url"[^>]*>/, `<meta property="og:url" content="${hubUrl}" />`)
-                .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: 'hub', pages: conditionPages.map(p => p.slug) })}</script>\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
+                .replace('</head>', `\n    <script id="sg-conditions-data" type="application/json">${JSON.stringify({ slug: 'hub', freshness: { selectionFresh: isConditionsFresh, satelliteLabel: conditionsFreshness.satelliteLabel, weatherLabel: conditionsFreshness.weatherLabel }, pages: conditionPages.map(p => p.slug) })}</script>\n    <script type="application/ld+json">\n    ${hubSchema}\n    </script>\n</head>`)
                 .replace('</body>', `\n    <noscript>${hubNoscript}</noscript>\n</body>`)
               writeFileSync(resolve(hubDir, 'index.html'), hubHtml)
               if (!isMQ) {
