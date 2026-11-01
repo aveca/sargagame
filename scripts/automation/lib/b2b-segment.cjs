@@ -7,7 +7,7 @@
  *       hôtel        : { beach, avoidDays }  (jours « à éviter/modéré » la semaine passée)
  *       collectivité : { nbeaches, navoid }  (sur ses N plages, combien ont eu ≥1 jour à éviter)
  *     → null si la commune ne matche aucune plage suivie (l'appelant retombe sur le copy générique).
- *   - liveProof()  → { pct, n, from, to } depuis track-record.json (méthode auditée, jamais figée).
+ *   - liveProof(region) → preuve de fiabilité uniquement si le registre est frais et mono-région.
  *
  * RÉGION-AWARE : MQ/GP via public/data/beaches-list.json + public/api/copernicus/history.json ;
  * régions USD (florida/puntacana/rivieramaya) via regions/<id>.json + public/api/copernicus/<id>/history.json.
@@ -94,8 +94,11 @@ function resolveLiveProof(tr, regionId) {
   if (regions.length !== 1 || regions[0] !== region) return null
 
   const calm = tr.byRegime && tr.byRegime.calm
-  const pct = Number(calm && calm.cleanReliabilityPct)
-  const n = Number(calm && calm.cleanSamples)
+  const rawPct = calm && calm.cleanReliabilityPct
+  const rawN = calm && calm.cleanSamples
+  if (rawPct == null || rawN == null) return null
+  const pct = Number(rawPct)
+  const n = Number(rawN)
   const w = tr.window || tr.lifetime || {}
   const from = typeof w.from === 'string' ? w.from : ''
   const to = typeof w.to === 'string' ? w.to : ''
