@@ -23,7 +23,7 @@
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
-      "a": "A seven-day outlook is shown only when a recent observation and validated wind/current inputs are available. The first few days are the near-term outlook; days 4–7 indicate a broader trend, not certainty. If valid inputs are missing, the forecast is not published as a current decision."
+      "a": "A seven-day outlook is shown only when a recent observation and validated wind/current inputs are available. The first few days are the near-term outlook; days 4–7 indicate a broader trend, not certainty. If valid inputs are missing, the forecast is not published as a current decision, and no fixed refresh cadence is promised."
     },
     {
       "q": "Do the hotels clean sargassum off their beaches?",
