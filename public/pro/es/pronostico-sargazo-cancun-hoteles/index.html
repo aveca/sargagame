@@ -458,7 +458,7 @@
   });
 
   // --- Regional demo: only publish a verdict from a fresh LIVE observation ---
-  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
+  fetch('/api/copernicus/rivieramaya/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
     try{
       var freshness = getObservationFreshness(d);
       setFreshnessPill(freshness.status, freshness.label);
