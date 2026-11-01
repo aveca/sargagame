@@ -113,11 +113,14 @@ async function listPaymentsSince(startIso, key, maxPages = 100) {
 
     if (crossedCutoff) break
 
-    const next = page._links?.next
-    if (next && typeof next.href !== 'string') {
+    if (!page._links || !Object.prototype.hasOwnProperty.call(page._links, 'next')) {
+      throw new Error('Mollie payments response is missing _links.next')
+    }
+    const next = page._links.next
+    if (next !== null && (!next || typeof next.href !== 'string' || !next.href)) {
       throw new Error('Mollie payments response has an invalid next pagination link')
     }
-    url = next?.href || null
+    url = next === null ? null : next.href
   }
 
   return out
