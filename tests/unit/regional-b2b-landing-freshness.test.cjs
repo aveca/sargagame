@@ -57,6 +57,8 @@ for (const page of pages) {
   assert.ok(html.includes("getObservationFreshness(d)"), page.path + ': API response not checked through shared helper')
   assert.ok(!html.includes('relTime(d.updatedAt)'), page.path + ': updatedAt must not drive freshness')
   assert.ok(!/refreshed 4× a day|actualizados 4× al día|actualizados varias veces al día/i.test(html), page.path + ': unsupported fixed cadence remains')
+  assert.ok(!/live-conditions badge|condiciones en vivo|real state of every monitored beach, right now|real state of your beachfront|estado real de su frente de mar|en vivo ahora/i.test(html), page.path + ': unsupported current-status copy remains')
+  assert.ok(/latest published satellite observation|última observación satelital publicada/i.test(html), page.path + ': transparent observation wording missing')
   assert.ok(html.includes('href="' + page.canonical + '"'), page.path + ': canonical changed or missing')
   for (const alternate of page.alternates) assert.ok(html.includes(alternate), page.path + ': missing ' + alternate)
   assert.ok(html.includes(page.destination), page.path + ': regional map destination changed')
