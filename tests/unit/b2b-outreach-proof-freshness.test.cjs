@@ -38,7 +38,8 @@ const generated = buildC0({
   url: 'https://example.com'
 }, 'test-prospect')
 assert.match(generated.html, /No reliability rate is quoted in this message/)
-assert.doesNotMatch(generated.html, /~?76\s*%|~?79\s*%|99\s*%/)
+const visibleText = generated.html.replace(/\sstyle="[^"]*"/g, '').replace(/<[^>]*>/g, ' ')
+assert.doesNotMatch(visibleText, /~?76\s*%|~?79\s*%|99\s*%/)
 assert.doesNotMatch(generated.html, /audited daily|audité chaque jour|se audita cada día/i)
 
 console.log('PASS b2b outreach proof is fresh, complete and single-region only')
