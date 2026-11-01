@@ -14,8 +14,7 @@ const beaches = [
   { id: 'gp-beach', name: 'Malendure', commune: 'Bouillante', island: 'gp' },
 ];
 const beachToSarg = { 'mq-beach': 'mq001', 'gp-beach': 'gp001' };
-const slugify = value => String(value).toLowerCase().normalize('NFD')
-  .replace(/[\\u0300-\\u036f]/g, '')
+const slugify = value => String(value).toLowerCase()
   .replace(/[^a-z0-9]+/g, '-')
   .replace(/^-|-$/g, '');
 
