@@ -52,11 +52,44 @@ const verifierSource = fs.readFileSync(
   path.join(__dirname, '../../scripts/autopilot/post-deploy-verify.cjs'),
   'utf8',
 );
-assert.ok(verifierSource.includes('/api/b2b-partners.json'),
-  'post-deploy verification must request the public B2B partner endpoint');
+assert.ok(verifierSource.includes('/b2b-partners.json?pdv='),
+  'post-deploy verification must request the root static B2B partner asset');
+assert.ok(!verifierSource.includes('/api/b2b-partners.json'),
+  'post-deploy verification must avoid the intercepted /api route');
 assert.ok(verifierSource.includes("set('b2b_partners_api'"),
   'the endpoint result must participate in the per-domain verification stage');
 assert.ok(verifierSource.includes('checkB2BPartnersPayload(b2bPayload)'),
   'the live response must be validated, not only fetched');
 
-console.log('B2B_PARTNERS_POSTDEPLOY_TESTS PASS (12 assertions)');
+const appSource = fs.readFileSync(
+  path.join(__dirname, '../../src/ChasseHome.jsx'),
+  'utf8',
+);
+assert.ok(appSource.includes('fetch("/b2b-partners.json"'),
+  'ChasseHome must consume the root static partner asset');
+assert.ok(!appSource.includes('fetch("/api/b2b-partners.json"'),
+  'ChasseHome must not use the intercepted /api route');
+
+const generatorSource = fs.readFileSync(
+  path.join(__dirname, '../../scripts/automation/gen-b2b-partners.cjs'),
+  'utf8',
+);
+assert.ok(generatorSource.includes('path.join(ROOT, "public/b2b-partners.json")'),
+  'the generator must create the canonical root asset');
+assert.ok(generatorSource.includes('path.join(ROOT, "public/api/b2b-partners.json")'),
+  'the generator must retain the legacy compatibility mirror');
+
+const rootPayload = JSON.parse(fs.readFileSync(
+  path.join(__dirname, '../../public/b2b-partners.json'),
+  'utf8',
+));
+const legacyPayload = JSON.parse(fs.readFileSync(
+  path.join(__dirname, '../../public/api/b2b-partners.json'),
+  'utf8',
+));
+assert.ok(Array.isArray(rootPayload.partners) && Array.isArray(rootPayload.preview),
+  'root static asset must expose both partner arrays');
+assert.deepEqual(rootPayload, legacyPayload,
+  'root and legacy assets must be identical; no partner data is lost');
+
+console.log('B2B_PARTNERS_POSTDEPLOY_TESTS PASS');
