@@ -17,22 +17,22 @@ const files = [
 ]
 
 const unsupportedCadence = [
-  /\\b(?:four|4)\\s*(?:×|x)\\s*(?:a day|per day|daily)\\b/i,
-  /\\b(?:four|4)\\s+times\\s+(?:a|per)\\s+day\\b/i,
-  /\\b(?:four|4)\\s+times\\s+daily\\b/i,
-  /\\b(?:updated|refreshed|recalculated|rechecked|checked|verified)\\s+(?:daily|every day)\\b/i,
-  /\\b(?:cuatro|4)\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\bactualizad[oa]s?\\s+(?:4|cuatro)\\s+veces\\s+al\\s+d[ií]a\\b/i,
-  /\\bactualizad[oa]s?\\s+a\\s+diario\\b/i,
-  /\\bactualizad[oa]s?\\s+diariamente\\b/i,
+  /\b(?:four|4)\s*(?:×|x)\s*(?:a day|per day|daily)\b/i,
+  /\b(?:four|4)\s+times\s+(?:a|per)\s+day\b/i,
+  /\b(?:four|4)\s+times\s+daily\b/i,
+  /\b(?:updated|refreshed|recalculated|rechecked|checked|verified)\s+(?:daily|every day)\b/i,
+  /\b(?:cuatro|4)\s+veces\s+al\s+d[ií]a\b/i,
+  /\bactualizad[oa]s?\s+(?:4|cuatro)\s+veces\s+al\s+d[ií]a\b/i,
+  /\bactualizad[oa]s?\s+a\s+diario\b/i,
+  /\bactualizad[oa]s?\s+diariamente\b/i,
 ]
 
 const unsupportedCurrent = [
-  /\\blive map\\b/i,
-  /\\bmapa en vivo\\b/i,
-  /\\bright now\\b/i,
-  /\\bahora mismo\\b/i,
-  /\\bhoy mismo\\b/i,
+  /\blive map\b/i,
+  /\bmapa en vivo\b/i,
+  /\bright now\b/i,
+  /\bahora mismo\b/i,
+  /\bhoy mismo\b/i,
 ]
 
 for (const [relativePath, lang] of files) {
@@ -68,7 +68,7 @@ for (const [relativePath, lang] of files) {
     assert.match(forecastAnswer, /shown only when/i, relativePath + ' gates the forecast on available validated inputs')
     assert.match(forecastAnswer, /no fixed refresh cadence/i, relativePath + ' does not promise a refresh schedule')
     assert.match(actionAnswer, /delayed/i, relativePath + ' explains delayed readings')
-    assert.match(actionAnswer, /no current clean-beach recommendation/i, relativePath + ' withholds unsupported clean recommendations')
+    assert.match(actionAnswer, /no current clean-beach recommendation|withholds a current clean-beach recommendation/i, relativePath + ' withholds unsupported clean recommendations')
   } else {
     assert.match(statusAnswer, /última observación publicada/i, relativePath + ' states that the map uses the latest published observation')
     assert.match(statusAnswer, /fecha|hora/i, relativePath + ' tells visitors to check the observation time')
@@ -83,7 +83,7 @@ for (const [relativePath, lang] of files) {
   if (content.home) {
     assert.ok(content.home.title.length <= 60, relativePath + ' home title stays within 60 characters')
     assert.ok(content.home.desc.length <= 160, relativePath + ' home description stays within 160 characters')
-    for (const pattern of unsupportedCadence.concat(unsupportedCurrent, [/\\btoday\\b/i, /\\bhoy\\b/i, /\\ben vivo\\b/i])) {
+    for (const pattern of unsupportedCadence.concat(unsupportedCurrent, [/\btoday\b/i, /\bhoy\b/i, /\ben vivo\b/i])) {
       assert.doesNotMatch(content.home.title, pattern, relativePath + ' home title must use observation-based copy')
       assert.doesNotMatch(content.home.desc, pattern, relativePath + ' home description must use observation-based copy')
     }
@@ -93,8 +93,8 @@ for (const [relativePath, lang] of files) {
 }
 
 const generator = fs.readFileSync(path.join(root, 'scripts/lib/region-seo-pages.cjs'), 'utf8')
-assert.match(generator, /content\\.faq\\.map/, 'homepage FAQ remains wired into JSON-LD')
-assert.match(generator, /FAQ \\+ liens hubs \\+ réseau dans le noscript racine/, 'homepage FAQ remains available in the static HTML')
-assert.match(generator, /content\\.home/, 'secondary-language homepage metadata remains wired to its content file')
+assert.match(generator, /content\.faq\.map/, 'homepage FAQ remains wired into JSON-LD')
+assert.match(generator, /FAQ \+ liens hubs \+ réseau dans le noscript racine/, 'homepage FAQ remains available in the static HTML')
+assert.match(generator, /content\.home/, 'secondary-language homepage metadata remains wired to its content file')
 
 console.log('REGIONAL_HOMEPAGE_OBSERVATION_COPY PASS (8 locale files)')
