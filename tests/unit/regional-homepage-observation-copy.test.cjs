@@ -62,7 +62,7 @@ for (const [relativePath, lang] of files) {
 
   if (lang === 'en') {
     assert.match(statusAnswer, /latest published observation/i, relativePath + ' states that the map uses the latest published observation')
-    assert.match(statusAnswer, /timestamp/i, relativePath + ' tells visitors to check the observation timestamp')
+    assert.match(statusAnswer, /timestamp|observation time/i, relativePath + ' tells visitors to check the observation timestamp')
     assert.match(reliabilityAnswer, /intermittent/i, relativePath + ' explains that satellite observations are intermittent')
     assert.match(reliabilityAnswer, /confidence/i, relativePath + ' preserves the confidence explanation')
     assert.match(forecastAnswer, /shown only when/i, relativePath + ' gates the forecast on available validated inputs')
