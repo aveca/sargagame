@@ -25,6 +25,8 @@ const unsupportedCadence = [
   /\bactualizad[oa]s?\s+(?:4|cuatro)\s+veces\s+al\s+d[ií]a\b/i,
   /\bactualizad[oa]s?\s+a\s+diario\b/i,
   /\bactualizad[oa]s?\s+diariamente\b/i,
+  /\bdaily satellite forecast\b/i,
+  /\bpronóstico satelital diario\b/i,
 ]
 
 const unsupportedCurrent = [
@@ -33,6 +35,9 @@ const unsupportedCurrent = [
   /\bright now\b/i,
   /\bahora mismo\b/i,
   /\bhoy mismo\b/i,
+  /\breal satellite flow\b/i,
+  /\bflujo real por satélite\b/i,
+  /\bmapa en directo\b/i,
 ]
 
 for (const [relativePath, lang] of files) {
@@ -48,10 +53,8 @@ for (const [relativePath, lang] of files) {
     for (const pattern of unsupportedCadence) {
       assert.doesNotMatch(answer, pattern, relativePath + ' FAQ ' + index + ' must not promise a fixed satellite cadence')
     }
-    if (index === 1 || index === 5) {
-      for (const pattern of unsupportedCurrent) {
-        assert.doesNotMatch(answer, pattern, relativePath + ' FAQ ' + index + ' must not imply a continuous live feed')
-      }
+    for (const pattern of unsupportedCurrent) {
+      assert.doesNotMatch(answer, pattern, relativePath + ' FAQ ' + index + ' must not imply a continuous live feed')
     }
   }
 
@@ -59,6 +62,7 @@ for (const [relativePath, lang] of files) {
   const reliabilityAnswer = content.faq[2].a
   const forecastAnswer = content.faq[3].a
   const actionAnswer = content.faq[5].a
+  const cleaningAnswer = content.faq[4].a
 
   if (lang === 'en') {
     assert.match(statusAnswer, /latest published observation/i, relativePath + ' states that the map uses the latest published observation')
@@ -69,6 +73,8 @@ for (const [relativePath, lang] of files) {
     assert.match(forecastAnswer, /no fixed refresh cadence/i, relativePath + ' does not promise a refresh schedule')
     assert.match(actionAnswer, /delayed/i, relativePath + ' explains delayed readings')
     assert.match(actionAnswer, /no current clean-beach recommendation|withholds a current clean-beach recommendation/i, relativePath + ' withholds unsupported clean recommendations')
+    assert.match(cleaningAnswer, /latest published observation/i, relativePath + ' cleaning FAQ points to the latest observation')
+    assert.match(cleaningAnswer, /satellite reading does not confirm/i, relativePath + ' does not equate a satellite reading with beach cleaning')
   } else {
     assert.match(statusAnswer, /última observación publicada/i, relativePath + ' states that the map uses the latest published observation')
     assert.match(statusAnswer, /fecha|hora/i, relativePath + ' tells visitors to check the observation time')
@@ -78,6 +84,8 @@ for (const [relativePath, lang] of files) {
     assert.match(forecastAnswer, /no se promete una cadencia fija/i, relativePath + ' does not promise a refresh schedule')
     assert.match(actionAnswer, /retrasad/i, relativePath + ' explains delayed readings')
     assert.match(actionAnswer, /suspende|no se publica/i, relativePath + ' withholds unsupported clean recommendations')
+    assert.match(cleaningAnswer, /última observación publicada/i, relativePath + ' cleaning FAQ points to the latest observation')
+    assert.match(cleaningAnswer, /lectura satelital no confirma/i, relativePath + ' does not equate a satellite reading with beach cleaning')
   }
 
   if (content.home) {
