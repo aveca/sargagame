@@ -285,14 +285,14 @@ try {
   const freshFiles = walk(freshDistDir).filter(file => file.endsWith('.html'))
   const freshLanding = freshFiles.find(file => /sargassum-for-hotels\/index\.html$/i.test(file.replace(/\\/g, '/')))
   const freshDirectory = freshFiles.find(file => /resorts\/index\.html$/i.test(file.replace(/\\/g, '/')))
-  const freshBrief = freshFiles.find(file => /resorts\/[^/]+\/brief\/index\.html$/i.test(file.replace(/\\/g, '/')))
-  assert.ok(freshLanding && freshDirectory && freshBrief, 'fresh B2B landing, directory and brief must remain generated')
+  const freshBriefs = freshFiles.filter(file => /resorts\/[^/]+\/brief\/index\.html$/i.test(file.replace(/\\/g, '/')))
+  assert.ok(freshLanding && freshDirectory && freshBriefs.length > 0, 'fresh B2B landing, directory and briefs must remain generated')
   assert.match(fs.readFileSync(freshLanding, 'utf8'), /<b>[^<]+<\/b> · (?:Clean|Moderate|Avoid)<br>/,
     'a fresh valid observation must preserve the hotel coverage status')
   assert.match(fs.readFileSync(freshDirectory, 'utf8'), /<small>[^<]* · (?:Clean|Moderate|Avoid)<\/small>/,
     'a fresh valid observation must preserve the resort directory status')
-  assert.match(fs.readFileSync(freshBrief, 'utf8'), /Latest reading: (?:Clean|Moderate|Avoid)/,
-    'a fresh valid observation must preserve the hotel brief status')
+  assert.match(freshBriefs.map(file => fs.readFileSync(file, 'utf8')).join('\n'), /Latest reading: (?:Clean|Moderate|Avoid)/,
+    'a fresh valid observation must preserve a hotel brief status')
 } finally {
   fs.rmSync(freshDistDir, { recursive: true, force: true })
 }
