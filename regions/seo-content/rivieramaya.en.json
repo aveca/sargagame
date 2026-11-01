@@ -1,8 +1,8 @@
 {
   "_note": "EN secondary-language SEO content for Riviera Maya / Cancún (sargassumcancun.com). Pages render under /en/. Primary (ES) lives at regions/seo-content/rivieramaya.json. Same facts as the ES file, written natively for English-speaking (US/Canada) visitors — not machine-translated. Slugs are EN; routes here drive the /en/ best + weekly pages.",
   "home": {
-    "title": "Cancún Sargassum Today — Live Seaweed Map & 7-Day Forecast 2026",
-    "desc": "Which Cancún or Riviera Maya beach is free of sargassum today? Live per-beach seaweed map, Beach Score 0-100 and a 7-day forecast. Updated 4× a day from satellite."
+    "title": "Cancún & Riviera Maya Sargassum — Latest Observations",
+    "desc": "Latest published satellite observations for Cancún and Riviera Maya beaches. Check each timestamp and confidence; current status is withheld when data are delayed."
   },
   "routes": {
     "best": "best-beaches-no-sargassum-cancun",
@@ -11,19 +11,19 @@
   "faq": [
     {
       "q": "When is sargassum season in Cancún and the Riviera Maya?",
-      "a": "The season runs April through September, peaking from May to July. November through March the beaches are usually clean, though stray patches can land at any time. Because each year is different — sometimes wildly so — we track every beach with Copernicus satellite imagery refreshed four times a day, so you see what is on the sand today rather than a historical average."
+      "a": "The Cancún and Riviera Maya sargassum season usually runs April through September, peaking from May to July. Beaches often see less from November through March, though isolated patches can still arrive. Conditions vary by year; check the latest available observation for each beach and its timestamp. No fixed refresh schedule is guaranteed."
     },
     {
       "q": "Which Riviera Maya beaches get the least sargassum?",
-      "a": "The ones that don't face east: Playa Norte on Isla Mujeres, Holbox at the top of the peninsula, and the west coast of Cozumel (Palancar) almost never get sargassum. Along the Cancún–Tulum corridor, beaches sheltered by a bay or reef — Akumal, Puerto Morelos — pile up far less than the open ones. Check the live map: daily satellite data shows which beaches are seaweed-free right now."
+      "a": "Beaches that do not face east — Playa Norte on Isla Mujeres, Holbox and Cozumel's west coast at Palancar — are often more sheltered. Bays and reefs also shape conditions along the Cancún–Tulum corridor. These are geographic patterns, not a current verdict: check each beach's latest published observation and timestamp; no current clean status is shown when data are delayed."
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed four times a day. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
+      "a": "We use the AFAI index on public satellite imagery to detect floating sargassum. Usable observations are intermittent and cloud cover can delay a reading. Each beach shows its observation time and confidence; a current status is published only when the reading passes freshness checks. Beach reports can add context when available, but they do not replace a new satellite observation."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
-      "a": "Yes, within reasonable limits. Sargassum drifts with the wind and currents, so once the satellite spots a mat offshore we can project its path toward each beach over the next seven days. Days 1 to 3 are the most accurate; days 4 to 7 show the trend. The forecast is recalculated every day with each new satellite pass."
+      "a": "A seven-day outlook is shown only when the latest observation and wind/current inputs are available and pass validation. The first few days are the near-term outlook; days 4–7 indicate a broader trend, not certainty. It is recalculated when validated data arrive; no fixed refresh cadence is promised."
     },
     {
       "q": "Do the hotels clean sargassum off their beaches?",
@@ -31,7 +31,7 @@
     },
     {
       "q": "What do I do if my beach is buried in sargassum?",
-      "a": "Move — the geography gives you options. If the Cancún hotel zone wakes up bad, Playa Norte on Isla Mujeres is usually clean; from Playa del Carmen, the ferry puts you half an hour from Palancar on Cozumel. Fresh sargassum isn't dangerous, but rotting piles smell of sulfur and are best avoided. With premium alerts we tell you the moment your beach changes status."
+      "a": "If Cancún's hotel zone is affected, Isla Mujeres or Cozumel may differ, but check the latest published observation for the alternative beach before travelling. Read its timestamp and confidence; if the observation is delayed, no current clean-beach recommendation is shown. Premium alerts are sent when a new validated observation changes a saved beach's status."
     }
   ],
   "pages": {
