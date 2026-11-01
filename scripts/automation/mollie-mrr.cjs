@@ -56,6 +56,74 @@ async function listAll(basePath, key, cap = 500) {
 }
 
 
+/**
+ * List payments created since an ISO cutoff.
+ *
+ * Mollie v2 payment listing supports cursor pagination (from/next), not a
+ * createdFrom date query parameter. Results are requested newest-first; once
+ * a page crosses the cutoff, older pages cannot contain in-window payments.
+ * Fail closed on malformed dates or an unexpectedly long pagination chain so
+ * the report is never silently published with partial payment totals.
+ */
+async function listPaymentsSince(startIso, key, maxPages = 100) {
+  const cutoff = Date.parse(startIso)
+  if (!Number.isFinite(cutoff)) throw new Error('Invalid Mollie payment cutoff')
+  if (!Number.isInteger(maxPages) || maxPages < 1) {
+    throw new Error('Invalid Mollie payment pagination page limit')
+  }
+
+  const out = []
+  let url = 'payments?limit=250&sort=desc'
+  let pages = 0
+
+  while (url) {
+    if (pages >= maxPages) {
+      throw new Error(`Mollie payments pagination exceeded ${maxPages} pages before reaching cutoff`)
+    }
+
+    const page = await mollieGet(url, key)
+    const items = page?._embedded?.payments
+    if (!Array.isArray(items)) {
+      throw new Error('Mollie payments response is missing _embedded.payments')
+    }
+    pages += 1
+    if (items.length === 0) break
+
+    let previousCreatedAt = Infinity
+    let crossedCutoff = false
+    for (const payment of items) {
+      const createdAt = Date.parse(payment?.createdAt)
+      if (!Number.isFinite(createdAt)) {
+        throw new Error(`Mollie payment ${payment?.id || '(unknown)'} has an invalid createdAt`)
+      }
+      if (createdAt > previousCreatedAt) {
+        throw new Error('Mollie payments are not ordered newest-first')
+      }
+      previousCreatedAt = createdAt
+
+      if (createdAt >= cutoff) {
+        if (crossedCutoff) {
+          throw new Error('Mollie payments crossed the cutoff out of order')
+        }
+        out.push(payment)
+      } else {
+        crossedCutoff = true
+      }
+    }
+
+    if (crossedCutoff) break
+
+    const next = page._links?.next
+    if (next && typeof next.href !== 'string') {
+      throw new Error('Mollie payments response has an invalid next pagination link')
+    }
+    url = next?.href || null
+  }
+
+  return out
+}
+
+
 function normalizeCurrency(amount) {
   const currency = typeof amount?.currency === 'string'
     ? amount.currency.trim().toUpperCase()
@@ -179,8 +247,8 @@ async function main() {
 
   // 2. Paiements du mois en cours
   const now = new Date()
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-  const payments = await listAll(`payments?limit=250&createdFrom=${encodeURIComponent(monthStart)}`, key)
+  const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString()
+  const payments = await listPaymentsSince(monthStart, key)
   const paid = payments.filter(p => p.status === 'paid')
 
   // 3. Calculs séparés par devise (aucune conversion FX implicite).
@@ -288,4 +356,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
 }
 
-module.exports = { resolveMollieApiUrl, mollieGet, listAll, normalizeCurrency, calculateMollieMetrics }
+module.exports = { resolveMollieApiUrl, mollieGet, listAll, listPaymentsSince, normalizeCurrency, calculateMollieMetrics }
