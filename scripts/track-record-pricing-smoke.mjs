@@ -158,7 +158,7 @@ try {
       await page.waitForFunction(() => document.querySelector('#tr-clean')?.textContent?.trim() === '98%');
       assert.equal((await page.locator('#tr-clean').textContent() || '').trim(), '98%', hub.locale + ' fresh in-scope record should render its validated percentage');
       const hubFreshLine = (await page.locator('#tr-line').textContent()) || '';
-      assert.match(hubFreshLine, /MQ \\+ GP/, hub.locale + ' fresh proof must display its regional scope');
+      assert.match(hubFreshLine, /MQ \+ GP/, hub.locale + ' fresh proof must display its regional scope');
       assert.match(hubFreshLine, /2026-10-01 → 2026-10-30/, hub.locale + ' fresh proof must display its validation window');
       await page.screenshot({ path: path.join(OUT, 'hub-' + hub.locale + '-after-fresh-' + viewport.name + '.png'), fullPage: true });
       console.log('PASS_HUB_' + hub.locale + '_' + viewport.name + '=stale/fresh scoped track record verified; before/after screenshots captured');
