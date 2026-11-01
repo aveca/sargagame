@@ -43,6 +43,9 @@ const STATUS_WORD = {
 const REGIONAL_OBSERVATION_SLA_MINUTES = 900;
 
 function getSatelliteObservationFreshness(data, now = Date.now()) {
+  if (String(data?.source ?? '').toLowerCase() !== 'erddap-live') {
+    return { state: 'unknown', timestamp: null, ageMinutes: null };
+  }
   const raw = data && data.erddapTimestamp;
   const timestamp = typeof raw === 'number' ? raw : Date.parse(String(raw ?? ''));
   if (!Number.isFinite(now) || !Number.isFinite(timestamp) || timestamp <= 0 || timestamp > now) {
@@ -53,6 +56,21 @@ function getSatelliteObservationFreshness(data, now = Date.now()) {
     return { state: 'delayed', timestamp, ageMinutes };
   }
   return { state: 'fresh', timestamp, ageMinutes };
+}
+
+function getPublishableBeachDecision(data, level, now = Date.now()) {
+  const freshness = getSatelliteObservationFreshness(data, now);
+  const status = ['clean', 'moderate', 'avoid'].includes(level?.status) ? level.status : null;
+  const score = typeof level?.score === 'number' && Number.isFinite(level.score) ? level.score : null;
+  const afai = typeof level?.afai === 'number' && Number.isFinite(level.afai) ? level.afai : null;
+  const available = freshness.state === 'fresh' && status !== null;
+  return {
+    available,
+    freshness,
+    status: available ? status : null,
+    score: available ? score : null,
+    afai: available ? afai : null,
+  };
 }
 
 function formatSatelliteObservationLabel(data, lang = 'en', now = Date.now()) {
@@ -90,6 +108,7 @@ const T = {
     beachesDir: 'beaches', resortsDir: 'resorts',
     updated: d => `Page generated ${d}; satellite observation time may differ.`,
     score: 'Beach Score', forecast7: '7-day forecast', status: 'Published status',
+    statusUnavailable: 'Unavailable — decision paused until a fresh satellite observation is available',
     viewMap: 'View the map', allBeaches: 'All beaches', nearby: 'Nearby beaches',
     resortsAt: 'Resorts on this beach', beachOf: r => `The beach at ${r}`,
     network: 'Sargassum network', home: 'Map',
@@ -114,6 +133,7 @@ const T = {
     beachesDir: 'playas', resortsDir: 'hoteles',
     updated: d => `Página generada el ${d}; la hora de observación satelital puede ser distinta.`,
     score: 'Beach Score', forecast7: 'Pronóstico de 7 días', status: 'Estado publicado',
+    statusUnavailable: 'No disponible — decisión suspendida hasta que haya una observación satelital reciente',
     viewMap: 'Ver el mapa', allBeaches: 'Todas las playas', nearby: 'Playas cercanas',
     resortsAt: 'Hoteles en esta playa', beachOf: r => `La playa de ${r}`,
     network: 'Red sargazo', home: 'Mapa',
@@ -465,7 +485,7 @@ ${secs}
 </div></body></html>`
 }
 
-function generateRegionSeoPages(region, distDir) {
+function generateRegionSeoPages(region, distDir, options = {}) {
   const RL = require('./region-langs.cjs')
   const domain = region.domain
   const primary = RL.normLang(region.primaryLang)
@@ -483,7 +503,8 @@ function generateRegionSeoPages(region, distDir) {
 
   // ── Données partagées (indépendantes de la langue) ──
   const resorts = loadJSON(path.join(ROOT, 'regions', 'resorts', `${region.id}.json`), [])
-  const data = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), { levels: [], weekly: {} })
+  const data = options.data || loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', region.id, 'sargassum.json'), { levels: [], weekly: {} })
+  const now = Number.isFinite(options.now) ? options.now : Date.now()
   // Public accuracy claims must come from the dated track record, never the raw
   // backtest input (which has no reliable region scope and can be stale).
   const trackRecord = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'track-record.json'), null)
@@ -510,7 +531,7 @@ function generateRegionSeoPages(region, distDir) {
       region, distDir, domain, lang, primary, useLangs, slugIndex, sitemap,
       content: contents[lang], t: T[lang], prefix: slugIndex[lang].prefix,
       routes: { best: slugIndex[lang].best, weekly: slugIndex[lang].weekly },
-      tpl, resorts, data, accuracy, photos, beaches, byScore, resortsByBeach, isoToday,
+      tpl, resorts, data, now, accuracy, photos, beaches, byScore, resortsByBeach, isoToday,
     })
   }
 
@@ -552,7 +573,7 @@ function buildSlugMap(region, lang, content, primary) {
 // à l'autre : seuls le préfixe d'URL, les liens internes et le cluster hreflang changent.
 function emitLangPages(ctx) {
   const { region, distDir, domain, lang, primary, useLangs, slugIndex, sitemap,
-    content, t, prefix, routes, tpl, resorts, data, accuracy, photos, beaches, byScore, resortsByBeach, isoToday } = ctx
+    content, t, prefix, routes, tpl, resorts, data, now = Date.now(), accuracy, photos, beaches, byScore, resortsByBeach, isoToday } = ctx
   const today = fmtDate(lang)
   // Slug de la landing B2B hôtels (intention d'achat pro) — lié + sitemapé.
   const hotelsSlug = lang === 'es' ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
@@ -918,11 +939,21 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
     const photo = photos[b.id] ? `<img src="/beaches/${photos[b.id]}" alt="${esc(b.name)}" width="800" height="450" loading="lazy" />` : ''
     // freshTitles (flag region.seo) : title daté statut+date courte, nom trimé
     // AVANT l'append (UNE seule date par page). Fallback : template historique.
+    const beachDecision = getPublishableBeachDecision(data, b.lv, now)
+    const observationFreshness = beachDecision.freshness
+    const observationLabel = formatSatelliteObservationLabel(data, lang, now)
     let title
-    if (region.seo && region.seo.freshTitles && b.lv.status) {
-      const suffix = lang === 'es' ? ` Último estado publicado: ${sw(b.lv.status)}` : ` Latest published status: ${sw(b.lv.status)}`
-      const prefix = lang === 'es' ? 'Sargazo en ' : ''
-      title = prefix + smartTrim(b.name, 70 - prefix.length - suffix.length) + suffix
+    if (region.seo && region.seo.freshTitles && beachDecision.available) {
+      const suffix = lang === 'es' ? ` Último estado publicado: ${sw(beachDecision.status)}` : ` Latest published status: ${sw(beachDecision.status)}`
+      const titlePrefix = lang === 'es' ? 'Sargazo en ' : ''
+      title = titlePrefix + smartTrim(b.name, 70 - titlePrefix.length - suffix.length) + suffix
+    } else if (!beachDecision.available) {
+      const unavailableTitle = observationFreshness.state === 'fresh'
+        ? (lang === 'es' ? 'estado no disponible' : 'status unavailable')
+        : (lang === 'es' ? 'observación satelital retrasada' : 'satellite observation delayed')
+      title = smartTrim(lang === 'es'
+        ? `Sargazo en ${b.name} — ${unavailableTitle}`
+        : `${b.name} Sargassum — ${unavailableTitle}`, 68)
     } else {
       title = smartTrim(lang === 'es'
         ? `Sargazo en ${b.name} — última observación satelital y pronóstico de 7 días`
@@ -931,16 +962,23 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
     // Signal géo renforcé : commune, région ET pays (ex. « Miami Beach, Florida,
     // United States ») — meilleur ranking sur les requêtes US/MX/DR géolocalisées.
     const _geo = [b.commune || '', region.name, region.country].filter(Boolean).join(', ')
-    const desc = trimDesc(lang === 'es'
-      ? `¿Hay sargazo en ${b.name} hoy? Último estado publicado según la observación satelital disponible, Beach Score ${b.lv.score ?? ''}/100 y pronóstico de 7 días. Comprueba la hora de observación y la confianza. ${_geo}.`
-      : `Is there sargassum at ${b.name} today? Latest published satellite status, Beach Score ${b.lv.score ?? ''}/100 and a 7-day forecast. Check observation time and confidence. ${_geo}.`)
+    const unavailableReason = observationFreshness.state === 'fresh'
+      ? (lang === 'es' ? 'no hay un estado de playa disponible' : 'no beach status is available')
+      : (lang === 'es' ? 'la observación satelital está retrasada o no se puede verificar' : 'the satellite observation is delayed or cannot be verified')
+    const desc = trimDesc(beachDecision.available
+      ? (lang === 'es'
+          ? `¿Hay sargazo en ${b.name}? Último estado satelital publicado${beachDecision.score != null ? `, Beach Score ${beachDecision.score}/100` : ''}. Comprueba la hora de observación y la confianza antes de decidir. ${_geo}.`
+          : `Sargassum status at ${b.name} from the latest available satellite observation${beachDecision.score != null ? `, Beach Score ${beachDecision.score}/100` : ''}. Check observation time and confidence before deciding. ${_geo}.`)
+      : (lang === 'es'
+          ? `No se publica una decisión actual para ${b.name}: ${unavailableReason}. Comprueba la hora de observación antes de decidir. ${_geo}.`
+          : `No current beach decision is published for ${b.name}: ${unavailableReason}. Check the observation time before deciding. ${_geo}.`))
     // FAQPage par plage — templates de content.beachFaq (contrat tokens dans
     // regions/seo-content/<id>.json), fallback T[lang].beachFaq. Tokens résolus
     // depuis la donnée LIVE uniquement ; pas de FAQPage si donnée absente.
     const bf = content.beachFaq || t.beachFaq
     let beachFaqLd = null
     let beachFaqHtml = ''
-    if (bf && Array.isArray(bf.questions) && b.lv.status && b.lv.score != null) {
+    if (bf && Array.isArray(bf.questions) && beachDecision.available && beachDecision.score != null) {
       const fLine = forecastLine(data.weekly, b.id, lang)
       const fc = (data.weekly?.[b.id]?.forecast || []).slice(1, 8)
       const hit = fc.find(f => f.status && f.status !== 'clean')
@@ -955,19 +993,31 @@ ${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
         daysFull: t.daysFull,
       })
       const tokB = s => String(s ?? '')
-        .replace(/\{beach\}/g, b.name).replace(/\{status\}/g, sw(b.lv.status))
-        .replace(/\{score\}/g, b.lv.score).replace(/\{today\}/g, today)
+        .replace(/\{beach\}/g, b.name).replace(/\{status\}/g, sw(beachDecision.status))
+        .replace(/\{score\}/g, beachDecision.score).replace(/\{today\}/g, today)
         .replace(/\{forecastLine\}/g, fLine).replace(/\{nextArrival\}/g, nextArrival)
       const qa = bf.questions.map(q => ({ q: tokB(q.q), a: tokB(q.a) }))
       beachFaqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: qa.map(x => ({ '@type': 'Question', name: x.q, acceptedAnswer: { '@type': 'Answer', text: x.a } })) }
       beachFaqHtml = `<section><h2>FAQ</h2>${qa.map(x => `<h3>${esc(x.q)}</h3><p>${esc(x.a)}</p>`).join('')}</section>`
     }
+    const statusHtml = beachDecision.available
+      ? `<p><strong>${esc(t.status)}: ${esc(sw(beachDecision.status))}</strong>${beachDecision.score != null ? ` · ${esc(t.score)} ${beachDecision.score}/100` : ''}</p>`
+      : `<p class="sg-status-unavailable"><strong>${esc(t.status)}: ${esc(t.statusUnavailable)}</strong></p>`
+    const observationHtml = `<p class="sg-observation sg-observation--${observationFreshness.state}">${esc(observationLabel)}</p>`
+    const forecastHtml = beachDecision.available
+      ? `<h2>${esc(t.forecast7)}</h2><p>${esc(forecastLine(data.weekly, b.id, lang))}</p>`
+      : ''
+    const nearbyHtml = nearby.map(n => {
+      const nearbyDecision = getPublishableBeachDecision(data, n.lv, now)
+      return `<li>${beachLink(n)}${nearbyDecision.available ? ` — ${esc(sw(nearbyDecision.status))}` : ''}</li>`
+    }).join('')
     const articleHtml = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>${photo}
-<p><strong>${t.status}: ${sw(b.lv.status)}</strong> · ${t.score} ${b.lv.score ?? '—'}/100</p>
+${statusHtml}
+${observationHtml}
 <p>${esc(blurb)}</p>
-<h2>${t.forecast7}</h2><p>${forecastLine(data.weekly, b.id, lang)}</p>
+${forecastHtml}
 ${beachResorts.length ? `<h2>${t.resortsAt}</h2><ul>${beachResorts.map(r => `<li><a href="${prefix}/${t.resortsDir}/${r.slug}/">${esc(r.name)}</a></li>`).join('')}</ul>` : ''}
-<h2>${t.nearby}</h2><ul>${nearby.map(n => `<li>${beachLink(n)} — ${sw(n.lv.status)}</li>`).join('')}</ul>
+<h2>${t.nearby}</h2><ul>${nearbyHtml}</ul>
 ${beachFaqHtml}
 ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     // Video-as-SEO : clip d'ambiance /videos/hero/{id}.mp4 (rail hero-loops déjà sur prod),
@@ -976,7 +1026,7 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     // (jamais data.updatedAt = fausse fraîcheur), description « ambiance, pas une mesure ».
     // Le verdict reste 100% ERDDAP, au-dessus, dans le DOM. Skip PROPRE si pas de clip
     // (loi valider-les-hrefs). Rollback build : VITE_NO_SEOVIDEO=1.
-    const heroClip = (process.env.VITE_NO_SEOVIDEO !== '1' && _heroIds.has(b.id))
+    const heroClip = (beachDecision.available && beachDecision.afai != null && process.env.VITE_NO_SEOVIDEO !== '1' && _heroIds.has(b.id))
       ? { mp4: `https://${domain}/videos/hero/${b.id}.mp4`, poster: `https://${domain}${photos[b.id] ? `/beaches/${photos[b.id]}` : '/og-image.png'}` }
       : null
     const heroClipEl = heroClip ? `<video class="sg-heroclip" preload="none" muted loop playsinline poster="${heroClip.poster}" style="width:100%;display:block"><source src="${heroClip.mp4}" type="video/mp4"></video>` : ''
@@ -992,13 +1042,16 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     // HERO golden-hour (additif) : préfixe l'article par scène SVG inline + bande
     // verdict. b a coords/island/status/afai (REGION.beaches) + b.lv live. Robuste.
     let noscript = articleHtml
-    if (_heroLib) {
+    if (_heroLib && beachDecision.available && beachDecision.afai != null) {
       try {
-        const lvH = { status: b.lv.status || 'clean', score: typeof b.lv.score === 'number' ? b.lv.score : undefined, afai: typeof b.lv.afai === 'number' ? b.lv.afai : (typeof b.afai === 'number' ? b.afai : 0.2) }
-        const observationFreshness = getSatelliteObservationFreshness(data)
-        const observationLabel = formatSatelliteObservationLabel(data, lang)
+        const lvH = {
+          status: beachDecision.status,
+          score: beachDecision.score ?? undefined,
+          afai: beachDecision.afai,
+        }
+        const heroBeach = { ...b, status: beachDecision.status, score: beachDecision.score ?? undefined, afai: beachDecision.afai }
         const heroSvg = _heroLib.buildHeroSvg(
-          b,
+          heroBeach,
           lvH,
           { updatedAt: observationFreshness.state === 'fresh' ? data.erddapTimestamp : null },
           { label: 'OBSERVATION' },
@@ -1007,7 +1060,7 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
         const scoreTxt = typeof lvH.score === 'number' ? ` · <span class="sg-stat">${lvH.score}/100</span>` : ''
         const observationTxt = `<div class="sg-live sg-observation sg-observation--${observationFreshness.state}">${esc(observationLabel)}</div>`
         const verdict = `<div class="sg-verdict"><h1>${esc(b.name)}</h1>`
-          + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(b.lv.status))}${scoreTxt}</div>`
+          + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(beachDecision.status))}${scoreTxt}</div>`
           + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
           + observationTxt
           + `</div>`
@@ -1146,4 +1199,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, formatSatelliteObservationLabel }
+module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, getPublishableBeachDecision, formatSatelliteObservationLabel }
