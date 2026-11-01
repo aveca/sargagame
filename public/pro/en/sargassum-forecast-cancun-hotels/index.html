@@ -58,6 +58,8 @@
     background:rgba(8,18,16,.42);border:1px solid rgba(255,255,255,.16);border-radius:999px;
     padding:6px 13px 6px 11px;font-family:var(--sg-font-mono);font-size:11px;font-weight:700;color:#fff}
   .freshpill .pulse{width:7px;height:7px;border-radius:50%;background:#6AC15A;box-shadow:0 0 0 0 rgba(106,193,90,.6);animation:pulse 2.4s ease-out infinite}
+  .freshpill.is-stale .pulse{background:#F59E0B;box-shadow:none;animation:none}
+  .freshpill.is-unknown .pulse{background:#9CA3AF;box-shadow:none;animation:none}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(106,193,90,.55)}70%{box-shadow:0 0 0 7px rgba(106,193,90,0)}100%{box-shadow:0 0 0 0 rgba(106,193,90,0)}}
   @media (prefers-reduced-motion:reduce){.sun,.freshpill .pulse{animation:none}}
   .perso{display:none;margin-top:18px;background:rgba(255,199,44,.14);border:1px solid rgba(255,199,44,.4);border-radius:var(--sg-r-lg);padding:12px 16px;font-size:14px;font-weight:700;color:#fff}
@@ -182,9 +184,9 @@
     <p class="lede">On the Quintana Roo coast, the sargassum belt gives no warning — but the satellite does. Le Veilleur watches the Caribbean while your guests sleep: a per-beach forecast for your stretch of Cancún or the Riviera Maya, an alert the morning conditions turn, and a reliability figure we publish and audit every day. Measured by satellite, not guessed. Schedule the cleanup, reassure your guests, protect your bookings.</p>
     <div class="ctas">
       <a class="btn btn-gold" href="#request">Start the free brief</a>
-      <a class="btn btn-ghost" href="https://sargassumcancun.com" target="_blank" rel="noopener">See the live Cancún forecast</a>
+      <a class="btn btn-ghost" href="https://sargassumcancun.com" target="_blank" rel="noopener">See the latest Cancún beach observations</a>
     </div>
-    <div class="freshpill"><span class="pulse"></span><span id="fresh">live satellite data</span></div>
+    <div class="freshpill is-unknown" id="freshpill"><span class="pulse"></span><span id="fresh" aria-live="polite">Checking satellite observation freshness…</span></div>
     <div class="perso" id="perso"></div>
   </div>
 </header>
@@ -194,10 +196,10 @@
   <div class="liveband">
     <div class="lb-ic">🗺</div>
     <div class="lb-body">
-      <p class="sec-eyebrow">Live in Quintana Roo now</p>
-      <h2>The beach-by-beach forecast is already running for Cancún.</h2>
-      <p class="sub">Your future guests are already checking it. The same satellite engine that powers your hotel alerts feeds the public app for the Caribbean coast — see the real state of every monitored beach around Cancún and the Riviera Maya, right now.</p>
-      <a class="btn btn-gold" href="https://sargassumcancun.com" target="_blank" rel="noopener">See the live beach-by-beach forecast for Cancún →</a>
+      <p class="sec-eyebrow">Public map for Quintana Roo</p>
+      <h2>The public beach map is available for Cancún.</h2>
+      <p class="sub">Your future guests can consult the public map for the Caribbean coast. Each beach shows the latest published satellite observation and its age; a current verdict is shown only while freshness is confirmed.</p>
+      <a class="btn btn-gold" href="https://sargassumcancun.com" target="_blank" rel="noopener">See the latest Cancún beach observations →</a>
     </div>
   </div>
 </div></section>
@@ -222,7 +224,7 @@
   <div class="cards">
     <div class="card"><div class="ic">📍</div><h3>7-day forecast, beach by beach</h3><p>Status (clean / moderate / avoid), score and trend for the exact stretch of your Cancún or Riviera Maya property — not a coastline average.</p></div>
     <div class="card"><div class="ic">🎭</div><h3>Automatic alerts</h3><p>Email or SMS the moment your beach changes state. Your team and your cleaning contractor know before your guests do.</p></div>
-    <div class="card"><div class="ic">🪐</div><h3>«Live conditions” badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk — in English and Spanish.</p></div>
+    <div class="card"><div class="ic">🪐</div><h3>Freshness-aware status badge + staff brief</h3><p>An embed for your booking site to reassure guests transparently, and a daily brief for the front desk — in English and Spanish.</p></div>
   </div>
 </div></section>
 
@@ -249,7 +251,7 @@
   <p class="sec-eyebrow">How it works</p>
   <h2>From satellite to your front desk, in three steps.</h2>
   <div class="steps">
-    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-referenced with the wind and currents driving sargassum onto the Quintana Roo coast — refreshed 4× a day.</p></div></div>
+    <div class="step"><div class="num"></div><div><h3>The satellite spots the rafts</h3><p>Copernicus / ERDDAP data, AFAI index, cross-referenced with the wind and currents driving sargassum onto the Quintana Roo coast — based on the latest published satellite observation; its age is shown here.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>We localize it on your beach</h3><p>Our drift + persistence model turns the open Caribbean into a per-beach forecast for Cancún and the Riviera Maya, over 7 days, with a confidence level.</p></div></div>
     <div class="step"><div class="num"></div><div><h3>Your team is alerted</h3><p>Daily brief + an alert when the state changes. You schedule cleanup and guest communication in advance.</p></div></div>
   </div>
@@ -261,8 +263,8 @@
   <h2>What Cancún &amp; Riviera Maya hoteliers ask us.</h2>
   <details><summary>How is this different from the free USF or public sargassum maps?</summary><p>Public maps give a regional risk for the whole Caribbean. We give a 7-day forecast beach by beach for your stretch of Cancún or the Riviera Maya, alerts targeted at your waterfront, and a reliability figure published and audited every day — something no free source does.</p></details>
   <details><summary>How reliable is it, really?</summary><p>We publish it on the reliability page, dated and per beach. Our reliability is validated in the French Antilles (Martinique &amp; Guadeloupe) — roughly 76% across all conditions — and shown with its sample size. Coverage is rolling out across the Caribbean, including Cancún; we do not claim validated accuracy on coasts we have not yet measured. Alerts are issued cautiously until the satellite confirms them.</p></details>
-  <details><summary>Is the Cancún forecast already live?</summary><p>Yes — the public beach-by-beach app for the Quintana Roo coast runs at sargassumcancun.com, powered by the same satellite engine. The dated reliability history for this coast is still building; we publish it market by market as it is validated.</p></details>
-  <details><summary>Can we embed it on our booking site and share it with our cleaning contractor?</summary><p>Yes. A live-conditions badge embeds on your site, in English or Spanish, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor.</p></details>
+  <details><summary>Is the public Cancún map available?</summary><p>Yes. The public beach-by-beach map is available at sargassumcancun.com. Each beach shows the latest published satellite observation and its age; current verdicts are shown only while freshness is confirmed. The dated reliability history for this coast is still building and is published market by market as it is validated.</p></details>
+  <details><summary>Can we embed it on our booking site and share it with our cleaning contractor?</summary><p>Yes. A freshness-aware status badge embeds on your site, in English or Spanish, and a daily brief can be sent to the front desk as well as to your team or beach-cleaning contractor.</p></details>
 </div></section>
 
 <!-- RELATED / INTERNAL LINKS -->
@@ -271,7 +273,7 @@
   <h2>Plan the season, not just the day.</h2>
   <div class="related">
     <a href="https://sargassumcancun.com"><div class="rt">Live beach-by-beach forecast for Cancún</div><div class="rd">The public app for the Quintana Roo coast — the real state of every monitored beach, right now.</div></a>
-    <a href="https://sargasses-martinique.com/pro/en/hotels/"><div class="rt">Sargassum forecasting &amp; alerts for hotels</div><div class="rd">The full offer for beachfront hotels: per-beach forecast, alerts and a live-conditions badge.</div></a>
+    <a href="https://sargasses-martinique.com/pro/en/hotels/"><div class="rt">Sargassum forecasting &amp; alerts for hotels</div><div class="rd">The full offer for beachfront hotels: per-beach forecast, alerts and a freshness-aware status badge.</div></a>
     <a href="https://sargasses-martinique.com/fiabilite/"><div class="rt">Our published reliability track record</div><div class="rd">Dated, per beach, auditable — see exactly how often we are right.</div></a>
     <a href="https://sargasses-martinique.com/pro/en/"><div class="rt">Sargassum Pro — all solutions</div><div class="rd">Hotels, resorts and local authorities. Forecasting that converts into decisions.</div></a>
   </div>
@@ -304,6 +306,7 @@
   <div style="margin-top:10px">Satellite sargassum forecast · Cancún &amp; Riviera Maya, Quintana Roo</div>
 </footer>
 
+<script src="/b2b-data-freshness.js"></script>
 <script>
 (function(){
   var ENDPOINT='https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec';
@@ -311,13 +314,31 @@
   var Q=new URLSearchParams(location.search);
   var QH=(Q.get('hotel')||'').trim();
 
-  function relTime(iso){
-    if(!iso) return '';
-    var h=(Date.now()-new Date(iso).getTime())/3.6e6;
-    if(h>=12) return 'verification in progress…';
-    if(h<1){var m=Math.max(1,Math.round(h*60));return 'LIVE · '+m+' min ago';}
-    return 'LIVE · '+Math.max(1,Math.round(h))+' h ago';
+  function getObservationFreshness(data) {
+    return window.SargagameB2BFreshness.getObservationFreshness(data, 'en');
   }
+  function setFreshnessPill(status, label) {
+    var pill = document.getElementById('freshpill');
+    if (pill) {
+      pill.classList.remove('is-stale', 'is-unknown');
+      if (status === 'stale') pill.classList.add('is-stale');
+      else if (status !== 'fresh') pill.classList.add('is-unknown');
+    }
+    var fresh = document.getElementById('fresh');
+    if (fresh) fresh.textContent = label;
+  }
+  function setUnknownFreshness() {
+    var unknown = getObservationFreshness(null);
+    setFreshnessPill(unknown.status, unknown.label);
+    var detail = document.getElementById('d-fresh');
+    if (detail) detail.textContent = unknown.label;
+    var verdict = document.getElementById('d-verdict');
+    if (verdict) { verdict.textContent = 'STATUS WITHHELD'; verdict.style.color = '#9CA3AF'; }
+    var score = document.getElementById('d-score');
+    if (score) score.textContent = '';
+    return unknown;
+  }
+
 
   // --- Proof live: track-record.json (figure NEVER hard-coded) ---
   // HONESTY: the hero number is the OVERALL status hit rate (all regimes) — the same
@@ -358,12 +379,15 @@
     document.getElementById('tr-headline').textContent='Full dated track record on our reliability page.';
   });
 
-  // --- Freshness pill: sargassum.json (no frozen timestamp) ---
-  fetch('/api/copernicus/sargassum.json').then(function(r){return r.json()}).then(function(d){
-    try{
-      document.getElementById('fresh').textContent=relTime(d.updatedAt)||'live satellite data';
-    }catch(e){}
-  }).catch(function(){});
+  // --- Freshness pill: use the satellite observation clock, never updatedAt ---
+  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
+    var freshness = getObservationFreshness(d);
+    setFreshnessPill(freshness.status, freshness.label);
+  }).catch(function(){
+    var unknown = getObservationFreshness(null);
+    setFreshnessPill(unknown.status, unknown.label);
+  });
+
 
   // --- B2B lead capture → Apps Script (dedicated source) ---
   var form=document.getElementById('b2b-form');
