@@ -1,8 +1,8 @@
 {
   "_note": "EN secondary-language SEO content for Tulum (sargazotulum.com). Pages render under /en/. Primary (ES) lives at regions/seo-content/tulum.json. Same facts as the ES file, written natively for English-speaking (US/Canada) visitors — not machine-translated. Slugs are EN; routes here drive the /en/ best + weekly pages.",
   "home": {
-    "title": "Tulum Sargassum & Seaweed Today — Live Beach Map & 7-Day Forecast 2026",
-    "desc": "Which Tulum beach is free of sargassum? Latest available per-beach satellite observations, Beach Score 0-100 and a 7-day forecast. Observation timing and confidence can vary."
+    "title": "Tulum Sargassum — Latest Satellite Observations",
+    "desc": "Latest published satellite observations for Tulum beaches. Check each timestamp and confidence; current status is withheld when data are delayed."
   },
   "routes": {
     "best": "best-beaches-no-sargassum-tulum",
@@ -11,19 +11,19 @@
   "faq": [
     {
       "q": "When is sargassum season in Tulum?",
-      "a": "The season runs April through September, peaking from May to July. November through March the beaches are usually clean, though stray patches can land at any time. Because each year is different, we track every beach with Copernicus satellite imagery refreshed when new satellite observations are available, so you see what is on the sand today rather than a historical average."
+      "a": "Tulum's sargassum season usually runs April through September, peaking from May to July. Beaches often see less from November through March, though isolated patches can still arrive. Satellite observations are intermittent; check the latest available reading and its timestamp rather than assuming a fixed refresh schedule."
     },
     {
       "q": "Which Tulum beaches get the least sargassum?",
-      "a": "The ones that don't face due east: Playa Ruinas and Playa Santa Fe, sheltered by the bay and coastline shape, usually get less sargassum than Playa Paraíso or Playa Pescadores which face dead east. Playa Xcacel to the south also tends to stay cleaner. Check the live map: daily satellite data shows which beaches are seaweed-free right now."
+      "a": "Playa Ruinas and Playa Santa Fe are often more sheltered by the coastline; Playa Paraíso and Playa Pescadores face more eastward exposure, while Xcacel can differ. These are general patterns, not today's verdict: check the latest published observation and timestamp for each beach; no current clean status is shown when data are delayed."
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "We use the AFAI index — the same standard NOAA uses to detect floating sargassum from satellite — with Copernicus imagery refreshed when new satellite observations are available. Reports from people on the beach fill in what clouds can hide. Every beach shows the exact time of its last update and a confidence level, so you know how fresh the reading you're looking at really is."
+      "a": "We use the AFAI index on public satellite imagery to detect floating sargassum. Usable observations are intermittent and cloud cover can delay a reading. Each beach shows its observation time and confidence; a current status is published only when the reading passes freshness checks. Beach reports can add context when available, but they do not replace a new satellite observation."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
-      "a": "Yes, within reasonable limits. Sargassum drifts with the wind and currents, so once the satellite spots a mat offshore we can project its path toward each beach over the next seven days. Days 1 to 3 are the most accurate; days 4 to 7 show the trend. The forecast is recalculated every day with each new satellite pass."
+      "a": "A seven-day outlook is shown only when a recent observation and validated wind/current inputs are available. The first few days are the near-term outlook; days 4–7 indicate a broader trend, not certainty. If valid inputs are missing, the forecast is not published as a current decision."
     },
     {
       "q": "Do the hotels clean sargassum off their beaches?",
@@ -31,7 +31,7 @@
     },
     {
       "q": "What do I do if my beach is buried in sargassum?",
-      "a": "Move — the geography gives you options. If Playa Paraíso wakes up bad, Playa Ruinas or Playa Santa Fe are usually cleaner; Akumal and Xpu-Ha to the north are also good options nearby. With premium alerts we tell you the moment your beach changes status."
+      "a": "If Playa Paraíso is affected, Playa Ruinas or Playa Santa Fe may differ; check the latest published observation for the alternative beach before travelling. Read its timestamp and confidence; if the reading is delayed, no current clean-beach recommendation is shown. Premium alerts are sent when a new validated observation changes a saved beach's status."
     }
   ],
   "pages": {
