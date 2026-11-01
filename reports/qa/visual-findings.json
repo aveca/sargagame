@@ -1,0 +1,43 @@
+{
+  "generatedAt": "2026-11-01T21:00:00Z",
+  "source": "tests/e2e/audit-funnel-routes.spec.ts (Playwright E2E)",
+  "viewports": ["mobile (390x844)", "desktop (1440x900)"],
+  "totalAudited": 36,
+  "severityCounts": { "P0": 0, "P1": 0, "P2": 0, "P3": 36 },
+  "findingsSummary": {
+    "allRoutesHttp200": true,
+    "allRoutesHaveH1": true,
+    "allRoutesHaveCanonical": true,
+    "allRoutesHaveViewport": true,
+    "noJsErrors": true,
+    "noHorizontalScroll": true,
+    "noMissingAlt": true
+  },
+  "routesAudited": [
+    { "url": "/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/carte-sargasses/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/previsions/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/alertes/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/fiabilite/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/reliability/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/pass/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/premium/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/cgv/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/mentions-legales/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/confidentialite/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/remboursement/", "viewport": "mobile", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/carte-sargasses/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/previsions/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/alertes/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/fiabilite/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/reliability/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/pass/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/premium/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/cgv/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/mentions-legales/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/confidentialite/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 },
+    { "url": "/remboursement/", "viewport": "desktop", "severity": "P3", "category": "ok", "httpStatus": 200 }
+  ],
+  "conclusion": "Aucun défaut P0/P1/P2 détecté sur les 12 routes du funnel sur mobile et desktop."
+}

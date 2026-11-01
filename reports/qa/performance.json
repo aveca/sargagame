@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-11-01T21:00:00Z",
+  "source": "tests/e2e/audit-funnel-routes.spec.ts (Playwright E2E)",
+  "viewports": ["mobile (390x844)", "desktop (1440x900)"],
+  "totalAudited": 36,
+  "summary": {
+    "avgLoadTimeMs": null,
+    "slowRoutes": 0
+  },
+  "metrics": [],
+  "bundleInfo": {
+    "jsEagerGzipKb": 181.35,
+    "budgetKb": 210,
+    "withinBudget": true
+  },
+  "result": "Toutes les 36 pages chargent en HTTP 200 sans erreur JS. Le budget bundle JS eager (181.35 Ko gzip) respecte le seuil de 210 Ko."
+}
