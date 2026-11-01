@@ -2,19 +2,19 @@
   "faq": [
     {
       "q": "When does sargassum season hit Florida?",
-      "a": "Florida's sargassum window runs roughly May through August, peaking in June and July. The Keys and the southeast Atlantic coast — Miami up to Jupiter — see the most; winter months are essentially seaweed-free statewide. The amount varies hugely year to year depending on the Atlantic bloom, which is why we track conditions with satellite data updated when new satellite observations are available instead of quoting seasonal averages."
+      "a": "Florida's sargassum window usually runs May through August, often peaking in June and July. Timing varies from year to year. Satellite observations are intermittent, not a guaranteed daily feed; each beach page shows the latest observation time and confidence so you can judge how current the reading is."
     },
     {
       "q": "Which Florida beaches get the least sargassum?",
-      "a": "Gulf coast beaches like Clearwater almost never see meaningful sargassum — the currents rarely deliver it there. On the Atlantic side, Daytona and the central coast get far less than the Keys or Miami. Within South Florida, conditions can flip beach to beach in a single day, so check the live map: our satellite data, refreshed daily, shows exactly which beaches are clean right now."
+      "a": "Gulf coast beaches like Clearwater usually see less sargassum because currents rarely carry it there. On the Atlantic side, Daytona and the central coast often see less than the Keys or Miami. These are general exposure patterns, not today's verdict: the map shows the latest published observation for each beach, and a current clean status is withheld when that reading is delayed or cannot be verified."
     },
     {
       "q": "How accurate is this sargassum tracker?",
-      "a": "We use the same AFAI satellite index NOAA relies on, sourced from Copernicus and NOAA imagery and refreshed when new satellite observations are available. Floating mats have a distinct spectral signature that satellites detect reliably in clear weather; clouds can delay readings, so every beach displays its data age and a confidence level. Beachgoer reports fill the gaps. It is the difference between a measurement and a guess."
+      "a": "We use the AFAI satellite index on public Copernicus/NOAA imagery. Usable observations are intermittent and cloud cover can delay a reading. Each beach shows its observation timestamp and confidence; a current status is published only when the observation passes the freshness checks. Beachgoer reports can add context when available, but they do not turn an old satellite observation into a new one."
     },
     {
       "q": "Can you really forecast sargassum a week out?",
-      "a": "To a useful degree, yes. Once satellites detect mats offshore, their drift is largely set by wind and the Gulf Stream, which we model daily for each beach. Days 1–3 are the most reliable; days 4–7 show the direction of travel. Seaweed already beached decays on a 3.5-day half-life unless resupplied. The forecast re-runs every day as fresh satellite passes arrive."
+      "a": "A seven-day outlook is shown only when the latest observation and forecast inputs pass validation. The first few days are the near-term outlook; days 4–7 indicate a broader trend, not a guarantee. The outlook is recalculated when validated observations and transport inputs become available; no fixed refresh cadence is promised."
     },
     {
       "q": "Do Florida beaches get cleaned of sargassum?",
@@ -22,7 +22,7 @@
     },
     {
       "q": "What should I do if my beach is covered in sargassum?",
-      "a": "Drive — Florida gives you options. If Miami Beach is buried, Daytona or the Gulf side at Clearwater almost certainly is not, and our live map shows the nearest clean sand instantly. Small amounts are harmless to swimmers; large rotting piles smell of sulfur and are worth avoiding. Premium alerts notify you the moment a saved beach changes status, so you stop guessing and start rerouting."
+      "a": "If Miami Beach is affected, nearby beaches can differ, but do not assume Daytona or Clearwater is clear. Check the latest published reading for each beach and its observation time before driving. If the reading is delayed or unavailable, the page withholds a current clean-beach recommendation. Premium alerts are sent when a new validated observation changes a saved beach's status."
     }
   ],
   "pages": {
