@@ -23,7 +23,7 @@ const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, brandHeader } = require('./lib/email-send.cjs')
-const { inferType, dataHook, liveProof } = require('./lib/b2b-segment.cjs')
+const { inferType, dataHook, liveProof, regionOf } = require('./lib/b2b-segment.cjs')
 
 const UNIFIED_PATH = path.join(__dirname, 'data', 'b2b-contacts-unified.json')
 const SRC_PATH = fs.existsSync(UNIFIED_PATH) ? UNIFIED_PATH : path.join(__dirname, 'data', 'b2b-enriched.json')
@@ -104,7 +104,7 @@ function buildC0(c, key) {
   // Segmentation déterministe (FR seul = marché B2B live MQ/GP ; EN/ES inchangés).
   const seg = inferType(c)                 // 'hotel' | 'collectivite'
   const dh = L === 'fr' ? dataHook(c, seg) : null  // vraie donnée plage(s), ou null
-  const pf = liveProof()                           // % LIVE (jamais figé) — langue-agnostique
+  const pf = liveProof(regionOf(c.island))          // preuve fraîche et strictement régionale, sinon null
   // Phrase de donnée réelle, adaptative (saison calme vs épisode). null → copy générique.
   let dataSentence = ''
   if (dh) {
@@ -118,19 +118,17 @@ function buildC0(c, key) {
         : `Un fait d'abord, sur votre plage : <strong>${dh.beach}</strong> est restée propre toute la semaine dernière — exactement le genre de certitude qu'on mesure et qu'on documente, jour après jour.`
     }
   }
-  // Preuve LIVE (remplace le chiffre figé qui se périme), forme hedgée canonique — FR/EN/ES.
-  // Même source live (pf) ; les 5 qualificatifs obligatoires (fenêtre datée, N comparaisons,
-  // « saison calme », ~76 % tous régimes, faible confiance sur les alertes) sont TOUJOURS là,
-  // jamais un « 100 % » nu. Lien honnêteté localisé : /fiabilite/ · /reliability/ · /fiabilidad/.
+  // Aucun chiffre de fiabilité n'est utilisé sans registre frais et mono-région.
+  // Les agrégats MQ+GP et les preuves d'une autre région ne sont pas transposés au prospect.
   const proofFr = pf
-    ? `On ne promet pas, on montre. Notre fiabilité est publiée et auditée chaque jour, par régime, sur <strong>/fiabilite/</strong> : <strong>${pf.pct} % des prévisions « mer propre » vérifiées en saison calme</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('fr-FR')} comparaisons${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''} ; <strong>~76 % tous régimes confondus</strong>, les rares alertes de saison calme en faible confiance. Le verdict reste 100 % data — l'argent n'y touche jamais.`
-    : `On ne promet pas, on montre : fiabilité publiée et auditée par régime sur <strong>/fiabilite/</strong> (≈ 76 % à 79 % selon la saison, alertes de saison calme en faible confiance). Le verdict reste 100 % data — l'argent n'y touche jamais.`
+    ? `Registre de validation public pour ${pf.region.toUpperCase()}, sur la période ${pf.from} → ${pf.to} : <strong>${pf.pct} %</strong> des prévisions « mer propre » vérifiées en saison calme (${Number(pf.n).toLocaleString('fr-FR')} comparaisons). Ce résultat porte uniquement sur cet échantillon ; ce n'est pas une garantie plage par plage.`
+    : `Aucun taux de fiabilité n'est avancé dans ce message : le registre disponible n'est pas à la fois frais, complet et strictement régional. La page publique n'affiche des chiffres que lorsque ces conditions sont réunies.`
   const proofEn = pf
-    ? `We don't promise, we show. Our reliability is published and audited daily, by regime, on <strong>/reliability/</strong>: <strong>${pf.pct}% of "clean-sea" forecasts verified in calm season</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('en-US')} comparisons${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''}; <strong>~76% across all regimes</strong>, with the rare calm-season alerts flagged low-confidence. The verdict stays 100% data — money never touches it.`
-    : `We don't promise, we show: reliability published and audited by regime on <strong>/reliability/</strong> (~76% to 79% depending on the season, calm-season alerts flagged low-confidence). The verdict stays 100% data — money never touches it.`
+    ? `Public validation record for ${pf.region.toUpperCase()}, covering ${pf.from} → ${pf.to}: <strong>${pf.pct}%</strong> of calm-season "clean-sea" forecasts verified (${Number(pf.n).toLocaleString('en-US')} comparisons). This result applies only to that sample; it is not a beach-by-beach guarantee.`
+    : `No reliability rate is quoted in this message: the available record is not both fresh, complete and strictly regional. The public page displays figures only when those conditions are met.`
   const proofEs = pf
-    ? `No prometemos, mostramos. Nuestra fiabilidad se publica y se audita cada día, por régimen, en <strong>/fiabilidad/</strong>: <strong>${pf.pct} % de los pronósticos de "mar limpio" verificados en temporada calmada</strong>${pf.n ? ` (${Number(pf.n).toLocaleString('es-ES')} comparaciones${pf.from ? `, ${pf.from} → ${pf.to}` : ''})` : ''}; <strong>~76 % en todos los regímenes</strong>, con las raras alertas de temporada calmada marcadas como baja confianza. El veredicto sigue siendo 100 % datos — el dinero nunca lo toca.`
-    : `No prometemos, mostramos: fiabilidad publicada y auditada por régimen en <strong>/fiabilidad/</strong> (~76 % a 79 % según la temporada, alertas de temporada calmada marcadas como baja confianza). El veredicto sigue siendo 100 % datos — el dinero nunca lo toca.`
+    ? `Registro público de validación para ${pf.region.toUpperCase()}, del ${pf.from} al ${pf.to}: <strong>${pf.pct} %</strong> de los pronósticos de "mar limpio" verificados en temporada calmada (${Number(pf.n).toLocaleString('es-ES')} comparaciones). El resultado se limita a esa muestra; no garantiza cada playa.`
+    : `Este mensaje no cita una tasa de fiabilidad: el registro disponible no es a la vez reciente, completo y estrictamente regional. La página pública solo muestra cifras cuando se cumplen esas condiciones.`
 
   const subject = L === 'en' ? `${c.name} — your beaches, watched every morning`
     : L === 'es' ? `${c.name} — sus playas, vigiladas cada mañana`
@@ -304,4 +302,4 @@ async function main() {
 // Exécution directe seulement → permet de require ce module (ex. tester isSendableEmail).
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })
 
-module.exports = { isSendableEmail, rampCap }
+module.exports = { isSendableEmail, rampCap, buildC0 }
