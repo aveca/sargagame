@@ -70,6 +70,14 @@
 - **Estimation** : 3h
 - **Statut** : [x] done by coding_agent
 
+### TASK-P1-004 (autonome) Inventaire routes + audit E2E funnel (P1 mission)
+- **Priorité** : P1
+- **Rôle** : coding_agent (OpenCode)
+- **Description** : Découverte autonome de toutes les routes sur 6 domaines (759 routes), audit E2E Playwright des 12 routes du funnel sur mobile + desktop, génération des 4 rapports QA + rapport final.
+- **Comment** : `scripts/qa/discover-routes.mjs` pour l'inventaire, `tests/e2e/audit-funnel-routes.spec.ts` pour l'audit E2E, rapports dans `reports/qa/`.
+- **Estimation** : 4h
+- **Statut** : [x] done by coding_agent (2026-10-31, branche fix/p1-autonomous-ux-qa-repair-20261030)
+
 ---
 
 ## P2 — Backlog normal

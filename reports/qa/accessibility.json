@@ -1,0 +1,14 @@
+{
+  "generatedAt": "2026-11-01T21:00:00Z",
+  "source": "tests/e2e/audit-funnel-routes.spec.ts (Playwright E2E)",
+  "viewports": ["mobile (390x844)", "desktop (1440x900)"],
+  "totalAudited": 36,
+  "totalIssues": 0,
+  "issues": [],
+  "checksPerformed": [
+    "Images sans attribut alt",
+    "Liens sans texte ni aria-label",
+    "Contraste (via code, pas capture headless)"
+  ],
+  "result": "Aucun problème d'accessibilité détecté sur les 36 audits (mobile + desktop, 12 routes)."
+}

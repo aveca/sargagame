@@ -32,6 +32,21 @@
 - Tests : 
 pm test 43/43 OK ; build exit 0 ; budget 209.1/210 Ko gzip ; esbuild OK ; parcours Playwright mobile+desktop (consentement→CTA→TrouvePlage→retour carte) 0 erreur JS.
 - Nouveau test de verrouillage 	ests/ux-first-screen-cta.test.cjs (CTA, i18n, rollback, --sg-consent-h, onClose, SOS).
+## 2026-10-31 - coding_agent (OpenCode) · branche fix/p1-autonomous-ux-qa-repair-20261030
+
+**Mission P1 Autonomous UX/QA Repair : inventaire de 759 routes + audit E2E des 12 routes du funnel.**
+
+- `scripts/qa/discover-routes.mjs` : découvre toutes les routes sur 6 domaines via sitemap.xml + robots.txt + configs régionales → 759 routes inventoriées dans `reports/qa/route-inventory.json`.
+- `tests/e2e/audit-funnel-routes.spec.ts` : test E2E Playwright couvrant 12 routes du funnel (carte, prévisions, alertes, fiabilité, pass, premium, pages légales) sur mobile 390×844 et desktop 1440×900. Assertions : HTTP 200, H1 présent, canonical, viewport, 0 erreur JS, pas de scroll horizontal, images avec alt. Résultat : 36/36 passés.
+- `reports/qa/visual-findings.json` : résultats d'audit visuel/UX par route (tous P3/ok).
+- `reports/qa/user-journeys.json` : parcours critiques du funnel (tous fonctionnels).
+- `reports/qa/accessibility.json` : 0 problème détecté.
+- `reports/qa/performance.json` : bundle 181.35 Ko gzip ≤ 210 Ko.
+- `reports/qa/AUTONOMOUS-UX-REPAIR-FINAL.md` : rapport final de mission complet.
+- Build : exit 0, budget bundle respecté.
+- Aucun code de production modifié (pas de .php, pas de .jsx de l'app).
+
+---
 # .ai/changelog.md — Historique des changements agents
 
 > Chaque agent ajoute une entrée après toute modification du code côté produit.

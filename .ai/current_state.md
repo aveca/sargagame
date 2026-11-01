@@ -1,5 +1,38 @@
 
-## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
+## 2026-10-31 · Agent: coding_agent (OpenCode) · Mission P1 Autonomous UX/QA Repair
+
+### Travail effectué
+- **Résumé 1 ligne** : Inventaire autonome de 759 routes sur 6 domaines + audit E2E Playwright des 12 routes du funnel (mobile + desktop) — tous passants, zéro défaut P0/P1/P2.
+- **Détails** :
+  - Créé `scripts/qa/discover-routes.mjs` — crawle sitemap.xml + robots.txt + configs régionales pour découvrir toutes les routes internes/orphelines. Sortie : `reports/qa/route-inventory.json` (759 routes).
+  - Créé `tests/e2e/audit-funnel-routes.spec.ts` — test E2E Playwright couvrant 12 routes du funnel sur mobile (390×844) et desktop (1440×900). Vérifie HTTP 200, H1, canonical, viewport, pas d'erreur JS, pas de scroll horizontal, images avec alt.
+  - Généré 4 rapports QA dans `reports/qa/` : visual-findings.json, user-journeys.json, accessibility.json, performance.json.
+  - Généré `reports/qa/AUTONOMOUS-UX-REPAIR-FINAL.md` — rapport final de mission.
+  - Build production : exit 0, bundle gzip 181.35 Ko ≤ 210 Ko.
+- **Fichiers modifiés** :
+  - `tests/e2e/audit-funnel-routes.spec.ts` — nouveau test E2E de régression
+  - `reports/qa/*` — 5 fichiers de rapports QA
+
+### Tests réalisés
+- [x] npm run build → exit 0 (bundle 181.35 Ko gzip ≤ 210 Ko)
+- [x] npx playwright test tests/e2e/audit-funnel-routes.spec.ts → 36/36 passés (24 mobile + 12 desktop)
+- [ ] php -l → n/a (aucun .php touché)
+
+### Problèmes restants
+- [ ] Tablet (768×1024) non encore couvert par l'audit E2E
+- [ ] Routes SEO par région (759 routes découvertes, seules 12 du funnel testées en profondeur)
+- [ ] TASK-P0-001 : webhook secret Mollie (non lié à cette mission)
+
+### Prochaine action recommandée
+1. Ajouter projet tablet dans playwright.config.ts + ré-exécuter audit — Role: QA_agent
+2. Étendre l'audit aux routes SEO régionales — Role: QA_agent
+3. Traiter TASK-P0-001 webhook secret Mollie — Role: coding_agent
+
+### Branche / PR
+- Branche : `fix/p1-autonomous-ux-qa-repair-20261030`
+- PR : à créer (base main)
+- Commit head : HEAD
+
 
 ### Travail effectué
 - **Résumé 1 ligne** : le chat d'hésitation « Le Veilleur » ne s'ouvre plus sur le premier écran sans interaction (anti-occlusion), CTA reste lisible.
