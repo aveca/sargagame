@@ -1058,11 +1058,9 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
         )
         const fline = forecastLine(data.weekly, b.id, lang)
         const scoreTxt = typeof lvH.score === 'number' ? ` · <span class="sg-stat">${lvH.score}/100</span>` : ''
-        const observationTxt = `<div class="sg-live sg-observation sg-observation--${observationFreshness.state}">${esc(observationLabel)}</div>`
         const verdict = `<div class="sg-verdict"><h1>${esc(b.name)}</h1>`
           + `<div class="sg-stat">${esc(t.status)}: ${esc(sw(beachDecision.status))}${scoreTxt}</div>`
           + (fline ? `<p class="sg-line">${esc(t.forecast7)} — ${esc(fline)}</p>` : '')
-          + observationTxt
           + `</div>`
         noscript = `${_heroLib.buildHeroCss()}<div class="sg-page"><div class="sg-hero">${heroSvg}${heroClipEl}${verdict}</div>${articleHtml}</div>`
       } catch (e) { noscript = articleHtml }
