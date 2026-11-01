@@ -349,7 +349,7 @@
   });
 
   // --- Freshness pill: use the satellite observation clock, never updatedAt ---
-  fetch('/api/copernicus/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
+  fetch('/api/copernicus/puntacana/sargassum.json').then(function(r){if(!r.ok)throw new Error('observation HTTP '+r.status);return r.json()}).then(function(d){
     var freshness = getObservationFreshness(d);
     setFreshnessPill(freshness.status, freshness.label);
   }).catch(function(){
