@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
- * gen-b2b-partners.cjs — génère public/b2b-partners.json (la « mise en avant
+ * gen-b2b-partners.cjs — génère public/data/b2b-partners.json (la « mise en avant
  * in-app » du palier Pro B2B) depuis le catalogue curé scripts/automation/data/
  * b2b-partner-meta.json.
  *
@@ -22,7 +22,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..", "..");
 const META = path.join(ROOT, "scripts/automation/data/b2b-partner-meta.json");
-const OUT = path.join(ROOT, "public/b2b-partners.json");
+const OUT = path.join(ROOT, "public/data/b2b-partners.json");
 const LEGACY_OUT = path.join(ROOT, "public/api/b2b-partners.json");
 const FUNNEL = path.join(ROOT, "scripts/automation/data/b2b-funnel.json");
 
@@ -69,8 +69,8 @@ function main() {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.mkdirSync(path.dirname(LEGACY_OUT), { recursive: true });
   fs.writeFileSync(OUT, serialized);
-  // Keep the former API asset as a compatibility mirror; the app and verifier
-  // use the root static path because /api/b2b-* is intercepted by sg-payments.
+  // Keep the former API path as a compatibility mirror only. Cloudflare routes
+  // /api/b2b-* and /b2b* to sg-payments; production consumers must use /data/.
   fs.writeFileSync(LEGACY_OUT, serialized);
 
   console.log(
