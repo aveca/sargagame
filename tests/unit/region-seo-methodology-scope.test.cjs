@@ -233,6 +233,10 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
         regionId + ': hotel landing must expose the source observation timestamp')
       assert.doesNotMatch(html, /<b>[^<]+<\/b> · (?:Clean|Moderate|Avoid|Limpia|Moderada|Evitar)<br>/,
         regionId + ': hotel landing must not display stale beach status')
+      assert.match(html, /When a fresh satellite observation is available|Cuando hay una observación satelital reciente/,
+        regionId + ': B2B morning-brief promise must be conditional on fresh data')
+      assert.match(html, /never repeats a stale verdict|nunca repite un veredicto antiguo/,
+        regionId + ': B2B landing must explain stale-data behavior')
     }
     for (const file of resortDetailPages) {
       const html = fs.readFileSync(file, 'utf8')
