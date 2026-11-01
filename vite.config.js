@@ -2422,7 +2422,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 else sitemapGPBeaches += condSitemapEntry
               }
               // /conditions/ landing (hub) — lists all sub-pages
-              const hubTitleBase = `Conditions des plages aujourd\\u2019hui \\u2014 ${island}`
+              const hubTitleBase = `Conditions des plages aujourd’hui — ${island}`
               const hubTitle = isConditionsFresh ? hubTitleBase : suspendConditionTitle(hubTitleBase)
               const hubDesc = `Plages de ${island} classées selon les critères météo et les dernières observations satellite. Les dates des deux sources sont affichées séparément; les sélections sont suspendues si une source dépasse son seuil de fraîcheur.`
               const hubUrl = `https://${domain}/conditions/`
