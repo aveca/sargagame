@@ -19,12 +19,12 @@ const viewports = [
 
 // The partner catalogue must be served as a static root asset, outside the
 // Cloudflare sg-payments /api route. This preview check catches a missing build copy.
-const partnerResponse = await fetch(baseUrl + '/b2b-partners.json', { cache: 'no-store' })
-assert.equal(partnerResponse.status, 200, 'root B2B partner asset must be HTTP 200 in Vite Preview')
+const partnerResponse = await fetch(baseUrl + '/data/b2b-partners.json', { cache: 'no-store' })
+assert.equal(partnerResponse.status, 200, '/data B2B partner asset must be HTTP 200 in Vite Preview')
 const partnerPayload = await partnerResponse.json()
-assert.ok(Array.isArray(partnerPayload.partners), 'root B2B partner asset must contain partners[]')
-assert.ok(Array.isArray(partnerPayload.preview), 'root B2B partner asset must contain preview[]')
-console.log('PASS /b2b-partners.json @ Vite Preview (HTTP 200, valid JSON)')
+assert.ok(Array.isArray(partnerPayload.partners), '/data B2B partner asset must contain partners[]')
+assert.ok(Array.isArray(partnerPayload.preview), '/data B2B partner asset must contain preview[]')
+console.log('PASS /data/b2b-partners.json @ Vite Preview (HTTP 200, valid JSON)')
 
 
 function publicTrackRecordSnapshot() {
