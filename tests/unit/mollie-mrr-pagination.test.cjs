@@ -94,6 +94,34 @@ async function main() {
     )
     assert.equal(cappedCalls.length, 1, 'the safety cap fails closed without requesting another page')
 
+    global.fetch = async () => ({
+      ok: true,
+      json: async () => ({
+        _embedded: { payments: [{ id: 'tr_missing_next', createdAt: '2026-11-02T00:00:00Z' }] },
+      }),
+    })
+    await assert.rejects(
+      listPaymentsSince('2026-11-01T00:00:00.000Z', 'test_mollie_key'),
+      /missing _links.next/,
+    )
+
+    global.fetch = async () => ({
+      ok: true,
+      json: async () => ({
+        _embedded: {
+          payments: [
+            { id: 'tr_newer', createdAt: '2026-11-02T00:00:00Z' },
+            { id: 'tr_older', createdAt: '2026-11-03T00:00:00Z' },
+          ],
+        },
+        _links: { next: null },
+      }),
+    })
+    await assert.rejects(
+      listPaymentsSince('2026-11-01T00:00:00.000Z', 'test_mollie_key'),
+      /not ordered newest-first/,
+    )
+
     await assert.rejects(
       listPaymentsSince('not-a-date', 'test_mollie_key'),
       /Invalid Mollie payment cutoff/,
