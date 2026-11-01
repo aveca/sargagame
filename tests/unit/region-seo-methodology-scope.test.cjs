@@ -54,7 +54,7 @@ assert.equal(getSatelliteObservationFreshness({
 }, freshnessNow).state, 'delayed', 'an explicit stale flag must never be overridden')
 
 for (const raw of [undefined, null, '', 'not-a-date', new Date(freshnessNow + 60000).toISOString()]) {
-  assert.equal(getSatelliteObservationFreshness({ erddapTimestamp: raw }, freshnessNow).state, 'unknown',
+  assert.equal(getSatelliteObservationFreshness({ source: 'erddap-live', erddapTimestamp: raw }, freshnessNow).state, 'unknown',
     'missing, invalid and future source timestamps fail closed')
 }
 assert.equal(formatSatelliteObservationLabel({}, 'en', freshnessNow),
@@ -227,7 +227,7 @@ assert.match(generatorSource, /track-record\.json/)
 assert.doesNotMatch(generatorSource, /backtest-results\.json/, 'raw backtest input has no public regional freshness contract')
 assert.match(generatorSource, /No separately validated accuracy percentage is published/)
 assert.doesNotMatch(generatorSource, /Measured accuracy across our Caribbean network|Precisión medida en nuestra red Caribe/)
-assert.match(generatorSource, /getSatelliteObservationFreshness\(data\)/)
+assert.match(generatorSource, /getSatelliteObservationFreshness\(data, now\)/)
 assert.match(generatorSource, /formatSatelliteObservationLabel\(data, lang, now\)/)
 assert.match(generatorSource, /getPublishableBeachDecision\(data, b\.lv, now\)/)
 assert.doesNotMatch(generatorSource, /status: b\.lv\.status \|\| 'clean'/,
