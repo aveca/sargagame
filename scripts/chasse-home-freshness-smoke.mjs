@@ -50,7 +50,7 @@ async function runScenario(viewport, state) {
   });
 
   try {
-    await page.goto(new URL('/?chasse=1', BASE).toString(), { waitUntil: 'domcontentloaded' });
+    await page.goto(new URL('/?hero=1&chasse=1', BASE).toString(), { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(250);
     assert.ok(intercepted > 0, 'the Chasse home must consume the intercepted satellite payload');
 
