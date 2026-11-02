@@ -31,13 +31,53 @@ function record(name, ok, extra) {
 
 // ── Jeux d'environnements ────────────────────────────────────────────────────
 const VALID_TOKEN = 'sgappr_' + 'a1b2c3d4e5f6g7h8i9j0'; // forme conforme
-const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1 };
+const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
 
 /** Environnement « tout est réuni » sauf ce que le test surcharge. */
 function env(overrides) {
   return Object.assign({
     GITHUB_EVENT_NAME: 'workflow_dispatch',
   }, overrides || {});
+}
+
+function oidcEnv(overrides) {
+  return env(Object.assign({
+    ACTIONS_ID_TOKEN_REQUEST_URL: 'https://pipelines.actions.githubusercontent.com/oidc',
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'runner-request-token',
+    GITHUB_REPOSITORY: 'aveca/sargagame',
+    GITHUB_RUN_ID: '123456789',
+    GITHUB_SHA: 'abc123def456',
+    GITHUB_REF: 'refs/heads/manual-test',
+    OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN,
+  }, overrides || {}));
+}
+
+function oidcJwt(e, claimOverrides) {
+  const now = Math.floor(Date.now() / 1000);
+  const claims = Object.assign({
+    iss: 'https://token.actions.githubusercontent.com',
+    aud: 'sargagame-outbound-authorization',
+    repository: e.GITHUB_REPOSITORY,
+    run_id: e.GITHUB_RUN_ID,
+    sha: e.GITHUB_SHA,
+    ref: e.GITHUB_REF,
+    event_name: 'workflow_dispatch',
+    environment: 'outbound-approval',
+    sub: `repo:${e.GITHUB_REPOSITORY}:environment:outbound-approval`,
+    exp: now + 300,
+    nbf: now - 30,
+  }, claimOverrides || {});
+  return `e30.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.test-signature`;
+}
+
+function oidcFetch(e, claimOverrides) {
+  const token = oidcJwt(e, claimOverrides);
+  return async (url, init) => {
+    assert.ok(url.startsWith('https://pipelines.actions.githubusercontent.com/'));
+    assert.strictEqual(init && init.headers && init.headers.authorization, 'Bearer runner-request-token');
+    assert.ok(url.includes('audience=sargagame-outbound-authorization'));
+    return { ok: true, status: 200, json: async () => ({ value: token }) };
+  };
 }
 
 async function main() {
@@ -239,12 +279,14 @@ async function main() {
   // P18 — Environment protégé trouvé via l'API : autorisé, et l'appel est un GET.
   {
     let call = null;
+    const e = oidcEnv();
     const fetchImpl = async (url, init) => {
       call = { url, method: (init && init.method) || 'GET', auth: init && init.headers && init.headers.authorization };
       return { ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers' }], reviewers: [{ id: 1 }] }) };
     };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P18a Environment protégé vérifié => autorisé',
@@ -259,9 +301,11 @@ async function main() {
   // P19 — 404 : Environment inexistant => bloqué (jamais créé, jamais supposé).
   {
     let calls = 0;
+    const e = oidcEnv();
     const fetchImpl = async () => { calls++; return { ok: false, status: 404, json: async () => ({}) }; };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P19 Environment 404 => bloqué',
@@ -271,9 +315,11 @@ async function main() {
 
   // P20 — Environment sans règle de protection => bloqué.
   {
+    const e = oidcEnv();
     const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ protection_rules: [], reviewers: [] }) });
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P20 Environment sans protection => bloqué',
@@ -282,9 +328,11 @@ async function main() {
 
   // P21 — Vérification impossible (réseau en erreur) => bloqué, pas de repli.
   {
+    const e = oidcEnv();
     const fetchImpl = async () => { throw new Error('ECONNREFUSED'); };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P21 vérification impossible => bloqué (aucun repli)',
@@ -327,6 +375,35 @@ async function main() {
     }).mode);
     record('P24 aucun environnement partiel ne donne le mode production',
       modes.every((m) => m !== 'production'), `modes=${modes.join(',')}`);
+  }
+
+  // P25 — un secret de repository + un Environment protege ne prouvent pas
+  // que le job courant est effectivement lie a cet Environment.
+  {
+    const unbound = { exists: true, reviewers: 1, protectionRules: 1 };
+    const d = central.authorizeAction('email_send', {
+      env: oidcEnv(), requested: true, environmentProtection: unbound,
+    });
+    record('P25 Environment protege sans claim OIDC du job => bloque',
+      d.execute === false && d.mode === 'blocked' && /job non lie/.test(d.reason),
+      `mode=${d.mode} reason=${d.reason}`);
+  }
+
+  // P26 — claim OIDC liee au mauvais Environment, repository ou run => refusee.
+  {
+    const e = oidcEnv();
+    const badClaims = [
+      { environment: 'other-environment', sub: 'repo:aveca/sargagame:environment:other-environment' },
+      { repository: 'attacker/other-repo' },
+      { run_id: '999999999' },
+      { event_name: 'schedule' },
+    ];
+    let rejected = true;
+    for (const claims of badClaims) {
+      const result = await central.verifyJobEnvironmentBinding({ env: e, fetchImpl: oidcFetch(e, claims) });
+      if (result.bound !== false) rejected = false;
+    }
+    record('P26 claims OIDC hors contexte exact => refusees', rejected);
   }
 
   console.log(failures === 0
