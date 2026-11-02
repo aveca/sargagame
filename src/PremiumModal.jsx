@@ -1171,7 +1171,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           const propres=_t(lang,"propres","clean","limpias")
           const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
           const _constel=[..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-            .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
+            .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=!_observationFresh?"#94a3b8":b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:_observationFresh&&!!(_topBeach&&b.id===_topBeach.id)}})
           const guide=_constel.find(p=>p.top)
           return(
             <div className="pwx-hero" style={{height:150}}>
@@ -1387,7 +1387,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // A/B fraîcheur (PassOffer) : "Données mises à jour il y a Xh" — récence réelle du pipeline.
   // PROMU EN DÉFAUT — fraîcheur toujours visible. Rollback ?pwfresh=0.
   const pwFresh=(()=>{try{if(/[?&]pwfresh=0/.test(window.location.search))return false;if(/[?&]pwfresh=1/.test(window.location.search))return true;return true}catch(_){return true}})()
-  const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
+  const _observationDisplay = observationDisplay(sargData, lang);
+  const _observationFresh = _observationDisplay.state === "fresh";
   // Preuve du moat au point de décision : lien /fiabilite/ à l'écran « Avant de
   // payer » (doctrine storytelling temps #5). Défaut ON, rollback ?pwrel=0.
   const pwRel=(()=>{try{return !/[?&]pwrel=0/.test(window.location.search)}catch(_){return true}})()
@@ -1416,17 +1417,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _islandLvls=_lvls.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
   // Même source que le header de liste (status==='clean') — l'ancien seuil
   // score>=70 contredisait le compte "{x}/{y} plages propres" affiché ailleurs.
-  const _cleanCount=_islandLvls.filter(b=>b.status==="clean").length
-  const _totalCount=_islandLvls.length
+  const _cleanCount=_observationFresh?_islandLvls.filter(b=>b.status==="clean").length:0
+  const _totalCount=_observationFresh?_islandLvls.length:0
   // FIX modal→CTA (fuite #1, 2% sur 3416 modals) : en SAISON CALME (≥80% propres,
   // 64% du temps) l'argument « alerte AVANT que ça tourne » tombe à plat — rien ne
   // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit
   // SANS peur = la prévision (« sache où sera la mer DEMAIN »). ?pwcalm=1/0 en QA.
-  const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
+  const _allCalm=_observationFresh&&_totalCount>0&&(_cleanCount/_totalCount)>=0.8
   // PROMU EN DÉFAUT (cohérence élévation premium) : la value-prop POSITIVE en saison
   // calme (« Sache où sera la mer demain ») est le défaut 85%, 15% holdout mesurable.
   const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
-  const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
+  const _topBeach=_observationFresh?[..._islandLvls].sort((a,b)=>b.score-a.score)[0]:null
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
   // Nom CANONIQUE — le slug-derive cassait les noms GP au point de décision
@@ -1445,23 +1446,23 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
   const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
   const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
-  const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
-  const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
-  const _ctxStatus=_hasBeachCtx?(beach&&beach.status)||null:null
+  const _ctxName=_observationFresh&&_hasBeachCtx?(beach&&beach.name)||null:null
+  const _ctxScore=_observationFresh&&_hasBeachCtx?(beach&&beach.score)||null:null
+  const _ctxStatus=_observationFresh&&_hasBeachCtx?(beach&&beach.status)||null:null
   // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer
   // golden-hour. PRNG seedé (stable entre renders = calme, jamais Math.random/render),
   // capé 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = étoile-guide.
-  const _aggStatus=_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"
-  const _constelMood=VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein
+  const _aggStatus=_observationFresh?(_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"):"clean"
+  const _constelMood=_observationFresh?(VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein):VEILLEUR_MOOD.serein
   const _constel=useMemo(()=>{
     const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
     return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
-  },[_islandLvls,_topBeach])
+      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=!_observationFresh?"#94a3b8":b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:_observationFresh&&!!(_topBeach&&b.id===_topBeach.id)}})
+  },[_islandLvls,_topBeach,_observationFresh])
   // Value card 02 : destination = vraie plage propre du jour calculée du live —
   // plus aucun nom de plage inventé ni changement d'état fabriqué.
-  const _cleanTop=_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]
-  const _exSwitch=_nameOf(_cleanTop)||_topName||null
+  const _cleanTop=_observationFresh?_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]:null
+  const _exSwitch=_observationFresh?(_nameOf(_cleanTop)||_topName||null):null
   // Value card 03 : vraie meilleure plage du samedi depuis le forecast hebdo.
   // Suffixe enfants UNIQUEMENT si kids:true dans la donnée région.
   const _kidsOf=lv=>{
@@ -1470,6 +1471,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     return !!BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.kids
   }
   const _wkend=(()=>{
+    if(!_observationFresh)return null
     const wk=sargData?.weekly||{}
     const ref=_islandLvls.map(lv=>wk[lv.id]?.forecast).find(f=>Array.isArray(f)&&f.length)
     if(!ref)return null
@@ -2367,7 +2369,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
   const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
   const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
-  if(pwHot&&beach){
+  if(pwHot&&beach&&_observationFresh){
     const _st=beach.status||"clean"
     const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
     const _stLbl=_st==="clean"?_t(lang,"propre aujourd'hui","clean today","limpia hoy"):_st==="moderate"?_t(lang,"modéré","moderate","moderada"):_t(lang,"à éviter","avoid","evitar")
