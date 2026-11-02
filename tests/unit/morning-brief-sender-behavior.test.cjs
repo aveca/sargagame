@@ -78,6 +78,13 @@ const fakeRequire = (specifier) => {
   if (specifier === '../lib/satellite-freshness.cjs') {
     return require('../../scripts/lib/satellite-freshness.cjs');
   }
+  if (specifier === './lib/safety.cjs') {
+    // The stale-data path under test must never authorize an outbound action.
+    return {
+      authorizeActionAsync: async () => ({ execute: false, mode: 'dry-run', reason: 'test-stub' }),
+      describeDecision: () => 'test dry-run',
+    };
+  }
   if (String(specifier).endsWith(path.join('regions', 'index.cjs'))) {
     return { getAllRegions: () => regions };
   }
