@@ -27,7 +27,7 @@ const copy = [
 ].join('\n')
 
 const unsupportedCadence = [
-  /\b(?:4|four)\s*(?:×|x)?\s*(?:times\s+(?:a|per)\s+day|times\s+daily)\b/i,
+  /\b(?:4|four)\s*(?:×|x)?\s*(?:times\s+(?:a|per)\s+day|times\s+daily|daily|per day)\b/i,
   /\b(?:refreshed|updated)\s+4\s*(?:×|x)?\s*(?:daily|times\s+(?:a|per)\s+day)\b/i,
   /\bfour\s+times\s+(?:a|per)\s+day\b/i,
 ]
@@ -38,6 +38,8 @@ const unsupportedLiveClaims = [
   /\bsame-day\s+read\b/i,
   /\bclean\s+right\s+now\b/i,
   /\bnear-certain\s+win\b/i,
+  /\bcurrent status today\b/i,
+  /\bevery (?:few|three|four) hours\b/i,
 ]
 
 for (const pattern of unsupportedCadence) {
@@ -56,7 +58,7 @@ assert.match(copy, /only when.*pass freshness/i, 'current status is conditional 
 assert.match(copy, /7-day outlook appears only when/i, 'forecast is conditional on validated inputs')
 assert.match(copy, /days 4–7.*trend, not a guarantee/i, 'longer forecast horizon is described as a trend')
 assert.match(copy, /does not measure hydrogen sulfide/i, 'page does not imply an air-quality or H2S sensor')
-assert.match(copy, /cannot confirm.*raked the sand/i, 'satellite observations are not presented as proof of beach cleanup')
+assert.match(copy, /(?:cannot confirm|does not confirm).*?(?:raked|removed).*sand/i, 'satellite observations are not presented as proof of beach cleanup')
 
 const generator = fs.readFileSync(path.join(root, 'scripts/lib/region-seo-pages.cjs'), 'utf8')
 assert.match(generator, /content\.extraPages/, 'regional SEO generator still consumes extraPages')
