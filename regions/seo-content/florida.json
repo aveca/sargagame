@@ -333,44 +333,44 @@
     {
       "lang": "en",
       "slug": "fort-lauderdale-sargassum-today",
-      "title": "Fort Lauderdale Sargassum Today — Live Beach Status",
-      "desc": "Sargassum in Fort Lauderdale and Sunny Isles today: live satellite Beach Score, clean/moderate/avoid status and a 7-day forecast, refreshed 4× daily.",
-      "h1": "Sargassum in Fort Lauderdale & Sunny Isles Today",
-      "intro": "Is there sargassum in Fort Lauderdale today? Check the live status panel above: Fort Lauderdale Beach shows its current status today — clean, moderate or avoid — read straight from the latest satellite pass and updated today. Sunny Isles, just south, almost always tracks the same southeast-Atlantic pattern, so the map gives you a same-day read for both before you load the car. Most seaweed pages quote a monthly average; this one measures your sand. We pull Copernicus and NOAA AFAI imagery when new satellite observations are available, score each beach 0–100, and project a per-beach 7-day forecast — measured, never guessed. When clouds block a satellite pass, the page says so and shows the data age and a confidence level rather than pretending. Beachgoer reports fill the gaps. In peak summer the coast can flip overnight on an east wind, so the honest answer is always the live one: check the Beach Score the morning you go, not last week's bulletin.",
+      "title": "Fort Lauderdale Sargassum Today — Latest Beach Observations",
+      "desc": "Check the latest published sargassum observation for Fort Lauderdale and Sunny Isles, with its timestamp and confidence. A current beach status is shown only when the reading passes freshness checks.",
+      "h1": "Sargassum in Fort Lauderdale & Sunny Isles — Latest Beach Observations",
+      "intro": "Checking sargassum in Fort Lauderdale today? Conditions can differ between Fort Lauderdale Beach and Sunny Isles. Use the map above to inspect the latest published observation for each tracked beach, including its observation time and confidence. Satellite observations are intermittent and cloud cover can delay a reading; no fixed refresh schedule is guaranteed. A current clean/moderate/avoid status, Beach Score, or 7-day outlook is shown only when its source observation and required forecast inputs pass freshness and validation checks. If a reading is delayed or unverified, the page withholds a current verdict rather than presenting an old pass as today's conditions. Satellite observations describe floating material offshore; they do not confirm whether municipal crews have raked the sand. Check local beach advisories before travelling.",
       "sections": [
         {
-          "h2": "Fort Lauderdale or Sunny Isles — which is cleaner today?",
-          "text": "Both sit on the open Atlantic in the Miami–Palm Beach corridor, so in season they take the same episodic sargassum pulses. They are not identical, though: a wind shift or a Gulf Stream wobble can leave one raked clean while the other holds a fresh wrack line. That is exactly why a regional bulletin fails you and a per-beach read wins. The panel above ranks Fort Lauderdale Beach by today's Beach Score; for Sunny Isles, the nearest tracked points on either side bracket its likely status. Fort Lauderdale runs regular municipal raking, which resets the sand fast — but if satellites show fresh mats inbound, seaweed can return within hours. Check both before you commit, and keep a backup in mind."
+          "h2": "Fort Lauderdale or Sunny Isles — how to compare the latest observations",
+          "text": "Both beaches sit on the open Atlantic in the Miami–Palm Beach corridor, but wind and currents can produce different conditions a short distance apart. These are general exposure patterns, not a same-day verdict. Open each beach and check its latest published observation time and confidence. A clean/moderate/avoid label and Beach Score appear only when the reading passes freshness checks; otherwise the page withholds a current status. Municipal raking changes the sand and is not measured by satellite."
         },
         {
-          "h2": "When does it clear, and is the smell a safety issue?",
-          "text": "Beached sargassum decays on roughly a 3.5-day half-life unless new mats keep landing, so a buried morning can be clean sand within days — faster where crews rake daily. Our 7-day forecast shows whether fresh material is inbound or the coast is set to clear; days 1–3 carry the most confidence, days 4–7 show direction of travel. On safety: small amounts in the water are harmless to swimmers. Large rotting piles release hydrogen sulfide (H2S) — the rotten-egg smell — which can irritate eyes, throat and lungs, and bothers people with asthma most. Avoid sitting downwind of thick, decaying wrack lines, and keep kids and pets off big piles. When a beach reads avoid, the smell is usually the reason."
+          "h2": "When can sargassum clear, and what about the smell?",
+          "text": "Landings and beach cleanup vary with wind, currents and local crews; there is no reliable fixed timetable. A 7-day outlook appears only when the latest observation and required wind/current inputs pass validation. Days 1–3 are the near-term outlook; days 4–7 indicate a broader trend, not a guarantee. This map is not an air-quality monitor and does not measure hydrogen sulfide (H2S). Avoid large decaying piles or strong rotten-egg odors and follow local public-health advice."
         },
         {
-          "h2": "Where to go instead when both are buried",
-          "text": "South Florida gives you options, and the live map shows the nearest clean sand instantly. If Fort Lauderdale and Sunny Isles both read avoid, the central Atlantic coast — Cocoa Beach, Daytona — sits north of the heaviest sargassum highway and is often far lighter. The reliable fallback is the Gulf coast: Clearwater almost never sees meaningful sargassum even in peak weeks. It is a longer drive but a near-certain win. Within easy reach, Palm Beach and Jupiter sometimes reset faster because the Gulf Stream runs close and sweeps mats away quickly. Pull up the full Florida list, sort by Beach Score, and pick the closest clean option rather than gambling on a single beach."
+          "h2": "Where to compare alternatives if both beaches are affected",
+          "text": "Use the regional map to compare the latest published observations for other tracked beaches such as Palm Beach, Jupiter, Cocoa Beach, Daytona or Clearwater. Geographic exposure patterns can guide what to check next, but they do not guarantee that any beach is clear today. Check each observation time and confidence; when a reading is delayed or unverified, no current clean-beach recommendation is made. Satellite observations do not confirm onshore cleanup."
         }
       ],
       "faq": [
         {
           "q": "Is there seaweed in Sunny Isles Beach today?",
-          "a": "Check the live panel above for today's status. Sunny Isles sits on the open Atlantic between Miami Beach and Fort Lauderdale, so it tracks the same southeast-Florida pattern, read as new satellite observations become available. In peak summer it can flip overnight on an east wind, so the only reliable answer is the same-day one — not a seasonal average."
+          "a": "The latest published observation may not be from today. Check its observation time and confidence. A current clean/moderate/avoid status is shown only when the reading passes freshness checks; if it is delayed or unverified, no current verdict is displayed. Nearby beaches can differ."
         },
         {
           "q": "Does Fort Lauderdale Beach get raked of sargassum?",
-          "a": "Yes. Fort Lauderdale runs regular municipal beach cleaning that resets the sand quickly, usually in the morning. But raking only clears what has already landed — if satellites show fresh mats drifting in, seaweed can return within hours. Pairing the cleaning schedule with today's satellite forecast tells you more than either alone."
+          "a": "Cleaning practices and timing vary by municipality and operator. Satellite imagery measures floating material offshore; it cannot confirm whether crews have removed seaweed from the sand. Check local beach updates as well as the latest satellite observation."
         },
         {
           "q": "Is sargassum dangerous to swim near in Fort Lauderdale?",
-          "a": "Small amounts floating in the water are harmless to swimmers. The real concern is large rotting piles on the sand, which release hydrogen sulfide (H2S) — a rotten-egg smell that can irritate eyes, throat and lungs, especially for people with asthma. Stay upwind of thick, decaying wrack lines and keep kids and pets off big piles."
+          "a": "This map is not a health or air-quality monitor and does not measure hydrogen sulfide (H2S). Avoid large decaying piles and strong rotten-egg odors, keep children and pets away from decomposing wrack, and follow local public-health guidance."
         },
         {
           "q": "How accurate is this Fort Lauderdale sargassum tracker?",
-          "a": "It uses the AFAI satellite index from Copernicus and NOAA — the same data NOAA relies on — refreshed when new satellite observations are available. Floating mats have a distinct spectral signature satellites detect reliably in clear weather; clouds can delay a reading, so every beach shows its data age and a confidence level. It is a measurement, not a guess."
+          "a": "We use the AFAI index on public satellite imagery from Copernicus/NOAA sources. Usable observations are intermittent and cloud cover can delay readings. Each beach shows observation time and confidence; a current status is published only when freshness checks pass. No fixed refresh schedule or unverified accuracy percentage is promised."
         },
         {
           "q": "When is sargassum worst in Fort Lauderdale?",
-          "a": "Roughly May through August, peaking in June and July, in line with the broader Atlantic bloom. Winter through early spring is effectively seaweed-free. Even in peak season the landings are episodic — a beach can be buried one day and raked clean a few days later — which is why the daily satellite read matters more than the calendar."
+          "a": "Florida's Atlantic coast often sees more arrivals during the warmer months, commonly May through August, but timing and intensity vary by year and location. This seasonal pattern is not today's beach status; check the latest published observation and timestamp for each beach."
         }
       ],
       "priority": "0.7",
