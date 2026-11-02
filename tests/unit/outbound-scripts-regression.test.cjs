@@ -22,6 +22,11 @@
  *   S4  `require()` d'un script sortant n'a AUCUN effet réseau (garde
  *       `require.main === module`) — les tests peuvent charger les modules sans
  *       déclencer d'envoi.
+ *   S6  Non-pollution : les scripts journalisent leur simulation dans
+ *       `scripts/automation/data/` (chemins résolus via `__dirname`, donc DANS
+ *       le dépôt). Le test photographie cet état, le restaure — suppressions
+ *       incluses — puis VÉRIFIE que l'arbre est inchangé. Un test qui sale le
+ *       dépôt est un échec, pas un détail.
  *
  * Aucun réseau réel : le mock remplace fetch, nodemailer, basic-ftp et
  * ssh2-sftp-client. Aucun secret réel n'est utilisé (valeurs factices).
@@ -186,16 +191,43 @@ function snapshotLocalState() {
 }
 
 function restoreLocalState(snap) {
+  let restored = 0;
+  // (1) Fichiers actuellement présents : on les remet à leur état photographié.
   for (const fp of collectLocalFiles()) {
     if (!snap.has(fp)) {
-      try { fs.rmSync(fp); } catch (_) { /* déjà absent */ }
+      // Fichier absent AVANT la campagne : la campagne l'a créé => on supprime,
+      // sinon il polluerait le dépôt (ex. journal de simulation).
+      try { fs.rmSync(fp); restored++; } catch (_) { /* déjà absent */ }
       continue;
     }
     const before = snap.get(fp);
     try {
-      if (!fs.readFileSync(fp).equals(before)) fs.writeFileSync(fp, before);
+      if (!fs.readFileSync(fp).equals(before)) { fs.writeFileSync(fp, before); restored++; }
     } catch (_) { /* fichier volatil : ignoré */ }
   }
+  // (2) Fichiers SUPPRIMÉS pendant la campagne : `collectLocalFiles()` ne les
+  // voit plus, donc une boucle sur le seul état courant laisserait un trou.
+  // On restaure explicitement tout ce que la photographie connaît.
+  for (const [fp, before] of snap) {
+    if (fs.existsSync(fp)) continue;
+    try {
+      fs.mkdirSync(path.dirname(fp), { recursive: true });
+      fs.writeFileSync(fp, before);
+      restored++;
+    } catch (_) { /* disque non inscriptible : ignoré */ }
+  }
+  return restored;
+}
+
+/** Le test ne doit JAMAIS laisser l'arbre de travail sale (mission P0.23). */
+function assertLocalStateRestored(snap, label) {
+  const dirty = [];
+  for (const [fp, before] of snap) {
+    let now = null;
+    try { now = fs.readFileSync(fp); } catch (_) { now = null; }
+    if (!now || !now.equals(before)) dirty.push(path.relative(ROOT, fp));
+  }
+  record(label, dirty.length === 0, dirty.length ? 'SALE: ' + dirty.join(', ') : `arbre propre`);
 }
 
 function main() {
@@ -296,6 +328,11 @@ const LOCAL_SNAPSHOT = snapshotLocalState();
 try {
   main();
 } finally {
-  restoreLocalState(LOCAL_SNAPSHOT);
+  const restored = restoreLocalState(LOCAL_SNAPSHOT);
+  // Garde finale : le test ne doit JAMAIS laisser `scripts/automation/data/`
+  // sale. Sans cette vérification, une pollution oubliée (déjà arrivée deux
+  // fois) passerait inaperçue et salirait le commit suivant.
+  console.log(`\nS6 — non-pollution (${restored} fichier(s) restauré(s)) :`);
+  assertLocalStateRestored(LOCAL_SNAPSHOT, 'arbre de travail inchangé après la campagne');
 }
 process.exit(failures === 0 ? 0 : 1);

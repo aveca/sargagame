@@ -1,4 +1,40 @@
 
+## 2026-11-02 08:55 UTC · Agent: coding_agent (OpenCode) · Durcissement S6 anti-pollution + sonde négative (mission P0.23/#1157)
+
+### Travail effectué
+- **Résumé 1 ligne** : la garde de non-pollution de la suite de régression sortante est devenue une assertion qui ÉCHOUE réellement, et cette défaillance est prouvée par une sonde négative.
+- **Détails** :
+  - Constat : `restoreLocalState()` ne restaurait que les fichiers **actuellement présents**. Un fichier supprimé en cours de campagne n'était plus vu par `collectLocalFiles()`, donc jamais restitué. La pollution data (`outreach-log.json`, `b2b-outreach-log.json`) est également réapparue deux fois en résidu de run.
+  - Correctif structurel : boucle (2) ajoutée — tout fichier connu par la photographie mais devenu absent est recréé (mkdir récursif + écriture du contenu photographié). `restoreLocalState()` renvoie désormais le nombre de fichiers restaurés.
+  - Nouvelle assertion `assertLocalStateRestored()` : relit chaque fichier photographié et enregistre PASS/FAIL. Un test qui laisse l'arbre sale est un **échec**, pas un détail. Affichée sous forme de bloc « S6 — non-pollution (N fichier(s) restauré(s)) ».
+  - **Sonde négative exécutée et concluante** (copie temporaire hors dépôt, restauration neutralisée) : S1-S5 restent PASS (le contrat fail-closed tient : 0 écriture externe sur les 31 scripts), mais **S6 ÉCHOUE** avec `SALE: scripts\automation\data\automation-log.json, scripts\automation\data\b2b-outreach-log.json, scripts\automation\data\outreach-log.json`, exit 1. La garde n'est donc pas un cachet tampon.
+  - Suite réelle rejouée après durcissement : `S6 — non-pollution (4 fichier(s) restauré(s))` / `PASS arbre de travail inchangé` ; `git status -- scripts/automation/data/` propre.
+  - Sondes et fichiers temporaires supprimés ; les 3 logs data rendus sales par la sonde ont été restaurés à HEAD (`git checkout HEAD --`) ; arbre final propre.
+
+### Fichiers modifiés
+- `tests/unit/outbound-scripts-regression.test.cjs` — `restoreLocalState()` (restaure aussi les fichiers supprimés, renvoie un compteur) + `assertLocalStateRestored()` + bloc S6 dans le `finally` ; documentation S6 ajoutée à l'en-tête.
+
+### Tests réalisés
+- [x] Suite réelle durcie → PASS, `pass 1, fail 0`, arbre propre
+- [x] Sonde négative (restauration neutralisée, hors dépôt) → S6 FAIL + exit 1 ⇒ garde réellement bloquante
+- [x] `git status --porcelain` final → uniquement les 3 `.ai/` + ce fichier de test ; zéro fichier `scripts/automation/data/` modifié
+
+### Problèmes restants
+- [ ] `.ai/` + le fichier de test sont modifiés mais **pas encore commités** (entrée à écrire puis commit + push sur `fix/outbound-safety-20261101`, merge sans force-push — le fondateur peut pousser en parallèle).
+- [ ] Les verrous de mission déjà listés restent inchangés (publication de données bloquée par la porte 900 min ; private forecast containment sans stockage autorisé ; PR #1221 en attente d'approbation reporting paiement).
+
+### Prochaine action recommandée
+1. Commiter + pousser ces 4 fichiers (merge, jamais force-push) — Rôle : coding_agent
+2. Vérifier que #1227 est toujours DRAFT et que son commit head correspond au HEAD local — Rôle : coding_agent
+3. Enchaîner les Draft PRs B-F séquentiellement, puis reprendre #1221 — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `fix/outbound-safety-20261101`
+- PR : **#1227 (DRAFT, non mergée)** — commit de tête à réaligner avec le nouveau commit local
+- Aucun force-push ; intégration par merge uniquement.
+
+---
+
 ## 2026-11-02 06:20 UTC · Agent: coding_agent (OpenCode) · Mission P0.23/#1157 — contrat d'autorisation sortant fail-closed
 
 ### Travail effectué
@@ -28,7 +64,7 @@
 ### Tests réalisés
 - [x] `npm run build` → exit 0
 - [x] `check-bundle-budget.cjs` → 210.0 Ko ≤ 210 Ko gzip
-- [x] `npm test` → **124/127** (3 échecs préexistants, aucune de leurs sources dans ce diff)
+- [x] `npm test` → **125/127** (le fondateur a réparé `morning-brief-sender-behavior` en stubant le contrat ; les 2 échecs restants sont prouvés préexistants / environnement autocrlf, hors périmètre — voir « Problèmes restants »)
 - [x] `CHECK_certification_status.cjs --mode pr` → exit 0
 - [x] `ci-certification-audit.cjs` → 11 pass / 1 warn / 0 issue
 - [x] `deploy-audit.cjs` → 16 / 0 / 0
@@ -42,6 +78,10 @@
 - [ ] actionlint / Lighthouse → **non installés hors ligne** ; substitué par un vrai parseur js-yaml des 2 workflows modifiés (jobs=6/54 steps et jobs=2/41 steps)
 
 ### Problèmes restants
+- [ ] **Intégration des travaux du fondateur sur la branche** (12 commits poussés pendant ma session, intégrés par merge, sans force-push) : durcissement du contrat central OIDC — preuve que le job sortant est bien passé par l'Environment protégé, validation `nbf`, liaison job↔Environment, vérification de signature via JWKS officiel, nombre de relecteurs lié à `required_reviewers`, et stub du contrat dans 2 tests hermétiques. Mes suites passent sur ce socle : contrat jusqu'à **P29**, gouvernance G1-G16 + R6a-R6g, régression scripts, purge 24 preuves.
+- [ ] `npm test` = **125/127**. Les 2 échecs restants sont **prouvés préexistants et hors périmètre** :
+  - `tests/unit/morning-brief-freshness.test.cjs:69` — assertion `indexOf('\n}\n')` sur le source de `send-notifications.cjs`. **Prouvé** : le blob git stocke LF (assertion PASSE), mais `core.autocrlf=true` sur Windows produit CRLF au checkout (assertion ÉCHOUE). Vérifié aussi sur 2989/3883 fichiers intacts du dépôt, tous en CRLF dans la copie de travail ⇒ artefact d'environnement, pas une régression de cette mission. Fragilité réelle du test (recherche de chaîne sensible aux fins de ligne).
+  - `tests/unit/region-seo-methodology-scope.test.cjs:182` — « florida: methodology page must remain generated » : génération SEO régionale, sans lien avec cette mission.
 - [ ] `tests/e2e/funnel-payment.spec.ts` : 1 test en échec, environnemental et **hors gate CI** — sélecteur obsolète `.sg-maplabel` + donnée satellite périmée dans cet environnement ; `src/` intact. Le smoke utilise `svg[data-sg-live="1"] g[style*="cursor"]` et passe.
 - [ ] `scripts/lib/premium-page.cjs` : erreur de syntaxe **préexistante** ligne 25 (identique à HEAD, liée au paiement, hors périmètre).
 - [ ] 3 requires relatifs cassés **préexistants** : `scripts/autopilot/runner.cjs`, `scripts/lib/certification-gate.cjs`, `scripts/lib/fast-deploy.cjs`.
@@ -58,7 +98,8 @@
 ### Branche / PR
 - Branche : `fix/outbound-safety-20261101`
 - PR : **#1227 (DRAFT, non mergée)** — https://github.com/aveca/sargagame/pull/1227
-- Commit head : `728b16e316aab62cdc4bef8ec8d27bc83e797c2a`
+- Commit head : `7067dd2758197e5bba4961dd57ce3a518de536f6` (merge d'intégration des 12 commits du fondateur, poussé en fast-forward, aucun force-push)
+- Mes commits : `728b16e31` (contrat + gouvernance + tests), `f311eeb26` (handoff `.ai/`)
 - Note : #1218 (périmètre purge-analytics seul, branche `fix/purge-analytics-hard-dry-run-20261101`) est un **sous-ensemble strict** de #1227 ; laissé ouvert, commentaire de superseion posté.
 
 ---
