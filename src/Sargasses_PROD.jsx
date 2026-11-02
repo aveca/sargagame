@@ -14577,7 +14577,7 @@ export default function App(){
           const _forceFallback = (() => {
             try {
               return /[?&]beachfallback=1(?:&|$)/.test(window.location.search)
-                && /^(localhost|127\\.0\\.0\\.1)$/.test(window.location.hostname)
+                && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
             } catch (_) { return false }
           })()
           if (_forceFallback) return _fallback
