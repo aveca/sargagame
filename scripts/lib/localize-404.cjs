@@ -24,7 +24,7 @@ const FR = {
   p: 'Cette page n’existe pas (ou a glissé au large). Pas grave — la mer, elle, est toujours là. La dernière observation satellite est affichée avec sa date ; si elle est retardée ou non vérifiable, aucun statut actuel n’est publié. Ouvre la carte pour consulter les données datées.',
   cta: '>Voir la carte des sargasses<',
   planB: 'Le Plan B :',
-  mapLink: '>la carte<',
+  mapLink: '>la carte du jour<',
   forecastLink: '>Prévisions 7 jours<',
   legalLink: '>Mentions légales<',
   privacyLink: '>Confidentialité<',
