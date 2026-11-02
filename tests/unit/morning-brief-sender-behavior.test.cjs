@@ -9,9 +9,9 @@ const ROOT = path.resolve(__dirname, '../..');
 const senderPath = path.join(ROOT, 'scripts/automation/send-notifications.cjs');
 let source = fs.readFileSync(senderPath, 'utf8');
 
-const mainCall = source.lastIndexOf('\nmain().catch(');
-assert.ok(mainCall > 0, 'sender CLI entry point must be present');
-source = source.slice(0, mainCall);
+// The sender now has a CLI guard: if (require.main === module).
+// This VM uses a plain fake require with no .main property, so evaluating the
+// complete source keeps the CLI inert while exposing the pure sender function.
 
 const pickSignature = 'function pickTopForBrief(sargassum, island) {';
 const messageSignature = "function buildBriefMessage(pick, islandName, lang = 'fr') {";
@@ -77,6 +77,13 @@ const fakeRequire = (specifier) => {
   if (specifier === 'https') return fakeHttps;
   if (specifier === '../lib/satellite-freshness.cjs') {
     return require('../../scripts/lib/satellite-freshness.cjs');
+  }
+  if (specifier === './lib/safety.cjs') {
+    // The stale-data path under test must never authorize an outbound action.
+    return {
+      authorizeActionAsync: async () => ({ execute: false, mode: 'dry-run', reason: 'test-stub' }),
+      describeDecision: () => 'test dry-run',
+    };
   }
   if (String(specifier).endsWith(path.join('regions', 'index.cjs'))) {
     return { getAllRegions: () => regions };
