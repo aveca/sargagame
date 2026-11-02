@@ -2557,15 +2557,17 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           const sparkPath=spark?("M"+spark.map(p=>p.x.toFixed(0)+" "+p.y.toFixed(0)).join(" L")):null
           const guide=_constel.find(p=>p.top)
           const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
-          const promiseEl=_ctxName
-            ?(lang==="es"?(<><span style={G}>{_ctxName}</span>. ¿Y mañana? Ya lo he visto.</>):lang==="en"?(<><span style={G}>{_ctxName}</span>. And tomorrow? I've already seen it.</>):(<><span style={G}>{_ctxName}</span>. Et demain ? Je l'ai déjà vu.</>))
-            :_allCalm
-              ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
-              :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
-          const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
-          const _baseProof=(_pName&&_pScore)
-            ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
-            :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+          const promiseEl=!_observationFresh
+            ?_t(lang,"Dernière observation datée : le statut actuel n'est pas confirmé.","Latest observation is dated; current status is not confirmed.","La última observación tiene fecha; el estado actual no está confirmado.")
+            :_ctxName
+              ?(lang==="es"?(<><span style={G}>{_ctxName}</span>. ¿Y mañana? Ya lo he visto.</>):lang==="en"?(<><span style={G}>{_ctxName}</span>. And tomorrow? I've already seen it.</>):(<><span style={G}>{_ctxName}</span>. Et demain ? Je l'ai déjà vu.</>))
+              :_allCalm
+                ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
+                :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
+          const _pName=_observationFresh?(_ctxName||_topName):null, _pScore=_observationFresh?(_ctxScore||_topScore):null
+          const _baseProof=_observationFresh&&_pName&&_pScore
+            ?_t(lang,`${_pName} · ${_pScore}/100 · dernière observation vérifiée`,`${_pName} · ${_pScore}/100 · latest verified observation`,`${_pName} · ${_pScore}/100 · última observación verificada`)
+            :_observationDisplay.label
           // A/B pw_proof : au point de décision, remplace le snapshot du jour par
           // le PALMARÈS auditable (preuve « Airbnb » = note + volume + public).
           const proof=(pwProof&&_recordProof)||_baseProof
