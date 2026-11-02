@@ -145,7 +145,7 @@ function buildC0(c, key) {
       hdrTitle: 'Le Veilleur', hdrSub: 'Vos plages, mesurées au satellite', hdrFor: `Pour ${c.name}, ${place}`,
       hi: 'Bonjour,',
       pain: `Je fais <strong>Le Veilleur</strong> — un projet indépendant qui publie les dernières observations AFAI disponibles plage par plage. Elles sont distribuées via NOAA/AOML ERDDAP à partir de données source du laboratoire USF. Chaque lecture est accompagnée de son horodatage et de son niveau de confiance ; la source est intermittente et un verdict actuel est suspendu lorsque l'observation est trop ancienne.`,
-      flip: `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; aucune alerte avant l'échouage n'est garantie.`,
+      flip: `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; Aucune alerte anticipée n'est garantie.`,
       proof: '',
       ask: `<strong>Essai 30 jours, sans carte.</strong> Le widget et les alertes par plage sont disponibles lorsque les données correspondantes sont disponibles et validées. Ensuite, si cela vous sert : 79 €/mois ou 690 €/an. Voici les dernières observations publiées, avec leur date et leur confiance.`,
       ctaText: 'Consulter les observations · essai 30 j',
@@ -155,7 +155,7 @@ function buildC0(c, key) {
       hdrTitle: 'Le Veilleur', hdrSub: 'Your beaches, measured by satellite', hdrFor: `For ${c.name}, ${place}`,
       hi: 'Hi,',
       pain: `I run <strong>Le Veilleur</strong> — an independent project publishing the latest available AFAI beach observations. They are distributed through NOAA/AOML ERDDAP from USF source data. Each reading includes its observation timestamp and confidence; the source is intermittent, and we withhold a current verdict when an observation is too old.`,
-      flip: `A forecast is shown only when the observation and wind/current inputs pass validation. Days 4–7 are a trend, not a guarantee; no alert-before-landfall promise is made.`,
+      flip: `A forecast is shown only when the observation and wind/current inputs pass validation. Days 4–7 are a trend, not a guarantee; No advance alert is guaranteed.`,
       proof: '',
       ask: `The Pro offer includes a <strong>free 30-day trial, no card</strong>; the widget and per-beach alerts are available when their data pass validation. Then €79/mo or €690/yr if it is useful. Here are the latest published observations, with their timestamps and confidence levels.`,
       ctaText: 'Review dated observations · 30-day trial',
@@ -165,7 +165,7 @@ function buildC0(c, key) {
       hdrTitle: 'Le Veilleur', hdrSub: 'Sus playas, medidas por satélite', hdrFor: `Para ${c.name}, ${place}`,
       hi: 'Hola,',
       pain: `Soy <strong>Le Veilleur</strong>, un proyecto independiente que publica las últimas observaciones AFAI disponibles para cada playa. Se distribuyen a través de NOAA/AOML ERDDAP a partir de datos de origen del laboratorio USF. Cada lectura incluye su fecha y nivel de confianza; la fuente es intermitente y se suspende un veredicto actual cuando la observación es demasiado antigua.`,
-      flip: `El pronóstico solo se muestra cuando la observación y los datos de viento y corriente pasan la validación. Los días 4–7 son una tendencia, no una garantía; no prometemos alertas antes de que llegue el sargazo.`,
+      flip: `El pronóstico solo se muestra cuando la observación y los datos de viento y corriente pasan la validación. Los días 4–7 son una tendencia, no una garantía; No se garantiza una alerta anticipada.`,
       proof: '',
       ask: `La oferta Pro incluye una <strong>prueba gratuita de 30 días, sin tarjeta</strong>; el widget y las alertas por playa están disponibles cuando sus datos pasan la validación. Después, 79 €/mes o 690 €/año si le resulta útil. Aquí están las últimas observaciones publicadas, con fecha y confianza.`,
       ctaText: 'Consultar observaciones · prueba 30 d',
@@ -186,7 +186,7 @@ function buildC0(c, key) {
       T.ask = `L'essai Pro de 30 jours, sans carte, donne accès au widget et aux alertes par plage lorsque les données sont disponibles et validées. Ensuite : 79 €/mois ou 690 €/an si le service vous est utile.`
       T.ctaText = dh ? `Consulter vos ${dh.nbeaches} plages · essai 30 j` : 'Consulter vos observations · essai 30 j'
     } else {
-      T.flip = `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; aucune alerte avant l'échouage n'est garantie.`
+      T.flip = `Un aperçu prévisionnel n'est présenté que lorsque l'observation et les entrées de vent et de courant passent les contrôles. Les jours 4 à 7 décrivent une tendance, pas une certitude ; Aucune alerte anticipée n'est garantie.`
       T.ctaText = dh ? `Consulter ${dh.beach} · essai 30 j` : 'Consulter mes observations · essai 30 j'
     }
   }
