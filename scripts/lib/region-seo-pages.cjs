@@ -119,14 +119,24 @@ function buildTodayHubState({ regionName, beaches, data, lang = 'en', now = Date
         ? 'No hay estados actuales de playa validados en la última observación. Revisa la hora de la lectura antes de decidir.'
         : 'No verified current beach statuses are available in the latest observation. Check the reading time before deciding.');
 
+  const unavailableDesc = freshness.state === 'delayed'
+    ? (isSpanish
+      ? `No se publica una clasificación actual por playa en ${regionName} porque la observación está retrasada. Revisa la hora de la última lectura.`
+      : `No current beach ranking is published for ${regionName} because the satellite observation is delayed. Check the last reading time.`)
+    : freshness.state === 'unknown'
+      ? (isSpanish
+        ? `No se publica una clasificación actual por playa en ${regionName} porque la observación no se puede verificar. Revisa la hora de la última lectura.`
+        : `No current beach ranking is published for ${regionName} because the satellite observation cannot be verified. Check the last reading time.`)
+      : (isSpanish
+        ? `No hay estados actuales de playa validados en la última observación de ${regionName}. Revisa la hora y la confianza antes de decidir.`
+        : `No verified current beach statuses are available in the latest observation for ${regionName}. Check the reading time and confidence before deciding.`);
+
   return {
     rows: [],
     title: isSpanish
       ? `Sargazo en ${regionName} — estado actual no disponible`
       : `${regionName} sargassum — current status unavailable`,
-    desc: isSpanish
-      ? `No se publica una clasificación actual por playa en ${regionName}. La observación está retrasada o no se puede verificar; revisa la hora de la última lectura.`
-      : `No current beach ranking is published for ${regionName}. The satellite observation is delayed or cannot be verified; check the last reading time.`,
+    desc: unavailableDesc,
     h1: isSpanish
       ? 'Estado actual de playas no disponible'
       : 'Current beach status unavailable',
