@@ -88,10 +88,10 @@ jobs:
           # Find all task sections with their status
           # Pattern: ### TASK-PX-XXX followed by content until next ### or end
           # Then find **Statut** : [ ] ...
-          sections = re.split(r'(^### TASK-P\d-\d{3}(?:\s|$))', content, flags=re.MULTILINE)
+          sections = re.split(r'(^### TASK-P\d-\d{3}(?=[\s.:—-]|$))', content, flags=re.MULTILINE)
           # sections alternates: prefix, task_id, content, task_id, content...
 
-          priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 2}
+          priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
           candidates = []
 
           for i in range(1, len(sections), 2):
@@ -115,7 +115,7 @@ jobs:
                   # Extract role
                   role_match = re.search(r'\*\*R[oô]le\*\*\s*:\s*(\w+)', task_content)
                   role = role_match.group(1) if role_match else 'coding'
-                  priority = priority_order.get(task_id.split('-')[1][0] if len(task_id.split('-')) > 1 else 'Z', 99)
+                  priority = priority_order.get(task_id.split('-')[1] if len(task_id.split('-')) > 1 else 'Z', 99)
                   candidates.append((priority, task_id, role))
 
           if not candidates:
@@ -162,7 +162,7 @@ jobs:
           content = p.read_text(encoding='utf-8')
           
           # Find the task section first
-          task_section_pattern = rf'(^### {re.escape(task_id)}(?:\s|$).*?)(?=^### TASK-P|\Z)'
+          task_section_pattern = rf'(^###\s+{re.escape(task_id)}(?=[\s.:—-]|$).*?)(?=^###\s+TASK-P\d-\d{{3}}(?=[\s.:—-]|$)|\Z)'
           task_match = re.search(task_section_pattern, content, re.MULTILINE | re.DOTALL)
           if not task_match:
               raise SystemExit(f'Task {task_id} not found')

@@ -14,7 +14,7 @@ function readTasks() {
 }
 
 function parseTasks(content) {
-  const sections = content.split(/(^### TASK-P\d-\d{3}(?:\s|$))/m);
+  const sections = content.split(/(^### TASK-P\d-\d{3}(?=[\s.:—-]|$))/m);
   const priorityOrder = { P0: 0, P1: 1, P2: 2, P3: 3 };
   const candidates = [];
 
@@ -32,7 +32,7 @@ function parseTasks(content) {
     if (status === ' ') {
       const roleMatch = taskContent.match(/\*\*R[oô]le\*\*\s*:\s*(\w+)/);
       const role = roleMatch ? roleMatch[1] : 'coding';
-      const priority = priorityOrder[taskId.split('-')[1]?.[0]] || 99;
+      const priority = priorityOrder[taskId.split('-')[1]] ?? 99;
       candidates.push({ priority, taskId, role });
     }
   }
@@ -44,7 +44,8 @@ function parseTasks(content) {
 
 function claimTask(content, taskId, agentType) {
   // Find the task section
-  const taskSectionPattern = new RegExp(`(^### ${taskId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:\\s|$).*?)(?=^### TASK-P|\\Z)`, 'ms');
+  if (!/^TASK-P[0-3]-[0-9]{3}$/.test(taskId)) throw new Error(`Invalid task ID: ${taskId}`);
+  const taskSectionPattern = new RegExp(`(^###\\s+${taskId}(?=[\\s.:—-]|$).*?)(?=^###\\s+TASK-P\\d-\\d{3}(?=[\\s.:—-]|$)|(?![\\s\\S]))`, 'ms');
   const taskMatch = content.match(taskSectionPattern);
   if (!taskMatch) throw new Error(`Task ${taskId} not found`);
 
@@ -77,7 +78,7 @@ function runTests() {
   // Note technique : claimTask capture une section jusqu'au prochain en-tête
   // `### TASK-P` — la fixture se termine donc par une sentinelle d'en-tête,
   // sinon la dernière section ne correspond pas (lookahead sans succès).
-  const contentWithP0 = content + '\n\n### TASK-P0-000 Test hermétique P0\n- **Priorité** : P0\n- **Rôle** : coding\n- **Statut** : [ ] disponible\n- **Description** : entrée de test — jamais exécutée.\n\n### TASK-P9-900 Sentinelle de fin de fixture\n';
+  const contentWithP0 = content + '\n\n### TASK-P0-000. Test hermétique P0\n- **Priorité** : P0\n- **Rôle** : coding\n- **Statut** : [ ] disponible\n- **Description** : entrée de test — jamais exécutée.\n\n### TASK-P9-900 Sentinelle de fin de fixture\n';
   
   console.log('=== Agent Handoff Task Claiming Tests ===\n');
   
@@ -139,7 +140,7 @@ function runTests() {
   // Test 4: Claim non-existent task should fail
   console.log('Test 4: Claim non-existent task should fail');
   try {
-    claimTask(content, 'TASK-P9-999', 'coding');
+    claimTask(content, 'TASK-P3-999', 'coding');
     console.log('  ✗ FAIL: Should have thrown for non-existent task');
     failed++;
   } catch (e) {
@@ -196,6 +197,52 @@ function runTests() {
       passed++;
     } else {
       console.log('  ✗ FAIL: Expected null, got', nextTask);
+      failed++;
+    }
+  } catch (e) {
+    console.log('  ✗ FAIL:', e.message);
+    failed++;
+  }
+
+
+  // Test 8: Punctuation after the task ID is accepted.
+  console.log('Test 8: Punctuated task header is parsed');
+  try {
+    const punctuated = [
+      '### TASK-P2-004. Transitions',
+      '- **Rôle** : coding',
+      '- **Statut** : [ ] pending'
+    ].join('\n');
+    const nextTask = parseTasks(punctuated);
+    if (nextTask && nextTask.taskId === 'TASK-P2-004') {
+      console.log('  ✓ PASS: TASK-P2-004. parsed as stable task ID');
+      passed++;
+    } else {
+      console.log('  ✗ FAIL: Expected TASK-P2-004, got', nextTask?.taskId);
+      failed++;
+    }
+  } catch (e) {
+    console.log('  ✗ FAIL:', e.message);
+    failed++;
+  }
+
+  // Test 9: P0 > P1 > P2 even when the lower-priority task appears first.
+  console.log('Test 9: Priority extraction and ordering');
+  try {
+    const priorityFixture = [
+      '### TASK-P2-001. Lower priority first',
+      '- **Statut** : [ ] pending',
+      '### TASK-P1-001: Higher priority second',
+      '- **Statut** : [ ] pending',
+      '### TASK-P0-001 — Highest priority last',
+      '- **Statut** : [ ] pending'
+    ].join('\n');
+    const nextTask = parseTasks(priorityFixture);
+    if (nextTask && nextTask.taskId === 'TASK-P0-001') {
+      console.log('  ✓ PASS: P0 selected ahead of P1 and P2');
+      passed++;
+    } else {
+      console.log('  ✗ FAIL: Expected TASK-P0-001, got', nextTask?.taskId);
       failed++;
     }
   } catch (e) {
