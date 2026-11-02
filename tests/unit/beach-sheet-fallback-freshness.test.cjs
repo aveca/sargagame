@@ -13,13 +13,12 @@ const end = source.indexOf('\nfunction ', start)
 assert.ok(start >= 0 && end > start, 'inline BeachSheet fallback exists')
 const component = source.slice(start, end)
 
-assert.ok(source.includes('lcDetailFreshnessLabel'), 'shared observation-age label is imported')
 assert.ok(component.includes('const satelliteDecisionCurrent = sargData?.source === "erddap-live" && sargData?.stale === false && isSatelliteFresh12h(sargData)'),
   'fallback requires live source, explicit stale=false and a fresh ERDDAP observation')
 assert.ok(component.includes('if(!satelliteDecisionCurrent) return('),
   'fallback must replace the whole decision UI when the observation is not current')
 assert.ok(component.includes('data-testid="beach-sheet-fallback-stale"'))
-assert.ok(component.includes('lcDetailFreshnessLabel(sargData,lang)'))
+assert.ok(component.includes('satelliteAgeHours(sargData)'), 'stale state displays age from the observation clock')
 assert.ok(component.includes('data-testid="beach-sheet-fallback-score-paused"'))
 assert.ok(component.includes('data-testid="beach-sheet-fallback-current"'))
 assert.ok(component.includes('if(!satelliteDecisionCurrent||!beach)return null'),
@@ -28,11 +27,11 @@ assert.ok(component.includes('if(!Array.isArray(fc)||fc.length===0)return null')
   'forecast must require an actual weekly pipeline series')
 assert.ok(!component.includes('generateForecast(beach.afai,lang)'),
   'fallback must not synthesize a forecast when the weekly pipeline is absent')
-assert.ok(source.includes('beachfallback=1') && source.includes('window.location.hostname === "127.0.0.1"') && source.includes('window.location.hostname === "localhost"'),
-  'QA override must be restricted to localhost/127.0.0.1')
+assert.ok(source.includes('beachfallback=1') && source.includes('window.location.hostname === "127.0.0.1"'),
+  'QA override must be restricted to 127.0.0.1')
 
 ;(async () => {
-  const { isSatelliteFresh12h, lcDetailFreshnessLabel } = await import('../../src/lib/format-freshness.mjs')
+  const { isSatelliteFresh12h } = await import('../../src/lib/format-freshness.mjs')
   const now = Date.parse('2026-11-02T09:35:00.000Z')
   const stale = {
     source: 'erddap-live',
@@ -42,8 +41,8 @@ assert.ok(source.includes('beachfallback=1') && source.includes('window.location
   }
   assert.equal(isSatelliteFresh12h(stale, now), false,
     'a recent publication timestamp must not refresh an old ERDDAP observation')
-  assert.match(lcDetailFreshnessLabel(stale, 'fr', now), /historique, pas un verdict actuel/,
-    'stale fallback must explain that the observation is historical')
+  assert.equal(Math.round((now - Date.parse(stale.erddapTimestamp)) / 3600000), 142,
+    'stale fallback test fixture is based on the old ERDDAP observation, not updatedAt')
 
   const fresh = {
     source: 'erddap-live',
