@@ -2270,7 +2270,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     if(!passSeq)return null
     const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)
     const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()
-    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
+    const fcLvl=_observationFresh?(has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null):null
     const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
     const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
     const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
@@ -2281,11 +2281,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
       return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
         `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
         `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)}catch(_){return null}})()
-    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
-      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
-      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
-        :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()
-    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
+    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine:_observationDisplay.label,hasGrid:!!(fcLvl&&fc.length>0)}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[passSeq,sargData,beach,island,_trackRec,lang])
   // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
