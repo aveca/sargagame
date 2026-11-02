@@ -605,10 +605,10 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
 // en la MONTRANT (aperçu 7 jours, Auj/Dem révélés verts, J+2…J+6 verrouillés). Classes .pww-*
 // pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
 // aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
-function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
+function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,observationFresh=false,freshnessLine=""}){
    // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
-   const ST=ctxStatus||(beach&&beach.status)||null
-   const ctxLoc=ctxName||topName||null
+   const ST=observationFresh?(ctxStatus||(beach&&beach.status)||null):null
+   const ctxLoc=observationFresh?(ctxName||topName||null):null
    // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
    // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
    // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
@@ -652,7 +652,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   // Aperçu 7 jours = STATIQUE / illustratif (pas de fausse donnée live), Auj/Dem verts.
   const dayNames=lang==="en"?["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]:lang==="es"?["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"]
   const today=new Date().getDay() // 0=Dim
-  const dn=i=>{if(i===0)return _t(lang,"Auj","Today","Hoy");if(i===1)return _t(lang,"Dem","Tom","Mañ");return dayNames[(today+i)%7]}
+  const dn=i=>{if(i===0)return _t(lang,"Exemple","Example","Ejemplo");if(i===1)return _t(lang,"Aperçu","Preview","Vista");return dayNames[(today+i)%7]}
   const previewDots=["ok","ok","mod","bad","bad","mod","ok"] // illustratif
   const planBtn=(key,label,price,unit,slam,eq,save)=>(
     <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"world"})}catch(_){}}}
@@ -837,7 +837,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         </svg>
         <span className="pww-eyebrow pww-anton">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
         <span className="pww-season">{seasonMsg||_t(lang,"La saison est là","Season is here","La temporada está aquí")}</span>
-        <div className="pww-vbubble">{_t(lang,<>Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</>,<>Your beach, checked every morning — <b>before</b> you leave.</>,<>Tu playa, verificada cada mañana — <b>antes</b> de que salgas.</>)}</div>
+        <div className="pww-vbubble">{_t(lang,<>Ta plage, avec la date de sa dernière observation.</>,<>Your beach, with the date of its latest observation.</>,<>Tu playa, con la fecha de su última observación.</>)}</div>
         <span className="pww-veil">
           <svg viewBox="0 0 120 90" width="78" height="58" aria-hidden="true">
             <g className="pww-breathe">
@@ -871,7 +871,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* APERÇU PRÉVISION 7 JOURS — illustratif (Auj/Dem verts, J+2…J+6 verrouillés) */}
         <div className="pww-fcast" role="button" tabIndex={0} onClick={()=>onStart()} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onStart()}}} aria-label={_t(lang,"Aperçu de la prévision 7 jours — débloquer","7-day forecast preview — unlock","Vista previa pronóstico 7 días — desbloquear")}>
           <div className="pww-fcast-top">
-            <span className="ttl pww-anton">{_t(lang,"Ta prévision · 7 jours","Your forecast · 7 days","Tu pronóstico · 7 días")}</span>
+            <span className="ttl pww-anton">{_t(lang,"Exemple de prévision · 7 jours","Illustrative 7-day forecast","Ejemplo de pronóstico · 7 días")}</span>
             {ctxLoc&&<span className="loc">{ctxLoc}</span>}
           </div>
           <svg className="pww-fcast-curve" viewBox="0 0 340 64" preserveAspectRatio="none" aria-hidden="true">
@@ -893,7 +893,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
               <div key={i} className={"pww-day"+(i>=2?" lock":"")}>
                 <span className="ddn">{dn(i)}</span>
                 <span className={"ddot "+st}></span>
-                <span className="dvd">{i<2?_t(lang,"Net","Clear","Limpio"):<Lock s={9}/>}</span>
+                <span className="dvd">{i<2?_t(lang,"Exemple","Example","Ejemplo"):<Lock s={9}/>}</span>
               </div>
             ))}
           </div>
@@ -921,10 +921,10 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             ADDITIF du bloc .pwx-record de ComicPaywall pour restaurer la preuve-moat sur
             l'écran de décision de l'arm World (capture/rollback). Gate lien = ?pwrel=0. */}
         {recordProof
-          ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
-          :totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
-          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
-          :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
+          ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em><small>{freshnessLine}</small>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
+          :<div className="pww-proof">{observationFresh&&totalCount>0
+            ?_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)
+            :freshnessLine}</div>}
 
         {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
             contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
@@ -990,13 +990,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
 // Header variants: scene (golden-hour), constel (constellation map), beat (beat panel).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,headerVariant="scene"}){
-   const ST=ctxStatus||(beach&&beach.status)||null
-   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
-   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
-   const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
-   const ctx=ctxName||topName
-   const best=topName
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,headerVariant="scene",observationFresh=false,freshnessLine=""}){
+   const ST=observationFresh?(ctxStatus||(beach&&beach.status)||null):null
+   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":ST==="clean"?"ok":"unknown"
+   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":ST==="clean"?"#27c46b":"#94a3b8"
+   const vLbl=ST==="avoid"?_t(lang,"à éviter selon l'observation","avoid in the observation","evitar según la observación"):ST==="moderate"?_t(lang,"à surveiller selon l'observation","watch in the observation","vigilar según la observación"):ST==="clean"?_t(lang,"propre selon l'observation","clean in the observation","limpia según la observación"):_t(lang,"statut non vérifié","status unverified","estado no verificado")
+   const ctx=observationFresh?(ctxName||topName):null
+   const best=observationFresh?topName:null
    // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
   // propre, ~64% du temps) la promesse de PEUR « avant que ta plage tourne » contredit
   // l'observation → dissonance → pas de clic. On bascule vers la value-prop POSITIVE que
@@ -1048,7 +1048,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pwx-veil{position:absolute;left:50%;top:46%;transform:translate(-50%,-58%);z-index:2;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
       .pwx-eyebrow{position:absolute;left:12px;top:14px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);background:var(--yel);border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
       .pwx-verdict{position:absolute;left:12px;bottom:10px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:12px;color:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:4px 11px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
-      .pwx-verdict.ok{background:var(--grn)}.pwx-verdict.mod{background:var(--org)}.pwx-verdict.bad{background:var(--red)}
+      .pwx-verdict.ok{background:var(--grn)}.pwx-verdict.mod{background:var(--org)}.pwx-verdict.bad{background:var(--red)}.pwx-verdict.unknown{background:#64748b}
       .pwx-season{position:absolute;right:12px;bottom:10px;z-index:3;font-size:10px;font-weight:800;color:#fff;background:rgba(13,11,20,.7);border:2px solid #fff;border-radius:14px;padding:3px 9px;letter-spacing:.3px}
       .pwx-body{padding:16px 22px 14px}
       @keyframes pwxChroma{0%{text-shadow:-1.5px 0 rgba(255,0,92,.55),1.6px 0 rgba(0,214,255,.55),2px 2px 0 #fff}100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 #fff}}
@@ -1293,7 +1293,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           :_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
 
         {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
-          best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
+          best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Plage la mieux classée dans la dernière observation","Top-ranked beach in the latest observation","Playa mejor clasificada en la última observación"),
           topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"),"daily_brief")}
         {calm
           ?panel("02",false,_t(lang,"Quand ça change","When it changes","Cuando cambia"),
@@ -1309,10 +1309,10 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
             registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
         {recordProof
-          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
-          :totalCount>0&&<div className="pwx-proof">{cleanCount>0
-            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
-            :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em><small>{freshnessLine}</small>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
+          :<div className="pwx-proof">{observationFresh&&totalCount>0
+            ?_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)
+            :freshnessLine}</div>}
 
         <div className="pwx-act">
           {hasAnnual&&!captureMode&&<div className="pwx-plans">
