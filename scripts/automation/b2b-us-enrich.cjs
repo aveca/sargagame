@@ -60,15 +60,15 @@ const EN_HOOKS = {
     `The latest published observation for ${beach}, its timestamp and confidence, gives ${hotel} a transparent answer to guest questions without promising a clean beach before the data support it.`,
   ],
   puntacana: [
-    `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified beach all-clear.`,
+    `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified claim about current beach conditions.`,
     `Punta Cana conditions can vary by beach. ${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, with guests.`,
-    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation and its confidence.`,
+    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation, its timestamp and confidence.`,
     `A dated, confidence-labelled latest published observation for ${beach} can help ${hotel}'s front desk explain what is known — and what is not.`,
   ],
   rivieramaya: [
     `The Riviera Maya varies from beach to beach. ${hotel} can point guests to the latest published observation for ${beach}, with its timestamp and confidence.`,
     `For ${hotel}, a beach-level view is more useful than a regional average: the latest published observation for ${beach} includes its timestamp and confidence.`,
-    `A forecast is shown only when observation and transport inputs pass validation. ${hotel} can share that planning context alongside the latest published observation for ${beach}.`,
+    `A forecast is shown only when observation and transport inputs pass validation. ${hotel} can share that planning context alongside the latest published observation for ${beach}, with its timestamp and confidence.`,
     `The latest published observation for ${beach}, timestamp and confidence included, gives ${hotel} a transparent basis for guest updates without promising a verified clean beach prematurely.`,
   ],
 }
