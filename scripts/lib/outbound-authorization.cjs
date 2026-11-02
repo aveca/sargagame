@@ -110,7 +110,8 @@ async function verifyEnvironmentProtection(options = {}) {
   const owner = options.owner || env.GITHUB_REPOSITORY_OWNER || (env.GITHUB_REPOSITORY || '').split('/')[0]
   const repo = options.repo || (env.GITHUB_REPOSITORY || '').split('/')[1] || ''
   const environment = options.environment || APPROVAL_ENVIRONMENT
-  const token = options.token || env.GITHUB_TOKEN || env.OUTBOUND_APPROVAL_TOKEN || ''
+  // Le jeton Environment est prefere; le claim OIDC prouve separement que le job y est lie.
+  const token = options.token || env.OUTBOUND_APPROVAL_TOKEN || env.GITHUB_TOKEN || ''
   const fetchImpl = options.fetchImpl || globalThis.fetch
 
   if (!owner || !repo || !environment) {
