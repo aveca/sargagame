@@ -168,8 +168,11 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const isl=island||((REGION&&REGION.id)?String(REGION.id).toLowerCase():"mq")
   const _lvls=Object.values(sargData?.levels||{})
   const islandLvls=_lvls.filter(b=>isl==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
-  const cleanCount=islandLvls.filter(b=>b.status==="clean").length
-  const totalCount=islandLvls.length
+  const observation = observationDisplay(sargData, lang);
+  const observationFresh = observation.state === "fresh";
+  const freshLine = observation.label;
+  const cleanCount=observationFresh?islandLvls.filter(b=>b.status==="clean").length:0
+  const totalCount=observationFresh?islandLvls.length:0
   // Plage active : contexte (prop beach) > deeplink ?beach=<id-sarg> > choix select > rien.
   const [pickedId,setPickedId]=useState("")
   const ctxSargId=beach?(IS_NEW_REGION?beach.id:(BEACH_TO_SARG[beach.id]||null)):null
@@ -186,25 +189,16 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
       ||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   }
   const bName=lvl?nameOf(lvl):(beach&&beach.name)||null
-  // Fraîcheur HONNÊTE : erddapTimestamp = « Vu du satellite » ; sinon updatedAt =
-  // « Données mises à jour » — jamais l'inverse (fausse fraîcheur interdite, loi moat).
-  const freshLine=(()=>{
-    const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null
-    const src=sat||up;if(!src)return null
-    const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6))
-    if(!isFinite(h))return null
-    return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
-      :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)
-  })()
   const STATUS={
     clean:{c:"#27c46b",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},
     moderate:{c:"#e8a800",l:_t(lang,"Algues modérées","Moderate seaweed","Algas moderadas")},
     avoid:{c:"#e8522a",l:_t(lang,"À éviter aujourd'hui","Avoid today","Evitar hoy")},
   }
-  const stOf=lv2=>STATUS[lv2&&lv2.status]||null
+  const stOf=lv2=>observationFresh?(STATUS[lv2&&lv2.status]||null):null
   // Grille É2 : la plage active si elle a un forecast, sinon la MEILLEURE plage de
   // l'île qui en a un (nommée — jamais une grille anonyme), sinon pas de grille.
   const fcLvl=(()=>{
+    if(!observationFresh)return null
     const has=l2=>!!(l2&&sargData?.weekly?.[l2.id]?.forecast?.length)
     if(has(lvl))return lvl
     return [...islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
@@ -417,8 +411,8 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
         </>:!sent&&step===1?<div key={1} className="sgseq-step">
           {/* ── É1 CONSTAT + CADEAU (temps 1+2+3) : le verdict RÉEL, gratuit, avant tout ask. ── */}
           <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{bName
-            ?_t(lang,`${bName}, ce matin. Mesurée, pas devinée.`,`${bName}, this morning. Measured, not guessed.`,`${bName}, esta mañana. Medida, no adivinada.`)
-            :_t(lang,"Vos plages, ce matin. Mesurées, pas devinées.","Your beaches, this morning. Measured, not guessed.","Sus playas, esta mañana. Medidas, no adivinadas.")}</div>
+            ?_t(lang,`${bName}, dernière observation datée.`,`${bName}, latest dated observation.`,`${bName}, última observación fechada.`)
+            :_t(lang,"Vos plages, dernière observation datée.","Your beaches, latest dated observation.","Sus playas, última observación fechada.")}</div>
           {lvl&&st1?<>
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
               <span style={{width:16,height:16,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>
@@ -434,7 +428,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
               <span style={{fontSize:20,flexShrink:0}} aria-hidden="true">🛰️</span>
               <div>
-                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages propres ce matin`,`${cleanCount}/${totalCount} beaches clean this morning`,`${cleanCount}/${totalCount} playas limpias esta mañana`)}</div>
+                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)}</div>
                 {freshLine&&<div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>{freshLine}</div>}
               </div>
             </div>
@@ -445,7 +439,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             </select>}
           </>:<>
             <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              🛰️ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
+              🛰️ {freshLine}
             </div>
           </>}
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
