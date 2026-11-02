@@ -49,6 +49,26 @@ assert.match(freshEs.title, /últimas observaciones/i)
 assert.match(freshEs.desc, /hora y la confianza/i)
 assert.doesNotMatch(freshEs.desc, /4 veces al día|en vivo/i)
 
+const freshWithoutStatuses = buildTodayHubState({
+  regionName: 'Florida',
+  beaches: [{ id: 'unknown', name: 'Unknown', lv: { status: 'unknown', score: 99 } }],
+  data: freshData,
+  lang: 'en',
+  now,
+})
+assert.equal(freshWithoutStatuses.rows.length, 0)
+assert.match(freshWithoutStatuses.desc, /No verified current beach statuses are available/i)
+assert.doesNotMatch(freshWithoutStatuses.desc, /observation is delayed/i)
+
+const unknownState = buildTodayHubState({
+  regionName: 'Florida',
+  beaches,
+  data: { source: 'other-source' },
+  lang: 'en',
+  now,
+})
+assert.match(unknownState.desc, /observation cannot be verified/i)
+
 const underSlaData = { ...freshData, erddapTimestamp: new Date(now - 899 * 60_000).toISOString() }
 assert.equal(getPublishableTodayRows(beaches, underSlaData, now).length, 2, '899 minutes remains within the 900-minute SLA')
 const atSlaData = { ...freshData, erddapTimestamp: new Date(now - 900 * 60_000).toISOString() }
