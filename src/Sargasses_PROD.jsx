@@ -91,6 +91,7 @@ const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
 // joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
 // (PRODUCT.md §8 ⭐). Default ON, rollback ?mapdetail=0. Lazy → DOIT être sous Suspense.
 const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
+const LazyBeachSheetStaleFallback=lazyWithRetry(()=>import("./BeachSheetStaleFallback.jsx"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
@@ -4946,16 +4947,13 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
 
   if(!satelliteDecisionCurrent) return(
-    <>
-      <div className="backdrop" ref={backdropRef} onClick={requestClose}/>
-      <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-stale" role="dialog" aria-modal="true">
-        <h2>{beach.name}</h2>
-        <p data-testid="beach-sheet-fallback-verdict">{_t(lang,"À VÉRIFIER","CHECK REQUIRED","POR VERIFICAR")}</p>
-        <p data-testid="beach-sheet-fallback-freshness">{Number.isFinite(satelliteAgeHours(sargData))?Math.round(satelliteAgeHours(sargData))+" h":_t(lang,"âge inconnu","age unknown","edad desconocida")}</p>
-        <p data-testid="beach-sheet-fallback-score-paused">{_t(lang,"Score et prévisions suspendus.","Score and forecast paused.","Puntuación y pronóstico suspendidos.")}</p>
-        <button type="button" data-testid="beach-sheet-fallback-close" onClick={requestClose}>{_t(lang,"Retour à la carte","Back to map","Volver al mapa")}</button>
-      </div>
-    </>
+    <Suspense fallback={<div className="sheet" data-testid="beach-sheet-fallback-stale-loading" role="dialog">
+      <p>À vérifier</p><button type="button" onClick={requestClose}>Fermer</button>
+    </div>}>
+      <LazyBeachSheetStaleFallback beach={beach} lang={lang} sargData={sargData}
+        onClose={requestClose} sheetRef={sheetRef} backdropRef={backdropRef}
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}/>
+    </Suspense>
   )
 
   return(
