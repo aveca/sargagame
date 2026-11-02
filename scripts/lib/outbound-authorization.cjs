@@ -19,7 +19,8 @@
  *   3. un jeton d'approbation provenant d'un Environment GitHub PROTEGE (secret injecte
  *      seulement apres approbation humaine), present et bien forme
  *   4. cet Environment verifie via l'API GitHub en LECTURE SEULE : il existe ET porte
- *      au moins une regle de protection / un required reviewer
+ *      une regle `required_reviewers` avec au moins un reviewer reel (un wait timer
+ *      ou une deployment-branch-policy seule ne vaut jamais approbation humaine)
  * Si UNE seule preuve manque ou n'est pas verifiable -> l'operation reste DESACTIVEE.
  * Aucun environnement, secret ou protection n'est cree par ce module.
  */
@@ -102,10 +103,10 @@ function hasApprovalProof(env) {
  * Injecte `fetchImpl` dans les tests (aucun reseau reel).
  *
  * @param {{token?:string, owner?:string, repo?:string, environment?:string, fetchImpl?:Function}} options
- * @returns {Promise<{exists:boolean, reviewers:number, protectionRules:number, error?:string}>}
+ * @returns {Promise<{exists:boolean, reviewers:number, protectionRules:number, hasRequiredReviewers:boolean, error?:string}>}
  */
 async function verifyEnvironmentProtection(options = {}) {
-  const empty = { exists: false, reviewers: 0, protectionRules: 0, error: 'unverified' }
+  const empty = { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'unverified' }
   const env = options.env || process.env
   const owner = options.owner || env.GITHUB_REPOSITORY_OWNER || (env.GITHUB_REPOSITORY || '').split('/')[0]
   const repo = options.repo || (env.GITHUB_REPOSITORY || '').split('/')[1] || ''
@@ -131,20 +132,27 @@ async function verifyEnvironmentProtection(options = {}) {
       `https://api.github.com/repos/${owner}/${repo}/environments/${encodeURIComponent(environment)}`,
       { headers }
     )
-    if (detail && detail.status === 404) return { exists: false, reviewers: 0, protectionRules: 0, error: 'environment-missing' }
+    if (detail && detail.status === 404) return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'environment-missing' }
     if (!detail || !detail.ok) {
-      return { exists: false, reviewers: 0, protectionRules: 0, error: 'verification-failed' }
+      return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'verification-failed' }
     }
     const body = await detail.json()
-    const protectionRules = Array.isArray(body.protection_rules) ? body.protection_rules.length : 0
-    const reviewers = Array.isArray(body.reviewers)
-      ? body.reviewers.length
-      : (Array.isArray(body.protection_rules)
-          ? body.protection_rules.filter((r) => r && r.type === 'required_reviewers').length
-          : 0)
-    return { exists: true, reviewers, protectionRules, error: protectionRules > 0 || reviewers > 0 ? undefined : 'not-protected' }
+    const rules = Array.isArray(body.protection_rules) ? body.protection_rules : []
+    const requiredRule = rules.find((rule) => rule && rule.type === 'required_reviewers')
+    const nestedReviewers = requiredRule && Array.isArray(requiredRule.reviewers) ? requiredRule.reviewers : []
+    const topLevelReviewers = Array.isArray(body.reviewers) ? body.reviewers : []
+    const reviewers = Math.max(nestedReviewers.length, topLevelReviewers.length)
+    const protectionRules = rules.length
+    const hasRequiredReviewers = Boolean(requiredRule) && reviewers > 0
+    return {
+      exists: true,
+      reviewers,
+      protectionRules,
+      hasRequiredReviewers,
+      error: hasRequiredReviewers ? undefined : 'required-reviewers-not-configured',
+    }
   } catch (err) {
-    return { exists: false, reviewers: 0, protectionRules: 0, error: 'verification-error:' + (err && err.message ? err.message : String(err)) }
+    return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'verification-error:' + (err && err.message ? err.message : String(err)) }
   }
 }
 
@@ -308,7 +316,7 @@ function authorizeAction(action, options = {}) {
       evidence,
     }
   }
-  if (!prot.exists || (!prot.protectionRules && !prot.reviewers)) {
+  if (!prot.exists || prot.hasRequiredReviewers !== true) {
     return {
       execute: false,
       mode: 'blocked',
