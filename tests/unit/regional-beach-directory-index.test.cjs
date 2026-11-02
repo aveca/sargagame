@@ -9,7 +9,7 @@ const { generateRegionSeoPages } = require('../../scripts/lib/region-seo-pages.c
 const { emittedLangs, normLang } = require('../../scripts/lib/region-langs.cjs')
 
 const ROOT = path.resolve(__dirname, '../..')
-const REGION_IDS = ['florida', 'puntacana', 'rivieramaya']
+const REGION_IDS = ['florida', 'puntacana', 'rivieramaya', 'tulum']
 
 function template(domain, lang) {
   return `<!doctype html><html lang="${lang}"><head>
