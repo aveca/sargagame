@@ -17,6 +17,9 @@
 'use strict';
 
 const assert = require('assert');
+const crypto = require('node:crypto');
+const { publicKey: oidcPublicKey, privateKey: oidcPrivateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const oidcJwk = Object.assign(oidcPublicKey.export({ format: 'jwk' }), { kid: 'test-kid', alg: 'RS256', use: 'sig' });
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -67,16 +70,30 @@ function oidcJwt(e, claimOverrides) {
     exp: now + 300,
     nbf: now - 30,
   }, claimOverrides || {});
-  return `e30.${Buffer.from(JSON.stringify(claims)).toString('base64url')}.test-signature`;
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: 'test-kid' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
+  const signingInput = `${header}.${payload}`;
+  const signature = crypto.sign('RSA-SHA256', Buffer.from(signingInput), oidcPrivateKey).toString('base64url');
+  return `${signingInput}.${signature}`;
 }
 
-function oidcFetch(e, claimOverrides) {
-  const token = oidcJwt(e, claimOverrides);
+function oidcFetch(e, claimOverrides, options) {
+  let token = oidcJwt(e, claimOverrides);
+  if (options && options.badSignature) {
+    const parts = token.split('.');
+    parts[2] = (parts[2][0] === 'A' ? 'B' : 'A') + parts[2].slice(1);
+    token = parts.join('.');
+  }
   return async (url, init) => {
-    assert.ok(url.startsWith('https://pipelines.actions.githubusercontent.com/'));
-    assert.strictEqual(init && init.headers && init.headers.authorization, 'Bearer runner-request-token');
-    assert.ok(url.includes('audience=sargagame-outbound-authorization'));
-    return { ok: true, status: 200, json: async () => ({ value: token }) };
+    if (url.startsWith('https://pipelines.actions.githubusercontent.com/')) {
+      assert.strictEqual(init && init.headers && init.headers.authorization, 'Bearer runner-request-token');
+      assert.ok(url.includes('audience=sargagame-outbound-authorization'));
+      return { ok: true, status: 200, json: async () => ({ value: token }) };
+    }
+    if (url === 'https://token.actions.githubusercontent.com/.well-known/jwks') {
+      return { ok: true, status: 200, json: async () => ({ keys: [oidcJwk] }) };
+    }
+    throw new Error(`Unexpected OIDC verification URL: ${url}`);
   };
 }
 
@@ -425,6 +442,13 @@ async function main() {
     const result = await central.verifyEnvironmentProtection(Object.assign({}, VERIFY_OPTS, { fetchImpl }));
     record('P28 required_reviewers vide => protection refusee',
       result.exists === true && result.hasRequiredReviewers === false && result.reviewers === 0);
+  }
+
+  // P29 — un JWT non signe par la cle publiee dans le JWKS est refuse.
+  {
+    const e = oidcEnv();
+    const result = await central.verifyJobEnvironmentBinding({ env: e, fetchImpl: oidcFetch(e, {}, { badSignature: true }) });
+    record('P29 signature OIDC invalide => refusee', result.bound === false && result.error === 'oidc-signature-invalid', result.error);
   }
 
   console.log(failures === 0
