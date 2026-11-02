@@ -38,7 +38,9 @@ const DAYS = (() => {
   const a = process.argv.find((x) => x.startsWith('--days='))
   return a ? parseInt(a.slice(7), 10) : 90
 })()
-const DRY = process.argv.includes('--dry')
+// Fail closed: analytics deletion remains disabled until a separately approved,
+// protected-environment execution path is implemented. Scheduled runs are read-only.
+const DRY = true
 const BATCH = (() => {
   const a = process.argv.find((x) => x.startsWith('--batch='))
   const n = a ? parseInt(a.slice(7), 10) : 5000
@@ -119,17 +121,17 @@ async function purgeInBatches(cutoff, opts, fetchImpl) {
   return { deleted, batches, lastError }
 }
 
-async function main() {
+async function main({ fetchImpl = fetch, now = Date.now() } = {}) {
   if (!SERVICE_KEY) {
     console.log('[purge] SUPABASE_SERVICE_KEY manquant — skip (aucune purge).')
     return
   }
-  const cutoff = new Date(Date.now() - DAYS * 86400000).toISOString()
+  const cutoff = new Date(now - DAYS * 86400000).toISOString()
   console.log(`[purge] analytics_events avant ${cutoff} (dry=${DRY})`)
 
   let toDelete = 0
   try {
-    toDelete = await countRows(cutoff, fetch)
+    toDelete = await countRows(cutoff, fetchImpl)
   } catch (e) {
     console.error('[purge] comptage impossible:', e && e.message)
     return
@@ -137,20 +139,20 @@ async function main() {
   console.log(`[purge] ${toDelete} ligne(s) à supprimer`)
 
   if (toDelete === 0 || DRY) {
-    if (DRY) console.log('[purge] --dry → aucune suppression effectuée')
+    if (DRY) console.log('[purge] dry-run forcé — suppression désactivée en attente d’une autorisation explicite')
     return
   }
 
   const r = await purgeInBatches(cutoff,
     { batch: BATCH, maxBatches: MAX_BATCHES, budgetSeconds: BUDGET_SECONDS },
-    fetch)
+    fetchImpl)
   console.log(`[purge] ${r.deleted} ligne(s) supprimée(s) en ${r.batches} lot(s)`)
   if (r.lastError) console.error('[purge] arrêt anticipé:', r.lastError)
 
   // Purge incomplète = problème d'hygiène de table, PAS une raison de tuer
   // le pipeline : on se termine proprement (exit 0). Le contrôle de
   // fraîcheur et le Sentinel restent les gardiens de la production.
-  const left = await countRows(cutoff, fetch).catch(() => -1)
+  const left = await countRows(cutoff, fetchImpl).catch(() => -1)
   if (left > 0) console.error(`[purge] ${left} ligne(s) antérieure(s) au cutoff subsistent — purge partielle`)
   else if (left === 0) console.log('[purge] purge complète')
 }
@@ -163,4 +165,4 @@ if (require.main === module) {
   })
 }
 
-module.exports = { countRows, purgeInBatches }
+module.exports = { countRows, purgeInBatches, main, DRY }
