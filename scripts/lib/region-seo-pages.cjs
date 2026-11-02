@@ -83,6 +83,25 @@ function getPublishableTodayRows(beaches, data, now = Date.now()) {
     .sort((a, b) => (b.decision.score ?? -1) - (a.decision.score ?? -1));
 }
 
+function buildBeachIndexItems(beaches, data, { lang = 'en', prefix = '', beachesDir = 'beaches', now = Date.now() } = {}) {
+  const locale = lang === 'es' ? 'es' : 'en';
+  return (Array.isArray(beaches) ? beaches : [])
+    .slice()
+    .sort((a, b) => (a.commune || '').localeCompare(b.commune || '') || a.name.localeCompare(b.name))
+    .map(beach => {
+      const decision = getPublishableBeachDecision(data, beach?.lv || {}, now);
+      const statusLabel = decision.available
+        ? (STATUS_WORD[locale][decision.status] || decision.status)
+        : unavailableBeachDecisionLabel(data, locale, now);
+      const score = decision.available && decision.score !== null
+        ? ` · ${T[locale].score} ${decision.score}/100`
+        : '';
+      const commune = beach.commune ? ` <small>· ${esc(beach.commune)}</small>` : '';
+      return `<li><a href="${prefix}/${beachesDir}/${beach.slug}/">${esc(beach.name)}</a>${commune} — ${esc(statusLabel)}${score}</li>`;
+    })
+    .join('');
+}
+
 function buildTodayHubState({ regionName, beaches, data, lang = 'en', now = Date.now() }) {
   const rows = getPublishableTodayRows(beaches, data, now);
   const freshness = getSatelliteObservationFreshness(data, now);
@@ -741,18 +760,13 @@ function emitLangPages(ctx) {
   const beachIndexIntro = lang === 'es'
     ? 'Consulta el estado disponible por playa y abre su ficha para ver los detalles.'
     : 'Check each beach’s available status and open its page for details.'
-  const beachIndexItems = [...beaches]
-    .sort((a, b2) => (a.commune || '').localeCompare(b2.commune || '') || a.name.localeCompare(b2.name))
-    .map(b => {
-      const status = b.lv && b.lv.status
-      const statusLabel = status
-        ? (STATUS_WORD[lang][status] || status)
-        : (lang === 'es' ? 'Sin dato' : 'Unavailable')
-      const score = b.lv && typeof b.lv.score === 'number' ? ` · ${t.score} ${b.lv.score}/100` : ''
-      const commune = b.commune ? ` <small>· ${esc(b.commune)}</small>` : ''
-      return `<li><a href="${prefix}/${slugIndex[lang].beachesDir}/${b.slug}/">${esc(b.name)}</a>${commune} — ${esc(statusLabel)}${score}</li>`
-    }).join('')
-  const beachIndexNoscript = `<article><h1>${esc(beachIndexH1)}</h1><p><em>${esc(t.updated(today))}</em></p><p>${esc(beachIndexIntro)}</p><ul>${beachIndexItems}</ul>${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+  const beachIndexItems = buildBeachIndexItems(beaches, data, {
+    lang,
+    prefix,
+    beachesDir: slugIndex[lang].beachesDir,
+    now,
+  })
+  const beachIndexNoscript = `<article><h1>${esc(beachIndexH1)}</h1><p><em>${esc(t.updated(today))}</em></p><p><em>${esc(formatSatelliteObservationLabel(data, lang, now))}</em></p><p>${esc(beachIndexIntro)}</p><ul>${beachIndexItems}</ul>${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   const beachIndexAlternates = useLangs.map(l => ({
     lang: l,
     href: `https://${domain}${slugIndex[l].prefix}/${slugIndex[l].beachesDir}/`,
@@ -1344,4 +1358,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, getPublishableBeachDecision, getPublishableTodayRows, buildTodayHubState, formatSatelliteObservationLabel }
+module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, getPublishableBeachDecision, getPublishableTodayRows, buildBeachIndexItems, buildTodayHubState, formatSatelliteObservationLabel }
