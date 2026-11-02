@@ -9,8 +9,10 @@
 const assert = require('node:assert/strict');
 
 (async () => {
-  const { satelliteAgeHours, isSatelliteStale36h, isSatelliteFresh12h, regionalObservationFreshness, REGIONAL_OBSERVATION_MAX_AGE_MINUTES } =
+  const { satelliteAgeHours, isSatelliteStale36h, isSatelliteFresh12h } =
     await import('../../src/lib/format-freshness.mjs');
+  const { regionalObservationFreshness, REGIONAL_OBSERVATION_MAX_AGE_MINUTES } =
+    await import('../../src/lib/regional-observation-freshness.mjs');
   const now = Date.parse('2026-10-12T18:46:17.584Z');
   const prod = {
     updatedAt: '2026-10-11T22:07:38.246Z',
