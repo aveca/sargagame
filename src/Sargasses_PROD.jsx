@@ -10,7 +10,7 @@ import {computeScore as _computeBeachScore} from "./lib/score.js"
 import { COAST_ZONES } from "../scripts/lib/coast-zones.js"
 import { getCanonicalSlug, beachPageUrl } from "./lib/slug-resolver.js"
 import { legalHref, legalLinks } from "./lib/legal-links.js"
-import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours, lcDetailFreshnessLabel } from "./lib/format-freshness.mjs"
+import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
 import PassOffer from "./PassOffer.jsx"
@@ -4948,19 +4948,14 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   if(!satelliteDecisionCurrent) return(
     <>
       <div className="backdrop" ref={backdropRef} onClick={requestClose}/>
-      <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-stale"
-        role="dialog" aria-modal="true"
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <div className="sheet-handle"/>
-        <button type="button" data-testid="beach-sheet-fallback-close"
-          aria-label={_t(lang,"Fermer","Close","Cerrar")} onClick={requestClose}>×</button>
+      <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-stale" role="dialog" aria-modal="true">
         <h2>{beach.name}</h2>
         <p data-testid="beach-sheet-fallback-verdict">{_t(lang,"À VÉRIFIER","CHECK REQUIRED","POR VERIFICAR")}</p>
-        <p data-testid="beach-sheet-fallback-freshness">{lcDetailFreshnessLabel(sargData,lang)}</p>
+        <p data-testid="beach-sheet-fallback-freshness">{Number.isFinite(satelliteAgeHours(sargData))?Math.round(satelliteAgeHours(sargData))+" h":_t(lang,"âge inconnu","age unknown","edad desconocida")}</p>
         <p data-testid="beach-sheet-fallback-score-paused">{_t(lang,"Score et prévisions suspendus.","Score and forecast paused.","Puntuación y pronóstico suspendidos.")}</p>
+        <button type="button" data-testid="beach-sheet-fallback-close" onClick={requestClose}>{_t(lang,"Retour à la carte","Back to map","Volver al mapa")}</button>
       </div>
     </>
-  )
 
   return(
     <>
@@ -14559,12 +14554,9 @@ export default function App(){
               onRequestGeo={requestGeo}/>
           )
           // Local-only QA switch: exercise the error-boundary fallback without exposing it on public hosts.
-          const _forceFallback = (() => {
-            try {
-              return /[?&]beachfallback=1(?:&|$)/.test(window.location.search)
-                && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
-            } catch (_) { return false }
-          })()
+          const _forceFallback = typeof window !== "undefined"
+            && window.location.hostname === "127.0.0.1"
+            && window.location.search.includes("beachfallback=1")
           if (_forceFallback) return _fallback
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
