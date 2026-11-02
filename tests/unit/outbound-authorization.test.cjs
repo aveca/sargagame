@@ -17,6 +17,9 @@
 'use strict';
 
 const assert = require('assert');
+const crypto = require('node:crypto');
+const { publicKey: oidcPublicKey, privateKey: oidcPrivateKey } = crypto.generateKeyPairSync('rsa', { modulusLength: 2048 });
+const oidcJwk = Object.assign(oidcPublicKey.export({ format: 'jwk' }), { kid: 'test-kid', alg: 'RS256', use: 'sig' });
 const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
@@ -31,13 +34,67 @@ function record(name, ok, extra) {
 
 // ── Jeux d'environnements ────────────────────────────────────────────────────
 const VALID_TOKEN = 'sgappr_' + 'a1b2c3d4e5f6g7h8i9j0'; // forme conforme
-const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1 };
+const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1, hasRequiredReviewers: true, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
 
 /** Environnement « tout est réuni » sauf ce que le test surcharge. */
 function env(overrides) {
   return Object.assign({
     GITHUB_EVENT_NAME: 'workflow_dispatch',
   }, overrides || {});
+}
+
+function oidcEnv(overrides) {
+  return env(Object.assign({
+    ACTIONS_ID_TOKEN_REQUEST_URL: 'https://pipelines.actions.githubusercontent.com/oidc',
+    ACTIONS_ID_TOKEN_REQUEST_TOKEN: 'runner-request-token',
+    GITHUB_REPOSITORY: 'aveca/sargagame',
+    GITHUB_RUN_ID: '123456789',
+    GITHUB_SHA: 'abc123def456',
+    GITHUB_REF: 'refs/heads/manual-test',
+    OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN,
+  }, overrides || {}));
+}
+
+function oidcJwt(e, claimOverrides) {
+  const now = Math.floor(Date.now() / 1000);
+  const claims = Object.assign({
+    iss: 'https://token.actions.githubusercontent.com',
+    aud: 'sargagame-outbound-authorization',
+    repository: e.GITHUB_REPOSITORY,
+    run_id: e.GITHUB_RUN_ID,
+    sha: e.GITHUB_SHA,
+    ref: e.GITHUB_REF,
+    event_name: 'workflow_dispatch',
+    environment: 'outbound-approval',
+    sub: `repo:${e.GITHUB_REPOSITORY}:environment:outbound-approval`,
+    exp: now + 300,
+    nbf: now - 30,
+  }, claimOverrides || {});
+  const header = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT', kid: 'test-kid' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify(claims)).toString('base64url');
+  const signingInput = `${header}.${payload}`;
+  const signature = crypto.sign('RSA-SHA256', Buffer.from(signingInput), oidcPrivateKey).toString('base64url');
+  return `${signingInput}.${signature}`;
+}
+
+function oidcFetch(e, claimOverrides, options) {
+  let token = oidcJwt(e, claimOverrides);
+  if (options && options.badSignature) {
+    const parts = token.split('.');
+    parts[2] = (parts[2][0] === 'A' ? 'B' : 'A') + parts[2].slice(1);
+    token = parts.join('.');
+  }
+  return async (url, init) => {
+    if (url.startsWith('https://pipelines.actions.githubusercontent.com/')) {
+      assert.strictEqual(init && init.headers && init.headers.authorization, 'Bearer runner-request-token');
+      assert.ok(url.includes('audience=sargagame-outbound-authorization'));
+      return { ok: true, status: 200, json: async () => ({ value: token }) };
+    }
+    if (url === 'https://token.actions.githubusercontent.com/.well-known/jwks') {
+      return { ok: true, status: 200, json: async () => ({ keys: [oidcJwk] }) };
+    }
+    throw new Error(`Unexpected OIDC verification URL: ${url}`);
+  };
 }
 
 async function main() {
@@ -154,7 +211,7 @@ async function main() {
   {
     const d = central.authorizeAction('external_write', {
       env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
-      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1 },
+      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1, hasRequiredReviewers: true, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' },
     });
     record('P11 4 preuves réunies => exécution autorisée',
       d.execute === true && d.mode === 'production', `mode=${d.mode} reason=${d.reason}`);
@@ -239,12 +296,14 @@ async function main() {
   // P18 — Environment protégé trouvé via l'API : autorisé, et l'appel est un GET.
   {
     let call = null;
+    const e = oidcEnv();
     const fetchImpl = async (url, init) => {
       call = { url, method: (init && init.method) || 'GET', auth: init && init.headers && init.headers.authorization };
-      return { ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers' }], reviewers: [{ id: 1 }] }) };
+      return { ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers', reviewers: [{ type: 'User', reviewer: { id: 1 } }] }] }) };
     };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P18a Environment protégé vérifié => autorisé',
@@ -259,9 +318,11 @@ async function main() {
   // P19 — 404 : Environment inexistant => bloqué (jamais créé, jamais supposé).
   {
     let calls = 0;
+    const e = oidcEnv();
     const fetchImpl = async () => { calls++; return { ok: false, status: 404, json: async () => ({}) }; };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P19 Environment 404 => bloqué',
@@ -271,9 +332,11 @@ async function main() {
 
   // P20 — Environment sans règle de protection => bloqué.
   {
+    const e = oidcEnv();
     const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ protection_rules: [], reviewers: [] }) });
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P20 Environment sans protection => bloqué',
@@ -282,9 +345,11 @@ async function main() {
 
   // P21 — Vérification impossible (réseau en erreur) => bloqué, pas de repli.
   {
+    const e = oidcEnv();
     const fetchImpl = async () => { throw new Error('ECONNREFUSED'); };
     const d = await central.authorizeActionAsync('external_write', {
-      env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
+      env: e, requested: true,
+      bindingOptions: { fetchImpl: oidcFetch(e) },
       verificationOptions: Object.assign({}, VERIFY_OPTS, { fetchImpl }),
     });
     record('P21 vérification impossible => bloqué (aucun repli)',
@@ -327,6 +392,63 @@ async function main() {
     }).mode);
     record('P24 aucun environnement partiel ne donne le mode production',
       modes.every((m) => m !== 'production'), `modes=${modes.join(',')}`);
+  }
+
+  // P25 — un secret de repository + un Environment protege ne prouvent pas
+  // que le job courant est effectivement lie a cet Environment.
+  {
+    const unbound = { exists: true, reviewers: 1, protectionRules: 1, hasRequiredReviewers: true };
+    const d = central.authorizeAction('email_send', {
+      env: oidcEnv(), requested: true, environmentProtection: unbound,
+    });
+    record('P25 Environment protege sans claim OIDC du job => bloque',
+      d.execute === false && d.mode === 'blocked' && /job non lie/.test(d.reason),
+      `mode=${d.mode} reason=${d.reason}`);
+  }
+
+  // P26 — claim OIDC liee au mauvais Environment, repository ou run => refusee.
+  {
+    const e = oidcEnv();
+    const badClaims = [
+      { environment: 'other-environment', sub: 'repo:aveca/sargagame:environment:other-environment' },
+      { repository: 'attacker/other-repo' },
+      { run_id: '999999999' },
+      { event_name: 'schedule' },
+    ];
+    let rejected = true;
+    for (const claims of badClaims) {
+      const result = await central.verifyJobEnvironmentBinding({ env: e, fetchImpl: oidcFetch(e, claims) });
+      if (result.bound !== false) rejected = false;
+    }
+    record('P26 claims OIDC hors contexte exact => refusees', rejected);
+  }
+
+  // P27 — une règle wait_timer ou deployment_branch_policy seule ne vaut pas
+  // une approbation humaine, même si le job est lie a l'Environment.
+  {
+    const nonHumanProtection = { exists: true, reviewers: 0, protectionRules: 1, hasRequiredReviewers: false, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
+    const d = central.authorizeAction('email_send', {
+      env: oidcEnv(), requested: true, environmentProtection: nonHumanProtection,
+    });
+    record('P27 wait timer / branch policy sans required reviewers => bloque',
+      d.execute === false && d.mode === 'blocked' && /required reviewer/.test(d.reason),
+      `mode=${d.mode} reason=${d.reason}`);
+  }
+
+  // P28 — required_reviewers rule sans reviewer configure => bloque.
+  {
+    const e = oidcEnv();
+    const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers', reviewers: [] }] }) });
+    const result = await central.verifyEnvironmentProtection(Object.assign({}, VERIFY_OPTS, { fetchImpl }));
+    record('P28 required_reviewers vide => protection refusee',
+      result.exists === true && result.hasRequiredReviewers === false && result.reviewers === 0);
+  }
+
+  // P29 — un JWT non signe par la cle publiee dans le JWKS est refuse.
+  {
+    const e = oidcEnv();
+    const result = await central.verifyJobEnvironmentBinding({ env: e, fetchImpl: oidcFetch(e, {}, { badSignature: true }) });
+    record('P29 signature OIDC invalide => refusee', result.bound === false && result.error === 'oidc-signature-invalid', result.error);
   }
 
   console.log(failures === 0

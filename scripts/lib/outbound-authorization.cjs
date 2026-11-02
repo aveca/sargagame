@@ -1,4 +1,6 @@
 'use strict'
+
+const crypto = require('node:crypto')
 /**
  * outbound-authorization.cjs — Contrat central d'autorisation des actions sortantes.
  * Mission P0.23 / issue #1157. Corrige les 8 defauts de review de la PR #1200 :
@@ -19,7 +21,8 @@
  *   3. un jeton d'approbation provenant d'un Environment GitHub PROTEGE (secret injecte
  *      seulement apres approbation humaine), present et bien forme
  *   4. cet Environment verifie via l'API GitHub en LECTURE SEULE : il existe ET porte
- *      au moins une regle de protection / un required reviewer
+ *      une regle `required_reviewers` avec au moins un reviewer reel (un wait timer
+ *      ou une deployment-branch-policy seule ne vaut jamais approbation humaine)
  * Si UNE seule preuve manque ou n'est pas verifiable -> l'operation reste DESACTIVEE.
  * Aucun environnement, secret ou protection n'est cree par ce module.
  */
@@ -62,6 +65,8 @@ const APPROVAL_TOKEN_PATTERN = /^sgappr_[A-Za-z0-9_-]{16,}$/
 
 /** Nom de l'Environment attendu (informationnel : la preuve reste le jeton + l'API). */
 const APPROVAL_ENVIRONMENT_VAR = 'OUTBOUND_APPROVAL_ENVIRONMENT'
+// Environment unique attendu. Une variable repo-level ne peut pas choisir la cible.
+const APPROVAL_ENVIRONMENT = 'outbound-approval'
 
 const truthy = (v) => v === '1' || v === true || String(v).toLowerCase() === 'true'
 
@@ -100,15 +105,16 @@ function hasApprovalProof(env) {
  * Injecte `fetchImpl` dans les tests (aucun reseau reel).
  *
  * @param {{token?:string, owner?:string, repo?:string, environment?:string, fetchImpl?:Function}} options
- * @returns {Promise<{exists:boolean, reviewers:number, protectionRules:number, error?:string}>}
+ * @returns {Promise<{exists:boolean, reviewers:number, protectionRules:number, hasRequiredReviewers:boolean, error?:string}>}
  */
 async function verifyEnvironmentProtection(options = {}) {
-  const empty = { exists: false, reviewers: 0, protectionRules: 0, error: 'unverified' }
-  const env = process.env
+  const empty = { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'unverified' }
+  const env = options.env || process.env
   const owner = options.owner || env.GITHUB_REPOSITORY_OWNER || (env.GITHUB_REPOSITORY || '').split('/')[0]
   const repo = options.repo || (env.GITHUB_REPOSITORY || '').split('/')[1] || ''
-  const environment = options.environment || env[APPROVAL_ENVIRONMENT_VAR] || ''
-  const token = options.token || env.GITHUB_TOKEN || env.OUTBOUND_APPROVAL_TOKEN || ''
+  const environment = options.environment || APPROVAL_ENVIRONMENT
+  // Le jeton Environment est prefere; le claim OIDC prouve separement que le job y est lie.
+  const token = options.token || env.OUTBOUND_APPROVAL_TOKEN || env.GITHUB_TOKEN || ''
   const fetchImpl = options.fetchImpl || globalThis.fetch
 
   if (!owner || !repo || !environment) {
@@ -128,20 +134,135 @@ async function verifyEnvironmentProtection(options = {}) {
       `https://api.github.com/repos/${owner}/${repo}/environments/${encodeURIComponent(environment)}`,
       { headers }
     )
-    if (detail && detail.status === 404) return { exists: false, reviewers: 0, protectionRules: 0, error: 'environment-missing' }
+    if (detail && detail.status === 404) return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'environment-missing' }
     if (!detail || !detail.ok) {
-      return { exists: false, reviewers: 0, protectionRules: 0, error: 'verification-failed' }
+      return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'verification-failed' }
     }
     const body = await detail.json()
-    const protectionRules = Array.isArray(body.protection_rules) ? body.protection_rules.length : 0
-    const reviewers = Array.isArray(body.reviewers)
-      ? body.reviewers.length
-      : (Array.isArray(body.protection_rules)
-          ? body.protection_rules.filter((r) => r && r.type === 'required_reviewers').length
-          : 0)
-    return { exists: true, reviewers, protectionRules, error: protectionRules > 0 || reviewers > 0 ? undefined : 'not-protected' }
+    const rules = Array.isArray(body.protection_rules) ? body.protection_rules : []
+    const requiredRule = rules.find((rule) => rule && rule.type === 'required_reviewers')
+    const nestedReviewers = requiredRule && Array.isArray(requiredRule.reviewers) ? requiredRule.reviewers : []
+    const reviewers = nestedReviewers.length
+    const protectionRules = rules.length
+    const hasRequiredReviewers = Boolean(requiredRule) && reviewers > 0
+    return {
+      exists: true,
+      reviewers,
+      protectionRules,
+      hasRequiredReviewers,
+      error: hasRequiredReviewers ? undefined : 'required-reviewers-not-configured',
+    }
   } catch (err) {
-    return { exists: false, reviewers: 0, protectionRules: 0, error: 'verification-error:' + (err && err.message ? err.message : String(err)) }
+    return { exists: false, reviewers: 0, protectionRules: 0, hasRequiredReviewers: false, error: 'verification-error:' + (err && err.message ? err.message : String(err)) }
+  }
+}
+
+/**
+ * Verifie que LE JOB COURANT est reellement lie a l'Environment d'approbation.
+ *
+ * Le nom d'un Environment et son existence ne prouvent pas que le job a attendu
+ * ses reviewers. On demande donc un OIDC token au endpoint ephemere fourni par
+ * le runner GitHub Actions, puis on lie ses claims au repository, run, SHA, ref,
+ * evenement et Environment attendus. Le jeton est emis par GitHub sur HTTPS;
+ * il n'est jamais journalise ni transmis a un service tiers.
+ *
+ * Sans permission id-token: write, sans job.environment, ou si une seule claim
+ * manque/ne correspond, la preuve est refusee. Aucun workflow actuel n'est
+ * active ici: cette garde maintient donc les envois bloques tant qu'un job
+ * manuel n'est pas explicitement attache a outbound-approval.
+ *
+ * @param {{env?:NodeJS.ProcessEnv, fetchImpl?:Function, environment?:string}} options
+ * @returns {Promise<{bound:boolean, environment?:string, runId?:string, error?:string}>}
+ */
+async function verifyJobEnvironmentBinding(options = {}) {
+  const env = options.env || process.env
+  const expectedEnvironment = options.environment || APPROVAL_ENVIRONMENT
+  const requestUrl = env.ACTIONS_ID_TOKEN_REQUEST_URL || ''
+  const requestToken = env.ACTIONS_ID_TOKEN_REQUEST_TOKEN || ''
+  const fetchImpl = options.fetchImpl || globalThis.fetch
+  const fail = (error) => ({ bound: false, error })
+
+  if (!requestUrl || !requestToken || typeof fetchImpl !== 'function') {
+    return fail('oidc-runner-context-unavailable')
+  }
+  if (!env.GITHUB_REPOSITORY || !env.GITHUB_RUN_ID || !env.GITHUB_SHA || !env.GITHUB_REF) {
+    return fail('github-run-identity-incomplete')
+  }
+
+  let endpoint
+  try {
+    endpoint = new URL(requestUrl)
+  } catch (_) {
+    return fail('oidc-endpoint-invalid')
+  }
+  if (endpoint.protocol !== 'https:' || endpoint.hostname !== 'pipelines.actions.githubusercontent.com') {
+    return fail('oidc-endpoint-untrusted')
+  }
+
+  try {
+    endpoint.searchParams.set('audience', 'sargagame-outbound-authorization')
+    const response = await fetchImpl(endpoint.toString(), {
+      headers: {
+        authorization: 'Bearer ' + requestToken,
+        accept: 'application/json',
+      },
+    })
+    if (!response || !response.ok) return fail('oidc-token-request-failed')
+    const body = await response.json()
+    const jwt = body && body.value
+    if (typeof jwt !== 'string') return fail('oidc-token-missing')
+    const parts = jwt.split('.')
+    if (parts.length !== 3) return fail('oidc-token-malformed')
+
+    const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'))
+    if (!header || header.alg !== 'RS256' || typeof header.kid !== 'string' || !header.kid) {
+      return fail('oidc-token-header-invalid')
+    }
+    const jwksResponse = await fetchImpl('https://token.actions.githubusercontent.com/.well-known/jwks', {
+      headers: { accept: 'application/json' },
+    })
+    if (!jwksResponse || !jwksResponse.ok) return fail('oidc-jwks-unavailable')
+    const jwksBody = await jwksResponse.json()
+    const signingKey = Array.isArray(jwksBody && jwksBody.keys)
+      ? jwksBody.keys.find((key) => key && key.kid === header.kid && key.kty === 'RSA')
+      : null
+    if (!signingKey) return fail('oidc-signing-key-not-found')
+    const publicKey = crypto.createPublicKey({ key: signingKey, format: 'jwk' })
+    const signature = Buffer.from(parts[2], 'base64url')
+    const signatureValid = crypto.verify(
+      'RSA-SHA256',
+      Buffer.from(parts[0] + '.' + parts[1]),
+      publicKey,
+      signature
+    )
+    if (!signatureValid) return fail('oidc-signature-invalid')
+
+    const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))
+    const now = Math.floor(Date.now() / 1000)
+    const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud]
+    const expectedSub = 'repo:' + env.GITHUB_REPOSITORY + ':environment:' + expectedEnvironment
+    const valid =
+      claims.iss === 'https://token.actions.githubusercontent.com' &&
+      aud.includes('sargagame-outbound-authorization') &&
+      claims.repository === env.GITHUB_REPOSITORY &&
+      String(claims.run_id || '') === String(env.GITHUB_RUN_ID) &&
+      claims.sha === env.GITHUB_SHA &&
+      claims.ref === env.GITHUB_REF &&
+      claims.event_name === MANUAL_TRIGGER &&
+      claims.environment === expectedEnvironment &&
+      claims.sub === expectedSub &&
+      Number.isFinite(Number(claims.exp)) && Number(claims.exp) > now &&
+      (!Number.isFinite(Number(claims.nbf)) || Number(claims.nbf) <= now + 30)
+
+    if (!valid) return fail('oidc-claims-do-not-bind-approved-job')
+    return {
+      bound: true,
+      environment: claims.environment,
+      runId: String(claims.run_id),
+    }
+  } catch (_) {
+    // Ne jamais inclure le JWT, le request token ou les reponses brutes dans le log.
+    return fail('oidc-verification-failed')
   }
 }
 
@@ -219,12 +340,23 @@ function authorizeAction(action, options = {}) {
       evidence,
     }
   }
-  if (!prot.exists || (!prot.protectionRules && !prot.reviewers)) {
+  if (!prot.exists || prot.hasRequiredReviewers !== true) {
     return {
       execute: false,
       mode: 'blocked',
       action,
       reason: 'Environment introuvable ou sans required reviewer : operation desactivee',
+      evidence,
+    }
+  }
+  // Un secret et un Environment protege ne prouvent pas que CE job y est lie.
+  // Exiger le claim OIDC emis pour le run courant, apres l'approbation du job.
+  if (prot.jobEnvironmentBound !== true || prot.boundEnvironment !== APPROVAL_ENVIRONMENT) {
+    return {
+      execute: false,
+      mode: 'blocked',
+      action,
+      reason: 'job non lie a l\'Environment outbound-approval (preuve OIDC absente ou invalide) : operation desactivee',
       evidence,
     }
   }
@@ -248,10 +380,28 @@ function authorizeAction(action, options = {}) {
  * @returns {Promise<{execute:boolean, mode:string, action:string, reason:string, evidence:Object}>}
  */
 async function authorizeActionAsync(action, options = {}) {
-  // Verification de l'Environment d'abord : sans elle, aucune production n'est possible.
-  const protection = await verifyEnvironmentProtection(options.verificationOptions || {})
-  const decision = authorizeAction(action, Object.assign({}, options, { environmentProtection: protection }))
-  return Object.assign({}, decision, { evidence: Object.assign({}, decision.evidence, { environmentProtection: protection }) })
+  // Les deux preuves sont independantes : protection de l'Environment ET liaison
+  // OIDC du job courant. L'absence de l'une ou l'autre garde le mode bloque.
+  const verificationOptions = options.verificationOptions || {}
+  const bindingOptions = Object.assign({}, options.bindingOptions || {}, {
+    env: options.env || process.env,
+  })
+  if (!bindingOptions.fetchImpl && verificationOptions.fetchImpl) {
+    bindingOptions.fetchImpl = verificationOptions.fetchImpl
+  }
+  const binding = await verifyJobEnvironmentBinding(bindingOptions)
+  const protection = await verifyEnvironmentProtection(verificationOptions)
+  const combined = Object.assign({}, protection, {
+    jobEnvironmentBound: binding.bound,
+    boundEnvironment: binding.environment || null,
+  })
+  const decision = authorizeAction(action, Object.assign({}, options, { environmentProtection: combined }))
+  return Object.assign({}, decision, {
+    evidence: Object.assign({}, decision.evidence, {
+      environmentProtection: combined,
+      jobEnvironmentBinding: binding,
+    }),
+  })
 }
 
 /** Fabrique les helpers nommes exiges par la mission. */
@@ -280,10 +430,12 @@ module.exports = {
   APPROVAL_TOKEN_VAR,
   APPROVAL_TOKEN_PATTERN,
   APPROVAL_ENVIRONMENT_VAR,
+  APPROVAL_ENVIRONMENT,
   resolveTrigger,
   isDryRunRequested,
   hasApprovalProof,
   verifyEnvironmentProtection,
+  verifyJobEnvironmentBinding,
   authorizeAction,
   authorizeActionAsync,
   assertEmailSendAllowed,
