@@ -13,7 +13,7 @@ const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cu
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshnessLabel = "", observationFresh = false, onBuy }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -50,7 +50,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {_t(lang, <>Sache où sera la mer <span style={{ color: "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: "#FFC72C" }}>mañana</span>.</>)}
         </h2>
         <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
-          {_t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
+          {_t(lang, "Prévision 7 jours · Statut des plages daté par observation satellite · Un prix, pas d'abonnement.", "7-day forecast · Beach status dated by satellite observation · One price, no subscription.", "Pronóstico 7 días · Estado de las playas fechado por observación satelital · Un precio, sin suscripción.")}
         </p>
 
         <div style={{ margin: "18px 0 0" }}>
@@ -76,7 +76,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             </span>
             <span style={{ display: "flex", flexDirection: "column", gap: 7, margin: "14px 0 0" }}>
               {[
-                _t(lang, <><b style={{ color: "#fff", fontWeight: 800 }}>LA plage propre</b> chaque matin, 7h</>, <><b style={{ color: "#fff", fontWeight: 800 }}>THE clean beach</b> every morning, 7am</>, <><b style={{ color: "#fff", fontWeight: 800 }}>LA playa limpia</b> cada mañana, 7h</>),
+                _t(lang, <><b style={{ color: "#fff", fontWeight: 800 }}>Le statut de chaque plage</b>, avec la date de l'observation</>, <><b style={{ color: "#fff", fontWeight: 800 }}>Each beach's status</b>, with the observation timestamp</>, <><b style={{ color: "#fff", fontWeight: 800 }}>El estado de cada playa</b>, con la fecha de observación</>),
                 _t(lang, <>Prévision <b style={{ color: "#fff", fontWeight: 800 }}>7 jours</b> · toutes les plages</>, <><b style={{ color: "#fff", fontWeight: 800 }}>7-day</b> forecast · all beaches</>, <>Pronóstico <b style={{ color: "#fff", fontWeight: 800 }}>7 días</b> · todas las playas</>),
                 _t(lang, <>Alerte le jour où <b style={{ color: "#fff", fontWeight: 800 }}>ça bascule</b></>, <>Alert the day <b style={{ color: "#fff", fontWeight: 800 }}>it flips</b></>, <>Alerta el día que <b style={{ color: "#fff", fontWeight: 800 }}>cambia</b></>),
               ].map((t, i) => (
@@ -106,7 +106,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           </button>
         </div>
 
-        {(community > 0 || freshTs) && (
+        {(community > 0 || freshnessLabel) && (
           <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 14px", margin: "14px 0 0", fontSize: 11.5, fontWeight: 600, color: "rgba(234,247,244,.62)" }}>
             {community > 0 && (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
@@ -114,12 +114,12 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
                 {_t(lang, `Déjà ${community}+ suivent leurs plages`, `${community}+ already track their beaches`, `${community}+ ya siguen sus playas`)}
               </span>
             )}
-            {freshTs && (() => {
-              const h = Math.max(1, Math.round((Date.now() - new Date(freshTs).getTime()) / 3.6e6))
-              if (!(h >= 1 && h < 48)) return null
-              const txt = _t(lang, `Données satellite mises à jour il y a ${h} h`, `Satellite data updated ${h}h ago`, `Datos satelitales actualizados hace ${h} h`)
-              return <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E" }} />{txt}</span>
-            })()}
+            {freshnessLabel && (
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: observationFresh ? "#22C55E" : "#FBBF24" }} />
+                {freshnessLabel}
+              </span>
+            )}
           </div>
         )}
 
