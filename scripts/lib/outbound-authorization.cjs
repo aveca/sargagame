@@ -62,6 +62,8 @@ const APPROVAL_TOKEN_PATTERN = /^sgappr_[A-Za-z0-9_-]{16,}$/
 
 /** Nom de l'Environment attendu (informationnel : la preuve reste le jeton + l'API). */
 const APPROVAL_ENVIRONMENT_VAR = 'OUTBOUND_APPROVAL_ENVIRONMENT'
+// Environment unique attendu. Une variable repo-level ne peut pas choisir la cible.
+const APPROVAL_ENVIRONMENT = 'outbound-approval'
 
 const truthy = (v) => v === '1' || v === true || String(v).toLowerCase() === 'true'
 
@@ -104,10 +106,10 @@ function hasApprovalProof(env) {
  */
 async function verifyEnvironmentProtection(options = {}) {
   const empty = { exists: false, reviewers: 0, protectionRules: 0, error: 'unverified' }
-  const env = process.env
+  const env = options.env || process.env
   const owner = options.owner || env.GITHUB_REPOSITORY_OWNER || (env.GITHUB_REPOSITORY || '').split('/')[0]
   const repo = options.repo || (env.GITHUB_REPOSITORY || '').split('/')[1] || ''
-  const environment = options.environment || env[APPROVAL_ENVIRONMENT_VAR] || ''
+  const environment = options.environment || APPROVAL_ENVIRONMENT
   const token = options.token || env.GITHUB_TOKEN || env.OUTBOUND_APPROVAL_TOKEN || ''
   const fetchImpl = options.fetchImpl || globalThis.fetch
 
@@ -142,6 +144,92 @@ async function verifyEnvironmentProtection(options = {}) {
     return { exists: true, reviewers, protectionRules, error: protectionRules > 0 || reviewers > 0 ? undefined : 'not-protected' }
   } catch (err) {
     return { exists: false, reviewers: 0, protectionRules: 0, error: 'verification-error:' + (err && err.message ? err.message : String(err)) }
+  }
+}
+
+/**
+ * Verifie que LE JOB COURANT est reellement lie a l'Environment d'approbation.
+ *
+ * Le nom d'un Environment et son existence ne prouvent pas que le job a attendu
+ * ses reviewers. On demande donc un OIDC token au endpoint ephemere fourni par
+ * le runner GitHub Actions, puis on lie ses claims au repository, run, SHA, ref,
+ * evenement et Environment attendus. Le jeton est emis par GitHub sur HTTPS;
+ * il n'est jamais journalise ni transmis a un service tiers.
+ *
+ * Sans permission id-token: write, sans job.environment, ou si une seule claim
+ * manque/ne correspond, la preuve est refusee. Aucun workflow actuel n'est
+ * active ici: cette garde maintient donc les envois bloques tant qu'un job
+ * manuel n'est pas explicitement attache a outbound-approval.
+ *
+ * @param {{env?:NodeJS.ProcessEnv, fetchImpl?:Function, environment?:string}} options
+ * @returns {Promise<{bound:boolean, environment?:string, runId?:string, error?:string}>}
+ */
+async function verifyJobEnvironmentBinding(options = {}) {
+  const env = options.env || process.env
+  const expectedEnvironment = options.environment || APPROVAL_ENVIRONMENT
+  const requestUrl = env.ACTIONS_ID_TOKEN_REQUEST_URL || ''
+  const requestToken = env.ACTIONS_ID_TOKEN_REQUEST_TOKEN || ''
+  const fetchImpl = options.fetchImpl || globalThis.fetch
+  const fail = (error) => ({ bound: false, error })
+
+  if (!requestUrl || !requestToken || typeof fetchImpl !== 'function') {
+    return fail('oidc-runner-context-unavailable')
+  }
+  if (!env.GITHUB_REPOSITORY || !env.GITHUB_RUN_ID || !env.GITHUB_SHA || !env.GITHUB_REF) {
+    return fail('github-run-identity-incomplete')
+  }
+
+  let endpoint
+  try {
+    endpoint = new URL(requestUrl)
+  } catch (_) {
+    return fail('oidc-endpoint-invalid')
+  }
+  if (endpoint.protocol !== 'https:' || endpoint.hostname !== 'pipelines.actions.githubusercontent.com') {
+    return fail('oidc-endpoint-untrusted')
+  }
+
+  try {
+    endpoint.searchParams.set('audience', 'sargagame-outbound-authorization')
+    const response = await fetchImpl(endpoint.toString(), {
+      headers: {
+        authorization: 'Bearer ' + requestToken,
+        accept: 'application/json',
+      },
+    })
+    if (!response || !response.ok) return fail('oidc-token-request-failed')
+    const body = await response.json()
+    const jwt = body && body.value
+    if (typeof jwt !== 'string') return fail('oidc-token-missing')
+    const parts = jwt.split('.')
+    if (parts.length !== 3) return fail('oidc-token-malformed')
+
+    const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))
+    const now = Math.floor(Date.now() / 1000)
+    const aud = Array.isArray(claims.aud) ? claims.aud : [claims.aud]
+    const expectedSub = 'repo:' + env.GITHUB_REPOSITORY + ':environment:' + expectedEnvironment
+    const valid =
+      claims.iss === 'https://token.actions.githubusercontent.com' &&
+      aud.includes('sargagame-outbound-authorization') &&
+      claims.repository === env.GITHUB_REPOSITORY &&
+      String(claims.run_id || '') === String(env.GITHUB_RUN_ID) &&
+      claims.sha === env.GITHUB_SHA &&
+      claims.ref === env.GITHUB_REF &&
+      claims.event_name === MANUAL_TRIGGER &&
+      claims.environment === expectedEnvironment &&
+      claims.sub === expectedSub &&
+      Number.isFinite(Number(claims.exp)) && Number(claims.exp) > now &&
+      (!Number.isFinite(Number(claims.nbf)) || Number(claims.nbf) <= now + 30
+
+    if (!valid) return fail('oidc-claims-do-not-bind-approved-job')
+    return {
+      bound: true,
+      environment: claims.environment,
+      runId: String(claims.run_id),
+    }
+  } catch (_) {
+    // Ne jamais inclure le JWT, le request token ou les reponses brutes dans le log.
+    return fail('oidc-verification-failed')
   }
 }
 
@@ -228,6 +316,17 @@ function authorizeAction(action, options = {}) {
       evidence,
     }
   }
+  // Un secret et un Environment protege ne prouvent pas que CE job y est lie.
+  // Exiger le claim OIDC emis pour le run courant, apres l'approbation du job.
+  if (prot.jobEnvironmentBound !== true || prot.boundEnvironment !== APPROVAL_ENVIRONMENT) {
+    return {
+      execute: false,
+      mode: 'blocked',
+      action,
+      reason: 'job non lie a l\'Environment outbound-approval (preuve OIDC absente ou invalide) : operation desactivee',
+      evidence,
+    }
+  }
 
   return {
     execute: true,
@@ -248,10 +347,28 @@ function authorizeAction(action, options = {}) {
  * @returns {Promise<{execute:boolean, mode:string, action:string, reason:string, evidence:Object}>}
  */
 async function authorizeActionAsync(action, options = {}) {
-  // Verification de l'Environment d'abord : sans elle, aucune production n'est possible.
-  const protection = await verifyEnvironmentProtection(options.verificationOptions || {})
-  const decision = authorizeAction(action, Object.assign({}, options, { environmentProtection: protection }))
-  return Object.assign({}, decision, { evidence: Object.assign({}, decision.evidence, { environmentProtection: protection }) })
+  // Les deux preuves sont independantes : protection de l'Environment ET liaison
+  // OIDC du job courant. L'absence de l'une ou l'autre garde le mode bloque.
+  const verificationOptions = options.verificationOptions || {}
+  const bindingOptions = Object.assign({}, options.bindingOptions || {}, {
+    env: options.env || process.env,
+  })
+  if (!bindingOptions.fetchImpl && verificationOptions.fetchImpl) {
+    bindingOptions.fetchImpl = verificationOptions.fetchImpl
+  }
+  const binding = await verifyJobEnvironmentBinding(bindingOptions)
+  const protection = await verifyEnvironmentProtection(verificationOptions)
+  const combined = Object.assign({}, protection, {
+    jobEnvironmentBound: binding.bound,
+    boundEnvironment: binding.environment || null,
+  })
+  const decision = authorizeAction(action, Object.assign({}, options, { environmentProtection: combined }))
+  return Object.assign({}, decision, {
+    evidence: Object.assign({}, decision.evidence, {
+      environmentProtection: combined,
+      jobEnvironmentBinding: binding,
+    }),
+  })
 }
 
 /** Fabrique les helpers nommes exiges par la mission. */
@@ -280,10 +397,12 @@ module.exports = {
   APPROVAL_TOKEN_VAR,
   APPROVAL_TOKEN_PATTERN,
   APPROVAL_ENVIRONMENT_VAR,
+  APPROVAL_ENVIRONMENT,
   resolveTrigger,
   isDryRunRequested,
   hasApprovalProof,
   verifyEnvironmentProtection,
+  verifyJobEnvironmentBinding,
   authorizeAction,
   authorizeActionAsync,
   assertEmailSendAllowed,
