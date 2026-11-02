@@ -144,8 +144,8 @@ function satelliteBeats(lang){
     },
     {
       eyebrow: T("RÉSOLUTIONS & FRÉQUENCE", "RESOLUTION & FREQUENCY", "RESOLUCIÓN Y FRECUENCIA"),
-      heading: T("Scan toutes les 3 heures", "Scan every 3 hours", "Escaneo cada 3 horas"),
-      sub: T("La grille de détection a une précision de 300 mètres, actualisée plusieurs fois par jour pour anticiper les arrivées.", "The detection grid has a 300-meter precision, updated several times a day to anticipate arrivals.", "La cuadrícula de detección tiene una precisión de 300 metros, actualizada varias veces al día para anticipar llegadas."),
+      heading: T("Observations satellites datées", "Dated satellite observations", "Observaciones satelitales fechadas"),
+      sub: T("La grille de détection s'appuie sur les observations disponibles. La date de chaque observation permet d'en apprécier la fraîcheur.", "The detection grid relies on available observations. Each observation's timestamp lets you assess its age.", "La cuadrícula de detección utiliza las observaciones disponibles. La fecha de cada observación permite valorar su antigüedad."),
       scene: (
         <g>
           <rect width="800" height="600" fill="#06211E"/>
@@ -158,10 +158,10 @@ function satelliteBeats(lang){
       )
     },
     {
-      eyebrow: T("TEMPS RÉEL", "REAL TIME", "TIEMPO REAL"),
-      heading: T("Ce que voit ta plage", "What your beach sees", "Lo que ve tu playa"),
-      sub: T("Grâce aux données satellite croisées en direct, tu sais si l'eau devant ta plage préférée est propre maintenant.", "Thanks to cross-referenced live satellite data, you know if the water in front of your favorite beach is clean right now.", "Gracias a los datos satelitales cruzados en vivo, sabes si el agua de tu playa favorita está limpia ahora."),
-      cta: T("Voir la carte en direct →", "See the live map →", "Ver el mapa en vivo →"),
+      eyebrow: T("OBSERVATION SATELLITE", "SATELLITE OBSERVATION", "OBSERVACIÓN SATELITAL"),
+      heading: T("Ce que montre la dernière observation", "What the latest observation shows", "Lo que muestra la última observación"),
+      sub: T("Les données satellite sont accompagnées de leur date. Une observation retardée ou non vérifiée n'est pas présentée comme l'état actuel de la plage.", "Satellite data are shown with their timestamp. Delayed or unverified observations are not presented as the beach's current state.", "Los datos satelitales se muestran con su fecha. Las observaciones retrasadas o no verificadas no se presentan como el estado actual de la playa."),
+      cta: T("Voir la carte des plages →", "See the beach map →", "Ver el mapa de playas →"),
       scene: (
         <g>
           <rect width="800" height="600" fill="#0B2230"/>
@@ -356,7 +356,7 @@ function methodeBeats(lang){
     {
       eyebrow: T("LA CARTE", "THE MAP", "EL MAPA"),
       heading: T("Prêt pour la plage ?", "Ready for the beach?", "¿Listo para la playa?"),
-      sub: T("Ouvre la carte interactive pour voir l'état exact de tes plages aujourd'hui et planifier ta semaine en Martinique et Guadeloupe.", "Open the interactive map to see the exact state of your beaches today and plan your week in Martinique and Guadeloupe.", "Abre el mapa interactivo para ver el estado exacto de tus playas hoy y planificar tu semana."),
+      sub: T("Ouvre la carte interactive pour consulter les dernières observations disponibles et leur date, puis planifier ta semaine en Martinique et Guadeloupe.", "Open the interactive map to review the latest available observations and their timestamps, then plan your week in Martinique and Guadeloupe.", "Abre el mapa interactivo para consultar las últimas observaciones disponibles y sus fechas, y planificar tu semana."),
       cta: T("Ouvrir la carte →", "Open the map →", "Abrir el mapa →"),
       scene: (
         <g>
@@ -622,8 +622,8 @@ function mapIntroBeats(lang,counts){
         <path d="M250 472 Q390 444 530 468 Q630 484 820 460 L820 620 L250 620 Z" fill="#13302A"/>
         <g style={{transform:"translateX(calc(var(--p0)*170px - 30px))"}}>{miVeil(330,250,"#5b3a8e","#3fd07f")}</g>
       </g>},
-    {eyebrow:T("TON LITTORAL AUJOURD'HUI","YOUR COAST TODAY","TU COSTA HOY"),heading:`${c.clean} ${T("propres","clean","limpias")} · ${c.avoid} ${T("à éviter","to avoid","a evitar")}`,
-      sub:T("L'état du jour, plage par plage. Le vert respire, le corail prévient.","Today's status, beach by beach. Green breathes, coral warns.","El estado de hoy, playa por playa."),
+    {eyebrow:T("STATUTS AFFICHÉS","DISPLAYED STATUSES","ESTADOS MOSTRADOS"),heading:`${c.clean} ${T("classées propres","marked clean","clasificadas limpias")} · ${c.avoid} ${T("à éviter","to avoid","a evitar")}`,
+      sub:T("Les catégories affichées correspondent aux données consultées ; vérifie leur date avant de décider.","Displayed categories reflect the data shown; check their timestamp before deciding.","Las categorías mostradas corresponden a los datos consultados; comprueba su fecha antes de decidir."),
       scene:<g>
         <rect width="800" height="600" fill="#120821"/><rect width="800" height="600" fill="#241246" opacity=".55"/>
         <g style={{opacity:"calc(.3 + var(--p1)*.7)",transformBox:"fill-box",transformOrigin:"center",transform:"scale(calc(.92 + var(--p1)*.08))"}}>
@@ -640,12 +640,12 @@ function mapIntroBeats(lang,counts){
         <circle cx="344" cy="220" r="11" fill="#22C55E"/><circle cx="476" cy="180" r="11" fill="#F59E0B"/><circle cx="510" cy="320" r="11" fill="#E8522A"/><circle cx="386" cy="372" r="11" fill="#22C55E"/>
         <g style={{transformBox:"fill-box",transformOrigin:"405px 250px",transform:"scale(calc(1 + var(--p2)*.9))",opacity:"calc(1 - var(--p2)*.6)"}}><circle cx="405" cy="250" r="16" fill="none" stroke="#FFE08A" strokeWidth="2"/></g>
         <circle cx="405" cy="250" r="13" fill="#22C55E"/><circle cx="405" cy="250" r="13" fill="none" stroke="#120821" strokeWidth="2"/>
-        <g style={{opacity:"var(--p2)"}}><g transform="translate(430,232)"><rect width="150" height="56" rx="12" fill="#241246" stroke="#22C55E" strokeWidth="1.5"/><circle cx="24" cy="20" r="8" fill="#22C55E"/><text x="42" y="26" fontFamily="'Anton',sans-serif" fontSize="17" fill="#fff">{T("VAS-Y","GO","¡VE!")}</text><text x="16" y="44" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB">{T("verdict du jour →","today's verdict →","veredicto →")}</text></g></g>
+        <g style={{opacity:"var(--p2)"}}><g transform="translate(430,232)"><rect width="150" height="56" rx="12" fill="#241246" stroke="#22C55E" strokeWidth="1.5"/><circle cx="24" cy="20" r="8" fill="#22C55E"/><text x="42" y="26" fontFamily="'Anton',sans-serif" fontSize="17" fill="#fff">{T("VAS-Y","GO","¡VE!")}</text><text x="16" y="44" fontFamily="ui-monospace,monospace" fontSize="11" fill="#9FE1CB">{T("statut affiché →","displayed status →","estado mostrado →")}</text></g></g>
         <g transform="translate(414,300)" style={{transform:"translate(414px,300px) translateY(calc(var(--p2)*-12px))"}}><path d="M0 0 q-7 -22 6 -30 q14 -8 13 8 l-2 26 Z" fill="#FFE08A"/><circle cx="2" cy="2" r="4" fill="#FFC72C"/></g>
       </g>},
-    {eyebrow:T("LA CARTE EST PRÊTE","THE MAP IS READY","EL MAPA ESTÁ LISTO"),heading:T("Ouvre ta carte live","Open your live map","Abre tu mapa en vivo"),
-      sub:T("Touche, zoome, compare. Le Veilleur reste serein tant que ton eau l'est.","Tap, zoom, compare. The Watcher stays calm while your water is.","Toca, acerca, compara."),
-      cta:T("Ouvrir la carte live →","Open the live map →","Abrir el mapa →"),
+    {eyebrow:T("LA CARTE EST PRÊTE","THE MAP IS READY","EL MAPA ESTÁ LISTO"),heading:T("Ouvre la carte des plages","Open the beach map","Abre el mapa de playas"),
+      sub:T("Touche, zoome, compare. Consulte la date de l'observation avant de prendre ta décision.","Tap, zoom, compare. Check the observation timestamp before deciding.","Toca, acerca y compara. Comprueba la fecha de observación antes de decidir."),
+      cta:T("Ouvrir la carte →","Open the map →","Abrir el mapa →"),
       scene:<g>
         <defs><linearGradient id="mi3sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#120821"/><stop offset=".55" stopColor="#11463E"/><stop offset="1" stopColor="#FFC72C"/></linearGradient></defs>
         <rect width="800" height="600" fill="url(#mi3sky)"/>
