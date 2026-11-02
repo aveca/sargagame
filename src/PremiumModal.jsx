@@ -8,7 +8,8 @@ import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
-import { regionalObservationFreshness, formatObservationTimestamp } from "./lib/format-freshness.mjs"
+import { regionalObservationFreshness } from "./lib/regional-observation-freshness.mjs"
+import { formatObservationTimestamp } from "./lib/format-freshness.mjs"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
