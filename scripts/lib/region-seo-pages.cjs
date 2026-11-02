@@ -677,7 +677,6 @@ function emitLangPages(ctx) {
   // Slug de la landing B2B hôtels (intention d'achat pro) — lié + sitemapé.
   const hotelsSlug = lang === 'es' ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
   // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
-  const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
   const sw = s => STATUS_WORD[lang][s] || s || '—'
   const pushUrl = (loc, opt = {}) => sitemap.push({ loc, changefreq: opt.daily ? 'daily' : 'weekly', priority: opt.priority || '0.5' })
 
