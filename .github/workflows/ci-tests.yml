@@ -72,6 +72,16 @@ jobs:
           done
           echo "Preview server failed to start"
           exit 1
+      - name: Run Chasse home freshness browser regression
+        run: node scripts/chasse-home-freshness-smoke.mjs
+      - name: Upload Chasse home freshness screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: chasse-home-freshness-390x844-1440x900
+          path: /tmp/chasse-home-freshness/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Run UX smoke test (mobile funnel)
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
       - name: Verify smoke tokens

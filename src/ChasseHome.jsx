@@ -1442,6 +1442,44 @@ function LadderSheet({tiers,count,best,onClose,lang}){
 }
 
 export default function ChasseHome(props){
+  // The alternate Chasse experience must gate EVERY card, score, challenge and
+  // email promise at its boundary. ChasseDetail has its own guard, but the home
+  // collection/duel previously consumed pickBeaches before opening a detail.
+  const sargData = props && props.sargData;
+  const lang = props && props.lang || "fr";
+  const current = sargData?.source === "erddap-live"
+    && sargData?.stale === false
+    && isSatelliteFresh12h(sargData);
+
+  if (!current) {
+    const title = lang === "en" ? "CHECK REQUIRED"
+      : lang === "es" ? "POR VERIFICAR" : "À VÉRIFIER";
+    const message = lang === "en"
+      ? "Satellite observations do not support a current beach verdict. The Chasse experience is paused until a sufficiently recent observation is available."
+      : lang === "es"
+        ? "Las observaciones satelitales no permiten publicar un veredicto actual de playa. La Chasse queda pausada hasta disponer de una medición suficientemente reciente."
+        : "Les observations satellite ne permettent pas de publier un verdict actuel pour les plages. La Chasse est suspendue jusqu'à une mesure suffisamment récente.";
+
+    return (
+      <div className="lc-root" role="status" aria-live="polite" data-testid="chasse-home-stale"
+        style={{position:"fixed",inset:0,zIndex:1050,overflowY:"auto",display:"grid",placeItems:"center",
+          padding:24,background:"#fdf6e3",color:"#0d0b14",textAlign:"center"}}>
+        <div style={{width:"100%",maxWidth:520,padding:24,border:"3px solid #0d0b14",borderRadius:18,
+          background:"#fff",boxShadow:"6px 6px 0 #0d0b14"}}>
+          <h1 style={{margin:"0 0 12px",fontSize:28,fontWeight:900}}>{title}</h1>
+          <p style={{margin:"0 0 12px",fontSize:16,lineHeight:1.5}}>{message}</p>
+          <p data-testid="chasse-home-stale-age" style={{margin:0,fontSize:13,fontWeight:700}}>
+            {lcDetailFreshnessLabel(sargData, lang)}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return <ChasseHomeFresh {...props}/>;
+}
+
+function ChasseHomeFresh(props){
   const {beach,lang="fr",sargData,pickBeaches=[],onOpen,onOpenBeach,onPremium,onShowMap,onCaptureEmail,track,exiting,isPremium=false,favorites=[],onToggleFav,onOpenPro,captureMode=false}=props
   const _t=useCallback((o)=>{ const v=o&&(o[lang]!=null?o[lang]:o.fr); return v },[lang])
 
