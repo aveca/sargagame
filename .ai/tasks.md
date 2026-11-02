@@ -97,10 +97,11 @@
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2
-- **Rple** : coding_agent + UX_agent
-- **Description** : Animation compose BD (slide les bolting) pour transitions top niveau: echoin Euro ∈ payer from cert to
+- **Rôle** : coding_agent + UX_agent
+- **Description** : [À reformuler — texte source corrompu/illisible ; ne pas handoff avant clarification.]
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] blocked
+- **Blocage** : description d'origine inexploitable ; aucune issue ni tâche agent ne doit être créée à partir de ce texte.
 
 ---
 
