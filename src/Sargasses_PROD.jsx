@@ -4839,7 +4839,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
     return w
   },[beach?.id,sargData])
   const forecast=useMemo(()=>{
-    if(!satelliteDecisionCurrent||!beach)return null
+    if(!beach)return null
     let fc=weeklyData?.forecast||null
     if(!Array.isArray(fc)||fc.length===0)return null
     // Blend community reports into a real weekly forecast when terrain says worse.
@@ -4947,12 +4947,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
 
   if(!satelliteDecisionCurrent) return(
-    <Suspense fallback={<div className="sheet" data-testid="beach-sheet-fallback-stale-loading" role="dialog">
-      <p>À vérifier</p><button type="button" onClick={requestClose}>Fermer</button>
-    </div>}>
-      <LazyBeachSheetStaleFallback beach={beach} lang={lang} sargData={sargData}
-        onClose={requestClose} sheetRef={sheetRef} backdropRef={backdropRef}
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}/>
+    <Suspense fallback={<div className="sheet" data-testid="beach-sheet-fallback-stale-loading">À vérifier</div>}>
+      <LazyBeachSheetStaleFallback beach={beach} lang={lang} sargData={sargData} onClose={onClose}/>
     </Suspense>
   )
 
@@ -14553,9 +14549,7 @@ export default function App(){
               onRequestGeo={requestGeo}/>
           )
           // Local-only QA switch: exercise the error-boundary fallback without exposing it on public hosts.
-          const _forceFallback = typeof window !== "undefined"
-            && window.location.hostname === "127.0.0.1"
-            && window.location.search.includes("beachfallback=1")
+          const _forceFallback = window.location.hostname === "127.0.0.1" && window.location.search.includes("beachfallback=1")
           if (_forceFallback) return _fallback
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
