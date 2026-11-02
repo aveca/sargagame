@@ -58,9 +58,9 @@ function isSelfRedirect(sourcePath, targetPath) {
 
 /** Convert only simple literal beach-slug RewriteRule patterns to a path. */
 function literalPathFromPattern(pattern) {
-  const match = String(pattern).match(/^\\^((?:\\\\.|[A-Za-z0-9_/-])+?)\\/\\?\\$/);
+  const match = String(pattern).match(/^\^((?:\\.|[A-Za-z0-9_/-])+?)\/\?\$$/);
   if (!match) return null;
-  return `/${match[1].replace(/\\\\(.)/g, '$1')}/`;
+  return `/${match[1].replace(/\\(.)/g, '$1')}/`;
 }
 
 /**
