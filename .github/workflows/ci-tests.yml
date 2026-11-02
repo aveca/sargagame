@@ -74,6 +74,16 @@ jobs:
           exit 1
       - name: Run UX smoke test (mobile funnel)
         run: node scripts/ux-smoke.mjs | tee /tmp/smoke.log
+      - name: Run BeachSheet fallback stale-freshness browser regression
+        run: node scripts/beach-sheet-fallback-freshness-smoke.cjs
+      - name: Upload BeachSheet fallback freshness screenshots
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: beach-sheet-fallback-freshness-390x844-1440x900
+          path: /tmp/beach-sheet-fallback-freshness/*.png
+          if-no-files-found: warn
+          retention-days: 7
       - name: Verify smoke tokens
         run: |
           grep -q 'FUNNEL_REACHED=map+fiche+paywall' /tmp/smoke.log
