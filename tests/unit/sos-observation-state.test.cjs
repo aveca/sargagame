@@ -2,9 +2,20 @@
 "use strict"
 
 const assert = require("node:assert/strict")
+const fs = require("node:fs")
+const path = require("node:path")
 
 async function main() {
   const { enrichSosBeaches } = await import("../../src/lib/sos-observation-state.mjs")
+  const root = path.resolve(__dirname, "../..")
+  const sosSource = fs.readFileSync(path.join(root, "src/SOSPlage.jsx"), "utf8")
+  assert.ok(sosSource.includes("enrichSosBeaches(sourceList, sargRes, region)"), "SOS UI must use the validated observation helper")
+  assert.doesNotMatch(sosSource, /lvl\?\.status\s*\|\|\s*["\x27]clean["\x27]/, "missing levels must never default to clean")
+  assert.doesNotMatch(sosSource, /lvl\?\.confidence\s*\|\|\s*70/, "missing confidence must never be invented")
+  assert.doesNotMatch(sosSource, /lvl\?\.afai\s*\|\|\s*0/, "missing AFAI must never be invented")
+  assert.ok(sosSource.includes("data-testid=\"sos-observation-unverified\""), "unknown observations must show a visible status notice")
+  assert.doesNotMatch(sosSource, /Satellite 4×\/day|Satellite 4×\/jour|Satélite 4×\/día/, "SOS copy must not promise an unsupported satellite cadence")
+  
   const now = Date.parse("2026-11-02T12:00:00Z")
   const beaches = [
     { id: "mq001", island: "mq", name: "Grande Anse" },
