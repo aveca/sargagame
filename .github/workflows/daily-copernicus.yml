@@ -506,12 +506,9 @@ jobs:
           SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
           SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        # Mission P0.23 / #1157 : `--send` retire (le contrat refuse par defaut
-        # un envoi sur declencheur `schedule`). NOTE : le chemin historique
-        # `scripts/automation/ux-daily.cjs` n'existe pas (script reel :
-        # `scripts/ux-daily.cjs`) ; l'etape echouait deja en silence
-        # (continue-on-error). A corriger separement, hors perimetre P0.23.
-        run: node scripts/automation/ux-daily.cjs
+        # Tracking UX first-party : script situé à scripts/ux-daily.cjs.
+        # Pas de --send : le job planifié collecte et écrit le snapshot, sans email.
+        run: node scripts/ux-daily.cjs
 
       - name: Publish daily metrics snapshot
         # Responsabilité SÉPARÉE du commit email (qui garde son continue-on-error
