@@ -63,7 +63,7 @@ async function runScenario(viewport, state) {
         'the pause state must expose the real observation-age label');
       for (const selector of ['.lc-card', '.lc-pack', '.lc-gomap', '.lc-bells', '.lc-spacebtn']) {
         assert.equal(await page.locator(selector).count(), 0,
-          \`\${selector} must not mount while the observation is stale\`);
+          selector + ' must not mount while the observation is stale');
       }
     } else {
       const game = page.locator('.lc-root[role="dialog"][aria-label="La Chasse"]');
@@ -73,9 +73,9 @@ async function runScenario(viewport, state) {
         'a sufficiently recent LIVE observation must retain the normal Chasse experience');
     }
 
-    const screenshot = \`\${OUTPUT}/\${state}-\${viewport.name}.png\`;
+    const screenshot = OUTPUT + '/' + state + '-' + viewport.name + '.png';
     await page.screenshot({ path: screenshot, fullPage: false });
-    console.log(\`PASS_CHASSE_HOME_\${state.toUpperCase()}_\${viewport.name} screenshot=\${screenshot}\`);
+    console.log('PASS_CHASSE_HOME_' + state.toUpperCase() + '_' + viewport.name + ' screenshot=' + screenshot);
   } finally {
     await context.close();
   }
