@@ -49,29 +49,33 @@ const BEACH_REGION = {
 }
 
 // ── hook generator (personalised per beach + hotel) ─────────────
+// Hooks describe the product's evidence contract, never a current beach verdict
+// or a refresh cadence. The downstream outreach template may include these
+// strings verbatim, so every variant must remain safe when observations are stale.
+const EN_HOOKS = {
+  florida: [
+    `We publish the latest published observation for ${beach}, with its timestamp and confidence. If the source is delayed, we withhold a current clean-beach verdict — useful context for ${hotel}'s guest team.`,
+    `${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, instead of relying on a generic coastal summary.`,
+    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; the latest published observation, timestamp and confidence remain visible, and days 4–7 are trends, not guarantees.`,
+    `The latest published observation for ${beach}, its timestamp and confidence, gives ${hotel} a transparent answer to guest questions without promising a clean beach before the data support it.`,
+  ],
+  puntacana: [
+    `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified beach all-clear.`,
+    `Punta Cana conditions can vary by beach. ${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, with guests.`,
+    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation and its confidence.`,
+    `A dated, confidence-labelled latest published observation for ${beach} can help ${hotel}'s front desk explain what is known — and what is not.`,
+  ],
+  rivieramaya: [
+    `The Riviera Maya varies from beach to beach. ${hotel} can point guests to the latest published observation for ${beach}, with its timestamp and confidence.`,
+    `For ${hotel}, a beach-level view is more useful than a regional average: the latest published observation for ${beach} includes its timestamp and confidence.`,
+    `A forecast is shown only when observation and transport inputs pass validation. ${hotel} can share that planning context alongside the latest published observation for ${beach}.`,
+    `The latest published observation for ${beach}, timestamp and confidence included, gives ${hotel} a transparent basis for guest updates without promising a verified clean beach prematurely.`,
+  ],
+}
+
 function makeHook(region, beach, hotel) {
-  const EN_HOOKS = {
-    florida: [
-      `${beach} this morning is clean according to our latest satellite pass — your guests at ${hotel} deserve to know before they step out.`,
-      `Sargassum season shifts ${beach} overnight. ${hotel} can alert guests before they hit the sand, with 7-day forecasts, beach by beach.`,
-      `Your ${hotel} guests heading to ${beach} expect perfection. We track the coast by satellite every 6 hours — no surprises, no disappointed check-outs.`,
-      `${beach} varies block by block. ${hotel} could be the one that always knows the exact all-clear spot, before reviews are written.`,
-    ],
-    puntacana: [
-      `Bavaro Beach drives bookings for ${hotel}. We track the sargassum drift daily by satellite — a beach certainty your guests won't find elsewhere.`,
-      `Punta Cana's coastline is stunning but unpredictable. ${hotel} can give guests a daily beach all-clear before they ask at the front desk.`,
-      `Cap Cana's pristine image depends on beach quality. ${hotel} can back it with real satellite data, day by day.`,
-      `${beach} is your property's crown jewel. Know its state before your guests do, with a simple widget on your site.`,
-    ],
-    rivieramaya: [
-      `Cancun's Hotel Zone sees sargassum pulses that shift overnight. ${hotel} could be the one that always knows first — and warns guests before check-in.`,
-      `Playa del Carmen beaches vary by current. ${hotel} can offer guests a real-time beach forecast — a competitive edge for reviews.`,
-      `Tulum's coastline is stunning but vulnerable. ${hotel} can show guests exactly where is clean today, with satellite data, not guesswork.`,
-      `Puerto Morelos beaches change with every tide. ${hotel} can give guests the daily verdict, measured by satellite, 4 times a day.`,
-    ],
-  }
   const pool = EN_HOOKS[region]
-  return pool ? pool[Math.floor(Math.random() * pool.length)] : `${beach} this morning — ${hotel} can know before guests arrive.`
+  return pool ? pool[Math.floor(Math.random() * pool.length)] : `The latest published observation for ${beach}, with its timestamp and confidence, gives ${hotel} a transparent starting point; if the source is delayed, no current clean-beach verdict is presented.`
 }
 
 // ── likely email from domain ─────────────────────────────────────
