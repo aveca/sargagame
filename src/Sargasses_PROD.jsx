@@ -4950,32 +4950,16 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
       <div className="backdrop" ref={backdropRef} onClick={requestClose}/>
       <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-stale"
         role="dialog" aria-modal="true"
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
-        style={{padding:"28px 20px max(24px, env(safe-area-inset-bottom))",boxSizing:"border-box"}}>
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
         <button type="button" data-testid="beach-sheet-fallback-close"
-          aria-label={_t(lang,"Fermer","Close","Cerrar")} onClick={requestClose}
-          style={{position:"absolute",top:14,right:14,minWidth:44,minHeight:44,borderRadius:"50%",border:"1px solid rgba(255,255,255,.2)",background:"rgba(255,255,255,.12)",color:"inherit",fontSize:22,cursor:"pointer"}}>×</button>
-        <div style={{maxWidth:520,margin:"18px auto 0"}}>
-          <div style={{fontSize:11,fontWeight:800,letterSpacing:".12em",textTransform:"uppercase",opacity:.7}}>{_t(lang,"FICHE DE PLAGE","BEACH DETAILS","FICHA DE PLAYA")}</div>
-          <h2 style={{fontSize:"clamp(24px,6vw,34px)",lineHeight:1.05,margin:"10px 0 18px"}}>{beach.name}</h2>
-          <div data-testid="beach-sheet-fallback-verdict" role="status" style={{fontSize:20,fontWeight:900,marginBottom:10}}>{_t(lang,"À VÉRIFIER","CHECK REQUIRED","POR VERIFICAR")}</div>
-          <p data-testid="beach-sheet-fallback-freshness" style={{fontSize:13,fontWeight:700,margin:"0 0 12px"}}>{lcDetailFreshnessLabel(sargData,lang)}</p>
-          <p data-testid="beach-sheet-fallback-score-paused" style={{fontSize:14,lineHeight:1.5,margin:"0 0 22px"}}>
-            {_t(lang,
-              "Le score, le verdict de baignade, les alternatives et les prévisions sont suspendus jusqu'à une observation satellite récente et validée.",
-              "The score, swimming verdict, alternatives and forecasts are paused until a recent, validated satellite observation is available.",
-              "La puntuación, el veredicto de baño, las alternativas y los pronósticos se suspenden hasta disponer de una observación satelital reciente y validada."
-            )}
-          </p>
-          <button type="button" onClick={requestClose} data-testid="beach-sheet-fallback-close-map"
-            style={{minHeight:48,width:"100%",borderRadius:12,border:"none",padding:"12px 18px",fontSize:15,fontWeight:800,cursor:"pointer"}}>
-            {_t(lang,"Retour à la carte","Back to map","Volver al mapa")}
-          </button>
-        </div>
+          aria-label={_t(lang,"Fermer","Close","Cerrar")} onClick={requestClose}>×</button>
+        <h2>{beach.name}</h2>
+        <p data-testid="beach-sheet-fallback-verdict">{_t(lang,"À VÉRIFIER","CHECK REQUIRED","POR VERIFICAR")}</p>
+        <p data-testid="beach-sheet-fallback-freshness">{lcDetailFreshnessLabel(sargData,lang)}</p>
+        <p data-testid="beach-sheet-fallback-score-paused">{_t(lang,"Score et prévisions suspendus.","Score and forecast paused.","Puntuación y pronóstico suspendidos.")}</p>
       </div>
     </>
-  )
 
   return(
     <>
