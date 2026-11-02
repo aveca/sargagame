@@ -193,49 +193,18 @@ RewriteRule ^previsions-bulletin-direct/?$ /previsions/ [R=301,L]
 
 # =====================================================================
 
-# 2026-06-16 : 4 règles « ^plages/<slug>/ → /plages/<slug>/ » (auto-ajoutées par
-# seo-fix-404 le 2026-04-13) retirées. Ces slugs sont devenus de VRAIES plages GP
-# (anse-laborde, plage-des-amandiers, plage-de-sainte-claire, plage-de-la-desirade-sud :
-# servies 200 + au sitemap GP) → la règle les redirigeait vers elles-mêmes = no-op
-# au mieux, boucle 301 au pire. Aucune cible à « réparer » → supprimées.
+# 2026-11-02 : 26 redirections vers leur propre URL ont été retirées.
+# seo-fix-404 ignore maintenant les correspondances source == cible ; validateHtaccess
+# rejette aussi ces règles. Régression : tests/unit/seo-fix-404-self-redirect.test.cjs.
 
-# Auto-added 2026-06-22 by seo-fix-404
-RewriteRule ^plages/anse-laborde/?$ /plages/anse-laborde/ [R=301,L]
-RewriteRule ^plages/plage-des-amandiers/?$ /plages/plage-des-amandiers/ [R=301,L]
-RewriteRule ^plages/plage-de-sainte-claire/?$ /plages/plage-de-sainte-claire/ [R=301,L]
-RewriteRule ^plages/plage-de-la-desirade-sud/?$ /plages/plage-de-la-desirade-sud/ [R=301,L]
+
 
 # Auto-added 2026-10-12 by seo-fix-404
 RewriteRule ^saison-sargasses-guadeloupe/?$ / [R=301,L]
 RewriteRule ^saison-sargasses-martinique/?$ / [R=301,L]
 
-# Auto-added 2026-10-19 by seo-fix-404
-RewriteRule ^plages/plage-des-salines/?$ /plages/plage-des-salines/ [R=301,L]
-RewriteRule ^plages/anse-meunier/?$ /plages/anse-meunier/ [R=301,L]
-RewriteRule ^plages/anse-trabaud/?$ /plages/anse-trabaud/ [R=301,L]
-RewriteRule ^plages/anse-michel/?$ /plages/anse-michel/ [R=301,L]
-RewriteRule ^plages/anse-noire/?$ /plages/anse-noire/ [R=301,L]
-RewriteRule ^plages/anse-dufour/?$ /plages/anse-dufour/ [R=301,L]
-RewriteRule ^plages/plage-du-diamant/?$ /plages/plage-du-diamant/ [R=301,L]
-RewriteRule ^plages/anse-gros-raisins/?$ /plages/anse-gros-raisins/ [R=301,L]
-RewriteRule ^plages/anse-collat/?$ /plages/anse-collat/ [R=301,L]
-RewriteRule ^plages/plage-de-saint-pierre/?$ /plages/plage-de-saint-pierre/ [R=301,L]
 
-# Auto-added 2026-10-26 by seo-fix-404
-RewriteRule ^plages/anse-caritan/?$ /plages/anse-caritan/ [R=301,L]
-RewriteRule ^plages/plage-de-sainte-luce/?$ /plages/plage-de-sainte-luce/ [R=301,L]
-RewriteRule ^plages/anse-turin/?$ /plages/anse-turin/ [R=301,L]
-RewriteRule ^plages/anse-belleville/?$ /plages/anse-belleville/ [R=301,L]
-RewriteRule ^plages/bourg-de-tartane/?$ /plages/bourg-de-tartane/ [R=301,L]
-RewriteRule ^plages/les-raisiniers/?$ /plages/les-raisiniers/ [R=301,L]
-RewriteRule ^plages/anse-charpentier/?$ /plages/anse-charpentier/ [R=301,L]
-RewriteRule ^plages/plage-du-vetiver/?$ /plages/plage-du-vetiver/ [R=301,L]
-RewriteRule ^plages/plage-de-petit-bourg/?$ /plages/plage-de-petit-bourg/ [R=301,L]
-RewriteRule ^plages/plage-de-capesterre-mg/?$ /plages/plage-de-capesterre-mg/ [R=301,L]
 
-# Auto-added 2026-11-02 by seo-fix-404
-RewriteRule ^plages/anse-rodrigue/?$ /plages/anse-rodrigue/ [R=301,L]
-RewriteRule ^plages/plage-de-moustique/?$ /plages/plage-de-moustique/ [R=301,L]
 # CATCH-ALL — remaining old URLs that don't match specific rules → homepage
 # These MUST come AFTER all specific redirects above
 # =====================================================================
