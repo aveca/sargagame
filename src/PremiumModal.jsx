@@ -2483,7 +2483,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()}
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshnessLabel={_observationDisplay.label} observationFresh={_observationFresh} wallet={walletAvail()}
           seq={passSeq} proof={_seqProof}
           onProofOpen={()=>{try{track("sg_pass_proof_open",{source:source||"unknown"})}catch(_){}}}
           onProofBack={()=>{try{track("sg_pass_seq_back",{source:source||"unknown"})}catch(_){}}}
@@ -2493,8 +2493,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
         }}/>}
         {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
-          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
-          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          topName={_observationFresh?_topName:null} topScore={_observationFresh?_topScore:null} exSwitch={_observationFresh?_exSwitch:null} wkend={_observationFresh?_wkend:null}
+          ctxName={_observationFresh?_ctxName:null} ctxStatus={_observationFresh?_ctxStatus:null} cleanCount={_observationFresh?_cleanCount:0} totalCount={_observationFresh?_totalCount:0}
+          observationFresh={_observationFresh} freshnessLine={_observationDisplay.label}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
@@ -2505,8 +2506,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
-          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
-          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          topName={_observationFresh?_topName:null} topScore={_observationFresh?_topScore:null} exSwitch={_observationFresh?_exSwitch:null} wkend={_observationFresh?_wkend:null}
+          ctxName={_observationFresh?_ctxName:null} ctxStatus={_observationFresh?_ctxStatus:null} cleanCount={_observationFresh?_cleanCount:0} totalCount={_observationFresh?_totalCount:0}
+          observationFresh={_observationFresh} freshnessLine={_observationDisplay.label}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
@@ -2521,7 +2523,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshnessLabel={_observationDisplay.label} observationFresh={_observationFresh} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
