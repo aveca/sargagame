@@ -8,6 +8,7 @@ import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
+import { regionalObservationFreshness, formatObservationTimestamp } from "./lib/format-freshness.mjs"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -18,6 +19,28 @@ const {
   loadStripeJs, miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy, sgToast, sgVerifySub, submitLead,
   track, walletAvail
 } = SG
+
+function observationDisplay(sargData, lang, now = Date.now()) {
+  const result = regionalObservationFreshness(sargData, now);
+  const stamp = result.timestamp ? formatObservationTimestamp(result.timestamp, lang) : null;
+  const age = result.ageMinutes == null ? null : Math.floor(result.ageMinutes);
+  const ageText = age == null ? null : age < 60 ? `${Math.max(1, age)} min` : `${Math.floor(age / 60)} h`;
+  if (result.state === "fresh") return { ...result, label: _t(lang,
+    `Dernière observation satellite : ${stamp} · âge ${ageText}`,
+    `Last satellite observation: ${stamp} · age ${ageText}`,
+    `Última observación satelital: ${stamp} · antigüedad ${ageText}`) };
+  if (result.state === "delayed") return { ...result, label: _t(lang,
+    `Observation satellite retardée : ${stamp} · statut actuel masqué`,
+    `Satellite observation delayed: ${stamp} · current status withheld`,
+    `Observación satelital retrasada: ${stamp} · estado actual oculto`) };
+  return { ...result, label: stamp
+    ? _t(lang, `Observation satellite non vérifiée : ${stamp} · statut actuel masqué`,
+        `Unverified satellite observation: ${stamp} · current status withheld`,
+        `Observación satelital no verificada: ${stamp} · estado actual oculto`)
+    : _t(lang, "Horodatage satellite indisponible · statut actuel masqué",
+        "Satellite timestamp unavailable · current status withheld",
+        "Hora satelital no disponible · estado actual oculto") };
+}
 
 // Simple media query hook (no deps)
 function useMediaQuery(query){
