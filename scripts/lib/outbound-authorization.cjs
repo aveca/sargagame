@@ -219,7 +219,7 @@ async function verifyJobEnvironmentBinding(options = {}) {
       claims.environment === expectedEnvironment &&
       claims.sub === expectedSub &&
       Number.isFinite(Number(claims.exp)) && Number(claims.exp) > now &&
-      (!Number.isFinite(Number(claims.nbf)) || Number(claims.nbf) <= now + 30
+      (!Number.isFinite(Number(claims.nbf)) || Number(claims.nbf) <= now + 30)
 
     if (!valid) return fail('oidc-claims-do-not-bind-approved-job')
     return {
