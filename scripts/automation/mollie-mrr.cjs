@@ -75,6 +75,8 @@ async function listPaymentsSince(startIso, key, maxPages = 100) {
   const out = []
   let url = 'payments?limit=250&sort=desc'
   let pages = 0
+  // Ordering must be validated across page boundaries, not reset per page.
+  let previousCreatedAt = Infinity
 
   while (url) {
     if (pages >= maxPages) {
@@ -89,7 +91,6 @@ async function listPaymentsSince(startIso, key, maxPages = 100) {
     pages += 1
     if (items.length === 0) break
 
-    let previousCreatedAt = Infinity
     let crossedCutoff = false
     for (const payment of items) {
       const createdAt = Date.parse(payment?.createdAt)
