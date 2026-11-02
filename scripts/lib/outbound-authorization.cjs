@@ -1,4 +1,6 @@
 'use strict'
+
+const crypto = require('node:crypto')
 /**
  * outbound-authorization.cjs — Contrat central d'autorisation des actions sortantes.
  * Mission P0.23 / issue #1157. Corrige les 8 defauts de review de la PR #1200 :
@@ -212,6 +214,29 @@ async function verifyJobEnvironmentBinding(options = {}) {
     if (typeof jwt !== 'string') return fail('oidc-token-missing')
     const parts = jwt.split('.')
     if (parts.length !== 3) return fail('oidc-token-malformed')
+
+    const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'))
+    if (!header || header.alg !== 'RS256' || typeof header.kid !== 'string' || !header.kid) {
+      return fail('oidc-token-header-invalid')
+    }
+    const jwksResponse = await fetchImpl('https://token.actions.githubusercontent.com/.well-known/jwks', {
+      headers: { accept: 'application/json' },
+    })
+    if (!jwksResponse || !jwksResponse.ok) return fail('oidc-jwks-unavailable')
+    const jwksBody = await jwksResponse.json()
+    const signingKey = Array.isArray(jwksBody && jwksBody.keys)
+      ? jwksBody.keys.find((key) => key && key.kid === header.kid && key.kty === 'RSA')
+      : null
+    if (!signingKey) return fail('oidc-signing-key-not-found')
+    const publicKey = crypto.createPublicKey({ key: signingKey, format: 'jwk' })
+    const signature = Buffer.from(parts[2], 'base64url')
+    const signatureValid = crypto.verify(
+      'RSA-SHA256',
+      Buffer.from(parts[0] + '.' + parts[1]),
+      publicKey,
+      signature
+    )
+    if (!signatureValid) return fail('oidc-signature-invalid')
 
     const claims = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'))
     const now = Math.floor(Date.now() / 1000)
