@@ -28,7 +28,7 @@ assert.ok(component.includes('if(!Array.isArray(fc)||fc.length===0)return null')
   'forecast must require an actual weekly pipeline series')
 assert.ok(!component.includes('generateForecast(beach.afai,lang)'),
   'fallback must not synthesize a forecast when the weekly pipeline is absent')
-assert.ok(source.includes('beachfallback=1') && source.includes('127\\\\.0\\\\.0\\\\.1'),
+assert.ok(source.includes('beachfallback=1') && source.includes('window.location.hostname === "127.0.0.1"') && source.includes('window.location.hostname === "localhost"'),
   'QA override must be restricted to localhost/127.0.0.1')
 
 ;(async () => {
