@@ -273,3 +273,12 @@
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
 | 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+
+## 2026-10-28 — P2-004 UI refactor / Playwright
+
+- Branche de livraison propre : `agent/coding/ui-refactor-p2-004-clean-20261028`, dérivée du HEAD actuel de `main`.
+- Périmètre : `src/Sargasses_PROD.jsx`, `src/app-runtime.css`, scénario Playwright après refonte, configuration Playwright dédiée, workflow CI, neuf captures et documentation de handoff.
+- Validation rapportée par le workspace source : `npm run build` exit 0 ; budget JS eager gzip 208.2 Ko / 210 Ko. Ces mesures seront recontrôlées par les runs CI de cette PR.
+- Le test Playwright fourni initialement avait une assertion finale triviale `expect(true).toBe(true)`. Elle a été remplacée par des assertions de rendu réelles et le test est maintenant inclus au workflow CI.
+- Incidents de preview signalés : POST HTTP 501, FAB count = 0 et bouton SOS non détecté. Ils restent à vérifier et ne sont pas déclarés corrigés.
+- Déploiement production : non effectué. Attendre CI, revue et autorisation explicite.
