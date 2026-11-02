@@ -1,4 +1,17 @@
 ﻿
+## 2026-11-02 - coding_agent (OpenCode) · branche fix/tulum-regional-seo-coverage-20261102 · commit 27d75edb4 · PR #1233 (DRAFT)
+
+**Mission D — couverture SEO régionale Tulum (défauts de vérification, pas défauts produit).**
+
+- Deux lacunes indépendantes faisaient que le contrat SEO régional Tulum n'était **jamais réellement vérifié** :
+  1. `region-seo-methodology-scope.test.cjs` filtrait les pages methodology/press avec un regex exigeant `/index.html`, alors que `walk()` renvoie des chemins natifs (antislash sous Windows) → `methodPages` toujours vide. Les autres filtres du même fichier (194, 213-216) normalisent déjà via `.replace(/\\/g, '/')` ; ces deux lignes non. L'assertion échouait donc sur la PREMIÈRE région de la boucle (florida) et le test n'atteignait jamais `tulum`. Contrat Tulum jamais exercé : pages methodology, press, plages, annuaire resorts B2B, landing hôtels, détail resort, briefs, et les règles de suspension de verdict stale (statut non publié, pas de Beach Score, pas de prévision 7 j, décision suspendue avec le vrai horodatage ERDDAP en retard).
+  2. `regional-beach-directory-index.test.cjs` annonce « every emitted EN/ES region » mais ne listait que florida/puntacana/rivieramaya. Tulum émet `es+en` → son répertoire de plages localisé (canonical, hreflang, liens plages réels, entrée sitemap) n'était asserté nulle part.
+- Correctif : normalisation des deux filtres + ajout de `tulum` à `REGION_IDS`.
+- Vérifications : `region-seo-methodology-scope` exit 0 et atteint bien tulum (`SEO régional tulum (es+en) : 41 URLs sitemap · 5 plages, 16 resorts`) ; `regional-beach-directory-index` exit 0, **64 assertions sur 4 régions** (était 48 sur 3) ; `npm test` complet **126/127** (était 125/127) — seul échec restant : artefact CRLF préexistant de `morning-brief-freshness`, hors périmètre. Arbre de travail propre, aucune donnée `scripts/automation/data/` modifiée.
+- **Les pages Tulum étaient déjà conformes** : les contrats ne pouvaient simplement pas les voir. Aucun changement de générateur, de config région, de sitemap ou d'artefact build ; aucune donnée publiée, aucune affirmation scientifique inventée. Non mergé, non déployé.
+
+---
+
 ## 2026-11-02 - coding_agent (OpenCode) · branche fix/outbound-safety-20261101 · PR #1227 (DRAFT) · durcissement S6 anti-pollution
 
 **Garde de non-pollution de la suite sortante rendue réellement bloquante, prouvée par sonde négative.**

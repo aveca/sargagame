@@ -1,4 +1,40 @@
 
+## 2026-11-02 09:40 UTC · Agent: coding_agent (OpenCode) · Mission D — couverture SEO régionale Tulum
+
+### Travail effectué
+- **Résumé 1 ligne** : le contrat SEO régional de Tulum n'était jamais réellement vérifié ; deux défauts de test corrigés, et Tulum est désormais exercé et vert.
+- **Détails** :
+  - **Défaut 1 — `tests/unit/region-seo-methodology-scope.test.cjs`** : les filtres `methodPages` (ligne 181) et `pressPages` (ligne 192) testaient un regex exigeant `/index.html` alors que `walk()` renvoie des chemins natifs (antislash sous Windows) → `methodPages` toujours vide. Tous les autres filtres du même fichier (194, 213-216) normalisent déjà via `.replace(/\\/g, '/')` ; ces deux lignes étaient restées brutes. L'assertion échouait donc sur la **première** région de la boucle (florida) et le test n'atteignait **jamais** `tulum`. Correction : normalisation des deux lignes.
+  - **Défaut 2 — `tests/unit/regional-beach-directory-index.test.cjs`** : l'en-tête annonce « every emitted EN/ES region » mais `REGION_IDS` ne listait que florida/puntacana/rivieramaya. Tulum émet `es+en` → son répertoire de plages localisé (canonical, hreflang, liens plages réels, entrée sitemap) n'était asserté nulle part. Correction : ajout de `tulum`.
+  - Contrat Tulum désormais réellement exercé : pages methodology, press, plages, annuaire resorts B2B, landing hôtels, détail resort, briefs, et les règles de suspension de verdict stale (statut non publié, pas de Beach Score, pas de prévision 7 j, décision suspendue avec le vrai horodatage ERDDAP en retard).
+  - `npm test` : **125/127 → 126/127**. Seul échec restant : artefact CRLF préexistant de `morning-brief-freshness` (assertion `indexOf('\n}\n')` sur un blob git LF sous `core.autocrlf=true`), prouvé identique sur le commit de base pur, hors périmètre SEO.
+
+### Fichiers modifiés
+- `tests/unit/region-seo-methodology-scope.test.cjs` — normalisation des séparateurs de chemin (cohérent avec le reste du fichier)
+- `tests/unit/regional-beach-directory-index.test.cjs` — `tulum` ajouté à `REGION_IDS` (l'en-tête le promettait déjà)
+
+### Tests réalisés
+- [x] `region-seo-methodology-scope.test.cjs` → exit 0, atteint bien tulum (`SEO régional tulum (es+en) : 41 URLs sitemap · 5 plages, 16 resorts`)
+- [x] `regional-beach-directory-index.test.cjs` → exit 0, **64 assertions sur 4 régions** (était 48 sur 3)
+- [x] `npm test` → 126/127 (voir « Problèmes restants » pour l'échec restant)
+- [x] Arbre de travail propre ; zéro fichier `scripts/automation/data/` modifié
+
+### Problèmes restants
+- [ ] `morning-brief-freshness.test.cjs:69` — artefact CRLF préexistant et hors périmètre (fragilité réelle du test : recherche de chaîne sensible aux fins de ligne). Non corrigé volontairement : hors mission D.
+- [ ] Missions E (attribution sans PII) et F (copie scientifique non supportée) : non définies dans le backlog, aucun critère d'acceptation — nécessitent un prompt de mission. Mission B (private forecast containment) toujours bloquée par l'autorisation de stockage privé ; mission C par la porte de fraîcheur 900 min.
+
+### Prochaine action recommandée
+1. Recevoir le prompt des missions E et F (ou l'autorisation de stockage pour B) — Rôle : fondateur
+2. Reprendre PR #1221 (pagination MRR Mollie), à garder ouverte en attente d'approbation — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `fix/tulum-regional-seo-coverage-20261102`
+- PR : **#1233 (DRAFT, non mergée)** — https://github.com/aveca/sargagame/pull/1233
+- Commit head : `27d75edb4adc50fd61bd8660314ab4a2b6f3b287`
+- Note : PR #1227 (P0.23) reste DRAFT sur `fix/outbound-safety-20261101` ; elle n'est pas affectée par cette branche.
+
+---
+
 ## 2026-11-02 08:55 UTC · Agent: coding_agent (OpenCode) · Durcissement S6 anti-pollution + sonde négative (mission P0.23/#1157)
 
 ### Travail effectué
