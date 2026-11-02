@@ -12,7 +12,7 @@ const ROOT = path.resolve(__dirname, '..', '..')
 let n = 0
 const t = (cond, label) => { n++; assert.ok(cond, label); console.log('OK  ' + label) }
 
-const { dedupKey, classify } = require('../../scripts/automation/user-journey-audit.cjs')
+const { dedupKey, classify, isKnownOutOfScopeResponse } = require('../../scripts/automation/user-journey-audit.cjs')
 
 // 1. Clé de déduplication : stable, composée (domaine|étape|type|détail).
 const k1 = dedupKey({ domain: 'x.com', step: 'fiche', type: 'ux', detail: 'label' })
@@ -41,6 +41,18 @@ const distinctUi = {
 t(dedupKey(staleMobile) !== dedupKey(distinctUi),
   'état UI matériel différent => incident distinct conservé')
 t(k1 === k1.toLowerCase(), 'clé normalisée en minuscules')
+
+// 1bis. Réponses 404 connues hors périmètre.
+t(isKnownOutOfScopeResponse(404, 'https://sargassummiami.com/api/b2b-partners.json?pdv=123'),
+  'le miroir legacy /api/b2b-partners.json intercepté par sg-payments ne crée pas de faux incident')
+t(!isKnownOutOfScopeResponse(404, 'https://sargassummiami.com/data/b2b-partners.json'),
+  'le chemin canonique /data/b2b-partners.json reste surveillé')
+t(!isKnownOutOfScopeResponse(404, 'https://sargassummiami.com/api/other.json'),
+  'un autre 404 API reste signalé')
+t(!isKnownOutOfScopeResponse(200, 'https://sargassummiami.com/api/b2b-partners.json'),
+  'la réponse 200 n’est pas classée comme exception 404')
+t(!isKnownOutOfScopeResponse(500, 'https://sargassummiami.com/api/b2b-partners.json'),
+  'une erreur serveur sur le chemin legacy reste signalée')
 
 // 2. Classification bloquant/ux.
 const cls = classify([

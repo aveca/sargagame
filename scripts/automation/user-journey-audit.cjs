@@ -41,6 +41,18 @@ function dedupKey(item) {
   return [item.domain, item.step, item.type, detail].join('|').toLowerCase()
 }
 
+// Cloudflare deliberately intercepts /api/b2b-* for sg-payments. The
+// partner catalogue is consumed from /data/b2b-partners.json; this legacy mirror
+// path is therefore an expected 404, not a broken visitor resource.
+function isKnownOutOfScopeResponse(status, rawUrl) {
+  if (status !== 404) return false;
+  try {
+    return new URL(String(rawUrl)).pathname.toLowerCase() === '/api/b2b-partners.json';
+  } catch (_) {
+    return false;
+  }
+}
+
 function classify(defects) {
   const blocking = defects.filter(d => ['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'stale-current-decision', 'primary-cta-dead'].includes(d.type))
   const ux = defects.filter(d => !blocking.includes(d))
@@ -65,9 +77,11 @@ async function runJourney(browser, region, viewport) {
   })
   page.on('pageerror', e => { defects.push({ domain, step: 'any', type: 'fatal-js', detail: String(e.message || e).slice(0, 200) }) })
   page.on('response', r => {
-    if (r.status() >= 400) {
-      const type = r.status() >= 500 ? 'server-error' : r.status() === 404 ? 'http-404' : 'http-client-error'
-      defects.push({ domain, step: 'any', type, detail: r.status() + ' ' + r.url().slice(0, 220) })
+    const status = r.status()
+    const url = r.url()
+    if (status >= 400 && !isKnownOutOfScopeResponse(status, url)) {
+      const type = status >= 500 ? 'server-error' : status === 404 ? 'http-404' : 'http-client-error'
+      defects.push({ domain, step: 'any', type, detail: status + ' ' + url.slice(0, 220) })
     }
   })
   page.on('requestfailed', req => {
@@ -253,4 +267,4 @@ async function main() {
 }
 
 if (require.main === module) main().catch(e => { console.error('ERREUR user-journey-audit :', e.message); process.exit(2) })
-module.exports = { dedupKey, classify }
+module.exports = { dedupKey, classify, isKnownOutOfScopeResponse }
