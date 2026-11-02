@@ -73,6 +73,80 @@ function getPublishableBeachDecision(data, level, now = Date.now()) {
   };
 }
 
+function getPublishableTodayRows(beaches, data, now = Date.now()) {
+  return (Array.isArray(beaches) ? beaches : [])
+    .map(beach => ({
+      beach,
+      decision: getPublishableBeachDecision(data, beach?.lv || {}, now),
+    }))
+    .filter(row => row.decision.available)
+    .sort((a, b) => (b.decision.score ?? -1) - (a.decision.score ?? -1));
+}
+
+function buildTodayHubState({ regionName, beaches, data, lang = 'en', now = Date.now() }) {
+  const rows = getPublishableTodayRows(beaches, data, now);
+  const freshness = getSatelliteObservationFreshness(data, now);
+  const isSpanish = lang === 'es';
+
+  if (rows.length) {
+    return {
+      rows,
+      title: isSpanish
+        ? `Playas de ${regionName} — últimas observaciones de sargazo`
+        : `Sargassum observations by beach in ${regionName}`,
+      desc: isSpanish
+        ? `Compara la última observación satelital validada por playa en ${regionName}. Revisa la hora y la confianza; las lecturas retrasadas o no verificables se excluyen.`
+        : `Compare the latest validated satellite observation for each beach in ${regionName}. Check its observation time and confidence; delayed or unverified readings are withheld.`,
+      h1: isSpanish
+        ? `Últimas observaciones de sargazo por playa en ${regionName}`
+        : `Latest sargassum observations by beach in ${regionName}`,
+      intro: isSpanish
+        ? 'Esta lista incluye únicamente estados de playa respaldados por una observación satelital dentro de la ventana de frescura. Cada fila muestra el último estado publicado y, cuando está disponible, su puntuación. Si la fuente se retrasa o no se puede verificar, la clasificación actual se suspende. Comprueba la hora de observación y la confianza antes de desplazarte.'
+        : 'This list includes only beach statuses backed by a satellite observation within the freshness window. Each row shows the latest published status and, when available, its score. If the source is delayed or cannot be verified, the current ranking is withheld. Check the observation time and confidence before traveling.',
+      unavailableMessage: null,
+    };
+  }
+
+  const unavailableMessage = freshness.state === 'delayed'
+    ? (isSpanish
+      ? 'No se publica una clasificación actual porque la observación satelital está retrasada. La hora de la última lectura aparece arriba.'
+      : 'No current beach ranking is published because the satellite observation is delayed. The last observation time appears above.')
+    : freshness.state === 'unknown'
+      ? (isSpanish
+        ? 'No se publica una clasificación actual porque la observación satelital no se puede verificar. Comprueba la hora de la última lectura antes de decidir.'
+        : 'No current beach ranking is published because the satellite observation cannot be verified. Check the last observation time before deciding.')
+      : (isSpanish
+        ? 'No hay estados actuales de playa validados en la última observación. Revisa la hora de la lectura antes de decidir.'
+        : 'No verified current beach statuses are available in the latest observation. Check the reading time before deciding.');
+
+  const unavailableDesc = freshness.state === 'delayed'
+    ? (isSpanish
+      ? `No se publica una clasificación actual por playa en ${regionName} porque la observación está retrasada. Revisa la hora de la última lectura.`
+      : `No current beach ranking is published for ${regionName} because the satellite observation is delayed. Check the last reading time.`)
+    : freshness.state === 'unknown'
+      ? (isSpanish
+        ? `No se publica una clasificación actual por playa en ${regionName} porque la observación no se puede verificar. Revisa la hora de la última lectura.`
+        : `No current beach ranking is published for ${regionName} because the satellite observation cannot be verified. Check the last reading time.`)
+      : (isSpanish
+        ? `No hay estados actuales de playa validados en la última observación de ${regionName}. Revisa la hora y la confianza antes de decidir.`
+        : `No verified current beach statuses are available in the latest observation for ${regionName}. Check the reading time and confidence before deciding.`);
+
+  return {
+    rows: [],
+    title: isSpanish
+      ? `Sargazo en ${regionName} — estado actual no disponible`
+      : `${regionName} sargassum — current status unavailable`,
+    desc: unavailableDesc,
+    h1: isSpanish
+      ? 'Estado actual de playas no disponible'
+      : 'Current beach status unavailable',
+    intro: `${unavailableMessage} ${isSpanish
+      ? 'Los estados y puntuaciones históricos no se presentan como condiciones de hoy.'
+      : "Historical statuses and scores are not presented as today's conditions."}`,
+    unavailableMessage,
+  };
+}
+
 function formatSatelliteObservationLabel(data, lang = 'en', now = Date.now()) {
   const freshness = getSatelliteObservationFreshness(data, now);
   const locale = lang === 'es' ? 'es' : lang === 'fr' ? 'fr' : 'en';
@@ -613,7 +687,6 @@ function emitLangPages(ctx) {
   // Slug de la landing B2B hôtels (intention d'achat pro) — lié + sitemapé.
   const hotelsSlug = lang === 'es' ? 'sargazo-para-hoteles' : 'sargassum-for-hotels'
   // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
-  const dateShort = new Date().toLocaleDateString(lang === 'es' ? 'es-MX' : 'en-US', { month: 'short', day: 'numeric' })
   const sw = s => STATUS_WORD[lang][s] || s || '—'
   const pushUrl = (loc, opt = {}) => sitemap.push({ loc, changefreq: opt.daily ? 'daily' : 'weekly', priority: opt.priority || '0.5' })
 
@@ -634,7 +707,7 @@ function emitLangPages(ctx) {
     const p = content.pages
     const items = [
       ['map', `${prefix}/${p.map.slug}/`, p.map.h1], ['forecast', `${prefix}/${p.forecast.slug}/`, p.forecast.h1],
-      ['today', `${prefix}/${p.today.slug}/`, p.today.h1], ['season', `${prefix}/${p.season.slug}/`, p.season.h1],
+      ['today', `${prefix}/${p.today.slug}/`, lang === 'es' ? `Últimas observaciones por playa en ${region.name}` : `Latest beach observations in ${region.name}`], ['season', `${prefix}/${p.season.slug}/`, p.season.h1],
     ]
     // Maillage des pages générées HORS seo-content (étaient orphelines = crawl-starved) :
     // best (transactionnel) + weekly (haute-intention) + méthodologie (E-E-A-T).
@@ -726,16 +799,19 @@ function emitLangPages(ctx) {
 ${hubLinks('forecast')}${networkFooter(region, t, lang)}</article>`,
   })
 
-  // today — liste ordonnée par score, format featured-snippet, datée.
-  // Le titre de base est trimé AVANT l'append de la date courte → la date
-  // n'est jamais coupée (l'ancien smartTrim(base+date) la tronquait).
-  const todayBase = p.today.title.replace(/\s*[—-]\s*\d{4}.*$|$/, '')
-  const todayTitle = `${smartTrim(todayBase, 70 - dateShort.length - 3)} (${dateShort})`
+  // today — ne publie que les statuts soutenus par une observation dans la fenêtre de fraîcheur.
+  // Si aucune décision n'est vérifiable, le hub suspend le classement, le score et le wording "today".
+  const todayState = buildTodayHubState({ regionName: region.name, beaches: byScore, data, lang, now })
+  const todayTitle = smartTrim(todayState.title, 70)
+  const todayObservationLabel = formatSatelliteObservationLabel(data, lang, now)
+  const todayListHtml = todayState.rows.length
+    ? `<ol>${todayState.rows.map(({ beach, decision }) => `<li><strong>${beachLink(beach)}</strong> — ${sw(decision.status)}${decision.score != null ? `, ${t.score} ${decision.score}/100` : ''}</li>`).join('')}</ol>`
+    : `<p class="sg-status-unavailable">${esc(todayState.unavailableMessage)}</p>`
   hubs.push({
     kind: 'today', sm: { daily: true, priority: '0.9' },
-    slug: p.today.slug, title: todayTitle, desc: p.today.desc,
-    noscript: `<article><h1>${esc(p.today.h1)} — ${today}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.today.intro)}</p>
-<ol>${byScore.map(b => `<li><strong>${beachLink(b)}</strong> — ${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100</li>`).join('')}</ol>
+    slug: p.today.slug, title: todayTitle, desc: todayState.desc,
+    noscript: `<article><h1>${esc(todayState.h1)}</h1><p><em>${esc(todayObservationLabel)}</em></p><p>${esc(todayState.intro)}</p>
+${todayListHtml}
 ${hubLinks('today')}${networkFooter(region, t, lang)}</article>`,
   })
 
@@ -1268,4 +1344,4 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   }
 }
 
-module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, getPublishableBeachDecision, formatSatelliteObservationLabel }
+module.exports = { generateRegionSeoPages, resolveNextArrival, getSatelliteObservationFreshness, getPublishableBeachDecision, getPublishableTodayRows, buildTodayHubState, formatSatelliteObservationLabel }
