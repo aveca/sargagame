@@ -42,6 +42,28 @@ function appendLog(entry) {
 }
 
 /**
+ * Normalize a URL path only for redirect equality checks.
+ * Trailing slashes are equivalent because the generated RewriteRule accepts both.
+ */
+function normalizeRedirectPath(value) {
+  const raw = String(value ?? '').split(/[?#]/, 1)[0];
+  const withLeadingSlash = raw.startsWith('/') ? raw : `/${raw}`;
+  return withLeadingSlash.replace(/\/+$/, '') || '/';
+}
+
+/** Return true when a redirect would send a URL back to itself. */
+function isSelfRedirect(sourcePath, targetPath) {
+  return normalizeRedirectPath(sourcePath) === normalizeRedirectPath(targetPath);
+}
+
+/** Convert only simple literal beach-slug RewriteRule patterns to a path. */
+function literalPathFromPattern(pattern) {
+  const match = String(pattern).match(/^\^((?:\\.|[A-Za-z0-9_/-])+?)\/\?\$$/);
+  if (!match) return null;
+  return `/${match[1].replace(/\\(.)/g, '$1')}/`;
+}
+
+/**
  * Validate .htaccess syntax: ensure RewriteRule lines have correct format.
  * Returns array of error strings (empty = valid).
  */
@@ -63,6 +85,12 @@ function validateHtaccess(content) {
       } catch (e) {
         errors.push(`Line ${i + 1}: Invalid regex in RewriteRule: "${pattern}" — ${e.message}`)
       }
+    }
+  }
+  for (const rule of parseHtaccessRedirects(content)) {
+    const sourcePath = literalPathFromPattern(rule.pattern);
+    if (sourcePath && isSelfRedirect(sourcePath, rule.target)) {
+      errors.push(`Line ${rule.line}: self-redirect sends ${sourcePath} to itself`);
     }
   }
   return errors
@@ -138,6 +166,7 @@ module.exports = {
   validateHtaccess,
   parseHtaccessRedirects,
   isPathRedirected,
+  isSelfRedirect,
   levenshtein,
   similarity,
 }
