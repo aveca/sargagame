@@ -48,7 +48,7 @@ const staleHtml = buildBeachIndexItems(beaches, payload({
 });
 assert.match(staleHtml, /href="\/beaches\/miami-beach\//);
 assert.match(staleHtml, /href="\/beaches\/south-beach\//);
-assert.match(staleHtml, /Status unavailable — decision paused until a fresh satellite observation is available/);
+assert.match(staleHtml, /Unavailable — decision paused until a fresh satellite observation is available/);
 assert.doesNotMatch(staleHtml, /\b(?:Clean|Moderate|Avoid)\b|Beach Score \d+\/100/);
 
 // The inclusive SLA boundary is deliberate: 899 minutes is publishable;
@@ -61,7 +61,7 @@ const atSla = buildBeachIndexItems(beaches, payload({
   erddapTimestamp: new Date(now - 900 * 60_000).toISOString(),
 }), { lang: 'en', now });
 assert.doesNotMatch(atSla, /Beach Score \d+\/100|\bClean\b|\bModerate\b/);
-assert.match(atSla, /Status unavailable/);
+assert.match(atSla, /Unavailable — decision paused/);
 
 // Spanish routes and copy remain localized; no stale status/score leaks.
 const staleEs = buildBeachIndexItems(beaches, payload({
@@ -79,11 +79,13 @@ assert.doesNotMatch(staleEs, /\b(?:Limpia|Moderada|Evitar)\b|Beach Score \d+\/10
 // Unknown, future, and explicit stale sources all fail closed.
 for (const invalid of [
   payload({ source: 'reference' }),
+  payload({ erddapTimestamp: null }),
+  payload({ erddapTimestamp: 'not-a-date' }),
   payload({ erddapTimestamp: new Date(now + 60_000).toISOString() }),
   payload({ stale: true }),
 ]) {
   const html = buildBeachIndexItems(beaches, invalid, { lang: 'en', now });
-  assert.match(html, /Status unavailable/);
+  assert.match(html, /Unavailable — decision paused/);
   assert.doesNotMatch(html, /Beach Score \d+\/100|\bClean\b|\bModerate\b/);
 }
 
