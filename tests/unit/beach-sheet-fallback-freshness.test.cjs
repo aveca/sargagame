@@ -23,8 +23,8 @@ assert.ok(staleFallback.includes('lcDetailFreshnessLabel(sargData, lang)'), 'sta
 assert.ok(staleFallback.includes('data-testid="beach-sheet-fallback-stale"'))
 assert.ok(staleFallback.includes('data-testid="beach-sheet-fallback-score-paused"'))
 assert.ok(component.includes('data-testid="beach-sheet-fallback-current"'))
-assert.ok(component.includes('if(!satelliteDecisionCurrent||!beach)return null'),
-  'forecast must be hidden when the observation is not current')
+assert.ok(component.includes('if(!beach)return null'),
+  'forecast requires a selected beach; the stale branch returns before rendering it')
 assert.ok(component.includes('if(!Array.isArray(fc)||fc.length===0)return null'),
   'forecast must require an actual weekly pipeline series')
 assert.ok(!component.includes('generateForecast(beach.afai,lang)'),
