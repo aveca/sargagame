@@ -12,11 +12,15 @@ const start = source.indexOf('function BeachSheet(')
 const end = source.indexOf('\nfunction ', start)
 assert.ok(start >= 0 && end > start, 'inline BeachSheet fallback exists')
 const component = source.slice(start, end)
+const staleFallback = fs.readFileSync(path.resolve(__dirname, '../../src/BeachSheetStaleFallback.jsx'), 'utf8')
 
 assert.ok(component.includes('const satelliteDecisionCurrent = sargData?.source === "erddap-live" && sargData?.stale === false && isSatelliteFresh12h(sargData)'),
   'fallback requires live source, explicit stale=false and a fresh ERDDAP observation')
 assert.ok(component.includes('if(!satelliteDecisionCurrent) return('),
   'fallback must replace the whole decision UI when the observation is not current')
+assert.ok(component.includes('<LazyBeachSheetStaleFallback'), 'stale UI is lazy-loaded off the eager path')
+assert.ok(staleFallback.includes('lcDetailFreshnessLabel(sargData, lang)'), 'stale fallback shows ERDDAP observation age')
+assert.ok(staleFallback.includes('data-testid="beach-sheet-fallback-stale"'))
 assert.ok(component.includes('data-testid="beach-sheet-fallback-stale"'))
 assert.ok(component.includes('satelliteAgeHours(sargData)'), 'stale state displays age from the observation clock')
 assert.ok(component.includes('data-testid="beach-sheet-fallback-score-paused"'))
@@ -31,7 +35,7 @@ assert.ok(source.includes('beachfallback=1') && source.includes('window.location
   'QA override must be restricted to 127.0.0.1')
 
 ;(async () => {
-  const { isSatelliteFresh12h } = await import('../../src/lib/format-freshness.mjs')
+  const { isSatelliteFresh12h, lcDetailFreshnessLabel } = await import('../../src/lib/format-freshness.mjs')
   const now = Date.parse('2026-11-02T09:35:00.000Z')
   const stale = {
     source: 'erddap-live',
@@ -41,6 +45,8 @@ assert.ok(source.includes('beachfallback=1') && source.includes('window.location
   }
   assert.equal(isSatelliteFresh12h(stale, now), false,
     'a recent publication timestamp must not refresh an old ERDDAP observation')
+  assert.match(lcDetailFreshnessLabel(stale, 'fr'), /historique, pas un verdict actuel/,
+    'stale fallback explains that the ERDDAP observation is historical')
   assert.equal(Math.round((now - Date.parse(stale.erddapTimestamp)) / 3600000), 142,
     'stale fallback test fixture is based on the old ERDDAP observation, not updatedAt')
 
