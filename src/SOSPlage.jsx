@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, memo, useRef } from "react"
 import { track } from "./Sargasses_PROD.jsx"
+import { enrichSosBeaches } from "./lib/sos-observation-state.mjs"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 
@@ -7,6 +8,7 @@ const STATUS_LABEL = {
   clean: { fr: "Propre", en: "Clean", es: "Limpia", color: "#22C55E", verb: { fr: "GO", en: "GO", es: "GO" } },
   moderate: { fr: "Attention", en: "Caution", es: "Precaución", color: "#F59E0B", verb: { fr: "ATTENTION", en: "CAUTION", es: "PRECAUCIÓN" } },
   avoid: { fr: "Éviter", en: "Avoid", es: "Evitar", color: "#E8522A", verb: { fr: "ÉVITER", en: "AVOID", es: "EVITAR" } },
+  unknown: { fr: "À vérifier", en: "Check required", es: "Por verificar", color: "#94A3B8", verb: { fr: "À VÉRIFIER", en: "CHECK", es: "VERIFICAR" } },
 }
 
 function moneyEUR(cents, lang) {
@@ -65,22 +67,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
           throw new Error("Données plages indisponibles")
         }
 
-        const islandBeaches = sourceList.filter(b => b.island === region)
-        const bySargId = {}
-        if (sargRes && Array.isArray(sargRes.levels)) {
-          for (const lvl of sargRes.levels) bySargId[lvl.id] = lvl
-        }
-
-        const enriched = islandBeaches.map(b => {
-          const lvl = bySargId[b.id] || bySargId[`${region}${b.id.slice(2)}`] || null
-          return {
-            ...b,
-            status: lvl?.status || "clean",
-            confidence: lvl?.confidence || 70,
-            forecast: lvl?.forecast || [],
-            afai: lvl?.afai || 0,
-          }
-        }).filter(b => b.status)
+        const enriched = enrichSosBeaches(sourceList, sargRes, region)
 
         setBeaches(enriched)
         if (enriched.length > 0 && !selectedBeachId) {
@@ -98,7 +85,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
 
   const selectedBeach = beaches.find(b => b.id === selectedBeachId)
   const tomorrowForecast = selectedBeach?.forecast?.[1] || null
-  const statusMeta = selectedBeach ? STATUS_LABEL[selectedBeach.status] : STATUS_LABEL.clean
+  const statusMeta = selectedBeach ? (STATUS_LABEL[selectedBeach.status] || STATUS_LABEL.unknown) : STATUS_LABEL.unknown
 
   const handleBuy = useCallback(async () => {
     if (!selectedBeach || checkoutLoading) return
@@ -196,7 +183,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
       </h2>
 
       <p style={{ fontSize: 13, lineHeight: 1.5, fontWeight: 600, color: "rgba(253,252,247,.7)", margin: "0 0 16px" }}>
-        {_t(lang, "Prévision sargasses personnalisée · Satellite 4×/jour · Décision immédiate.", "Personalized sargassum forecast · Satellite 4×/day · Instant decision.", "Previsión sargazo personalizada · Satélite 4×/día · Decisión inmediata.")}
+        {_t(lang, "Prévision sargasses personnalisée · Observation satellite horodatée · verdict selon la fraîcheur disponible.", "Personalized sargassum forecast · Timestamped satellite observation · verdict depends on data freshness.", "Previsión personalizada de sargazo · Observación satelital fechada · veredicto según la actualidad del dato.")}
       </p>
 
       <div style={{ marginBottom: 16 }}>
@@ -239,23 +226,30 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
               {selectedBeach.name}
             </div>
             <div style={{ fontSize: 12, color: "rgba(253,252,247,.5)", marginTop: 2 }}>
-              {selectedBeach.commune} · {_t(lang, "Confiance", "Confidence", "Confianza")}: {selectedBeach.confidence}%
+              {selectedBeach.commune} · {_t(lang, "Confiance", "Confidence", "Confianza")}: {selectedBeach.confidence == null ? "—" : `${selectedBeach.confidence}%`}
             </div>
           </div>
         </div>
+
+        {!selectedBeach.observationCurrent && (
+          <div data-testid="sos-observation-unverified" role="status" style={{ marginBottom: 12, padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,158,11,.45)", background: "rgba(245,158,11,.10)", color: "#FCD34D", fontSize: 12, lineHeight: 1.45 }}>
+            {_t(lang,
+              "Observation satellite absente, invalide ou trop ancienne : aucun verdict actuel n’est publié.",
+              "Satellite observation is missing, invalid or too old: no current verdict is published.",
+              "La observación satelital falta, es inválida o demasiado antigua: no se publica ningún veredicto actual.")}
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div style={{ padding: 12, borderRadius: 10, background: "rgba(255,255,255,.03)", border: "1px solid rgba(255,255,255,.06)" }}>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "rgba(253,252,247,.4)", letterSpacing: ".05em", marginBottom: 4 }}>
               {_t(lang, "Aujourd'hui", "Today", "Hoy")}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: STATUS_LABEL[selectedBeach.status].color }}>
-              {_t(lang, selectedBeach.status === "clean" ? "Propre" : selectedBeach.status === "moderate" ? "Algues modérées" : "À éviter",
-                selectedBeach.status === "clean" ? "Clean" : selectedBeach.status === "moderate" ? "Moderate" : "Avoid",
-                selectedBeach.status === "clean" ? "Limpia" : selectedBeach.status === "moderate" ? "Moderado" : "Evitar")}
+            <div style={{ fontSize: 14, fontWeight: 700, color: statusMeta.color }}>
+              {statusMeta[lang] || statusMeta.fr}
             </div>
             <div style={{ fontSize: 10, color: "rgba(253,252,247,.4)", marginTop: 4 }}>
-              AFai: {selectedBeach.afai.toFixed(2)}
+              AFai: {selectedBeach.afai == null ? "—" : selectedBeach.afai.toFixed(2)}
             </div>
           </div>
 
@@ -263,13 +257,12 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "rgba(253,252,247,.4)", letterSpacing: ".05em", marginBottom: 4 }}>
               {_t(lang, "Demain", "Tomorrow", "Mañana")}
             </div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: tomorrowForecast ? STATUS_LABEL[tomorrowForecast.status].color : "rgba(253,252,247,.5)" }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: tomorrowForecast ? (STATUS_LABEL[tomorrowForecast.status] || STATUS_LABEL.unknown).color : "rgba(253,252,247,.5)" }}>
               {tomorrowForecast
-                ? _t(lang,
-                    tomorrowForecast.status === "clean" ? "Propre" : tomorrowForecast.status === "moderate" ? "Algues modérées" : "À éviter",
-                    tomorrowForecast.status === "clean" ? "Clean" : tomorrowForecast.status === "moderate" ? "Moderate" : "Avoid",
-                    tomorrowForecast.status === "clean" ? "Limpia" : tomorrowForecast.status === "moderate" ? "Moderado" : "Evitar")
-                : _t(lang, "Données en cours", "Loading…", "Cargando…")}
+                ? (STATUS_LABEL[tomorrowForecast.status] || STATUS_LABEL.unknown)[lang] || (STATUS_LABEL[tomorrowForecast.status] || STATUS_LABEL.unknown).fr
+                : selectedBeach.observationCurrent
+                  ? _t(lang, "Données en cours", "Loading…", "Cargando…")
+                  : _t(lang, "Prévision actuelle indisponible", "Current forecast unavailable", "Pronóstico actual no disponible")}
             </div>
             {tomorrowForecast && (
               <div style={{ fontSize: 10, color: "rgba(253,252,247,.4)", marginTop: 4 }}>
