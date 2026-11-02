@@ -9,7 +9,10 @@ const { generateRegionSeoPages } = require('../../scripts/lib/region-seo-pages.c
 const { emittedLangs, normLang } = require('../../scripts/lib/region-langs.cjs')
 
 const ROOT = path.resolve(__dirname, '../..')
-const REGION_IDS = ['florida', 'puntacana', 'rivieramaya']
+// Le contrat annoncé par l'en-tête est « every emitted EN/ES region » : Tulum
+// émet bien es+en (région régionale EN/ES), il faisait donc défaut à cette
+// liste — son répertoire de plages localisé n'était vérifié nulle part.
+const REGION_IDS = ['florida', 'puntacana', 'rivieramaya', 'tulum']
 
 function template(domain, lang) {
   return `<!doctype html><html lang="${lang}"><head>
