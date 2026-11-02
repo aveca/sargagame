@@ -44,7 +44,7 @@ function parseTasks(content) {
 
 function claimTask(content, taskId, agentType) {
   // Find the task section
-  if (!/^TASK-P[0-3]-\\d{3}$/.test(taskId)) throw new Error(`Invalid task ID: ${taskId}`);
+  if (!/^TASK-P[0-3]-[0-9]{3}$/.test(taskId)) throw new Error(`Invalid task ID: ${taskId}`);
   const taskSectionPattern = new RegExp(`(^###\\s+${taskId}(?=[\\s.:—-]|$).*?)(?=^###\\s+TASK-P\\d-\\d{3}(?=[\\s.:—-]|$)|(?![\\s\\S]))`, 'ms');
   const taskMatch = content.match(taskSectionPattern);
   if (!taskMatch) throw new Error(`Task ${taskId} not found`);
