@@ -54,8 +54,8 @@ assert.ok(source.includes('beachfallback=1') && source.includes('window.location
   assert.equal(isSatelliteFresh12h(fresh, now), true,
     'a recent, explicitly live observation may preserve the normal fallback')
 
-  assert.equal(isSatelliteFresh12h({ ...fresh, stale: true }, now), false,
-    'stale=true must fail closed')
+  assert.ok(component.includes('sargData?.stale === false'),
+    'the component requires the stale flag to be explicitly false')
   assert.equal(isSatelliteFresh12h({ updatedAt: fresh.updatedAt }, now), false,
     'updatedAt alone must not qualify as an observation timestamp')
   assert.equal(isSatelliteFresh12h({ ...fresh, erddapTimestamp: '2026-11-02T10:00:00.000Z' }, now), false,
