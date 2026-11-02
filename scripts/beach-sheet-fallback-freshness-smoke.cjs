@@ -50,7 +50,7 @@ async function openState(browser, ageHours, viewport, label) {
     assert.equal(await page.locator('[data-testid="beach-sheet-fallback-current"]').count(), 0,
       'stale observation must not render the normal decision UI')
     const freshness = await page.locator('[data-testid="beach-sheet-fallback-freshness"]').innerText()
-    assert.match(freshness, /historique, pas un verdict actuel/,
+    assert.match(freshness, /48 h/,
       'the real observation age must be shown instead of the recent updatedAt')
     assert.match(await page.locator('[data-testid="beach-sheet-fallback-verdict"]').innerText(), /À VÉRIFIER/,
       'stale fallback must not show a clean/moderate/avoid verdict')
