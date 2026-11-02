@@ -354,39 +354,39 @@
       "lang": "es",
       "slug": "como-saber-si-hay-sargazo-en-punta-cana",
       "title": "Cómo saber si hay sargazo en Punta Cana",
-      "desc": "Cómo saber si hay sargazo en Punta Cana antes de viajar: consulta el mapa satelital en vivo, con estado por playa actualizado 4 veces al día.",
+      "desc": "Cómo comprobar el sargazo en Punta Cana antes de viajar: consulta la última observación satelital publicada, su hora y el nivel de confianza por playa.",
       "h1": "Cómo saber si hay sargazo en Punta Cana antes de viajar",
-      "intro": "Para saber si hay sargazo en Punta Cana antes de viajar, consulta un mapa satelital en vivo que mide cada playa en lugar de fiarte de fotos viejas o comentarios sueltos. La forma fiable es revisar el estado del día -- limpio, moderado o evitar -- y el Beach Score de cada playa, no recordar cómo estaba la costa la temporada pasada. Nosotros vigilamos el litoral con imágenes satelitales de Copernicus y NOAA actualizadas cuatro veces al día, las convertimos en una puntuación de 0 a 100 y publicamos el estado de cada playa. Es medido, no adivinado. Cuando las nubes tapan el satélite, lo marcamos como baja confianza en vez de inventar un número. Abajo te explicamos paso a paso cómo comprobarlo antes del viaje, cómo leer el pronóstico de 7 días y qué hacer si tu playa aparece en \"evitar\".",
+      "intro": "Para saber si hay sargazo en Punta Cana antes de viajar, consulta el mapa interactivo por playa y comprueba la hora de la última observación satelital publicada y su nivel de confianza. Las observaciones de Copernicus y NOAA son intermitentes: no constituyen un flujo continuo ni siguen una frecuencia fija. El estado y el Beach Score actuales solo se muestran cuando la observación y los datos necesarios superan los controles de validación. Si las nubes o un retraso impiden confirmarlo, la página debe indicarlo en vez de presentar una playa como limpia. A continuación explicamos cómo leer la observación, cuándo usar el pronóstico de siete días y cómo elegir una alternativa sin confundir una tendencia con una garantía.",
       "sections": [
         {
-          "h2": "Revisa el mapa satelital en vivo",
-          "text": "El primer paso es abrir el mapa de Punta Cana y mirar el estado de cada playa: limpio, moderado o evitar, junto a su Beach Score del día. Esa puntuación sale de imágenes satelitales procesadas cuatro veces al día, no de una suposición ni de una foto antigua. Una puntuación alta significa agua y arena despejadas; una baja indica que probablemente hay sargazo. Como las playas que dan al este recogen más sargazo a la deriva, conviene comparar varias antes de decidir. Si la última pasada del satélite quedó cubierta de nubes, no fingimos seguridad: marcamos el día como incierto y te decimos que no se ve con claridad. Esa transparencia es el punto -- recibes la medición, incluso cuando la medición es débil."
+          "h2": "Comprueba la última observación satelital",
+          "text": "Abre el mapa de Punta Cana y compara las playas que tengan una lectura publicada. Cada ficha debe mostrar la fecha y hora de observación y el nivel de confianza; el estado y el Beach Score se presentan como actuales solo si la lectura supera la validación de frescura. No es un flujo continuo ni sigue un calendario de publicación fijo. Si hay nubes, falta una lectura o la observación está retrasada, toma el resultado como no confirmado y no como una playa limpia. La exposición al este y las corrientes pueden ayudar a explicar diferencias entre playas, pero no sustituyen la medición más reciente."
         },
         {
-          "h2": "Consulta el pronóstico de 7 días",
-          "text": "El sargazo llega en oleadas, no como una marea constante. Una playa puede estar en \"evitar\" varios días y despejarse rápido cuando el viento gira hacia afuera y la corriente arrastra las algas. Por eso publicamos un pronóstico de 7 días para cada playa, que muestra si va mejorando, estable o empeorando, y así puedes elegir el día o cambiar de sitio antes de viajar. También publicamos la precisión de nuestro backtest para que juzgues cuánto confiar en la previsión, y bajamos la confianza en los días nublados. Preferimos decirte \"hoy no vemos bien\" antes que adivinar. Usa el pronóstico para planificar la semana y confirma el estado en vivo la mañana que vayas."
+          "h2": "Consulta el pronóstico de siete días cuando esté disponible",
+          "text": "El sargazo llega en oleadas, no como una marea constante. El pronóstico de siete días solo se muestra cuando la observación satelital más reciente y los datos de viento y corriente necesarios están disponibles y pasan la validación. Los primeros días suelen ser más útiles; los días 4–7 indican tendencia, no certeza. Revisa la fecha de la observación que alimenta el cálculo y la confianza de cada día. Si los datos están retrasados o incompletos, no uses una proyección antigua como indicación de las condiciones de hoy."
         },
         {
           "h2": "Qué hacer si tu playa tiene sargazo",
-          "text": "Si tu playa preferida aparece en \"evitar\", no canceles el plan -- cambia de playa. El mapa en vivo te deja comparar playas cercanas de Punta Cana por Beach Score, así que cuando una zona que da al este está cargada de sargazo, una caleta más resguardada a poca distancia puede seguir saliendo limpia. Ordena la lista, elige el estado limpio con la puntuación más alta a tu alcance y tendrás un plan B antes de salir del hotel. Esto es lo que hace El Vigía cada mañana: un satélite que vigila el mar mientras duermes y te dice dónde está el agua limpia. Un PASS único desbloquea todas las puntuaciones y el pronóstico completo -- sin suscripción, solo la respuesta, desde USD 5.99."
+          "text": "Si tu playa preferida aparece con un estado actual validado de «evitar», compara otras playas cercanas que también tengan lecturas actuales validadas. No des por limpia una playa por su orientación, reputación o limpieza habitual: son pistas generales, no una observación del día. Si una lectura no está disponible o está retrasada, elige una opción con datos confirmados o consulta fuentes locales. Un PASS único desbloquea todas las puntuaciones y el pronóstico completo — sin suscripción, desde USD 5.99."
         }
       ],
       "faq": [
         {
           "q": "¿Cómo sé si hay sargazo en Punta Cana antes de viajar?",
-          "a": "Consulta el mapa satelital en vivo: cada playa tiene un estado (limpio, moderado o evitar) y un Beach Score, actualizados cuatro veces al día con imágenes de Copernicus y NOAA. Es la forma medida, no adivinada."
+          "a": "Consulta el mapa interactivo y abre la ficha de la playa. Comprueba la hora de la última observación satelital publicada y su nivel de confianza. El estado actual solo se muestra cuando la lectura supera los controles; si está retrasada o no disponible, no se publica una recomendación de playa limpia."
         },
         {
           "q": "¿Puedo ver el sargazo de los próximos días?",
-          "a": "Sí. Cada playa tiene un pronóstico de 7 días que muestra si va mejorando o empeorando. Úsalo para planificar y confirma el estado en vivo la mañana que vayas, porque las condiciones cambian rápido."
+          "a": "El pronóstico de siete días solo aparece cuando la observación y los datos de transporte están disponibles y validados. Los primeros días son más útiles; los días 4–7 muestran una tendencia, no una garantía. Confirma la hora de la observación que sirve de base."
         },
         {
           "q": "¿Qué tan fiable es el dato de sargazo?",
-          "a": "Se basa en imágenes satelitales de Copernicus y NOAA, actualizadas cuatro veces al día, y publicamos la precisión de nuestro backtest. En días nublados marcamos baja confianza en lugar de inventar un número."
+          "a": "Las observaciones satelitales son intermitentes y la nubosidad puede retrasarlas. La página muestra la hora y la confianza de la lectura; no se promete una frecuencia fija. La precisión del backtest solo debe interpretarse junto con su periodo, cobertura y horizonte publicados."
         },
         {
           "q": "¿Hay alguna playa en Punta Cana sin sargazo segura?",
-          "a": "No existe una playa siempre limpia: el sargazo se mueve con el viento y la corriente. Te mostramos cuál sale limpia hoy y cómo evoluciona cada playa en los próximos 7 días."
+          "a": "No. Ninguna playa está garantizada sin sargazo. Compara las últimas observaciones publicadas y sus horas; si el dato está retrasado o no validado, no se presenta un estado actual de playa limpia."
         },
         {
           "q": "¿Cuánto cuesta ver toda la información?",
