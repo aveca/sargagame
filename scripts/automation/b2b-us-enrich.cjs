@@ -64,7 +64,7 @@ function makeHook(region, beach, hotel) {
       `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified claim about current beach conditions.`,
       `Punta Cana conditions can vary by beach. ${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, with guests.`,
       `When wind and current inputs pass validation, the outlook for ${beach} can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation, its timestamp and confidence.`,
-      `A dated, confidence-labelled latest published observation for ${beach} can help ${hotel}'s front desk explain what is known — and what is not.`,
+      `The latest published observation for ${beach}, with its timestamp and confidence, can help ${hotel}'s front desk explain what is known — and what is not.`,
     ],
     rivieramaya: [
       `The Riviera Maya varies from beach to beach. ${hotel} can point guests to the latest published observation for ${beach}, with its timestamp and confidence.`,
