@@ -1,4 +1,21 @@
 ﻿
+## 2026-11-02 - coding_agent (OpenCode) · branche fix/outbound-safety-20261101 · commit 728b16e31 · PR #1227 (DRAFT)
+
+**Mission P0.23/#1157 — contrat d'autorisation sortant fail-closed pour toutes les automatisations.**
+
+- Contrat central unique `scripts/lib/outbound-authorization.cjs` : `DRY_RUN=true` par défaut. Ne valent PAS approbation : variable d'environnement nue, `DRY_RUN=0` seul, présence d'un secret, `workflow_dispatch` seul, `ENVIRONMENT_NAME`. Production = Environment GitHub protégé **réellement existant** vérifié lecture seule ; invérifiable ⇒ désactivé. Aucune création/modification d'Environment, protection de branche ou secret.
+- 31 scripts gatés (email, push, outreach, Apps Script cleanup, Supabase DELETE/PATCH, écritures HTTP) : `main()` explicite, import pur, autorisation immédiatement avant chaque effet de bord externe, credentials absents ⇒ échec fermé.
+- `purge-analytics.cjs` : représentation obligatoire, ERROR si absente/partielle/divergente ; Supabase mocké dans les tests. `welcome-email.cjs` : était non gaté (présence `SMTP_PASS` = envoi) — désormais prouvé fail-closed. `notify-failure.cjs` : ops-event déplacé dans `appendOpsEvent()` (import pur).
+- Nouveau scanner `scripts/audit-workflow-outbound.cjs` (R1-R6, parsing YAML scopé par job, `verifyReadOnlyScript` transitif, exceptions inline avec gardes stale/escalade) : baseline 38 workflows, **0 HIGH**, 6 MEDIUM acceptés, exit strict 0. Correction des faux positifs (`repository_dispatch`, writes déléguées `auto-outreach` → `lib/email-send.cjs`, `https.request` natif, R6 limité aux secrets de STEP).
+- Tests : `outbound-authorization.test.cjs` (P1-P24), `outbound-scripts-regression.test.cjs` (auto-nettoyant), `workflow-outbound-governance.test.cjs` (G1-G16 + R6a-R6g), `purge-analytics.test.cjs` (24 preuves), `tests/helpers/outbound-network-mock.cjs` (mock réseau partagé).
+- Gate de validation exécuté localement : build exit 0 ; bundle 210.0/210 Ko ; `npm test` 124/127 (3 échecs préexistants hors diff) ; certif PR exit 0 ; audits 11/1/0 et 16/0/0 ; trigger-scope OK ; politique Actions OK ; prepare-ftp exit 0 ; ux-smoke 4 tokens ; 3 smokes navigateur PASS en 390x844 + 1440x900.
+- Pollutions de test corrigées : la suite restaure `scripts/automation/data/` (résolution `__dirname`, non redirigeable) ; `.gitignore` +`ops-events.jsonl` ; 3 logs data suivis restaurés à HEAD.
+- **Aucune** action de production : pas de DELETE/restore/schéma/migration, aucun email/push réel, pas de cleanup Apps Script réel, aucune transaction/webhook/checkout Mollie, pas de rotation de secret, pas de DNS/route Worker, pas de création de bucket, pas de réécriture d'historique, pas de bypass de SLA de fraîcheur, aucune mesure scientifique inventée.
+- Non vérifié : actionlint et Lighthouse absents hors ligne (substitué par parse js-yaml des 2 workflows modifiés). `funnel-payment.spec.ts` hors gate CI, échec environnemental (sélecteur obsolète + satellite périmé, `src/` intact).
+- Superseion de #1218 (périmètre purge seul) : commentaire posté, PR laissé ouvert, non mergée.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**
