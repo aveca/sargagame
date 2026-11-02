@@ -21,9 +21,7 @@ assert.ok(component.includes('if(!satelliteDecisionCurrent) return('),
 assert.ok(component.includes('<LazyBeachSheetStaleFallback'), 'stale UI is lazy-loaded off the eager path')
 assert.ok(staleFallback.includes('lcDetailFreshnessLabel(sargData, lang)'), 'stale fallback shows ERDDAP observation age')
 assert.ok(staleFallback.includes('data-testid="beach-sheet-fallback-stale"'))
-assert.ok(component.includes('data-testid="beach-sheet-fallback-stale"'))
-assert.ok(component.includes('satelliteAgeHours(sargData)'), 'stale state displays age from the observation clock')
-assert.ok(component.includes('data-testid="beach-sheet-fallback-score-paused"'))
+assert.ok(staleFallback.includes('data-testid="beach-sheet-fallback-score-paused"'))
 assert.ok(component.includes('data-testid="beach-sheet-fallback-current"'))
 assert.ok(component.includes('if(!satelliteDecisionCurrent||!beach)return null'),
   'forecast must be hidden when the observation is not current')
