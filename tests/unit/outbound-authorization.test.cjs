@@ -194,7 +194,7 @@ async function main() {
   {
     const d = central.authorizeAction('external_write', {
       env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
-      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1 },
+      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' },
     });
     record('P11 4 preuves réunies => exécution autorisée',
       d.execute === true && d.mode === 'production', `mode=${d.mode} reason=${d.reason}`);
