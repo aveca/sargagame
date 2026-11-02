@@ -22,6 +22,7 @@
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady, brandHeader } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {
@@ -86,6 +87,14 @@ async function main() {
 
   console.log(`  ⚠️ SILENCE : ${neverSeen ? 'aucun heartbeat jamais reçu' : `${ageH.toFixed(1)}h sans signal`}`)
   if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); return }
+  // Mission P0.23 / #1157 : --send est une DEMANDE, l'autorisation vient du contrat central
+  // (Environment GitHub protege + dispatch manuel + verification API lecture seule).
+  const decision = await authorizeActionAsync('email_send', { requested: DO_SEND })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log('\nDRY-RUN PAR CONTRAT CENTRAL - rien envoye (autorisation absente ou non verifiable).')
+    return
+  }
   if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); return }
 
   const html = `${brandHeader('Usine locale', "Silence de l'usine locale", neverSeen ? 'Aucun signal reçu depuis l\'installation' : `${Math.round(ageH)}h sans nouvelles`)}

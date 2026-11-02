@@ -35,7 +35,12 @@ const { resolve, dirname } = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, normalizeFrom } = require('./lib/email-send.cjs')
 
-const DRY_RUN = process.env.DRY_RUN === '1'
+// Mission P0.23 / #1157 : l'ancien drapeau `DRY_RUN = env.DRY_RUN === '1'`
+// autorisait l'envoi des que SMTP_PASS etait present — donc en cron `schedule`.
+// La decision reelle vient desormais du contrat central (resolue dans main()).
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+const SEND_REQUESTED = process.argv.includes('--send')
+let DRY_RUN = true
 const OUTREACH_INTL = process.env.OUTREACH_INTL === '1'
 const MAX_PER_RUN = Number(process.env.CURATED_MAX || 2)
 const REPLY_TO = 'alerte@sargasses-martinique.com'
@@ -147,6 +152,13 @@ function saveLedger(led) {
 }
 
 async function main() {
+  // Mission P0.23 / #1157 : autorisation resolue immediatement avant tout
+  // envoi. `--send` est une demande, jamais une autorisation.
+  const DECISION = await authorizeActionAsync('outreach', { requested: SEND_REQUESTED })
+  DRY_RUN = !DECISION.execute
+  console.log(describeDecision(DECISION))
+  if (!DECISION.execute) console.log('Contrat central : SIMULATION, aucun email de prospection ne sera envoye.')
+
   console.log(`=== Curated backlink outreach ${DRY_RUN ? '(DRY RUN)' : ''} ===`)
   console.log(`Intl (US/MX/DR): ${OUTREACH_INTL ? 'ON' : 'off'} · max/run: ${MAX_PER_RUN}`)
   if (!existsSync(PROSPECTS_PATH)) { console.log('No prospects file — nothing to do.'); return }
@@ -202,4 +214,7 @@ async function main() {
   console.log(`Done. ${sent} curated outreach email(s) ${DRY_RUN ? 'previewed' : 'sent'}. Lifetime: ${led.totalSent || 0}.`)
 }
 
-main().catch(e => { console.error(e); process.exit(0) })
+// Point d'entree explicite : importer ce module n'envoie jamais d'email.
+if (require.main === module) main().catch(e => { console.error(e); process.exit(0) })
+
+module.exports = { main }

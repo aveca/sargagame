@@ -13,9 +13,18 @@
  *   GOOGLE_SERVICE_ACCOUNT_JSON='...' GA4_PROPERTY_ID_MQ=123 node register-ga4-dimensions.cjs
  *
  * Or via GitHub Actions (where secrets are available).
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : ce script CRÉE des dimensions
+ * personnalisées dans les propriétés GA4 (POST sur l'API Admin) — c'est une écriture
+ * HTTP externe, donc DRY-RUN par défaut. Le contrat central
+ * (`scripts/lib/outbound-authorization.cjs`) exige un dispatch manuel + un jeton
+ * d'approbation d'un Environment protégé, vérifié en lecture seule via l'API GitHub.
+ * Sans cette preuve (cron, push, PR, déclencheur inconnu) : simulation complète —
+ * la liste des dimensions À CRÉER est affichée, aucune requête POST n'est envoyée.
  */
 const https = require('https')
 const crypto = require('crypto')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 // Custom dimensions to register
 const DIMENSIONS = [
@@ -122,6 +131,19 @@ async function main() {
   console.log(`Service account: ${sa.client_email}`)
   console.log(`Properties: ${properties.map(p => `${p.key}=${p.id}`).join(', ')}\n`)
 
+  // Autorisation AVANT la creation effective (contrat central, fail-closed).
+  const decision = await authorizeActionAsync('external_write', { requested: true })
+  console.log(describeDecision(decision))
+
+  if (!decision.execute) {
+    console.log(`\n[${decision.mode}] SIMULATION — aucune dimension creee (${decision.reason}).`)
+    console.log('Dimensions qui SERAIENT creees :')
+    for (const dim of DIMENSIONS) console.log(`  - ${dim.parameterName} -> ${dim.displayName} (${dim.description})`)
+    console.log('\nPour executer reellement : workflow_dispatch + OUTBOUND_APPROVAL_TOKEN')
+    console.log("d'un Environment GitHub protege, verifie via l'API GitHub en lecture seule.")
+    return
+  }
+
   const token = await getAccessToken(sa)
   console.log('Access token obtained.\n')
 
@@ -161,4 +183,8 @@ async function main() {
   console.log('\nDone. A/B test data will start appearing in GA4 Explorations within 24-48h.')
 }
 
-main().catch(e => { console.error(e); process.exit(1) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch(e => { console.error(e); process.exit(1) })
+}

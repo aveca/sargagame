@@ -21,6 +21,14 @@ const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
+// Mission P0.23 / #1157 : contrat d'autorisation central. Defaut = AUCUN email.
+// `--send` est une DEMANDE ; l'autorisation reelle vient du contrat (Environment
+// GitHub protege + dispatch manuel + verification API en lecture seule). Un cron
+// quotidien (daily-brief / pipeline) ne peut donc plus envoyer d'email.
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+const SEND_REQUESTED = process.argv.includes('--send')
+// Decision d'autorisation, resolue dans main() juste avant les envois.
+let EMAIL_DECISION = null
 
 const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
@@ -808,6 +816,10 @@ function getHTML(step, island, cleanCount, topBeaches, email, brief) {
 // ── Track to Google Sheet ────────────────────────────────────
 
 async function trackToSheet(data) {
+  // Mission P0.23 / #1157 : ecriture HTTP externe vers Apps Script => elle
+  // n'a lieu QU'APRES une autorisation effective du contrat central.
+  // Aucun effet reseau a l'import du module.
+  if (!EMAIL_DECISION || !EMAIL_DECISION.execute) return
   try {
     await fetch(WEBHOOK_URL, {
       method: 'POST',
@@ -822,12 +834,20 @@ async function trackToSheet(data) {
 async function main() {
   console.log('=== Drip Email Sequence (SMTP) ===')
 
+  // Mission P0.23 / #1157 : autorisation resolue immediatement avant tout
+  // envoi (jamais a l'import). `--send` est une demande, pas une autorisation.
+  EMAIL_DECISION = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(EMAIL_DECISION))
+  if (!EMAIL_DECISION.execute) console.log('Contrat central : simulation, aucun email ne sera envoye.')
+
   if (!API_KEY) {
     console.log('SMTP_PASS not set — skipping sends (dry-run).')
   }
 
-  // Sentinelle truthy = SMTP prêt (sendEmail ignore ce 1er arg, back-compat).
-  const resend = API_KEY ? {} : null
+  // Sentinelle truthy = SMTP pret (sendEmail ignore ce 1er arg, back-compat).
+  // Mission P0.23 / #1157 : null des que le contrat central refuse l'envoi,
+  // ce qui neutralise TOUS les sites d'appel sendEmail/resend du fichier.
+  const resend = API_KEY && EMAIL_DECISION.execute ? {} : null
   const subscribers = loadJSON(SUBSCRIBERS_PATH, [])
   // State files store email hashes (RGPD) — legacy plaintext entries hashed in memory
   const dripSent = hashedKeys(loadJSON(DRIP_SENT_PATH, {}))
@@ -1058,7 +1078,7 @@ async function main() {
   }
   if (dailySent || dailyWould) console.log(`Daily verdict: ${dailySent} sent, ${dailyWould} dry-run.`)
 
-  if (!API_KEY) {
+  if (!API_KEY || !EMAIL_DECISION.execute) {
     console.log(`\nDry-run: ${alreadyDripped} subscriber(s) recognized as already in drip, ${wouldSend} email(s) would be sent. Nothing saved.`)
     return
   }
@@ -1067,4 +1087,8 @@ async function main() {
   console.log(`\nDrip complete: ${totalSent} email(s) sent.`)
 }
 
-main().catch(e => console.error(e))
+// Mission P0.23 / #1157 : point d'entree explicite. Importer ce module
+// (ex: dans un test) ne doit JAMAIS lancer d'envoi d'email.
+if (require.main === module) main().catch(e => console.error(e))
+
+module.exports = { main }

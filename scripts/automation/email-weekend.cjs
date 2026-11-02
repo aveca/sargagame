@@ -20,6 +20,13 @@ const https = require('https')
 const nodemailer = require('nodemailer')
 const { injectPreheader, applyBrand, htmlToText } = require('./lib/email-send.cjs')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
+// Mission P0.23 / #1157 : contrat d'autorisation central. Le bulletin weekend
+// etait envoye PAR DEFAUT des que SMTP_PASS etait present (y compris en cron
+// `schedule`). Desormais : DRY-RUN par defaut, `--send` = demande, et
+// l'autorisation reelle vient du contrat (Environment GitHub protege verifie).
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+const SEND_REQUESTED = process.argv.includes('--send')
+let EMAIL_DECISION = null
 
 // SMTP — boîte alerte@ (cPanel). Envoi depuis le VRAI alerte@sargasses-martinique.com
 // (plus de MailApp/gmail). Lit process.env (CI) OU le .env local (comme welcome-paid.cjs).
@@ -548,6 +555,17 @@ async function main() {
 
   // Dédup par destinataire (incrémentale, voir loadSent). FORCE = ignore l'état
   // (ré-envoi complet), mais on enregistre quand même les envois du jour.
+  // Mission P0.23 / #1157 : autorisation resolue ici, avant tout envoi.
+  // `--send` est une demande ; sans preuve d'approbation, on simule et on
+  // sort SANS ecrire le marqueur du jour (sinon une simulation consommerait
+  // l'envoi legitime).
+  EMAIL_DECISION = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(EMAIL_DECISION))
+  if (!EMAIL_DECISION.execute) {
+    console.log('Contrat central : SIMULATION, aucun email weekend ne sera envoye.')
+    return
+  }
+
   const todayKey = sentKey()
   const sentState = loadSent(todayKey)
   const alreadySent = FORCE ? new Set() : new Set(Object.keys(sentState.sent))
@@ -680,6 +698,8 @@ async function main() {
       const personalText = text.replace(/\{\{EMAIL\}\}/g, enc)
       const unsub = unsubUrl(island).replace('{{EMAIL}}', enc)
       try {
+        // Mission P0.23 / #1157 : garde finale, immediatement avant l'envoi.
+        if (!EMAIL_DECISION || !EMAIL_DECISION.execute) { skipped++; continue }
         await transporter.sendMail({
           from, to: sub.email, subject,
           html: personalHtml, text: personalText,
@@ -743,6 +763,8 @@ async function main() {
       const personalText = rText.replace(/\{\{EMAIL\}\}/g, enc)
       const unsub = unsubUrl(region.id).replace('{{EMAIL}}', enc)
       try {
+        // Mission P0.23 / #1157 : garde finale, immediatement avant l'envoi.
+        if (!EMAIL_DECISION || !EMAIL_DECISION.execute) { rSkipped++; continue }
         await transporter.sendMail({
           from: rFrom, to: sub.email, subject: rSubject,
           html: personalHtml, text: personalText,

@@ -188,3 +188,8 @@ scripts/veilleurs/_artifacts/
 # Autonomous factory runtime state/logs — local only
 scripts/local-factory/state/
 scripts/local-factory/logs/
+
+# Ops bus local (notify-failure.cjs) : evenement pipeline_fail ecrit sur le
+# runner, jamais une donnee a versionner. Les tests importent les scripts : sans
+# cette regle, une execution locale polluerait l'arbre de travail.
+scripts/automation/data/ops-events.jsonl

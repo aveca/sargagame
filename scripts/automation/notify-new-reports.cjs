@@ -30,6 +30,9 @@ const FROM = 'Sargasses Terrain <alerte@sargasses-martinique.com>'
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+// Mission P0.23 / #1157 : aucun email sans demande `--send` ET autorisation du contrat.
+const SEND_REQUESTED = process.argv.includes('--send')
 
 function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
@@ -156,6 +159,14 @@ async function main() {
       <p style="font-size:11px;color:#999;margin-top:18px">Alerte auto — signalements terrain Sargasses. Le verdict reste mesuré au satellite.</p>
     </div>`
 
+  // Autorisation immediatement avant l'effet externe (mission P0.23 / #1157).
+  const decision = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log(`[reports-notify] simulation : ${n} signalement(s) auraient ete notifies (aucun email envoye, aucun marquage)`)
+    return
+  }
+
   const { error } = await sendEmail({ from: FROM, to: TO, subject, html })
   if (error) { console.error('[reports-notify] SMTP:', error.message); return }
   console.log(`[reports-notify] email envoyé (${n} signalement(s))`)
@@ -173,4 +184,8 @@ async function main() {
 }
 
 // process.exit explicite : le transport SMTP garde l'event loop vivant après l'envoi.
-main().then(() => process.exit(0)).catch(() => process.exit(0))
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().then(() => process.exit(0)).catch(() => process.exit(0))
+}

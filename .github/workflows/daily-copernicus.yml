@@ -370,17 +370,20 @@ jobs:
           cache: npm
       - run: npm ci
 
+      # Mission P0.23 / #1157 : pas de `--send` ici. Le flag ne serait qu'une
+      # DEMANDE, de toute facon refusee par le contrat central (declencheur
+      # `schedule`/`push` = jamais d'autorisation de production).
       - name: Push win-back dormant users
         env:
           ONESIGNAL_API_KEY_MQ: ${{ secrets.ONESIGNAL_API_KEY_MQ }}
           ONESIGNAL_API_KEY_GP: ${{ secrets.ONESIGNAL_API_KEY_GP }}
-        run: node scripts/automation/push-winback.cjs --send
+        run: node scripts/automation/push-winback.cjs
 
+      # Mission P0.23 / #1157 : l'appel `curl ... action=clean_bounces`
+      # contournait le contrat (defaut de review F, PR #1200). Il passe
+      # desormais par le wrapper Node qui exige une autorisation effective.
       - name: Clean bounced emails from Sheet
-        run: |
-          echo "Calling clean_bounces on Apps Script..."
-          RESULT=$(curl -sL --max-time 30 "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec?action=clean_bounces")
-          echo "Result: $RESULT"
+        run: node scripts/automation/appscript-cleanup.cjs
 
       - name: Fetch subscriber list
         env:
@@ -431,7 +434,7 @@ jobs:
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/revenue-watch.cjs --send
+        run: node scripts/automation/revenue-watch.cjs
 
       - name: Mollie MRR tracker
         if: github.event_name == 'schedule'
@@ -445,14 +448,14 @@ jobs:
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/ux-watch.cjs --send
+        run: node scripts/automation/ux-watch.cjs
 
       - name: Deliverability watch (alerte pic de rebonds)
         if: github.event_name == 'schedule'
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/deliverability-watch.cjs --send
+        run: node scripts/automation/deliverability-watch.cjs
 
       - name: Factory heartbeat watch (alerte usine locale silencieuse)
         if: github.event_name == 'schedule'
@@ -460,7 +463,7 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/automation/factory-heartbeat-watch.cjs --send
+        run: node scripts/automation/factory-heartbeat-watch.cjs
 
       - name: Purge analytics_events (> 90j)
         if: github.event_name == 'schedule'
@@ -503,7 +506,12 @@ jobs:
           SG_STATS_KEY_PUNTACANA: ${{ secrets.SG_STATS_KEY_PUNTACANA }}
           SG_STATS_KEY_RIVIERAMAYA: ${{ secrets.SG_STATS_KEY_RIVIERAMAYA }}
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/ux-daily.cjs --send
+        # Mission P0.23 / #1157 : `--send` retire (le contrat refuse par defaut
+        # un envoi sur declencheur `schedule`). NOTE : le chemin historique
+        # `scripts/automation/ux-daily.cjs` n'existe pas (script reel :
+        # `scripts/ux-daily.cjs`) ; l'etape echouait deja en silence
+        # (continue-on-error). A corriger separement, hors perimetre P0.23.
+        run: node scripts/automation/ux-daily.cjs
 
       - name: Publish daily metrics snapshot
         # Responsabilité SÉPARÉE du commit email (qui garde son continue-on-error

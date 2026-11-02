@@ -9,13 +9,21 @@
  *
  * Usage :
  *   node scripts/provision-barbados.cjs           # dry-run
- *   node scripts/provision-barbados.cjs --send    # exécute
+ *   node scripts/provision-barbados.cjs --send    # demande d'exécution réelle (si autorisé)
  *
  * Prérequis : MOLLIE_API_KEY dans l'env (secret GH Actions)
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : ce script CRÉE un profil de paiement
+ * Mollie (POST externe), écrit le fichier de config Mollie et déploie vers un domaine.
+ * Ce sont des écritures externes destructrices. `--send` est une DEMANDE, pas une
+ * autorisation : la preuve vient du contrat central (dispatch manuel + jeton d'un
+ * Environment protégé vérifié en lecture seule via l'API GitHub).
+ * Sans preuve : simulation (aucun POST Mollie, aucune écriture PHP, aucun déploiement).
  */
 const fs = require('fs')
 const path = require('path')
 const { execSync } = require('child_process')
+const { authorizeActionAsync, describeDecision } = require('./automation/lib/safety.cjs')
 
 const SEND = process.argv.includes('--send')
 const MOLLIE_KEY = (process.env.MOLLIE_API_KEY || '').trim()
@@ -58,6 +66,11 @@ async function main() {
   const prefix = MOLLIE_KEY.startsWith('test_') ? 'test_' : 'live_'
   console.log('Clé Mollie:', prefix + '...')
 
+  // Autorisation AVANT la premiere ecriture externe (contrat central, fail-closed).
+  const decision = await authorizeActionAsync('external_write', { requested: SEND })
+  console.log(describeDecision(decision))
+  const mayWrite = decision.execute
+
   // 1. Vérifier si un profil Barbados existe déjà
   console.log('\n1. Vérification des profils Mollie existants...')
   const profiles = await mollieGet('https://api.mollie.com/v2/profiles?limit=250')
@@ -71,8 +84,8 @@ async function main() {
     console.log(`   → Profil existant: ${profileId} (${existing.name})`)
   } else {
     console.log('   → Aucun profil Barbados trouvé')
-    if (!SEND) {
-      console.log('   [DRY] Créerait profil: "Sargassum Barbados", website: ' + DOMAIN + ', currency: USD')
+    if (!mayWrite) {
+      console.log(`   [${decision.mode}] SIMULATION — créerait le profil "Sargassum Barbados" (website: ${DOMAIN}, currency: ${CURRENCY}) (${decision.reason})`)
       profileId = 'pfl_PLACEHOLDER_DRY'
     } else {
       console.log('   → Création du profil Mollie pour Barbados...')
@@ -89,7 +102,7 @@ async function main() {
   }
 
   // Attendre que le profil soit approuvé (optionnel)
-  if (SEND && prefix === 'live_') {
+  if (mayWrite && prefix === 'live_') {
     console.log('   → Activation du profil (enableGiftCard, enableCreditCard)...')
     try {
       await molliePost(`https://api.mollie.com/v2/profiles/${profileId}/methods`, {
@@ -126,15 +139,15 @@ return [
   const configDir = path.join(__dirname, '..', REGION + '-ftp', 'api')
   if (!fs.existsSync(configDir)) {
     console.log(`   ⚠️ ${configDir}/ n'existe pas — build d'abord`)
-  } else if (SEND) {
+  } else if (mayWrite) {
     fs.writeFileSync(path.join(configDir, 'mollie-config.php'), phpContent)
     console.log(`   → Écrit dans ${REGION}-ftp/api/mollie-config.php`)
   } else {
-    console.log(`   [DRY] Écrirait dans ${REGION}-ftp/api/mollie-config.php`)
+    console.log(`   [${decision.mode}] SIMULATION — écrirait dans ${REGION}-ftp/api/mollie-config.php (non autorisé : ${decision.reason})`)
   }
 
   // 3. Déployer via fast-deploy si DEPLOY_TOKEN disponible
-  if (DEPLOY_TOKEN && SEND) {
+  if (DEPLOY_TOKEN && mayWrite) {
     console.log('\n3. Fast-deploy vers', DOMAIN)
     const deployDir = path.join(__dirname, '..', REGION + '-ftp')
     if (fs.existsSync(deployDir)) {
@@ -160,4 +173,8 @@ return [
   console.log('Site:', DOMAIN)
 }
 
-main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+}

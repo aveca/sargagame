@@ -32,7 +32,16 @@ const { resolve } = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady, normalizeFrom } = require('./lib/email-send.cjs')
 
-const DRY_RUN = process.env.DRY_RUN === '1'
+// Mission P0.23 / #1157 : DRY_RUN unifie via le contrat central ('1' OU 'true',
+// lu par process, jamais suppose). L'envoi reel exige en plus `--send` ET
+// l'autorisation du contrat (Environment GitHub protege + dispatch manuel).
+// Sans `--send`, le script SIMULE meme si aucune variable d'environnement
+// n'est definie : l'absence de DRY_RUN n'a jamais valu autorisation.
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+const DRY_RUN = require('./lib/safety.cjs').isDryRunRequested(process.env)
+const SEND_REQUESTED = process.argv.includes('--send')
+// Decision d'autorisation, resolue dans main() juste avant les envois.
+let OUTREACH_DECISION = null
 const MAX_EMAILS_PER_RUN = 5
 // Réponses : tout l'outreach part désormais du domaine FR (boîte alerte@), donc on
 // route les réponses vers une boîte FR réelle plutôt qu'un support@ intl non créé.
@@ -421,12 +430,14 @@ function buildSubject(target) {
 
 // ── Step 4: Send via SMTP (boîte alerte@) ─────────────────────
 
-async function sendOutreachEmail(resend, to, target) {
+async function sendOutreachEmail(resend, to, target, decision) {
   const m = MARKETS[target.market] || MARKETS.fr
   const subject = buildSubject(target)
   const html = buildEmailHTML(target)
 
-  if (DRY_RUN) {
+  // Mission P0.23 / #1157 : sans autorisation effective, on SIMULE. Le flag
+  // DRY_RUN seul ne suffit plus a proteger, et son absence n'autorise plus rien.
+  if (!decision || !decision.execute) {
     console.log(`  [DRY RUN] (${target.market || 'fr'}) Would send to: ${logId(to)}`)
     console.log(`  From: ${normalizeFrom(m.from)} · reply-to: ${OUTREACH_REPLY_TO}`)
     console.log(`  Subject: ${subject}`)
@@ -459,9 +470,19 @@ async function main() {
   console.log(`=== Auto-Outreach ${DRY_RUN ? '(DRY RUN)' : ''} ===`)
   console.log(`Timestamp: ${new Date().toISOString()}\n`)
 
-  if (!mailReady() && !DRY_RUN) {
-    console.error('SMTP_PASS not set.')
-    process.exit(0)
+  // Mission P0.23 / #1157 : autorisation resolue UNE fois, immediatement avant
+  // le premier effet externe. `--send` est une demande ; l'autorisation reelle
+  // vient du contrat (Environment GitHub protege + dispatch manuel).
+  OUTREACH_DECISION = await authorizeActionAsync('outreach', { requested: SEND_REQUESTED && !DRY_RUN })
+  console.log(describeDecision(OUTREACH_DECISION))
+
+  if (!mailReady() && OUTREACH_DECISION.execute) {
+    // Credentiels manquants = fail-closed : on retombe en simulation.
+    console.error('SMTP_PASS not set — fail-closed : simulation.')
+    OUTREACH_DECISION = { execute: false, mode: 'blocked', action: 'outreach', reason: 'credentiels SMTP absents' }
+  }
+  if (!OUTREACH_DECISION.execute) {
+    console.log('Mode simulation: aucun email de prospection ne sera envoye.')
   }
 
   console.log(`International markets (US/MX/DR): ${OUTREACH_INTL ? 'ON' : 'off (set OUTREACH_INTL=1)'}`)
@@ -509,8 +530,8 @@ async function main() {
       continue
     }
 
-    // Send
-    const result = await sendOutreachEmail(resend, email, target)
+    // Send — decision d'autorisation resolue avant la boucle (contrat central)
+    const result = await sendOutreachEmail(resend, email, target, OUTREACH_DECISION)
 
     // Don't burn an intl target on a send failure: the most likely cause early
     // on is the market's Resend sender domain not being verified yet. Leave it

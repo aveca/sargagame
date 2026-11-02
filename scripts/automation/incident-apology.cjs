@@ -22,6 +22,7 @@ const fs = require('fs')
 const path = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 const APOLOGY_PRE = {
   fr: 'Un bug d\'envoi de notre côté — déjà corrigé. Rien à faire de votre part.',
@@ -31,7 +32,12 @@ const APOLOGY_PRE = {
 
 const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const FORCE = process.argv.includes('--force')
-const DRY = process.argv.includes('--dry-run')
+// Mission P0.23 / #1157 : defaut = AUCUN envoi. `--send` est une DEMANDE, pas
+// une autorisation : celle-ci vient du contrat central (Environment GitHub
+// protege, dispatch manuel, verification API en lecture seule).
+// `--dry-run` force la simulation.
+const SEND_REQUESTED = process.argv.includes('--send')
+const DRY = process.argv.includes('--dry-run') || !SEND_REQUESTED
 const INCIDENTS_PATH = path.join(__dirname, 'data', 'incidents.json')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
 const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec'
@@ -124,7 +130,10 @@ async function main() {
   const byHash = new Map(subscribers.map(s => [emailHash(s.email), s]))
   // Sentinelle truthy = « on envoie pour de vrai » (SMTP prêt et pas en dry-run).
   // La couche sendEmail() ignore ce 1er argument (back-compat) et envoie via SMTP.
-  const resend = (mailReady() && !DRY) ? {} : null
+  // Autorisation immediatement avant le premier effet externe (mission P0.23).
+  const decision = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED && !DRY })
+  console.log(describeDecision(decision))
+  const resend = decision.execute ? {} : null
   let sent = 0
 
   for (const inc of pending) {
@@ -164,4 +173,8 @@ async function main() {
   console.log(`Done. ${sent} apology email(s) sent.`)
 }
 
-main().catch(e => { console.error(e); process.exit(1) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch(e => { console.error(e); process.exit(1) })
+}

@@ -13,6 +13,16 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 const { operationalSatelliteFreshness, OPERATIONAL_SLA_MINUTES } = require('../lib/satellite-freshness.cjs')
+// Mission P0.23 / #1157 : contrat d'autorisation central. Tout envoi (push
+// OneSignal, webhook Sheets/Apps Script) est DRY-RUN par defaut. `--send` est
+// une DEMANDE ; l'autorisation reelle vient du contrat (Environment GitHub
+// protege + dispatch manuel + verification API en lecture seule). Un cron ou
+// un push git ne peut donc plus notifier personne.
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+
+// Decisions d'autorisation, resolues dans main() juste avant les envois.
+let PUSH_DECISION = null
+let WEBHOOK_DECISION = null
 
 // ── Paths ────────────────────────────────────────────────────
 const ROOT = path.resolve(__dirname, '..', '..')
@@ -395,6 +405,12 @@ async function sendPushNotification(island, message, heading) {
 
   console.log(`[PUSH] Sending to ${island.toUpperCase()}: "${message}"`)
 
+  // Mission P0.23 / #1157 : autorisation verifiee immediatement avant le POST.
+  if (!PUSH_DECISION || !PUSH_DECISION.execute) {
+    console.log(`[PUSH] DRY-RUN (contrat central) : enverrait a ${island.toUpperCase()} "${message}" - aucun push envoye.`)
+    return { sent: false, reason: 'blocked-by-contract' }
+  }
+
   const result = await httpsPost(
     'https://onesignal.com/api/v1/notifications',
     payload,
@@ -605,6 +621,13 @@ async function sendFavoriteAlert(beachChange, type, opts = {}) {
   }
 
   console.log(`[FAV-ALERT] ${beachChange.island.toUpperCase()} ${type} ${favKeys.map(k => 'fav_' + k).join('|')}: ${msg}`)
+
+  // Mission P0.23 / #1157 : meme contrat, juste avant le POST cible.
+  if (!PUSH_DECISION || !PUSH_DECISION.execute) {
+    console.log(`[FAV-ALERT] DRY-RUN (contrat central) : enverrait a fav_${beachChange.id} - aucun push envoye.`)
+    return { sent: false, reason: 'blocked-by-contract' }
+  }
+
   const result = await httpsPost(
     'https://onesignal.com/api/v1/notifications',
     payload,
@@ -890,6 +913,13 @@ async function sendWeeklyDigest(currentLevels, alerts, goodNews) {
 
   console.log(`[DIGEST] Sending weekly digest...`)
 
+  // Mission P0.23 / #1157 : ecriture HTTP externe (Apps Script) => contrat
+  // `external_write`, verifie immediatement avant chaque POST.
+  if (!WEBHOOK_DECISION || !WEBHOOK_DECISION.execute) {
+    console.log('[DIGEST] DRY-RUN (contrat central) : enverrait le bilan hebdo - aucun POST effectue.')
+    return { sent: false, reason: 'blocked-by-contract' }
+  }
+
   // Send for MQ
   const resMQ = await httpsPost(SHEETS_WEBHOOK_URL, {
     email: 'WEEKLY_DIGEST',
@@ -924,12 +954,24 @@ async function main() {
   const MODE_TEST_FAV_IDX = argv.indexOf('--test-fav-alert')
   const MODE_TEST_FAV = MODE_TEST_FAV_IDX !== -1 ? argv[MODE_TEST_FAV_IDX + 1] : null
   const MODE_COUNT_SUBS = argv.includes('--count-subscribers')
+  // Mission P0.23 / #1157 : `--send` est une DEMANDE d'envoi, pas une
+  // autorisation. Sans autorisation effective du contrat central, tout est
+  // simule (aucun push, aucun POST Sheets), y compris en cron quotidien.
+  const SEND_REQUESTED = argv.includes('--send')
 
   console.log('=== send-notifications.cjs ===')
   console.log(`Date: ${new Date().toISOString()}`)
   if (MODE_MORNING_BRIEF) console.log('Mode: --morning-brief (skip change detection + digest)')
   if (MODE_TEST_FAV) console.log(`Mode: --test-fav-alert ${MODE_TEST_FAV}`)
   if (MODE_COUNT_SUBS) console.log('Mode: --count-subscribers')
+
+  // Autorisations resolues ici, immediatement avant tout envoi (jamais a
+  // l'import du module) : --count-subscribers reste en lecture seule.
+  PUSH_DECISION = await authorizeActionAsync('push_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(PUSH_DECISION))
+  WEBHOOK_DECISION = await authorizeActionAsync('external_write', { requested: SEND_REQUESTED })
+  console.log(describeDecision(WEBHOOK_DECISION))
+  if (!PUSH_DECISION.execute) console.log('[INFO] Contrat central : AUCUN push ne sera envoye (simulation).')
 
   // --count-subscribers: query OneSignal for messageable player counts per island.
   // Used to diagnose "is anybody actually subscribed to push?" without touching data.
@@ -1129,7 +1171,11 @@ async function main() {
       ],
     })
     // Marque ces changements comme envoyés AUJOURD'HUI (anti-spam inter-runs).
-    persistSent()
+    // Mission P0.23 : uniquement si le contrat central a REELLEMENT autorise
+    // l'envoi, sinon une simulation consommerait le quota du jour et l'alerte
+    // legitime serait perdue.
+    if (PUSH_DECISION.execute) persistSent()
+    else console.log('[INFO] Simulation : notifications-sent.json NON marque (aucun envoi effectif).')
   }
 
   // 4. Proactive forecast push (clean tomorrow, weekend outlook, degradation warning)
@@ -1170,9 +1216,13 @@ async function main() {
   console.log('[DONE] send-notifications.cjs complete.')
 }
 
-main().catch((e) => {
-  console.error(`[FATAL] Unhandled error: ${e.message}`)
-  console.error(e.stack)
-  // Never exit with error code — continue-on-error in CI
-  appendLog({ script: 'send-notifications', action: 'fatal-error', error: e.message })
-})
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch((e) => {
+    console.error(`[FATAL] Unhandled error: ${e.message}`)
+    console.error(e.stack)
+    // Never exit with error code — continue-on-error in CI
+    appendLog({ script: 'send-notifications', action: 'fatal-error', error: e.message })
+  })
+}

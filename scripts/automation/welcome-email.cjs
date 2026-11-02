@@ -10,6 +10,14 @@
  *
  * Env: SMTP_PASS (required pour envoyer ; absent = dry-run)
  * Usage: node scripts/automation/welcome-email.cjs
+ *
+ * Mission P0.23 / issue #1157 : l'ancienne unique condition d'envoi etait la
+ * PRESENCE de SMTP_PASS (secret) — donc secret present = envoi reel, y compris
+ * depuis un cron. Le script passe desormais par le contrat central
+ * `scripts/lib/outbound-authorization.cjs` : DRY-RUN par defaut, et un envoi
+ * reel exige une demande explicite (`--send`) ET une autorisation verifiee
+ * (Environment GitHub protege + dispatch manuel). Le POST de tracking Apps
+ * Script n'a lieu qu'apres un envoi REEL autorise.
  */
 const fs = require('fs')
 const path = require('path')
@@ -17,6 +25,11 @@ const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail, brandHeader, mailReady, makeTrackingId } = require('./lib/email-send.cjs')
 const { pickArm, applyArm } = require('./lib/email-ab.cjs')
 const AB_VARS = require('./data/email-ab-variants.json')
+// Contrat central d'autorisation (mission P0.23 / #1157).
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+
+// `--send` est une DEMANDE d'envoi reel, jamais une autorisation.
+const SEND_REQUESTED = process.argv.includes('--send')
 
 const API_KEY = mailReady() // envoi via SMTP (boîte alerte@) — plus de Resend
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -351,6 +364,17 @@ async function main() {
 
   if (!API_KEY) {
     console.log(`SMTP_PASS not set — skipping sends (would send ${newSubs.length}).`)
+    return
+  }
+
+  // Autorisation resolue IMMEDIATEMENT AVANT le premier envoi, pas a l'import :
+  // c'est la seule porte qui compte. Sans elle (DRY-RUN par defaut, ou
+  // declencheur automatique), on decrit l'action sans l'executer.
+  const decision = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(decision))
+
+  if (!decision.execute) {
+    console.log(`SIMULATION : ${newSubs.length} welcome email(s) decrit(s), aucun envoi effectue.`)
     return
   }
 

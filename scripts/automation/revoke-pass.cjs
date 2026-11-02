@@ -31,26 +31,45 @@
  *                                 accès ») — c'est le maximum atteignable côté serveur.
  *
  * PII-SAFE : l'email n'est jamais persisté ni loggé en clair côté repo (hash seulement).
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : la suppression FTPS du record pass ET
+ * la réécriture de comps.php (fichier d'accès critique) sont des opérations destructrices.
+ * Le déclenchement manuel EST la demande ; l'autorisation, elle, doit être PROUVÉE :
+ * jeton d'approbation d'un Environment protégé, vérifié en lecture seule via l'API GitHub.
+ * Sans cette preuve : simulation intégrale (aucun DELETE FTPS, aucune écriture comps.php),
+ * signal explicite — jamais un faux « révocation faite ».
  */
 const fs = require("fs"), path = require("path"), crypto = require("crypto")
 const { Writable } = require("stream")
+const { authorizeActionAsync, describeDecision } = require("./lib/safety.cjs")
 
-const islandArg = ((process.argv.find(a => a.startsWith("--island=")) || "").split("=")[1] || "all").toLowerCase()
-const hashArg = ((process.argv.find(a => a.startsWith("--hash=")) || "").split("=")[1] || "").toLowerCase()
-const email = (process.argv[2] || "").startsWith("--") ? "" : (process.argv[2] || "").trim().toLowerCase()
-
-let h
-if (hashArg) {
-  if (!/^[0-9a-f]{40}$/.test(hashArg)) { console.error("--hash invalide (attendu : sha1 hex 40 chars)"); process.exit(1) }
-  h = hashArg
-} else if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-  h = crypto.createHash("sha1").update(email).digest("hex")
-} else {
-  console.error("Usage : node scripts/automation/revoke-pass.cjs <email> [--island=mq|gp|...|all]")
-  console.error("        node scripts/automation/revoke-pass.cjs --hash=<sha1(email)> [--island=…]")
-  process.exit(1)
+// Arguments PARSES DANS main() uniquement (mission P0.23 / #1157) : un
+// `require()` de ce module ne doit jamais quitter le processus ni rien faire.
+let h = ''
+let islandArg = 'all'
+function parseArgs() {
+  islandArg = ((process.argv.find(a => a.startsWith("--island=")) || "").split("=")[1] || "all").toLowerCase()
+  const hashArg = ((process.argv.find(a => a.startsWith("--hash=")) || "").split("=")[1] || "").toLowerCase()
+  const email = (process.argv[2] || "").startsWith("--") ? "" : (process.argv[2] || "").trim().toLowerCase()
+  if (hashArg) {
+    if (!/^[0-9a-f]{40}$/.test(hashArg)) { console.error("--hash invalide (attendu : sha1 hex 40 chars)"); process.exit(1) }
+    h = hashArg
+  } else if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    h = crypto.createHash("sha1").update(email).digest("hex")
+  } else {
+    console.error("Usage : node scripts/automation/revoke-pass.cjs <email> [--island=mq|gp|...|all]")
+    console.error("        node scripts/automation/revoke-pass.cjs --hash=<sha1(email)> [--island=…]")
+    process.exit(1)
+  }
 }
 const now = Math.floor(Date.now() / 1000)
+
+async function main() {
+  parseArgs()
+// ── Autorisation immédiatement AVANT la première action destructive ────────────
+const decision = await authorizeActionAsync("external_write", { requested: true })
+console.log(describeDecision(decision))
+const mayWrite = decision.execute
 
 // ── 1. comps.php : retire l'entrée (même format/purge que gift-pass.cjs) ────────
 const compsPath = path.join(__dirname, "../../public/api/comps.php")
@@ -87,16 +106,20 @@ return [
 ${lines}
 ];
 `
-  fs.writeFileSync(compsPath, out)
-  console.log(compRemoved
-    ? `comps.php : entrée ${h.slice(0, 8)}… RETIRÉE (→ commit + merge pour déployer).`
-    : `comps.php : aucune entrée active pour cet email (rien à retirer).`)
+  if (mayWrite) {
+    fs.writeFileSync(compsPath, out)
+    console.log(compRemoved
+      ? `comps.php : entrée ${h.slice(0, 8)}… RETIRÉE (→ commit + merge pour déployer).`
+      : `comps.php : aucune entrée active pour cet email (rien à retirer).`)
+  } else {
+    console.log(`[${decision.mode}] SIMULATION — comps.php NON réécrit (${compRemoved ? "l'entrée " + h.slice(0, 8) + "… aurait été retirée" : "aucune entrée active à retirer"}). ${decision.reason}`)
+  }
 } else {
   console.log("comps.php absent — étape comp sautée.")
 }
 
 // ── 2. mol_store serveur : supprime api/data/mollie-subs/<sha1>.json via FTPS ───
-async function revokeServerRecords() {
+async function revokeServerRecords(mayWrite) {
   const { Client } = require("basic-ftp")
   const { loadProjectEnv } = require("../lib/load-project-env.cjs")
   const { getAllRegions } = require("../../regions/index.cjs")
@@ -133,6 +156,10 @@ async function revokeServerRecords() {
         console.log(`  ! ${r.id}: record ABONNEMENT (customer ${String(rec.customer).slice(0, 8)}…) — NON supprimé. Annuler l'abo côté dashboard Mollie.`)
         client.close(); continue
       }
+      if (!mayWrite) {
+        console.log(`  [${decision.mode}] ${r.id}: SIMULATION — ${h.slice(0, 8)}… serait supprimé (aucun DELETE FTPS)`)
+        client.close(); continue
+      }
       await client.remove(remote)
       try { await client.remove(remote + ".lock") } catch {} // verrou d'écriture éventuel
       touched++
@@ -144,8 +171,16 @@ async function revokeServerRecords() {
     }
   }
   console.log(`\nRévocation : ${touched} record(s) serveur supprimé(s)` +
-    (compRemoved ? " + entrée comps.php retirée (COMMIT + MERGE REQUIS pour déployer comps.php)." : ".") +
+    (compRemoved && mayWrite ? " + entrée comps.php retirée (COMMIT + MERGE REQUIS pour déployer comps.php)." : ".") +
     (skippedNoCreds ? ` (${skippedNoCreds} région(s) sans creds FTP.)` : ""))
   console.log("Rappel : l'appareil payeur garde son flag localStorage jusqu'à expiration ; le self-heal serveur ignore désormais les paiements remboursés intégralement.")
 }
-revokeServerRecords().catch(e => { console.error(e); process.exit(1) })
+
+await revokeServerRecords(mayWrite)
+}
+
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch(e => { console.error(e); process.exit(1) })
+}

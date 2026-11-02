@@ -31,8 +31,18 @@
  *
  * Env (secrets GitHub) : SUPABASE_SERVICE_KEY (obligatoire), SUPABASE_URL (optionnel),
  * AUTO_MODERATE_REPORTS ('0' → skip).
- * Usage : node scripts/automation/auto-moderate-reports.cjs
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : le PATCH d'approbation, la nullification
+ * des notes et surtout le DELETE de purge RGPD sont des ECRITURES EXTERNES destructrices.
+ * Par defaut (cron, push, run inconnu) le script ne fait que SIMULER : il imprime les
+ * clusters qu'il approuverait et ne touche aucune ligne, ET SURTOUT il ne supprime rien.
+ * Une execution reelle exige `--send` ET l'autorisation du contrat central (dispatch
+ * manuel + Environment protege verifie en lecture seule).
+ * Usage : node scripts/automation/auto-moderate-reports.cjs [--send]
  */
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+// Demande explicite d'execution reelle. Son absence n'est JAMAIS une autorisation.
+const SEND_REQUESTED = process.argv.includes('--send')
 const fs = require('fs')
 const path = require('path')
 const { sanitizeNote } = require('./lib/sanitize-note.cjs')
@@ -116,6 +126,11 @@ async function main() {
   const levelById = {}
   if (sarg && sarg.levels) for (const lv of Object.values(sarg.levels)) if (lv && lv.id) levelById[lv.id] = lv
 
+  // Autorisation immediatement avant la premiere ecriture externe (contrat central).
+  // Une decision non "execute" coupe TOUTES les mutations : aucun PATCH, aucun DELETE.
+  const decision = await authorizeActionAsync('external_write', { requested: SEND_REQUESTED })
+  console.log(describeDecision(decision))
+
   const now = Date.now()
   const ts = (r) => { try { return new Date(r.created_at).getTime() } catch (_) { return now } }
   const clusterKey = (r) => `${r.beach_id || r.beach_name}|${r.event}`
@@ -165,6 +180,7 @@ async function main() {
 
   // 3a) Nullifier les notes toxiques AVANT de publier
   for (const id of toNullify) {
+    if (!decision.execute) { console.log(`[auto-moderate] simulation : note de ${id} aurait ete nullifiee (aucun PATCH)`); continue }
     try {
       await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?id=eq.${encodeURIComponent(id)}`, {
         method: 'PATCH', headers: svcHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
@@ -174,7 +190,10 @@ async function main() {
   }
 
   // 3b) Approuver (filtre status=eq.pending = idempotent, ne retouche jamais une ligne tranchée)
-  if (toApprove.length) {
+  if (toApprove.length && !decision.execute) {
+    console.log(`[auto-moderate] simulation : ${approvedClusters} cluster(s) / ${toApprove.length} ligne(s) auraient ete approuves (aucun PATCH)`)
+  }
+  if (toApprove.length && decision.execute) {
     const filter = 'id=in.(' + toApprove.map((i) => `"${i}"`).join(',') + ')&status=eq.pending'
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?${filter}`, {
@@ -187,6 +206,18 @@ async function main() {
   console.log(`[auto-moderate] ${approvedClusters} cluster(s) approuvé(s), ${toApprove.length} ligne(s), ${toNullify.length} note(s) nullifiée(s)`)
 
   // 4) Purge RGPD : lignes > 30 j (aucune coordonnée GPS stockée — within_150m booléen seul)
+  // GOUVERNANCE : un DELETE n'est JAMAIS executé sans l'autorisation du contrat central.
+  // Sans elle on se contente de COMPTER les lignes concernees (aucune requete DELETE).
+  if (!decision.execute) {
+    let old = 0
+    try {
+      const cutoff = new Date(now - PURGE_MS).toISOString()
+      const chk = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?created_at=lt.${encodeURIComponent(cutoff)}&select=id`, { headers: svcHeaders(), signal: AbortSignal.timeout(20000) })
+      if (chk.ok) { const arr = await chk.json(); old = Array.isArray(arr) ? arr.length : 0 }
+    } catch (_) { /* lecture impossible : on reste en simulation, rien n'est supprime */ }
+    console.log(`[auto-moderate] simulation : ${old} ligne(s) de plus de 30 j auraient ete purgees (AUCUN DELETE execute, mode ${decision.mode})`)
+    return
+  }
   try {
     const cutoff = new Date(now - PURGE_MS).toISOString()
     const res = await fetch(`${SUPABASE_URL}/rest/v1/beach_reports?created_at=lt.${encodeURIComponent(cutoff)}`, {
@@ -196,5 +227,11 @@ async function main() {
   } catch (e) { console.warn('[auto-moderate] purge échouée:', e.message) }
 }
 
-// process.exit explicite (fetch keep-alive peut garder l'event loop vivant).
-main().then(() => process.exit(0)).catch((e) => { console.error('[auto-moderate]', e && e.message); process.exit(0) })
+// Point d'entree explicite (mission P0.23 / #1157) : aucun effet réseau à l'import,
+// les tests peuvent require() le module sans déclencher la moindre requête.
+module.exports = { main, sanitizeNote }
+
+if (require.main === module) {
+  // process.exit explicite (fetch keep-alive peut garder l'event loop vivant).
+  main().then(() => process.exit(0)).catch((e) => { console.error('[auto-moderate]', e && e.message); process.exit(0) })
+}

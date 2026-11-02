@@ -12,12 +12,19 @@
  * Nécessite scripts/automation/data/subscribers.json (récupéré au runtime/FTP).
  * Usage : node scripts/automation/relance-gap-leads.cjs              (dry-run sans SMTP_PASS)
  *         SMTP_PASS=… node scripts/automation/relance-gap-leads.cjs --send [--max=90]
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : `--send` est une DEMANDE, pas une
+ * autorisation. Le contrat central exige en plus le jeton d'un Environment protégé
+ * vérifié en lecture seule. Sans preuve : simulation complète (aucun email, aucun
+ * marqueur persisté). L'autorisation est vérifiée immédiatement AVANT le premier
+ * envoi réel, jamais à l'import du module.
  */
 const fs = require('fs')
 const path = require('path')
 const { emailHash } = require('./lib/email-hash.cjs')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
 const { getAllRegions } = require('../../regions/index.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 const SEND = process.argv.includes('--send')
 const SUBSCRIBERS_PATH = path.join(__dirname, 'data', 'subscribers.json')
@@ -133,9 +140,14 @@ function buildHtmlUS(domain, lang) {
 </div>`
 }
 
-;(async () => {
+async function main() {
   const ready = mailReady()
   if (SEND && !ready) { console.error('SMTP_PASS manquant — impossible d\'envoyer (--send).'); process.exit(1) }
+  // Autorisation immediatement avant le premier effet externe (contrat central).
+  // `--send` = demande explicite ; l'approbation reste à prouver (Environment protégé).
+  const decision = await authorizeActionAsync('email_send', { requested: SEND })
+  console.log(describeDecision(decision))
+  const maySend = decision.execute
   const sent = loadJson(SENT_PATH, {})
   const subs = subscribersList().filter(s => {
     if (!s || !s.email || isTestEmail(s.email)) return false
@@ -144,7 +156,8 @@ function buildHtmlUS(domain, lang) {
     if (ALL) return !isB2B(s.source)              // --all : tous les conso EUR (hors B2B/hôtels)
     return CAPTURE_SOURCES.has(s.source)          // défaut : seulement les leads "paiement"
   })
-  console.log(`cible: ${subs.length} (${USD ? 'régions USD, copy découverte EN/ES' : ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"'}) | plafond: ${MAX} | mode: ${SEND && ready ? 'SEND' : 'DRY-RUN'}`)
+  const scope = USD ? 'régions USD, copy découverte EN/ES' : (ALL ? 'TOUS conso, copy découverte' : 'leads capture, copy "c\'est rouvert"')
+  console.log(`cible: ${subs.length} (${scope}) | plafond: ${MAX} | mode: ${maySend ? 'SEND' : 'DRY-RUN/SIMULATION'}`)
   let done = 0, skip = 0, fail = 0
   for (const s of subs) {
     if (done >= MAX) { console.log(`Plafond ${MAX} atteint — relance le script demain pour la suite (idempotent).`); break }
@@ -153,7 +166,7 @@ function buildHtmlUS(domain, lang) {
     const h = emailHash(email)
     if (sent[h]) { skip++; continue }
     const island = islandOf(s)
-    if (!SEND || !ready) { console.log(`  [dry] → ${email} (${island}${USD ? '/' + (USD_CFG[island.toLowerCase()]?.lang || '?') : ''})`); done++; continue }
+    if (!maySend || !ready) { console.log(`  [dry] → ${email} (${island}${USD ? '/' + (USD_CFG[island.toLowerCase()]?.lang || '?') : ''})`); done++; continue }
     let msg
     if (USD) {
       const rc = USD_CFG[island.toLowerCase()]
@@ -182,6 +195,12 @@ function buildHtmlUS(domain, lang) {
     fs.writeFileSync(SENT_PATH, JSON.stringify(sent, null, 2)) // persiste à chaque envoi (reprise si crash mid-run)
     await new Promise(res => setTimeout(res, THROTTLE_MS))
   }
-  if (SEND && ready) fs.writeFileSync(SENT_PATH, JSON.stringify(sent, null, 2))
+  if (maySend && ready) fs.writeFileSync(SENT_PATH, JSON.stringify(sent, null, 2))
   console.log(`Terminé — envoyés/dry: ${done} · skip: ${skip} · échecs: ${fail}`)
-})().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+}
+
+module.exports = { main }
+
+if (require.main === module) {
+  main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+}
