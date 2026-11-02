@@ -140,7 +140,7 @@ function runTests() {
   // Test 4: Claim non-existent task should fail
   console.log('Test 4: Claim non-existent task should fail');
   try {
-    claimTask(content, 'TASK-P9-999', 'coding');
+    claimTask(content, 'TASK-P3-999', 'coding');
     console.log('  ✗ FAIL: Should have thrown for non-existent task');
     failed++;
   } catch (e) {
