@@ -4,15 +4,12 @@ import { lcDetailFreshnessLabel } from "./lib/format-freshness.mjs"
 const t = (lang, fr, en, es) => lang === "en" ? en : lang === "es" ? es : fr
 
 export default function BeachSheetStaleFallback({
-  beach, lang = "fr", sargData, onClose, sheetRef, backdropRef,
-  onTouchStart, onTouchMove, onTouchEnd
+  beach, lang = "fr", sargData, onClose
 }) {
   return (
     <>
-      <div className="backdrop" ref={backdropRef} onClick={onClose}/>
-      <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-stale"
-        role="dialog" aria-modal="true"
-        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+      <div className="backdrop" onClick={onClose}/>
+      <div className="sheet" data-testid="beach-sheet-fallback-stale" role="dialog" aria-modal="true">
         <div className="sheet-handle"/>
         <button type="button" data-testid="beach-sheet-fallback-close"
           aria-label={t(lang, "Fermer", "Close", "Cerrar")} onClick={onClose}>×</button>
