@@ -107,7 +107,7 @@ const assert = require('node:assert/strict');
   t(regionalObservationFreshness(regionalFresh, Number.NaN).state === 'unknown',
     'invalid clock is unknown');
 
-  console.log(`SERVE_TIME_FRESHNESS_TESTS PASS (${n + 11} assertions)`);
+  console.log(`SERVE_TIME_FRESHNESS_TESTS PASS (${n + 12} assertions)`);
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
