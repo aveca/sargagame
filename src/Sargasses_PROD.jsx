@@ -4956,6 +4956,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         <button type="button" data-testid="beach-sheet-fallback-close" onClick={requestClose}>{_t(lang,"Retour à la carte","Back to map","Volver al mapa")}</button>
       </div>
     </>
+  )
 
   return(
     <>
