@@ -54,28 +54,31 @@ const BEACH_REGION = {
 // strings verbatim, so every variant must remain safe when observations are stale.
 const EN_HOOKS = {
   florida: [
-    `We publish the latest published observation for ${beach}, with its timestamp and confidence. If the source is delayed, we withhold a current clean-beach verdict — useful context for ${hotel}'s guest team.`,
-    `${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, instead of relying on a generic coastal summary.`,
-    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; the latest published observation, timestamp and confidence remain visible, and days 4–7 are trends, not guarantees.`,
-    `The latest published observation for ${beach}, its timestamp and confidence, gives ${hotel} a transparent answer to guest questions without promising a clean beach before the data support it.`,
+    (beach, hotel) => `We publish the latest published observation for ${beach}, with its timestamp and confidence. If the source is delayed, we withhold a current clean-beach verdict — useful context for ${hotel}'s guest team.`,
+    (beach, hotel) => `${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, instead of relying on a generic coastal summary.`,
+    (beach, hotel) => `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; the latest published observation, timestamp and confidence remain visible, and days 4–7 are trends, not guarantees.`,
+    (beach, hotel) => `The latest published observation for ${beach}, its timestamp and confidence, gives ${hotel} a transparent answer to guest questions without promising a clean beach before the data support it.`,
   ],
   puntacana: [
-    `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified claim about current beach conditions.`,
-    `Punta Cana conditions can vary by beach. ${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, with guests.`,
-    `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation, its timestamp and confidence.`,
-    `A dated, confidence-labelled latest published observation for ${beach} can help ${hotel}'s front desk explain what is known — and what is not.`,
+    (beach, hotel) => `For ${hotel}, the useful starting point is the latest published observation for ${beach}, with its timestamp and confidence — not an unqualified claim about current beach conditions.`,
+    (beach, hotel) => `Punta Cana conditions can vary by beach. ${hotel} can share the latest published observation for ${beach}, including its timestamp and confidence, with guests.`,
+    (beach, hotel) => `When wind and current inputs pass validation, the outlook can add planning context for ${hotel}; days 4–7 remain trends, not certainty, alongside the latest published observation, its timestamp and confidence.`,
+    (beach, hotel) => `A dated, confidence-labelled latest published observation for ${beach} can help ${hotel}'s front desk explain what is known — and what is not.`,
   ],
   rivieramaya: [
-    `The Riviera Maya varies from beach to beach. ${hotel} can point guests to the latest published observation for ${beach}, with its timestamp and confidence.`,
-    `For ${hotel}, a beach-level view is more useful than a regional average: the latest published observation for ${beach} includes its timestamp and confidence.`,
-    `A forecast is shown only when observation and transport inputs pass validation. ${hotel} can share that planning context alongside the latest published observation for ${beach}, with its timestamp and confidence.`,
-    `The latest published observation for ${beach}, timestamp and confidence included, gives ${hotel} a transparent basis for guest updates without promising a verified clean beach prematurely.`,
+    (beach, hotel) => `The Riviera Maya varies from beach to beach. ${hotel} can point guests to the latest published observation for ${beach}, with its timestamp and confidence.`,
+    (beach, hotel) => `For ${hotel}, a beach-level view is more useful than a regional average: the latest published observation for ${beach} includes its timestamp and confidence.`,
+    (beach, hotel) => `A forecast is shown only when observation and transport inputs pass validation. ${hotel} can share that planning context alongside the latest published observation for ${beach}, with its timestamp and confidence.`,
+    (beach, hotel) => `The latest published observation for ${beach}, timestamp and confidence included, gives ${hotel} a transparent basis for guest updates without promising a verified clean beach prematurely.`,
   ],
 }
 
 function makeHook(region, beach, hotel) {
   const pool = EN_HOOKS[region]
-  return pool ? pool[Math.floor(Math.random() * pool.length)] : `The latest published observation for ${beach}, with its timestamp and confidence, gives ${hotel} a transparent starting point; if the source is delayed, no current clean-beach verdict is presented.`
+  const variant = pool
+    ? pool[Math.floor(Math.random() * pool.length)]
+    : (b, h) => `The latest published observation for ${b}, with its timestamp and confidence, gives ${h} a transparent starting point; if the source is delayed, no current clean-beach verdict is presented.`
+  return variant(beach, hotel)
 }
 
 // ── likely email from domain ─────────────────────────────────────
