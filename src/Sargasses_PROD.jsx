@@ -4960,6 +4960,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         <p data-testid="beach-sheet-fallback-score-paused">{_t(lang,"Score et prévisions suspendus.","Score and forecast paused.","Puntuación y pronóstico suspendidos.")}</p>
       </div>
     </>
+  )
 
   return(
     <>
