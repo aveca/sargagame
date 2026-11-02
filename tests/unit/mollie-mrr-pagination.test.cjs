@@ -122,6 +122,33 @@ async function main() {
       /not ordered newest-first/,
     )
 
+    const crossPageCalls = []
+    global.fetch = async url => {
+      crossPageCalls.push(String(url))
+      if (crossPageCalls.length === 1) {
+        return {
+          ok: true,
+          json: async () => ({
+            _embedded: { payments: [{ id: 'tr_page_1', createdAt: '2026-11-02T00:00:00Z' }] },
+            _links: { next: { href: nextUrl } },
+          }),
+        }
+      }
+      return {
+        ok: true,
+        json: async () => ({
+          _embedded: { payments: [{ id: 'tr_page_2_out_of_order', createdAt: '2026-11-03T00:00:00Z' }] },
+          _links: { next: null },
+        }),
+      }
+    }
+    await assert.rejects(
+      listPaymentsSince('2026-11-01T00:00:00.000Z', 'test_mollie_key'),
+      /not ordered newest-first/,
+    )
+    assert.equal(crossPageCalls.length, 2,
+      'newest-first ordering is enforced across page boundaries before returning a partial report')
+
     await assert.rejects(
       listPaymentsSince('not-a-date', 'test_mollie_key'),
       /Invalid Mollie payment cutoff/,
