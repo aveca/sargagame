@@ -31,7 +31,7 @@ function record(name, ok, extra) {
 
 // ── Jeux d'environnements ────────────────────────────────────────────────────
 const VALID_TOKEN = 'sgappr_' + 'a1b2c3d4e5f6g7h8i9j0'; // forme conforme
-const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
+const PROTECTED = { exists: true, reviewers: 1, protectionRules: 1, hasRequiredReviewers: true, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
 
 /** Environnement « tout est réuni » sauf ce que le test surcharge. */
 function env(overrides) {
@@ -194,7 +194,7 @@ async function main() {
   {
     const d = central.authorizeAction('external_write', {
       env: env({ OUTBOUND_APPROVAL_TOKEN: VALID_TOKEN }), requested: true,
-      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' },
+      environmentProtection: { exists: true, reviewers: 2, protectionRules: 1, hasRequiredReviewers: true, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' },
     });
     record('P11 4 preuves réunies => exécution autorisée',
       d.execute === true && d.mode === 'production', `mode=${d.mode} reason=${d.reason}`);
@@ -282,7 +282,7 @@ async function main() {
     const e = oidcEnv();
     const fetchImpl = async (url, init) => {
       call = { url, method: (init && init.method) || 'GET', auth: init && init.headers && init.headers.authorization };
-      return { ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers' }], reviewers: [{ id: 1 }] }) };
+      return { ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers', reviewers: [{ type: 'User', reviewer: { id: 1 } }] }] }) };
     };
     const d = await central.authorizeActionAsync('external_write', {
       env: e, requested: true,
@@ -380,7 +380,7 @@ async function main() {
   // P25 — un secret de repository + un Environment protege ne prouvent pas
   // que le job courant est effectivement lie a cet Environment.
   {
-    const unbound = { exists: true, reviewers: 1, protectionRules: 1 };
+    const unbound = { exists: true, reviewers: 1, protectionRules: 1, hasRequiredReviewers: true };
     const d = central.authorizeAction('email_send', {
       env: oidcEnv(), requested: true, environmentProtection: unbound,
     });
@@ -404,6 +404,27 @@ async function main() {
       if (result.bound !== false) rejected = false;
     }
     record('P26 claims OIDC hors contexte exact => refusees', rejected);
+  }
+
+  // P27 — une règle wait_timer ou deployment_branch_policy seule ne vaut pas
+  // une approbation humaine, même si le job est lie a l'Environment.
+  {
+    const nonHumanProtection = { exists: true, reviewers: 0, protectionRules: 1, hasRequiredReviewers: false, jobEnvironmentBound: true, boundEnvironment: 'outbound-approval' };
+    const d = central.authorizeAction('email_send', {
+      env: oidcEnv(), requested: true, environmentProtection: nonHumanProtection,
+    });
+    record('P27 wait timer / branch policy sans required reviewers => bloque',
+      d.execute === false && d.mode === 'blocked' && /required reviewer/.test(d.reason),
+      `mode=${d.mode} reason=${d.reason}`);
+  }
+
+  // P28 — required_reviewers rule sans reviewer configure => bloque.
+  {
+    const e = oidcEnv();
+    const fetchImpl = async () => ({ ok: true, status: 200, json: async () => ({ protection_rules: [{ type: 'required_reviewers', reviewers: [] }] }) });
+    const result = await central.verifyEnvironmentProtection(Object.assign({}, VERIFY_OPTS, { fetchImpl }));
+    record('P28 required_reviewers vide => protection refusee',
+      result.exists === true && result.hasRequiredReviewers === false && result.reviewers === 0);
   }
 
   console.log(failures === 0
