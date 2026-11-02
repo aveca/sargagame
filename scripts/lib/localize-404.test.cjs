@@ -20,11 +20,11 @@ const byId = Object.fromEntries(R.getAllRegions().map(r => [r.id, r]))
 
 const FR_MARKERS = [
   'Même le satellite', 'glissé au large', 'Voir la carte des sargasses',
-  'Le Plan B', 'la carte du jour', 'Prévisions 7 jours', 'Mentions légales',
+  'Le Plan B', 'la carte', 'Prévisions 7 jours', 'Mentions légales',
   'Confidentialité', 'Le Veilleur a perdu', 'lang="fr"'
 ]
 const EN_MARKERS = [
-  'Even the satellite', 'See the sargassum map', "today's map",
+  'Even the satellite', 'See the sargassum map', 'the beach map',
   '7-day forecast', 'lang="en"'
 ]
 const HREFS = ['href="/"', 'href="/previsions/"', 'href="/mentions-legales.html"', 'href="/confidentialite.html"']
@@ -71,6 +71,8 @@ test('les 7 régions réelles passent, lang attr conforme à primaryLang', () =>
     const out = localize404(SRC, r, r.name)
     const want = r.primaryLang === 'fr' ? 'fr' : r.primaryLang
     assert.ok(out.includes(`<html lang="${want}">`), `${r.id}: lang=${want}`)
+    assert.doesNotMatch(out, /4×\/jour|4×\/day|4×\/día|4 fois par jour|4 times a day|4 veces al día|ce matin|this morning|esta mañana/i,
+      `${r.id}: no unsupported cadence or morning-freshness claim`)
   }
 })
 
