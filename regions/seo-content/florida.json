@@ -366,7 +366,7 @@
         },
         {
           "q": "How accurate is this Fort Lauderdale sargassum tracker?",
-          "a": "We use the AFAI index on public satellite imagery from Copernicus/NOAA sources. Usable observations are intermittent and cloud cover can delay readings. Each beach shows observation time and confidence; a current status is published only when freshness checks pass. No fixed refresh schedule or unverified accuracy percentage is promised."
+          "a": "The tracker uses the USF AFAI satellite-derived index distributed through NOAA/AOML ERDDAP. Usable observations are intermittent and cloud cover can delay readings. Each beach shows observation time and confidence; a current status is published only when freshness checks pass. No fixed refresh schedule or unverified accuracy percentage is promised."
         },
         {
           "q": "When is sargassum worst in Fort Lauderdale?",
