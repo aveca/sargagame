@@ -142,8 +142,7 @@ async function verifyEnvironmentProtection(options = {}) {
     const rules = Array.isArray(body.protection_rules) ? body.protection_rules : []
     const requiredRule = rules.find((rule) => rule && rule.type === 'required_reviewers')
     const nestedReviewers = requiredRule && Array.isArray(requiredRule.reviewers) ? requiredRule.reviewers : []
-    const topLevelReviewers = Array.isArray(body.reviewers) ? body.reviewers : []
-    const reviewers = Math.max(nestedReviewers.length, topLevelReviewers.length)
+    const reviewers = nestedReviewers.length
     const protectionRules = rules.length
     const hasRequiredReviewers = Boolean(requiredRule) && reviewers > 0
     return {
