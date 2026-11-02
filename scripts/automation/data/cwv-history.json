@@ -1,94 +1,6 @@
 {
   "snapshots": [
     {
-      "date": "2026-08-03",
-      "sites": {
-        "mq": {
-          "combined": {
-            "LCP": {
-              "p75": 3579,
-              "good": null
-            },
-            "INP": {
-              "p75": 435,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 998,
-              "good": null
-            }
-          }
-        },
-        "gp": {
-          "combined": {
-            "LCP": {
-              "p75": 3660,
-              "good": null
-            },
-            "INP": {
-              "p75": 578,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.02,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 980,
-              "good": null
-            }
-          }
-        },
-        "florida": {
-          "combined": {
-            "LCP": {
-              "p75": 3209,
-              "good": null
-            },
-            "INP": {
-              "p75": 310,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 680,
-              "good": null
-            }
-          }
-        },
-        "puntacana": {
-          "combined": {
-            "LCP": {
-              "p75": 3206,
-              "good": null
-            },
-            "INP": {
-              "p75": 259,
-              "good": null
-            },
-            "CLS": {
-              "p75": 0.01,
-              "good": null
-            },
-            "TTFB": {
-              "p75": 862,
-              "good": null
-            }
-          }
-        },
-        "rivieramaya": {
-          "combined": null
-        }
-      }
-    },
-    {
       "date": "2026-10-05",
       "sites": {
         "mq": {
@@ -442,6 +354,102 @@
               "good": null
             }
           }
+        }
+      }
+    },
+    {
+      "date": "2026-11-02",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 1667,
+              "good": null
+            },
+            "INP": {
+              "p75": 460,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.02,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 472,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 1790,
+              "good": null
+            },
+            "INP": {
+              "p75": 487,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.02,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 522,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 1483,
+              "good": null
+            },
+            "INP": {
+              "p75": 352,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 451,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": {
+            "LCP": {
+              "p75": 1397,
+              "good": null
+            },
+            "INP": {
+              "p75": 232,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 502,
+              "good": null
+            }
+          }
+        },
+        "rivieramaya": {
+          "combined": {
+            "LCP": {
+              "p75": 1628,
+              "good": null
+            }
+          }
+        },
+        "tulum": {
+          "combined": null
         }
       }
     }

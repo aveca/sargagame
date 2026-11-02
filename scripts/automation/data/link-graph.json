@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-26T17:32:40.938Z",
+  "generatedAt": "2026-11-02T21:03:58.397Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
-      "noIncomingCount": 195,
+      "pageCount": 365,
+      "noIncomingCount": 196,
       "fewIncomingCount": 42,
       "phantomCount": 16,
       "noIncoming": [
@@ -99,6 +99,11 @@
         },
         {
           "url": "/onboarding.html",
+          "in": 0,
+          "out": 0
+        },
+        {
+          "url": "/premium/",
           "in": 0,
           "out": 0
         },
@@ -251,23 +256,18 @@
           "url": "/widget/embed/anse-bertrand-nord/",
           "in": 0,
           "out": 0
-        },
-        {
-          "url": "/widget/embed/anse-bonneville/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
         {
           "url": "/conditions/plages-enfants/",
           "in": 1,
-          "out": 8
+          "out": 7
         },
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 7
         },
         {
           "url": "/en/sargassum-health/",
@@ -469,11 +469,6 @@
           "out": 55
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 24
-        },
-        {
           "url": "/plages/plages-cote-caraibe-martinique/",
           "in": 22,
           "out": 24
@@ -504,14 +499,19 @@
           "out": 16
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 13,
-          "out": 16
-        },
-        {
           "url": "/sargasses-sainte-luce/",
           "in": 6,
           "out": 14
+        },
+        {
+          "url": "/saison-sargasses-martinique/",
+          "in": 28,
+          "out": 14
+        },
+        {
+          "url": "/pro/",
+          "in": 15,
+          "out": 13
         }
       ],
       "phantom": [
@@ -618,8 +618,8 @@
       ]
     },
     "gp": {
-      "pageCount": 403,
-      "noIncomingCount": 201,
+      "pageCount": 404,
+      "noIncomingCount": 202,
       "fewIncomingCount": 42,
       "phantomCount": 20,
       "noIncoming": [
@@ -730,6 +730,11 @@
         },
         {
           "url": "/onboarding.html",
+          "in": 0,
+          "out": 0
+        },
+        {
+          "url": "/premium/",
           "in": 0,
           "out": 0
         },
@@ -867,11 +872,6 @@
           "url": "/widget/embed/anse-a-l-eau/",
           "in": 0,
           "out": 1
-        },
-        {
-          "url": "/widget/embed/anse-a-la-barque-ste-anne/",
-          "in": 0,
-          "out": 1
         }
       ],
       "fewIncoming": [
@@ -883,7 +883,7 @@
         {
           "url": "/conditions/snorkeling/",
           "in": 1,
-          "out": 10
+          "out": 7
         },
         {
           "url": "/en/best-beaches-no-sargassum/",
@@ -1090,11 +1090,6 @@
           "out": 38
         },
         {
-          "url": "/conditions/mer-agitee/",
-          "in": 6,
-          "out": 28
-        },
-        {
           "url": "/plages/plages-basse-terre-cote-caraibe/",
           "in": 25,
           "out": 27
@@ -1120,14 +1115,19 @@
           "out": 15
         },
         {
-          "url": "/plages-sans-sargasses/",
-          "in": 10,
-          "out": 15
-        },
-        {
           "url": "/",
           "in": 313,
           "out": 15
+        },
+        {
+          "url": "/sargasses-la-desirade/",
+          "in": 3,
+          "out": 14
+        },
+        {
+          "url": "/sargasses-bouillante/",
+          "in": 0,
+          "out": 13
         }
       ],
       "phantom": [

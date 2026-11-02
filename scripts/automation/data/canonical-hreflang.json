@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-10-26T17:32:41.867Z",
+  "generatedAt": "2026-11-02T21:03:58.985Z",
   "sites": {
     "mq": {
-      "pageCount": 364,
+      "pageCount": 365,
       "pagesSkippedNoindex": 20,
       "pagesWithCanonical": 173,
       "pagesWithHreflang": 158,
-      "issueCount": 180,
+      "issueCount": 181,
       "byKind": {
-        "missing-canonical": 171,
+        "missing-canonical": 172,
         "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
@@ -46,6 +46,10 @@
           "kind": "canonical-mismatch",
           "canonical": "/mentions-legales",
           "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "premium/index.html",
+          "kind": "missing-canonical"
         },
         {
           "file": "remboursement.html",
@@ -226,21 +230,17 @@
         {
           "file": "widget/embed/anse-de-pigeon/index.html",
           "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
-          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 403,
+      "pageCount": 404,
       "pagesSkippedNoindex": 20,
       "pagesWithCanonical": 212,
       "pagesWithHreflang": 197,
-      "issueCount": 180,
+      "issueCount": 181,
       "byKind": {
-        "missing-canonical": 171,
+        "missing-canonical": 172,
         "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
@@ -278,6 +278,10 @@
           "kind": "canonical-mismatch",
           "canonical": "/mentions-legales",
           "pageUrl": "/mentions-legales.html"
+        },
+        {
+          "file": "premium/index.html",
+          "kind": "missing-canonical"
         },
         {
           "file": "remboursement.html",
@@ -457,10 +461,6 @@
         },
         {
           "file": "widget/embed/anse-de-pigeon/index.html",
-          "kind": "missing-canonical"
-        },
-        {
-          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
           "kind": "missing-canonical"
         }
       ]

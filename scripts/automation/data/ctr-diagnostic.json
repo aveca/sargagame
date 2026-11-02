@@ -1,182 +1,218 @@
 {
-  "generatedAt": "2026-10-26T17:32:33.396Z",
+  "generatedAt": "2026-11-02T21:03:51.161Z",
   "sites": {
     "mq": {
+      "opportunityCount": 0,
+      "winCount": 6,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": [
+        {
+          "url": "https://sargasses-martinique.com/en/",
+          "impressions": 89,
+          "clicks": 23,
+          "position": 6.4,
+          "actualCtr": 25.84,
+          "expectedCtr": 3.6,
+          "ctrLift": 22.24
+        },
+        {
+          "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
+          "impressions": 84,
+          "clicks": 10,
+          "position": 5.3,
+          "actualCtr": 11.9,
+          "expectedCtr": 5.38,
+          "ctrLift": 6.53
+        },
+        {
+          "url": "https://sargasses-martinique.com/sargasses-le-diamant/",
+          "impressions": 53,
+          "clicks": 7,
+          "position": 3.7,
+          "actualCtr": 13.21,
+          "expectedCtr": 8.82,
+          "ctrLift": 4.39
+        },
+        {
+          "url": "https://sargasses-martinique.com/",
+          "impressions": 3947,
+          "clicks": 416,
+          "position": 4.9,
+          "actualCtr": 10.54,
+          "expectedCtr": 6.23,
+          "ctrLift": 4.31
+        },
+        {
+          "url": "https://sargasses-martinique.com/carte-sargasses/",
+          "impressions": 856,
+          "clicks": 55,
+          "position": 8.2,
+          "actualCtr": 6.43,
+          "expectedCtr": 2.41,
+          "ctrLift": 4.01
+        },
+        {
+          "url": "https://sargasses-martinique.com/meteo-sargasses-martinique/",
+          "impressions": 76,
+          "clicks": 3,
+          "position": 13.3,
+          "actualCtr": 3.95,
+          "expectedCtr": 0.5,
+          "ctrLift": 3.45
+        }
+      ]
+    },
+    "gp": {
       "opportunityCount": 0,
       "winCount": 7,
       "totalLostClicks": 0,
       "opportunities": [],
       "wins": [
         {
-          "url": "https://sargasses-martinique.com/en/",
-          "impressions": 92,
-          "clicks": 27,
-          "position": 6.1,
-          "actualCtr": 29.35,
-          "expectedCtr": 3.91,
-          "ctrLift": 25.44
-        },
-        {
-          "url": "https://sargasses-martinique.com/sargasses-record-2026/",
-          "impressions": 136,
-          "clicks": 11,
-          "position": 8.4,
-          "actualCtr": 8.09,
-          "expectedCtr": 2.32,
-          "ctrLift": 5.77
-        },
-        {
-          "url": "https://sargasses-martinique.com/carte-sargasses/",
-          "impressions": 1097,
-          "clicks": 92,
-          "position": 7.4,
-          "actualCtr": 8.39,
-          "expectedCtr": 2.79,
-          "ctrLift": 5.6
-        },
-        {
-          "url": "https://sargasses-martinique.com/plages-sans-sargasses/",
-          "impressions": 82,
-          "clicks": 8,
-          "position": 5.6,
-          "actualCtr": 9.76,
-          "expectedCtr": 4.79,
-          "ctrLift": 4.96
-        },
-        {
-          "url": "https://sargasses-martinique.com/saison-sargasses-martinique/",
-          "impressions": 87,
-          "clicks": 6,
-          "position": 8.8,
-          "actualCtr": 6.9,
-          "expectedCtr": 2.12,
-          "ctrLift": 4.78
-        },
-        {
-          "url": "https://sargasses-martinique.com/sargasses-le-diamant/",
-          "impressions": 66,
-          "clicks": 9,
-          "position": 3.7,
-          "actualCtr": 13.64,
-          "expectedCtr": 8.94,
-          "ctrLift": 4.69
-        },
-        {
-          "url": "https://sargasses-martinique.com/",
-          "impressions": 4054,
-          "clicks": 386,
-          "position": 5.2,
-          "actualCtr": 9.52,
-          "expectedCtr": 5.52,
-          "ctrLift": 4
-        }
-      ]
-    },
-    "gp": {
-      "opportunityCount": 0,
-      "winCount": 3,
-      "totalLostClicks": 0,
-      "opportunities": [],
-      "wins": [
-        {
           "url": "https://sargasses-guadeloupe.com/en/",
-          "impressions": 181,
-          "clicks": 17,
-          "position": 7.6,
-          "actualCtr": 9.39,
-          "expectedCtr": 2.68,
-          "ctrLift": 6.71
+          "impressions": 76,
+          "clicks": 20,
+          "position": 6,
+          "actualCtr": 26.32,
+          "expectedCtr": 4.05,
+          "ctrLift": 22.27
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/en/sargassum-map/",
+          "impressions": 57,
+          "clicks": 6,
+          "position": 11.7,
+          "actualCtr": 10.53,
+          "expectedCtr": 0.5,
+          "ctrLift": 10.03
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/plages/plage-de-la-caravelle/",
+          "impressions": 53,
+          "clicks": 4,
+          "position": 15.4,
+          "actualCtr": 7.55,
+          "expectedCtr": 0.5,
+          "ctrLift": 7.05
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/meilleures-plages-guadeloupe-sargasses/",
+          "impressions": 64,
+          "clicks": 7,
+          "position": 5.5,
+          "actualCtr": 10.94,
+          "expectedCtr": 5,
+          "ctrLift": 5.94
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 1293,
-          "clicks": 126,
-          "position": 5.6,
-          "actualCtr": 9.74,
-          "expectedCtr": 4.86,
-          "ctrLift": 4.89
+          "impressions": 1520,
+          "clicks": 146,
+          "position": 6.1,
+          "actualCtr": 9.61,
+          "expectedCtr": 3.9,
+          "ctrLift": 5.71
         },
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 4780,
-          "clicks": 444,
-          "position": 5.2,
-          "actualCtr": 9.29,
-          "expectedCtr": 5.7,
-          "ctrLift": 3.59
+          "impressions": 4918,
+          "clicks": 483,
+          "position": 4.8,
+          "actualCtr": 9.82,
+          "expectedCtr": 6.33,
+          "ctrLift": 3.5
+        },
+        {
+          "url": "https://sargasses-guadeloupe.com/saison-sargasses-guadeloupe/",
+          "impressions": 132,
+          "clicks": 13,
+          "position": 4.8,
+          "actualCtr": 9.85,
+          "expectedCtr": 6.48,
+          "ctrLift": 3.37
         }
       ]
     },
     "florida": {
       "opportunityCount": 1,
-      "winCount": 6,
-      "totalLostClicks": 6,
+      "winCount": 7,
+      "totalLostClicks": 7,
       "opportunities": [
         {
           "url": "https://sargassummiami.com/es/temporada-sargazo-florida/",
-          "impressions": 85,
+          "impressions": 95,
           "clicks": 1,
-          "position": 4.1,
-          "actualCtr": 1.18,
-          "expectedCtr": 7.9,
-          "ctrGap": 6.72,
-          "lostClicks": 6
+          "position": 3.9,
+          "actualCtr": 1.05,
+          "expectedCtr": 8.17,
+          "ctrGap": 7.12,
+          "lostClicks": 7
         }
       ],
       "wins": [
         {
           "url": "https://sargassummiami.com/hollywood-beach-sargassum-today/",
-          "impressions": 82,
-          "clicks": 18,
-          "position": 8.4,
-          "actualCtr": 21.95,
-          "expectedCtr": 2.29,
-          "ctrLift": 19.66
+          "impressions": 91,
+          "clicks": 20,
+          "position": 6.9,
+          "actualCtr": 21.98,
+          "expectedCtr": 3.07,
+          "ctrLift": 18.9
         },
         {
           "url": "https://sargassummiami.com/seaweed-map/",
-          "impressions": 116,
-          "clicks": 19,
-          "position": 19.6,
-          "actualCtr": 16.38,
+          "impressions": 101,
+          "clicks": 18,
+          "position": 18.2,
+          "actualCtr": 17.82,
           "expectedCtr": 0.5,
-          "ctrLift": 15.88
+          "ctrLift": 17.32
         },
         {
-          "url": "https://sargassummiami.com/es/mapa-sargazo/",
-          "impressions": 92,
-          "clicks": 10,
-          "position": 7.2,
-          "actualCtr": 10.87,
-          "expectedCtr": 2.89,
-          "ctrLift": 7.98
-        },
-        {
-          "url": "https://sargassummiami.com/",
-          "impressions": 775,
-          "clicks": 43,
-          "position": 10.8,
-          "actualCtr": 5.55,
+          "url": "https://sargassummiami.com/is-there-sargassum-in-miami-today/",
+          "impressions": 51,
+          "clicks": 4,
+          "position": 21.6,
+          "actualCtr": 7.84,
           "expectedCtr": 0.5,
-          "ctrLift": 5.05
+          "ctrLift": 7.34
         },
         {
           "url": "https://sargassummiami.com/sargassum-season-florida/",
-          "impressions": 75,
-          "clicks": 4,
-          "position": 13.1,
-          "actualCtr": 5.33,
+          "impressions": 57,
+          "clicks": 3,
+          "position": 10.1,
+          "actualCtr": 5.26,
           "expectedCtr": 0.5,
-          "ctrLift": 4.83
+          "ctrLift": 4.76
         },
         {
           "url": "https://sargassummiami.com/miami-beach-seaweed-map-today/",
-          "impressions": 122,
-          "clicks": 5,
-          "position": 16.6,
-          "actualCtr": 4.1,
+          "impressions": 119,
+          "clicks": 6,
+          "position": 13.8,
+          "actualCtr": 5.04,
           "expectedCtr": 0.5,
-          "ctrLift": 3.6
+          "ctrLift": 4.54
+        },
+        {
+          "url": "https://sargassummiami.com/es/mapa-sargazo/",
+          "impressions": 132,
+          "clicks": 9,
+          "position": 6.9,
+          "actualCtr": 6.82,
+          "expectedCtr": 3.11,
+          "ctrLift": 3.71
+        },
+        {
+          "url": "https://sargassummiami.com/",
+          "impressions": 668,
+          "clicks": 34,
+          "position": 9.1,
+          "actualCtr": 5.09,
+          "expectedCtr": 1.95,
+          "ctrLift": 3.14
         }
       ]
     },
@@ -187,31 +223,31 @@
       "opportunities": [],
       "wins": [
         {
-          "url": "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/",
-          "impressions": 175,
-          "clicks": 31,
-          "position": 5.9,
-          "actualCtr": 17.71,
-          "expectedCtr": 4.14,
-          "ctrLift": 13.57
+          "url": "https://sargassumpuntacana.com/sargassum-forecast/",
+          "impressions": 56,
+          "clicks": 8,
+          "position": 9.3,
+          "actualCtr": 14.29,
+          "expectedCtr": 1.83,
+          "ctrLift": 12.45
         },
         {
-          "url": "https://sargassumpuntacana.com/sargassum-forecast/",
-          "impressions": 65,
-          "clicks": 10,
-          "position": 8.6,
-          "actualCtr": 15.38,
-          "expectedCtr": 2.2,
-          "ctrLift": 13.19
+          "url": "https://sargassumpuntacana.com/es/sargazo-bavaro-hoy/",
+          "impressions": 173,
+          "clicks": 26,
+          "position": 5.4,
+          "actualCtr": 15.03,
+          "expectedCtr": 5.25,
+          "ctrLift": 9.78
         },
         {
           "url": "https://sargassumpuntacana.com/es/",
-          "impressions": 753,
-          "clicks": 65,
-          "position": 9,
-          "actualCtr": 8.63,
-          "expectedCtr": 2.01,
-          "ctrLift": 6.63
+          "impressions": 655,
+          "clicks": 62,
+          "position": 8.6,
+          "actualCtr": 9.47,
+          "expectedCtr": 2.21,
+          "ctrLift": 7.26
         }
       ]
     },
@@ -223,14 +259,21 @@
       "wins": [
         {
           "url": "https://sargassumcancun.com/en/seaweed-map/",
-          "impressions": 168,
-          "clicks": 9,
-          "position": 31.2,
-          "actualCtr": 5.36,
+          "impressions": 161,
+          "clicks": 8,
+          "position": 33.9,
+          "actualCtr": 4.97,
           "expectedCtr": 0.5,
-          "ctrLift": 4.86
+          "ctrLift": 4.47
         }
       ]
+    },
+    "tulum": {
+      "opportunityCount": 0,
+      "winCount": 0,
+      "totalLostClicks": 0,
+      "opportunities": [],
+      "wins": []
     }
   }
 }
