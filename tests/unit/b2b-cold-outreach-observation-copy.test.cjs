@@ -33,7 +33,7 @@ for (const contact of contacts) {
     const text = visibleText(message)
     assert.doesNotMatch(text, unsupportedPositiveClaims, `${contact.island} ${step}: no unsupported cadence, live status, or advance-alert promise`)
     assert.match(text, /timestamp|horodatage|fecha/, `${contact.island} ${step}: observation date is explicit`)
-    assert.match(text, /confidence|confiance/, `${contact.island} ${step}: confidence is explicit`)
+    assert.match(text, /confidence|confiance|confianza/, `${contact.island} ${step}: confidence is explicit`)
     assert.match(message.html, new RegExp(`https://${contact.island === 'gp' ? 'sargasses-guadeloupe.com' : contact.island === 'florida' ? 'sargassummiami.com' : contact.island === 'puntacana' ? 'sargassumpuntacana.com' : contact.island === 'rivieramaya' ? 'sargassumcancun.com' : 'sargasses-martinique.com'}/pro/espace/`), `${contact.island} ${step}: regional Pro CTA route is preserved`)
     assertions += 4
   }
