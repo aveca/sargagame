@@ -83,6 +83,44 @@ async function main2() {
     }
   }
 
+  // ------------------------------------------- line-ending agnostic mapping
+  // split() eats the optional CR, so a per-line offset computed as
+  // "length + 1" drifts out of true on a CRLF worktree. A drifted index makes
+  // the classifier read the wrong character, which can drop a real secret.
+  {
+    const secret = REAL
+    for (const [label, eol] of [["LF", "\n"], ["CRLF", "\r\n"]]) {
+      const src = [
+        "// note",
+        "const a = 1",
+        "const NAMECHEAP_BEARER = \"" + secret + "\"",
+      ].join(eol) + eol
+      const { dir, file } = probeTo("eol-" + label, src)
+      try {
+        const findings = scanFile(file)
+        assert.equal(findings.length, 1, label + ": a real credential must still be reported")
+        assert.equal(findings[0].rule, "bearer-secret-assignment", label + ": correct rule")
+        assert.equal(findings[0].line, 3, label + ": correct line number")
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true })
+      }
+    }
+    // The same credential after comment content on the same line style must
+    // NOT be reported: that is the drifted-index failure mode.
+    for (const [label, eol] of [["LF", "\n"], ["CRLF", "\r\n"]]) {
+      const src = [
+        "// NAMECHEAP_BEARER = \"" + secret + "\"",
+        "const a = 1",
+      ].join(eol) + eol
+      const { dir, file } = probeTo("eol-comment-" + label, src)
+      try {
+        assert.deepEqual(scanFile(file), [], label + ": a documented example must stay unreported")
+      } finally {
+        fs.rmSync(dir, { recursive: true, force: true })
+      }
+    }
+  }
+
   // ------------------------------------------------------ redaction contract
   assert.equal(mask(""), "<empty>")
   assert.equal(mask("short"), "*****")

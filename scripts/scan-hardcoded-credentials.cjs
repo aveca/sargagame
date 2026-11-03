@@ -164,10 +164,16 @@ function scanFile(file) {
   try { text = fs.readFileSync(file, "utf8") } catch { return [] }
   const findings = []
   const isCode = classify(text)
-  const offsets = []
-  let cursor = 0
   const lines = text.split(/\r?\n/)
-  for (const line of lines) { offsets.push(cursor); cursor += line.length + 1 }
+  // True start offset of every line. split() consumes the optional CR, so
+  // lines[i].length + 1 under-counts by one for each CRLF line and the
+  // mapping drifts further out of true on every following line. Reading
+  // isCode at a drifted index can classify a real secret as comment content
+  // and silently drop it, so the offsets are taken from the text itself.
+  const offsets = [0]
+  for (let i = 0; i < text.length; i += 1) {
+    if (text[i] === "\n") offsets.push(i + 1)
+  }
 
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i]
