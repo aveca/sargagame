@@ -5,7 +5,7 @@
 // C'est le pendant FR du buildHotelLanding() USD (region-seo-pages.cjs), avec :
 //   · copy FR (colonne vertébrale 6-temps de design/STORY, claims hedgés),
 //   · prix EUR (79 €/mois · 690 €/an, essai 30 j sans carte),
-//   · tableau de couverture LIVE par plage (statut du jour, données réelles),
+//   · tableau de couverture par plage, uniquement si l'observation respecte le SLA,
 //   · boucle analytics : CTA → /?pro=1&b=…&utm_* → event sg_b2b_visit.
 //
 // PAGE STANDALONE (pas un <noscript> injecté dans l'app-shell) : elle DOIT
@@ -26,17 +26,19 @@ function esc(s) {
 const STATUS_FR = { clean: 'Propre', moderate: 'Modéré', avoid: 'À éviter', unknown: 'À vérifier' }
 const STATUS_COLOR = { clean: '#16A34A', moderate: '#D97706', avoid: '#DC2626', unknown: '#9CA3AF' }
 
+const MIN_RELIABILITY_SAMPLES = 20
+
 // La fraîcheur est calculée depuis l'observation satellite, jamais depuis l'heure du build.
-function getSatelliteFreshness(erddapTimestamp, nowMs = Date.now(), staleAfterHours = 36) {
+function getSatelliteFreshness(erddapTimestamp, nowMs = Date.now(), staleAfterMinutes = 900) {
   const observedAt = Date.parse(erddapTimestamp || '')
   if (!Number.isFinite(observedAt) || !Number.isFinite(nowMs) || observedAt > nowMs) {
     return { status: 'unknown', ageLabel: '' }
   }
-  const ageHours = (nowMs - observedAt) / 3600000
-  const ageLabel = ageHours < 1
-    ? 'il y a moins d’une heure'
-    : 'il y a ' + Math.max(1, Math.round(ageHours)) + ' h'
-  return { status: ageHours <= staleAfterHours ? 'fresh' : 'stale', ageLabel }
+  const ageMinutes = (nowMs - observedAt) / 60000
+  const ageLabel = ageMinutes < 60
+    ? 'il y a ' + Math.max(1, Math.round(ageMinutes)) + ' min'
+    : 'il y a ' + Math.max(1, Math.round(ageMinutes / 60)) + ' h'
+  return { status: ageMinutes <= staleAfterMinutes ? 'fresh' : 'stale', ageLabel }
 }
 
 /**
@@ -65,9 +67,9 @@ function buildHotelLandingFr(o) {
 
   // Publier les mesures par régime et type de verdict ; ne jamais remplacer une donnée absente par un taux global.
   const calmPct = reliability && Number.isFinite(reliability.calmPct) ? reliability.calmPct : null
-  const calmN = reliability && Number.isFinite(reliability.calmSamples) && reliability.calmSamples > 0 ? reliability.calmSamples : null
+  const calmN = reliability && Number.isFinite(reliability.calmSamples) && reliability.calmSamples >= MIN_RELIABILITY_SAMPLES ? reliability.calmSamples : null
   const calmAlertPct = reliability && Number.isFinite(reliability.calmAlertPct) ? reliability.calmAlertPct : null
-  const calmAlertN = reliability && Number.isFinite(reliability.calmAlertSamples) && reliability.calmAlertSamples > 0 ? reliability.calmAlertSamples : null
+  const calmAlertN = reliability && Number.isFinite(reliability.calmAlertSamples) && reliability.calmAlertSamples >= MIN_RELIABILITY_SAMPLES ? reliability.calmAlertSamples : null
   const hasWindow = Boolean(reliability && reliability.from && reliability.to)
   const hasCleanMetric = calmPct !== null && calmN !== null && hasWindow
   const hasAlertMetric = calmAlertPct !== null && calmAlertN !== null
@@ -93,21 +95,21 @@ function buildHotelLandingFr(o) {
     ? 'Aucun statut de plage disponible dans les données courantes.'
     : 'Statuts indisponibles tant que la fraîcheur satellite n’est pas confirmée.'
   const title = `Sargasses pour hôtels en ${islandName} — prévision par plage, alertes staff`
-  const desc = `Pour les hôtels de ${islandName} : le brief sargasses de VOTRE plage chaque matin, mesuré au satellite, plage par plage, 7 jours à l'avance. Privé par défaut, badge public optionnel. 79 €/mois, essai 30 j sans carte, zéro appel.`
+  const desc = `Pour les hôtels de ${islandName} : observations satellite horodatées pour votre plage ; statuts masqués si les données sont trop anciennes. Brief privé, badge public optionnel. 79 €/mois, essai 30 j sans carte.`
   const h1 = `Vos clients Googlent les sargasses de votre plage avant de réserver. En ce moment, c'est la photo d'un inconnu qui répond à leur place.`
 
   const faqs = [
     ['Combien ça coûte, et y a-t-il vraiment zéro appel ?',
      '79 €/mois ou 690 €/an — deux mois offerts sur l\'annuel. Aucun frais d\'installation, aucune commission sur vos réservations, aucun rendez-vous commercial. Vous démarrez par un essai de 30 jours gratuit, sans carte : vous jugez sur pièces avant de décider.'],
     ['Dois-je mettre « algues » ou un widget sur mon site ?',
-     'Non. Par défaut, rien n\'est public — vous recevez le brief matinal et les alertes en privé, pour votre équipe. Le badge public « plage propre » est optionnel et 100 % à votre main : vous choisissez de l\'afficher, jamais ce qu\'il dit. La plupart des établissements ne montrent le badge que les bons jours.'],
+     'Non. Par défaut, rien n\'est public — votre équipe consulte un brief privé horodaté et les alertes si elles sont activées. Le badge public optionnel reprend le statut neutre disponible ; si l\'observation est ancienne ou inconnue, il affiche « À vérifier » ou n\'est pas publié. Vous choisissez de l\'afficher, jamais son contenu.'],
     ['En quoi est-ce différent des données gratuites de Météo-France / NOAA ?',
-     'Les cartes publiques donnent un risque régional flou, pas un verdict pour VOTRE plage. Nous traduisons le satellite en une prévision par plage à 7 jours, avec un niveau de confiance, et nous publions un palmarès daté par régime et type de verdict, avec le nombre de cas mesurés. Les jours de faible confiance affichent « incertain », jamais un faux « propre » — vous êtes protégé, pas exposé.'],
+     'Nous associons les observations disponibles à une couverture par plage et à une tendance lorsque les données le permettent. Chaque statut affiché est rattaché à l\'heure réelle de l\'observation ; au-delà de 900 minutes, ou si le timestamp est absent, invalide ou futur, la plage reste « À vérifier » sans score actuel. Le palmarès de fiabilité est daté par régime et type de verdict, avec le nombre de cas mesurés.'],
   ]
   const faqHtml = faqs.map(([q, a]) => `<h3>${esc(q)}</h3><p>${esc(a)}</p>`).join('')
   const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }
   const bcLd = { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
-    { '@type': 'ListItem', position: 1, name: 'Carte en direct', item: `https://${domain}/` },
+    { '@type': 'ListItem', position: 1, name: 'Carte des observations', item: `https://${domain}/` },
     { '@type': 'ListItem', position: 2, name: title, item: canonical } ] }
   const ld = [bcLd, faqLd].map(x => `<script type="application/ld+json">${JSON.stringify(x)}</script>`).join('')
 
@@ -121,26 +123,26 @@ ${ld}
 <body><div class="wrap">
 <div class="hd"><div class="k">${esc(islandName)} · pour les hôtels &amp; resorts</div><h1>${esc(h1)}</h1><p>Mesuré au satellite, pas deviné. Privé par défaut.</p><div class="fresh ${freshness}"><span class="dot"></span>${esc(freshnessLabel)}</div></div>
 <div class="bd">
-<p>Une famille qui réserve ${esc(islandName)} ce week-end tape déjà « sargasses » — et ce qu'elle trouve, c'est la photo du pire jour d'un inconnu, sur une plage qui n'est peut-être même pas la vôtre. Vous ne pouvez pas empêcher vos clients de vérifier. Vous pouvez être celui qui <b>sait vraiment</b>. Nous mesurons au satellite la plage exacte devant votre établissement, quatre fois par jour, et vous envoyons le verdict chaque matin — en privé, avant qu'un client ne descende à l'eau.</p>
-<a class="cta" href="${pro('hero')}">Activer mon essai 30 j — voir ma plage en direct →</a>
+<p>Une famille qui réserve ${esc(islandName)} ce week-end cherche déjà des informations sur les sargasses de sa plage. Nous utilisons les dernières observations satellite disponibles et affichons leur horodatage réel. Si l'observation dépasse 900 minutes, est absente ou invalide, les statuts et scores actuels sont masqués : la plage passe « À vérifier » plutôt que d'afficher un verdict périmé.</p>
+<a class="cta" href="${pro('hero')}">Activer mon essai 30 j — configurer ma plage →</a>
 
-<h2>Privé d'abord : un brief matinal + des alertes staff — aucun widget, aucun développeur</h2>
-<p>Votre premier jour est invisible pour vos clients. Chaque matin, vous recevez par email l'état de votre plage et la tendance 7 jours, plus une alerte dès que notre prochaine lecture satellite détecte un changement — pour que la réception, la conciergerie et l'équipe plage le sachent avant la première question, pas après. Aucun code, aucun embed, rien sur votre site public. Orientez une famille vers la crique propre du jour, déplacez le mariage sur la plage, briefez l'équipe — sur un verdict fiable parce que c'est le <b>même verdict neutre que tout le monde voit</b>.</p>
+<h2>Privé d'abord : un brief daté + des alertes staff — aucun widget, aucun développeur</h2>
+<p>Votre premier jour est invisible pour vos clients. Votre équipe accède à un brief privé horodaté et peut recevoir des alertes staff lorsque les observations disponibles confirment un changement. Chaque état est rattaché à son observation ; si elle est trop ancienne ou inconnue, l'interface affiche « À vérifier » et aucun score actuel. Aucun code, aucun embed, rien sur votre site public. L'équipe peut ainsi répondre avec une information datée, sans transformer une absence de donnée en verdict « propre ».</p>
 
-<h2>Quand votre plage est propre, dites-le — avec un badge que vous contrôlez</h2>
-<p>La conversation sur votre plage a lieu sur Google et TripAdvisor, que vous y participiez ou non. Quand vous serez prêt, ajoutez un statut « plage propre » en direct à votre propre page de réservation — le même verdict honnête, sous votre toit plutôt que la photo d'un inconnu. C'est optionnel : vous choisissez de le montrer, <b>jamais ce qu'il dit</b>. Un jour de faible confiance, il affiche « incertain » plutôt qu'une promesse — vous n'êtes jamais pris à annoncer « propre » quand la mer dit le contraire. Vert veut dire vert parce que le satellite le dit, pas parce que ça vend des chambres.</p>
+<h2>Quand les données confirment une plage propre, affichez le badge si vous le souhaitez</h2>
+<p>La conversation sur votre plage a lieu sur Google et TripAdvisor, que vous y participiez ou non. Le badge public optionnel reprend le statut neutre disponible, avec sa date d'observation. Vous choisissez de l'afficher, jamais d'en modifier le contenu. Si la fraîcheur est insuffisante ou inconnue, le statut devient « À vérifier » et aucun score actuel n'est présenté — la communication reste alignée sur les données.</p>
 
 <div class="rel"><b>Mesuré, pas deviné — et on publie quand on se trompe.</b><br>${relLine} <a class="lnk" href="${fiab}">Voir notre palmarès daté →</a></div>
 
 <div class="cov"><h2>Les plages de ${esc(islandName)} qu'on surveille déjà</h2><p>${esc(coverageIntro)}</p><ul>${covRows || `<li><span class="n"><small>${esc(coverageFallback)}</small></span></li>`}</ul></div>
-<a class="cta" href="${pro('coverage')}">Voir ma plage en direct — essai gratuit →</a>
+<a class="cta" href="${pro('coverage')}">Configurer ma plage — essai gratuit →</a>
 
 <div class="price"><h2>Démarrez en deux minutes — sans carte, sans appel</h2><p>Le prix est annoncé d'emblée : <b>79 €/mois ou 690 €/an</b> (deux mois offerts). Vous démarrez un essai de 30 jours — sans carte, sans rendez-vous commercial. Vous configurez tout vous-même, et vous décidez ce qui reste privé et ce qui, éventuellement, devient public. Si ça ne gagne pas sa place à côté de vos tarifs, vous repartez sans avoir rien dépensé.</p><p><b>79 €/mois · 690 €/an</b> — essai 30 jours gratuit, sans carte, sans appel.</p></div>
 <a class="cta" href="${pro('pricing')}">Lancer mon essai 30 jours →</a>
 
 <div class="faq"><h2>Questions</h2>${faqHtml}</div>
 </div>
-<div class="ft">Source satellite indépendante Copernicus / NOAA · fraîcheur indiquée ci-dessus · Il regarde la mer, jamais vos clients. · <a href="${fiab}">Fiabilité</a> · <a href="https://${domain}/">Carte en direct</a> · ${esc(domain)}</div>
+<div class="ft">Source satellite indépendante Copernicus / NOAA · observation horodatée ci-dessus · Il regarde la mer, jamais vos clients. · <a href="${fiab}">Fiabilité</a> · <a href="https://${domain}/">Carte des observations</a> · ${esc(domain)}</div>
 </div></body></html>`
 }
 
