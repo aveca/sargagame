@@ -1192,7 +1192,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             try {
               const _sj = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
               _lvById = Object.fromEntries((_sj.levels || []).map(l => [l.id, l]))
-              const _freshness = getSatelliteFreshness(_sj.erddapTimestamp)
+              const _freshness = getSatelliteFreshness(_sj)
               _freshnessStatus = _freshness.status
               _updatedRel = _freshness.ageLabel
             } catch (_e) {}
