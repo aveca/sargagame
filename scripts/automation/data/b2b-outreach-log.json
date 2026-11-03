@@ -371,8 +371,52 @@
     "hotel-le-rotabas.com": {
       "date": "2026-10-27T15:55:16.078Z",
       "status": "no-email"
+    },
+    "kawann-beach-hotel.com": {
+      "date": "2026-11-03T17:43:59.959Z",
+      "status": "no-email"
+    },
+    "bahia-principe.com": {
+      "date": "2026-11-03T17:44:04.312Z",
+      "status": "no-email"
+    },
+    "iberostar.com": {
+      "date": "2026-11-03T17:44:14.686Z",
+      "status": "no-email"
+    },
+    "barcelo.com": {
+      "date": "2026-11-03T17:44:24.135Z",
+      "emailHash": "f2b777c4ad2d90afa09bb5ed9fc62122",
+      "emailDomain": "domain.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "grandvelas.com": {
+      "date": "2026-11-03T17:44:28.219Z",
+      "emailHash": "2c5592f4bb624c4ccf2877a5f21d2d5e",
+      "emailDomain": "velasresorts.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "rosewoodhotels.com": {
+      "date": "2026-11-03T17:44:30.328Z",
+      "emailHash": "9205a70bf4dee9fd5aab7530c57d2141",
+      "emailDomain": "rosewoodhotelgroup.com",
+      "island": "rivieramaya",
+      "status": "failed",
+      "error": "Invalid login: 535 Incorrect authentication data"
+    },
+    "banyantree.com": {
+      "date": "2026-11-03T17:44:37.940Z",
+      "status": "no-email"
+    },
+    "hotelxcaret.com": {
+      "date": "2026-11-03T17:44:38.586Z",
+      "status": "no-email"
     }
   },
-  "lastRun": "2026-10-27T15:55:16.078Z",
+  "lastRun": "2026-11-03T17:44:38.586Z",
   "totalSent": 11
 }
