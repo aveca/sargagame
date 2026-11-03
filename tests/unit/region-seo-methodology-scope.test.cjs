@@ -108,9 +108,18 @@ function walk(dir) {
   return out
 }
 
-// The current public record is stale and covers only the combined MQ + GP scope.
+// The checked-in public record is refreshed by automation, so it may be fresh
+// when this suite runs. Force the stale state in a deterministic fixture instead
+// of assuming the mutable production snapshot is still stale.
+const staleRecord = {
+  ...currentRecord,
+  freshness: {
+    ...(currentRecord.freshness || {}),
+    stale: true,
+  },
+}
 for (const region of ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']) {
-  const resolved = resolvePublicAccuracy(currentRecord, region)
+  const resolved = resolvePublicAccuracy(staleRecord, region)
   assert.equal(resolved.available, false, region + ': stale/out-of-scope record must not become a current percentage')
   assert.equal(resolved.recordStale, true)
   assert.equal(resolved.scopeLabel, 'MQ + GP')
