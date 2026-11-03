@@ -108,9 +108,18 @@ function walk(dir) {
   return out
 }
 
-// The current public record is stale and covers only the combined MQ + GP scope.
+// The checked-in public record is refreshed by automation, so it may be fresh
+// when this suite runs. Force the stale state in a deterministic fixture instead
+// of assuming the mutable production snapshot is still stale.
+const staleRecord = {
+  ...currentRecord,
+  freshness: {
+    ...(currentRecord.freshness || {}),
+    stale: true,
+  },
+}
 for (const region of ['mq', 'gp', 'florida', 'puntacana', 'rivieramaya', 'tulum']) {
-  const resolved = resolvePublicAccuracy(currentRecord, region)
+  const resolved = resolvePublicAccuracy(staleRecord, region)
   assert.equal(resolved.available, false, region + ': stale/out-of-scope record must not become a current percentage')
   assert.equal(resolved.recordStale, true)
   assert.equal(resolved.scopeLabel, 'MQ + GP')
@@ -176,7 +185,7 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       erddapTimestamp: '2026-10-27T12:00:00.000Z',
       stale: false,
     }
-    generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, now: freshnessNow })
+    generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, trackRecord: staleRecord, now: freshnessNow })
     const generatedFiles = walk(distDir).filter(file => file.endsWith('.html'))
     const methodPages = generatedFiles.filter(file => /(?:methodology|metodologia)\/index\.html$/i.test(file))
     assert.ok(methodPages.length > 0, regionId + ': methodology page must remain generated')
@@ -285,7 +294,7 @@ try {
     erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
     stale: false,
   }
-  generateRegionSeoPages(getRegion(freshRegionId), freshDistDir, { data: freshData, now: freshnessNow })
+  generateRegionSeoPages(getRegion(freshRegionId), freshDistDir, { data: freshData, trackRecord: freshRecord, now: freshnessNow })
   const freshFiles = walk(freshDistDir).filter(file => file.endsWith('.html'))
   const freshLanding = freshFiles.find(file => /sargassum-for-hotels\/index\.html$/i.test(file.replace(/\\/g, '/')))
   const freshDirectory = freshFiles.find(file => /resorts\/index\.html$/i.test(file.replace(/\\/g, '/')))
