@@ -635,7 +635,7 @@ function generateRegionSeoPages(region, distDir, options = {}) {
   const now = Number.isFinite(options.now) ? options.now : Date.now()
   // Public accuracy claims must come from the dated track record, never the raw
   // backtest input (which has no reliable region scope and can be stale).
-  const trackRecord = loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'track-record.json'), null)
+  const trackRecord = options.trackRecord || loadJSON(path.join(ROOT, 'public', 'api', 'copernicus', 'track-record.json'), null)
   const accuracy = resolvePublicAccuracy(trackRecord, region.id)
   const photos = loadJSON(path.join(ROOT, 'public', 'data', 'beaches-images.json'), {})
   const tpl = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
