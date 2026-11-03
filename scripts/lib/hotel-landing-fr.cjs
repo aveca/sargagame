@@ -31,8 +31,13 @@ const MIN_RELIABILITY_SAMPLES = 20
 // La fraîcheur est calculée depuis l'observation satellite, jamais depuis l'heure du build.
 const { operationalSatelliteFreshness } = require('./satellite-freshness.cjs')
 
-function getSatelliteFreshness(erddapTimestamp, nowMs = Date.now()) {
-  const result = operationalSatelliteFreshness({ source: 'erddap-live', erddapTimestamp }, nowMs)
+function getSatelliteFreshness(observation, nowMs = Date.now()) {
+  // Production callers pass the complete payload so the shared contract can
+  // reject non-live sources as well as invalid, missing and future timestamps.
+  const payload = typeof observation === 'string'
+    ? { source: 'erddap-live', erddapTimestamp: observation }
+    : observation
+  const result = operationalSatelliteFreshness(payload, nowMs)
   if (!Number.isFinite(result.ageMinutes)) return { status: 'unknown', ageLabel: '' }
   const ageMinutes = result.ageMinutes
   const ageLabel = ageMinutes < 60
