@@ -939,6 +939,9 @@ function prepareNewRegion(region) {
       // Les sous-dossiers sont les PAGES /beaches/<slug>/ du générateur SEO
       // région — ne purger que les fichiers images hors-région.
       if (fs.statSync(full).isDirectory()) continue
+      // L'index parent /beaches/ est une page HTML SEO, pas une photo hors-région.
+      // Le préserver avant le filtre qui ne doit retirer que les fichiers média.
+      if (f === 'index.html') continue
       const m = f.match(/^gplace-([a-z]{2}\d+)\.jpg$/)
       if (m && ownIds.has(m[1])) continue
       fs.rmSync(full)
