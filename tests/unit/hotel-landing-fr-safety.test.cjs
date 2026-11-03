@@ -65,10 +65,12 @@ const smallSampleHtml = render({
     to: '2026-10-21',
   },
 });
-const smallSampleRel = smallSampleHtml.match(/<div class="rel">([\\s\\S]*?)<\\/div>/);
-assert.ok(smallSampleRel, 'reliability block is present');
-assert.match(smallSampleRel[1], /Aucun taux de fiabilité n’est affiché/);
-assert.doesNotMatch(smallSampleRel[1], /100%|0%/);
+const smallSampleRelStart = smallSampleHtml.indexOf('<div class="rel">');
+const smallSampleRelEnd = smallSampleHtml.indexOf('</div>', smallSampleRelStart);
+assert.ok(smallSampleRelStart >= 0 && smallSampleRelEnd > smallSampleRelStart, 'reliability block is present');
+const smallSampleRel = smallSampleHtml.slice(smallSampleRelStart, smallSampleRelEnd);
+assert.match(smallSampleRel, /Aucun taux de fiabilité n’est affiché/);
+assert.doesNotMatch(smallSampleRel, /100%|0%/);
 
 const staleHtml = render({
   coverage: [{ name: 'Plage test', status: 'clean', score: 88 }],
