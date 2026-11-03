@@ -1,4 +1,38 @@
 
+## 2026-10-27 · Agent: autonome (OpenCode) · Mission 2/10 — sécurité Worker/assets (#1076)
+
+### Travail effectué
+- **Résumé 1 ligne** : `run_worker_first` passé de `false` à `true` pour que la garde fail-closed du Worker protège les assets statiques sur les 6 domaines ; test de garde renforcé (47/47).
+- **Défaut prouvé (issue #1076)** : avec `run_worker_first=false`, Cloudflare sert les assets par l'edge sans invoquer le Worker. 43 fichiers sensibles constatés en fuite dans `dist/` (.htaccess, api/*.php dont mollie.php/stripe-webhook.php/paypal.php, api/copernicus/*/_private/forecast-full.json). Preuve : `node tests/unit/worker-private-guard.test.cjs` scan dist/ + lecture de `wrangler.template.jsonc:18`.
+- **Correctif** : `wrangler.template.jsonc` → `run_worker_first: true` (garde Worker appliquée aux assets). Déploiement = WAITING_FOR_APPROVAL (config sécurité production, PR #1094).
+- **Test renforcé** : `tests/unit/worker-private-guard.test.cjs` vérifie (a) la garde Worker, (b) les 6 règles .assetsignore, (c) l'exclusion effective sur artefact simulé, (d) chaque règle indispensable (fixture malveillante), (e) scan dist/ en signal d'alerte. 47/47 passés.
+- **Budget bundle** : 208.1 Ko ≤ 210 Ko gzip (OK). `npm run build` exit 0.
+
+### Fichiers modifiés
+- `wrangler.template.jsonc` — run_worker_first: true + commentaire sécurité
+- `tests/unit/worker-private-guard.test.cjs` — garde renforcée + scan artefact + fixture malveillante
+- `reports/sargagame/M1-etat-maitre-20261027.md` — état maître Mission 1 (créé)
+
+### Tests réalisés
+- [x] npm run build → exit 0
+- [x] check-bundle-budget → 208.1 Ko ≤ 210 Ko gzip
+- [x] node tests/unit/worker-private-guard.test.cjs → 47/47 passés
+- [ ] php -l → n/a (aucun .php touché)
+- [ ] Preuve en production : bloquée par WAITING_FOR_APPROVAL (PR #1094, pas encore déployé)
+
+### Problèmes restants
+- [ ] Déploiement de run_worker_first=true en attente d'autorisation explicite (WAITING_FOR_APPROVAL, PR #1094)
+
+### Prochaine action recommandée
+1. Mission 3/10 : fraîcheur des données Copernicus/ERDDAP (stale, erddapTimestamp, updatedAt sur les 6 domaines) — Rôle : data_agent
+
+### Branche / PR
+- Branche : `agent/security/mission-2-worker-assets`
+- PR : #1094 (base main)
+- Commit head : `5e350453d`
+
+---
+
 ## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
 
 ### Travail effectué

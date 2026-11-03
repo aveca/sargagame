@@ -1,4 +1,15 @@
 ﻿
+## 2026-10-27 - autonome (OpenCode) · branche agent/security/mission-2-worker-assets · commit 5e350453d · PR #1094
+
+**Mission 2/10 — Sécurité Worker/assets : run_worker_first=true (issue #1076).**
+
+- Défaut prouvé : avec `run_worker_first=false`, 43 fichiers sensibles en fuite dans `dist/` (.htaccess, api/*.php dont mollie.php/stripe-webhook.php/paypal.php, api/copernicus/*/_private/forecast-full.json) servables en clair par l'edge Cloudflare.
+- Correctif : `run_worker_first: true` dans `wrangler.template.jsonc` → la garde fail-closed du Worker protège les assets statiques. Déploiement WAITING_FOR_APPROVAL.
+- Test renforcé `tests/unit/worker-private-guard.test.cjs` : 47/47 passés (garde Worker, 6 règles .assetsignore, exclusion effective sur artefact simulé, règles indispensables via fixture malveillante, scan dist/ en alerte).
+- Budget bundle : 208.1 Ko ≤ 210 Ko gzip.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**
