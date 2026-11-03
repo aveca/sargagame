@@ -11,7 +11,7 @@
 // PAGE STANDALONE (pas un <noscript> injecté dans l'app-shell) : elle DOIT
 // convertir un visiteur JS → vrai pitch + CTA cliquable, tout en restant
 // crawlable. Verdict panel USD #488 appliqué : le lead est l'usage PRIVÉ
-// (brief matinal + alerte staff), JAMAIS « collez un widget algues sur votre
+// (brief privé daté + alerte staff), JAMAIS « collez un widget algues sur votre
 // site » (tueur de conversion n°1) ; le badge public est OPT-IN. L'argent ne
 // touche jamais le verdict (badge = même verdict neutre public). Claims
 // fiabilité toujours datée et ventilée par régime/type de verdict, avec N ;
@@ -46,9 +46,9 @@ function getSatelliteFreshness(erddapTimestamp, nowMs = Date.now(), staleAfterMi
  * @param {'mq'|'gp'} o.islandId
  * @param {string} o.islandName            'Martinique' | 'Guadeloupe'
  * @param {string} o.domain                'sargasses-martinique.com'
- * @param {Array<{name,commune,status,score}>} o.coverage   plages LIVE de l'île
+ * @param {Array<{name,commune,status,score}>} o.coverage   couverture de plages de l'île
  * @param {object|null} o.reliability       mesures de fiabilité par régime/type de verdict, avec fenêtre et N, ou null
- * @param {string} o.updatedRel             ex. 'il y a 2 h' (fraîcheur du composite)
+ * @param {string} o.updatedRel             âge lisible calculé depuis erddapTimestamp
  */
 function buildHotelLandingFr(o) {
   const { islandId, islandName, domain, coverage = [], reliability = null, updatedRel = '', freshnessStatus = 'unknown' } = o
@@ -78,7 +78,7 @@ function buildHotelLandingFr(o) {
       (hasAlertMetric ? 'Les alertes en régime calme ont un taux de réussite de <b>' + calmAlertPct + '%</b> sur ' + Number(calmAlertN).toLocaleString('fr-FR') + ' cas ; elles restent à faible confiance tant que l’observation ne les confirme pas.' : 'Les alertes restent à faible confiance tant que l’observation ne les confirme pas.') +
       ' Les résultats varient selon le régime et le type de verdict ; consultez le palmarès daté pour le contexte.'
     : 'Aucun taux de fiabilité n’est affiché sans mesure datée par régime et type de verdict. Consultez le palmarès daté pour les résultats disponibles, réussites et ratés.'
-  // Tableau de couverture LIVE (par plage, statut du jour). Fait public =
+  // Tableau de couverture par plage ; statuts visibles uniquement dans le SLA. Fait public =
   // quelle plage on surveille + son état neutre, jamais « nos clients ».
   const covRows = coverage.slice(0, 16).map(b => {
     const knownStatus = freshness === 'fresh' && Object.prototype.hasOwnProperty.call(STATUS_FR, b.status) && b.status !== 'unknown'
@@ -95,7 +95,7 @@ function buildHotelLandingFr(o) {
     ? 'Aucun statut de plage disponible dans les données courantes.'
     : 'Statuts indisponibles tant que la fraîcheur satellite n’est pas confirmée.'
   const title = `Sargasses pour hôtels en ${islandName} — prévision par plage, alertes staff`
-  const desc = `Pour les hôtels de ${islandName} : observations satellite horodatées pour votre plage ; statuts masqués si les données sont trop anciennes. Brief privé, badge public optionnel. 79 €/mois, essai 30 j sans carte.`
+  const desc = `Pour les hôtels de ${islandName} : état satellite horodaté par plage ; statut masqué si la donnée est ancienne. Brief privé, essai gratuit 30 jours.`
   const h1 = `Vos clients Googlent les sargasses de votre plage avant de réserver. En ce moment, c'est la photo d'un inconnu qui répond à leur place.`
 
   const faqs = [
