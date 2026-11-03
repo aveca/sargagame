@@ -4,8 +4,12 @@
  */
 const { readFileSync, writeFileSync, existsSync } = require('fs')
 const { resolve } = require('path')
+const central = require('../../lib/outbound-authorization.cjs')
 
-const DRY_RUN = process.env.DRY_RUN === '1' || process.env.DRY_RUN === 'true'
+// DRY_RUN unifie via le contrat central (mission P0.23 / #1157) : '1' ou 'true',
+// lecture par process, jamais supposee. L'absence de DRY_RUN n'est PAS une
+// autorisation : toute action sortante doit passer par authorizeAction().
+const DRY_RUN = central.isDryRunRequested(process.env)
 
 const LIMITS = {
   MAX_REDIRECTS_PER_RUN: 10,
@@ -169,4 +173,18 @@ module.exports = {
   isSelfRedirect,
   levenshtein,
   similarity,
+  // Re-exports du contrat central : un seul import pour les scripts d'automation.
+  authorizeAction: central.authorizeAction,
+  authorizeActionAsync: central.authorizeActionAsync,
+  describeDecision: central.describeDecision,
+  verifyEnvironmentProtection: central.verifyEnvironmentProtection,
+  resolveTrigger: central.resolveTrigger,
+  isDryRunRequested: central.isDryRunRequested,
+  hasApprovalProof: central.hasApprovalProof,
+  assertEmailSendAllowed: central.assertEmailSendAllowed,
+  assertPushSendAllowed: central.assertPushSendAllowed,
+  assertOutreachAllowed: central.assertOutreachAllowed,
+  assertAppsScriptCleanupAllowed: central.assertAppsScriptCleanupAllowed,
+  assertAnalyticsDeleteAllowed: central.assertAnalyticsDeleteAllowed,
+  assertExternalWriteAllowed: central.assertExternalWriteAllowed,
 }

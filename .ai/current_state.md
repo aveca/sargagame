@@ -1,4 +1,109 @@
 
+## 2026-11-02 08:55 UTC · Agent: coding_agent (OpenCode) · Durcissement S6 anti-pollution + sonde négative (mission P0.23/#1157)
+
+### Travail effectué
+- **Résumé 1 ligne** : la garde de non-pollution de la suite de régression sortante est devenue une assertion qui ÉCHOUE réellement, et cette défaillance est prouvée par une sonde négative.
+- **Détails** :
+  - Constat : `restoreLocalState()` ne restaurait que les fichiers **actuellement présents**. Un fichier supprimé en cours de campagne n'était plus vu par `collectLocalFiles()`, donc jamais restitué. La pollution data (`outreach-log.json`, `b2b-outreach-log.json`) est également réapparue deux fois en résidu de run.
+  - Correctif structurel : boucle (2) ajoutée — tout fichier connu par la photographie mais devenu absent est recréé (mkdir récursif + écriture du contenu photographié). `restoreLocalState()` renvoie désormais le nombre de fichiers restaurés.
+  - Nouvelle assertion `assertLocalStateRestored()` : relit chaque fichier photographié et enregistre PASS/FAIL. Un test qui laisse l'arbre sale est un **échec**, pas un détail. Affichée sous forme de bloc « S6 — non-pollution (N fichier(s) restauré(s)) ».
+  - **Sonde négative exécutée et concluante** (copie temporaire hors dépôt, restauration neutralisée) : S1-S5 restent PASS (le contrat fail-closed tient : 0 écriture externe sur les 31 scripts), mais **S6 ÉCHOUE** avec `SALE: scripts\automation\data\automation-log.json, scripts\automation\data\b2b-outreach-log.json, scripts\automation\data\outreach-log.json`, exit 1. La garde n'est donc pas un cachet tampon.
+  - Suite réelle rejouée après durcissement : `S6 — non-pollution (4 fichier(s) restauré(s))` / `PASS arbre de travail inchangé` ; `git status -- scripts/automation/data/` propre.
+  - Sondes et fichiers temporaires supprimés ; les 3 logs data rendus sales par la sonde ont été restaurés à HEAD (`git checkout HEAD --`) ; arbre final propre.
+
+### Fichiers modifiés
+- `tests/unit/outbound-scripts-regression.test.cjs` — `restoreLocalState()` (restaure aussi les fichiers supprimés, renvoie un compteur) + `assertLocalStateRestored()` + bloc S6 dans le `finally` ; documentation S6 ajoutée à l'en-tête.
+
+### Tests réalisés
+- [x] Suite réelle durcie → PASS, `pass 1, fail 0`, arbre propre
+- [x] Sonde négative (restauration neutralisée, hors dépôt) → S6 FAIL + exit 1 ⇒ garde réellement bloquante
+- [x] `git status --porcelain` final → uniquement les 3 `.ai/` + ce fichier de test ; zéro fichier `scripts/automation/data/` modifié
+
+### Problèmes restants
+- [ ] `.ai/` + le fichier de test sont modifiés mais **pas encore commités** (entrée à écrire puis commit + push sur `fix/outbound-safety-20261101`, merge sans force-push — le fondateur peut pousser en parallèle).
+- [ ] Les verrous de mission déjà listés restent inchangés (publication de données bloquée par la porte 900 min ; private forecast containment sans stockage autorisé ; PR #1221 en attente d'approbation reporting paiement).
+
+### Prochaine action recommandée
+1. Commiter + pousser ces 4 fichiers (merge, jamais force-push) — Rôle : coding_agent
+2. Vérifier que #1227 est toujours DRAFT et que son commit head correspond au HEAD local — Rôle : coding_agent
+3. Enchaîner les Draft PRs B-F séquentiellement, puis reprendre #1221 — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `fix/outbound-safety-20261101`
+- PR : **#1227 (DRAFT, non mergée)** — commit de tête à réaligner avec le nouveau commit local
+- Aucun force-push ; intégration par merge uniquement.
+
+---
+
+## 2026-11-02 06:20 UTC · Agent: coding_agent (OpenCode) · Mission P0.23/#1157 — contrat d'autorisation sortant fail-closed
+
+### Travail effectué
+- **Résumé 1 ligne** : toutes les automatisations sortantes/destructrices (email, push, outreach, cleanup Apps Script, DELETE/PATCH Supabase, écritures HTTP externes) passent par un contrat d'autorisation central et échouent fermé par défaut.
+- **Détails** :
+  - Contrat central `scripts/lib/outbound-authorization.cjs` : `DRY_RUN=true` par défaut ; une variable d'environnement nue, `DRY_RUN=0` seule, la présence d'un secret, un `workflow_dispatch` seul ou `ENVIRONMENT_NAME` ne valent PAS approbation ; la production exige un **Environment GitHub protégé réellement existant**, vérifié en lecture seule ; invérifiable ⇒ désactivé ; le contrat ne crée/modifie jamais Environment, protection de branche ou secret.
+  - 31 scripts gatés : `main()` explicite, aucun effet de bord à l'import, autorisation posée immédiatement avant chaque effet de bord externe, credentials absents ⇒ échec fermé, rapports sûrs conservés.
+  - `purge-analytics.cjs` : contrat de représentation obligatoire (ERROR si représentation absente, partielle ou divergente) ; Supabase mocké dans les tests uniquement.
+  - `notify-failure.cjs` : append ops-event sorti du scope module vers `appendOpsEvent()` (import pur ; exécution directe écrit toujours l'event local).
+  - `welcome-email.cjs` : n'avait aucun contrat (présence de `SMTP_PASS` = envoi) — désormais gaté et prouvé fail-closed.
+  - Nouveau scanner de gouvernance `scripts/audit-workflow-outbound.cjs` : règles R1-R6 au niveau job/step, parsing YAML scopé par job (fidélité vérifiée sur les 38 workflows), `verifyReadOnlyScript` transitif, `INLINE_RUN_EXCEPTIONS` avec gardes stale/escalade. Baseline : **0 HIGH**, 6 MEDIUM (politique acceptée), exit strict 0.
+  - Pollution de test corrigée structurellement : la suite de régression snapshot/restaure `scripts/automation/data/` (les scripts résolvent leur dossier data via `__dirname`, non redirigeable) ; entrée `.gitignore` ajoutée pour `ops-events.jsonl` ; 3 logs data suivis restaurés à HEAD ; `ARBRE=PROPRE`.
+  - `check-mail-backlog.cjs` n'a jamais existé dans l'historique git — entrée périmée retirée de `OUTBOUND_SCRIPTS` (31 scripts sur disque).
+  - `mollie-mrr.cjs` = exemption lecture seule vérifiée légitime ; G15b l'ignore désormais et G15b2 revérifie mécaniquement chaque exemption restante.
+
+### Fichiers modifiés
+- `scripts/lib/outbound-authorization.cjs` (nouveau) — contrat central
+- `scripts/audit-workflow-outbound.cjs` (nouveau) — scanner de gouvernance R1-R6
+- `scripts/automation/appscript-cleanup.cjs` (nouveau) — cleanup Apps Script gaté
+- `tests/helpers/outbound-network-mock.cjs` (nouveau) — mock fetch/https/nodemailer/FTP partagé, aucun réseau réel
+- `tests/unit/outbound-authorization.test.cjs`, `outbound-scripts-regression.test.cjs`, `workflow-outbound-governance.test.cjs` (nouveaux)
+- 31 scripts d'automatisation + `scripts/provision-barbados.cjs` — contrat branché
+- `.github/workflows/daily-copernicus.yml`, `weekly-optimize.yml` — gouvernance job/step
+- `tests/purge-analytics.test.cjs` — contrat de représentation + preuve de composition post-check
+- `.gitignore`, `package.json`, `package-lock.json` — +js-yaml (dev uniquement)
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `check-bundle-budget.cjs` → 210.0 Ko ≤ 210 Ko gzip
+- [x] `npm test` → **125/127** (le fondateur a réparé `morning-brief-sender-behavior` en stubant le contrat ; les 2 échecs restants sont prouvés préexistants / environnement autocrlf, hors périmètre — voir « Problèmes restants »)
+- [x] `CHECK_certification_status.cjs --mode pr` → exit 0
+- [x] `ci-certification-audit.cjs` → 11 pass / 1 warn / 0 issue
+- [x] `deploy-audit.cjs` → 16 / 0 / 0
+- [x] `check-production-trigger-scope.cjs` → OK
+- [x] `check-github-actions-policy.cjs` → OK (38 workflows, 129 refs)
+- [x] `prepare-ftp.cjs` → exit 0
+- [x] `ux-smoke.mjs` → 4 tokens (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`)
+- [x] `track-record-pricing-smoke.mjs`, `regional-b2b-landing-freshness-smoke.mjs`, `homeaz-freshness-smoke.mjs` → PASS en 390x844 et 1440x900
+- [x] `regions/index.cjs` `assertAllRegionsValid()` → OK
+- [x] `php -l` → n/a (aucun .php touché)
+- [ ] actionlint / Lighthouse → **non installés hors ligne** ; substitué par un vrai parseur js-yaml des 2 workflows modifiés (jobs=6/54 steps et jobs=2/41 steps)
+
+### Problèmes restants
+- [ ] **Intégration des travaux du fondateur sur la branche** (12 commits poussés pendant ma session, intégrés par merge, sans force-push) : durcissement du contrat central OIDC — preuve que le job sortant est bien passé par l'Environment protégé, validation `nbf`, liaison job↔Environment, vérification de signature via JWKS officiel, nombre de relecteurs lié à `required_reviewers`, et stub du contrat dans 2 tests hermétiques. Mes suites passent sur ce socle : contrat jusqu'à **P29**, gouvernance G1-G16 + R6a-R6g, régression scripts, purge 24 preuves.
+- [ ] `npm test` = **125/127**. Les 2 échecs restants sont **prouvés préexistants et hors périmètre** :
+  - `tests/unit/morning-brief-freshness.test.cjs:69` — assertion `indexOf('\n}\n')` sur le source de `send-notifications.cjs`. **Prouvé** : le blob git stocke LF (assertion PASSE), mais `core.autocrlf=true` sur Windows produit CRLF au checkout (assertion ÉCHOUE). Vérifié aussi sur 2989/3883 fichiers intacts du dépôt, tous en CRLF dans la copie de travail ⇒ artefact d'environnement, pas une régression de cette mission. Fragilité réelle du test (recherche de chaîne sensible aux fins de ligne).
+  - `tests/unit/region-seo-methodology-scope.test.cjs:182` — « florida: methodology page must remain generated » : génération SEO régionale, sans lien avec cette mission.
+- [ ] `tests/e2e/funnel-payment.spec.ts` : 1 test en échec, environnemental et **hors gate CI** — sélecteur obsolète `.sg-maplabel` + donnée satellite périmée dans cet environnement ; `src/` intact. Le smoke utilise `svg[data-sg-live="1"] g[style*="cursor"]` et passe.
+- [ ] `scripts/lib/premium-page.cjs` : erreur de syntaxe **préexistante** ligne 25 (identique à HEAD, liée au paiement, hors périmètre).
+- [ ] 3 requires relatifs cassés **préexistants** : `scripts/autopilot/runner.cjs`, `scripts/lib/certification-gate.cjs`, `scripts/lib/fast-deploy.cjs`.
+- [ ] Défaut de stamping build **préexistant** : `npm run build` recalcule `dataAgeMinutes`/`stale` depuis l'horloge murale ⇒ rebuild sur `public/` vierge à HEAD produit quand même `stale:true`. `public/` a été restauré à HEAD (publication de données interdite, hors périmètre).
+- [ ] Publication de données (scientifiques comme métadonnées) **bloquée** par la porte opérationnelle de fraîcheur 900 minutes (FAIL) ; approbation requise, la porte ne doit jamais être abaissée.
+- [ ] Suite privée « private forecast containment » (B) bloquée : aucune option de stockage privé autorisée identifiée avec permissions de lecture réelles ; création de bucket et réécriture d'historique interdites.
+- [ ] Erreur console préexistante non liée : `[sg] referral_claim Unexpected token '<'` — un fichier PHP servi comme source au lieu de JSON.
+
+### Prochaine action recommandée
+1. Livrer les Draft PRs B-F séquentiellement (private forecast containment, fraîcheur métadonnées seules, SEO régional Tulum, attribution analytics sans PII, copie scientifique non supportée) — Rôle : coding_agent
+2. Reprendre PR #1221 (pagination MRR Mollie) — à garder ouverte en attente d'approbation reporting paiement — Rôle : coding_agent
+3. Mettre à jour `tests/e2e/funnel-payment.spec.ts` sur le sélecteur courant (`.sg-maplabel` conditionnel) et le faire entrer dans le gate CI — Rôle : qa_agent
+
+### Branche / PR
+- Branche : `fix/outbound-safety-20261101`
+- PR : **#1227 (DRAFT, non mergée)** — https://github.com/aveca/sargagame/pull/1227
+- Commit head : `7067dd2758197e5bba4961dd57ce3a518de536f6` (merge d'intégration des 12 commits du fondateur, poussé en fast-forward, aucun force-push)
+- Mes commits : `728b16e31` (contrat + gouvernance + tests), `f311eeb26` (handoff `.ai/`)
+- Note : #1218 (périmètre purge-analytics seul, branche `fix/purge-analytics-hard-dry-run-20261101`) est un **sous-ensemble strict** de #1227 ; laissé ouvert, commentaire de superseion posté.
+
+---
+
 ## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
 
 ### Travail effectué

@@ -19,6 +19,7 @@
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {
@@ -33,6 +34,9 @@ const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses UX <alerte@sargasses-martinique.com>'
 const load = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 
+/** Mission P0.23 / #1157 : tout l'effet externe est dans main() — importer ce
+ * module n'a aucun effet de bord (defaut H de la review PR #1200). */
+async function main() {
 const rep = load(REPORT, null)
 if (!rep || !rep.sites) { console.log('ux-watch: pas de ux-report.json exploitable.'); process.exit(0) }
 
@@ -74,6 +78,14 @@ actionable.forEach(c => console.log(`  [FIX] ${c.site.toUpperCase()} · ${c.page
 if (hotspots.length) console.log(`  [hotspots] ${hotList}${hotspots.length > 8 ? ` … +${hotspots.length - 8}` : ''}`)
 
 if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); process.exit(0) }
+  // Mission P0.23 / #1157 : --send est une DEMANDE, l'autorisation vient du contrat central
+  // (Environment GitHub protege + dispatch manuel + verification API lecture seule).
+  const decision = await authorizeActionAsync('email_send', { requested: DO_SEND })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log('\nDRY-RUN PAR CONTRAT CENTRAL - rien envoye (autorisation absente ou non verifiable).')
+    return
+  }
 if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); process.exit(0) }
 
 const actHtml = actionable.length
@@ -97,3 +109,7 @@ sendEmail({ from: FROM, to: TO, subject: `[Sargasses] UX : ${actionable.length} 
     console.log(`Alerte UX envoyée à ${TO}`)
   })
   .catch(e => console.error('ux-watch error:', e.message))
+
+}
+
+if (require.main === module) { main().catch((e) => { console.error('ux-watch:', e && e.message); process.exit(0) }) }

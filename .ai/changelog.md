@@ -1,4 +1,35 @@
 ﻿
+## 2026-11-02 - coding_agent (OpenCode) · branche fix/outbound-safety-20261101 · PR #1227 (DRAFT) · durcissement S6 anti-pollution
+
+**Garde de non-pollution de la suite sortante rendue réellement bloquante, prouvée par sonde négative.**
+
+- Défaut : `restoreLocalState()` ne parcourait que les fichiers **actuellement présents** — un fichier supprimé pendant la campagne n'était jamais restitué (`collectLocalFiles()` ne le voyait plus). D'où les pollutions récurrentes de `scripts/automation/data/` (résolution `__dirname`, non redirigeable par un test).
+- Correctif : boucle de restauration supplémentaire sur les fichiers photographiés mais devenus absents (mkdir récursif + réécriture) ; `restoreLocalState()` renvoie un compteur ; nouvelle assertion `assertLocalStateRestored()` qui enregistre PASS/FAIL sous le bloc « S6 — non-pollution ».
+- **Sonde négative (copie temporaire hors dépôt, restauration neutralisée) : S6 ÉCHOUE** — `SALE: scripts\automation\data\automation-log.json, scripts\automation\data\b2b-outreach-log.json, scripts\automation\data\outreach-log.json`, exit 1, alors que S1-S5 (zéro écriture externe sur les 31 scripts) restent PASS. Le garde est donc bloquant, pas décoratif.
+- Suite réelle après durcissement : `S6 — non-pollution (4 fichier(s) restauré(s))` / `arbre propre` ; sondes supprimées ; 3 logs data rendus sales par la sonde restaurés à HEAD ; arbre final propre.
+- Aucune action de production ; aucun fichier suivi hors `tests/unit/outbound-scripts-regression.test.cjs` et `.ai/` modifié.
+
+---
+
+## 2026-11-02 - coding_agent (OpenCode) · branche fix/outbound-safety-20261101 · commit 728b16e31 · PR #1227 (DRAFT)
+
+**Mission P0.23/#1157 — contrat d'autorisation sortant fail-closed pour toutes les automatisations.**
+
+- Contrat central unique `scripts/lib/outbound-authorization.cjs` : `DRY_RUN=true` par défaut. Ne valent PAS approbation : variable d'environnement nue, `DRY_RUN=0` seul, présence d'un secret, `workflow_dispatch` seul, `ENVIRONMENT_NAME`. Production = Environment GitHub protégé **réellement existant** vérifié lecture seule ; invérifiable ⇒ désactivé. Aucune création/modification d'Environment, protection de branche ou secret.
+- 31 scripts gatés (email, push, outreach, Apps Script cleanup, Supabase DELETE/PATCH, écritures HTTP) : `main()` explicite, import pur, autorisation immédiatement avant chaque effet de bord externe, credentials absents ⇒ échec fermé.
+- `purge-analytics.cjs` : représentation obligatoire, ERROR si absente/partielle/divergente ; Supabase mocké dans les tests. `welcome-email.cjs` : était non gaté (présence `SMTP_PASS` = envoi) — désormais prouvé fail-closed. `notify-failure.cjs` : ops-event déplacé dans `appendOpsEvent()` (import pur).
+- Nouveau scanner `scripts/audit-workflow-outbound.cjs` (R1-R6, parsing YAML scopé par job, `verifyReadOnlyScript` transitif, exceptions inline avec gardes stale/escalade) : baseline 38 workflows, **0 HIGH**, 6 MEDIUM acceptés, exit strict 0. Correction des faux positifs (`repository_dispatch`, writes déléguées `auto-outreach` → `lib/email-send.cjs`, `https.request` natif, R6 limité aux secrets de STEP).
+- Tests : `outbound-authorization.test.cjs` (P1-P24), `outbound-scripts-regression.test.cjs` (auto-nettoyant), `workflow-outbound-governance.test.cjs` (G1-G16 + R6a-R6g), `purge-analytics.test.cjs` (24 preuves), `tests/helpers/outbound-network-mock.cjs` (mock réseau partagé).
+- Gate de validation exécuté localement : build exit 0 ; bundle 210.0/210 Ko ; `npm test` **125/127** ; certif PR exit 0 ; audits 11/1/0 et 16/0/0 ; trigger-scope OK ; politique Actions OK ; prepare-ftp exit 0 ; ux-smoke 4 tokens ; 3 smokes navigateur PASS en 390x844 + 1440x900.
+- **Travaux du fondateur intégrés sur la branche (12 commits, mergés sans force-push)** : durcissement du contrat central — preuve OIDC que le job sortant est passé par l'Environment protégé, validation `nbf`, liaison job↔Environment, vérification de signature JWKS officiel, relecteurs liés à `required_reviewers`, stub du contrat dans 2 tests hermétiques. Mes suites restent vertes sur ce socle (contrat jusqu'à P29, gouvernance G1-G16 + R6a-R6g, régression scripts, purge 24 preuves).
+- Les 2 échecs de `npm test` restants sont **prouvés hors périmètre** : `morning-brief-freshness` fragilisé par une recherche `'\n}\n'` qui casse sous `core.autocrlf=true` (le blob git est LF, le checkout Windows est CRLF — même échec sur le commit de base pur, et 2989/3883 fichiers intacts du dépôt sont en CRLF en copie de travail) ; `region-seo-methodology-scope` = génération de page méthodologie Florida, sans lien avec cette mission.
+- Pollutions de test corrigées : la suite restaure `scripts/automation/data/` (résolution `__dirname`, non redirigeable) ; `.gitignore` +`ops-events.jsonl` ; 3 logs data suivis restaurés à HEAD.
+- **Aucune** action de production : pas de DELETE/restore/schéma/migration, aucun email/push réel, pas de cleanup Apps Script réel, aucune transaction/webhook/checkout Mollie, pas de rotation de secret, pas de DNS/route Worker, pas de création de bucket, pas de réécriture d'historique, pas de bypass de SLA de fraîcheur, aucune mesure scientifique inventée.
+- Non vérifié : actionlint et Lighthouse absents hors ligne (substitué par parse js-yaml des 2 workflows modifiés). `funnel-payment.spec.ts` hors gate CI, échec environnemental (sélecteur obsolète + satellite périmé, `src/` intact).
+- Superseion de #1218 (périmètre purge seul) : commentaire posté, PR laissé ouvert, non mergée.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**

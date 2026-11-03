@@ -23,6 +23,7 @@
 const fs = require('fs')
 const path = require('path')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {
@@ -38,6 +39,9 @@ const FROM = 'Sargasses Revenu <alerte@sargasses-martinique.com>'
 const load = (p, fb) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')) } catch { return fb } }
 const round2 = n => Math.round(n * 100) / 100
 
+/** Mission P0.23 / #1157 : tout l'effet externe est dans main() — importer ce
+ * module n'a aucun effet de bord (defaut H de la review PR #1200). */
+async function main() {
 const d = load(METRICS, [])
 const deltas = []
 
@@ -106,6 +110,14 @@ deltas.forEach(x => console.log('  ' + x))
 console.log('  ' + mrrLine)
 
 if (!DO_SEND) { console.log('\nDRY-RUN — rien envoyé. --send pour envoyer.'); process.exit(0) }
+  // Mission P0.23 / #1157 : --send est une DEMANDE, l'autorisation vient du contrat central
+  // (Environment GitHub protege + dispatch manuel + verification API lecture seule).
+  const decision = await authorizeActionAsync('email_send', { requested: DO_SEND })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log('\nDRY-RUN PAR CONTRAT CENTRAL - rien envoye (autorisation absente ou non verifiable).')
+    return
+  }
 if (!mailReady()) { console.error('SMTP_PASS absent — pas d\'envoi.'); process.exit(0) }
 const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px">
   <h2 style="margin:0 0 12px;font-size:18px">Mouvement revenu (Stripe + Mollie)</h2>
@@ -119,3 +131,7 @@ sendEmail({ from: FROM, to: TO, subject: `[Sargasses] Revenu : ${deltas[0].repla
     console.log(`Alerte envoyée à ${TO}`)
   })
   .catch(e => console.error('revenue-watch error:', e.message))
+
+}
+
+if (require.main === module) { main().catch((e) => { console.error('revenue-watch:', e && e.message); process.exit(0) }) }

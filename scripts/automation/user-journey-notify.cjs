@@ -4,6 +4,11 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+// Mission P0.23 / #1157 : ce script cree des issues, labels, commentaires et
+// des missions Factory (ecritures HTTP externes). DRY-RUN par defaut :
+// `--send` est une demande, l'autorisation reelle vient du contrat central.
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs');
+const SEND_REQUESTED = process.argv.includes('--send');
 
 const BLOCKING = new Set(['fatal-js', 'blank-page', 'nav-broken', 'misleading-state', 'stale-current-decision', 'primary-cta-dead']);
 const INCIDENT_LABEL = 'autopilot-journey-alert';
@@ -435,8 +440,19 @@ async function main() {
     generatedAt: new Date().toISOString(), sourceReportAt: report.generatedAt || null,
     sourceRun: runUrl(), repo, uniqueDefects: defects.length, incidents: [], factoryHandoff: null,
   };
+  // Mission P0.23 / #1157 : autorisation resolue immediatement avant toute
+  // ecriture externe (labels, issues, commentaires, handoff Factory).
+  const WRITE_DECISION = await authorizeActionAsync('external_write', { requested: SEND_REQUESTED });
+  console.log(describeDecision(WRITE_DECISION));
+  const mayWrite = WRITE_DECISION.execute;
   if (!token) result.incidentError = 'GITHUB_TOKEN absent : impossible de notifier les incidents';
-  else {
+  else if (!mayWrite) {
+    // Mission P0.23 / #1157 : simulation, mais l'artefact local reste ecrit
+    // (tracabilite de ce qui aurait ete cree). Pas d'exitCode 1 : un run
+    // planifie en fail-closed n'est PAS un echec.
+    result.simulated = true;
+    console.log('Contrat central : SIMULATION, aucun issue/label/commentaire ne sera cree.');
+  } else {
     try {
       await ensureIncidentLabels(token, repo);
       for (const d of defects.slice(0, 40)) result.incidents.push(await upsertIncident(token, repo, report, d));
@@ -445,6 +461,9 @@ async function main() {
   }
   const factoryControlToken = process.env.FACTORY_CONTROL_TOKEN || '';
   const cloudflareToken = process.env.CLOUDFLARE_API_TOKEN || '';
+  if (!mayWrite) {
+    result.factoryHandoff = { status: 'blocked', reason: 'simulation (contrat central) : handoff Factory non effectue' };
+  } else
   try {
     result.factoryHandoff = await handoffFactory(factoryControlToken, report, defects);
     if (result.factoryHandoff.status === 'blocked' && cloudflareToken && defects.length) {

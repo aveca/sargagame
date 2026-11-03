@@ -15,9 +15,14 @@
  *   KIND     'jc_access' | 'julien_ux' | 'access_generic'  [obligatoire]
  *   REGION   'guadeloupe' | 'martinique' (domaine du lien) [défaut guadeloupe]
  *   SEND     '1' pour envoyer pour de vrai (sinon dry-run)
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : SEND=1 est une DEMANDE, pas une
+ * autorisation. Le contrat central exige en plus le jeton d'un Environment protégé,
+ * vérifié en lecture seule via l'API GitHub. Sans preuve : simulation explicite.
  */
 const path = require('path')
 const { sendEmail, brandHeader } = require(path.join(__dirname, 'lib', 'email-send.cjs'))
+const { authorizeActionAsync, describeDecision } = require(path.join(__dirname, 'lib', 'safety.cjs'))
 
 const TO = (process.env.TO || '').trim()
 const NAME = (process.env.NAME || '').trim()
@@ -96,6 +101,16 @@ async function main() {
     return
   }
   if (!TO || !TO.includes('@')) { console.error('TO invalide pour un envoi réel'); process.exit(1) }
+  // Autorisation immediatement avant l'effet externe (contrat central) : SEND=1 est la
+  // DEMANDE, pas l'approbation. Il manque encore le jeton d'Environment protégé vérifié.
+  const decision = await authorizeActionAsync('email_send', { requested: true })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log(`[support-reply] SIMULATION (${decision.mode}) — aucun envoi. ${decision.reason}`)
+    console.log('--- HTML (extrait) ---')
+    console.log(html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 600))
+    return
+  }
   const info = await sendEmail({
     to: TO,
     subject,
@@ -106,4 +121,8 @@ async function main() {
   console.log('[support-reply] ENVOYÉ ✓', info && info.messageId ? info.messageId : '')
 }
 
-main().catch((e) => { console.error('[support-reply] ERREUR', e && e.message); process.exit(1) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch((e) => { console.error('[support-reply] ERREUR', e && e.message); process.exit(1) })
+}

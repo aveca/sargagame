@@ -37,7 +37,13 @@ const { resolve } = require('path')
 const { emailHash, logId } = require('./lib/email-hash.cjs')
 const { sendEmail: sendMail, mailReady } = require('./lib/email-send.cjs')
 
-const DRY_RUN = process.env.DRY_RUN === '1'
+// Mission P0.23 / #1157 : DRY_RUN unifie via le contrat central ('1' OU 'true').
+// L'envoi reel exige `--send` ET l'autorisation du contrat. L'absence de
+// DRY_RUN n'a jamais valu autorisation : defaut = simulation.
+const { authorizeActionAsync, describeDecision, isDryRunRequested } = require('./lib/safety.cjs')
+const DRY_RUN = isDryRunRequested(process.env)
+const SEND_REQUESTED = process.argv.includes('--send')
+let B2B_DECISION = null
 const MAX_EMAILS_PER_RUN = 4
 
 const DATA_DIR = resolve(__dirname, 'data')
@@ -226,7 +232,8 @@ function buildEmailHTML(target) {
 async function sendEmail(resend, to, target) {
   const subject = buildSubject(target)
   const html = buildEmailHTML(target)
-  if (DRY_RUN || !resend) {
+  // Mission P0.23 / #1157 : sans autorisation effective du contrat central, on SIMULE.
+  if (DRY_RUN || !resend || !B2B_DECISION || !B2B_DECISION.execute) {
     console.log(`  [DRY RUN] → ${logId(to)} | sujet: ${subject}`)
     return { sent: true, dry: true }
   }
@@ -244,7 +251,15 @@ async function sendEmail(resend, to, target) {
 async function main() {
   console.log(`=== B2B Outreach ${DRY_RUN ? '(DRY RUN)' : ''} ===`)
   console.log(`${new Date().toISOString()}\n`)
-  if (!mailReady() && !DRY_RUN) { console.log('SMTP_PASS absent → rien envoyé (set DRY_RUN=1 pour simuler).'); return }
+  // Mission P0.23 / #1157 : autorisation resolue immediatement avant tout envoi.
+  B2B_DECISION = await authorizeActionAsync('outreach', { requested: SEND_REQUESTED && !DRY_RUN })
+  console.log(describeDecision(B2B_DECISION))
+  if (!mailReady() && B2B_DECISION.execute) {
+    // Credentiels manquants = fail-closed : on retombe en simulation.
+    console.log('SMTP_PASS absent - fail-closed : simulation.')
+    B2B_DECISION = { execute: false, mode: 'blocked', action: 'outreach', reason: 'credentiels SMTP absents' }
+  }
+  if (!B2B_DECISION.execute) console.log('Mode simulation: aucun email B2B ne sera envoye.')
   const resend = mailReady() ? {} : null
 
   const log = readJSON(B2B_LOG) || { contacted: {}, lastRun: null, totalSent: 0 }
@@ -297,4 +312,8 @@ async function main() {
   console.log(`\n=== Fini : ${sent} envoyés ce run (${log.totalSent} au total) ===`)
 }
 
-main().catch(e => { console.error(`[b2b-outreach] Fatal: ${e.message}`); process.exit(0) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch(e => { console.error(`[b2b-outreach] Fatal: ${e.message}`); process.exit(0) })
+}

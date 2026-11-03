@@ -40,6 +40,17 @@
  * `--wait-ms`, que les checks apparaissent et tournent au vert), le workflow de
  * production ensuite.
  *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : ce script émet des requêtes POST
+ * externes (dispatch de workflows GitHub) qui déclenchent la chaîne de
+ * déploiement de PRODUCTION. Les règles du dépôt interdisent un déploiement de
+ * production sans autorisation explicite → contrat central
+ * (`scripts/lib/outbound-authorization.cjs`) : DRY-RUN par défaut.
+ * Un cron / push / PR ne peut JAMAIS autoriser le dispatch. Une exécution réelle
+ * exige `workflow_dispatch` + jeton d'approbation d'un Environment protégé,
+ * vérifié en lecture seule via l'API GitHub.
+ * Non autorisé → aucune requête envoyée, échec BRUYANT (l'inverse d'un succès
+ * silencieux), exactement comme un dispatch qui échoue.
+ *
  * Usage :
  *   GITHUB_TOKEN=... GITHUB_REPOSITORY=owner/repo [DEPLOY_REF=main] \
  *     node scripts/automation/trigger-production-deploy.cjs [--dry-run]
@@ -47,6 +58,7 @@
 'use strict';
 
 const https = require('https');
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs');
 
 const API = 'https://api.github.com';
 
@@ -146,6 +158,29 @@ async function main() {
     return;
   }
 
+  // Autorisation AVANT le premier dispatch (contrat central, fail-closed).
+  // Le run du workflow EST la demande ; la preuve d'approbation reste requise.
+  const decision = await authorizeActionAsync('external_write', { requested: true });
+  console.log(describeDecision(decision));
+  if (!decision.execute) {
+    note('');
+    note(`### Chaîne de déploiement NON déclenchée — autorisation absente`);
+    note('');
+    note(`Mode \`${decision.mode}\` : ${decision.reason}`);
+    note(`Aucune requête POST n'a été envoyée (API GitHub). Les données sont`);
+    note(`publiées dans \`${repo}\` mais ne seront **pas** déployées : la fraîcheur`);
+    note('en production va se dégrader. Le contrôle de fraîcheur du Sentinel doit');
+    note("alerter — c'est le comportement voulu (fail-closed), pas un défaut.");
+    note('');
+    note('Pour autoriser : lancer le workflow en `workflow_dispatch` avec');
+    note('`OUTBOUND_APPROVAL_TOKEN` fourni par un Environment protégé, vérifié');
+    note("via l'API GitHub en lecture seule par `outbound-authorization.cjs`.");
+    console.error('');
+    console.error("Chaîne de déclenchement NON autorisée : " + decision.reason);
+    console.error('Aucune requête envoyée. Production NON déployée (fail-closed).');
+    process.exit(1);
+  }
+
   const failures = [];
   for (const c of CHAIN) {
     try {
@@ -182,7 +217,11 @@ async function main() {
   note('aucun déploiement n\'est autorisé sans ces preuves.');
 }
 
-main().catch((e) => {
-  console.error('ERREUR : ' + (e && e.message ? e.message : e));
-  process.exit(1);
-});
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch((e) => {
+    console.error('ERREUR : ' + (e && e.message ? e.message : e));
+    process.exit(1);
+  });
+}

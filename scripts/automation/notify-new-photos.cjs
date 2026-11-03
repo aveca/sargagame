@@ -23,6 +23,9 @@ const TO = 'yacovassaraf@gmail.com'
 const FROM = 'Sargasses Photos <alerte@sargasses-martinique.com>'
 
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+// Mission P0.23 / #1157 : aucun email sans demande `--send` ET autorisation du contrat.
+const SEND_REQUESTED = process.argv.includes('--send')
 
 function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
@@ -66,6 +69,14 @@ async function main() {
       <p style="font-size:11px;color:#999;margin-top:18px">Alerte auto — photos visiteurs Sargasses.</p>
     </div>`
 
+  // Autorisation immediatement avant l'effet externe (mission P0.23 / #1157).
+  const decision = await authorizeActionAsync('email_send', { requested: SEND_REQUESTED })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log(`[photos-notify] simulation : ${n} photo(s) auraient ete notifiees (aucun email envoye, aucun marquage)`)
+    return
+  }
+
   const { error } = await sendEmail({ from: FROM, to: TO, subject, html })
   if (error) { console.error('[photos-notify] SMTP:', error.message); return }
   console.log(`[photos-notify] email envoyé (${n} photo(s))`)
@@ -85,4 +96,8 @@ async function main() {
 // process.exit explicite : le transport SMTP (nodemailer) garde l'event loop vivant
 // après l'envoi → sans ça le runner CI traîne ~3 min. main() a déjà awaité l'email + le
 // PATCH notified=true, donc rien n'est coupé.
-main().then(() => process.exit(0)).catch(() => process.exit(0))
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().then(() => process.exit(0)).catch(() => process.exit(0))
+}

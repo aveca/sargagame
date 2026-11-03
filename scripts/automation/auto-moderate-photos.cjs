@@ -18,8 +18,17 @@
  * jpeg-js pngjs) — PAS dans package.json, pour ne pas alourdir les autres workflows.
  *
  * Env : SUPABASE_SERVICE_KEY (obligatoire), SUPABASE_URL (optionnel), AUTO_MODERATE_PHOTOS ('0' → skip).
- * Usage : node scripts/automation/auto-moderate-photos.cjs
+ *
+ * GOUVERNANCE SORTANTE (mission P0.23 / #1157) : la classification est locale, mais le
+ * PATCH Supabase (`status=approved|rejected`) est une ECRITURE EXTERNE donc destructrice.
+ * Par defaut (cron, push, run inconnu) le script ne fait que SIMULER : il imprime les
+ * verdicts et ne touche aucune ligne. Une execution reelle exige `--send` ET
+ * l'autorisation du contrat central (dispatch manuel + Environment protege verifie).
+ * Usage : node scripts/automation/auto-moderate-photos.cjs [--send]
  */
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+// Demande explicite d'execution reelle. Son absence n'est JAMAIS une autorisation.
+const SEND_REQUESTED = process.argv.includes('--send')
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || ''
 const ENABLED = process.env.AUTO_MODERATE_PHOTOS !== '0'
@@ -93,7 +102,11 @@ async function main() {
   } catch (e) { console.warn('[photos-nsfw] lecture échouée:', e.message); return }
   if (!Array.isArray(rows) || !rows.length) { console.log('[photos-nsfw] aucune photo à filtrer'); return }
 
-  let approved = 0, rejected = 0, gray = 0, errored = 0
+  // Autorisation immediatement avant la premiere ecriture externe (contrat central).
+  // Une decision non "execute" coupe TOUTES les mutations : rien n'est applique.
+  const decision = await authorizeActionAsync('external_write', { requested: SEND_REQUESTED })
+  console.log(describeDecision(decision))
+  let approved = 0, rejected = 0, gray = 0, errored = 0, simulated = 0
   for (const r of rows) {
     let verdict = 'gray'
     try {
@@ -111,6 +124,7 @@ async function main() {
     } catch (e) { console.warn('[photos-nsfw] classification échouée', r.id, e.message); errored++; continue }
 
     if (verdict === 'gray') { gray++; continue } // laisse pending → email humain
+    if (!decision.execute) { simulated++; console.log(`[photos-nsfw] simulation : ${r.id} aurait ete ${verdict} (aucun PATCH Supabase)`); continue }
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/photos?id=eq.${encodeURIComponent(r.id)}&status=eq.pending`, {
         method: 'PATCH', headers: svcHeaders({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
@@ -120,7 +134,7 @@ async function main() {
       if (verdict === 'approved') approved++; else rejected++
     } catch (e) { console.warn('[photos-nsfw] PATCH échoué', r.id, e.message); errored++ }
   }
-  console.log(`[photos-nsfw] ${approved} approuvée(s), ${rejected} rejetée(s), ${gray} zone-grise (→ email), ${errored} erreur(s)`)
+  console.log(`[photos-nsfw] ${approved} approuvée(s), ${rejected} rejetée(s), ${gray} zone-grise (→ email), ${errored} erreur(s)${simulated ? `, ${simulated} simulee(s) (mode ${decision.mode})` : ''}`)
 }
 
 module.exports = { decide } // pour tests unitaires

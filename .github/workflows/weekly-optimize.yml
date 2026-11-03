@@ -110,9 +110,11 @@ jobs:
       - name: "[Tuesday] Bounce cleanup via Apps Script"
         if: steps.day.outputs.task == 'tuesday'
         continue-on-error: true
-        run: |
-          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=clean_bounces")
-          echo "Bounce cleanup: $RESULT"
+        # Mission P0.23 / #1157 : le `curl ... action=clean_bounces` direct
+        # contournait le contrat d'autorisation (defaut de review F, PR #1200).
+        # Il passe desormais par le wrapper Node appscript-cleanup.cjs, DRY-RUN
+        # par defaut sur un declencheur `schedule`.
+        run: node scripts/automation/appscript-cleanup.cjs
 
       # [Tuesday] Drip check Apps Script SUPPRIMÉ (2026-06-10) : runDripEmails()
       # legacy n'a ni garde île (envoyait du FR "Sargasses Martinique" aux leads
@@ -141,7 +143,11 @@ jobs:
         continue-on-error: true
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
-        run: node scripts/automation/beached-calibrate.cjs --send
+        # Mission P0.23 / #1157 : `--send` (ecriture locale + EMAIL) retire.
+        # `--write` conserve l'auto-calage hebdo (JSON local borne, non
+        # destructif) ; l'EMAIL de notification passe par le contrat central
+        # (simulation par defaut sur un declencheur `schedule`).
+        run: node scripts/automation/beached-calibrate.cjs --write
 
       - name: "[Wednesday] Health check both sites + staleness"
         if: steps.day.outputs.task == 'wednesday'
@@ -259,9 +265,8 @@ jobs:
       - name: "[Saturday] Bounce cleanup"
         if: steps.day.outputs.task == 'saturday'
         continue-on-error: true
-        run: |
-          RESULT=$(curl -sL "${{ secrets.APPS_SCRIPT_URL }}?action=clean_bounces")
-          echo "Bounce cleanup: $RESULT"
+        # Mission P0.23 / #1157 : idem mardi, via le wrapper Node contractualise.
+        run: node scripts/automation/appscript-cleanup.cjs
 
       - name: "[Saturday] Commit weekend data"
         if: steps.day.outputs.task == 'saturday'

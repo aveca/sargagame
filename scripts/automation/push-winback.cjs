@@ -25,7 +25,13 @@ const fs = require('fs')
 const path = require('path')
 const https = require('https')
 
+// Mission P0.23 / #1157 : `--send` est une DEMANDE, l'autorisation vient du
+// contrat central (Environment GitHub protege + dispatch manuel + verification
+// API en lecture seule). Sans autorisation effective => DRY-RUN, meme si le
+// cron passe `--send`.
 const SEND = process.argv.includes('--send')
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+let PUSH_DECISION = null
 const DORMANT_DAYS = parseInt(process.env.WINBACK_DORMANT_DAYS || '12', 10) // ≥12 j sans ouvrir
 const CADENCE_DAYS = parseInt(process.env.WINBACK_CADENCE_DAYS || '14', 10) // ≤1 push / 2 sem.
 const MARKER_PATH = path.join(__dirname, 'data', 'push-winback-sent.json')
@@ -80,6 +86,12 @@ async function main() {
   const nowMs = Date.now()
   console.log(`[winback] mode=${SEND ? 'SEND' : 'DRY-RUN'} · dormant>=${DORMANT_DAYS}j (sg_last_seen<${cutoff}) · cadence=${CADENCE_DAYS}j`)
 
+  // Autorisation immediatement avant le premier POST OneSignal (mission P0.23).
+  PUSH_DECISION = await authorizeActionAsync('push_send', { requested: SEND })
+  console.log(describeDecision(PUSH_DECISION))
+  const EFFECTIVE_SEND = SEND && PUSH_DECISION.execute
+  if (SEND && !EFFECTIVE_SEND) console.log('[winback] --send refuse par le contrat central: simulation.')
+
   for (const [id, cfg] of Object.entries(APPS)) {
     if (!cfg.apiKey) { console.log(`[winback] ${id.toUpperCase()} — pas de clé API → skip`); continue }
     const last = marker[id] ? Date.parse(marker[id]) : 0
@@ -95,7 +107,7 @@ async function main() {
       headings: { en: cfg.heading, fr: cfg.heading },
       url: cfg.url,
     }
-    if (!SEND) {
+    if (!EFFECTIVE_SEND) {
       console.log(`[winback] ${id.toUpperCase()} DRY-RUN — enverrait :`, JSON.stringify(payload.filters), `“${cfg.msg}”`)
       continue
     }
@@ -111,4 +123,8 @@ async function main() {
   console.log('[winback] terminé.')
 }
 
-main().catch((e) => { console.error('[winback] erreur non fatale :', e && e.message); process.exit(0) })
+// Garde d'exécution (mission P0.23 / #1157) : un `require()` n'a aucun effet
+// réseau ; seule une exécution directe lance main().
+if (require.main === module) {
+  main().catch((e) => { console.error('[winback] erreur non fatale :', e && e.message); process.exit(0) })
+}

@@ -27,12 +27,18 @@ const {
   BEACHES_META, HISTORY_PATH, BANKS_PATH, loadJSON,
 } = require('./backtest-forecast.cjs')
 const { sendEmail, mailReady } = require('./lib/email-send.cjs')
+// Mission P0.23 / #1157 : le JSON de calibration est une ecriture LOCALE
+// (--write, garde-foulee par les bornes), mais l'EMAIL de notification est une
+// action sortante : elle passe par le contrat central, DRY-RUN par defaut.
+const { authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
 
 // bridge .env → process.env (exécution locale)
 ;['SMTP_PASS', 'SMTP_USER', 'SMTP_HOST', 'SMTP_PORT'].forEach(k => {
   if (!process.env[k]) { try { const t = fs.readFileSync(path.join(__dirname, '../../.env'), 'utf8'); const m = t.match(new RegExp('^' + k + '=([^\\r\\n]+)', 'm')); if (m) process.env[k] = m[1].trim() } catch (_) {} }
 })
 
+// `--send` = DEMANDE d'ecriture locale + email. L'email n'aura lieu qu'apres
+// autorisation effective du contrat central (Environment GitHub protege).
 const DO_SEND = process.argv.includes('--send')
 const DO_WRITE = DO_SEND || process.argv.includes('--write')
 const OUT = path.join(__dirname, 'data/beached-calibration.json')
@@ -52,7 +58,7 @@ const LOADED_AFAI = 0.20  // a beach counts as "loaded" (échoué) at/above this
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v))
 
-function main() {
+async function main() {
   const history = (loadJSON(HISTORY_PATH, { history: [] }).history || []).slice().sort((a, b) => a.date.localeCompare(b.date))
   const banks = (loadJSON(BANKS_PATH, { banks: [] }).banks) || []
   const dates = history.map(e => e.date)
@@ -145,6 +151,14 @@ function main() {
   writeReport(report, true)
 
   if (!DO_SEND) { console.log(`  JSON écrit (${current}j → ${chosen}j). --send pour notifier.`); process.exit(0) }
+  // Mission P0.23 / #1157 : `--send` est une demande d'email, pas une
+  // autorisation. Sans preuve d'approbation, pas d'email.
+  const EMAIL_DECISION = await authorizeActionAsync('email_send', { requested: DO_SEND })
+  console.log(describeDecision(EMAIL_DECISION))
+  if (!EMAIL_DECISION.execute) {
+    console.log('Contrat central : SIMULATION, aucun email de recalage envoye.')
+    process.exit(0)
+  }
   if (!mailReady()) { console.error('  SMTP_PASS absent — JSON écrit, pas d\'email.'); process.exit(0) }
 
   const rows = report.sweep.map(s => `<tr><td style="padding:2px 8px">${s.days} j</td><td style="padding:2px 8px">${s.mae}</td><td style="padding:2px 8px">${s.hitRate}%</td></tr>`).join('')
@@ -176,4 +190,9 @@ function writeReport(report, changed) {
   console.log(`  → ${OUT} ${changed ? '(mis à jour)' : '(refresh)'}`)
 }
 
-main()
+// Point d'entree explicite : importer ce module ne calcule ni n'ecrit rien.
+if (require.main === module) {
+  main().catch((e) => { console.error(e); process.exitCode = 1 })
+}
+
+module.exports = { main }

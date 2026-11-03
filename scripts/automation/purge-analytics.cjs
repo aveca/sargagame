@@ -28,8 +28,14 @@
  *     avant le timeout du job — une purge incomplète est un problème
  *     d'hygiène de table, jamais une raison de tuer le pipeline.
  *
- * Usage : node scripts/automation/purge-analytics.cjs [--days=90] [--dry]
- *        [--batch=5000] [--max-batches=200] [--budget-seconds=480]
+ * Usage : node scripts/automation/purge-analytics.cjs [--days=90] [--batch=5000]
+ *        [--max-batches=200] [--budget-seconds=480] [--dry|--purge]
+ *
+ * Mission P0.23 / #1157 : SANS argument de mode, le script SIMULE (aucun DELETE).
+ * `--dry` force la simulation. `--purge` est une DEMANDE de suppression reelle,
+ * qui reste soumise au contrat `scripts/lib/outbound-authorization.cjs`
+ * (dispatch manuel + jeton d'Environment GitHub protege verifie en lecture
+ * seule). Un cron/journalier ne peut donc plus supprimer quoi que ce soit.
  */
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rswdmjtdzrucqzzukfmd.supabase.co'
@@ -38,7 +44,12 @@ const DAYS = (() => {
   const a = process.argv.find((x) => x.startsWith('--days='))
   return a ? parseInt(a.slice(7), 10) : 90
 })()
-const DRY = process.argv.includes('--dry')
+// Mission P0.23 / #1157 : contrat d'autorisation central.
+// Defaut = simulation. Une suppression reelle exige `--purge` explicite ET
+// l'autorisation du contrat (dispatch manuel + jeton d'Environment protege
+// verifie en lecture seule via l'API GitHub). Aucun workflow planifie ne peut purger.
+const { assertAnalyticsDeleteAllowed, authorizeActionAsync, describeDecision } = require('./lib/safety.cjs')
+const DRY = process.argv.includes('--dry') || !process.argv.includes('--purge')
 const BATCH = (() => {
   const a = process.argv.find((x) => x.startsWith('--batch='))
   const n = a ? parseInt(a.slice(7), 10) : 5000
@@ -98,7 +109,7 @@ async function purgeInBatches(cutoff, opts, fetchImpl) {
     try {
       res = await fetchImpl(`${SUPABASE_URL}/rest/v1/analytics_events?${q}`, {
         method: 'DELETE',
-        headers: svcHeaders({ Range: `0-${batch - 1}`, Prefer: 'return=minimal' }),
+        headers: svcHeaders({ Range: `0-${batch - 1}`, Prefer: 'return=representation' }),
         signal: AbortSignal.timeout(30000),
       })
     } catch (e) {
@@ -109,10 +120,30 @@ async function purgeInBatches(cutoff, opts, fetchImpl) {
       lastError = `HTTP ${res.status}: ${(await res.text().catch(() => '')).slice(0, 200)}`
       break
     }
-    // `content-range` d'un DELETE PostgREST : `0-<dernier index>/<nb supprimé>`
+    // Chemin autorise : representation OBLIGATOIRE (mission P0.23).
+    // representation absente / non JSON / ligne sans id / compte manquant = ERROR.
+    let payload
+    try {
+      payload = await res.json()
+    } catch (e) {
+      lastError = 'representation absente ou non JSON : suppression non certifiable'
+      break
+    }
+    if (!Array.isArray(payload) || payload.some((r) => !r || typeof r.id === 'undefined' || r.id === null)) {
+      lastError = 'representation incomplete : ligne supprimee sans id exact'
+      break
+    }
     const cr = res.headers.get('content-range') || ''
     const m = cr.match(/\/(\d+)\s*$/)
-    const removed = m ? parseInt(m[1], 10) : 0
+    if (!m) {
+      lastError = 'content-range absent : nombre de suppressions non certifiable'
+      break
+    }
+    const removed = payload.length
+    if (removed !== parseInt(m[1], 10)) {
+      lastError = 'compte de suppression incoherent (representation vs content-range)'
+      break
+    }
     deleted += removed
     if (removed < batch) break   // plus rien à supprimer
   }
@@ -136,8 +167,13 @@ async function main() {
   }
   console.log(`[purge] ${toDelete} ligne(s) à supprimer`)
 
-  if (toDelete === 0 || DRY) {
-    if (DRY) console.log('[purge] --dry → aucune suppression effectuée')
+  if (toDelete === 0) return
+
+  // Autorisation IMMEDIATEMENT avant l'effet externe (jamais a l'import).
+  const decision = await authorizeActionAsync('analytics_delete', { requested: !DRY })
+  console.log(describeDecision(decision))
+  if (!decision.execute) {
+    console.log(`[purge] simulation : ${toDelete} ligne(s) auraient ete supprimees (aucune suppression effectuee)`)
     return
   }
 
