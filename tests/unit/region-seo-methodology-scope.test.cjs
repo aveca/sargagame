@@ -185,7 +185,7 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       erddapTimestamp: '2026-10-27T12:00:00.000Z',
       stale: false,
     }
-    generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, now: freshnessNow })
+    generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, trackRecord: staleRecord, now: freshnessNow })
     const generatedFiles = walk(distDir).filter(file => file.endsWith('.html'))
     const methodPages = generatedFiles.filter(file => /(?:methodology|metodologia)\/index\.html$/i.test(file))
     assert.ok(methodPages.length > 0, regionId + ': methodology page must remain generated')
@@ -294,7 +294,7 @@ try {
     erddapTimestamp: new Date(freshnessNow - 899 * 60000).toISOString(),
     stale: false,
   }
-  generateRegionSeoPages(getRegion(freshRegionId), freshDistDir, { data: freshData, now: freshnessNow })
+  generateRegionSeoPages(getRegion(freshRegionId), freshDistDir, { data: freshData, trackRecord: freshRecord, now: freshnessNow })
   const freshFiles = walk(freshDistDir).filter(file => file.endsWith('.html'))
   const freshLanding = freshFiles.find(file => /sargassum-for-hotels\/index\.html$/i.test(file.replace(/\\/g, '/')))
   const freshDirectory = freshFiles.find(file => /resorts\/index\.html$/i.test(file.replace(/\\/g, '/')))
