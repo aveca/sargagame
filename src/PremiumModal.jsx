@@ -8,6 +8,8 @@ import React,{useState,useEffect,useMemo,useRef,useCallback} from "react"
 import PassOffer from "./PassOffer.jsx"
 import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
+import { regionalObservationFreshness } from "./lib/regional-observation-freshness.mjs"
+import { formatObservationTimestamp } from "./lib/format-freshness.mjs"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -18,6 +20,28 @@ const {
   loadStripeJs, miVeil, moodFromStatus, sgMyReferralCode, sgReferredBy, sgToast, sgVerifySub, submitLead,
   track, walletAvail
 } = SG
+
+function observationDisplay(sargData, lang, now = Date.now()) {
+  const result = regionalObservationFreshness(sargData, now);
+  const stamp = result.timestamp ? formatObservationTimestamp(result.timestamp, lang) : null;
+  const age = result.ageMinutes == null ? null : Math.floor(result.ageMinutes);
+  const ageText = age == null ? null : age < 60 ? `${Math.max(1, age)} min` : `${Math.floor(age / 60)} h`;
+  if (result.state === "fresh") return { ...result, label: _t(lang,
+    `Dernière observation satellite : ${stamp} · âge ${ageText}`,
+    `Last satellite observation: ${stamp} · age ${ageText}`,
+    `Última observación satelital: ${stamp} · antigüedad ${ageText}`) };
+  if (result.state === "delayed") return { ...result, label: _t(lang,
+    `Observation satellite retardée : ${stamp} · statut actuel masqué`,
+    `Satellite observation delayed: ${stamp} · current status withheld`,
+    `Observación satelital retrasada: ${stamp} · estado actual oculto`) };
+  return { ...result, label: stamp
+    ? _t(lang, `Observation satellite non vérifiée : ${stamp} · statut actuel masqué`,
+        `Unverified satellite observation: ${stamp} · current status withheld`,
+        `Observación satelital no verificada: ${stamp} · estado actual oculto`)
+    : _t(lang, "Horodatage satellite indisponible · statut actuel masqué",
+        "Satellite timestamp unavailable · current status withheld",
+        "Hora satelital no disponible · estado actual oculto") };
+}
 
 // Simple media query hook (no deps)
 function useMediaQuery(query){
@@ -168,8 +192,11 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const isl=island||((REGION&&REGION.id)?String(REGION.id).toLowerCase():"mq")
   const _lvls=Object.values(sargData?.levels||{})
   const islandLvls=_lvls.filter(b=>isl==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
-  const cleanCount=islandLvls.filter(b=>b.status==="clean").length
-  const totalCount=islandLvls.length
+  const observation = observationDisplay(sargData, lang);
+  const observationFresh = observation.state === "fresh";
+  const freshLine = observation.label;
+  const cleanCount=observationFresh?islandLvls.filter(b=>b.status==="clean").length:0
+  const totalCount=observationFresh?islandLvls.length:0
   // Plage active : contexte (prop beach) > deeplink ?beach=<id-sarg> > choix select > rien.
   const [pickedId,setPickedId]=useState("")
   const ctxSargId=beach?(IS_NEW_REGION?beach.id:(BEACH_TO_SARG[beach.id]||null)):null
@@ -186,25 +213,16 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
       ||lv.id.replace(/^gp-/,"").split("-").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ")||null
   }
   const bName=lvl?nameOf(lvl):(beach&&beach.name)||null
-  // Fraîcheur HONNÊTE : erddapTimestamp = « Vu du satellite » ; sinon updatedAt =
-  // « Données mises à jour » — jamais l'inverse (fausse fraîcheur interdite, loi moat).
-  const freshLine=(()=>{
-    const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null
-    const src=sat||up;if(!src)return null
-    const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6))
-    if(!isFinite(h))return null
-    return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
-      :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)
-  })()
   const STATUS={
     clean:{c:"#27c46b",l:_t(lang,"Propre aujourd'hui","Clean today","Limpia hoy")},
     moderate:{c:"#e8a800",l:_t(lang,"Algues modérées","Moderate seaweed","Algas moderadas")},
     avoid:{c:"#e8522a",l:_t(lang,"À éviter aujourd'hui","Avoid today","Evitar hoy")},
   }
-  const stOf=lv2=>STATUS[lv2&&lv2.status]||null
+  const stOf=lv2=>observationFresh?(STATUS[lv2&&lv2.status]||null):null
   // Grille É2 : la plage active si elle a un forecast, sinon la MEILLEURE plage de
   // l'île qui en a un (nommée — jamais une grille anonyme), sinon pas de grille.
   const fcLvl=(()=>{
+    if(!observationFresh)return null
     const has=l2=>!!(l2&&sargData?.weekly?.[l2.id]?.forecast?.length)
     if(has(lvl))return lvl
     return [...islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
@@ -417,8 +435,8 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
         </>:!sent&&step===1?<div key={1} className="sgseq-step">
           {/* ── É1 CONSTAT + CADEAU (temps 1+2+3) : le verdict RÉEL, gratuit, avant tout ask. ── */}
           <div ref={stepTitleRef} tabIndex={-1} style={titleStyle}>{bName
-            ?_t(lang,`${bName}, ce matin. Mesurée, pas devinée.`,`${bName}, this morning. Measured, not guessed.`,`${bName}, esta mañana. Medida, no adivinada.`)
-            :_t(lang,"Vos plages, ce matin. Mesurées, pas devinées.","Your beaches, this morning. Measured, not guessed.","Sus playas, esta mañana. Medidas, no adivinadas.")}</div>
+            ?_t(lang,`${bName}, dernière observation datée.`,`${bName}, latest dated observation.`,`${bName}, última observación fechada.`)
+            :_t(lang,"Vos plages, dernière observation datée.","Your beaches, latest dated observation.","Sus playas, última observación fechada.")}</div>
           {lvl&&st1?<>
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
               <span style={{width:16,height:16,borderRadius:"50%",background:st1.c,border:`2px solid ${I.ink}`,flexShrink:0}} aria-hidden="true"/>
@@ -434,7 +452,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`}}>
               <span style={{fontSize:20,flexShrink:0}} aria-hidden="true">🛰️</span>
               <div>
-                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages propres ce matin`,`${cleanCount}/${totalCount} beaches clean this morning`,`${cleanCount}/${totalCount} playas limpias esta mañana`)}</div>
+                <div style={{font:"800 14.5px/1.2 'Bricolage Grotesque'",color:I.ink}}>{_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)}</div>
                 {freshLine&&<div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:"#52525b",marginTop:3}}>{freshLine}</div>}
               </div>
             </div>
@@ -445,7 +463,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             </select>}
           </>:<>
             <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              🛰️ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
+              🛰️ {freshLine}
             </div>
           </>}
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
@@ -588,10 +606,10 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
 // en la MONTRANT (aperçu 7 jours, Auj/Dem révélés verts, J+2…J+6 verrouillés). Classes .pww-*
 // pour ne pas collisionner avec ComicPaywall (.pwx-*). reduced-motion respecté (tableau, pas
 // aquarium). Asset validé : design/wow-candidates/paywall-world-continuity.html.
-function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode}){
+function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,observationFresh=false,freshnessLine=""}){
    // Verdict plage (depuis le contexte d'ouverture) → loc affichée dans l'aperçu 7 jours.
-   const ST=ctxStatus||(beach&&beach.status)||null
-   const ctxLoc=ctxName||topName||null
+   const ST=observationFresh?(ctxStatus||(beach&&beach.status)||null):null
+   const ctxLoc=observationFresh?(ctxName||topName||null):null
    // Prix — réutilise À L'IDENTIQUE les dérivations de ComicPaywall (aucune divergence,
    // aucun hardcode devise). pMo/pYr = cartes plan, eqMo = « soit X/mois » sous l'annuel,
    // ctaSub = 1re sous-ligne CTA, perDay = 2e sous-ligne (« moins qu'un café »).
@@ -635,7 +653,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
   // Aperçu 7 jours = STATIQUE / illustratif (pas de fausse donnée live), Auj/Dem verts.
   const dayNames=lang==="en"?["Mon","Tue","Wed","Thu","Fri","Sat","Sun"]:lang==="es"?["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]:["Lun","Mar","Mer","Jeu","Ven","Sam","Dim"]
   const today=new Date().getDay() // 0=Dim
-  const dn=i=>{if(i===0)return _t(lang,"Auj","Today","Hoy");if(i===1)return _t(lang,"Dem","Tom","Mañ");return dayNames[(today+i)%7]}
+  const dn=i=>{if(i===0)return _t(lang,"Exemple","Example","Ejemplo");if(i===1)return _t(lang,"Aperçu","Preview","Vista");return dayNames[(today+i)%7]}
   const previewDots=["ok","ok","mod","bad","bad","mod","ok"] // illustratif
   const planBtn=(key,label,price,unit,slam,eq,save)=>(
     <button type="button" onClick={()=>{setPlan(key);try{track("sg_plan_toggle",{plan:key,skin:"world"})}catch(_){}}}
@@ -820,7 +838,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         </svg>
         <span className="pww-eyebrow pww-anton">{_t(lang,"Le Veilleur — Pass","The Watcher — Pass","El Vigía — Pase")}</span>
         <span className="pww-season">{seasonMsg||_t(lang,"La saison est là","Season is here","La temporada está aquí")}</span>
-        <div className="pww-vbubble">{_t(lang,<>Ta plage, vérifiée chaque matin — <b>avant</b> que tu partes.</>,<>Your beach, checked every morning — <b>before</b> you leave.</>,<>Tu playa, verificada cada mañana — <b>antes</b> de que salgas.</>)}</div>
+        <div className="pww-vbubble">{_t(lang,<>Ta plage, avec la date de sa dernière observation.</>,<>Your beach, with the date of its latest observation.</>,<>Tu playa, con la fecha de su última observación.</>)}</div>
         <span className="pww-veil">
           <svg viewBox="0 0 120 90" width="78" height="58" aria-hidden="true">
             <g className="pww-breathe">
@@ -854,7 +872,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* APERÇU PRÉVISION 7 JOURS — illustratif (Auj/Dem verts, J+2…J+6 verrouillés) */}
         <div className="pww-fcast" role="button" tabIndex={0} onClick={()=>onStart()} onKeyDown={e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();onStart()}}} aria-label={_t(lang,"Aperçu de la prévision 7 jours — débloquer","7-day forecast preview — unlock","Vista previa pronóstico 7 días — desbloquear")}>
           <div className="pww-fcast-top">
-            <span className="ttl pww-anton">{_t(lang,"Ta prévision · 7 jours","Your forecast · 7 days","Tu pronóstico · 7 días")}</span>
+            <span className="ttl pww-anton">{_t(lang,"Exemple de prévision · 7 jours","Illustrative 7-day forecast","Ejemplo de pronóstico · 7 días")}</span>
             {ctxLoc&&<span className="loc">{ctxLoc}</span>}
           </div>
           <svg className="pww-fcast-curve" viewBox="0 0 340 64" preserveAspectRatio="none" aria-hidden="true">
@@ -876,7 +894,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
               <div key={i} className={"pww-day"+(i>=2?" lock":"")}>
                 <span className="ddn">{dn(i)}</span>
                 <span className={"ddot "+st}></span>
-                <span className="dvd">{i<2?_t(lang,"Net","Clear","Limpio"):<Lock s={9}/>}</span>
+                <span className="dvd">{i<2?_t(lang,"Exemple","Example","Ejemplo"):<Lock s={9}/>}</span>
               </div>
             ))}
           </div>
@@ -904,10 +922,10 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
             ADDITIF du bloc .pwx-record de ComicPaywall pour restaurer la preuve-moat sur
             l'écran de décision de l'arm World (capture/rollback). Gate lien = ?pwrel=0. */}
         {recordProof
-          ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
-          :totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
-          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
-          :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
+          ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em><small>{freshnessLine}</small>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
+          :<div className="pww-proof">{observationFresh&&totalCount>0
+            ?_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)
+            :freshnessLine}</div>}
 
         {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
             contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
@@ -973,13 +991,13 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
 // Tokens .lc- (paper/ink/yel) + scène golden-hour + cases BD, miroir de ChasseDetail.
 // Asset validé : design/proto-paywall-comic.html (vérifié navigateur 2026-06-19).
 // Header variants: scene (golden-hour), constel (constellation map), beat (beat panel).
-function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,headerVariant="scene"}){
-   const ST=ctxStatus||(beach&&beach.status)||null
-   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":"ok"
-   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":"#27c46b"
-   const vLbl=ST==="avoid"?_t(lang,"à éviter","avoid","evitar"):ST==="moderate"?_t(lang,"à surveiller","watch it","a vigilar"):_t(lang,"propre","clean","limpia")
-   const ctx=ctxName||topName
-   const best=topName
+function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxStatus,cleanCount,totalCount,recordProof,allCalm,pwCalm,seasonMsg,plan,setPlan,effectivePlan,hasAnnual,onStart,onAlready,onClose,onB2B,onSeason,captureMode,headerVariant="scene",observationFresh=false,freshnessLine=""}){
+   const ST=observationFresh?(ctxStatus||(beach&&beach.status)||null):null
+   const stCls=ST==="avoid"?"bad":ST==="moderate"?"mod":ST==="clean"?"ok":"unknown"
+   const iris=ST==="avoid"?"#e8322a":ST==="moderate"?"#ffd23f":ST==="clean"?"#27c46b":"#94a3b8"
+   const vLbl=ST==="avoid"?_t(lang,"à éviter selon l'observation","avoid in the observation","evitar según la observación"):ST==="moderate"?_t(lang,"à surveiller selon l'observation","watch in the observation","vigilar según la observación"):ST==="clean"?_t(lang,"propre selon l'observation","clean in the observation","limpia según la observación"):_t(lang,"statut non vérifié","status unverified","estado no verificado")
+   const ctx=observationFresh?(ctxName||topName):null
+   const best=observationFresh?topName:null
    // Pivot saison-calme (A/B pw_calm, calculé dans PremiumModal) : en mer calme (≥80%
   // propre, ~64% du temps) la promesse de PEUR « avant que ta plage tourne » contredit
   // l'observation → dissonance → pas de clic. On bascule vers la value-prop POSITIVE que
@@ -1031,7 +1049,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
       .pwx-veil{position:absolute;left:50%;top:46%;transform:translate(-50%,-58%);z-index:2;filter:drop-shadow(2px 4px 0 rgba(13,11,20,.4))}
       .pwx-eyebrow{position:absolute;left:12px;top:14px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--ink);background:var(--yel);border:2px solid var(--ink);padding:3px 9px;border-radius:5px;box-shadow:2px 2px 0 var(--ink)}
       .pwx-verdict{position:absolute;left:12px;bottom:10px;z-index:3;font-family:"AntonLC","Anton",system-ui,sans-serif;font-size:12px;color:#fff;border:2.5px solid var(--ink);border-radius:9px;padding:4px 11px;box-shadow:3px 3px 0 var(--ink);transform:rotate(-1.5deg)}
-      .pwx-verdict.ok{background:var(--grn)}.pwx-verdict.mod{background:var(--org)}.pwx-verdict.bad{background:var(--red)}
+      .pwx-verdict.ok{background:var(--grn)}.pwx-verdict.mod{background:var(--org)}.pwx-verdict.bad{background:var(--red)}.pwx-verdict.unknown{background:#64748b}
       .pwx-season{position:absolute;right:12px;bottom:10px;z-index:3;font-size:10px;font-weight:800;color:#fff;background:rgba(13,11,20,.7);border:2px solid #fff;border-radius:14px;padding:3px 9px;letter-spacing:.3px}
       .pwx-body{padding:16px 22px 14px}
       @keyframes pwxChroma{0%{text-shadow:-1.5px 0 rgba(255,0,92,.55),1.6px 0 rgba(0,214,255,.55),2px 2px 0 #fff}100%{text-shadow:-2.6px .5px rgba(255,0,92,.6),2.6px -.5px rgba(0,214,255,.6),2px 2px 0 #fff}}
@@ -1154,7 +1172,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           const propres=_t(lang,"propres","clean","limpias")
           const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
           const _constel=[..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-            .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
+            .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=!_observationFresh?"#94a3b8":b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:_observationFresh&&!!(_topBeach&&b.id===_topBeach.id)}})
           const guide=_constel.find(p=>p.top)
           return(
             <div className="pwx-hero" style={{height:150}}>
@@ -1276,7 +1294,7 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           :_t(lang,<>Le gratuit te dit aujourd'hui. Le Veilleur te dit <b>demain</b> — et t'alerte le jour où ça bascule.</>,<>Free tells you today. The Watcher tells you <b>tomorrow</b> — and alerts you the day it flips.</>,<>Lo gratis te dice hoy. El Vigía te dice <b>mañana</b> — y te avisa el día que cambia.</>)}</p>
 
         {panel("01",true,_t(lang,"Chaque matin · 7h","Every morning · 7am","Cada mañana · 7am"),
-          best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Ta meilleure plage du jour","Your best beach today","Tu mejor playa de hoy"),
+          best?_t(lang,`Ta meilleure plage : ${best}`,`Your best beach: ${best}`,`Tu mejor playa: ${best}`):_t(lang,"Plage la mieux classée dans la dernière observation","Top-ranked beach in the latest observation","Playa mejor clasificada en la última observación"),
           topScore?_t(lang,`Score ${topScore}/100 · vérifié satellite`,`Score ${topScore}/100 · satellite-verified`,`Score ${topScore}/100 · verificado satélite`):_t(lang,"Vérifié au satellite","Satellite-verified","Verificado por satélite"),"daily_brief")}
         {calm
           ?panel("02",false,_t(lang,"Quand ça change","When it changes","Cuando cambia"),
@@ -1292,10 +1310,10 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {/* Preuve au point de décision : le PALMARÈS auditable (note + volume +
             registre public) > snapshot du jour. « mesuré au satellite, pas deviné ». */}
         {recordProof
-          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
-          :totalCount>0&&<div className="pwx-proof">{cleanCount>0
-            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
-            :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+          ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em><small>{freshnessLine}</small>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
+          :<div className="pwx-proof">{observationFresh&&totalCount>0
+            ?_t(lang,`${cleanCount}/${totalCount} plages classées propres dans la dernière observation`,`${cleanCount}/${totalCount} beaches marked clean in the latest observation`,`${cleanCount}/${totalCount} playas marcadas limpias en la última observación`)
+            :freshnessLine}</div>}
 
         <div className="pwx-act">
           {hasAnnual&&!captureMode&&<div className="pwx-plans">
@@ -1370,7 +1388,8 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // A/B fraîcheur (PassOffer) : "Données mises à jour il y a Xh" — récence réelle du pipeline.
   // PROMU EN DÉFAUT — fraîcheur toujours visible. Rollback ?pwfresh=0.
   const pwFresh=(()=>{try{if(/[?&]pwfresh=0/.test(window.location.search))return false;if(/[?&]pwfresh=1/.test(window.location.search))return true;return true}catch(_){return true}})()
-  const _passUpdatedAt=sargData?.updatedAt||sargData?.erddapTimestamp||null
+  const _observationDisplay = observationDisplay(sargData, lang);
+  const _observationFresh = _observationDisplay.state === "fresh";
   // Preuve du moat au point de décision : lien /fiabilite/ à l'écran « Avant de
   // payer » (doctrine storytelling temps #5). Défaut ON, rollback ?pwrel=0.
   const pwRel=(()=>{try{return !/[?&]pwrel=0/.test(window.location.search)}catch(_){return true}})()
@@ -1399,17 +1418,17 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   const _islandLvls=_lvls.filter(b=>island==="gp"?b.id?.startsWith("gp-"):!b.id?.startsWith("gp-"))
   // Même source que le header de liste (status==='clean') — l'ancien seuil
   // score>=70 contredisait le compte "{x}/{y} plages propres" affiché ailleurs.
-  const _cleanCount=_islandLvls.filter(b=>b.status==="clean").length
-  const _totalCount=_islandLvls.length
+  const _cleanCount=_observationFresh?_islandLvls.filter(b=>b.status==="clean").length:0
+  const _totalCount=_observationFresh?_islandLvls.length:0
   // FIX modal→CTA (fuite #1, 2% sur 3416 modals) : en SAISON CALME (≥80% propres,
   // 64% du temps) l'argument « alerte AVANT que ça tourne » tombe à plat — rien ne
   // tourne. A/B pw_calm : pivot vers la valeur que le GRATUIT n'a PAS et qui convertit
   // SANS peur = la prévision (« sache où sera la mer DEMAIN »). ?pwcalm=1/0 en QA.
-  const _allCalm=_totalCount>0&&(_cleanCount/_totalCount)>=0.8
+  const _allCalm=_observationFresh&&_totalCount>0&&(_cleanCount/_totalCount)>=0.8
   // PROMU EN DÉFAUT (cohérence élévation premium) : la value-prop POSITIVE en saison
   // calme (« Sache où sera la mer demain ») est le défaut 85%, 15% holdout mesurable.
   const pwCalm=(()=>{try{const q=window.location.search;if(/[?&]pwcalm=1/.test(q))return true;if(/[?&]pwcalm=0/.test(q))return false;return abVariant("pw_calm",["control","calm"],[.15,.85])==="calm"}catch(_){return false}})()
-  const _topBeach=[..._islandLvls].sort((a,b)=>b.score-a.score)[0]
+  const _topBeach=_observationFresh?[..._islandLvls].sort((a,b)=>b.score-a.score)[0]:null
   // Nouvelles régions : ids opaques (pc001…) → nom réel depuis REGION.beaches.
   // MQ/GP : derivation slug historique inchangée.
   // Nom CANONIQUE — le slug-derive cassait les noms GP au point de décision
@@ -1428,23 +1447,23 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
   // Contexte plage : quand la modal s'ouvre DEPUIS une fiche, le copy cite la plage vue.
   const _bcSrcs=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","beach_dive_footer","post_gate","social_proof","whisper_veilleur","arrive","rel_hot_cta"]
   const _hasBeachCtx=!!(beach&&_bcSrcs.some(ss=>(source||"").includes(ss)||(source||"")==="post_gate"))
-  const _ctxName=_hasBeachCtx?(beach&&beach.name)||null:null
-  const _ctxScore=_hasBeachCtx?(beach&&beach.score)||null:null
-  const _ctxStatus=_hasBeachCtx?(beach&&beach.status)||null:null
+  const _ctxName=_observationFresh&&_hasBeachCtx?(beach&&beach.name)||null:null
+  const _ctxScore=_observationFresh&&_hasBeachCtx?(beach&&beach.score)||null:null
+  const _ctxStatus=_observationFresh&&_hasBeachCtx?(beach&&beach.status)||null:null
   // Paywall-constellation (A/B pw_constel) : tes plages = points lumineux sur la mer
   // golden-hour. PRNG seedé (stable entre renders = calme, jamais Math.random/render),
   // capé 14 (avoid d'abord puis top scores), couleur = statut. _topBeach = étoile-guide.
-  const _aggStatus=_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"
-  const _constelMood=VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein
+  const _aggStatus=_observationFresh?(_islandLvls.some(b=>b.status==="avoid")?"avoid":_islandLvls.some(b=>b.status==="moderate")?"moderate":"clean"):"clean"
+  const _constelMood=_observationFresh?(VEILLEUR_MOOD[moodFromStatus(_aggStatus)]||VEILLEUR_MOOD.serein):VEILLEUR_MOOD.serein
   const _constel=useMemo(()=>{
     const seed=n=>{const x=Math.sin(n*127.1+74.7)*43758.5453;return x-Math.floor(x)}
     return [..._islandLvls].sort((a,b)=>((b.status==="avoid")-(a.status==="avoid"))||((b.score||0)-(a.score||0))).slice(0,14)
-      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:!!(_topBeach&&b.id===_topBeach.id)}})
-  },[_islandLvls,_topBeach])
+      .map((b,i)=>{const row=i%3;const x=18+seed(i+1)*364;const y=111+row*10+seed(i+50.3)*5;const col=!_observationFresh?"#94a3b8":b.status==="clean"?"#3fd07f":b.status==="moderate"?"#FFD27A":"#F4845F";return{x:+x.toFixed(1),y:+y.toFixed(1),col,top:_observationFresh&&!!(_topBeach&&b.id===_topBeach.id)}})
+  },[_islandLvls,_topBeach,_observationFresh])
   // Value card 02 : destination = vraie plage propre du jour calculée du live —
   // plus aucun nom de plage inventé ni changement d'état fabriqué.
-  const _cleanTop=_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]
-  const _exSwitch=_nameOf(_cleanTop)||_topName||null
+  const _cleanTop=_observationFresh?_islandLvls.filter(b=>b.status==="clean").sort((a,b)=>(b.score||0)-(a.score||0))[0]:null
+  const _exSwitch=_observationFresh?(_nameOf(_cleanTop)||_topName||null):null
   // Value card 03 : vraie meilleure plage du samedi depuis le forecast hebdo.
   // Suffixe enfants UNIQUEMENT si kids:true dans la donnée région.
   const _kidsOf=lv=>{
@@ -1453,6 +1472,7 @@ function PremiumModal({onClose,lang,source,onActivated,sargData,island,beach}){
     return !!BEACHES_FALLBACK.find(b=>b.id===SARG_TO_BEACH[lv.id])?.kids
   }
   const _wkend=(()=>{
+    if(!_observationFresh)return null
     const wk=sargData?.weekly||{}
     const ref=_islandLvls.map(lv=>wk[lv.id]?.forecast).find(f=>Array.isArray(f)&&f.length)
     if(!ref)return null
@@ -2251,7 +2271,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     if(!passSeq)return null
     const has=lv=>!!(lv&&lv.id&&sargData?.weekly?.[lv.id]?.forecast?.length)
     const ctxLvl=(()=>{if(!beach)return null;const sid=IS_NEW_REGION?beach.id:BEACH_TO_SARG[beach.id];return sid?_islandLvls.find(l=>l.id===sid)||null:null})()
-    const fcLvl=has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null
+    const fcLvl=_observationFresh?(has(ctxLvl)?ctxLvl:[..._islandLvls].sort((a,b)=>(b.score||0)-(a.score||0)).find(has)||null):null
     const fc=fcLvl?(sargData.weekly[fcLvl.id].forecast||[]).slice(0,2):[]
     const days=Array.from({length:7},(_,i)=>{const d=i<2?fc[i]:null;return d?{status:d.status,confidence:d.confidence||null}:null})
     const proofLine=(()=>{try{const r=_trackRec;if(!r||!r.byRegime)return null
@@ -2262,11 +2282,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
       return _t(lang,`${best.cleanReliabilityPct} % justes${calm} · ${nf} prévisions « mer propre » vérifiées · registre public`,
         `${best.cleanReliabilityPct}% correct${calm} · ${nf} “clean water” forecasts satellite-checked · public record`,
         `${best.cleanReliabilityPct}% correctos${calm} · ${nf} pronósticos “agua limpia” verificados · registro público`)}catch(_){return null}})()
-    const freshLine=(()=>{const sat=sargData?.erddapTimestamp||null,up=sargData?.updatedAt||null;const src=sat||up;if(!src)return null
-      const h=Math.max(1,Math.round((Date.now()-new Date(src).getTime())/3.6e6));if(!(h>=1&&h<24*14))return null
-      return sat?_t(lang,`Vu du satellite il y a ${h} h`,`Seen by satellite ${h}h ago`,`Visto por satélite hace ${h} h`)
-        :_t(lang,`Données mises à jour il y a ${h} h`,`Data updated ${h}h ago`,`Datos actualizados hace ${h} h`)})()
-    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
+    return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine:_observationDisplay.label,hasGrid:!!(fcLvl&&fc.length>0)}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[passSeq,sargData,beach,island,_trackRec,lang])
   // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
@@ -2350,7 +2366,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
   const HOT_INTENT_SRCS=["forecast_lock","forecast_cta","forecast_scrub","forecast_beat","urgency_banner","list_forecast_lock","rel_hot_cta","beach_dive_footer"]
   const _isHot=!!(beach&&HOT_INTENT_SRCS.includes(source||""))
   const pwHot=_isHot&&(()=>{try{const q=window.location.search;if(/[?&]pwhot=1/.test(q))return true;if(/[?&]pwhot=0/.test(q))return false;return abVariant("pw_hot_intent",["control","hot"],[.5,.5])==="hot"}catch(_){return false}})()
-  if(pwHot&&beach){
+  if(pwHot&&beach&&_observationFresh){
     const _st=beach.status||"clean"
     const _stCol=_st==="clean"?"#22C55E":_st==="moderate"?"#E8A800":"#E8522A"
     const _stLbl=_st==="clean"?_t(lang,"propre aujourd'hui","clean today","limpia hoy"):_st==="moderate"?_t(lang,"modéré","moderate","moderada"):_t(lang,"à éviter","avoid","evitar")
@@ -2468,7 +2484,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             zIndex:6,fontFamily:"inherit",display:"flex",alignItems:"center",justifyContent:"center"}}>×</button>
         {/* ── PASS-ONLY : seul storefront affiché (sombre, design A). onBuy → Mollie on-site :
             wallet (Apple/Google Pay) = paiement direct ; carte = écran de paiement (email+carte). ── */}
-        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()}
+        {passOnly&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshnessLabel={_observationDisplay.label} observationFresh={_observationFresh} wallet={walletAvail()}
           seq={passSeq} proof={_seqProof}
           onProofOpen={()=>{try{track("sg_pass_proof_open",{source:source||"unknown"})}catch(_){}}}
           onProofBack={()=>{try{track("sg_pass_seq_back",{source:source||"unknown"})}catch(_){}}}
@@ -2478,8 +2494,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}
         }}/>}
         {!passOnly&&pwComic&&pwWorld&&<WorldPaywall lang={lang} beach={beach} source={source}
-          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
-          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          topName={_observationFresh?_topName:null} topScore={_observationFresh?_topScore:null} exSwitch={_observationFresh?_exSwitch:null} wkend={_observationFresh?_wkend:null}
+          ctxName={_observationFresh?_ctxName:null} ctxStatus={_observationFresh?_ctxStatus:null} cleanCount={_observationFresh?_cleanCount:0} totalCount={_observationFresh?_totalCount:0}
+          observationFresh={_observationFresh} freshnessLine={_observationDisplay.label}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
@@ -2490,8 +2507,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
-          topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
-          ctxName={_ctxName} ctxStatus={_ctxStatus} cleanCount={_cleanCount} totalCount={_totalCount}
+          topName={_observationFresh?_topName:null} topScore={_observationFresh?_topScore:null} exSwitch={_observationFresh?_exSwitch:null} wkend={_observationFresh?_wkend:null}
+          ctxName={_observationFresh?_ctxName:null} ctxStatus={_observationFresh?_ctxStatus:null} cleanCount={_observationFresh?_cleanCount:0} totalCount={_observationFresh?_totalCount:0}
+          observationFresh={_observationFresh} freshnessLine={_observationDisplay.label}
           recordProof={_recordProof} allCalm={_allCalm} pwCalm={pwCalm}
           seasonMsg={seasonMsg} plan={plan} setPlan={setPlan} effectivePlan={effectivePlan} hasAnnual={hasAnnual}
           captureMode={PAY_CAPTURE_ONLY}
@@ -2506,7 +2524,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
         {!passOnly&&!pwComic&&(<>
         {!scenePay&&<div style={{borderTop:`3px solid ${C.gold}`,borderRadius:"3px 3px 0 0",
           margin:"-8px -24px 20px",padding:0}}/>}
-        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshTs={pwFresh?_passUpdatedAt:null} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
+        {!PAY_CAPTURE_ONLY&&pwPass&&<PassOffer lang={lang} currency={PAY_CUR} community={pwSocial?__COMM:0} freshnessLabel={_observationDisplay.label} observationFresh={_observationFresh} wallet={walletAvail()} onBuy={(item)=>{try{track("sg_pass_cta",{pass:item.pass,cents:item.c,source:source||"unknown",onsite:1})}catch(_){}
           passCtxRef.current={pass:item.pass,cents:item.c,days:item.days||(item.pass==="p30"?30:item.pass==="saison"?210:7),cur:PAY_CUR}
           if(item.method){payWithWallet(item.method)}else{setPayStep(true)}}}/>}
         {/* A/B pw_scene : le paywall = CONTINUATION du monde golden-hour (Veilleur + promesse),
@@ -2540,15 +2558,17 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           const sparkPath=spark?("M"+spark.map(p=>p.x.toFixed(0)+" "+p.y.toFixed(0)).join(" L")):null
           const guide=_constel.find(p=>p.top)
           const G={background:"linear-gradient(135deg,#FFE47A,#FFC72C 55%,#E89400)",WebkitBackgroundClip:"text",backgroundClip:"text",WebkitTextFillColor:"transparent",color:"transparent"}
-          const promiseEl=_ctxName
-            ?(lang==="es"?(<><span style={G}>{_ctxName}</span>. ¿Y mañana? Ya lo he visto.</>):lang==="en"?(<><span style={G}>{_ctxName}</span>. And tomorrow? I've already seen it.</>):(<><span style={G}>{_ctxName}</span>. Et demain ? Je l'ai déjà vu.</>))
-            :_allCalm
-              ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
-              :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
-          const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
-          const _baseProof=(_pName&&_pScore)
-            ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
-            :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+          const promiseEl=!_observationFresh
+            ?_t(lang,"Dernière observation datée : le statut actuel n'est pas confirmé.","Latest observation is dated; current status is not confirmed.","La última observación tiene fecha; el estado actual no está confirmado.")
+            :_ctxName
+              ?(lang==="es"?(<><span style={G}>{_ctxName}</span>. ¿Y mañana? Ya lo he visto.</>):lang==="en"?(<><span style={G}>{_ctxName}</span>. And tomorrow? I've already seen it.</>):(<><span style={G}>{_ctxName}</span>. Et demain ? Je l'ai déjà vu.</>))
+              :_allCalm
+                ?(lang==="es"?(<>Todo en calma. ¿Y <span style={G}>mañana</span>? Ya lo he visto.</>):lang==="en"?(<>All calm. And <span style={G}>tomorrow</span>? I've already seen it.</>):(<>Tout est calme. Et <span style={G}>demain</span> ? Je l'ai déjà vu.</>))
+                :(lang==="es"?(<>Sabe dónde estará el mar <span style={G}>mañana</span>, no solo hoy</>):lang==="en"?(<>Know where the sea will be <span style={G}>tomorrow</span>, not just today</>):(<>Sache où sera la mer <span style={G}>demain</span>, pas juste aujourd'hui</>))
+          const _pName=_observationFresh?(_ctxName||_topName):null, _pScore=_observationFresh?(_ctxScore||_topScore):null
+          const _baseProof=_observationFresh&&_pName&&_pScore
+            ?_t(lang,`${_pName} · ${_pScore}/100 · dernière observation vérifiée`,`${_pName} · ${_pScore}/100 · latest verified observation`,`${_pName} · ${_pScore}/100 · última observación verificada`)
+            :_observationDisplay.label
           // A/B pw_proof : au point de décision, remplace le snapshot du jour par
           // le PALMARÈS auditable (preuve « Airbnb » = note + volume + public).
           const proof=(pwProof&&_recordProof)||_baseProof

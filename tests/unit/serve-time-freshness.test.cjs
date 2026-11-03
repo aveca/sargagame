@@ -11,6 +11,8 @@ const assert = require('node:assert/strict');
 (async () => {
   const { satelliteAgeHours, isSatelliteStale36h, isSatelliteFresh12h } =
     await import('../../src/lib/format-freshness.mjs');
+  const { regionalObservationFreshness, REGIONAL_OBSERVATION_MAX_AGE_MINUTES } =
+    await import('../../src/lib/regional-observation-freshness.mjs');
   const now = Date.parse('2026-10-12T18:46:17.584Z');
   const prod = {
     updatedAt: '2026-10-11T22:07:38.246Z',
@@ -60,7 +62,54 @@ const assert = require('node:assert/strict');
     t(isSatelliteFresh12h(p, now) === false, label + ' => non frais 12h');
   }
 
-  console.log(`SERVE_TIME_FRESHNESS_TESTS PASS (${n} assertions)`);
+
+  // 7. Regional paywall contract: erddapTimestamp alone determines age.
+  const regionalFresh = {
+    source: 'erddap-live',
+    erddapTimestamp: new Date(now - 899 * 60_000).toISOString(),
+    updatedAt: new Date(now).toISOString(),
+    dataAgeMinutes: 1,
+    stale: false
+  };
+  const regional = regionalObservationFreshness(regionalFresh, now);
+  t(REGIONAL_OBSERVATION_MAX_AGE_MINUTES === 900, 'regional SLA is exactly 900 minutes');
+  t(regional.state === 'fresh', '899m ERDDAP observation is fresh');
+  t(approx(regional.ageMinutes / 60, 899 / 60), 'regional age comes from erddapTimestamp, not cached dataAgeMinutes');
+
+  // 8. The exact 900m boundary is closed; old cache metadata cannot override it.
+  const regionalAtSla = regionalObservationFreshness({
+    ...regionalFresh,
+    erddapTimestamp: new Date(now - 900 * 60_000).toISOString(),
+    dataAgeMinutes: 0,
+    updatedAt: new Date(now).toISOString()
+  }, now);
+  t(regionalAtSla.state === 'delayed', '900m exactly is delayed');
+
+  // 9. Public 36h threshold is also delayed, even if stale=false was frozen.
+  const regional36h = regionalObservationFreshness({
+    ...regionalFresh,
+    erddapTimestamp: new Date(now - 2160 * 60_000).toISOString(),
+    stale: false
+  }, now);
+  t(regional36h.state === 'delayed', '2160m observation cannot be presented as current');
+
+  // 10. Explicit stale, missing clearance, non-live, invalid and future fail closed.
+  t(regionalObservationFreshness({ ...regionalFresh, stale: true }, now).state === 'delayed',
+    'explicit stale flag wins even for a recent timestamp');
+  t(regionalObservationFreshness({ ...regionalFresh, stale: undefined }, now).state === 'unknown',
+    'missing stale clearance is unknown');
+  t(regionalObservationFreshness({ ...regionalFresh, source: 'cache' }, now).state === 'unknown',
+    'non-live source is unknown');
+  t(regionalObservationFreshness({ ...regionalFresh, erddapTimestamp: 'invalid' }, now).state === 'unknown',
+    'invalid timestamp is unknown');
+  t(regionalObservationFreshness({ ...regionalFresh, erddapTimestamp: new Date(now + 60_000).toISOString() }, now).state === 'unknown',
+    'future timestamp is unknown');
+  t(regionalObservationFreshness({}, now).state === 'unknown',
+    'missing timestamp is unknown');
+  t(regionalObservationFreshness(regionalFresh, Number.NaN).state === 'unknown',
+    'invalid clock is unknown');
+
+  console.log(`SERVE_TIME_FRESHNESS_TESTS PASS (${n + 12} assertions)`);
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;
