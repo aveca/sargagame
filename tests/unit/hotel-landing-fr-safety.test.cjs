@@ -112,6 +112,9 @@ assert.doesNotMatch(measuredHtml, /quatre fois par jour|4×\/jour|chaque matin|e
 assert.match(measuredHtml, /rel="canonical" href="https:\/\/sargasses-martinique\.com\/sargasses-pour-hotels\//);
 assert.match(measuredHtml, /79 €\/mois ou 690 €\/an/);
 assert.match(measuredHtml, /utm_campaign=b2b_hotels_fr_mq/);
+const metaDescription = measuredHtml.match(/<meta name="description" content="([^"]+)"/);
+assert.ok(metaDescription, 'meta description is present');
+assert.ok(metaDescription[1].length <= 155, 'meta description stays within the SERP length budget');
 
 const alertMetricHtml = render({
   freshnessStatus: 'fresh',
