@@ -85,7 +85,8 @@ for (const invalidData of [
 
 const generator = fs.readFileSync(path.resolve(__dirname, '../../scripts/lib/region-seo-pages.cjs'), 'utf8')
 assert.match(generator, /const todayState = buildTodayHubState/)
-assert.match(generator, /todayState\.rows\.map/)
+assert.match(generator, /const publishableRows = todayState\.rows/)
+assert.match(generator, /publishableRows\.map/)
 assert.match(generator, /formatSatelliteObservationLabel\(data, lang, now\)/)
 assert.match(generator, /slug: p\.today\.slug, title: todayTitle, desc: todayState\.desc/)
 assert.match(generator, /kind: 'today', sm: \{ daily: true, priority: '0\.9' \}/)
