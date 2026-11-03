@@ -613,6 +613,31 @@ ${secs}
 </div></body></html>`
 }
 
+
+function sanitizeCadenceClaims(value, lang = 'en') {
+  if (typeof value === 'string') {
+    const replacement = lang === 'es'
+      ? 'cuando se publican nuevas observaciones satelitales validadas'
+      : 'when new validated satellite observations are published';
+    let text = value;
+    if (lang === 'es') {
+      text = text.replace(/\b(?:4|cuatro)\s*(?:×|x|veces)\s*(?:al|por|\/)\s*d[ií]a\b/gi, replacement);
+      text = text.replace(/\bcada pocas horas\b/gi, replacement);
+      text = text.replace(/\b(actualizad[oa]s?|refrescad[oa]s?)\s+(?:hoy|today)\b/gi, '$1 ' + replacement);
+    } else {
+      text = text.replace(/\b(?:4|four)\s*(?:×|x|times)\s*(?:a\s+day|daily|per\s+day|\/day)\b/gi, replacement);
+      text = text.replace(/\b(?:updated|refreshed|recalculated)\s+daily\b/gi, 'updated ' + replacement);
+      text = text.replace(/\bupdated today\b/gi, 'updated ' + replacement);
+    }
+    return text;
+  }
+  if (Array.isArray(value)) return value.map(item => sanitizeCadenceClaims(item, lang));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, sanitizeCadenceClaims(item, lang)]));
+  }
+  return value;
+}
+
 function generateRegionSeoPages(region, distDir, options = {}) {
   const RL = require('./region-langs.cjs')
   const domain = region.domain
@@ -624,7 +649,7 @@ function generateRegionSeoPages(region, distDir, options = {}) {
   const contents = {}
   for (const l of langs) {
     const c = loadJSON(RL.seoContentPath(region.id, l, l === primary), null)
-    if (c) contents[l] = c
+    if (c) contents[l] = sanitizeCadenceClaims(c, l)
   }
   if (!contents[primary]) { console.warn(`   ⚠ seo-pages région: pas de regions/seo-content/${region.id}.json — pages non générées`); return }
   const useLangs = langs.filter(l => contents[l])
@@ -708,6 +733,17 @@ function emitLangPages(ctx) {
   // Date courte pour les titles (jamais coupée : on trimme le reste AVANT de l'appender)
   const sw = s => STATUS_WORD[lang][s] || s || '—'
   const pushUrl = (loc, opt = {}) => sitemap.push({ loc, changefreq: opt.daily ? 'daily' : 'weekly', priority: opt.priority || '0.5' })
+  const observationFreshness = getSatelliteObservationFreshness(data, now)
+  const observationLabel = formatSatelliteObservationLabel(data, lang, now)
+  const todayState = buildTodayHubState({ regionName: region.name, beaches: byScore, data, lang, now })
+  const publishableRows = todayState.rows
+  const hasPublishableRows = publishableRows.length > 0
+  const unavailableQualifier = observationFreshness.state === 'delayed'
+    ? (lang === 'es' ? 'observación retrasada' : 'observation delayed')
+    : observationFreshness.state === 'unknown'
+      ? (lang === 'es' ? 'observación no verificable' : 'observation unverified')
+      : (lang === 'es' ? 'estado no disponible' : 'status unavailable')
+  const freshnessUnavailableHtml = '<p class="sg-status-unavailable">' + esc(todayState.unavailableMessage || (lang === 'es' ? 'No hay datos de playa publicables.' : 'No publishable beach data is available.')) + '</p>'
 
   // Cluster hreflang : une page connaît ses sœurs dans toutes les langues émises.
   // Pages hub : slug par langue (slugIndex). Plages/resorts : slug identique (dérivé
@@ -802,40 +838,49 @@ function emitLangPages(ctx) {
   const hubs = []
   const p = content.pages
 
-  // forecast — barres 7j par plage (texte) + méthode
+  // forecast — aucun statut, score ou pronostic n'est rendu sans décision publiable.
+  const forecastRowsHtml = hasPublishableRows
+    ? '<ul>' + publishableRows.map(({ beach, decision }) =>
+        '<li><strong>' + beachLink(beach) + '</strong> (' + esc(sw(decision.status)) + ', ' + esc(t.score) + ' ' + (decision.score ?? '—') + '/100) — ' + esc(forecastLine(data.weekly, beach.id, lang)) + '</li>'
+      ).join('') + '</ul>'
+    : freshnessUnavailableHtml
+  const forecastTitle = hasPublishableRows ? p.forecast.title : smartTrim(p.forecast.title + ' — ' + unavailableQualifier, 70)
+  const forecastDesc = hasPublishableRows ? p.forecast.desc : trimDesc(todayState.desc)
+  const forecastH1 = hasPublishableRows ? p.forecast.h1 : smartTrim(p.forecast.h1 + ' — ' + unavailableQualifier, 80)
+  const forecastIntro = hasPublishableRows ? p.forecast.intro : todayState.intro
   hubs.push({
     kind: 'forecast', sm: { daily: true, priority: '0.9' },
-    slug: p.forecast.slug, title: p.forecast.title, desc: p.forecast.desc,
-    noscript: `<article><h1>${esc(p.forecast.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.forecast.intro)}</p>
-<h2>${t.forecast7} — ${esc(region.name)}</h2>
-<ul>${beaches.map(b => `<li><strong>${beachLink(b)}</strong> (${sw(b.lv.status)}, ${t.score} ${b.lv.score ?? '—'}/100) — ${forecastLine(data.weekly, b.id, lang)}</li>`).join('')}</ul>
-<h2>${lang === 'es' ? 'Cómo funciona nuestro pronóstico' : 'How our forecast works'}</h2><p>${esc(p.forecast.method)}</p>
-${hubLinks('forecast')}${networkFooter(region, t, lang)}</article>`,
+    slug: p.forecast.slug, title: forecastTitle, desc: forecastDesc,
+    noscript: '<article><h1>' + esc(forecastH1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(forecastIntro) + '</p>' +
+      '<h2>' + esc(t.forecast7) + ' — ' + esc(region.name) + '</h2>' + forecastRowsHtml +
+      '<h2>' + (lang === 'es' ? 'Cómo funciona nuestro pronóstico' : 'How our forecast works') + '</h2><p>' + esc(p.forecast.method) + '</p>' +
+      hubLinks('forecast') + networkFooter(region, t, lang) + '</article>',
   })
 
-  // today — ne publie que les statuts soutenus par une observation dans la fenêtre de fraîcheur.
-  // Si aucune décision n'est vérifiable, le hub suspend le classement, le score et le wording "today".
-  const todayState = buildTodayHubState({ regionName: region.name, beaches: byScore, data, lang, now })
+  // today — même contrat de fraîcheur partagé par les autres hubs.
   const todayTitle = smartTrim(todayState.title, 70)
-  const todayObservationLabel = formatSatelliteObservationLabel(data, lang, now)
-  const todayListHtml = todayState.rows.length
-    ? `<ol>${todayState.rows.map(({ beach, decision }) => `<li><strong>${beachLink(beach)}</strong> — ${sw(decision.status)}${decision.score != null ? `, ${t.score} ${decision.score}/100` : ''}</li>`).join('')}</ol>`
-    : `<p class="sg-status-unavailable">${esc(todayState.unavailableMessage)}</p>`
+  const todayListHtml = hasPublishableRows
+    ? '<ol>' + publishableRows.map(({ beach, decision }) => '<li><strong>' + beachLink(beach) + '</strong> — ' + esc(sw(decision.status)) + (decision.score != null ? ', ' + esc(t.score) + ' ' + decision.score + '/100' : '') + '</li>').join('') + '</ol>'
+    : freshnessUnavailableHtml
   hubs.push({
     kind: 'today', sm: { daily: true, priority: '0.9' },
     slug: p.today.slug, title: todayTitle, desc: todayState.desc,
-    noscript: `<article><h1>${esc(todayState.h1)}</h1><p><em>${esc(todayObservationLabel)}</em></p><p>${esc(todayState.intro)}</p>
-${todayListHtml}
-${hubLinks('today')}${networkFooter(region, t, lang)}</article>`,
+    noscript: '<article><h1>' + esc(todayState.h1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(todayState.intro) + '</p>' +
+      todayListHtml + hubLinks('today') + networkFooter(region, t, lang) + '</article>',
   })
 
-  // map — landing carte live
+  // map — les liens de plage restent crawlables, mais les décisions périmées sont masquées.
+  const mapTitle = hasPublishableRows ? p.map.title : smartTrim(p.map.title + ' — ' + unavailableQualifier, 70)
+  const mapDesc = hasPublishableRows ? p.map.desc : trimDesc(todayState.desc)
+  const mapH1 = hasPublishableRows ? p.map.h1 : smartTrim(p.map.h1 + ' — ' + unavailableQualifier, 80)
+  const mapIntro = hasPublishableRows ? p.map.intro : todayState.intro
+  const mapItems = buildBeachIndexItems(beaches, data, { lang, prefix, beachesDir: t.beachesDir, now })
   hubs.push({
     kind: 'map', sm: { priority: '0.5' },
-    slug: p.map.slug, title: p.map.title, desc: p.map.desc,
-    noscript: `<article><h1>${esc(p.map.h1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(p.map.intro)}</p>
-<h2>${t.allBeaches}</h2><ul>${beaches.map(b => `<li>${beachLink(b)} — ${sw(b.lv.status)} (${b.lv.score ?? '—'}/100)</li>`).join('')}</ul>
-${hubLinks('map')}${networkFooter(region, t, lang)}</article>`,
+    slug: p.map.slug, title: mapTitle, desc: mapDesc,
+    noscript: '<article><h1>' + esc(mapH1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(mapIntro) + '</p>' +
+      '<h2>' + esc(t.allBeaches) + '</h2><ul>' + mapItems + '</ul>' +
+      hubLinks('map') + networkFooter(region, t, lang) + '</article>',
   })
 
   // season — calendrier mois par mois
@@ -880,39 +925,58 @@ ${hubLinks('season')}${networkFooter(region, t, lang)}</article>`,
     })
   }
 
-  // semáforo (ES uniquement — vocabulaire local réel, requête quotidienne presse)
+  // semáforo (ES uniquement) — ne montre que les décisions publiables.
   if (lang === 'es') {
     const sem = { clean: '🟢 Verde — sin sargazo', moderate: '🟡 Amarillo — recale moderado', avoid: '🔴 Rojo — recale abundante' }
+    const semRowsHtml = hasPublishableRows
+      ? '<ul>' + publishableRows.map(({ beach, decision }) => '<li>' + (sem[decision.status] || '⚪') + ' — ' + beachLink(beach) + ' (' + (decision.score ?? '—') + '/100)</li>').join('') + '</ul>'
+      : freshnessUnavailableHtml
+    const semTitle = smartTrim('Semáforo del sargazo — ' + region.name + ' — ' + (hasPublishableRows ? 'última observación disponible' : unavailableQualifier), 68)
+    const semDesc = hasPublishableRows
+      ? 'Semáforo del sargazo por playa en ' + region.name + ', según la última observación satelital disponible; pronóstico de 7 días y alertas cuando hay datos.'
+      : trimDesc(todayState.desc)
+    const semH1 = hasPublishableRows ? 'Semáforo del sargazo — ' + region.name : 'Semáforo del sargazo — ' + unavailableQualifier
+    const semIntro = hasPublishableRows
+      ? 'El semáforo independiente del sargazo: estados respaldados por la última observación satelital disponible.'
+      : todayState.intro
     hubs.push({
       kind: 'semaforo', sm: { daily: true, priority: '0.5' },
       slug: 'semaforo-del-sargazo',
-      title: smartTrim(`Semáforo del sargazo — última observación disponible en ${region.name}`, 68),
-      desc: `Semáforo del sargazo por playa en ${region.name}, según la última observación satelital disponible; pronóstico de 7 días y alertas cuando hay datos. Independiente: nunca borrado, nunca filtrado.`,
-      noscript: `<article><h1>Semáforo del sargazo — ${today}</h1><p><em>${t.updated(today)}</em></p>
-<p>El semáforo independiente del sargazo: datos satelitales, no reportes editados. Último estado publicado por playa:</p>
-<ul>${byScore.map(b => `<li>${sem[b.lv.status] || '⚪'} — ${beachLink(b)} (${b.lv.score ?? '—'}/100)</li>`).join('')}</ul>
-${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
+      title: semTitle,
+      desc: semDesc,
+      noscript: '<article><h1>' + esc(semH1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p>' +
+        '<p>' + esc(semIntro) + '</p>' + semRowsHtml +
+        hubLinks(null) + networkFooter(region, t, lang) + '</article>',
     })
   }
 
-  // press — page presse/média rendue depuis content.press (tokens résolus
-  // depuis la donnée réelle, jamais inventés). Slug ajouté au sitemap via
-  // urls (weekly par défaut). NE PAS enregistrer 'press' dans regions/*.json
-  // routes (prepare-ftp.cjs skip les valeurs de routes des autres régions au
-  // deploy — un slug identique sur les 3 régions USD ferait sauter le dossier).
+  // press — le compteur de plages propres vient uniquement des décisions publiables.
   if (content.press && content.press.slug) {
     const pr = content.press
-    const cleanToday = (data.levels || []).filter(l => l.status === 'clean').length
+    const cleanToday = hasPublishableRows ? publishableRows.filter(row => row.decision.status === 'clean').length : null
+    const observationDate = observationFreshness.timestamp
+      ? new Date(observationFreshness.timestamp).toISOString().slice(0, 10)
+      : null
+    const cleanCountClaim = lang === 'es'
+      ? /Al \{updatedDate\}, \{cleanToday\} de \{beachCount\} playas monitoreadas están limpias\./gi
+      : /As of \{updatedDate\}, \{cleanToday\} of \{beachCount\} tracked beaches read clean\./gi
+    const cleanCountSummary = cleanToday === null
+      ? (lang === 'es'
+          ? 'El recuento actual de playas limpias se suspende porque la observación satelital está retrasada o no se puede verificar.'
+          : 'The current clean-beach count is withheld because the satellite observation is delayed or cannot be verified.')
+      : (lang === 'es'
+          ? 'En la última observación satelital publicada (' + observationDate + '), ' + cleanToday + ' de ' + publishableRows.length + ' playas con estado publicable aparecen limpias.'
+          : 'In the latest published satellite observation (' + observationDate + '), ' + cleanToday + ' of ' + publishableRows.length + ' beaches with a publishable status were classified clean.')
     const tok = s => String(s ?? '')
+      .replace(cleanCountClaim, cleanCountSummary)
       .replace(/\{beachCount\}/g, beaches.length)
-      .replace(/\{cleanToday\}/g, cleanToday)
-      .replace(/\{updatedDate\}/g, today)
+      .replace(/\{cleanToday\}/g, cleanToday === null ? (lang === 'es' ? 'no disponible' : 'unavailable') : cleanToday)
+      .replace(/\{updatedDate\}/g, observationDate || (lang === 'es' ? 'fecha no disponible' : 'date unavailable'))
       .replace(/\{contact\}/g, pr.contact || region.emails?.support || '')
       .replace(/\{citation\}/g, pr.citation || '')
 
     // Source press copy contained network-wide accuracy tokens. Replace every
-    // accuracy/backtest section with the same fresh, region-scoped contract
-    // used by methodology pages; never render an em dash followed by "%".
+    // accuracy/backtest section with the same fresh, region-scoped contract.
     const validationSection = accuracy?.available
       ? {
           h2: lang === 'es' ? 'Resultados de validación' : 'Validation results',
@@ -961,58 +1025,90 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
     hubs.push({
       kind: 'press', sm: { priority: '0.5' },
       slug: pr.slug, title: smartTrim(pr.title, 70), desc: pressDesc,
-      noscript: '<article><h1>' + esc(pr.h1) + '</h1><p><em>' + t.updated(today) + '</em></p><p>' + esc(pressIntro) + '</p>' +
+      noscript: '<article><h1>' + esc(pr.h1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(pressIntro) + '</p>' +
         pressSections.map(section => '<h2>' + esc(section.h2) + '</h2><p>' + esc(tok(section.text)) + '</p>').join('') +
         hubLinks('press') + networkFooter(region, t, lang) + '</article>',
     })
   }
 
-  // "Best beaches" — page HAUTE-INTENTION "meilleures plages sans sargasses
-  // aujourd'hui", data-driven (clean d'abord, puis score). La route existe
-  // (region.routes.best) mais n'était pas générée. Pré-voyage + sur place.
-  if (routes.best && byScore.length) {
+  // "Best beaches" — classement basé uniquement sur les décisions publiables.
+  if (routes.best && beaches.length) {
     const rank = s => s === 'clean' ? 0 : s === 'moderate' ? 1 : 2
-    const ranked = [...byScore].sort((a, b2) => (rank(a.lv.status) - rank(b2.lv.status)) || ((b2.lv.score || 0) - (a.lv.score || 0)))
-    const cleanN = ranked.filter(x => x.lv.status === 'clean').length
-    const bestTitle = smartTrim(lang === 'es'
-      ? `Mejores playas sin sargazo en ${region.name} — última observación`
-      : `Best Beaches Without Sargassum in ${region.name} — Latest Observation`, 68)
-    const bestDesc = trimDesc(lang === 'es'
-      ? `Las ${cleanN} playas mejor clasificadas de ${region.name} según la última observación satelital disponible. Beach Score y pronóstico por playa cuando hay datos.`
-      : `The ${cleanN} cleanest beaches in ${region.name} by latest published satellite status. Beach Score and forecast where data are available.`)
-    const bestH1 = lang === 'es' ? `Mejores playas sin sargazo en ${region.name} — última observación disponible` : `Best beaches without sargassum in ${region.name} — latest published satellite status`
-    const bestIntro = lang === 'es'
-      ? 'Estas son las playas mejor clasificadas según el último estado satelital publicado; comprueba la hora y la confianza antes de salir.'
-      : 'These are the highest-ranked beaches by latest published satellite status; check observation time and confidence before travelling.'
+    const ranked = [...publishableRows].sort((a, b2) =>
+      (rank(a.decision.status) - rank(b2.decision.status)) ||
+      ((b2.decision.score || 0) - (a.decision.score || 0)))
+    const hasBestRows = ranked.length > 0
+    const cleanN = ranked.filter(row => row.decision.status === 'clean').length
+    const bestTitle = hasBestRows
+      ? smartTrim(lang === 'es'
+          ? 'Mejores playas sin sargazo en ' + region.name + ' — última observación'
+          : 'Best Beaches Without Sargassum in ' + region.name + ' — Latest Observation', 68)
+      : smartTrim((lang === 'es' ? 'Mejores playas sin sargazo en ' : 'Best beaches without sargassum in ') + region.name + ' — ' + unavailableQualifier, 68)
+    const bestDesc = hasBestRows
+      ? trimDesc(lang === 'es'
+          ? 'Las ' + cleanN + ' playas mejor clasificadas de ' + region.name + ' según la última observación satelital disponible. Beach Score y pronóstico por playa cuando hay datos.'
+          : 'The ' + cleanN + ' cleanest beaches in ' + region.name + ' by latest published satellite status. Beach Score and forecast where data are available.')
+      : trimDesc(todayState.desc)
+    const bestH1 = hasBestRows
+      ? (lang === 'es' ? 'Mejores playas sin sargazo en ' + region.name + ' — última observación disponible' : 'Best beaches without sargassum in ' + region.name + ' — latest published satellite status')
+      : (lang === 'es' ? 'Clasificación actual no disponible en ' + region.name : 'Current beach ranking unavailable in ' + region.name)
+    const bestIntro = hasBestRows
+      ? (lang === 'es'
+          ? 'Estas son las playas mejor clasificadas según el último estado satelital publicado; comprueba la hora y la confianza antes de salir.'
+          : 'These are the highest-ranked beaches by latest published satellite status; check observation time and confidence before travelling.')
+      : todayState.intro
+    const bestRowsHtml = hasBestRows
+      ? '<ol>' + ranked.map(({ beach, decision }) =>
+          '<li><strong>' + beachLink(beach) + '</strong> — ' + esc(sw(decision.status)) + ', ' + esc(t.score) + ' ' + (decision.score ?? '—') + '/100' + (beach.commune ? ' · ' + esc(beach.commune) : '') + '</li>'
+        ).join('') + '</ol>'
+      : freshnessUnavailableHtml
     hubs.push({
       kind: 'best', sm: { daily: true, priority: '0.9' },
       slug: routes.best, title: bestTitle, desc: bestDesc,
-      noscript: `<article><h1>${esc(bestH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(bestIntro)}</p>
-<ol>${ranked.map(x => `<li><strong>${beachLink(x)}</strong> — ${sw(x.lv.status)}, ${t.score} ${x.lv.score ?? '—'}/100${x.commune ? ' · ' + esc(x.commune) : ''}</li>`).join('')}</ol>
-${hubLinks(null)}${networkFooter(region, t, lang)}</article>`,
+      noscript: '<article><h1>' + esc(bestH1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(bestIntro) + '</p>' +
+        bestRowsHtml + hubLinks(null) + networkFooter(region, t, lang) + '</article>',
     })
   }
 
-  // "This week" — page HAUTE-INTENTION "sargassum [dest] this week". La route
-  // region.routes.weekly était DÉCLARÉE dans les 3 configs USD mais JAMAIS générée
-  // → 404 en GSC ("unknown to Google"). 1 fonction transforme le 404 en page.
-  if (routes.weekly && byScore.length) {
+  // "This week" — un pronóstico uniquement si l'observation de base est publiable.
+  if (routes.weekly && beaches.length) {
     const wk = data.weekly || {}
-    const withClean = byScore.map(x => { const fc = ((wk[x.id] || {}).forecast || []).slice(0, 7); return { x, clean: fc.filter(f => f.status === 'clean').length } }).sort((a, c) => c.clean - a.clean)
-    const wkTitle = smartTrim(lang === 'es' ? `Sargazo en ${region.name} esta semana — pronóstico 7 días` : `Sargassum in ${region.name} This Week — 7-Day Outlook`, 68)
-    const wkDesc = trimDesc(lang === 'es'
-      ? `Pronóstico de sargazo a 7 días por playa para ${region.name}, basado en los datos disponibles. La hora de observación y la confianza pueden variar.`
-      : `7-day sargassum forecast beach by beach for ${region.name}, based on available data. Observation time and confidence may vary.`)
-    const wkH1 = lang === 'es' ? `Sargazo en ${region.name} esta semana — ${today}` : `Sargassum in ${region.name} this week — ${today}`
-    const wkIntro = lang === 'es'
-      ? 'El pronóstico de 7 días playa por playa, según el satélite. Empieza por las playas con más días limpios esta semana.'
-      : 'The 7-day outlook beach by beach, from satellite. Start with the beaches that have the most clean days this week.'
+    const withClean = publishableRows.map(({ beach, decision }) => {
+      const forecast = ((wk[beach.id] || {}).forecast || []).slice(0, 7)
+      return { beach, decision, forecast, clean: forecast.filter(f => f.status === 'clean').length }
+    }).filter(row => row.forecast.length > 0).sort((a, b2) => b2.clean - a.clean)
+    const hasWeeklyForecast = withClean.length > 0
+    const noForecastMessage = hasPublishableRows
+      ? (lang === 'es'
+          ? 'No hay un pronóstico de 7 días publicable para esta región. Comprueba la hora de la última observación.'
+          : 'No publishable 7-day forecast is available for this region. Check the latest observation time.')
+      : todayState.unavailableMessage
+    const wkTitle = hasWeeklyForecast
+      ? smartTrim(lang === 'es' ? 'Sargazo en ' + region.name + ' esta semana — pronóstico 7 días' : 'Sargassum in ' + region.name + ' This Week — 7-Day Outlook', 68)
+      : smartTrim(region.name + ' — ' + (lang === 'es' ? 'pronóstico semanal no disponible' : 'weekly forecast unavailable'), 68)
+    const wkDesc = hasWeeklyForecast
+      ? trimDesc(lang === 'es'
+          ? 'Pronóstico de sargazo a 7 días por playa para ' + region.name + ', basado en los datos disponibles. La hora de observación y la confianza pueden variar.'
+          : '7-day sargassum forecast beach by beach for ' + region.name + ', based on available data. Observation time and confidence may vary.')
+      : trimDesc(noForecastMessage)
+    const wkH1 = hasWeeklyForecast
+      ? (lang === 'es' ? 'Sargazo en ' + region.name + ' esta semana — última observación' : 'Sargassum in ' + region.name + ' this week — latest observation')
+      : (lang === 'es' ? 'Pronóstico semanal no disponible en ' + region.name : 'Weekly forecast unavailable in ' + region.name)
+    const wkIntro = hasWeeklyForecast
+      ? (lang === 'es'
+          ? 'El pronóstico de 7 días playa por playa, respaldado por la última observación publicable. Comprueba la hora y la confianza antes de decidir.'
+          : 'The 7-day outlook beach by beach, backed by the latest publishable observation. Check observation time and confidence before deciding.')
+      : noForecastMessage
+    const weeklyRowsHtml = hasWeeklyForecast
+      ? '<ul>' + withClean.map(({ beach, clean }) =>
+          '<li><strong>' + beachLink(beach) + '</strong> — ' + clean + '/7 ' + (lang === 'es' ? 'días limpios' : 'clean days') + ' · ' + esc(forecastLine(data.weekly, beach.id, lang)) + '</li>'
+        ).join('') + '</ul>'
+      : '<p class="sg-status-unavailable">' + esc(noForecastMessage) + '</p>'
     hubs.push({
       kind: 'weekly', sm: { daily: true, priority: '0.9' },
       slug: routes.weekly, title: wkTitle, desc: wkDesc,
-      noscript: `<article><h1>${esc(wkH1)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(wkIntro)}</p>
-<ul>${withClean.map(({ x, clean }) => `<li><strong>${beachLink(x)}</strong> — ${clean}/7 ${lang === 'es' ? 'días limpios' : 'clean days'} · ${forecastLine(data.weekly, x.id, lang)}</li>`).join('')}</ul>
-${hubLinks('weekly')}${networkFooter(region, t, lang)}</article>`,
+      noscript: '<article><h1>' + esc(wkH1) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p><p>' + esc(wkIntro) + '</p>' +
+        weeklyRowsHtml + hubLinks('weekly') + networkFooter(region, t, lang) + '</article>',
     })
   }
 
@@ -1036,9 +1132,8 @@ ${hubLinks('weekly')}${networkFooter(region, t, lang)}</article>`,
     hubs.push({
       kind: `extra:${e.slug}`, sm: { daily: !!e.daily, priority: e.priority || '0.6' },
       slug: e.slug, title: smartTrim(e.title, 70), desc: trimDesc(e.desc), jsonLd, alternates: [],
-      noscript: `<article><h1>${esc(e.h1 || e.title)}</h1><p><em>${t.updated(today)}</em></p><p>${esc(e.intro || '')}</p>
-${secHtml}${faqHtml}
-${hubLinks(`extra:${e.slug}`)}${networkFooter(region, t, lang)}</article>`,
+      noscript: '<article><h1>' + esc(e.h1 || e.title) + '</h1><p class="sg-observation sg-observation--' + observationFreshness.state + '">' + esc(observationLabel) + '</p>' + (hasPublishableRows ? '' : freshnessUnavailableHtml) + '<p>' + esc(e.intro || '') + '</p>' +
+  secHtml + faqHtml + hubLinks('extra:' + e.slug) + networkFooter(region, t, lang) + '</article>',
     })
   }
 
@@ -1264,12 +1359,9 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
     const forecastHtml = beachDecision.available
       ? `<h2>${esc(t.forecast7)}</h2><p>${esc(forecastLine(data.weekly, b.id, lang))}</p>`
       : ''
-    const noscript = `<article><h1>${esc(title)}</h1><p><em>${t.updated(today)}</em></p>
-<p>${esc(intro)}</p>
-<p><strong>${t.beachOf(r.name)} — ${beachLink(b)}</strong></p>
-${statusHtml}
-${forecastHtml}
-${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
+    const noscript = '<article><h1>' + esc(title) + '</h1><p class="sg-observation sg-observation--' + beachDecision.freshness.state + '">' + esc(observationLabel) + '</p>' +
+      '<p>' + esc(intro) + '</p><p><strong>' + t.beachOf(r.name) + ' — ' + beachLink(b) + '</strong></p>' +
+      statusHtml + forecastHtml + hubLinks(null) + networkFooter(region, t, lang) + '</article>'
     // Doorway risk : plusieurs resorts d'une même plage partagent le MÊME pixel
     // satellite → corps quasi byte-identique (nom seul échangé). On passe ces
     // pages en noindex,follow (retire le cluster dupliqué de l'index, garde la
@@ -1297,14 +1389,16 @@ ${hubLinks(null)}${networkFooter(region, t, lang)}</article>`
   //    langue SECONDAIRE = dist/<lang>/index.html re-pointé (ex. Riviera Maya /en/). ──
   if (prefix === '') {
     let home = fs.readFileSync(path.join(distDir, 'index.html'), 'utf-8')
-    if (region.seo && region.seo.homeTitle) {
+    const seoHomeTitle = sanitizeCadenceClaims(region.seo && region.seo.homeTitle, lang)
+    const seoHomeDesc = sanitizeCadenceClaims(region.seo && region.seo.homeDesc, lang)
+    if (seoHomeTitle) {
       home = home
-        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(region.seo.homeTitle)}</title>`)
-        .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
-        .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(region.seo.homeTitle)}"`)
-      if (region.seo.homeDesc) home = home
-        .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
-        .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(region.seo.homeDesc)}"`)
+        .replace(/<title>[\s\S]*?<\/title>/, `<title>${esc(seoHomeTitle)}</title>`)
+        .replace(/(<meta property="og:title" content=)"[^"]*"/, `$1"${esc(seoHomeTitle)}"`)
+        .replace(/(<meta name="twitter:title" content=)"[^"]*"/, `$1"${esc(seoHomeTitle)}"`)
+      if (seoHomeDesc) home = home
+        .replace(/(<meta name="description" content=)"[^"]*"/, `$1"${esc(seoHomeDesc)}"`)
+        .replace(/(<meta property="og:description" content=)"[^"]*"/, `$1"${esc(seoHomeDesc)}"`)
     }
     if (Array.isArray(content.faq) && content.faq.length) {
       const faqLd = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: content.faq.map(f => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) }
