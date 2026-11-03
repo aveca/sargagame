@@ -38,18 +38,45 @@ function freshPayload() {
   }
 }
 
+/**
+ * Extract the real handleBuy from src/SOSPlage.jsx and return an executable
+ * function with the same behaviour.
+ *
+ * The capture is `async () => {` ... `}` where the closing `}` is the literal
+ * one inside the `\n  }, [deps]` terminator, so the captured group is EXACTLY
+ * the arrow body content. It must be wrapped back in `{ ... }` and nothing
+ * else: stripping a trailing brace from the capture deletes the inner block's
+ * own closer (the `finally` block), which only ever produced valid code when a
+ * trailing CR accidentally blocked the strip.
+ *
+ * Line endings are normalised first so the extraction is identical on the LF
+ * blob CI checks out and on a CRLF Windows worktree.
+ */
 function extractHandleBuy(sosSource) {
-  const match = sosSource.match(/const handleBuy = useCallback\(async \(\) => \{([\s\S]*?)\n {2}\}, \[/)
+  const normalised = sosSource.replace(/\r\n/g, "\n")
+  const match = normalised.match(/const handleBuy = useCallback\(async \(\) => \{([\s\S]*?)\n {2}\}, \[/)
   if (!match) {
     throw new Error("handleBuy extraction failed: source shape changed")
   }
-  // Drop the closing brace of the async arrow body, keep the statements only.
-  const body = match[1].replace(/\}[ \t]*$/, "")
-  return new Function(
-    "selectedBeach", "checkoutLoading", "lang", "setCheckoutLoading", "setCheckoutBlocked",
-    "track", "window", "alert", "_t", "fetch",
-    "return (async () => {" + body + "})()"
-  )
+  const body = match[1]
+  const source = "return (async () => {" + body + "})()"
+  let factory
+  try {
+    factory = new Function(
+      "selectedBeach", "checkoutLoading", "lang", "setCheckoutLoading", "setCheckoutBlocked",
+      "track", "window", "alert", "_t", "fetch",
+      source
+    )
+  } catch (error) {
+    throw new Error(
+      "handleBuy extraction produced uncompilable source (" + error.message + "): " +
+      "the closing brace of an inner block was dropped. Keep the capture whole."
+    )
+  }
+  if (typeof factory !== "function") {
+    throw new Error("handleBuy extraction produced no function: source shape changed")
+  }
+  return factory
 }
 
 function runHandleBuy(factory, beach, lang) {
@@ -82,6 +109,27 @@ async function main() {
 
   // ---------------------------------------------------------------- ordering
   // The mission requires the freshness check BEFORE each of these three.
+  const factory0 = extractHandleBuy(sosSource)
+  assert.equal(typeof factory0, "function", "the extracted handleBuy must be a usable function")
+
+  // The capture is the arrow body content, so it must be brace-balanced on its
+  // own. A previous version stripped the last brace of the capture, which
+  // deleted the `finally` closer and only compiled by accident when a trailing
+  // CR blocked the strip - a false pass on Windows, a SyntaxError on CI.
+  {
+    const normalised = sosSource.replace(/\r\n/g, "\n")
+    const captured = normalised.match(/const handleBuy = useCallback\(async \(\) => \{([\s\S]*?)\n {2}\}, \[/)[1]
+    let depth = 0
+    let minimum = 0
+    for (const ch of captured) {
+      if (ch === "{") depth += 1
+      if (ch === "}") depth -= 1
+      if (depth < minimum) minimum = depth
+    }
+    assert.equal(depth, 0, "the captured handleBuy body must close every block it opens")
+    assert.equal(minimum, 0, "the captured handleBuy body must never close a block it did not open")
+  }
+
   const guardIndex = sosSource.indexOf("selectedBeach.observationCurrent !== true")
   const markIndex = sosSource.indexOf("window.__sosHandleBuyCalled = true")
   const trackIndex = sosSource.indexOf('track("sg_sos_checkout_start"')
