@@ -38,6 +38,8 @@ fs.writeFileSync(path.join(dist, 'robots.txt'), 'User-agent: *\n')
 fs.writeFileSync(path.join(dist, 'sitemap.xml'), '<urlset></urlset>\n')
 fs.writeFileSync(path.join(dist, 'version.json'), JSON.stringify({ v: 'v221', b: 'abc123' }))
 fs.writeFileSync(path.join(dist, 'sw.js'), "CACHE_NAME = 'sargasses-v221-abc123'")
+fs.mkdirSync(path.join(dist, 'beaches'), { recursive: true })
+fs.writeFileSync(path.join(dist, 'beaches', 'index.html'), '<html><body>Regional beach directory</body></html>')
 fs.writeFileSync(path.join(dist, '.assetsignore'), '**/*.php\n**/*.php.*\n**/.env*\n**/.htaccess\n**/.htpasswd\n**/_private/\n')
 
 // Donnée privée à EXCLURE du FTP (doit disparaître)
@@ -57,6 +59,7 @@ const mqFtp = path.join(ROOT, 'martinique-ftp')
 check('.htaccess présent dans le FTP mq', fs.existsSync(path.join(mqFtp, '.htaccess')))
 check('api/.htaccess présent dans le FTP mq', fs.existsSync(path.join(mqFtp, 'api', '.htaccess')))
 check('sargassum.json présent dans le FTP mq', fs.existsSync(path.join(mqFtp, 'api', 'copernicus', 'sargassum.json')))
+check('index parent /beaches/ préservé dans le FTP mq', fs.existsSync(path.join(mqFtp, 'beaches', 'index.html')))
 
 // 4. Vérifications : données privées exclues du FTP
 check('_private absent du FTP mq', !fs.existsSync(path.join(mqFtp, '_private')))
@@ -92,5 +95,5 @@ fs.rmSync(mqFtp, { recursive: true, force: true })
 if (fs.existsSync(puFtp)) fs.rmSync(puFtp, { recursive: true, force: true })
 fs.rmSync(dist, { recursive: true, force: true })
 
-console.log(`\n${passed}/13 assertions passed - packaging FTP protège .htaccess et exclut _private.\n`)
+console.log(`\n${passed}/14 assertions passed - packaging FTP préserve l'index régional et protège .htaccess / _private.\n`)
 process.exit(0)
