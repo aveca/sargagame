@@ -98,13 +98,44 @@ async function assertWithheld(page, locale) {
 }
 
 async function assertNoHorizontalOverflow(page, item, viewport, state) {
-  const dimensions = await page.evaluate(() => ({
-    viewportWidth: document.documentElement.clientWidth,
-    documentWidth: document.documentElement.scrollWidth,
-    bodyWidth: document.body.scrollWidth
-  }))
+  // Full-page screenshots wait for web fonts; measure only after the same
+  // layout has settled so the assertion cannot pass on fallback-font metrics.
+  await page.evaluate(async () => {
+    if (document.fonts && document.fonts.ready) await document.fonts.ready
+    await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+  })
+  const dimensions = await page.evaluate(() => {
+    const viewportWidth = document.documentElement.clientWidth
+    const overflowingElements = Array.from(document.body.querySelectorAll('*')).map(element => {
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      return {
+        tag: element.tagName.toLowerCase(),
+        id: element.id || '',
+        className: typeof element.className === 'string' ? element.className : '',
+        left: Math.round(rect.left),
+        right: Math.round(rect.right),
+        width: Math.round(rect.width),
+        position: style.position,
+        whiteSpace: style.whiteSpace,
+        text: (element.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 100)
+      }
+    }).filter(element =>
+      element.position !== 'absolute' &&
+      element.position !== 'fixed' &&
+      (element.right > viewportWidth + 1 || element.left < -1)
+    ).sort((a, b) => b.right - a.right).slice(0, 12)
+    return {
+      viewportWidth,
+      documentWidth: document.documentElement.scrollWidth,
+      bodyWidth: document.body.scrollWidth,
+      overflowingElements
+    }
+  })
+  const passed = dimensions.documentWidth <= dimensions.viewportWidth && dimensions.bodyWidth <= dimensions.viewportWidth
+  console.log('HORIZONTAL_OVERFLOW_DIAGNOSTIC ' + item.path + ' @ ' + viewport.width + 'x' + viewport.height + ' (' + state + '): ' + JSON.stringify(dimensions))
   assert.ok(
-    dimensions.documentWidth <= dimensions.viewportWidth && dimensions.bodyWidth <= dimensions.viewportWidth,
+    passed,
     item.path + ' @ ' + viewport.width + 'x' + viewport.height + ' (' + state + '): horizontal overflow ' + JSON.stringify(dimensions)
   )
 }
