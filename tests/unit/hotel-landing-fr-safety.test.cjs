@@ -65,8 +65,10 @@ const smallSampleHtml = render({
     to: '2026-10-21',
   },
 });
-assert.match(smallSampleHtml, /Aucun taux de fiabilité n’est affiché/);
-assert.doesNotMatch(smallSampleHtml, /100%|0%/);
+const smallSampleRel = smallSampleHtml.match(/<div class="rel">([\\s\\S]*?)<\\/div>/);
+assert.ok(smallSampleRel, 'reliability block is present');
+assert.match(smallSampleRel[1], /Aucun taux de fiabilité n’est affiché/);
+assert.doesNotMatch(smallSampleRel[1], /100%|0%/);
 
 const staleHtml = render({
   coverage: [{ name: 'Plage test', status: 'clean', score: 88 }],
