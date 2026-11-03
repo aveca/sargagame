@@ -152,7 +152,7 @@ try {
 
   assert.ok(freshEsMap.includes('987/100'), 'fresh map must retain publishable scores');
   assert.ok(freshEsForecast.includes('987/100'), 'fresh forecast page must retain publishable scores');
-  assert.ok(freshEsForecast.includes('viernes: Evitar'), 'fresh forecast page must retain forecast rows');
+  assert.ok(freshEsForecast.includes('Vie: Evitar'), 'fresh forecast page must retain forecast rows');
   assert.ok(freshEsSemaforo.includes('987/100'), 'fresh traffic-light page must retain publishable scores');
   assert.ok(freshEsBest.includes('987/100'), 'fresh best-beaches page must retain publishable scores');
   assert.ok(freshEsWeekly.includes('6/7 días limpios'), 'fresh weekly page must retain publishable forecast counts');
@@ -160,7 +160,7 @@ try {
   assert.ok(freshEsPress.includes(riviera.beaches.length + ' de ' + riviera.beaches.length + ' playas con estado publicable'));
   assert.ok(freshEnMap.includes('987/100'));
   assert.ok(freshEnForecast.includes('987/100'));
-  assert.ok(freshEnForecast.includes('Friday: Avoid'));
+  assert.ok(freshEnForecast.includes('Fri: Avoid'));
 } finally {
   fs.rmSync(freshDir, { recursive: true, force: true });
 }
