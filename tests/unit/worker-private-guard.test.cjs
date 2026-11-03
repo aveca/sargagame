@@ -1,11 +1,9 @@
 // tests/unit/worker-private-guard.test.cjs — garde _private fail-closed
 // Contexte : /api/copernicus/_private/forecast-full.json (premium J+2-7) a été
-// servi en clair sur *.workers.dev (constaté 2026-10-04). Cause racine : avec
-// run_worker_first=false (défaut actuel) : les assets statiques compatibles sont
-// servis directement par Cloudflare sans invocation Worker. Les chemins
-// dynamiques (API, Apple Pay, guards) sont toujours traités par le code Worker
-// car ils ne correspondent pas aux assets statiques. La garde _private/dotfiles/php
-// s'exécute uniquement quand le Worker est invoqué (req non-asset).
+// servi en clair sur *.workers.dev (constaté 2026-10-04). Les assets privés
+// restent asset-first et doivent être exclus par .assetsignore ; le Worker ne
+// protège que les routes configurées Worker-first. L'API Copernicus publique
+// est maintenant la seule route Worker-first pour recalculer ses métadonnées.
 // Lancement : node tests/unit/worker-private-guard.test.cjs
 
 const fs = require('fs');
@@ -53,8 +51,9 @@ check('handler widget-token préservé', /widget-token/.test(WORKER));
 check('handler b2b-trial préservé', /b2b-trial/.test(WORKER));
 check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(WORKER));
 
-// 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
-check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*false/.test(TPL));
+// 5. Worker-first sélectif : seule l'API Copernicus passe par le Worker.
+check('wrangler.template route uniquement l’API Copernicus en Worker-first', /"run_worker_first"\s*:\s*\[\s*"\/api\/copernicus\/sargassum\.json"\s*\]/.test(TPL));
+check('aucun Worker-first global', !/"run_worker_first"\s*:\s*true/.test(TPL));
 
 // 6. Garde assets: règles exactes, pas une simple présence du mot "_private".
 const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')));

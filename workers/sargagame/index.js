@@ -1,9 +1,12 @@
+import satelliteFreshness from '../../scripts/lib/satellite-freshness.cjs';
+const { refreshSatellitePayload } = satelliteFreshness;
+
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
     const origin = request.headers.get("Origin") || "";
     const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com","https://sargazotulum.com"];
-    const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
+    const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
@@ -234,10 +237,9 @@ export default {
     if(u.pathname==="/.well-known/apple-developer-merchantid-domain-association"){
       return env.ASSETS.fetch(new URL("/api/apple-pay-domain-association",u.origin),request);
     }
-    // Garde fail-closed (2e barrière après public/.assetsignore) : avec
-    // run_worker_first=true, les assets existants passent AUSSI par ce handler
-    // (sans ça, tout fichier de dist/ serait servi quel que soit le code
-    // ci-dessus — constaté : /api/.htaccess lisible en clair sur workers.dev).
+    // Garde fail-closed (2e barrière après public/.assetsignore) : les routes
+    // configurées Worker-first passent aussi par ce handler. Les autres assets
+    // restent asset-first ; .assetsignore reste donc obligatoire pour _private.
     // Refus neutre 404 (aucun détail) pour tout ce qui ne doit jamais être
     // public, même si un futur upload l'y déposait.
     if(u.pathname.includes("/_private/")
@@ -248,6 +250,26 @@ export default {
       || /\.htaccess$/i.test(u.pathname)
       || /\.env($|\.)/i.test(u.pathname)) {
       return out({error:"not_found"},404);
+    }
+    // Fraîcheur Copernicus à la requête : l'asset scientifique reste immuable.
+    // Seules les métadonnées dataAgeMinutes/stale sont recalculées depuis
+    // erddapTimestamp. Le run_worker_first sélectif ne vise que cette URL.
+    if(u.pathname==="/api/copernicus/sargassum.json" && request.method==="GET") {
+      const assetResponse=await env.ASSETS.fetch(request);
+      if(!assetResponse.ok) return assetResponse;
+      let payload;
+      try { payload=await assetResponse.json(); }
+      catch { return out({error:"invalid_copernicus_asset"},502); }
+      if(!payload || typeof payload!=="object" || Array.isArray(payload)) {
+        return out({error:"invalid_copernicus_asset"},502);
+      }
+      if(payload.source==="erddap-live") {
+        refreshSatellitePayload(payload);
+      } else {
+        payload.dataAgeMinutes=null;
+        payload.stale=true;
+      }
+      return out(payload,assetResponse.status);
     }
     // Données statiques publiques : laissées aux ASSETS (après la garde
     // ci-dessus : _private/dotfiles/php déjà refusés). Sans cette allowlist,
