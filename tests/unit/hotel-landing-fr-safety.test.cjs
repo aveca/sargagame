@@ -30,6 +30,16 @@ assert.equal(
   'unknown',
   'un timestamp futur ne peut pas être déclaré frais'
 );
+assert.equal(
+  getSatelliteFreshness({ source: 'fallback', erddapTimestamp: timestampAtAge(60) }, now).status,
+  'unknown',
+  'une source non-live ne peut pas être déclarée fraîche'
+);
+assert.equal(
+  getSatelliteFreshness({ source: 'erddap-live', erddapTimestamp: timestampAtAge(60) }, now).status,
+  'fresh',
+  'la source ERDDAP live utilise le contrat de fraîcheur partagé'
+);
 
 const base = {
   islandId: 'mq',
