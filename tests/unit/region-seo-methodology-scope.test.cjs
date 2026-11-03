@@ -187,7 +187,11 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
     }
     generateRegionSeoPages(getRegion(regionId), distDir, { data: staleData, trackRecord: staleRecord, now: freshnessNow })
     const generatedFiles = walk(distDir).filter(file => file.endsWith('.html'))
-    const methodPages = generatedFiles.filter(file => /(?:methodology|metodologia)\/index\.html$/i.test(file))
+    // walk() returns native paths (`\` on Windows), so a regex requiring `/`
+    // never matches there. The beach filter below already normalises; these
+    // two did not, which emptied methodPages/pressPages and failed on the
+    // first region (florida) before tulum was ever reached.
+    const methodPages = generatedFiles.filter(file => /(?:methodology|metodologia)\/index\.html$/i.test(file.replace(/\\/g, '/')))
     assert.ok(methodPages.length > 0, regionId + ': methodology page must remain generated')
     for (const file of methodPages) {
       const html = fs.readFileSync(file, 'utf8')
@@ -198,7 +202,7 @@ for (const regionId of ['florida', 'puntacana', 'rivieramaya', 'tulum']) {
       assert.doesNotMatch(html, /status is correct 99%|estado a 1 día acierta el 99%/)
     }
 
-    const pressPages = generatedFiles.filter(file => /(?:press|prensa|media)[^/]*\/index\.html$/i.test(file))
+    const pressPages = generatedFiles.filter(file => /(?:press|prensa|media)[^/]*\/index\.html$/i.test(file.replace(/\\/g, '/')))
     assert.ok(pressPages.length > 0, regionId + ': press page must remain generated')
     const beachPages = generatedFiles.filter(file => /(?:beaches|playas)\/[^/]+\/index\.html$/i.test(file.replace(/\\/g, '/')))
     assert.ok(beachPages.length > 0, regionId + ': beach detail pages must remain generated')
