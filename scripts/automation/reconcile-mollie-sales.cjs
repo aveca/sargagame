@@ -32,7 +32,8 @@ function maskEmail(e) {
 }
 
 async function mollieGet(url, key) {
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
+  const requestUrl = url.startsWith('http') ? url : new URL(url, MOLLIE_BASE).toString()
+  const res = await fetch(requestUrl, { headers: { Authorization: 'Bearer ' + key } })
   const j = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(`Mollie GET ${url}: ${j.detail || res.status}`)
   return j
