@@ -8,6 +8,16 @@ on:
     - cron: '0 12 * * *'
     - cron: '0 18 * * *'
   workflow_dispatch:
+    inputs:
+      # P0.67 §4 — la purge analytics_events supprime DÉFINITIVEMENT des
+      # lignes de production. Elle ne doit jamais s'exécuter parce qu'un
+      # cron s'est déclenché : elle exige une intention humaine explicite
+      # (Actions → Run workflow → cocher `purge_analytics`). false = dry-run,
+      # aucun DELETE émis. Cf. scripts/automation/purge-analytics.cjs.
+      purge_analytics:
+        description: 'Purge réelle analytics_events (> 90j) ? (false = dry-run, aucune suppression)'
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -462,7 +472,19 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/factory-heartbeat-watch.cjs --send
 
-      - name: Purge analytics_events (> 90j)
+      # P0.67 §4 — la purge était DESTRUCTRICE PAR DÉFAUT sur simple cron.
+      # Une suppression irréversible de lignes de production ne doit pas
+      # dépendre d'un déclenchement automatique : le script refuse désormais
+      # de supprimer sans `--execute --approved-by=<identité>`.
+      #
+      # Chemin CRON (4x/jour) : dry-run. Le comptage est publié dans le log
+      # (utile pour décider d'une purge réelle), ZÉRO DELETE émis.
+      #
+      # Chemin MANUEL (Actions → Run workflow → purge_analytics=true) :
+      # suppression réelle, avec l'identité de l'opérateur (`github.actor`)
+      # portée par `--approved-by` : la trace nomme qui a autorisé la
+      # suppression, ce qu'un cron anonyme ne pouvait pas faire.
+      - name: Purge analytics_events (> 90j) — dry-run (cron)
         if: github.event_name == 'schedule'
         continue-on-error: true
         # Budget d'étape : un blocage réseau ne doit plus consommer le budget
@@ -477,6 +499,17 @@ jobs:
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/purge-analytics.cjs
+
+      - name: Purge analytics_events (> 90j) — exécution réelle
+        if: github.event_name == 'workflow_dispatch' && inputs.purge_analytics
+        # Pas de continue-on-error : une purge demandée explicitement par un
+        # opérateur et qui échoue DOIT se voir dans le verdict du run.
+        timeout-minutes: 10
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          node scripts/automation/purge-analytics.cjs \
+            --execute --approved-by=github:${{ github.actor }}
 
       - name: Funnel from Supabase (complementary)
         if: github.event_name == 'schedule'
