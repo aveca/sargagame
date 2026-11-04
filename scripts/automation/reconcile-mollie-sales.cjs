@@ -9,22 +9,37 @@
  *   3. payment_grants dans Supabase (droits délivrés)
  *   4. Événements analytics sg_conversion / sg_checkout_* (Supabase)
  *
- * Sortie : scripts/automation/data/reconcile-sales.json (sans PII : emails hashés)
+ * Sortie détaillée : uniquement vers RECONCILE_PRIVATE_OUTPUT_PATH, chemin absolu hors dépôt.
+ * Aucun détail transactionnel n'est écrit dans les logs publics ou dans le dépôt.
  *
  * Secrets requis (env) : MOLLIE_API_KEY (live_), SUPABASE_URL, SUPABASE_SERVICE_KEY
  * Absent → skip propre, rien d'écrit.
  *
- * Usage : node scripts/automation/reconcile-mollie-sales.cjs [--send]
- *   sans --send : dry-run (affiche le rapport sur stdout, n'écrit rien)
- *   avec --send : écrit scripts/automation/data/reconcile-sales.json
+ * Usage : node scripts/automation/reconcile-mollie-sales.cjs [--write-private]
+ *   par défaut : lecture seule, logs génériques, aucun fichier écrit
+ *   --write-private : écrit vers un chemin absolu externe au dépôt.
  */
 const fs = require('fs')
 const path = require('path')
 const { emailHash } = require('./lib/email-hash.cjs')
 
-const OUT_PATH = path.join(__dirname, 'data', 'reconcile-sales.json')
-const SEND = process.argv.includes('--send')
+const WRITE_PRIVATE = process.argv.includes('--write-private')
+const REPO_ROOT = path.resolve(__dirname, '../..')
 const MOLLIE_BASE = 'https://api.mollie.com/v2'
+
+function resolvePrivateOutputPath(rawPath) {
+  if (typeof rawPath !== 'string' || !rawPath.trim() || !path.isAbsolute(rawPath)) {
+    throw new Error('RECONCILE_PRIVATE_OUTPUT_PATH doit être un chemin absolu.')
+  }
+  const resolved = path.resolve(rawPath)
+  const relative = path.relative(REPO_ROOT, resolved)
+  const isInsideRepo = relative === '' ||
+    (relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative))
+  if (isInsideRepo) {
+    throw new Error('Le rapport transactionnel doit être écrit hors du dépôt public.')
+  }
+  return resolved
+}
 
 function maskEmail(e) {
   if (!e) return null
@@ -258,27 +273,18 @@ async function main() {
     readOnly: true,
   }
 
-  console.log(`\n=== Rapprochement ventes (mode ${mode}) ===`)
-  console.log(`Paiements totaux : ${payments.length}`)
-  console.log(`Payés : ${paid.length} (dont tests exclus : ${testPaid.length}, réels : ${realPaid.length})`)
-  console.log(`Remboursements détectés : ${rawRefunds.length}`)
-  console.log(`Grants Supabase : ${grants.length}`)
-  console.log(`Problèmes : ${issues.length}`)
-  for (const cur of totalsByCurrency.keys()) {
-    const t = totalsByCurrency.get(cur)
-    console.log(`  ${cur}: ${t.count} payé(s), brut €${t.gross.toFixed(2)}, remboursé €${t.refunded.toFixed(2)}, net €${t.net.toFixed(2)}`)
-  }
-  for (const iss of issues) {
-    console.log(`  ⚠️  ${iss.severity.toUpperCase()} ${iss.type}: ${iss.detail} (paymentId=${iss.paymentId})`)
-  }
+  console.log('[reconcile] Rapprochement terminé. Détails transactionnels masqués des logs publics.')
 
-  if (SEND) {
-    fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true })
-    fs.writeFileSync(OUT_PATH, JSON.stringify(report, null, 2))
-    console.log(`\nRapport écrit → ${path.relative(process.cwd(), OUT_PATH)}`)
-  } else {
-    console.log('\n(Dry-run : passez --send pour écrire le fichier)')
+  if (WRITE_PRIVATE) {
+    const outputPath = resolvePrivateOutputPath(process.env.RECONCILE_PRIVATE_OUTPUT_PATH)
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+    fs.writeFileSync(outputPath, JSON.stringify(report, null, 2))
+    console.log('[reconcile] Rapport détaillé enregistré dans un chemin privé hors du dépôt (chemin masqué).')
   }
 }
 
-main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+if (require.main === module) {
+  main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
+}
+
+module.exports = { resolvePrivateOutputPath }
