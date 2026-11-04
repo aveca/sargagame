@@ -1,7 +1,9 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
+  "attribution_policy": "sargasses-brand-and-plan-v1",
+  "mollie_account_payments_this_month": 0,
   "date": "2026-11-04",
-  "timestamp": "2026-11-04T05:48:56.439Z",
+  "timestamp": "2026-11-04T18:55:50.237Z",
   "source": "mollie-api",
   "mrr": {
     "total_eur": 0,
@@ -22,12 +24,19 @@
   "customers": {
     "active_subs": 0,
     "paid_this_month": 0,
-    "unique_payers_all": 0
+    "unique_payers_all": 0,
+    "unattributed_active_subs": 0,
+    "unattributed_paid_this_month": 0
   },
   "payments_this_month": 0,
   "revenue_this_month_eur": 0,
   "revenue_this_month_by_currency": {},
   "currency_breakdown": {},
+  "unattributed": {
+    "active_subscriptions": 0,
+    "payments_this_month": 0,
+    "revenue_this_month_by_currency": {}
+  },
   "history": [
     {
       "schema_version": 2,
@@ -84,7 +93,7 @@
       "revenue_by_currency": {}
     },
     {
-      "schema_version": 2,
+      "schema_version": 3,
       "date": "2026-11-04",
       "mrr": {
         "total_eur": 0,
@@ -105,22 +114,18 @@
       "customers": {
         "active_subs": 0,
         "paid_this_month": 0,
-        "unique_payers_all": 0
+        "unique_payers_all": 0,
+        "unattributed_active_subs": 0,
+        "unattributed_paid_this_month": 0
       },
       "revenue": 0,
-      "revenue_by_currency": {}
-    }
-  ],
-  "trend": {
-    "mrr_7d": null,
-    "mrr_30d": null,
-    "current": 0,
-    "by_currency": {
-      "EUR": {
-        "mrr_7d": null,
-        "mrr_30d": null,
-        "current": 0
+      "revenue_by_currency": {},
+      "unattributed": {
+        "active_subscriptions": 0,
+        "payments_this_month": 0,
+        "revenue_this_month_by_currency": {}
       }
     }
-  }
+  ],
+  "trend": null
 }
