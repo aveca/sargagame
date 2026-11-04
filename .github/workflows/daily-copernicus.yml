@@ -468,10 +468,10 @@ jobs:
       # chemins GitHub Actions : le cron compte uniquement, et workflow_dispatch
       # n'expose aucun input ni aucune étape de suppression.
       #
-      # Le script conserve un mode CLI --execute pour un futur processus
-      # distinct, mais aucun workflow ne le branche. Une suppression réelle
-      # reste désactivée jusqu'à une approbation explicite et un contrôle
-      # opérateur protégé.
+      # Le script est désormais strictement en lecture seule : il ne contient
+      # plus de méthode d'écriture et ignore les anciens flags destructeurs.
+      # Toute future suppression devra utiliser un outil séparé, protégé,
+      # sauvegardé et soumis à une revue explicite.
       - name: Purge analytics_events (> 90j) — dry-run (cron)
         if: github.event_name == 'schedule'
         continue-on-error: true
