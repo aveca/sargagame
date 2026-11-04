@@ -18,7 +18,8 @@ const OUT_PATH = path.join(__dirname, 'data', 'fulfillment-diagnosis.json')
 const MOLLIE_BASE = 'https://api.mollie.com/v2'
 
 async function mollieGet(url, key) {
-  const res = await fetch(url, { headers: { Authorization: 'Bearer ' + key } })
+  const requestUrl = url.startsWith('http') ? url : new URL(url, MOLLIE_BASE).toString()
+  const res = await fetch(requestUrl, { headers: { Authorization: 'Bearer ' + key } })
   const j = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(`Mollie GET ${url}: ${j.detail || res.status}`)
   return j
