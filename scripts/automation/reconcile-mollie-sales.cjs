@@ -20,7 +20,7 @@
  */
 const fs = require('fs')
 const path = require('path')
-const { emailHash } = require('../lib/email-hash.cjs')
+const { emailHash } = require('./lib/email-hash.cjs')
 
 const OUT_PATH = path.join(__dirname, 'data', 'reconcile-sales.json')
 const SEND = process.argv.includes('--send')
