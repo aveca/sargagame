@@ -98,7 +98,7 @@ function main() {
 
   // ── 3. workflow_dispatch ne fournit aucun input de purge ─────────────────
   {
-    const m = /^  workflow_dispatch:\\s*\\r?\\n([\\s\\S]*?)(?=^  \\S)/m.exec(normalised);
+    const m = /^  workflow_dispatch:\s*\r?\n([\s\S]*?)(?=^  \S)/m.exec(normalised);
     const dispatchBlock = m ? m[1] || '' : '';
     record('workflow_dispatch reste disponible', !!m);
     record('workflow_dispatch ne contient aucun input de purge',
