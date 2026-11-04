@@ -550,6 +550,16 @@ Correctif : job `revenue-metrics` **autonome** (`needs: AUCUN`,
 | `npm test` | **149/149 exit 0** (148 + `daily-copernicus-revenue-metrics`) |
 | Budget bundle | **206,5 Ko ≤ 210 Ko** |
 
+**CI réelle sur le SHA mergé `90d083a1`** (mergée sur `main` → push réel) :
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (push `main`) | `41843389922` | **PASS** |
+| Perf Budget + Lighthouse (push `main`) | `41843390113` | **PASS** |
+| Daily Copernicus + Deploy (push `main`) | `41843389417` | **PASS** |
+| **Cloudflare Production (push `main`)** | `41843389301` | **FAILURE** — `FAIL SATELLITE_PREDEPLOY region=florida (3001.28 min > 900 min)` ; `certification-gate` **success**, `deploy`/`deploy-pages`/`verify-fleet`/`post-deploy-verify` **skipped** → **rien publié** |
+| User Journey Audit (E2E) | `41843797473` | skipped (déclenché par le workflow_run) |
+
 > **Effet de bord assumé et signalé :** le step « Revenue watch » (alerte interne
 > par email d'un mouvement de revenu) reste dans `email-automation`, donc
 > conditionné à la fraîcheur satellite — pour la même raison logique, il ne
@@ -667,7 +677,7 @@ dépôt, exactement comme le fait son cron 4x/jour.
 | Étapes non atteintes | `certification-gate` → `deploy` → `deploy-pages` → `verify-fleet` → `post-deploy-verify` (jamais exécutées) |
 
 **Ce n'est pas une régression du correctif de prix.** La même garde a fait échouer
-**20 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T11:04Z, y compris
+**21 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T14:01Z, y compris
 des SHAs qui ne contiennent **aucun** changement de cette branche :
 
 | Run | SHA | Région signalée | Âge de l'observation |
@@ -675,6 +685,50 @@ des SHAs qui ne contiennent **aucun** changement de cette branche :
 | `41790290141` | `ec49b167` (main **avant** cette branche) | florida | 2 590 min |
 | `41816656514` | `c4f9821d` (PR #1259) | rivieramaya | 2 809 min |
 | `41818452612` | `22ff4d8b` (**cette** branche) | puntacana | 2 825 min |
+| `41839142457` | `c5359b77` (PR #1267, rapport) | tulum | 2 974 min |
+| `41843389301` | `90d083a1` (**dernier** merge, #1271) | florida | 3 001 min |
+
+#### Le tout dernier run de production (SHA `90d083a1`) — la garde est bien fail-closed
+
+Le merge de #1271 (14:00:55Z) a déclenché un **push réel sur `main`** → la
+chaîne complète s'est exécutée. C'est la preuve la plus récente que la garde
+refuse proprement, sur le SHA le plus à jour :
+
+| Job | Résultat |
+|---|---|
+| `scope` | **success** |
+| `mollie-live-gate` | **success** |
+| **`certification-gate`** | **success** — `test-frontend` et `perf` **verts sur le SHA exact `90d083a1`** |
+| `build (florida)` | **failure** à l'étape 8 `Pre-deploy satellite freshness gate (all six regions)` |
+| `build (mq / gp / tulum / puntacana / rivieramaya)` | **cancelled** (fail-fast de la matrice) |
+| `deploy` · `deploy-pages` · `verify-fleet` · `post-deploy-verify` | **skipped** → **rien n'a été publié** |
+
+Message exact de la garde :
+`FAIL SATELLITE_PREDEPLOY region=florida limit=900min reason=observation hors SLA (3001.28 min > 900 min)`
+
+→ La **porte de certification passe**, la **porte satellite refuse**, et
+**aucune** étape de publication n'est atteinte. Le fail-closed est intact sur le
+SHA le plus récent.
+
+#### La production est **plus périmée** que le dépôt — 5 jours d'écart
+
+Fait mesuré et précédemment non consigné : les deux sources de payload n'ont
+**pas** le même horodatage.
+
+| Source | `erddapTimestamp` | Âge au 2026-11-04T14:23Z | SLA 900 min |
+|---|---|---:|---|
+| **Payload commité dans `main`** (`public/api/copernicus/*/sargassum.json`, les 7 régions + racine) | `2026-11-02T12:00:00Z` | 3 021 min | hors SLA |
+| **Production servie** (les 6 domaines) | `2026-10-27T12:00:00Z` | 11 645 min | hors SLA |
+
+Les 7 payloads régionaux du dépôt portent **tous** `2026-11-02T12:00:00Z` — la
+publication du 2026-11-02 a bien été committée par `fetch-data`, mais **jamais
+déployée**, faute de fenêtre SLA. La production affiche donc une observation de
+**5 jours plus ancienne** que celle déjà présente dans le dépôt.
+
+Conséquence opérationnelle : dès que NOAA publiera la grille du
+`2026-11-04T12:00:00Z`, le dispatch publishera une observation **fraîche** et la
+porte passera **sans qu'aucune weakened garde soit nécessaire**. Il n'y a
+**rien à corriger** côté garde : la garde a fait exactement son travail.
 
 **Cause racine, mesurée sur l'upstream.** Le payload Copernicus engage dans le dépôt
 porte `erddapTimestamp = 2026-11-02T12:00:00Z`. Interrogation directe de l'upstream
@@ -766,19 +820,20 @@ d'essai ou de remise n'a été tentée pour cette vérification.
 #### La production est en plus dégradée sur la DONNÉE (8 jours de retard)
 
 Contrôle du payload satellite **publié** sur les 6 domaines (lecture seule,
-2026-11-04T11:57Z) :
+re-mesuré le 2026-11-04T14:23Z ; première mesure à 11:57Z) :
 
 | Domaine | `source` | `erddapTimestamp` | Âge |
 |---|---|---|---|
-| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 515 min (8 j)** |
-| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 645 min (8 j)** |
+| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
 
-Alors que `main` porte déjà `2026-11-02T12:00:00Z` : **les données sont publiées
-dans le dépôt mais jamais déployées** — c'est exactement le défaut décrit en tête de
+Alors que `main` porte déjà `2026-11-02T12:00:00Z` (les 7 payloads régionaux +
+la racine, tous identiques) : **les données sont publiées dans le dépôt mais
+jamais déployées** — c'est exactement le défaut décrit en tête de
 `scripts/automation/trigger-production-deploy.cjs` (« le commit de données était
 publié mais JAMAIS déployé »).
 
