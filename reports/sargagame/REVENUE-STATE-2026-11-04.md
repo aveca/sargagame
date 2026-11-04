@@ -446,6 +446,39 @@ local ; avec : **147/147**. La CI Linux n'était pas affectée.
 | Gardes fail-closed (`evaluateConditionsFreshness`, `isConditionsFresh`, `renderCleanBeachIndex`, `getSatelliteFreshness`) | **présentes** |
 | Prix (`/offres/` : 4,99 € / 19,99 € / `?pass=p30`, pas de `/mois`) | **présents** |
 
+#### Le blocage est bien **amont** : la grille NOAA du 2026-11-04 n'est pas publiée
+
+Interrogation directe de l'upstream le **2026-11-04T13:08:33Z**, sur les **deux**
+datasets ERDDAP (et non un seul) :
+
+| Dataset | Dernière observation | Âge | SLA 900 min |
+|---|---|---|---|
+| `noaa_aoml_atlantic_oceanwatch_AFAI_7D` | `2026-11-03T12:00:00Z` | 1 509 min (25,2 h) | **hors SLA** |
+| `noaa_aoml_atlantic_oceanwatch_AFAI_1D` | `2026-11-03T12:00:00Z` | 1 509 min (25,2 h) | **hors SLA** |
+
+Les deux datasets concordent : la grille du 2026-11-04 **n'est pas encore
+publiée** par NOAA (publication historiquement observée vers 12:50Z). Ce n'est
+donc **pas** un défaut du pipeline Sargasses — c'est un **retard de l'upstream**,
+et le pipeline se met à la fenêtre dès que la grille paraît.
+
+Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
+
+| Étape | Vérification |
+|---|---|
+| Le job qui rafraîchit **et publie** | `fetch-data`, conditionné à `if: github.event_name != 'push'` → **exécuté** en `workflow_dispatch` |
+| Le payload publié | `git add public/api/copernicus/*/sargassum.json` (ligne 166 du workflow) → les **payloads régionaux** sont bien commités, pas seulement le fichier racine |
+| La porte pre-deploy lit | `<ftpDir>/api/copernicus/sargassum.json`, produit par `prepare-ftp.cjs` à partir du payload régional |
+| Le timestamp lu | `erddapTimestamp` = l'observation NOAA réelle — `refreshSatellitePayload` ne modifie que `dataAgeMinutes` et `stale`, **jamais** l'horodatage d'observation |
+| Le déclencheur de la chaîne | `scripts/automation/trigger-production-deploy.cjs` → `ci-tests.yml` → `perf-budget.yml` → `cloudflare-production.yml` sur le **SHA exact** |
+| La porte de certification | `certification-gate` **success** sur `b589099c`, `61c9959d` et `fc6eb8cb` — les deux checks requis (`test-frontend`, `perf`) sont verts sur le SHA exact |
+
+Un **poll** automatique interroge NOAA toutes les 2 min et déclenche
+`gh workflow run daily-copernicus.yml --ref main` à l'instant où la grille
+devient plus récente que `2026-11-03T12:00:00Z`. Ce chemin est
+`workflow_dispatch` : `email-automation` et `retry-on-failure` sont conditionnés à
+`github.event_name == 'schedule'` → **skippés** → aucun email client, aucune vidéo,
+aucun commit concurrent.
+
 #### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
 
 | Élément | Valeur |
