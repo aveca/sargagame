@@ -12,9 +12,8 @@
  * Ce test verrouille les DEUX moitiés du correctif :
  *   1. le script refuse de supprimer sans `--execute --approved-by=...`
  *      (verrouillé aussi dans tests/purge-analytics.test.cjs) ;
- *   2. le workflow n'émet AUCUN argument destructeur sur le chemin cron, et
- *      n'en émet un que sur le chemin MANUEL (`workflow_dispatch`), avec
- *      l'identité de l'opérateur portée par `--approved-by`.
+ *   2. aucun workflow GitHub ne possède de chemin de suppression : le cron
+ *      reste en dry-run et workflow_dispatch ne lance pas le script de purge.
  *
  * Un correctif à moitié (script durci, workflow inchangé) ne sert à rien :
  * sans ce test, rétablir l'ancien appel dans le workflow suffirait à
@@ -90,34 +89,22 @@ function main() {
       step.run.trim());
   }
 
-  // ── 2. Le chemin manuel exige l'intention explicite ET nomme l'opérateur ─
-  record('chemin manuel : une étape de purge réelle existe', manualSteps.length === 1,
+  // ── 2. Aucun chemin manuel de suppression n'est exposé ──────────────────
+  record('aucun chemin workflow_dispatch ne lance la purge', manualSteps.length === 0,
     `trouvées=${manualSteps.length}`);
-  for (const step of manualSteps) {
-    record('chemin manuel : --execute présent', /--execute/.test(step.run), step.run.trim());
-    record('chemin manuel : --approved-by=github:... présent',
-      /--approved-by=github:/.test(step.run), step.run.trim());
-    // L'identité doit venir de github.actor : une valeur figée dans le dépôt
-    // serait une fausse traçabilité.
-    record('chemin manuel : identité = github.actor (pas une constante)',
-      /\$\{\{\s*github\.actor\s*\}\}/.test(step.run), step.run.trim());
-    record('chemin manuel : conditionné par l input purge_analytics',
-      /purge_analytics/.test(step.if || ''), step.if || '');
-    record('chemin manuel : sans continue-on-error (un échec doit se voir)',
-      !/continue-on-error/.test(step.if || '') && !/continue-on-error:\s*true/.test(step.run),
-      step.run.trim());
-  }
+  const purgeCommandText = purgeSteps.map((step) => step.run).join('\\n');
+  record('aucune étape de purge ne passe --execute', !/--execute/.test(purgeCommandText));
+  record('aucune étape de purge ne passe --approved-by', !/--approved-by=/.test(purgeCommandText));
 
-  // ── 3. L input de dispatch existe et vaut false par défaut ──────────────
+  // ── 3. workflow_dispatch ne fournit aucun input de purge ─────────────────
   {
-    const m = /workflow_dispatch:\s*\r?\n(?:\s{4}inputs:\s*\r?\n([\s\S]*?))?(?=^\S|\z)/m.exec(normalised);
-    const inputsBlock = m ? m[1] || '' : '';
-    record('workflow_dispatch : bloc inputs déclaré', /purge_analytics/.test(inputsBlock));
-    record('workflow_dispatch : purge_analytics par défaut false',
-      /purge_analytics:[\s\S]{0,400}?default:\s*false/.test(inputsBlock),
-      'le défaut doit rester dry-run');
-    record('workflow_dispatch : purge_analytics typé boolean',
-      /purge_analytics:[\s\S]{0,400}?type:\s*boolean/.test(inputsBlock));
+    const m = /^  workflow_dispatch:\\s*\\r?\\n([\\s\\S]*?)(?=^  \\S)/m.exec(normalised);
+    const dispatchBlock = m ? m[1] || '' : '';
+    record('workflow_dispatch reste disponible', !!m);
+    record('workflow_dispatch ne contient aucun input de purge',
+      !/purge_analytics/.test(dispatchBlock));
+    record('workflow_dispatch ne déclare aucun bloc inputs',
+      !/^    inputs:/m.test(dispatchBlock));
   }
 
   // ── 4. Aucun autre appel du script dans les workflows ──────────────────
