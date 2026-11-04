@@ -67,6 +67,7 @@ for (const r of rows) console.log(`  ${kb(r.gz).padStart(9)} gzip  (${kb(r.raw)}
 const totalKb = totalGzip / 1024
 console.log(`  ─────────`)
 console.log(`  ${kb(totalGzip).padStart(9)} gzip TOTAL  /  budget ${BUDGET_KB} Ko`)
+console.log(`  Exact: ${totalGzip} / ${BUDGET_KB * 1024} bytes`)
 
 if (totalKb > BUDGET_KB) {
   console.error(`\n✗ ÉCHEC budget : ${totalKb.toFixed(1)} Ko > ${BUDGET_KB} Ko gzip.`)
