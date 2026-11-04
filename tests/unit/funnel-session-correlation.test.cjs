@@ -14,7 +14,8 @@ async function main() {
   assert.ok(start >= 0 && end > start, 'Supabase funnel sink must remain in the central track() path')
   const sink = app.slice(start, end)
 
-        assert.match(sink, /const sid=_sgcSid\(\);logAnalyticsEvent\(event,sid===['"]x['"]\?p:\{\.\.\.p,sid\}/, 'reuse existing tab session id only for Supabase and omit unavailable sentinel')
+          assert.match(sink, /p\.sid=_sgcSid\(\);logAnalyticsEvent\(event,p,/, 'reuse existing tab session id for the Supabase sink')
+  assert.match(sink, /delete p\.sid/, 'remove sid before GA4 and fallback sinks reuse the event params')
   
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
   assert.match(app, /if\(remoteEnabled\)try\{window\.gtag\("event",event,p\)\}/)
@@ -25,6 +26,7 @@ async function main() {
   assert.equal(sessionIdFromParams({ session_id: 'legacy-session-456' }), 'legacy-session-456')
   assert.equal(sessionIdFromParams({ sid: '', session_id: 'legacy-session-456' }), 'legacy-session-456')
   assert.equal(sessionIdFromParams({}), null)
+  assert.equal(sessionIdFromParams({ sid: 'x' }), null, 'storage-unavailable sentinel is not a real session')
 
   console.log('PASS: Supabase funnel events receive the existing anonymous tab sid; GA4 and fallback payloads remain unchanged')
 }
