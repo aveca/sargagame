@@ -190,46 +190,86 @@ function phpBin() {
 const php = phpBin()
 if (!php) {
   console.log('  --  PHP indisponible : les contrôles 1 à 6 (statiques) restent valides.')
-  console.log('  --  Les contrôles 7 (exécution réelle) sont SAUTÉS, pas « réussis ».')
+  console.log('  --  Les contrôles 7 à 10 (exécution réelle) sont SAUTÉS, pas « réussis ».')
 } else {
   const harness = path.join(ROOT, 'tests', 'fixtures', 'b2b-payment-harness.php')
   const convId = 'sgtest_' + Math.random().toString(36).slice(2, 14)
-  const runHarness = (id) => {
-    const out = execFileSync(php, [harness], {
+  // ⚠️ On DÉSACTIVE les fonctions curl natives (`disable_functions`) pour que le
+  // harness installe TOUJOURS ses stubs de capture. Sans cela, sur une machine
+  // où ext-curl est présent (CI Linux), `function_exists('curl_init')` est vrai,
+  // les stubs ne sont pas installés, et les appels HTTP partent réellement vers
+  // Supabase : le tableau de capture reste vide et le test échoue pour une
+  // raison qui n'a rien à voir avec le code testé.
+  const DISABLE_CURL = [
+    'curl_init', 'curl_setopt', 'curl_setopt_array', 'curl_exec', 'curl_close',
+    'curl_getinfo', 'curl_errno', 'curl_error', 'curl_reset', 'curl_version',
+  ].join(',')
+  // Deux stratégies pour garantir l'installation des stubs, dans cet ordre :
+  //  1. `-d disable_functions=…` : la fonction native devient **redéfinissable**
+  //     par l'utilisateur (vérifié : sans le flag, PHP lève « Cannot redeclare
+  //     function » ; avec le flag, le stub gagne).
+  //  2. `-n` (aucun php.ini) : repli si l'INI n'est pas applicable.
+  // Si aucune ne fonctionne, le test **ÉCHOUE** : mieux vaut un rouge honnête
+  // qu'un test qui « passe » sans jamais avoir capturé une écriture.
+  const strategies = [
+    ['-d', 'disable_functions=' + DISABLE_CURL],
+    ['-n'],
+  ]
+  const spawnHarness = (args, id) => {
+    const out = execFileSync(php, args.concat([harness]), {
       encoding: 'utf8',
       env: Object.assign({}, process.env, { SG_CONV_ID: id }),
       maxBuffer: 1024 * 1024 * 16,
     })
     return JSON.parse(out)
   }
+  let runHarness = (id) => spawnHarness([], id)
+  let r1 = null
+  for (const args of strategies) {
+    let res = null
+    try { res = spawnHarness(args, convId) } catch (_) { res = null }
+    if (res && res.stubbed === true) {
+      runHarness = (id) => spawnHarness(args, id)
+      r1 = res
+      break
+    }
+  }
+  check(r1 !== null,
+    'le harness a bien installé ses stubs curl (capture réelle des écritures)')
+  if (!r1) {
+    console.log('  --  Capture indisponible : les assertions de comptage d\'événements')
+    console.log('  --  sont SAUTÉES (jamais « réussies » par défaut).')
+  }
+  if (r1) {
+    check(r1.s1.function_exists === true,
+      'le helper de conversion existe à l\'exécution')
 
-  const r1 = runHarness(convId)
-  check(r1.s1.function_exists === true,
-    'le helper de conversion existe à l\'exécution')
-  check(r1.s1.events.length === 2,
-    `3 appels → 2 événements émis (le même encaissement compté UNE fois) [obtenu: ${r1.s1.events.length}]`)
+    check(r1.s1.events.length === 2,
+      `3 appels → 2 événements émis (le même encaissement compté UNE fois) [obtenu: ${r1.s1.events.length}]`)
 
-  const bodies = r1.s1.events.map((e) => { try { return JSON.parse(e.body) } catch (_) { return null } })
-  check(bodies.every((b) => b && b.event === 'b2b_trial_to_paid'),
-    'les événements portent bien le nom `b2b_trial_to_paid`')
-  check(bodies.every((b) => b.params && b.params.plan && b.params.kind),
-    'les paramètres portent le palier et la nature (mensuel/annuel)')
-  check(bodies.every((b) => !JSON.stringify(b).toLowerCase().includes('@')),
-    'AUCUN email dans les paramètres (pas de PII)')
-  check(r1.s1.events.every((e) => /rest\/v1\/analytics_events/.test(e.url)),
-    'l\'écriture cible bien la table `analytics_events`')
+    const bodies = r1.s1.events.map((e) => { try { return JSON.parse(e.body) } catch (_) { return null } })
+    check(bodies.length > 0 && bodies.every((b) => b && b.event === 'b2b_trial_to_paid'),
+      'les événements portent bien le nom `b2b_trial_to_paid`')
+    check(bodies.length > 0 && bodies.every((b) => b.params && b.params.plan && b.params.kind),
+      'les paramètres portent le palier et la nature (mensuel/annuel)')
+    check(bodies.length > 0 && bodies.every((b) => !JSON.stringify(b).toLowerCase().includes('@')),
+      'AUCUN email dans les paramètres (pas de PII)')
+    check(r1.s1.events.length > 0 && r1.s1.events.every((e) => /rest\/v1\/analytics_events/.test(e.url)),
+      'l\'écriture cible bien la table `analytics_events`')
 
-  // Idempotence INTER-processus : un rejeu de webhook est une nouvelle requête
-  // HTTP, donc un nouveau processus PHP → le fichier de dédoublonnage doit
-  // tenir entre les deux.
-  const r2 = runHarness(convId)
-  const bodies2 = r2.s1.events.map((e) => { try { return JSON.parse(e.body) } catch (_) { return null } })
-  const recompte = bodies2.filter((b) => b && b.params && b.params.plan === 'pro_monthly').length
-  check(recompte === 0,
-    `un rejeu dans un NOUVEAU processus ne recompte pas l'encaissement [recompté: ${recompte}]`)
+    // Idempotence INTER-processus : un rejeu de webhook est une nouvelle requête
+    // HTTP, donc un nouveau processus PHP → le fichier de dédoublonnage doit
+    // tenir entre les deux.
+    const r2 = runHarness(convId)
+    const bodies2 = r2.s1.events.map((e) => { try { return JSON.parse(e.body) } catch (_) { return null } })
+    const recompte = bodies2.filter((b) => b && b.params && b.params.plan === 'pro_monthly').length
+    check(recompte === 0,
+      `un rejeu dans un NOUVEAU processus ne recompte pas l'encaissement [recompté: ${recompte}]`)
+  }
 
   // ── Le trou de fulfillment, prouvé sur le CODE LIVRÉ ──────────────────────
   console.log('\n8. Preuve exécutée du refus de paiement (code livré)')
+  const r2 = runHarness(convId)
   check(r2.s2.available === true,
     'validateMollieAmountPHP() a pu être extraite et exécutée')
   const s2 = r2.s2.cases
