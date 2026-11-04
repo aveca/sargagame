@@ -1,4 +1,35 @@
 
+## 2026-11-04 · Agent: coding_agent (OpenCode) · branche fix/p0-mollie-fulfillment-review · commit c294d11c8
+
+### Travail effectué
+- **Résumé 1 ligne** : cycle 4 — correction des défauts de revue P0 du fulfillment Mollie : vraie coupure historique `p7`, logs sans identifiant de paiement, backfill réécrit fail-closed (71 nouveaux cas de test).
+- **Détails** :
+  - `workers/sargagame/index.js` : `LEGACY_CUTOFF_DATE = 2026-08-01T00:00:00Z` unique ; contrôle serveur de `payment.createdAt` (webhook **et** `payment_status`) ; refus `legacy_expired` si date absente, invalide, sans fuseau explicite, égale ou postérieure ; aucun RPC sur ces rejets ; `create_payment` refuse explicitement `p7` ; prix publics et montants historiques EUR 7,99 / USD 5,99 inchangés.
+  - Logs : correlation id **aléatoire** par requête (`crypto.getRandomValues`), sans lien dérivé du paymentId ; whitelist stricte des champs journalisés (`status`/`code`/`reason`) → ni paymentId, ni email, ni metadata, ni secret. Réponses HTTP inchangées (`paymentId` utile au client).
+  - `scripts/automation/backfill-mollie-grants.cjs` (nouveau) : fail-closed. HTTP 200 exigé sur payment / refunds / chargebacks (endpoint dédié `/v2/payments/{id}/chargebacks`, pages parcourues) / payment_grants ; toute lecture en échec bloque et marque le contrôle `indeterminate` ; rapport sans PII ; DRY RUN par défaut sans écriture ni fichier dans le dépôt ; rapport détaillé uniquement vers un chemin absolu hors dépôt (0600) ; `--apply` seul n'écrit jamais (confirmation explicite obligatoire), re-vérification immédiate des 4 lectures avant chaque RPC, résultat HTTP vérifié, jamais de prolongation d'un grant existant.
+- **Fichiers modifiés** : `workers/sargagame/index.js` (modifié), `scripts/automation/backfill-mollie-grants.cjs` (nouveau), `tests/unit/mollie-fulfillment-review.test.cjs` (nouveau, 29 cas), `tests/unit/mollie-backfill-failclosed.test.cjs` (nouveau, 42 cas).
+- **Tests réalisés** :
+  - [x] `node tests/unit/mollie-fulfillment-review.test.cjs` → PASS 29/29
+  - [x] `node tests/unit/mollie-backfill-failclosed.test.cjs` → PASS 42/42
+  - [x] `node tests/unit/mollie-webhook-p03.test.cjs` → PASS ; `mollie-payment-logic.test.cjs` → PASS
+  - [x] runner officiel `scripts/run-tests.cjs` : **main 136/138 → branche 138/140**, jeu d'échecs **identique** (`sitemap-guard-beach-pages`, `morning-brief-freshness`) → preuve factuelle, aucun échec lié à ce changement
+  - [x] `npm run build` → exit 0 ; `npx esbuild workers/sargagame/index.js --bundle=false` → OK ; `node -c scripts/automation/backfill-mollie-grants.cjs` → OK ; `git diff --check` → OK
+  - [ ] php -l : aucun `.php` touché (le chemin PHP legacy rejette déjà `p7` via `unknown_pass`)
+- **Problèmes restants** :
+  - [ ] Les 6 ventes Mollie restent **non livrées** : routage Cloudflare `/api/mollie*` encore pointé sur l'ancien Worker `sg-payments` ; déploiement du Worker régional et backfill `--apply` non effectués (hors périmètre de ce cycle).
+  - [ ] BUG-2026-001 (préexistant) : fail-open sur signature webhook faute de `MOLLIE_WEBHOOK_SECRET` sur le Worker régional.
+  - [ ] Si l'API Mollie n'expose pas `/v2/payments/{id}/chargebacks`, le backfill refusera toute ligne (fail-closed, conformément à la revue) → décision humaine requise avant `--apply`.
+- **Prochaine action recommandée** :
+  1. Revue + merge de `fix/p0-mollie-fulfillment-review` → `main` (après CI verte) — Role : release_agent
+  2. Changement de routage Cloudflare + déploiement du Worker régional — Role : devops_agent (autorisation requise)
+  3. Exécution autorisée du backfill `--apply --confirm-backfill=YES-I-HAVE-APPROVED` puis confirmation de 6 grants réels en base — Role : data_agent (autorisation requise)
+- **Branche / PR** :
+  - Branche : `fix/p0-mollie-fulfillment-review` (base `origin/main` = `ec49b167bf5125ee53135c5de499588e5f836017`)
+  - PR : à créer → `main` (non mergée)
+  - Commit head : `c294d11c8`
+
+---
+
 ## 2026-11-04 01:00 UTC · Agent: coding_agent (OpenCode) · Mission P0.67 (sections 5, 7, 1, 4 livrées en Draft PR)
 
 ### Travail effectué

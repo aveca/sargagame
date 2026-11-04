@@ -1,4 +1,34 @@
 ﻿
+## 2026-11-04 - coding_agent (OpenCode) · Cycle 4 - correction des défauts de revue P0 du fulfillment Mollie (branche fix/p0-mollie-fulfillment-review, commit c294d11c8)
+
+**Défauts de revue corrigés.** Aucun changement de production, aucune route Cloudflare, aucune écriture Supabase, aucun backfill exécuté, aucun email client.
+
+### P0-2 - Vraie coupure historique `p7` (`workers/sargagame/index.js`)
+- Date unique `LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z"`, contrôlée côté serveur sur `payment.createdAt`.
+- Vérifié dans le **webhook** ET dans **`payment_status`** : refus `legacy_expired` si la date est absente, invalide, sans fuseau explicite, égale ou postérieure à la coupure. **Aucun RPC sur ces rejets.**
+- `create_payment` refuse explicitement `p7` (400). Aucun tarif public modifié ; montants historiques EUR 7,99 / USD 5,99 conservés.
+- Le chemin PHP legacy (`public/api/mollie-webhook.php`) rejette déjà `p7` (`unknown_pass` → 400) : aucun `.php` touché.
+
+### P0-3 - Logs sans identifiant de paiement (`workers/sargagame/index.js`)
+- Correlation id **aléatoire** par requête (`crypto.getRandomValues`), **sans lien dérivé** du paymentId. FNV-1a et tout hash de l'identifiant abandonnés (un hash reste un lien dérivé).
+- Whitelist stricte des champs journalisés (`status`, `code`, `reason`) : un paymentId, un email ou un secret passé par erreur est **ignoré**, pas journalisé.
+- Aucun paymentId, email, metadata ni secret dans les logs. Les réponses HTTP conservent `paymentId` (utile au client).
+
+### P0-4/5/6 - Backfill fail-closed (`scripts/automation/backfill-mollie-grants.cjs`, nouveau)
+- HTTP 200 **obligatoire** sur : payment Mollie, refunds, chargebacks (endpoint dédié `/v2/payments/{id}/chargebacks`, pages parcourues), `payment_grants` Supabase.
+- Toute lecture en échec **bloque** la ligne et marque le contrôle `indeterminate` : une erreur API n'est **jamais** convertie en « aucun remboursement » ou « aucun grant ».
+- Rapport **sans PII** : ni paymentId brut, ni email (même masqué ou hashé), ni metadata Mollie brute, ni webhook URL, ni aperçu de payload contenant l'email. Identifiant de ligne aléatoire + pass + états des contrôles + raison technique.
+- **DRY RUN par défaut** : aucune écriture Supabase, aucun fichier écrit dans le dépôt. Rapport détaillé uniquement vers un chemin **absolu hors dépôt** (mode 0600).
+- `--apply` seul **n'écrit jamais** ; confirmation explicite obligatoire ; **re-vérification immédiate** des 4 lectures avant chaque RPC ; résultat HTTP du RPC vérifié ; exécution interrompue sur échec ; jamais de prolongation d'un grant existant.
+
+### Tests
+- `tests/unit/mollie-fulfillment-review.test.cjs` (nouveau) → **29/29** : p7 avant/à/après la coupure, date absente/invalide/sans fuseau, webhook + `payment_status`, aucun RPC sur refus, `create_payment` refuse `p7`, prix publics inchangés, Mollie 401/404/429/500/réseau, RPC 401/404/500 → HTTP 503, rejeu webhook, **capture réelle de `console.error`** prouvant l'absence de paymentId/email, correlation id aléatoire et distinct par requête.
+- `tests/unit/mollie-backfill-failclosed.test.cjs` (nouveau) → **42/42** : erreurs API (payment/refunds/chargebacks/grants, 401/404/429/500/réseau), chargebacks absents/présents/multiples/paginés, déjà délivré, remboursé, chargeback, email manquant, p7 avant/après coupure, rejeu backfill, rapport sans PII, aucun fichier dans le dépôt, `--apply` sans confirmation, re-vérification pré-écriture, RPC en erreur, refus CLI.
+- Runner officiel : **main 136/138 → branche 138/140**, jeu d'échecs **identique** (`sitemap-guard-beach-pages`, `morning-brief-freshness`) → aucun échec lié à ce changement (preuve par comparaison factuelle).
+- `npm run build` → exit 0 ; `esbuild` Worker → OK ; `node -c` script → OK.
+
+---
+
 ## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
 
 **Sécurité paiement, honnêteté de fraîcheur, séparation de release, sécurité des automatisations sortantes.**
