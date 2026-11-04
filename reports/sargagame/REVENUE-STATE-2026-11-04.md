@@ -324,10 +324,32 @@ se répète depuis 2 jours.
 1. Attendre la publication de la grille NOAA suivante (le `2026-11-04T12:00:00Z` est
    attendu ; à 12:00Z l'âge repart de ~0 et la fenêtre SLA rouvre).
 2. Re-dispatcher `Daily Copernicus + Deploy` (`workflow_dispatch`) : `fetch-data`
-   s'exécute alors, publie le payload frais sur `main`, et le `push` résultant
-   déclenche `CI Tests` → `Perf Budget` → `Cloudflare Production` sur le SHA exact.
+   s'exécute alors, publie le payload frais sur `main`, et le script
+   `scripts/automation/trigger-production-deploy.cjs` déclenche explicitement
+   `ci-tests.yml`, puis `perf-budget.yml`, puis `cloudflare-production.yml` sur le
+   SHA exact. (Le `push` du commit de données ne déclenche **rien** : GitHub
+   ignore les pushes faits avec le `GITHUB_TOKEN` — c'est la raison d'être de ce
+   script.)
 3. Vérifier `deploy` + `deploy-pages` + `verify-fleet` + `post-deploy-verify`, puis
    relire en production les surfaces corrigées (`/offres/`, `/premium/`, CGV).
+
+**Pourquoi ce chemin a déjà échoué le 2026-11-03 à 00:51Z — et ce qui a changé.**
+Le run de publication du 2026-11-03T00:50Z (`41555613035`) a **réussi** et a
+déclenché la chaîne (`dispatch OK ci-tests.yml`, `perf-budget.yml`,
+`cloudflare-production.yml`). Le déploiement a tout de même été refusé, pour
+**deux** raisons mesurées — toutes deux résolues depuis :
+
+| Cause mesurée | Preuve | État au 2026-11-04 |
+|---|---|---|
+| `test-frontend` **FAILED** : `133/134` — le test `region-seo-methodology-scope.test.cjs` affirmait `mq: stale/out-of-scope record must not become a current percentage` sur le payload **fraîchement publié** (fixture non déterministe) | run `41555735101`, log : `AssertionError [ERR_ASSERTION]: mq: stale/out-of-scope record must not become a current percentage` | **corrigé** par `8f902406` (#1241, 2026-11-03T04:29Z) : fixture stale déterministe. Le SHA `1583c36d` du run en échec ne contenait pas ce correctif. |
+| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **éliminé** sur le chemin `workflow_dispatch` : le job `email-automation` est conditionné à `if: github.event_name == 'schedule'` → sur un dispatch il est **skipped**, donc aucun commit « email state » n'est poussé et aucun run concurrent n'annule le `perf`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`). |
+
+La porte de certification a donc les deux checks requis (`test-frontend`, `perf`)
+au vert **sur le SHA exact**, et la garde satellite lit le payload **publié** dans
+`<ftpDir>/api/copernicus/sargassum.json`, réécrit par `prepare-ftp.cjs` à partir du
+payload régional — dont `erddapTimestamp` est l'observation NOAA réelle
+(`refreshSatellitePayload` ne modifie que `dataAgeMinutes` et `stale`, **jamais**
+l'horodatage d'observation).
 
 **Ce qui n'a PAS été fait, volontairement.** La SLA de 900 min n'a **pas** été
 abaissée et la garde n'a **pas** été contournée : une SLA relâchée rendrait possible
@@ -347,11 +369,48 @@ Contrôle en production des surfaces corrigées :
 |---|---|---|---|---|---|---|---|
 | `/offres/` (live) | oui | **oui** | oui | non | **oui** | non | **non** |
 | `/premium/` (live) | oui | non | oui | non | non | **oui** | non |
+| `/a-propos/` (live) | non | **oui** | non | non | non | non | non |
+| `/veilleur/` (live) | non | **oui** | non | non | non | **oui** | non |
 
-→ les divergences D1/D2/D3/D4 sont **bien présentes en production** et seront
+→ les divergences D1/D2/D3/D4/D7 sont **bien présentes en production** et seront
 corrigées dès que le déploiement passera la porte. `/api/mollie.php` répond `405` en
-GET (POST-only, inchangé) et `/api/create-checkout.php` répond `404` en GET : aucune
-écriture de paiement n'a été tentée pour cette vérification.
+GET (POST-only, inchangé), `/api/b2b-trial.php` répond `405` et
+`/api/create-checkout.php` répond `404` en GET : aucune écriture de paiement,
+d'essai ou de remise n'a été tentée pour cette vérification.
+
+#### La production est en plus dégradée sur la DONNÉE (8 jours de retard)
+
+Contrôle du payload satellite **publié** sur les 6 domaines (lecture seule,
+2026-11-04T11:57Z) :
+
+| Domaine | `source` | `erddapTimestamp` | Âge |
+|---|---|---|---|
+| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 515 min (8 j)** |
+| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+
+Alors que `main` porte déjà `2026-11-02T12:00:00Z` : **les données sont publiées
+dans le dépôt mais jamais déployées** — c'est exactement le défaut décrit en tête de
+`scripts/automation/trigger-production-deploy.cjs` (« le commit de données était
+publié mais JAMAIS déployé »).
+
+**Impact commercial direct.** Le service vend un « verdict de ma plage **au
+jourd'hui** » et des alertes. Avec une observation de 8 jours, la promesse n'est
+plus tenable sur les 6 marchés. Le produit **dégrade honnêtement** — il ne
+ment pas : `src/lib/format-freshness.mjs` recalcule la fraîcheur **au rendu**
+depuis `erddapTimestamp` (`isSatelliteFresh12h`, porte 12 h ; `satelliteAgeHours`,
+« jamais figé ») et `src/ChasseHome.jsx` n'affiche un verdict courant que si
+`stale === false` **et** l'observation est fraîche. Aucune fausse mention
+« propre aujourd'hui » n'est donc servie — mais le service est de fait dégradé,
+ce qui prive la raison d'acheter un pass (verdict courant + alertes).
+
+Le champ `stale` figé à `false` dans le payload publié est un **instantané
+d'empaquetage** (`refreshSatellitePayload` ne touche que `dataAgeMinutes` et
+`stale`, jamais `erddapTimestamp`) : il ne sert pas de preuve de fraîcheur côté
+client, qui recalcule.
 
 #### Rollback
 
