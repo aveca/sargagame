@@ -131,7 +131,7 @@ function classifyAnalyticsHost(params, island) {
 function sessionIdFromParams(params) {
   const p = parseEventParams(params)
   const value = p.sid || p.session_id || p.sessionId
-  return typeof value === 'string' && value.trim() ? value.trim() : null
+  return typeof value === 'string' && value.trim() && value !== 'x' ? value.trim() : null
 }
 
 module.exports = {
