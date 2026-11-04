@@ -251,7 +251,9 @@ consentement, jamais d'empreinte).
 |---|---|
 | Branche | `revenue/offres-durees-prix-coherence-20261104` |
 | Commit | `f899da28` (rebased sur `main` = `c4f9821d`, PR #1259) |
-| **PR mergée** | **#1264** → `22ff4d8b3228778a384ae4763707576fc3f30b4b` (mergée le 2026-11-04T11:04:48Z) |
+| **PR mergée (prix)** | **#1264** → `22ff4d8b3228778a384ae4763707576fc3f30b4b` (mergée le 2026-11-04T11:04:48Z) |
+| **PR mergée (analytics, P0)** | **#1142** → `b589099c606ade07a8638de4c35dec4348c7de38` (mergée le 2026-11-04T12:26:00Z) |
+| Push direct du fondateur | `dc31d732` (2026-11-04T12:20:20Z) — conservé par le squash de #1142 (ancêtre vérifié) |
 | PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
 | PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
 | PRs fermées comme supersédées | #1254 (spec 3 abonnements B2C mensuels), #1258 (clé `saison` + centimes en dur + CI rouge), #1260 (supersédée par #1259) |
@@ -271,6 +273,91 @@ consentement, jamais d'empreinte).
 `tests/unit/financial-artifact-privacy.test.cjs` de #1259 s'ajoute aux 140 de la
 branche). Le correctif CRLF du test `morning-brief-freshness` rend la suite portable
 Windows/Linux (l'échec existait **aussi** sur `origin/main`).
+
+#### Second merge sur `main` — PR #1142 (P0 exposition GA4) + push direct du fondateur
+
+| Élément | Valeur |
+|---|---|
+| Push direct du fondateur | `dc31d732` — « fix(seo): stop publishing synthetic beach forecasts » (Coco, 2026-11-04T12:20:20Z) — touche `vite.config.js` + ajoute `tests/no-synthetic-seo-forecast.test.cjs` |
+| **PR #1142 mergée** | **#1142 → `b589099c606ade07a8638de4c35dec4348c7de38`** (2026-11-04T12:26:00Z) — « fix(analytics): secure client telemetry and restore lead funnel logging » |
+| Diff réel du squash | **11 fichiers**, +303 / −83 — **aucun** fichier de paiement, de checkout, de prix ou d'email client |
+
+**Le P0 corrigé.** Le `api_secret` du Measurement Protocol GA4 était servi **au
+navigateur** sur `public/veille/index.html`, `public/a-propos/index.html`,
+`scripts/lib/reliability-page.cjs`, `vite.config.js` et `src/Sargasses_PROD.jsx`, et
+était **présent en production** :
+
+| URL | `api_secret` | `mp/collect` | IDs GA4 visibles |
+|---|---|---|---|
+| `https://sargasses-martinique.com/veille/` | 1 | 1 | `G-Q31VV3LLM9`, `G-V8JGMDZZ2Y` |
+| `https://sargasses-martinique.com/a-propos/` | 1 | 1 | `G-V8JGMDZZ2Y` |
+
+Après le squash : **0 exposition** sur les 5 fichiers, et le client ne mesure plus
+que par la balise Google **consent-aware** (`window.gtag`) et le sink
+first-party Supabase.
+
+**Le tunnel de leads était cassé — et c'est le correctif qui a le plus de valeur
+commerciale.** Sur `main`, `submitLead()` faisait :
+
+```js
+if (navigator.sendBeacon) { try { if (navigator.sendBeacon(APPS_SCRIPT_URL, body)) return } catch {} }
+```
+
+→ quand `sendBeacon` réussissait, la fonction **sortait immédiatement** et
+`logAnalyticsEvent("sg_email_submit", …)` n'était **jamais** exécuté. La soumission
+de lead n'était donc **pas** enregistrée côté Supabase dans le cas le plus
+fréquent — ce qui explique mesurément `sg_lead_banner_view = 714` pour
+`sg_lead_banner_submit = 1`. Après le correctif, le sink first-party est
+**toujours** écrit (sans PII : `{source, island}`), et la livraison Apps Script reste
+**best-effort et indépendante**. La mesure du tunnel B2B redevient exploitable.
+
+**Ce qui n'a PAS été touché par ce merge.** Aucun prix, aucun montant accepté,
+aucun checkout, aucun paiement, aucun remboursement, aucun abonnement, aucun email
+client. La télémétrie de frustration perd son champ `email` (PII) au profit d'un
+payload minimal (`sanitizeFrustrationAnalytics`) — c'est une **amélioration de
+confidentialité**, pas un changement d'email envoyé au client.
+
+#### CI et portes sur le SHA `b589099c` (état réel de `main`)
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (push `main`) | `41829229512` | **PASS** (`test-frontend`) |
+| Perf Budget + Lighthouse (push `main`) | `41829229657` | **PASS** (`perf`, `lighthouse-report`) |
+| Daily Copernicus + Deploy (push `main`) | `41829229503` | **PASS** (job `fetch-data` skippé — comportement `push` attendu) |
+| Cloudflare Production (push `main`) | `41829229524` | **FAILURE — attendu et fail-closed** |
+
+Détail du run de production `41829229524` sur `b589099c` :
+
+| Job | Résultat |
+|---|---|
+| `build` (6 régions) | **failure** — `FAIL SATELLITE_PREDEPLOY region={mq,gp,florida,puntacana,rivieramaya,tulum} limit=900min reason=observation hors SLA (2906,4 min > 900 min)` |
+| `mollie-live-gate` | **success** |
+| **`certification-gate`** | **success** ← les deux checks requis (`test-frontend`, `perf`) sont verts **sur le SHA exact** |
+| `deploy` / `deploy-pages` / `verify-fleet` / `post-deploy-verify` | **skipped** — rien n'a été publié |
+
+→ **la porte de certification est désormais SAINE**. Le seul obstacle restant est
+la SLA satellite (900 min) : dès que la grille NOAA du jour est publiée et
+rafraîchie, le même SHA franchit toutes les portes. C'est ce que le
+`workflow_dispatch` va déclencher.
+
+Contrôle local équivalent sur le **SHA exact `b589099c`** (checkout de
+`origin/main`, `npm run build` + `prepare-ftp` + `npm test` + budget bundle) :
+
+| Contrôle | Résultat |
+|---|---|
+| `npm run build` | exit 0 |
+| `node scripts/prepare-ftp.cjs` | exit 0 |
+| `npm test` | **exit 0 — 144/144 fichier(s) de test OK** (141 + `client-analytics-privacy` + `lead-submit-analytics-sink` + `no-synthetic-seo-forecast` du fondateur) |
+| `node scripts/check-bundle-budget.cjs` | **206,5 Ko gzip ≤ 210 Ko** ✓ |
+| Exposition GA4 dans les 5 fichiers | **0** |
+| Gardes fail-closed (`evaluateConditionsFreshness`, `isConditionsFresh`, `renderCleanBeachIndex`, `getSatelliteFreshness`, `suspendConditionTitle`) | **présentes** — vérifiées sur l'arbre fusionné, pas seulement sur le diff à deux points |
+| Corrections de prix (`/offres/` : 4,99 € / 19,99 € / `?pass=p30` / `?pass=season`, pas de `/mois`) | **présentes** |
+
+> Point de méthode : le diff à deux points `main → tête de PR #1142` laisse croire
+> que le merge **supprime** `evaluateConditionsFreshness`, `renderCleanBeachIndex`
+> et `getSatelliteFreshness` (la branche est 119 commits en retard). C'est un
+> artefact du diff deux points : la fusion à trois points les **conserve**. Vérifié
+> sur l'arbre réellement fusionné et sur le SHA mergé.
 
 #### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
 
