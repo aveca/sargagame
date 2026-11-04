@@ -245,4 +245,383 @@ consentement, jamais d'empreinte).
 
 ### §10 — CI / PR / déploiement
 
-*(complété après l'ouverture de la PR : SHA, run CI, déploiement)*
+#### Identifiants
+
+| Élément | Valeur |
+|---|---|
+| Branche | `revenue/offres-durees-prix-coherence-20261104` |
+| Commit | `f899da28` (rebased sur `main` = `c4f9821d`, PR #1259) |
+| **PR mergée (prix)** | **#1264** → `22ff4d8b3228778a384ae4763707576fc3f30b4b` (mergée le 2026-11-04T11:04:48Z) |
+| **PR mergée (analytics, P0)** | **#1142** → `b589099c606ade07a8638de4c35dec4348c7de38` (mergée le 2026-11-04T12:26:00Z) |
+| **PR mergée (funnel, session)** | **#1255** → `61c9959d9eaec9ba9799aa6117faf1577bea0824` (mergée le 2026-11-04T12:41:06Z) |
+| **PR mergée (checkout SOS, honnêteté)** | **#1243** → `e7162cde83a6c82b6cb9ed1c64520ff3bd54d14a` (mergée le 2026-11-04T12:58:48Z) |
+| **PR mergée (email outbound, garde)** | **#1265** → `fc6eb8cb223bdc90e1549ccac195da59b6c5d9ce` (mergée le 2026-11-04T13:01:55Z) |
+| Push direct du fondateur | `dc31d732` (2026-11-04T12:20:20Z) — conservé par le squash de #1142 (ancêtre vérifié) |
+| PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
+| PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
+| PRs fermées comme supersédées | #1254 (spec 3 abonnements B2C mensuels), #1258 (clé `saison` + centimes en dur + CI rouge), #1260 (supersédée par #1259) |
+
+#### CI sur le SHA exact
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (PR) | `41817769459` | **PASS** (`test-frontend`) |
+| Perf Budget + Lighthouse (PR) | `41817769356` | **PASS** (`perf`, `lighthouse-report`) |
+| GitGuardian | — | PASS |
+| CI Tests (push `main`) | `41818452440` | **PASS** |
+| Perf Budget + Lighthouse (push `main`) | `41818452517` | **PASS** |
+| Daily Copernicus + Deploy (push `main`) | `41818452572` | **PASS** |
+
+`npm test` local sur le même contenu : **141/141 fichier(s) de test OK** (le fichier
+`tests/unit/financial-artifact-privacy.test.cjs` de #1259 s'ajoute aux 140 de la
+branche). Le correctif CRLF du test `morning-brief-freshness` rend la suite portable
+Windows/Linux (l'échec existait **aussi** sur `origin/main`).
+
+#### Second merge sur `main` — PR #1142 (P0 exposition GA4) + push direct du fondateur
+
+| Élément | Valeur |
+|---|---|
+| Push direct du fondateur | `dc31d732` — « fix(seo): stop publishing synthetic beach forecasts » (Coco, 2026-11-04T12:20:20Z) — touche `vite.config.js` + ajoute `tests/no-synthetic-seo-forecast.test.cjs` |
+| **PR #1142 mergée** | **#1142 → `b589099c606ade07a8638de4c35dec4348c7de38`** (2026-11-04T12:26:00Z) — « fix(analytics): secure client telemetry and restore lead funnel logging » |
+| Diff réel du squash | **11 fichiers**, +303 / −83 — **aucun** fichier de paiement, de checkout, de prix ou d'email client |
+
+**Le P0 corrigé.** Le `api_secret` du Measurement Protocol GA4 était servi **au
+navigateur** sur `public/veille/index.html`, `public/a-propos/index.html`,
+`scripts/lib/reliability-page.cjs`, `vite.config.js` et `src/Sargasses_PROD.jsx`, et
+était **présent en production** :
+
+| URL | `api_secret` | `mp/collect` | IDs GA4 visibles |
+|---|---|---|---|
+| `https://sargasses-martinique.com/veille/` | 1 | 1 | `G-Q31VV3LLM9`, `G-V8JGMDZZ2Y` |
+| `https://sargasses-martinique.com/a-propos/` | 1 | 1 | `G-V8JGMDZZ2Y` |
+
+Après le squash : **0 exposition** sur les 5 fichiers, et le client ne mesure plus
+que par la balise Google **consent-aware** (`window.gtag`) et le sink
+first-party Supabase.
+
+**Le tunnel de leads était cassé — et c'est le correctif qui a le plus de valeur
+commerciale.** Sur `main`, `submitLead()` faisait :
+
+```js
+if (navigator.sendBeacon) { try { if (navigator.sendBeacon(APPS_SCRIPT_URL, body)) return } catch {} }
+```
+
+→ quand `sendBeacon` réussissait, la fonction **sortait immédiatement** et
+`logAnalyticsEvent("sg_email_submit", …)` n'était **jamais** exécuté. La soumission
+de lead n'était donc **pas** enregistrée côté Supabase dans le cas le plus
+fréquent — ce qui explique mesurément `sg_lead_banner_view = 714` pour
+`sg_lead_banner_submit = 1`. Après le correctif, le sink first-party est
+**toujours** écrit (sans PII : `{source, island}`), et la livraison Apps Script reste
+**best-effort et indépendante**. La mesure du tunnel B2B redevient exploitable.
+
+**Ce qui n'a PAS été touché par ce merge.** Aucun prix, aucun montant accepté,
+aucun checkout, aucun paiement, aucun remboursement, aucun abonnement, aucun email
+client. La télémétrie de frustration perd son champ `email` (PII) au profit d'un
+payload minimal (`sanitizeFrustrationAnalytics`) — c'est une **amélioration de
+confidentialité**, pas un changement d'email envoyé au client.
+
+#### CI et portes sur le SHA `b589099c` (état réel de `main`)
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (push `main`) | `41829229512` | **PASS** (`test-frontend`) |
+| Perf Budget + Lighthouse (push `main`) | `41829229657` | **PASS** (`perf`, `lighthouse-report`) |
+| Daily Copernicus + Deploy (push `main`) | `41829229503` | **PASS** (job `fetch-data` skippé — comportement `push` attendu) |
+| Cloudflare Production (push `main`) | `41829229524` | **FAILURE — attendu et fail-closed** |
+
+Détail du run de production `41829229524` sur `b589099c` :
+
+| Job | Résultat |
+|---|---|
+| `build` (6 régions) | **failure** — `FAIL SATELLITE_PREDEPLOY region={mq,gp,florida,puntacana,rivieramaya,tulum} limit=900min reason=observation hors SLA (2906,4 min > 900 min)` |
+| `mollie-live-gate` | **success** |
+| **`certification-gate`** | **success** ← les deux checks requis (`test-frontend`, `perf`) sont verts **sur le SHA exact** |
+| `deploy` / `deploy-pages` / `verify-fleet` / `post-deploy-verify` | **skipped** — rien n'a été publié |
+
+→ **la porte de certification est désormais SAINE**. Le seul obstacle restant est
+la SLA satellite (900 min) : dès que la grille NOAA du jour est publiée et
+rafraîchie, le même SHA franchit toutes les portes. C'est ce que le
+`workflow_dispatch` va déclencher.
+
+Contrôle local équivalent sur le **SHA exact `b589099c`** (checkout de
+`origin/main`, `npm run build` + `prepare-ftp` + `npm test` + budget bundle) :
+
+| Contrôle | Résultat |
+|---|---|
+| `npm run build` | exit 0 |
+| `node scripts/prepare-ftp.cjs` | exit 0 |
+| `npm test` | **exit 0 — 144/144 fichier(s) de test OK** (141 + `client-analytics-privacy` + `lead-submit-analytics-sink` + `no-synthetic-seo-forecast` du fondateur) |
+| `node scripts/check-bundle-budget.cjs` | **206,5 Ko gzip ≤ 210 Ko** ✓ |
+| Exposition GA4 dans les 5 fichiers | **0** |
+| Gardes fail-closed (`evaluateConditionsFreshness`, `isConditionsFresh`, `renderCleanBeachIndex`, `getSatelliteFreshness`, `suspendConditionTitle`) | **présentes** — vérifiées sur l'arbre fusionné, pas seulement sur le diff à deux points |
+| Corrections de prix (`/offres/` : 4,99 € / 19,99 € / `?pass=p30` / `?pass=season`, pas de `/mois`) | **présentes** |
+
+> Point de méthode : le diff à deux points `main → tête de PR #1142` laisse croire
+> que le merge **supprime** `evaluateConditionsFreshness`, `renderCleanBeachIndex`
+> et `getSatelliteFreshness` (la branche est 119 commits en retard). C'est un
+> artefact du diff deux points : la fusion à trois points les **conserve**. Vérifié
+> sur l'arbre réellement fusionné et sur le SHA mergé.
+
+#### Trois merges de plus sur `main` — mesure, honnêteté du checkout, honnêteté de l'email
+
+| PR | SHA | Objet |
+|---|---|---|
+| **#1255** | `61c9959d` (2026-11-04T12:41:06Z) | **Corrélation de session du funnel** — le tunnel n'était pas mesurable |
+| **#1243** | `e7162cde` (2026-11-04T12:58:48Z) | **Checkout SOS bloqué si l'observation satellite n'est pas courante** |
+| **#1265** | `fc6eb8cb` (2026-11-04T13:01:55Z) | **Emails clients conditionnés à une publication fraîche** + purge analytics en lecture seule par défaut |
+
+**#1255 — pourquoi le tunnel n'était pas mesurable.** Le census Supabase des
+30 jours (lecture seule) donnait `sg_pass_offer_view` = 3 324 lignes mais
+`sg_lead_banner_submit` = 1 pour `sg_lead_banner_view` = 714. Deux causes
+distinctes, corrigées :
+
+| Symptôme | Cause | Correctif |
+|---|---|---|
+| `sid` présent dans **22 lignes sur 3 324** | le sink Supabase était appelé **avant** `sgCollectEvent`, qui est la fonction qui crée `sessionStorage.sg_sid` → au premier événement de l'onglet, le `sid` n'existait pas encore | sink Supabase déplacé **après** `sgCollectEvent` |
+| `sg_lead_banner_submit` = 1 pour 714 vues | `submitLead()` faisait `if (navigator.sendBeacon(...)) return` → le sink `sg_email_submit` n'était **jamais** écrit quand le beacon réussissait (corrigé par #1142) | sink first-party **toujours** écrit, livraison Apps Script best-effort séparée |
+
+#1255 attache aussi le `sid` **uniquement sous consentement explicite**
+(`localStorage.sg_cookie_consent === "accepted"`) et exclut la sentinelle `"x"`
+(que `_sgcSid()` renvoie quand `sessionStorage` est indisponible) du comptage de
+session — sans cela, toutes les sessions sans stockage seraient comptées comme
+**une seule** session fictive.
+
+**#1243 — contradiction affichage/offre sur le checkout SOS.** Sur `main`,
+l'interface affichait déjà « *Observation satellite absente, invalide ou trop
+ancienne : aucun verdict actuel n'est publié* » — **et le bouton d'achat ouvrait
+quand même le paiement**. On vendait l'accès à un verdict qui n'existait pas, en
+pleine production servie avec une observation de 8 jours. Le garde est désormais
+**avant** le `POST /api/mollie` : `observationCurrent !== true` → aucun paiement
+ouvert, aucun tracking `sg_sos_checkout_start`, message honnête affiché. **En
+régime sain (donnée fraîche), le comportement est strictement inchangé.**
+
+**#1265 — des emails clients partaient avec des données périmées.** Mesuré sur
+les 3 derniers runs `schedule` : `fetch-data` en **failure**
+(`BLOCKED_STALE_SOURCE`) et `email-automation` en **success** — le job n'avait
+aucune dépendance de `fetch-data` et partait en parallèle.
+
+| Run | `fetch-data` | `email-automation` | Âge de l'observation |
+|---|---|---|---|
+| `41780985819` (2026-11-04T05:43Z) | **failure** | **success** | ~18 h |
+| `41736428821` (2026-11-03T23:06Z) | **failure** | **success** | ~23 h |
+| `41696164953` (2026-11-03T18:41Z) | **failure** | **success** | ~24 h |
+
+Le job est maintenant conditionné à `needs.fetch-data.result == 'success'` **et**
+`gate_outcome == 'success'` **et**
+`publication_status ∈ {FRESH_AND_PUBLISHED, NO_NEW_OBSERVATION}` — les deux
+sorties sont des **sorties de job réelles** (`fetch-data.outputs`, lignes 45-47
+du workflow). Effet de bord assumé et documenté : la grille NOAA publiant une
+observation par jour à 12:00:00Z pour une SLA de 900 min, l'email ne part plus
+qu'aux crons où la donnée est fraîche (~2/jour au lieu de 4) — **2 emails justes
+plutôt que 4 emails faux**. Réversible par `git revert`.
+
+La purge `analytics_events` passe aussi en **lecture seule par défaut** : une
+suppression exige désormais `--execute` **et** `--approved-by=<identifiant>`.
+
+**Correctif de portabilité ajouté à #1265.** Son test
+`tests/daily-copernicus-outbound-gate.test.cjs` cherchait
+`workflow.indexOf('  email-automation:\n')` sur un fichier lu tel quel : en
+checkout Windows (`\r\n`), l'index vaut `-1` et le test échoue alors que le
+contenu est identique. Normalisation `\r\n → \n` ajoutée — **même correctif et
+même précédent** que `tests/unit/morning-brief-freshness.test.cjs` (6 tests sur
+107 dans `tests/unit` normalisent déjà CRLF). Sans ce correctif : 146/147 en
+local ; avec : **147/147**. La CI Linux n'était pas affectée.
+
+#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265)
+
+| Contrôle | Résultat |
+|---|---|
+| `npm run build` | exit 0 |
+| `node scripts/prepare-ftp.cjs` | exit 0 |
+| `npm test` | **exit 0 — 147/147 fichier(s) de test OK** |
+| `node scripts/check-bundle-budget.cjs` | **206,5 Ko gzip ≤ 210 Ko** (211 478 / 215 040 octets) ✓ |
+| Exposition GA4 (5 fichiers) | **0** |
+| `submitLead` sans `return` prématuré | **oui** |
+| Sink Supabase après `sgCollectEvent` | **oui** |
+| `sid` sous consentement explicite | **oui** |
+| Sentinelle `"x"` exclue du comptage | **oui** |
+| `email-automation` conditionné à la publication fraîche | **oui** (6 conditions) |
+| Purge : `--execute` + `--approved-by` exigés | **oui** |
+| Garde SOS avant le `POST /api/mollie` | **oui** |
+| Gardes fail-closed (`evaluateConditionsFreshness`, `isConditionsFresh`, `renderCleanBeachIndex`, `getSatelliteFreshness`) | **présentes** |
+| Prix (`/offres/` : 4,99 € / 19,99 € / `?pass=p30`, pas de `/mois`) | **présents** |
+
+#### Le blocage est bien **amont** : la grille NOAA du 2026-11-04 n'est pas publiée
+
+Interrogation directe de l'upstream le **2026-11-04T13:08:33Z**, sur les **deux**
+datasets ERDDAP (et non un seul) :
+
+| Dataset | Dernière observation | Âge | SLA 900 min |
+|---|---|---|---|
+| `noaa_aoml_atlantic_oceanwatch_AFAI_7D` | `2026-11-03T12:00:00Z` | 1 509 min (25,2 h) | **hors SLA** |
+| `noaa_aoml_atlantic_oceanwatch_AFAI_1D` | `2026-11-03T12:00:00Z` | 1 509 min (25,2 h) | **hors SLA** |
+
+Les deux datasets concordent : la grille du 2026-11-04 **n'est pas encore
+publiée** par NOAA (publication historiquement observée vers 12:50Z). Ce n'est
+donc **pas** un défaut du pipeline Sargasses — c'est un **retard de l'upstream**,
+et le pipeline se met à la fenêtre dès que la grille paraît.
+
+Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
+
+| Étape | Vérification |
+|---|---|
+| Le job qui rafraîchit **et publie** | `fetch-data`, conditionné à `if: github.event_name != 'push'` → **exécuté** en `workflow_dispatch` |
+| Le payload publié | `git add public/api/copernicus/*/sargassum.json` (ligne 166 du workflow) → les **payloads régionaux** sont bien commités, pas seulement le fichier racine |
+| La porte pre-deploy lit | `<ftpDir>/api/copernicus/sargassum.json`, produit par `prepare-ftp.cjs` à partir du payload régional |
+| Le timestamp lu | `erddapTimestamp` = l'observation NOAA réelle — `refreshSatellitePayload` ne modifie que `dataAgeMinutes` et `stale`, **jamais** l'horodatage d'observation |
+| Le déclencheur de la chaîne | `scripts/automation/trigger-production-deploy.cjs` → `ci-tests.yml` → `perf-budget.yml` → `cloudflare-production.yml` sur le **SHA exact** |
+| La porte de certification | `certification-gate` **success** sur `b589099c`, `61c9959d` et `fc6eb8cb` — les deux checks requis (`test-frontend`, `perf`) sont verts sur le SHA exact |
+
+Un **poll** automatique interroge NOAA toutes les 2 min et déclenche
+`gh workflow run daily-copernicus.yml --ref main` à l'instant où la grille
+devient plus récente que `2026-11-03T12:00:00Z`. Ce chemin est
+`workflow_dispatch` : `email-automation` et `retry-on-failure` sont conditionnés à
+`github.event_name == 'schedule'` → **skippés** → aucun email client, aucune vidéo,
+aucun commit concurrent.
+
+#### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
+
+| Élément | Valeur |
+|---|---|
+| Run de déploiement | `41818452612` (Cloudflare Production, SHA `22ff4d8b`) → **FAILURE** |
+| Étape en échec | `Pre-deploy satellite freshness gate (all six regions)` |
+| Message | `FAIL SATELLITE_PREDEPLOY region=puntacana limit=900min reason=observation hors SLA (2825.20 min > 900 min)` |
+| Étapes non atteintes | `certification-gate` → `deploy` → `deploy-pages` → `verify-fleet` → `post-deploy-verify` (jamais exécutées) |
+
+**Ce n'est pas une régression du correctif de prix.** La même garde a fait échouer
+**20 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T11:04Z, y compris
+des SHAs qui ne contiennent **aucun** changement de cette branche :
+
+| Run | SHA | Région signalée | Âge de l'observation |
+|---|---|---|---|
+| `41790290141` | `ec49b167` (main **avant** cette branche) | florida | 2 590 min |
+| `41816656514` | `c4f9821d` (PR #1259) | rivieramaya | 2 809 min |
+| `41818452612` | `22ff4d8b` (**cette** branche) | puntacana | 2 825 min |
+
+**Cause racine, mesurée sur l'upstream.** Le payload Copernicus engage dans le dépôt
+porte `erddapTimestamp = 2026-11-02T12:00:00Z`. Interrogation directe de l'upstream
+NOAA (`noaa_aoml_atlantic_oceanwatch_AFAI_7D` et `_1D`) le 2026-11-04T11:10Z :
+
+| Dataset | Dernière observation | Âge | Verdict SLA 900 min |
+|---|---|---|---|
+| AFAI 7D | `2026-11-03T12:00:00Z` | 1 390 min (23,2 h) | HORS SLA |
+| AFAI 1D | `2026-11-03T12:00:00Z` | 1 390 min (23,2 h) | HORS SLA |
+
+Les 6 régions partagent la même grille globale NOAA. L'historique git du payload
+commité confirme une cadence **d'une grille par jour, horodatée 12:00:00Z**
+(24/10 → 25/10 → 26/10 → 27/10 → 29/10 → 02/11 → 03/11).
+
+**Conséquence structurelle :** une publication **quotidienne** à 12:00Z ne peut pas
+satisfaire une SLA de **900 min (15 h)** en permanence — l'âge de la dernière
+observation balaie 0 h → 24 h dans la journée. La fenêtre où la garde passe est donc
+**00:00Z → 03:00Z** (3 h/jour), et encore faut-il que la grille du jour soit déjà
+publiée. Le cron `0 0 * * *` tombe dedans (le run du 2026-11-03T00:50Z a bien publié
+`erddapTimestamp = 2026-11-02T12:00:00Z`, `dataAgeMinutes = 771`) ; les crons
+`0 6`, `0 12`, `0 18` et tous les runs `push` tombent **dehors**.
+
+**Pourquoi le pipeline ne rattrape pas.** Dans `daily-copernicus.yml`, le job
+`fetch-data` (seul à rafraîchir **et publier** le payload) est conditionné à
+`if: github.event_name != 'push'` → sur un push il est **skipped**. Sur `schedule` il
+s'exécute mais se termine en `Copernicus publication status is BLOCKED_STALE_SOURCE`
+(runs `41780985819` du 05:43Z et `41736428821` du 23:06Z) : la même SLA de 900 min
+appliquée à la source. Résultat : le payload reste figé, la garde refuse, et le cycle
+se répète depuis 2 jours.
+
+**Chemin de déblocage honnête (aucun affaiblissement de la vérité produit).**
+1. Attendre la publication de la grille NOAA suivante (le `2026-11-04T12:00:00Z` est
+   attendu ; à 12:00Z l'âge repart de ~0 et la fenêtre SLA rouvre).
+2. Re-dispatcher `Daily Copernicus + Deploy` (`workflow_dispatch`) : `fetch-data`
+   s'exécute alors, publie le payload frais sur `main`, et le script
+   `scripts/automation/trigger-production-deploy.cjs` déclenche explicitement
+   `ci-tests.yml`, puis `perf-budget.yml`, puis `cloudflare-production.yml` sur le
+   SHA exact. (Le `push` du commit de données ne déclenche **rien** : GitHub
+   ignore les pushes faits avec le `GITHUB_TOKEN` — c'est la raison d'être de ce
+   script.)
+3. Vérifier `deploy` + `deploy-pages` + `verify-fleet` + `post-deploy-verify`, puis
+   relire en production les surfaces corrigées (`/offres/`, `/premium/`, CGV).
+
+**Pourquoi ce chemin a déjà échoué le 2026-11-03 à 00:51Z — et ce qui a changé.**
+Le run de publication du 2026-11-03T00:50Z (`41555613035`) a **réussi** et a
+déclenché la chaîne (`dispatch OK ci-tests.yml`, `perf-budget.yml`,
+`cloudflare-production.yml`). Le déploiement a tout de même été refusé, pour
+**deux** raisons mesurées — toutes deux résolues depuis :
+
+| Cause mesurée | Preuve | État au 2026-11-04 |
+|---|---|---|
+| `test-frontend` **FAILED** : `133/134` — le test `region-seo-methodology-scope.test.cjs` affirmait `mq: stale/out-of-scope record must not become a current percentage` sur le payload **fraîchement publié** (fixture non déterministe) | run `41555735101`, log : `AssertionError [ERR_ASSERTION]: mq: stale/out-of-scope record must not become a current percentage` | **corrigé** par `8f902406` (#1241, 2026-11-03T04:29Z) : fixture stale déterministe. Le SHA `1583c36d` du run en échec ne contenait pas ce correctif. |
+| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **éliminé** sur le chemin `workflow_dispatch` : le job `email-automation` est conditionné à `if: github.event_name == 'schedule'` → sur un dispatch il est **skipped**, donc aucun commit « email state » n'est poussé et aucun run concurrent n'annule le `perf`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`). |
+
+La porte de certification a donc les deux checks requis (`test-frontend`, `perf`)
+au vert **sur le SHA exact**, et la garde satellite lit le payload **publié** dans
+`<ftpDir>/api/copernicus/sargassum.json`, réécrit par `prepare-ftp.cjs` à partir du
+payload régional — dont `erddapTimestamp` est l'observation NOAA réelle
+(`refreshSatellitePayload` ne modifie que `dataAgeMinutes` et `stale`, **jamais**
+l'horodatage d'observation).
+
+**Ce qui n'a PAS été fait, volontairement.** La SLA de 900 min n'a **pas** été
+abaissée et la garde n'a **pas** été contournée : une SLA relâchée rendrait possible
+d'afficher « propre aujourd'hui » sur une observation de 24 h, ce que le produit
+refuse explicitement. Changer la SLA ou le rythme du cron est une **décision
+produit** (fenêtre de vérité), pas un correctif technique : elle est laissée à la
+validation du fondateur, avec l'option triviale de décaler le cron `0 0/0 6/0 12/0 18`
+vers la fenêtre 00:00Z–03:00Z.
+
+#### État de la production au moment de la rédaction
+
+`https://sargasses-martinique.com/` sert encore le **build précédent** (chunk eager
+`assets/index-cLn0Pipx.js`, `version.json` = `{"v":"v221","date":"2026-10-12","b":"df18df5d"}`).
+Contrôle en production des surfaces corrigées :
+
+| Surface | `4,99 €` | `7,99 €` | `14,99 €` | `19,99 €` | `24,99 €` | `/mois` | `?pass=` |
+|---|---|---|---|---|---|---|---|
+| `/offres/` (live) | oui | **oui** | oui | non | **oui** | non | **non** |
+| `/premium/` (live) | oui | non | oui | non | non | **oui** | non |
+| `/a-propos/` (live) | non | **oui** | non | non | non | non | non |
+| `/veilleur/` (live) | non | **oui** | non | non | non | **oui** | non |
+
+→ les divergences D1/D2/D3/D4/D7 sont **bien présentes en production** et seront
+corrigées dès que le déploiement passera la porte. `/api/mollie.php` répond `405` en
+GET (POST-only, inchangé), `/api/b2b-trial.php` répond `405` et
+`/api/create-checkout.php` répond `404` en GET : aucune écriture de paiement,
+d'essai ou de remise n'a été tentée pour cette vérification.
+
+#### La production est en plus dégradée sur la DONNÉE (8 jours de retard)
+
+Contrôle du payload satellite **publié** sur les 6 domaines (lecture seule,
+2026-11-04T11:57Z) :
+
+| Domaine | `source` | `erddapTimestamp` | Âge |
+|---|---|---|---|
+| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 515 min (8 j)** |
+| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+
+Alors que `main` porte déjà `2026-11-02T12:00:00Z` : **les données sont publiées
+dans le dépôt mais jamais déployées** — c'est exactement le défaut décrit en tête de
+`scripts/automation/trigger-production-deploy.cjs` (« le commit de données était
+publié mais JAMAIS déployé »).
+
+**Impact commercial direct.** Le service vend un « verdict de ma plage **au
+jourd'hui** » et des alertes. Avec une observation de 8 jours, la promesse n'est
+plus tenable sur les 6 marchés. Le produit **dégrade honnêtement** — il ne
+ment pas : `src/lib/format-freshness.mjs` recalcule la fraîcheur **au rendu**
+depuis `erddapTimestamp` (`isSatelliteFresh12h`, porte 12 h ; `satelliteAgeHours`,
+« jamais figé ») et `src/ChasseHome.jsx` n'affiche un verdict courant que si
+`stale === false` **et** l'observation est fraîche. Aucune fausse mention
+« propre aujourd'hui » n'est donc servie — mais le service est de fait dégradé,
+ce qui prive la raison d'acheter un pass (verdict courant + alertes).
+
+Le champ `stale` figé à `false` dans le payload publié est un **instantané
+d'empaquetage** (`refreshSatellitePayload` ne touche que `dataAgeMinutes` et
+`stale`, jamais `erddapTimestamp`) : il ne sert pas de preuve de fraîcheur côté
+client, qui recalcule.
+
+#### Rollback
+
+`git revert 22ff4d8b` (repli du contenu) ou redéploiement d'un SHA antérieur — les
+déploiements Cloudflare précédents sont conservés. Aucun changement de prix serveur,
+de montant accepté, de remboursement ni d'email client n'est inclus dans ce
+correctif : le rollback n'a donc aucun impact métier à défendre.
