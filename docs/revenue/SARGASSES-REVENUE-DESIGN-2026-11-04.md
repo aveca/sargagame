@@ -132,3 +132,175 @@ Mollie test mode:
 - Build, accessibility, Playwright smoke, gzip budget and live endpoint checks.
 
 Before production: resolve freshness SLA and verify all included features. Run end-to-end Mollie TEST, rollback rehearsal, reconciliation and cancellation tests. Only then enable LIVE subscription creation and deploy. No live customer charge until all launch gates pass.
+
+
+## 10. SEO acquisition system — priority for paid traffic
+
+The existing code already has meaningful SEO infrastructure:
+- scripts/lib/region-seo-pages.cjs generates regional English/Spanish beach pages, beach hubs, resort pages, FAQ markup and regional sitemaps from data.
+- Existing generated routes include beach pages, beaches/playas hubs, resort/hotel directories and SEO region pages.
+- scripts/prepare-ftp.cjs rewrites robots.txt per region/domain and emits the sitemap URL for each generated regional build. Verify the final artifacts actually served on all six domains; do not assume the template is the deployed robots file.
+- Reliability pages and monthly pages already append into regional sitemaps.
+
+Do not rebuild this system blindly. Inventory actual indexable URLs, canonical URLs, hreflang alternates, internal links, page status, content freshness and sitemap inclusion first.
+
+### Search-intent clusters to cover
+
+Build and prioritize one genuinely useful landing page per unique intent, not a separate thin page per keyword.
+
+FR / EUR regions:
+- sargasses Martinique aujourd'hui / sargasses Martinique carte
+- état des sargasses plage des Salines / Sainte-Anne / Pointe Faula / Tartane / Diamant
+- plage sans sargasses Martinique / où aller à la plage aujourd'hui
+- sargasses Guadeloupe aujourd'hui / carte sargasses Guadeloupe
+- état des plages Grande-Terre / Basse-Terre / Sainte-Anne Guadeloupe
+
+EN / USD regions:
+- sargassum map Florida / sargassum Miami beach today / Florida sargassum forecast
+- sargassum Punta Cana today / Bavaro beach sargassum / Cap Cana seaweed
+- sargassum Cancun today / Riviera Maya sargassum / Playa del Carmen seaweed
+- sargassum Tulum beach today / Tulum seaweed forecast / Akumal sargassum
+
+ES / USD regions:
+- sargazo Punta Cana hoy / playas sin sargazo Punta Cana
+- sargazo Cancún hoy / sargazo Riviera Maya / playas sin sargazo Tulum
+- estado del sargazo por playa / mapa de sargazo
+
+Use GSC actual impressions/queries to pick the next page and title rewrite. These are initial intent hypotheses, not verified search-volume claims. Do not invent monthly search volumes, rankings, traffic, or keyword difficulty.
+
+### Page intent and content templates
+
+For each regional landing page:
+- unique H1, title, description and canonical matching the real target domain and language;
+- real geographic information, named beaches and useful travel context;
+- actual source observation timestamp, age, freshness state and confidence;
+- real beach-level data only when observation freshness is inside the 900-minute SLA;
+- a clear explanation when no current classification can be published;
+- CTA to save a beach, receive a factual alert or compare plans;
+- links to relevant beach, coast, resort and methodology pages;
+- no fabricated "clean today" counts, live status, accuracy claims or artificial freshness dates.
+
+For beach pages:
+- provide the actual beach name, commune/municipality, geographic context, available observations and source timestamps;
+- explain what delayed/unknown data means for a visitor;
+- link to nearby beaches and the regional comparison;
+- show subscription value at the point the visitor asks for a longer horizon or an alert.
+
+For resort/hotel pages:
+- only include verified resorts and nearest relevant beaches;
+- make unique local information genuinely useful;
+- offer a B2B contact/request route separately from B2C pricing;
+- avoid doorway pages that simply swap a resort name.
+
+Evergreen content cluster:
+- how to interpret a satellite sargassum observation;
+- what to check before choosing a beach;
+- regional beach guides and coastal exposure patterns;
+- seasonal sargassum guide with dated sources;
+- how alerts and 7-day outlooks work, including explicit limits.
+Use a real author/editorial review process, cited public sources and update dates tied to real changes. Refreshing the page build date alone does not make its content current.
+
+### Technical SEO checks
+
+- Verify all six domain robots.txt and sitemap.xml endpoints: HTTP 200, correct host, no cross-domain leakage, Tulum included, only indexable canonical URLs listed.
+- Check XML parse, duplicate URLs, missing generated pages, stale lastmod values, canonical/hreflang reciprocity, x-default where appropriate, status code and redirects.
+- Preserve canonical URLs and useful legacy paths; do not rename URL structures casually.
+- Add BreadcrumbList/Organization and page-specific structured data only when it accurately matches visible content. Do not promise a rich result.
+- Ensure titles/descriptions are unique, readable and written for click intent; no keyword stuffing.
+- Internal linking: regional hub → coast/commune → beach → nearby beaches → pricing/methodology; no orphan pages.
+- Optimize real image files: descriptive filenames/alt text, modern formats, intrinsic dimensions and lazy loading below fold.
+- Respect mobile Core Web Vitals, accessibility and existing gzip limit (reported 210.0 KB / 210 KB).
+- Confirm indexable pages have useful server-rendered HTML and are not dependent on blocked scripts for their main meaning.
+- Never use cloaking, doorway pages, link schemes, mass-generated near-duplicates, hidden text or fake reviews.
+
+### Critical current SEO issue
+
+A live Google result for the Martinique beach hub currently says "en temps réel" and lists satellite statuses dated 2026-10-28; the same date appears in live regional beach pages. At the current audit date 2026-11-04, that is at least a week old. The main branch contains newer freshness logic for regional SEO generation, but live regional Workers/pages were last deployed on 2026-10-28. Reconcile the generated HTML and deployed response. Fix any stale "today"/"live"/"real-time" claims before driving search traffic to those pages.
+
+### Ethical authority / distribution
+
+- Publish small, genuinely useful regional data explainers and seasonal summaries from verified dated source records.
+- Offer embeddable beach status cards or partner links to hotels, tourism offices, guides and local operators, with attribution and source freshness visible.
+- Seek relevant editorial links from local tourism partners, regional travel guides and universities/associations where the data is genuinely useful.
+- Share useful destination cards and guides in relevant travel communities without spam.
+- No paid link schemes, private blog networks, automated comment links or mass directory submissions.
+
+## 11. Lead capture and B2C/B2B funnels
+
+### Read-only production signals observed 2026-11-04
+
+Supabase public analytics_events contains approximately 415,730 rows overall. A last-30-day aggregate query returned:
+- 90,274 combined session event rows across the known regional labels. This sums sg_session and sg_session_start events; it is NOT a count of unique visitors.
+- 7,571 combined paywall/pass-offer event rows across six regions; these event names can overlap and are not unique people.
+- 717 sg_lead_banner_view rows; 1 sg_lead_banner_submit row; 101 banner dismiss rows.
+- 4 additional sg_email_submit / sg_hero_email_submit / sg_capture_gate_submit rows.
+- 64 combined sales CTA event rows, 5 sg_checkout_started rows, 30 sg_checkout_redirect rows and 23 sg_conversion rows. The checkout event taxonomy is inconsistent across regions; do NOT calculate a single funnel conversion rate from these raw totals.
+- All 23 sg_conversion events in this specific 30-day query were tagged MQ; other regions had zero such event rows in that window. This may be tracking coverage, not proof of zero payments.
+- Current tables: 234 active b2c_alerts and 1 unsubscribed; 21 b2b_leads (20 contacted, 1 new); 3 payment_grants, all b2c_pass.
+
+These are event/table counts, not unique people, and must be refreshed before using as a baseline. Do not infer SEO traffic, unique users or revenue from these counts.
+
+### Capture design
+
+Capture the lead after delivering a useful preview, not before the user understands the product:
+1. Visitor lands on the beach/region page.
+2. Show useful free current observation if fresh, timestamp and limitations.
+3. Offer a contextual value exchange: "Recevoir une alerte pour cette plage", "M'avertir quand une observation fraîche est disponible", or "Comparer mes 5 plages".
+4. Collect only email + selected beach/region + language; infer region where possible.
+5. Separate service-alert consent from optional marketing/newsletter consent. Never pre-check marketing consent.
+6. Verify email, provide unsubscribe and deletion paths, and store consent version/time/source.
+7. Do not block the map or public observations behind an email wall.
+8. Use existing b2c_alerts / planner_alerts / email infrastructure where appropriate; do not create a duplicate newsletter table or a second competing lead system.
+9. Keep B2B hotel/resort lead capture separate from the B2C subscription. Keep the 21 existing B2B records, normalize region/status/source, and track a genuine human follow-up.
+
+### Lead nurturing and recovery
+
+- Transactional beach alerts are delivered only for the selected beach and according to service consent.
+- Marketing newsletter and promotional offers require a separate valid opt-in.
+- Abandoned checkout follow-up may only be sent where the user knowingly supplied the email for checkout and applicable law permits the message; preserve consent evidence and an unsubscribe mechanism.
+- Send helpful content first: observation freshness explainer, beach-selection checklist, regional guide, then a transparent subscription offer.
+- Trigger an offer when the visitor saves/compares beaches or asks for more forecast horizon, not with repeated interruptive modals.
+- If data are delayed, offer "notify me when the next verifiable observation is available"; do not sell "today's answer" as though it exists.
+
+## 12. Unified acquisition-to-revenue funnel
+
+Implement consistent event names and event payload schema across all six domains:
+- seo_landing_view (page, keyword cluster if available, region, language, source/medium/campaign);
+- beach_preview_view (beach, source timestamp, freshness state);
+- lead_capture_view / lead_capture_submit / email_verified;
+- tier_table_view / plan_select / recurring_consent;
+- checkout_started / first_payment_paid / subscription_created;
+- renewal_paid / renewal_failed / cancellation_requested / subscription_canceled / access_expired;
+- alert_delivered / alert_opened / return_visit.
+
+Rules:
+- Normalize region casing and aliases before storage.
+- Generate a privacy-safe first-party session ID; never fingerprint. Respect cookie/analytics consent and applicable data-minimization rules.
+- Never put raw email, full name, payment data or tokens in analytics params.
+- Preserve UTM source/medium/campaign/content/term through payment return and webhook ledger.
+- Emit paid conversion only from the authoritative server webhook after confirmed payment; browser return is not revenue.
+- Distinguish alert registrations, marketing leads, B2B leads, checkout starts, successful first charges and recurring renewals.
+- Provide a per-region / per-language / per-landing-page report from SEO click → landing → preview → captured lead → tier → paid → renewed.
+- Use the highest-value pages and leads to prioritize improvements, not raw impressions alone.
+
+## 13. Execution order for fast growth
+
+P0 (before paid search acquisition):
+1. Bring deployed region sites/Workers into sync with current main after the freshness contract passes.
+2. Fix any stale "today"/"live" text and prove source timestamp on all six domains.
+3. Repair unified checkout/conversion tracking; reconcile real payment grants.
+4. Fix high-intent CTA → checkout path by region and currency.
+5. Add a non-intrusive email alert capture tied to a beach.
+
+P1:
+1. Improve title/description/H1 of existing ranking pages using GSC data.
+2. Fix robots/sitemaps/canonicals/hreflang and internal links.
+3. Ship the highest-intent regional beach/coast/resort pages where unique value exists.
+4. Build three-tier pricing comparison and one short recurring checkout.
+
+P2:
+1. Add evergreen regional guides and partner embeddable widgets.
+2. Build a permission-based helpful email sequence.
+3. Publish a monthly SEO + paid revenue report by region and intent.
+
+No paid campaigns until a landing page, current data, capture/checkout, legal disclosure and payment delivery are proven.
