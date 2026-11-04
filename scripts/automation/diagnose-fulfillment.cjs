@@ -41,22 +41,6 @@ async function listAll(basePath, key, cap = 500) {
   return out
 }
 
-async function supabaseRpc(sbUrl, sbKey, name, body) {
-  const res = await fetch(`${sbUrl.replace(/\/$/, '')}/rest/v1/rpc/${name}`, {
-    method: 'POST',
-    headers: {
-      apikey: sbKey,
-      Authorization: 'Bearer ' + sbKey,
-      'Content-Type': 'application/json',
-      Prefer: 'return=minimal'
-    },
-    body: JSON.stringify(body || {})
-  })
-  let text
-  try { text = await res.text() } catch { text = '' }
-  return { ok: res.ok, status: res.status, text, code: null }
-}
-
 async function supabaseGrants(sbUrl, sbKey) {
   const res = await fetch(`${sbUrl.replace(/\/$/, '')}/rest/v1/payment_grants?select=payment_id,type,pass,plan,email,currency,expires_at,granted_at&order=created_at.desc&limit=100`, {
     headers: { apikey: sbKey, Authorization: 'Bearer ' + sbKey, Accept: 'application/json' }
@@ -75,25 +59,12 @@ async function main() {
     checks: {},
   }
 
-  // ── 1. RPC sg_upsert_payment_grant existe-t-il ? ─────────────────────
-  if (sbUrl && sbKey) {
-    const rpcTest = await supabaseRpc(sbUrl, sbKey, 'sg_upsert_payment_grant', {
-      p_payment_id: 'diag_check_only',
-      p_pass: 'p30',
-      p_email: 'diag@example.com',
-      p_currency: 'EUR',
-      p_expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-      p_granted_at: new Date().toISOString(),
-      p_metadata: { diag: true }
-    })
-    diagnosis.checks.rpc_exists = rpcTest.ok
-    diagnosis.checks.rpc_status = rpcTest.status
-    diagnosis.checks.rpc_text = rpcTest.text.slice(0, 300)
-    diagnosis.checks.rpc_error = rpcTest.ok ? null : rpcTest.text.slice(0, 300)
-  } else {
-    diagnosis.checks.rpc_exists = null
-    diagnosis.checks.rpc_error = 'SUPABASE_URL ou SUPABASE_SERVICE_KEY absent'
-  }
+  // ── 1. RPC d'upsert : volontairement non invoqué ─────────────────────
+  // sg_upsert_payment_grant effectue un INSERT; un diagnostic ne doit jamais
+  // créer de faux droit pour tester l'existence d'une fonction.
+  diagnosis.checks.rpc_exists = null
+  diagnosis.checks.rpc_status = null
+  diagnosis.checks.rpc_error = 'NON TESTÉ : aucun appel RPC mutatif n’est effectué par ce diagnostic.'
 
   // ── 2. Grants existants dans Supabase ────────────────────────────────
   if (sbUrl && sbKey) {
@@ -120,8 +91,7 @@ async function main() {
   }
 
   console.log('=== Diagnostic fulfillment ===')
-  console.log(`RPC sg_upsert_payment_grant : ${diagnosis.checks.rpc_exists ? 'EXISTE' : 'ABSENT/ERREUR'} (status ${diagnosis.checks.rpc_status})`)
-  if (!diagnosis.checks.rpc_exists) console.log(`  Détail : ${diagnosis.checks.rpc_text}`)
+  console.log('RPC sg_upsert_payment_grant : NON TESTÉ (appel d’écriture volontairement exclu)')
   console.log(`Grants Supabase : ${diagnosis.checks.grants_count}`)
   console.log(`Payment links Mollie : ${diagnosis.checks.payment_links_count} (${diagnosis.checks.links_with_webhook} avec webhook)`)
 
