@@ -24,6 +24,7 @@ const AUTHORITY = {
   florida: { en: 'the Florida Department of Health', es: 'el Departamento de Salud de Florida' },
   puntacana: { en: "the Dominican Republic's Ministry of Public Health (Ministerio de Salud Pública)", es: 'el Ministerio de Salud Pública de República Dominicana' },
   rivieramaya: { en: 'the Quintana Roo health authorities', es: 'las autoridades de salud de Quintana Roo' },
+  tulum: { en: 'the Quintana Roo health authorities', es: 'las autoridades de salud de Quintana Roo' },
 }
 
 /**
