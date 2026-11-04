@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "date": "2026-11-03",
-  "timestamp": "2026-11-03T18:50:50.135Z",
+  "date": "2026-11-04",
+  "timestamp": "2026-11-04T05:48:56.439Z",
   "source": "mollie-api",
   "mrr": {
     "total_eur": 0,
@@ -59,6 +59,33 @@
     {
       "schema_version": 2,
       "date": "2026-11-03",
+      "mrr": {
+        "total_eur": 0,
+        "subscriptions_eur": 0,
+        "passes_month_eur": 0,
+        "b2b_month_eur": 0,
+        "by_currency": {
+          "EUR": {
+            "subscriptions": 0,
+            "passes_month": 0,
+            "b2b_month": 0,
+            "total": 0,
+            "revenue_month": 0,
+            "payments": 0
+          }
+        }
+      },
+      "customers": {
+        "active_subs": 0,
+        "paid_this_month": 0,
+        "unique_payers_all": 0
+      },
+      "revenue": 0,
+      "revenue_by_currency": {}
+    },
+    {
+      "schema_version": 2,
+      "date": "2026-11-04",
       "mrr": {
         "total_eur": 0,
         "subscriptions_eur": 0,

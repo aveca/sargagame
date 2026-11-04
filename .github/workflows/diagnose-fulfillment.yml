@@ -1,0 +1,38 @@
+name: diagnose-fulfillment
+
+on:
+  workflow_dispatch:
+    inputs:
+      authorize_readonly_diagnostic:
+        description: "Explicitly authorize a read-only Mollie/Supabase diagnostic for this run"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    if: inputs.authorize_readonly_diagnostic == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Diagnostic fulfillment Mollie → Supabase (GET only)
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/diagnose-fulfillment.cjs

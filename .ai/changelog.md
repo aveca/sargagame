@@ -1,4 +1,55 @@
+## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
+
+- Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
+- Le parseur de session ignore `sid='x'`. Aucun cookie, fingerprint, PII, migration SQL ou dépendance ajoutés.
+- Tête branche `fix/funnel-session-correlation-20261104` : `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; PR #1255 Draft.
+- CI : tests fonctionnels passent jusqu'au garde-fou final ; échec budget exact `215067 / 215040` bytes gzip (27 bytes au-dessus). Budget inchangé à 210 Ko. Aucune livraison autorisée tant qu'il ne passe pas.
+- Revue Codex demandée sur l'isolation Supabase-only et le consentement ; optimisation de moins de 30 bytes demandée à Codex. Aucun merge/déploiement ni write prod.
+
+---
+
+## 2026-11-04 — ChatGPT · funnel attribution session key (branch fix/funnel-session-correlation-20261104)
+
+**Correction ciblée de la corrélation du funnel Supabase, sans nouveau stockage ni tiers.**
+
+- `track()` réutilise le `sg_sid` anonyme déjà créé dans `sessionStorage` par le collecteur first-party ; le champ `sid` est ajouté uniquement à la copie envoyée à `logAnalyticsEvent` (Supabase).
+- GA4 conserve le payload `p` inchangé ; la file/beacon Apps Script et le collecteur first-party restent inchangés.
+- Le sentinel `x` (sessionStorage inaccessible) est exclu ; aucun cookie, fingerprint, PII, dépendance ni migration SQL ajoutés.
+- Test `tests/unit/funnel-session-correlation.test.cjs` : périmètre Supabase-only, sid fallback, invariance GA4 et compatibilité du parseur existant.
+- CI + revue confidentialité restent pendantes ; aucun merge, déploiement, paiement, emailing ou mutation de données en production.
+
+---
+
 ﻿
+## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
+
+**Sécurité paiement, honnêteté de fraîcheur, séparation de release, sécurité des automatisations sortantes.**
+
+- **§1 — garde-fou identifiants secrets** (PR #1247 Draft) : `scripts/scan-hardcoded-credentials.cjs`
+  (6 règles, classifieur caractère par caractère, masque d'empreinte, exit 1 sur finding) +
+  14 sondes de test. CI `138/138`, `scanned=970 findings=0`. Bug latent d'offset corrigé au passage :
+  la construction `line.length + 1` dérivait de 1 par ligne CRLF et MASQUAIT de vrais secrets.
+  Reste ouvert : la source autoritaire `sg-payments` n'est pas dans le dépôt (0 occurrence des 5
+  marqueurs) — aucun miroir inventé ; corrections F1-F3/F5-F7 et rotation à faire avec le fondateur.
+- **§4 — purge analytics fail-closed** (PR #1252 Draft) : le cron appelait le script de purge en
+  destructeur PAR DÉFAUT, 4×/jour, sans identité d'opérateur ; le dernier DELETE réel est parti en
+  `return=minimal` (nombre supprimé inconnaissable). Dry-run désormais par défaut, `--execute` exige
+  `--approved-by=<identité>`, plancher `--days` à 90 j, `return=representation`+`select=id` recoupé
+  avec `content-range` (arrêt immédiat sur écart), re-comptage post-boucle. Workflow : input
+  `purge_analytics` (défaut false, modèle `relance-gap`), cron en dry-run, chemin manuel portant
+  `github.actor`. Tests 7→22 + 17 nouveaux assertions ; falsification CAUGHT ; CI `139/139`.
+- **§5 — fraîcheur avant paiement SOS** (PR #1243 Draft) : `handleBuy` n'émet plus
+  `window.__sosHandleBuyCalled`/`track`/`POST /api/mollie` si `observationCurrent !== true`.
+  CTA maintenu actif (asserté par l'E2E) → blocage explicite au clic.
+- **§7 — régression `main`** (PR #1244 fusionnée) : regex de chemin natif dans
+  `region-seo-methodology-scope.test.cjs`.
+- **Mesuré et à retenir** : budget bundle à **210.0 / 210 Ko, marge nulle** ; SLA de fraîcheur en
+  RUPTURE sur les 6 régions (`erddapTimestamp` 2026-10-27T12:00:00Z → 10 828 min pour un SLA de
+  900 min) alors que les API publient `stale: false`. §2/§3 restent bloquées faute d'autorisation.
+  Aucune action de production, aucun déploiement, aucun merge sur `main` hors §7.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**

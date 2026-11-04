@@ -60,10 +60,15 @@ assert.equal(
 );
 
 // Verify the actual scheduled sender applies the guard before selecting/building/sending a verdict.
+// NOTE (2026-11-04) : la source est normalisée CRLF → LF avant toute recherche de
+// motif. Sur un checkout Windows (autocrlf), le fichier est en CRLF et le motif
+// '\n}\n' ne correspond JAMAIS ('\r\n}\r\n') : le test échouait alors à tort sur
+// 139/140 alors que le code est conforme (le même échec existait sur origin/main).
+// Normaliser rend le test portable Windows / Linux / macOS sans changer l'assertion.
 const sender = fs.readFileSync(
   path.join(__dirname, '../../scripts/automation/send-notifications.cjs'),
   'utf8',
-);
+).replace(/\r\n/g, '\n');
 const start = sender.indexOf('async function sendMorningBriefPush(sargassum)');
 const end = sender.indexOf('\n}\n', start) + 3;
 assert.ok(start >= 0 && end > start, 'sendMorningBriefPush source must remain discoverable');

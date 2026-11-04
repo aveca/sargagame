@@ -487,21 +487,6 @@ function track(event, params) {
   } catch(e){}
   p["ab_rel_v2"] = VARIANT === "v2" ? 1 : 0;
   
-  if (ISLAND_CODE === "MQ" || ISLAND_CODE === "GP") {
-    try {
-      var mid = ISLAND_CODE === "GP" ? "G-Q31VV3LLM9" : "G-V8JGMDZZ2Y";
-      var sec = ISLAND_CODE === "GP" ? "eWAv3vACT6uVzcrAi7JgYQ" : "eFHMRr4tQ-2B-JYidixOSA";
-      var cid = document.cookie.match(/_ga=GA\\d+\\.\\d+\\.(\\d+\\.\\d+)/);
-      cid = cid ? cid[1] : "a." + Date.now();
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(
-          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
-          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
-        );
-      }
-    } catch(e){}
-  }
-  
   if (event === "sg_email_submit" || event === "sg_rel_view") {
     try {
       var entry = { e: event, p: p, t: Date.now(), island: ISLAND_CODE };
