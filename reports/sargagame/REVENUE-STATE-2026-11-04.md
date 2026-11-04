@@ -79,6 +79,51 @@ Conséquences, sans interprétation :
 `b2b_leads` : 21 enregistrements (20 `contacted`, 1 `new`), le dernier du 2026-10-05.
 Aucun MRR, aucun churn mesurable : le moteur récurrent n'a pas encore de base.
 
+**Confirmation indépendante, lecture seule, depuis l'API Mollie.** Le rapport
+`scripts/automation/data/mollie-mrr.json` (commité dans le dépôt, `source:
+"mollie-api"`, `timestamp: 2026-11-04T05:48:56Z`) est calculé par
+`scripts/automation/mollie-mrr.cjs` en listant **les customers puis leurs
+subscriptions** — pas la table Supabase. Il affiche :
+
+| Indicateur (tracker MRR, API Mollie) | Valeur |
+|---|---:|
+| `mrr.total_eur` | **0** |
+| `mrr.subscriptions_eur` | **0** |
+| `mrr.b2b_month_eur` | **0** |
+| `mrr.passes_month_eur` | **0** |
+| `customers.active_subs` | **0** |
+| `customers.paid_this_month` | **0** |
+| `customers.unique_payers_all` | **0** (payeurs **du mois en cours**) |
+| `payments_this_month` | **0** |
+
+→ **0 € de MRR, 0 abonnement actif, 0 € encaissé sur le mois.** Les deux sources
+(Supabase `b2b_subscriptions` vide **et** API Mollie sans subscription) convergent :
+le moteur récurrent B2B n'a produit **aucun euro récurrent**.
+
+> Note de lecture : `unique_payers_all` compte les payeurs **du mois courant**
+> (`paid` = paiements depuis le 1er du mois), pas de l'histoire. Son 0 est donc
+> cohérent avec « aucun encaissement en novembre », et ne contredit pas les 6
+> encaissements B2C de juin-juillet.
+
+### Le tunnel B2B mesurables s'arrête à l'essai — la conversion payante n'est pas instrumentée
+
+`SG_FUNNEL_EVENTS` (`src/Sargasses_PROD.jsx`) autorise le sink Supabase pour :
+`sg_b2b_offer_view`, `sg_b2b_step`, `sg_b2b_intent`, `sg_b2b_trial_activated`.
+
+| Étape B2B | Événement | État |
+|---|---|---|
+| Vue de l'offre | `sg_b2b_offer_view` | ✅ instrumenté (101 lignes / 30 j) |
+| Progression dans le tunnel | `sg_b2b_step` | ✅ (31 lignes) |
+| Intention (email + palier) | `sg_b2b_intent` | ✅ |
+| **Essai activé** | `sg_b2b_trial_activated` / `b2b_trial_started` | ✅ (serveur : `b2b-trial.php`) |
+| **Essai → abonnement payé** | **aucun événement** | ❌ **absent** |
+| **Churn / MRR depuis la télémétrie** | **aucune table alimentée** | ❌ `b2b_subscriptions` n'a **aucun écrivain** dans le dépôt |
+
+Conséquence directe : **le taux de conversion essai → abonnement n'est pas
+mesurable par la télémétrie applicative.** Le seul chemin de preuve est
+l'API Mollie (`mollie-mrr.cjs`), qui lit les subscriptions côté serveur. C'est
+exactement ce chemin que #1271 répare : il était gelé avec le job d'email.
+
 ---
 
 ## 3. Funnel — census et limites de mesure
@@ -185,8 +230,14 @@ récupérable : commit `af8408e4`).
 | `sg_b2b_trial_started` | restauré (la fonction qui le porte n'existait plus) |
 | `sg_b2b_marketing_consent` | nouveau (opt-in explicite, versionné) |
 | `sg_pass_cta` / `sg_pass_offer_view` | enrichis (`pass`, `base_cents`, `cents` effectif) |
-| Session key / corrélation de parcours | **absente** → pas de taux de conversion calculable (à traiter) |
-| `daily-metrics.json` | figé au 2026-10-21 (cause inconnue) |
+| **Session key / corrélation de parcours** | **corrigée (PR #1255, `61c9959d`)** : sink Supabase déplacé **après** `sgCollectEvent` (qui crée `sessionStorage.sg_sid`), `sid` attaché **uniquement sous consentement explicite**, sentinelle `"x"` exclue du comptage. Un taux de conversion par session devient calculable. |
+| **Submission de lead** | **corrigée (PR #1142, `b589099c`)** : `submitLead()` sortait sur `if (navigator.sendBeacon(...)) return` → l'événement `sg_email_submit` n'était **jamais** écrit quand le beacon réussissait (714 vues / 1 soumission mesurées) |
+| **Exposition `api_secret` GA4** | **corrigée (PR #1142)** : 0 exposition sur les 5 fichiers (elle était **vivante en production**) |
+| **Checkout SOS sur observation périmée** | **corrigé (PR #1243, `e7162cde`)** : garde **avant** le `POST /api/mollie` — on ne vendait plus un verdict inexistant |
+| **Emails clients sur données périmées** | **corrigé (PR #1265, `fc6eb8cb`)** : `email-automation` conditionné à une publication fraîche |
+| **Mesure du revenu (MRR)** | **corrigée (PR #1271)** : le tracker MRR était dans le job d'email → il se **gelait** quand la donnée satellite était périmée. Job autonome `revenue-metrics`. |
+| `daily-metrics.json` | figé au 2026-10-21 (cause non établie) |
+| **Essai → abonnement payé (B2B)** | **toujours non instrumenté** : aucun événement, aucune table `b2b_subscriptions` alimentée → la conversion payante ne se mesure que via l'API Mollie |
 
 ---
 
@@ -202,7 +253,10 @@ récupérable : commit `af8408e4`).
 | R6 | Bascule de mois serveur/navigateur autour du 1er juin et du 1er décembre | La surcharge USD est calculée par le serveur (fuseau serveur) alors que l'affichage suit le navigateur. Fenêtre de quelques jours par an. **Désormais mesuré** (`sg_price_mismatch`) au lieu d'être invisible ; correction durable = endpoint de prix serveur (non ajouté ici). |
 | R7 | 6/6 paiements payés sans accès (`paid_no_grant`) | Ré-accusation = écriture en production + le correctif racine (alias `p7`) élargirait les montants acceptés → autorisation + arbitrage prix. |
 | R8 | `mol_b2b_trial_email()` absent → email de l'essai non envoyé | Changement d'email client → autorisation requise. |
-| R9 | `b2b_subscriptions` vide, `sg_b2b_trial_activated` jamais observé | Conséquence du P0 §5 : le tunnel B2B n'a jamais pu s'activer. |
+| R9 | `b2b_subscriptions` vide, `sg_b2b_trial_activated` jamais observé | Conséquence du P0 §5 : le tunnel B2B n'a jamais pu s'activer. Confirmé indépendamment par l'API Mollie (0 subscription active, MRR 0 €). |
+| R10 | Palier B2B affiché **avant** le moteur récurrent (Brief 29 € avant Pro 79 €) | **Corrigé (PR #1098, `393dc7a7`)** : Pro 79 € passe en tête. Aucun prix modifié. |
+| R11 | Territoire « dès 199 €/mois HT » (1 990 €/an) **sans paylink carte** dans l'app | **Volontaire** : `payOf()` exclut `territoire` (parcours devis/BDC, pas de CB juxtaposée). Le paylink `territory_annual` (1 990 €) existe dans `public/api/b2b-paylinks.json` mais n'est **pas** exposé dans l'app. La conversion Territoire dépend donc d'un parcours **non self-serve**, dont le code d'email (`mol_b2b_trial_email`) est **absent du dépôt** (R8) → **le MRR Territoire n'est pas mesurable en l'état**. |
+| R12 | `scripts/automation/lib/b2b-paylinks.cjs` mappe un lead `territoire` sur `pro_annual` (690 €) par défaut | `map[tier] || 'pro_annual'` : un lead Territoire en séquence drip reçoit un lien **Pro** à 690 €. Divergence offre/prix sur la prospection — corriger = changer le contenu d'un email de prospection → autorisation requise. |
 
 ---
 
@@ -222,11 +276,33 @@ actuellement de 0/6, ce qui est un risque juridique et réputationnel) ·
 (écriture en production + correctif racine à arbitrer : l'alias `p7` historique).
 Décision fondateur requise : ré-accuser manuellement les 6, ou assumer.
 
-### 3) Rétablir un taux de conversion mesurable (session key + funnel checkout)
-**Potentiel : moyen** (sans session key, aucune optimisation CRO n'est prouvable ;
-actuellement 3 324 vues d'offre → 34 CTA → 6 encaissements sur 3,5 mois) ·
-**Preuve : forte** (census §3) · **Effort : moyen** (session id first-party, respect du
-consentement, jamais d'empreinte).
+### 3) Rendre mesurable la conversion **essai → abonnement payé** (B2B)
+**Potentiel : moyen** (sans ce maillon, le tunnel B2B s'arrête à l'essai : 101 vues
+d'offre → 31 étapes → 0 abonnement, et rien ne permet de savoir si l'essai
+convertit ou fuit) · **Preuve : forte** (census §3 + API Mollie §2 : 0
+subscription, MRR 0 €) · **Effort : moyen** (un événement « abonnement payé »
+côté webhook + une table `b2b_subscriptions` alimentée, ou une lecture
+`payment_grants` → MRR/churn consolidés).
+
+> La **session key** a été corrigée entre-temps (PR #1255) : le taux de
+> conversion B2C par session devient calculable. L'action 3 s'est donc déplacée
+> sur le **maillon manquant le plus coûteux** : le passage de l'essai gratuit au
+> paiement récurrent, qui est précisément le moteur de revenu B2B.
+
+---
+
+## 8b. État de chaque moteur de revenu — synthèse mesurée
+
+| Moteur | Architecture | Revenu **confirmé** | Ce qui manque pour décider |
+|---|---|---:|---|
+| **B2C** — passs à durée fixe | Gratuit + 4,99 € (7 j) + 14,99 € (30 j) + 19,99 € (210 j) | **56,94 €** bruts, 6 paiements, **0** depuis le 2026-07-19 | session key (#1255, mergé) + grille fresh ; 6/6 payés sans accès |
+| **B2B** — Pro récurrent | Essai 30 j → Pro 79 €/mois ou 690 €/an ; Territoire sur devis | **0 €** de MRR, **0** abonnement actif | l'essai n'a jamais été activable (P0 §5) ; conversion payante non instrumentée |
+| **BOT-WOW** — licence unique | Démo navigateur + **20 €** unique | **0,00 €**, 0 activation, 0 livraison | checkout Mollie 6/6 en échec ; code Worker non déployé |
+
+Aucune de ces trois lignes ne permet de conclure à la rentabilité : les volumes
+sont trop faibles et la chaîne de mesure a été rompue à plusieurs endroits.
+Les correctifs de mesure et d'honnêteté sont en place ; il manque la preuve
+d'un flux payant réel.
 
 ---
 
@@ -256,6 +332,8 @@ consentement, jamais d'empreinte).
 | **PR mergée (funnel, session)** | **#1255** → `61c9959d9eaec9ba9799aa6117faf1577bea0824` (mergée le 2026-11-04T12:41:06Z) |
 | **PR mergée (checkout SOS, honnêteté)** | **#1243** → `e7162cde83a6c82b6cb9ed1c64520ff3bd54d14a` (mergée le 2026-11-04T12:58:48Z) |
 | **PR mergée (email outbound, garde)** | **#1265** → `fc6eb8cb223bdc90e1549ccac195da59b6c5d9ce` (mergée le 2026-11-04T13:01:55Z) |
+| **PR mergée (ordre des paliers B2B)** | **#1098** → `393dc7a77d25fdbc773583d4c0edbb478a538622` (mergée le 2026-11-04T13:43:42Z) — Pro 79 € avant Brief 29 € |
+| **PR mergée (mesure du revenu autonome)** | **#1271** → `90d083a1698ca6b330210d89364d2a9073df8c76` (mergée le 2026-11-04T14:00:55Z) — job `revenue-metrics` hors garde satellite |
 | Push direct du fondateur | `dc31d732` (2026-11-04T12:20:20Z) — conservé par le squash de #1142 (ancêtre vérifié) |
 | PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
 | PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
@@ -427,7 +505,59 @@ même précédent** que `tests/unit/morning-brief-freshness.test.cjs` (6 tests s
 107 dans `tests/unit` normalisent déjà CRLF). Sans ce correctif : 146/147 en
 local ; avec : **147/147**. La CI Linux n'était pas affectée.
 
-#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265)
+#### Deux merges de plus — priorité au palier récurrent, et la mesure du revenu ne se gèle plus
+
+**#1098 (`393dc7a7`, 13:43:42Z) — le moteur récurrent était affiché en second.**
+
+Le tableau `TIERS` de `src/PremiumModal.jsx` présentait **Brief 29 €/mois**
+avant **Pro 79 €/mois**. Les trois paliers restent, **aucun prix n'est modifié**,
+**aucun montant accepté n'est modifié** : seul l'**ordre** change.
+
+| | Avant | Après |
+|---|---|---|
+| Ordre affiché | `brief` (29 €) → `pro` (79 €) → `territoire` | **`pro` (79 €) → `brief` (29 €) → `territoire`** |
+
+Preuve après fusion : 3 paliers, `29 €/mois` / `79 €/mois` / `199 €/mois`
+**intacts**, `featured:true` conservé sur Pro, nouveau test
+`tests/unit/b2b-tier-order.test.cjs`. **Aucun** fichier de paiement, de
+checkout ou d'email touché.
+
+**#1271 (`90d083a1`, 14:00:55Z) — la mesure du revenu se gelait avec l'email.**
+
+Effet de bord mesuré de #1265 : le step « Mollie MRR tracker » vivait dans le
+job `email-automation`, désormais conditionné à une publication satellite
+fraîche. La grille NOAA publiant **une observation par jour à 12:00:00Z** pour
+une SLA de **900 min**, la garde ne passe qu'à ~00:00Z et ~18:00Z → quand la
+donnée était périmée (le cas depuis 8 jours), le tracker **ne tournait plus**
+et `scripts/automation/data/mollie-mrr.json` **se figeait**. Le MRR mesure
+l'argent, pas la donnée satellite : c'était une erreur de catégorie, et la
+mesure s'éteignait au moment exact où un incident commercial passerait
+inaperçu.
+
+Correctif : job `revenue-metrics` **autonome** (`needs: AUCUN`,
+`if: github.event_name == 'schedule'`, `continue-on-error`), et
+`mollie-mrr.json` **retiré** de la liste `git add` du job `email-automation`
+(ownership exclusif → pas de double commit, pas de conflit de push).
+
+| Contrôle (sur le SHA mergé `90d083a1`) | Résultat |
+|---|---|
+| `revenue-metrics.needs` | **aucun** (autonome) |
+| `revenue-metrics.if` | `github.event_name == 'schedule'` |
+| Tracker MRR encore dans `email-automation` | **non** |
+| `mollie-mrr.json` encore commité par `email-automation` | **non** |
+| Email / paiement dans le nouveau job | **aucun** |
+| Garde de fraîcheur de `email-automation` | **inchangée** (`needs.fetch-data.outputs.gate_outcome == 'success'`) |
+| `npm test` | **149/149 exit 0** (148 + `daily-copernicus-revenue-metrics`) |
+| Budget bundle | **206,5 Ko ≤ 210 Ko** |
+
+> **Effet de bord assumé et signalé :** le step « Revenue watch » (alerte interne
+> par email d'un mouvement de revenu) reste dans `email-automation`, donc
+> conditionné à la fraîcheur satellite — pour la même raison logique, il ne
+> devrait pas l'être. Mais ce step **envoie un email** → modifier son
+> comportement d'email relève d'une décision du fondateur. Il est laissé en
+> l'état et signalé ici.
+
+#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265 + #1098 + #1271)
 
 | Contrôle | Résultat |
 |---|---|
