@@ -9,13 +9,13 @@ const root = path.resolve(__dirname, '../..')
 const app = fs.readFileSync(path.join(root, 'src/Sargasses_PROD.jsx'), 'utf8')
 
 async function main() {
-  const start = app.indexOf('if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{')
-  const end = app.indexOf('// Primary: GA4', start)
-  assert.ok(start >= 0 && end > start, 'Supabase funnel sink must remain in the central track() path')
-  const sink = app.slice(start, end)
-
-          assert.match(sink, /p\.sid=_sgcSid\(\);logAnalyticsEvent\(event,p,/, 'reuse existing tab session id for the Supabase sink')
-  assert.match(sink, /delete p\.sid/, 'remove sid before GA4 and fallback sinks reuse the event params')
+  const start = app.indexOf('if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event))try{')
+  const trackEnd = app.indexOf('\n}', start)
+  assert.ok(start >= 0 && trackEnd > start, 'Supabase funnel sink must remain in the central track() path')
+  const sink = app.slice(start, trackEnd)
+  assert.ok(app.indexOf('window.gtag("event",event,p)') < start, 'GA4 must receive params before the Supabase-only sid is attached')
+  assert.ok(app.indexOf('sgCollectEvent(event,p)') < start, 'first-party collector must receive params before the Supabase-only sid is attached')
+  assert.match(sink, /p\\.sid=_sgcSid\\(\\);logAnalyticsEvent\\(event,p,/, 'reuse existing tab session id for the final Supabase sink')
   
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
   assert.match(app, /if\(remoteEnabled\)try\{window\.gtag\("event",event,p\)\}/)
