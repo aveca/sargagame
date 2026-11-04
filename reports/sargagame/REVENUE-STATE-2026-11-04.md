@@ -286,6 +286,29 @@ le pass dans le paywall (`src/PremiumModal.jsx` → `resolvePass`).
 les grants (`workers/sargagame`) et les prix Mollie sont inchangés : la correction porte
 sur ce qui est **affiché** et sur ce qui est **envoyé** par le client.
 
+### ⚠️ Ces corrections ne sont **pas en production** (re-mesuré le 2026-11-04T17:25Z)
+
+Le correctif est **mergé** (PR #1264 → `22ff4d8b`), mais le déploiement est
+**bloqué** (§10). Les 6 domaines servent donc encore l'ancien build
+(`version.json` = `v221` / `2026-10-12` / `df18df5d`) :
+
+| Surface live (Martinique) | Ce qui est encore affiché | Ce que le dépôt corrigé affichera |
+|---|---|---|
+| `/offres/` | 4,99 € **+ 7,99 € + 14,99 € + 24,99 €**, « **dès 7,99** », **aucun** `?pass=` | 4,99 € / 14,99 € / 19,99 €, « dès 4,99 », `?pass=p30\|trip7\|season` |
+| `/premium/` | 4,99 € + 14,99 €, **« /mois »** | 4,99 € / 14,99 € / 19,99 €, **sans** « /mois » |
+| `/a-propos/`, `/veilleur/` | « **dès 7,99** » (+ « /mois » sur veilleur) | « dès 4,99 » |
+
+⇒ **Tant que le déploiement n'a pas eu lieu, la divergence affichage/débit
+est toujours visible en production** (7,99 € affiché contre 4,99 € débité,
+24,99 € contre 19,99 €, « /mois » contre paiement unique). Elle sera
+**résorbée par le déploiement**, pas par le code seul : c'est une raison de
+plus pour que le pipeline de publication se débloque.
+
+> Note : en attendant, `/api/mollie.php` renvoie **500** et
+> `/api/create-checkout.php` **404** (§2bis) : **aucun débit n'est possible**,
+> donc ces divergences n'ont pas encore coûté d'argent — mais elles sont
+> prêtes à le faire dès que le checkout sera réparé.
+
 ---
 
 ## 5. P0 trouvé et corrigé : l'essai B2B 30 jours était mort
