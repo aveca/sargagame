@@ -14,11 +14,8 @@ async function main() {
   assert.ok(start >= 0 && end > start, 'Supabase funnel sink must remain in the central track() path')
   const sink = app.slice(start, end)
 
-  assert.match(sink, /const funnelParams=\{\.\.\.p\}/)
-  assert.match(sink, /const sid=_sgcSid\(\)/, 'reuse the existing first-party tab-scoped session id')
-  assert.match(sink, /if\(sid&&sid!==["']x["']\)funnelParams\.sid=sid/, 'omit the fallback sentinel when storage is unavailable')
-  assert.match(sink, /logAnalyticsEvent\(event,funnelParams,/, 'send sid only in the Supabase funnel payload')
-
+        assert.match(sink, /const sid=_sgcSid\(\);logAnalyticsEvent\(event,sid===['"]x['"]\?p:\{\.\.\.p,sid\}/, 'reuse existing tab session id only for Supabase and omit unavailable sentinel')
+  
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
   assert.match(app, /if\(remoteEnabled\)try\{window\.gtag\("event",event,p\)\}/)
   assert.match(app, /function _sgcSid\(\)\{try\{let s=sessionStorage\.getItem\("sg_sid"\)/)
