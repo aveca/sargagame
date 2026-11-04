@@ -27,7 +27,7 @@ const OUT_PATH = path.join(__dirname, 'data', 'funnel-b2b-snapshot.json')
 const DAYS = (() => { const a = process.argv.find((x) => x.startsWith('--days=')); const n = a ? parseInt(a.slice(7), 10) : 90; return Number.isFinite(n) && n > 0 ? n : 90 })()
 const PAGE = 1000 // cap REST Supabase par requête → pagination par Range
 
-const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_paid']
+const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_paid', 'payment_rejected']
 
 function svcHeaders(extra) {
   return Object.assign({ apikey: SERVICE_KEY, Authorization: 'Bearer ' + SERVICE_KEY }, extra || {})
@@ -55,9 +55,14 @@ async function fetchAll(cutoffIso) {
 }
 
 function compute(rows) {
-  const counts = { trials: 0, activated: 0, paid: 0 }
+  const counts = { trials: 0, activated: 0, paid: 0, rejected: 0 }
   const byIsland = {}
   const paidByPlan = {}
+  // Paiements SIGNÉS par Mollie mais REFUSÉS par la validation du webhook :
+  // de l'argent encaissé sans accès servi. C'est le trou de fulfillment.
+  const rejectedByTier = {}
+  const rejectedByKind = {}
+  const rejectedExamples = []
   for (const r of rows) {
     const evt = String(r.event || '')
     const isl = (r.island || 'MQ').toUpperCase()
@@ -69,6 +74,25 @@ function compute(rows) {
       const plan = (r.params && r.params.plan) || 'unknown'
       paidByPlan[plan] = (paidByPlan[plan] || 0) + 1
     }
+    else if (evt === 'payment_rejected') {
+      counts.rejected++
+      const p = r.params || {}
+      const tier = p.tier || 'unknown'
+      const kind = p.kind || 'unknown'
+      rejectedByTier[tier] = (rejectedByTier[tier] || 0) + 1
+      rejectedByKind[kind] = (rejectedByKind[kind] || 0) + 1
+      // Garde-fou : on ne conserve QUE les agrégats (montant/devise/palier),
+      // jamais d'identifiant de paiement ni d'email.
+      if (rejectedExamples.length < 20) {
+        rejectedExamples.push({
+          error: p.error || null,
+          value: p.value || null,
+          currency: p.currency || null,
+          tier,
+          kind,
+        })
+      }
+    }
   }
   const pct = (n, d) => (d > 0 ? Math.round((n / d) * 1000) / 10 : 0)
   return {
@@ -79,6 +103,9 @@ function compute(rows) {
       activated_to_paid: pct(counts.paid, counts.activated),
     },
     paid_by_plan: paidByPlan,
+    rejected_by_tier: rejectedByTier,
+    rejected_by_kind: rejectedByKind,
+    rejected_examples: rejectedExamples,
     by_island: byIsland,
   }
 }
@@ -95,6 +122,9 @@ async function main() {
     console.log(`[funnel-b2b] écrit ${OUT_PATH}`)
   } catch (e) { console.error('[funnel-b2b] write error:', e && e.message) }
   console.log(`[funnel-b2b] ${DAYS}j · essais ${f.counts.trials} · activés ${f.counts.activated} · payés ${f.counts.paid} · essai→payé ${f.rates.trial_to_paid}%`)
+  if (f.counts.rejected) {
+    console.log(`[funnel-b2b] ⚠ ${f.counts.rejected} paiement(s) REFUSÉ(s) par le webhook → encaissés sans accès servi : ${JSON.stringify(f.rejected_by_tier)}`)
+  }
 }
 
 main().catch((e) => { console.error('[funnel-b2b] erreur non fatale:', e && e.message); process.exit(0) })

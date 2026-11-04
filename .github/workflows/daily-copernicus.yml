@@ -374,18 +374,24 @@ jobs:
         env:
           MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
         run: node scripts/automation/mollie-mrr.cjs --send
-      - name: Commit MRR report (le rapport de mesure ne doit pas se figer)
+      - name: B2B funnel snapshot (essais / conversions / paiements refusés)
+        continue-on-error: true
+        env:
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node scripts/automation/funnel-b2b-from-supabase.cjs --days=90
+      - name: Commit measurement reports (les rapports de mesure ne doivent pas se figer)
         if: always() && github.event_name != 'push'
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          M=scripts/automation/data/mollie-mrr.json
-          [ -f "$M" ] && git add "$M"
-          if git diff --cached --quiet; then echo "MRR report unchanged."; exit 0; fi
-          git commit -m "chore: Mollie MRR report $(date -u +'%Y-%m-%d %H:%M UTC')" || exit 0
+          for M in scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-b2b-snapshot.json; do
+            [ -f "$M" ] && git add "$M"
+          done
+          if git diff --cached --quiet; then echo "Measurement reports unchanged."; exit 0; fi
+          git commit -m "chore: measurement reports $(date -u +'%Y-%m-%d %H:%M UTC')" || exit 0
           # Push best-effort : un push GITHUB_TOKEN ne déclenche AUCUN workflow.
-          git push || echo "Push MRR ignore (conflit ou rights) : le rapport reste dans les logs du run."
+          git push || echo "Push ignoré (conflit ou rights) : les rapports restent dans les logs du run."
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
