@@ -537,20 +537,6 @@
     } catch(e){}
     p["ab_az"] = VARIANT === "az" ? 1 : 0;
     
-    // MP collect GA4
-    try {
-      var mid = "G-V8JGMDZZ2Y";
-      var sec = "eFHMRr4tQ-2B-JYidixOSA";
-      var cid = document.cookie.match(/_ga=GA\d+\.\d+\.(\d+\.\d+)/);
-      cid = cid ? cid[1] : "a." + Date.now();
-      if (navigator.sendBeacon) {
-        navigator.sendBeacon(
-          "https://www.google-analytics.com/mp/collect?measurement_id=" + mid + "&api_secret=" + sec,
-          JSON.stringify({ client_id: cid, events: [{ name: event, params: p }] })
-        );
-      }
-    } catch(e){}
-    
     // Apps Script backup
     try {
       var entry = { e: event, p: p, t: Date.now(), island: "MQ" };
