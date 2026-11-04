@@ -126,6 +126,7 @@ async function testFailClosed() {
   )
 
   assert.throws(() => compute([{ event: 'b2b_trial_to_paid', island: null, params: {} }]), /valid numeric id/)
+  assert.throws(() => compute([{ id: null, event: 'b2b_trial_to_paid', island: null, params: {} }]), /valid numeric id/)
 }
 
 testPagination()
