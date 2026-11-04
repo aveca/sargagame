@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-04T06:45:00.812Z",
+  "mode": "LIVE",
+  "mollieProfile": "pfl_t8KCk4Cm2C",
+  "summary": {
+    "paymentsTotal": 147,
+    "paymentsPaid": 6,
+    "realPaid": 6,
+    "testPaidExcluded": 0,
+    "paymentsByStatus": {
+      "expired": 129,
+      "canceled": 9,
+      "failed": 3,
+      "paid": 6
+    },
+    "totalCurrencies": [
+      {
+        "currency": "USD",
+        "count": 2,
+        "gross": 17.98,
+        "refunded": 0,
+        "net": 17.98
+      },
+      {
+        "currency": "EUR",
+        "count": 4,
+        "gross": 38.96,
+        "refunded": 0,
+        "net": 38.96
+      }
+    ]
+  },
+  "reconciled": [
+    {
+      "paymentId": "tr_rgY7NvWRTZaeDS5vbDBUJ",
+      "status": "paid",
+      "amount": 5.99,
+      "currency": "USD",
+      "createdAt": "2026-07-19T03:46:26+00:00",
+      "pass": "p7",
+      "emailHash": "847abc3b4d6aeb4910f2454e41691423",
+      "source": "chasse_detail_fc",
+      "method": "creditcard",
+      "description": "Sargasses pass p7",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 5.99,
+      "grant": null,
+      "grantMatch": false
+    },
+    {
+      "paymentId": "tr_FfiGZtWSQWXB5b374A7UJ",
+      "status": "paid",
+      "amount": 11.99,
+      "currency": "USD",
+      "createdAt": "2026-07-17T14:07:06+00:00",
+      "pass": "p30",
+      "emailHash": "5510715a43b1043598756dcedd9192a8",
+      "source": "deeplink",
+      "method": "creditcard",
+      "description": "Sargasses pass p30",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 11.99,
+      "grant": null,
+      "grantMatch": false
+    },
+    {
+      "paymentId": "tr_3nxkaEMuRfPM2TWLXQeTJ",
+      "status": "paid",
+      "amount": 7.99,
+      "currency": "EUR",
+      "createdAt": "2026-07-07T15:28:19+00:00",
+      "pass": "p7",
+      "emailHash": null,
+      "source": "chasse_detail_fc",
+      "method": "creditcard",
+      "description": "Sargasses pass p7",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 7.99,
+      "grant": null,
+      "grantMatch": false
+    },
+    {
+      "paymentId": "tr_2Q9ubn2wUWA3CmoDM4eTJ",
+      "status": "paid",
+      "amount": 7.99,
+      "currency": "EUR",
+      "createdAt": "2026-07-07T12:11:26+00:00",
+      "pass": "p7",
+      "emailHash": "717332591fea452be6f78278a6c55a45",
+      "source": "map_scrub_forecast",
+      "method": "creditcard",
+      "description": "Sargasses pass p7",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 7.99,
+      "grant": null,
+      "grantMatch": false
+    },
+    {
+      "paymentId": "tr_r6JWpvCbAd4w29rTq5LTJ",
+      "status": "paid",
+      "amount": 14.99,
+      "currency": "EUR",
+      "createdAt": "2026-06-30T13:35:13+00:00",
+      "pass": "p30",
+      "emailHash": "1799efe3caf4b263aed3e15fce240e1a",
+      "source": "map_scrub_forecast",
+      "method": "creditcard",
+      "description": "Sargasses pass p30",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 14.99,
+      "grant": null,
+      "grantMatch": false
+    },
+    {
+      "paymentId": "tr_VzYFK5ihNua7Wq4fWyETJ",
+      "status": "paid",
+      "amount": 7.99,
+      "currency": "EUR",
+      "createdAt": "2026-06-28T14:22:26+00:00",
+      "pass": "p7",
+      "emailHash": "bf819a41db0f3e6744fa07d5e6b56e5f",
+      "source": "map_scrub_forecast",
+      "method": "creditcard",
+      "description": "Sargasses pass p7",
+      "refunds": [],
+      "refundedTotal": 0,
+      "netAmount": 7.99,
+      "grant": null,
+      "grantMatch": false
+    }
+  ],
+  "issues": [
+    {
+      "paymentId": "tr_rgY7NvWRTZaeDS5vbDBUJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    },
+    {
+      "paymentId": "tr_FfiGZtWSQWXB5b374A7UJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    },
+    {
+      "paymentId": "tr_3nxkaEMuRfPM2TWLXQeTJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    },
+    {
+      "paymentId": "tr_2Q9ubn2wUWA3CmoDM4eTJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    },
+    {
+      "paymentId": "tr_r6JWpvCbAd4w29rTq5LTJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    },
+    {
+      "paymentId": "tr_VzYFK5ihNua7Wq4fWyETJ",
+      "severity": "high",
+      "type": "paid_no_grant",
+      "detail": "Paiement payé sans grant Supabase correspondant"
+    }
+  ],
+  "source": "mollie-api + supabase payment_grants",
+  "readOnly": true
+}
