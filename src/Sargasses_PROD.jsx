@@ -2000,7 +2000,7 @@ export function track(event,params={}){
   for(const[k,v]of Object.entries(ab))p["ab_"+k]=v
   // Funnel → Supabase (fire-and-forget, no-op si non configuré). Île déduite comme
   // pour le beacon Apps Script ci-dessous. N'altère JAMAIS le flux track() existant.
-  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{const sid=_sgcSid();logAnalyticsEvent(event,sid==="x"?p:{...p,sid},IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{p.sid=_sgcSid();logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"));delete p.sid}catch(_){}}
   // Primary: GA4 (gtag.js — may 503 in EU/DMA regions)
   if(remoteEnabled)try{window.gtag("event",event,p)}catch(e){}
   // Measurement Protocol direct beacon — bypasses gtag.js DMA block
