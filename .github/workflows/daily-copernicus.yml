@@ -345,6 +345,48 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+  # ── 1b. MESURE REVENU (INDÉPENDANTE de la fraîcheur satellite) ────────────
+  # Le tracker MRR mesure l'ARGENT, pas la DONNÉE satellite. Il était placé
+  # dans `email-automation`, job conditionné (depuis #1265) à une publication
+  # fraîche. Conséquence mesurée : quand la donnée satellite est périmée — donc
+  # quand la donnée est dégradée — le tracker MRR ne tournait PLUS et le
+  # rapport `scripts/automation/data/mollie-mrr.json` se figeait. La mesure du
+  # revenu s'éteignait au moment exact où elle compte le plus.
+  #
+  # Ce job est donc AUTONOME : pas de `needs`, conditionné au seul
+  # `schedule`. Lecture seule de l'API Mollie + écriture du rapport de mesure.
+  # Aucun email client, aucun prix, aucun paiement, aucun remboursement.
+  revenue-metrics:
+    permissions:
+      contents: write
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with: { node-version: '24' }
+      - name: Mollie MRR tracker
+        continue-on-error: true
+        env:
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: node scripts/automation/mollie-mrr.cjs --send
+      - name: Commit MRR report (le rapport de mesure ne doit pas se figer)
+        if: always() && github.event_name != 'push'
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          M=scripts/automation/data/mollie-mrr.json
+          [ -f "$M" ] && git add "$M"
+          if git diff --cached --quiet; then echo "MRR report unchanged."; exit 0; fi
+          git commit -m "chore: Mollie MRR report $(date -u +'%Y-%m-%d %H:%M UTC')" || exit 0
+          # Push best-effort : un push GITHUB_TOKEN ne déclenche AUCUN workflow.
+          git push || echo "Push MRR ignore (conflit ou rights) : le rapport reste dans les logs du run."
+
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
     needs: [fetch-data]
@@ -438,13 +480,6 @@ jobs:
         env:
           SMTP_PASS: ${{ secrets.SMTP_PASS }}
         run: node scripts/automation/revenue-watch.cjs --send
-
-      - name: Mollie MRR tracker
-        if: github.event_name == 'schedule'
-        continue-on-error: true
-        env:
-          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
-        run: node scripts/automation/mollie-mrr.cjs --send
 
       - name: UX watch (alerte criticals rage/dead-click)
         if: github.event_name == 'schedule'
@@ -607,7 +642,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/mollie-mrr.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
+          for f in scripts/automation/data/welcome-sent.json scripts/automation/data/drip-sent.json scripts/automation/data/drip-b2b-sent.json scripts/automation/data/weekend-sent.json scripts/automation/data/bounced-emails.json scripts/automation/data/notifications-sent.json scripts/automation/data/welcome-paid-sent.json scripts/automation/data/dunning-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/cold-reengage-sent.json scripts/automation/data/weather-reengage-state.json scripts/automation/data/weather-reengage-sent.json scripts/automation/data/welcome-paid-mollie-sent.json scripts/automation/data/revenue-watch-seen.json scripts/automation/data/ux-watch-seen.json scripts/automation/data/deliverability-watch-seen.json scripts/automation/data/factory-heartbeat-watch-seen.json scripts/automation/data/widget-hosts-seen.json scripts/automation/data/widget-converted-sent.json scripts/automation/data/b2b-cold-sent.json scripts/automation/data/b2b-followup-sent.json scripts/automation/data/b2b-funnel.json scripts/automation/data/daily-brief-sent.json scripts/automation/data/ux-daily-sent.json scripts/automation/data/push-winback-sent.json scripts/automation/data/blast-mollie-offer-sent.json scripts/automation/data/funnel-snapshot.json scripts/automation/data/funnel-daily-report.json public/api/b2b-paylinks.json public/api/mollie-passlinks.json; do
             [ -f "$f" ] && git add "$f"
           done
           # NOTE : la publication du snapshot métrique quotidien est désormais une
