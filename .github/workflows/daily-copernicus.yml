@@ -347,9 +347,15 @@ jobs:
 
   # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
   email-automation:
+    needs: [fetch-data]
     permissions:
       contents: write
-    if: github.event_name == 'schedule'
+    if: >-
+      github.event_name == 'schedule' &&
+      needs.fetch-data.result == 'success' &&
+      needs.fetch-data.outputs.gate_outcome == 'success' &&
+      (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' ||
+       needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
     # était de 30 min — trop juste : un seul appel bloqué annulait le job, donc
@@ -476,7 +482,7 @@ jobs:
         timeout-minutes: 10
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: node scripts/automation/purge-analytics.cjs
+        run: node scripts/automation/purge-analytics.cjs --dry
 
       - name: Funnel from Supabase (complementary)
         if: github.event_name == 'schedule'
