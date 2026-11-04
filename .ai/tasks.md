@@ -7,6 +7,7 @@
 ---
 
 ## Récemment complété
+- [!] P0 attribution funnel — PR #1255 Draft, head `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; implémentation consent-gated Supabase-only, mais CI bloquée à `215067/215040` bytes gzip (+27). Aucun merge/deploy tant que budget + revue privacy sont verts. Optimisation minimale demandée à Codex.
 - [~] P0 mesure funnel — corrélation session anonyme sur les événements Supabase du parcours B2C Pass (réutilise `sg_sid` sessionStorage, payload Supabase only ; ne pas envoyer à GA4/Apps Script ; aucun changement checkout/prix). Branche `fix/funnel-session-correlation-20261104`, commits `312ec135` + `ccbb80e`. En attente CI (build + budget 210 Ko) et revue privacy/consent avant merge/deploy.
 
 - [x] P0 (P0.67 §4) - Purge analytics fail-closed : le cron supprimait par défaut, sans identité ni preuve (@coding_agent, 2026-11-04, branche fix/outbound-purge-safety-20261104, Draft PR #1252, commit dff18e28f, CI 139/139, 22+17 assertions, falsification CAUGHT). Orchestration + script : dry-run par défaut, `--execute --approved-by=` exigé, `--days` plancher 90, `return=representation` recoupé `content-range`, re-comptage post-boucle.
