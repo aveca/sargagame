@@ -2324,6 +2324,27 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     try{const _em=localStorage.getItem("sg_email")||"";localStorage.setItem("sg_checkout_abandoned",JSON.stringify({email:_em,ts:Date.now()}))}catch(_){}
     setPayStep(true)
   },[source,setPayStep])
+  // Présélection du pass depuis l'URL (?pass=p30|trip7|saison|sos) —
+  // permet aux pages offres/ de diriger vers le bon Pass au chargement du paywall.
+  const _passFromUrl = (() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const p = q.get('pass');
+      if (p && ['p30','trip7','saison','sos'].includes(p)) return p;
+      return null;
+    } catch (_) { return null; }
+  })();
+  if (_passFromUrl && !passCtxRef.current) {
+    const _passTable = {
+      p30:  { cents: 1499, days: 30 },
+      trip7:{ cents: 499,  days: 7  },
+      saison:{ cents: 1999, days: 210 },
+      sos:  { cents: 100,  days: 1  },
+    };
+    const _pp = _passTable[_passFromUrl];
+    passCtxRef.current = { pass: _passFromUrl, cents: _pp.cents, days: _pp.days, cur: PAY_CUR };
+    try { track("sg_pass_cta", { pass: _passFromUrl, cents: _pp.cents, source: source || "unknown", onsite: 0, fromUrl: 1 }); } catch (_) {}
+  }
   const[showPrelude,setShowPrelude]=useState(false)
   // Compute upcoming dates for the Prelude ledger
   const _preludeDates=(()=>{
