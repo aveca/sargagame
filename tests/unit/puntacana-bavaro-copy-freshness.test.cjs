@@ -11,7 +11,7 @@ assert.ok(page, 'Spanish Bávaro landing page remains present');
 assert.equal(page.slug, 'sargazo-bavaro-hoy', 'SEO route slug remains unchanged');
 assert.equal(page.lang, 'es', 'page language remains Spanish');
 assert.equal(page.daily, true, 'daily sitemap contract remains enabled');
-assert.equal(page.priority, 0.7, 'SEO priority remains unchanged');
+assert.equal(page.priority, '0.7', 'SEO priority remains unchanged');
 
 const copy = [
   page.title,
