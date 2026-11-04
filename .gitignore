@@ -193,3 +193,6 @@ scripts/local-factory/logs/
 scripts/automation/data/reconcile-sales.json
 scripts/automation/data/b2c-segmentation.json
 scripts/automation/data/fulfillment-diagnosis.json
+
+# Private premium J+2→J+7 forecasts are generated at build time; never commit them.
+/public/api/copernicus/**/_private/forecast-full.json

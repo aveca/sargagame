@@ -11,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { execFileSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const WORKER = fs.readFileSync(path.join(ROOT, 'workers', 'sargagame', 'index.js'), 'utf8');
@@ -60,5 +61,16 @@ check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*fals
 const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')));
 const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
 for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
+
+// 7. Premium J+2→J+7 forecast files are generated locally for protected FTP only.
+const trackedPrivate = execFileSync('git', ['ls-files', 'public/api/copernicus/**/_private/forecast-full.json'], {
+  cwd: ROOT, encoding: 'utf8'
+}).trim();
+check('aucun forecast-full privé n’est suivi par Git', trackedPrivate === '');
+const dailyWorkflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'daily-copernicus.yml'), 'utf8');
+const refreshWorkflow = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'data-refresh.yml'), 'utf8');
+check('daily-copernicus ne stage pas les forecast-full privés', !/git add[^\n]*_private\/forecast-full\.json/.test(dailyWorkflow));
+check('data-refresh ne stage pas les forecast-full privés', !/git add[^\n]*_private\/forecast-full\.json/.test(refreshWorkflow));
+check('.gitignore exclut les forecast-full privés', /public\/api\/copernicus\/\*\*\/_private\/forecast-full\.json/.test(fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')));
 
 console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');

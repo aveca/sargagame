@@ -134,11 +134,8 @@ jobs:
           done
           if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
 
-          # Prévision privée (root + régions) : un push-deploy la redéploye telle quelle.
-          if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
-          for p in public/api/copernicus/*/_private/forecast-full.json; do
-            if [ -f "$p" ]; then git add "$p"; fi
-          done
+          # Les prévisions premium J+2→J+7 restent locales au runner et sont
+          # empaquetées uniquement pour l'origine FTP protégée. Ne jamais les committer.
 
           # Sorties par région (mq/, gp/, florida/, …). Chaque pathspec est
           # ajouté SÉPARÉMENT : `git add a b` est atomique et un glob vide

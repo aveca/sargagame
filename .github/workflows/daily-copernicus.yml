@@ -158,10 +158,7 @@ jobs:
               if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
             done
             if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
-            if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
-            for p in public/api/copernicus/*/_private/forecast-full.json; do
-              if [ -f "$p" ]; then git add "$p"; fi
-            done
+            # Les prévisions premium J+2→J+7 ne sont jamais ajoutées au dépôt public.
             for pat in sargassum.json history.json sargassum-banks.json sargassum-grid.json forecast-archive.json; do
               git add "public/api/copernicus/*/$pat" 2>/dev/null || true
             done
