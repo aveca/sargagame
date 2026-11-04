@@ -7,41 +7,81 @@ export default {
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
+    // Historical alias map: legacy Mollie pass codes → current codes.
+    // p7 was the single-pass code for 7 days (EUR 7.99 / USD 5.99).
+    // This map is consulted ONLY in webhook/payment_status validation
+    // (already-created payments), NEVER in create_payment pricing.
+    const LEGACY_PASS_ALIASES = Object.freeze({ p7: "trip7" });
+    // Historical accepted amounts for LEGACY payments only (webhook / payment_status).
+    // Keyed by canonical (current) pass code, then currency.
+    // NEVER used for merchant-created payments: current prices are checked in
+    // PASS_PRICES and the create_payment allowlist.
+    const LEGACY_PRICES = Object.freeze({
+      trip7: { EUR: [7.99], USD: [5.99] },
+    });
     const PASS_PRICES = Object.freeze({
       p30:{EUR:14.99,USD:11.99},
       trip7:{EUR:4.99,USD:null},
       season:{EUR:19.99,USD:null},
       sos:{EUR:1.00,USD:null}
     });
+    // Resolve the canonical & current-priced pass code for an inbound
+    // (possibly legacy) pass, returning only the current price so the
+    // merchant flow is never affected by legacy codes.
+    const resolvePass = (pass) => {
+      if (DAYS_TABLE[pass]) return { canonicalPass: pass, isLegacy: false, days: DAYS_TABLE[pass] };
+      const canonical = LEGACY_PASS_ALIASES[pass];
+      if (canonical && DAYS_TABLE[canonical]) return { canonicalPass: canonical, isLegacy: true, days: DAYS_TABLE[canonical] };
+      return null;
+    };
+    // validateMollieAmount decides if a PAID payment qualifies for a grant.
+    // NOTE: this function must NEVER be used at payment-creation time;
+    // merchant creation uses the create_payment allowlist with PASS_PRICES only.
+    // For an already-created payment, it accepts the current price AND the
+    // only allowed historical price for the canonical pass (LEGACY_PRICES)
+    // when the payment's pass is a legacy alias (e.g. p7 at EUR 7.99 / USD 5.99).
     const validateMollieAmount = (payment) => {
       if (!payment || payment.status !== "paid") return {ok:false,reason:"not_paid"};
-      const pass=String(payment.metadata?.pass||"");
+      const rawPass=String(payment.metadata?.pass||"");
+      const resolved=resolvePass(rawPass);
+      if (!resolved) return {ok:false,reason:"unknown_pass"};
+      const pass=resolved.canonicalPass;
       const currency=String(payment.amount?.currency||"").toUpperCase();
       const value=Number(payment.amount?.value);
       const cents=Math.round(value*100);
-      if (!DAYS_TABLE[pass] || !PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
+      if (!PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
       if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
       if (!Object.prototype.hasOwnProperty.call(PASS_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
       const expected=PASS_PRICES[pass][currency];
+      if (resolved.isLegacy) {
+        // Legacy payment: accept ONLY an allowed historical price
+        // (current price is NOT allowed for legacy codes — keeps fraud surface
+        // narrow and matches the historical amounts actually used).
+        const legacyAmounts = LEGACY_PRICES[pass] || {};
+        const acceptableCents = new Set();
+        for (const n of legacyAmounts[currency] || []) acceptableCents.add(Math.round(n*100));
+        if (acceptableCents.size === 0) return {ok:false,reason:"unsupported_currency"};
+        if (![...acceptableCents].some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
+        return {ok:true,pass,currency,isLegacy:true,rawPass};
+      }
       if (expected === null) {
-        // Preserve the existing variable-amount contract for products whose
-        // currency price is null in create_payment; never accept zero/negative.
         const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
         if (cents <= 50 || cents >= upper) return {ok:false,reason:"amount_out_of_range"};
       } else {
         const acceptable=[Math.round(expected*100)];
-        // The create_payment route applies a 15% USD seasonal adjustment to
-        // passes other than trip7. Allow the adjusted amount on a delayed webhook.
         if (currency === "USD" && pass !== "trip7") acceptable.push(Math.round(acceptable[0]*1.15));
         if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
       }
-      return {ok:true,pass,currency};
+      return {ok:true,pass,currency,isLegacy:false,rawPass};
     };
     const grantB2CPassIdempotent=async(payment)=>{
       const md=payment?.metadata||{};
-      const pass=String(md.pass||"");
+      const rawPass=String(md.pass||"");
+      const resolved=resolvePass(rawPass);
+      if(!resolved)return {granted:false,skipped:true,reason:"unknown_pass"};
+      const pass=resolved.canonicalPass;
       const email=String(md.email||"").trim();
-      const days=DAYS_TABLE[pass];
+      const days=resolved.days;
       if(!days)return {granted:false,skipped:true,reason:"unknown_pass"};
       if(pass!=="sos"&&!email)return {granted:false,skipped:true,reason:"email_required"};
       if(!payment?.id)return {granted:false,skipped:true,reason:"payment_id_required"};
@@ -72,6 +112,7 @@ export default {
       if(!r.ok){
         let code="";
         try { code=String((await r.json())?.code||""); } catch {}
+        console.error("[mollie-webhook] Supabase grant RPC failed", {paymentId: String(payment?.id)||"", status: r.status, code: code||"unknown"});
         if(r.status===404 || code==="PGRST202") return {granted:false,error:"rpc_unavailable",status:r.status};
         return {granted:false,error:"grant_sync_failed",status:r.status};
       }
