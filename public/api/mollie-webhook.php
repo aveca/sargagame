@@ -72,6 +72,21 @@ try {
         // Vérification indépendante du montant et de la devise (anti-tampering).
         $amountCheck = validateMollieAmountPHP($payment);
         if(!$amountCheck['ok']){
+            // TÉLÉMÉTRIE (2026-11-04) : le refus est rendu VISIBLE.
+            // ⚠️ Le code HTTP reste 400 et AUCUN accès n'est accordé : ce bloc
+            // n'écrit que dans `analytics_events` (table de mesure, sans secret).
+            // Objectif : que l'argent encaissé sans service SERVÍ ne soit plus
+            // un trou muet, mais un signal mesuré et daté.
+            $sgAmt = mol_payment_amount($payment);
+            $sgTier = mol_paylink_classify($sgAmt['value'] ?? null, $sgAmt['currency'] ?? null);
+            sg_payment_rejected($id, [
+                'error'    => $amountCheck['error'],
+                'value'    => $sgAmt['value'] ?? null,
+                'currency' => $sgAmt['currency'] ?? null,
+                'tier'     => $sgTier['tier'] ?? null,
+                'kind'     => $sgTier['kind'] ?? null,
+                'has_meta' => $metadata ? 1 : 0,
+            ]);
             http_response_code(400);
             echo json_encode(['error'=>$amountCheck['error']]);
             exit;
@@ -84,6 +99,10 @@ try {
 
             if (in_array($source, ['b2b_annual'], true)) {
                 $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
+                // TÉLÉMÉTRIE (2026-11-04) : conversion B2B annuelle.
+                // Déduplonnée par identifiant de paiement → un encaissement
+                // n'est compté qu'une fois, même si Mollie rejoue le webhook.
+                sg_b2b_emit_conversion($id, 'pro_annual', 'annual');
                 $mirrorOk = $grant['mirror_ok'] ?? false;
                 if (!$mirrorOk) {
                     http_response_code(500);
@@ -139,6 +158,11 @@ try {
          if ($event === 'subscription.paid') {
              if ($planKey && in_array($planKey, ['pro_monthly', 'brief_monthly'], true)) {
                  $grant = mol_b2b_grant_once($customerId, $planKey, $subscription->id);
+                 // TÉLÉMÉTRIE (2026-11-04) : conversion B2B mensuelle.
+                 // Déduplonnée par identifiant d'ABONNEMENT → le taux
+                 // essai→payé compte une conversion par client, pas par
+                 // renouvellement.
+                 sg_b2b_emit_conversion($subscription->id, $planKey, 'monthly');
                  $mirrorOk = $grant['mirror_ok'] ?? false;
                  if (!$mirrorOk) {
                      http_response_code(500);

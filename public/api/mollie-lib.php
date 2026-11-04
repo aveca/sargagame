@@ -44,6 +44,75 @@ function sg_analytics_event($event, $params, $island = null) {
     @curl_close($ch);
 }
 
+/**
+ * Émet un événement de télémétrie **AU PLUS UNE FOIS** par clé de dédoublonnage.
+ *
+ * PROPRIÉTÉS (volontairement strictes — ces helpers sont APPELÉS DEPUIS le
+ * chemin de paiement, ils ne doivent JAMAIS pouvoir l'affecter) :
+ *
+ *  - INERT : le résultat de l'émission est IGNORÉ par les appelants. Un échec
+ *    réseau, un timeout ou une table absente ne change ni le code HTTP du
+ *    webhook, ni l'octroi, ni le mirror, ni le montant débité.
+ *  - IDEMPOTENT : un rejeu du webhook (Mollie rejoue en cas de 4xx/5xx) ne
+ *    recompte pas l'événement. Clé de dédoublonnage = l'identifiant de
+ *    l'encaissement.
+ *  - SANS PII : uniquement des paramètres non nominatifs (palier, montant,
+ *    devise). Jamais d'email, jamais d'identifiant client.
+ *  - SANS SECRET : même clé PUBLIQUE anon que le front (cf. sg_analytics_event).
+ *
+ * Le fichier de dédoublonnage est écrit avec `@` : un `/tmp` non inscriptible
+ * produit un avertissement PHP qui polluerait la réponse JSON du webhook.
+ */
+function sg_emit_once(string $dedupKey, string $event, array $params = []): bool {
+    try {
+        if (!$event || !$dedupKey) return false;
+        $file = sys_get_temp_dir() . '/sg_evt_' . md5($dedupKey);
+        if (file_exists($file)) {
+            // Expiration à 400 jours : borne la taille du dossier /tmp.
+            $ts = (int)@file_get_contents($file);
+            if ($ts > 0 && (time() - $ts) < 400 * 86400) return false;
+        }
+        @file_put_contents($file, (string)time(), LOCK_EX);
+        if (function_exists('sg_analytics_event')) {
+            sg_analytics_event($event, $params, null);
+        }
+        return true;
+    } catch (Throwable $e) {
+        error_log('[sg_emit_once] ' . $e->getMessage());
+        return false;
+    }
+}
+
+/**
+ * `b2b_trial_to_paid` — le client B2B vient de PAYER (mensuel ou annuel).
+ *
+ * POURQUOI CE HELPER EXISTE : `docs/B2B_DELIVERABILITY.md` annonçait cet
+ * événement comme « émis par mollie-webhook.php à chaque paiement Pro », et
+ * `scripts/automation/funnel-b2b-from-supabase.cjs` le lit pour calculer le
+ * taux essai→payé. AUCUN appelant ne l'émettait : le taux était donc
+ * STRUCTURELLEMENT impossible à calculer (0 par construction).
+ */
+function sg_b2b_emit_conversion(string $conversionId, string $planKey, string $kind): bool {
+    if (!$conversionId || !$planKey) return false;
+    return sg_emit_once('mollie_conv_' . $conversionId, 'b2b_trial_to_paid', [
+        'plan' => $planKey,
+        'kind' => $kind,
+    ]);
+}
+
+/**
+ * `payment_rejected` — un paiement SIGNÉ par Mollie a été refusé par la
+ * validation du webhook. C'est le signal qui rend VISIBLE le trou de
+ * fulfillment : tant que cet événement existe, de l'argent est encaissé sans
+ * accès servi.
+ *
+ * ⚠️ pure télémétrie : le code HTTP du webhook reste INCHANGÉ (400).
+ */
+function sg_payment_rejected(string $paymentId, array $info = []): bool {
+    if (!$paymentId) return false;
+    return sg_emit_once('mollie_rej_' . $paymentId, 'payment_rejected', $info);
+}
+
 class SgPaymentResponse {
     private array $resp;
     public function __construct(array $resp) { $this->resp = $resp; }
@@ -198,6 +267,71 @@ function mol_b2b_plans(): array {
             'interval' => '1 month',
         ],
     ];
+}
+
+/**
+ * Grille des LIENS DE PAIEMENT Mollie — reconnaissance (montant, devise).
+ *
+ * ⚠️ L'API Mollie `payment-links` N'ACCEPTE PAS de `metadata` (constaté le
+ * 2026-07-02, cf. scripts/automation/mollie-paylinks.cjs) et `webhookUrl` n'est
+ * pas patchable a posteriori : un paiement issu d'un lien arrive donc SANS
+ * `source` ni `pass`. La seule identification possible est le couple
+ * (montant, devise).
+ *
+ * Cette grille doit être IDENTIQUE à la liste `TIERS` de
+ * `scripts/automation/mollie-paylinks.cjs` — un test de parité
+ * (`tests/unit/b2b-paylink-grid-parity.test.cjs`) verrouille l'égalité et
+ * signale toute divergence nouvelle de montant.
+ */
+function mol_paylink_grid(): array {
+    return [
+        // B2B annuel (prépaiement) — EUR
+        'brief_annual'     => ['value' => '290.00',  'currency' => 'EUR', 'kind' => 'b2b_annual'],
+        'pro_annual'       => ['value' => '690.00',  'currency' => 'EUR', 'kind' => 'b2b_annual'],
+        'territory_annual' => ['value' => '1990.00', 'currency' => 'EUR', 'kind' => 'b2b_annual'],
+        // B2B annuel (prépaiement) — USD
+        'brief_annual_usd' => ['value' => '390.00',  'currency' => 'USD', 'kind' => 'b2b_annual'],
+        'pro_annual_usd'   => ['value' => '790.00',  'currency' => 'USD', 'kind' => 'b2b_annual'],
+        // B2C passs one-time — EUR
+        'trip_eur'         => ['value' => '4.99',    'currency' => 'EUR', 'kind' => 'b2c_pass'],
+        'sejour_eur'       => ['value' => '12.99',   'currency' => 'EUR', 'kind' => 'b2c_pass'],
+        'saison_eur'       => ['value' => '19.99',   'currency' => 'EUR', 'kind' => 'b2c_pass'],
+        // B2C passs one-time — USD
+        'trip_usd'         => ['value' => '4.99',    'currency' => 'USD', 'kind' => 'b2c_pass'],
+        'sejour_usd'       => ['value' => '9.99',    'currency' => 'USD', 'kind' => 'b2c_pass'],
+        'saison_usd'       => ['value' => '14.99',   'currency' => 'USD', 'kind' => 'b2c_pass'],
+    ];
+}
+
+/**
+ * Identifie un paiement par la grille des liens de paiement.
+ * Retourne le tier ('pro_annual', 'sejour_eur', …) ou null.
+ */
+function mol_paylink_classify(?string $value, ?string $currency): ?array {
+    if ($value === null || $currency === null) return null;
+    $v = number_format((float)$value, 2, '.', '');
+    $c = strtoupper(trim($currency));
+    foreach (mol_paylink_grid() as $tier => $spec) {
+        if ($spec['value'] === $v && $spec['currency'] === $c) {
+            return ['tier' => $tier, 'value' => $v, 'currency' => $c, 'kind' => $spec['kind']];
+        }
+    }
+    return null;
+}
+
+/**
+ * Lit le montant d'un paiement quelle que soit sa forme (tableau associatif
+ * — ce que produit `json_decode($response, true)` — ou objet).
+ *
+ * ⚠️ Le runtime réel renvoie un TABLEAU : `$payment->amount->currency` lit
+ * donc `null` sur un tableau (propriété absente). D'où l'usage de ce helper
+ * pour la TÉLÉMÉTRIE, qui doit refléter le montant RÉELMENT encaissé.
+ */
+function mol_payment_amount($payment): array {
+    $a = $payment->amount ?? null;
+    if (is_array($a)) return $a;
+    if (is_object($a)) return (array)$a;
+    return [];
 }
 
 /**
