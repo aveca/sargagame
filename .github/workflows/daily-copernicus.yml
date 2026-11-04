@@ -345,11 +345,15 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # ── 2. EMAIL AUTOMATION (parallèle, non-bloquant) ──────────────────────────
+  # ── 2. EMAIL AUTOMATION (gated on a fresh, successful fetch) ─────────────
+  # Customer-facing sends/pushes must not run after a failed ERDDAP fetch or
+  # a failed 900-minute integrity gate. The read-only health-check remains
+  # independent and can still report the incident.
   email-automation:
+    needs: [fetch-data]
+    if: github.event_name == 'schedule' && needs.fetch-data.result == 'success' && needs.fetch-data.outputs.gate_outcome == 'success' && (needs.fetch-data.outputs.publication_status == 'FRESH_AND_PUBLISHED' || needs.fetch-data.outputs.publication_status == 'NO_NEW_OBSERVATION')
     permissions:
       contents: write
-    if: github.event_name == 'schedule'
     runs-on: ubuntu-latest
     # 24 étapes réseau en série : le job tourne normalement ~28 min. Le budget
     # était de 30 min — trop juste : un seul appel bloqué annulait le job, donc
