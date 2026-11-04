@@ -18,8 +18,7 @@ async function main() {
   assert.ok(app.indexOf('navigator.sendBeacon(APPS_SCRIPT_URL') < start, 'Apps Script receives the unchanged params before the Supabase sink')
   assert.ok(app.indexOf('sgCollectEvent(event,p)') < start, 'first-party collection initializes the tab sid before the Supabase sink')
   assert.match(sink, /logAnalyticsEvent\(event,p,/, 'track() forwards params to the Supabase adapter only after other sinks')
-    assert.match(sink, /if\(localStorage\.sg_cookie_consent==="accepted"\)p\.sid=_sgcSid\(\);logAnalyticsEvent\(event,p,/, 'the final Supabase sink attaches sid only after analytics opt-in')
-  assert.doesNotMatch(supabase, /payloadParams\.sid\s*=/, 'the adapter does not add ids to unrelated Supabase events')
+  assert.match(supabase, /payloadParams\.sid = localStorage\.sg_cookie_consent === "accepted" && sessionStorage\.sg_sid/, 'the adapter attaches sid only after analytics opt-in')
   assert.match(app, /_sgc\.buf=\{v:1,sid:_sgcSid\(\)/, 'the first-party collector creates the existing session id before the Supabase call')
   
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
