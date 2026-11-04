@@ -43,6 +43,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [checkoutLoading, setCheckoutLoading] = useState(false)
+  const [checkoutBlocked, setCheckoutBlocked] = useState(false)
   const panelRef = useRef(null)
   
   useModalA11y(panelRef, onClose)
@@ -89,6 +90,15 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
 
   const handleBuy = useCallback(async () => {
     if (!selectedBeach || checkoutLoading) return
+    // Fraicheur (P0.67 §5) : aucune ouverture de paiement sur une observation
+    // non actuelle. Contrat src/lib/sos-observation-state.mjs : observationCurrent
+    // vaut true UNIQUEMENT si source ERDDAP live, stale === false, age < 12h et
+    // statut valide. Stale / unknown / non-live => 0 tracking, 0 POST /api/mollie.
+    if (selectedBeach.observationCurrent !== true) {
+      setCheckoutBlocked(true)
+      return
+    }
+    setCheckoutBlocked(false)
     if (typeof window !== "undefined") window.__sosHandleBuyCalled = true
     setCheckoutLoading(true)
     track("sg_sos_checkout_start", { beach: selectedBeach.id, beachName: selectedBeach.name })
@@ -192,7 +202,7 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
         </label>
         <select
           value={selectedBeachId}
-          onChange={e => setSelectedBeachId(e.target.value)}
+          onChange={e => { setSelectedBeachId(e.target.value); setCheckoutBlocked(false) }}
           style={{
             width: "100%", boxSizing: "border-box", padding: "12px 14px", borderRadius: 12,
             border: "1.5px solid rgba(255,255,255,.15)", background: "#1A1428",
@@ -288,6 +298,22 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
       </div>
 
       <div style={{ marginTop: 16, textAlign: "center" }}>
+        {checkoutBlocked && (
+          <div
+            data-testid="sos-checkout-blocked"
+            role="alert"
+            style={{
+              marginBottom: 10, padding: "10px 12px", borderRadius: 10,
+              border: "1px solid rgba(248,113,113,.45)", background: "rgba(248,113,113,.10)",
+              color: "#FCA5A5", fontSize: 12, lineHeight: 1.45, textAlign: "left",
+            }}
+          >
+            {_t(lang,
+              "Paiement indisponible : aucune observation satellite actuelle. Le paiement n’a pas été ouvert.",
+              "Payment unavailable: no current satellite observation. No payment was opened.",
+              "Pago no disponible: no hay observación satelital actual. No se abrió ningún pago.")}
+          </div>
+        )}
         <button
           id="sos-plage-cta"
           onClick={handleBuy}

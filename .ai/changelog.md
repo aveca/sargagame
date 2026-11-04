@@ -1,3 +1,25 @@
+## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
+
+- Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
+- Le parseur de session ignore `sid='x'`. Aucun cookie, fingerprint, PII, migration SQL ou dépendance ajoutés.
+- Tête branche `fix/funnel-session-correlation-20261104` : `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; PR #1255 Draft.
+- CI : tests fonctionnels passent jusqu'au garde-fou final ; échec budget exact `215067 / 215040` bytes gzip (27 bytes au-dessus). Budget inchangé à 210 Ko. Aucune livraison autorisée tant qu'il ne passe pas.
+- Revue Codex demandée sur l'isolation Supabase-only et le consentement ; optimisation de moins de 30 bytes demandée à Codex. Aucun merge/déploiement ni write prod.
+
+---
+
+## 2026-11-04 — ChatGPT · funnel attribution session key (branch fix/funnel-session-correlation-20261104)
+
+**Correction ciblée de la corrélation du funnel Supabase, sans nouveau stockage ni tiers.**
+
+- `track()` réutilise le `sg_sid` anonyme déjà créé dans `sessionStorage` par le collecteur first-party ; le champ `sid` est ajouté uniquement à la copie envoyée à `logAnalyticsEvent` (Supabase).
+- GA4 conserve le payload `p` inchangé ; la file/beacon Apps Script et le collecteur first-party restent inchangés.
+- Le sentinel `x` (sessionStorage inaccessible) est exclu ; aucun cookie, fingerprint, PII, dépendance ni migration SQL ajoutés.
+- Test `tests/unit/funnel-session-correlation.test.cjs` : périmètre Supabase-only, sid fallback, invariance GA4 et compatibilité du parseur existant.
+- CI + revue confidentialité restent pendantes ; aucun merge, déploiement, paiement, emailing ou mutation de données en production.
+
+---
+
 ﻿
 ## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
 
