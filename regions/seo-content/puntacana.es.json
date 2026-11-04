@@ -203,28 +203,28 @@
     {
       "lang": "es",
       "slug": "sargazo-bavaro-hoy",
-      "title": "Sargazo en Bávaro Hoy — Mapa Satelital en Vivo",
-      "desc": "¿Hay sargazo en Bávaro hoy? Estado en vivo de la playa por satélite Copernicus, actualizado 4× al día, con Beach Score y pronóstico a 7 días antes de salir.",
-      "h1": "Sargazo en Bávaro Hoy — Mapa Satelital en Vivo",
-      "intro": "¿Hay sargazo en Bávaro hoy? La respuesta cambia cada mañana, y por eso revisamos esta playa por separado en lugar de dar un veredicto único para toda la costa. El mapa en vivo de arriba muestra el estado de hoy de Bávaro —limpia, moderada o evitar—, su Beach Score de 0 a 100 y la hora exacta de la última lectura. Funciona con imágenes satelitales de Copernicus y NOAA, refrescadas cuatro veces al día, no con una reseña vieja ni un promedio de temporada. Bávaro es la franja hotelera más densa de Punta Cana y mira de frente al Atlántico abierto, así que recibe más alga que las playas protegidas por arrecife —pero las cuadrillas de los resorts rastrillan cada mañana, y un giro de viento nocturno puede cambiarlo todo. Somos honestos con la incertidumbre: cuando las nubes tapan una pasada del satélite, te lo decimos, y cada lectura muestra su nivel de confianza. No adivinamos el mar: lo medimos, y te entregamos el resultado cada mañana.",
+      "title": "Sargazo en Bávaro hoy: última observación satelital",
+      "desc": "¿Hay sargazo en Bávaro? Consulta la última observación satelital publicada, su hora y su confianza. Si el dato está retrasado, no se emite un veredicto actual.",
+      "h1": "Sargazo en Bávaro hoy: última observación satelital",
+      "intro": "¿Hay sargazo en Bávaro hoy? Consulta la última observación satelital publicada, su hora exacta y el nivel de confianza. Si la observación supera el umbral de frescura o no puede verificarse, el mapa suspende el veredicto actual: no presenta una lectura antigua como condición de hoy. Bávaro es la franja hotelera más densa de Punta Cana y mira de frente al Atlántico abierto, por lo que puede recibir más alga que las playas protegidas por arrecife. Las cuadrillas de cada resort y los cambios de viento pueden alterar la situación en la arena. Las imágenes satelitales describen lo observado desde órbita; no confirman por sí solas la limpieza manual de la playa. La página muestra la fecha y la confianza disponibles, sin prometer una frecuencia fija de actualización.",
       "sections": [
         {
           "h2": "¿Cómo está Bávaro ahora mismo?",
-          "text": "Mira el Beach Score y el estado de hoy en el mapa de arriba: es el único dato que de verdad importa, porque Bávaro cambia de un día a otro. Como referencia, esta playa mira al este, hacia el Atlántico abierto, así que en temporada acumula más sargazo que Cap Cana o Cabeza de Toro. Pero los grandes resorts de la franja rastrillan su frente de playa cada mañana, y la arena más limpia del día suele estar justo después de ese rastrillado. Muestreamos los píxeles satelitales frente a Bávaro específicamente —no un promedio de toda la costa— y los actualizamos cuatro veces al día. Toca la playa en el mapa para ver su estado actual y el pronóstico a 7 días antes de bajar a la arena."
+          "text": "Consulta la hora de la última observación y su confianza. El estado y el Beach Score solo se publican cuando la lectura es suficientemente reciente y verificable; si el dato está retrasado, el veredicto actual se suspende. El satélite observa la zona costera desde órbita y no confirma el estado de la arena después del rastrillado del resort. Como contexto general, la exposición al Atlántico puede hacer que Bávaro reciba más arribos que Cap Cana o Cabeza de Toro, pero no permite deducir la condición de hoy."
         },
         {
           "h2": "¿Cuándo se limpia Bávaro?",
-          "text": "El sargazo que ya está en la arena se degrada en pocos días si no llega material nuevo, así que un Bávaro cargado hoy puede amanecer despejado en 48 a 72 horas. El problema es lo que viene en camino: si una mancha grande deriva hacia la costa mar adentro, la playa vuelve a cargarse aunque las cuadrillas rastrillen a fondo. La temporada fuerte va de mayo a agosto, con arribos regulares en la franja abierta; de noviembre a marzo Bávaro suele estar fiablemente limpia. Nuestro pronóstico a 7 días por playa rastrea exactamente eso —qué se aproxima y cuándo se espera que la arena quede limpia— y se recalcula con cada actualización satelital, cuatro veces al día."
+          "text": "No hay una hora garantizada de limpieza. El sargazo que ya está en la arena puede degradarse en 48 a 72 horas si no llega material nuevo, pero una nueva arribazón o el trabajo de las cuadrillas puede cambiar el resultado. De noviembre a marzo suelen darse menos arribos que en los meses pico, pero no es una garantía para una playa concreta. El horizonte de previsión solo se presenta cuando los datos y la observación cumplen los controles de publicación; no prometemos una frecuencia fija ni una fecha exacta de limpieza."
         },
         {
           "h2": "Si Bávaro está cargada hoy, ¿adónde voy?",
-          "text": "Las condiciones varían muchísimo a poca distancia en carro. Mientras Bávaro está cubierta, Cap Cana —Juanillo, Playa Blanca— o Cabeza de Toro pueden estar perfectas gracias a la protección del arrecife y a una limpieza más intensiva. Usa el mapa en vivo para encontrar la playa limpia más cercana a tu hotel en vez de resignarte a un mal día de mar. Con el PASS recibes alertas push en cuanto una playa guardada cambia de estado, más el pronóstico a 7 días para ubicar tus mañanas de playa entre pulsos de alga. Así no pierdes la mañana caminando hasta la orilla para descubrir que el agua no está como esperabas."
+          "text": "Compara la última observación publicada de Bávaro con las de Cap Cana (Juanillo, Playa Blanca) y Cabeza de Toro. Una diferencia de pocos kilómetros puede importar, pero ninguna playa se presenta como limpia si la observación está retrasada o no puede validarse. El PASS añade alertas y acceso al horizonte ampliado cuando los datos están disponibles; no sustituye la comprobación local ni garantiza que el resort haya retirado el sargazo de la arena."
         }
       ],
       "faq": [
         {
           "q": "¿Hay sargazo en Bávaro hoy?",
-          "a": "Depende del día. Revisa el mapa en vivo de arriba: muestra el estado de hoy de Bávaro —limpia, moderada o evitar—, su Beach Score de 0 a 100 y la hora de la última lectura. Lo refrescamos cuatro veces al día con satélite Copernicus y NOAA, así que ves las condiciones reales de esta mañana, no un promedio de temporada."
+          "a": "Consulta la última observación satelital publicada, su hora y su confianza. Si está retrasada o no puede verificarse, el sitio suspende el veredicto actual en lugar de presentar una lectura antigua como condición de hoy."
         },
         {
           "q": "¿Por qué Bávaro recibe más sargazo que otras playas?",
@@ -232,15 +232,15 @@
         },
         {
           "q": "¿A qué hora está Bávaro más limpia?",
-          "a": "La arena más limpia del día suele estar justo después del rastrillado matutino de los resorts. Por eso conviene planear las mañanas de playa. Aun así, si llega una mancha nueva mar adentro, el alga puede regresar en horas: revisa el mapa y el pronóstico a 7 días antes de bajar."
+          "a": "No existe una hora universal: depende del calendario de limpieza de cada resort y de si llega nuevo material. El satélite no verifica el rastrillado de la arena. Consulta la última observación publicada y su fecha; si está retrasada, no se emite un veredicto actual."
         },
         {
           "q": "¿Cuándo se va a limpiar Bávaro?",
-          "a": "El sargazo en la arena se degrada en 48 a 72 horas si no llega material nuevo, así que una mañana cargada puede despejar en pocos días. Pero si otra mancha se aproxima, vuelve a cargarse. Nuestro pronóstico a 7 días por playa rastrea exactamente qué viene en camino y se recalcula cuatro veces al día."
+          "a": "No se puede prometer un día u hora. El sargazo en la arena puede degradarse en 48 a 72 horas si no llega material nuevo, pero nuevas arribazones pueden prolongar el episodio. Usa la última observación publicada como referencia y no como garantía."
         },
         {
           "q": "Si Bávaro está cargada, ¿qué playa cercana está limpia?",
-          "a": "Cap Cana (Juanillo, Playa Blanca) y Cabeza de Toro suelen salir mejor libradas por la protección del arrecife. Como el ranking cambia cada semana, revisa el mapa en vivo para ver qué arena está despejada ahora mismo en lugar de fiarte de una guía vieja."
+          "a": "Cap Cana (Juanillo, Playa Blanca) y Cabeza de Toro pueden estar menos expuestas por la protección del arrecife, pero ninguna playa está garantizada libre de sargazo. Compara la última observación verificable de cada zona; si el dato está retrasado, no se emite un veredicto actual."
         }
       ],
       "priority": "0.7",
