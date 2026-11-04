@@ -8,6 +8,8 @@ on:
     - cron: '0 12 * * *'
     - cron: '0 18 * * *'
   workflow_dispatch:
+    # No purge input: scheduled and manual runs remain read-only until
+    # a separately approved, protected cleanup path exists.
   push:
     branches:
       - main
@@ -462,7 +464,15 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/factory-heartbeat-watch.cjs --send
 
-      - name: Purge analytics_events (> 90j)
+      # P0.67 §4 — la purge analytics est en lecture seule sur tous les
+      # chemins GitHub Actions : le cron compte uniquement, et workflow_dispatch
+      # n'expose aucun input ni aucune étape de suppression.
+      #
+      # Le script est désormais strictement en lecture seule : il ne contient
+      # plus de méthode d'écriture et ignore les anciens flags destructeurs.
+      # Toute future suppression devra utiliser un outil séparé, protégé,
+      # sauvegardé et soumis à une revue explicite.
+      - name: Purge analytics_events (> 90j) — dry-run (cron)
         if: github.event_name == 'schedule'
         continue-on-error: true
         # Budget d'étape : un blocage réseau ne doit plus consommer le budget
