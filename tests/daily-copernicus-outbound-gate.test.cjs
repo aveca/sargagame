@@ -5,7 +5,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const workflowPath = path.join(__dirname, '..', '.github', 'workflows', 'daily-copernicus.yml');
-const workflow = fs.readFileSync(workflowPath, 'utf8');
+// Normalisation CRLF : le checkout Windows (\r\n) faisait échouer
+// indexOf('...\n') alors que le contenu est identique. Même correctif que
+// tests/unit/morning-brief-freshness.test.cjs.
+const workflow = fs.readFileSync(workflowPath, 'utf8').replace(/\r\n/g, '\n');
 const start = workflow.indexOf('  email-automation:\n');
 assert.notEqual(start, -1, 'email-automation job exists');
 const tail = workflow.slice(start);
