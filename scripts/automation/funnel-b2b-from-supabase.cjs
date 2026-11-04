@@ -32,6 +32,11 @@ const B2B_KEYS = ['b2b_trial_started', 'b2b_widget_activated', 'b2b_trial_to_pai
 // them as paid conversions. Do not delete or mutate the production rows.
 const EXCLUDED_SYNTHETIC_IDS = new Set([488769, 488770])
 
+function hasValidRowId(row) {
+  return !!row && row.id !== null && row.id !== undefined && String(row.id).trim() !== '' &&
+    Number.isSafeInteger(Number(row.id))
+}
+
 function svcHeaders(extra, serviceKey = SERVICE_KEY) {
   return Object.assign({
     apikey: serviceKey,
@@ -123,7 +128,7 @@ async function fetchAll(cutoffIso, options = {}) {
     }
   }
 
-  if (rows.some((row) => !Number.isSafeInteger(Number(row.id)))) {
+  if (rows.some((row) => !hasValidRowId(row))) {
     throw new Error('Supabase analytics page contains a row without a valid numeric id')
   }
   return rows
@@ -131,7 +136,7 @@ async function fetchAll(cutoffIso, options = {}) {
 
 function compute(rows) {
   if (!Array.isArray(rows)) throw new TypeError('B2B funnel rows must be an array')
-  if (rows.some((row) => !Number.isSafeInteger(Number(row.id)))) {
+  if (rows.some((row) => !hasValidRowId(row))) {
     throw new Error('B2B funnel rows must include a valid numeric id')
   }
 
