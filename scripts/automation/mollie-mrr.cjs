@@ -423,7 +423,7 @@ async function main() {
   for (const [currency, revenue] of Object.entries(report.unattributed.revenue_this_month_by_currency)) {
     console.log(`   Revenu non attribué ${currency}: ${revenue}`)
   }
-  console.log(`   Période MRR v2: ${versionedHistory.length} jours`)
+  console.log(`   Période MRR v3: ${versionedHistory.length} jours`)
 
   // Target €1000 — EUR only; USD and unknown currencies are not converted.
   const target = 1000
