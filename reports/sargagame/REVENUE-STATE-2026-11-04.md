@@ -245,4 +245,117 @@ consentement, jamais d'empreinte).
 
 ### §10 — CI / PR / déploiement
 
-*(complété après l'ouverture de la PR : SHA, run CI, déploiement)*
+#### Identifiants
+
+| Élément | Valeur |
+|---|---|
+| Branche | `revenue/offres-durees-prix-coherence-20261104` |
+| Commit | `f899da28` (rebased sur `main` = `c4f9821d`, PR #1259) |
+| **PR mergée** | **#1264** → `22ff4d8b3228778a384ae4763707576fc3f30b4b` (mergée le 2026-11-04T11:04:48Z) |
+| PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
+| PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
+| PRs fermées comme supersédées | #1254 (spec 3 abonnements B2C mensuels), #1258 (clé `saison` + centimes en dur + CI rouge), #1260 (supersédée par #1259) |
+
+#### CI sur le SHA exact
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (PR) | `41817769459` | **PASS** (`test-frontend`) |
+| Perf Budget + Lighthouse (PR) | `41817769356` | **PASS** (`perf`, `lighthouse-report`) |
+| GitGuardian | — | PASS |
+| CI Tests (push `main`) | `41818452440` | **PASS** |
+| Perf Budget + Lighthouse (push `main`) | `41818452517` | **PASS** |
+| Daily Copernicus + Deploy (push `main`) | `41818452572` | **PASS** |
+
+`npm test` local sur le même contenu : **141/141 fichier(s) de test OK** (le fichier
+`tests/unit/financial-artifact-privacy.test.cjs` de #1259 s'ajoute aux 140 de la
+branche). Le correctif CRLF du test `morning-brief-freshness` rend la suite portable
+Windows/Linux (l'échec existait **aussi** sur `origin/main`).
+
+#### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
+
+| Élément | Valeur |
+|---|---|
+| Run de déploiement | `41818452612` (Cloudflare Production, SHA `22ff4d8b`) → **FAILURE** |
+| Étape en échec | `Pre-deploy satellite freshness gate (all six regions)` |
+| Message | `FAIL SATELLITE_PREDEPLOY region=puntacana limit=900min reason=observation hors SLA (2825.20 min > 900 min)` |
+| Étapes non atteintes | `certification-gate` → `deploy` → `deploy-pages` → `verify-fleet` → `post-deploy-verify` (jamais exécutées) |
+
+**Ce n'est pas une régression du correctif de prix.** La même garde a fait échouer
+**20 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T11:04Z, y compris
+des SHAs qui ne contiennent **aucun** changement de cette branche :
+
+| Run | SHA | Région signalée | Âge de l'observation |
+|---|---|---|---|
+| `41790290141` | `ec49b167` (main **avant** cette branche) | florida | 2 590 min |
+| `41816656514` | `c4f9821d` (PR #1259) | rivieramaya | 2 809 min |
+| `41818452612` | `22ff4d8b` (**cette** branche) | puntacana | 2 825 min |
+
+**Cause racine, mesurée sur l'upstream.** Le payload Copernicus engage dans le dépôt
+porte `erddapTimestamp = 2026-11-02T12:00:00Z`. Interrogation directe de l'upstream
+NOAA (`noaa_aoml_atlantic_oceanwatch_AFAI_7D` et `_1D`) le 2026-11-04T11:10Z :
+
+| Dataset | Dernière observation | Âge | Verdict SLA 900 min |
+|---|---|---|---|
+| AFAI 7D | `2026-11-03T12:00:00Z` | 1 390 min (23,2 h) | HORS SLA |
+| AFAI 1D | `2026-11-03T12:00:00Z` | 1 390 min (23,2 h) | HORS SLA |
+
+Les 6 régions partagent la même grille globale NOAA. L'historique git du payload
+commité confirme une cadence **d'une grille par jour, horodatée 12:00:00Z**
+(24/10 → 25/10 → 26/10 → 27/10 → 29/10 → 02/11 → 03/11).
+
+**Conséquence structurelle :** une publication **quotidienne** à 12:00Z ne peut pas
+satisfaire une SLA de **900 min (15 h)** en permanence — l'âge de la dernière
+observation balaie 0 h → 24 h dans la journée. La fenêtre où la garde passe est donc
+**00:00Z → 03:00Z** (3 h/jour), et encore faut-il que la grille du jour soit déjà
+publiée. Le cron `0 0 * * *` tombe dedans (le run du 2026-11-03T00:50Z a bien publié
+`erddapTimestamp = 2026-11-02T12:00:00Z`, `dataAgeMinutes = 771`) ; les crons
+`0 6`, `0 12`, `0 18` et tous les runs `push` tombent **dehors**.
+
+**Pourquoi le pipeline ne rattrape pas.** Dans `daily-copernicus.yml`, le job
+`fetch-data` (seul à rafraîchir **et publier** le payload) est conditionné à
+`if: github.event_name != 'push'` → sur un push il est **skipped**. Sur `schedule` il
+s'exécute mais se termine en `Copernicus publication status is BLOCKED_STALE_SOURCE`
+(runs `41780985819` du 05:43Z et `41736428821` du 23:06Z) : la même SLA de 900 min
+appliquée à la source. Résultat : le payload reste figé, la garde refuse, et le cycle
+se répète depuis 2 jours.
+
+**Chemin de déblocage honnête (aucun affaiblissement de la vérité produit).**
+1. Attendre la publication de la grille NOAA suivante (le `2026-11-04T12:00:00Z` est
+   attendu ; à 12:00Z l'âge repart de ~0 et la fenêtre SLA rouvre).
+2. Re-dispatcher `Daily Copernicus + Deploy` (`workflow_dispatch`) : `fetch-data`
+   s'exécute alors, publie le payload frais sur `main`, et le `push` résultant
+   déclenche `CI Tests` → `Perf Budget` → `Cloudflare Production` sur le SHA exact.
+3. Vérifier `deploy` + `deploy-pages` + `verify-fleet` + `post-deploy-verify`, puis
+   relire en production les surfaces corrigées (`/offres/`, `/premium/`, CGV).
+
+**Ce qui n'a PAS été fait, volontairement.** La SLA de 900 min n'a **pas** été
+abaissée et la garde n'a **pas** été contournée : une SLA relâchée rendrait possible
+d'afficher « propre aujourd'hui » sur une observation de 24 h, ce que le produit
+refuse explicitement. Changer la SLA ou le rythme du cron est une **décision
+produit** (fenêtre de vérité), pas un correctif technique : elle est laissée à la
+validation du fondateur, avec l'option triviale de décaler le cron `0 0/0 6/0 12/0 18`
+vers la fenêtre 00:00Z–03:00Z.
+
+#### État de la production au moment de la rédaction
+
+`https://sargasses-martinique.com/` sert encore le **build précédent** (chunk eager
+`assets/index-cLn0Pipx.js`, `version.json` = `{"v":"v221","date":"2026-10-12","b":"df18df5d"}`).
+Contrôle en production des surfaces corrigées :
+
+| Surface | `4,99 €` | `7,99 €` | `14,99 €` | `19,99 €` | `24,99 €` | `/mois` | `?pass=` |
+|---|---|---|---|---|---|---|---|
+| `/offres/` (live) | oui | **oui** | oui | non | **oui** | non | **non** |
+| `/premium/` (live) | oui | non | oui | non | non | **oui** | non |
+
+→ les divergences D1/D2/D3/D4 sont **bien présentes en production** et seront
+corrigées dès que le déploiement passera la porte. `/api/mollie.php` répond `405` en
+GET (POST-only, inchangé) et `/api/create-checkout.php` répond `404` en GET : aucune
+écriture de paiement n'a été tentée pour cette vérification.
+
+#### Rollback
+
+`git revert 22ff4d8b` (repli du contenu) ou redéploiement d'un SHA antérieur — les
+déploiements Cloudflare précédents sont conservés. Aucun changement de prix serveur,
+de montant accepté, de remboursement ni d'email client n'est inclus dans ce
+correctif : le rollback n'a donc aucun impact métier à défendre.
