@@ -591,6 +591,26 @@ publiée** par NOAA (publication historiquement observée vers 12:50Z). Ce n'est
 donc **pas** un défaut du pipeline Sargasses — c'est un **retard de l'upstream**,
 et le pipeline se met à la fenêtre dès que la grille paraît.
 
+**Contrôle de validité de la méthode (exécuté le 2026-11-04T14:11Z).** Un 404
+peut signifier « pas publié » **ou** « mauvaise requête ». La méthode est donc
+validée par **deux points connus** sur le même axe temporel explicite
+(`AFAI[(<instant>)][(15):(15)][(-59.5):(-59.5)]` sur `AFAI_7D`) :
+
+| Point temporel interroge | HTTP | Lignes | Lecture |
+|---|---:|---:|---|
+| `2026-10-27T12:00:00Z` (valeur **observée en production**) | **200** | **1** | ✅ **publié** → la méthode est valide |
+| `2026-11-03T12:00:00Z` (dernier connu) | **200** | **1** | ✅ **publié** → la méthode est valide |
+| `2026-11-04T12:00:00Z` (attendu) | **404** | 0 | ❌ **non publié** |
+| `2026-11-04T18:00:00Z` (attendu) | **404** | 0 | ❌ **non publié** |
+
+La même requête a été rejouée sur `AFAI_1D` : **404** sur les deux points du
+2026-11-04, avec `2026-10-27` et `2026-11-03` en 200 + 1 ligne.
+
+→ La méthode **returns 200 avec des lignes là où la donnée existe** et **404
+sans ligne là où elle n'existe pas**. Le 404 du 2026-11-04 est donc un
+**absence réelle de publication**, pas un artefact de requête. **Le blocage est
+confirmé comme étant amont (NOAA), pas dans le pipeline Sargasses.**
+
 Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
 
 | Étape | Vérification |
@@ -602,12 +622,40 @@ Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
 | Le déclencheur de la chaîne | `scripts/automation/trigger-production-deploy.cjs` → `ci-tests.yml` → `perf-budget.yml` → `cloudflare-production.yml` sur le **SHA exact** |
 | La porte de certification | `certification-gate` **success** sur `b589099c`, `61c9959d` et `fc6eb8cb` — les deux checks requis (`test-frontend`, `perf`) sont verts sur le SHA exact |
 
-Un **poll** automatique interroge NOAA toutes les 2 min et déclenche
+Un **poll** automatique interroge NOAA toutes les 2 min — **sur les deux
+datasets** (`AFAI_7D` et `AFAI_1D`) — et déclenche
 `gh workflow run daily-copernicus.yml --ref main` à l'instant où la grille
 devient plus récente que `2026-11-03T12:00:00Z`. Ce chemin est
 `workflow_dispatch` : `email-automation` et `retry-on-failure` sont conditionnés à
 `github.event_name == 'schedule'` → **skippés** → aucun email client, aucune vidéo,
 aucun commit concurrent.
+
+Le poll est **armé contre la course push/dispatch** (cause mesurée du refus du
+2026-11-03) : avant tout dispatch, il attend `waitQuietMain()` —
+
+| Condition de `waitQuietMain()` | Pourquoi |
+|---|---|
+| **aucun** run `Perf Budget + Lighthouse` en `in_progress`/`queued` sur `main` | le groupe `concurrency` est par **branche** : un run push sur `main` annule le run dispatché sur `main` |
+| **aucun** run `push` créé sur `main` depuis moins de 120 s | laisse passer le temps de propagation des checks d'un push qui vient d'atterrir |
+| **aucun** run `push` en vol au HEAD de `main` | le HEAD ne doit pas bouger entre l'attente et le dispatch |
+
+**Publier de la documentation pendant la fenêtre de déploiement est sans
+risque** — vérifié sur les déclencheurs et les groupes de concurrence réels :
+
+| Workflow | Déclencheur `push` | Groupe `concurrency` | Conséquence |
+|---|---|---|---|
+| `perf-budget.yml` | `branches: [ main ]` **uniquement** | `perf-budget-${{ github.ref }}` + `cancel-in-progress: true` | un push sur une **branche** ne déclenche **rien** ; un run PR vit le groupe `refs/pull/N/merge`, **distinct** de `refs/heads/main` → **ne peut pas** annuler le run dispatché |
+| `ci-tests.yml` | `branches: [ main ]` **uniquement** | *(aucun)* | un push sur une branche ne le déclenche pas |
+| `cloudflare-production.yml` | `branches: [ main ]` **uniquement** | `cloudflare-production` + `cancel-in-progress: false` | **n'annule jamais** un run en cours |
+
+→ Le seul déclencheur dangereux est un **push sur `main`**. C'est exactement
+pourquoi le dispatch et la chaîne sont protégés, et pourquoi aucun push sur
+`main` n'est effectué entre le dispatch et la fin du déploiement.
+
+Après le dispatch, le script **surveille la chaîne** (`CI Tests` → `Perf Budget`
+→ `Cloudflare Production`) et sort à la fin du run de production. Le poll ne fait
+**aucune écriture directe en production** : il appelle le workflow fail-closed du
+dépôt, exactement comme le fait son cron 4x/jour.
 
 #### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
 
@@ -679,7 +727,7 @@ déclenché la chaîne (`dispatch OK ci-tests.yml`, `perf-budget.yml`,
 | Cause mesurée | Preuve | État au 2026-11-04 |
 |---|---|---|
 | `test-frontend` **FAILED** : `133/134` — le test `region-seo-methodology-scope.test.cjs` affirmait `mq: stale/out-of-scope record must not become a current percentage` sur le payload **fraîchement publié** (fixture non déterministe) | run `41555735101`, log : `AssertionError [ERR_ASSERTION]: mq: stale/out-of-scope record must not become a current percentage` | **corrigé** par `8f902406` (#1241, 2026-11-03T04:29Z) : fixture stale déterministe. Le SHA `1583c36d` du run en échec ne contenait pas ce correctif. |
-| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **éliminé** sur le chemin `workflow_dispatch` : le job `email-automation` est conditionné à `if: github.event_name == 'schedule'` → sur un dispatch il est **skipped**, donc aucun commit « email state » n'est poussé et aucun run concurrent n'annule le `perf`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`). |
+| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **cause comprise, mais PAS éliminée par le seul `workflow_dispatch`.** Une première explication affirmait que le job `email-automation`, conditionné à `if: github.event_name == 'schedule'`, ne pousserait rien sur un dispatch — **cette affirmation a été réfutée par l'observation** : la course s'est **produite** le 2026-11-03 (le run dispatché a bien été annulé par un run push sur `refs/heads/main`). Le groupe de concurrence est par **branche**, donc **tout** run `perf-budget` push sur `main` annule le run dispatché sur `main`, quelle que soit l'origine du push. **Correctif réel :** le dispatch est désormais précédé d'une attente `waitQuietMain()` qui exige (a) **aucun** run `perf-budget` en `in_progress`/`queued` sur `main`, (b) **aucun** run `push` créé sur `main` depuis moins de 120 s, (c) **aucun** run `push` en vol au HEAD de `main`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`) — cette partie de l'explication initiale est confirmée. |
 
 La porte de certification a donc les deux checks requis (`test-frontend`, `perf`)
 au vert **sur le SHA exact**, et la garde satellite lit le payload **publié** dans
