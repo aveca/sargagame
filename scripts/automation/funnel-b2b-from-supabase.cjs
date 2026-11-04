@@ -5,6 +5,8 @@
  * only after every page has been fetched and validated. Synthetic CI rows are
  * excluded by their exact historical IDs; unknown islands remain UNKNOWN and
  * are never silently attributed to MQ.
+ * b2b_widget_activated n'est PAS encore émis: it remains zero until the
+ * widget sends a consent-safe host integration event.
  *
  * Usage: node scripts/automation/funnel-b2b-from-supabase.cjs [--days=90]
  * Env: SUPABASE_SERVICE_KEY, optional SUPABASE_URL.
