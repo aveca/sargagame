@@ -8,6 +8,7 @@
 
 ## Récemment complété
 
+- [x] P0 - Cycle 2/3 fulfillment recovery : webhook Mollie → RPC sg_upsert_payment_grant, alias p7→trip7 durci (coupure 2026-08-01), logs sans PII (cid opaque), 21 tests, backfill DRY RUN audité, branche publiée sur origin (@coding_agent, 2026-11-04, branche fix/p0-mollie-fulfillment, commit 747af8376d972c9bd4712abb7b02b7f614f00b9c) — PR à créer, routage/backfill en attente approbation
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
 
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)
