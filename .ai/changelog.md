@@ -1,3 +1,13 @@
+## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
+
+- Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
+- Le parseur de session ignore `sid='x'`. Aucun cookie, fingerprint, PII, migration SQL ou dépendance ajoutés.
+- Tête branche `fix/funnel-session-correlation-20261104` : `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; PR #1255 Draft.
+- CI : tests fonctionnels passent jusqu'au garde-fou final ; échec budget exact `215067 / 215040` bytes gzip (27 bytes au-dessus). Budget inchangé à 210 Ko. Aucune livraison autorisée tant qu'il ne passe pas.
+- Revue Codex demandée sur l'isolation Supabase-only et le consentement ; optimisation de moins de 30 bytes demandée à Codex. Aucun merge/déploiement ni write prod.
+
+---
+
 ## 2026-11-04 — ChatGPT · funnel attribution session key (branch fix/funnel-session-correlation-20261104)
 
 **Correction ciblée de la corrélation du funnel Supabase, sans nouveau stockage ni tiers.**
