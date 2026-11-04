@@ -464,18 +464,14 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/factory-heartbeat-watch.cjs --send
 
-      # P0.67 §4 — la purge était DESTRUCTRICE PAR DÉFAUT sur simple cron.
-      # Une suppression irréversible de lignes de production ne doit pas
-      # dépendre d'un déclenchement automatique : le script refuse désormais
-      # de supprimer sans `--execute --approved-by=<identité>`.
+      # P0.67 §4 — la purge analytics est en lecture seule sur tous les
+      # chemins GitHub Actions : le cron compte uniquement, et workflow_dispatch
+      # n'expose aucun input ni aucune étape de suppression.
       #
-      # Chemin CRON (4x/jour) : dry-run. Le comptage est publié dans le log
-      # (utile pour décider d'une purge réelle), ZÉRO DELETE émis.
-      #
-      # Chemin MANUEL (Actions → Run workflow → purge_analytics=true) :
-      # suppression réelle, avec l'identité de l'opérateur (`github.actor`)
-      # portée par `--approved-by` : la trace nomme qui a autorisé la
-      # suppression, ce qu'un cron anonyme ne pouvait pas faire.
+      # Le script conserve un mode CLI --execute pour un futur processus
+      # distinct, mais aucun workflow ne le branche. Une suppression réelle
+      # reste désactivée jusqu'à une approbation explicite et un contrôle
+      # opérateur protégé.
       - name: Purge analytics_events (> 90j) — dry-run (cron)
         if: github.event_name == 'schedule'
         continue-on-error: true
