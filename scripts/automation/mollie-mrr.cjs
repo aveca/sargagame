@@ -159,7 +159,7 @@ const SARGASSES_B2B_PLAN_KEYS = new Set([
   'pro_annual_usd',
   'territory_annual_usd',
 ])
-const SARGASSES_BRAND_RE = /\\b(?:sargasses|sargassum)\\b/i
+const SARGASSES_BRAND_RE = /\b(?:sargasses|sargassum)\b/i
 
 function recordMetadata(record) {
   return record?.metadata && typeof record.metadata === 'object' ? record.metadata : {}
@@ -174,7 +174,7 @@ function isSargassesPassPayment(payment) {
   if (!hasSargassesBrand(description)) return false
   const pass = String(recordMetadata(payment).pass || '').trim().toLowerCase()
   return SARGASSES_PASS_KEYS.has(pass) ||
-    /\\b(?:pass|passe|escale|séjour|sejour|stay|season|saison|trip)\\b/i.test(description)
+    /\b(?:pass|passe|escale|séjour|sejour|stay|season|saison|trip)\b/i.test(description)
 }
 
 function isSargassesB2BPayment(payment) {
@@ -182,7 +182,7 @@ function isSargassesB2BPayment(payment) {
   if (!hasSargassesBrand(description)) return false
   const plan = String(recordMetadata(payment).plan || '').trim().toLowerCase()
   return SARGASSES_B2B_PLAN_KEYS.has(plan) ||
-    /\\b(?:pro|brief|territoire|territory)\\b/i.test(description)
+    /\b(?:pro|brief|territoire|territory)\b/i.test(description)
 }
 
 function isSargassesPayment(payment) {
@@ -336,6 +336,7 @@ async function main() {
   const report = {
     schema_version: 3,
     attribution_policy: 'sargasses-brand-and-plan-v1',
+    mollie_account_payments_this_month: metrics.account_payments_this_month,
     date: now.toISOString().split('T')[0],
     timestamp: now.toISOString(),
     source: 'mollie-api',
