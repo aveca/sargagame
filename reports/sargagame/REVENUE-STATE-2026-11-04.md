@@ -79,9 +79,128 @@ Conséquences, sans interprétation :
 `b2b_leads` : 21 enregistrements (20 `contacted`, 1 `new`), le dernier du 2026-10-05.
 Aucun MRR, aucun churn mesurable : le moteur récurrent n'a pas encore de base.
 
+**Confirmation indépendante, lecture seule, depuis l'API Mollie.** Le rapport
+`scripts/automation/data/mollie-mrr.json` (commité dans le dépôt, `source:
+"mollie-api"`, `timestamp: 2026-11-04T05:48:56Z`) est calculé par
+`scripts/automation/mollie-mrr.cjs` en listant **les customers puis leurs
+subscriptions** — pas la table Supabase. Il affiche :
+
+| Indicateur (tracker MRR, API Mollie) | Valeur |
+|---|---:|
+| `mrr.total_eur` | **0** |
+| `mrr.subscriptions_eur` | **0** |
+| `mrr.b2b_month_eur` | **0** |
+| `mrr.passes_month_eur` | **0** |
+| `customers.active_subs` | **0** |
+| `customers.paid_this_month` | **0** |
+| `customers.unique_payers_all` | **0** (payeurs **du mois en cours**) |
+| `payments_this_month` | **0** |
+
+→ **0 € de MRR, 0 abonnement actif, 0 € encaissé sur le mois.** Les deux sources
+(Supabase `b2b_subscriptions` vide **et** API Mollie sans subscription) convergent :
+le moteur récurrent B2B n'a produit **aucun euro récurrent**.
+
+> Note de lecture : `unique_payers_all` compte les payeurs **du mois courant**
+> (`paid` = paiements depuis le 1er du mois), pas de l'histoire. Son 0 est donc
+> cohérent avec « aucun encaissement en novembre », et ne contredit pas les 6
+> encaissements B2C de juin-juillet.
+
+### Le tunnel B2B mesurables s'arrête à l'essai — la conversion payante n'est pas instrumentée
+
+`SG_FUNNEL_EVENTS` (`src/Sargasses_PROD.jsx`) autorise le sink Supabase pour :
+`sg_b2b_offer_view`, `sg_b2b_step`, `sg_b2b_intent`, `sg_b2b_trial_activated`.
+
+| Étape B2B | Événement | État |
+|---|---|---|
+| Vue de l'offre | `sg_b2b_offer_view` | ✅ instrumenté (101 lignes / 30 j) |
+| Progression dans le tunnel | `sg_b2b_step` | ✅ (31 lignes) |
+| Intention (email + palier) | `sg_b2b_intent` | ✅ |
+| **Essai activé** | `sg_b2b_trial_activated` / `b2b_trial_started` | ✅ (serveur : `b2b-trial.php`) |
+| **Essai → abonnement payé** | **aucun événement** | ❌ **absent** |
+| **Churn / MRR depuis la télémétrie** | **aucune table alimentée** | ❌ `b2b_subscriptions` n'a **aucun écrivain** dans le dépôt |
+
+Conséquence directe : **le taux de conversion essai → abonnement n'est pas
+mesurable par la télémétrie applicative.** Le seul chemin de preuve est
+l'API Mollie (`mollie-mrr.cjs`), qui lit les subscriptions côté serveur. C'est
+exactement ce chemin que #1271 répare : il était gelé avec le job d'email.
+
 ---
 
-## 3. Funnel — census et limites de mesure
+## 2bis. Le chemin de paiement EN PRODUCTION (mesuré le 2026-11-04)
+
+Ce paragraphe est **le plus important du rapport** pour le revenu : il décrit
+ce qui **réellement** encaisse l'argent aujourd'hui, et il **corrige** une
+hypothèse du présent rapport.
+
+### Les routes servies par les 6 domaines
+
+Routes lues via l'API Cloudflare (`GET /zones/{zone_id}/workers/routes`, lecture
+seule) — **identiques sur les 6 zones** :
+
+| Motif de route | Worker qui sert |
+|---|---|
+| `<domaine>/api/mollie*` | **`sg-payments`** |
+| `<domaine>/api/b2b-*` | **`sg-payments`** |
+| `<domaine>/api/create-checkout*` | **`sg-payments`** |
+| `<domaine>/api/copernicus/forecast*` | **`sg-payments`** |
+| `<domaine>/api/widget-token*`, `/api/track-*`, `/api/comps.php`, `/api/_ratelimit.php`, `/api/paypal*`, `/api/stripe-webhook.php`, `/api/retry-failed-payment.php` | **`sg-payments`** |
+| `<domaine>/*` | `sargagame-mq` / `-gp` / `-florida` / `-tulum` / `-puntacana` / `-rivieramaya` (Worker du dépôt, cible de migration) |
+
+### Sondes live — lecture seule, 6 domaines
+
+| Sonde | Résultat | Ce que ça prouve |
+|---|---|---|
+| `GET /api/mollie-webhook.php` | `200 {"ok":true}` | health-check de `sg-payments` — **pas** le PHP du dépôt (qui répondrait `400 {"error":"id + type requis"}`) |
+| `GET /public/api/mollie-webhook.php` | `404 {"error":"not_found"}` (JSON) | le PHP **n'est pas joignable** : le Worker intercepte tout, y compris `/public/**` |
+| `POST /api/mollie.php` `{"action":"__payment_smoke__"}` | **`500` — `error code: 1101`** | le backend de paiement live **lève une exception** sur le smoke **sans transaction** du propre gate de déploiement du dépôt (`cloudflare-production.yml:436-448`) |
+| `POST /api/create-checkout.php` | **`404 {"error":"not_found"}`** | l'endpoint Stripe appelé par `src/PremiumModal.jsx` (l. 1704, 1966, 1984) **n'existe pas** en production |
+| `POST /api/mollie` (sans `.php`) | **`500`** | idem |
+| `GET /api/zzz-inconnu` | `404 {"error":"api_route_not_migrated","path":"/api/zzz-inconnu"}` | le Worker `/api/*` répond en JSON, avec une **liste de routes non migrées** |
+| `GET /zzz-inconnu` (hors `/api/`) | `404` **HTML** | le reste vient des assets statiques (Pages/FTP) |
+
+> **Conséquence directe : le revenu B2C est structurellement impossible en
+> ce moment.** Le frontend appelle `/api/create-checkout.php` (404) puis
+> `/api/mollie.php` avec `action:"create_payment"` (500). Aucun checkout ne peut
+> être créé, aucun paiement ne peut être déclenché. Les **56,94 €** du §2 sont
+> un **actif historique**, pas une capacité.
+
+### `sg-payments` : un Worker sans version dans le dépôt
+
+| Fait | Source | Valeur |
+|---|---|---|
+| Versions conservées | API Cloudflare | **10**, **toutes datées du 2026-10-01/02** |
+| Dernière version | idem | `36fa827a-a39c-4156-9359-30fc383eb6c5` (n° 381) |
+| Bindings | idem | secrets `MOLLIE_API_KEY`, `MOLLIE_PROFILE_ID`, `MOLLIE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `SUPABASE_SERVICE_KEY` ; KV `TRANSIENTS` ; var `SUPABASE_URL` ; handlers `fetch` + `scheduled` |
+| **Source dans le dépôt ?** | `.ai/current_state.md` | **NON** — « la source autoritative du Worker `sg-payments` n'est NI [dans le dépôt] » |
+
+### Ce que cela change — et ce que cela ne change pas
+
+Les 6 ventes payées non livrées datent du **2026-06-28 → 2026-07-19**.
+`sg-payments` **n'existait pas encore** à ces dates (première version
+conservée : 2026-10-01). Ces paiements **n'ont donc pas** été traités par
+`sg-payments` : ils ont été traités par le **chemin PHP du dépôt**, dont la
+validation est **cassée** (§7 R13, démontré par exécution PHP réelle).
+
+→ **Deux défauts distincts, à ne pas confondre :**
+
+| | Cause | Où | État |
+|---|---|---|---|
+| **Historique** (6 ventes de juin–juillet) | `$payment->amount->currency` lit `null` sur un **tableau** → tout paiement refusé en 400 → aucun accès servi | `public/api/mollie-webhook.php` | **cause racine prouvée**, correctif **préparé, non appliqué** (R13) |
+| **Actuel** (aujourd'hui) | `/api/mollie*` pointe vers `sg-payments`, Worker **sans version dans le dépôt**, qui **lève une exception** (CF 1101) et **ne connaît pas** `/api/create-checkout.php` | routes Cloudflare | **cause prouvée**, correctif **hors périmètre direct** (R17) |
+
+> ⚠️ **Ne pas basculer les routes sans porter le fulfillment B2B.**
+> `workers/sargagame/index.js` (cible de migration) ne livre **que** le B2C :
+> son webhook n'accepte que des identifiants de paiement (`tr_…`) et
+> **rejette** les identifiants d'abonnement (`sub_…`), et il n'a **aucun** cron.
+> `sg-payments` porte les abonnements B2B, le renewal, le cron, la
+> ré-accusation et le tracking. Basculer `/api/mollie*` ou `/api/b2b-*` vers le
+> Worker du dépôt **sans** porter ces fonctions **casserait le paiement
+> récurrent** — c'est-à-dire le seul moteur qui pourrait rapporter.
+> → **Récupérer ou porter la source `sg-payments` AVANT toute bascule.**
+
+---
+
+## 3. Funnel - census et limites de mesure
 
 Agrégation lecture seule de `public.analytics_events` sur 30 jours (2026-11-04).
 Ce sont des **lignes d'événements**, pas des personnes uniques.
@@ -185,8 +304,14 @@ récupérable : commit `af8408e4`).
 | `sg_b2b_trial_started` | restauré (la fonction qui le porte n'existait plus) |
 | `sg_b2b_marketing_consent` | nouveau (opt-in explicite, versionné) |
 | `sg_pass_cta` / `sg_pass_offer_view` | enrichis (`pass`, `base_cents`, `cents` effectif) |
-| Session key / corrélation de parcours | **absente** → pas de taux de conversion calculable (à traiter) |
-| `daily-metrics.json` | figé au 2026-10-21 (cause inconnue) |
+| **Session key / corrélation de parcours** | **corrigée (PR #1255, `61c9959d`)** : sink Supabase déplacé **après** `sgCollectEvent` (qui crée `sessionStorage.sg_sid`), `sid` attaché **uniquement sous consentement explicite**, sentinelle `"x"` exclue du comptage. Un taux de conversion par session devient calculable. |
+| **Submission de lead** | **corrigée (PR #1142, `b589099c`)** : `submitLead()` sortait sur `if (navigator.sendBeacon(...)) return` → l'événement `sg_email_submit` n'était **jamais** écrit quand le beacon réussissait (714 vues / 1 soumission mesurées) |
+| **Exposition `api_secret` GA4** | **corrigée (PR #1142)** : 0 exposition sur les 5 fichiers (elle était **vivante en production**) |
+| **Checkout SOS sur observation périmée** | **corrigé (PR #1243, `e7162cde`)** : garde **avant** le `POST /api/mollie` — on ne vendait plus un verdict inexistant |
+| **Emails clients sur données périmées** | **corrigé (PR #1265, `fc6eb8cb`)** : `email-automation` conditionné à une publication fraîche |
+| **Mesure du revenu (MRR)** | **corrigée (PR #1271)** : le tracker MRR était dans le job d'email → il se **gelait** quand la donnée satellite était périmée. Job autonome `revenue-metrics`. |
+| `daily-metrics.json` | figé au 2026-10-21 (cause non établie) |
+| **Essai → abonnement payé (B2B)** | **instrumenté (PR #1275, `b589fd66`)** : `b2b_trial_to_paid` **émis** par le webhook (mensuel via `subscription.paid`, annuel via `payment.paid`), **déduplonné** par identifiant d'encaissement, émis **avant** le contrôle du mirror ; `payment_rejected` rend visible un paiement signé refusé ; le lecteur `funnel-b2b-from-supabase.cjs` est **branché** dans le job autonome `revenue-metrics` (son instantané `funnel-b2b-snapshot.json` n'a jamais existé avant) et agrège `rejected_by_tier` / `rejected_by_kind`, **sans PII**. Preuve : exécution PHP réelle (`tests/fixtures/b2b-payment-harness.php`) → 3 appels = **2 événements**, **0** recompte en nouveau processus. ⚠️ **Porte sur le chemin PHP du dépôt** : tant que R17 n'est pas traité, cette instrumentation **ne produit aucune donnée live** (§2bis). |
 
 ---
 
@@ -202,31 +327,94 @@ récupérable : commit `af8408e4`).
 | R6 | Bascule de mois serveur/navigateur autour du 1er juin et du 1er décembre | La surcharge USD est calculée par le serveur (fuseau serveur) alors que l'affichage suit le navigateur. Fenêtre de quelques jours par an. **Désormais mesuré** (`sg_price_mismatch`) au lieu d'être invisible ; correction durable = endpoint de prix serveur (non ajouté ici). |
 | R7 | 6/6 paiements payés sans accès (`paid_no_grant`) | Ré-accusation = écriture en production + le correctif racine (alias `p7`) élargirait les montants acceptés → autorisation + arbitrage prix. |
 | R8 | `mol_b2b_trial_email()` absent → email de l'essai non envoyé | Changement d'email client → autorisation requise. |
-| R9 | `b2b_subscriptions` vide, `sg_b2b_trial_activated` jamais observé | Conséquence du P0 §5 : le tunnel B2B n'a jamais pu s'activer. |
+| R9 | `b2b_subscriptions` vide, `sg_b2b_trial_activated` jamais observé | Conséquence du P0 §5 : le tunnel B2B n'a jamais pu s'activer. Confirmé indépendamment par l'API Mollie (0 subscription active, MRR 0 €). |
+| R10 | Palier B2B affiché **avant** le moteur récurrent (Brief 29 € avant Pro 79 €) | **Corrigé (PR #1098, `393dc7a7`)** : Pro 79 € passe en tête. Aucun prix modifié. |
+| R11 | Territoire « dès 199 €/mois HT » (1 990 €/an) **sans paylink carte** dans l'app | **Volontaire** : `payOf()` exclut `territoire` (parcours devis/BDC, pas de CB juxtaposée). Le paylink `territory_annual` (1 990 €) existe dans `public/api/b2b-paylinks.json` mais n'est **pas** exposé dans l'app. La conversion Territoire dépend donc d'un parcours **non self-serve**, dont le code d'email (`mol_b2b_trial_email`) est **absent du dépôt** (R8) → **le MRR Territoire n'est pas mesurable en l'état**. |
+| R12 | `scripts/automation/lib/b2b-paylinks.cjs` mappe un lead `territoire` sur `pro_annual` (690 €) par défaut | `map[tier] || 'pro_annual'` : un lead Territoire en séquence drip reçoit un lien **Pro** à 690 €. Divergence offre/prix sur la prospection — corriger = changer le contenu d'un email de prospection → autorisation requise. |
+| **R13** | **Validation du webhook PHP : tout paiement signé est refusé en HTTP 400.** `validateMollieAmountPHP()` lit `$payment->amount->currency` alors que `SgMollieClient::_request()` renvoie `json_decode($response, true)` → un **tableau** → `$currency=''`, `$value=0`. Preuve : exécution PHP réelle du **code livré** (`tests/fixtures/b2b-payment-harness.php`) — pass B2C 14,99 €, B2B mensuel 79 €, B2B annuel 690 €, paylink B2C 19,99 € : **tous refusés**. | Correctif = **2 lignes** (`$payment->amount['currency']` / `['value']`). Modifie le **chemin de paiement** → **autorisation explicite requise**. Rollback : revert du commit. |
+| **R14** | **Aucun accès n'est livré pour un paiement par lien.** L'API Mollie `payment-links` n'accepte **pas** de `metadata` et `webhookUrl` n'est pas patchable a posteriori : le paiement arrive **sans** `source` ni `pass` → rien ne le rattache à un palier → aucun token n'est émis. Le design existe dans `scripts/automation/mollie-paylinks.cjs` (« identification par description + montant ») mais **n'a jamais été implémenté**. | Reconnaître le palier par (montant, devise) = **octroyer un droit d'accès** pour de l'argent déjà encaissé → autorisation requise. |
+| **R15** | `mol_b2b_grant_once()` / `mol_b2c_pass_grant()` renvoient `['granted'=>false,'reason'=>'already_granted']` **sans** `mirror_ok` → le webhook fait `$mirrorOk = $grant['mirror_ok'] ?? false` → **HTTP 500** sur chaque rejeu, et le mirror Supabase **n'est jamais re-tenté**. | Un rejeu de webhook Mollie (5xx) tombe dans une **boucle morte** : 500 → rejeu → 500. Le mirror ne se répare jamais tout seul. Correctif = 1 branche → **change un code HTTP de webhook** → autorisation requise. |
+| **R16** | **Dérive de prix sur la grille des liens de paiement** : `sejour_eur` 12,99 €, `sejour_usd` 9,99 $, `saison_usd` 14,99 $ — alors que la vérité canonique est `trip7` 4,99 € / 5,99 $ et `season` USD **`null`**. Les deux grilles sont désormais **parity-lockées** par test (11/11) : la divergence est désormais **visible**, pas silencieuse. | Ce sont des **prix** → décision commerciale explicite requise. **Aucun prix affiché n'est modifié** par ce rapport. |
+| **R17** | **Le chemin de paiement live n'est pas versionné dans le dépôt.** `/api/mollie*`, `/api/b2b-*`, `/api/create-checkout*` → Worker `sg-payments`, **source absente du dépôt** (10 versions, toutes du 2026-10-01/02). Symptômes mesurés : `POST /api/mollie.php` → **500 / CF 1101** ; `POST /api/create-checkout.php` → **404**. | **Changement de chemin de paiement** → autorisation requise. Et la bascule **n'est pas un simple réglage** : `workers/sargagame/index.js` ne livre **que** le B2C (ids `tr_…` seulement, pas `sub_…`, pas de cron) → il faut **porter** le fulfillment B2B de `sg-payments` d'abord. |
 
 ---
 
 ## 8. Trois prochaines actions (classées : potentiel de revenu × preuve × effort)
 
-### 1) Déployer le correctif P0 B2B et prouver l'activation d'un essai
-**Potentiel : élevé** (le moteur récurrent Pro n'a jamais produit une seule activation) ·
-**Preuve : forte** (E2E local reproduit le fatal et sa disparition) · **Effort : faible**
-(déploiement FTP des fichiers `public/api/` + 1 essai réel autorisé).
-À faire **avec** l'autorisation de restaurer l'email transactionnel (§5 R8), sinon l'hôtelier
-reste sans accès par email.
+> **Recalibrage du 2026-11-04T15:50Z.** Les trois actions ci-dessous ont été
+> **remplaces** : la mesure du chemin de paiement réel (§2bis) a montré que le
+> checkout B2C est **mort en production** (`404` + `500`), que le chemin
+> historique est **cassé** (R13) et que le Worker live **n'est pas dans le
+> dépôt** (R17). Aucune action de « mesure » ne peut produire de revenu tant
+> qu'aucun paiement ne peut être créé. L'ordre ci-dessous suit donc
+> **l'ordre des verrous**, pas celui de la confortabilité.
 
-### 2) Fermer la boucle « payé → accès » (les 6 `paid_no_grant`)
-**Potentiel : élevé** (6 clients ont payé sans service ; le taux de remboursement est
-actuellement de 0/6, ce qui est un risque juridique et réputationnel) ·
-**Preuve : forte** (réconciliation Mollie + table `payment_grants`) · **Effort : moyen**
-(écriture en production + correctif racine à arbitrer : l'alias `p7` historique).
-Décision fondateur requise : ré-accuser manuellement les 6, ou assumer.
+### 1) Rétablir la capacité à encaisser — porter `sg-payments` dans le dépôt (R17)
+**Potentiel : le plus élevé des trois moteurs** (sans encaissement, B2C **et**
+B2B valent **0 €** ; c'est le seul geste qui rouvre les deux) ·
+**Preuve : maximale** (routes lues via l'API Cloudflare ; sondes live
+`500`/CF 1101 et `404` ; 10 versions toutes datées du 2026-10-01 ; source
+confirmée absente du dépôt par `.ai/current_state.md`) · **Effort : moyen à
+élevé** (récupérer la source ou re-implémenter le fulfillment B2B —
+subscriptions `sub_…`, renewal, cron, ré-accusation — dans
+`workers/sargagame/index.js`, **avant** toute bascule de route).
 
-### 3) Rétablir un taux de conversion mesurable (session key + funnel checkout)
-**Potentiel : moyen** (sans session key, aucune optimisation CRO n'est prouvable ;
-actuellement 3 324 vues d'offre → 34 CTA → 6 encaissements sur 3,5 mois) ·
-**Preuve : forte** (census §3) · **Effort : moyen** (session id first-party, respect du
-consentement, jamais d'empreinte).
+Décision à prendre : **(a)** récupérer la source `sg-payments` (si elle existe
+ailleurs : archives CI, session wrangler, backup) et la versionner, ou
+**(b)** porter ses fonctions B2B dans le Worker du dépôt. Dans les deux cas,
+la **bascule de route est une décision séparée** et exige l'autorisation
+explicite.
+
+### 2) Fermer la boucle « payé → accès » — les 6 `paid_no_grant` (R13 + R14)
+**Potentiel : élevé** (6 clients ont payé sans service ; remboursement
+actuellement 0/6 — risque juridique et réputationnel ; 56,94 € encaissés) ·
+**Preuve : forte** (cause racine **prouvée par exécution PHP réelle** sur le
+code livré : 4 formes de paiement, 4 refus ; R14 : l'absence de `metadata`
+sur les liens de paiement est **structurelle**, pas un oubli) · **Effort : faible
+pour R13** (2 lignes) **à moyen pour R14** (reconnaissance par montant+devise
+puis octroi du token).
+
+⚠️ Ces deux correctifs **touchent le chemin de paiement** et **ne sont pas
+appliqués** dans ce rapport. R13 seul rendrait acceptables **100 %** des
+paiements signés — y compris des montants qui ne doivent pas l'être si R14
+n'est pas traité dans le même lot : **les traiter ensemble ou pas du tout.**
+
+### 3) Activer l'essai B2B 30 jours et prouver une conversion (R8 + instrumentation)
+**Potentiel : moyen à élevé** (le moteur récurrent Pro n'a jamais produit une
+seule activation ; 101 vues d'offre → 31 étapes → 0 abonnement) ·
+**Preuve : forte** (census §3 ; API Mollie §2 : 0 subscription, MRR 0 €) ·
+**Effort : faible pour l'instrumentation** (déjà livrée : PR #1275 — écriture,
+lecture, dédoublonnage, rebranchement du lecteur) **+ moyen pour l'email**
+(R8, `mol_b2b_trial_email()` absent du dépôt → l'hôtelier reste sans accès
+par email).
+
+⚠️ L'instrumentation livrée (#1275) rend le funnel **mesurable**, mais elle
+porte sur le **chemin PHP du dépôt** : tant que R17 n'est pas traité, elle ne
+produira **aucune** donnée live. **Ne pas confondre « instrumenté » et
+« mesuré en production ».**
+
+---
+
+## 8b. État de chaque moteur de revenu — synthèse mesurée
+
+| Moteur | Architecture | Revenu **confirmé** | Ce qui manque pour décider |
+|---|---|---:|---|
+| **B2C** — passs à durée fixe | Gratuit + 4,99 € (7 j) + 14,99 € (30 j) + 19,99 € (210 j) | **56,94 €** bruts, 6 paiements, **0** depuis le 2026-07-19 | **le checkout est mort en production** : `/api/create-checkout.php` → 404, `/api/mollie.php` → 500/CF 1101 (§2bis, R17) ; + 6/6 payés sans accès (R13/R14) |
+| **B2B** — Pro récurrent | Essai 30 j → Pro 79 €/mois ou 690 €/an ; Territoire sur devis | **0 €** de MRR, **0** abonnement actif | l'essai n'a jamais été activable (P0 §5) ; conversion payante **instrumentée** (#1275) mais **sur le chemin PHP**, pas sur le chemin live (R17) ; fulfillment B2B à porter depuis `sg-payments` |
+| **BOT-WOW** — licence unique | Démo navigateur + **20 €** unique | **0,00 €**, 0 activation, 0 livraison | checkout Mollie 6/6 en échec ; code Worker non déployé |
+
+Aucune de ces trois lignes ne permet de conclure à la rentabilité : les volumes
+sont trop faibles et la chaîne de mesure a été rompue à plusieurs endroits.
+Les correctifs de mesure et d’honnêteté sont en place ; il manque la preuve
+d’un flux payant réel.
+
+> **Constat le plus dur de ce rapport (2026-11-04).** Les trois moteurs
+> convergent vers la **même** cause structurelle : **le chemin de paiement
+> n’est ni vérifié ni versionné**. Pour Sargasses, il est dans un Worker
+> absent du dépôt (R17) ; pour BOT-WOW, le Worker n’est pas déployé et son
+> checkout échoue 6/6. **Réparer la capacité d’encaissement précède toute
+> optimisation de tunnel** : mesurer un funnel dont le dernier maillon est mort
+> revient à mesurer une panne.
 
 ---
 
@@ -256,7 +444,13 @@ consentement, jamais d'empreinte).
 | **PR mergée (funnel, session)** | **#1255** → `61c9959d9eaec9ba9799aa6117faf1577bea0824` (mergée le 2026-11-04T12:41:06Z) |
 | **PR mergée (checkout SOS, honnêteté)** | **#1243** → `e7162cde83a6c82b6cb9ed1c64520ff3bd54d14a` (mergée le 2026-11-04T12:58:48Z) |
 | **PR mergée (email outbound, garde)** | **#1265** → `fc6eb8cb223bdc90e1549ccac195da59b6c5d9ce` (mergée le 2026-11-04T13:01:55Z) |
+| **PR mergée (ordre des paliers B2B)** | **#1098** → `393dc7a77d25fdbc773583d4c0edbb478a538622` (mergée le 2026-11-04T13:43:42Z) — Pro 79 € avant Brief 29 € |
+| **PR mergée (mesure du revenu autonome)** | **#1271** → `90d083a1698ca6b330210d89364d2a9073df8c76` (mergée le 2026-11-04T14:00:55Z) — job `revenue-metrics` hors garde satellite |
+| **PR (instrumentation funnel B2B)** | **#1275** → `b589fd66ca6c1039e4bc90af974e5002ed10646a` (branche `fix/b2b-funnel-instrumentation-20261104`, base `997efb6c`) — écriture `b2b_trial_to_paid` + `payment_rejected`, dédoublonnage, rebranchement du lecteur, grille paylinks parité 11/11, harness d'exécution PHP réelle. **Inertie vérifiée** : aucun prix, montant, remboursement, débit, email, droit d'accès ni code HTTP modifié. |
+| **PR (rapport, ce document)** | **#1272** → branche `docs/revenue-state-b2b-measurement-20261104` |
+| PR #1274 (DRAFT, **non mergée**) | `fix/p0-mollie-fulfillment-review` — revue P0 du fulfillment Mollie **côté Worker** (`sg-payments`) : cutoff `p7`, logs sans identifiant, backfill fail-closed. **Base périmée** (`ec49b167b`). **Non mergée, non mergée de mon fait** : elle est **DRAFT** et son périmètre recoupe partiellement R13/R14. **À consolider avec ce rapport** avant toute action — deux diagnostics du même trou, deux chemins de code différents. |
 | Push direct du fondateur | `dc31d732` (2026-11-04T12:20:20Z) — conservé par le squash de #1142 (ancêtre vérifié) |
+| Push `GITHUB_TOKEN` (sans effet) | `997efb6c` « veilleurs: digest 2026-11-04 » (2026-11-04T15:0xZ) — **zéro** workflow `push` déclenché : confirme la règle « un push `GITHUB_TOKEN` ne déclenche rien » (le job de mesure peut donc commiter sans annuler un run en cours). |
 | PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
 | PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
 | PRs fermées comme supersédées | #1254 (spec 3 abonnements B2C mensuels), #1258 (clé `saison` + centimes en dur + CI rouge), #1260 (supersédée par #1259) |
@@ -427,7 +621,69 @@ même précédent** que `tests/unit/morning-brief-freshness.test.cjs` (6 tests s
 107 dans `tests/unit` normalisent déjà CRLF). Sans ce correctif : 146/147 en
 local ; avec : **147/147**. La CI Linux n'était pas affectée.
 
-#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265)
+#### Deux merges de plus — priorité au palier récurrent, et la mesure du revenu ne se gèle plus
+
+**#1098 (`393dc7a7`, 13:43:42Z) — le moteur récurrent était affiché en second.**
+
+Le tableau `TIERS` de `src/PremiumModal.jsx` présentait **Brief 29 €/mois**
+avant **Pro 79 €/mois**. Les trois paliers restent, **aucun prix n'est modifié**,
+**aucun montant accepté n'est modifié** : seul l'**ordre** change.
+
+| | Avant | Après |
+|---|---|---|
+| Ordre affiché | `brief` (29 €) → `pro` (79 €) → `territoire` | **`pro` (79 €) → `brief` (29 €) → `territoire`** |
+
+Preuve après fusion : 3 paliers, `29 €/mois` / `79 €/mois` / `199 €/mois`
+**intacts**, `featured:true` conservé sur Pro, nouveau test
+`tests/unit/b2b-tier-order.test.cjs`. **Aucun** fichier de paiement, de
+checkout ou d'email touché.
+
+**#1271 (`90d083a1`, 14:00:55Z) — la mesure du revenu se gelait avec l'email.**
+
+Effet de bord mesuré de #1265 : le step « Mollie MRR tracker » vivait dans le
+job `email-automation`, désormais conditionné à une publication satellite
+fraîche. La grille NOAA publiant **une observation par jour à 12:00:00Z** pour
+une SLA de **900 min**, la garde ne passe qu'à ~00:00Z et ~18:00Z → quand la
+donnée était périmée (le cas depuis 8 jours), le tracker **ne tournait plus**
+et `scripts/automation/data/mollie-mrr.json` **se figeait**. Le MRR mesure
+l'argent, pas la donnée satellite : c'était une erreur de catégorie, et la
+mesure s'éteignait au moment exact où un incident commercial passerait
+inaperçu.
+
+Correctif : job `revenue-metrics` **autonome** (`needs: AUCUN`,
+`if: github.event_name == 'schedule'`, `continue-on-error`), et
+`mollie-mrr.json` **retiré** de la liste `git add` du job `email-automation`
+(ownership exclusif → pas de double commit, pas de conflit de push).
+
+| Contrôle (sur le SHA mergé `90d083a1`) | Résultat |
+|---|---|
+| `revenue-metrics.needs` | **aucun** (autonome) |
+| `revenue-metrics.if` | `github.event_name == 'schedule'` |
+| Tracker MRR encore dans `email-automation` | **non** |
+| `mollie-mrr.json` encore commité par `email-automation` | **non** |
+| Email / paiement dans le nouveau job | **aucun** |
+| Garde de fraîcheur de `email-automation` | **inchangée** (`needs.fetch-data.outputs.gate_outcome == 'success'`) |
+| `npm test` | **149/149 exit 0** (148 + `daily-copernicus-revenue-metrics`) |
+| Budget bundle | **206,5 Ko ≤ 210 Ko** |
+
+**CI réelle sur le SHA mergé `90d083a1`** (mergée sur `main` → push réel) :
+
+| Run | ID | Résultat |
+|---|---|---|
+| CI Tests (push `main`) | `41843389922` | **PASS** |
+| Perf Budget + Lighthouse (push `main`) | `41843390113` | **PASS** |
+| Daily Copernicus + Deploy (push `main`) | `41843389417` | **PASS** |
+| **Cloudflare Production (push `main`)** | `41843389301` | **FAILURE** — `FAIL SATELLITE_PREDEPLOY region=florida (3001.28 min > 900 min)` ; `certification-gate` **success**, `deploy`/`deploy-pages`/`verify-fleet`/`post-deploy-verify` **skipped** → **rien publié** |
+| User Journey Audit (E2E) | `41843797473` | skipped (déclenché par le workflow_run) |
+
+> **Effet de bord assumé et signalé :** le step « Revenue watch » (alerte interne
+> par email d'un mouvement de revenu) reste dans `email-automation`, donc
+> conditionné à la fraîcheur satellite — pour la même raison logique, il ne
+> devrait pas l'être. Mais ce step **envoie un email** → modifier son
+> comportement d'email relève d'une décision du fondateur. Il est laissé en
+> l'état et signalé ici.
+
+#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265 + #1098 + #1271)
 
 | Contrôle | Résultat |
 |---|---|
@@ -461,6 +717,26 @@ publiée** par NOAA (publication historiquement observée vers 12:50Z). Ce n'est
 donc **pas** un défaut du pipeline Sargasses — c'est un **retard de l'upstream**,
 et le pipeline se met à la fenêtre dès que la grille paraît.
 
+**Contrôle de validité de la méthode (exécuté le 2026-11-04T14:11Z).** Un 404
+peut signifier « pas publié » **ou** « mauvaise requête ». La méthode est donc
+validée par **deux points connus** sur le même axe temporel explicite
+(`AFAI[(<instant>)][(15):(15)][(-59.5):(-59.5)]` sur `AFAI_7D`) :
+
+| Point temporel interroge | HTTP | Lignes | Lecture |
+|---|---:|---:|---|
+| `2026-10-27T12:00:00Z` (valeur **observée en production**) | **200** | **1** | ✅ **publié** → la méthode est valide |
+| `2026-11-03T12:00:00Z` (dernier connu) | **200** | **1** | ✅ **publié** → la méthode est valide |
+| `2026-11-04T12:00:00Z` (attendu) | **404** | 0 | ❌ **non publié** |
+| `2026-11-04T18:00:00Z` (attendu) | **404** | 0 | ❌ **non publié** |
+
+La même requête a été rejouée sur `AFAI_1D` : **404** sur les deux points du
+2026-11-04, avec `2026-10-27` et `2026-11-03` en 200 + 1 ligne.
+
+→ La méthode **returns 200 avec des lignes là où la donnée existe** et **404
+sans ligne là où elle n'existe pas**. Le 404 du 2026-11-04 est donc un
+**absence réelle de publication**, pas un artefact de requête. **Le blocage est
+confirmé comme étant amont (NOAA), pas dans le pipeline Sargasses.**
+
 Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
 
 | Étape | Vérification |
@@ -472,12 +748,40 @@ Le chemin de déblocage a été **validé de bout en bout**, sans rien deviner :
 | Le déclencheur de la chaîne | `scripts/automation/trigger-production-deploy.cjs` → `ci-tests.yml` → `perf-budget.yml` → `cloudflare-production.yml` sur le **SHA exact** |
 | La porte de certification | `certification-gate` **success** sur `b589099c`, `61c9959d` et `fc6eb8cb` — les deux checks requis (`test-frontend`, `perf`) sont verts sur le SHA exact |
 
-Un **poll** automatique interroge NOAA toutes les 2 min et déclenche
+Un **poll** automatique interroge NOAA toutes les 2 min — **sur les deux
+datasets** (`AFAI_7D` et `AFAI_1D`) — et déclenche
 `gh workflow run daily-copernicus.yml --ref main` à l'instant où la grille
 devient plus récente que `2026-11-03T12:00:00Z`. Ce chemin est
 `workflow_dispatch` : `email-automation` et `retry-on-failure` sont conditionnés à
 `github.event_name == 'schedule'` → **skippés** → aucun email client, aucune vidéo,
 aucun commit concurrent.
+
+Le poll est **armé contre la course push/dispatch** (cause mesurée du refus du
+2026-11-03) : avant tout dispatch, il attend `waitQuietMain()` —
+
+| Condition de `waitQuietMain()` | Pourquoi |
+|---|---|
+| **aucun** run `Perf Budget + Lighthouse` en `in_progress`/`queued` sur `main` | le groupe `concurrency` est par **branche** : un run push sur `main` annule le run dispatché sur `main` |
+| **aucun** run `push` créé sur `main` depuis moins de 120 s | laisse passer le temps de propagation des checks d'un push qui vient d'atterrir |
+| **aucun** run `push` en vol au HEAD de `main` | le HEAD ne doit pas bouger entre l'attente et le dispatch |
+
+**Publier de la documentation pendant la fenêtre de déploiement est sans
+risque** — vérifié sur les déclencheurs et les groupes de concurrence réels :
+
+| Workflow | Déclencheur `push` | Groupe `concurrency` | Conséquence |
+|---|---|---|---|
+| `perf-budget.yml` | `branches: [ main ]` **uniquement** | `perf-budget-${{ github.ref }}` + `cancel-in-progress: true` | un push sur une **branche** ne déclenche **rien** ; un run PR vit le groupe `refs/pull/N/merge`, **distinct** de `refs/heads/main` → **ne peut pas** annuler le run dispatché |
+| `ci-tests.yml` | `branches: [ main ]` **uniquement** | *(aucun)* | un push sur une branche ne le déclenche pas |
+| `cloudflare-production.yml` | `branches: [ main ]` **uniquement** | `cloudflare-production` + `cancel-in-progress: false` | **n'annule jamais** un run en cours |
+
+→ Le seul déclencheur dangereux est un **push sur `main`**. C'est exactement
+pourquoi le dispatch et la chaîne sont protégés, et pourquoi aucun push sur
+`main` n'est effectué entre le dispatch et la fin du déploiement.
+
+Après le dispatch, le script **surveille la chaîne** (`CI Tests` → `Perf Budget`
+→ `Cloudflare Production`) et sort à la fin du run de production. Le poll ne fait
+**aucune écriture directe en production** : il appelle le workflow fail-closed du
+dépôt, exactement comme le fait son cron 4x/jour.
 
 #### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
 
@@ -489,7 +793,7 @@ aucun commit concurrent.
 | Étapes non atteintes | `certification-gate` → `deploy` → `deploy-pages` → `verify-fleet` → `post-deploy-verify` (jamais exécutées) |
 
 **Ce n'est pas une régression du correctif de prix.** La même garde a fait échouer
-**20 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T11:04Z, y compris
+**21 déploiements consécutifs** du 2026-11-03T00:50Z au 2026-11-04T14:01Z, y compris
 des SHAs qui ne contiennent **aucun** changement de cette branche :
 
 | Run | SHA | Région signalée | Âge de l'observation |
@@ -497,6 +801,50 @@ des SHAs qui ne contiennent **aucun** changement de cette branche :
 | `41790290141` | `ec49b167` (main **avant** cette branche) | florida | 2 590 min |
 | `41816656514` | `c4f9821d` (PR #1259) | rivieramaya | 2 809 min |
 | `41818452612` | `22ff4d8b` (**cette** branche) | puntacana | 2 825 min |
+| `41839142457` | `c5359b77` (PR #1267, rapport) | tulum | 2 974 min |
+| `41843389301` | `90d083a1` (**dernier** merge, #1271) | florida | 3 001 min |
+
+#### Le tout dernier run de production (SHA `90d083a1`) — la garde est bien fail-closed
+
+Le merge de #1271 (14:00:55Z) a déclenché un **push réel sur `main`** → la
+chaîne complète s'est exécutée. C'est la preuve la plus récente que la garde
+refuse proprement, sur le SHA le plus à jour :
+
+| Job | Résultat |
+|---|---|
+| `scope` | **success** |
+| `mollie-live-gate` | **success** |
+| **`certification-gate`** | **success** — `test-frontend` et `perf` **verts sur le SHA exact `90d083a1`** |
+| `build (florida)` | **failure** à l'étape 8 `Pre-deploy satellite freshness gate (all six regions)` |
+| `build (mq / gp / tulum / puntacana / rivieramaya)` | **cancelled** (fail-fast de la matrice) |
+| `deploy` · `deploy-pages` · `verify-fleet` · `post-deploy-verify` | **skipped** → **rien n'a été publié** |
+
+Message exact de la garde :
+`FAIL SATELLITE_PREDEPLOY region=florida limit=900min reason=observation hors SLA (3001.28 min > 900 min)`
+
+→ La **porte de certification passe**, la **porte satellite refuse**, et
+**aucune** étape de publication n'est atteinte. Le fail-closed est intact sur le
+SHA le plus récent.
+
+#### La production est **plus périmée** que le dépôt — 5 jours d'écart
+
+Fait mesuré et précédemment non consigné : les deux sources de payload n'ont
+**pas** le même horodatage.
+
+| Source | `erddapTimestamp` | Âge au 2026-11-04T14:23Z | SLA 900 min |
+|---|---|---:|---|
+| **Payload commité dans `main`** (`public/api/copernicus/*/sargassum.json`, les 7 régions + racine) | `2026-11-02T12:00:00Z` | 3 021 min | hors SLA |
+| **Production servie** (les 6 domaines) | `2026-10-27T12:00:00Z` | 11 645 min | hors SLA |
+
+Les 7 payloads régionaux du dépôt portent **tous** `2026-11-02T12:00:00Z` — la
+publication du 2026-11-02 a bien été committée par `fetch-data`, mais **jamais
+déployée**, faute de fenêtre SLA. La production affiche donc une observation de
+**5 jours plus ancienne** que celle déjà présente dans le dépôt.
+
+Conséquence opérationnelle : dès que NOAA publiera la grille du
+`2026-11-04T12:00:00Z`, le dispatch publishera une observation **fraîche** et la
+porte passera **sans qu'aucune weakened garde soit nécessaire**. Il n'y a
+**rien à corriger** côté garde : la garde a fait exactement son travail.
 
 **Cause racine, mesurée sur l'upstream.** Le payload Copernicus engage dans le dépôt
 porte `erddapTimestamp = 2026-11-02T12:00:00Z`. Interrogation directe de l'upstream
@@ -549,7 +897,7 @@ déclenché la chaîne (`dispatch OK ci-tests.yml`, `perf-budget.yml`,
 | Cause mesurée | Preuve | État au 2026-11-04 |
 |---|---|---|
 | `test-frontend` **FAILED** : `133/134` — le test `region-seo-methodology-scope.test.cjs` affirmait `mq: stale/out-of-scope record must not become a current percentage` sur le payload **fraîchement publié** (fixture non déterministe) | run `41555735101`, log : `AssertionError [ERR_ASSERTION]: mq: stale/out-of-scope record must not become a current percentage` | **corrigé** par `8f902406` (#1241, 2026-11-03T04:29Z) : fixture stale déterministe. Le SHA `1583c36d` du run en échec ne contenait pas ce correctif. |
-| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **éliminé** sur le chemin `workflow_dispatch` : le job `email-automation` est conditionné à `if: github.event_name == 'schedule'` → sur un dispatch il est **skipped**, donc aucun commit « email state » n'est poussé et aucun run concurrent n'annule le `perf`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`). |
+| `perf` **CANCELLED** : la porte a lu `predeploy: check "perf" conclu "cancelled" sur 1583c36d` — un run `perf-budget.yml` **push** sur un autre SHA (`31d3cbf6`, le commit « email state ») a **annulé** le run dispatché, car `perf-budget.yml` porte `concurrency: perf-budget-${{ github.ref }}` + `cancel-in-progress: true` (le groupe est par **branche**, pas par SHA) | runs `41555737760` (dispatch, `cancelled`) et `41555775379` (push, `success`) | **cause comprise, mais PAS éliminée par le seul `workflow_dispatch`.** Une première explication affirmait que le job `email-automation`, conditionné à `if: github.event_name == 'schedule'`, ne pousserait rien sur un dispatch — **cette affirmation a été réfutée par l'observation** : la course s'est **produite** le 2026-11-03 (le run dispatché a bien été annulé par un run push sur `refs/heads/main`). Le groupe de concurrence est par **branche**, donc **tout** run `perf-budget` push sur `main` annule le run dispatché sur `main`, quelle que soit l'origine du push. **Correctif réel :** le dispatch est désormais précédé d'une attente `waitQuietMain()` qui exige (a) **aucun** run `perf-budget` en `in_progress`/`queued` sur `main`, (b) **aucun** run `push` créé sur `main` depuis moins de 120 s, (c) **aucun** run `push` en vol au HEAD de `main`. Le commit de données lui-même ne déclenche **aucun** workflow (push `GITHUB_TOKEN`) — cette partie de l'explication initiale est confirmée. |
 
 La porte de certification a donc les deux checks requis (`test-frontend`, `perf`)
 au vert **sur le SHA exact**, et la garde satellite lit le payload **publié** dans
@@ -588,19 +936,20 @@ d'essai ou de remise n'a été tentée pour cette vérification.
 #### La production est en plus dégradée sur la DONNÉE (8 jours de retard)
 
 Contrôle du payload satellite **publié** sur les 6 domaines (lecture seule,
-2026-11-04T11:57Z) :
+re-mesuré le 2026-11-04T14:23Z ; première mesure à 11:57Z) :
 
 | Domaine | `source` | `erddapTimestamp` | Âge |
 |---|---|---|---|
-| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 515 min (8 j)** |
-| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
-| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 515 min |
+| sargasses-martinique.com | `erddap-live` | `2026-10-27T12:00:00Z` | **11 645 min (8 j)** |
+| sargasses-guadeloupe.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassummiami.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassumpuntacana.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargassumcancun.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
+| sargazotulum.com | `erddap-live` | `2026-10-27T12:00:00Z` | 11 645 min |
 
-Alors que `main` porte déjà `2026-11-02T12:00:00Z` : **les données sont publiées
-dans le dépôt mais jamais déployées** — c'est exactement le défaut décrit en tête de
+Alors que `main` porte déjà `2026-11-02T12:00:00Z` (les 7 payloads régionaux +
+la racine, tous identiques) : **les données sont publiées dans le dépôt mais
+jamais déployées** — c'est exactement le défaut décrit en tête de
 `scripts/automation/trigger-production-deploy.cjs` (« le commit de données était
 publié mais JAMAIS déployé »).
 
@@ -625,3 +974,27 @@ client, qui recalcule.
 déploiements Cloudflare précédents sont conservés. Aucun changement de prix serveur,
 de montant accepté, de remboursement ni d'email client n'est inclus dans ce
 correctif : le rollback n'a donc aucun impact métier à défendre.
+
+#### Mesures Cloudflare du chemin de paiement (2026-11-04T15:20Z–15:50Z) — reproductible
+
+Toutes **lecture seule**. Aucun secret écrit, aucun paiement créé, aucune
+transaction initiée.
+
+| # | Appel | Résultat |
+|---|---|---|
+| 1 | `GET /accounts/{id}/workers/scripts` | 17 Workers, dont `sg-payments`, `sargagame-{mq,gp,florida,tulum,puntacana,rivieramaya}`, `b2b-api`, `outreach`, `supabase-proxy` |
+| 2 | `GET /zones?name=sargasses-martinique.com` (× 6 zones) | 6 zones Sargasses trouvées |
+| 3 | `GET /zones/{zone_id}/workers/routes` (× 6) | **18 routes par zone**, toutes identiques : `/api/mollie*`, `/api/b2b-*`, `/api/create-checkout*`, `/api/widget-token*`, `/api/track-*`, `/api/comps.php`, `/api/_ratelimit.php`, `/api/paypal*`, `/api/stripe-webhook.php`, `/api/retry-failed-payment.php`, `/api/_diag.php`, `/api/copernicus/forecast*`, `/collect.php`, `/b2b*`, `/unsubscribe*`, `/_cron/*` → **`sg-payments`** ; `/*` → Worker régional |
+| 4 | `GET /accounts/{id}/workers/scripts/sg-payments/versions` | **10 versions**, toutes du **2026-10-01/02**, dernière `36fa827a-a39c-4156-9359-30fc383eb6c5` (n° 381), `source: wrangler`, handlers `fetch` + `scheduled`, bindings `MOLLIE_API_KEY`, `MOLLIE_PROFILE_ID`, `MOLLIE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `SUPABASE_SERVICE_KEY`, KV `TRANSIENTS`, var `SUPABASE_URL` |
+| 5 | `GET /api/mollie-webhook.php` (× 6 domaines) | `200 {"ok":true}` — **pas** la signature du PHP (`400 {"error":"id + type requis"}`) ni celle du Worker du dépôt (`405 {"error":"POST only"}`) → c’est `sg-payments` |
+| 6 | `GET /public/api/mollie-webhook.php` (× 6) | `404 {"error":"not_found"}` **JSON** → le PHP n’est pas joignable (le Worker intercepte `/public/**`) |
+| 7 | `POST /api/mollie.php` `{"action":"__payment_smoke__"}` (× 6) | **`500` `error code: 1101`** (exception Worker) — smoke **sans transaction**, celui du gate de déploiement du dépôt |
+| 8 | `POST /api/create-checkout.php` et `/api/create-checkout` (× 6) | **`404 {"error":"not_found"}`** |
+| 9 | `GET /api/zzz-inconnu` | `404 {"error":"api_route_not_migrated","path":"/api/zzz-inconnu"}` (JSON) |
+| 10 | `GET /zzz-inconnu` (hors `/api/`) | `404` **HTML** (assets statiques) |
+
+> Le point 5 est le plus important : il **discrimine** les trois implémentations
+> possibles par la **forme exacte** de la réponse, sans rien supposer. Le point
+> 4 est le second : il **démontre** que `sg-payments` n’existait pas en
+> juin–juillet 2026, donc que les 6 ventes non livrées ont été traitées par le
+> chemin PHP — celui dont la validation est prouvée cassée (R13).
