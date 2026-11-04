@@ -304,3 +304,44 @@ P2:
 3. Publish a monthly SEO + paid revenue report by region and intent.
 
 No paid campaigns until a landing page, current data, capture/checkout, legal disclosure and payment delivery are proven.
+
+
+## 14. Fresh Supabase funnel evidence — 2026-11-04T04:14:13.298Z
+
+Read-only aggregation of `public.analytics_events` for the trailing 30 days. Counts below are **event rows**, not unique visitors, users, or a same-session funnel. Only 22 of 3,324 `sg_pass_offer_view` rows contain a session key; none of the 34 `sg_pass_cta` rows contain one. Therefore the ratios below are directional diagnostics only, not conversion rates.
+
+| Event / data point | Observed rows | Latest observed |
+|---|---:|---|
+| `sg_premium_modal_open` | 3,479 | 2026-11-04 01:49 UTC |
+| `sg_pass_offer_view` | 3,324 | 2026-11-04 01:49 UTC |
+| `sg_pass_cta` | 34 | 2026-10-29 07:52 UTC |
+| `sg_checkout_started` | 5 | 2026-10-28 16:29 UTC |
+| `sg_checkout_redirect` | 30 | 2026-10-30 18:44 UTC |
+| `sg_conversion` | 23 | 2026-10-30 02:52 UTC |
+| `sg_lead_banner_view` | 714 | 2026-10-07 20:48 UTC |
+| `sg_lead_banner_submit` | 1 | 2026-10-05 |
+| `sg_email_submit` | 4 | 2026-10-08 |
+
+### 14.1 Regional distribution and interpretation
+
+- Pass-offer views: MQ 1,999; Punta Cana 588; Florida 372; Guadeloupe 282; Riviera Maya 83. No Tulum row was present for this event in the 30-day grouping.
+- Recorded `sg_pass_cta`: MQ 16, Guadeloupe 5, Riviera Maya 12, in total 34. The most recent click row was 2026-10-29 07:52 UTC.
+- The five `sg_checkout_started` rows are all tagged Riviera Maya (2 from `chasse_detail`, 2 from `chasse_detail_fc`, 1 from `beach_sheet`). The separate `sg_checkout_redirect` population is older and mostly MQ (28 MQ, 2 Tulum), with mixed legacy/capture paths.
+- The 23 `sg_conversion` rows are not a homogeneous paywall cohort: 14 carry plan `p30` (last 2026-10-11) and 9 carry plan `sos` (last 2026-10-30). Do not treat all 23 as PassOffer purchases or attribute them to the current 30-day-pass offer.
+- The current `PassOffer.jsx` emits `sg_pass_offer_view` on mount and `sg_pass_cta` in its buy handler, then the parent opens the on-site payment step. The database shows a material instrumentation/funnel gap: the offer continues to be viewed through Nov 4, but its latest recorded CTA is Oct 29. This could be low click intent, event delivery loss, or a version/region discrepancy; current data cannot distinguish these explanations.
+
+### 14.2 B2B and lead capture
+
+- `sg_b2b_offer_view`: 101 rows in the 30-day window; `sg_b2b_step`: 31 rows, latest 2026-10-29 19:53 UTC.
+- `b2b_leads`: 21 stored records (20 `contacted`, 1 `new`); the latest created record is 2026-10-05 10:47 UTC. No B2B subscription rows were returned by the status/plan/region aggregation.
+- Lead-banner views and submissions have effectively stopped in the recorded events after Oct 7 / Oct 5 respectively. This is an instrumentation or acquisition/capture issue to diagnose, not proof that the UI is absent.
+
+### 14.3 Data hygiene / next actions
+
+- The 30-day aggregation found 234 B2C alert rows in an earlier status count; 186 `unknown`-region active rows are associated with domains `localhost` (185) and `127.0.0.1` (1). Treat these as likely development/test records, not real regional customers. Do not delete them from production as part of this analysis. Verify any notification or export job excludes localhost/test-domain rows before it uses the table.
+- Do not send follow-up emails or mass outreach from this analysis. Existing workflows include manual send gates; keep them closed.
+- P0 measurement work: add/verify a privacy-safe first-party session ID to offer-view, CTA, payment-step-open, `sg_checkout_started`, payment outcome, and server-confirmed conversion events; normalize the region and preserve one stable correlation ID across the journey. Respect consent; do not fingerprint; never place emails, payment data, or tokens in analytics.
+- P0 product diagnosis: run the same paywall/PassOffer smoke on all six production hosts (mobile + desktop), record whether the CTA is visible/enabled, confirm click -> email field -> Mollie payment creation -> redirect -> webhook-confirmed entitlement, and compare source SHAs/deployment versions. Do not create a real payment. Use Mollie test mode/fixtures only.
+- P0 B2B: inspect the form step transitions and API submit outcome by region; verify the API response and lead row persistence using a test fixture, not a real customer submission.
+- Preserve the current prices, Mollie live configuration, recurring-payment state, and production data. No checkout, price, email, or production write was made as part of this snapshot.
+
