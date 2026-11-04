@@ -8,16 +8,8 @@ on:
     - cron: '0 12 * * *'
     - cron: '0 18 * * *'
   workflow_dispatch:
-    inputs:
-      # P0.67 §4 — la purge analytics_events supprime DÉFINITIVEMENT des
-      # lignes de production. Elle ne doit jamais s'exécuter parce qu'un
-      # cron s'est déclenché : elle exige une intention humaine explicite
-      # (Actions → Run workflow → cocher `purge_analytics`). false = dry-run,
-      # aucun DELETE émis. Cf. scripts/automation/purge-analytics.cjs.
-      purge_analytics:
-        description: 'Purge réelle analytics_events (> 90j) ? (false = dry-run, aucune suppression)'
-        type: boolean
-        default: false
+    # No purge input: scheduled and manual runs remain read-only until
+    # a separately approved, protected cleanup path exists.
   push:
     branches:
       - main
@@ -499,17 +491,6 @@ jobs:
         env:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: node scripts/automation/purge-analytics.cjs
-
-      - name: Purge analytics_events (> 90j) — exécution réelle
-        if: github.event_name == 'workflow_dispatch' && inputs.purge_analytics
-        # Pas de continue-on-error : une purge demandée explicitement par un
-        # opérateur et qui échoue DOIT se voir dans le verdict du run.
-        timeout-minutes: 10
-        env:
-          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
-        run: |
-          node scripts/automation/purge-analytics.cjs \
-            --execute --approved-by=github:${{ github.actor }}
 
       - name: Funnel from Supabase (complementary)
         if: github.event_name == 'schedule'
