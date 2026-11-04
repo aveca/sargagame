@@ -15,7 +15,7 @@ async function main() {
   const sink = app.slice(start, trackEnd)
   assert.ok(app.indexOf('window.gtag("event",event,p)') < start, 'GA4 must receive params before the Supabase-only sid is attached')
   assert.ok(app.indexOf('sgCollectEvent(event,p)') < start, 'first-party collector must receive params before the Supabase-only sid is attached')
-  assert.match(sink, /p\\.sid=_sgcSid\\(\\);logAnalyticsEvent\\(event,p,/, 'reuse existing tab session id for the final Supabase sink')
+  assert.match(sink, /p\.sid=_sgcSid\(\);logAnalyticsEvent\(event,p,/, 'reuse existing tab session id for the final Supabase sink')
   
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
   assert.match(app, /if\(remoteEnabled\)try\{window\.gtag\("event",event,p\)\}/)
