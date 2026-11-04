@@ -2,21 +2,19 @@
   "window_days": 90,
   "since": "2026-08-06T18:55:51.277Z",
   "total_rows": 11,
+  "included_rows": 9,
   "counts": {
     "trials": 9,
     "activated": 0,
-    "paid": 2,
+    "paid": 0,
     "rejected": 0
   },
   "rates": {
-    "trial_to_paid": 22.2,
+    "trial_to_paid": 0,
     "trial_to_activated": 0,
     "activated_to_paid": 0
   },
-  "paid_by_plan": {
-    "pro_monthly": 1,
-    "pro_annual": 1
-  },
+  "paid_by_plan": {},
   "rejected_by_tier": {},
   "rejected_by_kind": {},
   "rejected_examples": [],
@@ -24,7 +22,8 @@
     "MQ": {
       "trials": 9,
       "activated": 0,
-      "paid": 2
+      "paid": 0
     }
-  }
+  },
+  "excluded_synthetic_rows": 2
 }
