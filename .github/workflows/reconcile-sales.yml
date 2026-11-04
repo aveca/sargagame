@@ -43,10 +43,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet scripts/automation/data/reconcile-sales.json; then
-            echo "Aucun changement dans le rapport de rapprochement."
-          else
+          if git status --porcelain scripts/automation/data/reconcile-sales.json | grep -q .; then
             git add scripts/automation/data/reconcile-sales.json
             git commit -m "feat(p0): rapport de rapprochement ventes Mollie/Supabase ($(date -u +%Y-%m-%dT%H:%M:%SZ))"
             git push
+          else
+            echo "Aucun changement dans le rapport de rapprochement."
           fi
