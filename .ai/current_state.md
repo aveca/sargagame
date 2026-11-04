@@ -1,3 +1,29 @@
+## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
+
+### Mission
+Close the measured attribution gap in the B2C pass funnel without changing prices, checkout, Mollie, customer communications, satellite data or production state.
+
+### Code changes
+- Branch: `fix/funnel-session-correlation-20261104`, based on protected `main` at `a460e4f6e5896778e5bef2f00a192824a3f608fb`.
+- `src/Sargasses_PROD.jsx` commit `312ec135846d467adfa5a53fbdec648148b2c730`: the central `track()` path now attaches the already-existing tab-scoped `sg_sid` to the **Supabase funnel payload only**. It reuses `_sgcSid()`, omits sentinel `x` when storage is unavailable, and sends a new `funnelParams` object to `logAnalyticsEvent`.
+- GA4 still receives the unchanged `p` object; the Apps Script fallback queue/beacon is unchanged. No new cookie, device fingerprint, dependency, database column, email, payment identifier or PII was introduced.
+- `tests/unit/funnel-session-correlation.test.cjs` commit `ccbb80ee33b7825ca59a428d99624f22d40ff8e4`: locks down Supabase-only scope, fallback omission, unchanged GA4 payload, and existing aggregator `sid` parsing.
+
+### Evidence and limitations
+- The Supabase funnel aggregator already resolves `params.sid` via `sessionIdFromParams`; no schema migration is needed.
+- The existing collector already uses `sessionStorage.sg_sid` for its own first-party session summary. This patch reuses that identifier; it is session/tab scoped, not cross-device and not a unique-visitor metric.
+- 30-day baseline: 3,324 pass-offer view event rows, only 22 with a session key; 34 pass CTA event rows, none with a session key. The historical figures remain directional event counts, not same-session conversion rates.
+- Main's last recorded eager gzip budget is 210.0/210 Ko with zero rounded margin. CI must prove this small patch still fits; do not bypass the budget.
+- Existing remote-analytics consent/legal behavior was not changed. Review against the active consent contract is required before merge.
+- CI and Codex security/privacy review are pending. Do not merge or deploy until both CI checks pass and the review confirms no consent/privacy regression.
+
+### State
+- Branch head after code/test commits: `ccbb80ee33b7825ca59a428d99624f22d40ff8e4`.
+- Not merged; not deployed. No production changes or Supabase writes were made.
+- Rollback: revert this branch's `src/Sargasses_PROD.jsx` and test commits; no schema/data rollback required.
+
+---
+
 
 ## 2026-11-04 01:00 UTC · Agent: coding_agent (OpenCode) · Mission P0.67 (sections 5, 7, 1, 4 livrées en Draft PR)
 
