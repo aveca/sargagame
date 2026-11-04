@@ -64,8 +64,7 @@ export function logAnalyticsEvent(event, params, island) {
     // that intentionally share analytics properties. Keep it in Supabase params,
     // not in the event's business payload or a new database column.
     try {
-      const hostname = typeof window !== "undefined" ? String(window.location?.hostname || "").toLowerCase() : ""
-      if (hostname && !payloadParams.hostname) payloadParams.hostname = hostname
+      if(typeof window!=="undefined")payloadParams.hostname ||= window.location.hostname.toLowerCase()
       payloadParams.sid = localStorage.sg_cookie_consent === "accepted" && sessionStorage.sg_sid
     } catch (_) {}
     fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
