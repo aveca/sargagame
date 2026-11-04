@@ -140,10 +140,70 @@ function roundMoney(value) {
 }
 
 /**
+ * The Mollie organization is shared by more than one product. Keep Sargasses
+ * reporting conservative: a record must carry a Sargasses/Sargassum description
+ * plus a known pass or B2B marker. Hosted Mollie payment links cannot carry
+ * metadata, so their repository-owned descriptions are the fallback marker.
+ *
+ * Ambiguous account records are reported separately, never counted as Sargasses.
+ * This is a reporting convention, not a cryptographic product identifier.
+ */
+const SARGASSES_PASS_KEYS = new Set(['p7', 'p30', 'trip7', 'season', 'sos'])
+const SARGASSES_B2B_PLAN_KEYS = new Set([
+  'pro_monthly',
+  'brief_monthly',
+  'brief_annual',
+  'pro_annual',
+  'territory_annual',
+  'brief_annual_usd',
+  'pro_annual_usd',
+  'territory_annual_usd',
+])
+const SARGASSES_BRAND_RE = /\\b(?:sargasses|sargassum)\\b/i
+
+function recordMetadata(record) {
+  return record?.metadata && typeof record.metadata === 'object' ? record.metadata : {}
+}
+
+function hasSargassesBrand(description) {
+  return SARGASSES_BRAND_RE.test(String(description || ''))
+}
+
+function isSargassesPassPayment(payment) {
+  const description = String(payment?.description || '')
+  if (!hasSargassesBrand(description)) return false
+  const pass = String(recordMetadata(payment).pass || '').trim().toLowerCase()
+  return SARGASSES_PASS_KEYS.has(pass) ||
+    /\\b(?:pass|passe|escale|séjour|sejour|stay|season|saison|trip)\\b/i.test(description)
+}
+
+function isSargassesB2BPayment(payment) {
+  const description = String(payment?.description || '')
+  if (!hasSargassesBrand(description)) return false
+  const plan = String(recordMetadata(payment).plan || '').trim().toLowerCase()
+  return SARGASSES_B2B_PLAN_KEYS.has(plan) ||
+    /\\b(?:pro|brief|territoire|territory)\\b/i.test(description)
+}
+
+function isSargassesPayment(payment) {
+  return isSargassesPassPayment(payment) || isSargassesB2BPayment(payment)
+}
+
+function isSargassesSubscription(subscription) {
+  const description = String(subscription?.description || '')
+  if (!hasSargassesBrand(description)) return false
+  const plan = String(recordMetadata(subscription).plan || '').trim().toLowerCase()
+  return plan === 'pro_monthly' || plan === 'brief_monthly'
+}
+
+/**
  * Keep financial totals separated by Mollie transaction currency.
  * Legacy *_eur fields are EUR-only; no implicit FX conversion is performed.
  */
 function calculateMollieMetrics(activeSubs = [], paid = []) {
+  const sargassesSubs = activeSubs.filter(isSargassesSubscription)
+  const sargassesPaid = paid.filter(isSargassesPayment)
+  const unattributedPaid = paid.filter(payment => !isSargassesPayment(payment))
   const groups = new Map()
   const ensureCurrency = currency => {
     if (!groups.has(currency)) {
@@ -161,7 +221,7 @@ function calculateMollieMetrics(activeSubs = [], paid = []) {
   // Keep the legacy EUR-only fields present even when there is no EUR activity.
   ensureCurrency('EUR')
 
-  for (const subscription of activeSubs) {
+  for (const subscription of sargassesSubs) {
     const amount = Number.parseFloat(subscription.amount?.value || '0')
     if (!Number.isFinite(amount)) continue
 
@@ -172,7 +232,7 @@ function calculateMollieMetrics(activeSubs = [], paid = []) {
     ensureCurrency(normalizeCurrency(subscription.amount)).subscriptions += monthlyAmount
   }
 
-  for (const payment of paid) {
+  for (const payment of sargassesPaid) {
     const amount = Number.parseFloat(payment.amount?.value || '0')
     if (!Number.isFinite(amount)) continue
 
@@ -180,16 +240,22 @@ function calculateMollieMetrics(activeSubs = [], paid = []) {
     group.payments += 1
     group.revenue_month += amount
 
-    if ((payment.metadata?.pass || '').startsWith('p') ||
-        (payment.metadata?.plan || '').startsWith('pass')) {
-      group.passes_month += amount
-    }
-
-    const description = (payment.description || '').toLowerCase()
-    if (description.includes('pro') || description.includes('brief')) {
-      group.b2b_month += amount
-    }
+    if (isSargassesPassPayment(payment)) group.passes_month += amount
+    if (isSargassesB2BPayment(payment)) group.b2b_month += amount
   }
+
+  const unattributedTotals = new Map()
+  for (const payment of unattributedPaid) {
+    const amount = Number.parseFloat(payment.amount?.value || '0')
+    if (!Number.isFinite(amount)) continue
+    const currency = normalizeCurrency(payment.amount)
+    unattributedTotals.set(currency, (unattributedTotals.get(currency) || 0) + amount)
+  }
+  const unattributedRevenueByCurrency = Object.fromEntries(
+    [...unattributedTotals.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([currency, amount]) => [currency, roundMoney(amount)])
+  )
 
   const byCurrency = {}
   for (const [currency, group] of [...groups.entries()].sort(([a], [b]) => a.localeCompare(b))) {
@@ -217,17 +283,22 @@ function calculateMollieMetrics(activeSubs = [], paid = []) {
 
   return {
     mrr: {
-      // Backward-compatible EUR fields now contain EUR transactions only.
+      // Backward-compatible EUR fields now contain Sargasses-attributed EUR only.
       total_eur: eur.total,
       subscriptions_eur: eur.subscriptions,
       passes_month_eur: eur.passes_month,
       b2b_month_eur: eur.b2b_month,
       by_currency: byCurrency,
     },
-    payments_this_month: paid.length,
+    payments_this_month: sargassesPaid.length,
+    account_payments_this_month: paid.length,
     revenue_this_month_eur: eur.revenue_month,
     revenue_this_month_by_currency: revenueByCurrency,
     currency_breakdown: currencyBreakdown,
+    active_subscriptions: sargassesSubs.length,
+    unattributed_active_subscriptions: activeSubs.length - sargassesSubs.length,
+    unattributed_payments_this_month: unattributedPaid.length,
+    unattributed_revenue_this_month_by_currency: unattributedRevenueByCurrency,
   }
 }
 
@@ -255,31 +326,36 @@ async function main() {
   const payments = await listPaymentsSince(monthStart, key)
   const paid = payments.filter(p => p.status === 'paid')
 
-  // 3. Calculs séparés par devise (aucune conversion FX implicite).
+  // 3. Attribution Sargasses stricte, puis calculs séparés par devise.
   const metrics = calculateMollieMetrics(activeSubs, paid)
+  const sargassesPaid = paid.filter(isSargassesPayment)
 
-  const uniquePayers = new Set()
   const uniquePayersAll = new Set()
-  for (const s of activeSubs) { if (s.customerId) uniquePayers.add(s.customerId) }
-  for (const p of paid) { if (p.customerId) uniquePayersAll.add(p.customerId) }
+  for (const p of sargassesPaid) { if (p.customerId) uniquePayersAll.add(p.customerId) }
 
   const report = {
-    schema_version: 2,
+    schema_version: 3,
+    attribution_policy: 'sargasses-brand-and-plan-v1',
     date: now.toISOString().split('T')[0],
     timestamp: now.toISOString(),
     source: 'mollie-api',
     mrr: metrics.mrr,
-    // Clients
     customers: {
-      active_subs: activeSubs.length,
-      paid_this_month: paid.length,
+      active_subs: metrics.active_subscriptions,
+      paid_this_month: metrics.payments_this_month,
       unique_payers_all: uniquePayersAll.size,
+      unattributed_active_subs: metrics.unattributed_active_subscriptions,
+      unattributed_paid_this_month: metrics.unattributed_payments_this_month,
     },
-    // Paiements du mois : les champs EUR sont EUR-only ; les autres devises restent séparées.
     payments_this_month: metrics.payments_this_month,
     revenue_this_month_eur: metrics.revenue_this_month_eur,
     revenue_this_month_by_currency: metrics.revenue_this_month_by_currency,
     currency_breakdown: metrics.currency_breakdown,
+    unattributed: {
+      active_subscriptions: metrics.unattributed_active_subscriptions,
+      payments_this_month: metrics.unattributed_payments_this_month,
+      revenue_this_month_by_currency: metrics.unattributed_revenue_this_month_by_currency,
+    },
   }
 
   // Lire l'historique et append
@@ -295,20 +371,21 @@ async function main() {
   const today = now.toISOString().split('T')[0]
   history = history.filter(h => h.date !== today)
   history.push({
-    schema_version: 2,
+    schema_version: 3,
     date: today,
     mrr: report.mrr,
     customers: report.customers,
     revenue: report.revenue_this_month_eur,
     revenue_by_currency: report.revenue_this_month_by_currency,
+    unattributed: report.unattributed,
   })
   // Garder 90 jours
   history.sort((a, b) => a.date.localeCompare(b.date))
   if (history.length > 90) history = history.slice(-90)
 
   report.history = history
-  // Ignore pre-v2 history: its EUR-labelled totals mixed raw EUR and USD amounts.
-  const versionedHistory = history.filter(entry => entry.schema_version === 2)
+  // Ignore pre-v3 history: earlier versions included unscoped Mollie account activity.
+  const versionedHistory = history.filter(entry => entry.schema_version === 3)
   const historicalMrr = (currency, days) => {
     if (versionedHistory.length < days) return null
     const entry = versionedHistory[versionedHistory.length - days]
@@ -328,7 +405,7 @@ async function main() {
   } : null
 
   console.log(`\n📊 Mollie MRR EUR (EUR uniquement): €${report.mrr.total_eur}`)
-  console.log(`   Abonnements EUR: €${report.mrr.subscriptions_eur} (${report.customers.active_subs} actifs au total)`)
+  console.log(`   Abonnements EUR: €${report.mrr.subscriptions_eur} (${report.customers.active_subs} Sargasses actifs)`)
   console.log(`   Passes B2C EUR ce mois: €${report.mrr.passes_month_eur}`)
   console.log(`   B2B EUR ce mois: €${report.mrr.b2b_month_eur}`)
   console.log(`   Revenu EUR ce mois: €${report.revenue_this_month_eur}`)
@@ -340,7 +417,11 @@ async function main() {
     if (currency === 'EUR') continue
     console.log(`   Revenu ${currency} ce mois (non converti): ${revenue}`)
   }
-  console.log(`   Paiements ce mois: ${report.payments_this_month}`)
+  console.log(`   Paiements Sargasses ce mois: ${report.payments_this_month}`)
+  console.log(`   Paiements non attribués à Sargasses: ${report.unattributed.payments_this_month}`)
+  for (const [currency, revenue] of Object.entries(report.unattributed.revenue_this_month_by_currency)) {
+    console.log(`   Revenu non attribué ${currency}: ${revenue}`)
+  }
   console.log(`   Période MRR v2: ${versionedHistory.length} jours`)
 
   // Target €1000 — EUR only; USD and unknown currencies are not converted.
@@ -360,4 +441,4 @@ if (require.main === module) {
   main().catch(e => { console.error('ERREUR:', e.message); process.exit(1) })
 }
 
-module.exports = { resolveMollieApiUrl, mollieGet, listAll, listPaymentsSince, normalizeCurrency, calculateMollieMetrics }
+module.exports = { resolveMollieApiUrl, mollieGet, listAll, listPaymentsSince, normalizeCurrency, isSargassesPayment, isSargassesSubscription, calculateMollieMetrics }
