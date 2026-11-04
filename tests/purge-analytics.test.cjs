@@ -21,7 +21,7 @@ const assert = require('assert');
 const path = require('path');
 
 const MOD = path.join(__dirname, '..', 'scripts', 'automation', 'purge-analytics.cjs');
-const { countRows, purgeInBatches } = require(MOD);
+const { countRows, purgeInBatches, isExecutionAuthorized, DRY } = require(MOD);
 
 let failures = 0;
 function record(name, ok, extra) {
@@ -96,6 +96,12 @@ async function main() {
     record('purge : erreur HTTP => arrêt immédiat', calls === 1 && !!r.lastError,
       `calls=${calls} lastError=${r.lastError}`);
   }
+
+  // ── 6. Destructive mode is opt-in and requires an explicit operator marker ──
+  record('purge : défaut = lecture seule', DRY && !isExecutionAuthorized([]));
+  record('purge : --execute seul est refusé', !isExecutionAuthorized(['--execute']));
+  record('purge : --execute + approbateur explicite est requis', isExecutionAuthorized(['--execute', '--approved-by=operator']));
+  record('purge : --dry prime toujours sur --execute', !isExecutionAuthorized(['--execute', '--approved-by=operator', '--dry']));
 
   console.log(failures === 0
     ? '\nPURGE_ANALYTICS_TESTS PASS'
