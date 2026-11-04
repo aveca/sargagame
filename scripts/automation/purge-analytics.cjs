@@ -3,9 +3,9 @@
  * purge-analytics.cjs — Purge analytics_events > 90 jours (RGPD + table lean).
  *
  * Supabase RLS = anon INSERT only, service_role READ/DELETE.
- * En GH Actions, le cron quotidien ne fait plus que COMPTER (dry-run) : la
- * suppression réelle passe par `workflow_dispatch` avec `purge_analytics=true`
- * (cf. .github/workflows/daily-copernicus.yml). Voir SÉCURITÉ plus bas.
+ * En GH Actions, les exécutions schedule et workflow_dispatch restent en
+ * lecture seule. Aucun workflow ne branche `--execute` : la suppression
+ * production demeure désactivée tant qu'un chemin protégé n'est pas approuvé.
  *
  * BUG CORRIGÉ (2026-10-20) — cause racine des 157 runs `Daily Copernicus +
  * Deploy` ANNULÉS (job `email-automation` annulé à 30 min, run entier
