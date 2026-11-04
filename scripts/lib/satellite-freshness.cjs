@@ -2,7 +2,10 @@
 
 // Shared freshness contract for static satellite payloads.
 // The observation timestamp (not updatedAt) is authoritative.
-const SAT_STALE_HOURS = 36;
+// SLA : le composite ERDDAP est considere frais si son erddapTimestamp a
+// moins de 900 minutes (15 h). Au-delà, `stale` est vrai et le verdict
+// hero doit etre masque (jamais de timestamp falsifie, jamais de SLA reduit).
+const SAT_STALE_HOURS = 15; // 900 minutes SLA
 
 function satelliteFreshness(erddapTimestamp, now = Date.now()) {
   const timestamp = typeof erddapTimestamp === 'number'

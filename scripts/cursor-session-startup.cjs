@@ -22,7 +22,7 @@ const os = require("os")
 
 const REPO = "aveca/sargagame"
 const STALE_H = 12      // âge du run pipeline (updatedAt) — re-run le corrige
-const SAT_STALE_H = 36  // âge du composite satellite (erddapTimestamp) — re-run ne corrige PAS (ERDDAP en retard)
+const SAT_STALE_H = 15  // âge du composite satellite (erddapTimestamp) — re-run ne corrige PAS (ERDDAP en retard), SLA 900 min
 const MEM_DIR = path.join(
   os.homedir(),
   ".claude",

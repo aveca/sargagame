@@ -12,18 +12,18 @@ function check(condition, message) {
   assert.ok(condition, message);
 }
 
-check(SAT_STALE_HOURS === 36, 'pipeline threshold remains 36 hours');
+check(SAT_STALE_HOURS === 15, 'pipeline threshold is 900 minutes (15 h), not 36 hours');
 check(
-  JSON.stringify(satelliteFreshness('2026-10-24T12:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 2160, stale: false }),
-  'exactly 36 hours retains the existing >36h stale boundary'
+  JSON.stringify(satelliteFreshness('2026-10-25T09:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 900, stale: false }),
+  'exactly 900 minutes remains fresh (strictly-greater-than threshold)'
 );
 check(
-  JSON.stringify(satelliteFreshness('2026-10-24T11:59:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 2161, stale: true }),
-  '36h01 is stale even when a previous static dataAgeMinutes value was lower'
+  JSON.stringify(satelliteFreshness('2026-10-25T08:59:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 901, stale: true }),
+  '901 minutes is stale under the 900-minute SLA'
 );
 check(
   JSON.stringify(satelliteFreshness('2026-10-25T12:00:00.000Z', now)) === JSON.stringify({ dataAgeMinutes: 720, stale: false }),
-  '12-hour observation is not stale under the 36-hour pipeline threshold'
+  '12-hour observation is not stale under the 900-minute pipeline threshold'
 );
 check(
   JSON.stringify(satelliteFreshness(null, now)) === JSON.stringify({ dataAgeMinutes: null, stale: false }),

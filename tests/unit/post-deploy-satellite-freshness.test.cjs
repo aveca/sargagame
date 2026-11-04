@@ -21,7 +21,7 @@ const payload = {
   stale: false,
 };
 const stale = PDV.checkSatelliteFreshness(payload, now);
-check(stale.status === 'FAILED', 'a fresh pipeline cannot mask a satellite observation older than 36 hours');
+check(stale.status === 'FAILED', 'a fresh pipeline cannot mask a satellite observation older than 900 minutes (15 h)');
 check(stale.ageMinutes === 2194, 'satellite age is recomputed from erddapTimestamp, not the frozen dataAgeMinutes field');
 check(/périmée/.test(stale.detail), 'stale observation reports an explicit reason');
 
@@ -29,13 +29,19 @@ const fresh = PDV.checkSatelliteFreshness({
   ...payload,
   erddapTimestamp: '2026-10-26T12:33:49.000Z',
 }, now);
-check(fresh.status === 'VERIFIED' && fresh.ageMinutes === 720, 'a 12-hour observation passes the 36-hour threshold');
+check(fresh.status === 'VERIFIED' && fresh.ageMinutes === 720, 'a 12-hour observation passes the 900-minute threshold');
 
-const boundary = PDV.checkSatelliteFreshness({
+// Frontiere du SLA : exactement 900 min reste frais (seuil strictement superieur), 901 min devient stale.
+const atSla = PDV.checkSatelliteFreshness({
   ...payload,
-  erddapTimestamp: '2026-10-25T12:33:49.000Z',
+  erddapTimestamp: '2026-10-26T09:33:49.000Z',
 }, now);
-check(boundary.status === 'VERIFIED' && boundary.ageMinutes === 2160, 'exactly 36 hours preserves the existing non-stale boundary');
+check(atSla.status === 'VERIFIED' && atSla.ageMinutes === 900, 'exactly 900 minutes remains fresh (strictly-greater threshold)');
+const justOverSla = PDV.checkSatelliteFreshness({
+  ...payload,
+  erddapTimestamp: '2026-10-26T09:32:49.000Z',
+}, now);
+check(justOverSla.status === 'FAILED' && justOverSla.ageMinutes === 901, '901 minutes exceeds the 900-minute SLA and is stale');
 
 check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: null }, now).status === 'FAILED', 'missing satellite timestamp fails closed');
 check(PDV.checkSatelliteFreshness({ ...payload, erddapTimestamp: 'not-a-date' }, now).status === 'FAILED', 'invalid satellite timestamp fails closed');
