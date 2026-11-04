@@ -45,6 +45,7 @@ const copySurfaces = [
   ['extraPages', content.extraPages],
   ['resortPageTpl', content.resortPageTpl],
   ['press', content.press],
+  ['beachFaq', content.beachFaq],
 ];
 for (const [label, surface] of copySurfaces) {
   const copy = collectStrings(surface).join(' ');
@@ -62,5 +63,8 @@ for (const slug of ['sargazo-punta-cana-hoy', 'sargazo-bavaro-hoy', 'playas-sin-
 assert.match(content.pages.forecast.desc, /última observación|observación satelital/i, 'forecast identifies its observation basis');
 assert.match(content.resortPageTpl.introPattern, /última observación/i, 'resort pages identify the observation basis');
 assert.match(content.press.citation, /fecha y confianza/i, 'press citations retain observation context');
+assert.ok(content.beachFaq, 'regional beach FAQ overrides the generic fallback');
+assert.match(content.beachFaq.questions[0].a, /última observación satelital publicada/i, 'beach FAQ identifies the published observation');
+assert.match(content.beachFaq.questions[1].a, /datos validados disponibles/i, 'beach forecast FAQ is conditional on validated data');
 
 console.log('PUNTACANA_SPANISH_COPY_FRESHNESS PASS (routes, sitemap, cadence, live claims, observation handling)');
