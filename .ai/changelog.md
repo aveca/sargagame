@@ -1,3 +1,15 @@
+## 2026-11-04 — ChatGPT · funnel attribution session key (branch fix/funnel-session-correlation-20261104)
+
+**Correction ciblée de la corrélation du funnel Supabase, sans nouveau stockage ni tiers.**
+
+- `track()` réutilise le `sg_sid` anonyme déjà créé dans `sessionStorage` par le collecteur first-party ; le champ `sid` est ajouté uniquement à la copie envoyée à `logAnalyticsEvent` (Supabase).
+- GA4 conserve le payload `p` inchangé ; la file/beacon Apps Script et le collecteur first-party restent inchangés.
+- Le sentinel `x` (sessionStorage inaccessible) est exclu ; aucun cookie, fingerprint, PII, dépendance ni migration SQL ajoutés.
+- Test `tests/unit/funnel-session-correlation.test.cjs` : périmètre Supabase-only, sid fallback, invariance GA4 et compatibilité du parseur existant.
+- CI + revue confidentialité restent pendantes ; aucun merge, déploiement, paiement, emailing ou mutation de données en production.
+
+---
+
 ﻿
 ## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
 
