@@ -1,4 +1,24 @@
-﻿---
+---
+
+## 2026-11-03 - coding_agent (mission P0 Factory : succès seulement si exécution réelle) - branche fix/guard-false-success
+
+**Cause racine supprimée : le runner déclarait `task.success` après une simple attente de sémaphore.**
+
+- **Constat** : `executeCodeTask()` retournait `{requeued:true}` sans lever d'erreur ; le chemin nominal en déduisait une exécution terminée → suppression de file + succès en télémétrie, sans aucun code exécuté. **6 337 faux succès** / 12 752 succès déclarés, 47 tâches distinctes (`scripts/local-factory/state/false-success-audit.json`).
+- `scripts/local-factory/factory-runner.cjs` : porte de preuve générique `verifyExecutionProof()` avant tout `task.success` ; `SemaphoreWaitError` (code `SEMAPHORE_WAIT`) pour l'attente sémaphore → requeue avec backoff **sans consommer de retry**, jamais un succès, jamais une auto-guérison en `task.error` ; marqueur `processing-` falsifiable (PID mort → retiré, PID vivant + < 30 min → respecté) ; garde `tasks.md` absente (le cycle n'échoue plus en ENOENT) ; heartbeat au démarrage + toutes les 15 s ; sweep des verrous abandonnés au démarrage.
+- `scripts/local-factory/semaphore.cjs` (**nouveau**) : sémaphore durci — preuve de vie par holder (pid + host + UTC), `count` dérivé des holders (non désynchronisable), classification `active` / `orphan_dead_pid` / `orphan_expired` (TTL 2 h), écritures atomiques, quarantaine des fichiers corrompus, journal `state/semaphore-journal.jsonl`, libérations **idempotentes**, `reclaim` refusé sans preuve d'abandon, CLI admin `status|audit|sweep|release`.
+- `scripts/local-factory/heartbeat.cjs` (**nouveau**) : contrat v2 partagé (timestamp UTC, pid réel, état, cycle, queueDepth) ; `evaluateHeartbeat()` validité + fraîcheur + tolérance busy (45 min, PID vivant exigé) ; `evaluateProgress()` pour les vrais blocages.
+- `scripts/local-factory/supervisor.cjs` (réécrit) : garde de verrou anti-double-lancement, fenêtre glissante 12 redémarrages/h, cooldown 5 min après mort < 60 s, récupération persistée observable (`state/supervisor-persist.json`), runner lancé **détaché** en mode continu (survit au superviseur), `--check` et `--restart` journalisés.
+- `scripts/local-factory/tests/factory-p0.test.cjs` (**nouveau**) : 9 tests P0 sur processus enfants réels et états isolés (`FACTORY_*_DIR`) — **9/9 verts**, 45,3 s.
+- `scripts/local-factory/audit-false-success.cjs` / `reclassify-false-success.cjs` (**nouveaux**) : audit et reclassement des faux succès ; 17 tâches de `.ai/autopilot/queue.json` passées à `needs_review` avec preuves, registre durable `.ai/autopilot/needs-review.json`.
+- `scripts/lib/process-runner.cjs` : `STATE_DIR` surchargeable par `FACTORY_STATE_DIR` (isole les tests de l'état de production).
+- Assainissement sémaphore : 2 verrous abandonnés libérés (237,8 h et 69,8 h) ; sémaphore à 0/2.
+- **Validation production** : superviseur `--watch` du 2026-11-04T02:02:54Z au 02:22:57Z → 17 contrôles `recovery=nominal`, 0 redémarrage, cycles 1063→1082, un succès réel `proof: ["candidates"]` (24 s), `recovery.orphaned` du pid mort 11168.
+- Rapport complet : `reports/RAPPORT-P0-FACTORY-2026-11-03.md`.
+- Rollback : `git revert` du commit dédié ; sauvegarde intégrale dans `%TEMP%\opencode\sargagame-factory-p0-backup-2026-11-03T13-23-08`.
+
+---
+---
 
 ## 2026-10-15 - devops_agent (directive DG : bascule gratuite, boucle codage unique)
 

@@ -1,5 +1,53 @@
 ---
 
+## 2026-11-03 22:30 UTC-4 (2026-11-04 02:30 UTC) · Agent: coding_agent (mission P0 Factory)
+
+### Travail effectué
+- **Résumé 1 ligne** : la Factory ne peut plus déclarer un succès sans exécution réelle — cause racine supprimée, sémaphore durci, heartbeat fiable, 9 tests P0 verts, validation production sur 17 cycles réels.
+- **Détails** :
+  - **Cause racine** : `executeCodeTask()` retournait `{requeued:true}` au saturer le sémaphore **sans lever d'erreur** donc `task.success` + suppression de file sans aucune exécution. Mesuré : **6 337 faux succès** / 12 752 succès déclarés (47 tâches distinctes).
+  - **Porte de preuve générique** `verifyExecutionProof()` appelée avant tout `task.success` ; l'attente sémaphore devient l'erreur typée `SemaphoreWaitError` (requeue avec backoff, **sans consommer de retry**, jamais un succès, jamais une auto-guérison en erreur).
+  - **Sémaphore** (`semaphore.cjs`, nouveau) : preuves de vie pid+host+UTC, `count` dérivé des holders, TTL 2 h, écritures atomiques, quarantaine des fichiers corrompus, journal `state/semaphore-journal.jsonl`, libérations idempotentes, CLI admin. Les **2 verrous abandonnés** (237,8 h et 69,8 h) libérés avec preuve ; sémaphore à **0/2**.
+  - **Heartbeat** (`heartbeat.cjs`, nouveau) : contrat v2 (timestamp UTC, pid réel, état, cycle) écrit au démarrage puis toutes les 15 s, validité + fraîcheur + tolérance busy (45 min, PID vivant exigé).
+  - **Superviseur** réécrit : garde de verrou anti-double-lancement, fenêtre glissante 12 redémarrages/h, cooldown 5 min, récupération persistée observable, runner **détaché** (survit au superviseur) en mode continu.
+  - **Défaut annexe corrigé** : `generateDiscoveryTasks()` plantait tout le cycle en l'absence de `.ai/tasks.md` (ENOENT) puis sortait en code 0.
+  - **Phase 2** : 17 tâches de `.ai/autopilot/queue.json` reclassées `new`/`blocked` vers `needs_review` avec preuves ; registre durable `.ai/autopilot/needs-review.json`. Aucune réexécution automatique (`syncAutopilotQueue` ne prend que `status === 'new'`).
+
+### Fichiers modifiés
+- `scripts/local-factory/factory-runner.cjs` — porte de preuve, `script_task`, `SemaphoreWaitError`, heartbeat, sweep des marqueurs abandonnés, gardes `tasks.md`
+- `scripts/local-factory/semaphore.cjs` (nouveau) — sémaphore durci + journal + CLI admin
+- `scripts/local-factory/heartbeat.cjs` (nouveau) — contrat heartbeat partagé
+- `scripts/local-factory/supervisor.cjs` (réécrit) — garde de verrou, limite de redémarrages, récupération observable, runner détaché
+- `scripts/local-factory/tests/factory-p0.test.cjs` (nouveau) — 9 tests P0
+- `scripts/local-factory/audit-false-success.cjs` / `reclassify-false-success.cjs` (nouveaux) — preuves Phase 2
+- `scripts/lib/process-runner.cjs` — `STATE_DIR` surchargeable (isolation des tests)
+- `.ai/autopilot/queue.json` — 17 tâches `needs_review` (preuves incluses) ; `.ai/autopilot/needs-review.json` (nouveau)
+- `reports/RAPPORT-P0-FACTORY-2026-11-03.md` (nouveau) — rapport complet avec preuves
+
+### Tests réalisés
+- [x] 9 tests P0 `node --test scripts/local-factory/tests/factory-p0.test.cjs` : **9/9 verts**, 45,3 s (états isolés, processus enfants réels)
+- [x] Tolérance busy du heartbeat : 4 cas (busy+PID vivant : alive ; idle périmé : stale ; busy+PID mort : stale ; idle frais : alive)
+- [x] Validation production : superviseur `--watch` : **17 contrôles consécutifs `recovery=nominal`**, 0 redémarrage, cycles 1063 vers 1082, un succès réel `proof: ["candidates"]` (24 s d'exécution), `recovery.orphaned` du pid mort 11168
+- [x] Idempotence sémaphore : re-sweep et re-release = noop, vérifiés
+- [x] `npm run build` : non requis (aucun fichier `src/` ou `public/` touché)
+
+### Problèmes restants
+- [ ] 17 tâches `needs_review` à relire avant de les repasser `new` (revue manuelle, aucune réexécution automatique) — sévérité moyenne
+- [ ] 6 337 faux succès restent dans les historiques (choix : aucun historique réécrit, étiquetage par registre) — sévérité basse
+- [ ] Factory à relancer en surveillance continue après la revue ci-dessus — sévérité basse
+
+### Prochaine action recommandée
+1. Relire les 17 tâches `needs_review` (`.ai/autopilot/needs-review.json`) puis repasser `status=new` celles dont la preuve est acceptable — Rôle : coding_agent
+2. Garder `supervisor.cjs --watch` actif et surveiller `state/supervisor-persist.json` (`recovery.state`) — Rôle : devops_agent
+
+### Branche / PR
+- Branche : `fix/guard-false-success`
+- PR : à créer (diff ciblé, pas de commit en bloc)
+- Commit head : à déterminer après commit ciblé
+
+---
+---
+
 ## 2026-10-15 01:45 UTC · Agent: devops_agent (directive DG : bascule gratuite + boucle codage unique)
 
 ### Travail effectué

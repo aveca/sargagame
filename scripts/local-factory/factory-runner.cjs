@@ -28,11 +28,17 @@ const SCRIPT_DIR = __dirname;
 const SCRIPTS_DIR = path.dirname(SCRIPT_DIR); // scripts/
 const ROOT = path.dirname(SCRIPTS_DIR); // repo root
 const AI_DIR = path.join(ROOT, '.ai');
-const QUEUE_DIR = path.join(ROOT, 'queue');
-const STATE_DIR = path.join(__dirname, 'state');
-const LOGS_DIR = path.join(__dirname, 'logs');
+const QUEUE_DIR = process.env.FACTORY_QUEUE_DIR
+  ? path.resolve(process.env.FACTORY_QUEUE_DIR)
+  : path.join(ROOT, 'queue');
+const STATE_DIR = process.env.FACTORY_STATE_DIR
+  ? path.resolve(process.env.FACTORY_STATE_DIR)
+  : path.join(__dirname, 'state');
+const LOGS_DIR = process.env.FACTORY_LOGS_DIR
+  ? path.resolve(process.env.FACTORY_LOGS_DIR)
+  : path.join(__dirname, 'logs');
 
-const TASKS_FILE = path.join(AI_DIR, 'tasks.md');
+const TASKS_FILE = process.env.FACTORY_TASKS_FILE || path.join(AI_DIR, 'tasks.md');
 const STATE_FILE = path.join(AI_DIR, 'current_state.md');
 const CHANGELOG_FILE = path.join(AI_DIR, 'changelog.md');
 
@@ -44,34 +50,29 @@ const LOCK_FILE = path.join(STATE_DIR, 'factory.lock');
 const TELEMETRY_FILE = path.join(STATE_DIR, 'telemetry.json');
 const CIRCUIT_BREAKER_FILE = path.join(STATE_DIR, 'circuit-breakers.json');
 const WORKER_POOL_FILE = path.join(STATE_DIR, 'worker-pool.json');
-const OPENCODE_SEMAPHORE_FILE = path.join(STATE_DIR, 'opencode-semaphore.json');
 
-const MAX_OPENCODE_CONCURRENT = 2;
+// Semaphore OpenCode + heartbeat : modules dédiés (source unique de vérité)
+const semaphoreLib = require('./semaphore.cjs');
+const heartbeatLib = require('./heartbeat.cjs');
+const { SemaphoreWaitError, sweepOrphans, acquire: semaphoreAcquire, release: semaphoreRelease, audit: semaphoreAudit } = semaphoreLib;
+const { writeHeartbeat } = heartbeatLib;
+const MAX_OPENCODE_CONCURRENT = semaphoreLib.MAX_OPENCODE_CONCURRENT;
+const HEARTBEAT_FILE = heartbeatLib.HEARTBEAT_FILE;
+const HEARTBEAT_INTERVAL_MS = heartbeatLib.HEARTBEAT_INTERVAL_MS;
 
-// Semaphore for OpenCode concurrency control
+// Adaptateurs : les noms historiques restent, la logique est dans semaphore.cjs
 function acquireOpenCodeSemaphore(taskId) {
-  let semaphore = { count: 0, holders: [] };
-  if (fs.existsSync(OPENCODE_SEMAPHORE_FILE)) {
-    try { semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8')); } catch (_) {}
-  }
-  if (semaphore.count >= MAX_OPENCODE_CONCURRENT) {
-    return false;
-  }
-  semaphore.count++;
-  semaphore.holders.push({ taskId, acquiredAt: Date.now() });
-  fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
-  return true;
+  return semaphoreAcquire(taskId, { pid: process.pid }).acquired === true;
+}
+function releaseOpenCodeSemaphore(taskId) {
+  semaphoreRelease(taskId, { pid: process.pid });
+}
+function openCodeSemaphoreAudit() {
+  return semaphoreAudit();
 }
 
-function releaseOpenCodeSemaphore(taskId) {
-  if (!fs.existsSync(OPENCODE_SEMAPHORE_FILE)) return;
-  try {
-    const semaphore = JSON.parse(fs.readFileSync(OPENCODE_SEMAPHORE_FILE, 'utf8'));
-    semaphore.count = Math.max(0, semaphore.count - 1);
-    semaphore.holders = semaphore.holders.filter(h => h.taskId !== taskId);
-    fs.writeFileSync(OPENCODE_SEMAPHORE_FILE, JSON.stringify(semaphore, null, 2));
-  } catch (_) {}
-}
+// État courant du runner, publié dans le heartbeat
+let runnerState = 'stopped';
 
 // UX Observer & Local Agent Executor (autonomous loop)
 const { runUXObserver } = require('../autopilot/ux-observer.cjs');
@@ -285,6 +286,9 @@ async function executeTask(task, worker) {
       case 'test_task':
         result = await executeTestTask(task, worker);
         break;
+      case 'script_task':
+        result = await executeScriptTask(task, worker);
+        break;
       case 'deploy_task':
         result = await executeDeployTask(task, worker);
         break;
@@ -292,15 +296,31 @@ async function executeTask(task, worker) {
         // Generic handler via local agent
         result = await executeGenericTask(task, worker);
     }
-    
+
+    // P0 — PORTE DE PREUVE : une tâche n'est `success` que si son exécution
+    // réelle et son résultat sont vérifiables. Un résultat « requeued »
+    // (attente sémaphore) ou dépourvu de champ de preuve est un ÉCHEC, pas
+    // un succès déguisé.
+    const proof = verifyExecutionProof(task, taskType, result);
+    if (!proof.ok) {
+      throw new Error(`Aucune preuve d'execution pour ${task.id} (${taskType}) : ${proof.missing}`);
+    }
+
     const duration = Date.now() - startTime;
-    log('task.success', { id: task.id, type: taskType, duration, worker: worker.name });
+    log('task.success', { id: task.id, type: taskType, duration, worker: worker.name, proof: proof.evidence });
     recordTelemetry('task_success', { taskId: task.id, type: taskType, worker: worker.name, duration, success: true });
     recordSuccess(worker.model);
-    
-    return { success: true, result, duration, worker: worker.name };
-    
+
+    return { success: true, result, duration, worker: worker.name, proof: proof.evidence };
+
   } catch (error) {
+    // P0 — une attente de sémaphore n'est pas une erreur d'exécution : ni
+    // succès, ni self-healing. Elle remonte telle quelle au planificateur.
+    if (error && error.code === 'SEMAPHORE_WAIT') {
+      log('task.semaphore_wait', { id: task.id, type: taskType, reason: error.reason });
+      throw error;
+    }
+
     const duration = Date.now() - startTime;
     log('task.error', { id: task.id, type: taskType, duration, error: error.message, worker: worker.name });
     recordTelemetry('task_error', { taskId: task.id, type: taskType, worker: worker.name, duration, error: error.message, success: false });
@@ -452,6 +472,79 @@ async function executeUxObserver(task, worker) {
   };
 }
 
+/**
+ * P0 — PORTE DE PREUVE D'EXÉCUTION.
+ * Un succès n'est accordé que si le résultat porte une preuve vérifiable
+ * (livrable, code de sortie, artefact, validation…). Un résultat marqué
+ * `requeued` (attente sémaphore) ou vide est un échec, jamais un succès.
+ */
+function verifyExecutionProof(task, taskType, result) {
+  if (result === null || result === undefined) return { ok: false, missing: 'resultat absent' };
+  if (typeof result !== 'object') return { ok: false, missing: `resultat de type ${typeof result}` };
+  if (result.requeued) return { ok: false, missing: 'tache non executee (requeued / attente semaphore)' };
+  if (Object.keys(result).length === 0) return { ok: false, missing: 'resultat vide' };
+
+  const EVIDENCE_KEYS = [
+    'prUrl', 'commitSha', 'branch', 'exitCode', 'artifact', 'validation', 'tasksGenerated',
+    'findings', 'deployed', 'candidates', 'verified', 'testType', 'skipped', 'noChanges',
+    'duration', 'rendered', 'size', 'completed',
+  ];
+  const present = EVIDENCE_KEYS.filter(k => result[k] !== undefined && result[k] !== null);
+  if (!present.length) {
+    return { ok: false, missing: `aucun champ de preuve parmi [${EVIDENCE_KEYS.join(', ')}]` };
+  }
+  if (result.exitCode !== undefined && Number(result.exitCode) !== 0) {
+    return { ok: false, missing: `exitCode ${result.exitCode} (execution en echec)` };
+  }
+  return { ok: true, evidence: present };
+}
+
+/**
+ * `script_task` — exécution réelle bornée d'une commande autorisée (node).
+ * Le succès est conditionné au code de sortie 0 ; la preuve = exitCode +
+ * sortie capturée + durée. Utilisé par la factory (vérifs) et par les tests P0.
+ */
+const SCRIPT_TASK_ALLOWED = { node: process.execPath };
+async function executeScriptTask(task, worker) {
+  const payload = task.payload || {};
+  const command = payload.command;
+  const bin = SCRIPT_TASK_ALLOWED[command];
+  if (!bin) {
+    throw new Error(`Commande non autorisee: ${command || 'absente'} (autorisees: ${Object.keys(SCRIPT_TASK_ALLOWED).join(', ')})`);
+  }
+  if (!Array.isArray(payload.args) || payload.args.length === 0) {
+    throw new Error('script_task: payload.args[] (tableau de chaines) est requis');
+  }
+  if (payload.args.some(a => typeof a !== 'string')) {
+    throw new Error('script_task: arguments non textuels refuses');
+  }
+  const timeoutMs = Math.min(Number(payload.timeoutMs) || 120000, 300000);
+  const startedAt = new Date();
+  log('script_task.start', { id: task.id, command, argsCount: payload.args.length, timeoutMs });
+
+  let res;
+  try {
+    res = await runBounded(bin, payload.args.slice(0, 20), { cwd: ROOT, timeout: timeoutMs });
+  } catch (e) {
+    const code = e.code !== undefined && e.code !== null ? e.code : null;
+    const fail = Object.assign(
+      new Error(`script_task echoue (code ${code}) : ${(e.stderr || e.message || '').slice(0, 300)}`),
+      { exitCode: code, stdoutTail: (e.stdout || '').slice(-500), stderrTail: (e.stderr || '').slice(-500) }
+    );
+    throw fail;
+  }
+
+  return {
+    exitCode: res.code,
+    command,
+    argsCount: payload.args.length,
+    stdoutTail: (res.stdout || '').slice(-2000),
+    stderrTail: (res.stderr || '').slice(-200),
+    startedAt: startedAt.toISOString(),
+    durationMs: Date.now() - startedAt.getTime(),
+  };
+}
+
 async function executeCodeTask(task, worker) {
   // Execute locally via OpenCode + Ollama (autonomous, no GitHub issue)
   // The task payload contains the full UX task from autopilot queue
@@ -459,13 +552,13 @@ async function executeCodeTask(task, worker) {
   log('code_task.local_execution', { taskId, type: task.payload?.type || 'unknown' });
   
   // Acquire semaphore for OpenCode concurrency control
-  const acquired = acquireOpenCodeSemaphore(taskId);
-  if (!acquired) {
-    log('code_task.semaphore_wait', { taskId, reason: 'max concurrent OpenCode reached' });
-    // Requeue with backoff
-    const backoff = Math.min(10000 + Math.random() * 5000, 60000);
-    task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
-    return { requeued: true, reason: 'semaphore_wait', backoff };
+  const acquisition = semaphoreAcquire(taskId, { pid: process.pid });
+  if (!acquisition.acquired) {
+    // P0 : une attente de sémaphore n'est JAMAIS un succès. On lève une erreur
+    // typée : le planificateur remet la tâche en file avec backoff, le compte
+    // de succès n'est PAS incrémenté, aucune trace « task.success » n'existe.
+    log('code_task.semaphore_wait', { taskId, reason: acquisition.reason, activeHolders: acquisition.holders });
+    throw new SemaphoreWaitError(acquisition.reason, { taskId, holders: acquisition.holders });
   }
   
   try {
@@ -595,6 +688,7 @@ async function waitForWorkflow(workflowName) {
 
 // Update tasks.md to mark task as in_progress (list format only - headers are documentation)
 function updateTaskInProgress(taskId) {
+  if (!fs.existsSync(TASKS_FILE)) return; // rien à réclamer : pas d'erreur, pas de commit
   const content = fs.readFileSync(TASKS_FILE, 'utf8');
   
   // Check if already claimed (in progress) - list format
@@ -639,16 +733,31 @@ async function processQueue() {
         continue;
       }
       
-      // Check if already processing
+      // Check if already processing (garde-fou anti-doublon : un marqueur vivant
+      // avec un PID vivant bloque la tâche ; un marqueur dont le PID est mort
+      // est un reste abandonné — il est retiré, pas respecté).
       const processingFile = path.join(STATE_DIR, `processing-${taskId}.json`);
       if (fs.existsSync(processingFile)) {
-        const proc = JSON.parse(fs.readFileSync(processingFile, 'utf8'));
-        if (Date.now() - new Date(proc.startedAt).getTime() < 30 * 60 * 1000) {
-          log('task.still_processing', { id: taskId });
+        let proc = {};
+        try { proc = JSON.parse(fs.readFileSync(processingFile, 'utf8')); } catch (_) {}
+        const startedMs = proc.startedAt ? new Date(proc.startedAt).getTime() : 0;
+        const ageMs = startedMs ? Date.now() - startedMs : Infinity;
+        const markerPid = proc.pid;
+        const markerAlive = markerPid ? pidAlive(markerPid) : false;
+        if (markerAlive && ageMs < 30 * 60 * 1000) {
+          log('task.still_processing', { id: taskId, pid: markerPid, ageMin: (ageMs / 60000).toFixed(1) });
           continue;
+        }
+        if (!markerAlive) {
+          log('processing.marker_abandoned', { id: taskId, pid: markerPid });
+          fs.unlinkSync(processingFile);
         }
       }
       
+      // Heartbeat de début de tâche : rend observable l'avancement réel
+      // (quelle tâche tourne, dans quel cycle) même si le cycle est long.
+      writeHeartbeat({ state: 'busy', cycle: loadTelemetry().cycles || 0, queueDepth: queue.length, currentTask: taskId });
+
       // Update tasks.md to mark as in_progress (mapped to the raw TASK-ID;
       // the queue id `task-<TASK-ID>` matches nothing in tasks.md).
       // Proof-task ids (no TASK-Px-xxx pattern) intentionally no-op here.
@@ -675,7 +784,19 @@ async function processQueue() {
       } catch (error) {
         // Requeue with backoff (synchronous - write immediately)
         fs.unlinkSync(processingFile);
-        
+
+        // P0 — Attente sémaphore : ce n'est PAS un échec d'exécution.
+        // La tâche retourne en file avec backoff, sans consommer de retry, et
+        // n'est JAMAIS retirée de la file ni marquée terminée/succès.
+        if (error && error.code === 'SEMAPHORE_WAIT') {
+          const backoff = Math.min(10000 + Math.random() * 5000, 60000);
+          task.nextRetryAt = new Date(Date.now() + backoff).toISOString();
+          task.lastWaitReason = error.reason;
+          saveQueueItem(task);
+          log('task.semaphore_wait_requeue', { id: taskId, reason: error.reason, backoff });
+          continue;
+        }
+
         const retryCount = (task.retryCount || 0) + 1;
         const maxRetries = task.maxRetries || 3;
 
@@ -762,7 +883,15 @@ async function generateDiscoveryTasks() {
   }
   
   // Check tasks.md for pending tasks (list format only - headers are documentation, not trackers)
-  const tasksContent = fs.readFileSync(TASKS_FILE, 'utf8');
+  // Un fichier absent n'est PAS une raison d'abandonner le cycle entier : la
+  // factory continue son travail de découverte et de file (défaut constaté :
+  // ENOENT sur tasks.md => cycle.error puis sortie, aucune tâche traitée).
+  let tasksContent = '';
+  if (fs.existsSync(TASKS_FILE)) {
+    tasksContent = fs.readFileSync(TASKS_FILE, 'utf8');
+  } else {
+    log('tasks_file.absent', { file: TASKS_FILE, note: 'aucune tache importee de tasks.md ce cycle' });
+  }
   const lines = tasksContent.split('\n');
   
   for (const line of lines) {
@@ -873,10 +1002,12 @@ async function runCycle() {
   telemetry.lastCycle = new Date().toISOString();
   saveTelemetry(telemetry);
   log('cycle.start', { cycle: telemetry.cycles });
-  
+  runnerState = 'busy';
+  writeHeartbeat({ state: runnerState, cycle: telemetry.cycles, queueDepth: loadQueue().length });
+
   // Generate discovery tasks
   await generateDiscoveryTasks();
-  
+
   // Run UX Observer to generate autonomous UX tasks (every 3 cycles = ~3 min)
   if (telemetry.cycles % 3 === 0) {
     log('ux_observer.scheduled', { cycle: telemetry.cycles });
@@ -886,45 +1017,79 @@ async function runCycle() {
       log('ux_observer.error', { error: e.message });
     }
   }
-  
+
   // Sync tasks from autopilot queue
   const synced = syncAutopilotQueue();
   if (synced > 0) log('queue.synced', { count: synced });
-  
+
   // Recover stale/failed
   await recoverStaleTasks();
   await recoverFailedWorkers();
-  
+
   // Process queue
   const processed = await processQueue();
-  
+
   // Cleanup temp files
   await stopAllServers();
-  
+
   log('cycle.end', { processed, queueRemaining: loadQueue().length });
-  
+  runnerState = 'idle';
+  writeHeartbeat({ state: runnerState, cycle: telemetry.cycles, queueDepth: loadQueue().length });
+
   return processed;
 }
 
 async function runContinuous(options = {}) {
   const { once = false, interval = 60000 } = options; // Default 1 min between cycles
-  
+
   log('factory.start', { mode: once ? 'once' : 'continuous', interval });
-  
-  while (true) {
-    try {
-      await runCycle();
-    } catch (error) {
-      log('cycle.error', { error: error.message, stack: error.stack });
-    }
-    
-    if (once) break;
-    
-    log('cycle.wait', { intervalMs: interval });
-    await new Promise(r => setTimeout(r, interval));
+
+  // P0 — Au démarrage : aucun verrou OpenCode abandonné (pid mort ou TTL
+  // dépassé) n'est respecté. Ils sont libérés et journalisés AVANT d'admettre
+  // la moindre tâche, sinon le sémaphore resterait saturé pour toujours.
+  const swept = sweepOrphans({ reason: 'demarrage du runner : verrous abandonnes liberes' });
+  if (swept.released.length) {
+    log('semaphore.sweep_startup', {
+      released: swept.released.map(r => ({ taskId: r.taskId, pid: r.pid, why: r.why, detail: r.detail })),
+    });
   }
-  
-  log('factory.stop');
+
+  // Heartbeat (P0) : écrit dès le démarrage AVANT le premier cycle, puis
+  // rafraîchi toutes les HEARTBEAT_INTERVAL_MS. Contient timestamp UTC, PID,
+  // état du runner, identifiant de cycle persistant, profondeur de file.
+  const startedAtMs = Date.now();
+  writeHeartbeat({ state: 'starting', startedAtMs, uptimeMs: 0, cycle: loadTelemetry().cycles || 0, queueDepth: loadQueue().length });
+  const heartbeatTimer = setInterval(() => {
+    writeHeartbeat({
+      state: runnerState || 'starting',
+      cycle: loadTelemetry().cycles || 0,
+      queueDepth: loadQueue().length,
+      uptimeMs: Date.now() - startedAtMs,
+    });
+  }, HEARTBEAT_INTERVAL_MS);
+  if (heartbeatTimer.unref) heartbeatTimer.unref();
+
+  try {
+    while (true) {
+      try {
+        await runCycle();
+      } catch (error) {
+        log('cycle.error', { error: error.message, stack: error.stack });
+        runnerState = 'error';
+        writeHeartbeat({ state: runnerState, cycle: loadTelemetry().cycles || 0, uptimeMs: Date.now() - startedAtMs });
+      }
+
+      if (once) break;
+
+      log('cycle.wait', { intervalMs: interval });
+      await new Promise(r => setTimeout(r, interval));
+    }
+  } finally {
+    clearInterval(heartbeatTimer);
+    runnerState = 'stopped';
+    writeHeartbeat({ state: 'stopped', cycle: loadTelemetry().cycles || 0, uptimeMs: Date.now() - startedAtMs });
+    log('factory.stop');
+  }
 }
 
 async function main() {
@@ -937,18 +1102,36 @@ async function main() {
     const t = loadTelemetry();
     const cb = loadCircuitBreakers();
     const queue = loadQueue();
-    
+    const sem = openCodeSemaphoreAudit();
+    const hb = heartbeatLib.readHeartbeat();
+
     console.log('\n=== Factory Runner Status ===\n');
     console.log(`Cycles: ${t.cycles}`);
     console.log(`Last cycle: ${t.lastCycle || 'never'}`);
     console.log(`Queue depth: ${queue.length}`);
     console.log(`Circuit breakers: ${Object.keys(cb).length}`);
     console.log(`Tasks:`, t.tasks);
+    console.log(`Semaphore: ${sem.count}/${sem.max} actifs, ${sem.orphans.length} abandonne(s)`);
+    for (const h of sem.holders) console.log(`  - ${h.taskId} pid=${h.pid} ${h.verdict} (${h.detail})`);
+    console.log(`Heartbeat: ${hb ? `${hb.state} pid=${hb.pid} ${hb.timestamp}` : 'aucun'}`);
     return;
   }
-  
+
+  // Arrêt gracieux : le verrou et le heartbeat sont soldés (pas de fantôme).
+  const gracefulShutdown = (signal) => {
+    try {
+      runnerState = 'terminated';
+      writeHeartbeat({ state: 'terminated', cycle: loadTelemetry().cycles || 0 });
+    } catch (_) {}
+    try { releaseLock(); } catch (_) {}
+    try { log('factory.signal', { signal }); } catch (_) {}
+    process.exit(0);
+  };
+  process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+
   acquireLock();
-  
+
   try {
     await runContinuous({ once, interval });
   } finally {
@@ -958,4 +1141,10 @@ async function main() {
 
 if (require.main === module) main();
 
-module.exports = { runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess, acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers, loadQueue, saveQueueItem, removeQueueItem };
+module.exports = {
+  runContinuous, executeWithFallback, getAvailableWorker, recordFailure, recordSuccess,
+  acquireLock, releaseLock, processQueue, recoverStaleTasks, recoverFailedWorkers,
+  loadQueue, saveQueueItem, removeQueueItem,
+  // Exportée pour les tests P0 : la porte de preuve doit être vérifiable hors ligne.
+  verifyExecutionProof,
+};

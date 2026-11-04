@@ -1,0 +1,774 @@
+{
+  "generatedAt": "2026-11-03T19:16:36.368Z",
+  "source": "scripts/local-factory/audit-false-success.cjs",
+  "policy": "Un succès déclaré sans preuve d exécution est révoqué = needs_review. Aucune réexécution automatique.",
+  "totalFalseSuccesses": 6337,
+  "distinctTasks": 47,
+  "reclassifiedInQueue": [
+    "FACTORY-LOCAL-OLLAMA-FINAL-20261003",
+    "OPP-visual-shift-mq-deep-1-deep-1",
+    "OPP-visual-shift-mq-paywall-paywall",
+    "OPP-visual-shift-mq-deep-2-deep-2",
+    "OPP-first-party-404-florida-paywall-https-sargassummiami-com-api",
+    "OPP-visual-shift-florida-paywall-paywall",
+    "OPP-visual-shift-florida-deep-2-deep-2",
+    "UX-JS_-20261024-000",
+    "UX-EMP-20261024-001",
+    "UX-LOW-20261024-002",
+    "UX-BRO-20261024-003",
+    "UX-BRO-20261024-004",
+    "UX-BRO-20261024-005",
+    "UX-BRO-20261024-006",
+    "UX-LOW-20261024-007",
+    "UX-VIS-20261024-008",
+    "UX-VIS-20261024-009"
+  ],
+  "alreadyReview": [],
+  "tasks": [
+    {
+      "taskId": "FACTORY-LOCAL-OLLAMA-FINAL-20261003",
+      "falseDeclarations": 573,
+      "firstDeclaredAt": "2026-10-20T02:42:45.964Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.847Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:136 (semaphore_wait) -> factory-2026-10-20.jsonl:137 (task.success)",
+        "factory-2026-10-20.jsonl:221 (semaphore_wait) -> factory-2026-10-20.jsonl:222 (task.success)",
+        "factory-2026-10-31.jsonl:188 (semaphore_wait) -> factory-2026-10-31.jsonl:189 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261020-003",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.968Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.601Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:142 (semaphore_wait) -> factory-2026-10-20.jsonl:143 (task.success)",
+        "factory-2026-10-20.jsonl:233 (semaphore_wait) -> factory-2026-10-20.jsonl:234 (task.success)",
+        "factory-2026-10-31.jsonl:260 (semaphore_wait) -> factory-2026-10-31.jsonl:261 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261020-004",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.972Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.606Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:148 (semaphore_wait) -> factory-2026-10-20.jsonl:149 (task.success)",
+        "factory-2026-10-20.jsonl:239 (semaphore_wait) -> factory-2026-10-20.jsonl:240 (task.success)",
+        "factory-2026-10-31.jsonl:266 (semaphore_wait) -> factory-2026-10-31.jsonl:267 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261020-005",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.976Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.611Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:154 (semaphore_wait) -> factory-2026-10-20.jsonl:155 (task.success)",
+        "factory-2026-10-20.jsonl:245 (semaphore_wait) -> factory-2026-10-20.jsonl:246 (task.success)",
+        "factory-2026-10-31.jsonl:272 (semaphore_wait) -> factory-2026-10-31.jsonl:273 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261020-006",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.980Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.616Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:160 (semaphore_wait) -> factory-2026-10-20.jsonl:161 (task.success)",
+        "factory-2026-10-20.jsonl:251 (semaphore_wait) -> factory-2026-10-20.jsonl:252 (task.success)",
+        "factory-2026-10-31.jsonl:278 (semaphore_wait) -> factory-2026-10-31.jsonl:279 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-EMP-20261020-001",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.985Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.663Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:166 (semaphore_wait) -> factory-2026-10-20.jsonl:167 (task.success)",
+        "factory-2026-10-20.jsonl:257 (semaphore_wait) -> factory-2026-10-20.jsonl:258 (task.success)",
+        "factory-2026-10-31.jsonl:332 (semaphore_wait) -> factory-2026-10-31.jsonl:333 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-JS_-20261020-000",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.989Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.678Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:172 (semaphore_wait) -> factory-2026-10-20.jsonl:173 (task.success)",
+        "factory-2026-10-20.jsonl:263 (semaphore_wait) -> factory-2026-10-20.jsonl:264 (task.success)",
+        "factory-2026-10-31.jsonl:350 (semaphore_wait) -> factory-2026-10-31.jsonl:351 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261020-002",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.993Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.700Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:178 (semaphore_wait) -> factory-2026-10-20.jsonl:179 (task.success)",
+        "factory-2026-10-20.jsonl:269 (semaphore_wait) -> factory-2026-10-20.jsonl:270 (task.success)",
+        "factory-2026-10-31.jsonl:374 (semaphore_wait) -> factory-2026-10-31.jsonl:375 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261020-007",
+      "falseDeclarations": 3,
+      "firstDeclaredAt": "2026-10-20T02:42:45.998Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.709Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:184 (semaphore_wait) -> factory-2026-10-20.jsonl:185 (task.success)",
+        "factory-2026-10-20.jsonl:275 (semaphore_wait) -> factory-2026-10-20.jsonl:276 (task.success)",
+        "factory-2026-10-31.jsonl:380 (semaphore_wait) -> factory-2026-10-31.jsonl:381 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261020-008",
+      "falseDeclarations": 2,
+      "firstDeclaredAt": "2026-10-20T02:42:46.001Z",
+      "lastDeclaredAt": "2026-10-20T02:43:54.621Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:190 (semaphore_wait) -> factory-2026-10-20.jsonl:191 (task.success)",
+        "factory-2026-10-20.jsonl:281 (semaphore_wait) -> factory-2026-10-20.jsonl:282 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261020-009",
+      "falseDeclarations": 2,
+      "firstDeclaredAt": "2026-10-20T02:42:46.005Z",
+      "lastDeclaredAt": "2026-10-20T02:43:54.626Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:196 (semaphore_wait) -> factory-2026-10-20.jsonl:197 (task.success)",
+        "factory-2026-10-20.jsonl:287 (semaphore_wait) -> factory-2026-10-20.jsonl:288 (task.success)"
+      ]
+    },
+    {
+      "taskId": "TEST-SEMAPHORE-REQUEUE-001",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-20T02:43:54.582Z",
+      "lastDeclaredAt": "2026-10-20T02:43:54.582Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-20.jsonl:227 (semaphore_wait) -> factory-2026-10-20.jsonl:228 (task.success)"
+      ]
+    },
+    {
+      "taskId": "budget-and-backoff",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.529Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.529Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:182 (semaphore_wait) -> factory-2026-10-31.jsonl:183 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-broken-link-florida-paywall-cgv-html",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.540Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.540Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:194 (semaphore_wait) -> factory-2026-10-31.jsonl:195 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-first-party-404-florida-paywall-https-sargassummiami-com-api",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.546Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.546Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:200 (semaphore_wait) -> factory-2026-10-31.jsonl:201 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-florida-deep-2-deep-2",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.552Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.552Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:206 (semaphore_wait) -> factory-2026-10-31.jsonl:207 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-florida-paywall-paywall",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.557Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.557Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:212 (semaphore_wait) -> factory-2026-10-31.jsonl:213 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-mq-deep-1-deep-1",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.562Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.562Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:218 (semaphore_wait) -> factory-2026-10-31.jsonl:219 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-mq-deep-2-deep-2",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.568Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.568Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:224 (semaphore_wait) -> factory-2026-10-31.jsonl:225 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-mq-home-home",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.573Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.573Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:230 (semaphore_wait) -> factory-2026-10-31.jsonl:231 (task.success)"
+      ]
+    },
+    {
+      "taskId": "OPP-visual-shift-mq-paywall-paywall",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.579Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.579Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:236 (semaphore_wait) -> factory-2026-10-31.jsonl:237 (task.success)"
+      ]
+    },
+    {
+      "taskId": "SEO-QW-GP-20261014-saison-sargasses-guadelo",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.585Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.585Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:242 (semaphore_wait) -> factory-2026-10-31.jsonl:243 (task.success)"
+      ]
+    },
+    {
+      "taskId": "SEO-QW-GP-20261014-sargasses-guadeloupe.com",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.590Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.590Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:248 (semaphore_wait) -> factory-2026-10-31.jsonl:249 (task.success)"
+      ]
+    },
+    {
+      "taskId": "SEO-QW-MQ-20261014-carte-sargasses",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.595Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.595Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:254 (semaphore_wait) -> factory-2026-10-31.jsonl:255 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261021-003",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.621Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.621Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:284 (semaphore_wait) -> factory-2026-10-31.jsonl:285 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261021-004",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.627Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.627Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:290 (semaphore_wait) -> factory-2026-10-31.jsonl:291 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261021-005",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.634Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.634Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:296 (semaphore_wait) -> factory-2026-10-31.jsonl:297 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261021-006",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.639Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.639Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:302 (semaphore_wait) -> factory-2026-10-31.jsonl:303 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261024-003",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.644Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.851Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:308 (semaphore_wait) -> factory-2026-10-31.jsonl:309 (task.success)",
+        "factory-2026-10-31.jsonl:471 (semaphore_wait) -> factory-2026-10-31.jsonl:472 (task.success)",
+        "factory-2026-10-31.jsonl:553 (semaphore_wait) -> factory-2026-10-31.jsonl:554 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261024-004",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.649Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.855Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:314 (semaphore_wait) -> factory-2026-10-31.jsonl:315 (task.success)",
+        "factory-2026-10-31.jsonl:477 (semaphore_wait) -> factory-2026-10-31.jsonl:478 (task.success)",
+        "factory-2026-10-31.jsonl:559 (semaphore_wait) -> factory-2026-10-31.jsonl:560 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261024-005",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.653Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.859Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:320 (semaphore_wait) -> factory-2026-10-31.jsonl:321 (task.success)",
+        "factory-2026-10-31.jsonl:483 (semaphore_wait) -> factory-2026-10-31.jsonl:484 (task.success)",
+        "factory-2026-10-31.jsonl:565 (semaphore_wait) -> factory-2026-10-31.jsonl:566 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-BRO-20261024-006",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.658Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.864Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:326 (semaphore_wait) -> factory-2026-10-31.jsonl:327 (task.success)",
+        "factory-2026-10-31.jsonl:489 (semaphore_wait) -> factory-2026-10-31.jsonl:490 (task.success)",
+        "factory-2026-10-31.jsonl:571 (semaphore_wait) -> factory-2026-10-31.jsonl:572 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-EMP-20261021-001",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.668Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.668Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:338 (semaphore_wait) -> factory-2026-10-31.jsonl:339 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-EMP-20261024-001",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.673Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.868Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:344 (semaphore_wait) -> factory-2026-10-31.jsonl:345 (task.success)",
+        "factory-2026-10-31.jsonl:495 (semaphore_wait) -> factory-2026-10-31.jsonl:496 (task.success)",
+        "factory-2026-10-31.jsonl:577 (semaphore_wait) -> factory-2026-10-31.jsonl:578 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-JS_-20261021-000",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.683Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.683Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:356 (semaphore_wait) -> factory-2026-10-31.jsonl:357 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-JS_-20261021-002",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.689Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.689Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:362 (semaphore_wait) -> factory-2026-10-31.jsonl:363 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-JS_-20261024-000",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.695Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.872Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:368 (semaphore_wait) -> factory-2026-10-31.jsonl:369 (task.success)",
+        "factory-2026-10-31.jsonl:501 (semaphore_wait) -> factory-2026-10-31.jsonl:502 (task.success)",
+        "factory-2026-10-31.jsonl:583 (semaphore_wait) -> factory-2026-10-31.jsonl:584 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261021-000",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.717Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.717Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:386 (semaphore_wait) -> factory-2026-10-31.jsonl:387 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261021-001",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.723Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.723Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:392 (semaphore_wait) -> factory-2026-10-31.jsonl:393 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261024-002",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.729Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.876Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:398 (semaphore_wait) -> factory-2026-10-31.jsonl:399 (task.success)",
+        "factory-2026-10-31.jsonl:507 (semaphore_wait) -> factory-2026-10-31.jsonl:508 (task.success)",
+        "factory-2026-10-31.jsonl:589 (semaphore_wait) -> factory-2026-10-31.jsonl:590 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-LOW-20261024-007",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.734Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.879Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:404 (semaphore_wait) -> factory-2026-10-31.jsonl:405 (task.success)",
+        "factory-2026-10-31.jsonl:513 (semaphore_wait) -> factory-2026-10-31.jsonl:514 (task.success)",
+        "factory-2026-10-31.jsonl:595 (semaphore_wait) -> factory-2026-10-31.jsonl:596 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-PER-20261022-009",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.739Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.739Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:410 (semaphore_wait) -> factory-2026-10-31.jsonl:411 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261021-002",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.745Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.745Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:416 (semaphore_wait) -> factory-2026-10-31.jsonl:417 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261021-008",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.750Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.750Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:422 (semaphore_wait) -> factory-2026-10-31.jsonl:423 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261021-009",
+      "falseDeclarations": 1,
+      "firstDeclaredAt": "2026-10-31T22:46:25.756Z",
+      "lastDeclaredAt": "2026-10-31T22:46:25.756Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:428 (semaphore_wait) -> factory-2026-10-31.jsonl:429 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261024-008",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.761Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.883Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:434 (semaphore_wait) -> factory-2026-10-31.jsonl:435 (task.success)",
+        "factory-2026-10-31.jsonl:519 (semaphore_wait) -> factory-2026-10-31.jsonl:520 (task.success)",
+        "factory-2026-10-31.jsonl:601 (semaphore_wait) -> factory-2026-10-31.jsonl:602 (task.success)"
+      ]
+    },
+    {
+      "taskId": "UX-VIS-20261024-009",
+      "falseDeclarations": 571,
+      "firstDeclaredAt": "2026-10-31T22:46:25.766Z",
+      "lastDeclaredAt": "2026-11-03T17:01:34.887Z",
+      "declaredBy": [
+        "task.success"
+      ],
+      "reasons": [
+        "max concurrent OpenCode reached"
+      ],
+      "evidence": [
+        "factory-2026-10-31.jsonl:440 (semaphore_wait) -> factory-2026-10-31.jsonl:441 (task.success)",
+        "factory-2026-10-31.jsonl:525 (semaphore_wait) -> factory-2026-10-31.jsonl:526 (task.success)",
+        "factory-2026-10-31.jsonl:607 (semaphore_wait) -> factory-2026-10-31.jsonl:608 (task.success)"
+      ]
+    }
+  ]
+}

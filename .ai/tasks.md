@@ -8,6 +8,9 @@
 
 ## Récemment complété
 
+- [x] P0 - Factory : succès seulement si exécution réelle et résultat vérifiable (porte de preuve, sémaphore durci, heartbeat, 9 tests, validation 17 cycles) (@coding_agent, 2026-11-03, branche fix/guard-false-success)
+  - Détail : `reports/RAPPORT-P0-FACTORY-2026-11-03.md` — 6 337 faux succès audités, 17 tâches reclassées `needs_review`, 2 verrous abandonnés libérés.
+
 - [x] P0 - Refonte UX visible : CTA « Trouve ta plage » accueil + bannière consent + SOS or (@ui_agent, 2026-10-14, branche agent/ui/p0-first-screen-20261014)
 
 - [x] P0 - Transformation AI-native du repo (@CTO_agent, 2026-07-31)

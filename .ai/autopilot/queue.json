@@ -11,7 +11,7 @@
       "evidence": "Repository already contains local factory runner and shared .ai contracts.,Founder requires zero external LLM API keys and no concurrent cloud implementation loop.",
       "rollback": "Revert only the factory orchestration changes; preserve product code.",
       "expectedImpact": "zero manual prompt handoffs; zero concurrent implementation runners",
-      "status": "new",
+      "status": "needs_review",
       "createdAt": "2026-10-03T18:17:56Z",
       "scope": {
         "files": [
@@ -85,7 +85,23 @@
         "visual": false
       },
       "_score": -959,
-      "_economicBonus": 0
+      "_economicBonus": 0,
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 573,
+        "firstDeclaredAt": "2026-10-20T02:42:45.964Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.847Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-20.jsonl:136 (semaphore_wait) -> factory-2026-10-20.jsonl:137 (task.success)",
+          "factory-2026-10-20.jsonl:221 (semaphore_wait) -> factory-2026-10-20.jsonl:222 (task.success)",
+          "factory-2026-10-31.jsonl:188 (semaphore_wait) -> factory-2026-10-31.jsonl:189 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "SEO-DOMAIN-CONTENT-GP-MQ-20260930-1228",
@@ -239,7 +255,7 @@
       "evidence": "deep-1@768 pctHot=0.3726",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-06T00:45:47.097Z",
       "_score": -3,
       "_economicBonus": -8,
@@ -247,7 +263,21 @@
       "cycleId": "2026-10-06-004349630-pb8s-1qi4y",
       "updatedAt": "2026-10-06T00:45:47.119Z",
       "blockReason": "[blocked] UX hypothesis invalid: Scope fichiers manquant",
-      "parkedAt": "2026-10-06T00:45:47.119Z"
+      "parkedAt": "2026-10-06T00:45:47.119Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.562Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.562Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:218 (semaphore_wait) -> factory-2026-10-31.jsonl:219 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "FACTORY-LINK-LOCAL-GITHUB-CHATGPT-20261012",
@@ -358,13 +388,27 @@
       "evidence": "paywall@390 pctHot=0.2092",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-22T20:25:22.962Z",
       "_score": 32,
       "_economicBonus": 27,
       "blockReason": "blocked by PR #1015 (PR_CONFLICT_REPAIRABLE): PR #1015 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
       "parkedAt": "2026-10-22T20:27:01.341Z",
-      "updatedAt": "2026-10-22T20:27:01.342Z"
+      "updatedAt": "2026-10-22T20:27:01.342Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.579Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.579Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:236 (semaphore_wait) -> factory-2026-10-31.jsonl:237 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "OPP-visual-shift-mq-deep-2-deep-2",
@@ -381,13 +425,27 @@
       "evidence": "deep-2@390 pctHot=0.2092",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-22T20:25:22.962Z",
       "_score": -3,
       "_economicBonus": -8,
       "blockReason": "blocked by PR #1015 (PR_CONFLICT_REPAIRABLE): PR #1015 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
       "parkedAt": "2026-10-22T20:29:31.849Z",
-      "updatedAt": "2026-10-22T20:29:31.850Z"
+      "updatedAt": "2026-10-22T20:29:31.850Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.568Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.568Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:224 (semaphore_wait) -> factory-2026-10-31.jsonl:225 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "OPP-broken-link-florida-home-en-privacy-",
@@ -427,13 +485,27 @@
       "evidence": "https://sargassummiami.com/api/copernicus/track-record.json → 404",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-22T20:25:22.962Z",
       "_score": 50,
       "_economicBonus": 35,
       "blockReason": "blocked by PR #1015 (PR_CONFLICT_REPAIRABLE): PR #1015 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
       "parkedAt": "2026-10-22T20:26:01.062Z",
-      "updatedAt": "2026-10-22T20:26:01.062Z"
+      "updatedAt": "2026-10-22T20:26:01.062Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.546Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.546Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:200 (semaphore_wait) -> factory-2026-10-31.jsonl:201 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "OPP-broken-link-florida-paywall-cgv",
@@ -473,13 +545,27 @@
       "evidence": "paywall@390 pctHot=0.21",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-22T20:25:22.962Z",
       "_score": 32,
       "_economicBonus": 27,
       "blockReason": "blocked by PR #1015 (PR_CONFLICT_REPAIRABLE): PR #1015 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
       "parkedAt": "2026-10-22T20:26:31.369Z",
-      "updatedAt": "2026-10-22T20:26:31.370Z"
+      "updatedAt": "2026-10-22T20:26:31.370Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.557Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.557Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:212 (semaphore_wait) -> factory-2026-10-31.jsonl:213 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     },
     {
       "id": "OPP-broken-link-florida-deep-1-en-privacy-",
@@ -542,13 +628,574 @@
       "evidence": "deep-2@390 pctHot=0.1555",
       "rollback": "revert du commit",
       "expectedImpact": "",
-      "status": "blocked",
+      "status": "needs_review",
       "createdAt": "2026-10-22T20:25:22.962Z",
       "_score": -3,
       "_economicBonus": -8,
       "blockReason": "blocked by PR #1015 (PR_CONFLICT_REPAIRABLE): PR #1015 en conflit (mergeable=CONFLICTING) — tentative de réparation auto",
       "parkedAt": "2026-10-22T20:29:01.347Z",
-      "updatedAt": "2026-10-22T20:29:01.347Z"
+      "updatedAt": "2026-10-22T20:29:01.347Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "blocked",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 1,
+        "firstDeclaredAt": "2026-10-31T22:46:25.552Z",
+        "lastDeclaredAt": "2026-10-31T22:46:25.552Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:206 (semaphore_wait) -> factory-2026-10-31.jsonl:207 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-JS_-20261024-000",
+      "type": "ux_task",
+      "title": "Fix JS error on paywall (390)",
+      "description": "Critical JavaScript error detected: Console errors: Failed to load resource: the server responded with a status of 404 ()",
+      "finding": {
+        "type": "js_error",
+        "severity": "high",
+        "region": "florida",
+        "route": "paywall",
+        "viewport": "390",
+        "evidence": "Console errors: Failed to load resource: the server responded with a status of 404 ()",
+        "rawErrors": [
+          "Failed to load resource: the server responded with a status of 404 ()"
+        ],
+        "revenueImpact": 0.9,
+        "userImpact": 0.8,
+        "confidence": 0.9,
+        "implementationCost": 0.3,
+        "score": 2.1600000000000006
+      },
+      "score": 2.16,
+      "severity": "high",
+      "route": "paywall",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/components/PaywallComic.jsx",
+        "src/PremiumModal.jsx",
+        "src/hooks/usePremiumModal.js"
+      ],
+      "evidence": "Console errors: Failed to load resource: the server responded with a status of 404 ()",
+      "expectedImpact": "Eliminate JS errors blocking user interaction",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.695Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.872Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:368 (semaphore_wait) -> factory-2026-10-31.jsonl:369 (task.success)",
+          "factory-2026-10-31.jsonl:501 (semaphore_wait) -> factory-2026-10-31.jsonl:502 (task.success)",
+          "factory-2026-10-31.jsonl:583 (semaphore_wait) -> factory-2026-10-31.jsonl:584 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-EMP-20261024-001",
+      "type": "ux_task",
+      "title": "Empty page content on home",
+      "description": "Page has insufficient content: Home page has insufficient content (<500 chars)",
+      "finding": {
+        "type": "empty_page",
+        "severity": "critical",
+        "region": "florida",
+        "route": "home",
+        "viewport": "390",
+        "evidence": "Home page has insufficient content (<500 chars)",
+        "revenueImpact": 0.8,
+        "userImpact": 0.9,
+        "confidence": 0.85,
+        "implementationCost": 0.4,
+        "score": 1.5300000000000002
+      },
+      "score": 1.53,
+      "severity": "critical",
+      "route": "home",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/Sargasses_PROD.jsx",
+        "src/components/WorldMapView.jsx",
+        "src/components/ChasseHome.jsx"
+      ],
+      "evidence": "Home page has insufficient content (<500 chars)",
+      "expectedImpact": "Restore content delivery",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.673Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.868Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:344 (semaphore_wait) -> factory-2026-10-31.jsonl:345 (task.success)",
+          "factory-2026-10-31.jsonl:495 (semaphore_wait) -> factory-2026-10-31.jsonl:496 (task.success)",
+          "factory-2026-10-31.jsonl:577 (semaphore_wait) -> factory-2026-10-31.jsonl:578 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-LOW-20261024-002",
+      "type": "ux_task",
+      "title": "Improve paywall CTA conversion rate",
+      "description": "Paywall CTA click rate below 15%: Paywall CTA rate: 0.4% (78/21108)",
+      "finding": {
+        "type": "low_cta_rate",
+        "severity": "high",
+        "route": "paywall",
+        "viewport": "all",
+        "evidence": "Paywall CTA rate: 0.4% (78/21108)",
+        "revenueImpact": 0.9,
+        "userImpact": 0.7,
+        "confidence": 0.75,
+        "implementationCost": 0.4,
+        "score": 1.18125
+      },
+      "score": 1.181,
+      "severity": "high",
+      "route": "paywall",
+      "viewport": "all",
+      "files": [
+        "src/components/PaywallComic.jsx",
+        "src/PremiumModal.jsx",
+        "src/hooks/usePaywallVariants.js"
+      ],
+      "evidence": "Paywall CTA rate: 0.4% (78/21108)",
+      "expectedImpact": "Increase CTA clicks → more checkout entries",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.729Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.876Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:398 (semaphore_wait) -> factory-2026-10-31.jsonl:399 (task.success)",
+          "factory-2026-10-31.jsonl:507 (semaphore_wait) -> factory-2026-10-31.jsonl:508 (task.success)",
+          "factory-2026-10-31.jsonl:589 (semaphore_wait) -> factory-2026-10-31.jsonl:590 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-BRO-20261024-003",
+      "type": "ux_task",
+      "title": "Fix broken links on home",
+      "description": "Internal links returning 4xx/5xx: Broken links: /en/privacy/ (404)",
+      "finding": {
+        "type": "broken_link",
+        "severity": "medium",
+        "region": "florida",
+        "route": "home",
+        "viewport": "390",
+        "evidence": "Broken links: /en/privacy/ (404)",
+        "rawErrors": [
+          {
+            "url": "/en/privacy/",
+            "status": 404
+          }
+        ],
+        "revenueImpact": 0.4,
+        "userImpact": 0.6,
+        "confidence": 0.8,
+        "implementationCost": 0.2,
+        "score": 0.96
+      },
+      "score": 0.96,
+      "severity": "medium",
+      "route": "home",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/Sargasses_PROD.jsx",
+        "src/components/WorldMapView.jsx",
+        "src/components/ChasseHome.jsx"
+      ],
+      "evidence": "Broken links: /en/privacy/ (404)",
+      "expectedImpact": "Fix navigation dead ends",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.644Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.851Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:308 (semaphore_wait) -> factory-2026-10-31.jsonl:309 (task.success)",
+          "factory-2026-10-31.jsonl:471 (semaphore_wait) -> factory-2026-10-31.jsonl:472 (task.success)",
+          "factory-2026-10-31.jsonl:553 (semaphore_wait) -> factory-2026-10-31.jsonl:554 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-BRO-20261024-004",
+      "type": "ux_task",
+      "title": "Fix broken links on paywall",
+      "description": "Internal links returning 4xx/5xx: Broken links: /cgv (404)",
+      "finding": {
+        "type": "broken_link",
+        "severity": "medium",
+        "region": "florida",
+        "route": "paywall",
+        "viewport": "390",
+        "evidence": "Broken links: /cgv (404)",
+        "rawErrors": [
+          {
+            "url": "/cgv",
+            "status": 404
+          }
+        ],
+        "revenueImpact": 0.4,
+        "userImpact": 0.6,
+        "confidence": 0.8,
+        "implementationCost": 0.2,
+        "score": 0.96
+      },
+      "score": 0.96,
+      "severity": "medium",
+      "route": "paywall",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/components/PaywallComic.jsx",
+        "src/PremiumModal.jsx",
+        "src/hooks/usePremiumModal.js"
+      ],
+      "evidence": "Broken links: /cgv (404)",
+      "expectedImpact": "Fix navigation dead ends",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.649Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.855Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:314 (semaphore_wait) -> factory-2026-10-31.jsonl:315 (task.success)",
+          "factory-2026-10-31.jsonl:477 (semaphore_wait) -> factory-2026-10-31.jsonl:478 (task.success)",
+          "factory-2026-10-31.jsonl:559 (semaphore_wait) -> factory-2026-10-31.jsonl:560 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-BRO-20261024-005",
+      "type": "ux_task",
+      "title": "Fix broken links on deep-1",
+      "description": "Internal links returning 4xx/5xx: Broken links: /en/privacy/ (404)",
+      "finding": {
+        "type": "broken_link",
+        "severity": "medium",
+        "region": "florida",
+        "route": "deep-1",
+        "viewport": "390",
+        "evidence": "Broken links: /en/privacy/ (404)",
+        "rawErrors": [
+          {
+            "url": "/en/privacy/",
+            "status": 404
+          }
+        ],
+        "revenueImpact": 0.4,
+        "userImpact": 0.6,
+        "confidence": 0.8,
+        "implementationCost": 0.2,
+        "score": 0.96
+      },
+      "score": 0.96,
+      "severity": "medium",
+      "route": "deep-1",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/Sargasses_PROD.jsx"
+      ],
+      "evidence": "Broken links: /en/privacy/ (404)",
+      "expectedImpact": "Fix navigation dead ends",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.653Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.859Z",
+        "detectedAt": "2026-11-03T19:16:36.367Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:320 (semaphore_wait) -> factory-2026-10-31.jsonl:321 (task.success)",
+          "factory-2026-10-31.jsonl:483 (semaphore_wait) -> factory-2026-10-31.jsonl:484 (task.success)",
+          "factory-2026-10-31.jsonl:565 (semaphore_wait) -> factory-2026-10-31.jsonl:566 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-BRO-20261024-006",
+      "type": "ux_task",
+      "title": "Fix broken links on deep-2",
+      "description": "Internal links returning 4xx/5xx: Broken links: /en/privacy/ (404)",
+      "finding": {
+        "type": "broken_link",
+        "severity": "medium",
+        "region": "florida",
+        "route": "deep-2",
+        "viewport": "390",
+        "evidence": "Broken links: /en/privacy/ (404)",
+        "rawErrors": [
+          {
+            "url": "/en/privacy/",
+            "status": 404
+          }
+        ],
+        "revenueImpact": 0.4,
+        "userImpact": 0.6,
+        "confidence": 0.8,
+        "implementationCost": 0.2,
+        "score": 0.96
+      },
+      "score": 0.96,
+      "severity": "medium",
+      "route": "deep-2",
+      "viewport": "390",
+      "region": "florida",
+      "files": [
+        "src/Sargasses_PROD.jsx"
+      ],
+      "evidence": "Broken links: /en/privacy/ (404)",
+      "expectedImpact": "Fix navigation dead ends",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.658Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.864Z",
+        "detectedAt": "2026-11-03T19:16:36.368Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:326 (semaphore_wait) -> factory-2026-10-31.jsonl:327 (task.success)",
+          "factory-2026-10-31.jsonl:489 (semaphore_wait) -> factory-2026-10-31.jsonl:490 (task.success)",
+          "factory-2026-10-31.jsonl:571 (semaphore_wait) -> factory-2026-10-31.jsonl:572 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-LOW-20261024-007",
+      "type": "ux_task",
+      "title": "Increase paywall reach rate",
+      "description": "Paywall reach rate below 8%: Paywall reach rate: 7.6% (21108/277926)",
+      "finding": {
+        "type": "low_paywall_reach",
+        "severity": "medium",
+        "route": "paywall",
+        "viewport": "all",
+        "evidence": "Paywall reach rate: 7.6% (21108/277926)",
+        "revenueImpact": 0.7,
+        "userImpact": 0.6,
+        "confidence": 0.65,
+        "implementationCost": 0.3,
+        "score": 0.9100000000000001
+      },
+      "score": 0.91,
+      "severity": "medium",
+      "route": "paywall",
+      "viewport": "all",
+      "files": [
+        "src/Sargasses_PROD.jsx",
+        "src/hooks/usePaywallTrigger.js",
+        "src/components/PaywallComic.jsx"
+      ],
+      "evidence": "Paywall reach rate: 7.6% (21108/277926)",
+      "expectedImpact": "More users see paywall → more conversion opportunities",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.734Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.879Z",
+        "detectedAt": "2026-11-03T19:16:36.368Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:404 (semaphore_wait) -> factory-2026-10-31.jsonl:405 (task.success)",
+          "factory-2026-10-31.jsonl:513 (semaphore_wait) -> factory-2026-10-31.jsonl:514 (task.success)",
+          "factory-2026-10-31.jsonl:595 (semaphore_wait) -> factory-2026-10-31.jsonl:596 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-VIS-20261024-008",
+      "type": "ux_task",
+      "title": "Fix visual regression on paywall (390)",
+      "description": "Visual diff detected: Visual diff: meanAbs=0.1132, pctHot=0.2039",
+      "finding": {
+        "type": "visual_regression",
+        "severity": "medium",
+        "region": "mq",
+        "route": "paywall",
+        "viewport": "390",
+        "evidence": "Visual diff: meanAbs=0.1132, pctHot=0.2039",
+        "rawErrors": {
+          "meanAbs": 0.1132,
+          "pctHot": 0.2039,
+          "flagged": true
+        },
+        "revenueImpact": 0.7,
+        "userImpact": 0.7,
+        "confidence": 0.6,
+        "implementationCost": 0.4,
+        "score": 0.7349999999999998
+      },
+      "score": 0.735,
+      "severity": "medium",
+      "route": "paywall",
+      "viewport": "390",
+      "region": "mq",
+      "files": [
+        "src/components/PaywallComic.jsx",
+        "src/PremiumModal.jsx",
+        "src/hooks/usePremiumModal.js"
+      ],
+      "evidence": "Visual diff: meanAbs=0.1132, pctHot=0.2039",
+      "expectedImpact": "Restore intended visual design",
+      "rollback": "revert",
+      "actionable": "agent",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.761Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.883Z",
+        "detectedAt": "2026-11-03T19:16:36.368Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:434 (semaphore_wait) -> factory-2026-10-31.jsonl:435 (task.success)",
+          "factory-2026-10-31.jsonl:519 (semaphore_wait) -> factory-2026-10-31.jsonl:520 (task.success)",
+          "factory-2026-10-31.jsonl:601 (semaphore_wait) -> factory-2026-10-31.jsonl:602 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
+    },
+    {
+      "id": "UX-VIS-20261024-009",
+      "type": "ux_task",
+      "title": "Fix visual regression on deep-1 (768)",
+      "description": "Visual diff detected: Visual diff: meanAbs=0.1964, pctHot=0.3726",
+      "finding": {
+        "type": "visual_regression",
+        "severity": "medium",
+        "region": "mq",
+        "route": "deep-1",
+        "viewport": "768",
+        "evidence": "Visual diff: meanAbs=0.1964, pctHot=0.3726",
+        "rawErrors": {
+          "meanAbs": 0.1964,
+          "pctHot": 0.3726,
+          "flagged": true
+        },
+        "revenueImpact": 0.4,
+        "userImpact": 0.7,
+        "confidence": 0.6,
+        "implementationCost": 0.4,
+        "score": 0.41999999999999993
+      },
+      "score": 0.42,
+      "severity": "medium",
+      "route": "deep-1",
+      "viewport": "768",
+      "region": "mq",
+      "files": [
+        "src/Sargasses_PROD.jsx"
+      ],
+      "evidence": "Visual diff: meanAbs=0.1964, pctHot=0.3726",
+      "expectedImpact": "Restore intended visual design",
+      "rollback": "revert",
+      "actionable": "human",
+      "persona": "ui-ux",
+      "status": "needs_review",
+      "createdAt": "2026-10-24T22:48:53.816Z",
+      "reviewReason": "succès déclaré sans exécution réelle (attente sémaphore) — revue requise",
+      "reclassification": {
+        "previousStatus": "new",
+        "verdict": "semaphore_wait -> task.success sans preuve d exécution",
+        "falseDeclarations": 571,
+        "firstDeclaredAt": "2026-10-31T22:46:25.766Z",
+        "lastDeclaredAt": "2026-11-03T17:01:34.887Z",
+        "detectedAt": "2026-11-03T19:16:36.368Z",
+        "evidence": [
+          "factory-2026-10-31.jsonl:440 (semaphore_wait) -> factory-2026-10-31.jsonl:441 (task.success)",
+          "factory-2026-10-31.jsonl:525 (semaphore_wait) -> factory-2026-10-31.jsonl:526 (task.success)",
+          "factory-2026-10-31.jsonl:607 (semaphore_wait) -> factory-2026-10-31.jsonl:608 (task.success)"
+        ],
+        "action": "relire la preuve puis repasser status=new pour exécution réelle",
+        "source": "state/false-success-audit.json (scripts/local-factory/audit-false-success.cjs)"
+      }
     }
   ]
 }

@@ -43,7 +43,7 @@ const VITE_BIN = resolveLocalBin('vite');
 const GLOBAL_NPM_CLI = path.join(process.execPath.replace('node.exe', ''), 'node_modules', 'npm', 'bin', 'npm-cli.js');
 const NPM_CMD = fs.existsSync(GLOBAL_NPM_CLI) ? [process.execPath, GLOBAL_NPM_CLI] : (IS_WIN ? 'npm.cmd' : 'npm');
 
-const STATE_DIR = path.join(__dirname, '..', 'local-factory', 'state');
+const STATE_DIR = process.env.FACTORY_STATE_DIR || path.join(__dirname, '..', 'local-factory', 'state');
 fs.mkdirSync(STATE_DIR, { recursive: true });
 const PID_FILE = path.join(STATE_DIR, 'preview-pids.json');
 
