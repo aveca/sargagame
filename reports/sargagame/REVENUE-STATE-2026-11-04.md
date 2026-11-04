@@ -200,6 +200,39 @@ validation est **cassée** (§7 R13, démontré par exécution PHP réelle).
 
 ---
 
+## 2ter. Les deux moteurs de revenue partagent la même organisation Mollie
+
+Découvert pendant la mesure de BOT-WOW (2026-11-04T16:45Z–17:10Z) et
+**vérifié dans les deux dépôts**.
+
+| Fait | Preuve |
+|---|---|
+| **Profil canonique Sargasses** | `pfl_t8KCk4Cm2C` — `public/api/mollie-config.example.php:9`, `scripts/write-mollie-config.cjs:49`, `src/Sargasses_PROD.jsx:1778` (dépôt `aveca/sargagame`) |
+| **Les paiements BOT-WOW en production utilisent CE profil** | `orders.metadata` de la D1 de production BOT-WOW : `"profileId":"pfl_t8KCk4Cm2C"` et lien dashboard `org_19554425` — **11 / 11** paiements |
+| **Le tracker MRR n'est pas scopé par produit** | `scripts/automation/mollie-mrr.cjs:175-192` : `revenue_month` cumule **tous** les paiements payés du compte ; seuls `passes_month` (metadata.pass) et `b2b_month` (description contient « pro »/« brief ») sont filtrés |
+
+**Conséquences :**
+
+1. **Contamination croisée de la mesure de revenu** : un paiement BOT-WOW
+   payé (20,00 €) serait compté dans `revenue_month` et dans
+   `currencyBreakdown` de Sargasses. **Impact aujourd’hui : 0** — les 11
+   paiements BOT-WOW sont expirés **impayés**, et les 6 paiements Sargasses
+   sont de juin–juillet (BOT-WOW : octobre+). Mais l’attribution repose sur
+   une **convention**, pas sur une construction.
+2. **Une seule organisation Mollie pour deux produits** : le rapprochement
+   comptable ne peut pas se faire « par compte », seulement par
+   `profileId` / `description` / `metadata`.
+3. **Symétriquement**, le checkout BOT-WOW n’est pas séparable : il dépose
+   dans l’organisation Sargasses (PR BOT-WOW #80, §3bis.2).
+
+> ⇒ **R18 (nouveau)** : avant toute activation d’un checkout réel d’un
+> côté comme de l’autre, il faut **séparer** les deux produits (profil + clé
+> BOT-WOW dédiés) ou **coder explicitement** la règle d’attribution dans
+> `mollie-mrr.cjs`. Ce n’est pas une amélioration : c’est une condition de
+> mesurabilité.
+
+---
+
 ## 3. Funnel - census et limites de mesure
 
 Agrégation lecture seule de `public.analytics_events` sur 30 jours (2026-11-04).
@@ -336,6 +369,7 @@ récupérable : commit `af8408e4`).
 | **R15** | `mol_b2b_grant_once()` / `mol_b2c_pass_grant()` renvoient `['granted'=>false,'reason'=>'already_granted']` **sans** `mirror_ok` → le webhook fait `$mirrorOk = $grant['mirror_ok'] ?? false` → **HTTP 500** sur chaque rejeu, et le mirror Supabase **n'est jamais re-tenté**. | Un rejeu de webhook Mollie (5xx) tombe dans une **boucle morte** : 500 → rejeu → 500. Le mirror ne se répare jamais tout seul. Correctif = 1 branche → **change un code HTTP de webhook** → autorisation requise. |
 | **R16** | **Dérive de prix sur la grille des liens de paiement** : `sejour_eur` 12,99 €, `sejour_usd` 9,99 $, `saison_usd` 14,99 $ — alors que la vérité canonique est `trip7` 4,99 € / 5,99 $ et `season` USD **`null`**. Les deux grilles sont désormais **parity-lockées** par test (11/11) : la divergence est désormais **visible**, pas silencieuse. | Ce sont des **prix** → décision commerciale explicite requise. **Aucun prix affiché n'est modifié** par ce rapport. |
 | **R17** | **Le chemin de paiement live n'est pas versionné dans le dépôt.** `/api/mollie*`, `/api/b2b-*`, `/api/create-checkout*` → Worker `sg-payments`, **source absente du dépôt** (10 versions, toutes du 2026-10-01/02). Symptômes mesurés : `POST /api/mollie.php` → **500 / CF 1101** ; `POST /api/create-checkout.php` → **404**. | **Changement de chemin de paiement** → autorisation requise. Et la bascule **n'est pas un simple réglage** : `workers/sargagame/index.js` ne livre **que** le B2C (ids `tr_…` seulement, pas `sub_…`, pas de cron) → il faut **porter** le fulfillment B2B de `sg-payments` d'abord. |
+| **R18** | **La mesure de revenu n'est pas scopée par produit.** `scripts/automation/mollie-mrr.cjs:175-192` cumule dans `revenue_month` **tous** les paiements payés du compte Mollie ; or BOT-WOW encaisse dans la **même organisation** que Sargasses (`profileId pfl_t8KCk4Cm2C`, `org_19554425`, §2ter). | Un paiement BOT-WOW payé (20,00 €) serait compté comme revenu Sargasses. **Impact mesuré aujourd’hui : 0 €** (11 paiements BOT-WOW expirés impayés ; 6 paiements Sargasses de juin–juillet, BOT-WOW d’octobre+). Corriger = **séparer les comptes Mollie** (profil + clé dédiés) ou **coder la règle d’attribution** → décision commerciale + secrets → autorisation requise. |
 
 ---
 
@@ -415,6 +449,12 @@ d’un flux payant réel.
 > checkout échoue 6/6. **Réparer la capacité d’encaissement précède toute
 > optimisation de tunnel** : mesurer un funnel dont le dernier maillon est mort
 > revient à mesurer une panne.
+>
+> **Et les deux moteurs partagent la même organisation Mollie** (§2ter) :
+> le checkout BOT-WOW dépose dans le compte Sargasses, et le tracker MRR
+> n’est pas scopé par produit (R18). Le problème n’est donc pas seulement
+> « un chemin de paiement mort par moteur » — c’est **une seule comptabilité
+> pour deux produits, aucun code traçable, et aucun euro encaissé**.
 
 ---
 
@@ -998,3 +1038,67 @@ transaction initiée.
 > 4 est le second : il **démontre** que `sg-payments` n’existait pas en
 > juin–juillet 2026, donc que les 6 ventes non livrées ont été traitées par le
 > chemin PHP — celui dont la validation est prouvée cassée (R13).
+
+#### Fusion des PR de revenu + état du déploiement (2026-11-04T17:05Z–17:15Z)
+
+| PR | Commit | État |
+|---|---|---|
+| **#1272** — rapport de revenu (§2bis, R13→R17, actions recalibrées) | `2d134a9ff83cb903cad48064031705884edea8cc` | **MERGED** 2026-11-04T16:27:46Z |
+| **#1275** — instrumentation du funnel B2B (écriture / lecture / dédoublonnage) | `02582af96a529c044521b7e16cbe56dc8bdfc596` | **MERGED** 2026-11-04T17:05:04Z |
+
+CI **sur le SHA exact** (aucun échec restant) :
+
+| PR | Run | Job | Résultat |
+|---|---|---|---|
+| #1272 | `41863240144` | `test-frontend` | **success** |
+| #1272 | `41863240409` | `perf` · `lighthouse-report` | **success** · **success** |
+| #1275 (1er run) | `41861559188` | `test-frontend` | **failure** — 149/150 : la CI Linux a `ext-curl`, les stubs du harness n’étaient pas installés |
+| #1275 (après `331ec218`) | `41865005969` | `test-frontend` | **success** |
+| #1275 | `41865005931` | `perf` · `lighthouse-report` | **success** · **success** |
+
+> Cause de l’échec initial **établie et corrigée** : `disable_functions` rend
+> la fonction native **redéfinissable** par l’utilisateur (vérifié : sans le
+> flag → `Fatal error: Cannot redeclare function` ; avec → le stub gagne).
+> Repli `-n`. Si aucune stratégie ne permet la capture, le test **échoue**
+> plutôt que de passer à vide.
+
+**Runs déclenchés par les pushes sur `main` (lecture seule) :**
+
+| Run | Workflow | SHA | Résultat |
+|---|---|---|---|
+| `41867453289` | **Cloudflare Production** | `2d134a9f` | **failure** — `scope` ✅, `mollie-live-gate` ✅, `certification-gate` ✅, puis `build (rivieramaya)` ❌ et 5 legs annulées → `deploy`, `deploy-pages`, `verify-fleet`, `post-deploy-verify` **skipped** → **rien n’a été publié** |
+| `41867453365` | Daily Copernicus + Deploy | `2d134a9f` | **success** — 6 builds régionaux ✅, `health-check` ✅ ; `fetch-data` **skipped** (`if: github.event_name != 'push'`), `revenue-metrics` **skipped** (`if: github.event_name == 'schedule'`) |
+| `41867453332` | CI Tests | `2d134a9f` | **success** |
+| `41867453359` | Perf Budget + Lighthouse | `2d134a9f` | **success** |
+
+Message exact du refus (run `41867453289`, job `build (rivieramaya)`, étape 8) :
+
+```
+FAIL SATELLITE_PREDEPLOY region=rivieramaya limit=900min reason=observation hors SLA (3148.18 min > 900 min)
+```
+
+**Ce refus est fail-closed et voulu.** 3 148 min ≈ 52,5 h → le payload du
+dépôt porte `2026-11-02T12:00:00Z`. La garde n’est **pas** affaiblie
+(décision fondateur).
+
+#### État NOAA ERDDAP — mesuré indépendamment (2026-11-04T17:09:33Z)
+
+Sonde reproduisant **exactement** les URL et la méthode de
+`scripts/fetch-sargassum-live.cjs` :
+
+| Dataset | Requête | Dernier grid |
+|---|---|---|
+| `AFAI_7D` | `?AFAI[(last)][(14):(16)][(-61):(-58)]` | **`2026-11-03T12:00:00Z`** |
+| `AFAI_1D` | `?AFAI[(last)][(14):(16)][(-61):(-58)]` | **`2026-11-03T12:00:00Z`** |
+
+→ Le grid `2026-11-04T12:00:00Z` **n’est pas publié** 5 h après l’heure
+nominale de publication NOAA. Aucun grid plus récent n’existe : le pipeline
+**ne peut pas** produire un payload dans la SLA de 900 min, et **le
+déploiement reste bloqué** — par une donnée amont, pas par un défaut de code.
+
+Un agent de surveillance a été armé : il sonde les deux datasets toutes les
+2 min et, dès la publication d’un grid plus récent que `2026-11-03T12:00:00Z`,
+attend que `main` soit libre (aucun run perf en cours, aucun push de moins
+de 120 s, HEAD stable), puis déclenche `workflow_dispatch` de
+`daily-copernicus.yml --ref main` — c’est-à-dire **le pipeline conçu par le
+dépôt**, avec ses gardes. **Aucune écriture directe en production.**
