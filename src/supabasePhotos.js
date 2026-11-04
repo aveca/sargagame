@@ -66,7 +66,7 @@ export function logAnalyticsEvent(event, params, island) {
     try {
       const hostname = typeof window !== "undefined" ? String(window.location?.hostname || "").toLowerCase() : ""
       if (hostname && !payloadParams.hostname) payloadParams.hostname = hostname
-      payloadParams.sid = window.sessionStorage.getItem("sg_sid")
+      if (localStorage.getItem("sg_cookie_consent") === "accepted") payloadParams.sid = sessionStorage.getItem("sg_sid")
     } catch (_) {}
     fetch(`${SUPABASE_URL}/rest/v1/analytics_events`, {
       method: "POST",
