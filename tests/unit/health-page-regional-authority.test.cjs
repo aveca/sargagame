@@ -33,7 +33,7 @@ try {
     'Tulum health guidance must name the local Quintana Roo health authorities')
   assert.doesNotMatch(tulum.html, /Departamento de Salud de Florida/,
     'Tulum must never inherit Florida health authority copy')
-  assert.match(tulum.html, /<link rel="canonical" href="https:\/\/sargazotulum\.com\/sargazo-salud-riesgos\/">/,
+  assert.match(tulum.html, /<link rel="canonical" href="https:\/\/sargazotulum\.com\/sargazo-salud-riesgos\/"\/>/,
     'Tulum canonical remains on its regional domain')
   assert.ok(tulum.sitemap.includes('https://sargazotulum.com/sargazo-salud-riesgos/'),
     'Tulum health page remains in the regional sitemap')
