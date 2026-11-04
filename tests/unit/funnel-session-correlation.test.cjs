@@ -19,7 +19,7 @@ async function main() {
   assert.ok(app.indexOf('sgCollectEvent(event,p)') < start, 'first-party collection initializes the tab sid before the Supabase sink')
   assert.doesNotMatch(app, /p\.sid\s*=/, 'track() never mutates the event payload with sid')
   assert.match(sink, /logAnalyticsEvent\(event,p,/, 'track() forwards unmodified params to the Supabase adapter')
-  assert.match(supabase, /localStorage\.getItem\("sg_cookie_consent"\) === "accepted"\) payloadParams\.sid = sessionStorage\.getItem\("sg_sid"\)/, 'the Supabase adapter attaches sid only after analytics opt-in')
+    assert.match(supabase, /payloadParams\.sid = localStorage\.sg_cookie_consent === "accepted" && sessionStorage\.sg_sid/, 'the Supabase adapter attaches sid only after analytics opt-in')
   assert.match(app, /_sgc\.buf=\{v:1,sid:_sgcSid\(\)/, 'the first-party collector creates the existing session id before the Supabase call')
   
   // Keep the pre-existing GA4 payload untouched: sid must not be added to p.
