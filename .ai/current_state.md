@@ -1,5 +1,42 @@
 > **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
+## 2026-11-04 · Agent: coding_agent (OpenCode) · Mission P0 — déblocage PR #1250 (fraîcheur Copernicus) · RÉFÉRENCE LA PLUS RÉCENTE
+
+### Travail effectué
+- **Résumé 1 ligne** : PR #1250 resynchronisée sur `main` par merge (jamais de rebase), test régional rendu conforme au registre `regions/`, et **reproduction déterministe du mismatch de fraîcheur observé en production** ajoutée, falsifiée et validée.
+- **Détails** :
+  - **Git** : `origin/main` a avancé de `997efb6ce` à `2d134a9ff` ; merge **sans conflit** de `origin/main` dans `fix/copernicus-runtime-freshness-route-20261103` (un rebase aurait imposé un force-push, interdit). Historique conservé.
+  - **Divergence constatée** : le ref distant de la branche pointait `ba1145f33` (2 commits) alors que le head du PR #1250 était `843c44d8a` (1 commit) — head de PR GitHub en retard, resynchronisé au push.
+  - **Contrat scientifique intact** : aucune observation NOAA/ERDDAP, aucun score de plage, aucune donnée de prévision, aucun prix, aucun checkout, aucun grant, aucun secret, aucun DNS, aucune donnée de production modifiés. Seuil opérationnel 900 min et seuil public 36 h inchangés (verrouillés par test).
+  - **Test régional corrigé** : `tests/unit/worker-copernicus-regional-preservation.test.cjs` figeait `assertAllRegionsValid() === 6` alors que `regions/` contient 7 fichiers (barbados inclus) → test rouge. Le test valide désormais **tous** les fichiers de région (nombre lu sur le dossier) et couvre la **surface live** dérivée du registre (`live !== false` → 6 régions, 12 requêtes), avec assertion qu'une région non live ne reçoit **pas** d'en-tête CORS.
+  - **Mismatch production reproduit** : `tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` (nouveau, 12 checks) rejoue les valeurs mesurées sur l'API publique Punta Cana (`erddapTimestamp=2026-10-27T12:00:00Z`, `updatedAt=2026-10-28T17:29:55.323Z`, `dataAgeMinutes=1772`, `stale=false`) avec horloge figée, prouve que l'âge est dérivé de `erddapTimestamp` et **jamais** de `updatedAt`, verrouille les frontières 36 h / 900 min, et refuse tout âge inventé (horodatage absent / invalide / futur / source non live).
+- **Fichiers modifiés** : `tests/unit/worker-copernicus-regional-preservation.test.cjs` (modifié), `tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` (nouveau), `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`.
+- **Tests réalisés** :
+  - [x] Node **v24.14.0**
+  - [x] `node tests/unit/worker-copernicus-regional-preservation.test.cjs` → PASS (6 régions, 12 requêtes)
+  - [x] `node tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` → PASS (12 checks)
+  - [x] `node tests/unit/worker-copernicus-freshness.test.cjs` → PASS (6 scénarios) ; `tests/unit/worker-private-guard.test.cjs` → PASS
+  - [x] **Falsification** : route Worker désactivée → le nouveau test **échoue** (exit 1) ; worker restauré (diff vide) → le test détecte bien le défaut
+  - [x] `npm test` → **152/152** fichiers de test OK (après build ; l'unique échec pré-build `sitemap-guard-beach-pages` était un ordre-de-build : `dist/` absent)
+  - [x] `npm run build` → exit 0 ; budget gzip **206,5 Ko / 210 Ko** (`211468 / 215040` octets)
+  - [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, `RAW_CSS_TEXT=[]`
+  - [x] `npx playwright test` → exit 0
+  - [x] Régression navigateur custom (390x844 + 1280x800) → **PASS 16 checks**, captures inspectées visuellement : badge « SATELLITE EN RETARD · il y a 2 j » affiché, pins en gris neutre, aucune promesse de statut en direct
+  - [x] Lighthouse (npx, hors dépendances du dépôt) → mobile perf 71 / a11y 100 / SEO 100 / CLS 0 ; desktop perf **100** / a11y 100 / SEO 100 / CLS 0
+- **Problèmes restants** :
+  - [ ] PR #1250 reste **Draft** : non mergée, non déployée. Le mismatch production n'est donc **pas** résolu en production tant que le Worker n'est pas déployé avec `run_worker_first` sélectif.
+  - [ ] Le score `best-practices` Lighthouse (73) est dû à des artefacts du preview local (cookies tiers, endpoint `.php` non exécuté, absence de source maps en build prod) — sans lien avec ce PR.
+  - [ ] Titre homepage « MARTINIQUE AUJOURD'HUI » alors que la source est en retard : hors périmètre de ce PR (traitement stale de la carte déjà en place, pins neutres).
+- **Prochaine action recommandée** :
+  1. Revue puis merge de PR #1250 (Draft → Ready) — Rôle : release_agent
+  2. Déploiement du Worker régional avec `run_worker_first: ["/api/copernicus/sargassum.json"]` puis vérification HTTP des 6 domaines — Rôle : devops_agent (autorisation requise)
+- **Branche / PR** :
+  - Branche : `fix/copernicus-runtime-freshness-route-20261103`
+  - PR : #1250 (Draft, base `main`)
+  - Commit head : `5658bcc35` (merge de `origin/main`) + commit de tests à venir
+
+---
+
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
 
 ### Mission

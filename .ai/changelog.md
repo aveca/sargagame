@@ -1,3 +1,44 @@
+## 2026-11-04 · coding_agent (OpenCode) · Mission P0 — déblocage PR #1250 (fraîcheur Copernicus)
+
+**PR #1250 resynchronisée sur `main`, tests durcis, mismatch production reproduit de façon déterministe.** Aucun déploiement, aucun merge, aucune donnée de production, aucune observation scientifique modifiée.
+
+### Git
+- `origin/main` a avancé (`997efb6ce` → `2d134a9ff`). Merge **sans conflit** de `origin/main` dans `fix/copernicus-runtime-freshness-route-20261103` → `5658bcc35`. **Pas de rebase** (interdit : imposerait un force-push), **pas de réécriture d'historique**.
+- Le ref distant de la branche (`ba1145f33`, 2 commits) était en avance sur le head affiché par le PR (`843c44d8a`, 1 commit) : head de PR GitHub en retard, resynchronisé au push.
+
+### Test régional — contrat aligné sur le registre (bug de test corrigé)
+`tests/unit/worker-copernicus-regional-preservation.test.cjs` figeait `assertAllRegionsValid() === 6` alors que `regions/` contient **7** fichiers (`barbados` inclus) → test rouge, PR bloquée. Correction **sans affaiblir la couverture** :
+- validation stricte de **tous** les fichiers de région (nombre lu sur le dossier, plus de valeur figée) ;
+- surface **live** dérivée du registre (`live !== false`) → 6 régions, 12 requêtes (URL normale + cache-bust), liste de domaines toujours **épinglée** (une région ajoutée/retirée fait échouer le test) ;
+- assertion supplémentaire : une région non live (barbados : `live: false`, pas de DNS, absente de l'allowlist CORS du Worker) ne doit **pas** recevoir d'en-tête CORS ;
+- `updatedAt` / `erddapTimestamp` immuables, payload régional préservé, `no-store` et CORS vérifiés sur chaque requête.
+
+### Mismatch production reproduit (nouveau test)
+`tests/unit/worker-copernicus-freshness-metadata-recalc.test.cjs` — 12 checks, horloge figée au `2026-11-04T12:00:00Z`.
+- **Constat mesuré** (sonde HTTP lecture seule sur l'API publique Punta Cana) : `erddapTimestamp=2026-10-27T12:00:00Z`, `updatedAt=2026-10-28T17:29:55.323Z`, `dataAgeMinutes=1772`, `stale=false`, `cache-control: public, max-age=0, must-revalidate` → les deux métadonnées de fraîcheur sont **figées depuis la publication** : l'API continue d'annoncer une observation fraîche alors qu'elle a 8 jours.
+- Le test rejoue ces valeurs **mesurées** (aucune observation inventée) et prouve :
+  - le couple servi `dataAgeMinutes=1772 / stale=false` **contredit** l'observation (vrai âge 11 520 min, donc `stale=true`) ;
+  - la route Worker recalcule `dataAgeMinutes` **et** `stale` depuis `erddapTimestamp`, sans toucher `updatedAt` ni un seul champ scientifique ;
+  - l'âge vient de l'observation et **jamais** de `updatedAt` (payload de test avec `dataAgeMinutes=999999` ignoré) ;
+  - frontières exactes : 36 h − 1 min → non stale, 36 h exactement → stale ; SLA opérationnel 900 min inchangé (900 → fresh, 901 → not fresh) ;
+  - fail-closed : horodatage absent / invalide / futur / source non `erddap-live` → `dataAgeMinutes=null`, `stale=true` (**jamais d'âge inventé**) ;
+  - cache-bust ≡ requête normale ; aucune région live n'annonce une observation périmée comme fraîche.
+- **Falsification** : route Worker désactivée → le test **échoue** (exit 1) ; worker restauré → diff vide. Le test détecte donc réellement le défaut.
+
+### Validation
+- Node **v24.14.0**.
+- `npm test` → **152/152** fichiers OK (après build). Avant build, l'unique échec `sitemap-guard-beach-pages` était un **ordre-de-build** (`dist/` absent) : il passe une fois le build fait.
+- `npm run build` → exit 0. Budget gzip **206,5 Ko / 210 Ko** (`211468 / 215040` octets) — aucun fichier frontend modifié par ce PR, bundle identique.
+- `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, `RAW_CSS_TEXT=[]`.
+- `npx playwright test` → exit 0.
+- Régression navigateur custom (390x844 + 1280x800) → **PASS 16 checks** : `stale` cohérent avec 36 h, âge cohérent avec `erddapTimestamp` (3202 min) et **non** avec `updatedAt` (2432 min), page annonçant « SATELLITE EN RETARD · il y a 2 j », pins en gris neutre, aucune erreur console same-origin, aucune requête same-origin en échec. Captures inspectées visuellement.
+- Lighthouse (via `npx`, aucune dépendance ajoutée au dépôt) → mobile : perf 71, a11y 100, SEO 100, CLS 0 ; desktop : perf **100**, a11y 100, SEO 100, CLS 0. Les déductions `best-practices` (73) sont des artefacts du preview local (cookies tiers, endpoint `.php` non exécuté par vite preview, absence de source maps en build prod).
+
+### Garde-fous respectés
+Seuil 900 min inchangé · seuil public 36 h inchangé · aucune observation NOAA/ERDDAP modifiée · aucun score de plage ni donnée de prévision touché · aucun prix, checkout, grant, secret, DNS ou données de production touché · PR #1250 maintenue **Draft**, ni mergée ni déployée.
+
+---
+
 ## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
 
 - Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.

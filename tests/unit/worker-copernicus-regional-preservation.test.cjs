@@ -3,7 +3,8 @@
 
 // The edge freshness route must preserve each region's prepared scientific
 // payload byte-for-byte at the JSON-value level. Only dataAgeMinutes/stale may
-// change. Exercise the normal URL and a cache-busting query for all six hosts.
+// change. Exercise the normal URL and a cache-busting query for every live
+// host (regions flagged live in regions/; the pinned list is asserted below).
 
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -12,6 +13,12 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const ROUTE = '/api/copernicus/sargassum.json';
 const FIXED_NOW = Date.parse('2026-11-04T12:00:00.000Z');
+// Contrat de régions LIVE : la liste est PINÉE ici (une région ajoutée,
+// retirée ou passée non-live doit faire échouer ce test et forcer une revue
+// explicite). Le registre `regions/` contient aussi des régions configurées
+// mais non déployées (`live: false`, ex. barbados : pas de DNS, pas dans la
+// allowlist CORS du Worker) : elles sont exclues des requêtes live mais
+// restent validées strictement (voir le bloc d'assertions).
 const EXPECTED_DOMAINS = {
   florida: 'sargassummiami.com',
   gp: 'sargasses-guadeloupe.com',
@@ -21,6 +28,7 @@ const EXPECTED_DOMAINS = {
   tulum: 'sargazotulum.com',
 };
 const EXPECTED_IDS = Object.keys(EXPECTED_DOMAINS).sort();
+const EXPECTED_REGION_COUNT = EXPECTED_IDS.length;
 
 const { getAllRegions, assertAllRegionsValid } = require('../../regions/index.cjs');
 const { filterCopernicusForIsland } = require('../../scripts/lib/regional-copernicus.cjs');
@@ -85,9 +93,35 @@ async function run() {
   Date.now = () => FIXED_NOW;
 
   try {
-    assert.equal(assertAllRegionsValid(), 6, 'all six region configs must validate');
-    const regions = getAllRegions();
+    // Validation STRICTE de TOUS les fichiers de région (y compris les
+    // régions non live : une config cassée doit casser la CI). Le nombre de
+    // fichiers vient du dossier lui-même — on ne fige ni 6 ni 7 ici.
+    const regionFiles = fs.readdirSync(path.join(ROOT, 'regions'))
+      .filter((file) => file.endsWith('.json') && !file.startsWith('_'));
+    assert.equal(
+      assertAllRegionsValid(),
+      regionFiles.length,
+      `all ${regionFiles.length} region config files must validate strictly`,
+    );
+
+    // Surface RÉELLEMENT servie par le Worker : les régions live. Le registre
+    // marque `live: false` pour une région configurée mais pas déployée
+    // (barbados : pas de DNS, pas dans la allowlist CORS du Worker). Elle est
+    // donc exclue des 12 requêtes live — mais reste validée ci-dessus.
+    const allRegions = getAllRegions();
+    const regions = allRegions.filter((region) => region.live !== false);
     assert.deepEqual(regions.map((region) => region.id), EXPECTED_IDS);
+    assert.equal(regions.length, EXPECTED_REGION_COUNT, 'live region count must match the pinned contract');
+    const nonLive = allRegions.filter((region) => region.live === false);
+    for (const region of nonLive) {
+      assert.ok(!EXPECTED_IDS.includes(region.id), `${region.id}: a non-live region must not be in the live contract`);
+      const result = await fetchThroughWorker(worker, region, readPreparedPayload(region), '');
+      assert.equal(
+        result.response.headers.get('access-control-allow-origin'),
+        null,
+        `${region.id}: a non-live region must not be granted CORS by the Worker`,
+      );
+    }
 
     let requestsChecked = 0;
     for (const region of regions) {
