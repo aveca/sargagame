@@ -7,6 +7,7 @@
 ---
 
 ## Récemment complété
+- [x] P0 - Cycle 4 fulfillment Mollie : correction des défauts de revue (coupure historique `p7` serveur-side sur `createdAt`, logs sans paymentId via correlation id aléatoire, backfill fail-closed avec endpoint chargebacks paginé + rapport sans PII + APPLY à double confirmation) (@coding_agent, 2026-11-04, branche fix/p0-mollie-fulfillment-review, commits c294d11c8 + merge main, 71 nouveaux tests, PR #1274 **draft, non mergée**). RESTE OUVERT : routage Cloudflare, déploiement du Worker régional, exécution autorisée du backfill pour les 6 ventes encore non livrées.
 - [!] P0 attribution funnel — PR #1255 Draft, head `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; implémentation consent-gated Supabase-only, mais CI bloquée à `215067/215040` bytes gzip (+27). Aucun merge/deploy tant que budget + revue privacy sont verts. Optimisation minimale demandée à Codex.
 - [~] P0 mesure funnel — corrélation session anonyme sur les événements Supabase du parcours B2C Pass (réutilise `sg_sid` sessionStorage, payload Supabase only ; ne pas envoyer à GA4/Apps Script ; aucun changement checkout/prix). Branche `fix/funnel-session-correlation-20261104`, commits `312ec135` + `ccbb80e`. En attente CI (build + budget 210 Ko) et revue privacy/consent avant merge/deploy.
 

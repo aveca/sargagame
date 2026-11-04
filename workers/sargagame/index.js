@@ -1,26 +1,111 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// P0-3 — Confidentialité des logs
+//
+// Aucun identifiant transactionnel (paymentId Mollie), aucune adresse email,
+// aucune métadonnée client et aucun secret ne doit apparaître dans les logs.
+// On utilise un identifiant de corrélation ALÉATOIRE, tiré par requête, sans
+// aucun lien dérivé de l'identifiant Mollie : contrairement à un hash de
+// l'identifiant, il ne permet pas de retrouver un paymentId à partir des logs.
+//
+// `crypto.getRandomValues` est disponible dans le runtime Cloudflare Workers
+// et dans Node >= 18 (Web Crypto global). Le repli n'est jamais dérivé du
+// paymentId : la propriété « aucun lien avec l'identifiant Mollie » tient
+// dans tous les cas.
+// ─────────────────────────────────────────────────────────────────────────────
+const randomCorrelationId = () => {
+  try {
+    const bytes = new Uint8Array(16);
+    globalThis.crypto.getRandomValues(bytes);
+    let hex = "";
+    for (const b of bytes) hex += b.toString(16).padStart(2, "0");
+    return "req_" + hex;
+  } catch {
+    // Repli dégradé : toujours sans lien avec le paymentId.
+    return "req_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 12);
+  }
+};
+
+// Champs de log explicitement autorisés. Tout le reste est ignoré : un
+// identifiant Mollie, un email ou un secret passé par erreur ne peut pas
+// fuiter dans les logs.
+const SAFE_LOG_FIELDS = Object.freeze(["status", "code", "reason"]);
+const logGrantEvent = (cid, event, fields) => {
+  const safe = {};
+  for (const k of SAFE_LOG_FIELDS) {
+    if (fields && fields[k] !== undefined && fields[k] !== null) safe[k] = fields[k];
+  }
+  console.error(`[mollie-grant] ${event}`, { cid, ...safe });
+};
+
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
+    // Identifiant de corrélation ALÉATOIRE par requête (cf. randomCorrelationId).
+    const cid = randomCorrelationId();
     const origin = request.headers.get("Origin") || "";
     const allowed = ["https://sargasses-martinique.com","https://sargasses-guadeloupe.com","https://sargassummiami.com","https://sargassumpuntacana.com","https://sargassumcancun.com","https://sargazotulum.com"];
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
+    // ── P0-2 — Alias historique + fenêtre historique ────────────────────────
+    // `p7` est l'ancien code du pass 7 jours (EUR 7,99 / USD 5,99). Il n'est
+    // accepté QUE pour des paiements DÉJÀ CRÉÉS (webhook / payment_status),
+    // jamais à la création : create_payment le refuse explicitement.
+    const LEGACY_PASS_ALIASES = Object.freeze({ p7: "trip7" });
+    // Montants historiques acceptés pour un code legacy. Le tarif courant
+    // (trip7 à 4,99) n'est PAS accepté pour un code legacy.
+    const LEGACY_PRICES = Object.freeze({ trip7: { EUR: [7.99], USD: [5.99] } });
+    // Date de coupure UNIQUE : un ancien pass n'est valable que pour un
+    // paiement créé STRICTEMENT avant cette date. Date absente, invalide ou
+    // non vérifiable => refus (fail-closed), jamais de délivrance.
+    const LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z";
     const PASS_PRICES = Object.freeze({
       p30:{EUR:14.99,USD:11.99},
       trip7:{EUR:4.99,USD:null},
       season:{EUR:19.99,USD:null},
       sos:{EUR:1.00,USD:null}
     });
+    // Résolution du pass : code canonique + indicateur legacy.
+    const resolvePass = (payment) => {
+      const raw=String(payment?.metadata?.pass||"");
+      const isLegacy=Object.prototype.hasOwnProperty.call(LEGACY_PASS_ALIASES,raw);
+      return {raw,pass:isLegacy?LEGACY_PASS_ALIASES[raw]:raw,isLegacy};
+    };
+    // Lecture de createdAt côté serveur : absente / invalide / sans fuseau
+    // explicite => NaN (fail-closed). Le fuseau est EXIGÉ pour que le contrôle
+    // de la coupure ne dépende jamais du fuseau local du runtime.
+    const ISO_WITH_TIMEZONE = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
+    const parseCreatedAt = (value) => {
+      if (typeof value === "number") return Number.isFinite(value)?value:NaN;
+      if (typeof value !== "string") return NaN;
+      const s=value.trim();
+      if (!ISO_WITH_TIMEZONE.test(s)) return NaN;
+      const ms=Date.parse(s);
+      return Number.isFinite(ms)?ms:NaN;
+    };
     const validateMollieAmount = (payment) => {
       if (!payment || payment.status !== "paid") return {ok:false,reason:"not_paid"};
-      const pass=String(payment.metadata?.pass||"");
+      const {pass,isLegacy}=resolvePass(payment);
       const currency=String(payment.amount?.currency||"").toUpperCase();
       const value=Number(payment.amount?.value);
       const cents=Math.round(value*100);
       if (!DAYS_TABLE[pass] || !PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
       if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
+      if (isLegacy) {
+        // ── P0-2 — contrôle serveur de la fenêtre historique ─────────────────
+        // La date de création doit être VÉRIFIABLE et strictement antérieure
+        // à la coupure. Absente, invalide, égale ou postérieure => refus.
+        const created=parseCreatedAt(payment.createdAt);
+        if (!Number.isFinite(created)) return {ok:false,reason:"legacy_expired"};
+        if (created >= Date.parse(LEGACY_CUTOFF_DATE)) return {ok:false,reason:"legacy_expired"};
+        // Montants historiques uniquement (EUR 7,99 / USD 5,99).
+        const legacy=LEGACY_PRICES[pass]||{};
+        if (!Object.prototype.hasOwnProperty.call(legacy,currency)) return {ok:false,reason:"unsupported_currency"};
+        const acceptable=legacy[currency].map(n=>Math.round(n*100));
+        if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
+        return {ok:true,pass,currency,isLegacy:true};
+      }
       if (!Object.prototype.hasOwnProperty.call(PASS_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
       const expected=PASS_PRICES[pass][currency];
       if (expected === null) {
@@ -37,15 +122,18 @@ export default {
       }
       return {ok:true,pass,currency};
     };
-    const grantB2CPassIdempotent=async(payment)=>{
+    const grantB2CPassIdempotent=async(payment,cid)=>{
       const md=payment?.metadata||{};
-      const pass=String(md.pass||"");
+      const {pass}=resolvePass(payment);
       const email=String(md.email||"").trim();
       const days=DAYS_TABLE[pass];
       if(!days)return {granted:false,skipped:true,reason:"unknown_pass"};
       if(pass!=="sos"&&!email)return {granted:false,skipped:true,reason:"email_required"};
       if(!payment?.id)return {granted:false,skipped:true,reason:"payment_id_required"};
       if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return {granted:false,error:"payment_backend_not_configured"};
+      // Les métadonnées persistées portent le pass CANONIQUE : un grant
+      // historique ne doit jamais stocker `p7`.
+      const metadata=Object.assign({},md,{pass});
       let r;
       try {
         r=await fetch(String(env.SUPABASE_URL).replace(/\/+$/,"")+"/rest/v1/rpc/sg_upsert_payment_grant",{
@@ -63,18 +151,25 @@ export default {
             p_currency:String(payment.amount?.currency||"EUR").toUpperCase(),
             p_expires_at:new Date(Date.now()+days*86400000).toISOString(),
             p_granted_at:new Date().toISOString(),
-            p_metadata:md
+            p_metadata:metadata
           })
         });
       } catch {
+        logGrantEvent(cid,"grant_rpc_unreachable",{});
         return {granted:false,error:"grant_sync_failed"};
       }
       if(!r.ok){
         let code="";
         try { code=String((await r.json())?.code||""); } catch {}
+        // P0-3 : aucune donnée de paiement dans le log (ni paymentId, ni
+        // email, ni metadata) — uniquement corrélation, statut et code.
+        logGrantEvent(cid,"grant_rpc_failed",{status:r.status,code:code||"unknown"});
         if(r.status===404 || code==="PGRST202") return {granted:false,error:"rpc_unavailable",status:r.status};
         return {granted:false,error:"grant_sync_failed",status:r.status};
       }
+      // P0-3 : trace d'audit d'une délivrance RÉUSSIE — corrélation seule,
+      // aucun identifiant de paiement, aucun email, aucune métadonnée.
+      logGrantEvent(cid,"grant_granted",{});
       return {granted:true,pass,email,days};
     };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
@@ -95,18 +190,19 @@ export default {
         p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{
           headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}
         });
-        try { payment=await p.json(); } catch { return out({error:"mollie_invalid_response"},502); }
+        try { payment=await p.json(); } catch { logGrantEvent(cid,"mollie_invalid_response",{}); return out({error:"mollie_invalid_response"},502); }
       } catch {
+        logGrantEvent(cid,"mollie_lookup_unreachable",{});
         return out({error:"mollie_api_unavailable"},503);
       }
-      if(!p.ok) return out({error:"mollie_payment_lookup_failed"},p.status===404?404:502);
+      if(!p.ok) { logGrantEvent(cid,"mollie_lookup_failed",{status:p.status}); return out({error:"mollie_payment_lookup_failed"},p.status===404?404:502); }
       if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
       const validation=validateMollieAmount(payment);
       if(!validation.ok){
-        console.error("[mollie-webhook] grant rejected", {paymentId:id,reason:validation.reason});
+        logGrantEvent(cid,"grant_rejected",{reason:validation.reason});
         return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
       }
-      const grant=await grantB2CPassIdempotent(payment);
+      const grant=await grantB2CPassIdempotent(payment,cid);
       if(grant.error) return out({error:grant.error},503);
       if(!grant.granted) return out({received:true,paymentId:id,status:payment.status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
       return out({received:true,paymentId:id,status:payment.status,granted:true},200);
@@ -125,18 +221,19 @@ export default {
             p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(paymentId),{
               headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}
             });
-            try { x=await p.json(); } catch { return out({error:"mollie_invalid_response"},502); }
+            try { x=await p.json(); } catch { logGrantEvent(cid,"mollie_invalid_response",{}); return out({error:"mollie_invalid_response"},502); }
           } catch {
+            logGrantEvent(cid,"mollie_lookup_unreachable",{});
             return out({error:"mollie_api_unavailable"},503);
           }
-          if(!p.ok)return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502);
+          if(!p.ok){ logGrantEvent(cid,"mollie_lookup_failed",{status:p.status}); return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502); }
           if(x.status!=="paid")return out({paid:false,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
           const requestedEmail=String(d.email||"").trim().toLowerCase();
           const paymentEmail=String(x.metadata?.email||"").trim().toLowerCase();
-          if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail)return out({error:"payment_owner_mismatch"},403);
+          if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail){ logGrantEvent(cid,"grant_rejected",{reason:"payment_owner_mismatch"}); return out({error:"payment_owner_mismatch"},403); }
           const validation=validateMollieAmount(x);
-          if(!validation.ok)return out({paid:false,status:x.status,paymentId:x.id,reason:validation.reason},409);
-          const grant=await grantB2CPassIdempotent(x);
+          if(!validation.ok){ logGrantEvent(cid,"grant_rejected",{reason:validation.reason}); return out({paid:false,status:x.status,paymentId:x.id,reason:validation.reason},409); }
+          const grant=await grantB2CPassIdempotent(x,cid);
           if(grant.error)return out({error:grant.error},503);
           if(!grant.granted)return out({paid:false,status:x.status,paymentId:x.id,reason:grant.reason||"pass_not_eligible"},409);
           return out({paid:true,status:x.status,paymentId:x.id,granted:true},200);
@@ -174,8 +271,12 @@ export default {
         }
         if(d.action==="create_payment" || d.action==="applepay_session"){
           const pass=d.pass||null, currency=String(d.cur||"EUR").toUpperCase();
+          // P0-2 : un ancien code (p7) ne doit JAMAIS pouvoir créer un
+          // paiement, même avec un montant valide : les tarifs historiques
+          // (EUR 7,99 / USD 5,99) ne s'appliquent qu'aux paiements déjà créés.
+          if(pass && Object.prototype.hasOwnProperty.call(LEGACY_PASS_ALIASES,pass)) return out({error:"Prix invalide"},400);
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
-          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null},sos:{EUR:1.00,USD:null}};
+          const prices=PASS_PRICES;
           let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
           if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
           if(!valid)return out({error:"Prix invalide"},400);
