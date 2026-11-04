@@ -253,6 +253,9 @@ consentement, jamais d'empreinte).
 | Commit | `f899da28` (rebased sur `main` = `c4f9821d`, PR #1259) |
 | **PR mergée (prix)** | **#1264** → `22ff4d8b3228778a384ae4763707576fc3f30b4b` (mergée le 2026-11-04T11:04:48Z) |
 | **PR mergée (analytics, P0)** | **#1142** → `b589099c606ade07a8638de4c35dec4348c7de38` (mergée le 2026-11-04T12:26:00Z) |
+| **PR mergée (funnel, session)** | **#1255** → `61c9959d9eaec9ba9799aa6117faf1577bea0824` (mergée le 2026-11-04T12:41:06Z) |
+| **PR mergée (checkout SOS, honnêteté)** | **#1243** → `e7162cde83a6c82b6cb9ed1c64520ff3bd54d14a` (mergée le 2026-11-04T12:58:48Z) |
+| **PR mergée (email outbound, garde)** | **#1265** → `fc6eb8cb223bdc90e1549ccac195da59b6c5d9ce` (mergée le 2026-11-04T13:01:55Z) |
 | Push direct du fondateur | `dc31d732` (2026-11-04T12:20:20Z) — conservé par le squash de #1142 (ancêtre vérifié) |
 | PR initiale (abandonnée) | #1263 — fermée : GitHub lie une PR au SHA d'origine et refuse de la rouvrir après un force-push (« state cannot be changed… branch was force-pushed »). Le contenu a été repris à l'identique dans #1264. |
 | PR #1259 (sécurité, mergée avant) | `c4f9821d` — retire les artefacts financiers/contact du dépôt public |
@@ -358,6 +361,90 @@ Contrôle local équivalent sur le **SHA exact `b589099c`** (checkout de
 > et `getSatelliteFreshness` (la branche est 119 commits en retard). C'est un
 > artefact du diff deux points : la fusion à trois points les **conserve**. Vérifié
 > sur l'arbre réellement fusionné et sur le SHA mergé.
+
+#### Trois merges de plus sur `main` — mesure, honnêteté du checkout, honnêteté de l'email
+
+| PR | SHA | Objet |
+|---|---|---|
+| **#1255** | `61c9959d` (2026-11-04T12:41:06Z) | **Corrélation de session du funnel** — le tunnel n'était pas mesurable |
+| **#1243** | `e7162cde` (2026-11-04T12:58:48Z) | **Checkout SOS bloqué si l'observation satellite n'est pas courante** |
+| **#1265** | `fc6eb8cb` (2026-11-04T13:01:55Z) | **Emails clients conditionnés à une publication fraîche** + purge analytics en lecture seule par défaut |
+
+**#1255 — pourquoi le tunnel n'était pas mesurable.** Le census Supabase des
+30 jours (lecture seule) donnait `sg_pass_offer_view` = 3 324 lignes mais
+`sg_lead_banner_submit` = 1 pour `sg_lead_banner_view` = 714. Deux causes
+distinctes, corrigées :
+
+| Symptôme | Cause | Correctif |
+|---|---|---|
+| `sid` présent dans **22 lignes sur 3 324** | le sink Supabase était appelé **avant** `sgCollectEvent`, qui est la fonction qui crée `sessionStorage.sg_sid` → au premier événement de l'onglet, le `sid` n'existait pas encore | sink Supabase déplacé **après** `sgCollectEvent` |
+| `sg_lead_banner_submit` = 1 pour 714 vues | `submitLead()` faisait `if (navigator.sendBeacon(...)) return` → le sink `sg_email_submit` n'était **jamais** écrit quand le beacon réussissait (corrigé par #1142) | sink first-party **toujours** écrit, livraison Apps Script best-effort séparée |
+
+#1255 attache aussi le `sid` **uniquement sous consentement explicite**
+(`localStorage.sg_cookie_consent === "accepted"`) et exclut la sentinelle `"x"`
+(que `_sgcSid()` renvoie quand `sessionStorage` est indisponible) du comptage de
+session — sans cela, toutes les sessions sans stockage seraient comptées comme
+**une seule** session fictive.
+
+**#1243 — contradiction affichage/offre sur le checkout SOS.** Sur `main`,
+l'interface affichait déjà « *Observation satellite absente, invalide ou trop
+ancienne : aucun verdict actuel n'est publié* » — **et le bouton d'achat ouvrait
+quand même le paiement**. On vendait l'accès à un verdict qui n'existait pas, en
+pleine production servie avec une observation de 8 jours. Le garde est désormais
+**avant** le `POST /api/mollie` : `observationCurrent !== true` → aucun paiement
+ouvert, aucun tracking `sg_sos_checkout_start`, message honnête affiché. **En
+régime sain (donnée fraîche), le comportement est strictement inchangé.**
+
+**#1265 — des emails clients partaient avec des données périmées.** Mesuré sur
+les 3 derniers runs `schedule` : `fetch-data` en **failure**
+(`BLOCKED_STALE_SOURCE`) et `email-automation` en **success** — le job n'avait
+aucune dépendance de `fetch-data` et partait en parallèle.
+
+| Run | `fetch-data` | `email-automation` | Âge de l'observation |
+|---|---|---|---|
+| `41780985819` (2026-11-04T05:43Z) | **failure** | **success** | ~18 h |
+| `41736428821` (2026-11-03T23:06Z) | **failure** | **success** | ~23 h |
+| `41696164953` (2026-11-03T18:41Z) | **failure** | **success** | ~24 h |
+
+Le job est maintenant conditionné à `needs.fetch-data.result == 'success'` **et**
+`gate_outcome == 'success'` **et**
+`publication_status ∈ {FRESH_AND_PUBLISHED, NO_NEW_OBSERVATION}` — les deux
+sorties sont des **sorties de job réelles** (`fetch-data.outputs`, lignes 45-47
+du workflow). Effet de bord assumé et documenté : la grille NOAA publiant une
+observation par jour à 12:00:00Z pour une SLA de 900 min, l'email ne part plus
+qu'aux crons où la donnée est fraîche (~2/jour au lieu de 4) — **2 emails justes
+plutôt que 4 emails faux**. Réversible par `git revert`.
+
+La purge `analytics_events` passe aussi en **lecture seule par défaut** : une
+suppression exige désormais `--execute` **et** `--approved-by=<identifiant>`.
+
+**Correctif de portabilité ajouté à #1265.** Son test
+`tests/daily-copernicus-outbound-gate.test.cjs` cherchait
+`workflow.indexOf('  email-automation:\n')` sur un fichier lu tel quel : en
+checkout Windows (`\r\n`), l'index vaut `-1` et le test échoue alors que le
+contenu est identique. Normalisation `\r\n → \n` ajoutée — **même correctif et
+même précédent** que `tests/unit/morning-brief-freshness.test.cjs` (6 tests sur
+107 dans `tests/unit` normalisent déjà CRLF). Sans ce correctif : 146/147 en
+local ; avec : **147/147**. La CI Linux n'était pas affectée.
+
+#### Contrôle local sur l'arbre complet (main + #1255 + #1243 + #1265)
+
+| Contrôle | Résultat |
+|---|---|
+| `npm run build` | exit 0 |
+| `node scripts/prepare-ftp.cjs` | exit 0 |
+| `npm test` | **exit 0 — 147/147 fichier(s) de test OK** |
+| `node scripts/check-bundle-budget.cjs` | **206,5 Ko gzip ≤ 210 Ko** (211 478 / 215 040 octets) ✓ |
+| Exposition GA4 (5 fichiers) | **0** |
+| `submitLead` sans `return` prématuré | **oui** |
+| Sink Supabase après `sgCollectEvent` | **oui** |
+| `sid` sous consentement explicite | **oui** |
+| Sentinelle `"x"` exclue du comptage | **oui** |
+| `email-automation` conditionné à la publication fraîche | **oui** (6 conditions) |
+| Purge : `--execute` + `--approved-by` exigés | **oui** |
+| Garde SOS avant le `POST /api/mollie` | **oui** |
+| Gardes fail-closed (`evaluateConditionsFreshness`, `isConditionsFresh`, `renderCleanBeachIndex`, `getSatelliteFreshness`) | **présentes** |
+| Prix (`/offres/` : 4,99 € / 19,99 € / `?pass=p30`, pas de `/mois`) | **présents** |
 
 #### Déploiement — BLOQUÉ par une garde de fraîcheur (pré-existante, diagnose complète)
 
