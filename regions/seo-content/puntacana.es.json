@@ -442,5 +442,20 @@
       "priority": "0.7",
       "daily": false
     }
-  ]
+  ],
+  "beachFaq": {
+    "questions": [
+      {
+        "q": "¿Hay sargazo en {beach} hoy?",
+        "a": "La última observación satelital publicada indica \"{status}\" para {beach}, con un Beach Score de {score}/100. Las observaciones son intermitentes; comprueba la hora y la confianza antes de decidir. Si la lectura está retrasada o no se puede verificar, el estado actual se suspende."
+      },
+      {
+        "q": "¿Cuándo se espera la próxima llegada de sargazo a {beach}?",
+        "a": "{nextArrival} Pronóstico disponible para {beach}: {forecastLine}. El número de días mostrados depende de los datos validados disponibles. Comprueba la hora de la observación y la confianza; no se publica una proyección si faltan datos verificables."
+      }
+    ],
+    "nextArrivalRisk": "El próximo riesgo de recale en {beach} se estima a partir de los bancos identificados en las observaciones disponibles. Es una tendencia condicionada por viento y corrientes, no una garantía de llegada.",
+    "nextArrivalNone": "No se indica una llegada significativa de sargazo en el pronóstico validado disponible para {beach}. Comprueba la fecha y la confianza de la observación que lo respalda.",
+    "nextArrivalUnavailable": "No hay datos de pronóstico validados disponibles para {beach}; no se publica una estimación de llegada."
+  }
 }
