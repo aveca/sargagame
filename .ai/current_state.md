@@ -35,7 +35,11 @@ fondateur.
   caractère, masque d'empreinte 20 caractères, exit 1 sur finding) +
   `tests/unit/scan-hardcoded-credentials.test.cjs` (6 sondes positives, 8 négatives,
   contrats eol/allowlist/template/skip-dir) + `docs/p0-67-sg-payments-security-handoff.md`.
-- CI vérifiée : `138/138`, `scanned=970 findings=0`.
+- CI vérifiée : **`139/139`**, `scanned=971 findings=0`.
+  (Un premier chiffre à 138/138 et `scanned=970` circule dans ce handoff : il est
+  FAUX, il a été corrigé après relecture des logs CI. La CI tourne sur la ref de
+  merge de la PR, donc sur `main ∪ branche` = 139 fichiers, et non sur les 137
+  fichiers suivis de la branche seule.)
 - Bug latent d'offset corrigé : `scanFile` construisait les offsets en
   `line.length + 1`, dérivant de 1 par ligne CRLF et **masquant silencieusement de
   vrais secrets**. Offsets désormais lus dans le texte (`text[i] === "\n"`) ; test de
@@ -92,8 +96,9 @@ fondateur.
 - [x] §4 8 tests de contrat workflow → exit 0 (deploy-trigger, track-record, copernicus-status, daily-metrics x2, data-publish-idempotence, predeploy-satellite, yaml-syntax)
 - [x] §4 PyYAML sur le workflow édité → parse OK, `inputs: ['purge_analytics']`, 2 étapes purge
 - [x] §4 CI run `41745453089` (tests) → **139/139 sur Linux/LF** ; run `41745453120` (perf + Lighthouse) → perf pass, lighthouse-report pass
-- [x] §1 CI `138/138` sur Linux/LF, `scanned=970 findings=0`
-- [x] §5 CI 4/4 SUCCESS
+- [x] §1 CI `139/139` sur Linux/LF, `scanned=971 findings=0` (relevés dans le log du run `41704849270` ; un premier chiffre à 138/138 puis à `scanned=970` circule dans ce handoff — FAUX, corrigé après relecture des logs. La CI tourne sur la ref de merge de la PR = `main ∪ branche`, donc 139 fichiers, et non sur les 137 suivis de la branche seule)
+- [x] §5 CI 4/4 SUCCESS, tests `139/139` (run `41699705236`)
+- [x] Docs PR #1253 CI run `41749744301` (tests) → `138/138` (= `main` seul, aucun fichier de test ajouté)
 - [x] npm run build → exit 0 (§4 local, Windows/CRLF)
 - [x] node scripts/check-bundle-budget.cjs → 210.0 Ko ≤ 210 Ko (exit 0, marge nulle)
 - [x] 6 régions HTTP 200 via Cloudflare (mq, gp, miami, puntacana, cancun, tulum)
@@ -134,7 +139,20 @@ fondateur.
 - §7 : branche `fix/region-seo-native-path-regex-20261103` — PR **#1244** (MERGED), head `7f0413d0`
 - §1 : branche `fix/payment-hardcoded-credential-guard-20261103` — Draft PR **#1247** (OPEN, CI 4/4 SUCCESS), head `3dc30d7e`
 - §4 : branche `fix/outbound-purge-safety-20261104` — Draft PR **#1252** (OPEN, CI 4/4 SUCCESS), head `dff18e28`
-- `main` HEAD : `36945c275744680304aa8aec51abc8cab6b29d12`
+- Docs : branche `docs/p0-67-handoff-20261104` — PR **#1253** (OPEN, CI 4/4 SUCCESS au SHA `bee90af68`), head `bee90af68`
+- `main` HEAD : `8d2e69ecc60e834d707438d1d9acb137138562fc` (également à l'origine de la branche §4 ; 2 commits data-only depuis `36945c275`)
+
+**Retard des branches — mesuré, pas supposé** (fichiers `*.test.cjs` SUIVIS, via `git ls-tree -r`) :
+
+| branche | fichiers de test | absent de `main` | propre à la branche |
+|---|---|---|---|
+| `main` | 138 | — | — |
+| §5 (#1243) | 137 | **2** (`region-seo-hubs-freshness`, `unit/hotel-landing-fr-safety`) | `unit/sos-checkout-freshness-gate` |
+| §1 (#1247) | 137 | **2** (idem) | `unit/scan-hardcoded-credentials` |
+| §4 (#1252) | 139 | aucun | `tests/purge-analytics-workflow-safety` |
+
+La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique le 139/139 : §5 et §1 ne sont PAS périmées côté exécution, mais doivent être rebasées/mergées avant merge réel. §4 est à jour.
+
 - Aucun push direct sur `main`, aucun merge automatique, aucun déploiement, aucune action de production.
 
 ---
