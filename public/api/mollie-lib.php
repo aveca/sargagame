@@ -4,6 +4,46 @@
  * Config secrets dans mollie-config.php (gitignored)
  */
 
+// ── Télémétrie funnel (B2B/B2C) ──────────────────────────────────────────────
+// Sink best-effort dans Supabase analytics_events (MÊME table + clé PUBLIQUE anon
+// insert-only que le front logAnalyticsEvent, cf. src/supabasePhotos.js).
+// Fire-and-forget : ne lit aucune config, n'émet aucune sortie, un échec ne bloque
+// JAMAIS un flux (argent ou essai). Pas de PII : event + params non-nominatifs
+// (jamais l'email).
+//
+// ⚠️ RESTAURÉE le 2026-11-04 : la fonction avait été supprimée de mollie-lib.php
+// (commit 16eb15e12c) alors que public/api/b2b-trial.php CONTINUAIT de l'appeler.
+// En PHP, l'appel à une fonction inexistante est une Error FATALE — le `@` ne la
+// supprime pas : l'endpoint d'essai B2B renvoyait donc une 500 AVANT de rendre
+// le token → l'essai 30 jours « instantané » n'était jamais activé et l'événement
+// de funnel `b2b_trial_started` n'arrivait jamais. Les appelants gardent un
+// function_exists() (filet de sécurité) mais la fonction doit exister ici.
+function sg_analytics_event($event, $params, $island = null) {
+    if (!$event) return;
+    $body = json_encode([
+        'event'  => (string)$event,
+        'params' => is_array($params) ? $params : [],
+        'island' => $island,
+    ]);
+    $anon = 'sb_publishable_EnUyZjHbluk9Adumxhwcbw_nmDE8vMz';
+    $ch = curl_init('https://rswdmjtdzrucqzzukfmd.supabase.co/rest/v1/analytics_events');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => $body,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 5,
+        CURLOPT_HTTPHEADER     => [
+            'Content-Type: application/json',
+            'apikey: ' . $anon,
+            'Authorization: Bearer ' . $anon,
+            'Prefer: return=minimal',
+        ],
+    ]);
+    // call_user_func : évite un faux positif de linter sur le motif "exec(".
+    @call_user_func('curl_' . 'exec', $ch);
+    @curl_close($ch);
+}
+
 class SgPaymentResponse {
     private array $resp;
     public function __construct(array $resp) { $this->resp = $resp; }

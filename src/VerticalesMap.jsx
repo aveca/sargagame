@@ -52,7 +52,7 @@ const COPY={
     exit:"Voir ma plage — gratuit", exitSub:"Vous gérez un rivage ? → Espace pro",
     foot:"Le verdict reste 100 % donnée mesurée, l'argent ne touche jamais la mesure. Les paliers sous la ligne de flottaison ne sont ni vendus ni promis tant qu'on ne sait pas les mesurer.",
     tiers:[
-      {market:"B2C · voyageurs",              value:"Votre plage aujourd'hui : mer propre ou pas.",   line:"Le verdict du jour, gratuit. Pass séjour dès 7,99 €.", prices:["7,99 €"], cta:"Voir ma plage — gratuit"},
+      {market:"B2C · voyageurs",              value:"Votre plage aujourd'hui : mer propre ou pas.",   line:"Le verdict du jour, gratuit. Pass séjour dès 4,99 €.", prices:["4,99 €"], cta:"Voir ma plage — gratuit"},
       {market:"Hôtels & clubs de plage",       value:"L'état de vos plages sur votre site, daté.",     line:"79 €/mois ou 690 €/an · essai 30 j sans carte.", prices:["79 €/mois","690 €/an"], cta:"Essayer 30 jours"},
       {market:"Mairies & offices de tourisme", value:"Toute la commune, baie par baie.",               line:"L'accès Territoire self-serve se met en place — dites-nous où vous en êtes.", note:"accès self-serve en préparation"},
       {market:"Immobilier côtier",             value:"Lire l'exposition d'un rivage dans le temps.",   line:"Pas encore mesuré → pas encore promis."},

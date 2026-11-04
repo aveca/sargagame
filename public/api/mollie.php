@@ -152,6 +152,11 @@ try {
         echo json_encode([
             'checkoutUrl' => $payment->getCheckoutUrl(),
             'paymentId' => $payment->id,
+            // Montant EFFECTIVEMENT débité (après la surcharge USD de haute saison
+            // appliquée plus haut). Champ ADDITIF : permet au front de vérifier
+            // que le prix affiché = prix débité et de tracer un écart éventuel
+            // (sg_price_mismatch) au lieu de le laisser invisible.
+            'amount' => ['value' => $amount['value'], 'currency' => $amount['currency']],
         ]);
         exit;
     }
