@@ -2036,7 +2036,7 @@ export function track(event,params={}){
   }
   // Tracking FIRST-PARTY indépendant (sans GA/Sheets) : capture l'event dans le résumé de session.
   try{sgCollectEvent(event,p)}catch(e){}
-  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
+  if(remoteEnabled&&SG_FUNNEL_EVENTS.has(event)){try{if(localStorage.sg_cookie_consent==="accepted")p.sid=_sgcSid();logAnalyticsEvent(event,p,IS_NEW_REGION?REGION.id.toUpperCase():(typeof window!=="undefined"&&window.location.hostname.includes("guadeloupe")?"GP":"MQ"))}catch(_){}}
 }
 // Flush queued events on next session if GA4 is available
 function flushTrackQueue(){
