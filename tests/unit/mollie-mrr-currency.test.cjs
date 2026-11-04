@@ -65,4 +65,4 @@ assert.equal(result.unattributed_payments_this_month, 6, 'unmatched account paym
 assert.equal(result.unattributed_revenue_this_month_by_currency.EUR, 26, 'unattributed EUR is reported separately')
 assert.equal(result.unattributed_revenue_this_month_by_currency.USD, 3, 'unattributed USD is reported separately')
 
-console.log('MOLLIE_MRR_CURRENCY_TESTS PASS (22 assertions)')
+console.log('MOLLIE_MRR_CURRENCY_TESTS PASS (26 assertions)')
