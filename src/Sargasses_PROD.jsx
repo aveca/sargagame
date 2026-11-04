@@ -13,7 +13,10 @@ import { legalHref, legalLinks } from "./lib/legal-links.js"
 import { isSatelliteFresh12h, isSatelliteStale36h, satelliteAgeHours } from "./lib/format-freshness.mjs"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { useFrustrationDetection } from "./useFrustrationDetection.js"
-import PassOffer from "./PassOffer.jsx"
+// ⚠️ NE PAS réimporter PassOffer ici : l'import était MORT (aucun `<PassOffer` dans
+// ce fichier) mais il tirait PassOffer + src/lib/pricing.js dans le chunk EAGER
+// (chemin critique) — +0,6 Ko gzip au-dessus du budget CI de 210 Ko. PassOffer
+// n'est chargé que par PremiumModal.jsx (LAZY).
 import { submitBeachReport, fetchApprovedReports, supabaseConfigured, logAnalyticsEvent, isRemoteAnalyticsEnabled } from "./supabasePhotos.js"
 import { AroundMeController } from "./world/AroundMeController"
 import "./Themes.css"
@@ -1980,6 +1983,12 @@ const SG_FUNNEL_EVENTS=new Set(["sg_session_start","sg_forecast_lock_click","sg_
   // aucune optimisation CRO prouvable. `sg_sos_checkout_*` commençant par "sg_sos"
   // et non "sg_checkout", il était aussi exclu de la file `critical`.
   "sg_sos_checkout_start","sg_sos_checkout_error",
+  // Contrôle affichage = débit (2026-11-04) : le serveur renvoie le montant
+  // EFFECTIF qu'il débite (champ `amount` de create_payment). Si le client a
+  // affiché un autre montant (bascule de mois serveur vs navigateur autour du
+  // 1er juin / 1er décembre, ou tarif non aligné), l'écart est MESURÉ au lieu
+  // d'être invisible. 0 écart attendu en régime nominal.
+  "sg_price_mismatch",
   // Engagement verdict (2026-08-04) : expansion methodology + forecast view.
   "sg_verdict_expand","sg_forecast_view","sg_paywall_view","sg_payment_failed","sg_premium_feature_click",
   // Funnel B2B séquentiel (2026-07-02) : view→step→intent→activated par écran/cohorte.

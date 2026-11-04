@@ -30,7 +30,7 @@ const STR={
       pill:{clean:"PROPRE",moderate:"MODÉRÉ",avoid:"ÉVITE"},
       say:"La mesure de ce matin — pas une supposition. Demain, Le Veilleur regarde pour toi.",
       cta:"Deviens celui qui connaît la fin de l'histoire",
-      ctaSub:"Pass — paiement unique, dès 7,99 €",
+      ctaSub:"Pass — paiement unique, dès 4,99 €",
       beat1:n=>["Tu regardes ",n,". Demain, le vent peut tourner — et personne ne te préviendra."],
       beat2:"Sauf lui. Chaque matin, le verdict de ta plage, gratuit — et les criques propres les plus proches.",
       beat3:"Personne n'aime découvrir les algues une fois la serviette posée.",
