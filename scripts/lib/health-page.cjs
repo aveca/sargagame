@@ -131,8 +131,14 @@ function buildContent(lang, regionName, authority) {
   }
 }
 
-function buildMeta(lang, regionName) {
+function buildMeta(lang, regionName, regionId) {
   if (lang === 'es') {
+    if (regionId === 'rivieramaya') {
+      return {
+        title: '¿A qué huele el sargazo y es peligroso? Riviera Maya',
+        desc: '¿A qué huele el sargazo y cuándo conviene alejarse? Olor a huevo podrido, posibles molestias y precauciones generales en Riviera Maya. No es consejo médico.',
+      }
+    }
     return {
       title: `¿El sargazo es peligroso? Salud y seguridad en la playa — ${regionName}`,
       desc: `¿El sargazo es dañino? El olor a huevo podrido (H2S), nadar, niños, mascotas e irritación de la piel ("pica-pica") — respuestas claras y prudentes y qué recomiendan las autoridades de salud en ${regionName}.`,
@@ -271,7 +277,7 @@ function generateHealthPages(region, distDir) {
   const authority = authMap[lang] || authMap.en
   const siteName = lang === 'es' ? `Sargazo ${region.name}` : `Sargassum ${region.name}`
   const content = buildContent(lang, region.name, authority)
-  const meta = buildMeta(lang, region.name)
+  const meta = buildMeta(lang, region.name, region.id)
   writePage(distDir, slug, renderPage({
     lang, domain: region.domain, siteName, slug, title: meta.title, desc: meta.desc, content,
   }))
