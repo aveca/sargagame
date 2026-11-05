@@ -1,3 +1,25 @@
+## 2026-11-05 · coding_agent (OpenCode) · P0 — finalisation PR #1250 (fraîcheur Copernicus)
+
+**Branche resynchronisée sur `main` par merge (jamais de rebase), validée Node 24, pushée. PR #1250 maintenue Draft, non mergée, non déployée.**
+
+### Git
+- `origin/main` a avancé (`02582af96` → `a7c15774a`). Merge **normal** de `origin/main` dans `fix/copernicus-runtime-freshness-route-20261103` → commit de merge `0247808b1` (2 parents : `70bdbfd56` + `a7c15774a`). **Aucun rebase, aucune réécriture d'historique, aucun force-push.**
+- **Conflit unique, circonscrit** : ADD/ADD à l'insertion avant `export default` dans `workers/sargagame/index.js` — la branche y ajoute l'import `satelliteFreshness`, `main` y ajoute ses helpers de confidentialité des logs (P0-3). Résolution **« keep both »** déterministe. Le diff croisé **prouve** l'absence de perte sémantique : delta vs `origin/main` = uniquement la correction de fraîcheur ; delta vs la branche = uniquement les apports paiement de `main` (cutoff legacy `p7`, logs sans `paymentId`). **Aucun conflit** sur `wrangler.template.jsonc`, la garde privée, le contrat scientifique ni les payloads régionaux.
+
+### Validation (Node v24.14.0, install propre `npm ci` exit 0)
+- 4 tests ciblés : `worker-copernicus-freshness-metadata-recalc` PASS (12 checks), `worker-copernicus-freshness` PASS (6 scénarios), `worker-copernicus-regional-preservation` PASS (6 régions, 12 requêtes), `worker-private-guard` PASS.
+- `npm test` → **155/155** fichiers de test OK (0 échec).
+- `npm run build` → exit 0 ; budget gzip **206,5 Ko / 210 Ko** (`211464 / 215040` octets).
+- `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, `RAW_CSS_TEXT=[]`.
+- `npx playwright test` → exit 0.
+- Régression navigateur custom (390×844 + 1280×800) → **PASS 16 checks** ; captures inspectées visuellement : badge « SATELLITE EN RETARD · il y a 3 j », pins neutres, CTA et bandeau cookies non bloquants. Âge servi **4573 min ≈ âge depuis `erddapTimestamp` (4574)**, et **≠** âge depuis `updatedAt` (3803) → l'âge vient bien de l'observation.
+- **Les 6 régions validées explicitement** (MQ, GP, Florida, Punta Cana, Riviera Maya, Tulum) : `dataAgeMinutes` recalculé depuis `erddapTimestamp` (2880 min à `FIXED_NOW=2026-11-04T12:00:00Z`), **valeur stockée `999999` injectée puis IGNORÉE**, `stale=true` (>36 h), `Cache-Control: no-store`, CORS présent pour l'origine live et absent pour une origine non autorisée, `erddapTimestamp`/`updatedAt` immuables, **tous** les champs scientifiques préservés à l'identique, séparation régionale vérifiée (aucun identifiant de plage partagé), cache-bust ≡ requête normale.
+
+### Garde-fous
+Seuil opérationnel 900 min inchangé · seuil public 36 h inchangé · aucune observation/score/prévision/prix/checkout/secret/DNS/donnée de production modifié · PR #1250 **Draft**, ni mergée ni déployée.
+
+---
+
 ## 2026-11-04 · coding_agent (OpenCode) · Mission P0 — déblocage PR #1250 (fraîcheur Copernicus)
 
 **PR #1250 resynchronisée sur `main`, tests durcis, mismatch production reproduit de façon déterministe.** Aucun déploiement, aucun merge, aucune donnée de production, aucune observation scientifique modifiée.
