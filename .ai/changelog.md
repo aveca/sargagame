@@ -1,3 +1,20 @@
+## 2026-11-05 19:35 UTC - OpenCode (coding_agent) - P0.118 §5/§6/§7 - branche feature/p0-mollie-durable-fulfillment-20261105 - commit 94ab2dd66
+
+**Worker `sg-payments` : source canonique récupérée depuis la source live, bearer en dur supprimé, adapters Mollie Next-gen/Classique, fulfillment durable. Aucun merge, aucun déploiement.**
+
+- Branche `feature/p0-mollie-durable-fulfillment-20261105` depuis `origin/main` (`ed446ac92`). Commits `c9e4884f7` (Worker + provenance) · `2bbf1c7d0` (migrations préparées) · `94ab2dd66` (tests).
+- **Provenance** : `workers/sg-payments/index.js` = **copie binaire byte-for-byte** de la source live récupérée (v381, version ID `36fa827a-a39c-4156-9359-30fc383eb6c5`, 100 % du trafic, 85 851 octets, SHA-256 `74c1a56a…`), **102 routes** et 7 bindings conservés. Correctifs appliqués **en ligne** (pas de réécriture) ; inventaire complet dans `workers/sg-payments/PROVENANCE.md`.
+- **§5** : `NAMECHEAP_BEARER = "sargagame-mail-2026"` supprimé → `env.NAMECHEAP_MAIL_TOKEN` obligatoire ; en son absence le relais Namecheap est sauté et `sendpulse → brevo → resend` prend le relais. Le secret n'existe pas parmi les bindings live : conséquence documentée (trafic e-mail via Resend), aucun secret deviné ni réintroduit.
+- **§6** : signature Next-gen `sha256=` normalisée (la version live répondait **403** à tout webhook officiel) ; corps Classique `application/x-www-form-urlencoded` traité (la version live levait une exception → **500**, paiement jamais honoré) ; **identifiant d'événement ≠ identifiant d'entité** ; état autoritative toujours lu depuis l'API Mollie ; validation mode/statut/`paidAt`/montant/devise/métadonnées/SKU ; **événement inconnu → aucun grant et aucun marqueur** (rejeu conservé) ; `payment.refunded` révoque l'accès.
+- **§7** : B2C via le RPC `sg_upsert_payment_grant` (7 arguments **exacts**, plus de colonnes `session_id`/`user_id` inexistantes), **grant durable écrit ET relu-vérifié AVANT tout marqueur KV** (ordre prouvé par compteur monotone partagé) ; B2B écrit les **colonnes réelles** de `payment_grants` et les vérifie avant le jeton KV ; révocation par `expires_at` car `payment_grants` **n'a pas de colonne `status`** ; `user_id` lu dans `metadata` (jsonb).
+- **Correction d'un point de méthode** : `supabase/schema.sql` prouve que `payment_grants` possède `subscription_id`/`plan`/`customer_id` → l'écriture B2B live était valide ; seuls `session_id`/`user_id` (B2C) n'existaient pas.
+- **⚠️ À trancher par le fondateur** : un paiement `mode = "test"` **ne crée plus de droit**. Si `MOLLIE_API_KEY` est une clé test, plus aucun droit B2C ne sera servi (réponse explicite `reasons: ["not_live_mode"]`).
+- **Migrations PRÉPARÉES, NON APPLIQUÉES** (§1/§3) : `002_payment_grant_search_path.sql` (`SET search_path = ''`, signature identique, re-voxel PUBLIC/anon/authenticated) et `003_b2b_leads_least_privilege.sql` (RLS + `REVOKE ALL` anon/authenticated, service_role préservé, garde `to_regclass`). §1 **column-agnostic** : le schéma réel `b2b_leads` est inconnu du dépôt (`BUG-2026-121`).
+- Tests : `npm ci` exit 0 · `npm run build` exit 0 · `npm test` **162/162** · adapters §6 **43 assertions** · fulfillment §7 **52 assertions** · migrations §1/§3 **28 assertions** (base réelle = SKIP) · esbuild exit 0 · bundle **206.5/210 Ko** · `git diff --check` exit 0.
+- Rollback : revert de la branche. **Aucun état de production touché** (pas de write Supabase, pas d'email, pas de paiement, pas de remboursement, pas de rejeu de webhook, pas de backfill).
+
+---
+
 ## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
 
 - Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.

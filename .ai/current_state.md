@@ -1,3 +1,61 @@
+## 2026-11-05 19:35 UTC · Agent: OpenCode (coding_agent)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0.118 §5/§6/§7 — source canonique de la Worker `sg-payments` **récupérée depuis la source live** (v381, 100 % du trafic), bearer Namecheap en dur supprimé, adapters Mollie **Next-gen + Classique** séparés, fulfillment **durable** (grant écrit **et vérifié** avant tout marqueur KV). **Aucun merge, aucun déploiement, aucun appel en production.**
+- **Détails** :
+  - Branche `feature/p0-mollie-durable-fulfillment-20261105`, depuis `origin/main` (`ed446ac92`). 3 commits : `c9e4884f7` (Worker + provenance), `2bbf1c7d0` (migrations préparées), `94ab2dd66` (tests).
+  - **Provenance prouvée** : `workers/sg-payments/index.js` est une **copie binaire byte-for-byte** de la source live récupérée (85 851 octets, SHA-256 `74c1a56a1e669ab00519b02b280f46362eaaaf1b3bc4c0ec2492a9458c3d2791`, version ID `36fa827a-a39c-4156-9359-30fc383eb6c5`, 100 % du trafic, **102 routes** conservées, 7 bindings inchangés). Les correctifs ont été appliqués **en ligne** — pas de réécriture. Inventaire complet dans `workers/sg-payments/PROVENANCE.md`.
+  - **§5** : `NAMECHEAP_BEARER = "sargagame-mail-2026"` (bearer figé dans le dépôt public) supprimé ; `env.NAMECHEAP_MAIL_TOKEN` désormais **obligatoire**. En son absence, le relais Namecheap est sauté et la chaîne de secours `sendpulse → brevo → resend` prend le relais. **Conséquence documentée** : `NAMECHEAP_MAIL_TOKEN` n'existe pas parmi les bindings live → tant qu'il n'est pas ajouté (hors §12), le trafic e-mail passe par Resend. Aucun secret deviné, aucun secret réintroduit.
+  - **§6** : `normalizeMollieSignature` retire le préfixe officiel `sha256=`, refuse tout ce qui n'est pas 64 hex, compare **à temps constant**. `parseMollieWebhook` distingue Classique (`application/x-www-form-urlencoded`) et Next-gen (JSON) et **ne confond jamais** l'identifiant d'**événement** (`event_…`) et l'identifiant d'**entité** (`entityId` / `tr_` / `sub_`). L'état autoritaire vient **toujours** de l'API Mollie, jamais du corps du webhook. `mode`, `status`, `paidAt`, montant, devise, métadonnées et SKU sont validés. Un événement inconnu ne crée **aucun** grant et **n'est pas marqué comme traité** (rejeu conservé). `payment.refunded` retire l'accès.
+  - **§7** : `grantB2C` appelle `public.sg_upsert_payment_grant` avec ses **7 arguments exacts**, **relit** la ligne et compare `type`/`pass`/`email`/`currency` ; **seulement ensuite** le marqueur KV est posé. `grantB2B` écrit les **colonnes réelles** (`subscription_id`, `type`, `plan`, `customer_id`, `expires_at`, `granted_at`, `metadata`) et les vérifie avant le jeton KV. La révocation expire le grant via `expires_at` car `payment_grants` **n'a pas de colonne `status`**. `userEntitlements` / `verify_subscription` lisent le `user_id` dans `metadata` (jsonb).
+  - **Correction d'un point de méthode** : `supabase/schema.sql` (lignes 193–209) prouve que `public.payment_grants` possède **bien** `subscription_id`, `plan` et `customer_id` → l'écriture B2B live était **valide**. Seuls `session_id` et `user_id` (B2C) n'existaient pas.
+  - **Migrations PRÉPARÉES, NON APPLIQUÉES** : `002_payment_grant_search_path.sql` (`SET search_path = ''`, signature identique, re-voxel PUBLIC/anon/authenticated, GRANT service_role) et `003_b2b_leads_least_privilege.sql` (RLS + `REVOKE ALL` anon/authenticated, service_role préservé, garde `to_regclass`, aucune donnée touchée). §1 reste **column-agnostic** : le schéma réel `b2b_leads` est inconnu du dépôt (`BUG-2026-121`).
+  - **⚠️ Changement de comportement à valider par le fondateur** : un paiement Mollie en `mode = "test"` **ne crée plus de droit** (la version live l'honorait). Si `MOLLIE_API_KEY` est une clé test, **plus aucun droit B2C ne sera servi** ; le webhook répond `processed: false, reasons: ["not_live_mode"]` (explicite, pas silencieux). Le type de la clé live doit être vérifié avant déploiement (hors §12).
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — **nouveau** : source canonique de la Worker (live v381 + correctifs §5/§6/§7).
+- `workers/sg-payments/PROVENANCE.md` — **nouveau** : provenance live, bindings, inventaire de chaque différence.
+- `scripts/migrations/002_payment_grant_search_path.sql` — **nouveau** : durcissement `search_path` du RPC (**non appliqué**).
+- `scripts/migrations/003_b2b_leads_least_privilege.sql` — **nouveau** : moindre privilège `public.b2b_leads` (**non appliqué**).
+- `tests/unit/mollie-worker-harness.cjs` — **nouveau** : KV + `fetch` simulés, **compteur monotone partagé** (preuve d'ordre cross-journaux).
+- `tests/unit/mollie-nextgen-classic-adapters.test.cjs` — **nouveau** : 43 assertions §6.
+- `tests/unit/mollie-durable-fulfillment.test.cjs` — **nouveau** : 52 assertions §7.
+- `tests/unit/p0-118-migrations-privileges.test.cjs` — **nouveau** : 28 assertions §1/§3 (section base réelle = **SKIP** sans `SG_TEST_PG_URL`).
+
+### Tests réalisés
+- [x] `npm ci` → exit 0 (Node v24.14.0 / npm 11.9.0)
+- [x] `npm run build` → exit 0
+- [x] `npm test` → **162/162 fichiers de test OK**, exit 0
+- [x] `node tests/unit/mollie-nextgen-classic-adapters.test.cjs` → **PASS 43 assertions**
+- [x] `node tests/unit/mollie-durable-fulfillment.test.cjs` → **PASS 52 assertions**
+- [x] `node tests/unit/p0-118-migrations-privileges.test.cjs` → **PASS 28 assertions** (+ SKIP base réelle)
+- [x] `npx esbuild workers/sg-payments/index.js --bundle=false` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206.5 / 210 Ko** gzip eager, exit 0
+- [x] `git diff --check` → exit 0
+- [ ] php -l → aucun `.php` touché
+- [ ] CI GitHub → en attente (branche pas encore poussée)
+
+### Problèmes restants
+- [ ] **Déploiement bloqué par §12** : la Worker n'est pas déployée, les migrations ne sont pas appliquées, aucun secret n'est ajouté, aucune route n'est modifiée.
+- [ ] `MOLLIE_API_KEY` : le type (live vs test) de la clé en production doit être vérifié **avant** tout déploiement (le mode test ne sert plus de droit).
+- [ ] `NAMECHEAP_MAIL_TOKEN` absent des bindings live → le relais Namecheap sera ignoré tant que le secret n'est pas ajouté.
+- [ ] Schéma réel `b2b_leads` / `b2b_subscriptions` **inconnu du dépôt** (`BUG-2026-121`) : §1 est fait (privilèges seuls, column-agnostic) mais toute travail B2B de **forme de données** exige une lecture autorisée.
+- [ ] `tests/sitemap-guard-beach-pages.test.cjs` exige un `dist/` préalable : au **premier** `npm test` d'un worktree neuf il échoue (`dist/ absent — vite build d'abord`). Il **passe** après `npm run build` et n'est **pas** modifié par cette branche (dépendance d'ordre d'exécution pré-existante).
+- [ ] La Worker `workers/sargagame/index.js` de `main` ne contient toujours **qu'un** handler Mollie Classique **sans vérification HMAC** et sans support Next-gen : son extension reste à faire (hors périmètre de cette PR).
+
+### Prochaine action recommandée
+1. Relire et merger (ou refuser) le Draft PR de `feature/p0-mollie-durable-fulfillment-20261105`, en tranchant d'abord le **mode test → aucun droit** — Rôle : founder/release_agent
+2. P0.118 §8 (alertes B2C sur `levels`/`weekly`/`scores`, fail-closed, dédup durable sur `subscription_id`/`beach_id`/`observation_identity`, 6 régions) — Rôle : coding_agent
+3. P0.118 §10 (intake B2B acquitté), §11 (Punta Cana `/beaches` + Cancún `/playas`), §2 (PR #1287), §4 (PR #1266) — Rôle : coding_agent
+4. Obtenir une lecture autorisée du schéma `b2b_leads` / `b2b_subscriptions` — Rôle : founder/data_agent
+
+### Branche / PR
+- Branche : `feature/p0-mollie-durable-fulfillment-20261105`
+- PR : Draft (URL dans le rapport de fin de mission)
+- Commit head : `94ab2dd666fd79434979190f9debd5086090bbe8`
+
+---
+
 > **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
