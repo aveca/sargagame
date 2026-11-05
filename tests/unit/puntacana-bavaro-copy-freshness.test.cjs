@@ -40,6 +40,18 @@ for (const [slug, daily] of expectedExtra) {
   assert.equal(page.priority, '0.7', slug + ' SEO priority remains unchanged');
   assert.equal(page.daily, daily, slug + ' sitemap cadence remains unchanged');
 }
+
+const lowSeasonPage = content.extraPages.find(item => item.slug === 'cuando-hay-menos-sargazo-en-punta-cana');
+assert.equal(lowSeasonPage.title, '¿Cuándo hay menos sargazo en Punta Cana? Meses clave',
+  'low-season title matches the observed query intent');
+assert.ok(lowSeasonPage.title.length <= 60, 'low-season title remains within 60 characters');
+assert.equal(lowSeasonPage.desc, '¿Cuándo hay menos sargazo en Punta Cana? De noviembre a marzo suelen registrarse menos arribos. Consulta el calendario y la última observación publicada.',
+  'low-season description answers the seasonal query without promising live data');
+assert.ok(lowSeasonPage.desc.length <= 158, 'low-season description remains within 158 characters');
+assert.match(lowSeasonPage.desc, /noviembre a marzo/i, 'description retains the seasonal window');
+assert.match(lowSeasonPage.desc, /última observación publicada/i, 'description identifies the observation basis');
+assert.doesNotMatch(lowSeasonPage.desc, /en vivo|tiempo real|4 veces al día/i,
+  'description makes no unsupported live or cadence promise');
 const copySurfaces = [
   ['pages', content.pages],
   ['extraPages', content.extraPages],
