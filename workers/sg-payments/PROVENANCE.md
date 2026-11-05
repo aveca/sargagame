@@ -34,7 +34,7 @@ reconstituée) puis durcie par la mission P0.118 §5/§6/§7.
 
 > **`NAMECHEAP_MAIL_TOKEN` n'existe PAS parmi les bindings live.** C'est
 > exactement pourquoi la version live portait un bearer figé en dur
-> (`NAMECHEAP_BEARER = "sargagame-mail-2026"`). Le correctif §5 supprime ce
+> (`NAMECHEAP_BEARER = "[REDACTED]"`). Le correctif §5 supprime ce
 > bearer : tant que le secret `NAMECHEAP_MAIL_TOKEN` n'est pas ajouté aux
 > bindings (action **hors périmètre d'approbation**, cf. §12), le relais
 > Namecheap est **ignoré** et la chaîne de secours
@@ -49,7 +49,7 @@ scientifique et aucune logique de création de paiement n'ont été modifiés.**
 
 ### §5 — Namecheap fail-safe
 
-- Suppression de `var NAMECHEAP_BEARER = "sargagame-mail-2026"`.
+- Suppression de `var NAMECHEAP_BEARER = "[REDACTED]"`.
 - `sendViaNamecheap` exige désormais `env.NAMECHEAP_MAIL_TOKEN` ; en son
   absence elle lève une erreur, ce qui fait passer le runner d'e-mails au
   provider suivant. **Plus aucun credential en dur dans le dépôt.**
