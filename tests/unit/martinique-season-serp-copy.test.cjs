@@ -6,7 +6,7 @@ const path = require('node:path')
 
 const root = path.resolve(__dirname, '../..')
 const config = fs.readFileSync(path.join(root, 'vite.config.js'), 'utf8')
-const entry = config.match(/\{ path: 'saison-sargasses-martinique', enPath: 'en\\/sargassum-season', esPath: 'es\\/temporada-sargazo', title: '([^']+)', desc: '([^']+)' \}/)
+const entry = config.match(/\{ path: 'saison-sargasses-martinique', enPath: 'en\x2fsargassum-season', esPath: 'es\x2ftemporada-sargazo', title: '([^']+)', desc: '([^']+)' \}/)
 
 assert.ok(entry, 'Martinique season editorial route remains configured')
 const [, title, description] = entry
