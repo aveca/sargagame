@@ -115,17 +115,17 @@ async function main() {
       legacy.status === 200 && !legacy.headers.has('location'));
   }
 
-  const prefixPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app-extra');
-  check('similar prefix paths are not redirected',
-    prefixPath.status === 200 && !prefixPath.headers.has('location'));
+  const legacyPrefixPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app-extra');
+  check('legacy alias prefix paths are not redirected',
+    legacyPrefixPath.status === 200 && !legacyPrefixPath.headers.has('location'));
 
-  const nestedPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app/extra');
-  check('nested paths are not redirected',
-    nestedPath.status === 200 && !nestedPath.headers.has('location'));
+  const legacyNestedPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app/extra');
+  check('legacy alias nested paths are not redirected',
+    legacyNestedPath.status === 200 && !legacyNestedPath.headers.has('location'));
 
-  const postAlias = await dispatch('POST', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app');
-  check('non-GET/HEAD methods are not redirected',
-    postAlias.status === 200 && !postAlias.headers.has('location'));
+  const legacyPostAlias = await dispatch('POST', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app');
+  check('legacy alias non-GET/HEAD methods are not redirected',
+    legacyPostAlias.status === 200 && !legacyPostAlias.headers.has('location'));
 
   console.log('\n' + passed + ' cross-domain redirect checks passed.');
 }
