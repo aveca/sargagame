@@ -104,9 +104,16 @@ async function main() {
       headAlias.status === 301 && (await headAlias.text()) === '');
   }
 
-  const floridaLegacy = await dispatch('GET', 'https://sargassummiami.com/sarg_carte_satellite_app');
-  check('USD regional hosts are not redirected by the MQ/GP legacy alias',
-    floridaLegacy.status === 200 && !floridaLegacy.headers.has('location'));
+  for (const host of [
+    'sargassummiami.com',
+    'sargassumpuntacana.com',
+    'sargassumcancun.com',
+    'sargazotulum.com',
+  ]) {
+    const legacy = await dispatch('GET', `https://${host}/sarg_carte_satellite_app`);
+    check(`${host} is not redirected by the MQ/GP legacy alias`,
+      legacy.status === 200 && !legacy.headers.has('location'));
+  }
 
   const prefixPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app-extra');
   check('similar prefix paths are not redirected',
