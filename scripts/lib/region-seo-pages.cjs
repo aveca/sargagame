@@ -773,6 +773,11 @@ function emitLangPages(ctx) {
     if (resorts.length) items.push(['hotels', `${prefix}/${hotelsSlug}/`, lang === 'es' ? 'Para hoteles' : 'For hotels'])
     // press (kit média / E-E-A-T) : sinon orpheline = liée seulement par le sitemap.
     if (content.press && content.press.slug) items.push(['press', `${prefix}/${content.press.slug}/`, lang === 'es' ? 'Prensa y medios' : 'Press & media'])
+    // La page santé est générée séparément après ce générateur. Sans ce lien,
+    // elle n'est découverte que par le sitemap malgré une demande organique réelle.
+    if (region.id === 'rivieramaya' && lang === 'es') {
+      items.push(['health', `${prefix}/sargazo-salud-riesgos/`, '¿A qué huele el sargazo y es peligroso?'])
+    }
     // Cluster hub↔spoke : les pages éditoriales programmatiques (content.extraPages)
     // sont liées depuis chaque hub ET entre elles → aucune orpheline, autorité
     // concentrée sur le cluster. Filtre par langue (slug propre à la langue).
