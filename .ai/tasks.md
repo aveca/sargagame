@@ -7,6 +7,17 @@
 ---
 
 ## Récemment complété
+- [x] P0 - Cycle 4 fulfillment Mollie : correction des défauts de revue (coupure historique `p7` serveur-side sur `createdAt`, logs sans paymentId via correlation id aléatoire, backfill fail-closed avec endpoint chargebacks paginé + rapport sans PII + APPLY à double confirmation) (@coding_agent, 2026-11-04, branche fix/p0-mollie-fulfillment-review, commits c294d11c8 + merge main, 71 nouveaux tests, PR #1274 **draft, non mergée**). RESTE OUVERT : routage Cloudflare, déploiement du Worker régional, exécution autorisée du backfill pour les 6 ventes encore non livrées.
+- [!] P0 attribution funnel — PR #1255 Draft, head `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; implémentation consent-gated Supabase-only, mais CI bloquée à `215067/215040` bytes gzip (+27). Aucun merge/deploy tant que budget + revue privacy sont verts. Optimisation minimale demandée à Codex.
+- [~] P0 mesure funnel — corrélation session anonyme sur les événements Supabase du parcours B2C Pass (réutilise `sg_sid` sessionStorage, payload Supabase only ; ne pas envoyer à GA4/Apps Script ; aucun changement checkout/prix). Branche `fix/funnel-session-correlation-20261104`, commits `312ec135` + `ccbb80e`. En attente CI (build + budget 210 Ko) et revue privacy/consent avant merge/deploy.
+
+- [x] P0 (P0.67 §4) - Purge analytics fail-closed : le cron supprimait par défaut, sans identité ni preuve (@coding_agent, 2026-11-04, branche fix/outbound-purge-safety-20261104, Draft PR #1252, commit dff18e28f, CI 139/139, 22+17 assertions, falsification CAUGHT). Orchestration + script : dry-run par défaut, `--execute --approved-by=` exigé, `--days` plancher 90, `return=representation` recoupé `content-range`, re-comptage post-boucle.
+- [x] P0 (P0.67 §1) - Garde-fou identifiants secrets : scanner 6 règles + 14 sondes, CI 139/139 scanned=971 findings=0 ; bug latent d'offset CRLF corrigé (@coding_agent, 2026-11-04, branche fix/payment-hardcoded-credential-guard-20261103, Draft PR #1247, head 3dc30d7e). Branche en retard sur main (2 fichiers de test absents) : rebase avant merge. RESTE OUVERT : source autoritaire sg-payments absente du dépôt.
+- [x] P0 (P0.67 §5) - Fraîcheur avant paiement SOS : `handleBuy` n'émet plus track/POST mollie si `observationCurrent !== true` ; CTA maintenu actif + blocage explicite (@coding_agent, 2026-11-04, branche fix/sos-mollie-freshness-gate-20261103, Draft PR #1243, head 0fe85fb3, CI 4/4 SUCCESS, dernier run CI 139/139). Branche en retard sur main (2 fichiers de test absents) : rebase avant merge.
+- [x] P0 (P0.67 §7) - Régression main : regex de chemin natif dans region-seo-methodology-scope.test.cjs (@coding_agent, 2026-11-03, branche fix/region-seo-native-path-regex-20261103, PR #1244 MERGEE, merge 7f0413d0).
+- [~] P0 (P0.67 §2/§3) - **Release code-only fail-closed PRÉPARÉE, déploiement bloqué (autorisation fondateur requise)** : SLA de fraîcheur en rupture sur les 6 régions (`erddapTimestamp` 2026-10-27T12:00:00Z → 13 318+ min pour un SLA de 900 min) alors que les API publient `stale: false`. La **séparation de release code-only** est faite : branche `release/code-only-fail-closed-20261105` depuis le baseline production exact `164d70fd`, garde `7a4c6a21` reprise verbatim, invariance prouvée sur 269 fichiers, 12/12 scénarios fail-closed, **Draft PR non mergée**. **Le SLA de 900 min n'a jamais été abaissé** (contrat public 36 h intact). RESTE OUVERT : publication des données ERDDAP fraîches (nécessite une exécution réseau du pipeline, hors périmètre §12) + décision de merge/deploy.
+- [~] P0 (P0.118) - Mission P0.118 complète (sécurité, Worker central, fulfillment Mollie durable, alertes B2C, fail-closed scientifique, conversion B2B) : §9 **fait** (Draft PR, non mergée) ; §5/§6/§7 en cours sur `feature/p0-mollie-durable-fulfillment-20261105` (depuis `origin/main`) ; §1 (RLS `public.b2b_leads`) et §7 (écriture B2B) **bloqués** : le schéma réel `b2b_leads` / `b2b_subscriptions` n'existe nulle part dans le dépôt → une lecture autorisée est requise avant d'écrire le moindre code B2B. §12 : aucune migration de production, aucune rotation de secret, aucun déploiement, aucun merge.
+- [ ] P0 (P0.67 §4, suite) - Auditer puis durcir les autres points de sortie : `push-winback/revenue-watch/mollie-mrr/ux-watch/deliverability-watch/factory-heartbeat-watch/ux-daily` (`--send` sur cron), `provision-barbados --send`, SMTP (`daily-brief`, `weekend-email`, `smtp-test`), bounce cleanup Apps Script de `weekly-optimize`.
 - [x] P0 - Mesure funnel checkout morte : `checkout.reached=0` alors que `paymentsReal=5` — cause = `sg_sos_checkout_start` absent de `SG_FUNNEL_EVENTS` (jamais envoyé à Supabase) + exclu de la file `critical`. Allowlist + critical corrigées (@mission_agent, 2026-10-26, PR #1064, MERGEE, deploye + verifie live bundle contient les 3 evenements)
 - [x] P0 - CI rouge sur main : `reliability-page-satellite-timestamp.test.cjs` frontière introuvable → remplacée par la prochaine fonction de premier niveau, 13 assertions horodatage intactes (@mission_agent, 2026-10-26, meme PR #1064)
 - [x] P2 - /fiabilite/ rendait deux <h1> identiques (variants A/B control-only / v2) : style extrait en classe .r-h1, fallback passé en <p> (@mission_agent, 2026-10-26, PR #1062, MERGEE, deploye + verifie live h1=1 6/6)
@@ -97,10 +108,11 @@
 
 ### TASK-P2-004. Transitions « case BD » entre écrans
 - **Priorité** : P2
-- **Rple** : coding_agent + UX_agent
-- **Description** : Animation compose BD (slide les bolting) pour transitions top niveau: echoin Euro ∈ payer from cert to
+- **Rôle** : coding_agent + UX_agent
+- **Description** : [À reformuler — texte source corrompu/illisible ; ne pas handoff avant clarification.]
 - **Estimation** : 3h
-- **Statut** : [ ] pending
+- **Statut** : [x] blocked
+- **Blocage** : description d'origine inexploitable ; aucune issue ni tâche agent ne doit être créée à partir de ce texte.
 
 ---
 

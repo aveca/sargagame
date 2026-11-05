@@ -1,3 +1,276 @@
+## 2026-11-05 18:58 UTC · Agent: OpenCode (coding_agent)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0.118 §9 — release « code-only fail-closed » préparée sur une branche coupée du **baseline production exact `164d70fd`**, garde stale `7a4c6a21` réutilisée verbatim, invariance prouvée sur 269 fichiers sensibles, 12/12 scénarios fail-closed, **aucun déploiement ni merge**.
+- **Détails** :
+  - Branche `release/code-only-fail-closed-20261105`, base `164d70fd5a494c638c4a804a093381e28fc393de` (HEAD prod au 2026-10-28). 5 commits : `2f06d13b0` (cherry-pick garde `7a4c6a21`, **sans conflit**), `7a033dae5`, `0bd0bf14c`, `b64df8e20`, `ced679ae3`.
+  - **Transplantation vérifiée** : 3 des 4 fichiers de la garde sont **byte-for-byte identiques** à `7a4c6a21` ; le 4ᵉ (`src/lib/format-freshness.mjs`) a un diff **strictement identique** au hunk de la garde (contexte divergent au baseline, aucune perte sémantique).
+  - **Sélecteur d'audit corrigé** (cause racine) : l'audit mesurait le score via `[data-testid="lc-detail-score"]`, un data-testid **introduit par la garde elle-même** → absent du build prod → l'audit annonçait « pas de score » pendant que la capture montrait un score (faux négatif). `/\\d/` matchait aussi le suffixe `/100` d'un score **masqué** (faux positif), et le CTA legacy « VOIR LES 7 PROCHAINS JOURS » n'était jamais détecté. Nouvelle mesure : **texte rendu + visibilité réelle** (`scripts/automation/lib/detail-decision-ui.cjs`, partagé audit + tests).
+  - **SLA opérationnel 900 min reporté** depuis `main` (`f1e5ca7b1`) **sans toucher** le contrat public 36 h (`SAT_STALE_HOURS = 36` inchangé). La garde UI (720 min) reste plus stricte : le SLA ne peut pas être élargi.
+  - **Preuve d'invariance** : `scripts/verify-code-only-release.cjs` → **20/20 contrôles OK, 269 fichiers** (payloads scientifiques, pricing/offres, checkout/paiement, Worker+bindings, routes/DNS/sécurité, libs partagées, chaîne de build + pages partagées). Manifeste SHA-256 versionné, fondé sur le **contenu commité** (indépendant de git à l'exécution) + contrôles de champ après rebuild (observation, levels, scores, weekly, météo inchangés).
+  - **12/12 scénarios fail-closed** (6 domaines × desktop 1280×800 / mobile 390×844), captures versionnées dans `scripts/automation/data/journeys/code-only-*.png`, inspection visuelle FR/EN/ES : `score=false paused=true forecast=false fcPaused=true`, têtes « À VÉRIFIER » / « CHECK REQUIRED » / « POR VERIFICAR », âge observation ≈ 13 318–13 321 min.
+  - **Échec de test unique (87/88)** : `tests/region-sitemap-ownership.test.cjs` — **pré-existant, prouvé** : le build du baseline `164d70fd` et celui de la branche produisent un `tulum-ftp/sitemap.xml` **byte-identique** (SHA-256 `162EC429872EA67DEF536D01EE9E649700CFFD84F7E31CE4FB746CCB1694C5A5`).
+
+### Fichiers modifiés
+- `src/lib/format-freshness.mjs`, `src/ChasseHome.jsx` — garde fail-closed `7a4c6a21` (inchangée).
+- `scripts/automation/user-journey-audit.cjs` — mesure honnête via le module partagé.
+- `scripts/automation/lib/detail-decision-ui.cjs` — **nouveau** : mesure rendu+visibilité + contrat fail-closed.
+- `scripts/verify-code-only-release.cjs` — **nouveau** : vérificateur d'invariance (20 contrôles).
+- `scripts/lib/satellite-freshness.cjs` — SLA opérationnel 900 min ajouté (36 h public intact).
+- `scripts/automation/code-only-12-scenarios.cjs` — **nouveau** : pilote des 12 scénarios.
+- `tests/unit/detail-decision-ui.test.cjs` — **nouveau** : 20 assertions navigateur (dont la régression de l'ancien sélecteur).
+- `tests/unit/code-only-invariance.test.cjs` — **nouveau** : 13 assertions.
+- `tests/unit/satellite-freshness-sla.test.cjs` — **nouveau** : 24 assertions.
+- `tests/fixtures/code-only-release-invariance.json` — **nouveau** : manifeste SHA-256 (269 fichiers, baseline `164d70fd`).
+- `tests/unit/lc-detail-freshness.test.cjs` — garde `7a4c6a21` (inchangé).
+
+### Tests réalisés
+- [x] `npm ci` → exit 0 (Node v24.14.0 / npm 11.9.0)
+- [x] `npm run build` → exit 0 pour **mq, florida, puntacana, rivieramaya, tulum** ; `node scripts/prepare-ftp.cjs` → exit 0 (mq → `martinique-ftp` + `guadeloupe-ftp`)
+- [x] `npm test` → **87/88** ; seul échec = `tests/region-sitemap-ownership.test.cjs`, **pré-existant** (sitemap baseline ≡ sitemap branche, hash identique)
+- [x] `node scripts/verify-code-only-release.cjs` → **20/20 contrôles OK (269 fichiers)**
+- [x] `node tests/unit/detail-decision-ui.test.cjs` → **PASS 20 assertions**
+- [x] `node tests/unit/code-only-invariance.test.cjs` → **PASS 13 assertions**
+- [x] `node tests/unit/satellite-freshness-sla.test.cjs` → **PASS 24 assertions**
+- [x] `node scripts/automation/code-only-12-scenarios.cjs` → **12/12 fail-closed**, 12 captures, seule erreur console = `[sg] referral_claim` (artifact du serveur statique local qui renvoie le source PHP — pas un défaut produit)
+- [ ] php -l → aucun `.php` touché
+- [ ] CI GitHub → en attente (branche pas encore poussée)
+
+### Problèmes restants
+- [ ] `tests/region-sitemap-ownership.test.cjs` échoue au baseline **et** sur la branche (pages partagées `/about/`, `/research/`, `/investigacion/`, `/for-hotels/` absentes du sitemap Tulum de secours) — pré-existant, hors périmètre §9, voir `.ai/bugs.md`.
+- [ ] La branche est **181 commits derrière `main`** par construction (release code-only depuis le baseline prod) : le diff applicatif est de 25 fichiers, mais un merge de `main` dessus réintroduirait 181 commits — à trancher par le fondateur (PR Draft, non mergé).
+- [ ] §5/§6/§7 (Worker `sg-payments`, adapters Mollie Next-gen/Classic, RPC-before-KV) : branche séparée `feature/p0-mollie-durable-fulfillment-20261105` depuis `origin/main` — en cours.
+- [ ] Schéma réel `b2b_subscriptions` / `b2b_leads` **inconnu du dépôt** : aucune occurrence dans le code → §1 (RLS `public.b2b_leads`) et §7 (écriture B2B) exigent une lecture autorisée avant écriture de code.
+
+### Prochaine action recommandée
+1. Relire et merger (ou refuser) le Draft PR de `release/code-only-fail-closed-20261105` — Rôle : founder/release_agent
+2. Poursuivre P0.118 §5/§6/§7 sur `feature/p0-mollie-durable-fulfillment-20261105` — Rôle : coding_agent
+3. Obtenir une lecture autorisée du schéma `b2b_leads` / `b2b_subscriptions` — Rôle : founder/data_agent
+
+### Branche / PR
+- Branche : `release/code-only-fail-closed-20261105`
+- PR : Draft (URL dans le rapport de fin de mission)
+- Commit head : `ced679ae356b31dfca22cb9a71ff641646be6189`
+
+---
+
+> **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
+
+## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
+
+### Mission
+Close the measured attribution gap in the B2C pass funnel without changing prices, checkout, Mollie, customer communications, satellite data or production state.
+
+### Code changes
+- Branch: `fix/funnel-session-correlation-20261104`, based on protected `main` at `a460e4f6e5896778e5bef2f00a192824a3f608fb`.
+- `src/Sargasses_PROD.jsx` commit `312ec135846d467adfa5a53fbdec648148b2c730`: the central `track()` path now attaches the already-existing tab-scoped `sg_sid` to the **Supabase funnel payload only**. It reuses `_sgcSid()`, omits sentinel `x` when storage is unavailable, and sends a new `funnelParams` object to `logAnalyticsEvent`.
+- GA4 still receives the unchanged `p` object; the Apps Script fallback queue/beacon is unchanged. No new cookie, device fingerprint, dependency, database column, email, payment identifier or PII was introduced.
+- `tests/unit/funnel-session-correlation.test.cjs` commit `ccbb80ee33b7825ca59a428d99624f22d40ff8e4`: locks down Supabase-only scope, fallback omission, unchanged GA4 payload, and existing aggregator `sid` parsing.
+
+### Evidence and limitations
+- The Supabase funnel aggregator already resolves `params.sid` via `sessionIdFromParams`; no schema migration is needed.
+- The existing collector already uses `sessionStorage.sg_sid` for its own first-party session summary. This patch reuses that identifier; it is session/tab scoped, not cross-device and not a unique-visitor metric.
+- 30-day baseline: 3,324 pass-offer view event rows, only 22 with a session key; 34 pass CTA event rows, none with a session key. The historical figures remain directional event counts, not same-session conversion rates.
+- Main's last recorded eager gzip budget is 210.0/210 Ko with zero rounded margin. CI must prove this small patch still fits; do not bypass the budget.
+- Existing remote-analytics consent/legal behavior was not changed. Review against the active consent contract is required before merge.
+- CI and Codex security/privacy review are pending. Do not merge or deploy until both CI checks pass and the review confirms no consent/privacy regression.
+
+### State
+- Branch head after code/test commits: `ccbb80ee33b7825ca59a428d99624f22d40ff8e4`.
+- Not merged; not deployed. No production changes or Supabase writes were made.
+- Rollback: revert this branch's `src/Sargasses_PROD.jsx` and test commits; no schema/data rollback required.
+
+---
+
+
+## 2026-11-04 · Agent: coding_agent (OpenCode) · branche fix/p0-mollie-fulfillment-review · commit c294d11c8
+
+### Travail effectué
+- **Résumé 1 ligne** : cycle 4 — correction des défauts de revue P0 du fulfillment Mollie : vraie coupure historique `p7`, logs sans identifiant de paiement, backfill réécrit fail-closed (71 nouveaux cas de test).
+- **Détails** :
+  - `workers/sargagame/index.js` : `LEGACY_CUTOFF_DATE = 2026-08-01T00:00:00Z` unique ; contrôle serveur de `payment.createdAt` (webhook **et** `payment_status`) ; refus `legacy_expired` si date absente, invalide, sans fuseau explicite, égale ou postérieure ; aucun RPC sur ces rejets ; `create_payment` refuse explicitement `p7` ; prix publics et montants historiques EUR 7,99 / USD 5,99 inchangés.
+  - Logs : correlation id **aléatoire** par requête (`crypto.getRandomValues`), sans lien dérivé du paymentId ; whitelist stricte des champs journalisés (`status`/`code`/`reason`) → ni paymentId, ni email, ni metadata, ni secret. Réponses HTTP inchangées (`paymentId` utile au client).
+  - `scripts/automation/backfill-mollie-grants.cjs` (nouveau) : fail-closed. HTTP 200 exigé sur payment / refunds / chargebacks (endpoint dédié `/v2/payments/{id}/chargebacks`, pages parcourues) / payment_grants ; toute lecture en échec bloque et marque le contrôle `indeterminate` ; rapport sans PII ; DRY RUN par défaut sans écriture ni fichier dans le dépôt ; rapport détaillé uniquement vers un chemin absolu hors dépôt (0600) ; `--apply` seul n'écrit jamais (confirmation explicite obligatoire), re-vérification immédiate des 4 lectures avant chaque RPC, résultat HTTP vérifié, jamais de prolongation d'un grant existant.
+- **Fichiers modifiés** : `workers/sargagame/index.js` (modifié), `scripts/automation/backfill-mollie-grants.cjs` (nouveau), `tests/unit/mollie-fulfillment-review.test.cjs` (nouveau, 29 cas), `tests/unit/mollie-backfill-failclosed.test.cjs` (nouveau, 42 cas).
+- **Tests réalisés** :
+  - [x] `node tests/unit/mollie-fulfillment-review.test.cjs` → PASS 29/29
+  - [x] `node tests/unit/mollie-backfill-failclosed.test.cjs` → PASS 42/42
+  - [x] `node tests/unit/mollie-webhook-p03.test.cjs` → PASS ; `mollie-payment-logic.test.cjs` → PASS
+  - [x] runner officiel `scripts/run-tests.cjs` : **main 136/138 → branche 138/140**, jeu d'échecs **identique** (`sitemap-guard-beach-pages`, `morning-brief-freshness`) → preuve factuelle, aucun échec lié à ce changement
+  - [x] `npm run build` → exit 0 ; `npx esbuild workers/sargagame/index.js --bundle=false` → OK ; `node -c scripts/automation/backfill-mollie-grants.cjs` → OK ; `git diff --check` → OK
+  - [ ] php -l : aucun `.php` touché (le chemin PHP legacy rejette déjà `p7` via `unknown_pass`)
+- **Problèmes restants** :
+  - [ ] Les 6 ventes Mollie restent **non livrées** : routage Cloudflare `/api/mollie*` encore pointé sur l'ancien Worker `sg-payments` ; déploiement du Worker régional et backfill `--apply` non effectués (hors périmètre de ce cycle).
+  - [ ] BUG-2026-001 (préexistant) : fail-open sur signature webhook faute de `MOLLIE_WEBHOOK_SECRET` sur le Worker régional.
+  - [ ] Si l'API Mollie n'expose pas `/v2/payments/{id}/chargebacks`, le backfill refusera toute ligne (fail-closed, conformément à la revue) → décision humaine requise avant `--apply`.
+- **Prochaine action recommandée** :
+  1. Revue + merge de `fix/p0-mollie-fulfillment-review` → `main` (après CI verte) — Role : release_agent
+  2. Changement de routage Cloudflare + déploiement du Worker régional — Role : devops_agent (autorisation requise)
+  3. Exécution autorisée du backfill `--apply --confirm-backfill=YES-I-HAVE-APPROVED` puis confirmation de 6 grants réels en base — Role : data_agent (autorisation requise)
+- **Branche / PR** :
+  - Branche : `fix/p0-mollie-fulfillment-review` (base `origin/main` = `ec49b167bf5125ee53135c5de499588e5f836017`)
+  - PR : à créer → `main` (non mergée)
+  - Commit head : `c294d11c8`
+
+---
+
+## 2026-11-04 01:00 UTC · Agent: coding_agent (OpenCode) · Mission P0.67 (sections 5, 7, 1, 4 livrées en Draft PR)
+
+### Travail effectué
+
+**Résumé 1 ligne** : quatre cibles de la mission P0.67 livrées en Draft PR ciblés —
+§5 fraîcheur avant paiement SOS, §7 régression `main` (fusionnée), §1 garde-fou
+identifiants secrets, §4 purge analytics fail-closed. Sections §2/§3 (publication
+scientifique + séparation release code-only) restent BLOQUÉES faute d'autorisation
+fondateur.
+
+**§5 — Fraîcheur SOS/Mollie (Draft PR #1243, CI 4/4 SUCCESS)**
+- Branche `fix/sos-mollie-freshness-gate-20261103`, HEAD `0fe85fb3d66aa59999776ac970b0b2644e2f2ba7`.
+- `src/SOSPlage.jsx` : `handleBuy` ne déclenche plus `window.__sosHandleBuyCalled`, `track(...)`
+  ni le `POST /api/mollie` tant que `selectedBeach.observationCurrent !== true`.
+- État `checkoutBlocked` + `data-testid="sos-checkout-blocked"`, remis à zéro au changement de plage.
+- **Décision produit** : le CTA n'est PAS désactivé sur donnée périmée (l'E2E
+  `tests/e2e/sos-plage-checkout.spec.ts` asserte `expect(cta).toBeEnabled()`) ; un clic
+  maintenu-actif affiche un blocage explicite à la place.
+- Correctif CI notable : `tests/unit/sos-checkout-freshness-gate.test.cjs` ->
+  `extractHandleBuy` rognait l'accolade du bloc `finally` via
+  `.replace(/\}[ \t]*$/, "")`. Ne passait en local que grâce à un artefact CRLF (le CR
+  final bloquait le strip). Corrigé : capture entière conservée, `\r\n`→`\n` normalisé,
+  compilation en try/catch, équilibre des accolades asserté. Validé contre un miroir
+  LF (`git show`) + test de falsification (`TAMPER_RESULT=CAUGHT`).
+
+**§7 — Régression `main` sur chemin natif (PR #1244 FUSIONNÉE)**
+- Branche `fix/region-seo-native-path-regex-20261103`, commit `898a61eaf69161dcecbb03fb3099ff3b28f04e`,
+  merge `7f0413d0e0e3bedeb91b00042c76045fe857c627`. Défaut réel de regex sur chemin
+  natif dans `tests/unit/region-seo-methodology-scope.test.cjs` (faux échec CI).
+
+**§1 — Sécurité paiement (Draft PR #1247, CI 4/4 SUCCESS)**
+- Branche `fix/payment-hardcoded-credential-guard-20261103`, HEAD `3dc30d7ec2b187f63e0e08aff5a40549ee7beba8`.
+- Nouveau `scripts/scan-hardcoded-credentials.cjs` (6 règles, classifieur caractère par
+  caractère, masque d'empreinte 20 caractères, exit 1 sur finding) +
+  `tests/unit/scan-hardcoded-credentials.test.cjs` (6 sondes positives, 8 négatives,
+  contrats eol/allowlist/template/skip-dir) + `docs/p0-67-sg-payments-security-handoff.md`.
+- CI vérifiée : **`139/139`**, `scanned=971 findings=0`.
+  (Un premier chiffre à 138/138 et `scanned=970` circule dans ce handoff : il est
+  FAUX, il a été corrigé après relecture des logs CI. La CI tourne sur la ref de
+  merge de la PR, donc sur `main ∪ branche` = 139 fichiers, et non sur les 137
+  fichiers suivis de la branche seule.)
+- Bug latent d'offset corrigé : `scanFile` construisait les offsets en
+  `line.length + 1`, dérivant de 1 par ligne CRLF et **masquant silencieusement de
+  vrais secrets**. Offsets désormais lus dans le texte (`text[i] === "\n"`) ; test de
+  régression verrouillant les deux styles d'eol dans les deux sens.
+- **Ce qui N'A PAS été fait** : la source autoritaire du Worker `sg-payments` n'est NI
+  dans le dépôt NI dans le workspace (0 occurrence de `NAMECHEAP_BEARER`,
+  `NAMECHEAP_MAIL_TOKEN`, `ALLOWED_ORIGINS`, `CLICK_REDIRECT_HOSTS`, `COLLECT_HOSTS`).
+  Aucun miroir inventé. Les corrections Tulum (F5-F7), le retrait des littéraux (F1-F3)
+  et la rotation des identifiants attendent la source réelle + décision fondateur.
+
+**§4 — Purge analytics fail-closed (Draft PR #1252, CI 4/4 SUCCESS)**
+- Branche `fix/outbound-purge-safety-20261104`, HEAD `dff18e28fbfc1cbcf4b3e57be5173c1f9597a58d`,
+  commit unique depuis `main` `36945c275`, 4 fichiers (+480/-48).
+- Défaut d'origine : `daily-copernicus.yml` appelait
+  `node scripts/automation/purge-analytics.cjs` sur CHAQUE `schedule` (4×/jour) et le
+  script supprimait PAR DÉFAUT. Un cron anonyme pouvait donc supprimer
+  définitivement des lignes de production, sans identité d'opérateur.
+- Preuve du second défaut dans le dernier run réel (`#41587576112`) : `dry=false`,
+  466 lignes éligibles, DELETE exécuté, **0 supprimé rapporté** (appel en
+  `return=minimal`) → le nombre exact supprimé est inconnaissable.
+- Correctif script : dry-run par défaut (ZÉRO DELETE sans `--execute`) ;
+  `--execute` exige `--approved-by=<identité>` (fail closed, exit 1) ;
+  `--days` plancher à 90 j ; `return=representation` + `select=id` avec recoupement
+  `content-range`, arrêt immédiat sur écart ou corps illisible ; comptage rejoué après
+  boucle. Une réponse illisible n'est JAMAIS lue comme « zéro supprimé ».
+- Correctif workflow : input `workflow_dispatch` `purge_analytics` (défaut false, sur le
+  modèle de `relance-gap.yml`) ; étape cron en dry-run ; étape manuelle portant
+  `--approved-by=github:${{ github.actor }}`, SANS `continue-on-error`.
+- `tests/purge-analytics.test.cjs` 7 → 22 assertions (le stub `resp()` modélise
+  désormais un vrai corps `return=representation`) ; nouveau
+  `tests/purge-analytics-workflow-safety.test.cjs` (17 assertions) verrouillant les
+  DEUX moitiés.
+
+**Fait mesuré, à connaître avant tout ajout front (§0 du rapport)**
+- Budget bundle : **210.0 Ko gzip / 210 Ko — marge NULLE.**
+  (`177.2 + 23.5 + 9.2`, chunks `index-yQsXcpfw`, `WorldMapView-BkO2P-qu`, `react-vendor-CLzekduW`).
+  La porte passe mais n'a plus aucune réserve : le prochain ajout de code eager la casse.
+
+### Fichiers modifiés
+- `src/SOSPlage.jsx`, `tests/unit/sos-checkout-freshness-gate.test.cjs` — §5 (PR #1243)
+- `tests/unit/region-seo-methodology-scope.test.cjs` — §7 (PR #1244, fusionnée)
+- `scripts/scan-hardcoded-credentials.cjs` (nouveau), `tests/unit/scan-hardcoded-credentials.test.cjs` (nouveau),
+  `docs/p0-67-sg-payments-security-handoff.md` (nouveau) — §1 (PR #1247)
+- `scripts/automation/purge-analytics.cjs` — §4, fail-closed + preuve de suppression
+- `tests/purge-analytics.test.cjs` — §4, 22 assertions, stub réaliste
+- `tests/purge-analytics-workflow-safety.test.cjs` (nouveau) — §4, 17 assertions
+- `.github/workflows/daily-copernicus.yml` — §4, input `purge_analytics` + split cron dry-run / manuel réel
+
+### Tests réalisés
+- [x] §4 `node tests/purge-analytics.test.cjs` → PURGE_ANALYTICS_TESTS PASS (22)
+- [x] §4 `node tests/purge-analytics-workflow-safety.test.cjs` → PURGE_WORKFLOW_SAFETY_TESTS PASS (17)
+- [x] §4 harnais CLI (fetch stubé, 13 sondes) → PURGE_CLI_VERIFY PASS, ZÉRO DELETE sur cron / `--dry` / `--execute`-sans-approver
+- [x] §4 falsification (`--execute --approved-by=cron:auto` réinjecté sur l'étape cron) → TAMPER_RESULT=CAUGHT (3 FAILs)
+- [x] §4 8 tests de contrat workflow → exit 0 (deploy-trigger, track-record, copernicus-status, daily-metrics x2, data-publish-idempotence, predeploy-satellite, yaml-syntax)
+- [x] §4 PyYAML sur le workflow édité → parse OK, `inputs: ['purge_analytics']`, 2 étapes purge
+- [x] §4 CI run `41745453089` (tests) → **139/139 sur Linux/LF** ; run `41745453120` (perf + Lighthouse) → perf pass, lighthouse-report pass
+- [x] §1 CI `139/139` sur Linux/LF, `scanned=971 findings=0` (relevés dans le log du run `41704849270` ; un premier chiffre à 138/138 puis à `scanned=970` circule dans ce handoff — FAUX, corrigé après relecture des logs. La CI tourne sur la ref de merge de la PR = `main ∪ branche`, donc 139 fichiers, et non sur les 137 suivis de la branche seule)
+- [x] §5 CI 4/4 SUCCESS, tests `139/139` (run `41699705236`)
+- [x] Docs PR #1253 CI run `41749744301` (tests) → `138/138` (= `main` seul, aucun fichier de test ajouté)
+- [x] npm run build → exit 0 (§4 local, Windows/CRLF)
+- [x] node scripts/check-bundle-budget.cjs → 210.0 Ko ≤ 210 Ko (exit 0, marge nulle)
+- [x] 6 régions HTTP 200 via Cloudflare (mq, gp, miami, puntacana, cancun, tulum)
+- [ ] php -l → n/a (aucun .php touché)
+
+### Problèmes restants
+- [ ] **BLOQUANT §2/§3 — rupture du SLA de fraîcheur sur les 6 régions.** `erddapTimestamp`
+      = `2026-10-27T12:00:00Z` partout → **âge mesuré 10 828 min pour un SLA de 900 min**
+      (dépassement 9 928 min, ≈ 12×). Pire : les API publient `stale: false` et un
+      `dataAgeMinutes` de 1772-1774 min calculé sur un `updatedAt` périmé
+      (`2026-10-28T17:29:52Z`), donc TROIS âges inconciliables selon le champ lu. Le
+      produit affiche une donnée périmée comme fraîche. Dernier échec prod : run `#41623175801`
+      (1375.07 > 900 min). Publication et release code-only exigent l'autorisation fondateur.
+      Le SLA de 900 min ne sera JAMAIS abaissé.
+- [ ] §1 : corrections Tulum F5-F7 + retrait des littéraux F1-F3 — attendent la source autoritaire `sg-payments` (absente du dépôt) + confirmation du domaine de production visé.
+- [ ] §1 : rotation des identifiants exposés — action fondateur.
+- [ ] §4 : audit des AUTRES points de sortie ouvert et hors périmètre de ce PR :
+      `push-winback --send`, `revenue-watch --send`, `mollie-mrr --send`, `ux-watch --send`,
+      `deliverability-watch --send`, `factory-heartbeat-watch --send`, `ux-daily --send`
+      (tous sur cron), `provision-barbados --send`, SMTP (`daily-brief`, `weekend-email`,
+      `smtp-test`), nettoyage bounce Apps Script de `weekly-optimize`.
+- [ ] Lighthouse (report-only) : 2 avertissements CLS au-delà du seuil 0.1 (0.205 sur
+      `404.html`, 0.221 sur `cgv.html`/`confidentialite.html`) — non bloquants, pages statiques.
+- [ ] Artefact de build : `npm test` / `npm run build` régénèrent avec des données
+      PÉRIMÉES `public/api/b2b-partners.json`, `public/api/copernicus/sargassum.json`,
+      `public/data/b2b-partners.json`, `public/version.json`. À NE JAMAIS committer
+      (restauration `git checkout --` faite avant chaque commit de cette session).
+      Piège connexe : `scripts/automation/data/ops-events.jsonl` (garde S6).
+
+### Prochaine action recommandée
+1. Attendre la décision fondateur sur la publication des données (§2/§3) — SLA 900 min intouchable. Rôle : data_agent
+2. Auditer puis durcir les autres points de sortie énumérés ci-dessus, suivant le même motif `relance-gap`. Rôle : devops_agent
+3. §1 : fournir la source autoritaire `sg-payments` (corrections F1-F3, F5-F7) puis rotation. Rôle : security_agent
+4. Surveiller la marge bundle (0 Ko disponible) sur tout ajout front. Rôle : architect_agent
+
+### Branche / PR
+- §5 : branche `fix/sos-mollie-freshness-gate-20261103` — Draft PR **#1243** (OPEN, CI 4/4 SUCCESS), head `0fe85fb3`
+- §7 : branche `fix/region-seo-native-path-regex-20261103` — PR **#1244** (MERGED), head `7f0413d0`
+- §1 : branche `fix/payment-hardcoded-credential-guard-20261103` — Draft PR **#1247** (OPEN, CI 4/4 SUCCESS), head `3dc30d7e`
+- §4 : branche `fix/outbound-purge-safety-20261104` — Draft PR **#1252** (OPEN, CI 4/4 SUCCESS), head `dff18e28`
+- Docs : branche `docs/p0-67-handoff-20261104` — PR **#1253** (OPEN, CI 4/4 SUCCESS au SHA `bee90af68`), head `bee90af68`
+- `main` HEAD : `8d2e69ecc60e834d707438d1d9acb137138562fc` (également à l'origine de la branche §4 ; 2 commits data-only depuis `36945c275`)
+
+**Retard des branches — mesuré, pas supposé** (fichiers `*.test.cjs` SUIVIS, via `git ls-tree -r`) :
+
+| branche | fichiers de test | absent de `main` | propre à la branche |
+|---|---|---|---|
+| `main` | 138 | — | — |
+| §5 (#1243) | 137 | **2** (`region-seo-hubs-freshness`, `unit/hotel-landing-fr-safety`) | `unit/sos-checkout-freshness-gate` |
+| §1 (#1247) | 137 | **2** (idem) | `unit/scan-hardcoded-credentials` |
+| §4 (#1252) | 139 | aucun | `tests/purge-analytics-workflow-safety` |
+
+La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique le 139/139 : §5 et §1 ne sont PAS périmées côté exécution, mais doivent être rebasées/mergées avant merge réel. §4 est à jour.
+
+- Aucun push direct sur `main`, aucun merge automatique, aucun déploiement, aucune action de production.
+
+---
 
 ## 2026-10-27 · Agent: coding_agent (OpenCode) · Mission P0 UI/UX premier écran
 

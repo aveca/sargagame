@@ -1,4 +1,100 @@
+## 2026-11-05 18:58 UTC - OpenCode (coding_agent) - P0.118 §9 - branche release/code-only-fail-closed-20261105 - commit ced679ae3
+
+**Release « code-only fail-closed » : garde stale réutilisée verbatim sur le baseline production exact, invariance prouvée, 12/12 scénarios fail-closed. Aucun merge, aucun déploiement.**
+
+- Base : `164d70fd5a494c638c4a804a093381e28fc393de` (HEAD production au 2026-10-28), branche `release/code-only-fail-closed-20261105`. **181 commits derrière `main` par construction** (c'est une release code-only, pas un rebase de `main`).
+- **Garde `7a4c6a21` cherry-pickée sans conflit** (`2f06d13b0`) : 3 fichiers sur 4 byte-for-byte identiques à la garde, le 4ᵉ avec un diff strictement identique au hunk de la garde. Aucune perte sémantique.
+- **Sélecteur d'audit réparé** : la mesure du score courant dépendait de `[data-testid="lc-detail-score"]`, introduit par la garde elle-même (absent du build prod) → faux négatif « pas de score » alors que la capture montrait un score ; `/\d/` matchait le suffixe `/100` d'un score masqué → faux positif ; le CTA legacy « VOIR LES 7 PROCHAINS JOURS » n'était jamais vu. Nouvelle mesure partagée audit+tests : **texte rendu + visibilité réelle**.
+- **SLA opérationnel 900 min reporté** depuis `main` sans abaisser ni modifier le contrat public 36 h ; la garde UI (720 min) reste plus stricte.
+- **Invariance** : `scripts/verify-code-only-release.cjs` → 20/20 contrôles sur **269 fichiers** (observations/levels/scores/weekly/history/banks/grid/prévisions privées/pricing/offres/checkout/paiement/Worker/bindings/routes/DNS/sécurité + chaîne de build et pages partagées), manifeste SHA-256 versionné, contrôles de champ après rebuild (observation, levels, scores, weekly, météo inchangés).
+- **12/12 scénarios fail-closed** (6 domaines × desktop/mobile) + 12 captures versionnées + inspection visuelle FR/EN/ES.
+- Tests : `npm ci` exit 0 · `npm run build` exit 0 sur 5 régions + `prepare-ftp` exit 0 · `npm test` **87/88** (échec unique `region-sitemap-ownership` **pré-existant**, sitemap baseline ≡ sitemap branche SHA-256 `162EC429…`) · invariance 20/20 · detail-decision-ui 20 assertions · code-only-invariance 13 assertions · satellite-freshness-sla 24 assertions.
+- Rollback : revert de la branche. Aucun payload, Worker, binding, secret, route, DNS, prix ou checkout touché.
+
+---
+
+## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
+
+- Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
+- Le parseur de session ignore `sid='x'`. Aucun cookie, fingerprint, PII, migration SQL ou dépendance ajoutés.
+- Tête branche `fix/funnel-session-correlation-20261104` : `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; PR #1255 Draft.
+- CI : tests fonctionnels passent jusqu'au garde-fou final ; échec budget exact `215067 / 215040` bytes gzip (27 bytes au-dessus). Budget inchangé à 210 Ko. Aucune livraison autorisée tant qu'il ne passe pas.
+- Revue Codex demandée sur l'isolation Supabase-only et le consentement ; optimisation de moins de 30 bytes demandée à Codex. Aucun merge/déploiement ni write prod.
+
+---
+
+## 2026-11-04 — ChatGPT · funnel attribution session key (branch fix/funnel-session-correlation-20261104)
+
+**Correction ciblée de la corrélation du funnel Supabase, sans nouveau stockage ni tiers.**
+
+- `track()` réutilise le `sg_sid` anonyme déjà créé dans `sessionStorage` par le collecteur first-party ; le champ `sid` est ajouté uniquement à la copie envoyée à `logAnalyticsEvent` (Supabase).
+- GA4 conserve le payload `p` inchangé ; la file/beacon Apps Script et le collecteur first-party restent inchangés.
+- Le sentinel `x` (sessionStorage inaccessible) est exclu ; aucun cookie, fingerprint, PII, dépendance ni migration SQL ajoutés.
+- Test `tests/unit/funnel-session-correlation.test.cjs` : périmètre Supabase-only, sid fallback, invariance GA4 et compatibilité du parseur existant.
+- CI + revue confidentialité restent pendantes ; aucun merge, déploiement, paiement, emailing ou mutation de données en production.
+
+---
+
 ﻿
+## 2026-11-04 - coding_agent (OpenCode) · Cycle 4 - correction des défauts de revue P0 du fulfillment Mollie (branche fix/p0-mollie-fulfillment-review, commit c294d11c8)
+
+**Défauts de revue corrigés.** Aucun changement de production, aucune route Cloudflare, aucune écriture Supabase, aucun backfill exécuté, aucun email client.
+
+### P0-2 - Vraie coupure historique `p7` (`workers/sargagame/index.js`)
+- Date unique `LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z"`, contrôlée côté serveur sur `payment.createdAt`.
+- Vérifié dans le **webhook** ET dans **`payment_status`** : refus `legacy_expired` si la date est absente, invalide, sans fuseau explicite, égale ou postérieure à la coupure. **Aucun RPC sur ces rejets.**
+- `create_payment` refuse explicitement `p7` (400). Aucun tarif public modifié ; montants historiques EUR 7,99 / USD 5,99 conservés.
+- Le chemin PHP legacy (`public/api/mollie-webhook.php`) rejette déjà `p7` (`unknown_pass` → 400) : aucun `.php` touché.
+
+### P0-3 - Logs sans identifiant de paiement (`workers/sargagame/index.js`)
+- Correlation id **aléatoire** par requête (`crypto.getRandomValues`), **sans lien dérivé** du paymentId. FNV-1a et tout hash de l'identifiant abandonnés (un hash reste un lien dérivé).
+- Whitelist stricte des champs journalisés (`status`, `code`, `reason`) : un paymentId, un email ou un secret passé par erreur est **ignoré**, pas journalisé.
+- Aucun paymentId, email, metadata ni secret dans les logs. Les réponses HTTP conservent `paymentId` (utile au client).
+
+### P0-4/5/6 - Backfill fail-closed (`scripts/automation/backfill-mollie-grants.cjs`, nouveau)
+- HTTP 200 **obligatoire** sur : payment Mollie, refunds, chargebacks (endpoint dédié `/v2/payments/{id}/chargebacks`, pages parcourues), `payment_grants` Supabase.
+- Toute lecture en échec **bloque** la ligne et marque le contrôle `indeterminate` : une erreur API n'est **jamais** convertie en « aucun remboursement » ou « aucun grant ».
+- Rapport **sans PII** : ni paymentId brut, ni email (même masqué ou hashé), ni metadata Mollie brute, ni webhook URL, ni aperçu de payload contenant l'email. Identifiant de ligne aléatoire + pass + états des contrôles + raison technique.
+- **DRY RUN par défaut** : aucune écriture Supabase, aucun fichier écrit dans le dépôt. Rapport détaillé uniquement vers un chemin **absolu hors dépôt** (mode 0600).
+- `--apply` seul **n'écrit jamais** ; confirmation explicite obligatoire ; **re-vérification immédiate** des 4 lectures avant chaque RPC ; résultat HTTP du RPC vérifié ; exécution interrompue sur échec ; jamais de prolongation d'un grant existant.
+
+### Tests
+- `tests/unit/mollie-fulfillment-review.test.cjs` (nouveau) → **29/29** : p7 avant/à/après la coupure, date absente/invalide/sans fuseau, webhook + `payment_status`, aucun RPC sur refus, `create_payment` refuse `p7`, prix publics inchangés, Mollie 401/404/429/500/réseau, RPC 401/404/500 → HTTP 503, rejeu webhook, **capture réelle de `console.error`** prouvant l'absence de paymentId/email, correlation id aléatoire et distinct par requête.
+- `tests/unit/mollie-backfill-failclosed.test.cjs` (nouveau) → **42/42** : erreurs API (payment/refunds/chargebacks/grants, 401/404/429/500/réseau), chargebacks absents/présents/multiples/paginés, déjà délivré, remboursé, chargeback, email manquant, p7 avant/après coupure, rejeu backfill, rapport sans PII, aucun fichier dans le dépôt, `--apply` sans confirmation, re-vérification pré-écriture, RPC en erreur, refus CLI.
+- Runner officiel : **main 136/138 → branche 138/140**, jeu d'échecs **identique** (`sitemap-guard-beach-pages`, `morning-brief-freshness`) → aucun échec lié à ce changement (preuve par comparaison factuelle).
+- `npm run build` → exit 0 ; `esbuild` Worker → OK ; `node -c` script → OK.
+
+---
+
+## 2026-11-04 - coding_agent (OpenCode) · Mission P0.67 · branches §5/§7/§1/§4 · 4 Draft PR (#1243, #1247, #1252) + 1 fusion (#1244)
+
+**Sécurité paiement, honnêteté de fraîcheur, séparation de release, sécurité des automatisations sortantes.**
+
+- **§1 — garde-fou identifiants secrets** (PR #1247 Draft) : `scripts/scan-hardcoded-credentials.cjs`
+  (6 règles, classifieur caractère par caractère, masque d'empreinte, exit 1 sur finding) +
+  14 sondes de test. CI `138/138`, `scanned=970 findings=0`. Bug latent d'offset corrigé au passage :
+  la construction `line.length + 1` dérivait de 1 par ligne CRLF et MASQUAIT de vrais secrets.
+  Reste ouvert : la source autoritaire `sg-payments` n'est pas dans le dépôt (0 occurrence des 5
+  marqueurs) — aucun miroir inventé ; corrections F1-F3/F5-F7 et rotation à faire avec le fondateur.
+- **§4 — purge analytics fail-closed** (PR #1252 Draft) : le cron appelait le script de purge en
+  destructeur PAR DÉFAUT, 4×/jour, sans identité d'opérateur ; le dernier DELETE réel est parti en
+  `return=minimal` (nombre supprimé inconnaissable). Dry-run désormais par défaut, `--execute` exige
+  `--approved-by=<identité>`, plancher `--days` à 90 j, `return=representation`+`select=id` recoupé
+  avec `content-range` (arrêt immédiat sur écart), re-comptage post-boucle. Workflow : input
+  `purge_analytics` (défaut false, modèle `relance-gap`), cron en dry-run, chemin manuel portant
+  `github.actor`. Tests 7→22 + 17 nouveaux assertions ; falsification CAUGHT ; CI `139/139`.
+- **§5 — fraîcheur avant paiement SOS** (PR #1243 Draft) : `handleBuy` n'émet plus
+  `window.__sosHandleBuyCalled`/`track`/`POST /api/mollie` si `observationCurrent !== true`.
+  CTA maintenu actif (asserté par l'E2E) → blocage explicite au clic.
+- **§7 — régression `main`** (PR #1244 fusionnée) : regex de chemin natif dans
+  `region-seo-methodology-scope.test.cjs`.
+- **Mesuré et à retenir** : budget bundle à **210.0 / 210 Ko, marge nulle** ; SLA de fraîcheur en
+  RUPTURE sur les 6 régions (`erddapTimestamp` 2026-10-27T12:00:00Z → 10 828 min pour un SLA de
+  900 min) alors que les API publient `stale: false`. §2/§3 restent bloquées faute d'autorisation.
+  Aucune action de production, aucun déploiement, aucun merge sur `main` hors §7.
+
+---
+
 ## 2026-10-27 - coding_agent (OpenCode) · branche agent/coding/p0-first-screen-chat · commit abc721593
 
 **Mission P0 UI/UX premier écran : le chat d'hésitation ne s'occlut plus le premier écran.**
