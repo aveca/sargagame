@@ -40,6 +40,27 @@ const logGrantEvent = (cid, event, fields) => {
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
+    // Redirect the legacy Guadeloupe URL on the Martinique host. The page is
+    // intentionally excluded from the MQ package; keep regional ownership
+    // while consolidating its remaining organic demand on the GP canonical.
+    if (
+      (request.method === "GET" || request.method === "HEAD") &&
+      u.hostname === "sargasses-martinique.com" &&
+      (u.pathname === "/meteo-sargasses-guadeloupe" ||
+        u.pathname === "/meteo-sargasses-guadeloupe/")
+    ) {
+      const destination = new URL(
+        "https://sargasses-guadeloupe.com/meteo-sargasses-guadeloupe/"
+      );
+      destination.search = u.search;
+      return new Response(null, {
+        status: 301,
+        headers: {
+          location: destination.toString(),
+          "cache-control": "public, max-age=300",
+        },
+      });
+    }
     // Identifiant de corrélation ALÉATOIRE par requête (cf. randomCorrelationId).
     const cid = randomCorrelationId();
     const origin = request.headers.get("Origin") || "";
