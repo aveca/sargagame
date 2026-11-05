@@ -1,0 +1,377 @@
+{
+  "generatedAt": "2026-11-05T18:00:58.493Z",
+  "results": [
+    {
+      "region": "florida",
+      "domain": "sargassummiami.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "CHECK REQUIRED",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13318,
+        "stale": true,
+        "levels": 20
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-florida-desktop.png"
+    },
+    {
+      "region": "florida",
+      "domain": "sargassummiami.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "CHECK REQUIRED",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13318,
+        "stale": true,
+        "levels": 20
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-florida-mobile.png"
+    },
+    {
+      "region": "gp",
+      "domain": "sargasses-guadeloupe.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "À VÉRIFIER",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13318,
+        "stale": true,
+        "levels": 10
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-gp-desktop.png"
+    },
+    {
+      "region": "gp",
+      "domain": "sargasses-guadeloupe.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": ".sg-maplabel",
+      "decisionUi": {
+        "head": "À VÉRIFIER",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13319,
+        "stale": true,
+        "levels": 10
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-gp-mobile.png"
+    },
+    {
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "À VÉRIFIER",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13319,
+        "stale": true,
+        "levels": 11
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-mq-desktop.png"
+    },
+    {
+      "region": "mq",
+      "domain": "sargasses-martinique.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": ".sg-maplabel",
+      "decisionUi": {
+        "head": "À VÉRIFIER",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13319,
+        "stale": true,
+        "levels": 11
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-mq-mobile.png"
+    },
+    {
+      "region": "puntacana",
+      "domain": "sargassumpuntacana.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "CHECK REQUIRED",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13319,
+        "stale": true,
+        "levels": 12
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-puntacana-desktop.png"
+    },
+    {
+      "region": "puntacana",
+      "domain": "sargassumpuntacana.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "CHECK REQUIRED",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13319,
+        "stale": true,
+        "levels": 12
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-puntacana-mobile.png"
+    },
+    {
+      "region": "rivieramaya",
+      "domain": "sargassumcancun.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "POR VERIFICAR",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13320,
+        "stale": true,
+        "levels": 20
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-rivieramaya-desktop.png"
+    },
+    {
+      "region": "rivieramaya",
+      "domain": "sargassumcancun.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "POR VERIFICAR",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13320,
+        "stale": true,
+        "levels": 20
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-rivieramaya-mobile.png"
+    },
+    {
+      "region": "tulum",
+      "domain": "sargazotulum.com",
+      "viewport": "desktop",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "POR VERIFICAR",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13320,
+        "stale": true,
+        "levels": 5
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-tulum-desktop.png"
+    },
+    {
+      "region": "tulum",
+      "domain": "sargazotulum.com",
+      "viewport": "mobile",
+      "baseUrl": "http://127.0.0.1:4180",
+      "ficheOpen": true,
+      "picker": null,
+      "decisionUi": {
+        "head": "POR VERIFICAR",
+        "scoreText": "",
+        "hasCurrentScore": false,
+        "scorePaused": true,
+        "staleNotice": true,
+        "hasForecast": false,
+        "forecastPaused": true
+      },
+      "observation": {
+        "ok": true,
+        "source": "erddap-live",
+        "erddapTimestamp": "2026-10-27T12:00:00Z",
+        "ageMinutes": 13321,
+        "stale": true,
+        "levels": 5
+      },
+      "failClosed": true,
+      "consoleErrors": [
+        "[sg] referral_claim Unexpected token '<', \"<?php\r\n/**\"... is not valid JSON"
+      ],
+      "failedRequests": [],
+      "screenshot": "C:\\Users\\user\\AppData\\Local\\Temp\\opencode\\sg-p0918\\scripts\\automation\\data\\journeys\\code-only-tulum-mobile.png"
+    }
+  ]
+}

@@ -58,6 +58,17 @@ const ALLOWED_CHANGED = new Set([
   'tests/fixtures/code-only-release-invariance.json',
 ])
 
+// Fichiers régénérés par `npm run build` : leur contenu dans l'arbre de
+// travail peut différer du commit sans que cela soit un changement de la
+// release (date de génération, fraîcheur recalculée, phase de saison).
+const BUILD_ARTIFACTS = new Set([
+  'public/api/b2b-partners.json',
+  'public/data/b2b-partners.json',
+  'public/version.json',
+  'public/api/copernicus/sargassum.json',
+  'public/api/copernicus/_private/forecast-full.json',
+])
+
 function git(args) {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
 }
@@ -135,27 +146,41 @@ function verify() {
   ok(missing === 0, `aucun fichier sensible absent du commit (${missing})`)
   ok(mismatches === 0, `aucun fichier sensible modifié dans le commit (${mismatches})`)
 
-  // 2. Dérive de l'ARBRE DE TRAVAIL : autorisé uniquement si le contenu
-  //    sémantique est identique (JSON ré-sérialisé par le build).
+  // 2. Dérive de l'ARBRE DE TRAVAIL : uniquement les ARTEFACTS DE BUILD
+  //    attendus (ils sont régénérés à chaque `npm run build` : date de
+  //    génération, métadonnées de fraîcheur recalculées depuis la même
+  //    observation, phase de saison dérivée de la date du jour). Tout autre
+  //    fichier sensible modifié dans l'arbre de travail = dérive interdite.
   const drifted = git(['diff', '--name-only', 'HEAD', '--']).split(/\r?\n/).filter(Boolean)
-  const semanticDrift = []
-  for (const file of drifted) {
-    const abs = path.join(ROOT, file)
-    if (!fs.existsSync(abs)) continue
-    const inSensitive = file in manifest.sha256
-    if (!inSensitive) continue
-    if (file.endsWith('.json')) {
-      let a; let b
-      try {
-        a = JSON.parse(fs.readFileSync(abs, 'utf8'))
-        b = JSON.parse(execFileSync('git', ['show', `HEAD:${file}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }))
-      } catch (_) { semanticDrift.push(file); continue }
-      if (JSON.stringify(a) !== JSON.stringify(b)) semanticDrift.push(file)
-    } else {
-      semanticDrift.push(file)
+  const unexpectedDrift = drifted.filter((file) => {
+    if (ALLOWED_CHANGED.has(file)) return false
+    if (BUILD_ARTIFACTS.has(file)) return false
+    return file in manifest.sha256
+  })
+  ok(unexpectedDrift.length === 0, `aucune dérive hors artefacts de build (${unexpectedDrift.slice(0, 5).join(', ')})`)
+
+  // 2bis. Le payload scientifique racine : le build ne doit modifier QUE la
+  //      fraîcheur recalculée et la phase de saison (dérivée de la date).
+  //      L'OBSERVATION, les levels, les weekly, les scores et la meteo
+  //      doivent rester IDENTIQUES.
+  const rootPayload = 'public/api/copernicus/sargassum.json'
+  if (fs.existsSync(path.join(ROOT, rootPayload))) {
+    let live; let committed
+    try {
+      live = JSON.parse(fs.readFileSync(path.join(ROOT, rootPayload), 'utf8'))
+      committed = JSON.parse(execFileSync('git', ['show', `HEAD:${rootPayload}`], { cwd: ROOT, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'ignore'] }))
+    } catch (_) { live = null; committed = null }
+    const same = (a, b) => JSON.stringify(a) === JSON.stringify(b)
+    ok(!!live && !!committed, 'payload racine lisible (arbre de travail + commit)')
+    if (live && committed) {
+      ok(live.erddapTimestamp === committed.erddapTimestamp, 'OBSERVATION inchangée après rebuild (erddapTimestamp)')
+      ok(live.updatedAt === committed.updatedAt, 'timestamp de publication inchangé après rebuild (updatedAt)')
+      ok(same(live.levels, committed.levels), 'levels inchangés après rebuild')
+      ok(same(live.weekly, committed.weekly), 'weekly forecasts inchangés après rebuild')
+      ok(same(live.scores, committed.scores), 'scores inchangés après rebuild')
+      ok(same(live.weather, committed.weather), 'météo inchangée après rebuild')
     }
   }
-  ok(semanticDrift.length === 0, `aucune dérive sémantique dans l'arbre de travail (${semanticDrift.slice(0, 5).join(', ')})`)
 
   // 2. Aucun fichier sensible AJOUTÉ (une apparition silencieuse serait un
   //    changement de surface scientifique/commerciale).
@@ -184,8 +209,10 @@ function verify() {
   })
   ok(untrackedSensitive.length === 0, `aucun fichier sensible non suivi (${untrackedSensitive.slice(0, 5).join(', ')})`)
 
-  // 3. Le diff git complet vs baseline ne contient QUE les chemins autorisés.
-  const changed = git(['diff', '--name-only', BASELINE, '--']).split(/\r?\n/).filter(Boolean)
+  // 3. Le diff du COMMIT vs baseline ne contient QUE les chemins autorisés.
+  //    (On compare commit à commit : la dérive de l'arbre de travail due au
+  //    build local est traitée au point 2.)
+  const changed = git(['diff', '--name-only', BASELINE, 'HEAD', '--']).split(/\r?\n/).filter(Boolean)
   const unauthorized = changed.filter((f) => !ALLOWED_CHANGED.has(f) && !f.startsWith('.ai/'))
   ok(unauthorized.length === 0, `diff vs baseline limité aux chemins autorisés (${unauthorized.slice(0, 5).join(', ')})`)
 

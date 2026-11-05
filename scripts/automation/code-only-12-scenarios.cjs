@@ -25,7 +25,7 @@ const path = require('path')
 const http = require('http')
 const { chromium } = require('playwright')
 
-const ROOT = path.resolve(__dirname, '..')
+const ROOT = path.resolve(__dirname, '..', '..')
 const { measureDetailDecisionUi, isFailClosedDecisionUi } = require(path.join(ROOT, 'scripts', 'automation', 'lib', 'detail-decision-ui.cjs'))
 const { getAllRegions } = require(path.join(ROOT, 'regions', 'index.cjs'))
 
