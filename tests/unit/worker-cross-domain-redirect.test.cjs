@@ -71,6 +71,55 @@ async function main() {
   );
   check('non-GET/HEAD methods are not redirected', post.status === 200 && !post.headers.has('location'));
 
+  const legacyAliases = [
+    {
+      host: 'sargasses-martinique.com',
+      canonical: 'https://sargasses-martinique.com/carte-sargasses/',
+    },
+    {
+      host: 'sargasses-guadeloupe.com',
+      canonical: 'https://sargasses-guadeloupe.com/carte-sargasses/',
+    },
+  ];
+
+  for (const { host, canonical: mapCanonical } of legacyAliases) {
+    const noSlash = await dispatch('GET', `https://${host}/sarg_carte_satellite_app`);
+    check(`${host} extensionless legacy map redirects permanently`, noSlash.status === 301);
+    check(`${host} legacy map redirects to its regional canonical`, noSlash.headers.get('location') === mapCanonical);
+
+    const slashAndQuery = await dispatch(
+      'GET',
+      `https://${host}/sarg_carte_satellite_app/?utm_source=google&gclid=abc`
+    );
+    check(`${host} trailing-slash legacy map preserves query`,
+      slashAndQuery.status === 301 &&
+      slashAndQuery.headers.get('location') === mapCanonical + '?utm_source=google&gclid=abc');
+
+    const htmlAlias = await dispatch('GET', `https://${host}/sarg_carte_satellite_app.html`);
+    check(`${host} legacy .html alias redirects directly to canonical`,
+      htmlAlias.status === 301 && htmlAlias.headers.get('location') === mapCanonical);
+
+    const headAlias = await dispatch('HEAD', `https://${host}/sarg_carte_satellite_app`);
+    check(`${host} HEAD legacy alias redirects without a body`,
+      headAlias.status === 301 && (await headAlias.text()) === '');
+  }
+
+  const floridaLegacy = await dispatch('GET', 'https://sargassummiami.com/sarg_carte_satellite_app');
+  check('USD regional hosts are not redirected by the MQ/GP legacy alias',
+    floridaLegacy.status === 200 && !floridaLegacy.headers.has('location'));
+
+  const prefixPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app-extra');
+  check('similar prefix paths are not redirected',
+    prefixPath.status === 200 && !prefixPath.headers.has('location'));
+
+  const nestedPath = await dispatch('GET', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app/extra');
+  check('nested paths are not redirected',
+    nestedPath.status === 200 && !nestedPath.headers.has('location'));
+
+  const postAlias = await dispatch('POST', 'https://sargasses-guadeloupe.com/sarg_carte_satellite_app');
+  check('non-GET/HEAD methods are not redirected',
+    postAlias.status === 200 && !postAlias.headers.has('location'));
+
   console.log('\n' + passed + ' cross-domain redirect checks passed.');
 }
 
