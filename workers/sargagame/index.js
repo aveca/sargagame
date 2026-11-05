@@ -61,6 +61,25 @@ export default {
         },
       });
     }
+    // The Worker owns every path on MQ/GP; .htaccess alone cannot consolidate
+    // the legacy standalone map URLs at the edge. Preserve regional ownership.
+    if (
+      (request.method === "GET" || request.method === "HEAD") &&
+      (u.hostname === "sargasses-martinique.com" || u.hostname === "sargasses-guadeloupe.com") &&
+      (u.pathname === "/sarg_carte_satellite_app" ||
+        u.pathname === "/sarg_carte_satellite_app/" ||
+        u.pathname === "/sarg_carte_satellite_app.html")
+    ) {
+      const destination = new URL("https://" + u.hostname + "/carte-sargasses/");
+      destination.search = u.search;
+      return new Response(null, {
+        status: 301,
+        headers: {
+          location: destination.toString(),
+          "cache-control": "public, max-age=300",
+        },
+      });
+    }
     // Identifiant de corrélation ALÉATOIRE par requête (cf. randomCorrelationId).
     const cid = randomCorrelationId();
     const origin = request.headers.get("Origin") || "";
