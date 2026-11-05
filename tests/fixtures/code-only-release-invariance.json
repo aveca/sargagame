@@ -269,6 +269,20 @@
       "scripts/lib/slug-resolver.cjs",
       "scripts/lib/widget-embed.cjs",
       "scripts/lib/worker-assetsignore.cjs"
+    ],
+    "buildPipelineAndSharedPages": [
+      "public/about/index.html",
+      "public/for-hotels/index.html",
+      "public/investigacion/index.html",
+      "public/research/index.html",
+      "scripts/automation/gen-b2b-partners.cjs",
+      "scripts/build-sargassum-json.cjs",
+      "scripts/lib/region-langs.cjs",
+      "scripts/lib/region-seo-pages.cjs",
+      "scripts/prepare-ftp.cjs",
+      "scripts/stamp-sw-hash.cjs",
+      "scripts/sync-version.cjs",
+      "vite.config.js"
     ]
   },
   "sha256": {
@@ -312,6 +326,7 @@
     ".github/workflows/weekly-ux-report.yml": "d7dfe38edf6b27eafd2b864a7ee395c9204c356692ce092f48ee7955969c14b5",
     "design/STORY/02-OFFER.md": "b86f8324524705641be9091e6b5823da13ba3bee16ae323f50b01ce9f9dcb27d",
     "public/.htaccess": "2e4f766de3f6153a74a012ea539b0184270c6894b470f1d91859e3d855793e1f",
+    "public/about/index.html": "51fb006eb76b585eb054831e373703c9dd165cb61b781475a42f094e9b59dc83",
     "public/api/.htaccess": "a58a1e5d761d01c2b0de44b768d2cf722d5b53ac8b8cf50528b1ea3ddc3194fb",
     "public/api/_deploy-secret.example.php": "86d9a296005a7e844d59b24bf794c03d6757d10aa9a19eedf5609a9f6855506f",
     "public/api/_deploy.php": "865654268845088b77c754b229308a732bb9a76964eed7afdd97238af33a2e22",
@@ -398,6 +413,8 @@
     "public/api/track-open.php": "9b01f4474acb51da4facb4058fd103e7e4ceae6ff30a868daae3306c2659b929",
     "public/api/weather/beaches-weather.json": "c4b4264ed0b8c604cfcf7b342dfcfde0f70db3e5d196b284f1b9545ef80550c1",
     "public/api/widget-token.php": "00444bc754019b6214459fa8baec51f4b48e99b6b0059894053374c21eefcd8b",
+    "public/for-hotels/index.html": "60f6164e4dbdc237ebaf225c9f2a6284cc02827c8f1e5b5c12d0882ea8e7142b",
+    "public/investigacion/index.html": "5cff196965e8a06d040fd58b0de60ca1f8c62960254de510daadccebe65e5178",
     "public/pro/barrieres-vs-prevision/index.html": "5bfc15e1d016f1e1c07f8eb3f4805ce2bfaf0fd0ae6b6e037134a7f9ef93cc7f",
     "public/pro/collectivites/index.html": "29738ca341528104becb93f43d87ad4d8a1ad8861182034c6ddd3570f4ef4a03",
     "public/pro/cout-sargasses-hotel/index.html": "65197c72776f39ea1ddba75d7661e7aa99909258f294882f1517587d4c8164d2",
@@ -430,7 +447,10 @@
     "public/pro/pricing/index.html": "f950b5ac71bcf7d0cb61f3cc6d298fb935fd02c8a0cec93fc22bab29a00251c5",
     "public/pro/widget-config/index.html": "2a7ac882020ab44055efcd48570e9291641f5a7e5b17a87eea730f8ec22d0040",
     "public/pro/widget-sargasses-hotel/index.html": "3279c0a27a8cacae34bf4405951c1d33063dd135c1596bc18f2c62ad24e602bd",
+    "public/research/index.html": "bf8de66388ff2a4ec4d84b339108293185a77cd29936da7725267d626b3fc041",
     "scripts/automation/B2B_OFFER.md": "d4fe2ed4034c5b3ef3e916b3ac812ae2de051d578e77136bbc52241d7903c602",
+    "scripts/automation/gen-b2b-partners.cjs": "27856ccea5423fbaf0186d77d2fec39e048988e0378f32ffd577a9283f910ab0",
+    "scripts/build-sargassum-json.cjs": "d142e816b868214c5842ecf7590b74034026bc02b3d9d5d747e1dc17c16d0cea",
     "scripts/lib/brand-icons.cjs": "6eb7ea27fc413e7e2532dd87be5883f69f5e80bad4451a9297e679d86c44f3ae",
     "scripts/lib/bundle-css.cjs": "a8ebd1c70c181c1d572dbe0ee808de0d8a5ad48b0e7b758d0bdd927741917782",
     "scripts/lib/certification-gate.cjs": "c1133baa20154b43a352b46cff2ed39266b9d0ab83d68ab824d98eeeb16fcdb2",
@@ -472,9 +492,13 @@
     "scripts/lib/slug-resolver.cjs": "27a26050a6bdd2f7f4927f0557ff28b6132ccac8a8785c6f045fdeb33148e0c2",
     "scripts/lib/widget-embed.cjs": "f4bb173b7ece46f7103abb34e1ffa37a4c23d9322f7ff20269049220f8fad8d0",
     "scripts/lib/worker-assetsignore.cjs": "18281ead03802b62e1e719c9f3e00bc190f4e2594ceb4ddb7d261cc3ba8f478b",
+    "scripts/prepare-ftp.cjs": "d233b6d3de4957e56fbd624a0fd921975cb15dbe4c10ec81d569504c274b8766",
+    "scripts/stamp-sw-hash.cjs": "d6c68a6da4ebbb2420922aed72b5227475ddcc4dce16d53c719a2d29c61d689c",
+    "scripts/sync-version.cjs": "6b3474bead2630aaf85e3af33eda4e3026e8d1416791df5129bb7a466f349c4e",
     "src/PassOffer.jsx": "afad3805afb3419d6be165a2cf8e4d80920134b65ac4a287f5bc631ede040b33",
+    "vite.config.js": "d3c04473cb1ca5740f804e4aca3ec07f213afb861ac86eb873fa247103c97c3b",
     "workers/sargagame/index.js": "dca28de0ed37e2ae1b5aa6a6ea33b726332ae6e08f79b37247ef041a3bcdb379",
     "wrangler.template.jsonc": "132415477b3ef2d887b5a9bbf22d36ede5097f2eb0cb1bdaf2e611c02e93bdbc"
   },
-  "total": 257
+  "total": 269
 }
