@@ -27,11 +27,12 @@ BEGIN
     RETURN;
   END IF;
 
-  -- RLS activée : sans politique pour anon/authenticated, l'accès est nul.
+  -- Supprimer la policy permissive TO public constatée en production.
+  EXECUTE 'DROP POLICY IF EXISTS "Allow all b2b_leads" ON public.b2b_leads';
   EXECUTE 'ALTER TABLE public.b2b_leads ENABLE ROW LEVEL SECURITY';
 
-  -- Révocation complète pour les rôles applicatifs (couvre SELECT, INSERT,
-  -- UPDATE, DELETE et TRUNCATE).
+  -- Révocation complète pour PUBLIC et les rôles applicatifs (inclut TRUNCATE).
+  EXECUTE 'REVOKE ALL ON TABLE public.b2b_leads FROM PUBLIC';
   EXECUTE 'REVOKE ALL ON TABLE public.b2b_leads FROM anon';
   EXECUTE 'REVOKE ALL ON TABLE public.b2b_leads FROM authenticated';
 
