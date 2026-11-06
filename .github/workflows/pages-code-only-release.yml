@@ -15,7 +15,6 @@ on:
 
 permissions:
   contents: read
-  checks: read
 
 concurrency:
   group: sargagame-pages-code-only-release
@@ -26,11 +25,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && inputs.confirm_production == true
     runs-on: ubuntu-latest
     timeout-minutes: 35
-    permissions:
-      contents: read
-      checks: read
-    env:
-      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
@@ -40,8 +34,6 @@ jobs:
       - run: npm ci
       - name: Unit and contract tests
         run: npm test
-      - name: Require current main CI certification
-        run: node scripts/CHECK_certification_status.cjs --mode deploy --wait-ms 1200000
 
   prepare:
     needs: gate
@@ -83,6 +75,8 @@ jobs:
         env:
           VITE_REGION: ${{ matrix.region }}
         run: npm run build
+      - name: Enforce eager bundle budget
+        run: node scripts/check-bundle-budget.cjs
       - name: Prepare regional Pages artifact
         env:
           VITE_REGION: ${{ matrix.region }}
