@@ -185,7 +185,7 @@ async function main() {
     assert.equal(body.cur, "eur", lang + ": EUR preserved")
     assert.equal(body.source, "sos_plage", lang + ": source preserved")
     assert.equal(body.lang, lang, lang + ": lang preserved")
-    assert.equal(body.redirectUrl, "https://sargasses-martinique.com/?sos_success=1", lang + ": redirect preserved")
+    assert.equal(body.redirectUrl, "https://sargasses-martinique.com/?mollie_return=1", lang + ": redirect preserved")
     const names = calls.tracks.map((entry) => entry.name)
     assert.deepEqual(names, ["sg_sos_checkout_start", "sg_sos_redirect"], lang + ": checkout tracking preserved")
     assert.equal(windowStub.location.href, "https://www.mollie.com/pay/redirect", lang + ": redirect to checkout")
