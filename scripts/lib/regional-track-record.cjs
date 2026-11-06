@@ -29,6 +29,7 @@ function resolvePublicAccuracy(record, regionId) {
     window,
     sampleSize,
     recordStale,
+    regimes: {},
   })
 
   if (!record || typeof record !== 'object') return unavailable('missing-record')
@@ -49,6 +50,24 @@ function resolvePublicAccuracy(record, regionId) {
   }
 
   const meanAbsErr = Number(record.overall?.afaiMAE)
+  const regimes = {}
+  for (const key of ['calm', 'high']) {
+    const source = record.byRegime?.[key]
+    const cleanReliabilityPct = Number(source?.cleanReliabilityPct)
+    const cleanSamples = Number(source?.cleanSamples)
+    if (validRate(cleanReliabilityPct) && validPairs(cleanSamples)) {
+      const falseAlarmRatePct = Number(source?.falseAlarmRatePct)
+      const alertReliabilityPct = Number(source?.alertReliabilityPct)
+      const alertSamples = Number(source?.alertSamples)
+      regimes[key] = {
+        cleanReliabilityPct,
+        cleanSamples,
+        falseAlarmRatePct: validRate(falseAlarmRatePct) ? falseAlarmRatePct : null,
+        alertReliabilityPct: validRate(alertReliabilityPct) ? alertReliabilityPct : null,
+        alertSamples: validPairs(alertSamples) ? alertSamples : 0,
+      }
+    }
+  }
   return {
     available: true,
     reason: null,
@@ -57,6 +76,7 @@ function resolvePublicAccuracy(record, regionId) {
     window,
     sampleSize,
     recordStale: false,
+    regimes,
     horizons: {
       'J+1': {
         statusMatchPct: Number(day1.hitRatePct),
