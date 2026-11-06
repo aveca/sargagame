@@ -143,9 +143,9 @@ function satelliteBeats(lang){
       )
     },
     {
-      eyebrow: T("RÉSOLUTIONS & FRÉQUENCE", "RESOLUTION & FREQUENCY", "RESOLUCIÓN Y FRECUENCIA"),
-      heading: T("Scan toutes les 3 heures", "Scan every 3 hours", "Escaneo cada 3 horas"),
-      sub: T("La grille de détection a une précision de 300 mètres, actualisée plusieurs fois par jour pour anticiper les arrivées.", "The detection grid has a 300-meter precision, updated several times a day to anticipate arrivals.", "La cuadrícula de detección tiene una precisión de 300 metros, actualizada varias veces al día para anticipar llegadas."),
+      eyebrow: T("OBSERVATION & FRAÎCHEUR", "OBSERVATION & FRESHNESS", "OBSERVACIÓN Y FRESCURA"),
+      heading: T("Dernière observation disponible", "Latest available observation", "Última observación disponible"),
+      sub: T("Les observations AFAI sont distribuées par NOAA/AOML ERDDAP. Leur fraîcheur et leur couverture varient ; l’heure de l’observation doit être vérifiée avant toute décision.", "AFAI observations are distributed through NOAA/AOML ERDDAP. Freshness and coverage vary; check the observation time before making a decision.", "Las observaciones AFAI se distribuyen mediante NOAA/AOML ERDDAP. La frescura y cobertura varían; comprueba la hora de observación antes de decidir."),
       scene: (
         <g>
           <rect width="800" height="600" fill="#06211E"/>
@@ -302,9 +302,13 @@ function nettoyerBeats(lang){
 
 function methodeBeats(lang){
   const T=(fr,en,es)=>_t(lang,fr,en,es)
-  const relPct = (__REL && typeof __REL.cleanPct === "number") ? __REL.cleanPct : 79
+  const relAvailable = !!(__REL && __REL.available === true && typeof __REL.cleanPct === "number")
+  const relPct = relAvailable ? __REL.cleanPct : null
   const relReg = (__REL && __REL.regime === "high") ? T("saison haute", "high season", "temporada alta") : T("saison calme", "calm season", "temporada tranquila")
-  const relRateStr = T(`fiabilité de ${relPct}% sur nos prévisions « mer propre » vérifiées (${relReg})`, `accuracy of ${relPct}% on our verified “clean water” forecasts (${relReg})`, `fiabilidad del ${relPct}% en pronósticos “agua limpia” verificados (${relReg})`)
+  const relScope = (__REL && __REL.scopeLabel) || ""
+  const relRateStr = relAvailable
+    ? T(`fiabilité de ${relPct}% sur les prévisions « mer propre » (${relReg}, ${relScope})`, `accuracy of ${relPct}% on “clean water” forecasts (${relReg}, ${relScope})`, `fiabilidad del ${relPct}% en pronósticos de “mar limpio” (${relReg}, ${relScope})`)
+    : T("aucun pourcentage de précision actuel n’est publié pour cette région", "no current validated accuracy percentage is published for this region", "no se publica un porcentaje de precisión actual para esta región")
   return [
     {
       eyebrow: T("NOTRE MÉTHODE", "OUR METHOD", "NUESTRO MÉTODO"),
@@ -341,15 +345,17 @@ function methodeBeats(lang){
     {
       eyebrow: T("FIABILITÉ", "ACCURACY", "FIABILIDAD"),
       heading: T("Transparence totale", "Total transparency", "Transparencia total"),
-      sub: T("Notre modèle affiche une " + relRateStr + ". Le taux est recalibré chaque semaine pour rester digne de confiance.", "Our model shows " + relRateStr + ". The rate is recalibrated every week to remain trustworthy.", "Nuestro modelo muestra una " + relRateStr + "."),
+      sub: relAvailable
+        ? T("Le relevé daté couvre " + relScope + " : " + relRateStr + ". Ce taux concerne les prévisions « mer propre », pas chaque plage.", "The dated record covers " + relScope + ": " + relRateStr + ". This rate concerns clean-water forecasts, not each beach.", "El registro fechado cubre " + relScope + ": " + relRateStr + ". Esta tasa se refiere a pronósticos de mar limpio, no a cada playa.")
+        : T("Le relevé est absent, obsolète ou ne couvre pas cette région. Vérifie l’heure et la confiance de chaque observation.", "The record is missing, stale, or does not cover this region. Check each observation time and confidence.", "El registro falta, está obsoleto o no cubre esta región. Comprueba la hora y confianza de cada observación."),
       scene: (
         <g>
           <rect width="800" height="600" fill="#06211E"/>
           <g transform="translate(400,260)">
-            <circle r="80" fill="none" stroke="#3fd07f" strokeWidth="8"/>
-            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill="#3fd07f" textAnchor="middle">{relPct}%</text>
+            <circle r="80" fill="none" stroke={relAvailable ? "#3fd07f" : "#8b9895"} strokeWidth="8"/>
+            <text x="0" y="15" fontFamily="'Anton',sans-serif" fontSize="48" fill={relAvailable ? "#3fd07f" : "#8b9895"} textAnchor="middle">{relAvailable ? `${relPct}%` : "—"}</text>
           </g>
-          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{T("Indice de confiance mis à jour", "Confidence index updated", "Índice de confianza actualizado")}</text>
+          <text x="400" y="380" fontFamily="system-ui,sans-serif" fontSize="14" fill="#9FE1CB" textAnchor="middle">{relAvailable ? T("Relevé validé " + relScope, "Validated record " + relScope, "Registro validado " + relScope) : T("Aucun taux régional actuel publié", "No current regional rate published", "No hay tasa regional actual publicada")}</text>
         </g>
       )
     },
@@ -520,7 +526,7 @@ function solutionsBeats(lang){
       </g>},
     // 1 — ON VOIT TOUT : le satellite scanne (notre moat)
     {eyebrow:T("ON VOIT TOUT","WE SEE IT ALL","LO VEMOS TODO"),heading:T("Lue depuis l'espace","Read from space","Leída desde el espacio"),
-      sub:T("Le Veilleur lit la signature des algues en mer (satellites NASA/Copernicus) et prévient ta plage 2 à 5 jours avant l'arrivée — recoupé chaque jour au satellite.","The Watcher reads the algae's signature at sea (Copernicus/NOAA satellites) and warns your beach 2-5 days ahead — cross-checked daily against satellite.","El Vigía lee la firma de las algas en el mar (satélites NASA/Copernicus) y avisa tu playa 2-5 días antes — contrastado a diario con satélite."),
+      sub:T("Le Veilleur utilise les observations AFAI distribuées par NOAA/AOML ERDDAP ; les courants Copernicus Marine et le vent Open-Meteo apportent le contexte de transport. L’anticipation dépend des données disponibles et de leur fraîcheur.","The Watcher uses AFAI observations distributed by NOAA/AOML ERDDAP; Copernicus Marine currents and Open-Meteo wind provide transport context. Lead time depends on available data and freshness.","El Vigía utiliza observaciones AFAI distribuidas por NOAA/AOML ERDDAP; las corrientes de Copernicus Marine y el viento de Open-Meteo aportan contexto de transporte. La anticipación depende de los datos disponibles y su frescura."),
       scene:<g><defs>{SEA("sol1")}</defs><rect width="800" height="600" fill="#06121A"/>
         {[[120,90],[300,70],[520,110],[680,80],[420,150],[600,180]].map((s,i)=>(<circle key={i} cx={s[0]} cy={s[1]} r="1.3" fill="#fff" opacity=".5"/>))}
         <rect y="360" width="800" height="240" fill="url(#sol1)"/>
