@@ -88,15 +88,18 @@ scientifique et aucune logique de création de paiement n'ont été modifiés.**
   (`subscription_id`, `type`, `plan`, `customer_id`, `expires_at`,
   `granted_at`, `metadata`), **vérifie** l'écriture, puis pose le jeton KV
   d'accès (la version live faisait l'inverse).
-- `grantOnboardingAuto` : écriture `b2b_subscriptions` **vérifiée** et
-  **idempotente** (un abonnement actif existant est réutilisé), le résultat
-  de l'envoi d'e-mail est **explicitement** reported (`email: sent|failed`).
+- `grantOnboardingAuto` : l'accès lecture seule au schéma live a révélé un contrat incompatible. Le CHECK `b2b_subscriptions.plan` accepte `free`, `alert`, `dashboard`, `enterprise`, alors que les clés Worker sont `pro_monthly`, `brief_monthly` et variantes USD. **Aucun mapping/prix n'est choisi** : l'onboarding renvoie 409 et n'écrit aucune ligne/n'envoie aucun email tant que le contrat commercial et le schéma ne sont pas approuvés. Les anciens noms de colonnes `company_email` et `domain` ont été retirés.
 - Révocation B2B/B2C : expiration du grant via `expires_at` (colonne réelle).
   La version live faisait `PATCH { status: "revoked" }` alors que
   `public.payment_grants` **n'a pas de colonne `status`** → la révocation
   n'arrivait jamais.
 - `userEntitlements` et `verify_subscription` : le `user_id` est lu dans
   `metadata` (jsonb) et non dans une colonne inexistante.
+
+### Journalisation et limites restantes
+
+- Les logs génériques d'envoi et le drip B2B n'exposent plus les adresses email.
+- Le drip B2B conserve encore le défaut de claim atomique et de `contacted_at`; ce point reste bloquant avant tout déploiement du Worker.
 
 ## Fichiers annexes
 

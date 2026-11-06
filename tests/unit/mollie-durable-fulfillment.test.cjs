@@ -106,8 +106,19 @@ function buildBackend(state = {}) {
     if (url.startsWith('https://supabase.test/rest/v1/b2b_subscriptions')) {
       if (method === 'GET') return jsonResponse(state.b2bSubscriptions || [])
       const row = JSON.parse(body || '{}')
+      const allowedColumns = new Set([
+        'company_name', 'contact_email', 'region', 'plan',
+        'mollie_customer_id', 'mollie_subscription_id',
+        'status', 'created_at', 'widget_token'
+      ])
+      if (Object.keys(row).some((key) => !allowedColumns.has(key))) {
+        return jsonResponse({ message: 'unknown b2b_subscriptions column' }, 400)
+      }
+      if (!['free', 'alert', 'dashboard', 'enterprise'].includes(row.plan)) {
+        return jsonResponse({ message: 'b2b_subscriptions_plan_check_violation' }, 400)
+      }
       writes.push({ method: 'POST_B2B_SUBSCRIPTIONS', row })
-      return jsonResponse([row], 201)
+      return jsonResponse([{ id: 'b2b-subscription-test', ...row }], 201)
     }
     if (url.startsWith('https://supabase.test/rest/v1/analytics_events')) {
       return new Response(null, { status: 204 })
@@ -270,48 +281,60 @@ async function main() {
     t(kv.calls.some((c) => c.op === 'delete' && c.key === 'mol_b2c_pass_tr_test_0001'), 'REMBOURSEMENT : la clef KV du pass est supprimee')
   }
 
-  // ── E5 : aucun bearer Namecheap en dur, secret obligatoire ──────────────
+  // ── E5 : no hardcoded Namecheap bearer; B2B onboarding fails closed without approved plan mapping ──
   {
-    t(!WORKER_SRC.includes('NAMECHEAP_BEARER'), 'NAMECHEAP : aucun bearer Namecheap en dur dans la source')
-    t(!/sargagame-mail-2026/.test(WORKER_SRC), 'NAMECHEAP : le token fige historiquement a disparu de la source')
-    t(/env\.NAMECHEAP_MAIL_TOKEN/.test(WORKER_SRC), 'NAMECHEAP : le token vient du secret NAMECHEAP_MAIL_TOKEN')
+    t(!WORKER_SRC.includes('NAMECHEAP_BEARER'), 'NAMECHEAP: no hardcoded bearer in Worker source')
+    t(!/sargagame-mail-2026/.test(WORKER_SRC), 'NAMECHEAP: historical hardcoded token is absent')
+    t(/env\\.NAMECHEAP_MAIL_TOKEN/.test(WORKER_SRC), 'NAMECHEAP: relay credential is read only from the secret binding')
 
-    // Sans secret : le relayeur Namecheap est saute (aucun appel), le
-    // provider suivant est utilise.
     const state = {
-      payment: paidPayment({
-        metadata: { source: 'b2b_subscription', email: 'hotel@example.com', plan: 'pro_monthly' }
-      })
+      payment: paidPayment({ metadata: { source: 'b2b_subscription', email: 'hotel@example.com', plan: 'pro_monthly' } })
     }
     const { backend, calls } = buildBackend(state)
-    const { env } = createEnv({ withoutNamecheap: true, env: { RESEND_API_KEY: 'test_resend_key' } })
+    const { env, kv } = createEnv({ withoutNamecheap: true, env: { RESEND_API_KEY: 'test_resend_key' } })
     const body = JSON.stringify({ resource: 'payment', id: 'event_mail_001', type: 'payment.paid', entityId: 'tr_test_0001' })
     const res = await runWebhook(worker, mkWebhookRequest({ body }), env)
     backend.restore()
-    t(res.status === 200, 'NAMECHEAP : le webhook onboarding repond 200')
-    t(!calls.some((c) => c.url.includes('/send-email.php')), 'NAMECHEAP : sans secret, aucun appel au relayeur Namecheap')
-    t(calls.some((c) => c.url.startsWith('https://api.resend.com/emails')), 'NAMECHEAP : sans secret, le provider suivant est utilise')
-    t(res.json && res.json.email === 'sent', 'NAMECHEAP : la reponse indique explicitement email=sent')
+    t(res.status === 409, 'B2B onboarding: pro_monthly is rejected because it is absent from the live DB plan CHECK')
+    t(res.json && res.json.reasons && res.json.reasons.includes('b2b_plan_schema_mismatch'), 'B2B onboarding: schema mismatch reason is explicit')
+    t(!calls.some((c) => c.url.includes('/rest/v1/b2b_subscriptions')), 'B2B onboarding: no subscription DB write occurs before plan mapping approval')
+    t(!calls.some((c) => c.url.includes('/send-email.php') || c.url.startsWith('https://api.resend.com/emails')), 'B2B onboarding: no email is sent before plan mapping approval')
+    t(!kv.has('mollie_event_mail_001'), 'B2B onboarding: event is not marked processed; Mollie can retry after the contract is fixed')
   }
 
-  // ── E5bis : avec secret, le relayeur Namecheap est utilise ─────────────
+  // ── E5bis : Brief is also blocked; no price is selected ──
   {
     const state = {
-      payment: paidPayment({
-        metadata: { source: 'b2b_subscription', email: 'hotel@example.com', plan: 'pro_monthly' }
-      })
+      payment: paidPayment({ metadata: { source: 'b2b_subscription', email: 'hotel@example.com', plan: 'brief_monthly' } })
     }
     const { backend, calls } = buildBackend(state)
-    const { env } = createEnv({ env: { RESEND_API_KEY: 'test_resend_key' } })
+    const { env, kv } = createEnv({ env: { RESEND_API_KEY: 'test_resend_key' } })
     const body = JSON.stringify({ resource: 'payment', id: 'event_mail_002', type: 'payment.paid', entityId: 'tr_test_0001' })
-    await runWebhook(worker, mkWebhookRequest({ body }), env)
+    const res = await runWebhook(worker, mkWebhookRequest({ body }), env)
     backend.restore()
-    const nc = calls.find((c) => c.url.includes('/send-email.php'))
-    t(!!nc, 'NAMECHEAP : avec secret, le relayeur Namecheap est utilise')
-    t(nc && nc.headers.Authorization === 'Bearer test_namecheap_token', 'NAMECHEAP : le secret est utilise tel quel dans l en-tete Authorization')
-    t(!calls.some((c) => c.url.startsWith('https://api.resend.com/emails')), 'NAMECHEAP : le provider suivant n est pas sollicite quand Namecheap reussit')
+    t(res.status === 409, 'B2B onboarding: brief_monthly is rejected without an approved DB mapping')
+    t(res.json && res.json.reasons && res.json.reasons.includes('b2b_plan_schema_mismatch'), 'B2B onboarding: Brief schema mismatch is explicit')
+    t(!calls.some((c) => c.url.includes('/rest/v1/b2b_subscriptions')), 'B2B onboarding: no DB write occurs for Brief')
+    t(!calls.some((c) => c.url.includes('/send-email.php') || c.url.startsWith('https://api.resend.com/emails')), 'B2B onboarding: no email is sent for Brief')
+    t(!kv.has('mollie_event_mail_002'), 'B2B onboarding: Brief event remains retryable')
   }
 
+  // ── E6 : email recipient addresses are absent from Worker log templates ──
+  {
+    const sendStart = WORKER_SRC.indexOf('async function sendEmail')
+    const sendEnd = WORKER_SRC.indexOf('__name(sendEmail', sendStart)
+    const sendSource = WORKER_SRC.slice(sendStart, sendEnd)
+    t(sendStart >= 0 && !sendSource.includes('${to}'), 'EMAIL LOGS: generic provider logs do not include recipients')
+    const dripStart = WORKER_SRC.indexOf('async function runDripEmails')
+    const dripEnd = WORKER_SRC.indexOf('__name(runDripEmails', dripStart)
+    const dripSource = WORKER_SRC.slice(dripStart, dripEnd)
+    t(dripStart >= 0 && !dripSource.includes('${lead.email}'), 'EMAIL LOGS: B2B drip logs do not include recipient addresses')
+    const onboardingStart = WORKER_SRC.indexOf('async function grantOnboardingAuto')
+    const onboardingEnd = WORKER_SRC.indexOf('__name(grantOnboardingAuto', onboardingStart)
+    const onboardingSource = WORKER_SRC.slice(onboardingStart, onboardingEnd)
+    t(onboardingStart >= 0 && !onboardingSource.includes('company_email'), 'B2B SCHEMA: nonexistent company_email column is absent')
+    t(!onboardingSource.includes('domain:'), 'B2B SCHEMA: nonexistent domain column is absent')
+  }
   console.log(`\nMOLLIE_DURABLE_FULFILLMENT_TESTS PASS (${n} assertions)`)
 }
 

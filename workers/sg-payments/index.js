@@ -27,6 +27,9 @@ var B2B_PLANS = {
   pro_monthly_usd: { amount: 89, currency: "USD", description: "Sargassum Pro \u2014 monthly ($89/mo)", interval: "1 month" },
   brief_monthly_usd: { amount: 39, currency: "USD", description: "Sargassum Brief \u2014 monthly ($39/mo)", interval: "1 month" }
 };
+// Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
+// No approved mapping currently exists from B2B_PLANS keys to this schema contract.
+var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
 var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210 };
 var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com"];
 var COLLECT_HOSTS = [
@@ -432,11 +435,11 @@ async function sendEmail(to, subject, html, domain, env) {
     try {
       const result = await p.fn(to, subject, html, domain, env);
       if (result) {
-        console.log(`Email sent via ${p.name} -> ${to}`);
+        console.log(`Email provider accepted message via ${p.name}`);
         return { success: true, provider: p.name };
       }
     } catch (e) {
-      console.log(`${p.name} failed: ${e.message}, trying next...`);
+      console.log(`Email provider ${p.name} failed; trying next provider`);
       continue;
     }
   }
@@ -892,13 +895,13 @@ async function runDripEmails(env) {
       const html = lang === "en" ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Live forecast for ${lead.region}</h2><p>Your beaches are monitored daily via satellite. Check the live map for today's verdict:</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View live map &rarr;</a></p><p style="font-size:12px;color:#666">Reliability: <a href="https://${domain}/fiabilite/">/fiabilite/</a> \u2014 Measured by satellite, not guessed.</p></div>` : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Pr\xE9vision sargasses ${lead.region}</h2><p>Vos plages sont surveill\xE9es chaque jour par satellite. Consultez la carte live pour le verdict du jour :</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte live &rarr;</a></p><p style="font-size:12px;color:#666">Fiabilit\xE9 : <a href="https://${domain}/fiabilite/">/fiabilite/</a> \u2014 Mesur\xE9 au satellite, pas devin\xE9.</p></div>`;
       const result = await sendEmail(lead.email, subject, html, domain, env);
       if (result.success) {
-        console.log(`Drip: sent via ${result.provider} -> ${lead.email}`);
+        console.log(`Drip: provider accepted message for lead=${String(lead.id || "unknown")} via ${result.provider}`);
         await supa(env, "b2b_leads", "PATCH", { status: "contacted" }, `?id=eq.${lead.id}&select=*`);
       } else {
-        console.log(`Drip: all providers failed for ${lead.email}`);
+        console.log(`Drip: all providers failed for lead=${String(lead.id || "unknown")}`);
       }
     } catch (e) {
-      console.log(`Drip: error for ${lead.email}: ${e.message}`);
+      console.log(`Drip: processing error for lead=${String(lead.id || "unknown")}`);
     }
   }
 }
@@ -1405,6 +1408,9 @@ function validatePaymentForFulfillment(payment, metadata) {
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
   } else if (kind === "b2b_onboarding") {
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+    const planKey = String(metadata?.plan || "");
+    if (!B2B_PLANS[planKey]) problems.push("b2b_offer_not_approved");
+    if (!B2B_SUBSCRIPTION_SCHEMA_PLANS.has(planKey)) problems.push("b2b_plan_schema_mismatch");
   } else {
     problems.push("unsupported_source");
   }
@@ -1729,54 +1735,15 @@ async function grantB2C(env, paymentId, pass, email, meta, currency) {
   return { ok: true };
 }
 __name(grantB2C, "grantB2C");
-async function grantOnboardingAuto(env, email, meta) {
-  let widgetToken = crypto.randomUUID();
-  const plan = (meta.plan || "pro_monthly").toString();
-  const region = (meta.region || "martinique").toString();
-  let domain = (meta.domain || "sargasses-martinique.com").toString();
-  const expiresAt = Math.floor(Date.now() / 1e3) + 365 * 86400;
-  // P0.118 §7 — ecriture VERIFIEE avant l'email et avant tout marqueur :
-  // on ne peut pas annoncer un onboarding reussi si la ligne n'existe pas.
-  // Idempotence : si un abonnement actif existe deja pour cette adresse, on
-  // le REUTILISE (pas de doublon lors d'un rejeu de l'evenement).
-  let existing = null;
-  try {
-    const found = await supaGetChecked(env, "b2b_subscriptions", `?company_email=eq.${encodeURIComponent(email)}&status=eq.active&select=company_email,plan,region,domain,widget_token&limit=1`);
-    if (found.ok && found.rows[0]) existing = found.rows[0];
-  } catch (_) {
-    existing = null;
+async function grantOnboardingAuto(env, email, meta = {}) {
+  // Fail closed: the live DB CHECK accepts free/alert/dashboard/enterprise,
+  // while the existing payment contract exposes pro_monthly/brief_monthly and USD variants.
+  // No mapping or price is selected without explicit commercial approval.
+  const plan = String(meta.plan || "");
+  if (!B2B_PLANS[plan] || !B2B_SUBSCRIPTION_SCHEMA_PLANS.has(plan)) {
+    throw new Error("b2b_plan_mapping_unapproved");
   }
-  if (existing) {
-    widgetToken = String(existing.widget_token || widgetToken);
-    domain = String(existing.domain || domain);
-  } else {
-    const write = await supaExec(env, "b2b_subscriptions", "POST", {
-      company_email: email,
-      region,
-      domain,
-      plan,
-      status: "active",
-      widget_token: widgetToken,
-      mollie_customer_id: meta.mollie_customer_id || "",
-      created_at: (/* @__PURE__ */ new Date()).toISOString()
-    });
-    if (!write.ok) throw new Error(`b2b_onboarding_write_failed:${write.error}`);
-  }
-  const iframeCode = `<iframe src="https://${domain}/widget?token=${widgetToken}" width="100%" height="320" frameborder="0"></iframe>`;
-  const subject = plan === "pro_monthly" ? `Bienvenue SargaGame Pro \u2014 votre widget est pr\xEAt` : `Bienvenue SargaGame Brief \u2014 votre widget est pr\xEAt`;
-  const lang = region && ["florida", "puntacana", "rivieramaya"].includes(region.toLowerCase()) ? "en" : "fr";
-  const html = lang === "en" ? `Bonjour,<br><br>Your SargaGame ${plan} subscription is active.<br><br>Here is your widget to integrate into your site:<br><code>${iframeCode}</code><br><br>Copy this code and paste it into your website.<br><br>Your dashboard: https://${domain}/b2b?token=${widgetToken}<br>Support: contact@${domain}<br><br>Thank you for your trust,<br>SargaGame` : `Bonjour,<br><br>Abonnement SargaGame ${plan} actif.<br><br>Voici votre widget \xE0 int\xE9grer sur votre site :<br><code>${iframeCode}</code><br><br>Copiez ce code et collez-le dans votre site web.<br><br>Votre dashboard: https://${domain}/b2b?token=${widgetToken}<br>Support: contact@${domain}<br><br>Merci de votre confiance,<br>SargaGame`;
-  // Le droit durable (ligne b2b_subscriptions) existe deja et est verifie :
-  // l'email est une NOTIFICATION. Son echec est signale explicitement dans
-  // la reponse du webhook, il ne doit pas faire mentir le fulfillment.
-  const mail = await sendEmail(email, subject, html, domain, env);
-  if (!mail?.success) console.log(`[sg] onboarding email non envoye (${email})`);
-  await supa(env, "analytics_events", "POST", {
-    event: "sg_client_onboarded",
-    params: { plan, region, domain, email }
-  }).catch(() => {
-  });
-  return { ok: true, email_sent: !!mail?.success, provider: mail?.provider || null };
+  throw new Error("b2b_onboarding_requires_verified_schema_and_offer_contract");
 }
 __name(grantOnboardingAuto, "grantOnboardingAuto");
 async function handlePartnerCommerce(request, env, ctx, path) {
