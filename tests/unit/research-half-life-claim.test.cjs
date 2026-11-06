@@ -10,6 +10,8 @@ const frResearch = fs.readFileSync(path.join(ROOT, 'public', 'recherche', 'index
 const esResearch = fs.readFileSync(path.join(ROOT, 'public', 'investigacion', 'index.html'), 'utf8')
 const apiDocs = fs.readFileSync(path.join(ROOT, 'public', 'api', 'index.html'), 'utf8')
 const regionalSeo = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'region-seo-pages.cjs'), 'utf8')
+const reliabilityPage = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'reliability-page.cjs'), 'utf8')
+const ftpFreshnessGate = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-ftp-ready.cjs'), 'utf8')
 
 assert.equal(research.includes('3.5-day</b> half-life'), false,
   'the obsolete 3.5-day half-life claim must not return')
@@ -48,6 +50,21 @@ assert.doesNotMatch(apiDocs, /Sentinel-3 \/ MODIS \(Copernicus Marine\)|Mise à 
   'API docs must not claim an unsupported sensor or guaranteed four-times-daily observations')
 assert.doesNotMatch(regionalSeo, /Copernicus\/NOAA AFAI|NOAA\/Copernicus imagery/i,
   'regional SEO copy must distinguish NOAA/AOML AFAI from Copernicus current inputs')
+
+assert.ok(reliabilityPage.includes('Floating mats use a ${HL_NUM}-day persistence half-life'),
+  'reliability methodology must scope the five-day half-life to floating mats')
+assert.ok(reliabilityPage.includes('material already beached remains a provisional prior'),
+  'reliability methodology must disclose that beach persistence remains provisional')
+assert.ok(reliabilityPage.includes('Observations AFAI NOAA/AOML ERDDAP')
+  && reliabilityPage.includes('NOAA/AOML ERDDAP AFAI observations')
+  && reliabilityPage.includes('Observaciones AFAI de NOAA/AOML ERDDAP'),
+  'reliability methodology must identify the actual NOAA/AOML ERDDAP AFAI source in all languages')
+assert.doesNotMatch(reliabilityPage, /Beaching persistence \(\$\{HL_NUM\}-day half-life\)|Persistance des échouages \(demi-vie \$\{HL_FR\} jours\)|persistencia de los recales \(vida media de \$\{HL_FR\} días\)/i,
+  'the five-day floating-mat half-life must never be mislabeled as beaching persistence')
+assert.doesNotMatch(ftpFreshnessGate, /demi-vie ~3,5j|half-life ~3\.5d/i,
+  'the operational green-spike gate must not present its threshold as a calibrated physical half-life')
+assert.match(ftpFreshnessGate, /anomalie d'intégrité/i,
+  'the green-spike gate must be described as a data-integrity check')
 
 const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.ok(widget.includes('NOAA/AOML ERDDAP'),

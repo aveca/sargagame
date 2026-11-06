@@ -30,6 +30,7 @@ let checks = 0
 for (const id of REGION_IDS) {
   const region = JSON.parse(fs.readFileSync(path.join(ROOT, 'regions', `${id}.json`), 'utf8'))
   const outDir = fs.mkdtempSync(path.join(os.tmpdir(), `sargagame-${id}-`))
+  const packageDir = fs.mkdtempSync(path.join(os.tmpdir(), `sargagame-${id}-package-`))
   try {
     fs.writeFileSync(path.join(outDir, 'index.html'), template(region.domain, normLang(region.primaryLang)))
     generateRegionSeoPages(region, outDir)
@@ -56,8 +57,29 @@ for (const id of REGION_IDS) {
       assert.ok(!fs.existsSync(path.join(outDir, 'plages', 'index.html')), `${id}/${lang}: unexpected FR index in USD build`)
       checks += 8
     }
+
+    // Re-run the exact validator used by Cloudflare Production against the
+    // prepared-package shape, then prove it fails when an index is omitted.
+    for (const entry of fs.readdirSync(outDir)) {
+      fs.cpSync(path.join(outDir, entry), path.join(packageDir, entry), { recursive: true })
+    }
+    const { validatePreparedBeachIndexes } = require('../../scripts/lib/regional-beach-index-contract.cjs')
+    const packagedRoutes = validatePreparedBeachIndexes(region, packageDir)
+    assert.equal(packagedRoutes.length, langs.length, `${id}: prepared package index count differs from emitted languages`)
+    checks++
+
+    const missing = packagedRoutes[0]
+    const missingFile = path.join(packageDir, ...`${missing.route}index.html`.split('/').filter(Boolean))
+    fs.rmSync(missingFile)
+    assert.throws(
+      () => validatePreparedBeachIndexes(region, packageDir),
+      /prepared beach index missing/,
+      `${id}: prepared-package guard must fail when a localized index is missing`
+    )
+    checks++
   } finally {
     fs.rmSync(outDir, { recursive: true, force: true })
+    fs.rmSync(packageDir, { recursive: true, force: true })
   }
 }
 console.log(`REGIONAL_BEACH_DIRECTORY_INDEX_TESTS PASS (${checks} assertions across ${REGION_IDS.length} regions)`)
