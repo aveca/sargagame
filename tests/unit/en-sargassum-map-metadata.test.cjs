@@ -6,7 +6,7 @@ const path = require('node:path')
 
 const root = path.resolve(__dirname, '../..')
 const vite = fs.readFileSync(path.join(root, 'vite.config.js'), 'utf8')
-const mapEntry = vite.match(/\{ path: 'en\\/sargassum-map', title: '([^']+)', desc: '([^']+)' \}/)
+const mapEntry = vite.match(/\{ path: 'en\/sargassum-map', title: '([^']+)', desc: '([^']+)' \}/)
 
 assert.ok(mapEntry, 'English sargassum map page remains generated')
 const title = mapEntry[1]
