@@ -4,7 +4,7 @@
 - **Résumé 1 ligne** : P0.46 — moteur d'alertes B2C de `sg-payments` rendu **fail-closed** (filtres vides/NULL/inconnus, contrat API réel `levels`/`weekly`, porte scientifique `erddapTimestamp`) + **idempotence durable** (marqueur B2C dédié, claim atomique **avant** envoi). **Aucun email réel, aucun cron exécuté, aucun déploiement, aucun merge — la PR #1294 reste Draft.**
 - **Détails** :
   - **État réel ≠ énoncé de la mission** : le head de la PR #1294 était `b1c34b1e2562c90b5f27c63ae48d83cf9444935e` (le `8f3c85d43` annoncé dans la mission est un commit **antérieur** du même historique, déjà inclus). `origin/main` avait avancé de `7663daffb` à `71ccda365`. Divergence réelle avant sync : **12 behind / 21 ahead** (et non 5/4).
-  - **Synchronisation normale** : `git merge --no-ff origin/main` → commit de merge `cc93a22024ee05dfec9d74e46ccb6ccf3e22b67a` (parents `b1c34b1e` + `71ccda365`). **Pas de rebase, pas de force push, aucune écriture sur `main`, 0 conflit.** Divergence après sync : **0 behind / 22 ahead**.
+  - **Synchronisation normale** : `git merge --no-ff origin/main` → commit de merge `cc93a22024ee05dfec9d74e46ccb6ccf3e22b67a` (parents `b1c34b1e` + `71ccda365`). `main` ayant avancé de **2 commits** pendant la session (`311a8bfa9`, `f3b085b76`), une **seconde** synchronisation normale a été faite : `git merge --no-ff origin/main` → **`1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6`** (parents `b757fed38` + `f3b085b76`), **0 conflit**. **Pas de rebase, pas de force push, aucune écriture sur `main`.** Divergence finale : **0 behind / 26 ahead**.
   - **§2 Filtres vides** : filtre plage `NULL` / vide / IDs inconnus / région absente / région sans correspondance ⇒ **aucune alerte**. Double garde (`boucle runB2CAlerts` + `b2cSelectedAlertLevels`). Un tableau vide n'est **jamais** interprété comme « toutes les plages ». Aucun abonnement modifié, aucun consentement implicite inventé.
   - **§3 Contrat API réel** : seules `levels`, `weekly`, `erddapTimestamp`, `stale` sont utilisées. **Plus de `fc.beaches`, plus de `fc.data`, plus de recherche textuelle JSON.** Correspondance **explicite** par ID de plage ; une plage présente uniquement dans `weekly` (sans observation de niveau) **ne notifie pas**.
   - **§4 Porte scientifique** : `erddapTimestamp` valide, **non futur**, âge réel ≤ **900 min**, `stale === false` (strict), mapping régional valide, résultat de niveau plage valide. **`updatedAt` et `dataAgeMinutes` ne sont jamais des substituts.** Données manquantes/invalides ⇒ **aucun email**. Valeurs scientifiques existantes préservées.
@@ -51,7 +51,7 @@
 ### Branche / PR
 - Branche : `feature/p0-mollie-durable-fulfillment-20261105`
 - PR : **#1294 (Draft, OPEN, MERGEABLE)** — https://github.com/aveca/sargagame/pull/1294
-- Commit head : `19be8adbfd6dd07043e130b25e538eb911d18d43` (handoff docs ; code P0.46 = `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` ; sync main = `cc93a2202`)
+- Commit head : **ce commit de handoff P0.46** (la tête de branche) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` · sync main n°1 : `cc93a2202` · sync main n°2 : `1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6` (vs `origin/main` = `f3b085b76`, **0 behind / 26 ahead**)
 
 ---
 
