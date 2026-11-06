@@ -394,7 +394,8 @@ export default {
     }
     // Fraîcheur Copernicus à la requête : l'asset scientifique reste immuable.
     // Seules les métadonnées dataAgeMinutes/stale sont recalculées depuis
-    // erddapTimestamp. Le run_worker_first sélectif ne vise que cette URL.
+    // erddapTimestamp. Le motif Worker-first de fraîcheur vise cette URL ;
+    // les motifs premium sont interceptés par la garde ci-dessus.
     if(u.pathname==="/api/copernicus/sargassum.json" && request.method==="GET") {
       const assetResponse=await env.ASSETS.fetch(request);
       if(!assetResponse.ok) return assetResponse;

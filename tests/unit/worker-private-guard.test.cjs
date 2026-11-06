@@ -1,11 +1,10 @@
 // tests/unit/worker-private-guard.test.cjs — garde _private fail-closed
 // Contexte : /api/copernicus/_private/forecast-full.json (premium J+2-7) a été
-// servi en clair sur *.workers.dev (constaté 2026-10-04). Cause racine : avec
-// run_worker_first=false (défaut actuel) : les assets statiques compatibles sont
-// servis directement par Cloudflare sans invocation Worker. Les chemins
-// dynamiques (API, Apple Pay, guards) sont toujours traités par le code Worker
-// car ils ne correspondent pas aux assets statiques. La garde _private/dotfiles/php
-// s'exécute uniquement quand le Worker est invoqué (req non-asset).
+// servi en clair sur *.workers.dev (constaté 2026-10-04). Le contrat actuel
+// utilise run_worker_first sélectif : API Copernicus publique + chemins premium.
+// Tous les autres assets restent asset-first. .assetsignore exclut les fichiers
+// privés du paquet ; la garde Worker renvoie aussi un 404 neutre si un chemin
+// premium atteint le Worker.
 // Lancement : node tests/unit/worker-private-guard.test.cjs
 
 const fs = require('fs');
