@@ -1,3 +1,65 @@
+## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission AUTOPILOT #1337 (`FACTORY-MULTIREPO-MISSION-RELAY-20261106`) exécutée et **terminée en `completed`** — pont autopilot multi-dépôt livré, fusionné (PR #1349), testé, mutationally vérifié et **neutre pour la production**.
+- **Détails** :
+  - **Livrable** : PR **#1349** fusionnée dans `main` (`87702066a79c03ff930500a2bad524df58c1f6f7`, head `8c34d6ce9e1bbfa0742fb476c194a3a07f779511`, 2026-11-06T18:10:59Z). Fichiers : `scripts/autopilot/multi-repo-bridge.cjs` (632 l.), `scripts/autopilot/multi-repo-bridge.test.cjs` (424 l.), `tests/unit/autopilot-bridge-paths-ignore.test.cjs` (186 l.), `.github/workflows/cloudflare-production.yml` (+12 l. d'exclusion `paths-ignore`). CI **4/4 verte** : `test-frontend`, `perf`, `lighthouse-report`, GitGuardian.
+  - **Allowlist fermée** : `ALLOWED_REPOS = ['aveca/bot-wow', 'aveca/sargagame']`. Tout autre dépôt est rejeté à l'import, jamais lu, jamais exécuté.
+  - **Routage strict (exigence « BOT-WOW missions stay in BOT-WOW »)** : une mission d'un dépôt autorisé qui n'est pas le dépôt local est **relayée** (statut publié sur son issue) et **jamais** enfilée dans la queue locale. **Symétrie prouvée** : le même module, dans le checkout BOT-WOW, détecte `aveca/bot-wow` comme dépôt local et y enfile les missions BOT-WOW tout en relayant les missions sargagame.
+  - **Idempotence** : clé canonique `chatgpt-issue|<repo>|<issue>|<task_id>`, **plus** reconnaissance de la clé historique de `bridge.cjs` (`chatgpt-issue|<issue>|<task_id>`) **et** de son `id` → pas de double import entre les deux ponts. Vérifié contre la **queue vivante du runner** (26 opportunités) : #1336 et #1337 correctement ignorés, **aucun doublon**.
+  - **Statuts corrélés** : `imported` / `started` / `heartbeat` / `blocked` / `completed` / `failed`, publiés sur l'issue de la mission, dans son dépôt, avec dépôt + issue + task ID + clé. CLI : `--status <s> --repo <r> --issue <n> --task <id> --detail <d>`. Les échecs de publication sont **comptés** (`statusFailures`), jamais avalés. Le statut `completed` de cette mission a été publié **par la CLI livrée**, exécutée depuis `main` fusionné.
+  - **Reprise de la PR #1342** (fermée **sans merge**, supersedée) : 7 défauts corrigés, dont trois bloquants — **85 octets UTF-8 invalides** ; **`requiredContract` rejetait les missions réelles** (#1336/#1337 ne portent que `id` → elles auraient été rejetées à l'import) ; **clé de dédup incompatible** avec `bridge.cjs` (double import) ; **missions `bot-wow` enfilées dans la queue sargagame** ; dry-run qui **mutait la queue** ; absence de CLI de statut avec erreurs avalées ; `repository_full_name` incohérent non rejeté.
+  - **Neutralité production (vérifiée, pas supposée)** : `cloudflare-production.yml` est le seul workflow qui exécute `Deploy Worker` + `Configure Worker secrets`. Aucun run créé par la fusion : **`total_count` 437 → 437**. Exclusion `paths-ignore` **stricte fichier par fichier** du pont — `scripts/autopilot/**` **n'est PAS** exclu en bloc, car la production appelle elle-même `check-predeploy-satellite-freshness.cjs`, `check-prepared-html.cjs`, `html-integrity.cjs` et `post-deploy-verify.cjs` ; une exclusion large empêcherait le déploiement de leurs correctifs. Le garde-fou **interdit explicitement** cette régression (mutation vérifiée → `exit=1`).
+  - **Dry-run bout-en-bout réel** : `imported=5 relayed=2 ignored=0 rejected=0 statusFailures=0 local=aveca/sargagame` (les 2 missions bot-wow relayées, les 5 sargagame candidates locales), queue locale intacte. **Chaînes E2E réelles dans les deux dépôts** : bot-wow #125 (`imported` 13:31:55Z → `started` 13:33:55Z → `completed` 13:36:26Z, PR #126 ouverte/non fusionnée) et sargagame #1341 (`imported` 13:37:06Z → `started` 13:39:48Z → `completed` 13:44:24Z, PR #1343 ouverte/non fusionnée).
+  - **Contrôle live après fusion** : 6/6 domaines HTTP 200, `b: df18df5d` (18:28:12Z) ; audit Playwright live 12 parcours / 12 défauts **tous** `stale-current-decision` → le **défaut d'honnêteté préexistant**, **aucun nouveau type** introduit (cette PR ne touche aucune interface).
+  - **Runner** : Factory V3 local **existant**, **inchangé** — PID `15072`, lock `15072`, `mode=INTERACTIVE`, `interactive_lock=true`, heartbeat vivant. **Aucun redémarrage, aucun nouveau runner, aucun runner cloud, aucune API LLM payante.**
+  - **Acks #1337** : `imported` (6684377579) → `started` (6690440198) → `completed` (6692370601, via la CLI livrée) → rapport de preuves (6692456511).
+
+### Fichiers modifiés
+- `scripts/autopilot/multi-repo-bridge.cjs` — pont multi-dépôt (allowlist, routage strict, dédup inter-ponts, statuts, CLI).
+- `scripts/autopilot/multi-repo-bridge.test.cjs` — 57 assertions déterministes sans réseau ni écriture.
+- `tests/unit/autopilot-bridge-paths-ignore.test.cjs` — garde-fou : neutralité production du pont + interdiction d'exclure `scripts/autopilot/**` en bloc.
+- `.github/workflows/cloudflare-production.yml` — exclusion `paths-ignore` stricte du pont (PR #1349).
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/tasks.md` — entrées `[x]` pour #1336 et #1337.
+
+### Tests réalisés
+- [x] `npm test` → **169/169 fichier(s) de test OK**
+- [x] `node scripts/autopilot/multi-repo-bridge.test.cjs` → **OK (0 échec)**, 57 assertions
+- [x] Mutation check du pont (5 garde-fous) → **MUTATION CHECK : OK**
+- [x] Mutation check du garde-fou `paths-ignore` (exclusion large) → **détectée** (`exit=1`)
+- [x] `node tests/unit/autopilot-bridge-paths-ignore.test.cjs` → PASS
+- [x] `node tests/unit/workflows-yaml-syntax.test.cjs` → PASS (41 workflows)
+- [x] `node scripts/check-production-trigger-scope.cjs` → OK
+- [x] `git diff --check` → OK
+- [ ] `npm run build` → N/A (aucun changement de bundle applicatif)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (aucun changement de bundle)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée ; l'audit Playwright live a été exécuté à la place)
+- [x] CI PR #1349 → **4/4 verte** (`test-frontend` 1m56s, `perf` 23s, `lighthouse-report` 3m24s, GitGuardian)
+- [x] Neutralité production → **aucun run `cloudflare-production.yml` créé** (437 → 437)
+- [x] HTTP live 6/6 (18:28:12Z) → HTTP 200, `b: df18df5d`
+- [x] Audit Playwright live → 12 parcours, 12 défauts bloquants, **tous** `stale-current-decision` (préexistant, inchangé)
+
+### Problèmes restants / Blockers
+- [ ] **Défaut d'honnêteté live, préexistant et inchangé** : les six domaines affichent encore « SWIM OK » + score + prévision 7 jours sur une observation de ~10 jours (`erddapTimestamp: 2026-10-27T12:00:00Z`, `stale: false` déclaré alors que l'âge réel ≈ 14 500 min). Le build fail-closed de `main` le corrige, mais il n'atteint les domaines publics que via l'option A ou B. — sévérité **P0** — action : arbitrage fondateur (inchangé depuis #1336).
+- [ ] `P0.67 §2/§3` : **autorisation fondateur requise** — arbitrer l'option A ou B de la release, et autoriser la densification de la cadence Copernicus (ou le dispatch `cloudflare-production.yml` pour les publications de données). — sévérité **P0** — action : décision du fondateur (inchangé depuis #1336).
+- [ ] PR #1335 (`ops/factory-v3-github-actions-connection-20261106`) : laissée **ouverte** — la fusionner déclencherait un déploiement production.
+- [ ] PR #1343 (`p0/dryrun-test-sargagame-001`) : laissée **ouverte** comme preuve de dry-run — **à ne pas merger** (mention conservée dans le README).
+
+### Prochaine action recommandée
+1. Arbitrer l'option A ou B de la release code-only et la densification de la cadence Copernicus — Rôle : fondateur + devops_agent
+2. Faire adopter le pont multi-dépôt par le checkout BOT-WOW (le module est symétrique : le même fichier, exécuté là-bas, y enfile les missions BOT-WOW) — Rôle : coding_agent + founder
+3. Reprendre la mission `SARG-DATA-FRESHNESS-ALTERNATIVE-SOURCE-20261106` (#1338) et `SARG-B2B-LEAD-ENDPOINT-READONLY-20261106` (#1345), désormais importables par le pont — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/multi-repo-bridge-handoff-20261106` (base `origin/main` = `a88099dc546bb5c793c82d41ec437c12b1bd2842`)
+- PR : **#1350** → `main` (PR #1349 déjà fusionnée : `87702066a79c03ff930500a2bad524df58c1f6f7`)
+- Commit head : `b7aee224a` (handoff) — le livrable de code est la PR #1349, head `8c34d6ce9e1bbfa0742fb476c194a3a07f779511`
+
+---
+
 ## 2026-11-06 16:50 UTC · Agent: Factory V3 bridge operator (OpenCode)
 
 ### Travail effectué
