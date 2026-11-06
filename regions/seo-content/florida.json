@@ -95,7 +95,7 @@
     "fl009": "A palm-lined local favorite in the middle Keys, free to enter and genuinely pretty. Atlantic-facing, it catches seasonal seaweed, and the county rakes on a schedule rather than daily — so timing matters in summer. Off-season, it is one of the nicest free beaches in the Keys.",
     "fl010": "The Space Coast classic — surf culture, the pier, and rocket launches over the water. Sargassum reaches this latitude only in occasional summer pulses, far lighter than South Florida. A dependable family pick most of the year, with a launch as a bonus if you time it right.",
     "fl011": "Twenty-three miles of hard-packed sand famous enough to drive on, with a boardwalk and amusements behind it. It sits north of the main sargassum highway and stays mostly clear even in peak season. One of Florida's safest Atlantic bets for seaweed-averse travelers.",
-    "fl012": "Powder-white quartz sand, gentle Gulf water and postcard sunsets — routinely ranked among America's best beaches. Critically for readers of this site: sargassum almost never reaches the Gulf coast, making Clearwater the fallback when the Atlantic misbehaves. Busy in spring, gorgeous year-round."
+    "fl012": "Powder-white quartz sand, gentle Gulf water and postcard sunsets — routinely ranked among America's best beaches. Critically for readers of this site: the Gulf coast can also receive sargassum, making Clearwater the fallback when the Atlantic misbehaves. Busy in spring, gorgeous year-round."
   },
   "resortPageTpl": {
     "titlePattern": "Sargassum at {resort} Today — Live Beach Status & Forecast",
@@ -202,7 +202,7 @@
         },
         {
           "h2": "Where to go instead when Miami is hit",
-          "text": "When the Miami coast reads moderate or avoid across the board, the map makes the alternative obvious. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day, so check it before assuming it's the same. For a near-certain escape, the Gulf coast — Clearwater and the west side — almost never sees meaningful sargassum, because the currents rarely deliver it there. It's a longer drive but a reliable clean day. Use the live Florida map to compare every tracked beach at once, then lock in your call the morning of, not the night before. The point is simple: don't waste a beach day guessing when the satellite already knows."
+          "text": "When the Miami coast reads moderate or avoid across the board, the map makes the alternative obvious. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day, so check it before assuming it's the same. For a near-certain escape, the Gulf coast — Clearwater and the west side — can also receive sargassum, so check its latest observation rather than assuming it is clear. It's a longer drive but a possible alternative, subject to its latest observation. Use the live Florida map to compare every tracked beach at once, then lock in your call the morning of, not the night before. The point is simple: don't waste a beach day guessing when the satellite already knows."
         }
       ],
       "faq": [
@@ -224,7 +224,7 @@
         },
         {
           "q": "Where can I avoid seaweed near Miami?",
-          "a": "When the Miami coast is hit, the Gulf coast — Clearwater and Florida's west side — almost never sees meaningful sargassum, making it the most reliable clean-day escape. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day. Compare every tracked beach on the live Florida map, then decide the morning you go."
+          "a": "When the Miami coast is hit, the Gulf coast — Clearwater and Florida's west side — can also receive sargassum; compare its latest observation before treating it as an alternative. Fort Lauderdale to the north follows a similar Atlantic pattern but can diverge on a given day. Compare every tracked beach on the live Florida map, then decide the morning you go."
         }
       ],
       "priority": "0.7",
@@ -252,7 +252,7 @@
         },
         {
           "h2": "Where to go instead when Key West is covered",
-          "text": "If every Key West beach reads avoid today, you have options up the chain and across the state. Bahia Honda, farther up the Keys, sometimes catches a different drift than the city beaches. On the Florida mainland, the Gulf coast around Clearwater almost never sees meaningful sargassum, and the central Atlantic — Daytona, Cocoa Beach — typically runs far lighter than the Keys or Miami. The live map shows the nearest clean sand instantly, ranked by Beach Score, so you reroute on the first try instead of driving blind. A one-time PASS unlocks alerts that notify you the moment a saved Key West beach changes status — you stop refreshing the map and let The Watcher tell you when the water turns clean."
+          "text": "If every Key West beach reads avoid today, you have options up the chain and across the state. Bahia Honda, farther up the Keys, sometimes catches a different drift than the city beaches. On the Florida mainland, the Gulf coast around Clearwater can also receive sargassum, and the central Atlantic — Daytona, Cocoa Beach — typically runs far lighter than the Keys or Miami. The live map shows the latest available status for tracked beaches when observations are fresh, ranked by Beach Score, so you reroute on the first try instead of driving blind. A one-time PASS unlocks alerts that notify you the moment a saved Key West beach changes status — you stop refreshing the map and let The Watcher tell you when the water turns clean."
         }
       ],
       "faq": [
