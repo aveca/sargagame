@@ -21,6 +21,7 @@ const ROOT = path.join(__dirname, '..', '..')
 const M1 = path.join(ROOT, 'scripts', 'migrations', '001_idempotent_payment_grant.sql')
 const M2 = path.join(ROOT, 'scripts', 'migrations', '002_payment_grant_search_path.sql')
 const M3 = path.join(ROOT, 'scripts', 'migrations', '003_b2b_leads_least_privilege.sql')
+const M4 = path.join(ROOT, 'scripts', 'migrations', '004_b2b_lead_drip_claims.sql')
 const WORKER = path.join(ROOT, 'workers', 'sg-payments', 'index.js')
 
 // Hôte de production connu (cf. bindings live de sg-payments). Toute cible
@@ -80,6 +81,8 @@ async function main() {
   // ── §1 : moindre privilège sur public.b2b_leads ─────────────────────────
   t(fs.existsSync(M3), '§1 : la migration 003 (b2b_leads) est présente dans le dépôt')
   const sql3 = fs.readFileSync(M3, 'utf8')
+  t(sql3.includes('REVOKE ALL ON TABLE public.b2b_leads FROM PUBLIC'), '§1 : les privilèges hérités de PUBLIC sont révoqués')
+  t(sql3.includes('DROP POLICY IF EXISTS "Allow all b2b_leads" ON public.b2b_leads'), '§1 : la policy PUBLIC ALL constatée est supprimée')
   // Les contrôles « opération destructive » ne portent que sur le SQL
   // EXÉCUTABLE : les commentaires (qui citent ces mots pour les proscrire)
   // sont retirés avant analyse.
@@ -98,6 +101,15 @@ async function main() {
   t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql3), '§1 : la migration est explicitement marquée comme non appliquée')
   t(/to_regclass\('public\.b2b_leads'\)/.test(sql3), '§1 : la migration est sans effet si la table est absente (idempotence)')
 
+  // ── §8 : claim atomique du drip B2B (migration préparée) ────────────────
+  t(fs.existsSync(M4), '§8 : la migration 004 (claim B2B) est présente dans le dépôt')
+  const sql4 = fs.readFileSync(M4, 'utf8')
+  t(sql4.includes('ADD COLUMN IF NOT EXISTS claimed_at timestamptz'), '§8 : claimed_at est ajouté sans réécrire les lignes existantes')
+  t(sql4.includes('ADD COLUMN IF NOT EXISTS contact_attempts integer NOT NULL DEFAULT 0'), '§8 : le compteur de tentatives est initialisé à zéro')
+  t(sql4.includes('ADD COLUMN IF NOT EXISTS last_contact_error text'), '§8 : seul un code d'erreur non-PII est conservé')
+  t(sql4.includes('CREATE INDEX IF NOT EXISTS b2b_leads_processing_claimed_idx'), '§8 : les claims expirés sont indexés')
+  t(sql4.includes('MIGRATION PRÉPARÉE, NON APPLIQUÉE'), '§8 : la migration est explicitement marquée comme non appliquée')
+  t(!sql4.includes('UPDATE public.b2b_leads') && !sql4.includes('DELETE FROM public.b2b_leads') && !sql4.includes('TRUNCATE public.b2b_leads'), '§8 : la migration ne modifie ni ne supprime les prospects')
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
   let pg = null
