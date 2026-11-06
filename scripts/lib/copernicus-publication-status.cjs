@@ -6,6 +6,7 @@ const STATUSES = Object.freeze({
   BLOCKED_STALE_SOURCE: 'BLOCKED_STALE_SOURCE',
   FAILED_VALIDATION: 'FAILED_VALIDATION',
   FAILED_PUBLISH: 'FAILED_PUBLISH',
+  FAILED_PRIVATE_UPLOAD: 'FAILED_PRIVATE_UPLOAD',
 });
 
 function classifyPublicationStatus(input = {}) {
@@ -16,6 +17,7 @@ function classifyPublicationStatus(input = {}) {
     gateOutcome,
     publishOutcome,
     publishChanged,
+    privateUploadOutcome,
   } = input;
 
   if (gateStatus === STATUSES.BLOCKED_STALE_SOURCE) {
@@ -30,6 +32,9 @@ function classifyPublicationStatus(input = {}) {
   }
   if (publishOutcome === 'failure') {
     return STATUSES.FAILED_PUBLISH;
+  }
+  if (privateUploadOutcome !== 'success') {
+    return STATUSES.FAILED_PRIVATE_UPLOAD;
   }
   if (publishOutcome === 'skipped') {
     return STATUSES.NO_NEW_OBSERVATION;
