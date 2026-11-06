@@ -90,6 +90,17 @@ async function runScenario(browser, region, viewport, baseUrl) {
     locale: region.primaryLang === 'es' ? 'es' : region.primaryLang === 'en' ? 'en' : 'fr'
   })
   const page = await context.newPage()
+
+  // The regional package is served statically in this browser proof, so PHP
+  // cannot execute. Stub only the unrelated referral-claim endpoint with its
+  // expected JSON auth response; never stub the Copernicus or decision UI paths.
+  await page.route('**/*referral_claim*', async (route) => {
+    await route.fulfill({
+      status: 401,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({ ok: false, error: 'AUTH_REQUIRED' })
+    })
+  })
   const consoleErrors = []
   const failedRequests = []
   page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 160)) })
@@ -200,7 +211,7 @@ async function main() {
   console.log('')
   console.log(`SCENARIOS=${scenarios.length} FAIL_CLOSED=${passed} CONSOLE_OR_NET_ERRORS=${errors}`)
   console.log(`REPORT=${out}`)
-  if (passed !== scenarios.length) process.exitCode = 1
+  if (passed !== scenarios.length || errors > 0) process.exitCode = 1
 }
 
 main().catch((error) => { console.error(error); process.exit(1) })
