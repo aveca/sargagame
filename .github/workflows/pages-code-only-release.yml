@@ -95,6 +95,7 @@ jobs:
           name: pages-code-only-${{ matrix.region }}
           path: ${{ matrix.ftp_dir }}/
           if-no-files-found: error
+          include-hidden-files: true
           retention-days: 2
 
   capture-rollback:
@@ -189,7 +190,7 @@ jobs:
 
   rollback:
     needs: [capture-rollback, deploy-pages, verify]
-    if: always() && needs.capture-rollback.result == 'success' && (needs.deploy-pages.result == 'failure' || needs.verify.result == 'failure')
+    if: always() && needs.capture-rollback.result == 'success' && (needs.deploy-pages.result != 'success' || needs.verify.result != 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
