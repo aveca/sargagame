@@ -1,3 +1,16 @@
+## 2026-11-06 16:50 UTC — mission AUTOPILOT #1336 : release code-only `failed` + cause racine Copernicus recorrectée
+
+- **Release code-only des six domaines : échec terminal, cause racine architecturale.** Les six domaines publics sont servis par les **Workers** `sargagame-<region>` (routes catch-all `<domaine>/*`, binding `ASSETS`), pas par les projets Pages — qui n'ont **aucun domaine personnalisé** et ne servent que `*.pages.dev`. Une release Pages-only ne peut donc pas atteindre les six domaines.
+- Gate de release corrigé par deux PRs fusionnées : **#1339** (`7974ccff1`, workflow Pages isolé dans `paths-ignore` de `cloudflare-production.yml`) et **#1340** (`3f60d84b2`, `npm run build` avant `npm test` dans le job `gate`). Aucune n'a créé de run `cloudflare-production.yml`.
+- Re-déploiement Pages-only (run **42227027205**) : `gate` ✅ / `prepare` ×6 ✅ / `deploy-pages` ×6 ✅ / **`verify` ❌** (12 défauts bloquants `stale-current-decision`) / **rollback ✅**. Production vérifiée intacte : 6/6 HTTP 200, `b: df18df5d`, payload scientifique identique (SHA-256), Workers non redéployés, bindings et secrets inchangés.
+- **Phase Copernicus — diagnostic RECORRECTÉ (l'hypothèse « latence de source ≈ 26 h » est infirmée).** La cellule ERDDAP du jour D est publiée **avant** l'échéance SLA (D+1 03:00Z), **prouvé 10 fois sur 10** (19→27 oct, âge 840–900 min ≤ 900). La rupture est une **cadence de sonde** : aucune livraison planifiée dans la fenêtre `D+1 00:00Z–03:00Z` du 28 oct au 6 nov (exception unique le 3 nov à 00:49Z, âge 771 min → `FRESH_AND_PUBLISHED`, commit `1583c36d4`) → 14 échecs consécutifs. Correctif proposé : densifier les crons sur `00:00Z–03:00Z` + élargir l'observabilité à `03:00Z–06:00Z` (coût mesuré : 1 min de CI par run hors SLA). **SLA 900 min inchangé, gate fail-closed, aucune publication hors SLA, ERDDAP = source unique jamais remplacée.**
+- Le correctif Copernicus **n'est pas mergé** : une publication réussie dispatche `cloudflare-production.yml` en `workflow_dispatch` (non filtré par `paths-ignore`) → `Deploy Worker` + `Configure Worker secrets`, interdit par le périmètre de la mission.
+- **PR #1346 fusionnée (`877730677`) :** `.ai/**` + son garde-fou ajoutés à `on.push.paths-ignore` de `cloudflare-production.yml` — un handoff agent ne peut plus redéployer le Worker ni réécrire les secrets de paiement. Vérifié : **aucun run `cloudflare-production.yml` créé** (total_count 437 → 437). Garde-fou : `tests/unit/ai-docs-paths-ignore.test.cjs`.
+- **PR #1342 (`feat(bridge): support multi-repo`) non fusionnée** : revue faite, 85 octets UTF-8 invalides dans la source, clé de déduplication incompatible avec `bridge.cjs` (risque de double import), et les missions `bot-wow` seraient enfilées dans la queue sargagame (violation « BOT-WOW missions stay in BOT-WOW »).
+- Aucune publication de données, aucun commit de données, aucun seuil modifié, aucun Worker/paiement/prix/secret/binding touché.
+
+---
+
 ## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
 
 - Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
