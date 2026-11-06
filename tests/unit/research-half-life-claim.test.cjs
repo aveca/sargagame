@@ -94,16 +94,16 @@ const regionalScienceFiles = [
 for (const relative of regionalScienceFiles) {
   const raw = fs.readFileSync(path.join(ROOT, relative), 'utf8')
   const data = JSON.parse(raw)
-  assert.doesNotMatch(raw, /3\\.5-day half-life/i, relative + ' must not publish the obsolete beach half-life')
+  assert.doesNotMatch(raw, /3\.5-day half-life/i, relative + ' must not publish the obsolete beach half-life')
   assert.doesNotMatch(raw, /4× daily|4× a day|4x daily|four times a day|four times daily/i, relative + ' must not promise a fixed AFAI refresh cadence')
-  assert.doesNotMatch(raw, /Copernicus\\/NOAA AFAI|Copernicus and NOAA satellite programs|Copernicus satellite imagery/i, relative + ' must identify NOAA/AOML ERDDAP as the AFAI distribution source')
+  assert.doesNotMatch(raw, /Copernicus\/NOAA AFAI|Copernicus and NOAA satellite programs|Copernicus satellite imagery/i, relative + ' must identify NOAA/AOML ERDDAP as the AFAI distribution source')
   assert.doesNotMatch(raw, /Accuracy is highest|Days 1–3 are the most accurate|Days 1–3 are the most reliable|days 1–3 verify best|publish our accuracy/i, relative + ' must not claim unvalidated regional accuracy')
   if (data.press) {
     const validation = data.press.sections?.find(section => section.h2 === 'Validation scope')
     assert.ok(validation, relative + ' must state the regional validation scope')
     assert.match(validation.text, /Martinique and Guadeloupe/)
     assert.match(validation.text, /does not establish forecast accuracy for/i)
-    assert.doesNotMatch(JSON.stringify(data.press), /\\{accuracyJ1Pct\\}|\\{accuracyJ3Pct\\}/, relative + ' must not inject out-of-region accuracy percentages')
+    assert.doesNotMatch(JSON.stringify(data.press), /\{accuracyJ1Pct\}|\{accuracyJ3Pct\}/, relative + ' must not inject out-of-region accuracy percentages')
   }
 }
 
