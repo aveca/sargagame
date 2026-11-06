@@ -1,7 +1,9 @@
 'use strict'
 
 const assert = require('node:assert/strict')
-const worker = require('../../workers/sg-payments/index.js')
+const path = require('node:path')
+const { pathToFileURL } = require('node:url')
+const WORKER_PATH = path.join(__dirname, '..', '..', 'workers', 'sg-payments', 'index.js')
 const { createEnv, jsonResponse, installFetch } = require('./mollie-worker-harness.cjs')
 
 function lead(overrides = {}) {
@@ -76,7 +78,7 @@ function setup(options = {}) {
   return { state, fetcher }
 }
 
-async function runDrip(env) {
+async function runDrip(worker, env) {
   const pending = []
   await worker.scheduled(
     { cron: '0 0 * * *' },
@@ -95,13 +97,14 @@ async function captureLogs(fn) {
 }
 
 async function main() {
+  const worker = (await import(pathToFileURL(WORKER_PATH).href)).default
   // Provider accepted: claim first, then contacted_at only after persistence.
   {
     const { state, fetcher } = setup()
     const { env } = createEnv()
     let logs
     try {
-      logs = await captureLogs(() => runDrip(env))
+      logs = await captureLogs(() => runDrip(worker, env))
     } finally {
       fetcher.restore()
     }
@@ -119,7 +122,7 @@ async function main() {
     const env1 = createEnv().env
     const env2 = createEnv().env
     try {
-      await Promise.all([runDrip(env1), runDrip(env2)])
+      await Promise.all([runDrip(worker, env1), runDrip(worker, env2)])
     } finally {
       fetcher.restore()
     }
@@ -131,7 +134,7 @@ async function main() {
   {
     const { state, fetcher } = setup({ providerSuccess: false })
     const { env } = createEnv()
-    try { await runDrip(env) } finally { fetcher.restore() }
+    try { await runDrip(worker, env) } finally { fetcher.restore() }
     assert.equal(state.emails.length, 1)
     assert.equal(state.lead.status, 'manual_review')
     assert.equal(state.lead.contacted_at, null)
@@ -145,13 +148,13 @@ async function main() {
     const { state, fetcher } = setup({ failPersist: true })
     const { env } = createEnv()
     try {
-      await runDrip(env)
+      await runDrip(worker, env)
       assert.equal(state.lead.status, 'processing')
       assert.equal(state.emails.length, 1)
-      await runDrip(env)
+      await runDrip(worker, env)
       assert.equal(state.emails.length, 1)
       state.lead.claimed_at = new Date(Date.now() - 31 * 60 * 1000).toISOString()
-      await runDrip(env)
+      await runDrip(worker, env)
     } finally {
       fetcher.restore()
     }
@@ -163,7 +166,7 @@ async function main() {
   {
     const { state, fetcher } = setup({ failClaim: true })
     const { env } = createEnv()
-    try { await runDrip(env) } finally { fetcher.restore() }
+    try { await runDrip(worker, env) } finally { fetcher.restore() }
     assert.equal(state.emails.length, 0)
     assert.equal(state.lead.status, 'new')
   }
@@ -172,7 +175,7 @@ async function main() {
   {
     const { state, fetcher } = setup({ lead: { domain: 'sargasses-martinique.com' } })
     const { env } = createEnv()
-    try { await runDrip(env) } finally { fetcher.restore() }
+    try { await runDrip(worker, env) } finally { fetcher.restore() }
     assert.equal(state.emails.length, 0)
     assert.equal(state.lead.status, 'manual_review')
     assert.equal(state.lead.last_contact_error, 'unsupported_region_domain')
