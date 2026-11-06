@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { getRegion } = require('../../regions/index.cjs');
-const { refreshSatellitePayload } = require('../lib/satellite-freshness.cjs');
+const { refreshSatellitePayload, satelliteFreshness } = require('../lib/satellite-freshness.cjs');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const METADATA_FIELDS = new Set(['dataAgeMinutes', 'stale']);
@@ -73,12 +73,9 @@ async function main() {
     throw new Error('prepared payload differs from current production data for ' + regionId);
   }
   if (written.source === 'erddap-live') {
-    const expectedAge = Number.isFinite(Date.parse(String(written.erddapTimestamp ?? '')))
-      ? Math.round((Date.now() - Date.parse(String(written.erddapTimestamp))) / 60000)
-      : null;
-    if (written.dataAgeMinutes !== expectedAge) throw new Error('dataAgeMinutes not recomputed for ' + regionId);
-    const expectedStale = expectedAge == null || expectedAge >= 2160;
-    if (written.stale !== expectedStale) throw new Error('stale marker not recomputed for ' + regionId);
+    const expected = satelliteFreshness(written.erddapTimestamp);
+    if (written.dataAgeMinutes !== expected.dataAgeMinutes) throw new Error('dataAgeMinutes not recomputed for ' + regionId);
+    if (written.stale !== expected.stale) throw new Error('stale marker not recomputed for ' + regionId);
   } else if (written.stale !== true || written.dataAgeMinutes !== null) {
     throw new Error('non-live source must be marked stale/unknown for ' + regionId);
   }
