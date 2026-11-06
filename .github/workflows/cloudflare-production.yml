@@ -34,6 +34,8 @@ on:
       - 'AGENTS.md'
       - '.github/workflows/daily-copernicus.yml'
       - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
       # Isolement de l'outillage de release Pages : la publication des six
       # domaines passe par `pages-code-only-release.yml`, qui possede sa propre
       # porte (build + tests + budget gzip + payload preserve + audit Playwright
