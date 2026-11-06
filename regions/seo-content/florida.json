@@ -39,7 +39,7 @@
       "title": "Florida Beaches Without Sargassum Today (Live List)",
       "desc": "Live list of Florida beaches with no sargassum right now. Satellite-checked daily — clean options from Miami and the Keys to Clearwater and Daytona Beach.",
       "h1": "Florida Beaches Without Sargassum Today",
-      "intro": "Need a seaweed-free beach in Florida today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed when new satellite observations are available. The pattern usually favors the Gulf coast (Clearwater is almost always clear) and the central Atlantic (Daytona, Cocoa Beach), while the Keys and the Miami–Palm Beach corridor swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+      "intro": "Need a seaweed-free beach in Florida today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed when new satellite observations are available. The pattern usually favors the Gulf coast (Clearwater is not guaranteed clear) and the central Atlantic (Daytona, Cocoa Beach), while the Keys and the Miami–Palm Beach corridor swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
     },
     "map": {
       "slug": "seaweed-map",
@@ -80,7 +80,7 @@
           "text": "Tail of the season. Landings become rare and light everywhere, and by Halloween Florida is essentially clear again. Stray patches after storms are possible, so the cautious still glance at the map — but the odds are firmly in your favor."
         }
       ],
-      "tips": "Booking flexibility is everything. November through April is effectively seaweed-proof anywhere in the state. For summer trips, the Gulf coast is the safe harbor — Clearwater rarely sees sargassum even in peak weeks — while Keys and Miami plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the Atlantic in June or July, pick lodging near a beach with daily raking and keep one Gulf-side day in reserve."
+      "tips": "Booking flexibility is everything. November through April is effectively not guaranteed seaweed-free anywhere in the state. For summer trips, no coast is a guaranteed safe harbor — Clearwater can still receive sargassum even in peak weeks — while Keys and Miami plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the Atlantic in June or July, pick lodging near a beach with daily raking and keep one Gulf-side day in reserve."
     }
   },
   "beachBlurbs": {
@@ -123,7 +123,7 @@
       },
       {
         "h2": "Story angles ready today",
-        "text": "Which Florida beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why the Keys and the southeast Atlantic coast get hit while the Gulf coast around Clearwater stays mostly clear · What a record Atlantic bloom means at beach level for Florida tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
+        "text": "Which Florida beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why the Keys and the southeast Atlantic coast get hit while the Gulf coast around Clearwater stays mostly clear · What a basin-scale sargassum conditions means at beach level for Florida tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
       },
       {
         "h2": "About the network",
@@ -162,7 +162,7 @@
         },
         {
           "q": "Does Clearwater Beach get sargassum like Miami?",
-          "a": "Generally much less. Clearwater faces the Gulf of Mexico, while heavy sargassum belts hit Florida's Atlantic coast first. Gulf landings tend to be thin, patchy, and short-lived. The live map confirms the actual status today rather than assuming the coast is always clear."
+          "a": "Generally much less. Clearwater faces the Gulf of Mexico, while heavy sargassum belts hit Florida's Atlantic coast first. Gulf landings tend to be thin, patchy, and short-lived. The live map confirms the actual status today rather than assuming the coast is not guaranteed clear."
         },
         {
           "q": "How accurate is the Clearwater seaweed forecast?",
@@ -220,7 +220,7 @@
         },
         {
           "q": "When is sargassum worst in Miami?",
-          "a": "Miami's sargassum window runs roughly May through August, peaking in June and July, driven by the Gulf Stream running close offshore. Winter is essentially seaweed-free. Within the season, day-to-day conditions swing hard with wind and current — which is why we track Miami Beach with live satellite data when new satellite observations are available instead of quoting a seasonal average."
+          "a": "Miami's sargassum window runs roughly May through August, peaking in June and July, driven by the Gulf Stream running close offshore. No month is guaranteed seaweed-free. Within the season, day-to-day conditions swing hard with wind and current — which is why we track Miami Beach with live satellite data when new satellite observations are available instead of quoting a seasonal average."
         },
         {
           "q": "Where can I avoid seaweed near Miami?",
@@ -270,7 +270,7 @@
         },
         {
           "q": "When is sargassum season in Key West?",
-          "a": "The Keys' sargassum window runs roughly May through August, peaking in June and July, with winter months essentially seaweed-free. The amount swings hugely year to year with the Atlantic bloom, which is why we track Key West with satellite data updated when new satellite observations are available instead of relying on seasonal averages."
+          "a": "The Keys' sargassum window runs roughly May through August, peaking in June and July, with No month is guaranteed seaweed-free. The amount swings hugely year to year with the Atlantic bloom, which is why we track Key West with satellite data updated when new satellite observations are available instead of relying on seasonal averages."
         },
         {
           "q": "Is Key West sargassum dangerous to health?",
@@ -324,7 +324,7 @@
         },
         {
           "q": "When is sargassum season worst in Miami?",
-          "a": "Miami's sargassum window runs roughly May through August, typically peaking in June and July, with winter months nearly seaweed-free. But the amount swings hugely year to year with the Atlantic bloom — which is why we track live conditions when new satellite observations are available rather than relying on seasonal averages to tell you about today."
+          "a": "Miami's sargassum window runs roughly May through August, typically peaking in June and July, with No month is guaranteed seaweed-free. But the amount swings hugely year to year with the Atlantic bloom — which is why we track live conditions when new satellite observations are available rather than relying on seasonal averages to tell you about today."
         }
       ],
       "priority": "0.7",
@@ -550,7 +550,7 @@
         },
         {
           "q": "When is sargassum season worst at Pompano Beach?",
-          "a": "Southeast Florida's window runs roughly May through August, with June and July typically heaviest. Landings are episodic, not constant, so a single week can swing from clear to covered. Winter is essentially seaweed-free. Check the live status for the actual reading on the day you visit rather than the seasonal average."
+          "a": "Southeast Florida's window runs roughly May through August, with June and July typically heaviest. Landings are episodic, not constant, so a single week can swing from clear to covered. No month is guaranteed seaweed-free. Check the live status for the actual reading on the day you visit rather than the seasonal average."
         },
         {
           "q": "Where can I go if Pompano Beach has sargassum today?",
@@ -600,7 +600,7 @@
         },
         {
           "q": "When is sargassum worst at Boca Raton?",
-          "a": "Southeast Florida's season runs roughly May through August, heaviest in June and July, with episodic rather than constant landings. Winter is essentially seaweed-free. Check the live status for the actual reading on your visit day instead of the seasonal average."
+          "a": "Southeast Florida's season runs roughly May through August, heaviest in June and July, with episodic rather than constant landings. No month is guaranteed seaweed-free. Check the live status for the actual reading on your visit day instead of the seasonal average."
         },
         {
           "q": "Where should I go if Boca Raton has sargassum today?",
@@ -642,7 +642,7 @@
         },
         {
           "q": "When is sargassum season worst at Delray Beach?",
-          "a": "Southeast Florida's window runs roughly May through August, heaviest in June and July, with episodic landings rather than constant cover. Winter is essentially seaweed-free. Check the live status for the actual reading on the day you visit instead of the seasonal average."
+          "a": "Southeast Florida's window runs roughly May through August, heaviest in June and July, with episodic landings rather than constant cover. No month is guaranteed seaweed-free. Check the live status for the actual reading on the day you visit instead of the seasonal average."
         },
         {
           "q": "Where can I go if Delray Beach has sargassum today?",
