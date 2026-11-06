@@ -354,7 +354,7 @@ export default function BeachSheet({
         <div style={{padding:"0 0 4px"}}>
           {!hasTrustedObservation&&<div data-testid="stale-observation-notice" role="status" style={{margin:"0 0 18px",padding:"13px 15px",border:"2px solid #1b2522",borderRadius:12,background:"#FFF1D6",color:"#1b2522",fontSize:12,fontWeight:700,lineHeight:1.5,textAlign:"center"}}>{_t(lang,"Observation satellite trop ancienne ou indisponible : verdict et prévision suspendus. Vérifie les conditions sur place avant de te déplacer.","Satellite observation is stale or unavailable: the verdict and forecast are paused. Check local conditions before travelling.","La observación satelital es antigua o no está disponible: el veredicto y el pronóstico están suspendidos. Comprueba las condiciones locales antes de viajar.")}</div>}
 
-          {/* #1 — Score reveal */>
+          {/* #1 — Score reveal */}
           <StorySection delay={0}>
             <div style={{textAlign:"center",maxWidth:360,margin:"0 auto"}}>
               <div style={{font:"800 10px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".16em",textTransform:"uppercase",marginBottom:16}}>{_t(lang,"INDICE DU JOUR","TODAY'S SCORE","ÍNDICE DE HOY")}</div>
@@ -362,7 +362,7 @@ export default function BeachSheet({
                 ? <AnimatedScore target={beach.score}/>
                 : <div style={{width:100,height:100,borderRadius:"50%",border:`4px solid ${COMIC.ink}`,margin:"0 auto",display:"flex",alignItems:"center",justifyContent:"center",fontSize:36,color:COMIC.sub}}>…</div>}
               <div style={{font:"600 13px/1.5 'Bricolage Grotesque'",color:COMIC.sub,marginTop:12,maxWidth:280,margin:"12px auto 0"}}>
-                {beach.scoreReason||_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")}
+                {hasScore?(beach.scoreReason||_t(lang,"Mesuré au satellite, pas deviné.","Measured by satellite, not guessed.","Medido por satélite, no adivinado.")):_t(lang,"Score suspendu jusqu’à une observation récente.","Score paused until a recent observation is available.","Puntuación suspendida hasta disponer de una observación reciente.")}
               </div>
             </div>
           </StorySection>
