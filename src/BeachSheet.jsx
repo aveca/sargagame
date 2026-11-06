@@ -391,8 +391,8 @@ export default function BeachSheet({
             {statusExplainOn&&<div data-testid="status-explain" style={{textAlign:"center",marginTop:8,font:"600 12px/1.5 'Bricolage Grotesque'",color:COMIC.ink,maxWidth:360,margin:"8px auto 0"}}>{explainBeachStatus(status,lang)}</div>}
           </StorySection>
 
-          {/* SOS PLAGE 24H — CTA after verdict */}
-          <StorySection delay={.15} style={{padding:"24px 20px"}}>
+          {/* SOS PLAGE 24H — never sell a data-driven report without a fresh source */}
+          {hasTrustedObservation&&<StorySection delay={.15} style={{padding:"24px 20px"}}>
             <div style={{maxWidth:400,margin:"0 auto",textAlign:"center"}}>
               <div style={{display:"inline-flex",alignItems:"center",gap:7,fontSize:11,fontWeight:800,letterSpacing:".14em",textTransform:"uppercase",color:"#FFC72C",marginBottom:8}}>
                 <span style={{width:6,height:6,borderRadius:"50%",background:"#22C55E" }}/>
@@ -420,7 +420,7 @@ export default function BeachSheet({
                 <span>{_t(lang,"Accès immédiat","Instant access","Acceso inmediato")}</span>
               </div>
             </div>
-          </StorySection>
+          </StorySection>}
 
           {/* #3 — Forecast 7j */}
           <StorySection delay={.2}>
@@ -593,7 +593,7 @@ export default function BeachSheet({
         </div>
       </div>
     </>
-    {showSOS && (
+    {showSOS && hasTrustedObservation && (
       <Suspense fallback={null}>
         <SOSPlage lang={lang} sargData={sargData} region={beach?.island || "mq"} onClose={() => setShowSOS(false)} />
       </Suspense>
