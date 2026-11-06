@@ -139,8 +139,9 @@ async function main() {
   // ── 1b. Outcome ambiguous => no provider fallback and no replay ───────
   {
     const markerStore = createB2cDeliveryMarkerStore()
-    const first = await runCron(worker, [subscriber()], payload(), { markerStore, ambiguousProvider: true })
-    const second = await runCron(worker, [subscriber()], payload(), { markerStore })
+    const sameObservation = payload({ erddapTimestamp: observationAt(5) })
+    const first = await runCron(worker, [subscriber()], sameObservation, { markerStore, ambiguousProvider: true })
+    const second = await runCron(worker, [subscriber()], sameObservation, { markerStore })
     ok(first.providerCalls.length === 1, 'ambiguous provider outcome is attempted once')
     ok(second.providerCalls.length === 0, 'same observation is not retried after ambiguous delivery')
     ok(markerStore.keys.size === 1, 'ambiguous delivery retains one durable marker')
