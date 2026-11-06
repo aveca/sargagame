@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   gate:
-    if: github.ref == 'refs/heads/main' && inputs.confirm_production == true
+    if: github.ref == 'refs/heads/main' && inputs.confirm_production == true && vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
