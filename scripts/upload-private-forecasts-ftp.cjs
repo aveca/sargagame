@@ -33,7 +33,11 @@ function resolveTargets(options = {}) {
     const password = env['FTP_PASS_' + suffix] || env['FTP_PASSWORD_' + suffix];
     if (!host || !user || !password) throw new Error('missing FTPS credentials for region ' + id);
 
-    const remoteRoot = safeRemoteRoot(env['FTP_REMOTE_' + suffix] || '/');
+    const remoteRootValue = env['FTP_REMOTE_' + suffix];
+    if (typeof remoteRootValue !== 'string' || !remoteRootValue.trim()) {
+      throw new Error('missing FTPS remote root for region ' + id);
+    }
+    const remoteRoot = safeRemoteRoot(remoteRootValue);
     const remoteDir = path.posix.join(remoteRoot, 'api/copernicus/_private');
     const privateDir = path.join(root, 'public', 'api', 'copernicus', id, '_private');
     const forecastPath = path.join(privateDir, 'forecast-full.json');
