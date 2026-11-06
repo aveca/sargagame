@@ -19,7 +19,7 @@ function payload(timestamp, overrides = {}) {
     levels: [
       { id: 'grande-anse', status: 'clean', score: 81 },
       { id: 'gp-grande-anse', status: 'moderate', score: 54 },
-      { id: 'unknown-beach', status: 'unverified', score: 99 },
+      { id: 'unknown-beach', status: 'clean', score: 99 },
     ],
     ...overrides,
   };
