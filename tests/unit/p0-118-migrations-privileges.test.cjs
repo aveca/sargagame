@@ -106,7 +106,7 @@ async function main() {
   const sql4 = fs.readFileSync(M4, 'utf8')
   t(sql4.includes('ADD COLUMN IF NOT EXISTS claimed_at timestamptz'), '§8 : claimed_at est ajouté sans réécrire les lignes existantes')
   t(sql4.includes('ADD COLUMN IF NOT EXISTS contact_attempts integer NOT NULL DEFAULT 0'), '§8 : le compteur de tentatives est initialisé à zéro')
-  t(sql4.includes('ADD COLUMN IF NOT EXISTS last_contact_error text'), '§8 : seul un code d'erreur non-PII est conservé')
+  t(sql4.includes('ADD COLUMN IF NOT EXISTS last_contact_error text'), "§8 : seul un code d'erreur non-PII est conservé")
   t(sql4.includes('CREATE INDEX IF NOT EXISTS b2b_leads_processing_claimed_idx'), '§8 : les claims expirés sont indexés')
   t(sql4.includes('MIGRATION PRÉPARÉE, NON APPLIQUÉE'), '§8 : la migration est explicitement marquée comme non appliquée')
   t(!sql4.includes('UPDATE public.b2b_leads') && !sql4.includes('DELETE FROM public.b2b_leads') && !sql4.includes('TRUNCATE public.b2b_leads'), '§8 : la migration ne modifie ni ne supprime les prospects')
