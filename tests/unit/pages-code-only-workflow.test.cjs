@@ -13,7 +13,7 @@ const rollbackScript = fs.readFileSync(path.join(ROOT, 'scripts/automation/pages
 assert.match(workflow, /workflow_dispatch:[\s\S]*confirm_production/)
 assert.match(workflow, /prepare-pages-code-only-payload\.cjs/)
 assert.match(workflow, /pages deploy/)
-assert.match(workflow, /check-bundle-budget\\.cjs/)
+assert.match(workflow, /check-bundle-budget\.cjs/)
 assert.match(workflow, /include-hidden-files: true/)
 assert.match(workflow, /needs: \\[prepare, capture-rollback\\]/)
 assert.doesNotMatch(workflow, /wrangler(?:@latest)? deploy|secret put|MOLLIE_API_KEY|SUPABASE_SERVICE_KEY|MOLLIE_WEBHOOK_SECRET/,
