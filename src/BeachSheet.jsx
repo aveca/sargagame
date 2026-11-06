@@ -16,6 +16,7 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback, Suspense, lazy } from "react"
 import { useSwipeClose } from "./useSwipeClose.js"
 import { _t, Veilleur, COMIC, moodFromStatus } from "./Sargasses_PROD.jsx"
+import { getObservationFreshness } from "./observation-freshness.js"
 const SOSPlage = lazy(() => import("./SOSPlage.jsx"))
 
 /* ── Inline helpers (mirrors from Sargasses_PROD to avoid circular dep) ── */
@@ -206,23 +207,31 @@ export default function BeachSheet({
   const trk=(n,p)=>{try{(trackProp||window.track||console.log)(n,p)}catch(_){}}
   const swipe=useSwipeClose(()=>onClose&&onClose(),{threshold:70,guardInput:true})
   const closingRef=useRef(false)
-  const hasScore=typeof beach?.score==="number"
-  const status=beach?.status||"_loading"
+  // A beach verdict is usable only while the observation timestamp itself is trustworthy.
+  // Publication time (updatedAt) must never make an old satellite observation look current.
+  const freshness=getObservationFreshness(sargData)
+  const hasTrustedObservation=freshness.fresh
+  const hasScore=hasTrustedObservation&&typeof beach?.score==="number"
+  const status=hasTrustedObservation?(beach?.status||"_loading"):"_loading"
   const vmeta=verdictMeta(status,lang)
-  const satAge=(()=>{try{const ts=sargData?.erddapTimestamp||sargData?.updatedAt;if(!ts)return null;const h=(Date.now()-new Date(ts).getTime())/3.6e6;return h>=0&&h<240?h:null}catch(_){return null}})()
-  const satLabel=satAge==null?_t(lang,"Satellite récent","Recent satellite","Satélite reciente")
-    :satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
-    :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+  const satAge=freshness.ageMinutes==null?null:freshness.ageMinutes/60
+  const satLabel=hasTrustedObservation
+    ?satAge<1?_t(lang,"Satellite il y a <1 h","Satellite <1h ago","Satélite hace <1 h")
+      :_t(lang,`Satellite il y a ${Math.round(satAge)} h`,`Satellite ${Math.round(satAge)}h ago`,`Satélite hace ${Math.round(satAge)} h`)
+    :freshness.reason==="stale"
+      ?_t(lang,`Observation satellite ancienne (${Math.round(satAge||0)} h)`,`Satellite observation is stale (${Math.round(satAge||0)}h)`,`Observación satelital antigua (${Math.round(satAge||0)} h)`)
+      :_t(lang,"Horodatage satellite indisponible","Satellite timestamp unavailable","Marca de tiempo satelital no disponible")
   const distKm=(()=>{try{if(!userPos||!beach)return null;return haversineKm(userPos.lat,userPos.lng,beach.lat,beach.lng)}catch(_){return null}})()
   const locLine=[beach?.commune||null,distKm!=null?_t(lang,`à ${Math.round(distKm)} km`,`${Math.round(distKm)} km away`,`a ${Math.round(distKm)} km`):null].filter(Boolean).join(" · ")
 
   // Forecast
   const forecast=useMemo(()=>{
+    if(!hasTrustedObservation)return null
     if(forecastProp&&forecastProp.length)return forecastProp
     if(!beach)return null
     const w=sargData?.weekly?.[beach.id]||sargData?._enrichedWeekly?.[`_interp_${beach.id}`]||null
     return w?.forecast||null
-  },[beach?.id,sargData,forecastProp])
+  },[beach?.id,sargData,forecastProp,hasTrustedObservation])
 
   const fcDays=(forecast||[]).slice(0,7)
   const planB=useMemo(()=>{
@@ -301,7 +310,7 @@ export default function BeachSheet({
           <BeachHeroScene beach={beach}/>
           <div style={{position:"absolute",inset:0,background:"linear-gradient(180deg, rgba(0,0,0,.12) 0%, transparent 35%, transparent 50%, rgba(0,0,0,.5) 100%)"}}/>
           <div style={{position:"absolute",top:"38%",left:0,right:0,display:"flex",justifyContent:"center",pointerEvents:"none"}}>
-            <Veilleur mood={moodFromScore(beach.score)} size={72}/>
+            <Veilleur mood={moodFromScore(hasScore?beach.score:null)} size={72}/>
           </div>
           <div style={{position:"absolute",bottom:20,left:20,right:20,zIndex:1}}>
             <div style={{fontFamily:"'Anton',sans-serif",fontSize:"clamp(28px,8vw,42px)",lineHeight:.92,color:"#fff",textTransform:"uppercase",letterSpacing:"-.3px",textShadow:"0 2px 16px rgba(0,0,0,.5)",wordBreak:"break-word"}}>{beach.name}</div>
@@ -343,7 +352,9 @@ export default function BeachSheet({
 
         {/* ── STORY SECTIONS (scroll-driven reveals) ── */}
         <div style={{padding:"0 0 4px"}}>
-          {/* #1 — Score reveal */}
+          {!hasTrustedObservation&&<div data-testid="stale-observation-notice" role="status" style={{margin:"0 0 18px",padding:"13px 15px",border:"2px solid #1b2522",borderRadius:12,background:"#FFF1D6",color:"#1b2522",fontSize:12,fontWeight:700,lineHeight:1.5,textAlign:"center"}}>{_t(lang,"Observation satellite trop ancienne ou indisponible : verdict et prévision suspendus. Vérifie les conditions sur place avant de te déplacer.","Satellite observation is stale or unavailable: the verdict and forecast are paused. Check local conditions before travelling.","La observación satelital es antigua o no está disponible: el veredicto y el pronóstico están suspendidos. Comprueba las condiciones locales antes de viajar.")}</div>}
+
+          {/* #1 — Score reveal */>
           <StorySection delay={0}>
             <div style={{textAlign:"center",maxWidth:360,margin:"0 auto"}}>
               <div style={{font:"800 10px/1 'Bricolage Grotesque'",color:COMIC.sub,letterSpacing:".16em",textTransform:"uppercase",marginBottom:16}}>{_t(lang,"INDICE DU JOUR","TODAY'S SCORE","ÍNDICE DE HOY")}</div>
@@ -497,7 +508,7 @@ export default function BeachSheet({
 
           {/* Quick Status Badge */}
           <div style={{display:"flex",alignItems:"center",gap:10,padding:"12px 14px",marginBottom:12,background:comicStatusColor(status),border:`2.5px solid ${COMIC.ink}`,borderRadius:14,boxShadow:`3px 3px 0 ${COMIC.ink}`}}>
-            <Veilleur mood={moodFromScore(beach.score)} size={44}/>
+            <Veilleur mood={moodFromScore(hasScore?beach.score:null)} size={44}/>
             <div>
               <div style={{font:"800 20px/1 'Bricolage Grotesque'",color:status==="avoid"?"#fff":COMIC.ink,textTransform:"uppercase",letterSpacing:"-.2px"}}>{stLabelLong(status,lang)}</div>
               <div style={{font:"700 11px/1 'Bricolage Grotesque'",color:status==="avoid"?"rgba(255,255,255,.75)":COMIC.ink,opacity:.75,marginTop:2}}>
@@ -524,8 +535,8 @@ export default function BeachSheet({
 
           {/* Satellite freshness */}
           <div style={{display:"flex",alignItems:"center",gap:7,font:"700 11.5px/1 'Bricolage Grotesque'",color:COMIC.sub,margin:"0 2px 14px"}}>
-            <span style={{width:7,height:7,borderRadius:"50%",background:COMIC.clean,boxShadow:`0 0 0 3px ${COMIC.clean}33`}}/>
-            {_t(lang,"Donnée vérifiée","Verified data","Dato verificado")} · {satLabel}
+            <span style={{width:7,height:7,borderRadius:"50%",background:hasTrustedObservation?COMIC.clean:COMIC.avoid,boxShadow:`0 0 0 3px ${hasTrustedObservation?COMIC.clean:COMIC.avoid}33`}}/>
+            {hasTrustedObservation?_t(lang,"Donnée vérifiée","Verified data","Dato verificado"):_t(lang,"Décision suspendue","Decision paused","Decisión suspendida")} · {satLabel}
           </div>
 
           {/* Forecast Bars (compact) */}
