@@ -15,7 +15,7 @@ assert.match(workflow, /prepare-pages-code-only-payload\.cjs/)
 assert.match(workflow, /pages deploy/)
 assert.match(workflow, /check-bundle-budget\.cjs/)
 assert.match(workflow, /include-hidden-files: true/)
-assert.match(workflow, /needs: \\[prepare, capture-rollback\\]/)
+assert.match(workflow, /needs: \[prepare, capture-rollback\]/)
 assert.doesNotMatch(workflow, /wrangler(?:@latest)? deploy|secret put|MOLLIE_API_KEY|SUPABASE_SERVICE_KEY|MOLLIE_WEBHOOK_SECRET/,
   'Pages-only workflow must never deploy a Worker or configure payment secrets')
 assert.match(workflow, /user-journey-audit\.cjs/)
