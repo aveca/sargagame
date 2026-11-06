@@ -1,21 +1,23 @@
 // tests/unit/worker-private-guard.test.cjs — garde _private fail-closed
 // Contexte : /api/copernicus/_private/forecast-full.json (premium J+2-7) a été
-// servi en clair sur *.workers.dev (constaté 2026-10-04). Cause racine : avec
-// run_worker_first=false (défaut actuel) : les assets statiques compatibles sont
-// servis directement par Cloudflare sans invocation Worker. Les chemins
-// dynamiques (API, Apple Pay, guards) sont toujours traités par le code Worker
-// car ils ne correspondent pas aux assets statiques. La garde _private/dotfiles/php
-// s'exécute uniquement quand le Worker est invoqué (req non-asset).
+// servi en clair sur *.workers.dev (constaté 2026-10-04). Le contrat actuel
+// utilise run_worker_first sélectif : API Copernicus publique + chemins premium.
+// Tous les autres assets restent asset-first. .assetsignore exclut les fichiers
+// privés du paquet ; la garde Worker renvoie aussi un 404 neutre si un chemin
+// premium atteint le Worker.
 // Lancement : node tests/unit/worker-private-guard.test.cjs
 
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
+const { execFileSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const WORKER = fs.readFileSync(path.join(ROOT, 'workers', 'sargagame', 'index.js'), 'utf8');
 const TPL = fs.readFileSync(path.join(ROOT, 'wrangler.template.jsonc'), 'utf8');
 const IGNORE = fs.readFileSync(path.join(ROOT, 'public', '.assetsignore'), 'utf8');
+const DATA_REFRESH = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'data-refresh.yml'), 'utf8');
+const DAILY_COPERNICUS = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'daily-copernicus.yml'), 'utf8');
 
 let passed = 0;
 function check(name, cond) {
@@ -53,12 +55,28 @@ check('handler widget-token préservé', /widget-token/.test(WORKER));
 check('handler b2b-trial préservé', /b2b-trial/.test(WORKER));
 check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(WORKER));
 
-// 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
-check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*false/.test(TPL));
+// 5. Worker-first sélectif : freshness API + garde premium, sans Worker-first global.
+check('wrangler.template Worker-first sélectif', /"run_worker_first"\s*:\s*\[/.test(TPL));
+check('Worker-first route Copernicus publique', /"\/api\/copernicus\/sargassum\.json"/.test(TPL));
+check('Worker-first route premium racine', /"\/api\/copernicus\/_private\/\*"/.test(TPL));
+check('Worker-first routes premium régionales', /"\/api\/copernicus\/\*\/_private\/\*"/.test(TPL));
+check('aucun Worker-first global', !/"run_worker_first"\s*:\s*true/.test(TPL));
 
 // 6. Garde assets: règles exactes, pas une simple présence du mot "_private".
 const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')));
 const REQUIRED_IGNORE_RULES = ['**/*.php', '**/*.php.*', '**/.env*', '**/.htaccess', '**/.htpasswd', '**/_private/'];
 for (const rule of REQUIRED_IGNORE_RULES) check('.assetsignore contient la règle exacte ' + rule, IGNORE_RULES.has(rule));
 
-console.log('\n' + passed + ' checks passed — private endpoint fail-closed, public paths intact.');
+const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' }).split(/\r?\n/).filter(Boolean);
+const privateForecastPaths = tracked.filter((file) => /^public\/api\/copernicus\/(?:[^/]+\/)?_private\/forecast-full\.json$/.test(file));
+check('aucun forecast-full privé suivi par Git', privateForecastPaths.length === 0);
+check('data-refresh stages and activates private forecasts through FTPS', DATA_REFRESH.includes('PRIVATE_FORECAST_FTP_MODE: stage') && DATA_REFRESH.includes('PRIVATE_FORECAST_FTP_MODE: activate'));
+check('daily-copernicus stages and activates private forecasts through FTPS', DAILY_COPERNICUS.includes('PRIVATE_FORECAST_FTP_MODE: stage') && DAILY_COPERNICUS.includes('PRIVATE_FORECAST_FTP_MODE: activate'));
+check('data-refresh does not stage forecast-full.json in Git', !DATA_REFRESH.includes('forecast-full.json'));
+check('daily-copernicus does not stage forecast-full.json in Git', !DAILY_COPERNICUS.includes('forecast-full.json'));
+check('both refresh workflows invoke the private FTPS handoff', DATA_REFRESH.includes('scripts/upload-private-forecasts-ftp.cjs') && DAILY_COPERNICUS.includes('scripts/upload-private-forecasts-ftp.cjs'));
+const dataRefreshGroup = DATA_REFRESH.match(/^\s*group:\s*(.+)$/m)?.[1]?.trim();
+const dailyCopernicusGroup = DAILY_COPERNICUS.match(/^\s*group:\s*(.+)$/m)?.[1]?.trim();
+check('both workflows serialize on the same cross-workflow publication lock', dataRefreshGroup === dailyCopernicusGroup && dataRefreshGroup === 'copernicus-publication-${{ github.ref }}');
+
+console.log('\n' + passed + ' checks passed — private endpoint fail-closed, no public Git payload, FTPS handoff required.');

@@ -35,10 +35,10 @@ permissions:
   # 403 « Resource not accessible by integration ».
   actions: write
 
-# Sérialise sur main : deux pushes concurrents sur les mêmes JSONs se
-# contrediraient (le retry-rebase ci-dessous gère l'unicité du push).
+# Sérialise les deux workflows de publication Copernicus sur la même branche.
+# Un seul run peut toucher aux mêmes répertoires FTPS à la fois.
 concurrency:
-  group: data-refresh
+  group: copernicus-publication-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -113,9 +113,43 @@ jobs:
           fi
           exit "$rc"
 
+      - name: Stage private forecasts on protected FTPS
+        id: private_ftp_stage
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST || secrets.FTP_SERVER }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_HOST_MQ: ${{ secrets.FTP_HOST_MQ || secrets.FTP_SERVER_MQ }}
+          FTP_USER_MQ: ${{ secrets.FTP_USER_MQ || secrets.FTP_USERNAME_MQ }}
+          FTP_PASS_MQ: ${{ secrets.FTP_PASS_MQ || secrets.FTP_PASSWORD_MQ }}
+          FTP_REMOTE_MQ: ${{ secrets.FTP_REMOTE_MQ }}
+          FTP_HOST_GP: ${{ secrets.FTP_HOST_GP || secrets.FTP_SERVER_GP }}
+          FTP_USER_GP: ${{ secrets.FTP_USER_GP || secrets.FTP_USERNAME_GP }}
+          FTP_PASS_GP: ${{ secrets.FTP_PASS_GP || secrets.FTP_PASSWORD_GP }}
+          FTP_REMOTE_GP: ${{ secrets.FTP_REMOTE_GP }}
+          FTP_HOST_FLORIDA: ${{ secrets.FTP_HOST_FLORIDA || secrets.FTP_SERVER_FLORIDA }}
+          FTP_USER_FLORIDA: ${{ secrets.FTP_USER_FLORIDA || secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASS_FLORIDA: ${{ secrets.FTP_PASS_FLORIDA || secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_REMOTE_FLORIDA: ${{ secrets.FTP_REMOTE_FLORIDA }}
+          FTP_HOST_PUNTACANA: ${{ secrets.FTP_HOST_PUNTACANA || secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USER_PUNTACANA: ${{ secrets.FTP_USER_PUNTACANA || secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASS_PUNTACANA: ${{ secrets.FTP_PASS_PUNTACANA || secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_REMOTE_PUNTACANA: ${{ secrets.FTP_REMOTE_PUNTACANA }}
+          FTP_HOST_RIVIERAMAYA: ${{ secrets.FTP_HOST_RIVIERAMAYA || secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USER_RIVIERAMAYA: ${{ secrets.FTP_USER_RIVIERAMAYA || secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASS_RIVIERAMAYA: ${{ secrets.FTP_PASS_RIVIERAMAYA || secrets.FTP_PASSWORD_RIVIERAMAYA }}
+          FTP_REMOTE_RIVIERAMAYA: ${{ secrets.FTP_REMOTE_RIVIERAMAYA }}
+          FTP_HOST_TULUM: ${{ secrets.FTP_HOST_TULUM || secrets.FTP_SERVER_TULUM }}
+          FTP_USER_TULUM: ${{ secrets.FTP_USER_TULUM || secrets.FTP_USERNAME_TULUM }}
+          FTP_PASS_TULUM: ${{ secrets.FTP_PASS_TULUM || secrets.FTP_PASSWORD_TULUM }}
+          FTP_REMOTE_TULUM: ${{ secrets.FTP_REMOTE_TULUM }}
+          PRIVATE_FORECAST_FTP_MODE: stage
+          PRIVATE_FORECAST_RUN_ID: ${{ github.run_id }}
+        run: node scripts/upload-private-forecasts-ftp.cjs
+
       - name: Commit + push des données Copernicus
         id: publish
-        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success'
+        if: steps.src.outputs.source != 'none' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success' && steps.private_ftp_stage.outcome == 'success'
         run: |
           set -e
           git config user.name "github-actions[bot]"
@@ -133,12 +167,6 @@ jobs:
             if [ -f "public/api/copernicus/$f" ]; then git add "public/api/copernicus/$f"; fi
           done
           if [ -f public/api/weather/beaches-weather.json ]; then git add public/api/weather/beaches-weather.json; fi
-
-          # Prévision privée (root + régions) : un push-deploy la redéploye telle quelle.
-          if [ -f public/api/copernicus/_private/forecast-full.json ]; then git add public/api/copernicus/_private/forecast-full.json; fi
-          for p in public/api/copernicus/*/_private/forecast-full.json; do
-            if [ -f "$p" ]; then git add "$p"; fi
-          done
 
           # Sorties par région (mq/, gp/, florida/, …). Chaque pathspec est
           # ajouté SÉPARÉMENT : `git add a b` est atomique et un glob vide
@@ -211,13 +239,47 @@ jobs:
           # `cloudflare-production.yml` (dont la porte n'autorisera le
           # déploiement que si ces deux checks sont verts).
 
+      - name: Activate private forecasts on protected FTPS
+        id: private_ftp_activate
+        if: steps.publish.outcome == 'success' && steps.private_ftp_stage.outcome == 'success'
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST || secrets.FTP_SERVER }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_HOST_MQ: ${{ secrets.FTP_HOST_MQ || secrets.FTP_SERVER_MQ }}
+          FTP_USER_MQ: ${{ secrets.FTP_USER_MQ || secrets.FTP_USERNAME_MQ }}
+          FTP_PASS_MQ: ${{ secrets.FTP_PASS_MQ || secrets.FTP_PASSWORD_MQ }}
+          FTP_REMOTE_MQ: ${{ secrets.FTP_REMOTE_MQ }}
+          FTP_HOST_GP: ${{ secrets.FTP_HOST_GP || secrets.FTP_SERVER_GP }}
+          FTP_USER_GP: ${{ secrets.FTP_USER_GP || secrets.FTP_USERNAME_GP }}
+          FTP_PASS_GP: ${{ secrets.FTP_PASS_GP || secrets.FTP_PASSWORD_GP }}
+          FTP_REMOTE_GP: ${{ secrets.FTP_REMOTE_GP }}
+          FTP_HOST_FLORIDA: ${{ secrets.FTP_HOST_FLORIDA || secrets.FTP_SERVER_FLORIDA }}
+          FTP_USER_FLORIDA: ${{ secrets.FTP_USER_FLORIDA || secrets.FTP_USERNAME_FLORIDA }}
+          FTP_PASS_FLORIDA: ${{ secrets.FTP_PASS_FLORIDA || secrets.FTP_PASSWORD_FLORIDA }}
+          FTP_REMOTE_FLORIDA: ${{ secrets.FTP_REMOTE_FLORIDA }}
+          FTP_HOST_PUNTACANA: ${{ secrets.FTP_HOST_PUNTACANA || secrets.FTP_SERVER_PUNTACANA }}
+          FTP_USER_PUNTACANA: ${{ secrets.FTP_USER_PUNTACANA || secrets.FTP_USERNAME_PUNTACANA }}
+          FTP_PASS_PUNTACANA: ${{ secrets.FTP_PASS_PUNTACANA || secrets.FTP_PASSWORD_PUNTACANA }}
+          FTP_REMOTE_PUNTACANA: ${{ secrets.FTP_REMOTE_PUNTACANA }}
+          FTP_HOST_RIVIERAMAYA: ${{ secrets.FTP_HOST_RIVIERAMAYA || secrets.FTP_SERVER_RIVIERAMAYA }}
+          FTP_USER_RIVIERAMAYA: ${{ secrets.FTP_USER_RIVIERAMAYA || secrets.FTP_USERNAME_RIVIERAMAYA }}
+          FTP_PASS_RIVIERAMAYA: ${{ secrets.FTP_PASS_RIVIERAMAYA || secrets.FTP_PASSWORD_RIVIERAMAYA }}
+          FTP_REMOTE_RIVIERAMAYA: ${{ secrets.FTP_REMOTE_RIVIERAMAYA }}
+          FTP_HOST_TULUM: ${{ secrets.FTP_HOST_TULUM || secrets.FTP_SERVER_TULUM }}
+          FTP_USER_TULUM: ${{ secrets.FTP_USER_TULUM || secrets.FTP_USERNAME_TULUM }}
+          FTP_PASS_TULUM: ${{ secrets.FTP_PASS_TULUM || secrets.FTP_PASSWORD_TULUM }}
+          FTP_REMOTE_TULUM: ${{ secrets.FTP_REMOTE_TULUM }}
+          PRIVATE_FORECAST_FTP_MODE: activate
+          PRIVATE_FORECAST_RUN_ID: ${{ github.run_id }}
+        run: node scripts/upload-private-forecasts-ftp.cjs
+
       # ── Déclenchement de la chaîne CI + déploiement ────────────────────────
       # Condition : la publication a réussi ET porte sur la branche de
       # production (`main`). Une publication sur une branche de développement
       # ne doit jamais déclencher un déploiement de production.
       - name: Déclenche la chaîne CI + déploiement
         id: dispatch
-        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success'
+        if: steps.publish.outcome == 'success' && steps.publish.outputs.branch == 'main' && steps.verify.outcome == 'success' && steps.erddap.outcome == 'success' && steps.private_ftp_activate.outcome == 'success'
         env:
           # `GITHUB_TOKEN` n'est PAS une variable d'environnement par défaut
           # dans GitHub Actions : sans elle, l'API dispatch est refusée (le
@@ -244,6 +306,8 @@ jobs:
           PUBLISH_CHANGED: ${{ steps.publish.outputs.changed }}
           PUBLISH_SHA: ${{ steps.publish.outputs.sha }}
           PUBLISH_BRANCH: ${{ steps.publish.outputs.branch }}
+          PRIVATE_FTP_STAGE_OUTCOME: ${{ steps.private_ftp_stage.outcome }}
+          PRIVATE_FTP_ACTIVATE_OUTCOME: ${{ steps.private_ftp_activate.outcome }}
           DISPATCH_OUTCOME: ${{ steps.dispatch.outcome }}
         run: |
           node <<'NODE'
@@ -257,6 +321,9 @@ jobs:
           const sourceTimestampValid = Number.isFinite(sourceMs) && sourceMs <= nowMs;
           const sourceAgeMinutes = sourceTimestampValid ? Math.floor((nowMs - sourceMs) / 60000) : null;
           const gateStatus = process.env.GATE_STATUS || 'UNCLASSIFIED';
+          const privateUploadOutcome = process.env.PRIVATE_FTP_STAGE_OUTCOME === 'failure' || process.env.PRIVATE_FTP_ACTIVATE_OUTCOME === 'failure'
+            ? 'failure'
+            : process.env.PRIVATE_FTP_STAGE_OUTCOME === 'success' && process.env.PRIVATE_FTP_ACTIVATE_OUTCOME === 'success' ? 'success' : 'skipped';
           const publishChanged = process.env.PUBLISH_CHANGED === 'true'
             ? true
             : process.env.PUBLISH_CHANGED === 'false' ? false : null;
@@ -267,6 +334,7 @@ jobs:
             source: process.env.SOURCE,
             gateOutcome: process.env.GATE_OUTCOME,
             publishOutcome: process.env.PUBLISH_OUTCOME,
+            privateUploadOutcome,
             publishChanged
           });
           let changedPayloadFiles = [];
@@ -291,6 +359,9 @@ jobs:
             integrityGateOutcome: process.env.GATE_OUTCOME || null,
             integrityGateClassification: gateStatus,
             publishOutcome: process.env.PUBLISH_OUTCOME || null,
+            privateForecastFtpStageOutcome: process.env.PRIVATE_FTP_STAGE_OUTCOME || null,
+            privateForecastFtpActivationOutcome: process.env.PRIVATE_FTP_ACTIVATE_OUTCOME || null,
+            privateForecastFtpOutcome: privateUploadOutcome,
             publishChanged,
             publishBranch: process.env.PUBLISH_BRANCH || null,
             commitSha: process.env.PUBLISH_SHA || null,
@@ -314,6 +385,7 @@ jobs:
             '- Public stale threshold: 2160 minutes',
             '- Integrity gate: ' + report.integrityGateOutcome + ' (' + gateStatus + ')',
             '- Publish outcome: ' + report.publishOutcome,
+            '- Private forecast FTPS: ' + report.privateForecastFtpOutcome + ' (stage=' + report.privateForecastFtpStageOutcome + ', activate=' + report.privateForecastFtpActivationOutcome + ')',
             '- Commit changes detected: ' + (publishChanged === null ? 'UNVERIFIED' : publishChanged),
             '- Commit SHA: ' + (report.commitSha || 'none'),
             '- Deploy dispatch: ' + report.deploymentDispatchOutcome,
@@ -323,7 +395,7 @@ jobs:
           ].join('\n') + '\n';
           fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary);
           console.log(JSON.stringify(report, null, 2));
-          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH'].includes(status)) {
+          if (['BLOCKED_STALE_SOURCE', 'FAILED_VALIDATION', 'FAILED_PUBLISH', 'FAILED_PRIVATE_UPLOAD'].includes(status)) {
             console.error('Copernicus publication status is ' + status);
             process.exit(1);
           }
