@@ -39,7 +39,7 @@
       "title": "Barbados Beaches Without Sargassum Today (Live List)",
       "desc": "Live list of Barbados beaches with no sargassum right now. Satellite-checked daily — clean west-coast options like Carlisle Bay, Mullins and Paynes Bay.",
       "h1": "Barbados Beaches Without Sargassum Today",
-      "intro": "Need a seaweed-free beach in Barbados today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed when new AFAI observations are available. The pattern usually favors the west coast (Carlisle Bay, Mullins and Paynes Bay are almost always clear), while the east coast (Bathsheba, Bottom Bay, Crane) and the open south (Silver Sands, Miami/Enterprise) swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
+      "intro": "Need a seaweed-free beach in Barbados today? The ranked list below shows which of the beaches we track are currently clean, ordered best to worst, straight from the latest satellite pass — refreshed when new AFAI observations are available. The pattern usually favors the west coast (Carlisle Bay, Mullins and Paynes Bay are not guaranteed clear), while the east coast (Bathsheba, Bottom Bay, Crane) and the open south (Silver Sands, Miami/Enterprise) swing week to week in season. But \"usually\" is not \"today\", and that is the point of this page: live data, beach by beach, so you pick a winner on the first try."
     },
     "map": {
       "slug": "seaweed-map",
@@ -80,7 +80,7 @@
           "text": "Tail of the season. Landings become lighter and less frequent, and by month's end Barbados is mostly clear again. Stray pulses on the east coast after storms remain possible, so the cautious still glance at the map — but the odds are firmly in your favor."
         }
       ],
-      "tips": "Booking flexibility is everything. November through April is effectively seaweed-proof anywhere on the island. For summer trips, the west coast is the safe harbor — Carlisle Bay, Mullins and Paynes Bay rarely see sargassum even in peak weeks — while east- and south-coast plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the south coast in June or July, pick lodging near a regularly cleaned beach like Rockley or Dover and keep one west-coast day in reserve."
+      "tips": "Booking flexibility is everything. November through April is effectively not guaranteed seaweed-free anywhere on the island. For summer trips, no coast is a guaranteed safe harbor — Carlisle Bay, Mullins and Paynes Bay can still receive sargassum even in peak weeks — while east- and south-coast plans deserve a look at the 7-day forecast before you lock anything in. If you are set on the south coast in June or July, pick lodging near a regularly cleaned beach like Rockley or Dover and keep one west-coast day in reserve."
     }
   },
   "beachBlurbs": {
@@ -123,7 +123,7 @@
       },
       {
         "h2": "Story angles ready today",
-        "text": "Which Barbados beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why the sheltered west coast stays clear while the windward east and south coasts get hit · What a record Atlantic bloom means at beach level for Barbados tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
+        "text": "Which Barbados beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why the sheltered west coast stays clear while the windward east and south coasts get hit · What a basin-scale sargassum conditions means at beach level for Barbados tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
       },
       {
         "h2": "About the network",
