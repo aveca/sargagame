@@ -56,7 +56,7 @@ t(!isKnownOutOfScopeResponse(500, 'https://sargassummiami.com/api/b2b-partners.j
 
 // 1ter. Le contrôle DOM doit détecter l'ancien HTML de production, pas seulement les test IDs du nouveau build.
 const auditSource = fs.readFileSync(path.join(ROOT, 'scripts', 'automation', 'user-journey-audit.cjs'), 'utf8')
-t(/data-testid="lc-detail-score", \.lc-detail-score/.test(auditSource),
+t(/data-testid="lc-detail-score"/.test(auditSource) && /\.lc-detail-score/.test(auditSource),
   'l’audit détecte le score dans le build legacy et le build instrumenté')
 t(/VOIR LES 7 PROCHAINS JOURS\|SEE THE NEXT 7 DAYS\|VER LOS 7 DÍAS/.test(auditSource),
   'l’audit détecte le CTA prévision legacy réellement visible')
