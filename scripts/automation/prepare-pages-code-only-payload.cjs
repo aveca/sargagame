@@ -55,7 +55,7 @@ async function main() {
 
   const url = 'https://' + region.domain + '/api/copernicus/sargassum.json';
   const response = await fetch(url, {
-    headers: { accept: 'application/json', 'cache-control': 'no-cache' },
+    headers: { accept: 'application/json', 'cache-control': 'no-cache', pragma: 'no-cache', 'user-agent': 'Sargagame-Pages-Code-Only-Release/1.0' },
     signal: AbortSignal.timeout(20000),
   });
   if (!response.ok) throw new Error('live payload fetch failed for ' + regionId + ': HTTP ' + response.status);
