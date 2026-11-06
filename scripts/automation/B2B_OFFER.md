@@ -71,7 +71,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > On ne va pas vous le promettre, on va vous le montrer. Le Veilleur est un satellite qui veille la mer (observations AFAI distribuées par NOAA/AOML ERDDAP, avec l’heure réelle de l’observation) — il regarde la mer, jamais vos visiteurs. Voici l'état réel des plages autour de chez vous aujourd'hui, daté : [aperçu]. Avec la prévision J+1→J+7, vous prévenez le client AVANT l'arrivée des algues.
 >
-> Le relevé public de validation est daté et limité à son périmètre. Il couvre actuellement Martinique et Guadeloupe uniquement et est marqué obsolète ; nous ne citons donc aucun pourcentage actuel tant que le contrôle de fraîcheur n'est pas repassé. Aucun taux n'est extrapolé à Florida, Punta Cana ou Riviera Maya.
+> Le relevé public de validation est daté et limité à son périmètre. Ne citer un pourcentage que si le contrôle de fraîcheur est passé et si la région du prospect figure dans le périmètre déclaré. Le périmètre actuellement déclaré couvre MQ+GP ; aucun taux n'est extrapolé à Florida, Punta Cana ou Riviera Maya.
 >
 > Et il y a un retour pour vous : avec le palier Pro, on **met votre établissement en avant DANS l'application**, sur la fiche de votre plage — donc juste au moment où le voyageur vérifie s'il y a des sargasses avant de réserver. C'est exactement votre futur client, au bon instant. Voici à quoi ça ressemblerait pour vous : [aperçu]. (Affiché « Partenaire », et ça ne touche jamais le verdict de la plage — c'est ce qui le rend crédible.)
 >
@@ -88,7 +88,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > We won't promise it, we'll show it. Le Veilleur is a satellite that watches the sea (NOAA/AOML ERDDAP AFAI observations, with the actual observation time) — it watches the sea, never your guests. Here's the real, dated state of the beaches near you today: [preview]. With the J+1→J+7 forecast, you warn the guest BEFORE the seaweed lands.
 >
-> The public validation record is dated and scope-limited. It currently covers Martinique and Guadeloupe only and is marked stale; we do not quote a current percentage until the freshness gate passes. No rate is extrapolated to Florida, Punta Cana, or Riviera Maya.
+> The public validation record is dated and scope-limited. Quote a percentage only when the freshness gate passes and the prospect's region is explicitly in the declared scope. The currently declared scope is MQ+GP; no rate is extrapolated to Florida, Punta Cana, or Riviera Maya.
 >
 > And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
 >
