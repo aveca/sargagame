@@ -55,8 +55,8 @@
 
 ### Branche / PR
 - Branche : `agent/coding/multi-repo-bridge-handoff-20261106` (base `origin/main` = `a88099dc546bb5c793c82d41ec437c12b1bd2842`)
-- PR : #<à créer> → `main` (PR #1349 déjà fusionnée : `87702066a79c03ff930500a2bad524df58c1f6f7`)
-- Commit head : `<à remplir>`
+- PR : **#1350** → `main` (PR #1349 déjà fusionnée : `87702066a79c03ff930500a2bad524df58c1f6f7`)
+- Commit head : `b7aee224a` (handoff) — le livrable de code est la PR #1349, head `8c34d6ce9e1bbfa0742fb476c194a3a07f779511`
 
 ---
 
