@@ -1062,6 +1062,16 @@ function resolveB2BWidgetRegion(region) {
 }
 var B2C_ALERT_STATUSES = ["moderate", "avoid", "high"];
 function b2cObservationIsFresh(payload, now = Date.now()) {
+  // P0.46 §4 — PORTE SCIENTIFIQUE (fail-closed).
+  // L'unique horodatage autorise est `erddapTimestamp` (l'instant REEL de
+  // l'observation satellite) :
+  //   • `updatedAt` = date de republication du JSON -> jamais un substitut ;
+  //   • `dataAgeMinutes` = valeur stockee, potentiellement perimee -> jamais
+  //     un substitut ;
+  //   • `stale` doit etre EXACTEMENT false (un champ absent ou non booleen
+  //     est traite comme stale).
+  // Exigences cumulees : payload present, `levels` non vide, `stale === false`,
+  // `erddapTimestamp` valide, non futur, age reel <= 900 minutes.
   if (!payload || payload.stale !== false || !Array.isArray(payload.levels) || payload.levels.length === 0) return false;
   const observedAt = Date.parse(payload.erddapTimestamp);
   if (!Number.isFinite(observedAt) || observedAt > now) return false;
@@ -1087,6 +1097,85 @@ function escapeB2CHtml(value) {
   })[char]);
 }
 __name(escapeB2CHtml, "escapeB2CHtml");
+var B2C_ALERT_DELIVERY_RPC = "sg_claim_b2c_alert_delivery";
+var B2C_ALERT_DELIVERY_TABLE = "b2c_alert_deliveries";
+async function b2cDeliveryFingerprint(subscription, payload, selectedAlerts) {
+  // P0.46 §6 — Identite d'une alerte : (abonne, observation satellite, ensemble
+  // des plages). Une NOUVELLE observation = une NOUVELLE alerte (autorisee) ;
+  // la MEME observation rejouee = MEME cle => doublon supprime.
+  // Aucune PII : ni email, ni nom — id d'abonnement, region, timestamp et une
+  // empreinte SHA-256 des IDs de plage.
+  const subscriptionId = typeof subscription.id === "string" ? subscription.id.trim() : "";
+  if (!subscriptionId) return null;
+  const observedAt = Date.parse(payload.erddapTimestamp);
+  if (!Number.isFinite(observedAt)) return null;
+  const beachIds = Array.from(new Set(selectedAlerts.map((beach) => String(beach?.id || "").trim()).filter(Boolean))).sort();
+  if (beachIds.length === 0) return null;
+  const beachesHash = await hashString(beachIds.join("|"));
+  return {
+    subscriptionId,
+    observationTs: new Date(observedAt).toISOString(),
+    beachesHash,
+    region: String(subscription.region || "").trim().toLowerCase() || null
+  };
+}
+__name(b2cDeliveryFingerprint, "b2cDeliveryFingerprint");
+async function claimB2cAlertDelivery(env, fingerprint) {
+  // P0.46 §6 — RECLAMATION ATOMIQUE du marqueur de livraison.
+  // La fonction SQL `public.sg_claim_b2c_alert_delivery(...)` fait
+  // `INSERT ... ON CONFLICT DO NOTHING` sur la cle primaire
+  // (subscription_id, observation_ts, beaches_hash) : deux invocations
+  // concurrentes du cron ne peuvent obtenir le marqueur qu'une seule fois.
+  // Contrat : {claimed:true} = envoi autorise, {claimed:false} = doublon
+  // (supprime), {error} = marqueur indisponible => FAIL-CLOSED (aucun envoi).
+  if (!env.SUPABASE_SERVICE_KEY) return { claimed: false, error: "SUPABASE_SERVICE_KEY absent" };
+  try {
+    const url = `${env.SUPABASE_URL}/rest/v1/rpc/${B2C_ALERT_DELIVERY_RPC}`;
+    const r = await fetch(url, {
+      method: "POST",
+      headers: {
+        "apikey": env.SUPABASE_SERVICE_KEY,
+        "Authorization": `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: JSON.stringify({
+        p_subscription_id: fingerprint.subscriptionId,
+        p_observation_ts: fingerprint.observationTs,
+        p_beaches_hash: fingerprint.beachesHash,
+        p_region: fingerprint.region
+      })
+    });
+    const text = await r.text();
+    if (!r.ok) return { claimed: false, error: `http_${r.status}:${text.slice(0, 160)}` };
+    let data = null;
+    try {
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = null;
+    }
+    const claimed = data === true || data === "true" || (Array.isArray(data) && (data[0] === true || data[0] === "true"));
+    return { claimed: claimed === true, error: null };
+  } catch (e) {
+    return { claimed: false, error: String(e?.message || e).slice(0, 160) };
+  }
+}
+__name(claimB2cAlertDelivery, "claimB2cAlertDelivery");
+async function markB2cAlertDelivery(env, fingerprint, status, provider) {
+  // Mise a jour BEST EFFORT du marqueur (statut 'sent'/'failed' + provider).
+  // Un echec ici n'annule PAS l'envoi : le marqueur existe deja, donc le
+  // doublon reste impossible (le sens de securite est preserve).
+  const query = "?subscription_id=eq." + encodeURIComponent(fingerprint.subscriptionId) +
+    "&observation_ts=eq." + encodeURIComponent(fingerprint.observationTs) +
+    "&beaches_hash=eq." + encodeURIComponent(fingerprint.beachesHash);
+  const result = await supaExec(env, B2C_ALERT_DELIVERY_TABLE, "PATCH", {
+    status,
+    provider: provider || null,
+    updated_at: new Date().toISOString()
+  }, query);
+  return result.ok;
+}
+__name(markB2cAlertDelivery, "markB2cAlertDelivery");
 async function runB2CAlerts(env) {
   console.log("B2C: starting runB2CAlerts");
   const alerts = await supa(env, "b2c_alerts", "GET", null, "?status=eq.active&select=*");
@@ -1135,6 +1224,27 @@ async function runB2CAlerts(env) {
         console.log("B2C: no exact selected-beach alert subscription=" + String(sub.id || "unknown"));
         continue;
       }
+      // P0.46 §6 — Idempotence DURABLE : le marqueur de livraison est
+      // RECLAME AVANT l'envoi (ecriture atomique en base).
+      //   • marqueur indisponible (migration 005 non appliquee, reseau HS)
+      //     => FAIL-CLOSED : aucune alerte n'est envoyee ;
+      //   • marqueur deja pris (meme observation rejouee) => doublon supprime.
+      // Le marqueur vit dans une table DEDICEE : public.b2c_alerts (les
+      // abonnements) n'est JAMAIS modifie par le moteur d'alertes.
+      const fingerprint = await b2cDeliveryFingerprint(sub, payload, selectedAlerts);
+      if (!fingerprint) {
+        console.log("B2C: delivery fingerprint unavailable subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      const claim = await claimB2cAlertDelivery(env, fingerprint);
+      if (claim.error) {
+        console.log("B2C: delivery marker unavailable (fail-closed) subscription=" + String(sub.id || "unknown") + ": " + claim.error);
+        continue;
+      }
+      if (!claim.claimed) {
+        console.log("B2C: duplicate alert suppressed subscription=" + String(sub.id || "unknown") + " observation=" + fingerprint.observationTs);
+        continue;
+      }
       const severity = { moderate: 1, avoid: 2, high: 3 };
       const level = selectedAlerts.reduce((worst, beach) => {
         const status = String(beach.status).toLowerCase();
@@ -1176,10 +1286,20 @@ async function runB2CAlerts(env) {
       const html = lang === "en"
         ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Sargassum alert — ' + escapeB2CHtml(regionLabel) + '</h2><p>Hello,</p><p>The sargassum level is <strong style="color:' + color + '">' + emoji + " " + level + '</strong> in <strong>' + escapeB2CHtml(regionLabel) + '</strong> today.</p><p>Beaches concerned: <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts →</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="' + unsubUrl + '">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>'
         : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Alerte sargassum — ' + escapeB2CHtml(regionLabel) + '</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:' + color + '">' + emoji + " " + level + '</strong> sur <strong>' + escapeB2CHtml(regionLabel) + '</strong> aujourd’hui.</p><p>Plages concernées : <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les prévisions complètes →</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous êtes abonné aux alertes SargaGame.<br><a href="' + unsubUrl + '">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>';
-      // No durable per-observation delivery marker exists in b2c_alerts; do not substitute best-effort KV idempotency here.
+      // Le marqueur de livraison est deja reclame (atomique) : un rejeu de la
+      // meme observation est supprime par la cle primaire, pas par un KV
+      // best-effort. Aucune ligne de public.b2c_alerts n'est modifiee.
       const result = await sendEmail(sub.email, subject, html, domain, env);
-      if (result.success) console.log("B2C: alert sent subscription=" + String(sub.id || "unknown") + " provider=" + result.provider);
-      else console.log("B2C: all email providers failed subscription=" + String(sub.id || "unknown"));
+      if (result.success) {
+        await markB2cAlertDelivery(env, fingerprint, "sent", result.provider);
+        console.log("B2C: alert sent subscription=" + String(sub.id || "unknown") + " provider=" + result.provider);
+      } else {
+        // Le marqueur reste en place : la MEME observation ne sera pas
+        // rejouee (pas de doublon possible). L'observation suivante, elle, a
+        // une cle differente et reste autorisee.
+        await markB2cAlertDelivery(env, fingerprint, "failed", null);
+        console.log("B2C: all email providers failed subscription=" + String(sub.id || "unknown"));
+      }
     } catch (e) {
       console.log("B2C: error subscription=" + String(sub.id || "unknown") + ": " + e.message);
     }

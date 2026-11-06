@@ -10,11 +10,25 @@ const { pathToFileURL } = require('node:url')
 const {
   createEnv,
   jsonResponse,
-  installFetch
+  installFetch,
+  installStrictFetch,
+  createB2cDeliveryMarkerStore
 } = require(path.join(__dirname, 'mollie-worker-harness.cjs'))
 
 const WORKER_PATH = path.join(__dirname, '..', '..', 'workers', 'sg-payments', 'index.js')
 const EMAIL_PATH = '/send-email.php'
+// Hotes INTERDITS : un test qui les touche doit ECHOUER (aucun email reel,
+// aucun service externe ne doit etre contacte).
+const FORBIDDEN_EMAIL_HOSTS = [
+  'api.resend.com',
+  'api.sendpulse.com',
+  'api.brevo.com',
+  'api.namecheap.com',
+  'email.smtp2go.com',
+  'smtp.gmail.com',
+  'smtp.office365.com'
+]
+const ALLOWED_HOSTS = ['supabase.test', 'sargasses-martinique.com']
 let assertions = 0
 function ok(condition, message) {
   assertions++
@@ -46,12 +60,24 @@ function subscriber(overrides = {}) {
     ...overrides
   }
 }
-async function runScheduled(worker, subscriptions, payload) {
+async function runScheduled(worker, subscriptions, payload, options = {}) {
   const { env } = createEnv()
   const providerCalls = []
   const apiCalls = []
-  const backend = installFetch(({ url, method, body }) => {
-    if (url.startsWith('https://supabase.test/rest/v1/b2c_alerts')) return jsonResponse(subscriptions)
+  const markerStore = options.markerStore || createB2cDeliveryMarkerStore()
+  const markerMode = options.markerMode || 'ok' // ok | error | missing
+  const backend = installStrictFetch(({ url, method, body }) => {
+    if (url.startsWith('https://supabase.test/rest/v1/b2c_alerts')) {
+      if (method !== 'GET') throw new Error('b2c_alerts must never be written by the alert engine: ' + method)
+      return jsonResponse(subscriptions)
+    }
+    if (url.startsWith('https://supabase.test/rest/v1/rpc/sg_claim_b2c_alert_delivery')) {
+      if (markerMode === 'missing') return jsonResponse({ error: 'function not found' }, 404)
+      if (markerMode === 'error') return jsonResponse({ error: 'database unavailable' }, 500)
+      const parsed = body ? JSON.parse(body) : {}
+      return jsonResponse(markerStore.claim(parsed))
+    }
+    if (url.startsWith('https://supabase.test/rest/v1/b2c_alert_deliveries')) return jsonResponse([])
     if (url.startsWith('https://supabase.test/rest/v1/b2b_leads')) return jsonResponse([])
     if (url.endsWith('/api/copernicus/sargassum.json')) {
       apiCalls.push(url)
@@ -61,17 +87,13 @@ async function runScheduled(worker, subscriptions, payload) {
       providerCalls.push({ url, body })
       return jsonResponse({ success: true })
     }
-    if (url.startsWith('https://api.resend.com/emails') || url.includes('sendpulse') || url.includes('brevo')) {
-      providerCalls.push({ url, body })
-      return jsonResponse({ success: true })
-    }
-    return jsonResponse({ error: 'unexpected test request' }, 404)
-  })
+    throw new Error('UNEXPECTED outbound request in B2C alert test: ' + method + ' ' + url)
+  }, { allowedHosts: ALLOWED_HOSTS, forbiddenHosts: FORBIDDEN_EMAIL_HOSTS })
   try {
     const pending = []
     await worker.scheduled({ cron: '0 6,18 * * *' }, env, { waitUntil(promise) { pending.push(Promise.resolve(promise)) } })
     await Promise.all(pending)
-    return { providerCalls, apiCalls }
+    return { providerCalls, apiCalls, markerStore }
   } finally {
     backend.restore()
   }
@@ -120,6 +142,40 @@ async function main() {
       levels: [{ id: 'grande-anse', status: 'clean' }]
     }))
     ok(result.providerCalls.length === 0, 'clean selected beaches produce zero email-provider calls')
+  }
+  // P0.46 §3 — seule une observation au NIVEAU DE PLAGE peut notifier :
+  // une plage presente uniquement dans `weekly` (sans entree dans `levels`)
+  // ne produit aucune alerte.
+  {
+    const result = await runScheduled(worker, [subscriber({ beaches: ['weekly-only-beach'] })], freshPayload({
+      levels: [{ id: 'grande-anse', status: 'moderate' }],
+      weekly: {
+        'weekly-only-beach': { forecast: [{ date: '2026-11-07', status: 'avoid' }] },
+        'grande-anse': { forecast: [{ date: '2026-11-07', status: 'moderate' }] }
+      }
+    }))
+    ok(result.providerCalls.length === 0, 'a beach present only in weekly (no beach-level observation) produces zero email-provider calls')
+  }
+  // P0.46 §4 — `stale` absent => traite comme stale (fail-closed).
+  {
+    const payload = freshPayload()
+    delete payload.stale
+    const result = await runScheduled(worker, [subscriber()], payload)
+    ok(result.providerCalls.length === 0, 'a payload without the stale flag produces zero email-provider calls')
+  }
+  // P0.46 §4 — `updatedAt` n'est JAMAIS un substitut de `erddapTimestamp`.
+  {
+    const result = await runScheduled(worker, [subscriber()], freshPayload({
+      erddapTimestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+      updatedAt: new Date().toISOString(),
+      dataAgeMinutes: 1
+    }))
+    ok(result.providerCalls.length === 0, 'a fresh updatedAt/dataAgeMinutes never substitutes an old erddapTimestamp (zero email-provider calls)')
+  }
+  // P0.46 §4 — `dataAgeMinutes` stocke n'est JAMAIS un substitut non plus.
+  {
+    const result = await runScheduled(worker, [subscriber()], freshPayload({ dataAgeMinutes: 999999 }))
+    ok(result.providerCalls.length === 1, 'a fresh erddapTimestamp is authoritative even when the stored dataAgeMinutes is absurd')
   }
   {
     const result = await runScheduled(worker, [subscriber()], freshPayload())

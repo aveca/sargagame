@@ -93,6 +93,62 @@ function installFetch(handler) {
   }
 }
 
+/**
+ * Interception STRICTE du `fetch` : toute requete sortante vers un hote qui
+ * n'est pas explicitement autorise (ou vers un provider d'email INTERDIT)
+ * LEVE une erreur => le test echoue immediatement.
+ *
+ * Objectif : un test ne doit JAMAIS pouvoir contacter un vrai service
+ * d'email (Resend / SendPulse / Brevo / Namecheap) ni un SMTP externe. Le
+ * test doit casser si le code tente un envoi reel.
+ */
+function installStrictFetch(handler, options = {}) {
+  const allowedHosts = new Set((options.allowedHosts || []).map((h) => String(h).toLowerCase()))
+  const forbiddenHosts = new Set((options.forbiddenHosts || []).map((h) => String(h).toLowerCase()))
+  const calls = []
+  const original = globalThis.fetch
+  globalThis.fetch = async (input, init = {}) => {
+    const url = String(input)
+    const method = String(init.method || 'GET')
+    const body = init.body == null ? null : String(init.body)
+    calls.push({ url, method, body, headers: init.headers || {}, seq: nextSeq() })
+    let host = ''
+    try { host = new URL(url).hostname.toLowerCase() } catch { host = '' }
+    if (forbiddenHosts.has(host)) {
+      throw new Error('FORBIDDEN outbound host (real email provider): ' + host + ' -> ' + url)
+    }
+    if (allowedHosts.size > 0 && !allowedHosts.has(host)) {
+      throw new Error('UNEXPECTED outbound host: ' + host + ' -> ' + url)
+    }
+    return handler({ url, method, body, init, calls })
+  }
+  return {
+    calls,
+    restore() { globalThis.fetch = original }
+  }
+}
+
+/**
+ * Faux marqueur de livraison B2C : rejoue le contrat de la CLE PRIMAIRE
+ * (subscription_id, observation_ts, beaches_hash) de
+ * public.b2c_alert_deliveries. Aucune base reelle n'est touchee.
+ */
+function createB2cDeliveryMarkerStore() {
+  const keys = new Set()
+  const claims = []
+  return {
+    keys,
+    claims,
+    claim(body) {
+      const key = [body?.p_subscription_id, body?.p_observation_ts, body?.p_beaches_hash].join('|')
+      claims.push({ ...(body || {}), key })
+      if (keys.has(key)) return false
+      keys.add(key)
+      return true
+    }
+  }
+}
+
 function mkWebhookRequest(options = {}) {
   const body = options.body == null ? '' : options.body
   const contentType = options.contentType || 'application/json'
@@ -154,6 +210,8 @@ module.exports = {
   createEnv,
   jsonResponse,
   installFetch,
+  installStrictFetch,
+  createB2cDeliveryMarkerStore,
   mkWebhookRequest,
   runWebhook,
   paidPayment,
