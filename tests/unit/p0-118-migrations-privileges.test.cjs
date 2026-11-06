@@ -22,6 +22,7 @@ const M1 = path.join(ROOT, 'scripts', 'migrations', '001_idempotent_payment_gran
 const M2 = path.join(ROOT, 'scripts', 'migrations', '002_payment_grant_search_path.sql')
 const M3 = path.join(ROOT, 'scripts', 'migrations', '003_b2b_leads_least_privilege.sql')
 const M4 = path.join(ROOT, 'scripts', 'migrations', '004_b2b_lead_drip_claims.sql')
+const M6 = path.join(ROOT, 'scripts', 'migrations', '006_public_table_least_privilege.sql')
 const WORKER = path.join(ROOT, 'workers', 'sg-payments', 'index.js')
 
 // Hôte de production connu (cf. bindings live de sg-payments). Toute cible
@@ -110,6 +111,29 @@ async function main() {
   t(sql4.includes('CREATE INDEX IF NOT EXISTS b2b_leads_processing_claimed_idx'), '§8 : les claims expirés sont indexés')
   t(sql4.includes('MIGRATION PRÉPARÉE, NON APPLIQUÉE'), '§8 : la migration est explicitement marquée comme non appliquée')
   t(!sql4.includes('UPDATE public.b2b_leads') && !sql4.includes('DELETE FROM public.b2b_leads') && !sql4.includes('TRUNCATE public.b2b_leads'), '§8 : la migration ne modifie ni ne supprime les prospects')
+  // ── P0.127 : moindre privilège B2B/B2C/payment ───────────────────────────
+  t(fs.existsSync(M6), 'P0.127 : la migration 006 (B2B/B2C/payment) est présente')
+  const sql6 = fs.readFileSync(M6, 'utf8')
+  t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql6), 'P0.127 : la migration 006 est explicitement non appliquée')
+  for (const [table, policy] of [
+    ['b2b_subscriptions', 'Allow all b2b_subscriptions'],
+    ['b2c_alerts', 'Allow all b2c_alerts']
+  ]) {
+    t(sql6.includes(`DROP POLICY IF EXISTS "${policy}" ON public.${table}`), `P0.127 : la policy permissive connue de ${table} est supprimée`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM PUBLIC`), `P0.127 : PUBLIC est révoqué sur ${table}`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM anon`), `P0.127 : anon est révoqué sur ${table}`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM authenticated`), `P0.127 : authenticated est révoqué sur ${table}`)
+    t(sql6.includes(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`), `P0.127 : RLS est activée sur ${table}`)
+  }
+  for (const role of ['PUBLIC', 'anon', 'authenticated']) {
+    t(sql6.includes(`REVOKE ALL ON TABLE public.payment_grants FROM ${role}`), `P0.127 : ${role} est révoqué sur payment_grants`)
+  }
+  t(sql6.includes('ALTER TABLE public.payment_grants ENABLE ROW LEVEL SECURITY'), 'P0.127 : RLS est activée sur payment_grants')
+  t(!/REVOKE[^;]*FROM service_role/i.test(sql6), 'P0.127 : service_role conserve ses droits')
+  const sql6Code = sql6.replace(/--[^\\n]*/g, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')
+  t(!/\\bDROP\\s+(TABLE|COLUMN)\\b/i.test(sql6Code), 'P0.127 : aucune suppression de table ou colonne')
+  t(!/\\b(DELETE\\s+FROM|TRUNCATE|UPDATE\\s+public\\.|INSERT\\s+INTO\\s+public\\.)/i.test(sql6Code), 'P0.127 : aucune modification ou suppression de données')
+
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
   let pg = null
