@@ -186,7 +186,9 @@ function createPR(wt, { title, body, base }) {
     fs.writeFileSync(bodyFile, body, 'utf8');
     const out = run(`gh pr create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" --base ${base}`, wt, { timeoutMs: 120000 });
     const m = out.match(/https:\/\/github\.com\/[^\s]+/);
-    return { url: m ? m[0] : out };
+    const url = m ? m[0] : out;
+    const numMatch = url.match(/\/pull\/(\d+)/);
+    return { url, number: numMatch ? Number(numMatch[1]) : null };
   } finally {
     try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {}
   }
