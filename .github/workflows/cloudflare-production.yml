@@ -55,6 +55,18 @@ on:
       - '.ai/**'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/ai-docs-paths-ignore.test.cjs'
+      # Pont autopilot multi-depot : OUTILLAGE pur (CLI du runner Factory V3
+      # existant), reference par AUCUN workflow. Modifier le pont ne doit donc
+      # pas redeployer le Worker ni reecrire les secrets de paiement.
+      # Exclusion STRICTE fichier par fichier : `scripts/autopilot/**` contient
+      # des scripts CRITIQUES pour la production (check-predeploy-satellite-
+      # freshness.cjs, check-prepared-html.cjs, html-integrity.cjs,
+      # post-deploy-verify.cjs) — les exclure wholesale desactiverait leur
+      # deploiement. Le garde-fou ci-dessous interdit cette regression.
+      - 'scripts/autopilot/multi-repo-bridge.cjs'
+      - 'scripts/autopilot/multi-repo-bridge.test.cjs'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
