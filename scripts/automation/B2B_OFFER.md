@@ -10,7 +10,7 @@
 ## Le réveil : pourquoi un veilleur côtier
 
 - **La douleur, en langage d'exploitant.** Une plage envahie un matin = des clients déçus, des avis négatifs, parfois des remboursements — et vous l'apprenez souvent en même temps qu'eux. Le déclic : avec Le Veilleur, vous devenez celui qui connaît la fin de l'histoire avant ses clients. L'alerte arrive AVANT les sargasses.
-- **Un projet né ici, pas un SaaS hors-sol.** Le Veilleur est indépendant, opéré depuis la Martinique, sur des données publiques et auditables (Copernicus Marine, NOAA). Le même satellite qui veille la mer pour le voyageur peut veiller votre rivage — et il regarde la mer, jamais vos visiteurs.
+- **Un projet né ici, pas un SaaS hors-sol.** Le Veilleur est indépendant, opéré depuis la Martinique, sur des observations AFAI distribuées par NOAA/AOML ERDDAP, avec les courants Copernicus Marine comme entrée distincte de transport. Le même satellite qui veille la mer pour le voyageur peut veiller votre rivage — et il regarde la mer, jamais vos visiteurs.
 - **La donnée existe déjà.** Indice AFAI par plage fondé sur les dernières observations NOAA/AOML ERDDAP disponibles ; prévision J+1→J+7 lorsque la fraîcheur et la couverture de la source le permettent. Le coût marginal d'un rivage de plus est proche de zéro.
 - **La demande s'est montrée seule.** Un hôtel a installé le widget public sans qu'on le lui demande — le besoin existe ; reste à le servir proprement, une fois le produit câblé.
 
@@ -71,7 +71,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > On ne va pas vous le promettre, on va vous le montrer. Le Veilleur est un satellite qui veille la mer (observations AFAI distribuées par NOAA/AOML ERDDAP, avec l’heure réelle de l’observation) — il regarde la mer, jamais vos visiteurs. Voici l'état réel des plages autour de chez vous aujourd'hui, daté : [aperçu]. Avec la prévision J+1→J+7, vous prévenez le client AVANT l'arrivée des algues.
 >
-> Et on est honnêtes jusqu'au bout : notre taux d'erreur est publié et audité chaque jour, par régime. En saison calme, 100 % de nos prévisions « mer propre » se sont vérifiées (2 805 contrôles, 2026-05-19 → 2026-06-18) ; tous régimes confondus on tourne autour de 75-78 %, et les rares alertes de saison calme sont affichées en faible confiance. Vous voyez nos réussites comme nos limites — c'est précisément ce que les outils gratuits ne publient pas.
+> Le relevé public de validation est daté et limité à son périmètre. Il couvre actuellement Martinique et Guadeloupe uniquement et est marqué obsolète ; nous ne citons donc aucun pourcentage actuel tant que le contrôle de fraîcheur n'est pas repassé. Aucun taux n'est extrapolé à Florida, Punta Cana ou Riviera Maya.
 >
 > Et il y a un retour pour vous : avec le palier Pro, on **met votre établissement en avant DANS l'application**, sur la fiche de votre plage — donc juste au moment où le voyageur vérifie s'il y a des sargasses avant de réserver. C'est exactement votre futur client, au bon instant. Voici à quoi ça ressemblerait pour vous : [aperçu]. (Affiché « Partenaire », et ça ne touche jamais le verdict de la plage — c'est ce qui le rend crédible.)
 >
@@ -88,7 +88,7 @@ Le `b2b-outreach.cjs` envoie déjà UN email consultatif gratuit (« voyez l'ét
 >
 > We won't promise it, we'll show it. Le Veilleur is a satellite that watches the sea (NOAA/AOML ERDDAP AFAI observations, with the actual observation time) — it watches the sea, never your guests. Here's the real, dated state of the beaches near you today: [preview]. With the J+1→J+7 forecast, you warn the guest BEFORE the seaweed lands.
 >
-> And we stay honest all the way: our miss rate is published and audited every day, by regime. In calm season, 100% of our "clean water" forecasts proved correct (2,805 checks, 2026-05-19 → 2026-06-18); across all regimes we run ~75-78%, and the rare calm-season alerts are flagged low-confidence. You see our wins and our limits — exactly what the free tools don't publish.
+> The public validation record is dated and scope-limited. It currently covers Martinique and Guadeloupe only and is marked stale; we do not quote a current percentage until the freshness gate passes. No rate is extrapolated to Florida, Punta Cana, or Riviera Maya.
 >
 > And there's something in it for you: with the Pro tier, we **feature your property INSIDE the app**, right on your beach's page — exactly when a traveler is checking for sargassum before booking. That's your future guest, at the perfect moment. Here's what it would look like for you: [preview]. (Shown as "Partner", and it never touches the beach's verdict — that's what keeps it credible.)
 >
