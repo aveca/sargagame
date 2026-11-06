@@ -855,7 +855,7 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all} % de prévisions sargasses justes, vérifié — ${regionLabel}` : `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Prévision vs observation satellite : ${j1} % de réussite à J+1, ${all} % global sur ${pairs} comparaisons (${days} jours). Méthode et chiffres réels, jamais retouchés.`
-        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations satellite Copernicus/NOAA, modèle de dérive et backtest automatique.',
+        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations AFAI NOAA/AOML ERDDAP, modèle de dérive et backtest automatique.',
     }
   }
   if (lang === 'es') {
@@ -863,14 +863,14 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all}% de pronósticos de sargazo acertados, verificado — ${regionLabel}` : `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Pronóstico vs observación satelital: ${j1}% de acierto a 1 día, ${all}% global en ${pairs} comparaciones (${days} días). Método y cifras reales, nunca retocadas.`
-        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones satelitales Copernicus/NOAA, modelo de deriva y backtest automático.',
+        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones AFAI de NOAA/AOML ERDDAP, modelo de deriva y backtest automático.',
     }
   }
   return {
     title: all != null ? `${all}% Accurate Sargassum Forecasts, Verified — ${regionLabel}` : `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
     desc: j1 != null && all != null && pairs && days
       ? `Forecast vs satellite observation: ${j1}% next-day hit rate, ${all}% overall across ${pairs} checks (${days} days). Full method, real numbers, never edited.`
-      : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite observations, drift model and automatic backtest.',
+      : 'How our sargassum forecasts are computed and verified: NOAA/AOML ERDDAP AFAI observations, drift model and automatic backtest.',
   }
 }
 
