@@ -79,4 +79,37 @@ assert.match(widgetTitle + widgetDescription, /dernière observation disponible/
 assert.doesNotMatch(widget, /Copernicus Marine|4× par jour|4×.{0,8}jour|quatre fois par jour/i,
   'hotel widget landing must not claim an unverified source or satellite cadence')
 
+
+
+const regionalScienceFiles = [
+  'regions/tulum.json',
+  'regions/rivieramaya.json',
+  'regions/seo-content/florida.json',
+  'regions/seo-content/puntacana.json',
+  'regions/seo-content/rivieramaya.en.json',
+  'regions/seo-content/tulum.en.json',
+  'regions/seo-content/barbados.json',
+  'regions/_staging/seo-content/bahamas.json',
+]
+for (const relative of regionalScienceFiles) {
+  const raw = fs.readFileSync(path.join(ROOT, relative), 'utf8')
+  const data = JSON.parse(raw)
+  assert.doesNotMatch(raw, /3\\.5-day half-life/i, relative + ' must not publish the obsolete beach half-life')
+  assert.doesNotMatch(raw, /4× daily|4× a day|4x daily|four times a day|four times daily/i, relative + ' must not promise a fixed AFAI refresh cadence')
+  assert.doesNotMatch(raw, /Copernicus\\/NOAA AFAI|Copernicus and NOAA satellite programs|Copernicus satellite imagery/i, relative + ' must identify NOAA/AOML ERDDAP as the AFAI distribution source')
+  assert.doesNotMatch(raw, /Accuracy is highest|Days 1–3 are the most accurate|Days 1–3 are the most reliable|days 1–3 verify best|publish our accuracy/i, relative + ' must not claim unvalidated regional accuracy')
+  if (data.press) {
+    const validation = data.press.sections?.find(section => section.h2 === 'Validation scope')
+    assert.ok(validation, relative + ' must state the regional validation scope')
+    assert.match(validation.text, /Martinique and Guadeloupe/)
+    assert.match(validation.text, /does not establish forecast accuracy for/i)
+    assert.doesNotMatch(JSON.stringify(data.press), /\\{accuracyJ1Pct\\}|\\{accuracyJ3Pct\\}/, relative + ' must not inject out-of-region accuracy percentages')
+  }
+}
+
+const hotelsLanding = fs.readFileSync(path.join(ROOT, 'public', 'for-hotels', 'index.html'), 'utf8')
+assert.ok(hotelsLanding.includes('NOAA/AOML ERDDAP'), 'B2B landing must identify the actual AFAI distribution source')
+assert.doesNotMatch(hotelsLanding, /4× a day|4× daily|four times a day|4x a day/i, 'B2B landing must not promise a fixed AFAI cadence')
+assert.doesNotMatch(hotelsLanding, /accuracy score we publish/i, 'B2B landing must not imply a universal accuracy score')
+
 console.log('PASS: research and B2B widget source/cadence copy matches NOAA/AOML AFAI provenance')
