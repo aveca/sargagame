@@ -45,6 +45,13 @@ on:
       # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
       - '.github/workflows/pages-code-only-release.yml'
       - 'tests/unit/pages-code-only-workflow.test.cjs'
+      # Memoire des agents (handoff, backlog, changelog) : une mise a jour de
+      # documentation NE doit jamais redployer le Worker ni reecrire les
+      # secrets de paiement. Cette exclusion rend le chemin de handoff
+      # document-only neutre pour la production.
+      - '.ai/**'
+      # Garde-fou de non-regression de cette exclusion.
+      - 'tests/unit/ai-docs-paths-ignore.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
