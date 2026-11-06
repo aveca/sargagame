@@ -15,6 +15,8 @@ on:
       - 'AGENTS.md'
       - '.github/workflows/daily-copernicus.yml'
       - '.github/workflows/cloudflare-production.yml'
+      - '.github/workflows/erddap-capture-window-monitor.yml'
+      - 'tests/unit/erddap-capture-window-monitor.test.cjs'
 
 # Gating par événement — un push de code doit être RAPIDE :
 #   • push            → build des 6 régions + health-check UNIQUEMENT.
