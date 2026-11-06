@@ -11,6 +11,7 @@ const payloadScript = fs.readFileSync(path.join(ROOT, 'scripts/automation/prepar
 const rollbackScript = fs.readFileSync(path.join(ROOT, 'scripts/automation/pages-code-only-rollback.cjs'), 'utf8')
 
 assert.match(workflow, /workflow_dispatch:[\s\S]*confirm_production/)
+assert.match(workflow, /CLOUDFLARE_DEPLOY_ENABLED == 'true'/)
 assert.match(workflow, /prepare-pages-code-only-payload\.cjs/)
 assert.match(workflow, /pages deploy/)
 assert.match(workflow, /check-bundle-budget\.cjs/)
