@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sargassum monitoring API for hotels and tourism businesses. Embed live sargassum status on your website.">
+    <meta name="keywords" content="sargassum, seaweed, monitoring, API, hotel, tourism, widget, embed, live data">
+    <title>Sargassum Pro API - Live Monitoring for Hotels & Tourism | Le Veilleur</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #1a1a1a;
+            background: linear-gradient(135deg, #0a1a14 0%, #1a2e24 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            padding: 20px 0;
+            background: rgba(10, 26, 20, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #FFC72C;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav a:hover {
+            color: #FFC72C;
+        }
+        
+        .nav a.active {
+            color: #FFC72C;
+        }
+        
+        .cta-button {
+            background: linear-gradient(135deg, #FFC72C, #FFB347);
+            color: #1a1a1a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 700;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(255, 199, 44, 0.3);
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px;
+            color: #fff;
+        }
+        
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 199, 44, 0.15);
+            border: 1px solid rgba(255, 199, 44, 0.3);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #FFC72C;
+            margin-bottom: 24px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .hero h1 {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 20px;
+        }
+        
+        .hero h1 .highlight {
+            color: #FFC72C;
+        }
+        
+        .hero p {
+            font-size: clamp(16px, 2.5vw, 20px);
+            color: rgba(255, 255, 255, 0.75);
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #FFC72C, #FFB347);
+            color: #1a1a1a;
+            padding: 16px 32px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 199, 44, 0.3);
+        }
+        
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 16px 32px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.4);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 60px 0;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+        
+        .feature-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-4px);
+        }
+        
+        .feature-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, rgba(255, 199, 44, 0.2), rgba(255, 199, 44, 0.1));
+        }
+        
+        .feature-card h3 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        
+        .feature-card p {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        /* Widget Preview */
+        .widget-preview {
+            padding: 60px 0;
+            text-align: center;
+        }
+        
+        .preview-container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .preview-title {
+            color: #1a1a1a;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .widget-iframe {
+            width: 100%;
+            height: 400px;
+            border: none;
+            border-radius: 12px;
+            background: #f8f9fa;
+        }
+        
+        /* Code Section */
+        .code-section {
+            padding: 60px 0;
+            background: rgba(0, 0, 0, 0.1);
+        }
+        
+        .code-section h2 {
+            color: #fff;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .code-section p {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .code-block {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+        
+        .code-block pre {
+            color: #e0e0e0;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        
+        .code-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        
+        .code-tab {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .code-tab:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .code-tab.active {
+            background: #FFC72C;
+            color: #1a1a1a;
+            border-color: #FFC72C;
+        }
+        
+        /* Pricing */
+        .pricing {
+            padding: 60px 0;
+        }
+        
+        .pricing h2 {
+            color: #fff;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .pricing-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .pricing-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            color: #fff;
+        }
+        
+        .pricing-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .pricing-card .price {
+            font-size: 40px;
+            font-weight: 800;
+            color: #FFC72C;
+            margin-bottom: 5px;
+        }
+        
+        .pricing-card .period {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+        
+        .pricing-card .features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+        
+        .pricing-card .features li {
+            padding: 8px 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+        }
+        
+        .pricing-card .features li::before {
+            content: "✓ ";
+            color: #22C55E;
+            margin-right: 10px;
+        }
+        
+        /* Testimonials */
+        .testimonials {
+            padding: 60px 0;
+        }
+        
+        .testimonials h2 {
+            color: #fff;
+            text-align: center;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 40px;
+        }
+        
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+        
+        .testimonial-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+        }
+        
+        .testimonial-card .quote {
+            color: rgba(255, 255, 255, 0.8);
+            font-style: italic;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .testimonial-card .author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .testimonial-card .author img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+        
+        .testimonial-card .author-info h4 {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .testimonial-card .author-info p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+        
+        /* Footer */
+        .footer {
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .footer-links a:hover {
+            color: #FFC72C;
+        }
+        
+        .copyright {
+            font-size: 12px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 36px;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="https://sargasses-martinique.com" class="logo">
+                    <img src="https://sargasses-martinique.com/veilleur-logo-120.png" alt="Le Veilleur">
+                    Le Veilleur
+                </a>
+                <nav class="nav">
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="#testimonials">Testimonials</a>
+                    <a href="#docs">Documentation</a>
+                </nav>
+                <a href="#contact" class="cta-button">Contact Sales</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <div class="hero-badge">B2B Solutions</div>
+                <h1>
+                    Live <span class="highlight">Sargassum Monitoring</span> 
+                    for Hotels & Tourism
+                </h1>
+                <p>
+                    Embed real-time sargassum status on your website. Give your guests 
+                    the confidence to book with accurate, up-to-date beach conditions.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#demo" class="btn-primary">See Live Demo</a>
+                    <a href="#pricing" class="btn-secondary">View Pricing</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="features" id="features">
+            <div class="container">
+                <h2 style="color: #fff; text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 40px;">
+                    Why Hotels Love Our API
+                </h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">📊</div>
+                        <h3>Real-Time Data</h3>
+                        <p>Satellite data updated 4×/day with 7-day forecasts for every beach in your region.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Easy Integration</h3>
+                        <p>One line of code to embed our widget. No development resources required.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Customizable</h3>
+                        <p>Match your brand colors and display only the beaches that matter to your guests.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Multi-Region</h3>
+                        <p>Covering Caribbean, Florida, Mexico, and expanding. One API for all your properties.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Reliable</h3>
+                        <p>99.9% uptime with fallback to cached data. Your widget always stays online.</p>
+                    </div>
+                    <div class="feature-card">
+                        <h3>Affordable</h3>
+                        <p>Plans starting at €29/month. No hidden fees, no long-term contracts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="widget-preview" id="demo">
+            <div class="container">
+                <h2 style="color: #fff; text-align: center; font-size: 32px; font-weight: 700; margin-bottom: 20px;">
+                    Live Demo
+                </h2>
+                <p style="color: rgba(255, 255, 255, 0.7); text-align: center; margin-bottom: 40px;">
+                    Here's what your guests will see. Fully responsive, works on all devices.
+                </p>
+                <div class="preview-container">
+                    <div class="preview-title">Sargassum Status Widget</div>
+                    <iframe 
+                        src="widget-embed.html?region=martinique"
+                        class="widget-iframe"
+                        title="Sargassum Widget Demo"
+                        allow="clipboard-write"
+                    ></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section class="code-section" id="docs">
+            <div class="container">
+                <h2>Simple Integration</h2>
+                <p>Add our widget to your website in under 5 minutes.</p>
+                
+                <div class="code-tabs">
+                    <div class="code-tab active" data-tab="html">HTML</div>
+                    <div class="code-tab" data-tab="react">React</div>
+                    <div class="code-tab" data-tab="api">API</div>
+                </div>
+                
+                <div id="code-html" class="code-content">
+                    <div class="code-block">
+                        <pre>&lt;iframe
+  src="https://sargasses-martinique.com/widget-embed.html?region=martinique"
+  width="100%"
+  height="400"
+  frameborder="0"
+  style="border-radius: 12px;"
+&gt;&lt;/iframe&gt;</pre>
+                    </div>
+                </div>
+                
+                <div id="code-react" class="code-content" style="display: none;">
+                    <div class="code-block">
+                        <pre>import React from 'react';
+
+function SargassumWidget() {
+  return (
+    &lt;iframe
+      src="https://sargasses-martinique.com/widget-embed.html?region=martinique"
+      width="100%"
+      height="400"
+      frameBorder="0"
+      style={{ borderRadius: '12px' }}
+    /&gt;
+  );
+}</pre>
+                    </div>
+                </div>
+                
+                <div id="code-api" class="code-content" style="display: none;">
+                    <div class="code-block">
+                        <pre>// Get JSON data for custom integration
+fetch('https://api.sargasses-martinique.com/copernicus/latest.json?region=martinique')
+  .then(response => response.json())
+  .then(data => {
+    console.log(data);
+    // {
+    //   status: 'clean',
+    //   score: 95,
+    //   forecast: [...],
+    //   beaches: [...]
+    // }
+  });</pre>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pricing" id="pricing">
+            <div class="container">
+                <h2>Simple, Transparent Pricing</h2>
+                <p class="pricing-subtitle">No hidden fees. No long-term contracts. Cancel anytime.</p>
+                
+                <div class="pricing-grid">
+                    <div class="pricing-card">
+                        <h3>Starter</h3>
+                        <div class="price">€29</div>
+                        <div class="period">/month</div>
+                        <ul class="features">
+                            <li>1 property</li>
+                            <li>Basic widget</li>
+                            <li>7-day forecast</li>
+                            <li>Email support</li>
+                        </ul>
+                        <a href="#contact" class="btn-primary">Get Started</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Pro</h3>
+                        <div class="price">€79</div>
+                        <div class="period">/month</div>
+                        <ul class="features">
+                            <li>Up to 5 properties</li>
+                            <li>Custom branding</li>
+                            <li>14-day forecast</li>
+                            <li>Priority support</li>
+                            <li>API access</li>
+                        </ul>
+                        <a href="#contact" class="btn-primary">Get Started</a>
+                    </div>
+                    <div class="pricing-card">
+                        <h3>Enterprise</h3>
+                        <div class="price">Custom</div>
+                        <div class="period"></div>
+                        <ul class="features">
+                            <li>Unlimited properties</li>
+                            <li>White-label solution</li>
+                            <li>Dedicated account manager</li>
+                            <li>24/7 support</li>
+                            <li>Custom integrations</li>
+                        </ul>
+                        <a href="#contact" class="btn-primary">Contact Us</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials" id="testimonials">
+            <div class="container">
+                <h2>What Our Partners Say</h2>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <p class="quote">
+                            "Our bookings increased by 23% after adding the sargassum widget. 
+                            Guests love the transparency and real-time updates."
+                        </p>
+                        <div class="author">
+                            <img src="https://via.placeholder.com/40" alt="Hotel Manager">
+                            <div class="author-info">
+                                <h4>Sophie Martin</h4>
+                                <p>General Manager, Hotel Le Paradis</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="quote">
+                            "The API integration was seamless. We had it running on our site 
+                            in less than an hour with zero issues."
+                        </p>
+                        <div class="author">
+                            <img src="https://via.placeholder.com/40" alt="CTO">
+                            <div class="author-info">
+                                <h4>Juan Rodriguez</h4>
+                                <p>CTO, Caribbean Resorts Group</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="testimonial-card">
+                        <p class="quote">
+                            "Our guests keep asking about sargassum. Now we can point them to 
+                            our website for accurate, up-to-date information."
+                        </p>
+                        <div class="author">
+                            <img src="https://via.placeholder.com/40" alt="Concierge">
+                            <div class="author-info">
+                                <h4>Marie Dubois</h4>
+                                <p>Concierge, Grand Hotel des Iles</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="container" id="contact" style="padding: 60px 0; text-align: center;">
+            <h2 style="color: #fff; font-size: 32px; font-weight: 700; margin-bottom: 20px;">
+                Ready to Get Started?
+            </h2>
+            <p style="color: rgba(255, 255, 255, 0.7); margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Join hundreds of hotels and tourism businesses already using our live sargassum monitoring.
+            </p>
+            <a href="mailto:b2b@sargasses-martinique.com?subject=B2B%20Inquiry%20-%20Sargassum%20API" class="btn-primary" style="font-size: 18px; padding: 20px 40px;">
+                Contact Sales →
+            </a>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://sargasses-martinique.com">Home</a>
+                <a href="https://sargasses-martinique.com/fiabilite/">Methodology</a>
+                <a href="https://sargasses-martinique.com/confidentialite.html">Privacy</a>
+                <a href="https://sargasses-martinique.com/cgv.html">Terms</a>
+            </div>
+            <p class="copyright">
+                © 2026 Le Veilleur. All rights reserved. Data powered by Copernicus & ERDDAP.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Code tabs functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabs = document.querySelectorAll('.code-tab');
+            const contents = document.querySelectorAll('.code-content');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.dataset.tab;
+                    
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    contents.forEach(c => c.style.display = 'none');
+                    document.getElementById('code-' + target).style.display = 'block';
+                });
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

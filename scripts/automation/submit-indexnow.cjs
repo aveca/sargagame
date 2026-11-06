@@ -33,13 +33,32 @@ const SITES = [
 function extractSitemapUrls(ftpDir) {
   const root = resolve(__dirname, '..', '..', ftpDir)
   const sitemapPath = resolve(root, 'sitemap.xml')
+  
+  // Essayer d'abord dans le dossier ftpDir
   try {
     const xml = readFileSync(sitemapPath, 'utf-8')
     const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim())
     return locs
   } catch (e) {
-    console.warn(`  Cannot read ${sitemapPath}: ${e.message}`)
-    return []
+    // Si pas trouvé, essayer dans public/sitemap-<region>.xml
+    try {
+      const publicSitemap = resolve(__dirname, '..', '..', 'public', `sitemap-${ftpDir.replace('-ftp', '')}.xml`)
+      const xml = readFileSync(publicSitemap, 'utf-8')
+      const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim())
+      return locs
+    } catch (e2) {
+      // Essayer aussi sitemap-<id>.xml où id est extrait de ftpDir
+      try {
+        const regionId = ftpDir.replace('-ftp', '')
+        const publicSitemap = resolve(__dirname, '..', '..', 'public', `sitemap-${regionId}.xml`)
+        const xml = readFileSync(publicSitemap, 'utf-8')
+        const locs = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1].trim())
+        return locs
+      } catch (e3) {
+        console.warn(`  Cannot read sitemap for ${ftpDir}: ${e.message}`)
+        return []
+      }
+    }
   }
 }
 
