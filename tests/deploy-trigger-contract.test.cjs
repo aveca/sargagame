@@ -78,6 +78,18 @@ for (const file of ['ci-tests.yml', 'perf-budget.yml', 'cloudflare-production.ym
     /PREDEPLOY_REQUIRED_CHECKS\s*=\s*\['test-frontend',\s*'perf'\]/.test(script));
 }
 
+// ── 6. Les releases sensibles exigent une approbation SHA explicite ────────
+{
+  const t = read('cloudflare-production.yml');
+  const script = fs.readFileSync(path.join(ROOT, 'scripts', 'CHECK_certification_status.cjs'), 'utf8');
+  record('cloudflare-production.yml : workflow_dispatch expose business_approval_sha',
+    /workflow_dispatch:[\\s\\S]*business_approval_sha:[\\s\\S]*type:\\s*string/.test(t));
+  record('cloudflare-production.yml : certification gate reçoit BUSINESS_APPROVAL_SHA uniquement depuis le dispatch',
+    /BUSINESS_APPROVAL_SHA:\\s*\\$\\{\\{\\s*github\\.event_name\\s*==\\s*'workflow_dispatch'\\s*&&\\s*github\\.event\\.inputs\\.business_approval_sha/.test(t));
+  record('CHECK_certification_status.cjs : diff inconnue et release sensible bloquées sans SHA exact',
+    /diffVerified:\\s*false/.test(script) && /businessApprovalGranted/.test(script) && /approbation explicite requise/.test(script));
+}
+
 console.log(failures === 0
   ? '\nDEPLOY_TRIGGER_CONTRACT_TESTS PASS'
   : `\nDEPLOY_TRIGGER_CONTRACT_TESTS FAIL (${failures})`);
