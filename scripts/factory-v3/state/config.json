@@ -1,0 +1,237 @@
+{
+  "capabilities": {
+    "checked_at": "2026-11-06T11:15:54.482Z",
+    "host": "DESKTOP-HG0O76B",
+    "platform": "win32",
+    "node": "v24.14.0",
+    "github": {
+      "cli": "C:\\Program Files\\GitHub CLI\\gh.exe",
+      "version": "gh version 2.103.3 (2026-10-26)",
+      "authenticated": true,
+      "login": "aveca",
+      "id": 15622068,
+      "account_type": "User",
+      "token_storage": "keyring (gh auth status)",
+      "permissions": {
+        "admin": true,
+        "maintain": true,
+        "push": true,
+        "triage": true,
+        "pull": true
+      },
+      "default_branch": "main",
+      "visibility": "public",
+      "archived": false,
+      "sufficient_for_actions": true
+    },
+    "actions": {
+      "workflows_visible": 56,
+      "runs_readable": 17933,
+      "recent_runs": [
+        {
+          "id": 42208439007,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "77d5151ad"
+        },
+        {
+          "id": 42208438867,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "77d5151ad"
+        },
+        {
+          "id": 42207758614,
+          "name": "Live Production Sentinel",
+          "status": "completed",
+          "conclusion": "failure",
+          "event": "schedule",
+          "branch": "main",
+          "sha": "5382a829c"
+        },
+        {
+          "id": 42207428257,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "988da1082"
+        },
+        {
+          "id": 42207428248,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "988da1082"
+        },
+        {
+          "id": 42207255965,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "81e69e7ac"
+        },
+        {
+          "id": 42207255958,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "81e69e7ac"
+        },
+        {
+          "id": 42199264982,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "fix/p0-worker-email-mollie-safety-20261106",
+          "sha": "653e72a34"
+        },
+        {
+          "id": 42199264804,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "fix/p0-worker-email-mollie-safety-20261106",
+          "sha": "653e72a34"
+        },
+        {
+          "id": 42192520610,
+          "name": "User Journey Audit (E2E",
+          "status": "completed",
+          "conclusion": "skipped",
+          "event": "workflow_run",
+          "branch": "main",
+          "sha": "5382a829c"
+        }
+      ],
+      "variables_visible": 1,
+      "secrets_names_visible": 50,
+      "cloudflare_deploy_enabled": "true",
+      "target_workflow": {
+        "id": 409119247,
+        "name": "Pages Code-Only Release",
+        "path": ".github/workflows/pages-code-only-release.yml",
+        "state": "active",
+        "total_runs": 0
+      },
+      "logs_readable": true,
+      "log_sample": {
+        "run_id": 42208439007,
+        "job_id": 127860825477,
+        "job_name": "lighthouse-report",
+        "job_status": "completed",
+        "bytes": 33858
+      },
+      "log_attempts": [
+        {
+          "run_id": 42208439007,
+          "job_id": 127860825477,
+          "ok": true
+        }
+      ]
+    },
+    "cloudflare": {
+      "auth": "wrangler OAuth (config/default.toml)",
+      "config_path": "C:\\Users\\user\\AppData\\Roaming\\xdg.config\\.wrangler\\config\\default.toml",
+      "account_id": "abf2b92cf718313567b4b38eb9dda17f",
+      "token_refreshed_before_probe": false,
+      "token_expires_at": "2026-11-06T11:47:26.137Z",
+      "pages_projects": {
+        "sargagame": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "1b3e7476-bbda-4399-889b-3dfb62c57a57",
+            "created_on": "2026-10-28T17:32:26.293388Z",
+            "stage": "deploy"
+          }
+        },
+        "sargagame-gp": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "b6ca6cd7-2a97-4445-b043-1ef1b60296e1",
+            "created_on": "2026-10-28T17:32:47.942914Z",
+            "stage": "deploy"
+          }
+        },
+        "sargagame-florida": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "ceb44241-693a-4f70-9a7d-df9fb4e36eb6",
+            "created_on": "2026-10-28T17:32:59.556358Z",
+            "stage": "deploy"
+          }
+        },
+        "sargagame-puntacana": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "72a9703e-555f-46cb-a8f6-1e3eb06b3846",
+            "created_on": "2026-10-28T17:32:26.946915Z",
+            "stage": "deploy"
+          }
+        },
+        "sargagame-rivieramaya": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "0a682214-c0dc-4508-98a6-c5ce3a24996c",
+            "created_on": "2026-10-28T17:32:22.901623Z",
+            "stage": "deploy"
+          }
+        },
+        "sargagame-tulum": {
+          "readable": true,
+          "http": 200,
+          "latest_production_deployment": {
+            "id": "ca978533-ab92-437c-862e-52e101abbc5c",
+            "created_on": "2026-10-28T17:32:14.860913Z",
+            "stage": "deploy"
+          }
+        }
+      },
+      "all_readable": true
+    },
+    "gates": {
+      "push_to_main_workflows": [
+        {
+          "workflow": "cloudflare-production.yml",
+          "paths_ignore": [
+            "'AGENTS.md'",
+            "'.github/workflows/daily-copernicus.yml'",
+            "'.github/workflows/cloudflare-production.yml'"
+          ]
+        },
+        {
+          "workflow": "daily-copernicus.yml",
+          "paths_ignore": [
+            "'AGENTS.md'",
+            "'.github/workflows/daily-copernicus.yml'",
+            "'.github/workflows/cloudflare-production.yml'"
+          ]
+        }
+      ],
+      "note": "Un merge sur main declenche tout workflow push:branches:[main] dont paths-ignore ne couvre pas le chemin modifie."
+    },
+    "problems": [],
+    "verdict": "CONNECTION_OK"
+  },
+  "updated_at": "2026-11-06T11:16:03.685Z"
+}

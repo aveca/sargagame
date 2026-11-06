@@ -1,3 +1,63 @@
+## 2026-11-06 10:55 UTC · Agent: factory_ops (OpenCode) · Mission FACTORY V3 — connexion GitHub Actions
+
+### Travail effectué
+- **Résumé 1 ligne** : connexion opérationnelle GitHub Actions ↔ Factory V3 **établie et vérifiée en lecture seule** sur `aveca/sargagame` — aucune authentification créée, aucun workflow déclenché, aucun déploiement, aucun secret/paiement/Worker touché.
+- **Détails** :
+  - **Connexion GitHub** : `gh` 2.103.3 déjà authentifié (keyring) sur le compte **`aveca`** (id 15622068, type User), portées `gist, read:org, repo, workflow`. **Aucune nouvelle authentification n'a été créée** — la session existante suffit et est plus large que le minimum requis. `gh auth login` n'a pas été lancé.
+  - **Permissions réelles** : `GET /repos/aveca/sargagame` → `permissions: {admin:true, maintain:true, push:true, pull:true, triage:true}`, dépôt public, branche par défaut `main`. Les 4 permissions demandées (Actions read+write, Contents read, Metadata read, variables Actions read) sont **couvertes et vérifiées**, pas supposées.
+  - **Accès Actions (lecture)** : 56 workflows listables, 17 926 runs listables, jobs d'un run lisibles, **logs de job lisibles** (59 Ko sur le run `42192193940`, job `127806661736`), 50 **noms** de secrets listables (valeurs jamais lues), 1 variable listable.
+  - **Variable** : `CLOUDFLARE_DEPLOY_ENABLED` = **`true`** (créée et modifiée le 2026-10-03T20:22:15Z). Unique variable du dépôt.
+  - **Workflow cible** `.github/workflows/pages-code-only-release.yml` : id `409119247`, état `active`, déclencheur `workflow_dispatch` seul, entrée `confirm_production` requise, **0 run passé**. Lu depuis `origin/main` (absent de la branche de travail locale `feature/p0-commercial-conversion-20261105`). Sa porte `gate` est cumulative : `ref == refs/heads/main` ET `confirm_production == true` ET `vars.CLOUDFLARE_DEPLOY_ENABLED == 'true'` — les deux dernières conditions sont déjà vraies.
+  - **Cloudflare (lecture)** : wrangler 4.127.1 via OAuth (config `C:\Users\user\AppData\Roaming\xdg.config\.wrangler\config\default.toml`), compte `abf2b92cf718313567b4b38eb9dda17f`. **Les six projets Pages sont lisibles** : `sargagame`, `sargagame-gp`, `sargagame-florida`, `sargagame-puntacana`, `sargagame-rivieramaya`, `sargagame-tulum`.
+  - **Piège operational corrige** : le jeton OAuth wrangler expire (~1 h) et l'API renvoie alors **401** alors que la session est valide. La sonde force désormais un rafraîchissement (`npx wrangler whoami`) avant lecture, avec backoff sur 429.
+  - **2e piège operational corrige (defaut reel trouve par rejeu)** : l'API GitHub renvoie **HTTP 404** sur les logs d'un job **en cours** (log pas encore archive). La sonde ne prenait que le run le plus recent → apres un push elle concluait a tort « logs illisibles » et sortait en `CONNECTION_PARTIAL`. Corrige : la sonde parcourt **8 runs et tous leurs jobs, en priorisant les jobs termines**, et ne conclut a l'echec qu'apres epuisement (`log_attempts` consigne dans l'etat). Rejeu verifie : `CONNECTION_OK`, exit 0.
+  - **Garde-fou de déploiement decouvert** : `cloudflare-production.yml` et `daily-copernicus.yml` se declenchent sur **tout** push sur `main` (seuls `AGENTS.md` et 2 fichiers de workflow sont en `paths-ignore`). **Un merge sur `main` deploye donc en production** : cette mission pousse une branche + ouvre une PR **sans merger**, conformement a la consigne « ne declenche aucun deploiement ». La CI de PR (`ci-tests.yml`, `perf-budget.yml`) est en revanche sur (build + tests + audit, aucun deploiement).
+
+### Fichiers modifies
+- `.ai/factory/capabilities.md` — **nouveau** : registre durable des capacites verifiees (identite, permissions, Actions, variable, Cloudflare, portes de deploiement, procedure de reutilisation). Aucune valeur de secret.
+- `scripts/factory-v3/probe-capabilities.cjs` — **nouveau** : sonde de capacites **lecture seule**, rejouable en une commande (`node scripts/factory-v3/probe-capabilities.cjs`, exit 0 = `CONNECTION_OK`), option `--write-state` pour reecrire l'instantane.
+- `scripts/factory-v3/state/config.json` — **nouveau** : instantane machine-lisible des capacites (verdict `CONNECTION_OK`), sans aucune valeur de secret (scan de 14 marqueurs : 0 occurrence).
+- `.ai/current_state.md` — cette entree de handoff.
+- `.ai/changelog.md` — entree de changelog.
+- `.ai/tasks.md` — entree de backlog.
+
+### Tests realises
+- [x] `gh auth status` → authentifie, keyring, scopes `gist/read:org/repo/workflow`
+- [x] `gh api user` → `aveca` (id 15622068)
+- [x] `gh repo view aveca/sargagame` + `GET /repos/aveca/sargagame` → permissions `admin:true`
+- [x] `GET /actions/workflows` → 56 workflows ; `GET /actions/runs` → 17 926 runs
+- [x] `GET /actions/runs/{id}/jobs` + `GET /actions/jobs/{id}/logs` → logs lisibles (59 638 caracteres)
+- [x] `GET /actions/variables` → `CLOUDFLARE_DEPLOY_ENABLED = true`
+- [x] `GET /actions/secrets` → 50 noms (valeurs jamais demandees)
+- [x] `GET /actions/workflows/409119247/runs` → 0 run
+- [x] `node scripts/factory-v3/probe-capabilities.cjs` → **CONNECTION_OK**, exit **0**
+- [x] Lecture Cloudflare des 6 projets Pages → 6/6 lisibles (API `/pages/projects/{p}/deployments`)
+- [x] Scan de l'etat Factory V3 → 0 valeur de secret (14 marqueurs)
+- [x] `node --check scripts/factory-v3/probe-capabilities.cjs` → exit 0
+- [x] `git diff --check` → exit 0
+- [x] **CI de PR #1335** sur le head `988da1082` → `test-frontend` **pass** (2m14s, run `42207428257`), `perf` **pass** (24s), `lighthouse-report` **pass** (3m27s, run `42207428248`), GitGuardian Security Checks **pass** → `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`, `autoMergeRequest: null`
+- [ ] `npm run build` / `npm test` / bundle → **sans objet** : aucun code applicatif, PHP, CSS ou dependance touche (la CI de PR les executera)
+
+### Problemes restants / Blockers
+- [ ] **PR non mergée volontairement** : merger sur `main` declenche `cloudflare-production.yml` donc un deploiement de production, interdit par la consigne « ne declenche aucun deploiement pendant cette phase ». **La PR #1335 est verte et mergeable** (`mergeStateStatus: CLEAN`, aucun auto-merge actif) : la fusion reste a l'arbitrage du fondateur, **apres** la phase de connexion.
+- [ ] **Chaine de deploiement bouchee depuis ~9 jours** : les six sites live sont servis par un deploiement du **2026-10-28** (source `164d70f`), soit **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` sur `main` `5382a829c` est en **echec**. **Corroboration independante** : le workflow planifie `Live Production Sentinel` (run `42207758614`, 2026-11-06T11:06Z, declenche par le schedule et **non** par cette mission) publie `LIVE_HEALTH: DEGRADED`, `operationalSlaBreaches: 6` (les 6 domaines), `operationalFreshnessStatus: OPERATIONAL_SLA_BREACHED`, `incidents: 0`, `sensorStatus: PROVEN`, `ciFailures: 2` → degradation de **fraicheur** seule, capteur sain. **Signale, non corrige** (hors perimetre) : appelle une mission dediee de diagnostic du workflow.
+- [ ] **Jeton OAuth Cloudflare expire au bout d'environ 1 h** : toute lecture Cloudflare doit preceder d'un `npx wrangler whoami` (automatise dans la sonde).
+- [ ] Secrets `RELEASE_STATUS`, Resend, Mollie, `CLOUDFLARE_API_TOKEN` : **valeurs non lues** (l'API GitHub ne les retourne pas) ; leur validite effective reste non prouvee par cette mission.
+
+### Prochaine action recommandee
+1. Merger la PR de cette mission **quand un deploiement est autorise** (ou fusionner un commit `AGENTS.md`-only si l'on veut un merge sans deploiement) — Role : release_agent
+2. Diagnostic du workflow `cloudflare-production.yml` (run `42192193671` en echec) pour retablir la chaine de deploiement des 6 domaines — Role : devops_agent
+3. Dispatch eventuel de `pages-code-only-release.yml` sur `main` avec `confirm_production=true` une fois la chaine de deploiement retablie et l'autorisation prod obtenue — Role : release_agent
+
+### Branche / PR
+- Branche : `ops/factory-v3-github-actions-connection-20261106` (base `origin/main` = `5382a829cc37751912372e75131f18aaf12dd0f8`)
+- PR : **#1335** — https://github.com/aveca/sargagame/pull/1335 (**non mergée, non déployée** ; merge = déploiement production, différé à l'arbitrage du fondateur)
+- Commit head : `81e69e7acbf56dd9adbdff9d8340665827490900` (commit des livrables ; suivi d'un commit de mise à jour de ce handoff)
+- Worktree dedie : `C:\Users\user\AppData\Local\Temp\opencode\sargagame-factoryv3-conn` — le worktree `sargagame-cycle4` (branche `feature/p0-commercial-conversion-20261105`, 3 fichiers modifies preexistants) est **intact**
+- Rollback : `git revert <commit>` — aucun secret, aucune migration, aucune donnee, aucun checkout
+
+---
+
 > **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
