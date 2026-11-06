@@ -285,7 +285,7 @@ async function main() {
   {
     t(!WORKER_SRC.includes('NAMECHEAP_BEARER'), 'NAMECHEAP: no hardcoded bearer in Worker source')
     t(!/sargagame-mail-2026/.test(WORKER_SRC), 'NAMECHEAP: historical hardcoded token is absent')
-    t(/env\\.NAMECHEAP_MAIL_TOKEN/.test(WORKER_SRC), 'NAMECHEAP: relay credential is read only from the secret binding')
+    t(/env\.NAMECHEAP_MAIL_TOKEN/.test(WORKER_SRC), 'NAMECHEAP: relay credential is read only from the secret binding')
 
     const state = {
       payment: paidPayment({ metadata: { source: 'b2b_subscription', email: 'hotel@example.com', plan: 'pro_monthly' } })
