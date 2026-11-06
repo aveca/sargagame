@@ -38,10 +38,10 @@
     "forecast": {
       "slug": "sargassum-forecast-tulum",
       "title": "Tulum Sargassum Forecast 2026 — 7-Day Outlook by Beach",
-      "desc": "7-day sargassum forecast for Tulum, updated daily from satellite. See which Tulum beaches will be clean this week.",
+      "desc": "7-day sargassum forecast for Tulum, based on the latest available NOAA/AOML ERDDAP AFAI observation. See which Tulum beaches will be clean this week.",
       "h1": "Sargassum Forecast for Tulum — Next 7 Days",
-      "intro": "Most sargassum forecasts for Tulum hand you one verdict for the whole town, built from official imagery that's already days old by the time it's published. This works differently: we run a separate forecast for each of the 5 beaches we monitor, because reality changes from one bay to the next — the same mat that buries Playa Paraíso can slide right past Playa Ruinas. Every morning the model ingests the latest Copernicus satellite pass, locates the mats drifting inbound, and projects landings for the next seven days, beach by beach. The result updates daily — four satellite reads a day feed it — so you can pick your beach day before the sargassum picks it for you.",
-      "method": "We start from the AFAI (Alternative Floating Algae Index), the AFAI spectral index distributed through NOAA/AOML ERDDAP to identify floating sargassum. Each detected mat is projected forward with wind and surface-current data — the forecast model uses a 2.5% windage parameter alongside local surface-current inputs; this is a modeling assumption, not a measured regional drift rate. For seaweed already on the sand, we use a separate provisional persistence prior; it is not a measured universal clearance time, and fresh material can arrive. community reports provide local context when cloud cover limits satellite visibility; the satellite timestamp remains the reference for observation freshness. Forecast confidence varies by horizon; no regional accuracy claim is made until the public validation record covers this market."
+      "intro": "Most sargassum forecasts for Tulum hand you one verdict for the whole town, built from official imagery that's already days old by the time it's published. This works differently: we run a separate forecast for each of the 5 beaches we monitor, because reality changes from one bay to the next — the same mat that buries Playa Paraíso can slide right past Playa Ruinas. When new validated inputs are available, the model uses the latest NOAA/AOML ERDDAP AFAI observation, locates the mats drifting inbound, and projects landings for the next seven days, beach by beach. The outlook is recalculated when new validated observations and model inputs are available so you can pick your beach day before the sargassum picks it for you.",
+      "method": "We start from the AFAI (Alternative Floating Algae Index), the AFAI spectral index distributed through NOAA/AOML ERDDAP to identify floating sargassum. Each detected mat is projected forward with wind and surface-current data — the forecast model uses a 2.5% windage parameter alongside local surface-current inputs; this is a modeling assumption, not a measured regional drift rate. For seaweed already on the sand, we use a separate provisional persistence prior; it is not a measured universal clearance time, and fresh material can arrive. Community reports provide local context when cloud cover limits satellite visibility; the satellite timestamp remains the reference for observation freshness. Forecast confidence varies by horizon; no regional accuracy claim is made until the public validation record covers this market."
     },
     "today": {
       "slug": "beaches-without-sargassum-today-tulum",
@@ -203,7 +203,7 @@
       "faq": [
         {
           "q": "Is there sargassum in Tulum today?",
-          "a": "Depends on the beach, and that's exactly what the live map above shows: every Tulum beach carries its Beach Score and status today — clean, moderate, or avoid — per the latest satellite pass, updated today. We don't average the zone, so you see if your specific beach has sargassum right now or not."
+          "a": "Depends on the beach, and that's exactly what the live map above shows: every Tulum beach carries its Beach Score and status today — clean, moderate, or avoid — per the latest satellite pass, based on the latest available observation. We don't average the zone, so you see if your specific beach has sargassum right now or not."
         },
         {
           "q": "How is the sargassum in Tulum right now?",
@@ -231,7 +231,7 @@
       "title": "Tulum Seaweed Map Today | Live",
       "desc": "Tulum seaweed map today: live satellite image updated when new satellite observations are available, Beach Score per beach, clean/moderate/avoid status and 7-day forecast.",
       "h1": "Tulum Seaweed Map Today",
-      "intro": "The Tulum seaweed map today updates with satellite imagery every few hours and shows you, beach by beach, where the water is clean and where there's a landing. Open the live map, find your beach (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) and check its Beach Score and today's status: clean, moderate, or avoid. Unlike social media photos, this isn't an opinion: it's what the NOAA/AOML ERDDAP AFAI observations (AFAI index) see, refreshed when new satellite observations are available. The Watcher is the satellite that watches the sea while you sleep and every morning tells you, measured not guessed, where the good water is. We're also honest about uncertainty: when a cloud blocks the coast or the data ages, we flag it instead of inventing. Check today's updated Beach Score and the 7-day forecast per beach before you decide where to go.",
+      "intro": "The Tulum seaweed map today updates with satellite imagery when new satellite observations are available and shows you, beach by beach, where the water is clean and where there's a landing. Open the live map, find your beach (Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel) and check its Beach Score and today's status: clean, moderate, or avoid. Unlike social media photos, this isn't an opinion: it's what the NOAA/AOML ERDDAP AFAI observations (AFAI index) see, refreshed when new satellite observations are available. The Watcher is the satellite that watches the sea while you sleep and every morning tells you, measured not guessed, where the good water is. We're also honest about uncertainty: when a cloud blocks the coast or the data ages, we flag it instead of inventing. Check today's updated Beach Score and the 7-day forecast per beach before you decide where to go.",
       "sections": [
         {
           "h2": "Which Tulum beaches have seaweed today?",
@@ -249,7 +249,7 @@
       "faq": [
         {
           "q": "How do I see the Tulum seaweed map today?",
-          "a": "Open the live map on this page and find your beach: Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel. Each shows its Beach Score and today status (clean, moderate, avoid), calculated from satellite imagery updated today, not from manual reports."
+          "a": "Open the live map on this page and find your beach: Playa Paraíso, Playa Pescadores, Playa Ruinas, Playa Santa Fe, Playa Xcacel. Each shows its Beach Score and today status (clean, moderate, avoid), calculated from satellite imagery based on the latest available observation, not from manual reports."
         },
         {
           "q": "How often is the satellite seaweed map updated?",
