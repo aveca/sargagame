@@ -173,16 +173,28 @@ async function runJourney(browser, region, viewport) {
         observation = { ok: false, current: false, reason: String(error?.message || error).slice(0, 160) }
       }
       const decisionUi = await page.evaluate(() => {
+        const visible = (el) => {
+          if (!el) return false
+          const style = window.getComputedStyle(el)
+          return style.display !== 'none' && style.visibility !== 'hidden' &&
+            Number(style.opacity || 1) > 0 && el.getClientRects().length > 0
+        }
         const head = document.querySelector('.lc-detail-head')?.textContent?.trim() || ''
-        const score = document.querySelector('[data-testid="lc-detail-score"]')
+        // Current build uses data-testid; the deployed legacy build only has the class.
+        // Measure the rendered DOM, not the presence of a test-only selector.
+        const score = document.querySelector('[data-testid="lc-detail-score"], .lc-detail-score')
         const scoreValue = score?.querySelector('.lc-detail-scnum')?.textContent?.trim() || ''
+        const forecastCta = [...document.querySelectorAll('button, a')].find((el) =>
+          visible(el) && /VOIR LES 7 PROCHAINS JOURS|SEE THE NEXT 7 DAYS|VER LOS 7 DÍAS/i.test((el.textContent || '').trim())
+        )
         return {
           head,
-          hasCurrentScore: !!score && /\d/.test(scoreValue),
-          scorePaused: !!document.querySelector('[data-testid="lc-detail-score-paused"]'),
-          staleNotice: !!document.querySelector('[data-testid="lc-detail-stale"]'),
-          hasForecast: !!document.querySelector('.lc-detail-fc-row'),
-          forecastPaused: !!document.querySelector('[data-testid="lc-detail-forecast-paused"]')
+          hasCurrentScore: visible(score) && /\d/.test(scoreValue.replace(/\/100/g, '')),
+          scorePaused: visible(document.querySelector('[data-testid="lc-detail-score-paused"], .lc-detail-score-paused')),
+          staleNotice: visible(document.querySelector('[data-testid="lc-detail-stale"], .lc-detail-stale')),
+          hasForecast: visible(document.querySelector('.lc-detail-fc-row')),
+          forecastPaused: visible(document.querySelector('[data-testid="lc-detail-forecast-paused"], .lc-detail-forecast-paused')),
+          hasForecastCta: !!forecastCta
         }
       })
       if (!fiche.hasVerdict) defects.push({ domain, step: 'fiche', type: 'ux', detail: 'verdict absent de la fiche' })
@@ -190,11 +202,12 @@ async function runJourney(browser, region, viewport) {
       if (observation.ok && !observation.current) {
         const staleContractOk = !decisionUi.hasCurrentScore && decisionUi.scorePaused &&
           decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused &&
+          !decisionUi.hasForecastCta &&
           /À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(decisionUi.head)
         if (!staleContractOk) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) })
       }
       steps.push({ step: 'fiche', ok: fiche.hasVerdict && fiche.hasFreshness, verdict: fiche.hasVerdict, freshness: fiche.hasFreshness })
-      steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || (!decisionUi.hasCurrentScore && decisionUi.scorePaused && decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused)), observation, decisionUi })
+      steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || (!decisionUi.hasCurrentScore && decisionUi.scorePaused && decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused && !decisionUi.hasForecastCta)), observation, decisionUi })
       await page.screenshot({ path: path.join(shotsDir, `journey-${region.id}-${viewport}.png`) }).catch(() => {})
     }
 
