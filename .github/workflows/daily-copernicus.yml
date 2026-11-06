@@ -31,9 +31,10 @@ permissions:
   # dispatch follow-up workflows receive write permissions below.
   contents: read
 
-# Sérialise les runs sur main pour éliminer les conflits rebase
+# Même groupe que data-refresh.yml : protège aussi le staging/activation FTPS
+# contre deux workflows différents lancés sur la même branche.
 concurrency:
-  group: daily-copernicus-${{ github.ref }}
+  group: copernicus-publication-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
