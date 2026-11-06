@@ -2066,24 +2066,33 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                     lat: o.lat, lng: o.lng
                   }
                 })
-                // Reliability (calm/high regime per backtest)
-                const _fd_rr = typeof readBacktestFD !== 'undefined' ? readBacktestFD() : null
-                // overall.statusHitRate = LE chiffre honnête à afficher (tous régimes, ~77%).
-                // calm.cleanReliabilityPct=100% est vrai mais TROMPEUR en titre (n'inclut
-                // pas les alertes 0%-fiables / 23% fausses) — le backtest dit lui-même de ne
-                // jamais publier un % unique sans le régime. On montre l'overall + lien fiabilité.
-                const _fd_rel = _fd_rr ? {
-                  overall: _fd_rr.overall?.statusHitRate ?? null,
-                  calm: _fd_rr.regimeReliability?.regimes?.calm?.cleanReliabilityPct ?? null,
-                  peak: _fd_rr.regimeReliability?.regimes?.high?.cleanReliabilityPct ?? null,
-                  sample: _fd_rr.totalPairs || 0
-                } : { overall: 77, calm: 79, peak: 76, sample: 0 }
-                // Freshness: honest (null if >12h)
-                const _fd_updatedAt = (() => {
-                  if (!_heroLive.updatedAt) return null
-                  const ageMin = (Date.now() - new Date(_heroLive.updatedAt).getTime()) / 60000
-                  return ageMin > 720 ? null : _heroLive.updatedAt
-                })()
+                // Never embed a verdict, score, forecast or reliability fallback
+                // into the static shell. The runtime app owns current decisions.
+                const _fd_observationAt = _heroLive.erddapTimestamp || null
+                const _fd_observationMs = Date.parse(_fd_observationAt || '')
+                const _fd_observationAgeMin = (Date.now() - _fd_observationMs) / 60000
+                const _fd_fresh = _heroLive.stale === false
+                  && Number.isFinite(_fd_observationMs)
+                  && _fd_observationAgeMin >= 0
+                  && _fd_observationAgeMin <= 900
+                const _fd_liveStatus = _fd_fresh ? ((_fd_lv && _fd_lv.status) || b.status || 'unknown') : 'unknown'
+                const _fd_score = _fd_fresh ? heroScore(b) : null
+                const _fd_eligible = _fd_fresh && RELIABILITY.available && !!_fd_score
+                const _fd_wk = _fd_fresh
+                  ? ((_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[slugify(b.name)])
+                    || (_heroLive.weeklyBySlug && _heroLive.weeklyBySlug[b.id])
+                    || null)
+                  : null
+                const _fd_forecast = Array.isArray(_fd_wk) ? _fd_wk
+                  : (_fd_wk && Array.isArray(_fd_wk.forecast) ? _fd_wk.forecast : null)
+                const _fd_rel = RELIABILITY.available ? {
+                  available: true,
+                  regime: RELIABILITY.regime,
+                  cleanPct: RELIABILITY.cleanPct,
+                  cleanN: RELIABILITY.cleanN,
+                  scopeLabel: RELIABILITY.scopeLabel,
+                  window: RELIABILITY.window,
+                } : null
                 const sgBeachData = JSON.stringify({
                   beach: { id: b.id, island: b.island, name: b.name, commune: b.commune,
                            lat: b.lat, lng: b.lng, drive: b.drive, status: _fd_liveStatus },
