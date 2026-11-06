@@ -1,0 +1,63 @@
+name: Regional Beach Index Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/regional-beach-index-validation.yml'
+      - 'vite.config.js'
+      - 'regions/**'
+      - 'scripts/prepare-ftp.cjs'
+      - 'scripts/verify-regional-beach-index.cjs'
+      - 'scripts/lib/regional-beach-index-contract.cjs'
+      - 'scripts/lib/region-langs.cjs'
+      - 'scripts/lib/slug-resolver.cjs'
+      - 'public/data/beaches-list.json'
+      - 'public/api/copernicus/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/regional-beach-index-validation.yml'
+      - 'vite.config.js'
+      - 'regions/**'
+      - 'scripts/prepare-ftp.cjs'
+      - 'scripts/verify-regional-beach-index.cjs'
+      - 'scripts/lib/regional-beach-index-contract.cjs'
+      - 'scripts/lib/region-langs.cjs'
+      - 'scripts/lib/slug-resolver.cjs'
+      - 'public/data/beaches-list.json'
+      - 'public/api/copernicus/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: regional-beach-index-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build and package ${{ matrix.region }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [mq, gp, florida, puntacana, rivieramaya, tulum]
+    env:
+      VITE_REGION: ${{ matrix.region }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Build regional site
+        run: npm run build
+      - name: Prepare regional FTP package (local only)
+        run: node scripts/prepare-ftp.cjs
+      - name: Verify localized beach indexes, canonicals, hreflang and sitemap links
+        run: node scripts/verify-regional-beach-index.cjs
