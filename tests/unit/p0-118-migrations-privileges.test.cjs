@@ -23,6 +23,7 @@ const M2 = path.join(ROOT, 'scripts', 'migrations', '002_payment_grant_search_pa
 const M3 = path.join(ROOT, 'scripts', 'migrations', '003_b2b_leads_least_privilege.sql')
 const M4 = path.join(ROOT, 'scripts', 'migrations', '004_b2b_lead_drip_claims.sql')
 const M6 = path.join(ROOT, 'scripts', 'migrations', '006_public_table_least_privilege.sql')
+const M7 = path.join(ROOT, 'scripts', 'migrations', '007_revoke_public_truncate.sql')
 const WORKER = path.join(ROOT, 'workers', 'sg-payments', 'index.js')
 
 // Hôte de production connu (cf. bindings live de sg-payments). Toute cible
@@ -134,6 +135,16 @@ async function main() {
   t(!/\bDROP\s+(TABLE|COLUMN)\b/i.test(sql6Code), 'P0.127 : aucune suppression de table ou colonne')
   t(!/\b(DELETE\s+FROM|TRUNCATE|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql6Code), 'P0.127 : aucune modification ou suppression de données')
 
+  // ── P0.127 : TRUNCATE bypass RLS ────────────────────────────────────────
+  t(fs.existsSync(M7), 'P0.127 : la migration 007 (TRUNCATE) est présente')
+  const sql7 = fs.readFileSync(M7, 'utf8')
+  t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql7), 'P0.127 : la migration 007 est explicitement non appliquée')
+  t(sql7.includes('REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;'), 'P0.127 : TRUNCATE est révoqué de tous les rôles clients sur le schéma public')
+  t(!/GRANT\\s+TRUNCATE/i.test(sql7), 'P0.127 : aucun privilège TRUNCATE n est accordé')
+  t(!/REVOKE[^;]*FROM service_role/i.test(sql7), 'P0.127 : service_role conserve ses droits')
+  const sql7Code = sql7.replace(/--[^\\n]*/g, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')
+  t(!/\\b(DROP\\s+(TABLE|COLUMN)|DELETE\\s+FROM|UPDATE\\s+public\\.|INSERT\\s+INTO\\s+public\\.)/i.test(sql7Code), 'P0.127 : aucune modification ou suppression de données')
+
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
   let pg = null
@@ -153,6 +164,8 @@ async function main() {
       await client.connect()
       await client.query(fs.readFileSync(M3, 'utf8'))
       await client.query(fs.readFileSync(M2, 'utf8'))
+      await client.query(fs.readFileSync(M6, 'utf8'))
+      await client.query(fs.readFileSync(M7, 'utf8'))
       const res = await client.query(`
         SELECT grantee, privilege_type
         FROM information_schema.role_table_grants
@@ -165,6 +178,14 @@ async function main() {
       t(anonRows.length === 0, '§1 : anon n a AUCUN privilège sur public.b2b_leads (base jetable)')
       t(authRows.length === 0, '§1 : authenticated n a AUCUN privilège sur public.b2b_leads (base jetable)')
       t(svcRows.length > 0, '§1 : service_role conserve ses privilèges (base jetable)')
+      const trunc = await client.query(`
+        SELECT grantee, table_name
+        FROM information_schema.role_table_grants
+        WHERE table_schema = 'public'
+          AND grantee IN ('anon', 'authenticated', 'PUBLIC')
+          AND privilege_type = 'TRUNCATE'
+      `)
+      t((trunc.rows || []).length === 0, 'P0.127 : aucun rôle client ne conserve TRUNCATE (base jetable)')
       const fn = await client.query(`
         SELECT proconfig FROM pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
