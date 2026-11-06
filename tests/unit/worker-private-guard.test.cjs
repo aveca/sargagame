@@ -56,8 +56,12 @@ check('handler widget-token préservé', /widget-token/.test(WORKER));
 check('handler b2b-trial préservé', /b2b-trial/.test(WORKER));
 check('/api/ non migré toujours 404 explicite', /api_route_not_migrated/.test(WORKER));
 
-// 5. run_worker_first=false : les assets statiques sont servis par Cloudflare edge
-check('wrangler.template run_worker_first=false', /"run_worker_first"\s*:\s*false/.test(TPL));
+// 5. Worker-first sélectif : freshness API + garde premium, sans Worker-first global.
+check('wrangler.template Worker-first sélectif', /"run_worker_first"\s*:\s*\[/.test(TPL));
+check('Worker-first route Copernicus publique', /"\/api\/copernicus\/sargassum\.json"/.test(TPL));
+check('Worker-first route premium racine', /"\/api\/copernicus\/_private\/\*"/.test(TPL));
+check('Worker-first routes premium régionales', /"\/api\/copernicus\/\*\/_private\/\*"/.test(TPL));
+check('aucun Worker-first global', !/"run_worker_first"\s*:\s*true/.test(TPL));
 
 // 6. Garde assets: règles exactes, pas une simple présence du mot "_private".
 const IGNORE_RULES = new Set(IGNORE.split(/\r?\n/).map(line => line.trim()).filter(line => line && !line.startsWith('#')));
