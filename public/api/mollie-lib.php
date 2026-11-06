@@ -251,6 +251,14 @@ function getMollieClient(): SgMollieClient {
  * B2B plans — montants EN REPO (pas en config gitignored)
  * Mensuel récurrent : Pro 79€/mois, Brief 29€/mois
  * Annuel : géré via mollie-paylinks.cjs (paylinks hosted)
+ *
+ * USD (2026-11-05) : `pro_monthly_usd` à 89 USD/mois. Le plan était déjà
+ * PROMIS sur les pages commerciales EN/ES (« Subscribe — $89/mo ») et appelé
+ * par /pro/espace/ (`PLAN_MO`), mais il n'existait PAS ici → le serveur
+ * répondait « Plan mensuel inconnu: pro_monthly_usd » : CTA mort sur les 4
+ * domaines USD (Miami, Punta Cana, Cancún, Tulum). Le montant 89 $ est celui
+ * déjà affiché publiquement (parité d'affichage, aucun prix inventé) ; annuel
+ * USD = 790 $ (pro_annual_usd, paylink annuel TIERS).
  */
 function mol_b2b_plans(): array {
     return [
@@ -258,6 +266,12 @@ function mol_b2b_plans(): array {
             'amount' => 79.00,
             'currency' => 'EUR',
             'description' => 'Sargasses Pro — mensuel (79 €/mois, sans engagement)',
+            'interval' => '1 month',
+        ],
+        'pro_monthly_usd' => [
+            'amount' => 89.00,
+            'currency' => 'USD',
+            'description' => 'Sargassum Pro — monthly ($89/month, cancel anytime)',
             'interval' => '1 month',
         ],
         'brief_monthly' => [

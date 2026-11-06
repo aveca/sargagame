@@ -416,7 +416,7 @@
           <div class="price-note" data-i18n="priceNote">2 mois offerts en annuel · résiliable à tout moment</div>
           <div class="cta-row">
             <button class="cta" id="subMonthly">S'abonner — 79 €/mois →</button>
-            <a class="cta sec" id="subscribe" href="https://sargasses-martinique.com/pro/pricing/">Verrouiller l'année — 690 € →</a>
+            <a class="cta sec" id="subscribe" href="/pro/pricing/">Verrouiller l'année — 690 € →</a>
           </div>
           <div id="subResult" style="display:none;margin-top:12px;font-size:13px;color:var(--teal);font-weight:600"></div>
           <p data-i18n="subSmall" style="font-size:12px;color:var(--mid);margin:10px 0 0">Prêt à vous abonner sans attendre la fin de l'essai ? Saisissez votre email pro ci-dessus, puis « S'abonner » — paiement sécurisé Mollie, résiliable à tout moment.</p>
@@ -576,9 +576,12 @@
     function setParts(node,parts){if(!node)return;while(node.firstChild)node.removeChild(node.firstChild);node.appendChild(frag(parts));}
 
     var HOST=(location.hostname||"").toLowerCase();
-    var USD_REGION=HOST.indexOf("miami")>-1?"florida":HOST.indexOf("cancun")>-1?"rivieramaya":HOST.indexOf("puntacana")>-1?"puntacana":null;
+    // Tulum est une région USD/ES à part entière (sargazotulum.com) : sans cette
+    // branche, l'espace Pro Tulum affichait les prix EUR, la copy FR, les plages
+    // MQ/GP et pointait vers sargasses-martinique.com (dead-end commercial).
+    var USD_REGION=HOST.indexOf("miami")>-1?"florida":HOST.indexOf("cancun")>-1?"rivieramaya":HOST.indexOf("puntacana")>-1?"puntacana":HOST.indexOf("tulum")>-1?"tulum":null;
     var CUR=USD_REGION?"USD":"EUR";
-    var REGION_LANG={florida:"en",puntacana:"en",rivieramaya:"es"};
+    var REGION_LANG={florida:"en",puntacana:"en",rivieramaya:"es",tulum:"es"};
     var LANG=USD_REGION?(REGION_LANG[USD_REGION]||"en"):"fr";
 
     var BEACHES_FR=[
@@ -627,6 +630,11 @@
         ["rm007","rm007","Playa Norte","RM"],["rm008","rm008","Puerto Morelos","RM"],
         ["rm009","rm009","Playa Mahahual","RM"],["rm010","rm010","Playa Holbox","RM"],
         ["rm011","rm011","Xpu-Ha","RM"],["rm012","rm012","Playa Maroma","RM"]
+      ],
+      tulum:[
+        ["tu001","tu001","Playa Paraíso","TU"],["tu002","tu002","Playa Pescadores","TU"],
+        ["tu003","tu003","Playa Ruinas","TU"],["tu004","tu004","Playa Santa Fe","TU"],
+        ["tu005","tu005","Playa Xcacel","TU"]
       ]
     };
     var BEACHES=USD_REGION?BEACHES_USD[USD_REGION]:BEACHES_FR;

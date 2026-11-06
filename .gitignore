@@ -160,6 +160,14 @@ scripts/automation/data/analytics-snapshot.json
 scripts/automation/data/b2b-us-enriched.json
 scripts/automation/data/b2b-contacts-unified.json
 
+# Registre commercial B2B (PII: emails en clair + brouillons de relance) —
+# généré par scripts/automation/b2b-registry.cjs, JAMAIS commité (dépôt public).
+# La version versionnée et masquée est docs/B2B_REGISTRY.md.
+scripts/automation/data/b2b-registry.json
+scripts/automation/data/b2b-registry-status.json
+scripts/automation/data/b2b-registry-funnel.json
+scripts/automation/data/b2b-followups/
+
 # Prototype IA orphelin "serious game / crise simulator" (Gemini, 2026-06-17) —
 # hors projet : basé sur une analyse IA erronée, moteur physique cassé (CFL),
 # design hors-marque. Conservé en local comme artefact de concept, JAMAIS commité.
