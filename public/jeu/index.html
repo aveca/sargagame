@@ -384,13 +384,22 @@ function gtrack(e,p){try{
 }catch{}}
 
 // ── Donnée LIVE : meilleure plage propre + plus belle photo ──
-const TODAY={beach:null,score:null}
+const TODAY={beach:null,score:null,fresh:false,observedAt:null}
 Promise.all([
   fetch('/api/copernicus/sargassum.json').then(r=>r.json()).catch(()=>null),
   fetch('/data/beaches-images.json').then(r=>r.json()).catch(()=>({})),
   fetch('/data/beaches-images-quality.json').then(r=>r.json()).catch(()=>({})),
   IS_MQGP?fetch('/data/beaches-list.json').then(r=>r.json()).catch(()=>[]):Promise.resolve([]),
 ]).then(([sarg,imgs,q,list])=>{
+  // A beach verdict is usable only when the actual satellite observation is
+  // present, non-future, explicitly non-stale, and within the 900-minute SLA.
+  // updatedAt/publication time is not a substitute for erddapTimestamp.
+  const observedMs=Date.parse(sarg&&sarg.erddapTimestamp||'')
+  const observationAgeMinutes=(Date.now()-observedMs)/60000
+  const observationFresh=Number.isFinite(observedMs)&&observationAgeMinutes>=0&&observationAgeMinutes<=900&&sarg.stale===false
+  if(!observationFresh)return
+  TODAY.fresh=true
+  TODAY.observedAt=sarg.erddapTimestamp
   const nameOf=id=>{
     if(IS_MQGP){const bid=SARG_TO_BEACH[id];const b=(list||[]).find(x=>x.id===bid);return b?b.name:null}
     return null // nouvelles régions : pas de noms côté statique (v1)
