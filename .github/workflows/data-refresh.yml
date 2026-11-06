@@ -35,10 +35,10 @@ permissions:
   # 403 « Resource not accessible by integration ».
   actions: write
 
-# Sérialise sur main : deux pushes concurrents sur les mêmes JSONs se
-# contrediraient (le retry-rebase ci-dessous gère l'unicité du push).
+# Sérialise les deux workflows de publication Copernicus sur la même branche.
+# Un seul run peut toucher aux mêmes répertoires FTPS à la fois.
 concurrency:
-  group: data-refresh
+  group: copernicus-publication-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
