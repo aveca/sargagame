@@ -12,14 +12,18 @@ function loadLinks() {
 
 // Tier logique → clé de lien. Aucun fallback : un tier inconnu ne doit jamais
 // recevoir silencieusement un paylink Pro (notamment Territoire).
-function payUrlFor(tier) {
-  const links = loadLinks()
+function urlFromCatalog(links, tier) {
   const normalized = String(tier || '').trim().toLowerCase()
   const map = { pro: 'pro_annual', hotel: 'pro_annual', resort: 'pro_annual', brief: 'brief_annual', 'lodge-gite': 'brief_annual' }
   const key = map[normalized]
   if (!key) return null
-  const link = links[key]
-  return (link && typeof link.url === 'string' && link.url.startsWith('https://')) ? link.url : null
+  const link = links && links[key]
+  if (!link || typeof link.url !== 'string' || !link.url.startsWith('https://') || link.reachable !== true) return null
+  return link.url
 }
 
-module.exports = { payUrlFor, loadLinks }
+function payUrlFor(tier) {
+  return urlFromCatalog(loadLinks(), tier)
+}
+
+module.exports = { payUrlFor, loadLinks, urlFromCatalog }

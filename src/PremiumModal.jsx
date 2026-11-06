@@ -10,6 +10,7 @@ import {SeqDots} from "./SeqPrimitives.jsx"
 import { legalHref as _legalHref } from "./lib/legal-links.js"
 // Source de vérité des prix B2C (miroir du serveur) — voir src/lib/pricing.js.
 import { PASS_DAYS, passBaseCents, resolvePass } from "./lib/pricing.js"
+import { selectB2bPaylink } from "./lib/b2b-paylink-offer.mjs"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -250,13 +251,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // {url, montant} devise-aware : domaines USD → entrée `${key}_usd` du JSON (790/390 $),
   // montant rendu depuis value (jamais en dur). Territoire = JAMAIS de paylink carte
   // (verdict panel : un paiement CB juxtaposé au parcours devis/BDC décrédibilise les 2).
-  const payOf=t=>{
-    const key={pro:"pro_annual",brief:"brief_annual"}[t];if(!key||!paylinks)return null
-    const k=(IS_NEW_REGION&&paylinks[key+"_usd"])?key+"_usd":key
-    const l=paylinks[k];if(!l||!l.url)return null
-    const v=String(l.value||"").replace(/\.00$/,"")
-    return {url:l.url,amt:v?(k.endsWith("_usd")?("$"+v):(v+" €")):null}
-  }
+  const payOf=t=>selectB2bPaylink(paylinks,t,IS_NEW_REGION)
   const payUrlOf=t=>{const p=payOf(t);return p?p.url:null}   // compat écran unique (?b2bseq=0)
   // ── Navigation de séquence : events funnel par étape + focus titre (a11y — le
   //    focus-trap de useModalA11y ne focus qu'au mount, pas au swap d'étape).

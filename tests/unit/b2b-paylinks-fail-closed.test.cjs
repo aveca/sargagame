@@ -15,21 +15,23 @@ assert.equal(payUrlFor(''), null,
 assert.equal(payUrlFor(null), null,
   'null tier must fail closed');
 
-if (links.pro_annual && typeof links.pro_annual.url === 'string') {
-  assert.equal(payUrlFor('pro'), links.pro_annual.url,
-    'approved Pro tier keeps its existing configured link');
-  assert.equal(payUrlFor(' PRO '), links.pro_annual.url,
-    'known tiers are normalized without changing their mapping');
-  assert.equal(payUrlFor('hotel'), links.pro_annual.url,
-    'existing hotel mapping remains unchanged');
-  assert.equal(payUrlFor('resort'), links.pro_annual.url,
-    'existing resort mapping remains unchanged');
+function expectedUrl(key) {
+  const link = links[key]
+  if (link && link.reachable === true && typeof link.url === 'string' && link.url.startsWith('https://')) return link.url
+  return null
 }
-if (links.brief_annual && typeof links.brief_annual.url === 'string') {
-  assert.equal(payUrlFor('brief'), links.brief_annual.url,
-    'approved Brief tier keeps its existing configured link');
-  assert.equal(payUrlFor('lodge-gite'), links.brief_annual.url,
-    'existing lodge-gite mapping remains unchanged');
-}
+
+assert.equal(payUrlFor('pro'), expectedUrl('pro_annual'),
+  'approved Pro tier keeps its link only when reachable is true');
+assert.equal(payUrlFor(' PRO '), expectedUrl('pro_annual'),
+  'known tiers are normalized without changing their mapping');
+assert.equal(payUrlFor('hotel'), expectedUrl('pro_annual'),
+  'existing hotel mapping remains unchanged');
+assert.equal(payUrlFor('resort'), expectedUrl('pro_annual'),
+  'existing resort mapping remains unchanged');
+assert.equal(payUrlFor('brief'), expectedUrl('brief_annual'),
+  'approved Brief tier keeps its link only when reachable is true');
+assert.equal(payUrlFor('lodge-gite'), expectedUrl('brief_annual'),
+  'existing lodge-gite mapping remains unchanged');
 
 console.log('B2B_PAYLINKS_FAIL_CLOSED_TESTS PASS');
