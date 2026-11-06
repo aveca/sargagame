@@ -188,6 +188,10 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('prepare-ftp OK -> '+d)"
+      - name: Verify localized beach indexes in prepared package
+        env:
+          VITE_REGION: ${{ matrix.id }}
+        run: node scripts/verify-regional-beach-index.cjs
       - name: Pre-deploy satellite freshness gate (all six regions)
         if: github.ref == 'refs/heads/main'
         env:
@@ -324,10 +328,6 @@ jobs:
           set -euo pipefail
           node scripts/prepare-ftp.cjs
           node -e "const fs=require('fs');const d=require('./regions/index.cjs').getRegion(process.env.VITE_REGION).ftpDir;for(const f of ['index.html','sitemap.xml','robots.txt','version.json','api/copernicus/sargassum.json']){if(!fs.existsSync(d+'/'+f)){console.error('missing: '+d+'/'+f);process.exit(1)}}console.log('assets dir OK -> '+d)"
-      - name: Verify localized beach indexes in prepared package
-        env:
-          VITE_REGION: ${{ matrix.id }}
-        run: node scripts/verify-regional-beach-index.cjs
       - name: Validate deploy HTML CSP and bundle references
         env:
           VITE_REGION: ${{ matrix.id }}
