@@ -1,5 +1,32 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-11-06 — Mission P0 conversion B2B 6 destinations livrée en PR Draft #1310**
+>
+> Branche `feature/p0-commercial-conversion-20261105` (base `origin/main` = `7663daffb`), commit `ecb389c83`,
+> PR **#1310 DRAFT** (https://github.com/aveca/sargagame/pull/1310) — **non mergée, non déployée**.
+>
+> **Fait** : audit prod 6 domaines (lecture seule, **aucun paiement réel**) → offre Pro régionalisée
+> (`/pro/` dans la langue de la région, canonical domaine région, palier Territoire 1 990 €/an,
+> slug fiabilite régional) + **nouvelle démo `/pro/demo/`** par destination (noms réels de plages,
+> fraîcheur recalculée à l'affichage, SLA 900 min fail-closed) + plan `pro_monthly_usd` **89 USD**
+> (CTA mensuel USD mort : « Plan mensuel inconnu ») + `/pro/espace/` corrigé pour Tulum (USD/ES) +
+> **registre commercial** (108 prospects, 105 contactés, 1 intéressé, **105 relances préparées / 0 envoi**,
+> PII hors git) + **diagnostic paiement** (`docs/B2B_PAYMENT_BLOCKERS_20261105.md`, aucune config prod modifiée).
+>
+> **Tests** : `b2b-commercial-conversion.test.cjs` PASS · `npm test` 160/160 · build OK (5 régions) ·
+> budget 206.5/210 Ko · ux-smoke 4 tokens · php -l OK · navigateur réel OK.
+>
+> **Prochaine action** : revue de #1310 (ne pas merger sans revue : elle touche `/pro/`, `/pro/demo/`
+> et `mol_b2b_plans()`), puis relancer le pipeline de fraîcheur (données > SLA 900 min) et générer
+> `b2b-us-enriched.json` (clé `GOOGLE_PLACES_KEY`) pour couvrir Miami / Punta Cana / Cancún / Tulum.
+> Autorisations encore requises : routage Cloudflare `/api/mollie*`, secret `MOLLIE_WEBHOOK_SECRET`,
+> backfill des 6 ventes Mollie, 1ʳᵉ vague de relances.
+>
+> Détail complet : `.ai/current_state.md` (entête du 2026-11-06) · `.ai/changelog.md` · `.ai/bugs.md`
+> (BUG-2026-007 → 010).
+
+---
+
 > **🎯 2026-07-30 — PAYMENT FLOW FIX + UI IMPROVEMENTS**
 
 ### 2026-07-30 — Mollie payment flow fixes and checkout UI improvements
