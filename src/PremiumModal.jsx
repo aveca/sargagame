@@ -464,7 +464,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             </select>}
           </>:<>
             <div style={{padding:"12px 13px",border:`2.5px solid ${I.ink}`,borderRadius:14,background:"#fff",boxShadow:`3px 3px 0 ${I.ink}`,font:"700 13px/1.45 'Bricolage Grotesque'",color:"#41414a"}}>
-              🛰️ {_t(lang,"Le satellite passe 4 fois par jour au-dessus de vos plages. Donnée en cours de chargement…","The satellite passes over your beaches 4 times a day. Data loading…","El satélite pasa 4 veces al día sobre sus playas. Datos cargándose…")}
+              🛰️ {_t(lang,"Nous vérifions régulièrement si une nouvelle observation satellite est disponible. L'heure de la dernière observation est affichée…","We check for new source observations several times a day. The latest observation time is shown…","Comprobamos varias veces al día si hay nuevas observaciones de la fuente. Se muestra la hora de la última observación…")}
             </div>
           </>}
           <div style={{...bodyStyle,marginTop:11}}>{_t(lang,"Ce verdict est public et gratuit — vos clients comme vos administrés le consultent déjà avant de venir.","This verdict is public and free — your guests and your citizens already check it before coming.","Este veredicto es público y gratuito — sus clientes y sus ciudadanos ya lo consultan antes de venir.")}</div>
@@ -926,8 +926,8 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {recordProof
           ?<div className="pww-record"><span className="pww-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_world_record"})}catch(_){}}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
           :totalCount>0&&<div className="pww-proof"><span className="pls"></span>{cleanCount>0
-          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite vérifié 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite-checked 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · verificado por satélite 4×/día`)
-          :_t(lang,`${totalCount} plages suivies · satellite vérifié 4×/jour`,`${totalCount} beaches tracked · satellite-checked 4×/day`,`${totalCount} playas seguidas · verificado por satélite 4×/día`)}</div>}
+          ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · dernière observation satellite`,`${cleanCount}/${totalCount} beaches clean right now · latest satellite observation`,`${cleanCount}/${totalCount} playas limpias ahora · última observación satelital`)
+          :_t(lang,`${totalCount} plages suivies · dernière observation satellite`,`${totalCount} beaches tracked · latest satellite observation`,`${totalCount} playas seguidas · última observación satelital`)}</div>}
 
         {/* PLANS — masqués en mode capture : rien n'est facturé (la 2e étape offre 7 j
             contre l'email), donc afficher des prix serait du bait-and-switch + plombe le
@@ -1314,8 +1314,8 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {recordProof
           ?<div className="pwx-record"><span className="pwx-rdot">●</span><span><b>{recordProof}</b><em>{_t(lang,"La seule carte qui publie aussi ses erreurs.","The only map that also publishes its misses.","El único mapa que también publica sus errores.")}</em>{(typeof window==="undefined"||!/[?&]pwrel=0/.test(window.location.search))&&<a href={_relHref(lang)} target="_blank" rel="noopener noreferrer" onClick={()=>{try{track("sg_reliability_open",{from:"paywall_record"})}catch(_){}}} style={{display:"inline-block",marginTop:4,fontSize:10.5,fontWeight:800,color:"var(--grn)",textDecoration:"underline"}}>{_t(lang,"Vérifier le registre →","Check the record →","Ver el registro →")}</a>}</span></div>
           :totalCount>0&&<div className="pwx-proof">{cleanCount>0
-            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · satellite 4×/jour`,`${cleanCount}/${totalCount} beaches clean right now · satellite 4×/day`,`${cleanCount}/${totalCount} playas limpias ahora · satélite 4×/día`)
-            :_t(lang,`${totalCount} plages suivies · satellite 4×/jour · prévision 7 jours`,`${totalCount} beaches tracked · satellite 4×/day · 7-day forecast`,`${totalCount} playas · satélite 4×/día · pronóstico 7 días`)}</div>}
+            ?_t(lang,`${cleanCount}/${totalCount} plages propres en ce moment · dernière observation satellite`,`${cleanCount}/${totalCount} beaches clean right now · latest satellite observation`,`${cleanCount}/${totalCount} playas limpias ahora · última observación satelital`)
+            :_t(lang,`${totalCount} plages suivies · dernière observation satellite · prévision 7 jours`,`${totalCount} beaches tracked · latest satellite observation · 7-day forecast`,`${totalCount} playas · última observación satelital · pronóstico 7 días`)}</div>}
 
         <div className="pwx-act">
           {hasAnnual&&!captureMode&&<div className="pwx-plans">
@@ -2601,7 +2601,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           const _pName=_ctxName||_topName, _pScore=_ctxScore||_topScore
           const _baseProof=(_pName&&_pScore)
             ?_t(lang,`${_pName} · ${_pScore}/100 · vérifié satellite`,`${_pName} · ${_pScore}/100 · satellite-verified`,`${_pName} · ${_pScore}/100 · verificado por satélite`)
-            :_t(lang,"Toute ta côte · vérifiée 4×/jour · satellite","Your whole coast · checked 4×/day · satellite","Toda tu costa · 4×/día · satélite")
+            :_t(lang,"Toute ta côte · dernière observation satellite","Your whole coast · latest satellite observation","Toda tu costa · última observación satelital")
           // A/B pw_proof : au point de décision, remplace le snapshot du jour par
           // le PALMARÈS auditable (preuve « Airbnb » = note + volume + public).
           const proof=(pwProof&&_recordProof)||_baseProof
