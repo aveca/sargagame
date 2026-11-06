@@ -156,8 +156,8 @@ async function main() {
     t(sql8.includes(`REVOKE ALL ON TABLE public.%I FROM anon`) && sql8.includes(`REVOKE ALL ON TABLE public.%I FROM authenticated`), `P0.127 : les privilèges clients sont révoqués dynamiquement pour ${table}`)
   }
   t(!/REVOKE[^;]*FROM service_role/i.test(sql8), 'P0.127 : service_role conserve ses droits sur les tables B2B internes')
-  const sql8Code = sql8.replace(/--[^\\n]*/g, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')
-  t(!/\\b(DROP\\s+(TABLE|COLUMN)|DELETE\\s+FROM|UPDATE\\s+public\\.|INSERT\\s+INTO\\s+public\.)/i.test(sql8Code), 'P0.127 : aucune modification ou suppression de données')
+  const sql8Code = sql8.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\b(DROP\s+(TABLE|COLUMN)|DELETE\s+FROM|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql8Code), 'P0.127 : aucune modification ou suppression de données')
 
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
