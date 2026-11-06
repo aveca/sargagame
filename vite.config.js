@@ -1204,20 +1204,19 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               _freshnessStatus = _freshness.status
               _updatedRel = _freshness.ageLabel
             } catch (_e) {}
-            let _rel = null
-            try {
-              const _bt = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8'))
-              const _calm = _bt.regimeReliability && _bt.regimeReliability.regimes && _bt.regimeReliability.regimes.calm
-              const _win = (_bt.regimeReliability && _bt.regimeReliability.window || '').split('→').map(s => s.trim())
-              _rel = {
-                calmPct: _calm && Number.isFinite(_calm.cleanReliabilityPct) ? _calm.cleanReliabilityPct : null,
-                calmSamples: _calm && Number.isFinite(_calm.cleanSamples) ? _calm.cleanSamples : null,
-                calmAlertPct: _calm && Number.isFinite(_calm.alertReliabilityPct) ? _calm.alertReliabilityPct : null,
-                calmAlertSamples: _calm && Number.isFinite(_calm.alertSamples) ? _calm.alertSamples : null,
-                from: _win[0] || null,
-                to: _win[1] || null,
-              }
-            } catch (_e) {}
+            // Public validation metrics are exposed only through the shared
+            // freshness + region-scope contract. Never read the stale backtest
+            // snapshot directly or substitute a global fallback.
+            const _rel = RELIABILITY.available && RELIABILITY.regime === 'calm'
+              ? {
+                  calmPct: RELIABILITY.cleanPct,
+                  calmSamples: RELIABILITY.cleanN,
+                  calmAlertPct: RELIABILITY.alertReliabilityPct,
+                  calmAlertSamples: RELIABILITY.alertSamples,
+                  from: RELIABILITY.window && RELIABILITY.window.from || null,
+                  to: RELIABILITY.window && RELIABILITY.window.to || null,
+                }
+              : null
             const _coverageFor = (isl) => ALL_BEACHES
               .filter(b => (b.island === 'gp' ? 'gp' : 'mq') === isl)
               .map(b => { const lv = _lvById[BEACH_TO_SARG[b.id] || slugify(b.name)] || _lvById[b.id] || {}; return { name: b.name, commune: b.commune, status: lv.status || 'unknown', score: _freshnessStatus === 'fresh' && typeof lv.score === 'number' ? lv.score : null } })
