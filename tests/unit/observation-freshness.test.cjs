@@ -1,6 +1,7 @@
 'use strict'
 
 const assert = require('node:assert/strict')
+const fs = require('node:fs')
 
 async function main() {
   const { getObservationFreshness, MAX_OBSERVATION_AGE_MINUTES } =
@@ -19,7 +20,14 @@ async function main() {
   assert.equal(getObservationFreshness({ erddapTimestamp: atAge(1200), dataAgeMinutes: 5 }, now).fresh, false)
   assert.equal(getObservationFreshness({ erddapTimestamp: atAge(5), dataAgeMinutes: 'bad' }, now).reason, 'unknown')
 
-  console.log('PASS observation freshness: 900/901 boundary, stale flags, invalid/future timestamps, no updatedAt fallback')
+  const component = fs.readFileSync(require('node:path').resolve(__dirname, '../../src/BeachSheet.jsx'), 'utf8')
+  assert.match(component, /if\(!hasTrustedObservation\)return null/, 'stale observations must suppress the forecast')
+  assert.match(component, /data-testid="stale-observation-notice"/, 'stale observations must show a warning')
+  assert.match(component, /hasTrustedObservation&&<StorySection delay=\{\.15\}/, 'the paid SOS report must be hidden without fresh observations')
+  assert.match(component, /showSOS && hasTrustedObservation/, 'the SOS checkout modal must not open after freshness is lost')
+  assert.doesNotMatch(component, /sargData\?\.erddapTimestamp\s*\|\|\s*sargData\?\.updatedAt/, 'publication time must not substitute for observation time')
+
+  console.log('PASS observation freshness and buyer safety: stale/unknown data suppresses verdict, forecast and SOS purchase')
 }
 
 main().catch(error => {
