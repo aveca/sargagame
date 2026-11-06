@@ -118,10 +118,12 @@ assert.equal(evaluateObservation('2026-11-06T04:00:00Z', boundaryNow).status, 'U
 
   const probeWorkflowPath = '.github/workflows/erddap-capture-window-monitor.yml';
   const probeTestPath = 'tests/unit/erddap-capture-window-monitor.test.cjs';
+  const probeScriptPath = 'scripts/probe-erddap-capture-window.cjs';
   for (const [name, source] of [['daily-copernicus.yml', daily], ['cloudflare-production.yml', production]]) {
     const ignored = pathsIgnore(source);
     assert.ok(ignored.includes(probeWorkflowPath), name + ' must ignore the read-only monitor workflow on push');
     assert.ok(ignored.includes(probeTestPath), name + ' must ignore the monitor guard test on push');
+    assert.ok(ignored.includes(probeScriptPath), name + ' must ignore the read-only probe script on push');
   }
 
   console.log('PASS: ERDDAP probe is read-only, keeps the 900-minute SLA, and cannot trigger production deployment.');
