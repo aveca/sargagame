@@ -1,3 +1,120 @@
+## 2026-11-06 05:05 UTC · Agent: OpenCode (coding_agent)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0.46 — moteur d'alertes B2C de `sg-payments` rendu **fail-closed** (filtres vides/NULL/inconnus, contrat API réel `levels`/`weekly`, porte scientifique `erddapTimestamp`) + **idempotence durable** (marqueur B2C dédié, claim atomique **avant** envoi). **Aucun email réel, aucun cron exécuté, aucun déploiement, aucun merge — la PR #1294 reste Draft.**
+- **Détails** :
+  - **État réel ≠ énoncé de la mission** : le head de la PR #1294 était `b1c34b1e2562c90b5f27c63ae48d83cf9444935e` (le `8f3c85d43` annoncé dans la mission est un commit **antérieur** du même historique, déjà inclus). `origin/main` avait avancé de `7663daffb` à `71ccda365`. Divergence réelle avant sync : **12 behind / 21 ahead** (et non 5/4).
+  - **Synchronisation normale** : `git merge --no-ff origin/main` → commit de merge `cc93a22024ee05dfec9d74e46ccb6ccf3e22b67a` (parents `b1c34b1e` + `71ccda365`). `main` ayant avancé de **2 commits** pendant la session (`311a8bfa9`, `f3b085b76`), une **seconde** synchronisation normale a été faite : `git merge --no-ff origin/main` → **`1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6`** (parents `b757fed38` + `f3b085b76`), **0 conflit**. **Pas de rebase, pas de force push, aucune écriture sur `main`.**
+  - **Fusion d'un agent concurrent** : pendant la session, un **agent sécurité** a poussé **9 commits** (`bb290e837` … `e449714a6`) sur **la même branche** (migrations `006_public_table_least_privilege.sql`, `007_revoke_public_truncate.sql`, `008_internal_b2b_least_privilege.sql` + tests). Le push direct a été **refusé** (non fast-forward) → **intégration par `git merge` normal** (`2e0da8f80`), **0 conflit**, **aucun de leurs commits écrasé**, **aucun force push**. Aucun de leurs fichiers ne touchait le périmètre P0.46.
+  - **Divergence finale** vs `origin/main` (`f3b085b76`) : **0 behind** (la branche est à jour de `main`) ; l'avance exacte est celle du commit de handoff final (≈ **38 ahead**).
+  - **§2 Filtres vides** : filtre plage `NULL` / vide / IDs inconnus / région absente / région sans correspondance ⇒ **aucune alerte**. Double garde (`boucle runB2CAlerts` + `b2cSelectedAlertLevels`). Un tableau vide n'est **jamais** interprété comme « toutes les plages ». Aucun abonnement modifié, aucun consentement implicite inventé.
+  - **§3 Contrat API réel** : seules `levels`, `weekly`, `erddapTimestamp`, `stale` sont utilisées. **Plus de `fc.beaches`, plus de `fc.data`, plus de recherche textuelle JSON.** Correspondance **explicite** par ID de plage ; une plage présente uniquement dans `weekly` (sans observation de niveau) **ne notifie pas**.
+  - **§4 Porte scientifique** : `erddapTimestamp` valide, **non futur**, âge réel ≤ **900 min**, `stale === false` (strict), mapping régional valide, résultat de niveau plage valide. **`updatedAt` et `dataAgeMinutes` ne sont jamais des substituts.** Données manquantes/invalides ⇒ **aucun email**. Valeurs scientifiques existantes préservées.
+  - **§6 Idempotence durable** : le vrai manque du moteur n'était pas les garde-fous (déjà présents via `ce3f7faa7`/`f501a6ca1`) mais l'**absence de marqueur de livraison**. Implémentation : table **dédiée** `public.b2c_alert_deliveries` (PK `(subscription_id, observation_ts, beaches_hash)`) + RPC atomique `public.sg_claim_b2c_alert_delivery` (`INSERT … ON CONFLICT DO NOTHING`), **claim avant envoi**. Marqueur indisponible ⇒ **fail-closed (zéro envoi)** ; marqueur déjà pris ⇒ doublon **supprimé** ; échec provider ⇒ marqueur conservé (`failed`), l'observation suivante a une clé différente. **Aucune PII stockée** (ni email, ni nom). `public.b2c_alerts` **jamais modifiée** par le moteur. KV best-effort **refusé** (décision antérieure du dépôt, `146979234`).
+  - **Migration `005_b2c_alert_delivery_markers.sql` PRÉPARÉE, NON APPLIQUÉE** (Phase 8) ⇒ **pré-condition de déploiement** : sans elle, le moteur reste fail-closed (zéro alerte, zéro doublon).
+  - **§5 Tests** : suite fail-closed étendue à **18 assertions** (dont **234 abonnés à filtres vides ⇒ 0 appel provider**), nouveau fichier d'idempotence **19 assertions**. Le `fetch` est intercepté en mode **STRICT** : toute sortie vers un provider d'email réel ou un hôte inattendu **fait échouer le test** ; garde statique anti-SMTP ; `b2c_alerts` en **lecture seule** dans les mocks.
+  - **Mutation testing (preuve que les tests mordent)** : (A2) suppression du garde-fou de filtres vides ⇒ échec « 234 active subscribers with empty beach filters produce zero email-provider calls » ; (C) substitution `updatedAt` ⇒ échec « a fresh updatedAt/dataAgeMinutes never substitutes an old erddapTimestamp » ; (B) suppression de la suppression des doublons ⇒ échec « replaying the SAME observation sends zero additional notification ». Worker restauré ensuite (diff 0 vs sauvegarde).
+  - **État réel constant** : `runB2CAlerts` n'est déclenché que par `scheduled()` pour `event.cron === "0 6,18 * * *"` ; la route manuelle `/_cron/b2c` renvoie **404** (deny-by-default, testée). Planning, secrets, abonnements, base de production : **inchangés**.
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — porte scientifique documentée + idempotence durable (`b2cDeliveryFingerprint`, `claimB2cAlertDelivery`, `markB2cAlertDelivery`, câblage claim→email dans `runB2CAlerts`).
+- `scripts/migrations/005_b2c_alert_delivery_markers.sql` — **nouveau** : table `b2c_alert_deliveries` + RPC `sg_claim_b2c_alert_delivery`, RLS, aucune PII, **non appliquée**.
+- `tests/unit/b2c-alert-idempotency.test.cjs` — **nouveau** : 19 assertions (doublon, nouvelle observation, marqueur indisponible, ordre claim→email, migration non appliquée, zéro écriture `b2c_alerts`).
+- `tests/unit/b2c-alerts-fail-closed.test.cjs` — étendu à 18 assertions (filtres vides, NULL, plage inconnue, weekly-only, stale absent, `updatedAt`/`dataAgeMinutes`, `/_cron/b2c` refusé).
+- `tests/unit/mollie-worker-harness.cjs` — `installStrictFetch` (échec sur provider réel / hôte inattendu) + `createB2cDeliveryMarkerStore` (rejoue la clé primaire).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md`, `NEXT_SESSION.md` — handoff P0.46.
+
+### Tests réalisés
+- [x] `npm ci` → exit 0 (Node v24.14.0 / npm 11.9.0)
+- [x] `npm test` → **167/167 fichiers de test OK**, exit 0
+- [x] `npm run build` → exit 0 (`✓ built in 3.54s`)
+- [x] `node scripts/check-bundle-budget.cjs` → **206.5 / 210 Ko** gzip eager (exact `211462 / 215040` octets), exit 0
+- [x] `node tests/unit/b2c-alerts-fail-closed.test.cjs` → **PASS 18 assertions**
+- [x] `node tests/unit/b2c-alert-idempotency.test.cjs` → **PASS 19 assertions**
+- [x] Groupes ciblés : B2C fail-closed **1/1** · B2C idempotence **1/1** · Mollie worker **6/6** · payment regression **7/7** · regional contract **11/11** · private guard **2/2** — tous PASS
+- [x] Mutation tests A2 / C / B → **les trois font échouer la suite attendue** (worker restauré, diff 0)
+- [x] `git diff --check` → exit 0
+- [ ] php -l → aucun `.php` touché (N/A)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune UI touchée)
+- [x] CI GitHub → **4/4 PASS** sur la **tête finale `19be8adbf`** : `test-frontend` (2m11s, run `42174963431`) · `perf` (23s) + `lighthouse-report` (3m21s, run `42174963404`) · `GitGuardian Security Checks` (23s). **4/4 PASS également sur le SHA de code `02c58177e`** (runs `42173901236` + `42173901187`).
+
+### Problèmes restants
+- [ ] **Migration 005 NON APPLIQUÉE** en production (autorisation requise) ⇒ **pré-condition de déploiement** : sans elle, le moteur d'alertes reste fail-closed (**zéro alerte**). — sévérité HIGH — action : appliquer `scripts/migrations/005_b2c_alert_delivery_markers.sql` **avant** de déployer la Worker.
+- [ ] **Déploiement de `sg-payments` hors périmètre** (dernier déploiement live `2026-10-02T04:11:44Z`) : le code fail-closed **n'est pas en production** tant que la PR n'est ni mergée ni déployée. — sévérité HIGH — action : merger + déployer après autorisation.
+- [ ] **Allowlist Tulum** (`BUG-2026-127`) : `ALLOWED_HOSTS` (l. 12–18) et `ALLOWED_ORIGINS` (l. 5–11) ne contiennent **pas** `sargazotulum.com`, alors que `COLLECT_HOSTS` (l. 35–42) le contient ⇒ hôte de repli des URLs webhook Mollie et CORS non couverts. Le **chemin alertes B2C Tulum fonctionne** (domaine issu de `B2C_REGION_CONFIG`). — sévérité MEDIUM — action : PR dédiée.
+- [ ] **Schéma B2B résiduel** (`BUG-2026-128`) : `B2B_SUBSCRIPTION_SCHEMA_PLANS` (l. 30–32) — le contrat live `b2b_subscriptions.plan` impose `free`/`alert`/`dashboard`/`enterprise` et **aucun mapping approuvé** depuis `B2B_PLANS` n'existe ⇒ échec **fermé** sur la création d'abonnement B2B (`e8ca8dbf4`). — sévérité MEDIUM — action : décision de mapping + migration.
+- [ ] Le « 45 prospects » de la mission B2B précédente ne correspond à **aucun compteur** du dépôt — écart déjà signalé, **aucun nombre inventé**.
+
+### Prochaine action recommandée
+1. Relire la PR #1294 (Draft) et trancher l'application de la migration 005 + le déploiement de `sg-payments` — Rôle : founder/release_agent
+2. Corriger l'allowlist Tulum (`ALLOWED_HOSTS` + `ALLOWED_ORIGINS`) — Rôle : coding_agent
+3. Trancher le mapping `B2B_PLANS` → `b2b_subscriptions.plan` — Rôle : founder/data_agent
+
+### Branche / PR
+- Branche : `feature/p0-mollie-durable-fulfillment-20261105`
+- PR : **#1294 (Draft, OPEN, MERGEABLE)** — https://github.com/aveca/sargagame/pull/1294
+- Commit head : **ce commit de handoff P0.46** (la tête de branche) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` · sync main n°1 : `cc93a2202` · sync main n°2 : `1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6` · fusion des commits de l'agent sécurité : `2e0da8f80` (vs `origin/main` = `f3b085b76`, **0 behind**)
+
+---
+
+## 2026-11-05 19:35 UTC · Agent: OpenCode (coding_agent)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0.118 §5/§6/§7 — source canonique de la Worker `sg-payments` **récupérée depuis la source live** (v381, 100 % du trafic), bearer Namecheap en dur supprimé, adapters Mollie **Next-gen + Classique** séparés, fulfillment **durable** (grant écrit **et vérifié** avant tout marqueur KV). **Aucun merge, aucun déploiement, aucun appel en production.**
+- **Détails** :
+  - Branche `feature/p0-mollie-durable-fulfillment-20261105`, depuis `origin/main` (`ed446ac92`). 3 commits : `c9e4884f7` (Worker + provenance), `2bbf1c7d0` (migrations préparées), `94ab2dd66` (tests).
+  - **Provenance prouvée** : `workers/sg-payments/index.js` est une **copie binaire byte-for-byte** de la source live récupérée (85 851 octets, SHA-256 `74c1a56a1e669ab00519b02b280f46362eaaaf1b3bc4c0ec2492a9458c3d2791`, version ID `36fa827a-a39c-4156-9359-30fc383eb6c5`, 100 % du trafic, **102 routes** conservées, 7 bindings inchangés). Les correctifs ont été appliqués **en ligne** — pas de réécriture. Inventaire complet dans `workers/sg-payments/PROVENANCE.md`.
+  - **§5** : `NAMECHEAP_BEARER = "sargagame-mail-2026"` (bearer figé dans le dépôt public) supprimé ; `env.NAMECHEAP_MAIL_TOKEN` désormais **obligatoire**. En son absence, le relais Namecheap est sauté et la chaîne de secours `sendpulse → brevo → resend` prend le relais. **Conséquence documentée** : `NAMECHEAP_MAIL_TOKEN` n'existe pas parmi les bindings live → tant qu'il n'est pas ajouté (hors §12), le trafic e-mail passe par Resend. Aucun secret deviné, aucun secret réintroduit.
+  - **§6** : `normalizeMollieSignature` retire le préfixe officiel `sha256=`, refuse tout ce qui n'est pas 64 hex, compare **à temps constant**. `parseMollieWebhook` distingue Classique (`application/x-www-form-urlencoded`) et Next-gen (JSON) et **ne confond jamais** l'identifiant d'**événement** (`event_…`) et l'identifiant d'**entité** (`entityId` / `tr_` / `sub_`). L'état autoritaire vient **toujours** de l'API Mollie, jamais du corps du webhook. `mode`, `status`, `paidAt`, montant, devise, métadonnées et SKU sont validés. Un événement inconnu ne crée **aucun** grant et **n'est pas marqué comme traité** (rejeu conservé). `payment.refunded` retire l'accès.
+  - **§7** : `grantB2C` appelle `public.sg_upsert_payment_grant` avec ses **7 arguments exacts**, **relit** la ligne et compare `type`/`pass`/`email`/`currency` ; **seulement ensuite** le marqueur KV est posé. `grantB2B` écrit les **colonnes réelles** (`subscription_id`, `type`, `plan`, `customer_id`, `expires_at`, `granted_at`, `metadata`) et les vérifie avant le jeton KV. La révocation expire le grant via `expires_at` car `payment_grants` **n'a pas de colonne `status`**. `userEntitlements` / `verify_subscription` lisent le `user_id` dans `metadata` (jsonb).
+  - **Correction d'un point de méthode** : `supabase/schema.sql` (lignes 193–209) prouve que `public.payment_grants` possède **bien** `subscription_id`, `plan` et `customer_id` → l'écriture B2B live était **valide**. Seuls `session_id` et `user_id` (B2C) n'existaient pas.
+  - **Migrations PRÉPARÉES, NON APPLIQUÉES** : `002_payment_grant_search_path.sql` (`SET search_path = ''`, signature identique, re-voxel PUBLIC/anon/authenticated, GRANT service_role) et `003_b2b_leads_least_privilege.sql` (RLS + `REVOKE ALL` anon/authenticated, service_role préservé, garde `to_regclass`, aucune donnée touchée). §1 reste **column-agnostic** : le schéma réel `b2b_leads` est inconnu du dépôt (`BUG-2026-121`).
+  - **⚠️ Changement de comportement à valider par le fondateur** : un paiement Mollie en `mode = "test"` **ne crée plus de droit** (la version live l'honorait). Si `MOLLIE_API_KEY` est une clé test, **plus aucun droit B2C ne sera servi** ; le webhook répond `processed: false, reasons: ["not_live_mode"]` (explicite, pas silencieux). Le type de la clé live doit être vérifié avant déploiement (hors §12).
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — **nouveau** : source canonique de la Worker (live v381 + correctifs §5/§6/§7).
+- `workers/sg-payments/PROVENANCE.md` — **nouveau** : provenance live, bindings, inventaire de chaque différence.
+- `scripts/migrations/002_payment_grant_search_path.sql` — **nouveau** : durcissement `search_path` du RPC (**non appliqué**).
+- `scripts/migrations/003_b2b_leads_least_privilege.sql` — **nouveau** : moindre privilège `public.b2b_leads` (**non appliqué**).
+- `tests/unit/mollie-worker-harness.cjs` — **nouveau** : KV + `fetch` simulés, **compteur monotone partagé** (preuve d'ordre cross-journaux).
+- `tests/unit/mollie-nextgen-classic-adapters.test.cjs` — **nouveau** : 43 assertions §6.
+- `tests/unit/mollie-durable-fulfillment.test.cjs` — **nouveau** : 52 assertions §7.
+- `tests/unit/p0-118-migrations-privileges.test.cjs` — **nouveau** : 28 assertions §1/§3 (section base réelle = **SKIP** sans `SG_TEST_PG_URL`).
+
+### Tests réalisés
+- [x] `npm ci` → exit 0 (Node v24.14.0 / npm 11.9.0)
+- [x] `npm run build` → exit 0
+- [x] `npm test` → **162/162 fichiers de test OK**, exit 0
+- [x] `node tests/unit/mollie-nextgen-classic-adapters.test.cjs` → **PASS 43 assertions**
+- [x] `node tests/unit/mollie-durable-fulfillment.test.cjs` → **PASS 52 assertions**
+- [x] `node tests/unit/p0-118-migrations-privileges.test.cjs` → **PASS 28 assertions** (+ SKIP base réelle)
+- [x] `npx esbuild workers/sg-payments/index.js --bundle=false` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206.5 / 210 Ko** gzip eager, exit 0
+- [x] `git diff --check` → exit 0
+- [ ] php -l → aucun `.php` touché
+- [ ] CI GitHub → en attente (branche pas encore poussée)
+
+### Problèmes restants
+- [ ] **Déploiement bloqué par §12** : la Worker n'est pas déployée, les migrations ne sont pas appliquées, aucun secret n'est ajouté, aucune route n'est modifiée.
+- [ ] `MOLLIE_API_KEY` : le type (live vs test) de la clé en production doit être vérifié **avant** tout déploiement (le mode test ne sert plus de droit).
+- [ ] `NAMECHEAP_MAIL_TOKEN` absent des bindings live → le relais Namecheap sera ignoré tant que le secret n'est pas ajouté.
+- [ ] Schéma réel `b2b_leads` / `b2b_subscriptions` **inconnu du dépôt** (`BUG-2026-121`) : §1 est fait (privilèges seuls, column-agnostic) mais toute travail B2B de **forme de données** exige une lecture autorisée.
+- [ ] `tests/sitemap-guard-beach-pages.test.cjs` exige un `dist/` préalable : au **premier** `npm test` d'un worktree neuf il échoue (`dist/ absent — vite build d'abord`). Il **passe** après `npm run build` et n'est **pas** modifié par cette branche (dépendance d'ordre d'exécution pré-existante).
+- [ ] La Worker `workers/sargagame/index.js` de `main` ne contient toujours **qu'un** handler Mollie Classique **sans vérification HMAC** et sans support Next-gen : son extension reste à faire (hors périmètre de cette PR).
+
+### Prochaine action recommandée
+1. Relire et merger (ou refuser) le Draft PR de `feature/p0-mollie-durable-fulfillment-20261105`, en tranchant d'abord le **mode test → aucun droit** — Rôle : founder/release_agent
+2. P0.118 §8 (alertes B2C sur `levels`/`weekly`/`scores`, fail-closed, dédup durable sur `subscription_id`/`beach_id`/`observation_identity`, 6 régions) — Rôle : coding_agent
+3. P0.118 §10 (intake B2B acquitté), §11 (Punta Cana `/beaches` + Cancún `/playas`), §2 (PR #1287), §4 (PR #1266) — Rôle : coding_agent
+4. Obtenir une lecture autorisée du schéma `b2b_leads` / `b2b_subscriptions` — Rôle : founder/data_agent
+
+### Branche / PR
+- Branche : `feature/p0-mollie-durable-fulfillment-20261105`
+- PR : Draft (URL dans le rapport de fin de mission)
+- Commit head : `94ab2dd666fd79434979190f9debd5086090bbe8`
+
+---
+
 > **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)

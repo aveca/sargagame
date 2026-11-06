@@ -1,5 +1,36 @@
 # NEXT_SESSION — sargagame
 
+> **🎯 2026-11-06 — P0.46 : ALERTES B2C FAIL-CLOSED + IDEMPOTENCE DURABLE (PR #1294, Draft)**
+
+### 2026-11-06 — P0.46 — Moteur d'alertes B2C fail-closed (234 abonnés actifs)
+
+#### Ce qui a été fait
+1. **§2 Filtres vides** — filtre plage `NULL` / vide / IDs inconnus / région absente / sans correspondance ⇒ **aucune alerte**. Double garde (`runB2CAlerts` + `b2cSelectedAlertLevels`). Un tableau vide n'est **jamais** « toutes les plages ». Aucun abonnement modifié.
+2. **§3 Contrat API réel** — seules `levels`, `weekly`, `erddapTimestamp`, `stale` sont lues. **Plus de `fc.beaches`, plus de `fc.data`, plus de recherche textuelle JSON.** Une plage présente **uniquement dans `weekly`** ne notifie pas (il faut une observation de niveau plage explicite).
+3. **§4 Porte scientifique** — `erddapTimestamp` valide, **non futur**, âge réel ≤ **900 min**, `stale === false` **strict**. **`updatedAt` et `dataAgeMinutes` ne sont jamais des substituts.** Données manquantes/invalides ⇒ **aucun email**.
+4. **§6 Idempotence durable** — le manque réel était l'**absence de marqueur de livraison**. Correction : table **dédiée** `public.b2c_alert_deliveries` (PK `(subscription_id, observation_ts, beaches_hash)`) + RPC atomique `public.sg_claim_b2c_alert_delivery`, **claim AVANT envoi**. Marqueur indisponible ⇒ **fail-closed (zéro envoi)** ; marqueur déjà pris ⇒ doublon **supprimé**. **Aucune PII**, `b2c_alerts` **jamais modifiée**, KV best-effort **refusé**.
+5. **§5 Tests** — 18 assertions fail-closed + 19 assertions d'idempotence. Le `fetch` est intercepté en mode **STRICT** : **le test échoue** si un provider d'email réel ou un hôte inattendu est contacté. Mutation-testes A2/C/B ⇒ échec attendu (les tests mordent).
+
+#### Branche / PR
+- Branche : `feature/p0-mollie-durable-fulfillment-20261105`
+- PR : **#1294 (Draft, OPEN)** — https://github.com/aveca/sargagame/pull/1294
+- Commit head : **commit de handoff P0.46** (tête de branche) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` — sync `main` n°1 : `cc93a2202` — sync `main` n°2 : `1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6` — merge des commits sécurité concurrents : `2e0da8f80` (**pas de rebase, pas de force push**)
+- Divergence vs `origin/main` (`f3b085b76`) : **0 behind**
+
+#### Tests
+- `npm ci` ✅ · `npm test` **167/167** ✅ · `npm run build` ✅ · bundle **206.5/210 Ko** (`211462/215040`) ✅
+- B2C fail-closed **18/18** · B2C idempotence **19/19** · Mollie worker **6/6** · payment regression **7/7** · regional contract **11/11** · private guard **2/2**
+- CI GitHub → **4/4 PASS** sur la tête finale `19be8adbf` : `test-frontend` (2m11s, run `42174963431`) · `perf` (23s) · `lighthouse-report` (3m21s, run `42174963404`) · `GitGuardian Security Checks` (23s) — **4/4 PASS aussi sur le SHA de code `02c58177e`**
+
+#### Reste à faire (hors périmètre P0.46)
+- [ ] **Migration `005_b2c_alert_delivery_markers.sql` PRÉPARÉE MAIS NON APPLIQUÉE** ⇒ **pré-condition de déploiement** : sans elle, le moteur reste fail-closed (**zéro alerte**). Autorisation requise.
+- [ ] **Déploiement de `sg-payments`** (dernier déploiement live `2026-10-02T04:11:44Z`) : le code fail-closed **n'est pas en prod** tant que la PR n'est ni mergée ni déployée.
+- [ ] `BUG-2026-127` — allowlist Tulum : `sargazotulum.com` absent de `ALLOWED_HOSTS` et `ALLOWED_ORIGINS` (webhook Mollie + CORS). PR dédiée.
+- [ ] `BUG-2026-128` — mapping `B2B_PLANS` → `b2b_subscriptions.plan` (`free`/`alert`/`dashboard`/`enterprise`) : échec fermé, mapping à trancher.
+- [ ] Aucun email réel, aucun cron exécuté, aucun déploiement, aucun merge — **PR #1294 maintenue Draft**.
+
+---
+
 > **🎯 2026-07-30 — PAYMENT FLOW FIX + UI IMPROVEMENTS**
 
 ### 2026-07-30 — Mollie payment flow fixes and checkout UI improvements
