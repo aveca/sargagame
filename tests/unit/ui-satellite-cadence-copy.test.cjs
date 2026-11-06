@@ -13,6 +13,10 @@ const files = [
   'src/ArenaOnboarding.jsx',
   'src/BeachSheet.jsx',
   'public/a-propos/index.html',
+  'public/404.html',
+  'public/weekend.html',
+  'scripts/lib/localize-404.cjs',
+  'scripts/automation/B2B_OFFER.md',
 ]
 const unsupportedCadence = [
   /(?:4×|4x)\s*(?:daily|a day|per day|\/\s*day|al\s+d[ií]a|\/\s*d[ií]a|par\s+jour|\/\s*jour)/i,
@@ -30,4 +34,4 @@ assert.ok(about.includes('NOAA/AOML ERDDAP'), 'About page must identify the veri
 assert.ok(about.includes('USF Optical Oceanography Laboratory'), 'About page must identify the source laboratory')
 assert.doesNotMatch(about, /MODIS|Résolution 1 km|Copernicus \(ESA\)/i, 'About page must not publish unsupported AFAI sensor or resolution attribution')
 
-console.log('PASS: 7 customer-facing surfaces use timestamped source-observation language')
+console.log('PASS: 11 customer-facing and outbound surfaces use timestamped source-observation language')
