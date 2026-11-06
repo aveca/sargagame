@@ -130,9 +130,9 @@ async function main() {
   }
   t(sql6.includes('ALTER TABLE public.payment_grants ENABLE ROW LEVEL SECURITY'), 'P0.127 : RLS est activée sur payment_grants')
   t(!/REVOKE[^;]*FROM service_role/i.test(sql6), 'P0.127 : service_role conserve ses droits')
-  const sql6Code = sql6.replace(/--[^\\n]*/g, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')
-  t(!/\\bDROP\\s+(TABLE|COLUMN)\\b/i.test(sql6Code), 'P0.127 : aucune suppression de table ou colonne')
-  t(!/\\b(DELETE\\s+FROM|TRUNCATE|UPDATE\\s+public\\.|INSERT\\s+INTO\\s+public\\.)/i.test(sql6Code), 'P0.127 : aucune modification ou suppression de données')
+  const sql6Code = sql6.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\bDROP\s+(TABLE|COLUMN)\b/i.test(sql6Code), 'P0.127 : aucune suppression de table ou colonne')
+  t(!/\b(DELETE\s+FROM|TRUNCATE|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql6Code), 'P0.127 : aucune modification ou suppression de données')
 
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
