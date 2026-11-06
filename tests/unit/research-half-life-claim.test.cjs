@@ -12,6 +12,7 @@ const apiDocs = fs.readFileSync(path.join(ROOT, 'public', 'api', 'index.html'), 
 const regionalSeo = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'region-seo-pages.cjs'), 'utf8')
 const reliabilityPage = fs.readFileSync(path.join(ROOT, 'scripts', 'lib', 'reliability-page.cjs'), 'utf8')
 const ftpFreshnessGate = fs.readFileSync(path.join(ROOT, 'scripts', 'verify-ftp-ready.cjs'), 'utf8')
+const ingestion = fs.readFileSync(path.join(ROOT, 'scripts', 'fetch-sargassum-live.cjs'), 'utf8')
 
 assert.equal(research.includes('3.5-day</b> half-life'), false,
   'the obsolete 3.5-day half-life claim must not return')
@@ -65,6 +66,8 @@ assert.doesNotMatch(ftpFreshnessGate, /demi-vie ~3,5j|half-life ~3\.5d/i,
   'the operational green-spike gate must not present its threshold as a calibrated physical half-life')
 assert.match(ftpFreshnessGate, /anomalie d'intégrité/i,
   'the green-spike gate must be described as a data-integrity check')
+assert.match(ingestion, /not a measured beach-clearance half-life/i,
+  'the 3.5-day ingestion value must be documented as a heuristic, not a universal beach half-life')
 
 const widget = fs.readFileSync(path.join(ROOT, 'public', 'pro', 'widget-sargasses-hotel', 'index.html'), 'utf8')
 assert.ok(widget.includes('NOAA/AOML ERDDAP'),
