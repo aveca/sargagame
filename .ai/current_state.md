@@ -34,7 +34,7 @@
 - [x] `git diff --check` → exit 0
 - [ ] php -l → aucun `.php` touché (N/A)
 - [ ] `node scripts/ux-smoke.mjs` → N/A (aucune UI touchée)
-- [x] CI GitHub sur le SHA exact `02c58177e` → **4/4 PASS** : `test-frontend` (2m18s, run `42173901236`) · `perf` (20s) + `lighthouse-report` (3m23s, run `42173901187`) · `GitGuardian Security Checks` (2s)
+- [x] CI GitHub → **4/4 PASS** sur la **tête finale `19be8adbf`** : `test-frontend` (2m11s, run `42174963431`) · `perf` (23s) + `lighthouse-report` (3m21s, run `42174963404`) · `GitGuardian Security Checks` (23s). **4/4 PASS également sur le SHA de code `02c58177e`** (runs `42173901236` + `42173901187`).
 
 ### Problèmes restants
 - [ ] **Migration 005 NON APPLIQUÉE** en production (autorisation requise) ⇒ **pré-condition de déploiement** : sans elle, le moteur d'alertes reste fail-closed (**zéro alerte**). — sévérité HIGH — action : appliquer `scripts/migrations/005_b2c_alert_delivery_markers.sql` **avant** de déployer la Worker.
@@ -51,7 +51,7 @@
 ### Branche / PR
 - Branche : `feature/p0-mollie-durable-fulfillment-20261105`
 - PR : **#1294 (Draft, OPEN, MERGEABLE)** — https://github.com/aveca/sargagame/pull/1294
-- Commit head : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` (sync main : `cc93a2202`)
+- Commit head : `19be8adbfd6dd07043e130b25e538eb911d18d43` (handoff docs ; code P0.46 = `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` ; sync main = `cc93a2202`)
 
 ---
 

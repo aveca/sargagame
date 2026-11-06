@@ -1,4 +1,4 @@
-## 2026-11-06 05:05 UTC - OpenCode (coding_agent) - P0.46 - branche feature/p0-mollie-durable-fulfillment-20261105 - commit 02c58177e
+## 2026-11-06 05:05 UTC - OpenCode (coding_agent) - P0.46 - branche feature/p0-mollie-durable-fulfillment-20261105 - commits 02c58177e + 19be8adbf
 
 **Moteur d'alertes B2C fail-closed + idempotence durable (234 abonnés actifs protégés). Aucun email réel, aucun cron exécuté, aucun déploiement, aucun merge — PR #1294 reste Draft.**
 
@@ -12,7 +12,7 @@
 - **§5 — tests** : suite fail-closed **18 assertions** (dont **234 abonnés à filtres vides ⇒ 0 appel provider**) + nouveau fichier d'idempotence **19 assertions**. `fetch` intercepté en mode **STRICT** (provider d'email réel ou hôte inattendu ⇒ **le test échoue**) ; garde statique anti-SMTP ; `b2c_alerts` en **lecture seule** dans les mocks.
 - **Mutation testing** : (A2) garde-fou de filtres vides supprimé ⇒ échec ; (C) `updatedAt` substitué ⇒ échec ; (B) suppression des doublons désactivée ⇒ échec. Les trois mordent ; worker restauré (diff 0 vs sauvegarde).
 - Tests : `npm ci` exit 0 · `npm test` **167/167** · `npm run build` exit 0 · bundle **206.5/210 Ko** (`211462/215040`) · B2C fail-closed 18/18 · B2C idempotence 19/19 · Mollie worker **6/6** · payment regression **7/7** · regional contract **11/11** · private guard **2/2** · `git diff --check` exit 0.
-- CI GitHub sur le SHA exact `02c58177e` → **4/4 PASS** : `test-frontend` **PASS** (2m18s, run `42173901236` — https://github.com/aveca/sargagame/actions/runs/42173901236/job/127747826071) · `perf` **PASS** (20s — https://github.com/aveca/sargagame/actions/runs/42173901187/job/127747825933) · `lighthouse-report` **PASS** (3m23s — https://github.com/aveca/sargagame/actions/runs/42173901187/job/127747826256) · `GitGuardian Security Checks` **PASS** (2s).
+- CI GitHub → **4/4 PASS** sur la **tête finale `19be8adbfd6dd07043e130b25e538eb911d18d43`** : `test-frontend` **PASS** (2m11s, run `42174963431` — https://github.com/aveca/sargagame/actions/runs/42174963431/job/127751197289) · `perf` **PASS** (23s — https://github.com/aveca/sargagame/actions/runs/42174963404/job/127751197814) · `lighthouse-report` **PASS** (3m21s — https://github.com/aveca/sargagame/actions/runs/42174963404/job/127751197606) · `GitGuardian Security Checks` **PASS** (23s). **4/4 PASS également sur le SHA de code `02c58177e`** (runs `42173901236` + `42173901187`).
 - **Rollback** : `git revert 02c58177e` (ou revert de la branche). **Aucun état de production touché** : pas d'email réel, pas de notification push, pas de contact client, pas d'exécution du cron, pas de changement de planning, pas de mutation d'abonnement, pas de paiement, pas de secret modifié, pas de modification de la base de production, pas de déploiement, pas de merge.
 
 ---

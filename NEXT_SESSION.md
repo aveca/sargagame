@@ -14,13 +14,13 @@
 #### Branche / PR
 - Branche : `feature/p0-mollie-durable-fulfillment-20261105`
 - PR : **#1294 (Draft, OPEN)** — https://github.com/aveca/sargagame/pull/1294
-- Commit head : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` (sync `main` = commit de merge `cc93a2202`, **pas de rebase, pas de force push**)
-- Divergence vs `origin/main` (`71ccda365`) : **0 behind / 23 ahead**
+- Commit head : `19be8adbfd6dd07043e130b25e538eb911d18d43` (handoff docs) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` — sync `main` : commit de merge `cc93a2202` (**pas de rebase, pas de force push**)
+- Divergence vs `origin/main` (`71ccda365`) : **0 behind / 24 ahead**
 
 #### Tests
 - `npm ci` ✅ · `npm test` **167/167** ✅ · `npm run build` ✅ · bundle **206.5/210 Ko** (`211462/215040`) ✅
 - B2C fail-closed **18/18** · B2C idempotence **19/19** · Mollie worker **6/6** · payment regression **7/7** · regional contract **11/11** · private guard **2/2**
-- CI GitHub sur le SHA exact `02c58177e` → **4/4 PASS** : `test-frontend` (2m18s, run `42173901236`) · `perf` (20s) · `lighthouse-report` (3m23s, run `42173901187`) · `GitGuardian Security Checks` (2s)
+- CI GitHub → **4/4 PASS** sur la tête finale `19be8adbf` : `test-frontend` (2m11s, run `42174963431`) · `perf` (23s) · `lighthouse-report` (3m21s, run `42174963404`) · `GitGuardian Security Checks` (23s) — **4/4 PASS aussi sur le SHA de code `02c58177e`**
 
 #### Reste à faire (hors périmètre P0.46)
 - [ ] **Migration `005_b2c_alert_delivery_markers.sql` PRÉPARÉE MAIS NON APPLIQUÉE** ⇒ **pré-condition de déploiement** : sans elle, le moteur reste fail-closed (**zéro alerte**). Autorisation requise.
