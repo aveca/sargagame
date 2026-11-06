@@ -14,8 +14,8 @@
 #### Branche / PR
 - Branche : `feature/p0-mollie-durable-fulfillment-20261105`
 - PR : **#1294 (Draft, OPEN)** — https://github.com/aveca/sargagame/pull/1294
-- Commit head : **commit de handoff P0.46** (tête de branche) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` — sync `main` n°1 : `cc93a2202` — sync `main` n°2 : `1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6` (**pas de rebase, pas de force push**)
-- Divergence vs `origin/main` (`f3b085b76`) : **0 behind / 26 ahead**
+- Commit head : **commit de handoff P0.46** (tête de branche) — code P0.46 : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` — sync `main` n°1 : `cc93a2202` — sync `main` n°2 : `1ac1563c0a139c9a6f826ea1dd3bd21f00d6c0c6` — merge des commits sécurité concurrents : `2e0da8f80` (**pas de rebase, pas de force push**)
+- Divergence vs `origin/main` (`f3b085b76`) : **0 behind**
 
 #### Tests
 - `npm ci` ✅ · `npm test` **167/167** ✅ · `npm run build` ✅ · bundle **206.5/210 Ko** (`211462/215040`) ✅
