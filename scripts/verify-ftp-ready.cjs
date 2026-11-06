@@ -71,9 +71,9 @@ function main() {
   }
 
   // ── Garde MOAT #2 : pic "tout vert" suspect. Un bond brutal du taux de plages
-  // propres (>40 points vs le dernier jour DISTINCT de l'historique) est
-  // physiquement improbable (demi-vie échouage ~3,5j) et trahit une grille
-  // corrompue ou du no-data masqué en 'clean'. On bloque la publication.
+  // propres (>40 points vs le dernier jour DISTINCT de l'historique) est traité
+  // comme une anomalie d'intégrité (source, couverture ou no-data masqué en
+  // "clean"), pas comme une limite physique ou une demi-vie calibrée.
   // Source-agnostique : attrape la fausse carte verte même si le flag source ment.
   // Lecture historique fail-open (si illisible → garde inactive, pas de blocage).
   if (Array.isArray(data.levels) && data.levels.length) {
@@ -89,7 +89,7 @@ function main() {
     } catch (_) {}
     const curCleanRatio = data.levels.filter(l => l.status === 'clean').length / data.levels.length
     if (prevCleanRatio !== null && (curCleanRatio - prevCleanRatio) > 0.4) {
-      console.error(`❌ Pic "tout vert" suspect : ${Math.round(prevCleanRatio * 100)}% → ${Math.round(curCleanRatio * 100)}% de plages propres en <24h (improbable, demi-vie ~3,5j). Publication bloquée — relancer fetch-sargassum-live.cjs pour confirmer.`)
+      console.error(`❌ Pic "tout vert" suspect : ${Math.round(prevCleanRatio * 100)}% → ${Math.round(curCleanRatio * 100)}% de plages propres en <24h. Anomalie d'intégrité — vérifier la source et la couverture avant publication.`)
       ok = false
     }
   }

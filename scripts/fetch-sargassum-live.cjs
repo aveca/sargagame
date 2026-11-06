@@ -653,25 +653,15 @@ function updateHistory(dir, levels) {
   return newChanges
 }
 
-// ── Beach Memory: accumulation decay from recent beaching events ──
+// ── Beach Memory: short-window history-weighting heuristic ──
 //
-// Rationale (cross-validated with external sources):
-// - Sargassum material persists 14+ days on beaches without cleanup
-//   (Source: EPA SIE guidelines, MDPI Remote Sensing 2025)
-// - Decomposition starts at ~48h but physical mass remains visible
-//   (Source: DAN Boater, ScienceDirect 2024 S0013935124001397)
-// - Even equipped communes cannot keep up during heavy events
-//   (Source: Sargassum Hub - French Antilles, Le Diamant daily ops)
-// - 2026 is a record year with continuous beaching since Nov 2025
-//   (Source: USF SaWS Bulletin 03/2026, La 1ere Guadeloupe)
+// The 3.5-day decay below is an engineering heuristic used only to weight
+// recent AFAI-derived beach-memory signals in this ingestion step. It is not
+// a measured beach-clearance half-life and must not be presented as a
+// universal persistence claim. The forecast layer uses a separate provisional
+// beached-material prior in scripts/lib/confidence.cjs / forecast.cjs.
+// Recalibrate only against dated, region-specific beach ground truth.
 //
-// Parameters:
-// - Half-life: 3.5 days (λ = ln(2)/3.5 ≈ 0.198)
-//   → Day 1: 82% remains, Day 3: 55%, Day 7: 24%, Day 10: 14%
-// - Window: 10 days lookback
-// - Only boosts AFAI upward (never reduces current satellite reading)
-//
-// Sources: NOAA SIR v1.4, USF SaWS 2026, Wang & Hu 2016, EPA SIE
 
 function applyBeachAccumulation(levels, dir) {
   const today = new Date().toISOString().slice(0, 10)
