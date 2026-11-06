@@ -150,10 +150,10 @@ console.log('predeploy-wait : les deux côtés du verrou (mission P0)\n');
 {
   const { dir } = makeGitRoot();
   try {
-    fs.writeFileSync(path.join(dir, 'app.js'), 'v1\\n');
+    fs.writeFileSync(path.join(dir, 'app.js'), 'v1\n');
     gcommit(dir, 'product: neutral base');
     fs.mkdirSync(path.join(dir, 'public', 'api'), { recursive: true });
-    fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // v1\\n");
+    fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // v1\n");
     const P1 = gcommit(dir, 'product: mollie endpoint');
     const s1 = paymentSensitiveInfo(dir, P1);
     record('W7a commit paiement détecté avec diff vérifiée + rollback',
@@ -167,7 +167,7 @@ console.log('predeploy-wait : les deux côtés du verrou (mission P0)\n');
     record('W7c commit sensible avec approbation SHA exacte => ALLOW',
       approved.exit === 0 && approved.decision === 'ALLOW' && approved.businessApprovalGranted === true,
       `decision=${approved.decision}`);
-    fs.writeFileSync(path.join(dir, 'app.js'), 'v2 — évolution neutre\\n');
+    fs.writeFileSync(path.join(dir, 'app.js'), 'v2 — évolution neutre\n');
     const P2 = gcommit(dir, 'product: neutral change');
     const s2 = paymentSensitiveInfo(dir, P2);
     const neutral = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN });
@@ -181,7 +181,7 @@ console.log('predeploy-wait : les deux côtés du verrou (mission P0)\n');
   const { dir } = makeGitRoot();
   try {
     fs.mkdirSync(path.join(dir, 'public', 'api'), { recursive: true });
-    fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // root\\n");
+    fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // root\n");
     const rootSha = gcommit(dir, 'root: payment code');
     const info = paymentSensitiveInfo(dir, rootSha);
     const r = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN, businessApprovalSha: rootSha });
