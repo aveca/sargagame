@@ -1,3 +1,20 @@
+## 2026-11-06 10:55 UTC — factory_ops (OpenCode) — FACTORY V3 : connexion GitHub Actions verifiee (lecture seule)
+
+**Connexion etablie et prouvee, sans deploiement ni mutation.**
+
+- **GitHub** : `gh` 2.103.3 deja authentifie (keyring, compte `aveca` id 15622068), scopes `gist/read:org/repo/workflow`. **Aucune authentification creee** : la session existante couvre deja le besoin.
+- **Permissions reelles** sur `aveca/sargagame` : `admin: true` (maintain/push/pull/triage). Actions read+write, Contents read, Metadata read et variables Actions read : **toutes verifiees**.
+- **Actions (lecture)** : 56 workflows, 17 926 runs, jobs lisibles, **logs lisibles** (59 Ko), 50 noms de secrets (valeurs jamais lues), 1 variable.
+- **Variable** : `CLOUDFLARE_DEPLOY_ENABLED` = `true`.
+- **Workflow** `pages-code-only-release.yml` (id `409119247`, dispatch-only, **0 run**) lu depuis `origin/main` ; ses conditions de `gate` sont deja satisfaites a part le dispatch sur `main`.
+- **Cloudflare (lecture)** : OAuth wrangler 4.127.1, compte `abf2b92cf718313567b4b38eb9dda17f` ; **6/6 projets Pages lisibles** (sargagame, -gp, -florida, -puntacana, -riveramaya, -tulum).
+- **Garde-fou** : `cloudflare-production.yml` + `daily-copernicus.yml` se declenchent sur tout push `main` → **un merge deploye**. PR poussee **sans merge** pour respecter « aucun deploiement pendant cette phase ».
+- **Reutilisation** : `.ai/factory/capabilities.md` (registre durable) + `scripts/factory-v3/probe-capabilities.cjs` (sonde lecture seule, exit 0 = OK) + `scripts/factory-v3/state/config.json` (instantane sans valeur de secret).
+- **Signale hors perimetre** : les 6 sites live sont servis par un deploiement du 2026-10-28, **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` est en echec.
+- **Aucun** checkout, paiement, e-mail, secret lu en valeur/modifie, Worker, D1/R2/Supabase ecrit, migration, DNS, purge de cache, ni travail sur un autre depot.
+
+---
+
 ## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
 
 - Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.
