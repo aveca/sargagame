@@ -10,7 +10,7 @@
     },
     {
       "q": "How accurate is this sargassum tracker?",
-      "a": "The public validation record currently covers Martinique and Guadeloupe. It does not establish forecast accuracy for Florida. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
+      "a": "AFAI observations are intermittent and cloud cover can delay a reading. Each beach page shows the observation time and confidence. The public validation record currently covers Martinique and Guadeloupe; it does not establish forecast accuracy for Florida. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
     },
     {
       "q": "Can you really forecast sargassum a week out?",
@@ -336,7 +336,7 @@
       "title": "Fort Lauderdale Sargassum Today — Latest Beach Observations",
       "desc": "Check the latest published sargassum observation for Fort Lauderdale and Sunny Isles, with its timestamp and confidence. A current beach status is shown only when the reading passes freshness checks.",
       "h1": "Sargassum in Fort Lauderdale & Sunny Isles — Latest Beach Observations",
-      "intro": "Checking sargassum in Fort Lauderdale today? Conditions can differ between Fort Lauderdale Beach and Sunny Isles. Use the map above to inspect the latest published observation for each tracked beach, including its observation time and confidence. Satellite observations are intermittent and cloud cover can delay a reading; no fixed refresh schedule is guaranteed. A current clean/moderate/avoid status, Beach Score, or 7-day outlook is shown only when its source observation and required forecast inputs pass freshness and validation checks. If a reading is delayed or unverified, the page withholds a current verdict rather than presenting an old pass as today's conditions. Satellite observations describe floating material offshore; they do not confirm whether municipal crews have raked the sand. Check local beach advisories before travelling.",
+      "intro": "Checking sargassum in Fort Lauderdale today? Conditions can differ between Fort Lauderdale Beach and Sunny Isles. Use the map above to inspect the latest published USF AFAI observation distributed through NOAA/AOML ERDDAP for each tracked beach, including its observation time and confidence. Satellite observations are intermittent and cloud cover can delay a reading; no fixed refresh schedule is guaranteed. A current clean/moderate/avoid status, Beach Score, or 7-day outlook is shown only when its source observation and required forecast inputs pass freshness and validation checks. If a reading is delayed or unverified, the page withholds a current verdict rather than presenting an old pass as today's conditions. Satellite observations describe floating material offshore; they do not confirm whether municipal crews have raked the sand. Check local beach advisories before travelling.",
       "sections": [
         {
           "h2": "Fort Lauderdale or Sunny Isles — how to compare the latest observations",
@@ -348,7 +348,7 @@
         },
         {
           "h2": "Where to compare alternatives if both beaches are affected",
-          "text": "Use the regional map to compare the latest published observations for other tracked beaches such as Palm Beach, Jupiter, Cocoa Beach, Daytona or Clearwater. Geographic exposure patterns can guide what to check next, but they do not guarantee that any beach is clear today. Check each observation time and confidence; when a reading is delayed or unverified, no current clean-beach recommendation is made. Satellite observations do not confirm onshore cleanup."
+          "text": "Use the regional map to compare the latest published observations for other tracked beaches such as Palm Beach, Jupiter, Cocoa Beach, Daytona or Clearwater. Geographic exposure patterns can guide what to check next, but they do not guarantee that any beach is clear today. Check each observation time and confidence; when a reading is delayed or unverified, no current clean-beach recommendation is made. Satellite observations cannot confirm whether municipal crews have raked or removed sargassum from the sand."
         }
       ],
       "faq": [
