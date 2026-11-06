@@ -99,14 +99,19 @@ scientifique et aucune logique de création de paiement n'ont été modifiés.**
 ### Journalisation et limites restantes
 
 - Les logs génériques d'envoi et le drip B2B n'exposent plus les adresses email.
-- Le drip B2B conserve encore le défaut de claim atomique et de `contacted_at`; ce point reste bloquant avant tout déploiement du Worker.
+- Le drip B2B revendique désormais chaque prospect atomiquement (`status=new` → `processing`), vérifie la réponse fournisseur et écrit `contacted_at` uniquement après acceptation. Les claims expirés et les livraisons non confirmées passent en `manual_review`; aucun email n'est relancé automatiquement après un résultat ambigu.
+- Le contenu du drip renvoie vers l'observation AFAI disponible et son horodatage, sans promettre une cadence satellite fixe.
+- Limite restante avant tout déploiement : la chaîne de fallback multi-provider n'a pas encore de clé d'idempotence commune. Un provider qui accepte puis perd sa réponse pourrait être suivi d'un second envoi par le provider suivant; ce scénario doit être neutralisé ou explicitement couvert avant activation.
 
 ## Fichiers annexes
 
 - `scripts/migrations/002_payment_grant_search_path.sql` — durcissement
   `SET search_path = ''` de la fonction RPC (**préparé, non appliqué**).
 - `scripts/migrations/003_b2b_leads_least_privilege.sql` — moindre privilège
-  sur `public.b2b_leads` (**préparé, non appliqué**).
+  sur `public.b2b_leads`, suppression de la policy `PUBLIC ALL` constatée et
+  révocation des privilèges PUBLIC/anon/authenticated (**préparé, non appliqué**).
+- `scripts/migrations/004_b2b_lead_drip_claims.sql` — colonnes de claim,
+  tentatives et erreur non-PII pour le drip B2B (**préparé, non appliqué**).
 
 ## Rappel de déploiement
 
@@ -114,8 +119,10 @@ Ce code **n'est pas déployé**. Toute mise en production suppose :
 
 1. application préalable de `002_payment_grant_search_path.sql` (la fonction
    RPC doit exister avec la signature exacte) ;
-2. ajout du secret `NAMECHEAP_MAIL_TOKEN` si le relais Namecheap doit rester
+2. application préalable de `003_b2b_leads_least_privilege.sql` et
+   `004_b2b_lead_drip_claims.sql` sur une fenêtre autorisée ;
+3. ajout du secret `NAMECHEAP_MAIL_TOKEN` si le relais Namecheap doit rester
    actif ;
-3. vérification que la clé Mollie utilisée est une clé **live** : un
+4. vérification que la clé Mollie utilisée est une clé **live** : un
    paiement en `mode=test` ne crée **plus** de droit (le test est explicite
    et l'ancien code honorait les paiements de test).
