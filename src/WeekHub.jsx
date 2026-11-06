@@ -141,13 +141,24 @@ export default function WeekHub({
   // auditable, même que /fiabilite/). Affiché seulement en saison calme, avec N réel.
   const [calmProof, setCalmProof] = useState(null)
   useEffect(()=>{ let ok=true
+    const regionId = String(island || '').trim().toLowerCase()
     fetch("/api/copernicus/track-record.json").then(r=>r.json()).then(d=>{
-      try{ const c=d&&d.byRegime&&d.byRegime.calm
-        if(ok&&c&&c.cleanReliabilityPct!=null&&c.cleanSamples>=20) setCalmProof({pct:c.cleanReliabilityPct, n:c.cleanSamples, fa:c.falseAlarmRatePct})
-      }catch(_){}
-    }).catch(()=>{})
+      try{
+        const covered = Array.isArray(d?.regions) && d.regions.includes(regionId)
+        const fresh = d?.freshness?.stale === false
+        const c = d?.byRegime?.calm
+        if(ok && fresh && covered && c && c.cleanReliabilityPct!=null && c.cleanSamples>=20){
+          setCalmProof({
+            pct:c.cleanReliabilityPct,
+            n:c.cleanSamples,
+            scope:d.regions.map(x=>String(x).toUpperCase()).join(' + '),
+            window:d.window?.from && d.window?.to ? d.window.from+' → '+d.window.to : null,
+          })
+        } else if(ok) setCalmProof(null)
+      }catch(_){ if(ok) setCalmProof(null) }
+    }).catch(()=>{ if(ok) setCalmProof(null) })
     return ()=>{ ok=false }
-  },[])
+  },[island])
 
   // Climatologie OBSERVÉE (état B planner) : pour une date future, on donne l'estimation
   // approximative demandée par le fondateur — le taux propre RÉELLEMENT observé pour ce
@@ -452,9 +463,9 @@ export default function WeekHub({
                   <div style={{font:"500 12px/1.3 'Bricolage Grotesque',system-ui,sans-serif", color:"#4a4458", marginTop:5}}>{_t(lang,"On surveille la mer pour toi — alerte à la seconde où ça bascule.","We watch the sea for you — alerted the second it shifts.","Vigilamos el mar por ti — aviso en cuanto cambie.")}</div>
                   {calmProof && (
                     <div style={{font:"600 10.5px/1.35 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:8, paddingTop:8, borderTop:`1.5px dashed rgba(13,11,20,.22)`}}>{_t(lang,
-                      `En saison calme, ${calmProof.pct}% de nos « mer propre » se sont vérifiées (${calmProof.n.toLocaleString("fr-FR")} cas). Les rares alertes, on les donne à faible confiance — on ne crie pas au loup. 76-79% tous régimes confondus, détail sur /fiabilite/.`,
-                      `In calm season, ${calmProof.pct}% of our “clean water” calls held up (${calmProof.n.toLocaleString("en-US")} cases). The rare alerts we give low-confidence — we don't cry wolf. 76-79% across all regimes, details on /reliability/.`,
-                      `En temporada calma, ${calmProof.pct}% de nuestros “agua limpia” se cumplieron (${calmProof.n.toLocaleString("es-ES")} casos). Las raras alertas las damos con baja confianza — no gritamos lobo. 76-79% en todos los regímenes, detalle en /fiabilidad/.`)}</div>
+                      `Sur le périmètre agrégé ${calmProof.scope}, ${calmProof.pct}% des prévisions « mer propre » de saison calme se sont vérifiées (${calmProof.n.toLocaleString("fr-FR")} cas${calmProof.window ? ", "+calmProof.window : ""}). Ce résultat ne mesure ni les alertes ni la précision de chaque plage.`,
+                      `Within the aggregate ${calmProof.scope} scope, ${calmProof.pct}% of calm-season “clean water” forecasts matched later observations (${calmProof.n.toLocaleString("en-US")} cases${calmProof.window ? ", "+calmProof.window : ""}). This does not measure alerts or per-beach accuracy.`,
+                      `En el alcance agregado ${calmProof.scope}, el ${calmProof.pct}% de los pronósticos de “mar limpio” en temporada tranquila coincidió con observaciones posteriores (${calmProof.n.toLocaleString("es-ES")} casos${calmProof.window ? ", "+calmProof.window : ""}). Este resultado no mide las alertas ni la precisión por playa.`)}</div>
                   )}
                 </>
               ) : hero.safe ? (
@@ -728,7 +739,7 @@ export default function WeekHub({
           {/* PIED honnêteté */}
           <div style={{textAlign:"center", padding:"2px 4px 0"}}>
             <a href="/fiabilite/" style={{font:"800 11.5px/1 'Bricolage Grotesque',system-ui,sans-serif", color:INK, textDecoration:"underline"}}>{_t(lang,"Va voir ce qu'on vaut vraiment →","See what we're really worth →","Mira lo que valemos de verdad →")}</a>
-            <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"76 à 79 % de justesse selon la saison · confiance forte J0-J3, indicative au-delà.","76-79% accuracy by season · strong confidence D0-D3, indicative beyond.","76-79 % de acierto según temporada · confianza alta D0-D3, indicativa más allá.")}</div>
+            <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque',system-ui,sans-serif", color:"#3a3548", marginTop:6}}>{_t(lang,"Un taux n’apparaît que si le relevé est frais et couvre cette région.","A rate appears only when the validation record is fresh and covers this region.","La tasa solo aparece si el registro está actualizado y cubre esta región.")}</div>
           </div>
 
         </div>
