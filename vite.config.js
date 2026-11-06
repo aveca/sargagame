@@ -452,6 +452,21 @@ export default defineConfig({
           console.warn('   ⚠ /api/reliability.json failed:', e.message)
         }
 
+        // Pages commerciales regionalisées : /pro/ sert la langue de la région,
+        // démo par destination (/pro/demo/), palier Territoire canonique sur les
+        // pages EN/ES, canonical/liens sur le domaine de la région.
+        // Détail des défauts mesurés en prod : scripts/lib/b2b-commercial-pages.cjs
+        try {
+          const { buildCommercialPages } = _require('./scripts/lib/b2b-commercial-pages.cjs')
+          const commercialRegion = REGION || JSON.parse(readFileSync(resolve(__dirname, 'regions/mq.json'), 'utf-8'))
+          const commercial = buildCommercialPages({
+            region: commercialRegion,
+            outDir,
+            publicDir: resolve(__dirname, 'public'),
+          })
+          console.log(`   → pages commerciales: langue ${commercial.lang}, écrit: ${commercial.written.join(', ') || '(hub inchangé)'}`)
+        } catch (e) { console.warn('   ⚠ pages commerciales région:', e.message) }
+
         if (IS_NEW_REGION) {
           try {
             const { generateRegionSeoPages } = _require('./scripts/lib/region-seo-pages.cjs')

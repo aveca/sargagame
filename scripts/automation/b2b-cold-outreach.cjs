@@ -68,13 +68,14 @@ function rampCap(firstSendISO) {
 // Pro 79 €/mois ou 690 €/an, sur /pro/espace/ (essai + abo mensuel/annuel). ZÉRO call.
 // Langue = primaryLang du site de la région (cf. regions/<id>.json) : florida & puntacana
 // = EN-first (sargassummiami / sargassumpuntacana), rivieramaya = ES-first (sargassumcancun).
-function localeFor(c) { return (c.island === 'FL' || c.island === 'florida' || c.island === 'PC' || c.island === 'puntacana') ? 'en' : (c.island === 'RM' || c.island === 'rivieramaya') ? 'es' : 'fr' }
+function localeFor(c) { const i = String((c && c.island) || '').toLowerCase(); return (i === 'fl' || i === 'florida' || i === 'pc' || i === 'puntacana') ? 'en' : (i === 'rm' || i === 'rivieramaya' || i === 'tu' || i === 'tulum') ? 'es' : 'fr' }
 function domainFor(c) {
-  const i = String(c.island || '').toLowerCase()
+  const i = String((c && c.island) || '').toLowerCase()
   if (i === 'gp') return 'sargasses-guadeloupe.com'
   if (i === 'fl' || i === 'florida') return 'sargassummiami.com'
   if (i === 'pc' || i === 'puntacana') return 'sargassumpuntacana.com'
   if (i === 'rm' || i === 'rivieramaya') return 'sargassumcancun.com'
+  if (i === 'tu' || i === 'tulum') return 'sargazotulum.com'
   return 'sargasses-martinique.com'
 }
 
@@ -302,4 +303,7 @@ async function main() {
 // Exécution directe seulement → permet de require ce module (ex. tester isSendableEmail).
 if (require.main === module) main().catch(e => { console.error(e); process.exit(1) })
 
-module.exports = { isSendableEmail, rampCap, buildC0 }
+// `localeFor` / `domainFor` sont exportés pour être verrouillés par test :
+// Tulum est une région USD/ES à part entière (sargazotulum.com) — sans cela,
+// un contact Tulum recevait une copy FR pointant vers la Martinique.
+module.exports = { isSendableEmail, rampCap, buildC0, buildC4, localeFor, domainFor }

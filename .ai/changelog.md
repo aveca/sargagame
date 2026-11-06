@@ -1,3 +1,18 @@
+## 2026-11-06 05:20 UTC — Mission P0 conversion B2B 6 destinations (PR Draft #1310)
+
+**Branche `feature/p0-commercial-conversion-20261105` (base `origin/main` = `7663daffb`), commit `ecb389c83`, PR #1310 DRAFT — non mergée, non déployée.**
+
+- **Phase 1 — audit production (lecture seule, aucun paiement réel)** : 6 domaines × 7 paths, HTTP 200. Défauts mesurés : hubs `/pro/` FR servis sur les 4 domaines USD (canonical/og/hreflang Martinique), CTA absolus vers la Martinique, `/for-hotels/` canonique MQ, `/pro/espace/` EUR/FR + plages MQ-GP sur Tulum, palier « from $219/month » non vendable, CTA `pro_monthly_usd` → « Plan mensuel inconnu », données live périmées (~5 300 min) avec `stale:false` contradictoire, 4 leads dont 1 identifiable (Anoli Lodges).
+- **Phase 2 — offre** : `scripts/lib/b2b-commercial-pages.cjs` (nouveau, hooké dans `vite.config.js`) régionalise `/pro/` (langue, canonical, palier Territoire canonique 1 990 €/an, slug fiabilite régional, CTA démo FR + EN/ES) et génère `/pro/demo/` par destination (données publiques du site, **noms réels de plages**, fraîcheur recalculée à l'affichage, SLA 900 min fail-closed). `public/api/mollie-lib.php` : plan `pro_monthly_usd` = 89 USD (montant déjà affiché publiquement) → le CTA mensuel USD n'est plus mort. `public/pro/espace/index.html` : Tulum en USD/ES + 5 plages + lien annuel relatif.
+- **Phase 3 — registre** : `scripts/automation/b2b-registry.cjs` (nouveau) → 108 prospects, 105 contactés identifiables, 3 jamais contactés, 1 intéressé (Anoli Lodges), 0 réponse/démo/devis/gagné, **105 relances préparées, 0 envoi** ; statuts manuels prioritaires ; PII hors git, `docs/B2B_REGISTRY.md` versionné avec partie locale **et** domaine masqués.
+- **Phase 4 — diagnostic paiement** : `docs/B2B_PAYMENT_BLOCKERS_20261105.md` (grille payable, parcours, blocages B1→B7, corrections préparées, points à autorisation, rollback). **Aucune configuration de paiement en production modifiée.**
+- **Garde-fous** : `regionOf('tulum')`, `historyFreshness()` (SLA 900 jamais abaissé), `dataHook()` → `null` si historique > SLA, `localeFor`/`domainFor` Tulum (ES + sargazotulum.com).
+- **Tests** : `node tests/unit/b2b-commercial-conversion.test.cjs` PASS · `npm test` **160/160** · `npm run build` exit 0 (5 régions vérifiées) · budget **206.5/210 Ko** · `ux-smoke` 4 tokens OK · `php -l` OK (3 fichiers) · navigateur réel (Playwright) `/pro/` + `/pro/demo/` 200, 21 lignes, 0 lien externe, `ERRORS=[]` · `git diff --check` OK.
+- **Bloqués / hors périmètre** : pipeline de fraîcheur (> SLA 900 min), 0 prospect contacté sur les 4 marchés USD (base enrichie MQ/GP seule), 3 leads sans identité dans le dépôt, routage Cloudflare `/api/mollie*` + secret webhook + backfill des 6 ventes Mollie (autorisation requise), arbitrage Stripe run-off vs Mollie sur les régions USD.
+- **Note d'écart** : le « 45 prospects » du cahier des charges ne correspond à aucun compteur du dépôt (152 envois hashés, 105 contactés identifiables, 4 leads, 0 payé) — aucun nombre inventé.
+
+---
+
 ## 2026-11-04 04:40 UTC — correction de l'état P0 attribution funnel
 
 - Stratégie finale candidate simplifiée : `track()` reste inchangé côté payload destiné aux autres sinks ; `src/supabasePhotos.js` enrichit uniquement la copie `payloadParams` Supabase avec `sessionStorage.sg_sid`, uniquement après `sg_cookie_consent=accepted`.

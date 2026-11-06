@@ -26,7 +26,36 @@ function regionOf(island) {
   if (i === 'fl' || i === 'florida') return 'florida'
   if (i === 'pc' || i === 'puntacana') return 'puntacana'
   if (i === 'rm' || i === 'rivieramaya') return 'rivieramaya'
+  if (i === 'tu' || i === 'tulum') return 'tulum'
   return 'mq'
+}
+
+// SLA opérationnel de fraîcheur (P0.118 §9) : 900 min, JAMAIS abaissé.
+// Au-delà, l'historique ne peut plus porter une affirmation (« la semaine
+// dernière… ») : le hook de données est alors rendu à `null` (fail-closed).
+const SLA_MINUTES = 900
+
+// Fraîcheur de l'historique d'une région (même source que avoidDaysLastWeek).
+function historyFreshness(regionId) {
+  const region = regionOf(regionId)
+  const p = (region === 'mq' || region === 'gp')
+    ? 'public/api/copernicus/history.json'
+    : `public/api/copernicus/${region}/history.json`
+  const h = load(p, { history: [] })
+  const snaps = h.history || []
+  let newest = null
+  for (const s of snaps) {
+    const d = Date.parse(s && s.date)
+    if (Number.isFinite(d) && (newest === null || d > newest)) newest = d
+  }
+  if (newest === null) return { fresh: false, ageMinutes: Infinity, newestISO: null, reason: 'no_history' }
+  const ageMinutes = Math.round((Date.now() - newest) / 60000)
+  return {
+    fresh: ageMinutes <= SLA_MINUTES,
+    ageMinutes,
+    newestISO: new Date(newest).toISOString(),
+    reason: ageMinutes <= SLA_MINUTES ? null : 'sla_exceeded',
+  }
 }
 
 // Hôtel par défaut ; collectivité si le contact sent la mairie/office/agglo.
@@ -71,6 +100,10 @@ function avoidDaysLastWeek(beachId, island) {
 }
 
 function dataHook(c, type) {
+  // FAIL-CLOSED : sans historique frais (SLA 900 min), aucune affirmation de
+  // donnée n'est produite (ni « jours à éviter », ni « plages propres »).
+  const fresh = historyFreshness(c && c.island)
+  if (!fresh.fresh) return null
   const beaches = beachesForCommune(c.town, c.island)
   if (!beaches.length) return null
   if (type === 'collectivite') {
@@ -113,4 +146,4 @@ function liveProof(regionId) {
   return resolveLiveProof(tr, regionId)
 }
 
-module.exports = { inferType, beachesForCommune, avoidDaysLastWeek, dataHook, liveProof, resolveLiveProof, regionOf }
+module.exports = { inferType, beachesForCommune, avoidDaysLastWeek, dataHook, liveProof, resolveLiveProof, regionOf, historyFreshness, SLA_MINUTES }

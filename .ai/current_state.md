@@ -1,3 +1,59 @@
+## 2026-11-06 05:20 UTC · Agent: coding_agent (OpenCode) · Mission P0 conversion B2B 6 destinations
+
+### Travail effectué
+- **Résumé 1 ligne** : mission P0 « transformer les prospects B2B déjà contactés en clients payants » livrée en **PR Draft #1310** (branche `feature/p0-commercial-conversion-20261105`, base `origin/main` = `7663daffb`) — audit prod 6 domaines (lecture seule, **aucun paiement réel**), offre Pro régionalisée + démo `/pro/demo/` par destination, registre commercial (108 prospects / 105 contactés / 1 intéressé / **0 envoi**), diagnostic paiement (aucune config prod modifiée).
+- **Détails** :
+  - **Phase 1 (audit prod)** : 6 domaines × 7 paths, HTTP 200, lecture seule. Défauts démontrés : hubs `/pro/` FR servis sur les 4 domaines USD (canonical/og/hreflang Martinique), CTA absolus vers la Martinique, `/for-hotels/` canonique MQ, `/pro/espace/` EUR/FR + plages MQ-GP sur Tulum, palier « from $219/month » non vendable, CTA `pro_monthly_usd` → « Plan mensuel inconnu », données live périmées (~5 300 min) avec `stale:false` contradictoire, 4 leads dont 1 identifiable (Anoli Lodges).
+  - **Phase 2 (offre)** : `scripts/lib/b2b-commercial-pages.cjs` (nouveau, hooké dans `vite.config.js` au `closeBundle`) → `/pro/` dans la langue de la région, canonical/liens sur le domaine de la région, palier Territoire canonique **1 990 €/an** (pas de palier USD non vendable), slug fiabilité régional (`/fiabilite/` · `/reliability/` · `/fiabilidad/`), CTA démo sur le hub FR **et** EN/ES, formulation FR neutre (build MQ/GP partagé). `/pro/demo/` : lecture des données publiques du site, **noms réels de plages**, fraîcheur **recalculée à l'affichage** (SLA 900 min, fail-closed). `public/api/mollie-lib.php` : plan `pro_monthly_usd` = **89 USD** (montant déjà affiché publiquement). `public/pro/espace/index.html` : Tulum en USD/ES + 5 plages + lien annuel relatif.
+  - **Phase 3 (registre)** : `scripts/automation/b2b-registry.cjs` → 108 prospects, 105 contactés identifiables, 3 jamais contactés, 1 intéressé, 0 réponse/démo/devis/gagné, **105 relances préparées en fichiers, 0 envoi**. Statuts manuels prioritaires. PII hors git (registre + brouillons gitignorés) ; `docs/B2B_REGISTRY.md` versionné avec **partie locale ET domaine masqués**.
+  - **Phase 4 (diagnostic)** : `docs/B2B_PAYMENT_BLOCKERS_20261105.md` (grille payable, parcours, blocages B1→B7, corrections préparées, points à autorisation, rollback). **Aucune configuration de paiement en production modifiée.**
+  - **Garde-fous** : `b2b-segment.cjs` → `regionOf('tulum')`, `historyFreshness()` (SLA 900 **jamais abaissé**), `dataHook()` → `null` si historique > SLA ; `b2b-cold-outreach.cjs` → `localeFor`/`domainFor` Tulum (ES + `sargazotulum.com`).
+
+### Fichiers modifiés
+- `scripts/lib/b2b-commercial-pages.cjs` — **nouveau** (hub régionalisé, démo par destination, SLA 900, noms de plages).
+- `scripts/automation/b2b-registry.cjs` — **nouveau** (registre commercial + relances préparées, aucun envoi).
+- `docs/B2B_REGISTRY.md` — **nouveau** (registre versionné, adresses masquées).
+- `docs/B2B_PAYMENT_BLOCKERS_20261105.md` — **nouveau** (diagnostic paiement Phase 4).
+- `tests/unit/b2b-commercial-conversion.test.cjs` — **nouveau** (PASS).
+- `public/api/mollie-lib.php` — plan `pro_monthly_usd` (89 USD).
+- `public/pro/espace/index.html` — Espace Pro Tulum (USD/ES, 5 plages).
+- `scripts/automation/lib/b2b-segment.cjs`, `scripts/automation/b2b-cold-outreach.cjs` — Tulum + fail-closed fraîcheur.
+- `vite.config.js` — hook `buildCommercialPages`.
+- `.gitignore` — chemins PII du registre.
+
+### Tests réalisés
+- [x] `node tests/unit/b2b-commercial-conversion.test.cjs` → PASS (noms de plages, SLA 900, Tulum ES, masquage PII, pas d'envoi)
+- [x] `npm test` → **160/160 fichiers OK**
+- [x] `npm run build` → exit 0 (MQ + florida / puntacana / rivieramaya / tulum vérifiés)
+- [x] `node scripts/check-bundle-budget.cjs` → **206.5 Ko ≤ 210 Ko** gzip eager
+- [x] `node scripts/ux-smoke.mjs` → `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, `RAW_CSS_TEXT=[]`
+- [x] `php -l` → OK sur `mollie-lib.php`, `mollie.php`, `b2b-trial.php`
+- [x] Navigateur réel (Playwright, build local) → `/pro/` 200 + CTA démo visible ; `/pro/demo/` 200, 21 lignes, barre fail-closed, 0 lien externe, `ERRORS=[]`
+- [x] `git diff --check` → OK
+- [ ] CI PR #1310 → **en cours à la création du PR** (checks `test-frontend`, `perf`, `lighthouse-report`)
+
+### Problèmes restants
+- [ ] **Données live périmées** (> SLA 900 min) → la démo n'affiche aucun verdict (dépendance data, hors périmètre).
+- [ ] **0 prospect contacté sur Miami / Punta Cana / Cancún / Tulum** : la base enrichie ne couvre que MQ/GP ; `b2b-us-enriched.json` jamais généré (requiert `GOOGLE_PLACES_KEY`).
+- [ ] **3 des 4 leads sans identité** dans le dépôt → non actionnables sans lecture Supabase/Apps Script.
+- [ ] **Écart de cahier des charges** : le « 45 prospects » ne correspond à aucun compteur du dépôt (152 envois hashés, 105 contactés identifiables, 4 leads, 0 payé) — signalé, aucun nombre inventé.
+- [ ] **Stash `stash@{0}` conservé** (artefacts de build pré-existants restaurés dans l'arbre de travail, non commités) : `public/api/b2b-partners.json`, `public/api/copernicus/sargassum.json`, `public/data/b2b-partners.json` restent modifiés en local comme avant la session.
+- [ ] Autorisations requises (hors périmètre, non demandées) : routage Cloudflare `/api/mollie*` → Worker `sg-payments`, secret `MOLLIE_WEBHOOK_SECRET`, backfill des 6 ventes Mollie non livrées, arbitrage Stripe run-off vs Mollie sur les 4 régions USD.
+
+### Prochaine action recommandée
+1. Revue + validation de la PR **Draft #1310** (ne pas merger sans revue : elle touche `/pro/`, `/pro/demo/` et `mol_b2b_plans()`) — Rôle : release_agent
+2. Reprise du pipeline de fraîcheur des données (SLA 900 min) pour que la démo affiche un verdict — Rôle : data_agent
+3. Générer `b2b-us-enriched.json` (clé `GOOGLE_PLACES_KEY`) puis contacter les 4 marchés USD — Rôle : growth_agent
+4. Autorisation explicite pour la 1ʳᵉ relance des 105 brouillons préparés — Rôle : fondateur
+
+### Branche / PR
+- Branche : `feature/p0-commercial-conversion-20261105` (base `origin/main` = `7663daffb`)
+- PR : **#1310 — Draft** (https://github.com/aveca/sargagame/pull/1310) — **non mergée, non déployée**
+- Commit head : `ecb389c8392239a292e3e568b0bce52c2d79a8ef`
+- Rollback : revert du commit `ecb389c83` — aucune migration, aucun secret, aucune donnée ; `/pro/demo/` est une page statique, `pro_monthly_usd` inactif tant qu'il n'est pas appelé.
+
+---
+
 > **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
