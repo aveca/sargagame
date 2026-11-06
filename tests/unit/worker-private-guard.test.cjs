@@ -75,5 +75,8 @@ check('daily-copernicus stages and activates private forecasts through FTPS', DA
 check('data-refresh does not stage forecast-full.json in Git', !DATA_REFRESH.includes('forecast-full.json'));
 check('daily-copernicus does not stage forecast-full.json in Git', !DAILY_COPERNICUS.includes('forecast-full.json'));
 check('both refresh workflows invoke the private FTPS handoff', DATA_REFRESH.includes('scripts/upload-private-forecasts-ftp.cjs') && DAILY_COPERNICUS.includes('scripts/upload-private-forecasts-ftp.cjs'));
+const dataRefreshGroup = DATA_REFRESH.match(/^\s*group:\s*(.+)$/m)?.[1]?.trim();
+const dailyCopernicusGroup = DAILY_COPERNICUS.match(/^\s*group:\s*(.+)$/m)?.[1]?.trim();
+check('both workflows serialize on the same cross-workflow publication lock', dataRefreshGroup === dailyCopernicusGroup && dataRefreshGroup === 'copernicus-publication-${{ github.ref }}');
 
 console.log('\n' + passed + ' checks passed — private endpoint fail-closed, no public Git payload, FTPS handoff required.');
