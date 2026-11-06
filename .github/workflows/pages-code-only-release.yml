@@ -32,6 +32,13 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # La suite de tests lit `dist/` (artefact Vite) : le build doit preceder
+      # `npm test`, exactement comme le job `test-frontend` de ci-tests.yml.
+      # Sans ce build, `tests/sitemap-guard-beach-pages.test.cjs` echoue
+      # ("dist/ absent - vite build d'abord") et le gate refuse la release
+      # (run 42215481383, job gate, step "Unit and contract tests").
+      - name: Verify Build
+        run: npm run build
       - name: Unit and contract tests
         run: npm test
 
