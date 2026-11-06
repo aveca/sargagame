@@ -1,3 +1,60 @@
+## 2026-11-06 05:05 UTC · Agent: OpenCode (coding_agent)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0.46 — moteur d'alertes B2C de `sg-payments` rendu **fail-closed** (filtres vides/NULL/inconnus, contrat API réel `levels`/`weekly`, porte scientifique `erddapTimestamp`) + **idempotence durable** (marqueur B2C dédié, claim atomique **avant** envoi). **Aucun email réel, aucun cron exécuté, aucun déploiement, aucun merge — la PR #1294 reste Draft.**
+- **Détails** :
+  - **État réel ≠ énoncé de la mission** : le head de la PR #1294 était `b1c34b1e2562c90b5f27c63ae48d83cf9444935e` (le `8f3c85d43` annoncé dans la mission est un commit **antérieur** du même historique, déjà inclus). `origin/main` avait avancé de `7663daffb` à `71ccda365`. Divergence réelle avant sync : **12 behind / 21 ahead** (et non 5/4).
+  - **Synchronisation normale** : `git merge --no-ff origin/main` → commit de merge `cc93a22024ee05dfec9d74e46ccb6ccf3e22b67a` (parents `b1c34b1e` + `71ccda365`). **Pas de rebase, pas de force push, aucune écriture sur `main`, 0 conflit.** Divergence après sync : **0 behind / 22 ahead**.
+  - **§2 Filtres vides** : filtre plage `NULL` / vide / IDs inconnus / région absente / région sans correspondance ⇒ **aucune alerte**. Double garde (`boucle runB2CAlerts` + `b2cSelectedAlertLevels`). Un tableau vide n'est **jamais** interprété comme « toutes les plages ». Aucun abonnement modifié, aucun consentement implicite inventé.
+  - **§3 Contrat API réel** : seules `levels`, `weekly`, `erddapTimestamp`, `stale` sont utilisées. **Plus de `fc.beaches`, plus de `fc.data`, plus de recherche textuelle JSON.** Correspondance **explicite** par ID de plage ; une plage présente uniquement dans `weekly` (sans observation de niveau) **ne notifie pas**.
+  - **§4 Porte scientifique** : `erddapTimestamp` valide, **non futur**, âge réel ≤ **900 min**, `stale === false` (strict), mapping régional valide, résultat de niveau plage valide. **`updatedAt` et `dataAgeMinutes` ne sont jamais des substituts.** Données manquantes/invalides ⇒ **aucun email**. Valeurs scientifiques existantes préservées.
+  - **§6 Idempotence durable** : le vrai manque du moteur n'était pas les garde-fous (déjà présents via `ce3f7faa7`/`f501a6ca1`) mais l'**absence de marqueur de livraison**. Implémentation : table **dédiée** `public.b2c_alert_deliveries` (PK `(subscription_id, observation_ts, beaches_hash)`) + RPC atomique `public.sg_claim_b2c_alert_delivery` (`INSERT … ON CONFLICT DO NOTHING`), **claim avant envoi**. Marqueur indisponible ⇒ **fail-closed (zéro envoi)** ; marqueur déjà pris ⇒ doublon **supprimé** ; échec provider ⇒ marqueur conservé (`failed`), l'observation suivante a une clé différente. **Aucune PII stockée** (ni email, ni nom). `public.b2c_alerts` **jamais modifiée** par le moteur. KV best-effort **refusé** (décision antérieure du dépôt, `146979234`).
+  - **Migration `005_b2c_alert_delivery_markers.sql` PRÉPARÉE, NON APPLIQUÉE** (Phase 8) ⇒ **pré-condition de déploiement** : sans elle, le moteur reste fail-closed (zéro alerte, zéro doublon).
+  - **§5 Tests** : suite fail-closed étendue à **18 assertions** (dont **234 abonnés à filtres vides ⇒ 0 appel provider**), nouveau fichier d'idempotence **19 assertions**. Le `fetch` est intercepté en mode **STRICT** : toute sortie vers un provider d'email réel ou un hôte inattendu **fait échouer le test** ; garde statique anti-SMTP ; `b2c_alerts` en **lecture seule** dans les mocks.
+  - **Mutation testing (preuve que les tests mordent)** : (A2) suppression du garde-fou de filtres vides ⇒ échec « 234 active subscribers with empty beach filters produce zero email-provider calls » ; (C) substitution `updatedAt` ⇒ échec « a fresh updatedAt/dataAgeMinutes never substitutes an old erddapTimestamp » ; (B) suppression de la suppression des doublons ⇒ échec « replaying the SAME observation sends zero additional notification ». Worker restauré ensuite (diff 0 vs sauvegarde).
+  - **État réel constant** : `runB2CAlerts` n'est déclenché que par `scheduled()` pour `event.cron === "0 6,18 * * *"` ; la route manuelle `/_cron/b2c` renvoie **404** (deny-by-default, testée). Planning, secrets, abonnements, base de production : **inchangés**.
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — porte scientifique documentée + idempotence durable (`b2cDeliveryFingerprint`, `claimB2cAlertDelivery`, `markB2cAlertDelivery`, câblage claim→email dans `runB2CAlerts`).
+- `scripts/migrations/005_b2c_alert_delivery_markers.sql` — **nouveau** : table `b2c_alert_deliveries` + RPC `sg_claim_b2c_alert_delivery`, RLS, aucune PII, **non appliquée**.
+- `tests/unit/b2c-alert-idempotency.test.cjs` — **nouveau** : 19 assertions (doublon, nouvelle observation, marqueur indisponible, ordre claim→email, migration non appliquée, zéro écriture `b2c_alerts`).
+- `tests/unit/b2c-alerts-fail-closed.test.cjs` — étendu à 18 assertions (filtres vides, NULL, plage inconnue, weekly-only, stale absent, `updatedAt`/`dataAgeMinutes`, `/_cron/b2c` refusé).
+- `tests/unit/mollie-worker-harness.cjs` — `installStrictFetch` (échec sur provider réel / hôte inattendu) + `createB2cDeliveryMarkerStore` (rejoue la clé primaire).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md`, `NEXT_SESSION.md` — handoff P0.46.
+
+### Tests réalisés
+- [x] `npm ci` → exit 0 (Node v24.14.0 / npm 11.9.0)
+- [x] `npm test` → **167/167 fichiers de test OK**, exit 0
+- [x] `npm run build` → exit 0 (`✓ built in 3.54s`)
+- [x] `node scripts/check-bundle-budget.cjs` → **206.5 / 210 Ko** gzip eager (exact `211462 / 215040` octets), exit 0
+- [x] `node tests/unit/b2c-alerts-fail-closed.test.cjs` → **PASS 18 assertions**
+- [x] `node tests/unit/b2c-alert-idempotency.test.cjs` → **PASS 19 assertions**
+- [x] Groupes ciblés : B2C fail-closed **1/1** · B2C idempotence **1/1** · Mollie worker **6/6** · payment regression **7/7** · regional contract **11/11** · private guard **2/2** — tous PASS
+- [x] Mutation tests A2 / C / B → **les trois font échouer la suite attendue** (worker restauré, diff 0)
+- [x] `git diff --check` → exit 0
+- [ ] php -l → aucun `.php` touché (N/A)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune UI touchée)
+- [x] CI GitHub sur le SHA exact `02c58177e` → **4/4 PASS** : `test-frontend` (2m18s, run `42173901236`) · `perf` (20s) + `lighthouse-report` (3m23s, run `42173901187`) · `GitGuardian Security Checks` (2s)
+
+### Problèmes restants
+- [ ] **Migration 005 NON APPLIQUÉE** en production (autorisation requise) ⇒ **pré-condition de déploiement** : sans elle, le moteur d'alertes reste fail-closed (**zéro alerte**). — sévérité HIGH — action : appliquer `scripts/migrations/005_b2c_alert_delivery_markers.sql` **avant** de déployer la Worker.
+- [ ] **Déploiement de `sg-payments` hors périmètre** (dernier déploiement live `2026-10-02T04:11:44Z`) : le code fail-closed **n'est pas en production** tant que la PR n'est ni mergée ni déployée. — sévérité HIGH — action : merger + déployer après autorisation.
+- [ ] **Allowlist Tulum** (`BUG-2026-127`) : `ALLOWED_HOSTS` (l. 12–18) et `ALLOWED_ORIGINS` (l. 5–11) ne contiennent **pas** `sargazotulum.com`, alors que `COLLECT_HOSTS` (l. 35–42) le contient ⇒ hôte de repli des URLs webhook Mollie et CORS non couverts. Le **chemin alertes B2C Tulum fonctionne** (domaine issu de `B2C_REGION_CONFIG`). — sévérité MEDIUM — action : PR dédiée.
+- [ ] **Schéma B2B résiduel** (`BUG-2026-128`) : `B2B_SUBSCRIPTION_SCHEMA_PLANS` (l. 30–32) — le contrat live `b2b_subscriptions.plan` impose `free`/`alert`/`dashboard`/`enterprise` et **aucun mapping approuvé** depuis `B2B_PLANS` n'existe ⇒ échec **fermé** sur la création d'abonnement B2B (`e8ca8dbf4`). — sévérité MEDIUM — action : décision de mapping + migration.
+- [ ] Le « 45 prospects » de la mission B2B précédente ne correspond à **aucun compteur** du dépôt — écart déjà signalé, **aucun nombre inventé**.
+
+### Prochaine action recommandée
+1. Relire la PR #1294 (Draft) et trancher l'application de la migration 005 + le déploiement de `sg-payments` — Rôle : founder/release_agent
+2. Corriger l'allowlist Tulum (`ALLOWED_HOSTS` + `ALLOWED_ORIGINS`) — Rôle : coding_agent
+3. Trancher le mapping `B2B_PLANS` → `b2b_subscriptions.plan` — Rôle : founder/data_agent
+
+### Branche / PR
+- Branche : `feature/p0-mollie-durable-fulfillment-20261105`
+- PR : **#1294 (Draft, OPEN, MERGEABLE)** — https://github.com/aveca/sargagame/pull/1294
+- Commit head : `02c58177efeb0cdc3a6db4eedf391dcb36dcd663` (sync main : `cc93a2202`)
+
+---
+
 ## 2026-11-05 19:35 UTC · Agent: OpenCode (coding_agent)
 
 ### Travail effectué
