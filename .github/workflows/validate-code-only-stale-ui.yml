@@ -1,0 +1,62 @@
+name: Validate code-only stale UI candidate
+on:
+  push:
+    branches:
+      - validate/code-only-ui-release-20261106
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout validation workflow
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Checkout exact code-only candidate
+        uses: actions/checkout@v4
+        with:
+          ref: 3baeee393f93f9f813ef6aa96e20ff693dabd6a4
+          path: candidate
+          fetch-depth: 0
+      - name: Set up Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: candidate/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: candidate
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: candidate
+      - name: Build all six regional FTP packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          for region in mq florida puntacana rivieramaya tulum; do
+            echo "=== Building ${region} ==="
+            VITE_REGION="${region}" npm run build
+            node scripts/prepare-ftp.cjs
+          done
+        working-directory: candidate
+      - name: Run full test suite
+        run: npm test
+        working-directory: candidate
+      - name: Verify 269-file code-only invariance
+        run: node scripts/verify-code-only-release.cjs
+        working-directory: candidate
+      - name: Run 12 desktop/mobile fail-closed scenarios
+        run: node scripts/automation/code-only-12-scenarios.cjs
+        working-directory: candidate
+      - name: Upload validation evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-only-stale-ui-validation
+          path: |
+            candidate/scripts/automation/data/code-only-12-scenarios.json
+            candidate/scripts/automation/data/journeys/code-only-*.png
+          if-no-files-found: warn
