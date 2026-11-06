@@ -1332,8 +1332,10 @@ async function runB2CAlerts(env) {
         // Le marqueur reste en place : la MEME observation ne sera pas
         // rejouee (pas de doublon possible). L'observation suivante, elle, a
         // une cle differente et reste autorisee.
-        await markB2cAlertDelivery(env, fingerprint, "failed", null);
-        console.log("B2C: all email providers failed subscription=" + String(sub.id || "unknown"));
+        await markB2cAlertDelivery(env, fingerprint, "failed", result.provider || null);
+        console.log("B2C: email delivery not confirmed subscription=" + String(sub.id || "unknown") +
+          " provider=" + String(result.provider || "none") +
+          " ambiguous=" + String(Boolean(result.ambiguous)));
       }
     } catch (e) {
       console.log("B2C: error subscription=" + String(sub.id || "unknown") + ": " + e.message);
