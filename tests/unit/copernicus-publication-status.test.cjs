@@ -10,6 +10,7 @@ const base = {
   gateOutcome: 'success',
   publishOutcome: 'success',
   publishChanged: true,
+  privateUploadOutcome: 'success',
 };
 
 const cases = [
@@ -21,6 +22,8 @@ const cases = [
   ['missing source fails closed', { ...base, source: 'none' }, STATUSES.FAILED_VALIDATION],
   ['gate validation failure fails closed', { ...base, gateOutcome: 'failure', gateStatus: 'FAILED_VALIDATION' }, STATUSES.FAILED_VALIDATION],
   ['push failure is explicit', { ...base, publishOutcome: 'failure' }, STATUSES.FAILED_PUBLISH],
+  ['private FTPS stage failure blocks publication', { ...base, publishOutcome: 'skipped', privateUploadOutcome: 'failure' }, STATUSES.FAILED_PRIVATE_UPLOAD],
+  ['private FTPS activation cannot be skipped after a fresh fetch', { ...base, privateUploadOutcome: 'skipped' }, STATUSES.FAILED_PRIVATE_UPLOAD],
   ['skipped publish is not reported as a fresh publication', { ...base, publishOutcome: 'skipped', publishChanged: null }, STATUSES.NO_NEW_OBSERVATION],
   ['successful no-op commit step is not reported as a publication', { ...base, publishChanged: false }, STATUSES.NO_NEW_OBSERVATION],
   ['missing change signal fails closed', { ...base, publishChanged: null }, STATUSES.FAILED_VALIDATION],
