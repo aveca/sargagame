@@ -19,7 +19,7 @@
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "The public validation record currently covers Martinique and Guadeloupe. It does not establish forecast accuracy for Riviera Maya. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
+      "a": "AFAI observations are intermittent and cloud cover can delay a reading. Each beach page shows the observation time and confidence. The public validation record currently covers Martinique and Guadeloupe; it does not establish forecast accuracy for Riviera Maya. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
@@ -53,7 +53,7 @@
     "map": {
       "slug": "seaweed-map",
       "title": "Cancún Seaweed Map (Live) — Riviera Maya Sargassum Tracker",
-      "desc": "Interactive live seaweed map of Cancún and the Riviera Maya, updated when new AFAI observations are available from satellite. Check every beach before you leave the room.",
+      "desc": "Interactive live seaweed map of Cancún and the Riviera Maya, updated when new AFAI observations are published through NOAA/AOML ERDDAP. Check every beach before you leave the room.",
       "h1": "Live Seaweed & Sargassum Map — Cancún and the Riviera Maya",
       "intro": "This is an interactive, live map of the sargassum — the seaweed — across the Mexican Caribbean: every beach, from Holbox to Mahahual, shown with a color-coded status (clean, moderate, or avoid). It's fed by NOAA/AOML ERDDAP AFAI observations refreshed when new AFAI observations are available, plus reports from people standing on the sand right now. Tap any beach for its current status, a 0–100 Beach Score, and the 7-day forecast. Unlike a seasonal guide, this map changes when the sea changes: an overnight wind shift can clear Cancún and load Tulum by noon. Check it the morning you go."
     },
@@ -147,7 +147,7 @@
       "lang": "en",
       "slug": "cancun-seaweed-map-2026",
       "title": "Cancun Seaweed Map 2026 — Live Sargassum Tracker",
-      "desc": "Cancun seaweed map 2026: live, per-beach sargassum status across the Riviera Maya, updated when new AFAI observations are available from satellite. Beach Score, 7-day forecast, no guessing.",
+      "desc": "Cancun seaweed map 2026: live, per-beach sargassum status across the Riviera Maya, updated when new AFAI observations are published through NOAA/AOML ERDDAP. Beach Score, 7-day forecast, no guessing.",
       "h1": "Cancun Seaweed Map 2026 — Live Sargassum, Beach by Beach",
       "intro": "The Cancun seaweed map for 2026 is a live, interactive map showing the sargassum on every beach from Holbox to Mahahual right now — each one rated clean, moderate, or avoid, with a 0–100 Beach Score and a 7-day forecast. It is updated when new AFAI observations are available from NOAA/AOML ERDDAP AFAI observations, so what you see is today's water, not last season's average. That is the difference. Most \"2026 sargassum maps\" hand you one verdict for all of Quintana Roo, built from imagery that is already days old. This one reads each beach separately, pixel by pixel offshore — because the same mat that buries Playa Delfines can slide right past Puerto Morelos. We are honest about uncertainty: every beach shows the exact time of its last update and a confidence level, and forecast confidence varies by horizon. Tap your beach, check its status today, and go.",
       "sections": [
