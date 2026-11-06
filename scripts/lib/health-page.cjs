@@ -135,8 +135,8 @@ function buildMeta(lang, regionName, regionId) {
   if (lang === 'es') {
     if (regionId === 'rivieramaya') {
       return {
-        title: '¿A qué huele el sargazo y es peligroso? Riviera Maya',
-        desc: '¿A qué huele el sargazo y cuándo conviene alejarse? Olor a huevo podrido, posibles molestias y precauciones generales en Riviera Maya. No es consejo médico.',
+        title: '¿El sargazo es peligroso? Riesgos y H2S en Cancún',
+        desc: 'El sargazo fresco no suele ser dañino al tacto; las grandes acumulaciones pueden liberar H2S. Precauciones en Cancún y Riviera Maya. No es consejo médico.',
       }
     }
     return {
