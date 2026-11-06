@@ -880,28 +880,158 @@ var index_default = {
 };
 async function runDripEmails(env) {
   console.log("Drip: starting runDripEmails");
-  const cutoff = new Date(Date.now() - 36e5).toISOString();
-  const leads = await supa(env, "b2b_leads", "GET", null, `?status=eq.new&created_at=lt.${cutoff}&select=*`);
-  if (!leads || leads.length === 0) {
-    console.log("Drip: 0 leads to contact");
+  const now = Date.now();
+  const cutoff = new Date(now - 36e5).toISOString();
+  const staleClaimCutoff = new Date(now - 30 * 60 * 1000).toISOString();
+
+  // A claim older than 30 minutes is never resent automatically: delivery
+  // may have been accepted before a Worker/database interruption.
+  const staleClaims = await supaQ(
+    env,
+    "b2b_leads",
+    "GET",
+    null,
+    "?status=eq.processing&claimed_at=lt." + encodeURIComponent(staleClaimCutoff) + "&select=id,claimed_at"
+  );
+  for (const stale of Array.isArray(staleClaims) ? staleClaims : []) {
+    const recovered = await supaQ(
+      env,
+      "b2b_leads",
+      "PATCH",
+      { status: "manual_review", claimed_at: null, last_contact_error: "stale_claim_requires_manual_review" },
+      "?id=eq." + encodeURIComponent(stale.id) + "&status=eq.processing&claimed_at=lt." + encodeURIComponent(staleClaimCutoff) + "&select=id,status"
+    );
+    if (Array.isArray(recovered) && recovered.length === 1) {
+      console.log("Drip: stale claim moved to manual_review lead=" + String(stale.id || "unknown"));
+    } else {
+      console.log("Drip: stale claim recovery not persisted lead=" + String(stale.id || "unknown"));
+    }
+  }
+
+  const leads = await supa(
+    env,
+    "b2b_leads",
+    "GET",
+    null,
+    "?status=eq.new&created_at=lt." + encodeURIComponent(cutoff) + "&select=*"
+  );
+  if (!Array.isArray(leads) || leads.length === 0) {
+    console.log("Drip: no eligible leads");
     return;
   }
-  console.log(`Drip: ${leads.length} leads`);
+
+  const domainByRegion = {
+    do: "sargassumpuntacana.com",
+    puntacana: "sargassumpuntacana.com",
+    punta_cana: "sargassumpuntacana.com",
+    florida: "sargassummiami.com",
+    gp: "sargasses-guadeloupe.com",
+    guadeloupe: "sargasses-guadeloupe.com",
+    mq: "sargasses-martinique.com",
+    martinique: "sargasses-martinique.com",
+    rivieramaya: "sargassumcancun.com",
+    riviera_maya: "sargassumcancun.com",
+    tulum: "sargazotulum.com"
+  };
+
   for (const lead of leads) {
+    const claimAt = new Date().toISOString();
+    const claim = await supaQ(
+      env,
+      "b2b_leads",
+      "PATCH",
+      {
+        status: "processing",
+        claimed_at: claimAt,
+        contact_attempts: Math.max(0, Number(lead.contact_attempts) || 0) + 1,
+        last_contact_error: null
+      },
+      "?id=eq." + encodeURIComponent(lead.id) +
+        "&status=eq.new&created_at=lt." + encodeURIComponent(cutoff) +
+        "&select=id,email,domain,region,created_at,status,claimed_at,contact_attempts"
+    );
+
+    // PostgREST PATCH + status=eq.new is the atomic claim. A concurrent
+    // Worker receives zero rows and cannot send the same lead.
+    if (!Array.isArray(claim) || claim.length !== 1) {
+      console.log("Drip: lead not claimed; skip id=" + String(lead.id || "unknown"));
+      continue;
+    }
+
+    const claimedLead = claim[0];
+    const regionKey = String(claimedLead.region || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    const domain = String(claimedLead.domain || "").trim().toLowerCase();
+    const expectedDomain = domainByRegion[regionKey];
+    const email = String(claimedLead.email || "").trim();
+    const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    const markManualReview = async (reason) => {
+      const rows = await supaQ(
+        env,
+        "b2b_leads",
+        "PATCH",
+        { status: "manual_review", claimed_at: null, last_contact_error: reason },
+        "?id=eq." + encodeURIComponent(claimedLead.id) +
+          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
+          "&select=id,status"
+      );
+      return Array.isArray(rows) && rows.length === 1;
+    };
+
+    if (!validEmail || !expectedDomain || domain !== expectedDomain) {
+      const persisted = await markManualReview(!validEmail ? "invalid_email" : "unsupported_region_domain");
+      console.log("Drip: lead requires manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
+      continue;
+    }
+
+    const lang = ["mq", "martinique", "gp", "guadeloupe"].includes(regionKey)
+      ? "fr"
+      : ["do", "puntacana", "punta_cana", "rivieramaya", "riviera_maya", "tulum"].includes(regionKey)
+        ? "es"
+        : "en";
+    const subject = lang === "fr"
+      ? "Prévisions sargasses " + regionKey + " — observation datée"
+      : lang === "es"
+        ? "Previsión de sargazo " + regionKey + " — observación fechada"
+        : "Sargassum forecast " + regionKey + " — timestamped observation";
+    const html = lang === "fr"
+      ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Dernière observation disponible — ' + regionKey + '</h2><p>Consultez la carte et vérifiez l’heure réelle de la dernière observation AFAI avant de prendre une décision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Voir la carte et l’heure de mesure</a></p><p><a href="https://' + domain + '/fiabilite/">Méthode et fiabilité</a></p></div>'
+      : lang === "es"
+        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Última observación disponible — ' + regionKey + '</h2><p>Consulta el mapa y comprueba la hora real de la última observación AFAI antes de decidir.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">Ver mapa y hora de medición</a></p><p><a href="https://' + domain + '/fiabilite/">Método y fiabilidad</a></p></div>'
+        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2>Latest available observation — ' + regionKey + '</h2><p>Check the map and the actual timestamp of the latest AFAI observation before making a decision.</p><p><a href="https://' + domain + '/?utm_source=drip&amp;utm_medium=email">View map and observation time</a></p><p><a href="https://' + domain + '/fiabilite/">Method and reliability</a></p></div>';
+
     try {
-      const domain = lead.domain || "sargasses-martinique.com";
-      const lang = lead.region && ["florida", "puntacana", "rivieramaya"].includes(lead.region.toLowerCase()) ? "en" : "fr";
-      const subject = lang === "en" ? `Sargassum forecast for ${lead.region} \u2014 live update` : `Pr\xE9vision sargasses ${lead.region} \u2014 mise \xE0 jour live`;
-      const html = lang === "en" ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Live forecast for ${lead.region}</h2><p>Your beaches are monitored daily via satellite. Check the live map for today's verdict:</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View live map &rarr;</a></p><p style="font-size:12px;color:#666">Reliability: <a href="https://${domain}/fiabilite/">/fiabilite/</a> \u2014 Measured by satellite, not guessed.</p></div>` : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:#0D1E1C">Pr\xE9vision sargasses ${lead.region}</h2><p>Vos plages sont surveill\xE9es chaque jour par satellite. Consultez la carte live pour le verdict du jour :</p><p><a href="https://${domain}/?utm_source=drip&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte live &rarr;</a></p><p style="font-size:12px;color:#666">Fiabilit\xE9 : <a href="https://${domain}/fiabilite/">/fiabilite/</a> \u2014 Mesur\xE9 au satellite, pas devin\xE9.</p></div>`;
-      const result = await sendEmail(lead.email, subject, html, domain, env);
-      if (result.success) {
-        console.log(`Drip: provider accepted message for lead=${String(lead.id || "unknown")} via ${result.provider}`);
-        await supa(env, "b2b_leads", "PATCH", { status: "contacted" }, `?id=eq.${lead.id}&select=*`);
-      } else {
-        console.log(`Drip: all providers failed for lead=${String(lead.id || "unknown")}`);
+      const result = await sendEmail(email, subject, html, domain, env);
+      if (!result || !result.success) {
+        const persisted = await markManualReview("provider_delivery_unconfirmed");
+        console.log("Drip: delivery unconfirmed; manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
+        continue;
       }
-    } catch (e) {
-      console.log(`Drip: processing error for lead=${String(lead.id || "unknown")}`);
+
+      const contactedAt = new Date().toISOString();
+      const saved = await supaQ(
+        env,
+        "b2b_leads",
+        "PATCH",
+        { status: "contacted", contacted_at: contactedAt, claimed_at: null, last_contact_error: null },
+        "?id=eq." + encodeURIComponent(claimedLead.id) +
+          "&status=eq.processing&claimed_at=eq." + encodeURIComponent(claimAt) +
+          "&select=id,status,contacted_at"
+      );
+      if (!Array.isArray(saved) || saved.length !== 1) {
+        // Do not release the claim or resend: the provider may already have
+        // accepted the message. Stale claims move to manual_review above.
+        console.log("Drip: provider accepted but contacted_at persistence failed; claim retained lead=" + String(claimedLead.id || "unknown"));
+        continue;
+      }
+      console.log("Drip: provider accepted and contacted_at persisted lead=" + String(claimedLead.id || "unknown") + " via " + result.provider);
+    } catch (_) {
+      const persisted = await markManualReview("processing_exception");
+      console.log("Drip: processing exception; manual review id=" + String(claimedLead.id || "unknown") + " persisted=" + persisted);
     }
   }
 }
