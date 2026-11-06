@@ -40,7 +40,7 @@ async function capture(outputPath) {
   for (const project of PROJECTS) {
     const deployments = await apiRequest('/pages/projects/' + project + '/deployments?per_page=20&page=1');
     const previous = (deployments || [])
-      .filter(item => item.environment === 'production' && item.latest_stage?.status === 'success')
+      .filter(item => item.environment === 'production' && item.latest_stage?.status === 'success' && item.deployment_trigger?.metadata?.branch === 'main')
       .sort((a, b) => String(b.created_on).localeCompare(String(a.created_on)))[0];
     if (!previous?.id) throw new Error('no previous successful production deployment for ' + project);
     targets[project] = { deploymentId: previous.id, createdOn: previous.created_on, commit: previous.deployment_trigger?.metadata?.commit_hash || null };
