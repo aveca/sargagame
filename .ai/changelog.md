@@ -8,7 +8,8 @@
 - **Variable** : `CLOUDFLARE_DEPLOY_ENABLED` = `true`.
 - **Workflow** `pages-code-only-release.yml` (id `409119247`, dispatch-only, **0 run**) lu depuis `origin/main` ; ses conditions de `gate` sont deja satisfaites a part le dispatch sur `main`.
 - **Cloudflare (lecture)** : OAuth wrangler 4.127.1, compte `abf2b92cf718313567b4b38eb9dda17f` ; **6/6 projets Pages lisibles** (sargagame, -gp, -florida, -puntacana, -riveramaya, -tulum).
-- **Garde-fou** : `cloudflare-production.yml` + `daily-copernicus.yml` se declenchent sur tout push `main` → **un merge deploye**. PR poussee **sans merge** pour respecter « aucun deploiement pendant cette phase ».
+- **Garde-fou** : `cloudflare-production.yml` + `daily-copernicus.yml` se declenchent sur tout push `main` → **un merge deploye**. PR **#1335** poussee **sans merge** (aucun auto-merge actif) pour respecter « aucun deploiement pendant cette phase ».
+- **CI de PR #1335 verte** sur le head `988da1082` : `test-frontend` pass (2m14s), `perf` pass (24s), `lighthouse-report` pass (3m27s), GitGuardian pass → `mergeStateStatus: CLEAN`.
 - **Reutilisation** : `.ai/factory/capabilities.md` (registre durable) + `scripts/factory-v3/probe-capabilities.cjs` (sonde lecture seule, exit 0 = OK) + `scripts/factory-v3/state/config.json` (instantane sans valeur de secret).
 - **Signale hors perimetre** : les 6 sites live sont servis par un deploiement du 2026-10-28, **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` est en echec.
 - **Aucun** checkout, paiement, e-mail, secret lu en valeur/modifie, Worker, D1/R2/Supabase ecrit, migration, DNS, purge de cache, ni travail sur un autre depot.

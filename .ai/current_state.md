@@ -34,10 +34,11 @@
 - [x] Scan de l'etat Factory V3 → 0 valeur de secret (14 marqueurs)
 - [x] `node --check scripts/factory-v3/probe-capabilities.cjs` → exit 0
 - [x] `git diff --check` → exit 0
+- [x] **CI de PR #1335** sur le head `988da1082` → `test-frontend` **pass** (2m14s, run `42207428257`), `perf` **pass** (24s), `lighthouse-report` **pass** (3m27s, run `42207428248`), GitGuardian Security Checks **pass** → `mergeStateStatus: CLEAN`, `mergeable: MERGEABLE`, `autoMergeRequest: null`
 - [ ] `npm run build` / `npm test` / bundle → **sans objet** : aucun code applicatif, PHP, CSS ou dependance touche (la CI de PR les executera)
 
 ### Problemes restants / Blockers
-- [ ] **PR non mergée volontairement** : merger sur `main` declenche `cloudflare-production.yml` donc un deploiement de production, interdit par la consigne « ne declenche aucun deploiement pendant cette phase ». La fusion reste a l'arbitrage du fondateur, **apres** la phase de connexion.
+- [ ] **PR non mergée volontairement** : merger sur `main` declenche `cloudflare-production.yml` donc un deploiement de production, interdit par la consigne « ne declenche aucun deploiement pendant cette phase ». **La PR #1335 est verte et mergeable** (`mergeStateStatus: CLEAN`, aucun auto-merge actif) : la fusion reste a l'arbitrage du fondateur, **apres** la phase de connexion.
 - [ ] **Chaine de deploiement bouchee depuis ~9 jours** : les six sites live sont servis par un deploiement du **2026-10-28** (source `164d70f`), soit **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` sur `main` `5382a829c` est en **echec**. **Signale, non corrige** (hors perimetre) : appelle une mission dediee de diagnostic du workflow.
 - [ ] **Jeton OAuth Cloudflare expire au bout d'environ 1 h** : toute lecture Cloudflare doit preceder d'un `npx wrangler whoami` (automatise dans la sonde).
 - [ ] Secrets `RELEASE_STATUS`, Resend, Mollie, `CLOUDFLARE_API_TOKEN` : **valeurs non lues** (l'API GitHub ne les retourne pas) ; leur validite effective reste non prouvee par cette mission.
