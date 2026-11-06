@@ -99,7 +99,7 @@ for (const relative of regionalScienceFiles) {
   assert.doesNotMatch(raw, /Copernicus\/NOAA AFAI|Copernicus and NOAA satellite programs|Copernicus satellite imagery/i, relative + ' must identify NOAA/AOML ERDDAP as the AFAI distribution source')
   assert.doesNotMatch(raw, /Accuracy is highest|Days 1–3 are the most accurate|Days 1–3 are the most reliable|days 1–3 verify best|publish our accuracy/i, relative + ' must not claim unvalidated regional accuracy')
   assert.doesNotMatch(raw, /community reports (?:from beachgoers )?correct the satellite/i, relative + ' must not imply reports replace satellite observations')
-  if (/2\\.5%/.test(raw)) assert.match(raw, /2\\.5% windage parameter.*modeling assumption|model uses a 2\\.5% windage parameter/i, relative + ' must identify 2.5% windage as a model assumption')
+  if (/2\.5%/.test(raw)) assert.match(raw, /2\.5% windage parameter.*modeling assumption|model uses a 2\.5% windage parameter/i, relative + ' must identify 2.5% windage as a model assumption')
   if (data.press) {
     const validation = data.press.sections?.find(section => section.h2 === 'Validation scope')
     assert.ok(validation, relative + ' must state the regional validation scope')
