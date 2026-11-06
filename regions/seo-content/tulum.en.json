@@ -19,7 +19,7 @@
     },
     {
       "q": "How reliable is the data on this site?",
-      "a": "The public validation record currently covers Martinique and Guadeloupe. It does not establish forecast accuracy for Tulum. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
+      "a": "AFAI observations are intermittent and cloud cover can delay a reading. Each beach page shows the observation time and confidence. The public validation record currently covers Martinique and Guadeloupe; it does not establish forecast accuracy for Tulum. No regional accuracy percentage is claimed for this market until it is included in the record. Forecast confidence varies by horizon; the 7-day outlook is directional, not a verified accuracy guarantee."
     },
     {
       "q": "Can you forecast sargassum a week ahead?",
