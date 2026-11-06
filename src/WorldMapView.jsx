@@ -2043,7 +2043,7 @@ export default function WorldMapView({
                 <b style={{fontWeight:800}}>{_t(lang,"Prévu","Forecast","Previsto")} {ti(lang,DAY_LBL[day])}{dateStr?` · ${dateStr}`:""} · {hitStr}</b><br/>
                 {far
                   ? _t(lang,"Fin de semaine : on lit la tendance, pas encore la certitude. On affine chaque matin.","End of week: we read the trend, not yet certainty. We sharpen it each morning.","Fin de semana: leemos la tendencia, aún no la certeza. La afinamos cada mañana.")
-                  : _t(lang,"Confiance forte sur ces jours — 76 à 79 % de justesse selon la saison.","Strong confidence on these days — 76-79% accuracy by season.","Confianza alta en estos días — 76-79 % de acierto según temporada.")}
+                  : _t(lang,"La confiance dépend de la fraîcheur et de la qualité de l’observation.","Confidence depends on observation freshness and signal quality.","La confianza depende de la frescura y calidad de la observación.")}
               </div>
             )
           })()}
@@ -2184,7 +2184,7 @@ export default function WorldMapView({
                 )}
               </div>
             )}
-            {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"Confiance forte J0-J2, tendance au-delà — 76 à 79 % de justesse selon la saison.","Strong confidence days 0-2, trend after — 76-79% accuracy by season.","Confianza alta días 0-2, tendencia después — 76-79 % de acierto según temporada.")}</div>}
+            {friseOn&&<div style={{font:"700 7.5px/1.25 'Bricolage Grotesque',system-ui,sans-serif",color:"#6b6478",marginTop:5,maxWidth:160,whiteSpace:"normal"}}>{_t(lang,"J0-J2 : confiance selon la fraîcheur de la source ; au-delà : tendance, pas certitude.","Days 0-2: confidence follows source freshness; beyond that: trend, not certainty.","D0-D2: confianza según la frescura de la fuente; después: tendencia, no certeza.")}</div>}
             {/* Décodeur des pastilles de confiance sous la frise — même grammaire que le hub La Vigie
                 (finding audit Vague 2 : tiers plein/demi/pointillé montrés mais jamais expliqués). Rollback ?conflegend=0. */}
             {friseOn&&(()=>{ let off=false; try{off=/[?&]conflegend=0/.test(window.location.search)}catch(_){}; if(off) return null
