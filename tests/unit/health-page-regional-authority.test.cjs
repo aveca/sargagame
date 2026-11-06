@@ -48,9 +48,9 @@ try {
   })
   assert.match(riviera.html, /las autoridades de salud de Quintana Roo/,
     'Riviera Maya authority wording remains unchanged')
-  assert.match(riviera.html, /<title>¿A qué huele el sargazo y es peligroso\? Riviera Maya<\/title>/,
+  assert.match(riviera.html, /<title>¿El sargazo es peligroso\? Riesgos y H2S en Cancún<\/title>/,
     'Riviera Maya title matches the observed odor and danger search intent')
-  assert.match(riviera.html, /<meta name="description" content="¿A qué huele el sargazo y cuándo conviene alejarse\? Olor a huevo podrido, posibles molestias y precauciones generales en Riviera Maya\. No es consejo médico\."\/>/,
+  assert.match(riviera.html, /<meta name="description" content="El sargazo fresco no suele ser dañino al tacto; las grandes acumulaciones pueden liberar H2S\. Precauciones en Cancún y Riviera Maya\. No es consejo médico\."\/>/,
     'Riviera Maya description stays conservative and matches the page content')
   const title = riviera.html.match(/<title>(.*?)<\/title>/)?.[1] || ''
   const description = riviera.html.match(/<meta name="description" content="(.*?)"\/>/)?.[1] || ''
