@@ -83,31 +83,39 @@ const IS_NEW_REGION = !!(REGION && REGION.id !== 'mq' && REGION.id !== 'gp')
 // de page). Même module que les tests → build et déploiement ne divergent plus.
 const LEGAL_LINKS = _require('./scripts/lib/legal-links-table.cjs').buildLegalLinks(REGION)
 
-// FIABILITÉ HONNÊTE — injectée au runtime via __RELIABILITY__ pour que le badge in-app
-// consomme la MÊME source que /fiabilite/ (backtest-results.json) et ne sur-claime/dérive
-// plus (était hardcodé "80%"). On publie le hit-rate PAR RÉGIME, jamais le global %
-// (instruction explicite de regimeReliability.note : le global masque que les ALERTES en
-// saison calme sont bien moins fiables que les « mer propre »). Fallback global si absent.
-let RELIABILITY = null
+// FIABILITÉ HONNÊTE — métriques uniquement depuis le track record public,
+ // frais et couvrant la région courante. Aucun fallback global ou chiffre codé en dur.
+const { resolvePublicAccuracy } = _require('./scripts/lib/regional-track-record.cjs')
+let RELIABILITY = {
+  available: false,
+  reason: 'missing-record',
+  scopeRegions: [],
+  scopeLabel: null,
+  recordStale: true,
+}
 try {
-  const _bt = JSON.parse(readFileSync(resolve(__dirname, 'scripts/automation/data/backtest-results.json'), 'utf-8'))
-  const _rr = _bt && _bt.regimeReliability
-  const _reg = _rr && _rr.regimes && (_rr.regimes.high && _rr.regimes.high.samples > (_rr.regimes.calm ? _rr.regimes.calm.samples : 0) ? _rr.regimes.high : _rr.regimes.calm)
-  const _regKey = _rr && _rr.regimes ? (_rr.regimes.high && _reg === _rr.regimes.high ? 'high' : 'calm') : null
-  if (_reg && typeof _reg.cleanReliabilityPct === 'number' && _reg.cleanSamples > 0) {
-    RELIABILITY = {
-      regime: _regKey,
-      cleanPct: _reg.cleanReliabilityPct,
-      cleanN: _reg.cleanSamples,
-      falseAlarmPct: _reg.falseAlarmRatePct,
-      window: _rr.window || null,
-      headline: _rr.headline || null,
-    }
-  } else if (_bt && _bt.overall && typeof _bt.overall.statusHitRate === 'number' && _bt.totalPairs > 0) {
-    RELIABILITY = { global: Math.round(_bt.overall.statusHitRate), pairs: _bt.totalPairs }
+  const _trackRecord = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/track-record.json'), 'utf-8'))
+  const _resolved = resolvePublicAccuracy(_trackRecord, REGION && REGION.id)
+  const _featured = Object.entries(_resolved.regimes || {})
+    .sort((a, b) => b[1].cleanSamples - a[1].cleanSamples)[0]
+  RELIABILITY = {
+    available: !!(_resolved.available && _featured),
+    reason: _resolved.reason || (_featured ? null : 'no-valid-regime'),
+    regime: _featured ? _featured[0] : null,
+    cleanPct: _featured ? _featured[1].cleanReliabilityPct : null,
+    cleanN: _featured ? _featured[1].cleanSamples : null,
+    falseAlarmPct: _featured ? _featured[1].falseAlarmRatePct : null,
+    alertReliabilityPct: _featured ? _featured[1].alertReliabilityPct : null,
+    alertSamples: _featured ? _featured[1].alertSamples : 0,
+    scopeRegions: _resolved.scopeRegions || [],
+    scopeLabel: _resolved.scopeLabel || null,
+    window: _resolved.window || null,
+    sampleSize: _resolved.sampleSize || null,
+    recordStale: _resolved.recordStale,
+    horizons: _resolved.horizons || null,
   }
 } catch (e) {
-  console.warn('vite.config.js: backtest fiabilité non chargé:', e.message)
+  console.warn('vite.config.js: track record fiabilité non chargé:', e.message)
 }
 
 // Taille communauté (preuve sociale HONNÊTE, paywall) — plancher conservateur du
