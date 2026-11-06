@@ -1,4 +1,55 @@
-> **Correction d'état — 2026-11-04 04:40 UTC (référence la plus récente).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
+## 2026-11-06 16:50 UTC · Agent: Factory V3 bridge operator (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission AUTOPILOT #1336 (`SARG-PAGES-CODE-ONLY-RELEASE-20261106`) exécutée et **terminée en `failed`** — la release code-only des six domaines est impossible via Pages ; cause racine Copernicus **recorrectée** (cadence de sonde, pas latence de source) et publiée.
+- **Détails** :
+  - **Release code-only : échec terminal, cause racine architecturale.** Les six domaines publics sont servis par les **Workers** Cloudflare `sargagame-<region>` (routes catch-all `<domaine>/*` + binding `ASSETS`), **pas** par les projets Pages. Les six projets Pages n'ont **aucun domaine personnalisé** et ne servent que `*.pages.dev`. Une release Pages-only ne peut donc jamais atteindre les six domaines publics.
+  - Deux PRs de correction du gate ont été livrées et fusionnées : **#1339** (`7974ccff1`, isolement du workflow Pages dans `paths-ignore` de `cloudflare-production.yml`) et **#1340** (`3f60d84b2`, `npm run build` avant `npm test` dans le job `gate`). Aucune n'a créé de run `cloudflare-production.yml`.
+  - Re-déploiement|Pages-only (run **42227027205**, `main` @ `0571cdad`) : `gate` ✅, `prepare` ×6 ✅, `deploy-pages` ×6 ✅, **`verify` ❌** (12 défauts bloquants `stale-current-decision` : les six domaines servaient encore `b: df18df5d` alors que `pages.dev` servait `b: ac1b6d69`), **rollback automatique ✅**.
+  - **Production vérifiée intacte** après rollback : 6/6 domaines HTTP 200, `b: df18df5d`, payload scientifique identique (SHA-256), aucun Worker redéployé (`modified_on` inchangé), bindings et secrets inchangés (5 par Worker). Deux runs `cloudflare-production.yml` ultérieurs et sans rapport (`42237657408`, `42238639868`, poussées d'autres sessions) ont échoué au job `build` **avant** tout déploiement → `deploy` skipped, aucune variation de production.
+  - **Phase Copernicus : diagnostic RECORRECTÉ.** L'hypothèse antérieure (« latence de source risenue à ≈ 26 h ») est **infirmée**. Mesure : la cellule ERDDAP du jour D est publiée **avant** l'échéance SLA (D+1 03:00Z), **prouvé 10 fois sur 10** (19→27 oct, âge observé 840–900 min ≤ 900). La rupture vient de la **cadence de sonde** : plus aucune livraison planifiée n'est tombée dans la fenêtre `D+1 00:00Z–03:00Z` du 28 oct au 6 nov (1 seule exception le 3 nov à 00:49Z, âge 771 min → `FRESH_AND_PUBLISHED`, commit `1583c36d4`) → **14 échecs consécutifs**. Correctif proposé : densifier les crons sur `00:00Z–03:00Z` (`*/15 0-2 * * *`) + élargir l'observabilité à `03:00Z–06:00Z` (coût mesuré : 1 min de CI par run hors SLA). **SLA 900 min inchangé, gate fail-closed, aucune publication hors SLA, ERDDAP = source unique jamais remplacée.** Correctif **non mergé** : une publication réussie dispatche `cloudflare-production.yml` en `workflow_dispatch` (non filtré par `paths-ignore`) → `Deploy Worker` + `Configure Worker secrets`, hors périmètre de la mission.
+  - **Deux options d'arbitrage fondateur** pour la release : **A)** attacher les six domaines personnalisés aux six projets Pages **et** supprimer les six routes catch-all Workers ; **B)** déployer les Workers régionaux via le job `deploy` de `cloudflare-production.yml` (chemin qui atteint réellement les six domaines, mais rejoue les secrets de paiement).
+  - **Bridge Factory V3** : runner vérifié vivant (PID 15072, heartbeat `f3_control.json` qui avance) — **non redémarré** ; bridge sargagame : import **sans doublon** de #1336 et #1337 (`imported=2`, second passage `imported=0`), ack `imported` publié sur les deux issues. #1337 **non démarré** tant que #1336 n'était pas terminé ; sa livraison (PR #1342) est **en revue** et ne sera pas fusionnée en l'état (voir « Problèmes restants »).
+
+### Fichiers modifiés
+- `.github/workflows/cloudflare-production.yml` — `.ai/**` + son garde-fou ajoutés à `on.push.paths-ignore` (PR #1346, fusionné `877730677`).
+- `tests/unit/ai-docs-paths-ignore.test.cjs` — garde-fou de non-regression de cette exclusion (nouveau).
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/tasks.md` — entrée P0.67 §2/§3 mise à jour avec la cause racine mesurée.
+
+### Tests réalisés
+- [x] `npm test` → **167/167 fichier(s) de test OK**
+- [x] `node tests/unit/ai-docs-paths-ignore.test.cjs` → PASS
+- [x] `node tests/unit/workflows-yaml-syntax.test.cjs` → PASS (41 workflows)
+- [x] `node scripts/check-production-trigger-scope.cjs` → OK
+- [x] `node tests/unit/pages-code-only-workflow.test.cjs` → PASS (non-regression)
+- [x] `git diff --check` → OK
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (aucun changement de bundle)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucun changement d'UI dans ce lot)
+- [x] Vérification production après merge : **aucun run `cloudflare-production.yml` créé** (`total_count` inchangé : 437 → 437)
+- [x] Vérification live 6 domaines (2026-11-06T16:13Z) : HTTP 200, `b: df18df5d` sur les six
+
+### Problèmes restants / Blockers
+- [ ] `P0.67 §2/§3` : **autorisation fondateur requise** — arbitrer l'option A ou B de la release, et autoriser la densification de la cadence Copernicus (ou le dispatch `cloudflare-production.yml` pour les publications de données). — sévérité **P0** — action : décision du fondateur.
+- [ ] **Défaut d'honnêteté live, préexistant et inchangé** : les six domaines affichent encore « SWIM OK » + score + prévision 7 jours sur une observation de ~10 jours (`erddapTimestamp: 2026-10-27T12:00:00Z`, `stale: false` déclaré alors que l'âge réel ≈ 14 500 min). Le build fail-closed de `main` le corrige, mais il n'atteint les domaines publics que via l'option A ou B. — sévérité **P0** — action : même arbitrage.
+- [ ] PR #1342 (`feat(bridge): support multi-repo`) : **ne pas fusionner en l'état** — 85 octets UTF-8 invalides dans le fichier source, clé de déduplication incompatible avec `bridge.cjs` (donc risque de double import), et les missions `bot-wow` seraient enfilées dans la queue **sargagame** (violation « BOT-WOW missions stay in BOT-WOW »). — sévérité **P1** — action : reprise du PR avant merge.
+- [ ] PR #1335 (`ops/factory-v3-github-actions-connection-20261106`) : laissée **ouverte** — la fusionner déclencherait un déploiement production.
+
+### Prochaine action recommandée
+1. Arbitrer l'option A ou B de la release code-only et la densification de la cadence Copernicus — Rôle : fondateur + devops_agent
+2. Reprendre PR #1342 (UTF-8, clé de déduplication canonique, routage strict BOT-WOW, CLI de statuts) et le fusionner — Rôle : coding_agent
+3. Démarrer la mission #1337 (`FACTORY-MULTIREPO-MISSION-RELAY-20261106`) une fois #1336 arbitré — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/devops/ai-docs-handoff-20261106` (base `origin/main` = `87773067786619ffba2e5477ce576efe5a7fcc82`)
+- PR : #<à créer> → `main`
+- Commit head : `<à remplir>`
+
+---
+
+> **Correction d'état — 2026-11-04 04:40 UTC (référence à cette date).** Les premières lignes ci-dessous décrivent l'implémentation initiale et leurs SHA ne sont plus la tête courante. La stratégie actuelle a été simplifiée : le composant `track()` reste sur l'appel Supabase original, et l'adaptateur ajoute `sid` uniquement à sa copie privée `payloadParams` lorsque `localStorage.sg_cookie_consent === "accepted"`. La ligne est dans `src/supabasePhotos.js`, pas dans GA4/Apps Script/collecteur first-party. Le sentinelle `x` est rejeté par le parseur. La tête actuelle de branche est `f1648ac1d3f3f83bfa6123f8bd3aaaa0d0e19642`; CI du candidat échoue uniquement sur le budget eager strict : `215067 / 215040` octets gzip (27 octets au-dessus). Le seuil 210 Ko n'a pas été modifié. Le PR #1255 reste Draft, non fusionné et non déployé. Aucun write Supabase ni trafic de paiement/email réel n'a été lancé. Revue Codex privacy/code sur cette tête simplifiée encore pendante. L'optimisation minimale est déléguée à Codex ; ne pas contourner le budget, ne pas élargir le tracking sans consentement.
 
 ## 2026-11-04 · Agent ChatGPT · funnel session correlation (branch / CI pending)
 
