@@ -99,7 +99,7 @@
     "rm004": "The Tulum postcard: leaning palms, white sand, and the most photographed beach clubs in Mexico. It's fully exposed to the east, so at peak season it can wake up loaded — each club rakes its stretch daily. Arrive early for the cleanest sand and the best spot under the palapa.",
     "rm005": "The turtle bay: shallow water, a reef that breaks the swell, and snorkeling with turtles a few meters off the shore. The shape of the bay holds less sargassum than the open beaches, though a heavy landing still gets some through. One of the corridor's safer bets for families and snorkelers.",
     "rm006": "The good side of Cozumel: the west, leeward coast, where sargassum barely reaches even at peak season. Clear water, a relaxed beach club, and the Palancar reef for snorkeling a few minutes away by boat. The perfect plan B when the corridor wakes up brown — and a great day out in its own right.",
-    "rm007": "The jewel of Isla Mujeres and one of the few Mexican Caribbean beaches that almost never sees sargassum, thanks to its north-facing orientation. Waist-deep water for hundreds of meters, calendar-worthy sunsets, and a small-town feel. When everything else fails in season, Playa Norte delivers.",
+    "rm007": "The jewel of Isla Mujeres and one of the few Mexican Caribbean beaches that can still receive sargassum, thanks to its north-facing orientation. Waist-deep water for hundreds of meters, calendar-worthy sunsets, and a small-town feel. When everything else fails in season, Playa Norte delivers.",
     "rm008": "A fishing village halfway between Cancún and Playa del Carmen, with the national-park reef just 500 meters offshore. The reef blocks part of the sargassum and the vibe stays boardwalk-and-boat, not nightclub. For travelers after top-tier snorkeling and a slower Mexican pace.",
     "rm009": "The deep south of the Costa Maya: a town boardwalk, shallow water, and prices that are still friendly. Sargassum is variable with the wind, but the boardwalk stretch is cleaned daily and, outside cruise-ship days, the beach is nearly private. For travelers who want the Caribbean without the corridor's scale.",
     "rm010": "Up at the top of the peninsula, already in Gulf waters, sargassum simply barely reaches — that's half the magic. The other half: sand streets, flamingos, summer bioluminescence, and endless sandbars. The anti-sargassum escape par excellence — no cars, no rush.",
@@ -132,7 +132,7 @@
       },
       {
         "h2": "Story angles ready today",
-        "text": "Which Riviera Maya beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why Isla Mujeres, Cozumel and Holbox often escape the sargassum that hits Tulum and Playa del Carmen · What a record Atlantic bloom means at beach level for Quintana Roo tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
+        "text": "Which Riviera Maya beach is clean this week (live ranked list, updated when new AFAI observations are available) · Why Isla Mujeres, Cozumel and Holbox often escape the sargassum that hits Tulum and Playa del Carmen · What a basin-scale sargassum conditions means at beach level for Quintana Roo tourism · How satellite AFAI detection works, with published validation scope published on our methodology page."
       },
       {
         "h2": "About the network",
@@ -153,7 +153,7 @@
       "sections": [
         {
           "h2": "Which Cancun & Riviera Maya beaches are clean in 2026?",
-          "text": "The map ranks every tracked beach cleanest-first, but the geography rarely lies: the beaches that don't face east take the least sargassum. Playa Norte on Isla Mujeres, Holbox at the top of the peninsula, and Cozumel's leeward west coast (Palancar) stay clear even at peak — their orientation does the work. Along the open Cancun–Tulum corridor, a bay or reef helps: Akumal and Puerto Morelos pile up far less than exposed stretches like Playa Delfines, Playa del Carmen and Tulum's beach-club strip. But a rule of thumb is not today's reading. An overnight wind shift can clear Cancun and load Tulum by noon, so check each beach's status today on the live map before you pack the cooler — the Beach Score next to each name tells you which water is genuinely turquoise this morning."
+          "text": "The map ranks every tracked beach latest-observation-first, but the geography rarely lies: the beaches that don't face east take the least sargassum. Playa Norte on Isla Mujeres, Holbox at the top of the peninsula, and Cozumel's leeward west coast (Palancar) stay clear even at peak — their orientation does the work. Along the open Cancun–Tulum corridor, a bay or reef helps: Akumal and Puerto Morelos pile up far less than exposed stretches like Playa Delfines, Playa del Carmen and Tulum's beach-club strip. But a rule of thumb is not today's reading. An overnight wind shift can clear Cancun and load Tulum by noon, so check each beach's status today on the live map before you pack the cooler — the Beach Score next to each name tells you which water is genuinely turquoise this morning."
         },
         {
           "h2": "When does the seaweed clear, and is it dangerous?",
@@ -187,7 +187,7 @@
         },
         {
           "q": "Which Riviera Maya beaches have the least sargassum in 2026?",
-          "a": "The ones not facing east: Playa Norte on Isla Mujeres, Holbox, and Cozumel's west coast (Palancar) almost never get sargassum. In the Cancun–Tulum corridor, sheltered Akumal and Puerto Morelos pile up far less than open beaches. The live map ranks them cleanest-first each day, so you can confirm which are seaweed-free right now."
+          "a": "The ones not facing east: Playa Norte on Isla Mujeres, Holbox, and Cozumel's west coast (Palancar) can still receive sargassum. In the Cancun–Tulum corridor, sheltered Akumal and Puerto Morelos pile up far less than open beaches. The live map ranks them latest-observation-first each day, so you can confirm which are seaweed-free right now."
         },
         {
           "q": "Does this map cover Playa del Carmen and Tulum too?",
