@@ -452,3 +452,10 @@ PR: #810 (auto-merged)
 - Agent name (code, QA, product, etc.)
 - List of changes with file names
 - Never delete previous entries — they satisfy AI pièe memory.
+
+## 2026-11-06 — Revalidation release code-only fail-closed
+
+- Main observé : `7ac1656fc257077c5bb4c42d43d4ab9855c45b20`; production : `164d70fd5a494c638c4a804a093381e28fc393de`.
+- Le candidat `release/code-only-fail-closed-20261105` reste limité à la garde d'affichage fail-closed et à son instrumentation/tests.
+- Les contrôles de code et le rollback doivent être validés sur le SHA exact ; aucune donnée scientifique ou surface commerciale ne doit être publiée depuis cette branche.
+- Aucun déploiement production effectué.

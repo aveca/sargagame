@@ -546,3 +546,12 @@ La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique 
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
 | 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+
+## 2026-11-06 03:48 UTC — Revalidation du candidat fail-closed
+
+- Main actuel : `7ac1656fc257077c5bb4c42d43d4ab9855c45b20`.
+- Production Pages : baseline `164d70fd5a494c638c4a804a093381e28fc393de` (déploiements régionaux du 28 octobre).
+- Candidat code-only : branche `release/code-only-fail-closed-20261105`, commit de validation documentaire en cours.
+- Le candidat conserve le baseline production et masque les scores, verdicts et prévisions lorsque l'observation dépasse le SLA opérationnel ; il ne modifie pas les payloads scientifiques, prix, checkout, Worker, bindings, secrets, routes ou DNS.
+- Aucun déploiement n'a été effectué. Le workflow Cloudflare Production du main reste bloqué par la fraîcheur de Punta Cana.
+- La validation GitHub du SHA exact doit être obtenue avant toute décision de publication.
