@@ -34,6 +34,17 @@ on:
       - 'AGENTS.md'
       - '.github/workflows/daily-copernicus.yml'
       - '.github/workflows/cloudflare-production.yml'
+      # Isolement de l'outillage de release Pages : la publication des six
+      # domaines passe par `pages-code-only-release.yml`, qui possede sa propre
+      # porte (build + tests + budget gzip + payload preserve + audit Playwright
+      # + rollback automatique). Un changement de CE workflow (ou de son
+      # garde-fou de non-regression) ne doit donc pas redeployer le Worker ni
+      # reconfigurer les secrets de paiement : sans cette exclusion, corriger
+      # le gate de la release Pages declencherait un deploiement production
+      # Workers depuis un simple push sur `main`.
+      # Garde-fou de non-regression : tests/unit/pages-code-only-workflow.test.cjs
+      - '.github/workflows/pages-code-only-release.yml'
+      - 'tests/unit/pages-code-only-workflow.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
