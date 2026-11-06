@@ -140,10 +140,10 @@ async function main() {
   const sql7 = fs.readFileSync(M7, 'utf8')
   t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql7), 'P0.127 : la migration 007 est explicitement non appliquée')
   t(sql7.includes('REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;'), 'P0.127 : TRUNCATE est révoqué de tous les rôles clients sur le schéma public')
-  t(!/GRANT\\s+TRUNCATE/i.test(sql7), 'P0.127 : aucun privilège TRUNCATE n est accordé')
+  t(!/GRANT\s+TRUNCATE/i.test(sql7), 'P0.127 : aucun privilège TRUNCATE n est accordé')
   t(!/REVOKE[^;]*FROM service_role/i.test(sql7), 'P0.127 : service_role conserve ses droits')
-  const sql7Code = sql7.replace(/--[^\\n]*/g, '').replace(/\\/\\*[\\s\\S]*?\\*\\//g, '')
-  t(!/\\b(DROP\\s+(TABLE|COLUMN)|DELETE\\s+FROM|UPDATE\\s+public\\.|INSERT\\s+INTO\\s+public\\.)/i.test(sql7Code), 'P0.127 : aucune modification ou suppression de données')
+  const sql7Code = sql7.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\b(DROP\s+(TABLE|COLUMN)|DELETE\s+FROM|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql7Code), 'P0.127 : aucune modification ou suppression de données')
 
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
