@@ -16,9 +16,9 @@
 --   authenticated : idem
 --   service_role  : PRÉSERVÉ (il contourne les RLS et reste propriétaire)
 --
--- Aucun nom de colonne n'est inventé : la migration n'agit que sur les
--- PRIVILÈGES au niveau table et sur l'activation des RLS. Elle ne modifie
--- aucune donnée, aucune colonne et aucune politique existante.
+-- Aucun nom de colonne n'est inventé : la migration agit sur les PRIVILÈGES
+-- et les RLS. Elle supprime uniquement la policy permissive connue
+-- `Allow all b2b_leads`; elle ne modifie aucune donnée ni aucune colonne.
 
 DO $$
 BEGIN
