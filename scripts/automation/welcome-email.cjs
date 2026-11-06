@@ -152,7 +152,7 @@ function buildWelcomeHTML(island, cleanCount, email, source) {
 <td valign="top" width="40" style="font-family:Georgia, serif; font-size:22px; color:#E89400; font-weight:bold; padding-top:2px;">03</td>
 <td valign="top" style="font-family:Arial, Helvetica, sans-serif;">
 <p style="margin:0; font-size:17px; line-height:1.4; color:#0A1714; font-weight:bold;">Mesuré, pas deviné</p>
-<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">De vraies images Copernicus et NOAA, croisées 4 fois par jour. Pas d'avis, pas de boîte noire : juste ce que le satellite a réellement vu. Et si l'image a plus de 36h, on l'écrit.</p>
+<p style="margin:6px 0 0 0; font-size:15px; line-height:1.55; color:#52605C;">Les observations AFAI sont distribuées par NOAA/AOML ERDDAP. La carte affiche l’heure de la dernière observation disponible ; si la source est en retard, nous le signalons et ne présentons pas le résultat comme actuel.</p>
 </td>
 </tr>
 </table>
@@ -242,7 +242,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cleanLabel: `playas sin sargazo ahora mismo en ${name}`,
     intro: `Acabas de unirte a quienes verifican la playa antes de salir. Esto es lo que recibes:`,
     f1t: 'Mapa en vivo', f1d: 'Verifica cualquier playa en 5 segundos antes de ir.',
-    f2t: 'Medido, no adivinado', f2d: 'Imágenes reales de Copernicus + NOAA, cruzadas 4 veces al día. Sin opiniones, sin caja negra — solo lo que el satélite vio de verdad.',
+    f2t: 'Medido, no adivinado', f2d: 'Observaciones AFAI distribuidas por NOAA/AOML ERDDAP. El mapa muestra la hora de la última observación disponible; si la fuente se retrasa, lo indicamos y no presentamos el resultado como actual.',
     f3t: 'Beach Score 0-100', f3d: 'Sargazo, oleaje, viento y sol combinados en una sola nota por playa.',
     cta: 'Ver el mapa ahora',
     upKicker: 'Para ir más lejos', upTitle: 'Mira la mañana en que cambia, 7 días antes',
@@ -257,7 +257,7 @@ function buildWelcomeHTMLRegion(region, cleanCount, email) {
     cleanLabel: `sargassum-free beaches right now in ${name}`,
     intro: `You just joined the people who check the beach before heading out. Here's what you get:`,
     f1t: 'Live map', f1d: 'Check any beach in 5 seconds before you go.',
-    f2t: 'Measured, not guessed', f2d: 'Real Copernicus + NOAA imagery, cross-checked 4 times a day. No opinions, no black box — just what the satellite actually saw.',
+    f2t: 'Measured, not guessed', f2d: 'AFAI observations are distributed through NOAA/AOML ERDDAP. The map shows the latest observation time; if the source is delayed, we flag it and do not present the result as current.',
     f3t: 'Beach Score 0-100', f3d: 'Sargassum, swell, wind and sun blended into one score per beach.',
     cta: 'See the map now',
     upKicker: 'Go further', upTitle: 'See the morning it turns, 7 days ahead',
@@ -376,8 +376,8 @@ async function main() {
         : (cleanCount > 0 ? `${cleanCount} sargassum-free beaches in ${newRegion.name} \u2014 your map is ready` : `Welcome \u2014 your ${newRegion.name} sargassum map is ready`)
       htmlBody = buildWelcomeHTMLRegion(newRegion, cleanCount, sub.email)
       preheader = es
-        ? `Tu mapa de playas en vivo, actualizado 4×/día — mira cualquier playa en 5 segundos.`
-        : `Your live beach map, updated 4×/day — check any beach in 5 seconds.`
+        ? `Consulta la hora de la última observación AFAI disponible en el mapa.`
+        : `Check the latest available AFAI observation time on the map.`
     } else {
       const islandBeaches = beaches.filter(b => b.island === island.toLowerCase())
       const cleanCount = islandBeaches.filter(b => b.status === 'clean').length
