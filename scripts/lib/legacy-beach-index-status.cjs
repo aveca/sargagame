@@ -26,10 +26,11 @@ function buildLegacyBeachIndexStatus(payload, sargToBeach = {}, now = Date.now()
     };
   }
 
+  const knownBeachIds = new Set(Object.values(sargToBeach));
   const statusByBeachId = {};
   for (const level of (Array.isArray(payload.levels) ? payload.levels : [])) {
     const id = String(level?.id ?? '').trim();
-    const beachId = sargToBeach[id] || id;
+    const beachId = sargToBeach[id] || (knownBeachIds.has(id) ? id : null);
     const status = String(level?.status ?? '').toLowerCase();
     if (!beachId || !VALID_STATUSES.has(status)) continue;
     statusByBeachId[beachId] = status;
