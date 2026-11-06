@@ -49,8 +49,8 @@
 
 ### Branche / PR
 - Branche : `ops/factory-v3-github-actions-connection-20261106` (base `origin/main` = `5382a829cc37751912372e75131f18aaf12dd0f8`)
-- PR : a creer (non mergée, non déployée)
-- Commit head : a remplir apres commit
+- PR : **#1335** — https://github.com/aveca/sargagame/pull/1335 (**non mergée, non déployée** ; merge = déploiement production, différé à l'arbitrage du fondateur)
+- Commit head : `81e69e7acbf56dd9adbdff9d8340665827490900` (commit des livrables ; suivi d'un commit de mise à jour de ce handoff)
 - Worktree dedie : `C:\Users\user\AppData\Local\Temp\opencode\sargagame-factoryv3-conn` — le worktree `sargagame-cycle4` (branche `feature/p0-commercial-conversion-20261105`, 3 fichiers modifies preexistants) est **intact**
 - Rollback : `git revert <commit>` — aucun secret, aucune migration, aucune donnee, aucun checkout
 
