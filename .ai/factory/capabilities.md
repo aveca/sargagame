@@ -1,8 +1,9 @@
 # Capacités de connexion Factory V3 — `aveca/sargagame`
 
-> **Vérifié le 2026-11-06 10:50 UTC.** Relevé de faits **réellement observés**, pas de
-> suppositions. Aucune valeur de secret n'est consignée ici : seuls des noms, des
-> emplacements et des résultats de lecture.
+> **Vérifié le 2026-11-06 11:16 UTC** (relevé initial 10:50 UTC, rejoué et confirmé à
+> 11:16 UTC après correction de la sonde — voir §3, piège n°2). Relevé de faits
+> **réellement observés**, pas de suppositions. Aucune valeur de secret n'est consignée
+> ici : seuls des noms, des emplacements et des résultats de lecture.
 >
 > **Revérification en une commande** (lecture seule, aucun déploiement) :
 > ```bash
@@ -50,7 +51,7 @@ Les permissions demandées sont donc couvertes :
 | Élément | Résultat |
 |---|---|
 | Workflows listables | **56** (`GET /actions/workflows`) |
-| Runs listables | **17 926** au total (`GET /actions/runs`) |
+| Runs listables | **17 933** au total (`GET /actions/runs`) — compteur croissant à chaque run |
 | Jobs d'un run | lisibles (`GET /actions/runs/{id}/jobs`) |
 | **Logs d'un job** | **LISIBLES** — `GET /actions/jobs/{id}/logs` renvoie le texte brut (~59 Ko sur le run `42192193940`, job `127806661736`) |
 | Secrets — **noms** | **50** listables (`GET /actions/secrets`). **Valeurs jamais lues** : l'API ne les retourne pas |
