@@ -32,7 +32,7 @@
       "desc": "Pronóstico de sargazo a 7 días para Tulum, actualizado a diario con datos satelitales. Mira qué playas estarán limpias esta semana.",
       "h1": "Pronóstico de Sargazo en Tulum — Próximos 7 Días",
       "intro": "Casi todos los pronósticos te dan un solo veredicto para toda la zona de Tulum, basado en imágenes oficiales con días de retraso. Aquí corremos un pronóstico independiente para cada una de las 5 playas que monitoreamos, porque la realidad cambia de una bahía a otra. Cada mañana el modelo procesa la pasada más reciente del satélite Copernicus, ubica las manchas que vienen en camino y proyecta los arribos de los próximos siete días, playa por playa.",
-      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los satélites de Copernicus y la NOAA detectan sargazo desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial. Para el alga que ya está en la arena aplicamos persistencia exponencial con vida media de 3.5 días. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
+      "method": "Partimos del índice AFAI (Alternative Floating Algae Index), la firma espectral con la que los observaciones AFAI distribuidas por NOAA/AOML ERDDAP detectan sargazo desde órbita. Cada mancha detectada se proyecta hacia adelante con datos de viento y corriente superficial. Para el alga que ya está en la arena aplicamos persistencia exponencial con no se publica una vida media fija para el material varado; la persistencia depende de las condiciones locales y la limpieza. Los reportes de la comunidad corrigen al satélite cuando hay nubes. La mayor precisión está en los días 1 a 3, y todo se recalcula a diario."
     },
     "today": {
       "slug": "playas-sin-sargazo-hoy-tulum",
@@ -46,7 +46,7 @@
       "title": "Mapa del Sargazo Tulum (En Vivo) — Playa por Playa",
       "desc": "Mapa interactivo del sargazo en Tulum, actualizado cuando hay nuevas observaciones satelitales disponibles con imágenes satelitales.",
       "h1": "Mapa del Sargazo en Vivo — Tulum",
-      "intro": "Este es un mapa interactivo y en vivo del sargazo en Tulum: cada playa aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan imágenes satelitales de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles, más los reportes de gente en la arena. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. Un giro de viento en la noche puede limpiar Playa Paraíso y cargar Playa Pescadores antes del mediodía. Revísalo la mañana que vayas."
+      "intro": "Este es un mapa interactivo y en vivo del sargazo en Tulum: cada playa aparece con su estado en colores — limpia, moderada o evitar. Lo alimentan observaciones AFAI distribuidas por NOAA/AOML ERDDAP actualizadas cuando hay nuevas observaciones satelitales disponibles, más los reportes de gente en la arena. Toca cualquier playa para ver su estado actual, su calificación de 0 a 100 y el pronóstico a 7 días. Un giro de viento en la noche puede limpiar Playa Paraíso y cargar Playa Pescadores antes del mediodía. Revísalo la mañana que vayas."
     },
     "season": {
       "intro": "¿Planeas un viaje a Tulum y te preocupan el sargazo y las algas? Esta es la imagen honesta de 2026 — cuándo llega el alga, cuándo las playas quedan limpias y cómo planificar tu viaje. En corto: de noviembre a marzo es fiable y limpio; el cinturón atlántico llega de abril a octubre, más fuerte de mayo a agosto.",
@@ -92,7 +92,7 @@
   },
   "resortPageTpl": {
     "titlePattern": "Sargazo en {resort} Hoy — Estado en Vivo y Pronóstico",
-    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia de algas y sargazo? Esta página monitorea {beach}, el tramo de arena frente al hotel, con imágenes satelitales de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
+    "introPattern": "¿Quieres saber si la playa de {resort} amaneció limpia de algas y sargazo? Esta página monitorea {beach}, el tramo de arena frente al hotel, con observaciones AFAI distribuidas por NOAA/AOML ERDDAP actualizadas cuando hay nuevas observaciones satelitales disponibles. Aquí ves el estado actual, una calificación de playa de 0 a 100 y el pronóstico a 7 días, para planear tus días de mar — o de alberca — antes del check-in. En temporada las condiciones cambian de la noche a la mañana: guarda esta página y revísala cada mañana."
   },
   "press": {
     "_doc": "Página de prensa renderizada en /press/ por region-seo-pages.cjs.",
@@ -125,7 +125,7 @@
       "title": "¿Por qué hay tanto sargazo en Tulum?",
       "desc": "¿Por qué hay tanto sargazo en Tulum? Llega del Gran Cinturón Atlántico, empujado por corrientes y viento. Causas reales y mapa satelital por playa, cuando hay nuevas observaciones satelitales disponibles.",
       "h1": "¿Por qué hay tanto sargazo en Tulum?",
-      "intro": "Hay tanto sargazo en Tulum porque las algas no nacen aquí: llegan flotando desde el Gran Cinturón de Sargazo del Atlántico, una enorme franja de alga que crece entre África y Brasil y que las corrientes marinas y los vientos del este empujan hasta el Caribe mexicano. Es un fenómeno oceánico, no local, y por eso ningún hotel puede impedir que llegue. Las causas de fondo se acumulan: más nutrientes en el océano (polvo del Sahara, descargas de ríos como el Amazonas), aguas más cálidas y corrientes que canalizan el alga directo hacia la costa de Quintana Roo. Por eso aquí no te damos un veredicto único: seguimos cada playa de Tulum con imágenes satelitales de Copernicus actualizadas cuando hay nuevas observaciones satelitales disponibles, con un Beach Score de 0 a 100 y su estado de hoy.",
+      "intro": "Hay tanto sargazo en Tulum porque las algas no nacen aquí: llegan flotando desde el Gran Cinturón de Sargazo del Atlántico, una enorme franja de alga que crece entre África y Brasil y que las corrientes marinas y los vientos del este empujan hasta el Caribe mexicano. Es un fenómeno oceánico, no local, y por eso ningún hotel puede impedir que llegue. Las causas de fondo se acumulan: más nutrientes en el océano (polvo del Sahara, descargas de ríos como el Amazonas), aguas más cálidas y corrientes que canalizan el alga directo hacia la costa de Quintana Roo. Por eso aquí no te damos un veredicto único: seguimos cada playa de Tulum con observaciones AFAI distribuidas por NOAA/AOML ERDDAP actualizadas cuando hay nuevas observaciones satelitales disponibles, con un Beach Score de 0 a 100 y su estado de hoy.",
       "sections": [
         {
           "h2": "¿De dónde viene el sargazo que llega a Tulum?",
