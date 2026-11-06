@@ -1,23 +1,6 @@
 {
   "runs": [
     {
-      "timestamp": "2026-10-05T19:54:09.635Z",
-      "dryRun": false,
-      "script": "seo-sitemap-check",
-      "action": "check",
-      "sites": 2,
-      "total404": 0,
-      "totalMissing": 363
-    },
-    {
-      "timestamp": "2026-10-05T19:54:09.827Z",
-      "dryRun": false,
-      "script": "seo-image-audit",
-      "action": "audit",
-      "sites": 2,
-      "totalIssues": 0
-    },
-    {
       "timestamp": "2026-10-05T19:54:09.887Z",
       "dryRun": false,
       "script": "seo-orphan-healer",
@@ -1779,6 +1762,73 @@
         "https://sargasses-martinique.com/pro/hotels/",
         "https://sargasses-martinique.com/sargasses-pour-hotels/"
       ]
+    },
+    {
+      "timestamp": "2026-11-06T18:14:38.336Z",
+      "dryRun": false,
+      "script": "seo-audit",
+      "action": "data-collection",
+      "results": {
+        "mq": {
+          "indexed": 58,
+          "total": 74,
+          "notIndexed": 0,
+          "lowCtr": 4,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "gp": {
+          "indexed": 81,
+          "total": 100,
+          "notIndexed": 0,
+          "lowCtr": 2,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "florida": {
+          "indexed": 19,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 2,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "puntacana": {
+          "indexed": 8,
+          "total": 16,
+          "notIndexed": 0,
+          "lowCtr": 1,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "rivieramaya": {
+          "indexed": 16,
+          "total": 24,
+          "notIndexed": 0,
+          "lowCtr": 3,
+          "highBounce": 0,
+          "cwvIssues": 1
+        },
+        "tulum": {
+          "indexed": 0,
+          "total": 9,
+          "notIndexed": 0,
+          "lowCtr": 0,
+          "highBounce": 0,
+          "cwvIssues": 0
+        }
+      }
+    },
+    {
+      "timestamp": "2026-11-06T18:14:39.715Z",
+      "dryRun": false,
+      "script": "ux-audit",
+      "action": "report-generated",
+      "issues": {
+        "totalIssues": 26,
+        "critical": 0,
+        "warnings": 26
+      }
     }
   ]
 }
