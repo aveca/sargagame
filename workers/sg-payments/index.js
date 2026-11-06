@@ -592,8 +592,12 @@ var index_default = {
       return new Response(JSON.stringify({ ok: true, cron: "drip" }), { headers: { "Content-Type": "application/json" } });
     }
     if (url.pathname === "/_cron/b2c") {
-      ctx.waitUntil(runB2CAlerts(env));
-      return new Response(JSON.stringify({ ok: true, cron: "b2c" }), { headers: { "Content-Type": "application/json" } });
+      // No authenticated manual-cron contract or secret binding exists.
+      // Keep the scheduled() trigger; deny public/manual invocation by default.
+      return new Response(JSON.stringify({ error: "Not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" }
+      });
     }
     const path = url.pathname;
     if (path === "/api/jev-intent" || path === "/api/jev-intent.php") {
@@ -899,70 +903,140 @@ async function runDripEmails(env) {
   }
 }
 __name(runDripEmails, "runDripEmails");
+var B2C_REGION_CONFIG = {
+  mq: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
+  martinique: { domain: "sargasses-martinique.com", label: "Martinique", lang: "fr" },
+  gp: { domain: "sargasses-guadeloupe.com", label: "Guadeloupe", lang: "fr" },
+  guadeloupe: { domain: "sargasses-guadeloupe.com", label: "Guadeloupe", lang: "fr" },
+  us: { domain: "sargassummiami.com", label: "Florida", lang: "en" },
+  florida: { domain: "sargassummiami.com", label: "Florida", lang: "en" },
+  do: { domain: "sargassumpuntacana.com", label: "Punta Cana", lang: "en" },
+  puntacana: { domain: "sargassumpuntacana.com", label: "Punta Cana", lang: "en" },
+  mx: { domain: "sargassumcancun.com", label: "Riviera Maya", lang: "en" },
+  rivieramaya: { domain: "sargassumcancun.com", label: "Riviera Maya", lang: "en" },
+  tulum: { domain: "sargazotulum.com", label: "Tulum", lang: "en" }
+};
+var B2C_ALERT_STATUSES = ["moderate", "avoid", "high"];
+function b2cObservationIsFresh(payload, now = Date.now()) {
+  if (!payload || payload.stale !== false || !Array.isArray(payload.levels) || payload.levels.length === 0) return false;
+  const observedAt = Date.parse(payload.erddapTimestamp);
+  if (!Number.isFinite(observedAt) || observedAt > now) return false;
+  return now - observedAt <= 900 * 60 * 1000;
+}
+__name(b2cObservationIsFresh, "b2cObservationIsFresh");
+function b2cSelectedAlertLevels(subscription, payload) {
+  if (!Array.isArray(subscription.beaches) || subscription.beaches.length === 0) return [];
+  const selectedIds = subscription.beaches.map((id) => typeof id === "string" ? id.trim() : "");
+  if (selectedIds.some((id) => !id) || new Set(selectedIds).size !== selectedIds.length) return [];
+  const byId = new Map();
+  for (const level of payload.levels) {
+    if (!level || typeof level.id !== "string" || !level.id.trim() || byId.has(level.id)) return [];
+    byId.set(level.id, level);
+  }
+  if (selectedIds.some((id) => !byId.has(id))) return [];
+  return selectedIds.map((id) => byId.get(id)).filter((level) => B2C_ALERT_STATUSES.includes(String(level.status || "").toLowerCase()));
+}
+__name(b2cSelectedAlertLevels, "b2cSelectedAlertLevels");
+function escapeB2CHtml(value) {
+  return String(value == null ? "" : value).replace(/[&<>"']/g, (char) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  })[char]);
+}
+__name(escapeB2CHtml, "escapeB2CHtml");
 async function runB2CAlerts(env) {
   console.log("B2C: starting runB2CAlerts");
-  const alerts = await supa(env, "b2c_alerts", "GET", null, `?status=eq.active&select=*`);
-  if (!alerts || alerts.length === 0) {
+  const alerts = await supa(env, "b2c_alerts", "GET", null, "?status=eq.active&select=*");
+  if (!Array.isArray(alerts) || alerts.length === 0) {
     console.log("B2C: 0 active subscribers");
     return;
   }
-  console.log(`B2C: ${alerts.length} active subscribers`);
+  console.log("B2C: active subscriber count=" + alerts.length);
   for (const sub of alerts) {
     try {
-      const domain = sub.domain || "sargasses-martinique.com";
-      const region = sub.region || "martinique";
-      let shouldAlert = false;
-      let level = "unknown";
-      let forecastDate = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-      try {
-        const fcRes = await fetch(`https://${domain}/api/copernicus/sargassum.json`, { cf: { cacheTtl: 300 } });
-        if (fcRes.ok) {
-          const fc = await fcRes.json();
-          const txt = JSON.stringify(fc).toLowerCase();
-          if (txt.includes("moderate") || txt.includes("avoid") || txt.includes('"level":"moderate"') || txt.includes("sargass")) {
-            const beaches = fc.beaches || fc.data || [];
-            const regionBeaches = beaches.filter((b) => (b.region || b.island || "").toLowerCase().includes(region.toLowerCase().slice(0, 3)));
-            const hasAlert = regionBeaches.some((b) => ["moderate", "avoid", "high"].includes((b.level || b.status || "").toLowerCase()));
-            shouldAlert = hasAlert || regionBeaches.length === 0;
-            if (hasAlert) level = regionBeaches.find((b) => ["moderate", "avoid", "high"].includes((b.level || "").toLowerCase()))?.level || "moderate";
-          }
-        }
-      } catch (e) {
-        console.log(`B2C: forecast fetch failed for ${domain}: ${e.message}`);
-      }
-      if (!shouldAlert) {
-        console.log(`B2C: no sargassum detected for ${sub.email} region=${region} \u2014 skipping`);
+      const region = String(sub.region || "").trim().toLowerCase();
+      const regionInfo = B2C_REGION_CONFIG[region];
+      const domain = String(sub.domain || "").trim().toLowerCase();
+      if (!regionInfo || !domain || domain !== regionInfo.domain) {
+        console.log("B2C: invalid region/domain contract subscription=" + String(sub.id || "unknown"));
         continue;
       }
-      const token = sub.unsubscribe_token;
-      const unsubUrl = `https://${domain}/unsubscribe?token=${token}`;
-      const lang = region && ["florida", "puntacana", "rivieramaya", "miami"].includes(region.toLowerCase()) ? "en" : "fr";
-      const levelEmoji = { clean: "\u{1F7E2}", moderate: "\u{1F7E1}", avoid: "\u{1F534}", high: "\u{1F534}", unknown: "\u26AA" };
-      const levelColor = { clean: "#16a34a", moderate: "#eab308", avoid: "#dc2626", high: "#dc2626", unknown: "#6b7280" };
-      const emoji = levelEmoji[level] || "\u26A0\uFE0F";
-      const color = levelColor[level] || "#c0392b";
-      let forecastHtml = "";
-      try {
-        const c = await fetch(`https://${domain}/api/copernicus/sargassum.json`, { cf: { cacheTtl: 300 } }).then((r) => r.ok ? r.json() : null);
-        const wk = c?.weekly;
-        if (wk) {
-          const firstKey = Object.keys(wk)[0];
-          const fc = wk[firstKey]?.forecast?.slice(0, 4) || [];
-          if (fc.length >= 2) {
-            const rows = fc.slice(1, 4).map((d, i) => `<tr><td style="padding:6px 10px;border:1px solid #e5e7eb">J+${i + 1}</td><td style="padding:6px 10px;border:1px solid #e5e7eb">${levelEmoji[d.status] || ""} ${d.status}</td><td style="padding:6px 10px;border:1px solid #e5e7eb">${d.date || ""}</td></tr>`).join("");
-            forecastHtml = `<table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:13px"><tr><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Jour</th><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Niveau</th><th style="padding:6px 10px;background:#f3f4f6;border:1px solid #e5e7eb">Date</th></tr>${rows}</table>`;
-          }
-        }
-      } catch {
+      if (typeof sub.email !== "string" || !sub.email.includes("@") || /\\s/.test(sub.email) ||
+          typeof sub.unsubscribe_token !== "string" || !sub.unsubscribe_token.trim()) {
+        console.log("B2C: invalid subscriber contact subscription=" + String(sub.id || "unknown"));
+        continue;
       }
-      const beachesList = sub.beaches && sub.beaches.length ? sub.beaches.join(", ") : lang === "en" ? "All beaches in region" : "Toutes les plages de la r\xE9gion";
-      const subject = lang === "en" ? `\u26A0\uFE0F Sargassum alert \u2014 ${region} \u2014 ${forecastDate}` : `\u26A0\uFE0F Alerte sargassum \u2014 ${region} \u2014 ${forecastDate}`;
-      const html = lang === "en" ? `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:${color}">${emoji} Sargassum alert \u2014 ${region}</h2><p>Hello,</p><p>The sargassum level is <strong style="color:${color}">${emoji} ${level}</strong> in <strong>${region}</strong> today.</p><p>Beaches concerned: <strong>${beachesList}</strong></p>${forecastHtml}<p>Forecast: ${forecastHtml ? "see table above" : "J+1-3 available on map"}</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map \u2192</a> <a href="https://${domain}/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts \u2192</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="${unsubUrl}">Unsubscribe</a> \u2014 Measured by satellite, not guessed. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>` : `<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:${color}">${emoji} Alerte sargassum \u2014 ${region}</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:${color}">${emoji} ${level}</strong> sur <strong>${region}</strong> aujourd'hui.</p><p>Plages concern\xE9es: <strong>${beachesList}</strong></p>${forecastHtml}<p>Pr\xE9visions: ${forecastHtml ? "voir tableau ci-dessus" : "J+1 \xE0 J+3 sur la carte"}</p><p><a href="https://${domain}/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte \u2192</a> <a href="https://${domain}/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les pr\xE9visions compl\xE8tes \u2192</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous \xEAtes abonn\xE9 aux alertes SargaGame.<br><a href="${unsubUrl}">Se d\xE9sabonner</a> \u2014 Mesur\xE9 au satellite, pas devin\xE9. <a href="https://${domain}/fiabilite/">/fiabilite/</a></p></div>`;
+      // PostgreSQL text[] is expected. Empty, NULL, display-name or unknown selections never imply consent for all beaches.
+      if (!Array.isArray(sub.beaches) || sub.beaches.length === 0) {
+        console.log("B2C: no explicit beach selection subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      let payload;
+      try {
+        const response = await fetch("https://" + domain + "/api/copernicus/sargassum.json", { cf: { cacheTtl: 300 } });
+        if (!response.ok) {
+          console.log("B2C: forecast HTTP failure subscription=" + String(sub.id || "unknown"));
+          continue;
+        }
+        payload = await response.json();
+      } catch (e) {
+        console.log("B2C: forecast fetch failed subscription=" + String(sub.id || "unknown") + ": " + e.message);
+        continue;
+      }
+      if (!b2cObservationIsFresh(payload)) {
+        console.log("B2C: observation missing, stale, future or older than 900m subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      const selectedAlerts = b2cSelectedAlertLevels(sub, payload);
+      if (selectedAlerts.length === 0) {
+        console.log("B2C: no exact selected-beach alert subscription=" + String(sub.id || "unknown"));
+        continue;
+      }
+      const severity = { moderate: 1, avoid: 2, high: 3 };
+      const level = selectedAlerts.reduce((worst, beach) => {
+        const status = String(beach.status).toLowerCase();
+        return severity[status] > severity[worst] ? status : worst;
+      }, "moderate");
+      const forecastDate = new Date(payload.erddapTimestamp).toISOString().slice(0, 10);
+      const token = sub.unsubscribe_token;
+      const unsubUrl = "https://" + domain + "/unsubscribe?token=" + encodeURIComponent(token);
+      const lang = regionInfo.lang;
+      const regionLabel = regionInfo.label;
+      const levelEmoji = { clean: "🟢", moderate: "🟡", avoid: "🔴", high: "🔴", unknown: "⚪" };
+      const levelColor = { clean: "#16a34a", moderate: "#eab308", avoid: "#dc2626", high: "#dc2626", unknown: "#6b7280" };
+      const emoji = levelEmoji[level] || "⚠️";
+      const color = levelColor[level] || "#c0392b";
+      const beachesList = selectedAlerts.map((beach) => escapeB2CHtml(beach.id)).join(", ");
+      const weekly = payload.weekly && typeof payload.weekly === "object" ? payload.weekly : {};
+      const forecastRows = [];
+      for (const beach of selectedAlerts) {
+        const beachForecast = weekly[beach.id] && weekly[beach.id].forecast;
+        if (!Array.isArray(beachForecast)) continue;
+        for (let i = 1; i < Math.min(beachForecast.length, 4); i++) {
+          const day = beachForecast[i];
+          if (!day || typeof day.status !== "string") continue;
+          const dayStatus = String(day.status).toLowerCase();
+          forecastRows.push("<tr><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            escapeB2CHtml(beach.id) + "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>J+" + i +
+            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            (levelEmoji[dayStatus] || "") + " " + escapeB2CHtml(dayStatus) +
+            "</td><td style='padding:6px 10px;border:1px solid #e5e7eb'>" +
+            escapeB2CHtml(day.date || "") + "</td></tr>");
+        }
+      }
+      const forecastHtml = forecastRows.length
+        ? "<table style='width:100%;border-collapse:collapse;margin:12px 0;font-size:13px'><tr><th>Plage</th><th>Jour</th><th>Niveau</th><th>Date</th></tr>" + forecastRows.join("") + "</table>"
+        : "";
+      const subject = lang === "en"
+        ? "⚠️ Sargassum alert — " + regionLabel + " — " + forecastDate
+        : "⚠️ Alerte sargassum — " + regionLabel + " — " + forecastDate;
+      const html = lang === "en"
+        ? '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Sargassum alert — ' + escapeB2CHtml(regionLabel) + '</h2><p>Hello,</p><p>The sargassum level is <strong style="color:' + color + '">' + emoji + " " + level + '</strong> in <strong>' + escapeB2CHtml(regionLabel) + '</strong> today.</p><p>Beaches concerned: <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">View map →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">See full forecasts →</a></p><p style="font-size:11px;color:#888;margin-top:20px">You receive this email because you subscribed to SargaGame alerts.<br><a href="' + unsubUrl + '">Unsubscribe</a> — Measured by satellite, not guessed. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>'
+        : '<div style="font-family:system-ui;max-width:560px;margin:0 auto;padding:20px;color:#0d1117"><h2 style="color:' + color + '">' + emoji + ' Alerte sargassum — ' + escapeB2CHtml(regionLabel) + '</h2><p>Bonjour,</p><p>Le niveau de sargassum est <strong style="color:' + color + '">' + emoji + " " + level + '</strong> sur <strong>' + escapeB2CHtml(regionLabel) + '</strong> aujourd’hui.</p><p>Plages concernées : <strong>' + beachesList + '</strong></p>' + forecastHtml + '<p><a href="https://' + domain + '/?utm_source=b2c_alert&utm_medium=email" style="display:inline-block;background:#FFC72C;color:#0d1117;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none">Voir la carte →</a> <a href="https://' + domain + '/b2b?utm_source=b2c_alert" style="display:inline-block;background:#0d7f63;color:white;font-weight:700;padding:12px 24px;border-radius:999px;text-decoration:none;margin-left:8px">Voir les prévisions complètes →</a></p><p style="font-size:11px;color:#888;margin-top:20px">Vous recevez cet email car vous êtes abonné aux alertes SargaGame.<br><a href="' + unsubUrl + '">Se désabonner</a> — Mesuré au satellite, pas deviné. <a href="https://' + domain + '/fiabilite/">/fiabilite/</a></p></div>';
       const result = await sendEmail(sub.email, subject, html, domain, env);
-      if (result.success) console.log(`B2C: alert sent via ${result.provider} -> ${sub.email}`);
-      else console.log(`B2C: all providers failed for ${sub.email}`);
+      if (result.success) console.log("B2C: alert sent subscription=" + String(sub.id || "unknown") + " provider=" + result.provider);
+      else console.log("B2C: all email providers failed subscription=" + String(sub.id || "unknown"));
     } catch (e) {
-      console.log(`B2C: error for ${sub.email}: ${e.message}`);
+      console.log("B2C: error subscription=" + String(sub.id || "unknown") + ": " + e.message);
     }
   }
 }
