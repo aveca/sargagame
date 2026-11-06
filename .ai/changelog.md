@@ -11,7 +11,8 @@
 - **Garde-fou** : `cloudflare-production.yml` + `daily-copernicus.yml` se declenchent sur tout push `main` → **un merge deploye**. PR **#1335** poussee **sans merge** (aucun auto-merge actif) pour respecter « aucun deploiement pendant cette phase ».
 - **CI de PR #1335 verte** sur le head `988da1082` : `test-frontend` pass (2m14s), `perf` pass (24s), `lighthouse-report` pass (3m27s), GitGuardian pass → `mergeStateStatus: CLEAN`.
 - **Reutilisation** : `.ai/factory/capabilities.md` (registre durable) + `scripts/factory-v3/probe-capabilities.cjs` (sonde lecture seule, exit 0 = OK) + `scripts/factory-v3/state/config.json` (instantane sans valeur de secret).
-- **Signale hors perimetre** : les 6 sites live sont servis par un deploiement du 2026-10-28, **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` est en echec.
+- **Signale hors perimetre** : les 6 sites live sont servis par un deploiement du 2026-10-28, **202 commits derriere `main`**, et le run `Cloudflare Production` `42192193671` est en echec. Corrobore par le workflow planifie `Live Production Sentinel` (run `42207758614`) : `LIVE_HEALTH: DEGRADED`, `operationalSlaBreaches: 6`, `incidents: 0`, `sensorStatus: PROVEN` → degradation de fraicheur seule.
+- **Defaut corrige dans la sonde** : l'API GitHub renvoie **HTTP 404** sur les logs d'un job **en cours**. La sonde ne prenait que le run le plus recent et concluait a tort « logs illisibles » (`CONNECTION_PARTIAL`) juste apres un push. Elle parcourt desormais 8 runs et tous leurs jobs, en priorisant les jobs termines (`log_attempts` consigne dans l'etat). Rejeu : `CONNECTION_OK`, exit 0.
 - **Aucun** checkout, paiement, e-mail, secret lu en valeur/modifie, Worker, D1/R2/Supabase ecrit, migration, DNS, purge de cache, ni travail sur un autre depot.
 
 ---

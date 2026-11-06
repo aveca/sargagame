@@ -128,7 +128,7 @@ try {
 section('GitHub Actions');
 try {
   const workflows = ghJson(['api', `repos/${REPO}/actions/workflows`]);
-  const runs = ghJson(['api', `repos/${REPO}/actions/runs?per_page=5`]);
+  const runs = ghJson(['api', `repos/${REPO}/actions/runs?per_page=10`]);
   const variables = ghJson(['api', `repos/${REPO}/actions/variables`]);
   const secrets = ghJson(['api', `repos/${REPO}/actions/secrets`]);
 
@@ -149,29 +149,61 @@ try {
   }
 
   // Lecture des logs d'un job (preuve que les artefacts de CI sont lisibles).
+  //
+  // Piege : l'API GitHub renvoie HTTP 404 sur les logs d'un job EN COURS
+  // (log pas encore archive). Prendre simplement le run le plus recent rend
+  // donc la sonde trompeuse (CONNECTION_PARTIAL) juste apres un push. On
+  // parcourt plusieurs runs et plusieurs jobs, en priorisant les jobs
+  // termines, et on ne conclut a l'echec quapres avoir tout epuise.
   let logsReadable = false;
   let logSample = null;
-  try {
-    const first = runs.workflow_runs.find((r) => r.id);
-    if (first) {
-      const jobs = ghJson(['api', `repos/${REPO}/actions/runs/${first.id}/jobs`]);
-      const job = (jobs.jobs || [])[0];
-      if (job) {
-        // Sans `--include` : gh renvoie directement le corps (texte brut des logs).
-        // `--allow-escape-sequences` : les logs CI contiennent des codes ANSI.
-        const body = execFileSync(GH_BIN,
-          ['api', `repos/${REPO}/actions/jobs/${job.id}/logs`, '--allow-escape-sequences'],
-          { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 120000 });
-        logsReadable = typeof body === 'string' && body.length > 0;
-        logSample = {
-          run_id: first.id,
-          job_id: job.id,
-          job_name: job.name,
-          bytes: Buffer.byteLength(String(body)),
-        };
+  const logAttempts = [];
+  {
+    const candidates = runs.workflow_runs.filter((r) => r.id).slice(0, 8);
+    outer:
+    for (const run of candidates) {
+      let jobs = [];
+      try {
+        jobs = ghJson(['api', `repos/${REPO}/actions/runs/${run.id}/jobs`]).jobs || [];
+      } catch (_) { /* run sans jobs materialises */ }
+      if (!jobs.length) continue;
+      // Jobs termines d'abord (leurs logs sont archives), puis les autres.
+      const ordered = [...jobs].sort((a, b) => {
+        const ac = a.status === 'completed' ? 0 : 1;
+        const bc = b.status === 'completed' ? 0 : 1;
+        return ac - bc;
+      });
+      for (const job of ordered) {
+        try {
+          // Sans `--include` : gh renvoie directement le corps (texte brut des logs).
+          // `--allow-escape-sequences` : les logs CI contiennent des codes ANSI.
+          const body = execFileSync(GH_BIN,
+            ['api', `repos/${REPO}/actions/jobs/${job.id}/logs`, '--allow-escape-sequences'],
+            { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, timeout: 120000 });
+          if (typeof body === 'string' && body.length > 0) {
+            logsReadable = true;
+            logSample = {
+              run_id: run.id,
+              job_id: job.id,
+              job_name: job.name,
+              job_status: job.status,
+              bytes: Buffer.byteLength(String(body)),
+            };
+            logAttempts.push({ run_id: run.id, job_id: job.id, ok: true });
+            break outer;
+          }
+          logAttempts.push({ run_id: run.id, job_id: job.id, ok: false, reason: 'corps vide' });
+        } catch (e) {
+          logAttempts.push({
+            run_id: run.id,
+            job_id: job.id,
+            ok: false,
+            reason: String(e.message || e).split('\n')[0].slice(0, 80),
+          });
+        }
       }
     }
-  } catch (_) { logsReadable = false; }
+  }
 
   report.actions = {
     workflows_visible: workflows.total_count,
@@ -188,6 +220,7 @@ try {
       : null,
     logs_readable: logsReadable,
     log_sample: logSample,
+    log_attempts: logAttempts,
   };
 
   if (!asJson) {

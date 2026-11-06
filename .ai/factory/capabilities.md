@@ -58,6 +58,15 @@ Les permissions demandées sont donc couvertes :
 
 > Note d'implémentation : `gh api` refuse la sortie brute des logs CI à cause des codes
 > ANSI. Il faut passer `--allow-escape-sequences` (sans `--include`).
+>
+> **Piège n°2 — logs d'un job en cours.** L'API GitHub renvoie **HTTP 404** sur
+> `GET /actions/jobs/{id}/logs` tant que le job n'a pas archivé ses logs. Une sonde
+> qui prend simplement le run le plus récent tombe donc sur un job *en cours* et conclut
+> à tort « logs illisibles » (verdict `CONNECTION_PARTIAL`) juste après un push — c'est
+> exactement ce qui s'est produit sur cette mission. La sonde parcourt désormais
+> **8 runs et tous leurs jobs, en priorisant les jobs terminés**, et ne conclut à
+> l'échec qu'après avoir tout épuisé. `log_attempts` est consigné dans l'état pour
+> diagnostic.
 
 ### Variable Actions demandée
 
@@ -163,6 +172,28 @@ Pour une mission ultérieure :
 Au 2026-11-06, les six sites live sont servis par un déploiement du **2026-10-28**, soit
 **202 commits derrière `main`**. Le run `Cloudflare Production` `42192193671` sur `main`
 `5382a829c` est en **échec**. La chaîne de déploiement paraît donc **bouchée depuis ~9 jours**.
+
+**Corroboration indépendante** — le workflow planifié `Live Production Sentinel`, run
+`42207758614` sur `main` `5382a829c` (2026-11-06T11:06Z, déclenché par le schedule, **pas**
+par cette mission), publie :
+
+```json
+{
+  "LIVE_HEALTH": "DEGRADED",
+  "domains": 6,
+  "operationalSlaBreaches": 6,
+  "operationalFreshnessStatus": "OPERATIONAL_SLA_BREACHED",
+  "incidents": 0,
+  "sensorStatus": "PROVEN",
+  "sensorErrors": 0,
+  "ciFailures": 2
+}
+```
+
+Donc : **les 6 domaines dépassent tous le SLA opérationnel de fraîcheur** des données, sans
+incident confirmé (`incidents: 0`) et sans erreur du capteur (`sensorStatus: PROVEN`). C'est
+une dégradation de fraîcheur seule, pas une panne de sensor — ce qui pointe vers la chaîne
+de déploiement/rafraîchissement, pas vers la collecte scientifique.
 
 Cette observation est **signalée, pas corrigée** : elle sort du périmètre de la mission de
 connexion (aucun déploiement autorisé, aucun checkout, aucun Worker). Elle appelle une

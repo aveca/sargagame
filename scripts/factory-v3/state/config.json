@@ -1,6 +1,6 @@
 {
   "capabilities": {
-    "checked_at": "2026-11-06T10:57:42.971Z",
+    "checked_at": "2026-11-06T11:15:54.482Z",
     "host": "DESKTOP-HG0O76B",
     "platform": "win32",
     "node": "v24.14.0",
@@ -26,8 +26,71 @@
     },
     "actions": {
       "workflows_visible": 56,
-      "runs_readable": 17926,
+      "runs_readable": 17933,
       "recent_runs": [
+        {
+          "id": 42208439007,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "77d5151ad"
+        },
+        {
+          "id": 42208438867,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "77d5151ad"
+        },
+        {
+          "id": 42207758614,
+          "name": "Live Production Sentinel",
+          "status": "completed",
+          "conclusion": "failure",
+          "event": "schedule",
+          "branch": "main",
+          "sha": "5382a829c"
+        },
+        {
+          "id": 42207428257,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "988da1082"
+        },
+        {
+          "id": 42207428248,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "988da1082"
+        },
+        {
+          "id": 42207255965,
+          "name": "Perf Budget + Lighthouse",
+          "status": "completed",
+          "conclusion": "cancelled",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "81e69e7ac"
+        },
+        {
+          "id": 42207255958,
+          "name": "CI Tests",
+          "status": "completed",
+          "conclusion": "success",
+          "event": "pull_request",
+          "branch": "ops/factory-v3-github-actions-connection-20261106",
+          "sha": "81e69e7ac"
+        },
         {
           "id": 42199264982,
           "name": "CI Tests",
@@ -54,24 +117,6 @@
           "event": "workflow_run",
           "branch": "main",
           "sha": "5382a829c"
-        },
-        {
-          "id": 42192193940,
-          "name": "Daily Copernicus + Deploy",
-          "status": "completed",
-          "conclusion": "success",
-          "event": "push",
-          "branch": "main",
-          "sha": "5382a829c"
-        },
-        {
-          "id": 42192193734,
-          "name": "CI Tests",
-          "status": "completed",
-          "conclusion": "success",
-          "event": "push",
-          "branch": "main",
-          "sha": "5382a829c"
         }
       ],
       "variables_visible": 1,
@@ -86,11 +131,19 @@
       },
       "logs_readable": true,
       "log_sample": {
-        "run_id": 42199264982,
-        "job_id": 127830225983,
-        "job_name": "test-frontend",
-        "bytes": 307031
-      }
+        "run_id": 42208439007,
+        "job_id": 127860825477,
+        "job_name": "lighthouse-report",
+        "job_status": "completed",
+        "bytes": 33858
+      },
+      "log_attempts": [
+        {
+          "run_id": 42208439007,
+          "job_id": 127860825477,
+          "ok": true
+        }
+      ]
     },
     "cloudflare": {
       "auth": "wrangler OAuth (config/default.toml)",
@@ -180,5 +233,5 @@
     "problems": [],
     "verdict": "CONNECTION_OK"
   },
-  "updated_at": "2026-11-06T10:57:52.180Z"
+  "updated_at": "2026-11-06T11:16:03.685Z"
 }
