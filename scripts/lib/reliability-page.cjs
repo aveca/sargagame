@@ -19,7 +19,7 @@
 const fs = require('fs')
 const { icon: brandIcon } = require('./brand-icons.cjs')
 const { resolvePublicAccuracy } = require('./regional-track-record.cjs')
-const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie réelle du modèle (5,0 j) — jamais re-coder en dur
+const { HALF_LIFE_DAYS } = require('./confidence.cjs') // demi-vie des bancs flottants (5,0 j), pas des échouages
 const path = require('path')
 const HL_FR = String(HALF_LIFE_DAYS).replace('.', ',') // 5,0 → "5"
 const HL_NUM = String(HALF_LIFE_DAYS)
@@ -85,10 +85,10 @@ const I18N = {
     h1a: 'Nos prévisions,', h1b: 'vérifiées',
     lead: "Aucune promesse, des mesures : les prévisions archivées sont comparées aux observations satellite disponibles. Voici la méthode — et les chiffres, y compris ceux qu'on rate.",
     l1: 'La méthode', h2m: 'Comment naît une prévision',
-    m1t: 'Satellite Copernicus / NOAA',
+    m1t: 'Observations AFAI NOAA/AOML ERDDAP',
     m1s: "L'indice AFAI (algues flottantes) est échantillonné au large de chaque plage, pixel par pixel — jamais une moyenne régionale.",
     m2t: 'Un modèle de dérive, pas une boule de cristal',
-    m2s: `Persistance des échouages (demi-vie ${HL_FR} jours), vent et bancs détectés au large : ces éléments alimentent la prévision à 7 jours à partir des observations disponibles.`,
+    m2s: `Les bancs flottants utilisent une demi-vie de persistance de ${HL_FR} jours ; la persistance des algues déjà échouées reste une hypothèse provisoire, non calibrée sur des observations de terrain en saison active.`,
     m3t: 'Un backtest automatique',
     m3s: "Les prévisions archivées sont confrontées aux observations satellite disponibles. Le calcul est automatique — personne ne retouche les chiffres.",
     m4t: "Quand la donnée manque, on n'affiche rien",
@@ -127,10 +127,10 @@ const I18N = {
     h1a: 'Our forecasts,', h1b: 'verified',
     lead: 'No promises — measurements. Archived forecasts are compared with the satellite observations available. Here is the method, and the numbers — including the ones we miss.',
     l1: 'The method', h2m: 'How a forecast is made',
-    m1t: 'Copernicus / NOAA satellite observations',
+    m1t: 'NOAA/AOML ERDDAP AFAI observations',
     m1s: 'The AFAI floating-algae index is sampled offshore of every beach, pixel by pixel — never a regional average.',
     m2t: 'A drift model, not a crystal ball',
-    m2s: `Beaching persistence (${HL_NUM}-day half-life), wind and offshore mats feed the 7-day forecast using the available observations.`,
+    m2s: `Floating mats use a ${HL_NUM}-day persistence half-life; persistence of material already beached remains a provisional prior, not calibrated against active-season ground truth.`,
     m3t: 'An automatic backtest',
     m3s: 'Archived forecasts are checked against the available satellite observations. The process is automatic — nobody edits the numbers.',
     m4t: 'When data is missing, we show nothing',
@@ -169,10 +169,10 @@ const I18N = {
     h1a: 'Nuestros pronósticos,', h1b: 'verificados',
     lead: 'Sin promesas — mediciones. Los pronósticos archivados se comparan con las observaciones satelitales disponibles. Este es el método, y las cifras — incluidas las que fallamos.',
     l1: 'El método', h2m: 'Cómo se hace un pronóstico',
-    m1t: 'Observaciones satelitales Copernicus / NOAA',
+    m1t: 'Observaciones AFAI de NOAA/AOML ERDDAP',
     m1s: 'El índice AFAI (algas flotantes) se muestrea frente a cada playa, píxel por píxel — nunca un promedio regional.',
     m2t: 'Un modelo de deriva, no una bola de cristal',
-    m2s: `La persistencia de los recales (vida media de ${HL_FR} días), el viento y los bancos detectados mar adentro alimentan el pronóstico de 7 días a partir de las observaciones disponibles.`,
+    m2s: `Los bancos flotantes usan una semivida de persistencia de ${HL_FR} días; la persistencia del material ya varado sigue siendo una hipótesis provisional, sin calibrar con observaciones de terreno durante la temporada activa.`,
     m3t: 'Un backtest automático',
     m3s: 'Los pronósticos archivados se comparan con las observaciones satelitales disponibles. El proceso es automático — nadie retoca las cifras.',
     m4t: 'Cuando falta el dato, no mostramos nada',
@@ -855,7 +855,7 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all} % de prévisions sargasses justes, vérifié — ${regionLabel}` : `Fiabilité des prévisions sargasses — précision mesurée | ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Prévision vs observation satellite : ${j1} % de réussite à J+1, ${all} % global sur ${pairs} comparaisons (${days} jours). Méthode et chiffres réels, jamais retouchés.`
-        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations satellite Copernicus/NOAA, modèle de dérive et backtest automatique.',
+        : 'Comment nos prévisions sargasses sont calculées et vérifiées : observations AFAI NOAA/AOML ERDDAP, modèle de dérive et backtest automatique.',
     }
   }
   if (lang === 'es') {
@@ -863,14 +863,14 @@ function buildMeta(lang, bt, regionLabel) {
       title: all != null ? `${all}% de pronósticos de sargazo acertados, verificado — ${regionLabel}` : `Precisión del pronóstico de sargazo, verificada — ${regionLabel}`,
       desc: j1 != null && all != null && pairs && days
         ? `Pronóstico vs observación satelital: ${j1}% de acierto a 1 día, ${all}% global en ${pairs} comparaciones (${days} días). Método y cifras reales, nunca retocadas.`
-        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones satelitales Copernicus/NOAA, modelo de deriva y backtest automático.',
+        : 'Cómo se calculan y verifican nuestros pronósticos de sargazo: observaciones AFAI de NOAA/AOML ERDDAP, modelo de deriva y backtest automático.',
     }
   }
   return {
     title: all != null ? `${all}% Accurate Sargassum Forecasts, Verified — ${regionLabel}` : `Sargassum Forecast Accuracy, Verified — ${regionLabel}`,
     desc: j1 != null && all != null && pairs && days
       ? `Forecast vs satellite observation: ${j1}% next-day hit rate, ${all}% overall across ${pairs} checks (${days} days). Full method, real numbers, never edited.`
-      : 'How our sargassum forecasts are computed and verified: Copernicus/NOAA satellite observations, drift model and automatic backtest.',
+      : 'How our sargassum forecasts are computed and verified: NOAA/AOML ERDDAP AFAI observations, drift model and automatic backtest.',
   }
 }
 
