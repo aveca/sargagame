@@ -22,6 +22,9 @@ const M1 = path.join(ROOT, 'scripts', 'migrations', '001_idempotent_payment_gran
 const M2 = path.join(ROOT, 'scripts', 'migrations', '002_payment_grant_search_path.sql')
 const M3 = path.join(ROOT, 'scripts', 'migrations', '003_b2b_leads_least_privilege.sql')
 const M4 = path.join(ROOT, 'scripts', 'migrations', '004_b2b_lead_drip_claims.sql')
+const M6 = path.join(ROOT, 'scripts', 'migrations', '006_public_table_least_privilege.sql')
+const M7 = path.join(ROOT, 'scripts', 'migrations', '007_revoke_public_truncate.sql')
+const M8 = path.join(ROOT, 'scripts', 'migrations', '008_internal_b2b_least_privilege.sql')
 const WORKER = path.join(ROOT, 'workers', 'sg-payments', 'index.js')
 
 // Hôte de production connu (cf. bindings live de sg-payments). Toute cible
@@ -110,6 +113,52 @@ async function main() {
   t(sql4.includes('CREATE INDEX IF NOT EXISTS b2b_leads_processing_claimed_idx'), '§8 : les claims expirés sont indexés')
   t(sql4.includes('MIGRATION PRÉPARÉE, NON APPLIQUÉE'), '§8 : la migration est explicitement marquée comme non appliquée')
   t(!sql4.includes('UPDATE public.b2b_leads') && !sql4.includes('DELETE FROM public.b2b_leads') && !sql4.includes('TRUNCATE public.b2b_leads'), '§8 : la migration ne modifie ni ne supprime les prospects')
+  // ── P0.127 : moindre privilège B2B/B2C/payment ───────────────────────────
+  t(fs.existsSync(M6), 'P0.127 : la migration 006 (B2B/B2C/payment) est présente')
+  const sql6 = fs.readFileSync(M6, 'utf8')
+  t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql6), 'P0.127 : la migration 006 est explicitement non appliquée')
+  for (const [table, policy] of [
+    ['b2b_subscriptions', 'Allow all b2b_subscriptions'],
+    ['b2c_alerts', 'Allow all b2c_alerts']
+  ]) {
+    t(sql6.includes(`DROP POLICY IF EXISTS "${policy}" ON public.${table}`), `P0.127 : la policy permissive connue de ${table} est supprimée`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM PUBLIC`), `P0.127 : PUBLIC est révoqué sur ${table}`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM anon`), `P0.127 : anon est révoqué sur ${table}`)
+    t(sql6.includes(`REVOKE ALL ON TABLE public.${table} FROM authenticated`), `P0.127 : authenticated est révoqué sur ${table}`)
+    t(sql6.includes(`ALTER TABLE public.${table} ENABLE ROW LEVEL SECURITY`), `P0.127 : RLS est activée sur ${table}`)
+  }
+  for (const role of ['PUBLIC', 'anon', 'authenticated']) {
+    t(sql6.includes(`REVOKE ALL ON TABLE public.payment_grants FROM ${role}`), `P0.127 : ${role} est révoqué sur payment_grants`)
+  }
+  t(sql6.includes('ALTER TABLE public.payment_grants ENABLE ROW LEVEL SECURITY'), 'P0.127 : RLS est activée sur payment_grants')
+  t(!/REVOKE[^;]*FROM service_role/i.test(sql6), 'P0.127 : service_role conserve ses droits')
+  const sql6Code = sql6.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\bDROP\s+(TABLE|COLUMN)\b/i.test(sql6Code), 'P0.127 : aucune suppression de table ou colonne')
+  t(!/\b(DELETE\s+FROM|TRUNCATE|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql6Code), 'P0.127 : aucune modification ou suppression de données')
+
+  // ── P0.127 : TRUNCATE bypass RLS ────────────────────────────────────────
+  t(fs.existsSync(M7), 'P0.127 : la migration 007 (TRUNCATE) est présente')
+  const sql7 = fs.readFileSync(M7, 'utf8')
+  t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql7), 'P0.127 : la migration 007 est explicitement non appliquée')
+  t(sql7.includes('REVOKE TRUNCATE ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;'), 'P0.127 : TRUNCATE est révoqué de tous les rôles clients sur le schéma public')
+  t(!/GRANT\s+TRUNCATE/i.test(sql7), 'P0.127 : aucun privilège TRUNCATE n est accordé')
+  t(!/REVOKE[^;]*FROM service_role/i.test(sql7), 'P0.127 : service_role conserve ses droits')
+  const sql7Code = sql7.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\b(DROP\s+(TABLE|COLUMN)|DELETE\s+FROM|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql7Code), 'P0.127 : aucune modification ou suppression de données')
+
+  // ── P0.127 : tables B2B internes sans policy ────────────────────────────
+  t(fs.existsSync(M8), 'P0.127 : la migration 008 (tables B2B internes) est présente')
+  const sql8 = fs.readFileSync(M8, 'utf8')
+  t(/MIGRATION PRÉPARÉE, NON APPLIQUÉE/.test(sql8), 'P0.127 : la migration 008 est explicitement non appliquée')
+  const internalTables = ['b2b_prospects', 'b2b_contacts', 'b2b_scores', 'b2b_concierge', 'b2b_forecast_deliveries', 'b2b_payments', 'b2b_events']
+  for (const table of internalTables) {
+    t(sql8.includes(`'${table}'`), `P0.127 : ${table} est explicitement dans le périmètre interne`)
+    t(sql8.includes(`REVOKE ALL ON TABLE public.%I FROM anon`) && sql8.includes(`REVOKE ALL ON TABLE public.%I FROM authenticated`), `P0.127 : les privilèges clients sont révoqués dynamiquement pour ${table}`)
+  }
+  t(!/REVOKE[^;]*FROM service_role/i.test(sql8), 'P0.127 : service_role conserve ses droits sur les tables B2B internes')
+  const sql8Code = sql8.replace(/--[^\n]*/g, '').replace(/\/\*[\s\S]*?\*\//g, '')
+  t(!/\b(DROP\s+(TABLE|COLUMN)|DELETE\s+FROM|UPDATE\s+public\.|INSERT\s+INTO\s+public\.)/i.test(sql8Code), 'P0.127 : aucune modification ou suppression de données')
+
   // ── Contrôle « base jetable » : JAMAIS en production ─────────────────────
   const target = process.env.SG_TEST_PG_URL || process.env.SG_TEST_SUPABASE_URL || ''
   let pg = null
@@ -129,6 +178,9 @@ async function main() {
       await client.connect()
       await client.query(fs.readFileSync(M3, 'utf8'))
       await client.query(fs.readFileSync(M2, 'utf8'))
+      await client.query(fs.readFileSync(M6, 'utf8'))
+      await client.query(fs.readFileSync(M7, 'utf8'))
+      await client.query(fs.readFileSync(M8, 'utf8'))
       const res = await client.query(`
         SELECT grantee, privilege_type
         FROM information_schema.role_table_grants
@@ -141,6 +193,22 @@ async function main() {
       t(anonRows.length === 0, '§1 : anon n a AUCUN privilège sur public.b2b_leads (base jetable)')
       t(authRows.length === 0, '§1 : authenticated n a AUCUN privilège sur public.b2b_leads (base jetable)')
       t(svcRows.length > 0, '§1 : service_role conserve ses privilèges (base jetable)')
+      const trunc = await client.query(`
+        SELECT grantee, table_name
+        FROM information_schema.role_table_grants
+        WHERE table_schema = 'public'
+          AND grantee IN ('anon', 'authenticated', 'PUBLIC')
+          AND privilege_type = 'TRUNCATE'
+      `)
+      t((trunc.rows || []).length === 0, 'P0.127 : aucun rôle client ne conserve TRUNCATE (base jetable)')
+      const internalGrants = await client.query(`
+        SELECT table_name, grantee, privilege_type
+        FROM information_schema.role_table_grants
+        WHERE table_schema = 'public'
+          AND table_name = ANY($1::text[])
+          AND grantee IN ('PUBLIC', 'anon', 'authenticated')
+      `, [internalTables])
+      t((internalGrants.rows || []).length === 0, 'P0.127 : aucun privilège client ne subsiste sur les tables B2B internes (base jetable)')
       const fn = await client.query(`
         SELECT proconfig FROM pg_proc p
         JOIN pg_namespace n ON n.oid = p.pronamespace
