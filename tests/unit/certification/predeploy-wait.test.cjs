@@ -146,9 +146,9 @@ console.log('predeploy-wait : les deux côtés du verrou (mission P0)\n');
     w.ready === false && reasons.some(x => /épuisée|fail-closed/.test(x)));
 }
 
-// W7 — sensibilité paiements : flag informatif, jamais bloquant
+// W7 — toute release sensible exige une approbation explicite du SHA exact
 {
-  const { dir, g } = makeGitRoot();
+  const { dir } = makeGitRoot();
   try {
     fs.writeFileSync(path.join(dir, 'app.js'), 'v1\n');
     gcommit(dir, 'product: neutral base');
@@ -156,19 +156,37 @@ console.log('predeploy-wait : les deux côtés du verrou (mission P0)\n');
     fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // v1\n");
     const P1 = gcommit(dir, 'product: mollie endpoint');
     const s1 = paymentSensitiveInfo(dir, P1);
+    record('W7a commit paiement détecté avec diff vérifiée + rollback',
+      s1.diffVerified === true && s1.paymentSensitive === true && typeof s1.rollback === 'string' && s1.rollback.includes(P1),
+      `fichiers=${s1.paymentFiles.join(',')}`);
+    const blocked = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN });
+    record('W7b commit sensible sans approbation SHA exacte => REFUSE',
+      blocked.exit === 1 && blocked.decision === 'REFUSE' && blocked.businessApprovalRequired === true && blocked.businessApprovalGranted === false,
+      `decision=${blocked.decision}`);
+    const approved = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN, businessApprovalSha: P1 });
+    record('W7c commit sensible avec approbation SHA exacte => ALLOW',
+      approved.exit === 0 && approved.decision === 'ALLOW' && approved.businessApprovalGranted === true,
+      `decision=${approved.decision}`);
     fs.writeFileSync(path.join(dir, 'app.js'), 'v2 — évolution neutre\n');
     const P2 = gcommit(dir, 'product: neutral change');
     const s2 = paymentSensitiveInfo(dir, P2);
-    record('W7a commit paiements => paymentSensitive:true + rollback',
-      s1.paymentSensitive === true && typeof s1.rollback === 'string' && s1.rollback.includes(P1),
-      `fichiers=${s1.paymentFiles.join(',')}`);
-    record('W7b commit neutre => paymentSensitive:false',
-      s2.paymentSensitive === false && s2.rollback === null);
-    // Le flag ne bloque pas : release verte (HEAD = commit neutre P2) => ALLOW
-    const r = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN });
-    record('W7c release verte => ALLOW avec paymentSensitive:false (flag informatif)',
-      r.exit === 0 && r.decision === 'ALLOW' && r.paymentSensitive === false,
-      `decision=${r.decision} sensible=${r.paymentSensitive}`);
+    const neutral = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN });
+    record('W7d commit neutre => ALLOW sans approbation',
+      s2.diffVerified === true && s2.paymentSensitive === false && neutral.exit === 0 && neutral.decision === 'ALLOW');
+  } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {} }
+}
+
+// W7e — diff produit invérifiable (commit racine) => REFUSE même si CI verte
+{
+  const { dir } = makeGitRoot();
+  try {
+    fs.mkdirSync(path.join(dir, 'public', 'api'), { recursive: true });
+    fs.writeFileSync(path.join(dir, 'public', 'api', 'mollie.php'), "<?php // root\n");
+    const rootSha = gcommit(dir, 'root: payment code');
+    const info = paymentSensitiveInfo(dir, rootSha);
+    const r = evaluateDeploy({ root: dir }, { fetchCheckRuns: () => GREEN, businessApprovalSha: rootSha });
+    record('W7e diff invérifiable => REFUSE fail-closed même avec SHA fourni',
+      info.diffVerified === false && info.paymentSensitive === null && r.exit === 1 && r.decision === 'REFUSE');
   } finally { try { fs.rmSync(dir, { recursive: true, force: true }); } catch (_) {} }
 }
 
