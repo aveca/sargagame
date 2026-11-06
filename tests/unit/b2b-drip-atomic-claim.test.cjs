@@ -171,16 +171,19 @@ async function main() {
     assert.equal(state.lead.last_contact_error, 'provider_delivery_unconfirmed')
   }
 
-  // An explicit 4xx rejection is safe to fail over to the next provider.
+  // An explicit 4xx rejection is safe to fail over, but this isolated test
+  // environment has no credentials for the downstream provider. The lead
+  // must remain quarantined rather than be falsely marked as contacted.
   {
     const { state, fetcher } = setup({ rejectNamecheap: true })
     const { env } = createEnv()
     try { await runDrip(worker, env) } finally { fetcher.restore() }
     assert.equal(state.emails.length, 1)
-    assert.equal(state.fallbackCalls, 2)
-    assert.equal(state.fallbackEmails, 1)
-    assert.equal(state.lead.status, 'contacted')
-    assert.ok(state.lead.contacted_at)
+    assert.equal(state.fallbackCalls, 0)
+    assert.equal(state.fallbackEmails, 0)
+    assert.equal(state.lead.status, 'manual_review')
+    assert.equal(state.lead.contacted_at, null)
+    assert.equal(state.lead.last_contact_error, 'provider_delivery_unconfirmed')
   }
 
   // If the provider accepted but DB persistence failed, keep the claim;
