@@ -236,7 +236,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
 <tr>
 <td valign="top" width="26" style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#FFC72C;">&#10003;</td>
-<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#E4EEEB; padding-bottom:8px;">Prévision 7 jours, mise à jour 4×/jour</td>
+<td style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#E4EEEB; padding-bottom:8px;">Tendance jusqu’à 7 jours, fondée sur les dernières observations AFAI disponibles</td>
 </tr>
 <tr>
 <td valign="top" width="26" style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:15px; line-height:1.5; color:#FFC72C;">&#10003;</td>
@@ -292,7 +292,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 </tr>
 <tr>
 <td align="center" style="padding:12px 24px 22px 24px;">
-<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.5; color:#7A8A85;">Prévision satellite pour samedi · Mise à jour 4×/jour</div>
+<div style="font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.5; color:#7A8A85;">Dernière observation AFAI disponible · heure à vérifier sur la carte</div>
 </td>
 </tr>
 </table>
@@ -303,7 +303,7 @@ function buildEmailHTML(island, topBeaches, stats, domain) {
 <tr>
 <td align="center" style="padding:26px 28px 36px 28px;">
 <div style="font-family:'Anton','Helvetica Neue',Arial,sans-serif; font-size:16px; font-weight:800; letter-spacing:1px; color:#0D1E1C; text-transform:uppercase;">Le Veilleur</div>
-<div style="padding-top:8px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;">Ta vigie sargasses pour ${islandName} &mdash; donn&eacute;es publiques Copernicus + NOAA, mesur&eacute;es 4&times;/jour.<br>&copy; ${new Date().getFullYear()} Le Veilleur &middot; 97TECH SAS &middot; RCS Paris 882 370 703</div>
+<div style="padding-top:8px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;">Ta vigie sargasses pour ${islandName} &mdash; observations AFAI distribuées par NOAA/AOML ERDDAP ; fraîcheur variable selon la source.<br>&copy; ${new Date().getFullYear()} Le Veilleur &middot; 97TECH SAS &middot; RCS Paris 882 370 703</div>
 <div style="padding-top:12px; font-family:'Helvetica Neue',Arial,sans-serif; font-size:12px; line-height:1.6; color:#9AA8A3;"><a href="${unsubUrl(island)}" target="_blank" style="color:#7A8A85; text-decoration:underline;">Me désabonner</a></div>
 </td>
 </tr>
@@ -416,7 +416,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     premiumKick: 'El Pase del Vigía', premiumTitle: 'Sabe el sábado desde el lunes',
     premiumDesc: '7 días por delante, playa por playa — medido por satélite, no adivinado.<br>Un aviso la mañana en que se despeja una playa, para que salgas sabiéndolo ya.',
     premiumCta: 'Activar mi pase', priceNote: 'Desde $5.99 · pago único, sin suscripción · acceso inmediato',
-    mapCta: 'Ver el mapa en vivo', mapNote: 'Pronóstico satelital para el sábado · Actualizado 4×/día',
+    mapCta: 'Ver el mapa en vivo', mapNote: 'Última observación AFAI disponible · comprueba la hora en el mapa',
     unsub: 'Darse de baja',
   } : {
     eyebrow: "The Watchman's Bulletin", title: `${name} Beaches`,
@@ -426,7 +426,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
     premiumKick: 'The Watchman Pass', premiumTitle: 'Know Saturday by Monday',
     premiumDesc: '7 days ahead, beach by beach — measured by satellite, not guessed.<br>A push the morning a clean beach opens up, so you leave already knowing.',
     premiumCta: 'Activate my Pass', priceNote: 'From $5.99 · one-time, no subscription · instant access',
-    mapCta: 'See the live map', mapNote: 'Satellite forecast for Saturday · Updated 4×/day',
+    mapCta: 'See the live map', mapNote: 'Latest available AFAI observation · check the time on the map',
     unsub: 'Unsubscribe',
   }
   const beachRows = topBeaches.map(b => {
@@ -503,7 +503,7 @@ function buildEmailHTMLRegion(region, lang, topBeaches, stats) {
 
   <div style="text-align:center;padding:16px;font-size:10px;color:#999;line-height:1.6">
     <b style="color:#0D1E1C">${brand} ${name}</b> · ${domain}<br>
-    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'Datos públicos Copernicus Marine + NOAA, medidos 4×/día' : 'Public Copernicus Marine + NOAA data, measured 4×/day'}<br>
+    © ${new Date().getFullYear()} ${brand} ${name} · ${es ? 'Observaciones AFAI distribuidas por NOAA/AOML ERDDAP; disponibilidad variable según la fuente' : 'NOAA/AOML ERDDAP AFAI observations; availability varies with the source'}<br>
     <a href="${unsubUrl(region.id)}" style="color:#999">${t.unsub}</a>
   </div>
 </div>
