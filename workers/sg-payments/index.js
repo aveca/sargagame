@@ -641,9 +641,16 @@ var index_default = {
       const rows = await supa(env, "b2b_subscriptions", "GET", null, `?widget_token=eq.${token}&select=*&limit=1`);
       if (!rows?.length) return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Token invalide</h2><p>Aucun abonnement trouv\xE9 pour ce widget token.</p></body>', { headers: { "Content-Type": "text/html; charset=utf-8" } });
       const sub = rows[0];
-      const region = sub.region || "martinique";
-      const lang = region && ["florida", "puntacana", "rivieramaya"].includes(region.toLowerCase()) ? "en" : "fr";
-      const domain = sub.domain || "sargasses-martinique.com";
+      const region = String(sub.region || "").trim();
+      const regionInfo = resolveB2BWidgetRegion(region);
+      if (!regionInfo) {
+        return new Response('<!doctype html><meta charset="utf-8"><body style="font-family:system-ui;padding:40px;text-align:center"><h2>Widget indisponible</h2><p>Région non configurée.</p></body>', {
+          status: 404,
+          headers: { "Content-Type": "text/html; charset=utf-8" }
+        });
+      }
+      const lang = regionInfo.lang;
+      const domain = regionInfo.domain;
       let sargStatus = "unknown";
       let forecast3j = "";
       try {
@@ -1049,6 +1056,10 @@ var B2C_REGION_CONFIG = {
   rivieramaya: { domain: "sargassumcancun.com", label: "Riviera Maya", lang: "en" },
   tulum: { domain: "sargazotulum.com", label: "Tulum", lang: "en" }
 };
+function resolveB2BWidgetRegion(region) {
+  const key = String(region || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "");
+  return B2C_REGION_CONFIG[key] || null;
+}
 var B2C_ALERT_STATUSES = ["moderate", "avoid", "high"];
 function b2cObservationIsFresh(payload, now = Date.now()) {
   if (!payload || payload.stale !== false || !Array.isArray(payload.levels) || payload.levels.length === 0) return false;
@@ -2034,5 +2045,6 @@ async function handlePartnerCommerce(request, env, ctx, path) {
 }
 __name(handlePartnerCommerce, "handlePartnerCommerce");
 export {
-  index_default as default
+  index_default as default,
+  resolveB2BWidgetRegion
 };
