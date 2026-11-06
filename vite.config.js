@@ -62,6 +62,7 @@ try {
 // scripts/automation/seo-enrich-content.cjs pour la jointure historique des fiches SEO.
 const { SARG_TO_BEACH } = _require('./scripts/lib/sarg-to-beach.cjs')
 const BEACH_TO_SARG = Object.fromEntries(Object.entries(SARG_TO_BEACH).map(([k, v]) => [v, k]))
+const { buildLegacyBeachIndexStatus } = _require('./scripts/lib/legacy-beach-index-status.cjs')
 
 
 // Région active du build (env VITE_REGION), défaut 'mq' = comportement historique inchangé.
@@ -2193,6 +2194,21 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // and prepare-ftp.cjs only substitutes Martinique→Guadeloupe on the GP
           // side. So we need the FINAL state of dist/ to be Martinique-flavored
           // (hence MQ last) for the MQ copy to be correct.
+          // Never publish current beach verdicts from the static beaches-list fallback.
+          // The authoritative ERDDAP observation timestamp is the only freshness clock.
+          let legacyIndexSatellitePayload = null
+          try {
+            legacyIndexSatellitePayload = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
+          } catch {}
+          const legacyIndexStatus = buildLegacyBeachIndexStatus(legacyIndexSatellitePayload, SARG_TO_BEACH)
+          const statusById = legacyIndexStatus.statusByBeachId
+          const indexObservationLabel = legacyIndexStatus.observationTimestamp
+            ? `Dernière observation satellite : ${new Date(legacyIndexStatus.observationTimestamp).toISOString().replace('T', ' ').slice(0, 16)} UTC`
+            : 'Horodatage satellite indisponible'
+          const indexStatusSummary = legacyIndexStatus.available
+            ? `${legacyIndexStatus.validCount} statuts validés sur la dernière observation ; les autres plages restent à vérifier.`
+            : 'Statuts et scores suspendus : observation satellite absente, invalide ou hors fenêtre de fraîcheur.'
+
           for (const islandCode of ['gp', 'mq']) {
             const isMQ = islandCode === 'mq'
             const island = isMQ ? 'Martinique' : 'Guadeloupe'
@@ -2205,26 +2221,26 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
               communes[b.commune].push(b)
             }
             const communeNames = Object.keys(communes).sort()
-            // Status from SARGASSUM_REF
-            const statusById = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            // Status map above is built only from fresh, live ERDDAP levels.
             const statusBadge = (st) => {
               if (st === 'clean') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#dcfce7;color:#16a34a;font-size:12px;font-weight:600">Propre</span>'
               if (st === 'moderate') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fef3c7;color:#b87a00;font-size:12px;font-weight:600">Modéré</span>'
-              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">À éviter</span>'
+              if (st === 'avoid') return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#fee2e2;color:#e8522a;font-size:12px;font-weight:600">À éviter</span>'
+              return '<span style="display:inline-block;padding:1px 8px;border-radius:8px;background:#f1f5f9;color:#475569;font-size:12px;font-weight:600">À vérifier</span>'
             }
             let communeListHtml = ''
             for (const commune of communeNames) {
               const cBeaches = communes[commune]
               const beachLinks = cBeaches.map(b => {
-                const st = statusById[b.id] || 'clean'
+                const st = statusById[b.id] || null
                 return `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> ${statusBadge(st)}</li>`
               }).join('')
               communeListHtml += `<h2 style="margin:28px 0 8px;font-size:18px;color:#0D0D0D">${commune}</h2><ul style="list-style:none;padding:0">${beachLinks}</ul>`
             }
             const plagesTitle = `Toutes les plages \u2014 Sargasses ${island}`
-            const plagesDesc = `Liste compl\u00e8te des ${islandBeaches.length} plages surveill\u00e9es en ${island}. \u00c9tat des sargasses en temps r\u00e9el, regroup\u00e9es par commune.`
+            const plagesDesc = clampDesc(`Liste complète des ${islandBeaches.length} plages suivies en ${island}. ${indexStatusSummary} ${indexObservationLabel}.`, 155)
             const plagesUrl = `https://${domain}/plages/`
-            const plagesNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Toutes les plages de ${island}</h1><p style="color:#686868;margin-bottom:24px">${islandBeaches.length} plages surveill\u00e9es par satellite \u2014 donn\u00e9es Copernicus</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
+            const plagesNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Toutes les plages de ${island}</h1><p style="color:#686868;margin-bottom:24px">${islandBeaches.length} plages suivies par satellite. ${indexStatusSummary} ${indexObservationLabel}</p>${communeListHtml}<nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600;margin-right:16px">Carte des sargasses</a><a href="/alertes/" style="color:#E8A800;font-weight:600">Alertes sargasses</a></nav></article>`
             const plagesSchema = JSON.stringify({"@context":"https://schema.org","@type":"CollectionPage","name":plagesTitle,"description":plagesDesc,"url":plagesUrl,"isPartOf":{"@type":"WebApplication","name":`Sargasses ${island}`,"url":`https://${domain}/`},"dateModified":today})
             const breadcrumbPlages = JSON.stringify({"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Accueil","item":`https://${domain}/`},{"@type":"ListItem","position":2,"name":"Plages","item":plagesUrl}]})
             const plagesDir = resolve(outDir, 'plages')
@@ -2266,16 +2282,20 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
             for (const z of (COAST_ZONES[islandCode] || [])) {
               const zBeaches = islandBeaches.filter(b => z.communes.includes(b.commune))
               if (!zBeaches.length) continue
-              const zClean = zBeaches.filter(b => (statusById[b.id] || 'clean') === 'clean').length
+              const zVerified = zBeaches.filter(b => ['clean', 'moderate', 'avoid'].includes(statusById[b.id])).length
+              const zClean = zBeaches.filter(b => statusById[b.id] === 'clean').length
+              const zStatusSummary = zVerified
+                ? `${zVerified} statuts validés sur ${zBeaches.length} plages ; ${zClean} propre(s) dans la dernière observation.`
+                : 'Aucun statut actuel publié ; les décisions sont suspendues.'
               const zList = zBeaches
                 .slice().sort((a, b2) => a.commune === b2.commune ? a.name.localeCompare(b2.name) : a.commune.localeCompare(b2.commune))
-                .map(b => `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> — ${b.commune} ${statusBadge(statusById[b.id] || 'clean')}</li>`).join('')
+                .map(b => `<li style="padding:6px 0"><a href="/plages/${b.slug}/" style="color:#0D0D0D;text-decoration:none;font-weight:500">${b.name}</a> — ${b.commune} ${statusBadge(statusById[b.id] || null)}</li>`).join('')
               const others = (COAST_ZONES[islandCode] || []).filter(o => o.slug !== z.slug)
                 .map(o => `<a href="/plages/${o.slug}/" style="color:#E8A800;font-weight:600;margin-right:14px">${o.name}</a>`).join('')
-              const zTitle = `Plages ${z.titleName || z.name} — sargasses en temps réel`
-              const zDesc = clampDesc(`${zBeaches.length} plages surveillées par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}) : ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui. État en temps réel et prévisions 7 jours.`, 155)
+              const zTitle = `Plages ${z.titleName || z.name} — Sargasses ${island}`
+              const zDesc = clampDesc(`${zBeaches.length} plages suivies par satellite ${islandCode === 'mq' ? 'en Martinique' : 'en Guadeloupe'} (${z.name}). ${zStatusSummary} ${indexObservationLabel}.`, 155)
               const zUrl = `https://${domain}/plages/${z.slug}/`
-              const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages surveillées · ${zClean} propre${zClean > 1 ? 's' : ''} aujourd'hui (satellite Copernicus, ${today})</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${z.intro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte en temps réel</a></div></nav></article>`
+              const zNoscript = `<article style="max-width:700px;margin:0 auto;padding:24px 16px;font-family:system-ui,sans-serif"><h1 style="font-size:26px;margin-bottom:8px">Plages — ${z.name}</h1><p style="color:#686868;margin-bottom:12px">${zBeaches.length} plages suivies. ${zStatusSummary} ${indexObservationLabel}</p><p style="color:#333;line-height:1.6;margin-bottom:20px">${z.intro}</p><ul style="list-style:none;padding:0">${zList}</ul><nav style="margin-top:32px;padding-top:16px;border-top:1px solid #eee"><div style="margin-bottom:10px;font-size:13px;color:#999">Autres zones :</div>${others}<div style="margin-top:14px"><a href="/plages/" style="color:#E8A800;font-weight:600;margin-right:14px">Toutes les plages</a><a href="/carte-sargasses/" style="color:#E8A800;font-weight:600">Carte des sargasses</a></div></nav></article>`
               const zSchema = JSON.stringify({ "@context": "https://schema.org", "@type": "CollectionPage", "name": zTitle, "description": zDesc, "url": zUrl, "isPartOf": { "@type": "WebApplication", "name": `Sargasses ${island}`, "url": `https://${domain}/` }, "dateModified": today })
               const zBreadcrumb = JSON.stringify({ "@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{ "@type": "ListItem", "position": 1, "name": "Accueil", "item": `https://${domain}/` }, { "@type": "ListItem", "position": 2, "name": "Plages", "item": plagesUrl }, { "@type": "ListItem", "position": 3, "name": z.name, "item": zUrl }] })
               const zHtml = htmlSubpage
@@ -2316,7 +2336,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
           // "baignade ideale martinique", etc. Build-time generation reads _weather
           // (Open-Meteo) + beach status so content is unique per build, per island.
           {
-            const statusByIdCond = Object.fromEntries(SARGASSUM_REF.map(r => [r.id, r.status]))
+            const statusByIdCond = statusById
             let conditionsSatellitePayload = null
             try {
               conditionsSatellitePayload = JSON.parse(readFileSync(resolve(__dirname, 'public/api/copernicus/sargassum.json'), 'utf-8'))
@@ -2338,7 +2358,7 @@ ${isGP ? `  <url><loc>${d}/bulletin-sargasses-guadeloupe/</loc><lastmod>${today}
                 // Apply today's status to each beach before filtering
                 const enrichedBeaches = islandBeaches.map(b => ({
                   ...b,
-                  status: statusByIdCond[b.id] || b.status,
+                  status: statusByIdCond[b.id] || null,
                 }))
                 const matching = !isConditionsFresh ? [] : enrichedBeaches
                   .filter(b => page.filter(b, _weather[b.id]))
