@@ -24,6 +24,61 @@ assert.match(workflow, /summary\.blocking>0/)
 assert.match(workflow, /pages-code-only-rollback\.cjs capture/)
 assert.match(workflow, /pages-code-only-rollback\.cjs rollback/)
 
+// ── Non-regression : le gate doit BUILDER avant de tester ───────────────────
+// `tests/sitemap-guard-beach-pages.test.cjs` lit l'artefact `dist/` produit par
+// Vite. Sans `npm run build` avant `npm test`, le gate echoue et la release
+// code-only des six domaines ne peut pas partir (run 42215481383, job `gate`,
+// step "Unit and contract tests" -> exit 1).
+const gateJob = (() => {
+  const lines = workflow.split(/\r?\n/)
+  const start = lines.findIndex((l) => /^ {2}gate:\s*$/.test(l))
+  assert.ok(start >= 0, 'pages-code-only-release.yml must declare a `gate` job')
+  const rest = lines.slice(start + 1)
+  const endRel = rest.findIndex((l) => /^ {2}\S/.test(l))
+  return (endRel === -1 ? rest : rest.slice(0, endRel)).join('\n')
+})()
+const gateLines = gateJob.split(/\r?\n/)
+const buildStep = gateLines.findIndex((l) => /run:\s*npm run build\b/.test(l))
+const testStep = gateLines.findIndex((l) => /run:\s*npm test\b/.test(l))
+assert.ok(testStep >= 0, 'gate job must run `npm test`')
+assert.ok(buildStep >= 0,
+  'gate job must run `npm run build` before the test suite (the sitemap guard reads the Vite artifact `dist/`)')
+assert.ok(buildStep < testStep, 'gate job must run `npm run build` BEFORE `npm test`')
+
+// ── Non-regression : la release Pages ne doit pas redeployer le Worker ──────
+// Un push sur `main` qui touche l'outillage de release Pages ne doit pas
+// declencher cloudflare-production.yml : sa certification-gate finit par
+// executer "Deploy Worker" + "Configure Worker secrets", hors perimetre d'une
+// release code-only Pages (aucun Worker, aucun secret, aucun paiement).
+const productionPathsIgnore = (() => {
+  const lines = production.split(/\r?\n/)
+  const start = lines.findIndex((l) => /^\s*paths-ignore:\s*$/.test(l))
+  if (start < 0) return []
+  const keyIndent = lines[start].match(/^\s*/)[0].length
+  const itemIndent = keyIndent + 2
+  const out = []
+  for (let i = start + 1; i < lines.length; i++) {
+    const line = lines[i]
+    if (!line.trim()) continue
+    const indent = line.match(/^\s*/)[0].length
+    if (indent < itemIndent) break
+    const text = line.trim()
+    if (text.startsWith('#')) continue
+    const m = text.match(/^-\s*(.+)$/)
+    if (!m) break
+    out.push(m[1].trim().replace(/^['"]|['"]$/g, ''))
+  }
+  return out
+})()
+assert.ok(
+  productionPathsIgnore.includes('.github/workflows/pages-code-only-release.yml'),
+  'cloudflare-production.yml must ignore pushes touching the Pages release workflow (a release-tooling change must not redeploy the Worker)'
+)
+assert.ok(
+  productionPathsIgnore.includes('tests/unit/pages-code-only-workflow.test.cjs'),
+  'cloudflare-production.yml must ignore pushes touching this guard (a guard-only change must not redeploy the Worker)'
+)
+
 assert.match(payloadScript, /refreshSatellitePayload/)
 assert.match(payloadScript, /METADATA_FIELDS = new Set\(\['dataAgeMinutes', 'stale'\]\)/)
 assert.match(payloadScript, /nonMetadataFieldsPreserved: true/)
