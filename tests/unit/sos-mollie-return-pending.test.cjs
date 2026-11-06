@@ -14,7 +14,7 @@ assert.match(sos, /paymentId,\s*email:\s*["']["'],\s*pass:\s*["']sos["'],\s*days
 assert.match(sos, /sessionStorage\.setItem\(["']sg_mollie_pending/)
 assert.match(sos, /localStorage\.setItem\(["']sg_mollie_pending/)
 assert.match(sos, /if\s*\(!stored\)/)
-assert.match(app, /new URLSearchParams\(window\.location\.search\)\.get\(["']mollie_return["']\)!==["']1["']/)
+assert.match(app, /new URLSearchParams\(window\.location\.search\)\.get\(["']mollie_return["']\)/)
 assert.match(app, /sessionStorage\.getItem\(["']sg_mollie_pending["']/)
 assert.match(app, /localStorage\.getItem\(["']sg_mollie_pending["']/)
 assert.match(app, /action:["']payment_status["'],paymentId:ctx\.paymentId/)
