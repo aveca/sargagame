@@ -65,7 +65,7 @@ function buildHotelLandingFr(o) {
   const fiab = `https://${domain}/fiabilite/`
   const freshness = ['fresh', 'stale', 'unknown'].includes(freshnessStatus) ? freshnessStatus : 'unknown'
   const freshnessLabel = freshness === 'fresh'
-    ? 'Données satellite Copernicus' + (updatedRel ? ' · ' + updatedRel : '')
+    ? 'Observations AFAI NOAA/AOML ERDDAP' + (updatedRel ? ' · ' + updatedRel : '')
     : freshness === 'stale'
       ? 'Observation satellite ancienne' + (updatedRel ? ' · ' + updatedRel : '')
       : 'Fraîcheur satellite inconnue'
