@@ -148,6 +148,20 @@ async function run() {
     fs.rmSync(f.root, { recursive: true, force: true });
   }
 
+  // 4. An absent remote document-root mapping fails before any FTP connection.
+  {
+    const f = fixture();
+    delete f.env.FTP_REMOTE_TULUM;
+    clients = [];
+    await assert.rejects(() => uploadPrivateForecasts({
+      mode: 'stage', runId: 'run-remote-missing', root: f.root, env: f.env,
+      regions: f.regions, ClientClass: FakeClient, log
+    }), /missing FTPS remote root for region tulum/);
+    assert.equal(clients.length, 0);
+    count++;
+    fs.rmSync(f.root, { recursive: true, force: true });
+  }
+
   // 4. A permissive .htaccess fails before any FTP connection.
   {
     const f = fixture();
