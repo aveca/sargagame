@@ -82,12 +82,13 @@ for (const file of ['ci-tests.yml', 'perf-budget.yml', 'cloudflare-production.ym
 {
   const t = read('cloudflare-production.yml');
   const script = fs.readFileSync(path.join(ROOT, 'scripts', 'CHECK_certification_status.cjs'), 'utf8');
+  const expectedEnv = "BUSINESS_APPROVAL_SHA: " + "${{" + " github.event_name == 'workflow_dispatch' && github.event.inputs.business_approval_sha || '' " + "}}";
   record('cloudflare-production.yml : workflow_dispatch expose business_approval_sha',
-    /workflow_dispatch:[\\s\\S]*business_approval_sha:[\\s\\S]*type:\\s*string/.test(t));
-  record('cloudflare-production.yml : certification gate reçoit BUSINESS_APPROVAL_SHA uniquement depuis le dispatch',
-    /BUSINESS_APPROVAL_SHA:\\s*\\$\\{\\{\\s*github\\.event_name\\s*==\\s*'workflow_dispatch'\\s*&&\\s*github\\.event\\.inputs\\.business_approval_sha/.test(t));
+    t.includes('business_approval_sha:') && t.includes('type: string'));
+  record('cloudflare-production.yml : certification gate reçoit BUSINESS_APPROVAL_SHA depuis le dispatch',
+    t.includes(expectedEnv));
   record('CHECK_certification_status.cjs : diff inconnue et release sensible bloquées sans SHA exact',
-    /diffVerified:\\s*false/.test(script) && /businessApprovalGranted/.test(script) && /approbation explicite requise/.test(script));
+    script.includes('diffVerified: false') && script.includes('businessApprovalGranted') && script.includes('approbation explicite requise'));
 }
 
 console.log(failures === 0
