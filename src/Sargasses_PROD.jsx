@@ -94,6 +94,7 @@ const LazyWorldView3D=lazyWithRetry(()=>import("./WorldView3D"))
 // joueur dans l'univers arène au lieu de l'éjecter vers la fiche data « scroll satellite »
 // (PRODUCT.md §8 ⭐). Default ON, rollback ?mapdetail=0. Lazy → DOIT être sous Suspense.
 const LazyComicDetail=lazyWithRetry(()=>import("./ComicDetail"))
+const LazyBeachSheetStaleFallback=lazyWithRetry(()=>import("./BeachSheetStaleFallback.jsx"))
 // Fiche plage « en PLONGÉE » (bras A/B `pw_beach_dive`) — port proto-plage-plongee,
 // Shadow DOM, region-aware. Alternative additive à BeachSheet (control intact).
 // Onboarding GUIDÉ des nouveaux clients PAYANTS (bras A/B `pw_onboard`) — remplace
@@ -4822,7 +4823,9 @@ function BeachSheetComic({beach,onClose,favorites,onToggleFav,lang,allBeaches,on
 function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMap,onBeachClick,onPremiumClick,isPremium,historyData,sargData,dataSource,userPos,communityReports,fbPosts,onRequestGeo}){
   const LL=T[lang]||T.fr
   const weather=useWeather(beach)
-  // Use REAL forecast, then interpolated, then fallback generated
+  // Error-boundary fallback: never expose a current decision from an old or unvalidated observation.
+  const satelliteDecisionCurrent = sargData?.source === "erddap-live" && sargData?.stale === false && isSatelliteFresh12h(sargData)
+  // Use only a real or interpolated weekly forecast; never synthesize a forecast in this fallback.
   // If community reports override status, blend into forecast
   const weeklyData=useMemo(()=>{
     if(!beach||!sargData)return null
@@ -4846,9 +4849,8 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
   const forecast=useMemo(()=>{
     if(!beach)return null
     let fc=weeklyData?.forecast||null
-    // 3. Math.sin fallback (should not happen with 20 sentinels)
-    if(!fc) fc=generateForecast(beach.afai,lang)
-    // 4. Blend community reports into forecast when terrain says worse
+    if(!Array.isArray(fc)||fc.length===0)return null
+    // Blend community reports into a real weekly forecast when terrain says worse.
     if(fc&&beach?._communityOverride){
       const RANK={clean:0,moderate:1,avoid:2}
       const STATUS_AFAI={clean:.05,moderate:.25,avoid:.60}
@@ -4864,7 +4866,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
       }
     }
     return fc
-  },[beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
+  },[satelliteDecisionCurrent,beach?.id,beach?.status,beach?._communityOverride,lang,weeklyData])
   const isFav=favorites.includes(beach?.id)
   const [scoreOpen,setScoreOpen]=useState(false)
   const [photoScanOpen,setPhotoScanOpen]=useState(false)
@@ -4952,6 +4954,12 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
 
   const wazeUrl=`https://waze.com/ul?ll=${beach.lat},${beach.lng}&navigate=yes`
 
+  if(!satelliteDecisionCurrent) return(
+    <Suspense fallback={<div className="sheet" data-testid="beach-sheet-fallback-stale-loading">À vérifier</div>}>
+      <LazyBeachSheetStaleFallback beach={beach} lang={lang} sargData={sargData} onClose={onClose}/>
+    </Suspense>
+  )
+
   return(
     <>
       {/* Pass-through pin : si le tap tombe pile sur une pastille visible dans la
@@ -4990,7 +4998,7 @@ function BeachSheet({beach,onClose,favorites,onToggleFav,lang,allBeaches,imageMa
         }
         requestClose()
       }}/>
-      <div className="sheet" ref={sheetRef}
+      <div className="sheet" ref={sheetRef} data-testid="beach-sheet-fallback-current"
         onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
         <div className="sheet-handle"/>
 
@@ -14548,6 +14556,9 @@ export default function App(){
               dataSource={dataSource} userPos={userPos} communityReports={communityReports} fbPosts={fbPosts}
               onRequestGeo={requestGeo}/>
           )
+          // Local-only QA switch: exercise the error-boundary fallback without exposing it on public hosts.
+          const _forceFallback = window.location.hostname === "127.0.0.1" && window.location.search.includes("beachfallback=1")
+          if (_forceFallback) return _fallback
           return(
             <ErrBound key={selectedBeach.id} fallback={_fallback}>
               <BeachSheetComic beach={selectedBeach} onClose={closeSheet}
