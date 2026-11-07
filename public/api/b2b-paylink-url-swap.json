@@ -1,0 +1,16 @@
+{
+  "_note": "Seuls id et url sont remplaçables. Laisser url vide = aucun changement. value du catalogue ne se modifie pas ici. Après une URL https neuve, le script pose reachable:true pour que le paywall et payUrlFor puissent l'afficher.",
+  "links": {
+    "brief_annual": { "id": "", "url": "" },
+    "pro_annual": { "id": "", "url": "" },
+    "brief_annual_usd": { "id": "", "url": "" },
+    "pro_annual_usd": { "id": "", "url": "" },
+    "territory_annual": { "id": "", "url": "" },
+    "trip_eur": { "id": "", "url": "" },
+    "trip_usd": { "id": "", "url": "" },
+    "sejour_eur": { "id": "", "url": "" },
+    "sejour_usd": { "id": "", "url": "" },
+    "saison_eur": { "id": "", "url": "" },
+    "saison_usd": { "id": "", "url": "" }
+  }
+}
