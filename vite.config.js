@@ -957,7 +957,7 @@ export default defineConfig({
 
           // EN subpages for international SEO
           const enPages = [
-            { path: 'en/sargassum-map', title: 'Sargassum Map Martinique &amp; Guadeloupe — Real-time satellite', desc: 'Interactive sargassum map for Martinique and Guadeloupe. Real-time satellite data, 7-day forecast. Find clean beaches today.' },
+            { path: 'en/sargassum-map', title: 'Sargassum Map Martinique &amp; Guadeloupe — Observations', desc: 'Published satellite observations for Martinique and Guadeloupe. Check beach timestamps and confidence; forecasts appear only with validated inputs.' },
             { path: 'en/best-beaches-no-sargassum', title: 'Best beaches without sargassum in Martinique &amp; Guadeloupe', desc: 'Latest available satellite observation for Martinique and Guadeloupe. Beach statuses appear only when the observation meets the freshness threshold.' },
             { path: 'en/sargassum-season', title: 'Sargassum season in the Caribbean — When to avoid', desc: 'When does sargassum season start? Peak months, which beaches are affected, real-time forecasts for Martinique and Guadeloupe.' },
             { path: 'en/sargassum-alerts', title: 'Sargassum alerts Martinique &amp; Guadeloupe — Real-time notifications', desc: 'Get real-time sargassum alerts for your favorite beaches in Martinique and Guadeloupe. Know before you go.' },
