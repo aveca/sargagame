@@ -119,13 +119,39 @@ function SOSPlage({ lang = "fr", onClose, sargData = null, region = "mq", beache
             beach: selectedBeach.id,
             beachName: selectedBeach.name,
           },
-          redirectUrl: origin + "/?sos_success=1",
+          redirectUrl: origin + "/?mollie_return=1",
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Erreur paiement")
       if (data.checkoutUrl) {
-        track("sg_sos_redirect", { beach: selectedBeach.id, paymentId: data.paymentId })
+        const paymentId = typeof data.paymentId === "string" ? data.paymentId : ""
+        if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) {
+          throw new Error("Identifiant de paiement Mollie invalide")
+        }
+        const pending = {
+          paymentId,
+          email: "",
+          pass: "sos",
+          days: 1,
+          source: "sos_plage",
+          beachId: selectedBeach.id,
+          beachName: selectedBeach.name,
+          createdAt: Date.now(),
+        }
+        let stored = false
+        try {
+          sessionStorage.setItem("sg_mollie_pending", JSON.stringify(pending))
+          stored = true
+        } catch (_) {}
+        try {
+          localStorage.setItem("sg_mollie_pending", JSON.stringify(pending))
+          stored = true
+        } catch (_) {}
+        if (!stored) {
+          throw new Error("Impossible de mémoriser le paiement avant la redirection")
+        }
+        track("sg_sos_redirect", { beach: selectedBeach.id })
         window.location.href = data.checkoutUrl
       } else {
         throw new Error("URL de paiement non reçue")
