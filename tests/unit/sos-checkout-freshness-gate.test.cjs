@@ -79,17 +79,38 @@ function extractHandleBuy(sosSource) {
   return factory
 }
 
-function runHandleBuy(factory, beach, lang) {
+function memoryStorage() {
+  const data = new Map()
+  return {
+    setItem(key, value) { data.set(String(key), String(value)) },
+    getItem(key) { return data.has(String(key)) ? data.get(String(key)) : null },
+    removeItem(key) { data.delete(String(key)) },
+  }
+}
+
+function throwingStorage() {
+  return { setItem() { throw new Error("storage denied") } }
+}
+
+function runHandleBuy(factory, beach, lang, options) {
   const calls = { tracks: [], fetches: [], alerts: [], blocked: [] }
   const windowStub = { location: { origin: "https://sargasses-martinique.com", href: "" } }
   const trackStub = (name, params) => calls.tracks.push({ name, params })
+  const payment = options && options.payment
+    ? options.payment
+    : { checkoutUrl: "https://www.mollie.com/pay/redirect", paymentId: "tr_TEST" }
   const fetchStub = (url, init) => {
     calls.fetches.push({ url, method: init && init.method, body: init && init.body })
     return Promise.resolve({
-      ok: true,
-      json: async () => ({ checkoutUrl: "https://www.mollie.com/pay/redirect", paymentId: "tr_TEST" }),
+      ok: options && options.httpOk === false ? false : true,
+      json: async () => payment,
     })
   }
+  const storage = options && options.storage === "deny" ? throwingStorage : memoryStorage
+  const previousSession = global.sessionStorage
+  const previousLocal = global.localStorage
+  global.sessionStorage = storage()
+  global.localStorage = storage()
   const pending = factory(
     beach, false, lang || "fr",
     () => {},
@@ -99,7 +120,12 @@ function runHandleBuy(factory, beach, lang) {
     (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr),
     fetchStub
   )
-  return Promise.resolve(pending).then(() => ({ calls, windowStub }))
+  return Promise.resolve(pending).then(() => ({ calls, windowStub })).finally(() => {
+    if (previousSession === undefined) delete global.sessionStorage
+    else global.sessionStorage = previousSession
+    if (previousLocal === undefined) delete global.localStorage
+    else global.localStorage = previousLocal
+  })
 }
 
 async function main() {
@@ -190,6 +216,27 @@ async function main() {
     assert.deepEqual(names, ["sg_sos_checkout_start", "sg_sos_redirect"], lang + ": checkout tracking preserved")
     assert.equal(windowStub.location.href, "https://www.mollie.com/pay/redirect", lang + ": redirect to checkout")
     assert.deepEqual(calls.blocked, [false], lang + ": blocked notice must be cleared")
+    assert.equal(calls.alerts.length, 0, lang + ": no payment error when the return context is stored")
+  }
+
+  // Fail-closed: a checkout URL that cannot be resumed, or that was not
+  // returned, must not navigate the visitor to Mollie.
+  {
+    const [beach] = enrichSosBeaches(beaches, freshPayload(), "mq", NOW)
+    const denied = await runHandleBuy(factory, beach, "fr", { storage: "deny" })
+    assert.deepEqual(denied.calls.tracks.map((entry) => entry.name), ["sg_sos_checkout_start", "sg_sos_checkout_error"])
+    assert.equal(denied.windowStub.location.href, "", "storage failure must not redirect")
+    assert.equal(denied.calls.alerts.length, 1, "storage failure must tell the visitor")
+
+    const missingUrl = await runHandleBuy(factory, beach, "fr", { payment: { paymentId: "tr_TEST" } })
+    assert.deepEqual(missingUrl.calls.tracks.map((entry) => entry.name), ["sg_sos_checkout_start", "sg_sos_checkout_error"])
+    assert.equal(missingUrl.windowStub.location.href, "", "missing checkout URL must not redirect")
+
+    const badId = await runHandleBuy(factory, beach, "fr", {
+      payment: { checkoutUrl: "https://www.mollie.com/pay/redirect", paymentId: "not-a-payment" },
+    })
+    assert.equal(badId.windowStub.location.href, "", "invalid payment id must not redirect")
+    assert.deepEqual(badId.calls.tracks.map((entry) => entry.name), ["sg_sos_checkout_start", "sg_sos_checkout_error"])
   }
 
   // A blocked notice must exist in the UI so the click is never a silent no-op.
