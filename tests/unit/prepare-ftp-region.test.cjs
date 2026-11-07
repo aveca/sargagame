@@ -91,8 +91,17 @@ try {
 fs.rmSync(puFtp, { recursive: true, force: true })
 
 // ── 8. Nettoyage ──
+// Les artefacts Pages (`<region>-ftp-pages/`) sont eux aussi produits par
+// prepare-ftp.cjs : on les supprime avec le même soin que les dossiers FTP,
+// sinon ce test laisserait derrière lui des artefacts Pages construits à
+// partir du dist FACTICE (piste de publication accidentelle d'un artefact
+// qui ne correspond à aucun build réel).
 fs.rmSync(mqFtp, { recursive: true, force: true })
 if (fs.existsSync(puFtp)) fs.rmSync(puFtp, { recursive: true, force: true })
+for (const pagesDir of ['martinique-ftp-pages', 'guadeloupe-ftp-pages', 'puntacana-ftp-pages']) {
+  const dir = path.join(ROOT, pagesDir)
+  if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true })
+}
 fs.rmSync(dist, { recursive: true, force: true })
 
 console.log(`\n${passed}/14 assertions passed - packaging FTP préserve l'index régional et protège .htaccess / _private.\n`)
