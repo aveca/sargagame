@@ -6,6 +6,20 @@
 
 ---
 
+## DEC-2026-11-07 : Release Pages-only des six domaines — REFUSÉE (routage non compatible Pages-only)
+
+- **Décision** : `gh workflow run pages-code-only-release.yml --repo aveca/sargagame --ref main -f confirm_production=true` **n'est pas lancé**. La condition de déclenchement (« routage démontré compatible avec un déploiement Pages-only ») **n'est pas remplie**, même si `CLOUDFLARE_DEPLOY_ENABLED = true`.
+- **Pourquoi** (mesuré le `2026-11-07T16:35:51Z`) :
+  1. Les six domaines publics sont servis par les **Workers** `sargagame-<region>` : **4/4 routes Worker-only** répondent sur chacun d'eux avec la sémantique exacte du code Worker (`/api/mollie.php` → 405 `{"error":"POST only"}`, `/api/widget-token.php` → 200 `{"pro":false}`, `/api/b2b-trial.php` → 405 `{"error":"method_not_allowed"}`, `/api/nope.php` → 404 `{"error":"not_found"}`), alors que les `*.pages.dev` correspondants répondent tout autrement. En-tête `cf-cache-status: HIT` (assets servis via le binding `ASSETS`), absent sur `pages.dev` ; `version.json` public porte le champ `"worker"`.
+  2. Les projets Pages **ne portent pas la money path** : sur `*.pages.dev`, `/api/mollie.php`, `/api/widget-token.php`, `/api/b2b-trial.php` et `/api/mollie-lib.php` renvoient le **code source PHP en clair** (`content-type: application/x-httpd-php`, HTTP 200) au lieu d'exécuter la logique → paiements, jetons Pro et essais B2B y seraient morts. Le Worker, lui, refuse déjà tout `*.php` (`workers/sargagame/index.js:384-392`).
+  3. Le job `verify` du workflow audite les **domaines publics** (`user-journey-audit.cjs` → `regions/index.cjs` → `region.domain`, desktop + mobile) et exige `summary.blocking === 0` ; l'état live comporte **12 défauts bloquants `stale-current-decision`** → échec du gate puis `rollback`. Prouvé par le run `42227027205` (`verify` ❌ `parcours 12, défauts 12 (bloquants 12, ux 0)` ; `rollback` ✅).
+- **Conséquences** :
+  - Une release Pages-only exécutée aujourd'hui serait une **mutation de production sans effet visible** sur les six domaines (le Worker garde la main), **échouerait son propre gate**, **rollbackerait**, et **republierait du code source PHP** sur les six `*.pages.dev` (24/36 endpoints testés). **Aucun secret de service n'est exposé** (`mollie-config.php` et `_deploy-secret.php` → 404 ; `_deploy.php` fail-closed) : l'exposition est une divulgation de code applicatif, pas de credentials.
+  - **Voie de livraison retenue : Workers (option B)** — le code applicatif est déjà dans le repo (`workers/sargagame/index.js`), le workflow de déploiement existe, le rollback est un redeploy du SHA précédent. L'option A (Pages) exigerait de **réimplémenter la money path en Pages Functions** : hors périmètre et interdit.
+  - **Blocage restant, hors périmètre** : le gate fail-closed `check-predeploy-satellite-freshness.cjs` (`MAX_AGE_MINUTES = 900`) refuse tout déploiement tant que l'observation n'est pas fraîche (live : `2026-10-27T12:00:00Z`, 16 128 min ≈ 17,9× le SLA). Relâcher ce gate = **mutation de garde-fou de production → autorisation fondateur requise**. La voie prévue reste la densification Copernicus (`*/15 0-2 * * *`, observabilité jusqu'à `05:45Z`), elle-même soumise à autorisation car une publication dispatche `cloudflare-production.yml`.
+  - **Écart d'outillage à corriger** : `scripts/prepare-ftp.cjs` doit stripper les `.php` de l'artefact Pages (le `.assetsignore` `**/*.php` n'est honoré que par les assets statiques **Worker**, pas par `wrangler pages deploy`) — sinon toute publication Pages réexpose le code source.
+  - **Limite de lecture assumée** : `pages_domains_list`, `workers_domains_list`, `workers_routes_list` et `zones_list` restent inaccessibles (scope OAuth MCP « requires user authorization »). La preuve de bord est **plus forte** que la lecture d'API : elle identifie directement quel service répond.
+
 ## DEC-2026-07-31 Transformation AI-native du repo
 
 - **Décision** : Structurer le repo pour un travail multi-agents 24/7 sans intervention humaine.

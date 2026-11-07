@@ -1,3 +1,55 @@
+## 2026-11-07 16:55 UTC · Agent: OpenCode (release decision operator)
+
+### Travail effectué
+- **Résumé 1 ligne** : Release Pages-only des six domaines **REFUSÉE** — le gate `CLOUDFLARE_DEPLOY_ENABLED` vaut bien `true`, mais le routage n'est **pas** compatible Pages-only (les 6 domaines publics sont servis par les **Workers**, les projets Pages ne portent pas les fonctions applicatives et exposent le code source PHP) → **aucun déploiement lancé**.
+- **Détails** :
+  - **Gate 1 — variable** : `CLOUDFLARE_DEPLOY_ENABLED = true` (variable Actions **niveau dépôt** `aveca/sargagame`, créée `2026-10-03T20:22:15Z`, lue via `gh variable list --repo aveca/sargagame` + `gh api repos/aveca/sargagame/actions/variables`). Le job `gate` ne déclare pas d'`environment:` → la valeur effective est bien `true`. **Aucune valeur de secret lue ni affichée.**
+  - **Gate 2 — routage : NON compatible (preuve live `2026-11-07T16:35:51Z`)** : sur **chacun** des 6 domaines publics, **4/4 routes Worker-only** répondent avec la sémantique du code Worker — `/api/mollie.php` → 405 `{"error":"POST only"}`, `/api/widget-token.php` → 200 `{"pro":false}`, `/api/b2b-trial.php` → 405 `{"error":"method_not_allowed"}`, `/api/nope.php` → 404 `{"error":"not_found"}` — alors que les `*.pages.dev` correspondants répondent tout autrement. En-tête `cf-cache-status: HIT` sur les domaines publics (assets via le binding `ASSETS` du Worker), absent sur `pages.dev` ; `version.json` public porte le champ `"worker"`.
+  - **Les Pages ne portent pas la money path** : sur `*.pages.dev`, `/api/mollie.php`, `/api/widget-token.php`, `/api/b2b-trial.php` et `/api/mollie-lib.php` renvoient le **code source PHP en clair** (`content-type: application/x-httpd-php`, HTTP 200) — le PHP n'y est jamais exécuté. Le Worker, lui, refuse tout `*.php` (`workers/sargagame/index.js:384-392`). Réattacher les domaines aux Pages casserait donc paiements, jetons Pro et essais B2B.
+  - **Le gate `verify` du workflow audite les domaines publics**, pas `pages.dev` (`user-journey-audit.cjs` → `regions/index.cjs` → `region.domain`, desktop + mobile) et exige `summary.blocking === 0`. État live = **12 défauts bloquants `stale-current-decision`** (6 domaines × 2 viewports) → `verify` échoue → `rollback`. **Prouvé** par le run `42227027205` : `gate` ✅ / `prepare` ×6 ✅ / `deploy-pages` ×6 ✅ / **`verify` ❌** (`rapport: parcours 12, défauts 12 (bloquants 12, ux 0)` → exit 1) / **`rollback` ✅**.
+  - **Conséquence d'un déploiement Pages-only aujourd'hui** : mutation de production **sans effet visible** sur les six domaines (le Worker garde la main), **échec garanti** de son propre gate + rollback, et **republication du code source PHP** sur les six `*.pages.dev` (24/36 endpoints testés ; `/api/mollie-config.php` et `/api/_deploy-secret.php` restent 404 → **aucun secret de service exposé** ; `_deploy.php` reste fail-closed sans `_deploy-secret.php`).
+  - **Cause structurelle de l'exposition PHP** : `scripts/prepare-ftp.cjs` exclut `api/stripe-config.php` mais **pas** les autres `.php` ; le `.assetsignore` (règles `**/*.php`) n'est honoré que par les assets statiques **Worker**, **pas** par `wrangler pages deploy`.
+  - **Lecture des objets de routage Cloudflare toujours inaccessible** : `pages_domains_list`, `workers_domains_list`, `workers_routes_list` et `zones_list` échouent sur « requires user authorization » (scope OAuth MCP). La preuve de substitution est **plus forte** que la lecture d'API : l'observation au bord identifie directement qui répond.
+  - **État SLA live** : observation ERDDAP `2026-10-27T12:00:00Z` sur les 6 domaines, soit **16 128 min** (≈ 17,9× le SLA de 900 min) au `2026-11-07T16:48:25Z`. Le payload figé porte encore `stale=false` / `dataAgeMinutes=1772` (seuil d'affichage 36 h de `satelliteFreshness`), ce qui explique les verdicts non fail-closed.
+  - **PRs actives examinées** : #1335 (`ops/factory-v3-github-actions-connection-20261106`) et #1343 (`p0/dryrun-test-sargagame-001`) — **ouvertes, sans rapport avec la release Pages**, laissées intactes.
+  - **Aucune mutation** : `cloudflare-production.yml` **non lancé**, Workers/routes/DNS/bindings/secrets **inchangés**, SLA 900 min **jamais contourné**, aucune publication de données, aucune écriture de production.
+  - **Observation hors périmètre (signalée, non touchée)** : le run `27264429433` (« Daily Copernicus + Deploy », `workflow_dispatch`) est **en `queued` depuis le 2026-06-10** ; le run `42392832410` (« Daily Brief ») est `in_progress`. Aucun n'a été modifié.
+
+### Fichiers modifiés
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/decisions.md` — `DEC-2026-11-07`.
+- `.ai/tasks.md` — entrée de tâche.
+
+### Tests réalisés
+- [x] Lecture du gate : `gh variable list --repo aveca/sargagame` + `gh api repos/aveca/sargagame/actions/variables` → `CLOUDFLARE_DEPLOY_ENABLED = true`.
+- [x] Preuve de routage : `node routing-proof.cjs` → **6/6 domaines publics = WORKER**, 4/4 routes Worker-only actives ; `*.pages.dev` répond différemment.
+- [x] État live : `node final-state-snapshot.cjs` → 6/6 `b: df18df5d` (domaine public **et** `pages.dev`), observation `2026-10-27T12:00:00Z`, âge 16 128 min > SLA 900.
+- [x] Exposition : `node pages-dev-exposure-check.cjs` → 24/36 endpoints servis en code source clair sur les 6 `*.pages.dev` ; `node php-secret-literal-check.cjs` → **aucun secret de service en dur** (URL Supabase + clé *publishable* uniquement, publiques par conception) ; vrais fichiers de config **404**.
+- [x] Preuve du gate `verify` : log du run `42227027205` → `parcours 12, défauts 12 (bloquants 12, ux 0)` + `Process completed with exit code 1` ; jobs du run : `verify` = failure, `rollback` = success.
+- [x] Neutralité du chemin documentaire : `cloudflare-production.yml` `on.push` limité à `branches: [main]` **et** `.ai/**` en `paths-ignore` → ce commit **ne peut pas** déclencher de déploiement.
+- [ ] `npm run build` → N/A (aucun changement applicatif).
+- [ ] `php -l` → N/A (aucun `.php` touché).
+- [ ] CI → non déclenchée (documentation seule, aucune PR applicative).
+
+### Problèmes restants
+- [ ] `TASK-P0-SLA-CADENCE` : SLA de fraîcheur en rupture (16 128 min > 900) — **bloquant pour toute release** — action : densification Copernicus `*/15 0-2 * * *` + observabilité jusqu'à `05:45Z`, **autorisation fondateur requise** (une publication dispatche `cloudflare-production.yml`).
+- [ ] `TASK-P0-PAGES-DOMAINS` : attacher les 6 domaines aux projets Pages + retirer les 6 routes catch-all Workers **exigerait de réimplémenter la money path en Pages Functions** — interdit par le périmètre ; **arbitrage fondateur requis**.
+- [ ] `TASK-P0-PHP-SOURCE-PAGES` : le code source PHP est servi en clair sur les 6 `*.pages.dev` — action : stripper les `.php` de l'artefact Pages (ou ne pas publier les `pages.dev`) — **sans effet sur les domaines publics** (le Worker les bloque déjà).
+- [ ] `TASK-P0-CF-SCOPE` : re-accorder les scopes Cloudflare (`pages_domains_list`, `workers_domains_list`, `workers_routes_list`, `zones_list`) pour lire l'état réel des objets de routage.
+
+### Prochaine action recommandée
+1. Arbitrer A/B (Workers = option recommandée) et lever le gate de fraîcheur par la densification Copernicus — Rôle : fondateur.
+2. Stripper les `.php` de l'artefact Pages + garde-fou de non-régression — Rôle : coding.
+3. Re-accorder les scopes MCP Cloudflare (DNS / zone / routes / Pages domains) — Rôle : fondateur.
+
+### Branche / PR
+- Branche : `agent/coding/p0-release-readiness-20261107` (base `origin/main` = `9ce1e099e`)
+- PR : aucune (documentation seule ; `.ai/**` est exclu du trigger production, et `on.push` ne cible que `main`)
+- Commit head : commit de ce handoff (branche `agent/coding/p0-release-readiness-20261107`)
+
+---
+
 ## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
 
 ### Travail effectué
