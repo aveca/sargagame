@@ -1,3 +1,71 @@
+## 2026-11-07 19:35 UTC · Agent: OpenCode (coding/data/devops)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission P0 « SARGAGAME : WORKERS FIRST, FRESHNESS, PHP EXPOSURE » — **4 PRs en DRAFT, non mergées**, contract fail-closed rendu reproductible avant déploiement, publication PHP|Pages éliminée sans casser la money path FTP, cadence Copernicus densifiée (préparée, non activée), runbook de release Workers écrit ; **aucun déploiement, aucun paiement, aucun secret touché**.
+- **Détails** :
+  - **PR #1359 (DRAFT) — `fix(freshness)`** · branche `agent/coding/p0-freshness-fail-closed-20261107` · head `b0a33e8527876c984a690b2e1deb22a28806fc56` · base `4f9fed472fd39485ef2c18a1ddf1ed0ed6ffb6d5`.
+    - **Diagnostic** : `main` honore DÉJÀ le contrat fail-closed (`src/ChasseHome.jsx:522` — `satelliteDecisionCurrent` exige `source==="erddap-live"` **ET** `stale===false` **ET** `isSatelliteFresh12h()`). Les 12 défauts `stale-current-decision` sont un **lag de déploiement**, pas un manque de code.
+    - **Le défaut réel était le DÉTECTEUR** : `user-journey-audit.cjs` mesurait le score via `[data-testid="lc-detail-score"]` — présent **uniquement** dans les builds fail-closed → sur un build legacy, « pas de score » alors que le score est à l'écran (classe legacy `.lc-detail-scnum`) ; `/\d/` matchait le suffixe `/100` (`—/100` compté comme un score) ; le CTA « VOIR LES 7 PROCHAINS JOURS » n'était pas un `.lc-detail-fc-row` (angle mort). Conséquence : le contrôle **n'était exécutable que contre les domaines publics**, donc **pas de gate pré-déploiement**.
+    - **Correction** : module partagé `scripts/automation/lib/detail-decision-ui.cjs` (texte rendu + visibilité réelle + classes legacy, suffixe `/100` retiré), contrat fail-closed **symétrique** (une observation fraîche DOIT produire score + prévision), `freshness-contract-check.cjs` (desktop **et** mobile, stale/fresh, dans les deux sens), `--base-url` sur l'audit, **câblage CI** (les deux contrôles deviennent des gates de PR), 2 tests unitaires (43 + 31 assertions).
+    - **Preuve par MUTATION** : `satelliteDecisionCurrent=true` → l'audit remonte **2 défauts bloquants `stale-current-decision`** (exit 1) et le contrôle contrat **FAIL** (exit 1). Mutation revertée, rebuild `b: 5710ff9d` identique à l'original.
+  - **PR #1360 (DRAFT) — `fix(pages)`** · branche `agent/coding/p0-pages-php-strip-20261107` · head `aacfc585ef39b0aed988b4a31b59ab0590c5e8af`.
+    - **Constat live mesuré** : les 6 `*.pages.dev` servaient le **code source PHP en clair** (`content-type: application/x-httpd-php`, HTTP 200) sur **24/36 endpoints** testés (`/api/mollie.php`, `/api/widget-token.php`, `/api/b2b-trial.php`…). **Aucun secret de service exposé** (`mollie-config.php` et `_deploy-secret.php` absents du dépôt → 404 ; `_deploy.php` fail-closed) ; code exposé = URL Supabase + clé publishable (publiques par conception).
+    - **Cause** : `prepare-ftp.cjs` n'excluait que `api/stripe-config.php`, et `wrangler pages deploy <dir>` publie **TOUT** le contenu de `<dir>` — le `.assetsignore` n'est honoré que par les assets **Worker**.
+    - **Correctif** : artefact Pages **distinct** `<region.ftpDir>-pages/` (scripts/lib/pages-artifact.cjs) ; le **dossier FTP reste INTACT** (les `.php` y sont la money path historique) ; inventaire `scripts/inventory-pages-artifacts.cjs` (`--region`, `--only-existing`, `--report`) ; le workflow `pages-code-only-release.yml` publie l'artefact `-pages` (plus jamais le dossier FTP), le reconstruit après le rafraîchissement du payload et **refuse de publier** si un PHP traîne.
+    - **Preuve** : `martinique-ftp` = 24 PHP (FTP intact) · `martinique-ftp-pages` = **0 PHP / 0 htaccess** · idem GP.
+  - **PR #1361 (DRAFT) — `feat(data)`** · branche `agent/data/copernicus-dense-cadence-20261107` · head `f291bb78ea58c78c2f9f0877e7d44d4cc848ae8c`.
+    - **Cadence** : `*/15 0-2 * * *` (famille dense, 12 ticks/jour) **remplace** `0 0 * * *` (le conserver déclencherait un **second run à 00:00 UTC**) ; `0 6/12/18 * * *` conservés. **SLA 900 min inchangé** (gate + helper produit).
+    - **Distinction DENSE / CANONIQUE** via source unique `scripts/lib/copernicus-publication-slot.cjs` (fail-closed : cron/événement/horloge inconnus ⇒ jamais canonique ; tolérance 10 min < 15 min sur le tick 00:00 pour le retard de l'ordonnanceur).
+    - **Travaux lourds bornés** : backtest, track-record, marquage « stale », rapport MRR (`--send`), snapshot funnel, emails win-back → créneaux canoniques **uniquement**. La chaîne de publication (fetch → gate → commit/push → dispatch) reste active sur **tous** les ticks.
+    - **Piège corrigé** : « Mark existing track record stale if regeneration fails » (`backtest.outcome != 'success'`) se serait déclenché sur **chaque** tick dense (backtest *skipped*) → le track-record public aurait été marqué stale 12×/jour sans aucun échec.
+  - **PR #1362 (DRAFT) — `docs`** · branche `agent/devops/workers-release-runbook-20261107` · ce handoff + `docs/WORKERS_RELEASE.md` (ordre réel des 8 jobs, SHA exact, 6 Workers, rollback, autorisations).
+  - **Ordre des gates vérifié** dans `cloudflare-production.yml` : `scope` → `build` (**gate 900 min**) → `certification-gate` (SHA exact) → `mollie-live-gate` → `deploy` (**recheck 900 min juste avant `wrangler deploy`**) → `deploy-pages` (**recheck 900 min juste avant le deploy Pages**) → `post-deploy-verify` → `verify-fleet`.
+  - **PR #1292 NON mergée** : base `164d70fd`, 244 commits derrière, diff de −12 474 lignes / 147 fichiers → obsolète.
+  - **`main` n'est pas protégé** et `agent-handoff.yml` déclare « No implicit merge is performed by this workflow » → **toutes les PRs restent en DRAFT**, aucune fusion.
+
+### Fichiers modifiés
+- PR #1359 : `scripts/automation/lib/detail-decision-ui.cjs`, `scripts/automation/freshness-contract-check.cjs`, `scripts/automation/user-journey-audit.cjs`, `.github/workflows/ci-tests.yml`, `.gitignore`, `tests/unit/detail-decision-ui.test.cjs`, `tests/unit/freshness-decision-contract.test.cjs`, `tests/unit/user-journey-report.test.cjs`.
+- PR #1360 : `scripts/lib/pages-artifact.cjs`, `scripts/inventory-pages-artifacts.cjs`, `scripts/prepare-ftp.cjs`, `.github/workflows/pages-code-only-release.yml`, `.gitignore`, `tests/unit/pages-artifact-php-inventory.test.cjs`, `tests/unit/prepare-ftp-region.test.cjs`.
+- PR #1361 : `scripts/lib/copernicus-publication-slot.cjs`, `scripts/automation/compute-publication-slot.cjs`, `.github/workflows/daily-copernicus.yml`, `tests/unit/copernicus-dense-cadence.test.cjs`, `tests/unit/daily-metrics-publication-cadence.test.cjs`.
+- PR #1362 : `docs/WORKERS_RELEASE.md`, `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (`b: 5710ff9d`)
+- [x] `node scripts/check-bundle-budget.cjs` → **206,7 Ko ≤ 210 Ko** (exit 0)
+- [x] `node scripts/ux-smoke.mjs` → **4 tokens OK** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `php -l` → **sans objet** : aucun fichier `.php` touché (les 4 PRs n'en modifient aucun)
+- [x] `node scripts/run-tests.cjs` → PR #1359 **181/181**, PR #1360 **180/180**, PR #1361 **180/180** (exit 0)
+- [x] `node scripts/automation/freshness-contract-check.cjs --base http://127.0.0.1:4173` → **PASS** (stale → « À VÉRIFIER » desktop+mobile ; fresh → score 66)
+- [x] `node scripts/automation/user-journey-audit.cjs --base-url http://127.0.0.1:4173` → **0 défaut, 0 bloquant** (exit 0)
+- [x] **Mutation test** du gate fail-closed → régression **détectée** (2 défauts bloquants, exit 1), mutation revertée
+- [x] `node scripts/inventory-pages-artifacts.cjs --region mq` → `php_pages=0 php_ftp=24` → `PAGES_ARTIFACTS_PHP_FREE=true` (exit 0)
+- [x] `node scripts/prepare-ftp.cjs --pages-only` → exit 0 (27 PHP/.htaccess exclus par région)
+- [x] `node scripts/autopilot/check-github-actions-policy.cjs` → `GITHUB_ACTIONS_POLICY_OK workflows=42`
+- [x] `node tests/unit/copernicus-dense-cadence.test.cjs` → **48 assertions** PASS
+- [x] CI distante : PR #1359 **4/4 verte** ; PR #1360 **verte** (`test-frontend`, `perf`, `lighthouse-report`, 6× `Build and package`, GitGuardian)
+
+### Problèmes restants
+- [ ] **BLOQUÉ (autorisation fondateur)** : release Workers des 12 défauts — `check-predeploy-satellite-freshness.cjs` (`MAX_AGE_MINUTES = 900`) refuse tout déploiement (observation live `2026-10-27T12:00:00Z`, âge ≈ 16 128 min ≈ 17,9× le SLA). Relâcher ce garde-fou = **violation du contrat honnêteté** → ne pas le faire ; densifier la publication à la place.
+- [ ] **BLOQUÉ (autorisation fondateur)** : merge de la cadence dense (#1361) — chaque tick dense publié dispatche `cloudflare-production.yml` (Workers + secrets).
+- [ ] **NON VÉRIFIÉ** : attachement des domaines au niveau API (`workers_domains_list`, `pages_domains_list`, `workers_routes_list`, `zones_list`) — scope OAuth non autorisé. Preuve disponible : niveau **bord** (6/6 domaines = WORKER, 4/4 routes Worker-only).
+- [ ] **NON VÉRIFIÉ** : l'exposition PHP sur `*.pages.dev` ne sera corrigée qu'**après** merge + republication de l'artefact `-pages` (#1360) — non déployé ici.
+- [ ] **Préexistant, dû au temps** : `node scripts/verify-ftp-ready.cjs` échoue sur `main` (observation 3313 min > SLA 900) — indépendant des modifications de la mission.
+- [ ] **Signalé, non touché** : run `27264429433` (« Daily Copernicus + Deploy ») **queued depuis le 2026-06-10**.
+
+### Prochaine action recommandée
+1. Revue + décision du fondateur sur les **5 autorisations** listées dans `docs/WORKERS_RELEASE.md` §7 (gate 900 min, cadence dense, arbitrage A/B, scopes MCP Cloudflare, backfill Mollie) — Rôle : **fondateur**
+2. Si la cadence dense est refusée, explorer la **sonde ERDDAP** dans la fenêtre `D+1 00:00Z→03:00Z` (cause racine de la rupture de SLA, cf. `.ai/tasks.md`) — Rôle : **data_agent**
+3. Merger #1359 puis #1360 (indépendants, CI vertes), **puis** rejouer `check-predeploy-satellite-freshness.cjs` avant toute release — Rôle : **release_agent**
+4. Produire la **preuve d'attachement API** (routing, domains, routes) dès que le scope OAuth est accordé — Rôle : **architect_agent**
+
+### Branche / PR
+- Branche : `agent/coding/p0-freshness-fail-closed-20261107` (#1359), `agent/coding/p0-pages-php-strip-20261107` (#1360), `agent/data/copernicus-dense-cadence-20261107` (#1361), `agent/devops/workers-release-runbook-20261107` (#1362)
+- PR : **#1359, #1360, #1361, #1362** — **les 4 en DRAFT, aucune mergée**
+- Commit head : `b0a33e8527876c984a690b2e1deb22a28806fc56` (#1359) · `aacfc585ef39b0aed988b4a31b59ab0590c5e8af` (#1360) · `f291bb78ea58c78c2f9f0877e7d44d4cc848ae8c` (#1361) · (ce commit) (#1362)
+- Base des 4 branches : `origin/main` = `4f9fed472fd39485ef2c18a1ddf1ed0ed6ffb6d5`
+
+---
+
 ## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
 
 ### Travail effectué
