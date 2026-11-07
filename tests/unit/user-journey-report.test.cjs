@@ -56,12 +56,22 @@ t(!isKnownOutOfScopeResponse(500, 'https://sargassummiami.com/api/b2b-partners.j
 
 // 1ter. Le contrôle DOM doit détecter l'ancien HTML de production, pas seulement les test IDs du nouveau build.
 const auditSource = fs.readFileSync(path.join(ROOT, 'scripts', 'automation', 'user-journey-audit.cjs'), 'utf8')
-t(/data-testid="lc-detail-score"/.test(auditSource) && /\.lc-detail-score/.test(auditSource),
+const decisionModuleSource = fs.readFileSync(path.join(ROOT, 'scripts', 'automation', 'lib', 'detail-decision-ui.cjs'), 'utf8')
+t(/require\('\.\/lib\/detail-decision-ui\.cjs'\)/.test(auditSource) && /measureDetailDecisionUi\(page\)/.test(auditSource),
+  'l’audit utilise la mesure DOM partagée (source unique, pas de copie divergente)')
+t(/\.lc-detail-scnum/.test(decisionModuleSource) && /data-testid="lc-detail-score"/.test(decisionModuleSource),
   'l’audit détecte le score dans le build legacy et le build instrumenté')
-t(/VOIR LES 7 PROCHAINS JOURS\|SEE THE NEXT 7 DAYS\|VER LOS 7 DÍAS/.test(auditSource),
+t(/VOIR LES 7 PROCHAINS JOURS|SEE THE NEXT 7 DAYS|VER LOS 7 D[IÍ]AS/.test(decisionModuleSource),
   'l’audit détecte le CTA prévision legacy réellement visible')
-t(/!decisionUi\.hasForecastCta/.test(auditSource),
+const { checkFailClosedDecisionUi } = require('../../scripts/automation/lib/detail-decision-ui.cjs')
+const compliantMeasure = {
+  head: 'À VÉRIFIER', scoreText: '', hasCurrentScore: false, scorePaused: true,
+  staleNotice: true, hasForecast: false, forecastPaused: true, hasForecastCta: false, verdictWords: []
+}
+t(checkFailClosedDecisionUi({ ...compliantMeasure, hasForecastCta: true }).ok === false,
   'le contrat stale exige aussi la disparition du CTA prévision')
+t(checkFailClosedDecisionUi({ ...compliantMeasure, hasCurrentScore: true, scoreText: '66' }).ok === false,
+  'le contrat stale détecte un score courant résiduel')
 
 // 2. Classification bloquant/ux.
 const cls = classify([

@@ -89,6 +89,11 @@ scripts/perf/*.png
 .fb-session-chrome/
 scripts/automation/data/fb-reply-log.jsonl
 .secrets-to-redact.txt
+# Captures de l'audit parcours (scripts/automation/user-journey-audit.cjs) :
+# l'audit tourne désormais aussi en local et en CI (gate pré-déploiement) —
+# ses captures sont régénérées à chaque run, JAMAIS commitées.
+scripts/automation/data/journeys/
+scripts/automation/data/user-journey-report-local.json
 
 # RGPD : liste d'abonnés (emails en clair) — re-fetchée à chaque run, JAMAIS commitée
 scripts/automation/data/subscribers.json

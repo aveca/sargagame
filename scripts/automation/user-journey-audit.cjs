@@ -9,6 +9,7 @@
  * domaine+route+étape+type). Aucun achat réel. Headless, zéro vol de focus.
  *
  * Usage : node scripts/automation/user-journey-audit.cjs [--out report.json] [--domains a,b] [--viewport mobile|desktop]
+ *          [--base-url http://127.0.0.1:4173]   (audite un artefact LOCAL au lieu des domaines publics)
  */
 'use strict'
 const fs = require('fs')
@@ -16,16 +17,19 @@ const path = require('path')
 const { execFileSync } = require('child_process')
 
 const ROOT = path.resolve(__dirname, '..', '..')
+const { measureDetailDecisionUi, checkFailClosedDecisionUi } = require('./lib/detail-decision-ui.cjs')
 
 function getRegions() {
   return require(path.join(ROOT, 'regions', 'index.cjs')).getAllRegions().filter(r => r.live !== false)
 }
 
 // Empreinte version du domaine (v + b) — lie le rapport au build réellement servi.
-function fetchVersion(domain) {
+// `baseUrl` (mode local) : l'empreinte est lue sur l'artefact local audité.
+function fetchVersion(domain, baseUrl) {
   const { execFileSync } = require('child_process')
   try {
-    const out = execFileSync('curl', ['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargaJourney/1.0)', `https://${domain}/version.json`], { encoding: 'utf8', timeout: 25000 })
+    const url = baseUrl ? new URL('/version.json', baseUrl).toString() : `https://${domain}/version.json`
+    const out = execFileSync('curl', ['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargaJourney/1.0)', url], { encoding: 'utf8', timeout: 25000 })
     const j = JSON.parse(out)
     return { v: j.v || null, b: j.b || null }
   } catch (_) { return { v: null, b: null } }
@@ -59,7 +63,7 @@ function classify(defects) {
   return { blocking, ux }
 }
 
-async function runJourney(browser, region, viewport) {
+async function runJourney(browser, region, viewport, baseUrl) {
   const domain = region.domain
   const defects = []
   const steps = []
@@ -92,7 +96,7 @@ async function runJourney(browser, region, viewport) {
 
   try {
     // 1. Accueil
-    await page.goto(`https://${domain}/`, { waitUntil: 'domcontentloaded', timeout: 60000 })
+    await page.goto(baseUrl || `https://${domain}/`, { waitUntil: 'domcontentloaded', timeout: 60000 })
     await page.waitForTimeout(9000)
     const bodyLen = await page.evaluate(() => document.body.innerText.length)
     if (bodyLen < 200) defects.push({ domain, step: 'home', type: 'blank-page', detail: `innerText=${bodyLen}` })
@@ -112,7 +116,12 @@ async function runJourney(browser, region, viewport) {
     //    fermeture et couvre la carte — on le referme avant CHAQUE tentative, et on
     //    retombe sur un clic synthétique (dispatchEvent) si un overlay avale
     //    l'actionabilité Playwright ; le résultat est vérifié dans le DOM (fiche).
-    const pickers = ['.sg-maplabel', '.sg-l-card', 'button.lc-card', '.blv-row', '[data-beach]', '.hj-card']
+    //    NB : le PIN de la carte (`svg[data-sg-live="1"] g[style*="cursor"]`) est
+    //    le DERNIER sélecteur : quand la donnée est hors SLA, les LABELS de plage
+    //    sont volontairement masqués (fail-closed) — l'audit doit pouvoir
+    //    descendre jusqu'à la fiche plage même dans cet état, sans quoi il ne
+    //    mesurerait jamais le contrat qu'il est censé vérifier.
+    const pickers = ['.sg-maplabel', '.sg-l-card', 'button.lc-card', '.blv-row', '[data-beach]', '.hj-card', 'svg[data-sg-live="1"] g[style*="cursor"]']
     const closeChat = () => page.evaluate(() => {
       const dlgs = [...document.querySelectorAll('[role="dialog"]')]
       const chat = dlgs[dlgs.length - 1]
@@ -172,39 +181,16 @@ async function runJourney(browser, region, viewport) {
       } catch (error) {
         observation = { ok: false, current: false, reason: String(error?.message || error).slice(0, 160) }
       }
-      const decisionUi = await page.evaluate(() => {
-        const visible = (el) => {
-          if (!el) return false
-          const style = window.getComputedStyle(el)
-          return style.display !== 'none' && style.visibility !== 'hidden' &&
-            Number(style.opacity || 1) > 0 && el.getClientRects().length > 0
-        }
-        const head = document.querySelector('.lc-detail-head')?.textContent?.trim() || ''
-        // Current build uses data-testid; the deployed legacy build only has the class.
-        // Measure the rendered DOM, not the presence of a test-only selector.
-        const score = document.querySelector('[data-testid="lc-detail-score"], .lc-detail-score')
-        const scoreValue = score?.querySelector('.lc-detail-scnum')?.textContent?.trim() || ''
-        const forecastCta = [...document.querySelectorAll('button, a')].find((el) =>
-          visible(el) && /VOIR LES 7 PROCHAINS JOURS|SEE THE NEXT 7 DAYS|VER LOS 7 DÍAS/i.test((el.textContent || '').trim())
-        )
-        return {
-          head,
-          hasCurrentScore: visible(score) && /\d/.test(scoreValue.replace(/\/100/g, '')),
-          scorePaused: visible(document.querySelector('[data-testid="lc-detail-score-paused"], .lc-detail-score-paused')),
-          staleNotice: visible(document.querySelector('[data-testid="lc-detail-stale"], .lc-detail-stale')),
-          hasForecast: visible(document.querySelector('.lc-detail-fc-row')),
-          forecastPaused: visible(document.querySelector('[data-testid="lc-detail-forecast-paused"], .lc-detail-forecast-paused')),
-          hasForecastCta: !!forecastCta
-        }
-      })
+      // Mesure HONNÊTE de l'état décisionnel (texte rendu + visibilité réelle,
+      // classes legacy présentes dans TOUS les builds) — cf. le module partagé
+      // scripts/automation/lib/detail-decision-ui.cjs : les data-testid de la
+      // garde fail-closed ne sont utilisés que pour les états « suspendu ».
+      const decisionUi = await measureDetailDecisionUi(page)
       if (!fiche.hasVerdict) defects.push({ domain, step: 'fiche', type: 'ux', detail: 'verdict absent de la fiche' })
       if (!fiche.hasFreshness) defects.push({ domain, step: 'fiche', type: 'misleading-state', detail: 'aucune mention de fraîcheur sur la fiche (état satellite trompeur)' })
       if (observation.ok && !observation.current) {
-        const staleContractOk = !decisionUi.hasCurrentScore && decisionUi.scorePaused &&
-          decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused &&
-          !decisionUi.hasForecastCta &&
-          /À VÉRIFIER|CHECK REQUIRED|POR VERIFICAR/i.test(decisionUi.head)
-        if (!staleContractOk) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) })
+        const contract = checkFailClosedDecisionUi(decisionUi)
+        if (!contract.ok) defects.push({ domain, step: 'fiche', type: 'stale-current-decision', detail: 'observation stale/unknown (ageMinutes=' + observation.ageMinutes + ') mais UI non fail-closed: ' + JSON.stringify(decisionUi) + ' violations=' + JSON.stringify(contract.violations) })
       }
       steps.push({ step: 'fiche', ok: fiche.hasVerdict && fiche.hasFreshness, verdict: fiche.hasVerdict, freshness: fiche.hasFreshness })
       steps.push({ step: 'freshness-contract', ok: observation.ok && (observation.current || (!decisionUi.hasCurrentScore && decisionUi.scorePaused && decisionUi.staleNotice && !decisionUi.hasForecast && decisionUi.forecastPaused && !decisionUi.hasForecastCta)), observation, decisionUi })
@@ -242,9 +228,18 @@ async function main() {
   const outPath = A('out') || path.join(ROOT, 'scripts', 'automation', 'data', 'user-journey-report.json')
   const onlyDomains = A('domains') ? A('domains').split(',') : null
   const viewports = A('viewport') ? [A('viewport')] : ['mobile', 'desktop']
+  // --base-url : audite un ARTEFACT LOCAL (preview vite, FTP, build) au lieu
+  // des domaines publics. Rend le détecteur `stale-current-decision`
+  // reproductible AVANT toute mise en production (gate pré-déploiement).
+  const baseUrl = A('base-url')
 
   let regions = getRegions()
   if (onlyDomains) regions = regions.filter(r => onlyDomains.includes(r.id))
+  if (baseUrl) {
+    // Une seule région synthétique : le domaine n'est qu'un libellé de rapport.
+    const first = regions[0] || { id: 'local', domain: 'localhost', primaryLang: 'fr' }
+    regions = [{ ...first, id: 'local', domain: new URL(baseUrl).host }]
+  }
 
   let chromium
   try { chromium = require('playwright').chromium } catch (_) { chromium = require(path.join(ROOT, 'node_modules', 'playwright')).chromium }
@@ -253,9 +248,9 @@ async function main() {
   const runs = []
   const allDefects = []
   for (const region of regions) {
-    const version = fetchVersion(region.domain)
+    const version = fetchVersion(region.domain, baseUrl)
     for (const vp of viewports) {
-      const r = await runJourney(browser, region, vp)
+      const r = await runJourney(browser, region, vp, baseUrl)
       r.version = version
       r.defects.forEach(d => { allDefects.push(d) })
       runs.push(r)
@@ -268,6 +263,7 @@ async function main() {
   const report = {
     generatedAt: new Date().toISOString(),
     tool: 'user-journey-audit.cjs',
+    baseUrl: baseUrl || null,
     domains: regions.map(r => r.domain),
     viewports,
     runs,
