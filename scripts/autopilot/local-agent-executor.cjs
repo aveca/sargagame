@@ -21,6 +21,7 @@ const { spawn, execFileSync, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const gitops = require('./lib/gitops.cjs');
 const policy = require('./lib/policy.cjs');
+const { assertRequiredEditProducedDiff } = require('./lib/edit-required-guard.cjs');
 const { runVisualQA } = require('./visual-qa.cjs');
 
 const ROOT = C.ROOT;
@@ -388,7 +389,16 @@ async function executeLocalAgentTask(task, cfg, log) {
     }
     
     // 4. Policy checks on diff
-    const diff = gitops.diffStats(wt);
+    const scopeFiles = (task.files && task.files.length) ? task.files
+      : ((task.scope && task.scope.files) || []);
+    const producedDiff = gitops.diffStats(wt);
+    const { editRequired, changedFileCount } = assertRequiredEditProducedDiff(
+      scopeFiles,
+      producedDiff,
+      agentResult.model || 'unknown'
+    );
+    log(`[diff-guard] editRequired=${editRequired} fichiersModifies=${changedFileCount}`);
+    const diff = producedDiff;
     const ev = policy.evaluateFiles(diff.files, cfg);
     if (!ev.allowed) {
       throw new Error(`Policy violation: ${ev.denied.join(', ')}`);
