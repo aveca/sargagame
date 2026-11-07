@@ -486,81 +486,6 @@ async function hashString(s) {
   return Array.from(new Uint8Array(h)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 __name(hashString, "hashString");
-async function b2bProspects(env, request) {
-  const h = cors(request);
-  const url = new URL(request.url);
-  const method = request.method;
-  if (method === "POST") {
-    const input = await request.json();
-    if (!input.name) return new Response(JSON.stringify({ error: "name required" }), { status: 400, headers: h });
-    const rows = await supa(env, "b2b_prospects", "POST", { name: input.name, beach: input.beach, island: input.island, phone: input.phone, email: input.email, grade: input.grade || "A" });
-    const p = rows?.[0];
-    if (p) await supa(env, "b2b_events", "POST", { prospect_id: p.id, type: "PROSPECT_CREATED", actor: "system", metadata: { name: p.name } });
-    return new Response(JSON.stringify(p || { error: "create_failed" }), { status: p ? 200 : 500, headers: h });
-  }
-  if (method === "GET") {
-    const id = url.searchParams.get("id");
-    if (id) {
-      const rows2 = await supa(env, "b2b_prospects", "GET", null, `?id=eq.${id}&select=*`);
-      return new Response(JSON.stringify(rows2?.[0] || { error: "not_found" }), { status: rows2?.[0] ? 200 : 404, headers: h });
-    }
-    const status = url.searchParams.get("status");
-    let q = "?select=*&order=created_at.desc";
-    if (status) q += `&status=eq.${status}`;
-    const rows = await supa(env, "b2b_prospects", "GET", null, q);
-    return new Response(JSON.stringify(rows), { headers: h });
-  }
-  if (method === "PATCH") {
-    const id = url.searchParams.get("id");
-    if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
-    const input = await request.json();
-    const rows = await supa(env, "b2b_prospects", "PATCH", input, `?id=eq.${id}&select=*`);
-    return new Response(JSON.stringify(rows?.[0] || { error: "not_found" }), { status: rows?.[0] ? 200 : 404, headers: h });
-  }
-  return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
-}
-__name(b2bProspects, "b2bProspects");
-async function b2bConcierge(env, request) {
-  const h = cors(request);
-  const url = new URL(request.url);
-  const method = request.method;
-  if (method === "POST") {
-    const input = await request.json();
-    if (!input.prospect_id) return new Response(JSON.stringify({ error: "prospect_id required" }), { status: 400, headers: h });
-    const existing = await supa(env, "b2b_concierge", "GET", null, `?prospect_id=eq.${input.prospect_id}&status=eq.active&select=*&limit=1`);
-    if (existing?.[0]) return new Response(JSON.stringify({ error: "active_exists", concierge: existing[0] }), { status: 409, headers: h });
-    const start = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
-    const end = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
-    const rows = await supa(env, "b2b_concierge", "POST", { prospect_id: input.prospect_id, start_date: start, end_date: end, status: "active", current_day: 0 });
-    return new Response(JSON.stringify(rows?.[0] || { error: "failed" }), { status: rows?.[0] ? 200 : 500, headers: h });
-  }
-  if (method === "GET") {
-    const pid = url.searchParams.get("prospect_id");
-    if (!pid) return new Response(JSON.stringify({ error: "prospect_id required" }), { status: 400, headers: h });
-    const rows = await supa(env, "b2b_concierge", "GET", null, `?prospect_id=eq.${pid}&status=eq.active&select=*&limit=1`);
-    return new Response(JSON.stringify(rows?.[0] || null), { headers: h });
-  }
-  if (method === "PATCH") {
-    const id = url.searchParams.get("id");
-    if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
-    const input = await request.json();
-    const action = input.action;
-    if (action === "advance_day") {
-      const rows = await supa(env, "b2b_concierge", "PATCH", { current_day: input.day }, `?id=eq.${id}&select=*`);
-      return new Response(JSON.stringify(rows?.[0]), { headers: h });
-    }
-    if (action === "payment_requested") {
-      const rows = await supa(env, "b2b_concierge", "PATCH", { payment_requested: true }, `?id=eq.${id}&select=*`);
-      return new Response(JSON.stringify(rows?.[0]), { headers: h });
-    }
-    if (action === "payment_confirmed") {
-      const rows = await supa(env, "b2b_concierge", "PATCH", { payment_confirmed: true, status: "completed" }, `?id=eq.${id}&select=*`);
-      return new Response(JSON.stringify(rows?.[0]), { headers: h });
-    }
-  }
-  return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
-}
-__name(b2bConcierge, "b2bConcierge");
 var JEV_INTENTS = ["today_verdict", "when_later", "trip_planning", "which_beach", "avoid_seaweed", "b2b", "off_topic"];
 async function handleJevIntent(request, env) {
   const J = { "Content-Type": "application/json" };
@@ -796,8 +721,12 @@ var index_default = {
         headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
       });
     }
-    if (path === "/api/b2b-prospects.php") return b2bProspects(env, request);
-    if (path === "/api/b2b-concierge.php") return b2bConcierge(env, request);
+    if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
     if (path === "/api/b2b-trial.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: cors(request) });
       if (!await rateLimit(env, "b2b_trial", 50)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
