@@ -46,7 +46,7 @@
 ### Branche / PR
 - Branche : `agent/coding/p0-release-readiness-20261107` (base `origin/main` = `9ce1e099e`)
 - PR : aucune (documentation seule ; `.ai/**` est exclu du trigger production, et `on.push` ne cible que `main`)
-- Commit head : commit de ce handoff (branche `agent/coding/p0-release-readiness-20261107`)
+- Commit head : `ec8463138c206e27f82ce0e8a62e58f6c5cbaaed` (commit portant ce handoff, poussé sur `origin/agent/coding/p0-release-readiness-20261107`) — commit de mise à jour du SHA : voir `git log -2` sur la branche.
 
 ---
 
