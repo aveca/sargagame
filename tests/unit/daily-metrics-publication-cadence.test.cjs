@@ -6,8 +6,10 @@
  * CONSOLIDÉE (PR #1070 + garde de #1071).
  *
  * Règles verrouillées :
- *  1. Les QUATRE exécutions quotidiennes sont conservées (4 entrées cron
- *     distinctes — pas l'ancienne expression unique `0 0,6,12,18 * * *`).
+ *  1. Les QUATRE exécutions quotidiennes CANONIQUES sont conservées (00:00 UTC
+ *     via la famille dense « 15 min de 00:00 à 02:45 UTC », puis 06:00, 12:00
+ *     et 18:00 UTC en entrées cron distinctes — pas l'ancienne expression
+ *     unique `0 0,6,12,18 * * *`, et pas de doublon `0 0 * * *`).
  *  2. Le snapshot canonique n'est publié qu'une fois par date UTC, au run 18:00.
  *  3. La publication est une responsabilité SÉPARÉE du commit email, SANS
  *     `continue-on-error` : un échec définitif fait ÉCHOUER le workflow.
@@ -25,15 +27,26 @@ const root = path.resolve(__dirname, '../..')
 const daily = fs.readFileSync(path.join(root, '.github/workflows/daily-copernicus.yml'), 'utf8').replace(/\r\n/g, '\n')
 const weekly = fs.readFileSync(path.join(root, '.github/workflows/weekly-optimize.yml'), 'utf8').replace(/\r\n/g, '\n')
 
-// ── 1. Cadence : 4 entrées cron distinctes conservées ──────────────────────
+// ── 1. Cadence : famille dense + 3 creneaux canoniques historiques ─────────
+// Règle (mission P0 « freshness », 2026-11-07) : la publication satellite est
+// DENSIFIÉE (un tick toutes les 15 min pendant la fenêtre de capture ERDDAP
+// 00:00 → 02:45 UTC), mais les CRÉNEAUX CANONIQUES historiques — qui portent
+// le track-record, les mesures MRR et les emails — restent au nombre de QUATRE
+// exécutions quotidiennes : 00:00 (tick dense), 06:00, 12:00 et 18:00 UTC.
+//
+// Le cron `0 0 * * *` a été REMPLACÉ par la famille dense : le conserver
+// déclencherait un SECOND run à 00:00 UTC (double fetch, double publication).
 const schedule = (daily.match(/^  schedule:\n([\s\S]*?)(?=^  workflow_dispatch:)/m) || [])[1] || ''
-for (const cron of ["0 0 * * *", "0 6 * * *", "0 12 * * *", "0 18 * * *"]) {
+for (const cron of ["*/15 0-2 * * *", "0 6 * * *", "0 12 * * *", "0 18 * * *"]) {
   assert.ok(schedule.includes(`- cron: '${cron}'`), `daily Copernicus schedule must retain ${cron}`)
 }
+// Le créneau 00:00 UTC est fourni par la famille dense : pas de doublon.
+assert.doesNotMatch(schedule, /- cron: '0 0 \* \* \*'/,
+  "le cron '0 0 * * *' ne doit pas revenir en plus de la famille dense (double run a 00:00 UTC)")
 // L'ancienne expression cron UNIQUE ne doit pas revenir.
 assert.doesNotMatch(schedule, /0 0,6,12,18 \* \* \*/,
   "l ancienne expression cron unique 0 0,6,12,18 ne doit pas revenir")
-console.log('OK 1: quatre exécutions quotidiennes conservées en entrées cron distinctes')
+console.log('OK 1: famille dense + 3 creneaux canoniques = 4 executions quotidiennes canoniques')
 
 // ── 2. Le step de publication existe et cible le run 18:00 ─────────────────
 assert.match(daily, /- name: Publish daily metrics snapshot/,
