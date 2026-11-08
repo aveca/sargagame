@@ -881,26 +881,17 @@ var index_default = {
       }
     }
     if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
-      const table = path.includes("contacts") ? "b2b_contacts" : path.includes("events") ? "b2b_events" : path.includes("scores") ? "b2b_scores" : "b2b_forecast_deliveries";
-      const h = cors(request);
-      if (request.method === "GET") {
-        const qs = url.searchParams.toString();
-        const rows = await supa(env, table, "GET", null, `?${qs}&select=*`);
-        return new Response(JSON.stringify(rows), { headers: h });
-      }
-      if (request.method === "POST") {
-        const input = await request.json();
-        const rows = await supa(env, table, "POST", input);
-        return new Response(JSON.stringify(rows?.[0] || { ok: true }), { headers: h });
-      }
-      if (request.method === "PATCH") {
-        const id = url.searchParams.get("id");
-        if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
-        const input = await request.json();
-        const rows = await supa(env, table, "PATCH", input, `?id=eq.${id}&select=*`);
-        return new Response(JSON.stringify(rows?.[0]), { headers: h });
-      }
-      return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
+      // These four tables are INTERNAL (migration 008: RLS enabled, no client
+      // grants, no client-side reference in the repository). The handler below
+      // used the service-role key, which bypasses RLS, and exposed anonymous
+      // `select=*` reads plus arbitrary POST/PATCH writes — including PII in
+      // `b2b_contacts`. There is no legitimate caller: the B2B outreach
+      // tooling reads local JSON files, never these HTTP routes.
+      // Retired fail-closed: no service-role read/write, no CORS, no-store.
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
     }
     if (path.startsWith("/api/partner/")) {
       return handlePartnerCommerce(request, env, ctx, path);
