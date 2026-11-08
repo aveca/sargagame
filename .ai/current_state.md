@@ -1,3 +1,81 @@
+## 2026-11-08 05:25 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : la boucle Factory V3 est **réellement branchée, activée en persistance sur le PC du fondateur et capable de produire du travail** — le pont multi-dépôt est câblé (PR #1364), l'activation persistante est prouvée (clé de registre `HKCU\...\Run`, runner vivant, lock, heartbeat, kill-switch), et **10 défauts d'exécution** découverts en conditions réelles ont été corrigés et verrouillés par des garde-fous.
+- **Détails** :
+  - **Activation persistante (prouvée sur le PC réel, pas simulée en CI)** :
+    - `scripts/autopilot/install-scheduler.ps1` **échoue** : `Register-ScheduledTask` → « Accès refusé » et `schtasks /create` → refus également (session **non élevée**). La tâche planifiée `SargagameAutopilot` **n'existe pas** sur ce PC (constaté : absent de `Get-ScheduledTask`).
+    - Mécanisme de remplacement **sans droit admin** : clé de registre **`HKCU\Software\Microsoft\Windows\CurrentVersion\Run` → `SargagameAutopilot`** pointant sur `wscript.exe //nologo "C:\Users\user\local-tools\run-hidden.vbs" "C:\Users\user\sargagame-runner" "C:\Windows\System32\cmd.exe" /c "C:\Users\user\local-tools\sargagame-autopilot.cmd"` → `scripts\autopilot\autopilot-live.cmd` → `run.cjs --live --continuous` → `runner.cjs`. Déclenchement à **chaque ouverture de session**, sans fenêtre visible, sans élévation.
+    - **Kill-switch** : `C:\Users\user\local-tools\sargagame-autopilot-disable.cmd` retire la clé de registre **et** pose `.ai\autopilot\STOP` ; `sargagame-autopilot.cmd` vérifie le `STOP` avant de lancer. **Testé** : arrêt propre (lock rendu), redémarrage OK.
+    - **Checkout runner dédié** : `C:\Users\user\sargagame-runner` (worktree de `C:\Users\user\Documents\Backup\sargagame`, branche `runner/factory-local`) — épinglé sur la branche de la PR #1364, car celle-ci n'est **pas mergée** et je ne la merge pas.
+    - **Preuves d'exécution** : runner vivant (PID), lock `.ai\autopilot\orchestrator.lock` détenu avec heartbeat frais, `.ai\autopilot/status.json` écrit (`alive: true`, `modelRouting.mode: perf`, `nvidiaKey: SET`, `healthchecks: SET`, `discord: SET`), `runner.log` renseigné (11 Ko+), kill-switch → arrêt propre → redémarrage OK.
+    - **Boucle prouvée bout-en-bout sur GitHub** : #1362 `imported` ; #1357, #1345, #1338 `imported → blocked → started → blocked` ; #1341 `imported → started → completed` (historique du 2026-11-06). 10 missions importées, 12 opportunités en queue locale.
+  - **Défauts d'exécution trouvés en conditions réelles (tous corrigés + garde-fous)** — aucun n'était visible avant l'activation, le runner étant mort depuis le 2026-10-22 :
+    1. **`scripts/autopilot/lib/notify.cjs` n'existait pas dans le dépôt.** Le commit `efdcde9da` (2026-10-22) a ajouté `require('./lib/notify.cjs')` **sans ajouter le fichier** → tout checkout propre mourait en `MODULE_NOT_FOUND` **avant le premier cycle**. Restauré à l'identique (sha256 `BAD699A3…`), sans secret en dur (URLs lues dans `HC_PING_URL` / `DISCORD_WEBHOOK_URL`).
+    2. **Trace du runner perdue.** `autopilot-live.cmd` redirigeait stdout vers `runner.log` ; sous Windows, `cmd.exe` ouvre la cible de son `>>` en mode **exclusif** → les appends concurrents de `runner.cjs` échouaient en `EBUSY` et le `catch` vide de `rlog()` les avalait. La factory tournait **sans trace observable**. Séparation `runner.log` (trace runner) / `runner-console.log` (sortie wrapper) + repli explicite.
+    3. **`C.paths.statusFile` n'existait pas** → chaque écriture d'instantané levait `ERR_INVALID_ARG_TYPE` dans un `catch` vide : l'état n'était **jamais** écrit. Clé ajoutée (+ `runnerConsoleLog`), échec désormais journalisé.
+    4. **`manualOpencodeSessionActive()` était appelé par `runner.cjs` mais n'existait pas** dans `local-model-router.cjs` → `TypeError` à chaque cycle. Implémentée (env `SARGA_MANUAL_SESSION=1` ou marqueur `.ai/autopilot/manual-session.json` avec PID vivant), jamais d'exception.
+    5. **Contrat de mission non normalisé** : le pont importait les missions **sans `type`** → l'orchestrateur les parquait « contrat invalide : type manquant » **avant tout dispatch**. Le pont est l'adaptateur : il normalise (`type` déclaré, sinon `agent-task`/`auto-task`, sans déclencher le routage browser-recon).
+    6. **AHA inutilisable** : le pont posait `expectedImpact: 'n/a'` (3 caractères) alors que la validation exige ≥ 20 → missions parquées « AHA insuffisamment défini ». Dérivé de l'`acceptance` de la mission.
+    7. **Instantané d'état mensonger** : `autoMergeEnabled` codé en dur à `true` alors que la config porte `false` (et `lib/policy.cjs` refuse l'auto-merge) ; `cycleSuccess` **structurellement toujours `false`** (variable réinitialisée à chaque tour alors que l'instantané est écrit en début de cycle). Les deux reflètent maintenant l'état réel.
+    8. **Angle mort de supervision** : un code de sortie non nul de l'orchestrateur n'incrémentait pas `consecutiveErrors` → ni l'alerte Discord (seuil 2) ni la pause de sécurité (seuil 5) ne pouvaient jamais se déclencher.
+    9. **Boucle infinie** : les opportunités issues de l'analyse et de la découverte autonome n'étaient **jamais écrites** dans `queue.json` → `parkTask()` → `mem.updateOpportunity()` → `null` (NO-OP) → le même candidat était re-sélectionné et re-parqué **tous les 30 s, sans jamais produire de travail**. `mem.upsertOpportunity()` + persistance avant parcage (jamais en `--dry`) : la boucle **converge** (prouvé : 4 candidats distincts tentés puis mis en `blocked`).
+    10. **L'agent local ne démarrait jamais** (`agent exit 3`). Deux causes cumulées : (a) `implement.cjs` lançait l'agent **sans nettoyer l'env** → l'env du runner porte `NVIDIA_API_KEY` (portée User) et l'adaptateur local-only refuse les credentials cloud (`exit 3`) ; (b) OpenCode 1.18.34 n'expose **aucun** provider `ollama` intégré sur cette machine (`Provider not found: ollama`) → erreur opaque « Unexpected server error », alors que le modèle local répondait parfaitement. Correctif : nettoyage d'env identique à `local-agent-executor.cjs` + **déclaration à l'exécution** du provider local (`@ai-sdk/openai-compatible` sur `OLLAMA_BASE/v1`) exportée via `OPENCODE_CONFIG` — **fusionnée** avec la config globale (permissions `edit`/`bash: allow` conservées), **jamais** écrasée. **Prouvé** : `exit 0`, le modèle local répond.
+  - **Neutralité production** : chaque fichier local touché est ajouté au `paths-ignore` **strict fichier par fichier** de `cloudflare-production.yml` (`runner.cjs`, `orchestrator.cjs`, `analyze.cjs`, `discover.cjs`, `implement.cjs`, `lib/{notify,common,memory}.cjs`, `local-model-router.cjs`, `autopilot*.cmd`, `prune.cjs`) + les garde-fous. `.ai/**` est déjà exclu. `scripts/autopilot/**` et `scripts/autopilot/lib/**` restent **non** exclus en bloc (la production appelle `check-predeploy-satellite-freshness.cjs`, `check-prepared-html.cjs`, `html-integrity.cjs`, `post-deploy-verify.cjs`) — un garde-fou interdit explicitement cette régression.
+  - **Périmètre respecté** : aucun Worker, binding, secret, paiement, prix, donnée scientifique, seuil, contenu de page ou interface touché. Aucune donnée inventée. `autoMergeEnabled` reste `false`.
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — pont multi-dépôt, compteurs, journalisation avec repli, instantané d'état honnête, `consecutiveErrors` sur code de sortie non nul.
+- `scripts/autopilot/orchestrator.cjs` — publication des statuts de cycle de vie sur l'issue source ; persistance de l'opportunité avant parcage.
+- `scripts/autopilot/multi-repo-bridge.cjs` — déduplication durable des relais, normalisation du `type`, AHA dérivé de l'`acceptance`.
+- `scripts/autopilot/lib/notify.cjs` — **restauré** (module jamais commité).
+- `scripts/autopilot/lib/common.cjs` — `paths.statusFile`, `paths.runnerConsoleLog`.
+- `scripts/autopilot/lib/memory.cjs` — `upsertOpportunity()`.
+- `scripts/autopilot/local-model-router.cjs` — `manualOpencodeSessionActive()`.
+- `scripts/autopilot/implement.cjs` — env nettoyé pour l'agent local.
+- `scripts/autopilot/analyze.cjs`, `scripts/autopilot/discover.cjs` — AHA / métriques honnêtes et assez longs.
+- `scripts/autopilot/autopilot-live.cmd`, `scripts/autopilot/autopilot.cmd`, `scripts/autopilot/prune.cjs` — séparation des journaux, rotation du nouveau fichier.
+- `.ai/ux-agent/opencode-auto.cjs` — déclaration du provider local (`OPENCODE_CONFIG`).
+- `tests/unit/autopilot-clean-checkout-runnable.test.cjs` — **nouveau** : requires relatifs, API `notify`, absence de secret, neutralité production, trace non muette, exports du routeur, honnêteté de l'instantané.
+- `tests/unit/autopilot-queue-persistence-loop.test.cjs` — **nouveau** : persistance avant parcage (test fonctionnel sur queue isolée), idempotence, `--dry` non mutant.
+- `tests/unit/autopilot-local-agent-contract.test.cjs` — **nouveau** : contrat de l'agent local sur les deux chemins.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — étendu (44 assertions).
+- `.github/workflows/cloudflare-production.yml` — `paths-ignore` strict étendu.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md` — ce handoff.
+
+### Tests réalisés
+- [ ] `npm run build` → N/A (aucun bundle applicatif touché : outillage local uniquement)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée) ; dry-run orchestrateur réel → exit 0, « health OK (6 domains 2xx) »
+- [x] `npm test` → **179/183** fichiers OK ; **4 échecs PRÉEXISTANTS** (reproduits à l'identique sur `origin/main`) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs` → ce sont les feux rouges de la mission **#1362**.
+- [x] Garde-fous dédiés : `autopilot-clean-checkout-runnable` (OK), `autopilot-queue-persistence-loop` (OK), `autopilot-local-agent-contract` (OK), `autopilot-runner-multirepo-wiring` (44 assertions OK), `autopilot-bridge-paths-ignore` (OK), `autopilot-live-single-runner` (56 checks OK), `workflows-yaml-syntax` (42 workflows OK), `ai-docs-paths-ignore` (OK)
+- [x] `scripts/autopilot/multi-repo-bridge.test.cjs` → OK (0 échec) ; `ci-certification-audit.cjs` → OK ; `deploy-audit.cjs` → OK
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] **Preuves d'exécution réelle** (pas simulées) : runner vivant + lock + heartbeat ; `status.json` avec `cycleSuccess: true` et `autoMergeEnabled: false` ; `imported/started/blocked` publiés sur #1357, #1345, #1338, #1362 ; agent local `exit 0` avec réponse du modèle ; boucle convergente (4 candidats tentés une fois puis `blocked`)
+- [x] `git diff --check` → OK
+
+### Problèmes restants
+- [ ] **PR #1364 non mergée** → le checkout runner reste épinglé sur `runner/factory-local`. Après fusion : `git -C C:\Users\user\sargagame-runner fetch origin main && git -C C:\Users\user\sargagame-runner checkout origin/main -- scripts/autopilot/ .ai/ux-agent/` puis redémarrer via `C:\Users\user\local-tools\sargagame-autopilot.cmd`. — sévérité P1 — action : `coding_agent` après merge.
+- [ ] **Missions parquées « Scope fichiers manquant »** (#1345, #1338, #1337, #1336) : la mission ne déclare pas `filesToModify`. Le pont **n'invente pas** de périmètre (c'est la base de la denylist et du scope-guard) → le parcage est délibérément conservé. — sévérité P1 — action : compléter les missions (ChatGPT) ou définir une inférence de périmètre prudente.
+- [ ] **`pngjs` + `pixelmatch` absents de `package.json`** alors que `scripts/autopilot/visual-qa.cjs` les requiert dans un script fils (`cwd = racine`) → sur un `npm ci` propre, la comparaison visuelle échoue en silence et le gate visuel devient un toujours-pass. Contourné localement par `npm install pngjs pixelmatch --no-save` (package.json/lock intouchés). — sévérité P1 — action : PR dédiée (ajouter les dépendances déclencherait le déploiement production au merge → à isoler).
+- [ ] **`DRYRUN-SARGASS-001` (#1341) : « impl failed after 4 attempts: agent exit 3 »** — **cause corrigée** dans ce handoff ; l'opportunité reste `blocked` en base (les statuts publiés sont historiques). Passer la mission à `new` pour rejouer. — sévérité P2 — action : `coding_agent`.
+- [ ] **Échec `git worktree add`** sur `C:\Users\user\sargagame-autopilot-wt` (« already exists ») : le dossier orphelin ne pouvait pas être renommé (verrou Windows). Nettoyé manuellement (`git worktree remove --force`) ; la cause (dossier résiduel non enregistré) n'est pas traitée dans le code. — sévérité P2 — action : `devops_agent`.
+- [ ] **4 tests rouges préexistants** (fraîcheur/copy) → hors périmètre, ce sont les feux rouges de la mission **#1362** désormais importable. — sévérité P1 — action : `coding_agent`.
+- [ ] **Mission B2B P0/P1 non commencée dans ce cycle** : endpoint `/api/b2b-lead.php`, complétion PR #1358, retrait du `no-cors` des formulaires, diagnostic NOAA/MCI (#1338), runbook Mollie. Worktree prêt : `C:\Users\user\AppData\Local\Temp\opencode\sg-p0-b2b` (branche `agent/security/p0-b2b-api-review-20261107`, base `4f9fed472`). — sévérité P0 — action : `security_agent`.
+
+### Prochaine action recommandée
+1. Merger la PR **#1364** (CI 4/4 verte) puis rebasculer le checkout runner sur `origin/main` et redémarrer — Rôle : `coding_agent`.
+2. Reprendre la mission **B2B P0/P1** (endpoint, PR #1358, formulaires, diagnostic NOAA/MCI, runbook Mollie) — Rôle : `security_agent`.
+3. Traiter les missions bloquées « Scope fichiers manquant » et la dépendance `pngjs`/`pixelmatch` — Rôle : `coding_agent` / `devops_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107` (base `origin/main` = `4c24b562f5ca83951eb676f0c20213fb2a6ff28e`)
+- PR : **#1364** (https://github.com/aveca/sargagame/pull/1364) — OPEN, CI 4/4 verte, **non mergée**
+- Commit head : `3635a72c3`
+
+---
+
 ## 2026-11-07 22:55 UTC · Agent: OpenCode (coding/autopilot)
 
 ### Travail effectué

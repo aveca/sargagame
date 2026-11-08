@@ -1,3 +1,24 @@
+## 2026-11-08 05:25 UTC — boucle Factory activée en persistance sur le PC du fondateur + 10 défauts d'exécution corrigés
+
+- **Activation persistante RÉELLE, pas simulée.** `install-scheduler.ps1` échoue (« Accès refusé », session non élevée) et `schtasks /create` échoue aussi : la tâche `SargagameAutopilot` **n'existe pas** sur ce PC. Remplacement **sans droit admin** par une clé **`HKCU\Software\Microsoft\Windows\CurrentVersion\Run`** → `run-hidden.vbs` → `C:\Users\user\local-tools\sargagame-autopilot.cmd` → `autopilot-live.cmd` → `run.cjs --live --continuous`. Kill-switch : `sargagame-autopilot-disable.cmd` (retire la clé + pose le `STOP`). **Testé** : runner vivant, lock détenu, heartbeat frais, `status.json` écrit, arrêt propre → redémarrage OK.
+- **La boucle est prouvée bout-en-bout sur GitHub** : #1362 `imported` ; #1357 / #1345 / #1338 `imported → blocked → started → blocked` ; #1341 `imported → started → completed` (historique). 10 missions importées.
+- **10 défauts d'exécution trouvés en conditions réelles** (le runner était mort depuis le 2026-10-22 : aucun n'était visible) :
+  1. **`lib/notify.cjs` jamais commité** (`require` ajouté par `efdcde9da` sans le fichier) → `MODULE_NOT_FOUND` avant le 1er cycle sur tout checkout propre. Restauré à l'identique, sans secret.
+  2. **Trace perdue** : `cmd.exe` tient `runner.log` en mode exclusif → `EBUSY` sur chaque append, avalé par un `catch` vide. Journaux séparés (`runner.log` / `runner-console.log`).
+  3. **`C.paths.statusFile` inexistant** → l'instantané d'état n'était jamais écrit.
+  4. **`manualOpencodeSessionActive()` jamais exportée** → `TypeError` à chaque cycle.
+  5. **Contrat de mission non normalisé** → toutes les missions parquées « type manquant » avant dispatch. Normalisation côté pont (l'adaptateur), pas côté orchestrateur.
+  6. **AHA = `'n/a'`** (3 caractères, minimum 20) → missions parquées « AHA insuffisamment défini ». Dérivé de l'`acceptance`.
+  7. **Instantané mensonger** : `autoMergeEnabled` codé en dur à `true` (config : `false`) et `cycleSuccess` structurellement toujours `false`.
+  8. **Angle mort de supervision** : code de sortie non nul n'incrémentait pas `consecutiveErrors` → ni alerte Discord, ni pause de sécurité.
+  9. **Boucle infinie** : les opportunités d'analyse/découverte n'étaient jamais écrites en queue → `parkTask()` NO-OP → même candidat re-sélectionné toutes les 30 s, **0 travail produit**. `upsertOpportunity()` + persistance avant parcage → la boucle **converge**.
+  10. **Agent local jamais démarré** (`exit 3`) : (a) `implement.cjs` ne nettoyait pas l'env → credentials cloud hérités → refus de l'adaptateur local-only ; (b) OpenCode 1.18.34 n'a **aucun** provider `ollama` intégré sur cette machine → erreur opaque « Unexpected server error ». Correctif : nettoyage d'env + **déclaration à l'exécution** du provider local via `OPENCODE_CONFIG` (fusionnée avec la config globale, jamais écrasée). **Prouvé : `exit 0`, le modèle local répond.**
+- **Garde-fous** : 3 nouveaux tests dédiés (`autopilot-clean-checkout-runnable`, `autopilot-queue-persistence-loop`, `autopilot-local-agent-contract`) + extension du test de câblage (44 assertions). `npm test` **179/183** (les **4 échecs sont PRÉEXISTANTS**, reproduits sur `origin/main` — ce sont les feux rouges de la mission #1362).
+- **Neutralité production** : chaque fichier local touché est exclu **fichier par fichier** du `paths-ignore` de `cloudflare-production.yml` (jamais `scripts/autopilot/**` en bloc — la production appelle `check-predeploy-satellite-freshness.cjs`, `check-prepared-html.cjs`, `html-integrity.cjs`, `post-deploy-verify.cjs`). Aucun Worker, binding, secret, paiement, prix, donnée scientifique, seuil ou interface touché.
+- **PR #1364 ouverte, CI 4/4 verte, NON mergée** (le checkout runner reste épinglé sur la branche).
+
+---
+
 ## 2026-11-07 22:55 UTC — pont multi-dépôt RÉELLEMENT branché dans la boucle Factory locale
 
 - **Le gap du pont multi-dépôt est comblé.** La PR #1349 (`87702066`) avait livré `scripts/autopilot/multi-repo-bridge.cjs`, mais sur `main` le runner chargeait encore `bridge.cjs` (`runner.cjs:28`) et appelait `ingestOpenIssues()` (`:158`) : **le module n'était jamais exécuté** par la boucle. Allowlist fermée, routage strict et statuts corrélés n'existaient que sur le papier.
