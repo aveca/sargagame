@@ -385,7 +385,18 @@ async function phaseImplementLocal(opp) {
     const scopeGuard = evaluateScopeGuard(allowedScope, diff.files);
     if (!scopeGuard.ok) {
       S('FAILED', `SCOPE VIOLATION — ${scopeGuard.reason}`);
-      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}`, 'blocked');
+      // DIAGNOSTIC : l'agent sort souvent en code 0 SANS toucher la cible —
+      // cas reel observe le 2026-11-08 : le modele local (9B) a "ecrit" le
+      // fichier mais avec un CHEMIN CORROMPU (`tests/u nit/...` au lieu de
+      // `tests/unit/...`), donc le diff du worktree restait vide. Sans la
+      // trace de l'agent, le parcage ne disait QUE « no files modified by
+      // agent » : impossible a diagnostiquer sans repasser la main.
+      // On joint donc les dernieres lignes de la trace de l'agent.
+      const agentTrace = impl && impl.agentLog
+        ? String(impl.agentLog).trim().split(/\r?\n/).filter(Boolean).slice(-4).join(' / ').slice(0, 160)
+        : '';
+      const hint = agentTrace ? ` [agent: ${agentTrace}]` : '';
+      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked');
     }
 
     const ev = policy.evaluateFiles(diff.files, cfg);

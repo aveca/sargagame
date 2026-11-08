@@ -139,7 +139,12 @@ async function implementOpportunity(opp, wt, cfg, log, failureContext) {
     }
     const r = await runAgent(opp, wt, cfg, log, failureContext);
     if (!r.ok) return { ok: false, via: 'agent', agentLog: (r.err || r.out || '').slice(-3000), summary: `agent exit ${r.code}` };
-    return { ok: true, via: 'agent', summary: 'agent opencode applied', agentLog: r.out };
+    // La trace de l'agent doit contenir stdout ET stderr : le CLI OpenCode
+    // ecrit les APPELS D OUTILS (Write/Edit/Bash) sur stderr, et la reponse
+    // du modele sur stdout. Sans stderr, la trace ne contenait que les
+    // lignes `[local-agent] ...` et le diagnostic du parcage restait vide.
+    const agentLog = [r.out, r.err].filter(Boolean).join('\n').slice(-3000);
+    return { ok: true, via: 'agent', summary: 'agent opencode applied', agentLog };
   }
   return { ok: false, via: 'none', blocked: `actionable=${opp.actionable} non implémentable par l'autopilot` };
 }
