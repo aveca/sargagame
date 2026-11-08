@@ -117,6 +117,13 @@ async function main() {
   const maxConsecutiveErrors = 5;
   const notifiedPrs = new Map(); // anti-spam : une PR signalée une seule fois par cycle
   let lastCycleError = '';
+  // Issue du DERNIER cycle TERMINE. `cycleSuccess` est reinitialise a chaque
+  // tour de boucle ET l'instantane d'etat est ecrit au DEMARRAGE du cycle :
+  // sans cette variable, le champ `cycleSuccess` de status.json valait
+  // TOUJOURS false, meme quand tous les cycles reussissaient (constate le
+  // 2026-11-08 : 14 cycles "completed successfully" dans runner.log, et un
+  // status.json qui annoncait cycleSuccess=false en boucle).
+  let lastCycleSuccess = false;
 
   // MAIN 24/7 LOOP
   while (!isShuttingDown && !fs.existsSync(C.paths.stopFile)) {
@@ -146,9 +153,16 @@ async function main() {
           startedAt: ls.lock?.startedAt,
           lastHeartbeat: ls.lock?.heartbeatAt,
           cycleCount,
-          cycleSuccess,
+          // Issue du DERNIER cycle TERMINE (le cycle en cours n'est pas fini).
+          cycleSuccess: lastCycleSuccess,
           consecutiveErrors,
-          autoMergeEnabled: true,
+          // Issue de la CONFIG EFFECTIVE, jamais une constante : la valeur
+          // precedente etait codee en dur a `true` alors que
+          // .ai/autopilot/config.json porte autoMergeEnabled=false. Un
+          // operateur lisant status.json croyait donc que la factory
+          // auto-mergeait les PR — alors que la politique REPRODUIT
+          // (`lib/policy.cjs`) refuse justement l'auto-merge.
+          autoMergeEnabled: Boolean(cfg.policy && cfg.policy.autoMergeEnabled),
           modelRouting: {
             mode: manualSession ? 'quota-protect' : 'perf',
             detail: manualSession
@@ -237,6 +251,15 @@ async function main() {
         // Error or non-fatal failure
         rlog(`orchestrator exited with code ${orchestratorCode}`);
         cycleSuccess = false;
+        // Un code de sortie non nul DOIT compter comme un echec consecutif.
+        // Avant ce correctif, seul le `catch` incrementait consecutiveErrors :
+        // un orchestrateur qui sortait en erreur a chaque cycle laissait
+        // consecutiveErrors a 0, donc JAMAIS d'alerte Discord
+        // (`cycleFailed`, seuil 2) et JAMAIS de pause de securite
+        // (`maxConsecutiveErrors`, seuil 5). La factory pouvait boucler
+        // indefiniment en echec, silencieusement.
+        consecutiveErrors++;
+        lastCycleError = `orchestrator exited with code ${orchestratorCode}`;
       }
 
     } catch (e) {
@@ -246,6 +269,10 @@ async function main() {
       consecutiveErrors++;
       lastCycleError = e.message;
     }
+
+    // Memorise l'issue du cycle qui vient de se terminer : c'est elle que le
+    // prochain instantane d'etat doit annoncer.
+    lastCycleSuccess = cycleSuccess;
 
     // Alerte Discord sur échecs consécutifs (throttlé : à partir de 2) + ping /fail
     if (!cycleSuccess && consecutiveErrors >= 2) {

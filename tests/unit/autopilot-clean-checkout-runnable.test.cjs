@@ -289,6 +289,54 @@ assert.equal(
   'manualOpencodeSessionActive() must return a boolean and must never throw',
 )
 
+// ── 7. Le snapshot d'état est HONNÊTE ──────────────────────────────────────
+// Régression constatée le 2026-11-08 sur le PC du fondateur : status.json
+// annonçait `autoMergeEnabled: true` (valeur codée en dur) alors que
+// `.ai/autopilot/config.json` porte `autoMergeEnabled: false`, et
+// `cycleSuccess: false` en permanence — la variable étant réinitialisée à
+// chaque tour de boucle alors que l'instantané est écrit au DÉBUT du cycle.
+// Un opérateur ne pouvait donc pas savoir, depuis l'instantané, si la factory
+// avançait ni si elle auto-mergeait. Deux autres champs structurent la
+// supervision : `consecutiveErrors` (déclenche l'alerte Discord et la pause
+// de sécurité) et le code de sortie de l'orchestrateur.
+
+const runnerSourceFull = fs.readFileSync(RUNNER, 'utf8')
+
+assert.ok(
+  !/autoMergeEnabled:\s*true/.test(runnerSourceFull),
+  'runner.cjs must NOT hardcode autoMergeEnabled:true in the state snapshot — it must report the effective policy from config.json (which is false), otherwise the operator reads a lie about auto-merge',
+)
+assert.ok(
+  /autoMergeEnabled:\s*Boolean\(cfg\.policy/.test(runnerSourceFull),
+  "runner.cjs must report the effective auto-merge policy (cfg.policy.autoMergeEnabled) in the state snapshot",
+)
+assert.ok(
+  /cycleSuccess:\s*lastCycleSuccess/.test(runnerSourceFull),
+  'runner.cjs must report the outcome of the LAST COMPLETED cycle (lastCycleSuccess) — the in-loop variable is reset on every iteration and was therefore always false',
+)
+assert.ok(
+  /let\s+lastCycleSuccess\s*=\s*false/.test(runnerSourceFull),
+  'runner.cjs must keep a lastCycleSuccess variable across iterations to report a truthful cycle outcome',
+)
+
+// La branche `else` qui traite le code de sortie non nul de l'orchestrateur
+// est extraite PRECISEMENT (pas par fenetre de caracteres) : une fenetre
+// large pourrait attraper le `consecutiveErrors++` du `catch` voisin et
+// laisser passer une regression.
+const exitIdx = runnerSourceFull.indexOf('orchestrator exited with code')
+assert.ok(exitIdx > 0, 'runner.cjs must handle a non-zero orchestrator exit code explicitly')
+const branchStart = runnerSourceFull.lastIndexOf('} else {', exitIdx)
+const branchEnd = runnerSourceFull.indexOf('\n      }', exitIdx)
+assert.ok(
+  branchStart > 0 && branchEnd > branchStart,
+  'runner.cjs must have an explicit `else` branch for a non-zero orchestrator exit code',
+)
+const orchestratorExit = runnerSourceFull.slice(branchStart, branchEnd)
+assert.ok(
+  /consecutiveErrors\s*\+\+/.test(orchestratorExit),
+  'a non-zero orchestrator exit must increment consecutiveErrors — otherwise the Discord failure alert (threshold 2) and the safety pause (threshold 5) can never fire and the factory loops forever in silence',
+)
+
 console.log(
   'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral) and its trace cannot be silently lost',
 )
