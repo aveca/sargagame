@@ -35,7 +35,13 @@ const notify = require('./lib/notify.cjs');
 function rlog(msg) {
   const line = `${new Date().toISOString()} [runner] ${msg}`;
   console.log(line);
-  try { fs.mkdirSync(path.dirname(C.paths.runnerLog), { recursive: true }); fs.appendFileSync(C.paths.runnerLog, line + '\n'); } catch (_) {}
+  // La trace du runner ne doit JAMAIS devenir un point muet : si le log
+  // principal est verrouille (EBUSY sous Windows quand un wrapper redirige
+  // stdout vers le meme fichier), on bascule vers le log console, puis vers
+  // stderr. Un catch silencieux ici a deja fait perdre des cycles entiers.
+  try { fs.mkdirSync(path.dirname(C.paths.runnerLog), { recursive: true }); fs.appendFileSync(C.paths.runnerLog, line + '\n'); return; } catch (_) {}
+  try { fs.mkdirSync(path.dirname(C.paths.runnerConsoleLog), { recursive: true }); fs.appendFileSync(C.paths.runnerConsoleLog, line + '\n'); return; } catch (_) {}
+  try { console.error(`[runner][log-unavailable] ${line}`); } catch (_) {}
 }
 
 const CONTINUOUS = process.env.SARGA_AUTOPILOT_CONTINUOUS === '1';
@@ -155,7 +161,11 @@ async function main() {
           notify: notify.channelsStatus(),
           timestamp: new Date().toISOString()
         }, null, 2));
-      } catch (_) {}
+      } catch (e) {
+        // Une erreur d'ecriture du snapshot d'etat ne doit pas tuer le cycle,
+        // mais elle ne doit pas non plus disparaitre sans trace.
+        rlog(`status write failed (non-fatal): ${e.message}`);
+      }
 
       // 1. BRIDGE: Import des missions GitHub (multi-dépôt) — non-bloquant.
       //    Le pont multi-dépôt est le SEUL point d'entrée de la boucle :

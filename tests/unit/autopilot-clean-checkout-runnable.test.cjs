@@ -204,8 +204,73 @@ for (const wf of workflowFiles) {
     !stripPathsIgnore(content).includes('lib/notify.cjs'),
     `.github/workflows/${wf} must not execute lib/notify.cjs — the module is excluded from the production trigger, so a workflow dependency on it would never be deployed`,
   )
+  assert.ok(
+    !stripPathsIgnore(content).includes('lib/common.cjs'),
+    `.github/workflows/${wf} must not import scripts/autopilot/lib/common.cjs — that file is excluded from the production trigger, so a workflow dependency on it would never be deployed`,
+  )
 }
 
+// ── 5. Le runner est OBSERVABLE : aucune trace ne peut disparaitre ──────────
+//
+// Régression constatée le 2026-11-08 sur le PC du fondateur : le wrapper
+// `autopilot-live.cmd` redirigeait stdout vers runner.log. Sous Windows,
+// cmd.exe ouvre la cible de son `>>` en mode EXCLUSIF : les appends
+// concurrents de la trace du runner (runner.cjs) échouaient en EBUSY et le
+// `catch` silencieux de rlog() les faisait disparaître. Résultat : la factory
+// tournait, le lock était détenu, les statuts GitHub étaient publiés… mais le
+// journal du runner restait vide. Un opérateur ne pouvait donc ni voir ni
+// diagnostiquer ce que la factory faisait.
+//
+// Invariant : le wrapper écrit dans runner-console.log, le runner écrit dans
+// runner.log, et les deux fichiers existent dans le dépôt des chemins.
+
+const common = require(path.join(ROOT, 'scripts/autopilot/lib/common.cjs'))
+
+assert.ok(
+  typeof common.paths.statusFile === 'string' && common.paths.statusFile.length > 0,
+  'scripts/autopilot/lib/common.cjs must define paths.statusFile — runner.cjs writes its state snapshot there (an undefined path made every write fail silently)',
+)
+assert.ok(
+  typeof common.paths.runnerConsoleLog === 'string' && common.paths.runnerConsoleLog.length > 0,
+  'scripts/autopilot/lib/common.cjs must define paths.runnerConsoleLog — the wrapper console output must not share the runner trace file',
+)
+assert.notEqual(
+  common.paths.runnerConsoleLog,
+  common.paths.runnerLog,
+  'the console log and the runner trace must be two different files (a single shared file is locked exclusively by the Windows wrapper and silently loses the runner trace)',
+)
+
+const liveWrapper = fs.readFileSync(path.join(AUTOPILOT, 'autopilot-live.cmd'), 'utf8')
+assert.ok(
+  /runner-console\.log/.test(liveWrapper),
+  'scripts/autopilot/autopilot-live.cmd must redirect its console output to runner-console.log',
+)
+assert.ok(
+  !/runner-console\.log[^\n]*runner\.log/.test(liveWrapper),
+  'scripts/autopilot/autopilot-live.cmd must not redirect the console output to runner.log (Windows locks that file exclusively and the runner trace is silently lost)',
+)
+
+const tickWrapper = fs.readFileSync(path.join(AUTOPILOT, 'autopilot.cmd'), 'utf8')
+assert.ok(
+  /runner-console\.log/.test(tickWrapper),
+  'scripts/autopilot/autopilot.cmd must redirect its console output to runner-console.log',
+)
+assert.ok(
+  !/>>\s*"\.ai\\autopilot\\runs\\runner\.log"/.test(tickWrapper),
+  'scripts/autopilot/autopilot.cmd must not redirect to runner.log (same exclusive-lock defect)',
+)
+
+const runnerLogLines = (fs.readFileSync(RUNNER, 'utf8').match(/rlog\(/g) || []).length
+assert.ok(runnerLogLines > 0, 'runner.cjs must still use rlog() for its trace')
+
+// Le fallback de rlog() doit exister : un log qui peut devenir muet est un
+// garde-fou de surveillance qui ne surveille plus rien.
+const runnerSourceAll = fs.readFileSync(RUNNER, 'utf8')
+assert.ok(
+  /runnerConsoleLog/.test(runnerSourceAll),
+  'runner.cjs must fall back to the console log when runner.log cannot be written (a swallowed EBUSY must not erase the factory trace)',
+)
+
 console.log(
-  'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral)',
+  'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral) and its trace cannot be silently lost',
 )

@@ -80,6 +80,15 @@ on:
       # `scripts/autopilot/lib/**` en bloc : des helpers critiques de la
       # production vivent dans ce dossier).
       - 'scripts/autopilot/lib/notify.cjs'
+      # Wrappers Windows du runner LOCAL + helpers de journalisation/pruning.
+      # Aucun workflow ne les execute : les corriger ne doit pas redeployer le
+      # Worker. `scripts/autopilot/lib/common.cjs` n'est utilise QUE par
+      # l'outillage local du runner (verifie : aucun workflow ne l'importe) —
+      # garde-fou dans tests/unit/autopilot-clean-checkout-runnable.test.cjs.
+      - 'scripts/autopilot/autopilot-live.cmd'
+      - 'scripts/autopilot/autopilot.cmd'
+      - 'scripts/autopilot/prune.cjs'
+      - 'scripts/autopilot/lib/common.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'

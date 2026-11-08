@@ -1,0 +1,25 @@
+fix(autopilot): make the runner trace observable and the state snapshot writable
+
+Two silent-failure defects found while activating the Factory loop on the
+founder's PC (2026-11-08):
+
+1. The trace was lost. autopilot-live.cmd redirected stdout to runner.log;
+   on Windows cmd.exe opens the redirect target EXCLUSIVELY, so every
+   concurrent append from runner.cjs failed with EBUSY and rlog()'s empty
+   catch swallowed it. The factory ran, held the lock and published GitHub
+   statuses while runner.log stayed empty: the operator could neither see
+   nor diagnose what it did. The wrapper now writes runner-console.log and
+   the runner keeps runner.log, with a console-log fallback and an explicit
+   stderr fallback if both are locked.
+
+2. The state snapshot was never written. runner.cjs wrote to
+   C.paths.statusFile, a key that did not exist in common.cjs: every write
+   threw ERR_INVALID_ARG_TYPE inside an empty catch. common.cjs now defines
+   paths.statusFile and paths.runnerConsoleLog, and a failed write is
+   logged instead of disappearing.
+
+Also rotate runner-console.log in prune.cjs, and extend the strict
+file-by-file paths-ignore (autopilot-live.cmd, autopilot.cmd, prune.cjs,
+lib/common.cjs) so these local-only changes still cannot redeploy the
+Worker. lib/common.cjs is imported by no workflow - the new guard test
+asserts it.
