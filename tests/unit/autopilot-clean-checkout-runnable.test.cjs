@@ -337,6 +337,47 @@ assert.ok(
   'a non-zero orchestrator exit must increment consecutiveErrors — otherwise the Discord failure alert (threshold 2) and the safety pause (threshold 5) can never fire and the factory loops forever in silence',
 )
 
+// ── 8. Le heartbeat bat PENDANT le cycle, pas seulement à son début ────────
+// Constat réel (2026-11-08, PC du fondateur) : un cycle qui exécute l'agent
+// local dure jusqu'à `policy.agentMaxMinutes` = 25 min. Le heartbeat (lock)
+// et l'instantané d'état n'étaient rafraîchis qu'AU DÉBUT du cycle : pendant
+// 25 min, `status.json` affichait un `lastHeartbeat` vieux de 25 min alors
+// que le runner faisait réellement tourner un agent (constaté : age = 674 s
+// pendant une exécution réelle). Un opérateur — ou un dead-man's switch
+// externe — concluait à une panne et pouvait arrêter le runner AU MOMENT où
+// il produisait enfin du travail. Le ping healthchecks n'était émis qu'aux
+// frontières de cycle : idem, silence pendant le travail.
+
+assert.ok(
+  /function\s+writeStatusSnapshot\s*\(/.test(runnerSourceFull),
+  'runner.cjs must expose writeStatusSnapshot() so the state snapshot can be refreshed during a long cycle, not only at the cycle boundary',
+)
+
+const guardianIdx = runnerSourceFull.indexOf('setInterval')
+assert.ok(guardianIdx > 0, 'runner.cjs must install a periodic guardian during the cycle')
+const guardianBlock = runnerSourceFull.slice(guardianIdx, guardianIdx + 900)
+assert.ok(
+  /lock\.heartbeat\(\)/.test(guardianBlock),
+  'the cycle guardian must refresh the lock heartbeat — a stale heartbeat during a 25-minute agent run makes the runner look dead',
+)
+assert.ok(
+  /writeStatusSnapshot\(\)/.test(guardianBlock),
+  'the cycle guardian must rewrite the state snapshot — otherwise status.json keeps advertising a stale heartbeat during a long cycle',
+)
+assert.ok(
+  /pingHealthchecks\(\)/.test(guardianBlock),
+  'the cycle guardian must ping healthchecks — the dead-man switch must not false-trip while the factory is legitimately working',
+)
+
+assert.ok(
+  /clearInterval\(guardian\)/.test(runnerSourceFull),
+  'the cycle guardian must be stopped when the cycle ends — a guardian that outlives its cycle would refresh a state that no longer advances',
+)
+assert.ok(
+  /finally\s*\{[\s\S]{0,400}clearInterval\(guardian\)/.test(runnerSourceFull),
+  'the cycle guardian must be cleared in a `finally` block so it is stopped on success, error and early exit alike',
+)
+
 console.log(
-  'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral) and its trace cannot be silently lost',
+  'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral), its trace cannot be silently lost, its state snapshot is truthful and its heartbeat keeps beating during long cycles',
 )
