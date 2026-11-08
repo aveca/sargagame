@@ -41,6 +41,7 @@ const { hypothesisFromOpportunity, validateHypothesis, UXHypothesis } = require(
 const { deployAndValidatePreview } = require('./preview-deploy.cjs');
 const { runOnlineQA } = require('./online-qa.cjs');
 const selfHealing = require('./lib/self-healing.cjs');
+const multiRepoBridge = require('./multi-repo-bridge.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -68,6 +69,46 @@ function factoryStop(reason) {
   S('FACTORY_STOP', `STOP — ${reason}`);
 }
 
+/**
+ * Publie un statut de cycle de vie de la mission sur SON issue source.
+ *
+ * Règles :
+ *  - JAMAIS bloquant : une publication ratée ne doit pas arrêter la factory
+ *    (le statut manquant est journalisé, jamais avalé) ;
+ *  - JAMAIS en mode DRY : un dry-run n'a aucun effet de bord ;
+ *  - silence explicite pour les opportunités sans issue source (les
+ *    opportunités de découverte locale n'ont pas d'issue GitHub) ;
+ *  - dépôt hors allowlist : refus (fail-closed).
+ */
+function publishMissionStatus(oppId, status, detail) {
+  if (DRY) return;
+  try {
+    const queue = mem.loadQueue();
+    const opp = (queue.opportunities || []).find(o => o && o.id === oppId);
+    if (!opp) return;
+    const repo = String(opp.repository_full_name || '').trim();
+    const issue = Number(opp.issue_number);
+    if (!repo || !Number.isInteger(issue) || issue <= 0) return;
+    if (!multiRepoBridge.isAllowedRepo(repo)) return;
+    const ok = multiRepoBridge.publishStatus(repo, issue, status, String(detail || ''), {
+      taskId: opp.id,
+      fingerprint: opp.fingerprint,
+    });
+    if (!ok && typeof log === 'function') {
+      log(`[mission-status] publication "${status}" impossible sur ${repo}#${issue}`);
+    }
+  } catch (e) {
+    if (typeof log === 'function') log(`[mission-status] publication "${status}" ignorée: ${e.message}`);
+  }
+}
+
+/** Statut de mission correspondant à un état de parking local. */
+function missionStatusForPark(status) {
+  if (status === 'ready-to-merge' || status === 'done') return 'completed';
+  if (status === 'rejected') return 'failed';
+  return 'blocked';
+}
+
 /** Park a single task (HUMAN GATE, READY TO MERGE, blocked) - factory continues */
 function parkTask(oppId, reason, status = 'blocked') {
   // Garde-fou mémoire : seuls les statuts VALID_STATES sont persistables.
@@ -78,6 +119,9 @@ function parkTask(oppId, reason, status = 'blocked') {
   log('🅿️  ' + msg);
   S('PARKED', `${oppId} — ${reason}`);
   mem.updateOpportunity(oppId, { status: safe, blockReason: (`[${status}] ` + reason).slice(0, 200), parkedAt: C.nowIso() });
+  // Statut corrélé sur l'issue source : `completed` = travail terminé (PR prête
+  // à merge humain), `failed` = tâche rejetée, `blocked` = parkée.
+  publishMissionStatus(oppId, missionStatusForPark(safe), reason);
   return { parked: true, reason };
 }
 
@@ -341,7 +385,30 @@ async function phaseImplementLocal(opp) {
     const scopeGuard = evaluateScopeGuard(allowedScope, diff.files);
     if (!scopeGuard.ok) {
       S('FAILED', `SCOPE VIOLATION — ${scopeGuard.reason}`);
-      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}`, 'blocked');
+      // DIAGNOSTIC : l'agent sort souvent en code 0 SANS toucher la cible —
+      // cas reel observe le 2026-11-08 : le modele local (9B) a "ecrit" le
+      // fichier mais avec un CHEMIN CORROMPU (`tests/u nit/...` au lieu de
+      // `tests/unit/...`), donc le diff du worktree restait vide. Sans la
+      // trace de l'agent, le parcage ne disait QUE « no files modified by
+      // agent » : impossible a diagnostiquer sans repasser la main.
+      // On joint donc les dernieres lignes de la trace de l'agent.
+      //
+      // Les sequences ANSI sont retirees : ce motif de parcage est PUBLIE
+      // sur l'issue source, et les codes couleur y seraient illisibles
+      // (verifie en reel : « [0m→ [0mRead .ai/current_state.md »).
+      const agentTrace = impl && impl.agentLog
+        ? String(impl.agentLog)
+            .replace(/\x1B\[[0-9;?]*[ -\/]*[@-~]/g, '')
+            .trim()
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .slice(-4)
+            .join(' / ')
+            .slice(0, 160)
+        : '';
+      const hint = agentTrace ? ` [agent: ${agentTrace}]` : '';
+      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked');
     }
 
     const ev = policy.evaluateFiles(diff.files, cfg);
@@ -562,6 +629,28 @@ async function processOpportunity(opp) {
   progress(`SELECT      ${(opp && opp.id) || 'unknown'}`);
   S('SELECTED', `${(opp && opp.id) || 'unknown'} (score ${(opp && opp._score) || '?'})`);
 
+  // PERSISTANCE AVANT TOUT PARCAGE — correction d'une BOUCLE INFINIE.
+  //
+  // Les opportunites issues de l'ANALYSE (observations) et de la DECOUVERTE
+  // autonome n'existaient qu'en memoire : elles n'etaient jamais ecrites dans
+  // `queue.json`. Or `parkTask()` appelle `mem.updateOpportunity()`, qui
+  // renvoie `null` sur une opportunite absente de la queue : le parcage etait
+  // donc un NO-OP. Consequence observee le 2026-11-08 sur le PC du fondateur :
+  // la factory consommait un cycle toutes les 30 s, re-selectionnait le MEME
+  // candidat, le re-parquait, et ne produisait AUCUN travail — indefiniment.
+  //
+  // Ecrit dans la queue, le parcage devient effectif : le candidat passe a
+  // `blocked` et les deux sources de candidats l'ignorent au cycle suivant
+  // (deduplication par `fingerprint` deja en place dans `analyze.cjs` et
+  // `discover.cjs`).
+  //
+  // Le mode `--dry` n'ecrit RIEN : un dry-run ne doit jamais muter l'etat.
+  if (!DRY) {
+    try { mem.upsertOpportunity(opp); } catch (e) {
+      log(`queue persist failed (non-fatal): ${String(e.message).slice(0, 120)}`);
+    }
+  }
+
   // Garde-contrat : parquer avec diagnostic au lieu de crasher la factory
   // (TypeError .includes sur opp.type undefined → exit 1, jamais dispatched).
   const contract = validateOpportunityContract(opp);
@@ -569,6 +658,9 @@ async function processOpportunity(opp) {
     progress(`CONTRACT    invalide: ${contract.missing.join(', ')} manquant`);
     return parkTask((opp && opp.id) || 'unknown', contract.reason, 'blocked');
   }
+
+  // Statut corrélé `started` : la mission est prise en charge par le runner.
+  publishMissionStatus(opp.id, 'started', `exécution locale par le runner Factory (${opp.actionable || 'agent'})`);
 
   // 1. UX Hypothesis
   const hypothesis = hypothesisFromOpportunity(opp);
@@ -611,6 +703,20 @@ async function processOpportunity(opp) {
   S('READY', `${opp.id} — all gates green, ready for merge`);
   progress('READY       all gates green — parking task');
   return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
+}
+
+/**
+ * Exécute une opportunité et publie le statut `failed` si l'exécution
+ * explose. L'erreur est REMONTÉE telle quelle : la publication d'un statut
+ * n'a jamais vocation à masquer un échec technique.
+ */
+async function dispatchOpportunity(opp) {
+  try {
+    return await processOpportunity(opp);
+  } catch (e) {
+    publishMissionStatus(opp && opp.id, 'failed', `erreur d'exécution: ${String((e && e.message) || e).slice(0, 160)}`);
+    throw e;
+  }
 }
 
 async function main() {
@@ -801,7 +907,7 @@ if (prBlocking.blocking) {
       }
       // Refresh depuis la queue pour exécuter l'état persisté réel.
       const fresh = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-      const result = await processOpportunity(fresh);
+      const result = await dispatchOpportunity(fresh);
       scheduler.persistDispatched(fresh, report.id, { parked: !!(result && result.parked), reason: (result && result.reason) || null });
       log(scheduler.stateLine('selected', 'dispatched', `${fresh.id} dispatchée (${result && result.parked ? 'parked: ' + result.reason : 'traitée'})`));
       log(scheduler.stateLine('dispatched', 'persisted', `${fresh.id} état persisté`));
@@ -837,7 +943,7 @@ if (prBlocking.blocking) {
               log(scheduler.stateLine('selected', claim2.alreadyClaimed ? 'claimed' : 'claimed', `${selected.id} claimée (queue-vide)`));
               progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
               const fresh2 = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-              const result2 = await processOpportunity(fresh2);
+              const result2 = await dispatchOpportunity(fresh2);
               scheduler.persistDispatched(fresh2, report.id, { parked: !!(result2 && result2.parked), reason: (result2 && result2.reason) || null });
               log(scheduler.stateLine('selected', 'dispatched', `${fresh2.id} dispatchée`));
             }

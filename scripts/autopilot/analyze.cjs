@@ -139,7 +139,12 @@ function analyze({ findings, queue, isRejectedFn, cfg }) {
       source: 'observation ' + (findings.obsId || 'prod'),
       severity: f.severity, confidence: f.confidence,
       actionable: 'agent', // un finding brut n'est jamais auto sans recette éprouvée
-      evidence: f.evidence, rollback: 'revert du commit', expectedImpact: '',
+      evidence: f.evidence, rollback: 'revert du commit',
+      // Impact attendu : derive HONNETEMENT du constat (type + region + route).
+      // Un placeholder vide ou trop court fait echouer la validation de
+      // l'hypothese UX (« AHA insuffisamment defini ») et la tache est
+      // parquee sans diagnostic utile.
+      expectedImpact: `corriger le defaut « ${f.type} » observe sur ${f.region}/${f.route}`,
       status: 'new', createdAt: C.nowIso(),
     });
   }
