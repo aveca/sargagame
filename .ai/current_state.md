@@ -1,3 +1,51 @@
+## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : la boucle Factory ne se contente plus de « tourner » — elle **produit** : premier démarrage réussi de l'agent local (exit 0), et **2 défauts de supervision supplémentaires** corrigés (heartbeat muet pendant les cycles longs, échec d'agent non diagnostiquable).
+- **Détails** :
+  - **Premier agent local réellement exécuté (preuve vivante)** : après le correctif du contrat d'agent (handoff précédent), la boucle a sélectionné une opportunité de découverte (`visual-shift-high on mq/deep-1`), a créé le worktree, lancé l'agent local, et l'agent a **sorti en code 0** après ~15 min. C'est la première fois que l'agent local démarre et va au bout dans ce dépôt.
+  - **Défaut #11 — le heartbeat se taisait pendant les cycles longs.** Le heartbeat du lock, l'instantané `status.json` et le ping healthchecks n'étaient rafraîchis qu'aux **frontières de cycle**. Or un cycle qui exécute l'agent dure jusqu'à `policy.agentMaxMinutes` = **25 min** : pendant tout le travail, `status.json` affichait un `lastHeartbeat` vieux de **674 s** (mesuré) et le dead-man's switch ne recevait aucun ping (il n'est émis qu'au démarrage, en cas de succès de cycle et en cas d'échec). Un opérateur — ou un watchdog externe — concluait à une panne et pouvait arrêter le runner **au moment précis où il produisait enfin du travail**. Le lock lui-même n'était jamais en danger (`lib/lock.cjs` est *fail-closed* sur un pid vivant : jamais préempté) : le défaut était dans le **signal**, pas dans la sécurité. Correctif : `writeStatusSnapshot()` factorisé + **gardien de vie** par cycle (heartbeat + instantané + ping healthchecks toutes les 60 s), arrêté dans un `finally`.
+  - **Défaut #12 — un agent « réussi » sans changement était INDIAGNOSTIQUABLE.** La boucle parquait `scope violation: FAIL_TARGET_UNCHANGED: no files modified by agent`, sans plus. La cause réelle, établie par une **sonde contrôlée** : l'agent appelle bien son outil d'écriture (« Wrote file successfully »), mais le modèle local (9B) produit un **chemin corrompu** — `tests/u nit/.agent-probe.txt` au lieu de `tests/unit/.agent-probe.txt` (artefact supprimé ; le runner a été vérifié propre). L'écriture part donc à côté de la cible, le diff du worktree reste vide, et le garde-fou refuse correctement le no-op. Deux manques : (a) `implement.cjs` ne conservait que **stdout**, alors que le CLI OpenCode écrit les **appels d'outils sur stderr** et la réponse du modèle sur stdout → la trace ne contenait que des lignes `[local-agent] …` ; (b) le motif de parcage ne mentionnait jamais l'agent. Correctif : `agentLog` conserve stdout **et** stderr, et le motif de parcage porte un extrait de la trace. **Le garde-fou n'est pas assoupli** : ce qu'il refuse reste refusé, seul le diagnostic change.
+  - **Limite honnête du modèle local (à signaler, pas à contourner)** : le modèle installé sur ce PC (`tripolskypetr/qwen3.5-uncensored-aggressive:9b`) est un fine-tune « uncensored aggressive » dont la tokenisation corrompt les chemins. Le routeur local **préfère déjà** `qwen3-coder:30b` > `qwen2.5-coder:32b` > `*-coder` : installer un modèle `*-coder` sur la machine suffit à ce que le routeur le choisisse, sans modification de code. Aucune invention de workaround dans le dépôt.
+  - **Neutralité production** : `scripts/autopilot/runner.cjs`, `orchestrator.cjs` et `implement.cjs` sont **déjà** exclus fichier par fichier du `paths-ignore` de `cloudflare-production.yml` → ce handoff ne redeploie rien.
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — `writeStatusSnapshot()` factorisé + gardien de vie par cycle (heartbeat, instantané, ping healthchecks toutes les 60 s), arrêté en `finally`.
+- `scripts/autopilot/orchestrator.cjs` — extrait de la trace de l'agent joint au motif de parcage quand le scope-guard échoue.
+- `scripts/autopilot/implement.cjs` — `agentLog` conserve stdout **et** stderr (les appels d'outils du CLI sont sur stderr).
+- `tests/unit/autopilot-clean-checkout-runnable.test.cjs` — invariant « le heartbeat bat pendant le cycle » (6 assertions).
+- `tests/unit/autopilot-local-agent-contract.test.cjs` — invariant « un agent sans changement reste diagnostiquable » (3 assertions).
+
+### Tests réalisés
+- [ ] `npm run build` → N/A (outillage local uniquement, aucun bundle applicatif touché)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée)
+- [x] `npm test` → **179/183** fichiers OK ; **4 échecs PRÉEXISTANTS** (identiques à `origin/main`) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs`
+- [x] Garde-fous dédiés : `autopilot-clean-checkout-runnable` (OK), `autopilot-queue-persistence-loop` (OK), `autopilot-local-agent-contract` (OK), `autopilot-runner-multirepo-wiring` (OK), `autopilot-bridge-paths-ignore` (OK), `autopilot-live-single-runner` (56 checks OK), `workflows-yaml-syntax` (42 workflows OK), `ai-docs-paths-ignore` (OK) ; `multi-repo-bridge.test.cjs`, `ci-certification-audit.cjs`, `deploy-audit.cjs` → exit 0
+- [x] **Preuve que le garde du heartbeat détecte sa régression** : le dépôt est recopié dans une arborescence temporaire, `runner.cjs` est amputé de son gardien, et le **vrai test** est rejoué → il échoue sur l'assertion exacte « must install a periodic guardian during the cycle ». (Preuve non destructive : le dépôt n'est pas modifié.)
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] `git diff --check` → OK
+
+### Problèmes restants
+- [ ] **PR #1364 non mergée** (CI en cours sur le head `5cc35f23b`) → le checkout runner reste épinglé sur la branche. Après fusion : `git -C C:\Users\user\sargagame-runner fetch origin main && git -C C:\Users\user\sargagame-runner checkout origin/main -- scripts/autopilot/ .ai/ux-agent/` puis redémarrage via `C:\Users\user\local-tools\sargagame-autopilot.cmd`. — sévérité P1 — action : `coding_agent` après merge.
+- [ ] **Le modèle local corrompt les chemins** → l'agent écrit à côté de la cible et le scope-guard refuse le no-op (correctement). Le code est désormais **diagnostiquable**, mais la production de PR reste bloquée par la qualité du modèle. — sévérité P1 — action : installer un modèle `*-coder` sur le PC (le routeur le choisira seul) ou passer le runner sur un modèle cloud dédié.
+- [ ] **Missions parquées « Scope fichiers manquant »** (#1345, #1338, #1337, #1336) : le pont n'invente pas de périmètre. — sévérité P1 — action : compléter les missions ou définir une inférence prudente.
+- [ ] **`pngjs` + `pixelmatch` absents de `package.json`** alors que `scripts/autopilot/visual-qa.cjs` les requiert → sur un `npm ci` propre, le gate visuel devient un toujours-pass. — sévérité P1 — action : PR dédiée (les ajouter déclencherait le déploiement production au merge).
+- [ ] **Mission B2B P0/P1 non commencée** (endpoint `/api/b2b-lead.php`, complétion PR #1358, retrait du `no-cors`, diagnostic NOAA/MCI #1338, runbook Mollie). Worktree prêt : `C:\Users\user\AppData\Local\Temp\opencode\sg-p0-b2b`. — sévérité P0 — action : `security_agent`.
+
+### Prochaine action recommandée
+1. Merger la PR **#1364** puis rebasculer le checkout runner sur `origin/main` et redémarrer — Rôle : `coding_agent`.
+2. Reprendre la mission **B2B P0/P1** — Rôle : `security_agent`.
+3. Installer un modèle `*-coder` local pour rendre l'agent productif — Rôle : `devops_agent` / fondateur.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107`
+- PR : **#1364** — OPEN, non mergée
+- Commit head : `5cc35f23b`
+
+---
+
 ## 2026-11-08 05:25 UTC · Agent: OpenCode (coding/autopilot)
 
 ### Travail effectué
