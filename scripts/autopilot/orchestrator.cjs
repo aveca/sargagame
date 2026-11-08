@@ -606,6 +606,28 @@ async function processOpportunity(opp) {
   progress(`SELECT      ${(opp && opp.id) || 'unknown'}`);
   S('SELECTED', `${(opp && opp.id) || 'unknown'} (score ${(opp && opp._score) || '?'})`);
 
+  // PERSISTANCE AVANT TOUT PARCAGE — correction d'une BOUCLE INFINIE.
+  //
+  // Les opportunites issues de l'ANALYSE (observations) et de la DECOUVERTE
+  // autonome n'existaient qu'en memoire : elles n'etaient jamais ecrites dans
+  // `queue.json`. Or `parkTask()` appelle `mem.updateOpportunity()`, qui
+  // renvoie `null` sur une opportunite absente de la queue : le parcage etait
+  // donc un NO-OP. Consequence observee le 2026-11-08 sur le PC du fondateur :
+  // la factory consommait un cycle toutes les 30 s, re-selectionnait le MEME
+  // candidat, le re-parquait, et ne produisait AUCUN travail — indefiniment.
+  //
+  // Ecrit dans la queue, le parcage devient effectif : le candidat passe a
+  // `blocked` et les deux sources de candidats l'ignorent au cycle suivant
+  // (deduplication par `fingerprint` deja en place dans `analyze.cjs` et
+  // `discover.cjs`).
+  //
+  // Le mode `--dry` n'ecrit RIEN : un dry-run ne doit jamais muter l'etat.
+  if (!DRY) {
+    try { mem.upsertOpportunity(opp); } catch (e) {
+      log(`queue persist failed (non-fatal): ${String(e.message).slice(0, 120)}`);
+    }
+  }
+
   // Garde-contrat : parquer avec diagnostic au lieu de crasher la factory
   // (TypeError .includes sur opp.type undefined → exit 1, jamais dispatched).
   const contract = validateOpportunityContract(opp);

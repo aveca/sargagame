@@ -90,10 +90,18 @@ on:
       - 'scripts/autopilot/prune.cjs'
       - 'scripts/autopilot/lib/common.cjs'
       - 'scripts/autopilot/local-model-router.cjs'
+      # Boucle de selection/decouverte de l'orchestrateur (outillage LOCAL).
+      # Aucun workflow ne les execute ni ne les importe : les corriger ne doit
+      # pas redeployer le Worker. `lib/memory.cjs` est la persistance de la
+      # queue de l'autopilot local — il ne touche ni aux secrets ni au build.
+      - 'scripts/autopilot/analyze.cjs'
+      - 'scripts/autopilot/discover.cjs'
+      - 'scripts/autopilot/lib/memory.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
       - 'tests/unit/autopilot-clean-checkout-runnable.test.cjs'
+      - 'tests/unit/autopilot-queue-persistence-loop.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy

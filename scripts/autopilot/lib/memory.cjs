@@ -22,6 +22,39 @@ function validateState(state) {
   return VALID_STATES.includes(state);
 }
 
+/**
+ * Insere une opportunite dans la queue si elle n'y est pas deja.
+ *
+ * Pourquoi : les opportunites issues de la DECOUVERTE AUTONOME
+ * (`discover.cjs`) n'existaient qu'en memoire — elles n'etaient jamais
+ * ecrites dans `queue.json`. `updateOpportunity()` renvoie `null` sur une
+ * opportunite absente de la queue : `parkTask()` etait donc un NO-OP, le
+ * candidat etait re-decouvert au cycle suivant, re-selectionne, re-parque...
+ * La factory bouclait a l'infini sur le meme candidat, sans jamais produire
+ * le moindre travail (constate le 2026-11-08 : un cycle toutes les 30 s
+ * consomme, 0 travail produit).
+ *
+ * L'ecriture rend le parcage effectif : le candidat passe a `blocked`, et
+ * `discover.cjs` l'ignore au cycle suivant grace a la deduplication par
+ * `fingerprint` deja en place.
+ *
+ * Ne modifie JAMAIS une opportunite deja presente (une opportunite de la
+ * queue a toujours priorité sur la version decouverte).
+ */
+function upsertOpportunity(opp) {
+  if (!opp || typeof opp !== 'object' || !opp.id) return null;
+  const q = loadQueue();
+  const list = q.opportunities || (q.opportunities = []);
+  const existing = list.find(x => x.id === opp.id);
+  if (existing) return existing;
+  const status = VALID_STATES.includes(opp.status) ? opp.status : 'new';
+  const entry = { ...opp, status, createdAt: opp.createdAt || nowIso() };
+  list.push(entry);
+  saveQueue(q);
+  try { writeOpportunityFile(entry); } catch (_) {}
+  return entry;
+}
+
 function updateOpportunity(id, patch) {
   const q = loadQueue();
   const o = (q.opportunities || []).find(x => x.id === id);
@@ -139,7 +172,7 @@ function listRuns(limit = 10) {
 }
 
 module.exports = {
-  loadQueue, saveQueue, updateOpportunity,
+  loadQueue, saveQueue, updateOpportunity, upsertOpportunity,
   loadRejected, isRejected, reject,
   writeOpportunityFile, writeRegression,
   newReport, writeRunReport, listRuns,
