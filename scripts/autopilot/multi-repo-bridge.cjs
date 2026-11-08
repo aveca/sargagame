@@ -372,9 +372,14 @@ function toOpportunity(task, issue, repoFullName) {
     severity: priorityToSeverity(task.priority),
     confidence: CONFIDENCE.has(task.confidence) ? task.confidence : 'observed',
     actionable,
-    evidence: String(task.evidence || task.diagnostic || 'n/a'),
+    evidence: String(task.evidence || task.diagnostic || task.acceptance || 'preuve non declaree dans la mission'),
     rollback: String(task.rollback || 'revert du commit'),
-    expectedImpact: String(task.metric || task.expectedImpact || 'n/a'),
+    // `expectedImpact` alimente le champ « AHA » de l'hypothese UX, qui
+    // exige au moins 20 caracteres. Un fallback 'n/a' (3 caracteres) faisait
+    // parquer la mission « AHA insuffisamment defini » AVANT tout travail
+    // utile. La mission declare presque toujours un `acceptance` explicite :
+    // on l'utilise comme impact attendu, en priorite sur un placeholder.
+    expectedImpact: String(task.metric || task.expectedImpact || task.acceptance || 'impact non declare dans la mission'),
     status: 'new',
     createdAt: issue.createdAt || C.nowIso(),
     scope: { files: normalizeFiles(task.filesToModify) },

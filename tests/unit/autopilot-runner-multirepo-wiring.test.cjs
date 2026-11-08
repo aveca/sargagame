@@ -292,6 +292,28 @@ ok(
   'a mission without a declared type must still get a usable type',
 );
 
+// ── Les champs derivés doivent etre UTILISABLES par l'orchestrateur ────────
+// L'hypothese UX exige `aha` >= 20 caracteres : un fallback 'n/a' (3
+// caracteres) faisait parquer la mission « AHA insuffisamment defini ».
+
+const derived = bridge.toOpportunity(
+  makeTask({ id: 'DERIVED', task_id: 'DERIVED', acceptance: 'le texte de Verification honnete est retire des six domaines' }),
+  { number: 9, url: 'https://github.com/aveca/sargagame/issues/9', createdAt: '2026-11-07T22:00:00Z' },
+  'aveca/sargagame',
+);
+ok(
+  typeof derived.expectedImpact === 'string' && derived.expectedImpact.length >= 20,
+  'the derived expectedImpact (AHA) must be at least 20 characters — the UX hypothesis validation rejects shorter ones, which parked every imported mission before any work',
+);
+ok(
+  derived.expectedImpact.includes('Verification honnete'),
+  'the derived expectedImpact must reuse the mission acceptance when no metric is declared (honest, not a placeholder)',
+);
+ok(
+  typeof derived.evidence === 'string' && derived.evidence.length >= 20,
+  'the derived evidence must be long enough to document the problem',
+);
+
 console.log(`autopilot-runner-multirepo-wiring : ${checks} assertions OK`);
 console.log('  - runner.cjs charge multi-repo-bridge.cjs et appelle ingestMultiRepo()');
 console.log('  - runner.cjs n\'appelle plus ingestOpenIssues() (pont mono-dépôt)');
