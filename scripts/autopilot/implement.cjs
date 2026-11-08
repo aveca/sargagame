@@ -73,9 +73,27 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     }
     
     const child = spawn(process.execPath, [router, 'run', prompt], {
-      cwd: wt, 
+      cwd: wt,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
+      // L'agent DOIT tourner en local pur (contrat de `.ai/ux-agent/
+      // opencode-auto.cjs`). Cet adaptateur refuse CLOUd credentials et
+      // sort en code 3 — donc l'agent n'AVAIT AUCUNE chance de tourner :
+      // le spawn heritait de l'env du runner, qui porte NVIDIA_API_KEY
+      // (portee User). Le meme nettoyage est deja applique par
+      // `local-agent-executor.cjs` : les deux chemins d'agent doivent
+      // partager le meme contrat.
+      env: {
+        ...process.env,
+        SARGA_LOCAL_ONLY: '1',
+        OPENAI_API_KEY: undefined,
+        ANTHROPIC_API_KEY: undefined,
+        GOOGLE_API_KEY: undefined,
+        NVIDIA_API_KEY: undefined,
+        COHERE_API_KEY: undefined,
+        MISTRAL_API_KEY: undefined,
+        OLLAMA_HOST: String(process.env.SARGA_OLLAMA_URL || 'http://127.0.0.1:11434').replace(/\/$/, ''),
+      },
     });
     
     let out = '', err = '';

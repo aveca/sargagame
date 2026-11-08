@@ -97,6 +97,11 @@ on:
       - 'scripts/autopilot/analyze.cjs'
       - 'scripts/autopilot/discover.cjs'
       - 'scripts/autopilot/lib/memory.cjs'
+      # Execution de l'opportunite par l'agent local (outillage LOCAL).
+      # Aucun workflow ne l'execute : le corriger ne doit pas redeployer le
+      # Worker. L'adaptateur d'agent est sous `.ai/**`, deja exclu.
+      - 'scripts/autopilot/implement.cjs'
+      - 'tests/unit/autopilot-local-agent-contract.test.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
