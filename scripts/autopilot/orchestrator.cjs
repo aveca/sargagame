@@ -392,8 +392,20 @@ async function phaseImplementLocal(opp) {
       // trace de l'agent, le parcage ne disait QUE « no files modified by
       // agent » : impossible a diagnostiquer sans repasser la main.
       // On joint donc les dernieres lignes de la trace de l'agent.
+      //
+      // Les sequences ANSI sont retirees : ce motif de parcage est PUBLIE
+      // sur l'issue source, et les codes couleur y seraient illisibles
+      // (verifie en reel : « [0m→ [0mRead .ai/current_state.md »).
       const agentTrace = impl && impl.agentLog
-        ? String(impl.agentLog).trim().split(/\r?\n/).filter(Boolean).slice(-4).join(' / ').slice(0, 160)
+        ? String(impl.agentLog)
+            .replace(/\x1B\[[0-9;?]*[ -\/]*[@-~]/g, '')
+            .trim()
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .filter(Boolean)
+            .slice(-4)
+            .join(' / ')
+            .slice(0, 160)
         : '';
       const hint = agentTrace ? ` [agent: ${agentTrace}]` : '';
       return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked');

@@ -110,7 +110,7 @@ assert.ok(
 const orchestratorSource = fs.readFileSync(path.join(ROOT, 'scripts', 'autopilot', 'orchestrator.cjs'), 'utf8')
 const guardIdx = orchestratorSource.indexOf('evaluateScopeGuard(allowedScope, diff.files)')
 assert.ok(guardIdx > 0, 'orchestrator.cjs must evaluate the scope guard')
-const guardBlock = orchestratorSource.slice(guardIdx, guardIdx + 1200)
+const guardBlock = orchestratorSource.slice(guardIdx, guardIdx + 2600)
 assert.ok(
   /impl\.agentLog/.test(guardBlock),
   'orchestrator.cjs must surface the agent trace when the scope guard fails — otherwise a successful-but-empty agent run is undiagnosable',
@@ -122,6 +122,10 @@ assert.ok(
 assert.ok(
   /hint\s*=\s*agentTrace/.test(guardBlock) && /agentTrace[\s\S]{0,200}impl\.agentLog/.test(guardBlock),
   'the hint must be built from the agent log captured by implement.cjs',
+)
+assert.ok(
+  /replace\(\/\\x1B/.test(guardBlock),
+  'the agent trace excerpt must strip ANSI escape sequences — this park reason is PUBLISHED on the source issue, where colour codes are unreadable (observed live: "[0m→ [0mRead .ai/current_state.md")',
 )
 
 // ── 5. Le refus cloud reste en place (contrat local-only) ────────────────────
