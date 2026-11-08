@@ -1,3 +1,51 @@
+## 2026-11-07 22:55 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : le pont multi-dépôt livré par la PR #1349 est **réellement branché** dans la boucle Factory locale (`runner.cjs` charge désormais `multi-repo-bridge.cjs` et appelle `ingestMultiRepo()`), l'orchestrateur publie les statuts de cycle de vie sur l'issue source, et un **défaut d'idempotence des missions relayées** (commentaires republiés à chaque cycle) est corrigé.
+- **Détails** :
+  - **Le gap était réel et vérifié dans le code** : sur `origin/main` (`4c24b562f`), `scripts/autopilot/runner.cjs:28` faisait `require('./bridge.cjs')` et `:158` appelait `bridge.ingestOpenIssues(...)`. Le module `scripts/autopilot/multi-repo-bridge.cjs` (PR #1349, merge `87702066a79c03ff930500a2bad524df58c1f6f7`) était donc **présent mais jamais exécuté** par la boucle : l'allowlist fermée, le routage strict et les statuts corrélés n'existaient que sur le papier.
+  - **Câblage** : `runner.cjs` appelle désormais `multiRepoBridge.ingestMultiRepo({ dry, log })` et journalise `imported / relayed / ignored / rejected` + `localRepo` ; les échecs de publication de statut sont **comptés et signalés** (`statusFailures`), jamais avalés ; l'étape reste **non bloquante** (`bridge failed (non-fatal)`).
+  - **Statuts de cycle de vie** : `orchestrator.cjs` publie désormais `started` (mission prise en charge), `completed` (PR prête à merge humain / tâche terminée), `blocked` (tâche parquée) et `failed` (erreur d'exécution) **sur l'issue source de la mission**, via `multiRepoBridge.publishStatus()`. Garde-fous : publication **jamais bloquante**, **jamais en mode `--dry`**, dépôt hors allowlist **refusé**, silence explicite pour les opportunités sans issue GitHub.
+  - **Défaut corrigé (démontré par test)** : une mission d'un dépôt autorisé relayée n'était **jamais mémorisée** → elle était **re-relayée à chaque cycle** (donc republished un commentaire `imported` sur l'issue du dépôt d'origine toutes les ~60 s en mode continu). Correctif : trace durable `queue.relayed` (clé canonique `repo|issue|task_id`), bornée à 200 entrées, et `saveQueue()` déclenché aussi quand il n'y a eu qu'un relay.
+  - **Neutralité production** : `scripts/autopilot/runner.cjs` et `scripts/autopilot/orchestrator.cjs` sont ajoutés au `paths-ignore` **strict fichier par fichier** de `cloudflare-production.yml` (aucun workflow ne les exécute) → un push sur `main` **ne peut pas** redeployer le Worker ni réécrire les secrets Mollie. `scripts/autopilot/**` reste **non** exclu en bloc (les scripts critiques de la production restent déployables) et le garde-fou existant est étendu au nouveau fichier de test.
+  - **État réel du PC (lecture seule, vérifié)** : le runner du dépôt est **mort depuis le 2026-10-22** (`runner.log` : « MAX_RESTARTS atteint — abandon, intervention requise ») ; la tâche planifiée `SargagameAutopilot` (celle qu'installe `scripts/autopilot/install-scheduler.ps1`) **n'existe pas** sur ce PC ; le lock `orchestrator.lock` pointe encore vers le pid `9404` (mort, donc repris par la preuve de stale-lock) ; **PID `15072` est vivant mais c'est `pythonw.exe C:\factory-service\v3\f3.py supervise`** (superviseur Python Factory V3, `mode=INTERACTIVE`/`interactive_lock` sont SES états) — `f3.py` ne référence **ni** `runner.cjs` **ni** `bridge.cjs` **ni** `sargagame` : ce n'est pas le poller de ce dépôt ; `Factory-Control-Runner` lance `C:\factory\control\github-bridge.cjs` (pont **par labels** `factory:*` sur le canal privé `aveca/factory-control`, pas le contrat `[AUTOPILOT]`, et qui n'utilise pas le module du dépôt) ; `SargaFactory-Supervisor` pointe l'ancienne stack `scripts/local-factory/` (dernier résultat `0xC000013A` = arrêté).
+  - **Conséquence** : le poller multi-dépôt n'était **actif nulle part** sur ce PC — ce qui explique l'absence d'accusé `imported` sur #1362 (0 commentaire au moment du contrôle).
+
+### Fichiers modifiés
+- `scripts/autopilot/runner.cjs` — charge `multi-repo-bridge.cjs`, appelle `ingestMultiRepo()`, journalise les compteurs et les échecs de publication.
+- `scripts/autopilot/orchestrator.cjs` — `publishMissionStatus()` + `missionStatusForPark()` + `dispatchOpportunity()` : statuts `started` / `completed` / `blocked` / `failed` sur l'issue source.
+- `scripts/autopilot/multi-repo-bridge.cjs` — déduplication **durable** des missions relayées (`queue.relayed`, borné à 200) + `saveQueue()` sur relay.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — **nouveau** : 37 assertions déterministes (câblage, non-blocance, statuts, import de #1362, idempotence, relay, rejets).
+- `.github/workflows/cloudflare-production.yml` — `paths-ignore` strict : `runner.cjs`, `orchestrator.cjs` + le nouveau test.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — ce handoff.
+
+### Tests réalisés
+- [x] `node tests/unit/autopilot-runner-multirepo-wiring.test.cjs` → **OK, 37 assertions**
+- [x] `node scripts/autopilot/multi-repo-bridge.test.cjs` → **OK (0 échec)** (non-régression du pont livré en #1349)
+- [x] `npm test` → **176/180** fichiers de test OK ; **4 échecs PRÉEXISTANTS** (reproduits à l'identique sur `origin/main` après `git stash` de mes changements) : `tests/sitemap-guard-beach-pages.test.cjs`, `tests/unit/b2b-outreach-proof-freshness.test.cjs`, `tests/unit/generate-og-beaches-freshness.test.cjs`, `tests/unit/regional-homepage-freshness-copy.test.cjs` — ce sont les feux rouges de fraîcheur que la mission **#1362** doit traiter.
+- [x] `node --check` sur `runner.cjs`, `orchestrator.cjs`, `multi-repo-bridge.cjs`, le nouveau test → exit 0
+- [x] `git diff --check` → OK
+- [ ] `npm run build` → N/A (aucun bundle applicatif touché : outillage local uniquement)
+- [ ] `node scripts/check-bundle-budget.cjs` → N/A (idem)
+- [ ] `php -l` → N/A (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → N/A (aucune interface touchée)
+- [ ] CI PR → **en cours** (4 checks attendus : `test-frontend`, `perf`, `lighthouse-report`, GitGuardian)
+
+### Problèmes restants
+- [ ] **4 tests rouges préexistants** (fraîcheur/copy) — hors périmètre de cette mission, ils sont précisément le contenu de la mission #1362. — sévérité P1 — action : rôle `coding_agent` via le runner (la mission est maintenant importable).
+- [ ] **PR à merger** : la fusion déclenchera `cloudflare-production.yml` ? **Non** — `paths-ignore` étendu (runner/orchestrator/test). À revérifier par le compteur de runs `cloudflare-production.yml` (attendu : inchangé).
+
+### Prochaine action recommandée
+1. Merger la PR de câblage (CI verte) puis **basculer le checkout runner sur `main`** — Rôle : `coding_agent`.
+2. **Re-vérifier l'activation persistante** : la tâche `SargagameAutopilot` doit pointer sur le checkout runner et repartir au boot — Rôle : `devops_agent`.
+3. Mission **#1362** (copy de fraîcheur honnête) désormais importable par le poller — Rôle : `coding_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/factory-multirepo-bridge-20261107` (base `origin/main` = `4c24b562f5ca83951eb676f0c20213fb2a6ff28e`)
+- PR : (voir rapport de fin de mission)
+- Commit head : (voir rapport de fin de mission)
+
+---
 ## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
 
 ### Travail effectué

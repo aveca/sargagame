@@ -41,6 +41,7 @@ const { hypothesisFromOpportunity, validateHypothesis, UXHypothesis } = require(
 const { deployAndValidatePreview } = require('./preview-deploy.cjs');
 const { runOnlineQA } = require('./online-qa.cjs');
 const selfHealing = require('./lib/self-healing.cjs');
+const multiRepoBridge = require('./multi-repo-bridge.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -68,6 +69,46 @@ function factoryStop(reason) {
   S('FACTORY_STOP', `STOP — ${reason}`);
 }
 
+/**
+ * Publie un statut de cycle de vie de la mission sur SON issue source.
+ *
+ * Règles :
+ *  - JAMAIS bloquant : une publication ratée ne doit pas arrêter la factory
+ *    (le statut manquant est journalisé, jamais avalé) ;
+ *  - JAMAIS en mode DRY : un dry-run n'a aucun effet de bord ;
+ *  - silence explicite pour les opportunités sans issue source (les
+ *    opportunités de découverte locale n'ont pas d'issue GitHub) ;
+ *  - dépôt hors allowlist : refus (fail-closed).
+ */
+function publishMissionStatus(oppId, status, detail) {
+  if (DRY) return;
+  try {
+    const queue = mem.loadQueue();
+    const opp = (queue.opportunities || []).find(o => o && o.id === oppId);
+    if (!opp) return;
+    const repo = String(opp.repository_full_name || '').trim();
+    const issue = Number(opp.issue_number);
+    if (!repo || !Number.isInteger(issue) || issue <= 0) return;
+    if (!multiRepoBridge.isAllowedRepo(repo)) return;
+    const ok = multiRepoBridge.publishStatus(repo, issue, status, String(detail || ''), {
+      taskId: opp.id,
+      fingerprint: opp.fingerprint,
+    });
+    if (!ok && typeof log === 'function') {
+      log(`[mission-status] publication "${status}" impossible sur ${repo}#${issue}`);
+    }
+  } catch (e) {
+    if (typeof log === 'function') log(`[mission-status] publication "${status}" ignorée: ${e.message}`);
+  }
+}
+
+/** Statut de mission correspondant à un état de parking local. */
+function missionStatusForPark(status) {
+  if (status === 'ready-to-merge' || status === 'done') return 'completed';
+  if (status === 'rejected') return 'failed';
+  return 'blocked';
+}
+
 /** Park a single task (HUMAN GATE, READY TO MERGE, blocked) - factory continues */
 function parkTask(oppId, reason, status = 'blocked') {
   // Garde-fou mémoire : seuls les statuts VALID_STATES sont persistables.
@@ -78,6 +119,9 @@ function parkTask(oppId, reason, status = 'blocked') {
   log('🅿️  ' + msg);
   S('PARKED', `${oppId} — ${reason}`);
   mem.updateOpportunity(oppId, { status: safe, blockReason: (`[${status}] ` + reason).slice(0, 200), parkedAt: C.nowIso() });
+  // Statut corrélé sur l'issue source : `completed` = travail terminé (PR prête
+  // à merge humain), `failed` = tâche rejetée, `blocked` = parkée.
+  publishMissionStatus(oppId, missionStatusForPark(safe), reason);
   return { parked: true, reason };
 }
 
@@ -570,6 +614,9 @@ async function processOpportunity(opp) {
     return parkTask((opp && opp.id) || 'unknown', contract.reason, 'blocked');
   }
 
+  // Statut corrélé `started` : la mission est prise en charge par le runner.
+  publishMissionStatus(opp.id, 'started', `exécution locale par le runner Factory (${opp.actionable || 'agent'})`);
+
   // 1. UX Hypothesis
   const hypothesis = hypothesisFromOpportunity(opp);
   const validation = validateHypothesis(hypothesis);
@@ -611,6 +658,20 @@ async function processOpportunity(opp) {
   S('READY', `${opp.id} — all gates green, ready for merge`);
   progress('READY       all gates green — parking task');
   return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
+}
+
+/**
+ * Exécute une opportunité et publie le statut `failed` si l'exécution
+ * explose. L'erreur est REMONTÉE telle quelle : la publication d'un statut
+ * n'a jamais vocation à masquer un échec technique.
+ */
+async function dispatchOpportunity(opp) {
+  try {
+    return await processOpportunity(opp);
+  } catch (e) {
+    publishMissionStatus(opp && opp.id, 'failed', `erreur d'exécution: ${String((e && e.message) || e).slice(0, 160)}`);
+    throw e;
+  }
 }
 
 async function main() {
@@ -801,7 +862,7 @@ if (prBlocking.blocking) {
       }
       // Refresh depuis la queue pour exécuter l'état persisté réel.
       const fresh = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-      const result = await processOpportunity(fresh);
+      const result = await dispatchOpportunity(fresh);
       scheduler.persistDispatched(fresh, report.id, { parked: !!(result && result.parked), reason: (result && result.reason) || null });
       log(scheduler.stateLine('selected', 'dispatched', `${fresh.id} dispatchée (${result && result.parked ? 'parked: ' + result.reason : 'traitée'})`));
       log(scheduler.stateLine('dispatched', 'persisted', `${fresh.id} état persisté`));
@@ -837,7 +898,7 @@ if (prBlocking.blocking) {
               log(scheduler.stateLine('selected', claim2.alreadyClaimed ? 'claimed' : 'claimed', `${selected.id} claimée (queue-vide)`));
               progress(`DISCOVER    selected ${selected.id} (score ${selected._score})`);
               const fresh2 = (mem.loadQueue().opportunities || []).find(o => o.id === selected.id) || selected;
-              const result2 = await processOpportunity(fresh2);
+              const result2 = await dispatchOpportunity(fresh2);
               scheduler.persistDispatched(fresh2, report.id, { parked: !!(result2 && result2.parked), reason: (result2 && result2.reason) || null });
               log(scheduler.stateLine('selected', 'dispatched', `${fresh2.id} dispatchée`));
             }

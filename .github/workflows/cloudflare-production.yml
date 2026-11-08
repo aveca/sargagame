@@ -65,8 +65,17 @@ on:
       # deploiement. Le garde-fou ci-dessous interdit cette regression.
       - 'scripts/autopilot/multi-repo-bridge.cjs'
       - 'scripts/autopilot/multi-repo-bridge.test.cjs'
+      # Runner + orchestrateur Factory : outillage LOCAL du PC du fondateur
+      # (boucle 24/7 qui importe les missions AUTOPILOT et exécute une
+      # opportunité par cycle). Aucun workflow ne les execute — ils ne font
+      # donc partie ni du contenu deploye ni des secrets de paiement.
+      # Modifier le câblage du runner ne doit surtout pas redeployer le Worker
+      # ni reecrire les secrets Mollie depuis un simple push sur `main`.
+      - 'scripts/autopilot/runner.cjs'
+      - 'scripts/autopilot/orchestrator.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
+      - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy

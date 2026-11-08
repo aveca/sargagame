@@ -25,7 +25,11 @@ const path = require('path');
 const { spawn, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const lock = require('./lib/lock.cjs');
-const bridge = require('./bridge.cjs');
+// Pont multi-dépôt (allowlist fermée, routage strict, idempotence inter-ponts,
+// statuts corrélés publiés sur l'issue source). Il REMPLACE le pont mono-dépôt
+// `bridge.cjs` dans la boucle : ce dernier n'est plus appelé par le runner
+// (il reste dans le dépôt comme contrat mono-dépôt historique).
+const multiRepoBridge = require('./multi-repo-bridge.cjs');
 const notify = require('./lib/notify.cjs');
 
 function rlog(msg) {
@@ -153,10 +157,19 @@ async function main() {
         }, null, 2));
       } catch (_) {}
 
-      // 1. BRIDGE: Import GitHub issues (non-blocking)
+      // 1. BRIDGE: Import des missions GitHub (multi-dépôt) — non-bloquant.
+      //    Le pont multi-dépôt est le SEUL point d'entrée de la boucle :
+      //    allowlist fermée (aveca/bot-wow, aveca/sargagame), routage strict
+      //    (une mission d'un autre dépôt autorisé est RELAYÉE, jamais exécutée
+      //    ici), idempotence avec l'ancien pont mono-dépôt (une tâche déjà
+      //    connue n'est jamais réimportée) et publication du statut
+      //    `imported` sur l'issue source de la mission.
       try {
-        const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
-        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.ignored} ignored`);
+        const bridgeResult = multiRepoBridge.ingestMultiRepo({ dry: process.argv.includes('--dry'), log: rlog });
+        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.relayed} relayed, ${bridgeResult.ignored} ignored, ${bridgeResult.rejected} rejected (local=${bridgeResult.localRepo})`);
+        if (bridgeResult.statusFailures > 0) {
+          rlog(`bridge: ${bridgeResult.statusFailures} publication(s) de statut en échec — accuser le silence est interdit`);
+        }
       } catch (e) {
         rlog(`bridge failed (non-fatal): ${e.message}`);
       }
