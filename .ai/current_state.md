@@ -1,3 +1,60 @@
+## 2026-11-08 13:11 UTC · Agent: Factory V3 bridge operator (OpenCode)
+
+### Travail effectué
+- **Résumé 1 ligne** : mission AUTOPILOT #1356 (`SARG-P0-B2B-PROSPECTS-CONCIERGE-API-AUTH-20261107`) — **revue de sécurité approfondie de la PR #1358** (retrait des handlers B2B prospects/concierge non authentifiés) : diff réel, cartographie des appelants, dépendances internes, 6 flux régionaux, revalidation du code **déployé** et gate de ship local. **PR maintenue NON fusionnée et NON déployée** (garde de livraison de l'issue + `humanGate: true`).
+- **Détails** :
+  - **Diff réel revu** : 2 fichiers, `workers/sg-payments/index.js` **+5 / −77** et `tests/unit/p0-b2b-api-retirement.test.cjs` **+47**. Les handlers `b2bProspects` et `b2bConcierge` sont **supprimés** ; les deux routes renvoient **HTTP 410 `{"error":"endpoint_retired"}`** avec `Cache-Control: no-store` et **sans en-tête CORS**. `git diff --name-status` = 2 entrées, `git diff --check` exit 0, **aucun autre fichier touché**.
+  - **Cartographie des appelants (étape 1 de l'issue)** : recherche sur **tout** le dépôt → **0 appelant** de `/api/b2b-prospects.php` et `/api/b2b-concierge.php` (les seules occurrences sont les définitions dans le Worker). Aucun script d'automation, aucun Worker régional, aucun test, aucun client `src/`, **aucun script de vérification production ni workflow** ne les appelle. Le retrait ne casse donc aucun appelant connu.
+  - **Dépendances internes B2B** : `b2b_prospects` et `b2b_concierge` n'étaient lues/écrites **que** par ces deux handlers. `b2b-create-checkout.php` ne fait que porter `prospect_id`/`concierge_id` en **metadata** Mollie (sans lire ces tables). Le widget `/widget` lit `b2b_subscriptions`, `/b2b` redirige vers `/pro/`, et `b2b-trial` / `b2b-meeting` / `b2b-paylinks` / `b2b-partners` sont indépendants. **Aucun flux légitime n'est cassé.**
+  - **6 flux régionaux** : les six domaines live (`sargasses-martinique.com`, `sargasses-guadeloupe.com`, `sargassummiami.com`, `sargassumpuntacana.com`, `sargassumcancun.com`, `sargazotulum.com`) sont servis par les Workers `sargagame-<region>` ; le routage `/api/b2b-*` et `/b2b*` vers `sg-payments` est documenté comme **vérifié live** dans `tests/unit/b2b-partners-postdeploy.test.cjs` (L96-107) et `scripts/automation/gen-b2b-partners.cjs` (L72-73). Le Worker régional conserve sa **garde fail-closed `*.php` → 404** ; le retirement dans `sg-payments` est donc le seul point de contrôle de ces deux routes, et le **410 sera uniforme sur les 6 zones**.
+  - **Revalidation delta obligatoire (2026-11-07 18:12Z)** : le code **déployé** de `sg-payments` a été relu via l'API Cloudflare (**lecture seule**). Il **contient toujours** `b2bProspects` / `b2bConcierge`, les deux routes, `payment_confirmed` et `SUPABASE_SERVICE_KEY` (22 usages) ; `endpoint_retired` = **0 occurrence** → **le défaut est toujours présent en production**, la PR n'est pas déployée. Correspondance au SHA source établie **par hash** : code déployé = 123 556 o / FNV-1a `9f47d8dd`, **identique** à `origin/main` **et** à `18cb16d7` (SHA du diagnostic initial). Conclusion : c'est le **déploiement** (version 382 → `08f46a03` / `575c2bbb`) qui a changé, **pas le contenu du code** — l'hypothèse « le défaut a été corrigé entre-temps » est **infirmée**.
+  - **Point bloquant pour un merge** : `workers/**` n'est **PAS** dans `on.push.paths-ignore` de `.github/workflows/cloudflare-production.yml` → **fusionner la PR #1358 déclencherait `Deploy Worker` + `Configure Worker secrets` en production**, ce que l'issue interdit explicitement. Le merge reste donc conditionné à l'**approbation explicite du propriétaire sur le SHA exact**. (`.ai/**` est, lui, ignoré → un commit de documentation seul ne déploie rien.)
+  - **Résidus P0 nommés (hors périmètre de #1356 → PRs distinctes à créer)** :
+    1. `b2b-contacts.php`, `b2b-events.php`, `b2b-scores.php`, `b2b-forecast-delivery.php` : **même classe de défaut** — GET `select=*` + POST/PATCH arbitraires, **sans authentification**, via `service_role` (RLS contournée). `b2b_contacts` contient de la PII.
+    2. `b2b-create-checkout.php` : **non authentifié**, crée un **client + un abonnement Mollie réels** (chemin argent) et écrit `b2b_payments`.
+    3. `public/api/b2b-lead.php` **n'existe pas** dans le dépôt : la mission #1345 (`SARG-B2B-LEAD-ENDPOINT-READONLY-20261106`) reste à faire, distinctement.
+    4. La migration 008 (non appliquée) revoque déjà les privilèges clients sur `b2b_prospects` / `b2b_concierge` / … : le retrait Worker est le complément nécessaire, mais l'application de 008 est un chantier séparé (interdit ici).
+  - **Aucun accès live** : aucun GET/POST/PATCH sur un endpoint de production, **aucune lecture** de ligne `b2b_prospects` / `b2b_concierge` / `b2b_leads`, aucun email, aucun client/abonnement/paiement Mollie, aucune mutation de production, aucun secret touché. Seule l'API Cloudflare **en lecture** a été utilisée (code déployé + métadonnées).
+
+### Fichiers modifiés
+- `.ai/current_state.md` — ce handoff.
+- `.ai/changelog.md` — entrée de changelog.
+- `.ai/tasks.md` — entrée P0 (PR #1358 revue, non fusionnée).
+- `.ai/bugs.md` — 2 bugs de sécurité ouverts (résidus hors périmètre).
+
+### Tests réalisés
+- [x] `node tests/unit/p0-b2b-api-retirement.test.cjs` → **PASS** (6 requêtes refusées, **0 appel sortant**)
+- [x] `node tests/unit/b2b-widget-region-routing.test.cjs` → PASS (14 assertions)
+- [x] `node tests/unit/b2b-partners-postdeploy.test.cjs` → PASS
+- [x] `node tests/unit/p0-118-migrations-privileges.test.cjs` → PASS (80 assertions)
+- [x] `npm run build` → **exit 0**
+- [x] `node scripts/check-bundle-budget.cjs` → **206,7 Ko ≤ 210 Ko** (exit 0)
+- [x] `npm test` → **180/180 fichier(s) de test OK** (exit 0)
+- [x] `node scripts/ux-smoke.mjs` → **4 tokens OK** (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`, + `RAW_CSS_TEXT=[]`)
+- [x] `node scripts/autopilot/deploy-audit.cjs` → **AUDIT PASSED** (16 passes, 0 issue)
+- [x] `git diff --check` → exit 0
+- [ ] `php -l` → **N/A** (aucun `.php` touché)
+- [x] CI PR #1358 → **4/4 verte** (`test-frontend`, `perf`, `lighthouse-report`, GitGuardian) sur le head `27042c82e`
+- [ ] merge / déploiement → **INTERDITS** (PR laissée **non fusionnée et non déployée**)
+
+### Problèmes restants / Blockers
+- [ ] **P0-B2B-MERGE** : merge + déploiement de #1358 → **autorisation propriétaire requise** sur le SHA `27042c82e66f1cb0f1becc9ac087398bf2312fb0` (un merge déclenche `Deploy Worker` en production, interdit par l'issue). — sévérité **P0** — action : arbitrage du fondateur.
+- [ ] **P0-B2B-SIBLINGS** : `b2b-contacts` / `b2b-events` / `b2b-scores` / `b2b-forecast-delivery` restent lisibles et mutables **sans authentification** (PII anonyme possible). — sévérité **P0** — action : PR distincte (cf. BUG-2026-007).
+- [ ] **P0-B2B-CHECKOUT** : `b2b-create-checkout.php` crée un abonnement Mollie **sans authentification**. — sévérité **P0 moneyPath** — action : PR distincte (cf. BUG-2026-008).
+- [ ] **#1345** : `SARG-B2B-LEAD-ENDPOINT-READONLY-20261106` — endpoint `b2b-lead.php` inexistant, mission distincte.
+
+### Prochaine action recommandée
+1. Arbitrer le SHA `27042c82e` de la PR #1358 (merge + déploiement, ou refus motivé) — Rôle : fondateur
+2. Ouvrir la PR P0 sur les 4 endpoints B2B frères (contacts/events/scores/forecast-delivery) — Rôle : security_agent
+3. Ouvrir la PR P0 moneyPath sur `b2b-create-checkout.php` — Rôle : security_agent + coding_agent
+
+### Branche / PR
+- Branche : `fix/p0-retire-unauthenticated-b2b-handlers` (base `origin/main` = `e141af93419cf3706ffc2db95c0ee567236615d6`)
+- PR : **#1358** — OUVERTE, **NON fusionnée**, **NON déployée**
+- Commit head : `27042c82e66f1cb0f1becc9ac087398bf2312fb0` (code) + commit de documentation de cette revue
+
+---
+
 ## 2026-11-06 18:35 UTC · Agent: Factory V3 bridge operator (OpenCode)
 
 ### Travail effectué
