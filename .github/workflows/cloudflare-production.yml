@@ -89,6 +89,7 @@ on:
       - 'scripts/autopilot/autopilot.cmd'
       - 'scripts/autopilot/prune.cjs'
       - 'scripts/autopilot/lib/common.cjs'
+      - 'scripts/autopilot/local-model-router.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'

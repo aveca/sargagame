@@ -271,6 +271,24 @@ assert.ok(
   'runner.cjs must fall back to the console log when runner.log cannot be written (a swallowed EBUSY must not erase the factory trace)',
 )
 
+// ── 6. Le runner n'appelle que des fonctions EXPORTÉES ─────────────────────
+// Régression constatée le 2026-11-08 : le runner appelle
+// `require('./local-model-router.cjs').manualOpencodeSessionActive()`,
+// fonction ABSENTE du module -> TypeError a chaque cycle, et l'instantané
+// d'état n'était jamais écrit (l'erreur disparaissait dans un catch vide).
+
+const router = require(path.join(AUTOPILOT, 'local-model-router.cjs'))
+assert.equal(
+  typeof router.manualOpencodeSessionActive,
+  'function',
+  'scripts/autopilot/local-model-router.cjs must export manualOpencodeSessionActive() — runner.cjs calls it on every cycle',
+)
+assert.equal(
+  typeof router.manualOpencodeSessionActive(),
+  'boolean',
+  'manualOpencodeSessionActive() must return a boolean and must never throw',
+)
+
 console.log(
   'PASS: the Factory runner is loadable from a clean checkout (every relative require resolves, the notify API is complete, no hardcoded secret, production-neutral) and its trace cannot be silently lost',
 )
