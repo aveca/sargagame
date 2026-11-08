@@ -25,13 +25,23 @@ const path = require('path');
 const { spawn, execSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const lock = require('./lib/lock.cjs');
-const bridge = require('./bridge.cjs');
+// Pont multi-dépôt (allowlist fermée, routage strict, idempotence inter-ponts,
+// statuts corrélés publiés sur l'issue source). Il REMPLACE le pont mono-dépôt
+// `bridge.cjs` dans la boucle : ce dernier n'est plus appelé par le runner
+// (il reste dans le dépôt comme contrat mono-dépôt historique).
+const multiRepoBridge = require('./multi-repo-bridge.cjs');
 const notify = require('./lib/notify.cjs');
 
 function rlog(msg) {
   const line = `${new Date().toISOString()} [runner] ${msg}`;
   console.log(line);
-  try { fs.mkdirSync(path.dirname(C.paths.runnerLog), { recursive: true }); fs.appendFileSync(C.paths.runnerLog, line + '\n'); } catch (_) {}
+  // La trace du runner ne doit JAMAIS devenir un point muet : si le log
+  // principal est verrouille (EBUSY sous Windows quand un wrapper redirige
+  // stdout vers le meme fichier), on bascule vers le log console, puis vers
+  // stderr. Un catch silencieux ici a deja fait perdre des cycles entiers.
+  try { fs.mkdirSync(path.dirname(C.paths.runnerLog), { recursive: true }); fs.appendFileSync(C.paths.runnerLog, line + '\n'); return; } catch (_) {}
+  try { fs.mkdirSync(path.dirname(C.paths.runnerConsoleLog), { recursive: true }); fs.appendFileSync(C.paths.runnerConsoleLog, line + '\n'); return; } catch (_) {}
+  try { console.error(`[runner][log-unavailable] ${line}`); } catch (_) {}
 }
 
 const CONTINUOUS = process.env.SARGA_AUTOPILOT_CONTINUOUS === '1';
@@ -107,12 +117,67 @@ async function main() {
   const maxConsecutiveErrors = 5;
   const notifiedPrs = new Map(); // anti-spam : une PR signalée une seule fois par cycle
   let lastCycleError = '';
+  // Issue du DERNIER cycle TERMINE. `cycleSuccess` est reinitialise a chaque
+  // tour de boucle ET l'instantane d'etat est ecrit au DEMARRAGE du cycle :
+  // sans cette variable, le champ `cycleSuccess` de status.json valait
+  // TOUJOURS false, meme quand tous les cycles reussissaient (constate le
+  // 2026-11-08 : 14 cycles "completed successfully" dans runner.log, et un
+  // status.json qui annoncait cycleSuccess=false en boucle).
+  let lastCycleSuccess = false;
+
+  /**
+   * Ecrit l'instantane d'etat externe (monitoring sans intervention humaine).
+   * Facteurise pour pouvoir le reecrire PENDANT un cycle long : voir le
+   * "gardien de vie" plus bas.
+   */
+  function writeStatusSnapshot() {
+    try {
+      const ls = lock.status();
+      const manualSession = require('./local-model-router.cjs').manualOpencodeSessionActive();
+      fs.writeFileSync(C.paths.statusFile, JSON.stringify({
+        alive: true,
+        pid: process.pid,
+        lockPid: ls.lock?.pid,
+        startedAt: ls.lock?.startedAt,
+        lastHeartbeat: ls.lock?.heartbeatAt,
+        cycleCount,
+        // Issue du DERNIER cycle TERMINE (le cycle en cours n'est pas fini).
+        cycleSuccess: lastCycleSuccess,
+        consecutiveErrors,
+        // Issue de la CONFIG EFFECTIVE, jamais une constante : la valeur
+        // precedente etait codee en dur a `true` alors que
+        // .ai/autopilot/config.json porte autoMergeEnabled=false. Un
+        // operateur lisant status.json croyait donc que la factory
+        // auto-mergeait les PR — alors que la politique REPRODUIT
+        // (`lib/policy.cjs`) refuse justement l'auto-merge.
+        autoMergeEnabled: Boolean(cfg.policy && cfg.policy.autoMergeEnabled),
+        modelRouting: {
+          mode: manualSession ? 'quota-protect' : 'perf',
+          detail: manualSession
+            ? 'session OpenCode manuelle détectée → free/local (quota NVIDIA préservé)'
+            : 'aucune session manuelle → NVIDIA cloud (perf max)',
+          nvidiaKey: process.env.NVIDIA_API_KEY ? 'SET' : 'NOT SET',
+          openaiKey: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
+          openrouterKey: process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET',
+        },
+        notify: notify.channelsStatus(),
+        timestamp: new Date().toISOString()
+      }, null, 2));
+    } catch (e) {
+      // Une erreur d'ecriture du snapshot d'etat ne doit pas tuer le cycle,
+      // mais elle ne doit pas non plus disparaitre sans trace.
+      rlog(`status write failed (non-fatal): ${e.message}`);
+    }
+  }
 
   // MAIN 24/7 LOOP
   while (!isShuttingDown && !fs.existsSync(C.paths.stopFile)) {
     cycleCount++;
     const cycleStart = Date.now();
     let cycleSuccess = false;
+    // Gardien de vie du cycle (heartbeat continu) — declare hors du `try`
+    // pour pouvoir etre arrete dans le `finally`.
+    let guardian = null;
 
     try {
       rlog(`\n┌─ CYCLE ${cycleCount} ──────────────────────────────`);
@@ -126,37 +191,54 @@ async function main() {
       }
 
       // Statut externe (monitoring sans intervention humaine)
-      try {
-        const ls = lock.status();
-        const manualSession = require('./local-model-router.cjs').manualOpencodeSessionActive();
-        fs.writeFileSync(C.paths.statusFile, JSON.stringify({
-          alive: true,
-          pid: process.pid,
-          lockPid: ls.lock?.pid,
-          startedAt: ls.lock?.startedAt,
-          lastHeartbeat: ls.lock?.heartbeatAt,
-          cycleCount,
-          cycleSuccess,
-          consecutiveErrors,
-          autoMergeEnabled: true,
-          modelRouting: {
-            mode: manualSession ? 'quota-protect' : 'perf',
-            detail: manualSession
-              ? 'session OpenCode manuelle détectée → free/local (quota NVIDIA préservé)'
-              : 'aucune session manuelle → NVIDIA cloud (perf max)',
-            nvidiaKey: process.env.NVIDIA_API_KEY ? 'SET' : 'NOT SET',
-            openaiKey: process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET',
-            openrouterKey: process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET',
-          },
-          notify: notify.channelsStatus(),
-          timestamp: new Date().toISOString()
-        }, null, 2));
-      } catch (_) {}
+      writeStatusSnapshot();
 
-      // 1. BRIDGE: Import GitHub issues (non-blocking)
+      // GARDIEN DE VIE — le heartbeat doit battre PENDANT le cycle, pas
+      // seulement a son debut.
+      //
+      // Constat reel (2026-11-08, sur le PC du fondateur) : un cycle qui
+      // execute l'agent local dure jusqu'a `policy.agentMaxMinutes` = 25 min.
+      // Le heartbeat (lock) et l'instantane d'etat n'etaient rafraichis
+      // qu'AU DEBUT du cycle : pendant 25 minutes, `status.json` affichait
+      // un `lastHeartbeat` vieux de 25 min alors que le runner faisait
+      // reellement tourner un agent. Un operateur (ou un dead-man's switch
+      // externe) concluait a une panne et pouvait arreter le runner AU
+      // MOMENT ou il produisait enfin du travail. Le ping healthchecks
+      // n'etait emis qu'aux frontiers de cycle : idem, silence pendant le
+      // travail.
+      //
+      // Le pid vivant reste la source de verite pour le lock (fail-closed :
+      // jamais preempte), mais le signalement doit etre HONNETE et
+      // CONTINU : on rafraichit heartbeat + instantane + ping toutes les
+      // 60 s pendant le cycle.
+      guardian = setInterval(() => {
+        try {
+          const h = lock.heartbeat();
+          if (!h.ok) {
+            rlog(`guardian: heartbeat KO (${h.reason})`);
+            return;
+          }
+          writeStatusSnapshot();
+          notify.pingHealthchecks();
+        } catch (e) {
+          rlog(`guardian failed (non-fatal): ${String(e.message).slice(0, 120)}`);
+        }
+      }, 60 * 1000);
+      if (typeof guardian.unref === 'function') guardian.unref();
+
+      // 1. BRIDGE: Import des missions GitHub (multi-dépôt) — non-bloquant.
+      //    Le pont multi-dépôt est le SEUL point d'entrée de la boucle :
+      //    allowlist fermée (aveca/bot-wow, aveca/sargagame), routage strict
+      //    (une mission d'un autre dépôt autorisé est RELAYÉE, jamais exécutée
+      //    ici), idempotence avec l'ancien pont mono-dépôt (une tâche déjà
+      //    connue n'est jamais réimportée) et publication du statut
+      //    `imported` sur l'issue source de la mission.
       try {
-        const bridgeResult = bridge.ingestOpenIssues({ dry: process.argv.includes('--dry'), log: rlog });
-        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.ignored} ignored`);
+        const bridgeResult = multiRepoBridge.ingestMultiRepo({ dry: process.argv.includes('--dry'), log: rlog });
+        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.relayed} relayed, ${bridgeResult.ignored} ignored, ${bridgeResult.rejected} rejected (local=${bridgeResult.localRepo})`);
+        if (bridgeResult.statusFailures > 0) {
+          rlog(`bridge: ${bridgeResult.statusFailures} publication(s) de statut en échec — accuser le silence est interdit`);
+        }
       } catch (e) {
         rlog(`bridge failed (non-fatal): ${e.message}`);
       }
@@ -214,6 +296,15 @@ async function main() {
         // Error or non-fatal failure
         rlog(`orchestrator exited with code ${orchestratorCode}`);
         cycleSuccess = false;
+        // Un code de sortie non nul DOIT compter comme un echec consecutif.
+        // Avant ce correctif, seul le `catch` incrementait consecutiveErrors :
+        // un orchestrateur qui sortait en erreur a chaque cycle laissait
+        // consecutiveErrors a 0, donc JAMAIS d'alerte Discord
+        // (`cycleFailed`, seuil 2) et JAMAIS de pause de securite
+        // (`maxConsecutiveErrors`, seuil 5). La factory pouvait boucler
+        // indefiniment en echec, silencieusement.
+        consecutiveErrors++;
+        lastCycleError = `orchestrator exited with code ${orchestratorCode}`;
       }
 
     } catch (e) {
@@ -222,7 +313,17 @@ async function main() {
       cycleSuccess = false;
       consecutiveErrors++;
       lastCycleError = e.message;
+    } finally {
+      // Le gardien de vie est strictement lie au cycle : il doit s'arreter
+      // quand le cycle se termine (succes, erreur ou arret), sinon il
+      // continuerait de rafraichir un etat qui n'avance plus.
+      try { if (guardian) clearInterval(guardian); } catch (_) {}
+      guardian = null;
     }
+
+    // Memorise l'issue du cycle qui vient de se terminer : c'est elle que le
+    // prochain instantane d'etat doit annoncer.
+    lastCycleSuccess = cycleSuccess;
 
     // Alerte Discord sur échecs consécutifs (throttlé : à partir de 2) + ping /fail
     if (!cycleSuccess && consecutiveErrors >= 2) {

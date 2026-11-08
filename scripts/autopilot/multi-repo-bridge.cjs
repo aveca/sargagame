@@ -47,6 +47,12 @@ const PRIORITY = { critical: 'critical', high: 'high', medium: 'medium', low: 'l
 const CONFIDENCE = new Set(['proven', 'observed', 'inferred']);
 
 const STATUSES = ['imported', 'started', 'heartbeat', 'blocked', 'completed', 'failed'];
+
+/**
+ * Taille maximale de l'historique des missions RELAYÉES (trace de
+ * déduplication locale). Borné : la queue locale ne grossit pas sans fin.
+ */
+const RELAYED_HISTORY_MAX = 200;
 const STATUS_EMOJI = {
   imported: '📥',
   started: '🔄',
@@ -209,6 +215,43 @@ function isAlreadyKnown(known, repoFullName, issueNumber, taskId) {
   );
 }
 
+/**
+ * Index des missions DÉJÀ RELAYÉES.
+ *
+ * Une mission d'un autre dépôt autorisé n'entre PAS dans la queue locale :
+ * elle est seulement relayée (statut publié sur son issue d'origine). Sans
+ * trace durable, le runner la relayerait à CHAQUE cycle — donc à chaque
+ * minute en mode continu — et republierait un commentaire `imported` sur
+ * l'issue du dépôt d'origine (flottement de commentaires, faux compteurs).
+ * On mémorise donc la clé canonique des missions relayées, dans la queue
+ * locale, sous la clé `relayed` (bornée, jamais mélangée aux opportunités).
+ */
+function buildRelayedIndex(queue) {
+  const fingerprints = new Set();
+  const entries = (queue && queue.relayed) || [];
+  for (const entry of entries) {
+    if (typeof entry === 'string') fingerprints.add(entry);
+    else if (entry && entry.fingerprint) fingerprints.add(String(entry.fingerprint));
+  }
+  return fingerprints;
+}
+
+/** Enregistre une mission relayée (trace durable, bornée). */
+function recordRelayed(queue, repoFullName, issueNumber, taskId, key) {
+  if (!queue || !key) return;
+  if (!Array.isArray(queue.relayed)) queue.relayed = [];
+  queue.relayed.push({
+    fingerprint: key,
+    repository_full_name: repoFullName,
+    issue_number: issueNumber,
+    task_id: taskId,
+    relayedAt: C.nowIso(),
+  });
+  if (queue.relayed.length > RELAYED_HISTORY_MAX) {
+    queue.relayed = queue.relayed.slice(-RELAYED_HISTORY_MAX);
+  }
+}
+
 // ── Lecture GitHub ───────────────────────────────────────────────────────────
 
 /** Issues ouvertes `[AUTOPILOT]` d'un dépôt donné. */
@@ -263,6 +306,27 @@ function priorityToSeverity(value) {
  *     (une mission ne peut pas prétendre appartenir à un autre dépôt) ;
  *   - identifiant de tâche absent.
  */
+/**
+ * Type de l'opportunité — normalisation du contrat EXTERNE (mission GitHub)
+ * vers le contrat INTERNE de l'orchestrateur.
+ *
+ * Le contrat local exige `opp.type` (string non vide) : `validateOpportunityContract`
+ * parque l'opportunité « contrat invalide : type manquant » AVANT toute
+ * exécution. Les opportunités découvertes par la sonde locale (analyze.cjs)
+ * portent toujours un type ; c'est donc l'ADAPTATEUR — le pont — qui doit
+ * normaliser la mission GitHub, pas l'orchestrateur qui doit s'assouplir.
+ *
+ * - type déclaré par la mission -> respecté tel quel ;
+ * - sinon -> type générique honnête. Il ne doit surtout PAS déclencher le
+ *   routage browser-recon : les seuls types qui le déclenchent sont
+ *   'ux-ui', 'browser-interaction', 'aha-wow' et 'svg-assets-a11y'.
+ */
+function opportunityType(task) {
+  const declared = task && typeof task.type === 'string' ? task.type.trim() : '';
+  if (declared) return declared;
+  return task && task.mode === 'auto' ? 'auto-task' : 'agent-task';
+}
+
 function toOpportunity(task, issue, repoFullName) {
   if (!isAllowedRepo(repoFullName)) {
     return { rejected: true, reason: 'repository_not_allowed: ' + repoFullName };
@@ -299,15 +363,23 @@ function toOpportunity(task, issue, repoFullName) {
     fingerprint: fingerprint(repoFullName, issueNumber, taskId),
     legacyFingerprint: legacyFingerprint(issueNumber, taskId),
     title: String(task.title),
+    // Contrat interne de l'orchestrateur : sans type, la mission importée est
+    // parquée avant même d'être dispatchée.
+    type: opportunityType(task),
     repository_full_name: repoFullName,
     issue_number: issueNumber,
     source: `${String(task.source || 'chatgpt')} issue #${issueNumber} (${repoFullName})`,
     severity: priorityToSeverity(task.priority),
     confidence: CONFIDENCE.has(task.confidence) ? task.confidence : 'observed',
     actionable,
-    evidence: String(task.evidence || task.diagnostic || 'n/a'),
+    evidence: String(task.evidence || task.diagnostic || task.acceptance || 'preuve non declaree dans la mission'),
     rollback: String(task.rollback || 'revert du commit'),
-    expectedImpact: String(task.metric || task.expectedImpact || 'n/a'),
+    // `expectedImpact` alimente le champ « AHA » de l'hypothese UX, qui
+    // exige au moins 20 caracteres. Un fallback 'n/a' (3 caracteres) faisait
+    // parquer la mission « AHA insuffisamment defini » AVANT tout travail
+    // utile. La mission declare presque toujours un `acceptance` explicite :
+    // on l'utilise comme impact attendu, en priorite sur un placeholder.
+    expectedImpact: String(task.metric || task.expectedImpact || task.acceptance || 'impact non declare dans la mission'),
     status: 'new',
     createdAt: issue.createdAt || C.nowIso(),
     scope: { files: normalizeFiles(task.filesToModify) },
@@ -394,6 +466,7 @@ function ingestMultiRepo(options = {}) {
   const queue = options.queue || loadQueue();
   queue.opportunities = queue.opportunities || [];
   const known = buildKnownIndex(queue);
+  const relayedKnown = buildRelayedIndex(queue);
 
   let imported = 0;
   let wouldImport = 0;
@@ -444,6 +517,15 @@ function ingestMultiRepo(options = {}) {
         continue;
       }
 
+      // Mission déjà RELAYÉE lors d'un cycle précédent : on ne la rejoue pas
+      // (sinon un commentaire `imported` est republié à chaque cycle).
+      if (relayedKnown.has(opp.fingerprint)) {
+        ignored += 1;
+        perRepo[repoFullName].ignored += 1;
+        log(`[bridge] ${repoFullName} #${opp.issue_number} déjà relayée — pas de nouveau statut`);
+        continue;
+      }
+
       // ── Routage strict ───────────────────────────────────────────────────
       // Une mission d'un dépôt autorisé qui n'est pas CE dépôt est RELAYÉE :
       // elle reste chez son dépôt d'origine. Elle n'est jamais enfilée dans
@@ -459,6 +541,7 @@ function ingestMultiRepo(options = {}) {
         if (!dry) {
           relayed += 1;
           perRepo[repoFullName].relayed += 1;
+          recordRelayed(queue, repoFullName, opp.issue_number, opp.id, opp.fingerprint);
           const ok = publish(
             repoFullName,
             opp.issue_number,
@@ -515,7 +598,10 @@ function ingestMultiRepo(options = {}) {
     }
   }
 
-  if (imported && !dry) saveQueue(queue);
+  // La queue est persistée s'il y a eu un import ET/OU un relay : le relay
+  // laisse une trace durable (`queue.relayed`) qui empêche le re-relay au
+  // cycle suivant.
+  if ((imported || relayed) && !dry) saveQueue(queue);
 
   return {
     imported,

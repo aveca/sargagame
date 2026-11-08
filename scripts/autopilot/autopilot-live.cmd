@@ -13,7 +13,13 @@ REM     seul run.cjs --live --continuous pose SARGA_AUTOPILOT_LIVE/CONTINUOUS=1.
 setlocal EnableDelayedExpansion
 cd /d "%~dp0..\.."
 set REPO=%CD%
-set LOGFILE=%REPO%\.ai\autopilot\runs\runner.log
+REM La sortie console du watchdog va dans runner-console.log, PAS dans
+REM runner.log : sous Windows, cmd.exe ouvre le fichier cible de son `>>` en
+REM mode EXCLUSIF. La trace du runner (qui ecrit dans runner.log) echouait
+REM alors en EBUSY et disparaitait silencieusement -> la factory tournait
+REM SANS trace observable. Les deux journaux sont distincts et ninguno n'est
+REM plus un point muet.
+set LOGFILE=%REPO%\.ai\autopilot\runs\runner-console.log
 REM Durcissement PATH minimal (Task Scheduler) — FIX spawnSync git ENOENT :
 REM le scheduler lance avec un PATH reduit ou git/gh/npm sont introuvables,
 REM ce qui faisait echouer repairPRConflict en "spawnSync git ENOENT (unsafe)".

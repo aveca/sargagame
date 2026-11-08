@@ -15,6 +15,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..', '..');
 const CACHE_FILE = path.join(ROOT, '.ai', 'autopilot', 'model-cache.json');
+const MANUAL_SESSION_FILE = path.join(ROOT, '.ai', 'autopilot', 'manual-session.json');
 
 const TASK_TYPES = {
   CODING: 'coding',
@@ -293,10 +294,46 @@ function getBestModelForType(taskType) {
   return Object.entries(stats).sort((a, b) => b[1] - a[1])[0]?.[0] || null;
 }
 
+/**
+ * Le fondateur est-il EN TRAIN d'utiliser OpenCode manuellement ?
+ *
+ * Pourquoi cette fonction existe : le runner l'appelle a chaque cycle pour
+ * choisir entre les modeles gratuits/locaux (mode `quota-protect`) et le
+ * cloud NVIDIA (mode `perf`). Elle manquait dans ce module : l'appel levait
+ * `TypeError: ... is not a function` et l'ecriture de l'instantane d'etat
+ * echouait a CHAQUE cycle (erreur avalee par un catch vide).
+ *
+ * Detection EXPLICITE, sans deviner (devoir deviner « est-ce moi ? » en
+ * listant les processus serait fragile : le runner lance lui-meme des
+ * sessions `opencode` pour ses agents) :
+ *   1. `SARGA_MANUAL_SESSION=1` dans l'environnement -> session manuelle ;
+ *   2. fichier marqueur `.ai/autopilot/manual-session.json` contenant un
+ *      `pid` encore vivant -> session manuelle (le marqueur perime est
+ *      ignore, jamais supprime : on ne touche pas a l'etat du fondateur) ;
+ *   3. sinon -> false.
+ *
+ * La fonction ne leve JAMAIS : elle ne doit pas pouvoir casser un cycle.
+ */
+function manualOpencodeSessionActive() {
+  try {
+    if (String(process.env.SARGA_MANUAL_SESSION || '').trim() === '1') return true;
+    const raw = fs.readFileSync(MANUAL_SESSION_FILE, 'utf8');
+    const marker = JSON.parse(raw);
+    const pid = Number(marker && marker.pid);
+    if (!Number.isInteger(pid) || pid <= 0) return false;
+    if (pid === process.pid) return false;
+    process.kill(pid, 0); // signal 0 = test d'existence, sans effet de bord
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 module.exports = {
   routeModel,
   recordSelection,
   getBestModelForType,
+  manualOpencodeSessionActive,
   TASK_TYPES,
   CODING_MODELS,
   VISION_MODELS,
