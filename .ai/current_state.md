@@ -1,3 +1,43 @@
+## 2026-11-08 23:06 UTC · Agent: OpenCode (coding)
+
+### Travail effectué
+- **Résumé 1 ligne** : P0 « chemin argent » — la Worker `sg-payments` (celle qui sert réellement les 6 domaines sur `/api/*`) résout désormais **l'offre, le montant et la classification côté serveur** ; 8 défauts corrigés, PR #1370 ouverte **non mergée**.
+- **Détails** :
+  - **Topologie prouvée par sonde live** : `/api/mollie-health` → `{"worker":"sg-payments","version":"sprint15","routes":45}` sur les 6 domaines. Les routes `/api/*` sont donc servies par `sg-payments`, **pas** par le Worker régional `workers/sargagame/index.js` (qui est **ombreux** sur `/api/*`). `workers/sg-payments/` est la source récupérée depuis le live (v381) — durcie mais **pas déployée**.
+  - **8 défauts corrigés** dans `workers/sg-payments/index.js` : **E1** allowlist court-circuitée (montant libre jusqu'à 300 € + vrai paiement Mollie créé) ; **E2** classification forgeable (`metadata.source`/`plan` client → `source:"b2b_annual"` + 29 € = **365 jours** d'accès B2B) ; **E3** `redirectUrl` client (open redirect) ; **E4** `Host` client → URL de webhook Mollie (exfiltration) ; **E5** `MOLLIE_PROFILE_ID` lu puis jeté ; **E6** SKU **`sos` absent** (offre déjà vendue à 1,00 €/24 h → encaissé **sans accès livré**) ; **E7** `sargazotulum.com` absent des 3 allowlists ; **E8** `payment_status` ne distinguait pas un paiement Mollie de **TEST** (pouvait déverrouiller Premium).
+  - **Durcissements complémentaires** : allowlist centimes **par SKU** (une devise non vendue n'est plus acceptée dans une plage libre — `season` en USD livrait 210 j) ; email obligatoire pour un pass achetable (SOS excepté) ; **montant effectif renvoyé** dans la réponse (le front émet déjà `sg_price_mismatch` — la mesure était inopérante) ; `offer_kind`/`pass`/`email` client supprimés des métadonnées, `source` conservé comme simple attribution de canal.
+  - **Aucun prix modifié** : catalogue = copie verbatim de `public/api/mollie.php` (`$passPrices`) + allowlist existante de `public/api/create-checkout.php` (`$ALLOWED_CENTS USD = [599]`). `p7` reste **coupé** (cutoff 2026-08-01).
+  - **Contrat fail-closed préservé** : le canal historique `b2b_subscription` reste routé vers `grantOnboardingAuto`, qui **lève inconditionnellement** (`b2b_onboarding_requires_verified_schema_and_offer_contract`) — le refus reste explicite sans jamais livrer d'accès. `b2b_annual` devient **fail-closed** (`b2b_annual_not_approved`) tant que le catalogue annuel n'est pas validé.
+- **Fichiers modifiés** :
+  - `workers/sg-payments/index.js` — résolution serveur de l'offre/du montant, classification par `offer_kind`, redirect/host allowlistés, `profileId` envoyé, `payment_status` distingue `mode:test`, `sos` + 6ᵉ domaine ajoutés.
+  - `tests/unit/p0-money-path-offer-resolution.test.cjs` — **nouveau**, 83 assertions **hors-ligne** (aucun appel réseau réel, aucun credential, aucune donnée client).
+  - `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — handoff (chemin `.ai/**` ignoré par le `paths-ignore` de déploiement).
+- **Tests réalisés** :
+  - [x] `npm run build` → exit 0
+  - [x] `node scripts/check-bundle-budget.cjs` → **206,7 Ko ≤ 210 Ko** (exit 0)
+  - [x] `php -l` → N/A (aucun `.php` touché)
+  - [x] `node scripts/ux-smoke.mjs` → **4 tokens OK** (`FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`)
+  - [x] `npm test` → **184/184 fichiers OK** (après build)
+  - [x] `node scripts/autopilot/deploy-audit.cjs` → AUDIT PASSED (16 passes / 0 issue) · `git diff --check` → 0 · `npx esbuild workers/sg-payments/index.js --bundle=false` → exit 0
+  - [x] Tests ciblés : `p0-money-path-offer-resolution` (83), `mollie-durable-fulfillment` (59), `mollie-nextgen-classic-adapters` (43), `mollie-payment-scenarios` (**mock** → `LOCAL SIMULATION`), `mollie-fulfillment-review` (Worker régional), `price-parity`, `b2b-conversion-instrumentation`
+- **Problèmes restants / Blockers** :
+  - [ ] **PR #1370 non mergée, non déployée** : `workers/**` est absent de `on.push.paths-ignore` de `cloudflare-production.yml` → un merge déclenche `Deploy Worker` **en production**. Approbation propriétaire sur **SHA exact** requise. Les défauts E1→E8 restent donc **exploitables en production**. — sévérité **P0** — action : merger sur autorisation.
+  - [ ] **Aucun workflow ne déploie `sg-payments`** (le job `deploy` cible `wrangler.jsonc` → `workers/sargagame/index.js`). Prérequis `PROVENANCE.md` : migrations 002/003/004 (`sg_upsert_payment_grant`), secret `NAMECHEAP_MAIL_TOKEN`, clé Mollie **`live_*`**. — sévérité **P0** — action : runbook de déploiement Worker.
+  - [ ] **Vente LIVE non activée** : `validatePaymentForFulfillment` exige `mode === "live"` → un paiement **TEST** ne déverrouille jamais Premium. Preuve d'activation = paiement LIVE ≤ 1 € (issue #1357, non exécuté). — sévérité **P0** — action : autoriser un paiement test.
+  - [ ] **B2B annuel (290/690/1990 €) fail-closed** : les payment-links n'acceptent pas de metadata → aucune classification serveur dérivable. Réactivation = **catalogue annuel validé** (décision propriétaire, pas un correctif technique). — sévérité **P1** — action : arbitrage propriétaire.
+  - [ ] **Échec local `region-sitemap-ownership`** : artefact `tulum-ftp/` **périmé** (généré à 16:46, `prepare-ftp` ne régénère que MQ/GP) — reproduit **identique avec les modifications stashées** ; en CI (checkout neuf) le dossier n'existe pas → section ignorée. Aucun impact sur la PR. — sévérité **P2** — action : nettoyer les artefacts `*-ftp/` périmés en local.
+- **Prochaine action recommandée** :
+  1. Merger la PR #1370 sur autorisation (SHA `fe8c75b02`) puis déployer la Worker `sg-payments` — Rôle : **devops_agent + propriétaire**
+  2. Produire le paquet d'autorisation de déploiement `sg-payments` (migrations + secrets + clé live + rollback `git revert`) — Rôle : **devops_agent**
+  3. Vérifier la chaîne de mesure (`sg_pass_offer_view` → `sg_pass_cta` → `sg_checkout_started` → `sg_checkout_redirect` → `sg_conversion` → `payment_grants`) et produire le tableau par domaine et par offre — Rôle : **growth_agent**
+  4. Arbitrer le catalogue B2B annuel (290/690/1990 €) et la divergence Trip Pass USD 5,99 $ (`mollie.php` = `null` vs `pricing.js`/`create-checkout.php` = 599) — Rôle : **propriétaire**
+- **Branche / PR** :
+  - Branche : `agent/coding/p0-money-path-offer-resolution-20261108`
+  - PR : **#1370** (ouverte, **NON mergée**, aucun déploiement)
+  - Commit head : `fe8c75b022b835042b0889baf3bd16ad28dabc93`
+
+---
+
 ## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
 
 ### Travail effectué
