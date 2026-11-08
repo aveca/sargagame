@@ -1784,6 +1784,16 @@ function classifyPayment(metadata) {
   // ("b2b_onboarding_requires_verified_schema_and_offer_contract") et n'ecrit
   // rien. Le refus reste donc explicite, sans jamais delivrer d'acces.
   if (!kind && String(metadata?.source || "") === "b2b_subscription") return "b2b_onboarding";
+  // Abonnements B2B (source ecrite par le serveur a la creation de
+  // l'abonnement : `create_subscription` supprime `offer_kind`/`pass`/`email`).
+  // Ces evenements de paiement ne doivent JAMAIS livrer un pass B2C : ils
+  // restent refuses explicitement (`unsupported_source`) comme avant le
+  // correctif. La branche est conservee pour ne pas changer la semantique
+  // du refus, et pour que le refus ne dépende PAS du fait accidentel que
+  // `metadata.pass` soit vide.
+  if (!kind && (String(metadata?.source || "") === "b2b_monthly" || String(metadata?.source || "") === "b2b_concierge")) {
+    return "b2b_subscription_only";
+  }
   return "b2c";
 }
 __name(classifyPayment, "classifyPayment");

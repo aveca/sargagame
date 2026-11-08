@@ -506,6 +506,50 @@ async function main() {
     }
   }
 
+  // ── Non-regression : un abonnement B2B ne livre JAMAIS un pass B2C ─────────
+  // `create_subscription` ecrit source=b2b_monthly|b2b_concierge et SUPPRIME
+  // offer_kind/pass/email. Le live classait ces evenements
+  // `b2b_subscription_only` -> refus explicite `unsupported_source`.
+  {
+    for (const source of ['b2b_monthly', 'b2b_concierge']) {
+      const state = {
+        grants: [],
+        rpcCalls: [],
+        unmocked: [],
+        payment: {
+          id: 'tr_sub_' + source,
+          mode: 'live',
+          status: 'paid',
+          paidAt: '2026-11-08T10:00:00Z',
+          amount: { value: '29.00', currency: 'EUR' },
+          metadata: { source, plan: 'pro_monthly', pass: '', email: 'hotel@example.com' },
+        },
+      }
+      const backend = buildBackend(state)
+      const { env } = createEnv()
+      try {
+        const request = mkWebhookRequest({
+          body: JSON.stringify({
+            id: 'event_' + source,
+            type: 'payment.paid',
+            resource: 'payment',
+            entityId: 'tr_sub_' + source,
+          }),
+        })
+        const result = await runWebhook(worker, request, env)
+        t(result.status === 409, 'webhook ' + source + ' : HTTP 409 (refus fail-closed)')
+        t(result.json && result.json.granted !== true, 'webhook ' + source + ' : AUCUN acces B2C livre')
+        t(result.json && Array.isArray(result.json.reasons) && result.json.reasons.indexOf('unsupported_source') !== -1,
+          'webhook ' + source + ' : refus explicite unsupported_source (semantique live preservee)')
+        t(state.rpcCalls.length === 0, 'webhook ' + source + ' : 0 ecriture de grant (RPC)')
+        t((state.grantWrites || []).length === 0, 'webhook ' + source + ' : 0 ecriture de grant B2B (payment_grants)')
+        t(state.grants.length === 0, 'webhook ' + source + ' : 0 ligne de droit')
+      } finally {
+        backend.restore()
+      }
+    }
+  }
+
   // ── Devise non vendue : le webhook refuse aussi (pas de 210 j en USD) ─────
   {
     const state = {
