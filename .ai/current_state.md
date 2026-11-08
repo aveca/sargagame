@@ -213,7 +213,7 @@
 - [x] `node scripts/autopilot/deploy-audit.cjs` → **AUDIT PASSED** (16 passes, 0 issue)
 - [x] `git diff --check` → exit 0
 - [ ] `php -l` → **N/A** (aucun `.php` touché)
-- [x] CI PR #1358 → **4/4 verte** (`test-frontend`, `perf`, `lighthouse-report`, GitGuardian) sur le head `27042c82e`
+- [x] CI PR #1358 → **4/4 verte** (`test-frontend`, `perf`, `lighthouse-report`, GitGuardian) sur le head `27042c82e` (code) et revalidée **4/4 verte** sur le head `b5539fafc` (après merge `origin/main`)
 - [ ] merge / déploiement → **INTERDITS** (PR laissée **non fusionnée et non déployée**)
 
 ### Problèmes restants / Blockers
@@ -228,9 +228,13 @@
 3. Ouvrir la PR P0 moneyPath sur `b2b-create-checkout.php` — Rôle : security_agent + coding_agent
 
 ### Branche / PR
-- Branche : `fix/p0-retire-unauthenticated-b2b-handlers` (base `origin/main` = `e141af93419cf3706ffc2db95c0ee567236615d6`)
-- PR : **#1358** — OUVERTE, **NON fusionnée**, **NON déployée**
-- Commit head : `27042c82e66f1cb0f1becc9ac087398bf2312fb0` (code) + commit de documentation de cette revue
+- Branche : `fix/p0-retire-unauthenticated-b2b-handlers` — **synchronisée sur `origin/main` par un merge** (jamais de rebase, jamais de réécriture d'historique : le SHA du code soumis à approbation reste valable)
+- PR : **#1358** — OUVERTE, **NON fusionnée**, **NON déployée**, `MERGEABLE/CLEAN`, CI **4/4 verte**
+- Commit head : `b5539fafc65e3ba87319854142bfe926215afb7d` (merge `origin/main` + documentation de la revue)
+- **SHA du code à approuver** (celui qui sera déployé) : **`27042c82e66f1cb0f1becc9ac087398bf2312fb0`** — inchangé par la synchronisation
+- Diff final vs `origin/main` : **6 fichiers** (4 `.ai/` + `workers/sg-payments/index.js` + `tests/unit/p0-b2b-api-retirement.test.cjs`) — **145 insertions / 77 suppressions**, dont **0 suppression** dans les fichiers `.ai/`
+- Neutralité vérifiée après les pushes : **0 run `cloudflare-production.yml`** sur la branche (`total_count` 443 → 443) · code déployé `sg-payments` **byte-identique** à la baseline · **6/6 domaines live HTTP 200**
+- Statut de mission publié sur #1356 : **`completed`** (via `multi-repo-bridge.cjs`, task ID `SARG-P0-B2B-PROSPECTS-CONCIERGE-API-AUTH-20261107`) + **rapport de revue** posté en commentaire d'issue. Note : le runner Factory republie `blocked` « humanGate/moneyPath : exécution automatique interdite » **à chaque cycle d'ingestion (~30 s)** tant que l'issue reste ouverte — comportement **by-design** du pont pour toute mission `actionable === 'human'`, pas une action d'agent.
 
 ---
 
