@@ -7,19 +7,29 @@ var ALLOWED_ORIGINS = [
   "https://sargasses-guadeloupe.com",
   "https://sargassumpuntacana.com",
   "https://sargassummiami.com",
-  "https://sargassumcancun.com"
+  "https://sargassumcancun.com",
+  "https://sargazotulum.com"
 ];
 var ALLOWED_HOSTS = [
   "sargasses-martinique.com",
   "sargasses-guadeloupe.com",
   "sargassumpuntacana.com",
   "sargassummiami.com",
-  "sargassumcancun.com"
+  "sargassumcancun.com",
+  "sargazotulum.com"
 ];
+// Catalogue serveur des offres B2C — COPIE VERBATIM de la source autoritative
+// `public/api/mollie.php` ($passPrices) : aucune valeur inventee, aucun prix
+// modifie. `sos` (1,00 EUR / 24 h) etait ABSENT de cette copie (derive) alors
+// que le site le vend deja (src/SOSPlage.jsx -> pass:"sos", cents:100) et que
+// le contrat de certification l'exige (MOLLIE_TEST_CERTIFICATION.md :
+// "Allowlist: sos, p30, trip7, season"). Sans cette entree, un paiement SOS
+// etait encaisse et NE DELIVRAIT AUCUN acces.
 var PASS_PRICES = {
   p30: { EUR: 14.99, USD: 11.99 },
   trip7: { EUR: 4.99, USD: null },
-  season: { EUR: 19.99, USD: null }
+  season: { EUR: 19.99, USD: null },
+  sos: { EUR: 1.00, USD: null }
 };
 var B2B_PLANS = {
   pro_monthly: { amount: 79, currency: "EUR", description: "Sargasses Pro \u2014 mensuel (79 \u20AC/mois)", interval: "1 month" },
@@ -30,8 +40,77 @@ var B2B_PLANS = {
 // Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
 // No approved mapping currently exists from B2B_PLANS keys to this schema contract.
 var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
-var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210 };
-var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com"];
+var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, sos: 1 };
+// Allowlist centimes pour un SKU SANS prix deterministe serveur dans la
+// devise demandee. Unique offre concernee : le Trip Pass a 5,99 $ — allowlist
+// serveur deja existante et validée dans public/api/create-checkout.php
+// ($ALLOWED_CENTS USD = [599]) et src/lib/pricing.js (trip7.usd = 599).
+// L'allowlist est PAR SKU : `season` et `sos` ne sont PAS vendus en USD et
+// ne doivent donc JAMAIS beneficier du centime du Trip Pass.
+var PASS_CENTS_ALLOWLIST = {
+  trip7: { USD: [599] }
+};
+// Surcharge USD "haute saison" (juin -> novembre), SAUF trip7.
+// Meme regle que public/api/mollie.php et workers/sargagame/index.js : le
+// client envoie le montant de BASE, le serveur debite BASE x 1,15.
+var USD_HIGH_SEASON_RATE = 1.15;
+function usdHighSeasonFactor(date) {
+  var m = (date || new Date()).getMonth() + 1;
+  return m >= 6 && m <= 11 ? USD_HIGH_SEASON_RATE : 1;
+}
+function round2(value) {
+  return Math.round(Number(value) * 100) / 100;
+}
+// Resolution SERVEUR d'une offre B2C : le catalogue est la seule autorite.
+// Retourne null si le SKU est inconnu ou si la devise n'est pas vendue.
+function resolvePassOffer(pass, currency, date) {
+  var key = String(pass || "").trim();
+  if (!key || !Object.prototype.hasOwnProperty.call(PASS_PRICES, key)) return null;
+  var row = PASS_PRICES[key];
+  var cur = String(currency || "EUR").toUpperCase();
+  if (!Object.prototype.hasOwnProperty.call(row, cur)) return null;
+  var base = row[cur];
+  var factor = cur === "USD" && key !== "trip7" ? usdHighSeasonFactor(date) : 1;
+  return {
+    pass: key,
+    currency: cur,
+    base: base === null || base === undefined ? null : Number(base),
+    effective: base === null || base === undefined ? null : round2(Number(base) * factor),
+    days: PASS_DURATIONS[key] || 30
+  };
+}
+// Host de la requete : seul un domaine de la flotte est accepte. Le header
+// `Host` est fourni par le client — sans ce filtre il devenait l'URL du
+// webhook Mollie (exfiltration des metadonnees de paiement vers un domaine
+// arbitraire) et l'URL de retour.
+function requestHost(request) {
+  var host = String(request.headers.get("Host") || "").toLowerCase();
+  if (ALLOWED_HOSTS.indexOf(host) !== -1) return host;
+  try {
+    var urlHost = new URL(request.url).hostname.toLowerCase();
+    if (ALLOWED_HOSTS.indexOf(urlHost) !== -1) return urlHost;
+  } catch (_) {
+  }
+  return ALLOWED_HOSTS[0];
+}
+// URL de retour : acceptee uniquement si son origine est un domaine de la
+// flotte (sinon open redirect / phishing apres paiement).
+function safeRedirectUrl(candidate, fallback) {
+  try {
+    var u = new URL(String(candidate || ""));
+    if (ALLOWED_ORIGINS.indexOf(u.origin) !== -1) return u.toString();
+  } catch (_) {
+  }
+  return fallback;
+}
+// Identifiant de profil marchand Mollie : uniquement s'il vient du binding
+// `MOLLIE_PROFILE_ID` (et pas d'une valeur codee en dur). Sans profil
+// explicite, Mollie rattache le paiement au profil par defaut de la cle API.
+function mollieProfileId(env) {
+  var raw = String((env && env.MOLLIE_PROFILE_ID) || "");
+  return /^pfl_[A-Za-z0-9]+$/.test(raw) ? raw : "";
+}
+var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com", "sargazotulum.com"];
 var COLLECT_HOSTS = [
   "sargasses-martinique.com",
   "sargasses-guadeloupe.com",
@@ -1410,38 +1489,73 @@ async function handleMollie(request, env) {
   if (!await rateLimit(env, `mol_${action}`, 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: h });
   try {
     const apiKey = env.MOLLIE_API_KEY;
-    const profileId = env.MOLLIE_PROFILE_ID || "pfl_t8KCk4Cm2C";
-    const host = request.headers.get("Host") || ALLOWED_HOSTS[0];
+    const profileId = mollieProfileId(env);
+    const host = requestHost(request);
     if (action === "create_payment") {
-      const { pass, email, source, description, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
-      let amount;
-      let amountVal;
-      let currency;
+      const { pass, email, source, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
+      // ── P0 money path : le SERVEUR decide de l'offre et du montant ─────────
+      // Avant : un `pass` inconnu (ou absent) court-circuitait l'allowlist
+      // (n'importe quel montant accepte, jusqu'a 300 EUR) et `metadata.source`
+      // / `metadata.plan`, choisis par le client, selectionnaient la
+      // classification B2B du webhook (29 EUR -> 365 jours d'acces B2B).
+      // Le catalogue serveur est maintenant la seule autorite : SKU inconnu
+      // => 400, AUCUN appel Mollie, AUCUN paiement cree.
+      const sku = String(pass || "").trim();
+      const requestedCurrency = String(body.cur || body.currency || amountObj?.currency || "EUR").toUpperCase();
+      const offer = resolvePassOffer(sku, requestedCurrency, new Date());
+      // Le message d'erreur public reste "Prix invalide" (contrat affiche au
+      // client et deja verifie par les tests) ; `reason` porte le diagnostic
+      // technique pour les logs et la mesure.
+      if (!offer) return new Response(JSON.stringify({ error: "Prix invalide", reason: "unknown_offer" }), { status: 400, headers: h });
+      // Montant demande par le client : il doit concorder avec le catalogue.
+      let requestedVal = null;
       if (cents != null) {
         const c = parseInt(cents);
-        if (c <= 0) throw new Error("cents invalide");
-        currency = (body.cur || "EUR").toUpperCase();
-        if (!["EUR", "USD"].includes(currency)) currency = "EUR";
-        amountVal = c / 100;
-        amount = { value: amountVal.toFixed(2), currency };
-      } else if (amountObj?.value && amountObj?.currency) {
-        amount = amountObj;
-        currency = amount.currency;
-        amountVal = parseFloat(amount.value);
-      } else throw new Error("cents ou amount requis");
-      if (pass && PASS_PRICES[pass]) {
-        const expected = PASS_PRICES[pass][currency];
-        if (expected !== null && Math.abs(amountVal - expected) >= 0.02) throw new Error("Prix invalide");
-        if (expected === null && (amountVal <= 0.5 || amountVal >= 50)) throw new Error("Prix invalide");
-      } else if (!pass && (amountVal <= 0 || amountVal >= 300)) throw new Error("Prix invalide");
-      if (currency === "USD" && pass && pass !== "trip7") {
-        const m = (/* @__PURE__ */ new Date()).getMonth() + 1;
-        if (m >= 6 && m <= 11) amount.value = (parseFloat(amount.value) * 1.15).toFixed(2);
+        if (!Number.isFinite(c) || c <= 0) return new Response(JSON.stringify({ error: "Prix invalide", reason: "invalid_amount" }), { status: 400, headers: h });
+        requestedVal = c / 100;
+      } else if (amountObj?.value != null) {
+        requestedVal = parseFloat(amountObj.value);
+        if (!Number.isFinite(requestedVal)) return new Response(JSON.stringify({ error: "Prix invalide", reason: "invalid_amount" }), { status: 400, headers: h });
       }
-      const metadata = userMeta || {};
-      metadata.source = source || "unknown";
-      metadata.pass = pass || "";
-      metadata.email = email || "";
+      if (requestedVal == null) return new Response(JSON.stringify({ error: "Prix invalide", reason: "amount_required" }), { status: 400, headers: h });
+      // Email obligatoire pour un pass achetable : sans email, le grant
+      // durable ne peut etre rattache a personne -> argent paye sans acces
+      // livre. Seule l'offre SOS (1 EUR / 24 h, rapport ponctuel) accepte
+      // un email vide (cf. src/SOSPlage.jsx -> email: "").
+      const normalizedEmail = String(email || "").trim().toLowerCase();
+      if (sku !== "sos" && !EMAIL_RE.test(normalizedEmail)) {
+        return new Response(JSON.stringify({ error: "Email invalide", reason: "invalid_email" }), { status: 400, headers: h });
+      }
+      const currency = offer.currency;
+      if (offer.base != null) {
+        if (Math.abs(requestedVal - offer.base) >= 0.02) return new Response(JSON.stringify({ error: "Prix invalide", reason: "price_mismatch" }), { status: 400, headers: h });
+      } else {
+        // SKU sans prix deterministe serveur dans cette devise : seul un
+        // centime present dans l'allowlist serveur de CE SKU est accepte.
+        const requestedCents = Math.round(requestedVal * 100);
+        const allowedCents = (PASS_CENTS_ALLOWLIST[sku] || {})[currency] || [];
+        if (!allowedCents.some((n) => Math.abs(requestedCents - n) <= 2)) {
+          return new Response(JSON.stringify({ error: "Prix invalide", reason: "price_mismatch" }), { status: 400, headers: h });
+        }
+      }
+      // Le montant DEBITE est celui du catalogue (base + surcharge USD de
+      // haute saison), pas celui dicte par le client.
+      const charged = offer.effective != null ? offer.effective : requestedVal;
+      const amount = { value: charged.toFixed(2), currency };
+      // Metadonnees : la CLASSIFICATION est ecrite par le serveur, jamais par
+      // le client. `source` reste l'attribution de canal (lue par la
+      // reconciliation des ventes) mais ne selectionne plus aucun chemin B2B.
+      const metadata = {};
+      if (userMeta && typeof userMeta === "object" && !Array.isArray(userMeta)) {
+        for (const [k, v] of Object.entries(userMeta)) {
+          if (k === "pass" || k === "source" || k === "plan" || k === "offer_kind" || k === "email") continue;
+          metadata[k] = v;
+        }
+      }
+      metadata.source = String(source || "unknown").slice(0, 40);
+      metadata.offer_kind = "b2c_pass";
+      metadata.pass = sku;
+      metadata.email = normalizedEmail;
       metadata.lang = lang || "fr";
       if (referredBy) metadata.referredBy = referredBy;
       if (myReferralCode) metadata.myReferralCode = myReferralCode;
@@ -1455,20 +1569,26 @@ async function handleMollie(request, env) {
         if (u) userId = u.id;
       }
       if (userId) metadata.user_id = userId;
-      const kind = pass ? "pass" : "pro";
-      const redirectUrl = userRedirect || `https://${host}/payment/good.html?kind=${kind}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(pass || "annual")}`;
-      if (pass && email) {
-        const idemKey = `mol_${await hashString(email + "|" + pass)}`;
+      const kind = "pass";
+      const redirectUrl = safeRedirectUrl(userRedirect, `https://${host}/payment/good.html?kind=${kind}&email=${encodeURIComponent(normalizedEmail)}&plan=${encodeURIComponent(sku)}`);
+      if (normalizedEmail) {
+        const idemKey = `mol_${await hashString(normalizedEmail + "|" + sku)}`;
         const ex = await kv(env).get(idemKey);
         if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
         await kv(env).put(idemKey, "1", { expirationTtl: 60 });
       }
-      const pd = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : "Sargasses"), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || "fr_FR" };
+      const safeLocale = /^[a-z]{2}_[A-Z]{2}$/.test(String(locale || "")) ? locale : "fr_FR";
+      const pd = { amount, description: `Sargasses Pass ${sku}`, redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: safeLocale };
+      if (profileId) pd.profileId = profileId;
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
       if (cardToken) pd.cardToken = cardToken;
       if (payMethod) pd.method = payMethod;
       const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
-      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null }), { headers: h });
+      // `amount` = montant EFFECTIF que le serveur va debiter. Le front
+      // (src/PremiumModal.jsx) compare ce champ a l'affichage et emet
+      // `sg_price_mismatch` en cas d'ecart (ex. surcharge USD de saison).
+      // Sans ce champ, l'ecart affichage/debit etait invisible.
+      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null, amount: { value: amount.value, currency: amount.currency }, pass: sku, days: offer.days }), { headers: h });
     }
     if (action === "create_subscription") {
       const { plan: planKey, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
@@ -1485,15 +1605,21 @@ async function handleMollie(request, env) {
         }
       }
       if (!cid) throw new Error("customerId ou email requis");
-      const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
+      const subMeta = { ...userMeta || {}, source: "b2b_monthly", plan: planKey };
+      delete subMeta.offer_kind;
+      delete subMeta.pass;
+      delete subMeta.email;
+      const subPayload = {
         amount: { value: plan.amount.toFixed(2), currency: plan.currency },
         description: plan.description,
         webhookUrl: `https://${host}/api/mollie-webhook`,
-        metadata: { ...userMeta || {}, source: "b2b_monthly", plan: planKey },
+        metadata: subMeta,
         interval: plan.interval,
         ...mandateId ? { mandateId } : {},
         ...payMethod ? { method: payMethod } : {}
-      });
+      };
+      if (profileId) subPayload.profileId = profileId;
+      const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, subPayload);
       const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
       if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
       return new Response(JSON.stringify(result), { headers: h });
@@ -1503,7 +1629,15 @@ async function handleMollie(request, env) {
       if (!paymentId) throw new Error("paymentId requis");
       const p = await mollieReq("GET", `v2/payments/${paymentId}`, apiKey);
       const status = p.status || "unknown";
-      return new Response(JSON.stringify({ paid: ["paid", "settled"].includes(status), status, paymentId, terminal: ["canceled", "expired", "failed"].includes(status) }), { headers: h });
+      // Etat autoritatif : lu APRES l'appel API Mollie, jamais depuis le corps
+      // du webhook ni depuis un parametre fourni par le client.
+      // Un paiement de TEST (`mode: "test"`) ne delivre JAMAIS Premium : le
+      // front (PremiumModal) debloque l'acces sur `paid`, donc un paiement
+      // test ne doit pas pouvoir l'ouvrir. Si `mode` est absent de la reponse
+      // API, le comportement reste celui d'aujourd'hui (pas de regression).
+      const isTestMode = String(p.mode || "") === "test";
+      const paid = !isTestMode && ["paid", "settled"].includes(status);
+      return new Response(JSON.stringify({ paid, status, paymentId, mode: p.mode || null, terminal: ["canceled", "expired", "failed"].includes(status) }), { headers: h });
     }
     if (action === "verify_subscription") {
       const email = (body.email || "").trim();
@@ -1633,10 +1767,23 @@ function parseMollieWebhook(request, raw) {
 }
 __name(parseMollieWebhook, "parseMollieWebhook");
 function classifyPayment(metadata) {
-  const source = String(metadata?.source || "");
-  if (source === "b2b_annual") return "b2b_annual";
-  if (source === "b2b_subscription") return "b2b_onboarding";
-  if (source === "b2b_monthly" || source === "b2b_concierge") return "b2b_subscription_only";
+  // La classification vient EXCLUSIVEMENT de `offer_kind`, ecrit par le
+  // serveur a la creation du paiement. Avant, elle derivait de
+  // `metadata.source` / `metadata.plan` — deux champs choisis par le client :
+  // `source: "b2b_annual"` + `plan: "brief_monthly"` + 29 EUR suffisaient a
+  // obtenir 365 JOURS d'acces B2B (l'offre annuelle approuvee coute
+  // 290/690/1990 EUR, cf. public/api/mollie-lib.php).
+  const kind = String(metadata?.offer_kind || "");
+  if (kind === "b2b_annual") return "b2b_annual";
+  if (kind === "b2b_onboarding") return "b2b_onboarding";
+  // Paiement cree AVANT le correctif : aucun `offer_kind`. La source client
+  // ne selectionne PLUS aucun chemin de livraison — en particulier
+  // `b2b_annual` (365 jours) est definitivement retire. On conserve
+  // uniquement le canal historique `b2b_subscription`, qui menait a un code
+  // mort : `grantOnboardingAuto` leve systematiquement
+  // ("b2b_onboarding_requires_verified_schema_and_offer_contract") et n'ecrit
+  // rien. Le refus reste donc explicite, sans jamais delivrer d'acces.
+  if (!kind && String(metadata?.source || "") === "b2b_subscription") return "b2b_onboarding";
   return "b2c";
 }
 __name(classifyPayment, "classifyPayment");
@@ -1648,8 +1795,13 @@ function validateMollieAmount(payment, pass) {
   if (!expected) return { ok: false, reason: "unknown_sku" };
   const base = expected[currency];
   if (base == null) {
-    const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
-    if (cents <= 50 || cents >= upper) return { ok: false, reason: "amount_out_of_range" };
+    // SKU NON VENDU dans cette devise : seule une valeur explicitement
+    // autorisee au centime pres pour CE SKU est acceptee (Trip Pass USD =
+    // 599). Avant : toute valeur dans (0,50 ; 50) etait acceptee — un
+    // paiement `season` en USD (19,99 $) delivrait 210 JOURS d'acces, et un
+    // paiement `sos` en USD delivrait 24 h.
+    const allowed = (PASS_CENTS_ALLOWLIST[pass] || {})[currency] || [];
+    if (!allowed.some((n) => Math.abs(cents - n) <= 2)) return { ok: false, reason: "amount_mismatch" };
     return { ok: true, currency, cents };
   }
   const acceptable = [Math.round(base * 100)];
@@ -1699,11 +1851,15 @@ function validatePaymentForFulfillment(payment, metadata) {
       const amt = validateMollieAmount(payment, pass);
       if (!amt.ok) problems.push(amt.reason);
     }
-    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+    if (pass !== "sos" && !EMAIL_RE.test(email)) problems.push("invalid_email");
   } else if (kind === "b2b_annual") {
-    const amt = validateB2BAmount(payment, String(metadata?.plan || "pro_monthly"));
-    if (!amt.ok) problems.push(amt.reason);
-    if (!EMAIL_RE.test(email)) problems.push("invalid_email");
+    // FAIL CLOSED : cette Worker ne vend pas d'offre B2B annuelle (B2B_PLANS
+    // est un catalogue MENSUEL). Le chemin historique acceptait le prix
+    // mensuel (29 EUR) et delivrait 365 JOURS d'acces. Le catalogue annuel
+    // approuve (290/690/1990 EUR) vit dans public/api/mollie-lib.php et exige
+    // une resolution par MONTANT (les payment-links n'acceptent pas de
+    // metadata) : reactivation soumise a validation proprietaire.
+    problems.push("b2b_annual_not_approved");
   } else if (kind === "b2b_onboarding") {
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
     const planKey = String(metadata?.plan || "");
