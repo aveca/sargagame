@@ -230,7 +230,7 @@
 ### Branche / PR
 - Branche : `fix/p0-retire-unauthenticated-b2b-handlers` — **synchronisée sur `origin/main` par un merge** (jamais de rebase, jamais de réécriture d'historique : le SHA du code soumis à approbation reste valable)
 - PR : **#1358** — OUVERTE, **NON fusionnée**, **NON déployée**, `MERGEABLE/CLEAN`, CI **4/4 verte**
-- Commit head : `b5539fafc65e3ba87319854142bfe926215afb7d` (merge `origin/main` + documentation de la revue)
+- Commit head : dernier commit **de documentation uniquement** sur la branche — head exact lisible via `git rev-parse origin/fix/p0-retire-unauthenticated-b2b-handlers` (référence volontairement non figée : chaque commit de doc la déplace). **Le seul SHA stable et signifiant est le SHA du code : `27042c82e66f1cb0f1becc9ac087398bf2312fb0`.**
 - **SHA du code à approuver** (celui qui sera déployé) : **`27042c82e66f1cb0f1becc9ac087398bf2312fb0`** — inchangé par la synchronisation
 - Diff final vs `origin/main` : **6 fichiers** (4 `.ai/` + `workers/sg-payments/index.js` + `tests/unit/p0-b2b-api-retirement.test.cjs`) — **145 insertions / 77 suppressions**, dont **0 suppression** dans les fichiers `.ai/`
 - Neutralité vérifiée après les pushes : **0 run `cloudflare-production.yml`** sur la branche (`total_count` 443 → 443) · code déployé `sg-payments` **byte-identique** à la baseline · **6/6 domaines live HTTP 200**
