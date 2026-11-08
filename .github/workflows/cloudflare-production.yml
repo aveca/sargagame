@@ -73,9 +73,17 @@ on:
       # ni reecrire les secrets Mollie depuis un simple push sur `main`.
       - 'scripts/autopilot/runner.cjs'
       - 'scripts/autopilot/orchestrator.cjs'
+      # Module de notifications du runner LOCAL (Discord + healthchecks).
+      # Il n'etait pas commite : le runner ne pouvait pas demarrer depuis un
+      # checkout propre (MODULE_NOT_FOUND avant le premier cycle). Aucun
+      # workflow ne l'execute -> exclusion fichier par fichier (jamais
+      # `scripts/autopilot/lib/**` en bloc : des helpers critiques de la
+      # production vivent dans ce dossier).
+      - 'scripts/autopilot/lib/notify.cjs'
       # Garde-fou de non-regression de cette exclusion.
       - 'tests/unit/autopilot-bridge-paths-ignore.test.cjs'
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
+      - 'tests/unit/autopilot-clean-checkout-runnable.test.cjs'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
