@@ -306,6 +306,27 @@ function priorityToSeverity(value) {
  *     (une mission ne peut pas prétendre appartenir à un autre dépôt) ;
  *   - identifiant de tâche absent.
  */
+/**
+ * Type de l'opportunité — normalisation du contrat EXTERNE (mission GitHub)
+ * vers le contrat INTERNE de l'orchestrateur.
+ *
+ * Le contrat local exige `opp.type` (string non vide) : `validateOpportunityContract`
+ * parque l'opportunité « contrat invalide : type manquant » AVANT toute
+ * exécution. Les opportunités découvertes par la sonde locale (analyze.cjs)
+ * portent toujours un type ; c'est donc l'ADAPTATEUR — le pont — qui doit
+ * normaliser la mission GitHub, pas l'orchestrateur qui doit s'assouplir.
+ *
+ * - type déclaré par la mission -> respecté tel quel ;
+ * - sinon -> type générique honnête. Il ne doit surtout PAS déclencher le
+ *   routage browser-recon : les seuls types qui le déclenchent sont
+ *   'ux-ui', 'browser-interaction', 'aha-wow' et 'svg-assets-a11y'.
+ */
+function opportunityType(task) {
+  const declared = task && typeof task.type === 'string' ? task.type.trim() : '';
+  if (declared) return declared;
+  return task && task.mode === 'auto' ? 'auto-task' : 'agent-task';
+}
+
 function toOpportunity(task, issue, repoFullName) {
   if (!isAllowedRepo(repoFullName)) {
     return { rejected: true, reason: 'repository_not_allowed: ' + repoFullName };
@@ -342,6 +363,9 @@ function toOpportunity(task, issue, repoFullName) {
     fingerprint: fingerprint(repoFullName, issueNumber, taskId),
     legacyFingerprint: legacyFingerprint(issueNumber, taskId),
     title: String(task.title),
+    // Contrat interne de l'orchestrateur : sans type, la mission importée est
+    // parquée avant même d'être dispatchée.
+    type: opportunityType(task),
     repository_full_name: repoFullName,
     issue_number: issueNumber,
     source: `${String(task.source || 'chatgpt')} issue #${issueNumber} (${repoFullName})`,

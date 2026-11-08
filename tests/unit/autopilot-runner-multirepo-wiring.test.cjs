@@ -193,6 +193,14 @@ ok(first.statusFailures === 0, 'no status publication must fail');
 ok(queue.opportunities.length === 1, 'only the local mission may enter the local queue');
 ok(queue.opportunities[0].id === 'SARG-P1-TRUTHFUL-FRESHNESS-COPY-20261107', 'the imported opportunity must carry the mission task id');
 ok(
+  typeof queue.opportunities[0].type === 'string' && queue.opportunities[0].type.length > 0,
+  'the imported opportunity must carry a non-empty `type` — the orchestrator contract requires it and parks every mission without it as "contrat invalide: type manquant" BEFORE dispatch',
+);
+ok(
+  !['ux-ui', 'browser-interaction', 'aha-wow', 'svg-assets-a11y'].some((k) => queue.opportunities[0].type.includes(k)),
+  'the default type must not trigger the browser-recon routing (only ux-ui / browser-interaction / aha-wow / svg-assets-a11y do)',
+);
+ok(
   queue.opportunities[0].repository_full_name === 'aveca/sargagame' &&
   queue.opportunities[0].issue_number === 1362,
   'the imported opportunity must carry its source repository and issue (status correlation)'
@@ -264,6 +272,25 @@ ok(rejectQueue.opportunities.length === 0, 'a rejected mission must never enter 
 
 const outside = bridge.toOpportunity(makeTask({ repository_full_name: 'aveca/inconnu' }), { number: 1 }, 'aveca/inconnu');
 ok(!!outside.rejected, 'toOpportunity() must reject a repository outside the allowlist');
+
+// ── Le type déclaré par la mission est respecté tel quel ────────────────────
+
+const declaredType = bridge.toOpportunity(
+  makeTask({ id: 'TYPED', task_id: 'TYPED', type: 'ux-ui' }),
+  { number: 7, url: 'https://github.com/aveca/sargagame/issues/7', createdAt: '2026-11-07T22:00:00Z' },
+  'aveca/sargagame',
+);
+ok(declaredType.type === 'ux-ui', 'a type explicitly declared by the mission must be preserved (not overwritten by the generic default)');
+
+const defaultType = bridge.toOpportunity(
+  makeTask({ id: 'UNTYPED', task_id: 'UNTYPED' }),
+  { number: 8, url: 'https://github.com/aveca/sargagame/issues/8', createdAt: '2026-11-07T22:00:00Z' },
+  'aveca/sargagame',
+);
+ok(
+  typeof defaultType.type === 'string' && defaultType.type.length > 0,
+  'a mission without a declared type must still get a usable type',
+);
 
 console.log(`autopilot-runner-multirepo-wiring : ${checks} assertions OK`);
 console.log('  - runner.cjs charge multi-repo-bridge.cjs et appelle ingestMultiRepo()');
