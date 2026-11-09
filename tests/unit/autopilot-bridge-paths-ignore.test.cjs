@@ -287,7 +287,6 @@ const VEILLEURS_GENERATED_OUTPUTS = [
   'scripts/veilleurs/out/sable/latest.json',
   'scripts/veilleurs/out/digue/2026-11-09.md',
   'scripts/veilleurs/out/digue/latest.json',
-  'scripts/veilleurs/out/prisme/latest.json',
 ]
 
 for (const file of VEILLEURS_GENERATED_OUTPUTS) {
