@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-11-02T21:03:58.985Z",
+  "generatedAt": "2026-11-09T21:42:52.630Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
+      "pageCount": 366,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 173,
+      "pagesWithCanonical": 175,
       "pagesWithHreflang": 158,
-      "issueCount": 181,
+      "issueCount": 180,
       "byKind": {
-        "missing-canonical": 172,
+        "missing-canonical": 171,
         "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
@@ -46,10 +46,6 @@
           "kind": "canonical-mismatch",
           "canonical": "/mentions-legales",
           "pageUrl": "/mentions-legales.html"
-        },
-        {
-          "file": "premium/index.html",
-          "kind": "missing-canonical"
         },
         {
           "file": "remboursement.html",
@@ -230,17 +226,21 @@
         {
           "file": "widget/embed/anse-de-pigeon/index.html",
           "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
+          "kind": "missing-canonical"
         }
       ]
     },
     "gp": {
-      "pageCount": 404,
+      "pageCount": 405,
       "pagesSkippedNoindex": 20,
-      "pagesWithCanonical": 212,
+      "pagesWithCanonical": 214,
       "pagesWithHreflang": 197,
-      "issueCount": 181,
+      "issueCount": 180,
       "byKind": {
-        "missing-canonical": 172,
+        "missing-canonical": 171,
         "canonical-mismatch": 5,
         "hreflang-target-missing": 4
       },
@@ -278,10 +278,6 @@
           "kind": "canonical-mismatch",
           "canonical": "/mentions-legales",
           "pageUrl": "/mentions-legales.html"
-        },
-        {
-          "file": "premium/index.html",
-          "kind": "missing-canonical"
         },
         {
           "file": "remboursement.html",
@@ -461,6 +457,10 @@
         },
         {
           "file": "widget/embed/anse-de-pigeon/index.html",
+          "kind": "missing-canonical"
+        },
+        {
+          "file": "widget/embed/anse-de-vieux-fort-mg/index.html",
           "kind": "missing-canonical"
         }
       ]

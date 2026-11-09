@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-02T21:03:58.534Z",
+  "generatedAt": "2026-11-09T21:42:52.082Z",
   "sites": {
     "mq": {
-      "pageCount": 366,
-      "totalLinks": 6071,
-      "checkedLinks": 4729,
+      "pageCount": 367,
+      "totalLinks": 6062,
+      "checkedLinks": 4717,
       "brokenCount": 20,
       "broken": [
         {
@@ -130,9 +130,9 @@
       ]
     },
     "gp": {
-      "pageCount": 405,
-      "totalLinks": 7684,
-      "checkedLinks": 5979,
+      "pageCount": 406,
+      "totalLinks": 7665,
+      "checkedLinks": 5957,
       "brokenCount": 27,
       "broken": [
         {
