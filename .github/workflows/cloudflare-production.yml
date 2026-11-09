@@ -107,6 +107,39 @@ on:
       - 'tests/unit/autopilot-runner-multirepo-wiring.test.cjs'
       - 'tests/unit/autopilot-clean-checkout-runnable.test.cjs'
       - 'tests/unit/autopilot-queue-persistence-loop.test.cjs'
+      # ── Pont autonome GitHub <-> Factory V3 <-> OpenCode (2026-11-09) ──────
+      # Modules du cycle de vie des missions [AUTOPILOT] (outillage LOCAL du
+      # PC du fondateur). Aucun workflow ne les execute ni ne les importe :
+      # les corriger ne doit surtout pas redeployer le Worker ni reecrire les
+      # secrets de paiement (MOLLIE_API_KEY, SUPABASE_SERVICE_KEY).
+      # Exclusion STRICTE fichier par fichier — `scripts/autopilot/lib/**`
+      # contient des helpers CRITIQUES pour la production, jamais de glob.
+      - 'scripts/autopilot/lib/agent-prompt.cjs'
+      - 'scripts/autopilot/lib/agent-prompt.probe.cjs'
+      - 'scripts/autopilot/lib/agent-router.cjs'
+      - 'scripts/autopilot/lib/agent-router.test.cjs'
+      - 'scripts/autopilot/lib/final-scope.cjs'
+      - 'scripts/autopilot/lib/final-scope.test.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.cjs'
+      - 'scripts/autopilot/lib/mission-lifecycle.test.cjs'
+      - 'scripts/autopilot/lib/mission-publisher.cjs'
+      - 'scripts/autopilot/lib/mission-watchdog.cjs'
+      - 'scripts/autopilot/lib/orchestrator-scope.test.cjs'
+      - 'scripts/autopilot/lib/restore-scope.test.cjs'
+      - 'scripts/autopilot/lib/safety-guard.cjs'
+      - 'scripts/autopilot/lib/safety-guard.test.cjs'
+      - 'scripts/autopilot/lib/gitops.cjs'
+      - 'scripts/autopilot/status.cjs'
+      - 'scripts/autopilot/multi-repo-bridge-e2e.test.cjs'
+      # Persistance + exploitation du service 24/7 (tache planifiee Windows,
+      # arret propre, installation). Aucun workflow ne les execute.
+      - 'scripts/autopilot/autopilot-service.cmd'
+      - 'scripts/autopilot/autopilot-stop.cmd'
+      - 'scripts/autopilot/autopilot-stop.ps1'
+      - 'scripts/autopilot/install-service.ps1'
+      # Runbook d'exploitation du pont autonome : documentation pure, jamais
+      # deployee. Fichier par fichier (pas de `docs/**` wholesale).
+      - 'docs/AUTOPILOT-RUNBOOK.md'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy

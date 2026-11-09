@@ -1,24 +1,14 @@
 {
-  "generatedAt": "2026-11-02T21:03:51.246Z",
+  "generatedAt": "2026-11-09T21:42:43.334Z",
   "kind": "delta",
   "changes": [
     {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 2280,
-      "to": 1483,
-      "delta": -797,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
-    {
       "site": "gp",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 2444,
-      "to": 1790,
-      "delta": -654,
+      "from": 1790,
+      "to": 1530,
+      "delta": -260,
       "kind": "improvement",
       "crossesThreshold": false
     },
@@ -26,70 +16,20 @@
       "site": "mq",
       "formFactor": "combined",
       "metric": "LCP",
-      "from": 2220,
-      "to": 1667,
-      "delta": -553,
+      "from": 1667,
+      "to": 1422,
+      "delta": -245,
       "kind": "improvement",
       "crossesThreshold": false
-    },
-    {
-      "site": "puntacana",
-      "formFactor": "combined",
-      "metric": "LCP",
-      "from": 1624,
-      "to": 1397,
-      "delta": -227,
-      "kind": "improvement",
-      "crossesThreshold": false
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 251,
-      "to": 352,
-      "delta": 101,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
-      "metric": "INP",
-      "from": 415,
-      "to": 487,
-      "delta": 72,
-      "kind": "regression",
-      "crossesThreshold": false
-    },
-    {
-      "site": "gp",
-      "formFactor": "combined",
-      "metric": "CLS",
-      "from": 0.54,
-      "to": 0.02,
-      "delta": -0.52,
-      "kind": "improvement",
-      "crossesThreshold": true
-    },
-    {
-      "site": "florida",
-      "formFactor": "combined",
-      "metric": "CLS",
-      "from": 0.19,
-      "to": 0,
-      "delta": -0.19,
-      "kind": "improvement",
-      "crossesThreshold": true
     },
     {
       "site": "mq",
       "formFactor": "combined",
-      "metric": "CLS",
-      "from": 0.08,
-      "to": 0.02,
-      "delta": -0.06,
-      "kind": "improvement",
+      "metric": "INP",
+      "from": 460,
+      "to": 519,
+      "delta": 59,
+      "kind": "regression",
       "crossesThreshold": false
     }
   ]

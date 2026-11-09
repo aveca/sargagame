@@ -452,6 +452,97 @@
           "combined": null
         }
       }
+    },
+    {
+      "date": "2026-11-09",
+      "sites": {
+        "mq": {
+          "combined": {
+            "LCP": {
+              "p75": 1422,
+              "good": null
+            },
+            "INP": {
+              "p75": 519,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 461,
+              "good": null
+            }
+          }
+        },
+        "gp": {
+          "combined": {
+            "LCP": {
+              "p75": 1530,
+              "good": null
+            },
+            "INP": {
+              "p75": 517,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.01,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 481,
+              "good": null
+            }
+          }
+        },
+        "florida": {
+          "combined": {
+            "LCP": {
+              "p75": 1482,
+              "good": null
+            },
+            "INP": {
+              "p75": 376,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 508,
+              "good": null
+            }
+          }
+        },
+        "puntacana": {
+          "combined": null
+        },
+        "rivieramaya": {
+          "combined": {
+            "LCP": {
+              "p75": 1620,
+              "good": null
+            },
+            "INP": {
+              "p75": 355,
+              "good": null
+            },
+            "CLS": {
+              "p75": 0.05,
+              "good": null
+            },
+            "TTFB": {
+              "p75": 473,
+              "good": null
+            }
+          }
+        },
+        "tulum": {
+          "combined": null
+        }
+      }
     }
   ]
 }

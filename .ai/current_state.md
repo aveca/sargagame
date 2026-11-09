@@ -70,6 +70,88 @@
 - Commit head : `dd3ae1026d92c88cc6ceaa76359530a9d5847ef9`
 
 ---
+## 2026-11-09 15:36 UTC · Agent: OpenCode (coding/autopilot)
+
+### Travail effectué
+- **Résumé 1 ligne** : le pont autonome GitHub ↔ Factory V3 ↔ OpenCode est **réellement opérationnel 24/7** — service persistant installé et vérifié sur le PC réel, cycle de vie complet publié sur l'issue #1376 (`imported → started → retrying → heartbeat → blocked`), PR #1377 ouverte par le pont avec CI 4/4 verte, et **9 défauts d'exécution réels corrigés** (défauts #13 à #22).
+- **Détails** :
+  - **Cycle de vie live prouvé sur GitHub** : mission `AUTOPILOT-E2E-BRIDGE-20261109-R4` (issue `aveca/sargagame#1376`). Statuts publiés : `imported` ×1, `started` ×6, `failed` ×5, `retrying` ×3, `heartbeat` ×2, **`blocked` ×1** (anti-spam vérifié : un seul `blocked` malgré les cycles répétés, marqueur durable `finalPublishedFor`). **Aucun `completed` sans preuve.**
+  - **PR #1377 ouverte par le pont** : head `cff6e8f2f122cf5cd2ea31051b18ba23010b1fa0`, branche `agent/autopilot/2026-11-09-142542877-p1dk-184l1-…`, **1 seul fichier** `.ai/autopilot/README.md` (+16/−0) — **aucun** `public/api/**` malgré le gate qui régénère ces artefacts. CI **4/4 verte** (GitGuardian Security Checks, lighthouse-report, perf, test-frontend).
+  - **Service 24/7 installé et VÉRIFIÉ** : tâche planifiée `SargagameAutopilot` (`Running`, `AtLogOn`, `RestartInterval` 1 min ×999, `ExecutionTimeLimit` 0, `IgnoreNew`), chaîne `wscript.exe → run-hidden.vbs → cmd → autopilot-service.cmd → autopilot-live.cmd → run.cjs --live --continuous → runner.cjs`, **un seul runner** (verrou PID). Runner vivant (PID 7372) au dernier contrôle.
+  - **9 défauts réels corrigés** (détails et preuves dans `.ai/changelog.md`) : PR polluée par les artefacts de build (#13) · `ReferenceError: diff` (#14) · `ReferenceError: allowedScope` (#15) · crash du pont sur bug interne (#16) · l'agent « narrait » au lieu d'écrire (#17) · `completed` fantôme du watchdog (#18) · statut final jamais publié (#19) · arrêt propre impossible (#20) · boucle de service sans délai (#21) · moteur exécuté annoncé faux (#22).
+  - **Corrections structurelles, pas des contournements** : la phase de commit est une **fonction à paramètres explicites** (`phaseCommitAndPublish`) → la famille de bugs « variable hors portée après la boucle » est structurellement impossible ; le prompt est une **fonction pure exportée** (`buildAgentPrompt`) → il est vérifiable hors-ligne **et** testable en conditions réelles via une sonde qui appelle le même constructeur.
+  - **Sonde réelle du prompt** : `Read` → `Write` → « Wrote file successfully. » — 5/5 contrôles OK (fichier modifié, titre de section, commande, ligne de sortie, contenu d'origine conservé), prompt 14 370 car., modèle `qwen3.5:9b`.
+  - **Garde-fous** : 5 nouveaux modules (`safety-guard`, `mission-lifecycle`, `mission-watchdog`, `mission-publisher`, `agent-router`, `final-scope`, `agent-prompt`) + 6 fichiers de test + extension du test de câblage (47 assertions). Le garde-fou anti-fuite de portée est **mutation-testé** (défaut réintroduit → 3 échecs sur le code muté → restauration → OK).
+  - **Sécurité inchangée et fail-closed** : une issue est une donnée, jamais une autorisation. Déploiement production, merge, paiement/prix, secrets/permissions, migrations irréversibles et envois massifs sont refusés **et signalés** (avec gestion des négations).
+
+### Fichiers modifiés
+- `scripts/autopilot/orchestrator.cjs` — `phaseCommitAndPublish` (paramètres explicites), revalidation post-gate, reprise bornée (`MAX_BRIDGE_ERROR_RETRIES`), publication des preuves dès la PR, publication de l'état final (sélection **ou** mission d'origine via `findByPr`).
+- `scripts/autopilot/implement.cjs` — prompt construit par `buildAgentPrompt` (fonction pure) ; moteur réel `opencode` annoncé.
+- `scripts/autopilot/lib/agent-prompt.cjs` — **nouveau** : constructeur pur du prompt (action en tête + rappel en fin, `read` puis `write`).
+- `scripts/autopilot/lib/agent-prompt.probe.cjs` — **nouveau** : sonde réelle (mêmes constructeur et adaptateur que la production).
+- `scripts/autopilot/lib/safety-guard.cjs` + `lib/safety-guard.test.cjs` — **nouveaux** : refus fail-closed des missions dangereuses, gestion des négations, masquage ciblé des secrets.
+- `scripts/autopilot/lib/mission-lifecycle.cjs` + `lib/mission-lifecycle.test.cjs` — **nouveaux** : état durable des missions, `findByTaskId`, `findByPr`, `finalPublishedFor`.
+- `scripts/autopilot/lib/mission-watchdog.cjs` — **nouveau** : reprise sans doublon ; l'état terminal **reflète** la réalité (plus de faux `completed`).
+- `scripts/autopilot/lib/mission-publisher.cjs` — **nouveau** : publication unique des statuts de cycle de vie sur l'issue source.
+- `scripts/autopilot/lib/agent-router.cjs` — **nouveau** : routage strict ; seul `opencode` est câblé non-interactif.
+- `scripts/autopilot/lib/final-scope.cjs` + `lib/final-scope.test.cjs` — **nouveaux** : périmètre final + revalidation post-gate.
+- `scripts/autopilot/lib/gitops.cjs` — `restoreOutOfScope` (restauration hors périmètre), `getPrDetail` porte désormais l'URL de PR.
+- `scripts/autopilot/lib/orchestrator-scope.test.cjs` — **nouveau** : garde-fou **statique** anti-fuite de portée (mutation-testé).
+- `scripts/autopilot/lib/restore-scope.test.cjs` — **nouveau** : restauration hors périmètre.
+- `scripts/autopilot/multi-repo-bridge.cjs` + `multi-repo-bridge.test.cjs` + `multi-repo-bridge-e2e.test.cjs` — import allowlisté, `AUTOPILOT_TASK` validé, anti-doublon, E2E 12 étapes.
+- `scripts/autopilot/runner.cjs`, `scripts/autopilot/status.cjs`, `scripts/autopilot/prune.cjs` — câblage du pont multi-dépôt, état consultable, purge.
+- `scripts/autopilot/autopilot-service.cmd`, `autopilot-stop.cmd`, `autopilot-stop.ps1`, `install-service.ps1` — **nouveaux** : persistance, arrêt propre, installation de la tâche planifiée.
+- `docs/AUTOPILOT-RUNBOOK.md` — **nouveau** : runbook d'exploitation (état, redémarrage, arrêt, diagnostic, limites).
+- `.ai/autopilot/config.json` — section `mission` (heartbeat, watchdog, tentatives).
+- `.ai/autopilot/.gitignore` — `mission-state.json` (état runtime) **ignoré**.
+- `tests/unit/autopilot-runner-multirepo-wiring.test.cjs` — 47 assertions (forme stricte `publishMissionStatus(opp.id, 'failed')` + reprise bornée).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — handoff de cette mission.
+
+### Tests réalisés
+- [ ] `npm run build` → **N/A** (outillage d'automatisation uniquement — aucun bundle applicatif, Worker, `public/api/**` ou interface touché)
+- [ ] `node scripts/check-bundle-budget.cjs` → **N/A** (idem — budget inchangé, aucune dépendance ajoutée)
+- [ ] `php -l` → **N/A** (aucun `.php` touché)
+- [ ] `node scripts/ux-smoke.mjs` → **N/A** (aucune interface touchée)
+- [x] `node --check` sur chaque `.cjs` touché → exit 0
+- [x] `node scripts/run-tests.cjs` → **185/189 fichiers OK** ; les **4 échecs sont PRÉEXISTANTS** (identiques à `origin/main`, lisent `dist/` et `scripts/automation/**`, **aucun fichier modifié par ce travail**) : `sitemap-guard-beach-pages`, `b2b-outreach-proof-freshness`, `generate-og-beaches-freshness`, `regional-homepage-freshness-copy`
+- [x] Tests ciblés : `safety-guard` OK · `mission-lifecycle` OK · `final-scope` OK · `restore-scope` OK · `orchestrator-scope` OK · `multi-repo-bridge-e2e` OK · `multi-repo-bridge` OK · `autopilot-runner-multirepo-wiring` **47 assertions OK**
+- [x] **Mutation-test du garde-fou anti-fuite de portée** : le défaut réel (`allowedScope` redéclaré dans la boucle) est réintroduit → **3 échecs** sur le code muté → restauration → **OK**
+- [x] **Sonde réelle du prompt** (`agent-prompt.probe.cjs`) : agent réel `Read` → `Write` → « Wrote file successfully. » — **5/5** contrôles OK
+- [x] **Cycle de vie live vérifié sur GitHub** (issue #1376) : compte exact des statuts publiés, PR #1377, commit SHA, branche, agent, motif de blocage
+- [x] **Conformité de la PR #1377 vérifiée** : périmètre strict, aucune denylist, aucun secret dans le corps, mention de la revalidation post-gate
+- [x] **Anti-spam vérifié** : 1 seul commentaire `blocked` malgré les cycles répétés
+- [x] **Reprise après crash mid-mission vérifiée** (même `task_id`, pas de doublon) ; une mission terminale n'est jamais relancée
+- [x] **Arrêt propre vérifié** : `autopilot-stop.cmd` → verrou libéré en 3–15 s, aucun processus `node` résiduel
+- [x] `git diff --check` → OK
+
+### Problèmes restants / Blockers
+- [ ] **PR #1377 non mergée** (en attente de vérification humaine) → le clone runner reste épinglé sur le code corrigé. — sévérité P1 — action : `coding_agent` après merge, rebasculer le checkout runner sur `origin/main`.
+- [ ] **Déclencheur `AtStartup` refusé sans droits admin** → le service démarre à chaque ouverture de session, pas au démarrage de la machine. La tâche est `Interactive` (session ouverte requise). — sévérité P2 — action : exécuter `scripts/autopilot/install-service.ps1` depuis une console **élevée**.
+- [ ] **Pas d'accès API Cloudflare local** (`CLOUDFLARE_API_TOKEN` absent, `.wrangler` absent) → la phase **PREVIEW** ne peut pas déployer l'aperçu Pages (`https://1377.sargagame.pages.dev` non vérifiable) → la mission finit `blocked-preview` et non `completed`. — sévérité P1 — action : fournir le token + `.wrangler`.
+- [ ] **`aveca/bot-wow` sans harness `scripts/autopilot`** → ses missions sont **relayées** (statut publié) mais **pas exécutées** localement. — sévérité P1 — action : installer le même harness côté `bot-wow`.
+- [ ] **`f3.py` (Factory V3 Python) inexploitable** : `INTERACTIVE`, `claims_allowed:false`, base figée au 2026-10-27. — sévérité P3 — action : hors chemin retenu, documenté.
+- [ ] **Pont control `C:\factory\control\github-bridge.cjs`** : processus mort, heartbeat figé au 2026-10-22, hors périmètre (pont par labels `factory:*`, pas le contrat `[AUTOPILOT]`). — sévérité P3 — action : documenté dans le runbook.
+- [ ] **Aider / Hermes** : déclarés dans la Factory mais **aucune voie non interactive** → jamais annoncés comme exécutés (seul `opencode` l'est). — sévérité P2 — action : câbler un exécutable non interactif par agent.
+- [ ] **`queue.json` / `scheduler.json` restent versionnés** (convention existante du dépôt) → un commit peut y embarquer du churn runtime. — sévérité P3 — action : décider d'un futur `git rm --cached` (hors périmètre de cette mission).
+
+### Prochaine action recommandée
+1. Merger la PR de cette mission après relecture, puis rebasculer le checkout runner sur `origin/main` et redémarrer le service — Rôle : `coding_agent`.
+2. Fournir `CLOUDFLARE_API_TOKEN` + `.wrangler` pour rendre la phase PREVIEW vérifiable et allowlisted `completed` — Rôle : `devops_agent`.
+3. Installer le harness `scripts/autopilot` côté `aveca/bot-wow` pour exécuter (et non seulement relayer) ses missions — Rôle : `coding_agent`.
+
+### Branche / PR
+- Branche : `agent/coding/autopilot-bridge-20261109`
+- PR : **#1378** — OPEN, NON mergée (base `main`), CI **4/4 verte**
+- Commit head : `2c8ac8b178138b50ed18a238eadf698bfe8b1fe2`
+  (`41f2e6a8` = livraison initiale · `2c8ac8b17` = correctif du défaut #23 révélé par la CI)
+
+> **Complément (après premier push)** : la CI de #1378 a révélé le **défaut #23** — `multi-repo-bridge-e2e.test.cjs` exigeait un agent **réellement installé** (binaire `opencode` absent du runner CI) : le test passait en local et échouait en CI. Correctif : point d'injection `options.router` dans le pont + test vérifiant la **décision** de routage (et non l'installation de la machine) + nouveau scénario « machine sans agent » (la mission reste importée et actionnable) + nouveau `lib/agent-router.test.cjs`.
+> **Preuve CI sur le SHA exact `2c8ac8b17`** : `test-frontend` **190/190 fichiers de test OK** (les 4 échecs locaux ne se reproduisent pas en CI : `dist/` y est construit), `perf` OK, `lighthouse-report` OK, `GitGuardian Security Checks` OK.
+> **Neutralité production confirmée** : **0 run** `cloudflare-production.yml` sur la branche (les derniers runs datent du 2026-11-07) — aucun déploiement, aucun secret de paiement réécrit.
+
+---
+
+
 ## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
 
 ### Travail effectué

@@ -808,8 +808,12 @@ var index_default = {
         headers: { "Content-Type": "application/json", "Cache-Control": isFree ? "public, max-age=1800" : "no-store" }
       });
     }
-    if (path === "/api/b2b-prospects.php") return b2bProspects(env, request);
-    if (path === "/api/b2b-concierge.php") return b2bConcierge(env, request);
+    if (path === "/api/b2b-prospects.php" || path === "/api/b2b-concierge.php") {
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
+    }
     if (path === "/api/b2b-trial.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: cors(request) });
       if (!await rateLimit(env, "b2b_trial", 50)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
@@ -893,26 +897,10 @@ var index_default = {
       }
     }
     if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
-      const table = path.includes("contacts") ? "b2b_contacts" : path.includes("events") ? "b2b_events" : path.includes("scores") ? "b2b_scores" : "b2b_forecast_deliveries";
-      const h = cors(request);
-      if (request.method === "GET") {
-        const qs = url.searchParams.toString();
-        const rows = await supa(env, table, "GET", null, `?${qs}&select=*`);
-        return new Response(JSON.stringify(rows), { headers: h });
-      }
-      if (request.method === "POST") {
-        const input = await request.json();
-        const rows = await supa(env, table, "POST", input);
-        return new Response(JSON.stringify(rows?.[0] || { ok: true }), { headers: h });
-      }
-      if (request.method === "PATCH") {
-        const id = url.searchParams.get("id");
-        if (!id) return new Response(JSON.stringify({ error: "id required" }), { status: 400, headers: h });
-        const input = await request.json();
-        const rows = await supa(env, table, "PATCH", input, `?id=eq.${id}&select=*`);
-        return new Response(JSON.stringify(rows?.[0]), { headers: h });
-      }
-      return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: h });
+      return new Response(JSON.stringify({ error: "endpoint_retired" }), {
+        status: 410,
+        headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
+      });
     }
     if (path.startsWith("/api/partner/")) {
       return handlePartnerCommerce(request, env, ctx, path);

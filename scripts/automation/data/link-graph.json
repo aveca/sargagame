@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-02T21:03:58.397Z",
+  "generatedAt": "2026-11-09T21:42:51.895Z",
   "sites": {
     "mq": {
-      "pageCount": 365,
-      "noIncomingCount": 196,
-      "fewIncomingCount": 42,
+      "pageCount": 366,
+      "noIncomingCount": 195,
+      "fewIncomingCount": 44,
       "phantomCount": 16,
       "noIncoming": [
         {
@@ -105,7 +105,7 @@
         {
           "url": "/premium/",
           "in": 0,
-          "out": 0
+          "out": 1
         },
         {
           "url": "/pro/widget-config/",
@@ -121,11 +121,6 @@
           "url": "/sargasses-aujourdhui/",
           "in": 0,
           "out": 10
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 0,
-          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -256,6 +251,11 @@
           "url": "/widget/embed/anse-bertrand-nord/",
           "in": 0,
           "out": 0
+        },
+        {
+          "url": "/widget/embed/anse-bonneville/",
+          "in": 0,
+          "out": 1
         }
       ],
       "fewIncoming": [
@@ -308,6 +308,16 @@
           "url": "/sargasses-martinique-cette-semaine/",
           "in": 1,
           "out": 11
+        },
+        {
+          "url": "/sargasses-novembre-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-octobre-2026/",
+          "in": 1,
+          "out": 3
         },
         {
           "url": "/veilleur-mvp/anse-mitan/",
@@ -398,22 +408,12 @@
           "url": "/es/mejores-playas-sin-sargazo/",
           "in": 2,
           "out": 2
-        },
-        {
-          "url": "/es/temporada-sargazo/",
-          "in": 2,
-          "out": 2
-        },
-        {
-          "url": "/faq/",
-          "in": 2,
-          "out": 6
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 188,
+          "in": 190,
           "out": 17
         },
         {
@@ -438,7 +438,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
         },
         {
@@ -485,7 +485,7 @@
         },
         {
           "url": "/",
-          "in": 188,
+          "in": 190,
           "out": 17
         },
         {
@@ -618,9 +618,9 @@
       ]
     },
     "gp": {
-      "pageCount": 404,
-      "noIncomingCount": 202,
-      "fewIncomingCount": 42,
+      "pageCount": 405,
+      "noIncomingCount": 201,
+      "fewIncomingCount": 44,
       "phantomCount": 20,
       "noIncoming": [
         {
@@ -736,7 +736,7 @@
         {
           "url": "/premium/",
           "in": 0,
-          "out": 0
+          "out": 1
         },
         {
           "url": "/pro/widget-config/",
@@ -767,11 +767,6 @@
           "url": "/sargasses-marie-galante/",
           "in": 0,
           "out": 12
-        },
-        {
-          "url": "/sargasses-octobre-2026/",
-          "in": 0,
-          "out": 2
         },
         {
           "url": "/sargasses-pour-hotels/",
@@ -872,6 +867,11 @@
           "url": "/widget/embed/anse-a-l-eau/",
           "in": 0,
           "out": 1
+        },
+        {
+          "url": "/widget/embed/anse-a-la-barque-ste-anne/",
+          "in": 0,
+          "out": 1
         }
       ],
       "fewIncoming": [
@@ -946,6 +946,16 @@
           "out": 11
         },
         {
+          "url": "/sargasses-novembre-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
+          "url": "/sargasses-octobre-2026/",
+          "in": 1,
+          "out": 3
+        },
+        {
           "url": "/sargasses-saint-francois/",
           "in": 1,
           "out": 12
@@ -1014,22 +1024,12 @@
           "url": "/en/best-beaches-guadeloupe/",
           "in": 2,
           "out": 1
-        },
-        {
-          "url": "/en/understanding-sargassum/",
-          "in": 2,
-          "out": 0
-        },
-        {
-          "url": "/es/mapa-sargazo/",
-          "in": 2,
-          "out": 0
         }
       ],
       "topTargets": [
         {
           "url": "/",
-          "in": 313,
+          "in": 314,
           "out": 15
         },
         {
@@ -1039,7 +1039,7 @@
         },
         {
           "url": "/carte-sargasses/",
-          "in": 132,
+          "in": 133,
           "out": 13
         },
         {
@@ -1054,7 +1054,7 @@
         },
         {
           "url": "/fiabilite/",
-          "in": 47,
+          "in": 48,
           "out": 8
         },
         {
@@ -1116,7 +1116,7 @@
         },
         {
           "url": "/",
-          "in": 313,
+          "in": 314,
           "out": 15
         },
         {

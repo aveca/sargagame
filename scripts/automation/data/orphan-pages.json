@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-11-02T21:03:51.119Z",
+  "generatedAt": "2026-11-09T21:42:43.187Z",
   "sites": {
     "mq": {
       "sitemapSize": 15,
-      "orphanCount": 7,
+      "orphanCount": 8,
       "orphansByKind": {
-        "editorial": 2,
+        "editorial": 3,
         "beach": 0,
         "other": 5
       },
       "linkDonors": [
         {
           "url": "https://sargasses-martinique.com/",
-          "impressions": 3947,
-          "clicks": 416
+          "impressions": 4170,
+          "clicks": 462
         }
       ],
       "orphans": [
@@ -29,6 +29,15 @@
         {
           "url": "https://sargasses-martinique.com/danger-sargasses-h2s/",
           "impressions": 0,
+          "clicks": 0,
+          "kind": "editorial",
+          "recommendedLinkSources": [
+            "https://sargasses-martinique.com/"
+          ]
+        },
+        {
+          "url": "https://sargasses-martinique.com/previsions/",
+          "impressions": 4,
           "clicks": 0,
           "kind": "editorial",
           "recommendedLinkSources": [
@@ -64,7 +73,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/en/sargassum-season/",
-          "impressions": 5,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -73,7 +82,7 @@
         },
         {
           "url": "https://sargasses-martinique.com/mentions-legales.html",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
@@ -93,13 +102,13 @@
       "linkDonors": [
         {
           "url": "https://sargasses-guadeloupe.com/",
-          "impressions": 4918,
-          "clicks": 483
+          "impressions": 5030,
+          "clicks": 549
         },
         {
           "url": "https://sargasses-guadeloupe.com/carte-sargasses/",
-          "impressions": 1520,
-          "clicks": 146
+          "impressions": 2143,
+          "clicks": 220
         }
       ],
       "orphans": [
@@ -145,7 +154,7 @@
         },
         {
           "url": "https://sargasses-guadeloupe.com/en/best-beaches-no-sargassum/",
-          "impressions": 1,
+          "impressions": 0,
           "clicks": 0,
           "kind": "other",
           "recommendedLinkSources": [
