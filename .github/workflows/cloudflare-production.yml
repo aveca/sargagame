@@ -140,6 +140,11 @@ on:
       # Runbook d'exploitation du pont autonome : documentation pure, jamais
       # deployee. Fichier par fichier (pas de `docs/**` wholesale).
       - 'docs/AUTOPILOT-RUNBOOK.md'
+      # Veilleurs : uniquement les artefacts générés (jamais les scripts exécutés
+      # par veilleurs.yml). Les digests ne font pas partie du Worker public.
+      - 'scripts/veilleurs/DIGEST.md'
+      - 'scripts/veilleurs/latest-digest.json'
+      - 'scripts/veilleurs/out/**'
   workflow_run:
     workflows:
       - Daily Copernicus + Deploy
