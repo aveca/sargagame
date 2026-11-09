@@ -42,6 +42,10 @@ const { deployAndValidatePreview } = require('./preview-deploy.cjs');
 const { runOnlineQA } = require('./online-qa.cjs');
 const selfHealing = require('./lib/self-healing.cjs');
 const multiRepoBridge = require('./multi-repo-bridge.cjs');
+const lifecycle = require('./lib/mission-lifecycle.cjs');
+const missionPublisher = require('./lib/mission-publisher.cjs');
+const safetyGuard = require('./lib/safety-guard.cjs');
+const finalScope = require('./lib/final-scope.cjs');
 
 const args = process.argv.slice(2);
 const DRY = args.includes('--dry');
@@ -50,6 +54,13 @@ const HEADED = process.env.SARGA_AUTOPILOT_HEADED === '1';
 
 const t0 = Date.now();
 let cfg, report, log, lastProgress = Date.now();
+
+/**
+ * Nombre maximal de REPRISES après un bug interne du pont (ReferenceError,
+ * exception inattendue). Au-delà, la mission est PARQUÉE avec son
+ * diagnostic : jamais abandonnée en silence, jamais relancée en boucle.
+ */
+const MAX_BRIDGE_ERROR_RETRIES = 3;
 
 function elapsedMin() { return (Date.now() - t0) / 60000; }
 function progress(msg) {
@@ -79,27 +90,49 @@ function factoryStop(reason) {
  *  - silence explicite pour les opportunités sans issue source (les
  *    opportunités de découverte locale n'ont pas d'issue GitHub) ;
  *  - dépôt hors allowlist : refus (fail-closed).
+ *
+ * @param {string} oppId    identifiant de mission
+ * @param {string} status   état (imported/started/heartbeat/completed/blocked/failed/retrying)
+ * @param {string} detail   détail lisible
+ * @param {object} evidence preuves {branch, agent, model, startedAt, commit, tests, pr, reason}
  */
-function publishMissionStatus(oppId, status, detail) {
-  if (DRY) return;
-  try {
-    const queue = mem.loadQueue();
-    const opp = (queue.opportunities || []).find(o => o && o.id === oppId);
-    if (!opp) return;
-    const repo = String(opp.repository_full_name || '').trim();
-    const issue = Number(opp.issue_number);
-    if (!repo || !Number.isInteger(issue) || issue <= 0) return;
-    if (!multiRepoBridge.isAllowedRepo(repo)) return;
-    const ok = multiRepoBridge.publishStatus(repo, issue, status, String(detail || ''), {
-      taskId: opp.id,
-      fingerprint: opp.fingerprint,
-    });
-    if (!ok && typeof log === 'function') {
-      log(`[mission-status] publication "${status}" impossible sur ${repo}#${issue}`);
+function publishMissionStatus(oppId, status, detail, evidence = {}) {
+  return missionPublisher.publishMissionStatus(oppId, status, detail, evidence, {
+    mem, multiRepoBridge, lifecycle, log, dry: DRY,
+  });
+}
+
+/**
+ * Branche de la mission — calculée UNE SEULE fois pour que le statut publié
+ * sur l'issue (`started`) porte exactement la branche qui sera poussée.
+ */
+function branchFor(opp) {
+  const slug = String((opp && (opp.recipe || opp.title)) || 'mission')
+    .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  return `${cfg.git.branchPrefix}${report.id}-${slug}`;
+}
+
+/**
+ * Heartbeat de mission : publication périodique sur l'issue pendant que
+ * l'agent travaille. Sans lui, une mission longue est MUETTE (le fondateur ne
+ * sait pas si elle avance) et le watchdog n'a aucun signal de vie.
+ */
+function startMissionHeartbeat(opp) {
+  const seconds = Number(cfg.mission && cfg.mission.heartbeatSeconds) || 300;
+  if (!seconds || seconds <= 0) return null;
+  const timer = setInterval(() => {
+    try {
+      publishMissionStatus(opp.id, 'heartbeat', `agent en cours (heartbeat ${Math.round(seconds / 60)} min)`, {
+        branch: branchFor(opp),
+        startedAt: opp.missionStartedAt || undefined,
+        lastHeartbeatAt: C.nowIso(),
+      });
+    } catch (e) {
+      if (typeof log === 'function') log(`[mission-heartbeat] publication échouée: ${e.message}`);
     }
-  } catch (e) {
-    if (typeof log === 'function') log(`[mission-status] publication "${status}" ignorée: ${e.message}`);
-  }
+  }, seconds * 1000);
+  if (typeof timer.unref === 'function') timer.unref();
+  return timer;
 }
 
 /** Statut de mission correspondant à un état de parking local. */
@@ -110,7 +143,7 @@ function missionStatusForPark(status) {
 }
 
 /** Park a single task (HUMAN GATE, READY TO MERGE, blocked) - factory continues */
-function parkTask(oppId, reason, status = 'blocked') {
+function parkTask(oppId, reason, status = 'blocked', evidence = {}) {
   // Garde-fou mémoire : seuls les statuts VALID_STATES sont persistables.
   // Les codes fins (blocked-preview, parked…) restent dans blockReason.
   const VALID = new Set(['new', 'picked', 'in_progress', 'blocked', 'validation', 'ready-to-merge', 'done', 'rejected']);
@@ -121,7 +154,7 @@ function parkTask(oppId, reason, status = 'blocked') {
   mem.updateOpportunity(oppId, { status: safe, blockReason: (`[${status}] ` + reason).slice(0, 200), parkedAt: C.nowIso() });
   // Statut corrélé sur l'issue source : `completed` = travail terminé (PR prête
   // à merge humain), `failed` = tâche rejetée, `blocked` = parkée.
-  publishMissionStatus(oppId, missionStatusForPark(safe), reason);
+  publishMissionStatus(oppId, missionStatusForPark(safe), reason, { reason, ...evidence });
   return { parked: true, reason };
 }
 
@@ -340,10 +373,120 @@ function phaseAnalyze(obs) {
   return res;
 }
 
+/**
+ * Phase COMMIT & PUBLISH — extraction EXPLICITE du bloc post-gate.
+ *
+ * Pourquoi cette extraction (défaut réel du 2026-11-09, deux fois) :
+ * le bloc de commit vivait APRÈS la boucle `while (attempt <= …)` de
+ * `phaseImplementLocal`, alors que plusieurs de ses entrées étaient
+ * DÉCLARÉES DANS la boucle (`allowedScope`) ou supprimées par une
+ * modification de diff (`diff`). Résultat : `ReferenceError:
+ * allowedScope is not defined` / `diff is not defined` au moment précis
+ * du commit — après un gate VERT et un agent qui avait réellement
+ * travaillé. La mission était perdue et l'orchestrateur crashait.
+ *
+ * Correction STRUCTURELLE (pas un simple déplacement de ligne) : toutes
+ * les données nécessaires au commit sont désormais des PARAMÈTRES
+ * EXPLICITES. Aucune variable implicite ne traverse la frontière de la
+ * boucle : la famille de bugs est structurellement impossible.
+ */
+async function phaseCommitAndPublish({ opp, wt, branch, allowedScope, gateFiles, gate }) {
+  // ── RE-VALIDATION POST-GATE (défaut réel corrigé le 2026-11-09) ────────
+  //
+  // Le gate de ship lance `npm run build`, qui RÉGÉNÈRE des artefacts
+  // versionnés (`public/api/**`, `public/data/**`, `public/version.json`).
+  // Le diff était RECALCULÉ ici, juste avant `commitAll`, alors que le scope
+  // guard et la denylist n'avaient été validés que sur le diff ANTÉRIEUR au
+  // gate. Conséquence observée : la PR #1374 (mission « documenter
+  // `.ai/autopilot/README.md` ») contenait 4 fichiers — le README + 3 fichiers
+  // `public/api/**` / `public/data/**` (denylist contournée).
+  //
+  // Correctif en 4 temps, fail-closed :
+  //   1. restaurer tout fichier hors périmètre (artefacts de build compris) ;
+  //   2. recalculer le diff RÉELLEMENT committé ;
+  //   3. revalider scope + denylist + budget + secrets sur cette liste ;
+  //   4. committer UNIQUEMENT cette liste.
+  if (LIVE) progress('COMMIT      committing...');
+  const restore = gitops.restoreOutOfScope(wt, allowedScope, m => log(m));
+  if (restore.failed.length) {
+    return parkTask(opp.id, `restore hors périmètre impossible: ${restore.failed.join(' ; ')}`, 'blocked', { branch });
+  }
+  const finalDiff = gitops.diffStats(wt);
+  const finalCheck = finalScope.finalScopeCheck({
+    changedFiles: finalDiff.files,
+    allowedFiles: allowedScope,
+    gateFiles,
+  });
+  if (!finalCheck.ok) {
+    S('FAILED', `SCOPE VIOLATION (post-gate) — ${finalCheck.violations.join(' ; ')}`);
+    return parkTask(opp.id, `scope violation (post-gate): ${finalCheck.violations.join(' ; ')}`, 'blocked', { branch });
+  }
+  const finalEv = policy.evaluateFiles(finalDiff.files, cfg);
+  if (!finalEv.allowed) return parkTask(opp.id, `denylist: ${finalEv.denied.join(', ')}`, 'blocked', { branch });
+  const finalBudget = policy.evaluateBudget(finalDiff, cfg);
+  if (finalBudget.length) return parkTask(opp.id, `budget: ${finalBudget.join(' ; ')}`, 'blocked', { branch });
+  const finalSecrets = policy.scanSecrets(finalDiff.diffText);
+  if (finalSecrets.length) return parkTask(opp.id, `secrets: ${finalSecrets.join(', ')}`, 'blocked', { branch });
+
+  const commitSha = gitops.commitAll(wt,
+    `fix(autopilot): ${opp.title.slice(0, 90)}\n\nOpportunité ${opp.id}\nPreuve : ${(opp.evidence || '').slice(0, 200)}\nRollback : ${opp.rollback || 'revert'}\n\nCycle autopilot ${report.id}`,
+    finalDiff.files);
+  if (LIVE) progress('PUSH        pushing...');
+  gitops.pushBranch(wt, branch, cfg);
+  const body = [
+    `## 🤖 Cycle autopilot ${report.id}`, '',
+    `**Opportunité** : ${opp.id} — ${opp.title}`, '',
+    `**Preuve** : ${opp.evidence || 'n/a'}`, '',
+    `**Impact attendu** : ${opp.expectedImpact || 'n/a'}`, '',
+    `### Gate de ship (worktree dédié)`, '',
+    gate.steps.map(s => `- ✅ ${s}`).join('\n'), '',
+    `### Rollback`, '',
+    `${opp.rollback || 'revert ' + commitSha}`, '',
+    `### Frontières`, '',
+    `- ${finalDiff.files.length} fichiers, +${finalDiff.insertions}/-${finalDiff.deletions} lignes`,
+    `- périmètre strict : ${finalDiff.files.join(', ')}`,
+    `- denylist money/secrets/api/régions : OK (revalidée APRÈS le gate)`,
+  ].join('\n');
+  if (LIVE) progress('PR          creating...');
+  // Échec PR (gh en panne, droits, réseau) : parquer avec diagnostic au lieu
+  // de crasher (la branche est déjà poussée — rien n'est perdu, reprise au
+  // prochain cycle). Raison toujours préservée, jamais masquée.
+  let pr;
+  try {
+    pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
+  } catch (e) {
+    const diag = `pr create failed (branche ${branch} poussée, commit ${commitSha}) : ${String((e && e.message) || e).split('\n').slice(0, 3).join(' / ').slice(0, 200)}`;
+    S('FAILED', diag);
+    return parkTask(opp.id, diag, 'blocked');
+  }
+  report.prUrl = pr.url;
+  S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
+  if (LIVE) progress('PR          ' + pr.url);
+
+  // PUBLICATION DES PREUVES dès l'ouverture de la PR.
+  //
+  // Pourquoi (défaut réel du 2026-11-09, mission #1376) : le commit SHA,
+  // l'URL de PR et les tests n'étaient publiés qu'en fin de pipeline. Une
+  // mission interrompue entre la PR et la fin (crash, redémarrage, PR
+  // bloquante) ne laissait sur l'issue qu'un `heartbeat` : le fondateur ne
+  // voyait NI le commit, NI la PR, NI les tests réellement exécutés.
+  // On publie donc les preuves dès qu'elles existent.
+  publishMissionStatus(opp.id, 'heartbeat', `PR ouverte — commit ${String(commitSha).slice(0, 8)} · ${finalDiff.files.length} fichier(s) · en attente de CI`, {
+    branch,
+    commit: commitSha,
+    pr: pr.url,
+    agent: (opp.agent && opp.agent.agent) || null,
+    model: (opp.agent && opp.agent.model) || null,
+    tests: gate.steps,
+    reason: `PR ${pr.url} ouverte — gate vert, en attente de CI`,
+  });
+
+  return { pr, branch, commitSha, wt };
+}
+
 /** Implémentation locale avec self-repair ≤ 3 */
 async function phaseImplementLocal(opp) {
-  const slug = (opp.recipe || opp.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
-  const branch = cfg.git.branchPrefix + report.id + '-' + slug;
+  const branch = branchFor(opp);
 
   if (DRY) { S('IMPLEMENTED', `[dry-run] aurait créé ${branch}`); return { dry: true }; }
 
@@ -366,14 +509,35 @@ async function phaseImplementLocal(opp) {
     }
     throw e;
   }
-  let attempt = 0, gate = null, impl = null;
+  let attempt = 0, gate = null, impl = null, failureContext = null;
+  // Fichiers soumis au gate (hors boucle) : la revalidation post-gate doit
+  // pouvoir vérifier que chaque fichier committé a bien été contrôlé.
+  let gateFiles = [];
+  // Périmètre AUTORISÉ de la mission — INVARIANT de la boucle (il vient de
+  // l'opportunité, jamais de l'agent). Déclaré HORS de la boucle parce
+  // qu'il est consommé APRÈS la boucle (revalidation post-gate). Déclaré
+  // dans la boucle, il était invisible après → `ReferenceError:
+  // allowedScope is not defined` au moment du commit (observé en réel le
+  // 2026-11-09 à 14:00:15, après un gate VERT et un agent qui avait
+  // réellement travaillé : la mission a été perdue).
+  const allowedScope = (opp.scope && opp.scope.files) || [];
   while (attempt <= cfg.loop.maxRepairAttempts) {
     attempt++;
     if (LIVE) progress(`OPENCODE    attempt ${attempt}/${cfg.loop.maxRepairAttempts}`);
-    impl = await implementOpportunity(opp, wt, cfg, m => { if (LIVE) progress('IMPLEMENT   ' + m); else log('[implement] ' + m); }, gate ? gate.detail : null);
+    impl = await implementOpportunity(opp, wt, cfg, m => { if (LIVE) progress('IMPLEMENT   ' + m); else log('[implement] ' + m); }, failureContext);
     if (!impl.ok) {
-      if (impl.blocked) return parkTask(opp.id, `blocked: ${impl.blocked}`);
-      if (attempt > cfg.loop.maxRepairAttempts || impl.via === 'recipe') return parkTask(opp.id, `impl failed after ${attempt} attempts: ${impl.summary}`);
+      if (impl.blocked) return parkTask(opp.id, `blocked: ${impl.blocked}`, 'blocked', { branch });
+      if (attempt > cfg.loop.maxRepairAttempts || impl.via === 'recipe') {
+        return parkTask(opp.id, `impl failed after ${attempt} attempts: ${impl.summary}`, 'blocked', { branch });
+      }
+      // Reprise annoncée : l'issue doit montrer que la mission n'est pas
+      // abandonnée mais en cours de nouvelle tentative.
+      publishMissionStatus(opp.id, 'retrying', `nouvelle tentative ${attempt + 1}/${cfg.loop.maxRepairAttempts + 1}`, {
+        branch,
+        attempts: attempt + 1,
+        reason: String(impl.summary || '').slice(0, 300),
+      });
+      failureContext = `Tentative ${attempt} : l'agent n'a pas produit de modification exploitable. ${String(impl.summary || '').slice(0, 500)}`;
       continue;
     }
     S('IMPLEMENTED', `${impl.via}: ${impl.summary} (${impl.files ? impl.files.join(', ') : 'diff agent'})`);
@@ -381,10 +545,9 @@ async function phaseImplementLocal(opp) {
     const diff = gitops.diffStats(wt);
 
     // SCOPE GUARD — agent must only modify files explicitly allowed by opp.scope.files
-    const allowedScope = (opp.scope && opp.scope.files) || [];
     const scopeGuard = evaluateScopeGuard(allowedScope, diff.files);
     if (!scopeGuard.ok) {
-      S('FAILED', `SCOPE VIOLATION — ${scopeGuard.reason}`);
+      S('FAILED', `SCOPE — ${scopeGuard.reason}`);
       // DIAGNOSTIC : l'agent sort souvent en code 0 SANS toucher la cible —
       // cas reel observe le 2026-11-08 : le modele local (9B) a "ecrit" le
       // fichier mais avec un CHEMIN CORROMPU (`tests/u nit/...` au lieu de
@@ -408,7 +571,48 @@ async function phaseImplementLocal(opp) {
             .slice(0, 160)
         : '';
       const hint = agentTrace ? ` [agent: ${agentTrace}]` : '';
-      return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked');
+      const failure = finalScope.classifyScopeFailure(scopeGuard);
+      const outOfScope = failure.outOfScope;
+
+      if (outOfScope.length) {
+        // VIOLATION DE PÉRIMÈTRE RÉELLE : l'agent a touché des fichiers
+        // interdits (denylist ou hors mission). On PARQUE immédiatement —
+        // c'est un signal de sécurité, pas une maladresse de forme.
+        return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked', { branch });
+      }
+
+      // AUCUNE MODIFICATION UTILE (fichier autorisé non touché, ou diff vide)
+      // : ce n'est PAS une violation de périmètre, c'est un agent qui n'a pas
+      // exécuté son outil d'édition. Constaté en réel le 2026-11-09 12:38 :
+      // le modèle local 9B a Narré son intention (« Je lis le fichier… »)
+      // puis a rendu la main sans modifier le fichier.
+      //
+      // On RELANCE l'agent (jusqu'à maxRepairAttempts) en lui transmettant le
+      // motif exact + la trace : c'est ce que `failureContext` sert. Le
+      // statut `retrying` est publié sur l'issue : la mission n'est ni
+      // abandonnée, ni marquée « done » à tort.
+      const retryHint = `Tentative ${attempt} sans modification exploitable : ${scopeGuard.reason}. Tu dois APPELER l'outil d'édition (read puis edit) sur le fichier autorisé, puis t'arrêter. N'écris pas la commande shell : appelle l'outil.${hint}`;
+      if (attempt > cfg.loop.maxRepairAttempts) {
+        return parkTask(opp.id, `scope violation: ${scopeGuard.reason}${hint}`, 'blocked', { branch });
+      }
+      S('FAILED', `AUCUNE MODIFICATION UTILE — relance de l'agent (${scopeGuard.reason})`);
+      publishMissionStatus(opp.id, 'retrying', `nouvelle tentative ${attempt + 1}/${cfg.loop.maxRepairAttempts + 1} (l'agent n'a modifié aucun fichier autorisé)`, {
+        branch,
+        attempts: attempt + 1,
+        // La trace de l'agent est PUBLIEE : sans elle, l'issue ne dit que
+        // « no files modified by agent » — impossible à diagnostiquer sans
+        // repasser la main. Les codes ANSI sont retirés (illisibles).
+        reason: `${String(scopeGuard.reason).slice(0, 200)}${hint}`.slice(0, 400),
+      });
+      // Worktree remis à zéro : la tentative suivante repart d'une base propre
+      // (les brouillons de la tentative échouée ne doivent pas s'accumuler).
+      try {
+        gitops.restoreOutOfScope(wt, [], () => {});
+      } catch (e) {
+        log(`reset worktree avant relance : ${e.message}`);
+      }
+      failureContext = retryHint;
+      continue;
     }
 
     const ev = policy.evaluateFiles(diff.files, cfg);
@@ -419,6 +623,7 @@ async function phaseImplementLocal(opp) {
     if (secrets.length) return parkTask(opp.id, `secrets: ${secrets.join(', ')}`);
 
     if (LIVE) progress('GATE        running...');
+    gateFiles = diff.files.slice();
     gate = await runGate({ wt, files: diff.files, tests: diff.files.filter(f => f.startsWith('tests/') && f.endsWith('.cjs')), log: m => { if (LIVE) progress('VERIFY      ' + m); else log('[verify] ' + m); } });
     if (gate.ok) {
       S('TESTED', gate.steps.join(' · '));
@@ -437,44 +642,12 @@ async function phaseImplementLocal(opp) {
     return parkTask(opp.id, `gate failed: ${detail.slice(0, 200)}`);
   }
 
-  // Commit & push
-  if (LIVE) progress('COMMIT      committing...');
-  const diff = gitops.diffStats(wt);
-  const commitSha = gitops.commitAll(wt,
-    `fix(autopilot): ${opp.title.slice(0, 90)}\n\nOpportunité ${opp.id}\nPreuve : ${(opp.evidence || '').slice(0, 200)}\nRollback : ${opp.rollback || 'revert'}\n\nCycle autopilot ${report.id}`,
-    diff.files);
-  if (LIVE) progress('PUSH        pushing...');
-  gitops.pushBranch(wt, branch, cfg);
-  const body = [
-    `## 🤖 Cycle autopilot ${report.id}`, '',
-    `**Opportunité** : ${opp.id} — ${opp.title}`, '',
-    `**Preuve** : ${opp.evidence || 'n/a'}`, '',
-    `**Impact attendu** : ${opp.expectedImpact || 'n/a'}`, '',
-    `### Gate de ship (worktree dédié)`, '',
-    gate.steps.map(s => `- ✅ ${s}`).join('\n'), '',
-    `### Rollback`, '',
-    `${opp.rollback || 'revert ' + commitSha}`, '',
-    `### Frontières`, '',
-    `- ${diff.files.length} fichiers, +${diff.insertions}/-${diff.deletions} lignes`,
-    `- denylist money/secrets/api/régions : OK`,
-  ].join('\n');
-  if (LIVE) progress('PR          creating...');
-  // Échec PR (gh en panne, droits, réseau) : parquer avec diagnostic au lieu
-  // de crasher (la branche est déjà poussée — rien n'est perdu, reprise au
-  // prochain cycle). Raison toujours préservée, jamais masquée.
-  let pr;
-  try {
-    pr = gitops.createPR(wt, { title: `[autopilot] ${opp.title.slice(0, 80)}`, body, base: cfg.git.baseBranch });
-  } catch (e) {
-    const diag = `pr create failed (branche ${branch} poussée, commit ${commitSha}) : ${String((e && e.message) || e).split('\n').slice(0, 3).join(' / ').slice(0, 200)}`;
-    S('FAILED', diag);
-    return parkTask(opp.id, diag, 'blocked');
-  }
-  report.prUrl = pr.url;
-  S('PR', `${pr.url} (branche ${branch}, head ${commitSha})`);
-  if (LIVE) progress('PR          ' + pr.url);
-
-  return { pr, branch, commitSha, wt };
+  // Commit & push — la phase est une FONCTION à paramètres EXPLICITES
+  // (`phaseCommitAndPublish`). Aucune variable de la boucle n’est
+  // accessible implicitement : c’est la correction STRUCTURELLE des deux
+  // ReferenceError observés en réel (`diff is not defined` le 2026-11-09
+  // à 12:59:19, `allowedScope is not defined` le même jour à 14:00:15).
+  return phaseCommitAndPublish({ opp, wt, branch, allowedScope, gateFiles, gate });
 }
 
 /** Self-repair using self-healing supervisor — classify error and attempt targeted fix */
@@ -625,6 +798,42 @@ function needsBrowserRecon(opp) {
 }
 
 /** Process a single opportunity through the full pipeline */
+/**
+ * Re-évalue la sécurité d'une opportunité AVANT son exécution.
+ *
+ * Deux sources de vérité, combinées (fail-closed) :
+ *   1. le verdict figé à l'import (`opp.safety`) ;
+ *   2. une nouvelle évaluation du texte intégral (`opp.mission.text`).
+ *
+ * Si l'une des deux dit « bloqué », l'opportunité est bloquée.
+ * @returns {{blocked:boolean, reason:string}}
+ */
+function evaluateOpportunitySafety(opp) {
+  if (!opp) return { blocked: false, reason: '' };
+  // 1. Verdict d'import.
+  if (opp.safety && opp.safety.blocked) {
+    return { blocked: true, reason: String(opp.safety.reason || 'mission interdite à l\'import') };
+  }
+  // 2. Nouvelle évaluation sur le texte intégral (mission + commentaires).
+  try {
+    const mission = opp.mission || {};
+    const task = opp.task || {};
+    const verdict = safetyGuard.evaluateMissionSafety({
+      title: (opp.sourceIssue && opp.sourceIssue.title) || opp.title || '',
+      body: mission.body || task.description || '',
+      comments: Array.isArray(mission.comments) ? mission.comments.map(c => c && c.body).join('\n') : '',
+      task,
+    });
+    if (verdict && verdict.blocked) {
+      return { blocked: true, reason: verdict.reason };
+    }
+  } catch (e) {
+    // Fail-closed : une erreur d'évaluation ne doit JAMAIS autoriser.
+    return { blocked: true, reason: `évaluation de sécurité impossible (fail-closed): ${e.message}` };
+  }
+  return { blocked: false, reason: '' };
+}
+
 async function processOpportunity(opp) {
   progress(`SELECT      ${(opp && opp.id) || 'unknown'}`);
   S('SELECTED', `${(opp && opp.id) || 'unknown'} (score ${(opp && opp._score) || '?'})`);
@@ -659,8 +868,36 @@ async function processOpportunity(opp) {
     return parkTask((opp && opp.id) || 'unknown', contract.reason, 'blocked');
   }
 
+  // ── GARDE-FOU DE SÉCURITÉ — RE-VÉRIFICATION AVANT EXÉCUTION (fail-closed)
+  //
+  // Le verdict du pont est figé à l'import, mais l'opportunité peut être
+  // entrée dans la queue AVANT l'existence du garde-fou, ou par une autre
+  // voie. On re-contrôle donc ici, sur le texte intégral de la mission :
+  // une mission interdite n'est JAMAIS exécutée, même si elle traîne en
+  // queue. Le verdict d'import sert de filtre amont ; celui-ci est le
+  // verrou de sortie.
+  const safetyVerdict = evaluateOpportunitySafety(opp);
+  if (safetyVerdict && safetyVerdict.blocked) {
+    progress(`SAFETY      BLOQUÉ: ${safetyVerdict.reason}`);
+    return parkTask((opp && opp.id) || 'unknown', `blocked (sécurité): ${safetyVerdict.reason}`, 'blocked', {
+      reason: safetyVerdict.reason,
+    });
+  }
+
   // Statut corrélé `started` : la mission est prise en charge par le runner.
-  publishMissionStatus(opp.id, 'started', `exécution locale par le runner Factory (${opp.actionable || 'agent'})`);
+  // Le commentaire porte la branche, l'agent routé et l'heure de début.
+  const missionStartedAt = C.nowIso();
+  opp.missionStartedAt = missionStartedAt;
+  publishMissionStatus(opp.id, 'started', `exécution locale par le runner Factory (${opp.actionable || 'agent'})`, {
+    branch: branchFor(opp),
+    agent: (opp.agent && opp.agent.agent) || null,
+    model: (opp.agent && opp.agent.model) || null,
+    startedAt: missionStartedAt,
+    reason: (opp.agent && opp.agent.reason) || null,
+  });
+  // Heartbeat périodique publié sur l'issue pendant toute l'exécution.
+  const heartbeatTimer = startMissionHeartbeat(opp);
+  try {
 
   // 1. UX Hypothesis
   const hypothesis = hypothesisFromOpportunity(opp);
@@ -702,20 +939,85 @@ async function processOpportunity(opp) {
   // 5. All green → READY TO MERGE = PARK, not stop
   S('READY', `${opp.id} — all gates green, ready for merge`);
   progress('READY       all gates green — parking task');
-  return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge');
+  // Le statut `completed` n'est publié qu'APRÈS les gates : un `completed`
+  // sans commit, sans tests et sans PR serait un faux succès.
+  const gateSteps = (report.sections.TESTED || []).slice();
+  return parkTask(opp.id, 'READY TO MERGE — all gates green, awaiting human merge', 'ready-to-merge', {
+    branch,
+    commit: commitSha,
+    pr: pr && pr.url ? pr.url : null,
+    agent: (opp.agent && opp.agent.agent) || null,
+    model: (opp.agent && opp.agent.model) || null,
+    startedAt: missionStartedAt,
+    tests: gateSteps.length ? gateSteps : ['gate de ship exécuté (voir PR)'],
+  });
+  } finally {
+    try { if (heartbeatTimer) clearInterval(heartbeatTimer); } catch (_) {}
+  }
 }
 
 /**
  * Exécute une opportunité et publie le statut `failed` si l'exécution
- * explose. L'erreur est REMONTÉE telle quelle : la publication d'un statut
- * n'a jamais vocation à masquer un échec technique.
+ * explose.
+ *
+ * LE PONT NE CRASHE PLUS (défaut réel du 2026-11-09) :
+ * avant, toute exception non rattrapée tuait l'orchestrateur (exit 1) et
+ * le cycle entier — donc le travail déjà fait par l'agent (agent OK + gate
+ * VERT) était perdu, et le service devait redémarrer. Le service est 24/7 :
+ * un bug interne ne doit pas arrêter les cycles suivants.
+ *
+ * Comportement retenu (fail-closed, borné, publié) :
+ *  1. `failed` publié sur l'issue avec le message EXACT de l'erreur ;
+ *  2. reprise programmée (`retrying`) tant que le budget de reprises n'est
+ *     pas atteint — l'opportunité reste sélectionnable, sans doublon ;
+ *  3. au-delà du budget : mission PARQUÉE (`blocked`) avec son diagnostic,
+ *     pour qu'un humain intervienne. Jamais de boucle infinie, jamais de
+ *     statut silencieusement avalé.
  */
 async function dispatchOpportunity(opp) {
   try {
     return await processOpportunity(opp);
   } catch (e) {
-    publishMissionStatus(opp && opp.id, 'failed', `erreur d'exécution: ${String((e && e.message) || e).slice(0, 160)}`);
-    throw e;
+    const detail = String((e && e.message) || e).split('\n').slice(0, 2).join(' / ').slice(0, 240);
+    const errors = (Number(opp && opp.bridgeErrors) || 0) + 1;
+    log(`❌ erreur du pont (${errors}/${MAX_BRIDGE_ERROR_RETRIES}) : ${detail}`);
+
+    if (!opp || !opp.id) throw e;
+
+    if (errors > MAX_BRIDGE_ERROR_RETRIES) {
+      publishMissionStatus(opp.id, 'failed', `erreur d'exécution (${errors} fois) : ${detail}`, {
+        attempts: errors,
+        reason: detail,
+      });
+      publishMissionStatus(opp.id, 'blocked', `mission parquée après ${errors} erreurs du pont : ${detail}`, {
+        attempts: errors,
+        reason: detail,
+      });
+      mem.updateOpportunity(opp.id, {
+        status: 'blocked',
+        blockReason: `[failed] erreur du pont (${errors} fois) : ${detail}`.slice(0, 200),
+        parkedAt: C.nowIso(),
+        bridgeErrors: errors,
+      });
+      return { parked: true, reason: detail };
+    }
+
+    publishMissionStatus(opp.id, 'failed', `erreur d'exécution : ${detail}`, {
+      attempts: errors,
+      reason: detail,
+    });
+    publishMissionStatus(opp.id, 'retrying', `nouvelle tentative après erreur du pont (${errors}/${MAX_BRIDGE_ERROR_RETRIES})`, {
+      attempts: errors,
+      reason: detail,
+    });
+    // `picked` → sélectionnable au prochain cycle (reprise sans doublon).
+    // On ne réécrit le statut que s'il faut le remettre sélectionnable :
+    // éviter une transition `picked → picked` inutile dans le journal.
+    const current = (mem.loadQueue().opportunities || []).find(o => o && o.id === opp.id);
+    const patch = { bridgeErrors: errors };
+    if (current && current.status !== 'picked') patch.status = 'picked';
+    mem.updateOpportunity(opp.id, patch);
+    return { parked: true, reason: detail };
   }
 }
 
@@ -885,6 +1187,30 @@ if (prBlocking.blocking) {
       }
     } else if (prBlocking && prBlocking.blocking) {
       // Bloquant réel : observation explicite + état persistant (pas de redécouverte aveugle).
+      //
+      // PUBLICATION de l'état final sur l'issue source (défaut réel du
+      // 2026-11-09, mission #1376) : la mission produisait une PR et une CI
+      // verte, mais l'issue ne recevait AUCUN statut final — dernier
+      // commentaire : un `heartbeat`. Le fondateur ne pouvait pas savoir que
+      // le travail était fini et qu'une PR l'attendait.
+      //
+      // Deux cas :
+      //  - une opportunistic est sélectionnée → on parque et on publie ;
+      //  - aucune sélection (opportunité déjà parquée) → on retrouve la
+      //    mission d'origine de la PR (durable) et on publie quand même.
+      const prEvidence = {
+        branch: prDetail && prDetail.headRefName ? prDetail.headRefName : null,
+        commit: prDetail && prDetail.headRefOid ? prDetail.headRefOid : null,
+        pr: prDetail && prDetail.url ? prDetail.url : null,
+      };
+      // Anti-spam : on ne republie pas le statut final à chaque cycle.
+      // Le marqueur `finalPublishedFor` (durable) dit « l'état final de
+      // CETTE PR a déjà été publié ».
+      const linkedMission = lifecycle.findByPr(prDetail && prDetail.number);
+      const targetMissionId = selected ? selected.id : (linkedMission ? linkedMission.taskId : null);
+      const alreadyPublished = linkedMission && linkedMission.finalPublishedFor && prEvidence.pr
+        && linkedMission.finalPublishedFor === prEvidence.pr;
+      const isFinalSuccess = linkedMission && ['completed', 'failed'].includes(linkedMission.state);
       if (selected) {
         // Parquer l'opportunité dans la queue (status='blocked') pour éviter la re-sélection
         // au cycle suivant. Le scheduler garde l'état 'blocked-by-pr' pour le diagnostic.
@@ -893,6 +1219,33 @@ if (prBlocking.blocking) {
         // Mettre à jour le statut dans la queue pour éviter la re-sélection via restoreSelected
         mem.updateOpportunity(selected.id, { status: 'blocked', blockReason: parkReason, parkedAt: C.nowIso() });
         log(scheduler.stateLine('selected', 'persisted', `${selected.id} persisté (${prBlocking.code})`));
+        if (!alreadyPublished && !isFinalSuccess) {
+          const res = publishMissionStatus(selected.id, 'blocked', parkReason, {
+            ...prEvidence,
+            agent: (selected.agent && selected.agent.agent) || null,
+            model: (selected.agent && selected.agent.model) || null,
+            reason: parkReason,
+          });
+          if (res && res.published && prEvidence.pr) {
+            try { lifecycle.patch(selected.id, selected.repository_full_name, selected.issue_number, { finalPublishedFor: prEvidence.pr }); } catch (_) {}
+          }
+        }
+      } else if (linkedMission && !alreadyPublished && !isFinalSuccess) {
+        // Aucune sélection : la mission d'origine de la PR porte encore un
+        // état non terminal → on publie l'état final dessus.
+        const parkReason = `blocked by PR #${prDetail.number} (${prBlocking.code}): ${prBlocking.reason}`;
+        const res = publishMissionStatus(linkedMission.taskId, 'blocked', parkReason, {
+          branch: prEvidence.branch || linkedMission.branch || null,
+          commit: prEvidence.commit || linkedMission.commit || null,
+          pr: prEvidence.pr || linkedMission.pr || null,
+          agent: linkedMission.agent || null,
+          model: linkedMission.model || null,
+          tests: linkedMission.tests && linkedMission.tests.length ? linkedMission.tests : undefined,
+          reason: parkReason,
+        });
+        if (res && res.published && prEvidence.pr) {
+          try { lifecycle.patch(linkedMission.taskId, linkedMission.repo, linkedMission.issue, { finalPublishedFor: prEvidence.pr }); } catch (_) {}
+        }
       }
       S('PR', `PR #${prDetail.number} bloquant (${prBlocking.code}) — ${prBlocking.reason}`);
       S('NEXT', `reprendre ${selected ? selected.id : 'sélection'} quand PR #${prDetail.number} mergée/fermée`);
@@ -1041,4 +1394,4 @@ function evaluateScopeGuard(allowedScope, modifiedFiles) {
   return { ok: true, reason: 'SCOPE_GUARD = PASS', details: { expected: allowedScope, modified: modifiedFiles, outOfScope: [] } };
 }
 
-module.exports = { validateOpportunityContract, needsBrowserRecon, evaluateScopeGuard };
+module.exports = { validateOpportunityContract, needsBrowserRecon, evaluateScopeGuard, evaluateOpportunitySafety };

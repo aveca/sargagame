@@ -34,6 +34,9 @@ const path = require('path');
 const { execFileSync } = require('child_process');
 const C = require('./lib/common.cjs');
 const mem = require('./lib/memory.cjs');
+const safety = require('./lib/safety-guard.cjs');
+const lifecycle = require('./lib/mission-lifecycle.cjs');
+const agentRouter = require('./lib/agent-router.cjs');
 
 /** Dépôts autorisés. Liste fermée : aucun autre dépôt n'est jamais lu. */
 const ALLOWED_REPOS = ['aveca/bot-wow', 'aveca/sargagame'];
@@ -46,7 +49,18 @@ const AUTOPILOT_PREFIX = '[AUTOPILOT]';
 const PRIORITY = { critical: 'critical', high: 'high', medium: 'medium', low: 'low' };
 const CONFIDENCE = new Set(['proven', 'observed', 'inferred']);
 
-const STATUSES = ['imported', 'started', 'heartbeat', 'blocked', 'completed', 'failed'];
+/**
+ * Cycle de vie complet publié sur l'issue.
+ * `queued` : mission vue, pas encore importée.
+ * `imported` : mission enfilée dans la queue durable.
+ * `started` : un agent a été lancé.
+ * `heartbeat` : l'agent est vivant (published périodiquement).
+ * `completed` : travail terminé ET vérifié (preuves jointes).
+ * `blocked` : opération interdite (sécurité / human gate).
+ * `failed` : erreur d'exécution.
+ * `retrying` : reprise après crash / heartbeat expiré / agent mort.
+ */
+const STATUSES = ['queued', 'imported', 'started', 'heartbeat', 'completed', 'blocked', 'failed', 'retrying'];
 
 /**
  * Taille maximale de l'historique des missions RELAYÉES (trace de
@@ -54,12 +68,14 @@ const STATUSES = ['imported', 'started', 'heartbeat', 'blocked', 'completed', 'f
  */
 const RELAYED_HISTORY_MAX = 200;
 const STATUS_EMOJI = {
+  queued: '🕓',
   imported: '📥',
   started: '🔄',
   heartbeat: '❤️',
   blocked: '🚫',
   completed: '✅',
   failed: '❌',
+  retrying: '🔁',
 };
 
 /** Champs exigés par le contrat de mission. */
@@ -252,6 +268,40 @@ function recordRelayed(queue, repoFullName, issueNumber, taskId, key) {
   }
 }
 
+/**
+ * Index des missions BLOQUÉES par le garde-fou de sécurité.
+ *
+ * Sans trace durable, le pont republierait un commentaire `blocked` à CHAQUE
+ * cycle (donc chaque minute) sur la même issue : bruit inutile et compteur
+ * faux. La trace est bornée comme celle des missions relayées.
+ */
+function buildBlockedIndex(queue) {
+  const fingerprints = new Set();
+  const entries = (queue && queue.blockedSafety) || [];
+  for (const entry of entries) {
+    if (typeof entry === 'string') fingerprints.add(entry);
+    else if (entry && entry.fingerprint) fingerprints.add(String(entry.fingerprint));
+  }
+  return fingerprints;
+}
+
+/** Enregistre une mission bloquée par la sécurité (trace durable, bornée). */
+function recordBlockedSafety(queue, repoFullName, issueNumber, taskId, key, reason) {
+  if (!queue || !key) return;
+  if (!Array.isArray(queue.blockedSafety)) queue.blockedSafety = [];
+  queue.blockedSafety.push({
+    fingerprint: key,
+    repository_full_name: repoFullName,
+    issue_number: issueNumber,
+    task_id: taskId,
+    reason: String(reason || '').slice(0, 300),
+    blockedAt: C.nowIso(),
+  });
+  if (queue.blockedSafety.length > RELAYED_HISTORY_MAX) {
+    queue.blockedSafety = queue.blockedSafety.slice(-RELAYED_HISTORY_MAX);
+  }
+}
+
 // ── Lecture GitHub ───────────────────────────────────────────────────────────
 
 /** Issues ouvertes `[AUTOPILOT]` d'un dépôt donné. */
@@ -265,6 +315,84 @@ function loadOpenAutopilotIssuesForRepo(repoFullName, ghFn = gh) {
   ]);
   const issues = JSON.parse(out || '[]');
   return issues.filter((i) => String(i.title || '').startsWith(AUTOPILOT_PREFIX));
+}
+
+/**
+ * Un commentaire est-il PUBLIÉ PAR L'AUTOPILOT (et non par l'opérateur) ?
+ *
+ * Nos propres commentaires de statut ne sont PAS des « précisions utiles » :
+ * les relire comme une consigne de mission créerait des faux positifs (une
+ * ancienne ligne « aucun merge sur main, aucun paiement » serait lue comme une
+ * demande de merge). On les exclut donc — et on le fait par MARQUEUR stable
+ * (commentaire HTML invisible) plus un repli sur l'entête historique.
+ */
+function isAutopilotComment(body) {
+  const b = String(body || '');
+  if (b.indexOf('<!-- autopilot-status:') >= 0) return true;
+  return /Autopilot\s+(multi-repo\s+)?—\s*statut\s*:/i.test(b);
+}
+
+/**
+ * Commentaires de l'issue (précisions utiles de l'opérateur).
+ *
+ * Une mission GitHub n'est jamais complète dans son seul corps : les précisions
+ * arrivent souvent en commentaire (fichiers exacts, commande de test, message
+ * d'erreur). Les commentaires sont donc récupérés et transmis À L'AGENT.
+ *
+ * Best-effort : un échec de lecture des commentaires n'empêche JAMAIS
+ * l'import (une mission ne doit pas être perdue pour une API capricieuse).
+ */
+function loadIssueComments(repoFullName, issueNumber, ghFn = gh) {
+  try {
+    const out = ghFn([
+      'issue', 'view', String(issueNumber),
+      '--repo', repoFullName,
+      '--json', 'comments',
+    ]);
+    const parsed = JSON.parse(out || '{}');
+    const comments = Array.isArray(parsed.comments) ? parsed.comments : [];
+    return comments
+      .map(c => ({
+        author: (c && (c.author && (c.author.login || c.author.name))) || 'unknown',
+        createdAt: (c && c.createdAt) || null,
+        body: String((c && c.body) || '').trim(),
+      }))
+      .filter(c => c.body && !isAutopilotComment(c.body));
+  } catch (e) {
+    console.log(`[bridge] commentaires illisibles sur ${repoFullName}#${issueNumber}: ${e.message}`);
+    return [];
+  }
+}
+
+/**
+ * TEXTE INTÉGRAL de la mission : c'est CE texte qui part à l'agent.
+ * Il contient le corps complet de l'issue, les commentaires utiles et le bloc
+ * AUTOPILOT_TASK — jamais seulement le titre.
+ */
+function buildMissionText(issue, comments, task) {
+  const parts = [];
+  parts.push(`# Issue ${issue.number} — ${issue.title || ''}`);
+  if (issue.url) parts.push(`URL : ${issue.url}`);
+  parts.push('');
+  parts.push('## CORPS COMPLET DE L\'ISSUE');
+  parts.push(String(issue.body || '').trim() || '(corps vide)');
+  if (comments && comments.length) {
+    parts.push('');
+    parts.push('## COMMENTAIRES (précisions de l\'opérateur)');
+    for (const c of comments) {
+      parts.push(`- @${c.author}${c.createdAt ? ` (${c.createdAt})` : ''} : ${c.body}`);
+    }
+  }
+  if (task) {
+    parts.push('');
+    parts.push('## BLOC AUTOPILOT_TASK (contrat machine)');
+    try {
+      parts.push(JSON.stringify(task, null, 2));
+    } catch (_) {
+      parts.push(String(task));
+    }
+  }
+  return parts.join('\n');
 }
 
 /** Extrait le bloc JSON `AUTOPILOT_TASK` du corps d'issue. */
@@ -327,7 +455,7 @@ function opportunityType(task) {
   return task && task.mode === 'auto' ? 'auto-task' : 'agent-task';
 }
 
-function toOpportunity(task, issue, repoFullName) {
+function toOpportunity(task, issue, repoFullName, options = {}) {
   if (!isAllowedRepo(repoFullName)) {
     return { rejected: true, reason: 'repository_not_allowed: ' + repoFullName };
   }
@@ -358,6 +486,35 @@ function toOpportunity(task, issue, repoFullName) {
     repository_full_name: repoFullName,
   };
 
+  const comments = Array.isArray(options.comments) ? options.comments : [];
+  const missionText = buildMissionText(issue, comments, task);
+
+  // Garde-fou de sécurité : fail-closed, jamais contournable par la mission.
+  const safetyVerdict = options.safety || safety.evaluateMissionSafety({
+    title: issue.title,
+    body: issue.body,
+    comments: comments.map(c => c.body).join('\n'),
+    task,
+  });
+
+  // Routage réel : quel agent / quel modèle va exécuter cette mission.
+  //
+  // `options.router` est un point d'INJECTION (symétrique à `options.safety`
+  // ci-dessus) : il permet de tester le pont avec une décision de routage
+  // DÉTERMINISTE. Sans lui, le test dépend de la machine : le routeur ne
+  // retient que les agents RÉELLEMENT installé (un binaire `opencode`
+  // présent sur le PC du fondateur, absent sur un runner CI) — le même
+  // test passait en local et échouait en CI. Un test qui dépend de
+  // l'installation de la machine est un test non déterministe : il doit
+  // être rendu explicite, pas contourné.
+  const router = options.router || agentRouter;
+  let agent = null;
+  try {
+    agent = router.route({ type: task.type || '', priority: task.priority });
+  } catch (e) {
+    agent = { ok: false, reason: 'routage impossible: ' + e.message };
+  }
+
   return {
     id: taskId,
     fingerprint: fingerprint(repoFullName, issueNumber, taskId),
@@ -386,6 +543,40 @@ function toOpportunity(task, issue, repoFullName) {
     contract: { ok: contract.ok, missing: contract.missing },
     sourceIssue: issueRef,
     acceptance: task.acceptance || 'n/a',
+    // Garde-fou de sécurité : verdict figé à l'import (jamais réévalué à
+    // l'exécution : une mission ne peut pas s'auto-autoriser ensuite).
+    safety: {
+      blocked: !!safetyVerdict.blocked,
+      categories: safetyVerdict.categories || [],
+      reason: safetyVerdict.reason || '',
+    },
+    // Agent routé (décision + raison, pour la preuve publiée sur l'issue).
+    // `engine` = moteur RÉELLEMENT exécuté ; `declaredAgent` = agent déclaré
+    // par le profil Factory (peut différer s'il n'est pas câblé).
+    agent: agent && agent.ok
+      ? {
+          agent: agent.agent,
+          engine: agent.engine || agent.agent,
+          declaredAgent: agent.declaredAgent || null,
+          model: agent.model || null,
+          profile: agent.profile,
+          reason: agent.reason,
+          source: agent.source,
+        }
+      : { agent: null, engine: null, declaredAgent: null, model: null, profile: (agent && agent.profile) || null, reason: (agent && agent.reason) || 'routage indisponible', source: (agent && agent.source) || null },
+    // MISSION INTÉGRALE transmise à l'agent (corps + commentaires + contrat).
+    mission: {
+      text: missionText,
+      body: String(issue.body || ''),
+      comments,
+      instructions: String(task.instructions || task.instruction || task.description || ''),
+      acceptance: task.acceptance || 'n/a',
+      constraints: Array.isArray(task.constraints) ? task.constraints : [],
+      rollback: String(task.rollback || 'revert du commit'),
+      filesToRead: normalizeFiles(task.filesToRead),
+      filesToModify: normalizeFiles(task.filesToModify),
+      previousAttempts: Array.isArray(task.previousAttempts) ? task.previousAttempts : [],
+    },
     task: {
       ...task,
       task_id: taskId,
@@ -402,9 +593,21 @@ function toOpportunity(task, issue, repoFullName) {
 
 /**
  * Publie un statut corrélé sur l'issue de la mission.
+ *
+ * Le commentaire porte TOUTES les preuves exigées par la mission P0 :
+ * identifiant de mission, dépôt, branche, agent lancé (+ modèle), heure de
+ * début, dernier heartbeat, commit SHA, tests réellement exécutés et leurs
+ * résultats, PR créée, motif de blocage/échec.
+ *
  * Retourne true si le commentaire a bien été publié.
  * Une erreur de publication est SIGNALÉE (log + retour false) : elle ne doit
  * jamais disparaître silencieusement.
+ *
+ * @param {string} repoFullName dépôt (allowlist fermée)
+ * @param {number} issueNumber numéro d'issue
+ * @param {string} status       état du cycle de vie
+ * @param {string} details      détail libre (une ligne)
+ * @param {object} options      {taskId, fingerprint, evidence}
  */
 function publishStatus(repoFullName, issueNumber, status, details = '', options = {}) {
   if (!STATUSES.includes(status)) {
@@ -414,17 +617,40 @@ function publishStatus(repoFullName, issueNumber, status, details = '', options 
     throw new Error(`dépôt non autorisé pour la publication d'un statut: ${repoFullName}`);
   }
   const ghFn = options.gh || gh;
-  const body = [
-    `${STATUS_EMOJI[status]} Autopilot multi-repo — statut : **${status}**`,
+  const ev = options.evidence || {};
+  const safe = safety.maskSecrets;
+
+  const lines = [
+    `${STATUS_EMOJI[status] || '•'} Autopilot — statut : **${status}**`,
     '',
+    `- mission ID : ${options.taskId || 'n/a'}`,
     `- dépôt : ${repoFullName}`,
     `- issue : #${issueNumber}`,
-    `- task ID : ${options.taskId || 'n/a'}`,
-    options.fingerprint ? `- clé : ${options.fingerprint}` : '',
-    details ? `- détail : ${details}` : '',
+  ];
+  if (options.fingerprint) lines.push(`- clé : ${options.fingerprint}`);
+  if (ev.branch) lines.push(`- branche : \`${ev.branch}\``);
+  if (ev.agent) lines.push(`- agent lancé : ${ev.agent}${ev.model ? ` (modèle : ${ev.model})` : ''}`);
+  if (ev.startedAt) lines.push(`- début : ${ev.startedAt}`);
+  if (ev.lastHeartbeatAt) lines.push(`- dernier heartbeat : ${ev.lastHeartbeatAt}`);
+  if (ev.attempts) lines.push(`- tentatives : ${ev.attempts}`);
+  if (ev.commit) lines.push(`- commit SHA : \`${ev.commit}\``);
+  if (ev.pr) lines.push(`- PR : ${ev.pr}`);
+  if (Array.isArray(ev.tests) && ev.tests.length) {
+    lines.push('- tests réellement exécutés :');
+    for (const t of ev.tests) {
+      const label = typeof t === 'string' ? t : `${t.name || t.command || 'test'} — ${t.result || 'inconnu'}`;
+      lines.push(`  - ${safe(String(label)).slice(0, 200)}`);
+    }
+  }
+  if (ev.reason) lines.push(`- motif : ${safe(String(ev.reason)).slice(0, 400)}`);
+  if (details) lines.push(`- détail : ${safe(String(details)).slice(0, 400)}`);
+
+  const body = [
+    ...lines,
     '',
-    '_Statut publié par multi-repo-bridge.cjs. Aucune intervention manuelle n’est requise pour ce statut._',
-  ].filter(Boolean).join('\n');
+    `_Statut publié par le pont Factory V3. Aucune intervention manuelle n'est requise pour ce statut._`,
+    `<!-- autopilot-status:${options.taskId || 'n/a'}:${status} -->`,
+  ].join('\n');
   try {
     ghFn(['issue', 'comment', String(issueNumber), '--repo', repoFullName, '--body', body]);
     return true;
@@ -449,6 +675,12 @@ function publishStatus(repoFullName, issueNumber, status, details = '', options 
  * @param {function} options.saveQueue
  * @param {function} options.writeOpportunityFile
  * @param {function} options.publishStatus
+ * @param {{route:Function}} [options.router]  routeur d'agent injecté (tests
+ *        déterministes). Par défaut : `lib/agent-router.cjs`, qui ne retient
+ *        que les agents RÉELLEMENT installés — donc une assertion de test
+ *        sur l'agent retenu dépend de la machine (cf. run CI 42651059357).
+ * @param {{evaluateMissionSafety:Function}} [options.safety] verdict de
+ *        sécurité injecté (tests) ; par défaut : `lib/safety-guard.cjs`.
  */
 function ingestMultiRepo(options = {}) {
   const dry = options.dry === true;
@@ -456,10 +688,17 @@ function ingestMultiRepo(options = {}) {
   const ghFn = options.gh || gh;
   const localRepo = options.localRepo || detectLocalRepo();
   const loadIssues = options.loadIssues || ((repo) => loadOpenAutopilotIssuesForRepo(repo, ghFn));
+  const loadComments = options.loadComments || ((repo, number) => loadIssueComments(repo, number, ghFn));
   const publish = options.publishStatus || publishStatus;
   const loadQueue = options.loadQueue || mem.loadQueue;
   const saveQueue = options.saveQueue || mem.saveQueue;
   const writeOppFile = options.writeOpportunityFile || mem.writeOpportunityFile;
+  // Points d'injection (tests déterministes, indépendants de la machine) :
+  // le routage d'agent et le verdict de sécurité sont résolus par défaut via
+  // les modules réels, mais peuvent être fournis par l'appelant.
+  // `null` = « utilise le module réel » (le `||` de `toOpportunity`).
+  const router = options.router || null;
+  const safetyInjector = options.safety || null;
 
   if (!dry) C.ensureDirs();
 
@@ -467,6 +706,7 @@ function ingestMultiRepo(options = {}) {
   queue.opportunities = queue.opportunities || [];
   const known = buildKnownIndex(queue);
   const relayedKnown = buildRelayedIndex(queue);
+  const blockedKnown = buildBlockedIndex(queue);
 
   let imported = 0;
   let wouldImport = 0;
@@ -474,14 +714,17 @@ function ingestMultiRepo(options = {}) {
   let wouldRelay = 0;
   let ignored = 0;
   let rejected = 0;
+  let blocked = 0;
+  let neutralized = 0;
   let statusFailures = 0;
   const perRepo = {};
   const relayedTasks = [];
   const importedTasks = [];
   const wouldImportTasks = [];
+  const blockedTasks = [];
 
   for (const repoFullName of ALLOWED_REPOS) {
-    perRepo[repoFullName] = { issues: 0, imported: 0, wouldImport: 0, relayed: 0, wouldRelay: 0, ignored: 0, rejected: 0 };
+    perRepo[repoFullName] = { issues: 0, imported: 0, wouldImport: 0, relayed: 0, wouldRelay: 0, ignored: 0, rejected: 0, blocked: 0 };
 
     let issues;
     try {
@@ -503,11 +746,81 @@ function ingestMultiRepo(options = {}) {
         continue;
       }
 
-      const opp = toOpportunity(task, issue, repoFullName);
+      // Commentaires utiles de l'opérateur (best-effort : une API capricieuse
+      // ne doit JAMAIS faire perdre une mission).
+      const comments = loadComments(repoFullName, issue.number) || [];
+
+      const opp = toOpportunity(task, issue, repoFullName, { comments, router, safety: safetyInjector });
       if (opp.rejected) {
         rejected += 1;
         perRepo[repoFullName].rejected += 1;
         log(`[bridge] ${repoFullName} issue #${issue.number} rejetée : ${opp.reason}`);
+        continue;
+      }
+
+      // ── GARDE-FOU DE SÉCURITÉ (fail-closed) ─────────────────────────────
+      // Une mission qui demande un déploiement production, une modification de
+      // prix, un paiement réel, un secret, une migration irréversible, un envoi
+      // massif ou une fusion paiements/sécurité est BLOQUÉE et signalée
+      // explicitement. Elle n'est JAMAIS enfilée, JAMAIS exécutée.
+      if (opp.safety && opp.safety.blocked) {
+        // Une mission déjà enfilée AVANT l'arrivée du garde-fou (ou importée
+        // par une autre voie) doit être NEUTRALISÉE dans la queue : sinon
+        // l'orchestrateur la sélectionne et l'exécute — fail-open. On la
+        // marque `blocked` (état terminal pour le sélecteur) et on conserve
+        // le motif. C'est la correction d'une faille réelle constatée sur la
+        // mission SARG-P0-B2B-SIBLING-HANDLERS-RETIREMENT-20261108 (#1368).
+        const queued = (queue.opportunities || []).find(o =>
+          o && (o.id === opp.id || o.fingerprint === opp.fingerprint));
+        if (queued && !['done', 'rejected', 'blocked'].includes(queued.status)) {
+          queued.status = 'blocked';
+          queued.blockReason = `[safety] ${opp.safety.reason}`.slice(0, 300);
+          queued.blockedAt = C.nowIso();
+          queued.safety = { blocked: true, reason: opp.safety.reason };
+          neutralized += 1;
+          log(`[bridge] NEUTRALISÉE ${repoFullName} #${opp.issue_number} ${opp.id} (queue ${queued.status})`);
+        }
+        if (blockedKnown.has(opp.fingerprint)) {
+          ignored += 1;
+          perRepo[repoFullName].ignored += 1;
+          continue;
+        }
+        blocked += 1;
+        perRepo[repoFullName].blocked += 1;
+        blockedTasks.push({ repo: repoFullName, issue: opp.issue_number, taskId: opp.id, reason: opp.safety.reason });
+        log(`[bridge] BLOQUÉ ${repoFullName} #${opp.issue_number} ${opp.id} : ${opp.safety.reason}`);
+        if (!dry) {
+          recordBlockedSafety(queue, repoFullName, opp.issue_number, opp.id, opp.fingerprint, opp.safety.reason);
+          known.fingerprints.add(opp.fingerprint);
+          known.ids.add(opp.id);
+          // Trace durable du blocage (survit au redémarrage, visible dans
+          // `status.cjs`).
+          try {
+            lifecycle.upsert({
+              taskId: opp.id,
+              repo: repoFullName,
+              issue: opp.issue_number,
+              fingerprint: opp.fingerprint,
+              state: 'blocked',
+              reason: opp.safety.reason,
+            });
+          } catch (e) {
+            log(`[bridge] état durable non écrit (non-fatal): ${e.message}`);
+          }
+          const ok = publish(
+            repoFullName,
+            opp.issue_number,
+            'blocked',
+            'exécution automatique interdite : ' + opp.safety.reason,
+            {
+              taskId: opp.id,
+              fingerprint: opp.fingerprint,
+              gh: ghFn,
+              evidence: { reason: opp.safety.reason },
+            },
+          );
+          if (!ok) statusFailures += 1;
+        }
         continue;
       }
 
@@ -547,7 +860,15 @@ function ingestMultiRepo(options = {}) {
             opp.issue_number,
             'imported',
             `mission relayée vers ${repoFullName} (non exécutée ici)`,
-            { taskId: opp.id, fingerprint: opp.fingerprint, gh: ghFn },
+            {
+              taskId: opp.id,
+              fingerprint: opp.fingerprint,
+              gh: ghFn,
+              evidence: {
+                agent: opp.agent && opp.agent.agent ? `${opp.agent.agent} (profil ${opp.agent.profile})` : null,
+                reason: 'routage strict : la mission reste dans son dépôt d\'origine',
+              },
+            },
           );
           if (!ok) statusFailures += 1;
         }
@@ -565,7 +886,12 @@ function ingestMultiRepo(options = {}) {
             opp.issue_number,
             'blocked',
             'humanGate/moneyPath : exécution automatique interdite',
-            { taskId: opp.id, fingerprint: opp.fingerprint, gh: ghFn },
+            {
+              taskId: opp.id,
+              fingerprint: opp.fingerprint,
+              gh: ghFn,
+              evidence: { reason: 'humanGate/moneyPath : exécution automatique interdite' },
+            },
           );
           if (!ok) statusFailures += 1;
         }
@@ -586,22 +912,44 @@ function ingestMultiRepo(options = {}) {
         perRepo[repoFullName].imported += 1;
         importedTasks.push({ repo: repoFullName, issue: opp.issue_number, taskId: opp.id });
         writeOppFile(opp);
+        // Trace durable du cycle de vie (survit au redémarrage).
+        try {
+          lifecycle.upsert({
+            taskId: opp.id,
+            repo: repoFullName,
+            issue: opp.issue_number,
+            fingerprint: opp.fingerprint,
+            state: 'imported',
+            agent: opp.agent && opp.agent.agent,
+            model: opp.agent && opp.agent.model,
+          });
+        } catch (e) {
+          log(`[bridge] état durable non écrit (non-fatal): ${e.message}`);
+        }
         const ok = publish(
           repoFullName,
           opp.issue_number,
           'imported',
           `opportunité ${opp.id} (${opp.actionable})`,
-          { taskId: opp.id, fingerprint: opp.fingerprint, gh: ghFn },
+          {
+            taskId: opp.id,
+            fingerprint: opp.fingerprint,
+            gh: ghFn,
+            evidence: {
+              agent: opp.agent && opp.agent.agent ? `${opp.agent.agent}${opp.agent.model ? ` (modèle ${opp.agent.model})` : ''}` : null,
+              reason: opp.agent && opp.agent.reason,
+            },
+          },
         );
         if (!ok) statusFailures += 1;
       }
     }
   }
 
-  // La queue est persistée s'il y a eu un import ET/OU un relay : le relay
-  // laisse une trace durable (`queue.relayed`) qui empêche le re-relay au
-  // cycle suivant.
-  if ((imported || relayed) && !dry) saveQueue(queue);
+  // La queue est persistée s'il y a eu un import, un relay, un blocage
+  // sécurité OU une NEUTRALISATION (une mission déjà enfilée qui devient
+  // interdite DOIT être retirée du sélecteur, sinon elle s'exécuterait).
+  if ((imported || relayed || blocked || neutralized) && !dry) saveQueue(queue);
 
   return {
     imported,
@@ -610,11 +958,14 @@ function ingestMultiRepo(options = {}) {
     wouldRelay,
     ignored,
     rejected,
+    blocked,
+    neutralized,
     statusFailures,
     perRepo,
     relayedTasks,
     importedTasks,
     wouldImportTasks,
+    blockedTasks,
     localRepo,
   };
 }
@@ -672,14 +1023,15 @@ function runCli(argv = process.argv.slice(2)) {
   const relayed = dry ? result.wouldRelay : result.relayed;
   console.log(
     `MULTI-REPO-BRIDGE ${dry ? 'DRY' : 'PASS'} · imported=${imported} relayed=${relayed} ` +
-    `ignored=${result.ignored} rejected=${result.rejected} statusFailures=${result.statusFailures} local=${result.localRepo}`,
+    `blocked=${result.blocked} ignored=${result.ignored} rejected=${result.rejected} ` +
+    `statusFailures=${result.statusFailures} local=${result.localRepo}`,
   );
   for (const [repo, stats] of Object.entries(result.perRepo)) {
     const repoImported = dry ? stats.wouldImport : stats.imported;
     const repoRelayed = dry ? stats.wouldRelay : stats.relayed;
     console.log(
       `   ${repo} : issues=${stats.issues} imported=${repoImported} relayed=${repoRelayed} ` +
-      `ignored=${stats.ignored} rejected=${stats.rejected}`,
+      `blocked=${stats.blocked} ignored=${stats.ignored} rejected=${stats.rejected}`,
     );
   }
   if (result.statusFailures > 0) process.exit(1);
@@ -706,10 +1058,18 @@ module.exports = {
   legacyFingerprint,
   buildKnownIndex,
   isAlreadyKnown,
+  buildRelayedIndex,
+  recordRelayed,
+  buildBlockedIndex,
+  recordBlockedSafety,
   loadOpenAutopilotIssuesForRepo,
+  loadIssueComments,
+  isAutopilotComment,
+  buildMissionText,
   extractTask,
   normalizeFiles,
   priorityToSeverity,
+  opportunityType,
   toOpportunity,
   publishStatus,
   ingestMultiRepo,

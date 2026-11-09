@@ -40,6 +40,7 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const runnerSrc = fs.readFileSync(path.join(ROOT, 'scripts/autopilot/runner.cjs'), 'utf8');
 const orchSrc = fs.readFileSync(path.join(ROOT, 'scripts/autopilot/orchestrator.cjs'), 'utf8');
+const publisherSrc = fs.readFileSync(path.join(ROOT, 'scripts/autopilot/lib/mission-publisher.cjs'), 'utf8');
 const bridge = require(path.join(ROOT, 'scripts/autopilot/multi-repo-bridge.cjs'));
 
 let checks = 0;
@@ -112,8 +113,16 @@ ok(
   'orchestrator.cjs must expose publishMissionStatus() to correlate mission lifecycle on the source issue'
 );
 ok(
-  /multiRepoBridge\.publishStatus\(/.test(orchSrc),
-  'orchestrator.cjs must publish mission statuses through the multi-repo bridge publishStatus()'
+  /bridge\.publishStatus\(/.test(publisherSrc),
+  'the mission publisher must publish mission statuses through the multi-repo bridge publishStatus()'
+);
+ok(
+  /require\('\.\/lib\/mission-publisher\.cjs'\)/.test(orchSrc),
+  "orchestrator.cjs must require './lib/mission-publisher.cjs' (single implementation of the mission-status contract)"
+);
+ok(
+  /missionPublisher\.publishMissionStatus\(/.test(orchSrc),
+  'orchestrator.cjs must delegate mission status publication to the shared mission publisher'
 );
 for (const status of ['started', 'completed', 'blocked', 'failed']) {
   ok(
@@ -122,7 +131,7 @@ for (const status of ['started', 'completed', 'blocked', 'failed']) {
   );
 }
 ok(
-  /function publishMissionStatus\([^)]*\)\s*\{\s*if \(DRY\) return;/.test(orchSrc),
+  /if \(deps\.dry\) return/.test(publisherSrc),
   'publishMissionStatus() must be a no-op in --dry mode (a dry-run has no side effect)'
 );
 ok(
@@ -133,9 +142,18 @@ ok(
   /publishMissionStatus\(oppId, missionStatusForPark\(safe\)/.test(orchSrc),
   'orchestrator.cjs must publish the terminal mission status when a task is parked'
 );
+// La publication de `failed` doit utiliser l'identifiant GARANTI (opp.id
+// non nul) : la forme `opp && opp.id` pouvait publier un statut `failed`
+// sans mission associée. La forme stricte est donc acceptée en priorité.
 ok(
-  /publishMissionStatus\(opp && opp\.id, 'failed'/.test(orchSrc),
+  /publishMissionStatus\(opp\.id, 'failed'/.test(orchSrc),
   'orchestrator.cjs must publish `failed` when execution throws'
+);
+// Reprise bornée : un bug interne ne doit pas tuer l'orchestrateur 24/7
+// (défaut réel du 2026-11-09 : ReferenceError → exit 1 → travail perdu).
+ok(
+  /MAX_BRIDGE_ERROR_RETRIES/.test(orchSrc) && /publishMissionStatus\(opp\.id, 'retrying'/.test(orchSrc),
+  'orchestrator.cjs must schedule a bounded retry instead of crashing the runner'
 );
 
 // ── 5-8. Comportement du pont appelé par le runner ──────────────────────────
@@ -177,6 +195,7 @@ const first = bridge.ingestMultiRepo({
   log: () => {},
   localRepo: 'aveca/sargagame',
   loadIssues: fakeLoadIssues,
+  loadComments: () => [],
   queue,
   saveQueue: () => { saved++; },
   writeOpportunityFile: () => { written++; },
@@ -226,6 +245,7 @@ const second = bridge.ingestMultiRepo({
   log: () => {},
   localRepo: 'aveca/sargagame',
   loadIssues: fakeLoadIssues,
+  loadComments: () => [],
   queue,
   saveQueue: () => { saved++; },
   writeOpportunityFile: () => { written++; },
@@ -259,6 +279,7 @@ const rejected = bridge.ingestMultiRepo({
   log: () => {},
   localRepo: 'aveca/sargagame',
   loadIssues: (repo) => (repo === 'aveca/sargagame' ? [impostor] : []),
+  loadComments: () => [],
   queue: rejectQueue,
   saveQueue: () => {},
   writeOpportunityFile: () => {},

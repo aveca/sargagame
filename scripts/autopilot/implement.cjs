@@ -16,6 +16,7 @@ const fs = require('fs');
 const path = require('path');
 const { spawn } = require('child_process');
 const C = require('./lib/common.cjs');
+const { buildAgentPrompt } = require('./lib/agent-prompt.cjs');
 const policy = require('./lib/policy.cjs');
 
 const AGIT = (wt, f) => path.join(wt, f);
@@ -37,39 +38,44 @@ function runAgent(opp, wt, cfg, log, failureContext) {
     const persona = fs.existsSync(personaPath) ? fs.readFileSync(personaPath, 'utf8') : '';
     const scopeFiles = (opp.scope && opp.scope.files || []).join(', ');
     const wtRel = path.relative(C.ROOT, wt).replace(/\\/g, '/');
-    const prompt = [
+    const mission = opp.mission || {};
+    // MOTEUR RÉELLEMENT EXÉCUTÉ. La chaîne d'exécution de ce dépôt passe
+    // TOUJOURS par `.ai/ux-agent/opencode-auto.cjs` (OpenCode + modèle local
+    // Ollama). On announce donc le moteur réel — jamais l'agent « préféré »
+    // d'un profil Factory qui n'aurait pas de voie non interactive câblée
+    // (une preuve d'agent qui n'a pas travaillé serait un faux succès).
+    const ENGINE = 'opencode';
+    // Le moteur RÉEL est toujours OpenCode dans ce dépôt (chaîne
+    // `.ai/ux-agent/opencode-auto.cjs`). On n'annonce JAMAIS l'agent
+    // « préféré » d'un profil Factory : la valeur figée dans l'opportunité
+    // (importée avant un correctif de routage) pourrait nommer un agent
+    // qui n'a pas travaillé — une preuve fausse.
+    const routedAgent = ENGINE;
+    const declaredAgent = (opp.agent && (opp.agent.declaredAgent || opp.agent.agent)) || null;
+    const routedProfile = (opp.agent && opp.agent.profile) || 'n/a';
+    const routedModel = (opp.agent && opp.agent.model) || '';
+    const prompt = buildAgentPrompt({
       persona,
-      '',
-      '# MISSION AUTOPILOT (bornes DURES, toute sortie = annulation)',
-      `Opportunité : ${opp.title}`,
-      `Preuve : ${opp.evidence || 'n/a'}`,
-      `Impact attendu : ${opp.expectedImpact || 'n/a'}`,
-      `Fichiers AUTORISÉS (y rester strictement) : ${scopeFiles || 'aucun — propose seulement'}`,
-      `Répertoire de travail (worktree) : ${wt} (relatif: ${wtRel})`,
-      'Contexte tâche structurée : ' + (opp.task ? JSON.stringify({
-        filesToRead: opp.task.filesToRead || [],
-        implementation: opp.task.implementation || '',
-        tests: opp.task.tests || [],
-        acceptance: opp.task.acceptance || [],
-        constraints: opp.task.constraints || [],
-        stopCondition: opp.task.stopCondition || '',
-      }) : 'aucun'),
-      `Rollback OBLIGATOIRE si conversion/UI : flag query ?xxx=0 (pattern /[?&]xxx=0/.test(window.location.search)).`,
-      'Interdictions : paiement/checkout/mollie/paypal/stripe, public/api, workers, regions,',
-      'workflows, secrets, nouvelles dépendances, dist/, traductions absentes (i18n _t obligatoire).',
-      'Style : patterns existants du repo, minimal, bundle eager ≤ 210 Ko gzip.',
-      failureContext ? `\n# ÉCHEC PRÉCÉDENT À CORRIGER\n${failureContext.slice(0, 3000)}` : '',
-      '\nApplique le fix MAINTENANT sur le working tree, puis arrête-toi (ne commit pas, ne push pas).',
-    ].join('\n');
+      scopeFiles,
+      opp,
+      mission,
+      wt,
+      wtRel,
+      engine: ENGINE,
+      routedModel,
+      routedProfile,
+      declaredAgent,
+      failureContext,
+    });
 
     const router = path.join(C.ROOT, '.ai', 'ux-agent', 'opencode-auto.cjs');
     const liveMode = process.env.SARGA_AUTOPILOT_LIVE === '1';
     
     if (liveMode) {
-      log(`[LIVE] agent opencode starting (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min)…`);
-      log(`[LIVE] prompt length: ${prompt.length} chars`);
+      log(`[LIVE] agent ${routedAgent} starting (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min, profil ${routedProfile}).`);
+      log(`[LIVE] prompt length: ${prompt.length} chars · mission text: ${(mission.text || '').length} chars`);
     } else {
-      log(`agent opencode lancé (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min)…`);
+      log(`agent ${routedAgent} lancé (persona ${opp.persona || 'ui-ux'}, max ${cfg.policy.agentMaxMinutes} min, profil ${routedProfile}).`);
     }
     
     const child = spawn(process.execPath, [router, 'run', prompt], {
@@ -86,6 +92,9 @@ function runAgent(opp, wt, cfg, log, failureContext) {
       env: {
         ...process.env,
         SARGA_LOCAL_ONLY: '1',
+        // Modèle routé par l'Agent Router : l'adaptateur local le respecte
+        // s'il est réellement installé sur la machine.
+        ...(routedModel ? { SARGA_OLLAMA_MODEL: routedModel } : {}),
         OPENAI_API_KEY: undefined,
         ANTHROPIC_API_KEY: undefined,
         GOOGLE_API_KEY: undefined,

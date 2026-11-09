@@ -181,6 +181,95 @@ assert.match(
   'cloudflare-production.yml must keep its Worker secrets step (this guard only adds exclusions)',
 )
 
+// ── 6. Le pont autonome GitHub <-> Factory V3 <-> OpenCode est neutralisé ──
+//
+// CONTEXTE (2026-11-09) : la mission du pont autonome a ajouté de NOUVEAUX
+// modules sous `scripts/autopilot/` (cycle de vie des missions [AUTOPILOT],
+// routage d'agent, garde-fou de périmètre, prompt) et un runbook. Aucun
+// workflow ne les execute ni ne les importe (vérifié : aucun nom de ces
+// modules n'apparait dans `.github/workflows/**` ni dans `scripts/automation/**`).
+//
+// SANS exclusion fichier par fichier, un push sur `main` de cette mission
+// déclencherait `cloudflare-production.yml` (`on.push` -> `production=true`)
+// → redéploiement des Workers ET réécriture des secrets de paiement
+// (MOLLIE_API_KEY, SUPABASE_SERVICE_KEY, MOLLIE_WEBHOOK_SECRET) pour un
+// simple correctif d'outillage local.
+//
+// L'invariant est donc explicite et fail-closed : chaque fichier de la
+// mission DOIT être listé dans `paths-ignore`.
+
+const AUTOPILOT_BRIDGE_FILES = [
+  // Cycle de vie des missions [AUTOPILOT].
+  'scripts/autopilot/lib/agent-prompt.cjs',
+  'scripts/autopilot/lib/agent-prompt.probe.cjs',
+  'scripts/autopilot/lib/agent-router.cjs',
+  'scripts/autopilot/lib/agent-router.test.cjs',
+  'scripts/autopilot/lib/final-scope.cjs',
+  'scripts/autopilot/lib/final-scope.test.cjs',
+  'scripts/autopilot/lib/mission-lifecycle.cjs',
+  'scripts/autopilot/lib/mission-lifecycle.test.cjs',
+  'scripts/autopilot/lib/mission-publisher.cjs',
+  'scripts/autopilot/lib/mission-watchdog.cjs',
+  'scripts/autopilot/lib/orchestrator-scope.test.cjs',
+  'scripts/autopilot/lib/restore-scope.test.cjs',
+  'scripts/autopilot/lib/safety-guard.cjs',
+  'scripts/autopilot/lib/safety-guard.test.cjs',
+  'scripts/autopilot/lib/gitops.cjs',
+  'scripts/autopilot/status.cjs',
+  'scripts/autopilot/multi-repo-bridge-e2e.test.cjs',
+  // Persistance et exploitation du service 24/7.
+  'scripts/autopilot/autopilot-service.cmd',
+  'scripts/autopilot/autopilot-stop.cmd',
+  'scripts/autopilot/autopilot-stop.ps1',
+  'scripts/autopilot/install-service.ps1',
+  // Runbook (documentation pure).
+  'docs/AUTOPILOT-RUNBOOK.md',
+]
+
+for (const file of AUTOPILOT_BRIDGE_FILES) {
+  assert.ok(
+    ignored.includes(file),
+    `cloudflare-production.yml must ignore '${file}': it is local tooling of the autonomous bridge, and a push touching it must not redeploy the Worker or rewrite the payment secrets`,
+  )
+}
+
+// Aucun de ces fichiers ne doit masquer un script critique de la production.
+for (const file of AUTOPILOT_BRIDGE_FILES) {
+  assert.ok(
+    !PRODUCTION_CRITICAL.some((p) => matches(p, file)),
+    `the paths-ignore entry '${file}' must not shadow a production-critical script`,
+  )
+}
+
+// ── 7. Aucun module du pont n'est exécuté par un workflow ───────────────────
+// Condition de sécurité de l'exclusion : on n'exclut que ce qui n'a aucun
+// effet sur le contenu déployé.
+
+const BRIDGE_MODULE_NAMES = [
+  'agent-prompt',
+  'agent-router',
+  'final-scope',
+  'mission-lifecycle',
+  'mission-publisher',
+  'mission-watchdog',
+  'safety-guard',
+  'multi-repo-bridge-e2e',
+  'autopilot-service',
+  'autopilot-stop',
+  'install-service',
+]
+
+for (const wf of workflowFiles) {
+  const content = fs.readFileSync(path.join(workflowDir, wf), 'utf8')
+  const executable = stripPathsIgnore(content)
+  for (const name of BRIDGE_MODULE_NAMES) {
+    assert.ok(
+      !executable.includes(name),
+      `.github/workflows/${wf} must not execute '${name}': the path is excluded from the production trigger, so a workflow dependency on it would never be deployed`,
+    )
+  }
+}
+
 console.log(
-  'PASS: the multi-repo autopilot bridge is production-neutral, and the production-critical autopilot scripts stay deployable',
+  'PASS: the multi-repo autopilot bridge is production-neutral, the production-critical autopilot scripts stay deployable, and the autonomous-bridge modules are excluded file by file',
 )

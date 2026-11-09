@@ -7,3 +7,15 @@ runs/runner.log
 orchestrator.lock
 STOP
 baselines/**
+
+# État runtime du cycle de vie des missions GitHub ([AUTOPILOT]) :
+# régénéré au démarrage du runner, jamais versionné. Un commit de ce
+# fichier publierait l'état live des missions (heartbeats, PR, motifs de
+# blocage) — bruit inutile et risque de fuite de contexte.
+mission-state.json
+
+# NOTE : `queue.json` (mémoire des opportunités) et `scheduler.json`
+# (claim courant) restent VERSIONNÉS : c'est la convention existante du
+# dépôt (« la mémoire exploitable reste trackée »). Ils sont régénérés au
+# démarrage ; un futur nettoyage de suivi est possible mais sort du
+# périmètre de cette correction.
