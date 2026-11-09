@@ -67,7 +67,7 @@
 ### Branche / PR
 - Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
 - PR : **#1383** (base `main`) — **NON mergée, AUCUN déploiement déclenché** — CI **verte** sur le SHA exact (`test-frontend` ✅, `perf` ✅, `lighthouse-report` ✅, `GitGuardian` ✅)
-- Commit head : `7225b3729de7ef7c5d54a0eac995b53257e07ddb` (branche : mission `dd3ae1026` + merge `origin/main` `827351232`)
+- Commit head : `7225b3729de7ef7c5d54a0eac995b53257e07ddb` (mission `dd3ae1026` + merge `origin/main` `827351232` ; + commits de documentation de handoff par-dessus)
 
 ---
 ## 2026-11-09 15:36 UTC · Agent: OpenCode (coding/autopilot)
