@@ -137,7 +137,46 @@ const assert = require("node:assert/strict");
     assert.equal((await sosCreate.json()).error, "Prix invalide");
     assert.equal(createCalls.length, 0, "aucun paiement « sos » ne doit être créé");
 
-    console.log("PASS: payment_status RPC arguments, amount validation, owner mismatch, RPC fail-closed, pending status, CRÉATION sos refusée / LIVRAISON sos conservée");
+    // ── CONTRÔLE PROPRIÉTAIRE : le client doit TOUJOURS transmettre l'email ──
+    // Le serveur (payment_status) refuse un paiement appartenant à un autre
+    // email (403 payment_owner_mismatch) — mais CE CONTRÔLE n'est effectif que
+    // si le client envoie l'email. Un appel sans `email` laisserait la
+    // confirmation serveur s'ouvrir à quiconque connaît un identifiant de
+    // paiement. Garde-fou : chaque appel `payment_status` du client doit
+    // porter un champ email.
+    const fsMod = require("node:fs");
+    const pathMod = require("node:path");
+    const clientFiles = ["src/PremiumModal.jsx", "src/Sargasses_PROD.jsx"];
+    let auditedCalls = 0;
+    for (const rel of clientFiles) {
+      const src = fsMod.readFileSync(pathMod.resolve(__dirname, "..", "..", rel), "utf8");
+      const re = /action:"payment_status"/g;
+      let m;
+      while ((m = re.exec(src))) {
+        // Extrait l'objet littéral transmis à JSON.stringify (accolades équilibrées).
+        // L'accolade d'ouverture précède `action:` dans le source → recherche en ARRIÈRE.
+        const open = src.lastIndexOf("{", m.index);
+        assert.ok(open !== -1, rel + " : objet de requête introuvable");
+        let depth = 0;
+        let end = -1;
+        for (let i = open; i < src.length; i++) {
+          if (src[i] === "{") depth++;
+          else if (src[i] === "}") {
+            depth--;
+            if (depth === 0) { end = i; break; }
+          }
+        }
+        assert.ok(end !== -1, rel + " : objet de requête mal formé");
+        const payload = src.slice(open, end + 1);
+        auditedCalls++;
+        assert.match(payload, /email/,
+          rel + " : appel payment_status sans email -> le contrôle propriétaire serveur serait inerte");
+      }
+    }
+    assert.ok(auditedCalls >= 4,
+      "les appels payment_status du client ont tous été audités (" + auditedCalls + ")");
+
+    console.log("PASS: payment_status RPC arguments, amount validation, owner mismatch, RPC fail-closed, pending status, CRÉATION sos refusée / LIVRAISON sos conservée, email transmis par TOUS les appels client payment_status");
   } finally {
     globalThis.fetch = originalFetch;
   }
