@@ -66,8 +66,8 @@
 
 ### Branche / PR
 - Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
-- PR : à créer (base `main`) — **NON mergée, AUCUN déploiement déclenché**
-- Commit head : `à compléter après commit`
+- PR : **#1383** (base `main`) — **NON mergée, AUCUN déploiement déclenché**
+- Commit head : `dd3ae1026d92c88cc6ceaa76359530a9d5847ef9`
 
 ---
 ## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
