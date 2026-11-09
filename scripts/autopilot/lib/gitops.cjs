@@ -164,6 +164,56 @@ function diffStats(wt) {
   return { files, insertions: ins, deletions: del, diffText: diffText + untrackedText };
 }
 
+/**
+ * Restaure les fichiers modifiés HORS du périmètre autorisé.
+ *
+ * Pourquoi (défaut réel du 2026-11-09, PR #1374) : le gate de ship lance
+ * `npm run build`, qui RÉGÉNÈRE des artefacts versionnés (`public/api/**`,
+ * `public/data/**`, `public/version.json`). Le diff était recalculé APRÈS le
+ * gate et committé sans revalidation → des fichiers denylist
+ * (`public/api/**`) se retrouvaient dans la PR d'une mission qui ne demandait
+ * qu'un fichier de documentation.
+ *
+ * Règles :
+ *  - fichier suivi  → `git checkout -- <f>` (retour à la version HEAD) ;
+ *  - fichier non suivi (`??`) → suppression DU SEUL fichier (jamais
+ *    `git clean -fd`, qui effacerait des répertoires entiers) ;
+ *  - un fichier du périmètre autorisé n'est JAMAIS touché ;
+ *  - `node_modules`, `dist/` et les fichiers ignorés par git n'apparaissent
+ *    pas dans `git status --porcelain` : ils sont intacts.
+ *
+ * Retourne `{restored: [], failed: []}`. Un `failed` non vide oblige
+ * l'appelant à PARQUER la mission (fail-closed) : on ne commite jamais un
+ * diff dont la composition n'a pas pu être contrôlée.
+ */
+function restoreOutOfScope(wt, allowedFiles, log = () => {}) {
+  const { normalizeRepoPath } = require('./final-scope.cjs');
+  const allowed = new Set((allowedFiles || []).map(normalizeRepoPath));
+  const status = gitSafe(['status', '--porcelain=v1'], wt) || '';
+  const restored = [];
+  const failed = [];
+  for (const line of status.split('\n').filter(Boolean)) {
+    const file = parsePorcelainLine(line);
+    if (!file) continue;
+    if (allowed.has(normalizeRepoPath(file))) continue;
+    const untracked = line.startsWith('??');
+    try {
+      if (untracked) {
+        const full = path.join(wt, file);
+        if (fs.existsSync(full)) fs.rmSync(full, { recursive: true, force: true });
+      } else {
+        git(['checkout', '--', file], wt);
+      }
+      restored.push(file);
+      log(`restore hors périmètre : ${file}`);
+    } catch (e) {
+      failed.push(`${file}: ${String((e && e.message) || e).split('\n')[0]}`);
+    }
+  }
+  if (failed.length) log(`restore ÉCHEC (fail-closed) : ${failed.join(' ; ')}`);
+  return { restored, failed };
+}
+
 function commitAll(wt, message, files) {
   for (const f of files) git(['add', '--', f], wt);
   git(['-c', 'user.name=sargagame-autopilot', '-c', 'user.email=autopilot@sargagame.local',
@@ -231,13 +281,16 @@ function cleanupWorktree(cfg, log = console.log) {
 function getPrDetail(number) {
   try {
     const bin = process.platform === 'win32' ? 'gh.exe' : 'gh';
-    const out = execFileSync(bin, ['pr', 'view', String(number), '--json', 'number,title,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,headRefOid,files'], {
+    const out = execFileSync(bin, ['pr', 'view', String(number), '--json', 'number,title,url,headRefName,baseRefName,isDraft,mergeable,mergeStateStatus,headRefOid,files'], {
       cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000,
     }).trim();
     const j = JSON.parse(out || '{}');
     return {
       number: j.number != null ? j.number : number,
       title: j.title || null,
+      // L'URL est indispensable : c'est elle qui est publiée sur l'issue
+      // comme preuve (auparavant, l'état final n'était pas publié du tout).
+      url: j.url || null,
       headRefName: j.headRefName || null,
       baseRefName: j.baseRefName || null,
       isDraft: !!j.isDraft,
@@ -743,5 +796,6 @@ module.exports = {
   worktreePath, founderTreeState, prepareWorktree, diffStats, worktreeAddRecovery,
   commitAll, pushBranch, createPR, openAutopilotPR, getPrDetail, enableAutoMerge, cleanupWorktree,
   prState, prodFingerprint, repairPRConflict, analyzeConflict, resolveKeepOurs, prepareRepairWorktree,
+  restoreOutOfScope,
   git, gitSafe, run,
 };

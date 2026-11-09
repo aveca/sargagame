@@ -30,6 +30,9 @@ const lock = require('./lib/lock.cjs');
 // `bridge.cjs` dans la boucle : ce dernier n'est plus appelé par le runner
 // (il reste dans le dépôt comme contrat mono-dépôt historique).
 const multiRepoBridge = require('./multi-repo-bridge.cjs');
+const lifecycle = require('./lib/mission-lifecycle.cjs');
+const missionWatchdog = require('./lib/mission-watchdog.cjs');
+const mem = require('./lib/memory.cjs');
 const notify = require('./lib/notify.cjs');
 
 function rlog(msg) {
@@ -42,6 +45,21 @@ function rlog(msg) {
   try { fs.mkdirSync(path.dirname(C.paths.runnerLog), { recursive: true }); fs.appendFileSync(C.paths.runnerLog, line + '\n'); return; } catch (_) {}
   try { fs.mkdirSync(path.dirname(C.paths.runnerConsoleLog), { recursive: true }); fs.appendFileSync(C.paths.runnerConsoleLog, line + '\n'); return; } catch (_) {}
   try { console.error(`[runner][log-unavailable] ${line}`); } catch (_) {}
+}
+
+/**
+ * WATCHDOG DE MISSIONS — reprise sans doublon.
+ *
+ * La logique vit dans `lib/mission-watchdog.cjs` (module pur, testable
+ * hors-ligne) ; le runner ne fait que l'appeler avec ses dépendances.
+ */
+function runMissionWatchdog(cfg) {
+  return missionWatchdog.runMissionWatchdog({
+    cfg,
+    log: rlog,
+    publish: (repo, issue, status, detail, options) =>
+      multiRepoBridge.publishStatus(repo, issue, status, detail, options),
+  });
 }
 
 const CONTINUOUS = process.env.SARGA_AUTOPILOT_CONTINUOUS === '1';
@@ -226,6 +244,17 @@ async function main() {
       }, 60 * 1000);
       if (typeof guardian.unref === 'function') guardian.unref();
 
+      // 0. WATCHDOG DE MISSIONS — reprise des missions abandonnées (crash du
+      //    runner, agent mort, heartbeat expiré) SANS doublon. Doit tourner
+      //    AVANT l'import : une mission reprise peut être une mission déjà
+      //    connue du pont (elle ne sera donc pas réimportée).
+      try {
+        const wd = runMissionWatchdog(cfg);
+        if (wd.resumed > 0) rlog(`watchdog missions : ${wd.resumed}/${wd.checked} mission(s) reprise(s)`);
+      } catch (e) {
+        rlog(`watchdog missions (non-fatal): ${e.message}`);
+      }
+
       // 1. BRIDGE: Import des missions GitHub (multi-dépôt) — non-bloquant.
       //    Le pont multi-dépôt est le SEUL point d'entrée de la boucle :
       //    allowlist fermée (aveca/bot-wow, aveca/sargagame), routage strict
@@ -235,7 +264,7 @@ async function main() {
       //    `imported` sur l'issue source de la mission.
       try {
         const bridgeResult = multiRepoBridge.ingestMultiRepo({ dry: process.argv.includes('--dry'), log: rlog });
-        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.relayed} relayed, ${bridgeResult.ignored} ignored, ${bridgeResult.rejected} rejected (local=${bridgeResult.localRepo})`);
+        rlog(`bridge: ${bridgeResult.imported} imported, ${bridgeResult.relayed} relayed, ${bridgeResult.blocked} blocked, ${bridgeResult.ignored} ignored, ${bridgeResult.rejected} rejected (local=${bridgeResult.localRepo})`);
         if (bridgeResult.statusFailures > 0) {
           rlog(`bridge: ${bridgeResult.statusFailures} publication(s) de statut en échec — accuser le silence est interdit`);
         }

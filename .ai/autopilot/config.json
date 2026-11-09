@@ -8,6 +8,12 @@
     "observeIfOlderThanMinutes": 45,
     "researchEveryNRuns": 6
   },
+  "mission": {
+    "$comment": "Cycle de vie des missions GitHub [AUTOPILOT] : heartbeat publié sur l'issue et watchdog de reprise.",
+    "heartbeatSeconds": 300,
+    "watchdogStaleSeconds": 900,
+    "maxAttempts": 3
+  },
   "resources": {
     "maxConcurrentAgents": 1,
     "minFreeMemoryMB": 1024,
