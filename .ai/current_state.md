@@ -69,10 +69,13 @@
 
 ### Branche / PR
 - Branche : `agent/coding/autopilot-bridge-20261109`
-- PR : **#1378** — OPEN, NON mergée (base `main`)
-- Commit head : `41f2e6a838efe31bbc9c3cdceb6123fb61868c9b` (complété par le commit de correction CI décrit ci-dessous)
+- PR : **#1378** — OPEN, NON mergée (base `main`), CI **4/4 verte**
+- Commit head : `2c8ac8b178138b50ed18a238eadf698bfe8b1fe2`
+  (`41f2e6a8` = livraison initiale · `2c8ac8b17` = correctif du défaut #23 révélé par la CI)
 
-> **Complément (après premier push)** : la CI de #1378 a révélé le **défaut #23** — `multi-repo-bridge-e2e.test.cjs` exigeait un agent **réellement installé** (binaire `opencode` absent du runner CI) : le test passait en local et échouait en CI. Correctif : point d'injection `options.router` dans le pont + test vérifiant la **décision** de routage (et non l'installation de la machine) + nouveau scénario « machine sans agent » (la mission reste importée et actionnable) + nouveau `lib/agent-router.test.cjs`. Suite après correctif : **186/190** (les 4 échecs restent les **mêmes préexistants**).
+> **Complément (après premier push)** : la CI de #1378 a révélé le **défaut #23** — `multi-repo-bridge-e2e.test.cjs` exigeait un agent **réellement installé** (binaire `opencode` absent du runner CI) : le test passait en local et échouait en CI. Correctif : point d'injection `options.router` dans le pont + test vérifiant la **décision** de routage (et non l'installation de la machine) + nouveau scénario « machine sans agent » (la mission reste importée et actionnable) + nouveau `lib/agent-router.test.cjs`.
+> **Preuve CI sur le SHA exact `2c8ac8b17`** : `test-frontend` **190/190 fichiers de test OK** (les 4 échecs locaux ne se reproduisent pas en CI : `dist/` y est construit), `perf` OK, `lighthouse-report` OK, `GitGuardian Security Checks` OK.
+> **Neutralité production confirmée** : **0 run** `cloudflare-production.yml` sur la branche (les derniers runs datent du 2026-11-07) — aucun déploiement, aucun secret de paiement réécrit.
 
 ---
 
