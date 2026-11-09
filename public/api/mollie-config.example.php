@@ -35,8 +35,12 @@ return [
     //     historiques de juillet 2026 l'utilisaient — ils ne sont plus rejouables).
     //   • En USD, une surcharge de haute saison de +15 % (juin→novembre, hors trip7)
     //     est appliquée par le serveur APRès validation du montant de base.
+    //   • 'sos' a été RETIRÉ le 2026-11-09 : le parcours de paiement SOS (1 €)
+    //     n'est plus proposé au client et le serveur REFUSE sa création. La
+    //     livraison des paiements `sos` DÉJÀ encaissés reste possible (webhook
+    //     + backfill contrôlé) — encaisser sans livrer serait un trou de
+    //     confiance. Ne pas réintroduire 'sos' ici.
     'passes' => [
-        'sos'   => ['cents' => 100,  'days' => 1,   'label' => 'SOS Plage 24H — rapport demain'],
         'trip7' => ['cents' => 499,  'days' => 7,   'label' => 'Pass 7 jours (séjour)'],
         'season'=> ['cents' => 1999, 'days' => 210, 'label' => 'Pass saison'],
         'p30'   => ['cents' => 1499, 'days' => 30,  'label' => 'Pass 30 jours'],

@@ -11,8 +11,10 @@
  *   5. Paramètres régionaux : canonical/og:url = domaine de la région, et si
  *      regions/<id>.json définit un GA4 réel (!= TODO_GA4_ID) ⇒ présent dans le HTML.
  *      Sans GA4 configuré, le contrôle analytics reste NOT_VERIFIED (jamais PASS simulé).
- *   6. Parcours ?sos=1 : HTTP 200 sans redirection d'erreur. Le rendu UI du modal
- *      est client-side : non prouvable en HTTP pur ⇒ reste NOT_VERIFIED.
+ *   6. ABSENCE de la surface SOS publique : le HTML servi ne doit contenir
+ *      AUCUN marqueur du parcours SOS 1 € (CTA, deep-link ?sos=1, classe
+ *      .sg-soscta, catalogue /premium). Une occurrence = FAILED.
+ *      Lecture seule : aucune création de paiement n'est émise.
  *   7. API paiement : POST {"action":"__payment_smoke__"} doit répondre 400 et ne
  *      jamais révéler payment_backend_not_configured / api_route_not_migrated.
  *
@@ -134,7 +136,7 @@ function checkArtifactIdentity(vj, expectV, expectB) {
 
 // ID GA4 d'une région : champ `ga4Id` (config actuelle), repli `ga4` historique.
 // `TODO_GA4_ID`, absent ou vide => null (contrôle NOT_VERIFIED honnête).
-// Pure et testée (voir tests/unit/sos-modal.test.cjs, série G).
+// Pure et testée (voir tests/unit/post-deploy-satellite-freshness.test.cjs).
 function resolveGa4Id(region) {
   const raw = (region && region.ga4Id) || (region && region.ga4) || null;
   if (typeof raw !== 'string' || !raw.trim() || raw.trim() === 'TODO_GA4_ID') return null;
@@ -346,15 +348,28 @@ async function verifyDomain(region, opts) {
     set('analytics_region_param', 'NOT_VERIFIED', `aucun GA4 configuré pour ${region.id} — contrôle non applicable (jamais simulé)`);
   }
 
-  // 6. Parcours ?sos=1 (niveau HTTP ; le rendu modal est client-side)
+  // 6. ABSENCE de la surface SOS publique (le parcours SOS 1 € a été retiré
+  //    le 2026-11-09). Contrôle RÉEL et lecture seule : on cherche dans le
+  //    HTML servi les marqueurs du parcours supprimé (CTA, deep-link, classe
+  //    CSS, catalogue /premium). Une seule occurrence = FAILED.
+  //    ⚠️ Aucune requête de CRÉATION de paiement n'est émise : cela créerait
+  //    un paiement LIVE (interdit sans validation explicite). La preuve du
+  //    refus serveur est faite en local (tests/unit/sos-public-surface-removed).
   if (opts.sosTest) {
-    const sos = httpStatus(`https://${domain}/?sos=1&pdv=${Date.now()}`);
-    if (!sos.ok) set('sos_deeplink', 'NOT_VERIFIED', `injoignable (${String(sos.error || '').split('\n')[0]})`);
-    else if (sos.status !== 200) set('sos_deeplink', 'FAILED', `HTTP ${sos.status}`);
+    const sosHtml = curl(['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', `https://${domain}/?sos=1&pdv=${Date.now()}`], 25000);
+    if (!sosHtml.ok) set('sos_public_surface', 'NOT_VERIFIED', `injoignable (${String(sosHtml.error || '').split('\n')[0]})`);
     else {
-      set('sos_deeplink_http', 'VERIFIED', '?sos=1 → HTTP 200');
-      set('sos_modal_render', 'NOT_VERIFIED', 'modal SOS rendu côté client (JS) — non prouvable en HTTP pur ; contrôle navigateur requis');
+      const html = sosHtml.out || '';
+      const markers = ['sg-soscta', 'SOS PLAGE 24H', 'SOS BEACH 24H', 'SOS PLAYA 24H', 'sos_success', 'sg_sos_checkout', 'sos-observation-state'];
+      const found = markers.filter((m) => html.includes(m));
+      if (found.length) set('sos_public_surface', 'FAILED', `surface SOS encore servie : ${found.join(', ')}`);
+      else set('sos_public_surface', 'VERIFIED', 'aucune surface SOS servie (CTA, deep-link, classe CSS, catalogue)');
     }
+    // Catalogue /premium/ : le pass « sos » ne doit plus être proposé.
+    const prem = curl(['-sL', '--max-time', '20', '-A', 'Mozilla/5.0 (compatible; SargagamePostDeploy/2.0)', `https://${domain}/premium/`], 25000);
+    if (!prem.ok) set('sos_premium_catalogue', 'NOT_VERIFIED', `injoignable (${String(prem.error || '').split('\n')[0]})`);
+    else if (/"pass"\s*:\s*"sos"/.test(prem.out || '')) set('sos_premium_catalogue', 'FAILED', 'le catalogue /premium/ propose encore le pass « sos »');
+    else set('sos_premium_catalogue', 'VERIFIED', 'le catalogue /premium/ ne propose plus le pass « sos »');
   }
 
   // 7. API paiement — contrat réel : POST __payment_smoke__ => 400, backend configuré

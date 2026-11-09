@@ -20,13 +20,18 @@
 // Passs B2C — paiement unique, JAMAIS d'abonnement.
 //   eur : prix serveur exact (mollie.php $passPrices).
 //   usd : p30 = 11.99 (mollie.php) ; trip7 = 5.99 (allowlist create-checkout.php
-//         USD = [599]) ; season / sos = null → NON commercialisés en USD
+//         USD = [599]) ; season = null → NON commercialisé en USD
 //         (le serveur n'a pas de montant déterministe → pas d'offre affichable).
+//
+// ⚠️ 2026-11-09 — le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du
+// parcours client : il n'est plus affiché, plus vendu, plus créable côté
+// serveur. La LIVRAISON des paiements `sos` DÉJÀ encaissés reste possible
+// (backfill contrôlé + webhook) : encaisser sans livrer serait un trou de
+// confiance. Ne pas réintroduire `sos` dans OFFERS.
 const OFFERS = Object.freeze([
   { pass: 'trip7', cents: 499, cur: 'EUR', price: '4,99 €', days: 7 },
   { pass: 'p30',  cents: 1499, cur: 'EUR', price: '14,99 €', days: 30, best: true },
   { pass: 'season', cents: 1999, cur: 'EUR', price: '19,99 €', days: 210 },
-  { pass: 'sos',   cents: 100, cur: 'EUR', price: '1,00 €', days: 1 },
 ]);
 
 const USD_OFFERS = Object.freeze([

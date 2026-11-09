@@ -39,11 +39,15 @@ check(!offer.includes('cents: { eur: 1499, usd: 1199 }'), 'no hardcoded price ta
 check(/from\s*["']\.\/lib\/pricing\.js["']/.test(offer), 'PassOffer imports the single pricing source')
 check(/passBaseCents/.test(offer) && /passEffectiveCents/.test(offer), 'PassOffer resolves base and effective amounts')
 check(/PASS_DAYS\[key\]/.test(offer), 'pass duration comes from PASS_DAYS (pricing.js)')
-check(pricing.includes('PASS_DAYS = Object.freeze({ p30: 30, trip7: 7, season: 210, sos: 1 })'), 'PASS_DAYS covers the 4 server passes')
+check(pricing.includes('PASS_DAYS = Object.freeze({ p30: 30, trip7: 7, season: 210 })'), 'PASS_DAYS covers the 3 server passes')
 check(pricing.includes('p30: Object.freeze({ eur: 1499, usd: 1199 })'), 'pricing.js mirrors the server p30 price (14,99 € / 11,99 $)')
 check(pricing.includes('trip7: Object.freeze({ eur: 499, usd: 599 })'), 'pricing.js mirrors the server trip7 price (4,99 € / 5,99 $)')
 check(pricing.includes('season: Object.freeze({ eur: 1999, usd: null })'), 'pricing.js mirrors the server season price (19,99 €, absent en USD)')
-check(pricing.includes('sos: Object.freeze({ eur: 100, usd: null })'), 'pricing.js mirrors the server SOS price (1,00 €)')
+// 2026-11-09 : le pass « SOS » (1 €) a été retiré du parcours client — il ne
+// doit plus être proposé au client (la LIVRAISON des paiements déjà encaissés
+// reste gérée côté serveur, cf. FULFILL_PRICES).
+check(!pricing.includes('sos: Object.freeze({ eur: 100, usd: null })'), 'pricing.js ne propose plus le pass SOS (1,00 €)')
+check(!/PASS_KEYS\s*=\s*Object\.freeze\(\[[^\]]*sos/.test(pricing), 'PASS_KEYS ne contient plus le pass « sos »')
 check(pricing.includes('USD_HIGH_SEASON_RATE = 0.15'), 'pricing.js mirrors the USD high-season surcharge (+15 %)')
 check(pricing.includes('resolvePass'), 'pricing.js exposes resolvePass (fallback p30 si le pass n’est pas vendu)')
 check(offer.includes('resolvePass(passKey, cur)'), 'PassOffer falls back to the main offer when a pass is not sold in the currency')

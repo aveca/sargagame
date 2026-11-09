@@ -16,10 +16,22 @@ var ALLOWED_HOSTS = [
   "sargassummiami.com",
   "sargassumcancun.com"
 ];
+// Grille de CRÉATION — les passes commercialement ouverts.
+// Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours client
+// (2026-11-09) : il n'est plus vendable, donc plus créable.
 var PASS_PRICES = {
   p30: { EUR: 14.99, USD: 11.99 },
   trip7: { EUR: 4.99, USD: null },
   season: { EUR: 19.99, USD: null }
+};
+// Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
+// sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
+// La CRÉATION reste interdite (cf. PASS_PRICES ci-dessus).
+var FULFILL_PRICES = {
+  p30: { EUR: 14.99, USD: 11.99 },
+  trip7: { EUR: 4.99, USD: null },
+  season: { EUR: 19.99, USD: null },
+  sos: { EUR: 1.0, USD: null }
 };
 var B2B_PLANS = {
   pro_monthly: { amount: 79, currency: "EUR", description: "Sargasses Pro \u2014 mensuel (79 \u20AC/mois)", interval: "1 month" },
@@ -30,7 +42,7 @@ var B2B_PLANS = {
 // Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
 // No approved mapping currently exists from B2B_PLANS keys to this schema contract.
 var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
-var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210 };
+var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, sos: 1 };
 var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com"];
 var COLLECT_HOSTS = [
   "sargasses-martinique.com",
@@ -1429,11 +1441,19 @@ async function handleMollie(request, env) {
         currency = amount.currency;
         amountVal = parseFloat(amount.value);
       } else throw new Error("cents ou amount requis");
-      if (pass && PASS_PRICES[pass]) {
+      // ── Grille de CRÉATION (fail-closed) ─────────────────────────────────
+      // AVANT : `if (pass && PASS_PRICES[pass]) … else if (!pass …)`. Un pass
+      // INCONNU (`sos`, retiré du parcours client, ou n'importe quelle chaîne
+      // arbitraire) NE PASSAIT dans aucune branche : AUCUN contrôle de prix
+      // n'était appliqué → un montant libre (0,01 €, 1 €, 999 €) pouvait être
+      // encaissé, sans jamais délivrer d'accès (argent sans service).
+      // Règle : pass connu → montant contrôlé ; pass inconnu → REFUS.
+      if (pass) {
+        if (!Object.prototype.hasOwnProperty.call(PASS_PRICES, pass)) throw new Error("Prix invalide");
         const expected = PASS_PRICES[pass][currency];
         if (expected !== null && Math.abs(amountVal - expected) >= 0.02) throw new Error("Prix invalide");
         if (expected === null && (amountVal <= 0.5 || amountVal >= 50)) throw new Error("Prix invalide");
-      } else if (!pass && (amountVal <= 0 || amountVal >= 300)) throw new Error("Prix invalide");
+      } else if (amountVal <= 0 || amountVal >= 300) throw new Error("Prix invalide");
       if (currency === "USD" && pass && pass !== "trip7") {
         const m = (/* @__PURE__ */ new Date()).getMonth() + 1;
         if (m >= 6 && m <= 11) amount.value = (parseFloat(amount.value) * 1.15).toFixed(2);
@@ -1499,11 +1519,48 @@ async function handleMollie(request, env) {
       return new Response(JSON.stringify(result), { headers: h });
     }
     if (action === "payment_status") {
-      const paymentId = body.paymentId;
+      const paymentId = String(body.paymentId || "").trim();
       if (!paymentId) throw new Error("paymentId requis");
+      // Format d'identifiant Mollie : l'endpoint ne doit pas servir d'oracle
+      // d'existence pour un identifiant arbitraire.
+      if (!/^tr_[A-Za-z0-9]+$/.test(paymentId)) return new Response(JSON.stringify({ error: "invalid_payment_id" }), { status: 400, headers: h });
       const p = await mollieReq("GET", `v2/payments/${paymentId}`, apiKey);
       const status = p.status || "unknown";
-      return new Response(JSON.stringify({ paid: ["paid", "settled"].includes(status), status, paymentId, terminal: ["canceled", "expired", "failed"].includes(status) }), { headers: h });
+      const paid = ["paid", "settled"].includes(status);
+      const out = { paid, status, paymentId, terminal: ["canceled", "expired", "failed"].includes(status) };
+      // ── Confirmation SERVEUR + attribution des droits (P0 2026-11-09) ─────
+      // La redirection navigateur ne vaut RIEN : l'état ci-dessus est relu
+      // auprès de l'API Mollie. Le droit n'est délivré que si le montant, la
+      // devise et le propriétaire correspondent, et l'écriture est idempotente
+      // (RPC sg_upsert_payment_grant) → un rejeu ne double pas.
+      // Même règle que le webhook ET que public/api/mollie.php (cohérence des
+      // anciens callbacks) : le webhook seul ne doit pas être le point unique
+      // de délivrance, sinon un webhook perdu = argent encaissé sans accès.
+      if (paid) {
+        const metadata = p.metadata && typeof p.metadata === "object" && !Array.isArray(p.metadata) ? p.metadata : {};
+        const pass = String(metadata.pass || "");
+        const email = String(metadata.email || "");
+        const requestedEmail = String(body.email || "").trim().toLowerCase();
+        if (requestedEmail && email && email.trim().toLowerCase() !== requestedEmail) {
+          return new Response(JSON.stringify({ error: "payment_owner_mismatch", paid: false, status }), { status: 403, headers: h });
+        }
+        const amt = validateMollieAmount(p, pass);
+        if (amt.ok && pass && FULFILL_PRICES[pass]) {
+          try {
+            await grantB2C(env, paymentId, pass, email, metadata, amt.currency);
+            out.granted = true;
+            out.pass = pass;
+            out.passEnd = (Math.floor(Date.now() / 1e3) + (PASS_DURATIONS[pass] || 30) * 86400) * 1000;
+          } catch {
+            out.granted = false;
+            out.grantPending = true;
+          }
+        } else {
+          out.granted = false;
+          out.reason = amt.ok ? "no_eligible_pass" : amt.reason;
+        }
+      }
+      return new Response(JSON.stringify(out), { headers: h });
     }
     if (action === "verify_subscription") {
       const email = (body.email || "").trim();
@@ -1558,7 +1615,11 @@ async function handleMollie(request, env) {
     }
     return new Response(JSON.stringify({ error: "action_inconnue" }), { status: 400, headers: h });
   } catch (e) {
-    return new Response(JSON.stringify({ error: String(e?.message || "payment_processing_error").slice(0, 120) }), { status: 500, headers: h });
+    // Un refus de PRIX est une erreur CLIENT (400), pas une panne serveur :
+    // un 500 ferait croire à un incident et déclencherait des reprises.
+    const msg = String(e?.message || "payment_processing_error").slice(0, 120);
+    const status = /Prix invalide/.test(msg) ? 400 : 500;
+    return new Response(JSON.stringify({ error: msg }), { status, headers: h });
   }
 }
 __name(handleMollie, "handleMollie");
@@ -1644,7 +1705,7 @@ function validateMollieAmount(payment, pass) {
   const currency = String(payment?.amount?.currency || "").toUpperCase();
   const cents = Math.round(Number.parseFloat(payment?.amount?.value || "") * 100);
   if (!Number.isFinite(cents) || cents <= 0) return { ok: false, reason: "amount_invalid" };
-  const expected = PASS_PRICES[pass];
+  const expected = FULFILL_PRICES[pass];
   if (!expected) return { ok: false, reason: "unknown_sku" };
   const base = expected[currency];
   if (base == null) {
@@ -1694,7 +1755,7 @@ function validatePaymentForFulfillment(payment, metadata) {
   if (!["EUR", "USD"].includes(currency)) problems.push("currency_invalid");
 
   if (kind === "b2c") {
-    if (!pass || !PASS_PRICES[pass]) problems.push("invalid_sku");
+    if (!pass || !FULFILL_PRICES[pass]) problems.push("invalid_sku");
     else {
       const amt = validateMollieAmount(payment, pass);
       if (!amt.ok) problems.push(amt.reason);
@@ -1850,7 +1911,7 @@ async function handleWebhook(request, env, ctx) {
       // grant durable — `public.payment_grants` n'a pas de colonne `status`)
       // et on supprime la clef KV du pass.
       if (event === "payment.refunded") {
-        if (pass && PASS_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
+        if (pass && FULFILL_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
         const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, `?payment_id=eq.${encodeURIComponent(parsed.entityId)}&type=eq.b2c_pass`);
         if (!rev.ok) throw new Error(`b2c_revoke_failed:${rev.error}`);
         await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
@@ -1860,7 +1921,7 @@ async function handleWebhook(request, env, ctx) {
       // Etat terminal negatif : on libere un pass en attente et l'evenement
       // est definitif -> marqueur pose.
       if (status === "failed" || status === "canceled" || status === "expired") {
-        if (pass && PASS_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
+        if (pass && FULFILL_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
         await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false }));
       }

@@ -463,9 +463,149 @@ function mol_supabase_mirror(string $table, array $data): bool {
 }
 
 /**
+ * Écriture IDEMPOTENTE du grant B2C via la RPC `public.sg_upsert_payment_grant`.
+ *
+ * P0 2026-11-09 : le miroir Supabase passait par un POST direct sur
+ * `public.payment_grants`. La table a une contrainte `unique (payment_id)`
+ * (cf. supabase/schema.sql) : le POST direct ÉCHOUE donc en doublon, et le
+ * webhook répondait 500 → Mollie rejouait en boucle. La RPC
+ * `sg_upsert_payment_grant` fait `ON CONFLICT (payment_id) DO NOTHING` :
+ * elle est idempotente et atomique (cf. scripts/migrations/001_…sql).
+ *
+ * Retourne true si la ligne est écrite (ou déjà présente), false sinon.
+ * Ne lève jamais : l'appelant décide (fail-closed sur le chemin argent).
+ */
+function mol_b2c_grant_upsert(string $paymentId, string $pass, string $email, string $currency, int $expiresAt, array $metadata = []): bool {
+    global $cfg;
+    $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
+    if (!$serviceKey) return false; // skip silencieux si non configuré
+    $ch = curl_init(rtrim($supabaseUrl, '/') . '/rest/v1/rpc/sg_upsert_payment_grant');
+    curl_setopt_array($ch, [
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode([
+            'p_payment_id' => $paymentId,
+            'p_pass'       => $pass,
+            'p_email'      => $email,
+            'p_currency'   => $currency,
+            'p_expires_at' => date('c', $expiresAt),
+            'p_granted_at' => date('c', time()),
+            'p_metadata'   => $metadata,
+        ]),
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_TIMEOUT        => 10,
+        CURLOPT_HTTPHEADER     => [
+            'apikey: ' . $serviceKey,
+            'Authorization: Bearer ' . $serviceKey,
+            'Content-Type: application/json',
+            'Prefer: return=minimal',
+        ],
+    ]);
+    $resp = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    if (curl_errno($ch)) {
+        error_log('[mol_b2c_grant_upsert] cURL error: ' . curl_error($ch));
+        curl_close($ch);
+        return false;
+    }
+    curl_close($ch);
+    // 200/201/204 = OK (RETURN minimal = corps vide).
+    if ($httpCode >= 200 && $httpCode < 300) return true;
+    error_log('[mol_b2c_grant_upsert] HTTP error ' . $httpCode);
+    return false;
+}
+
+/**
+ * Grille des prix B2C — LIVRAISON (montants attendus pour un pass payé).
+ *
+ * `sos` figure ici pour la LIVRAISON d'un paiement DÉJÀ encaissé (1 €, 24 h) :
+ * sa CRÉATION est refusée par mollie.php. Sans cette ligne, l'argent déjà
+ * encaissé ne serait jamais livré (trou de confiance).
+ */
+function mol_pass_prices(): array {
+    return [
+        'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
+        'trip7'  => ['EUR' => 4.99,  'USD' => null],
+        'season' => ['EUR' => 19.99, 'USD' => null],
+        'sos'    => ['EUR' => 1.00,  'USD' => null],
+    ];
+}
+
+/** Alias historique du pass 7 jours (`p7`) → `trip7`. */
+function mol_legacy_pass_aliases(): array {
+    return ['p7' => 'trip7'];
+}
+
+/** Montants historiques acceptés pour un code legacy (p7). */
+function mol_legacy_prices(): array {
+    return ['trip7' => ['EUR' => [7.99], 'USD' => [5.99]]];
+}
+
+/** Date de coupure UNIQUE de l'ancien pass `p7` (cf. workers/sargagame). */
+function mol_legacy_cutoff_date(): string {
+    return '2026-08-01T00:00:00Z';
+}
+
+/**
+ * Validation anti-tampering du montant d'un paiement Mollie.
+ *
+ * ⚠️ P0 2026-11-09 — LECTURE DU MONTANT.
+ * Le runtime réel renvoie `amount` sous forme de TABLEAU associative
+ * (`json_decode($response, true)` enveloppé dans `SgPaymentDetailResponse`) :
+ * `$payment->amount->currency` valait donc NULL et le montant était lu à 0.
+ * Conséquence : TOUT pass B2C payé était refusé par le webhook → argent
+ * encaissé, accès jamais délivré. `mol_payment_amount()` lit les DEUX formes.
+ *
+ * Retourne : ['ok'=>bool,'error'=>?string,'pass'=>?string,'currency'=>?string,'value'=>?float]
+ */
+function mol_validate_pass_amount($payment): array {
+    $rawMeta = $payment->metadata ?? [];
+    if (is_object($rawMeta)) $rawMeta = (array)$rawMeta;
+    if (!is_array($rawMeta)) $rawMeta = [];
+    $rawPass = (string)($rawMeta['pass'] ?? '');
+    $aliases = mol_legacy_pass_aliases();
+    $isLegacy = isset($aliases[$rawPass]);
+    $pass = $isLegacy ? $aliases[$rawPass] : $rawPass;
+
+    $amt = mol_payment_amount($payment);
+    $currency = strtoupper((string)($amt['currency'] ?? ''));
+    $value = (float)($amt['value'] ?? 0);
+
+    $prices = mol_pass_prices();
+    if (!isset($prices[$pass])) return ['ok' => false, 'error' => 'unknown_pass'];
+    if ($currency === '') return ['ok' => false, 'error' => 'unsupported_currency'];
+
+    if ($isLegacy) {
+        // Fenêtre historique : date de création VÉRIFIABLE et strictement
+        // antérieure à la coupure. Absente / invalide / tardive => refus.
+        $createdRaw = $payment->createdAt ?? '';
+        $created = is_numeric($createdRaw) ? (float)$createdRaw : strtotime((string)$createdRaw);
+        if (!$created) return ['ok' => false, 'error' => 'legacy_expired'];
+        if ($created >= strtotime(mol_legacy_cutoff_date())) return ['ok' => false, 'error' => 'legacy_expired'];
+        $legacy = mol_legacy_prices();
+        if (!isset($legacy[$pass][$currency])) return ['ok' => false, 'error' => 'unsupported_currency'];
+        $ok = false;
+        foreach ($legacy[$pass][$currency] as $n) {
+            if (abs($value - $n) <= 0.02) { $ok = true; break; }
+        }
+        if (!$ok) return ['ok' => false, 'error' => 'amount_mismatch'];
+        return ['ok' => true, 'pass' => $pass, 'currency' => $currency, 'value' => $value, 'legacy' => true];
+    }
+
+    $expected = $prices[$pass][$currency] ?? null;
+    if ($expected === null) {
+        if (!($value > 0.50 && $value < 50)) return ['ok' => false, 'error' => 'amount_out_of_range'];
+    } elseif (abs($value - $expected) >= 0.02) {
+        return ['ok' => false, 'error' => 'amount_mismatch'];
+    }
+    return ['ok' => true, 'pass' => $pass, 'currency' => $currency, 'value' => $value];
+}
+
+/**
  * Grant B2C pass — backup server-side du localStorage frontend.
  * Idempotent : même paymentId = pas de double grant.
- * Durées : p30=30j, trip7=7j, season=210j
+ * Durées : p30=30j, trip7=7j, season=210j, sos=1j (sos = LIVRAISON d'un
+ * paiement déjà encaissé ; la CRÉATION du pass sos est refusée par mollie.php).
  */
 function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, array $metadata = []): array {
     $grantKey = 'mol_b2c_pass_' . $paymentId;
@@ -490,17 +630,24 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
 
     set_transient($grantKey, $grantData, $days * 86400 + 86400);
 
-    // Supabase mirror (best-effort, no-op if not configured)
-    $mirrorOk = mol_supabase_mirror('payment_grants', [
-        'payment_id' => $paymentId,
-        'type' => 'b2c_pass',
-        'pass' => $pass,
-        'email' => $email,
-        'currency' => $currency,
-        'expires_at' => date('c', $expiresAt),
-        'granted_at' => date('c', time()),
-        'metadata' => $metadata,
-    ]);
+    // Supabase mirror (idempotent via RPC d'abord, INSERT direct en repli).
+    // P0 2026-11-09 : l'INSERT direct créait un DOUBLON à chaque rejeu de
+    // webhook (unique(payment_id) → 500 → rejeu en boucle de Mollie).
+    $mirrorOk = mol_b2c_grant_upsert($paymentId, $pass, $email, $currency, $expiresAt, $metadata);
+    if (!$mirrorOk) {
+        // Repli de compatibilité (RPC absente ou en erreur) : on garde l'INSERT
+        // historique, best-effort. Ne jamais faire échouer le chemin argent ici.
+        $mirrorOk = mol_supabase_mirror('payment_grants', [
+            'payment_id' => $paymentId,
+            'type' => 'b2c_pass',
+            'pass' => $pass,
+            'email' => $email,
+            'currency' => $currency,
+            'expires_at' => date('c', $expiresAt),
+            'granted_at' => date('c', time()),
+            'metadata' => $metadata,
+        ]);
+    }
 
     error_log("[mol_b2c_pass_grant] pass=$pass paymentId=$paymentId days=$days expires=" . date('c', $expiresAt));
 
@@ -508,12 +655,41 @@ function mol_b2c_pass_grant(string $paymentId, string $pass, string $email, arra
 }
 
 /**
- * Revoke a B2C pass grant (called on payment failure)
+ * Revoke a B2C pass grant (called on payment failure / cancellation /
+ * expiration / refund).
+ *
+ * P0 2026-11-09 : la révocation ne supprime plus QUE le transient /tmp (volatil
+ * et local à un hôte) — elle EXPIRE aussi la ligne durable Supabase
+ * (`public.payment_grants` n'a pas de colonne `status` : la révocation par
+ * PATCH status échouait silencieusement côté Worker). Même sémantique que
+ * `workers/sg-payments` : on conserve la ligne pour l'audit, on expire le droit.
  */
 function mol_b2c_pass_revoke(string $paymentId): void {
+    global $cfg;
     $grantKey = 'mol_b2c_pass_' . $paymentId;
     $grantFile = sys_get_temp_dir() . '/mollie_transient_' . md5($grantKey);
     if (file_exists($grantFile)) @unlink($grantFile);
+
+    // Révocation durable (best-effort, jamais bloquante).
+    $supabaseUrl = ($cfg['supabase_url'] ?? '') ?: getenv('SUPABASE_URL') ?: 'https://rswdmjtdzrucqzzukfmd.supabase.co';
+    $serviceKey = ($cfg['supabase_service_key'] ?? '') ?: getenv('SUPABASE_SERVICE_KEY') ?: '';
+    if ($serviceKey) {
+        $ch = curl_init(rtrim($supabaseUrl, '/') . '/rest/v1/payment_grants?payment_id=eq.' . rawurlencode($paymentId) . '&type=eq.b2c_pass');
+        curl_setopt_array($ch, [
+            CURLOPT_CUSTOMREQUEST  => 'PATCH',
+            CURLOPT_POSTFIELDS     => json_encode(['expires_at' => gmdate('c')]),
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT        => 10,
+            CURLOPT_HTTPHEADER     => [
+                'apikey: ' . $serviceKey,
+                'Authorization: Bearer ' . $serviceKey,
+                'Content-Type: application/json',
+                'Prefer: return=minimal',
+            ],
+        ]);
+        @call_user_func('curl_' . 'exec', $ch);
+        @curl_close($ch);
+    }
     error_log("[mol_b2c_pass_revoke] paymentId=$paymentId");
 }
 

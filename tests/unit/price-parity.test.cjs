@@ -33,7 +33,9 @@ const read = (p) => fs.readFileSync(path.join(root, p), 'utf8');
 
 const pricingSrc = read('src/lib/pricing.js');
 const molliePhp = read('public/api/mollie.php');
+const mollieLibSrc = read('public/api/mollie-lib.php');
 const workerJs = read('workers/sargagame/index.js');
+const workerPayJs = read('workers/sg-payments/index.js');
 const checkoutPhp = read('public/api/create-checkout.php');
 const premiumLib = require(path.join(root, 'scripts', 'lib', 'premium-page.cjs'));
 
@@ -68,7 +70,8 @@ const clientHighRate = (() => {
 })();
 
 console.log('1. src/lib/pricing.js');
-check(Object.keys(clientPrices).length === 4, 'les 4 passes sont déclarés (p30, trip7, season, sos)');
+check(Object.keys(clientPrices).length === 3, 'les 3 passes sont déclarés (p30, trip7, season)');
+check(!('sos' in clientPrices), 'le pass « sos » n’est PLUS déclaré côté client (retrait 2026-11-09)');
 check(clientHighRate === 0.15, 'la surcharge USD de haute saison est de +15 %');
 check(JSON.stringify(clientHighMonths) === JSON.stringify([6, 7, 8, 9, 10, 11]), 'la fenêtre USD est juin → novembre');
 
@@ -82,11 +85,17 @@ const bandRe = /\$amountVal\s*>\s*([\d.]+)\s*&&\s*\$amountVal\s*<\s*([\d.]+)/.ex
 const usdBand = bandRe ? { min: Number(bandRe[1]), max: Number(bandRe[2]) } : null;
 
 console.log('\n2. public/api/mollie.php ($passPrices — autoritaire)');
-check(Object.keys(serverPrices).length === 4, 'les 4 passes sont définis côté serveur');
+check(Object.keys(serverPrices).length === 3, 'les 3 passes sont définis côté serveur');
+check(!('sos' in serverPrices),
+  'le pass « sos » n’est PLUS créable côté serveur (allowlist de création)');
 check(/\$month\s*>=\s*6\s*&&\s*\$month\s*<=\s*11/.test(molliePhp), 'la fenêtre serveur est juin → novembre');
 check(/1\.15/.test(molliePhp), 'le serveur applique la surcharge ×1,15');
 check(/\$pass\s*!==\s*'trip7'/.test(molliePhp), 'le serveur exclut trip7 de la surcharge');
 check(!!usdBand, 'le serveur expose une bande de plausibilité pour les prix USD variables');
+// Grille de LIVRAISON : `sos` reste accepté pour les paiements DÉJÀ encaissés
+// (encaisser sans livrer serait un trou de confiance).
+check(/'sos'\s*=>\s*\[\s*'EUR'\s*=>\s*1\.0/.test(mollieLibSrc),
+  'la grille de LIVRAISON (mollie-lib.php) conserve « sos » pour les paiements déjà encaissés');
 
 // ── 3. workers/sargagame/index.js ───────────────────────────────────────────
 const workerPrices = {};
@@ -110,6 +119,44 @@ for (const pass of Object.keys(serverPrices)) {
 check(JSON.stringify(workerDays) === JSON.stringify({ p30: 30, trip7: 7, season: 210, sos: 1 }),
   'DAYS_TABLE worker = p30/trip7/season/sos avec les bonnes durées');
 check(!('p7' in workerDays) && !('saison' in workerDays), 'aucune clé legacy « p7 » / « saison » dans le worker');
+
+// ── 3b. Grille de CRÉATION vs grille de LIVRAISON (retrait SOS 2026-11-09) ───
+// Le pass « sos » a été retiré du parcours client : il ne doit plus être
+// CRÉABLE, mais il doit rester LIVRABLE (paiements déjà encaissés).
+const parsePriceBlock = (src, label) => {
+  const re = new RegExp(label + '\\s*=\\s*(?:Object\\.freeze\\()?\\{([\\s\\S]*?)\\n\\s*\\}\\)?;');
+  const m = re.exec(src);
+  const out = {};
+  if (!m) return out;
+  const kre = /(p30|trip7|season|sos)\s*:\s*\{\s*EUR\s*:\s*([\d.]+)\s*,\s*USD\s*:\s*([\d.]+|null)\s*\}/g;
+  let mm;
+  while ((mm = kre.exec(m[1]))) {
+    out[mm[1]] = { eur: Math.round(Number(mm[2]) * 100), usd: mm[3] === 'null' ? null : Math.round(Number(mm[3]) * 100) };
+  }
+  return out;
+};
+console.log('\n3b. Séparation CRÉATION / LIVRAISON (pass « sos »)');
+const workerCreate = parsePriceBlock(workerJs, 'const PASS_PRICES');
+const workerFulfill = parsePriceBlock(workerJs, 'const FULFILL_PRICES');
+check(Object.keys(workerCreate).length === 3 && !('sos' in workerCreate),
+  'workers/sargagame PASS_PRICES (création) = 3 passes, sans « sos »');
+check('sos' in workerFulfill && workerFulfill.sos.eur === 100,
+  'workers/sargagame FULFILL_PRICES (livraison) conserve « sos » à 1,00 €');
+
+const workerPayCreate = parsePriceBlock(workerPayJs, 'var PASS_PRICES');
+const workerPayFulfill = parsePriceBlock(workerPayJs, 'var FULFILL_PRICES');
+check(Object.keys(workerPayCreate).length === 3 && !('sos' in workerPayCreate),
+  'workers/sg-payments PASS_PRICES (création) = 3 passes, sans « sos »');
+check('sos' in workerPayFulfill && workerPayFulfill.sos.eur === 100,
+  'workers/sg-payments FULFILL_PRICES (livraison) conserve « sos » à 1,00 €');
+check(/hasOwnProperty\.call\(PASS_PRICES,\s*pass\)/.test(workerPayJs),
+  'workers/sg-payments refuse un pass INCONNU à la création (fail-closed)');
+
+console.log('\n3c. Catalogue public /premium/');
+check(!premiumLib.OFFERS.some((o) => o.pass === 'sos'),
+  'scripts/lib/premium-page.cjs n’offre plus le pass « sos »');
+check(!premiumLib.USD_OFFERS.some((o) => o.pass === 'sos'),
+  'scripts/lib/premium-page.cjs n’offre plus le pass « sos » en USD');
 
 // ── 4. Parité client ↔ serveur ↔ worker ──────────────────────────────────────
 // Cas particulier USD : mollie.php laisse le montant USD « variable par région »
@@ -214,8 +261,10 @@ const premiumPage = read('public/premium/index.html');
 check(!/\/mois/.test(premiumPage), '/premium/ n’annonce plus aucun abonnement « /mois »');
 check(!/S\u2019abonner|S'abonner/.test(premiumPage), '/premium/ : plus de bouton « S’abonner »');
 check(premiumPage.includes('"cents":499') && premiumPage.includes('"cents":1499') &&
-  premiumPage.includes('"cents":1999') && premiumPage.includes('"cents":100'),
-  '/premium/ : le catalogue embarqué contient les 4 passes EUR aux bons centimes');
+  premiumPage.includes('"cents":1999'),
+  '/premium/ : le catalogue embarqué contient les 3 passes EUR aux bons centimes');
+check(!/"pass"\s*:\s*"sos"/.test(premiumPage) && !/"cents"\s*:\s*100[,\}]/.test(premiumPage),
+  '/premium/ : le catalogue embarqué ne propose plus le pass « sos » (1,00 €)');
 check(premiumPage.includes('"cents":599') && premiumPage.includes('"cents":1199'),
   '/premium/ : le catalogue embarqué contient les 2 passes USD aux bons centimes');
 check(!premiumPage.includes('"cents":799'), '/premium/ : plus de pass legacy à 799¢');
@@ -286,6 +335,7 @@ check(/"sg_price_mismatch"/.test(prod),
 console.log('\n11. Modèle B2C = pass unique, pas d’abonnement');
 const configExample = read('public/api/mollie-config.example.php');
 check(!/'\s*p7'\s*=>/.test(configExample), 'le template de config ne documente plus le pass legacy « p7 »');
+check(!/'\s*sos'\s*=>/.test(configExample), 'le template de config ne documente plus le pass « sos » (retrait 2026-11-09)');
 check(/'season'\s*=>/.test(configExample), 'le template de config documente la clé serveur « season »');
 check(!/'monthly'\s*=>\s*\[\s*'amount'\s*=>\s*'4\.99'/.test(configExample),
   'le template de config ne documente plus l’abonnement B2C fantôme 4,99 €/mois');

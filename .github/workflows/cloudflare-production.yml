@@ -527,8 +527,9 @@ jobs:
   # CONTRÔLE POST-DÉPLOIEMENT RÉEL — s'exécute UNIQUEMENT après un déploiement
   # autorisé et réussi. Vérifications HTTP réelles sur chaque domaine live :
   # accessibilité, identité artefact (version.json), fraîcheur données,
-  # cohérence région↔plages, params régionaux (canonical, GA4), ?sos=1,
-  # contrat API paiement (POST __payment_smoke__ => 400, backend configuré).
+  # cohérence région↔plages, params régionaux (canonical, GA4), ABSENCE de
+  # la surface SOS publique, contrat API paiement (POST __payment_smoke__ => 400,
+  # backend configuré).
   # Tout contrôle non réalisable reste NOT_VERIFIED ; tout échec => job rouge.
   post-deploy-verify:
     needs: [deploy, scope]

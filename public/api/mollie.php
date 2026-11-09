@@ -67,8 +67,14 @@ try {
         // ── Validation prix côté serveur (anti-tampering) ─────────────────────
         // Allowlist complète : pass -> {EUR: montant, USD: montant|null}
         // USD null = montant variable par région (trip7) → fallback plausibilité
+        //
+        // ⚠️ 2026-11-09 — Le pass `sos` (1 €, rapport 24 h) a été RETIRÉ du
+        // parcours client : il n'est PLUS dans l'allowlist de CRÉATION. Un
+        // `create_payment` avec pass=sos est donc refusé (« Prix invalide »).
+        // Sa LIVRAISON (paiements déjà encaissés) reste gérée par le webhook et
+        // par le backfill contrôlé — encaisser sans livrer serait un trou de
+        // confiance. Tout pass inconnu est refusé (fail-closed).
         $passPrices = [
-            'sos'    => ['EUR' => 1.00,  'USD' => null],
             'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
             'trip7'  => ['EUR' => 4.99,  'USD' => null],
             'season' => ['EUR' => 19.99, 'USD' => null],
@@ -266,8 +272,11 @@ try {
     }
 
     if ($action === 'payment_status') {
-        $paymentId = $data['paymentId'] ?? '';
+        $paymentId = trim((string)($data['paymentId'] ?? ''));
         if (!$paymentId) throw new Exception('paymentId requis');
+        // Format d'identifiant Mollie : évite d'utiliser l'endpoint comme
+        // oracle de son existence pour un identifiant arbitraire.
+        if (!preg_match('/^tr_[A-Za-z0-9]+$/', $paymentId)) throw new Exception('paymentId invalide');
         $payment = $mollie->payments->get($paymentId);
         $status = $payment->status ?? 'unknown';
         // Terminal statuses (canceled, expired, failed) indicate final failure
@@ -275,7 +284,44 @@ try {
         // Seul "paid" = payé. "pending" = en attente (virement, 3DS non terminé).
         // "settled" = payé + viré (plus tardif, couvert par paid).
         $paid = in_array($status, ['paid', 'settled'], true);
-        echo json_encode(['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId, 'terminal' => $terminal]);
+        $out = ['paid' => $paid, 'status' => $status, 'paymentId' => $paymentId, 'terminal' => $terminal];
+
+        // ── Confirmation serveur + attribution des droits (P0 2026-11-09) ─────
+        // La redirection navigateur ne vaut RIEN : l'état ci-dessus est relu
+        // auprès de l'API Mollie. Le droit n'est délivré que si le montant, la
+        // devise et le propriétaire correspondent, et l'écriture est
+        // idempotente (RPC sg_upsert_payment_grant) → un rejeu ne double pas.
+        // C'est la même règle que le Worker sg-payments (cohérence des anciens
+        // callbacks) : le webhook seul ne doit pas être le point unique de
+        // délivrance, sinon un webhook perdu = argent encaissé sans accès.
+        if ($paid) {
+            $rawMeta = $payment->metadata ?? [];
+            if (is_object($rawMeta)) $rawMeta = (array)$rawMeta;
+            if (!is_array($rawMeta)) $rawMeta = [];
+            $pass = (string)($rawMeta['pass'] ?? '');
+            $email = (string)($rawMeta['email'] ?? '');
+            $requestedEmail = strtolower(trim((string)($data['email'] ?? '')));
+            if ($requestedEmail !== '' && $email !== '' && strtolower(trim($email)) !== $requestedEmail) {
+                // Le paiement appartient à une autre adresse : on ne délivre rien.
+                http_response_code(403);
+                echo json_encode(['error' => 'payment_owner_mismatch', 'paid' => false, 'status' => $status]);
+                exit;
+            }
+            $check = mol_validate_pass_amount($payment);
+            $aliases = mol_legacy_pass_aliases();
+            $canonical = $aliases[$pass] ?? $pass;
+            if ($check['ok'] && $canonical !== '' && in_array($canonical, ['p30', 'trip7', 'season', 'sos'], true)) {
+                $grant = mol_b2c_pass_grant($paymentId, $canonical, $email, $rawMeta);
+                $out['granted'] = !empty($grant['granted']);
+                $out['pass'] = $canonical;
+                if (!empty($grant['expires_at'])) $out['passEnd'] = ((int)$grant['expires_at']) * 1000;
+                if (empty($grant['mirror_ok'])) $out['grantPending'] = true;
+            } else {
+                $out['granted'] = false;
+                $out['reason'] = $check['ok'] ? 'no_eligible_pass' : ($check['error'] ?? 'invalid');
+            }
+        }
+        echo json_encode($out);
         exit;
     }
 
@@ -401,7 +447,12 @@ try {
     http_response_code(400);
     echo json_encode(['error' => "Action inconnue: $action"]);
 } catch (Throwable $e) {
-    http_response_code(500);
-    error_log('[mollie.php] ' . $e->getMessage());
-    echo json_encode(['error' => $e->getMessage()]);
+    $msg = $e->getMessage();
+    // Un refus de PRIX ou un identifiant de paiement mal formé est une erreur
+    // CLIENT (400), pas une panne serveur (500) : un 500 ferait croire à un
+    // incident et déclencherait des reprises. Même sémantique que
+    // workers/sargagame (400 « Prix invalide ») et workers/sg-payments.
+    http_response_code(($msg === 'Prix invalide' || $msg === 'paymentId invalide') ? 400 : 500);
+    error_log('[mollie.php] ' . $msg);
+    echo json_encode(['error' => $msg]);
 }

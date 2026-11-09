@@ -113,7 +113,31 @@ const assert = require("node:assert/strict");
     assert.equal((await pending.json()).paid, false);
     assert.equal(state.rpcCalls.length, 0);
 
-    console.log("PASS: payment_status RPC arguments, amount validation, SOS no-email, owner mismatch, RPC fail-closed, pending status");
+    // ── Retrait du parcours SOS (2026-11-09) ─────────────────────────────────
+    // CRÉATION : un pass « sos » ne peut plus être vendu (aucun montant libre).
+    // LIVRAISON : un paiement « sos » DÉJÀ encaissé reste livré (encaisser
+    // sans livrer serait un trou de confiance).
+    const createCalls = [];
+    globalThis.fetch = async (input, init = {}) => {
+      const url = String(input);
+      if (url === "https://api.mollie.com/v2/payments" && (init.method || "GET") === "POST") {
+        createCalls.push(JSON.parse(init.body));
+        return new Response(JSON.stringify({ id: "tr_created01", _links: { checkout: { href: "https://mollie.test/checkout/tr_created01" } } }), {
+          status: 201, headers: { "content-type": "application/json" }
+        });
+      }
+      return originalFetch(input, init);
+    };
+    const sosCreate = await worker.fetch(new Request("https://worker.test/api/mollie", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ action: "create_payment", pass: "sos", cents: 100, cur: "EUR", email: "" })
+    }), env);
+    assert.equal(sosCreate.status, 400);
+    assert.equal((await sosCreate.json()).error, "Prix invalide");
+    assert.equal(createCalls.length, 0, "aucun paiement « sos » ne doit être créé");
+
+    console.log("PASS: payment_status RPC arguments, amount validation, owner mismatch, RPC fail-closed, pending status, CRÉATION sos refusée / LIVRAISON sos conservée");
   } finally {
     globalThis.fetch = originalFetch;
   }

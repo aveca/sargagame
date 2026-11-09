@@ -37,6 +37,34 @@ const logGrantEvent = (cid, event, fields) => {
   console.error(`[mollie-grant] ${event}`, { cid, ...safe });
 };
 
+// ── Signature webhook Mollie (fail-closed) ─────────────────────────────────
+// Classique : hex 64 nu. Next-gen : "sha256=<hex 64>".
+// Comparaison à temps constant (le même algo que workers/sg-payments).
+const normalizeMollieSignature = (sig) => {
+  const v = String(sig || "").trim();
+  const prefixed = /^sha256=([0-9a-fA-F]{64})$/.exec(v);
+  if (prefixed) return prefixed[1].toLowerCase();
+  if (/^[0-9a-fA-F]{64}$/.test(v)) return v.toLowerCase();
+  return "";
+};
+const verifyMollieHmac = async (raw, sig, secret) => {
+  const provided = normalizeMollieSignature(sig);
+  if (!provided) return false;
+  try {
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const mac = await crypto.subtle.sign("HMAC", key, enc.encode(raw));
+    const expected = Array.from(new Uint8Array(mac)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    const a = enc.encode(expected), b = enc.encode(provided);
+    if (a.length !== b.length) return false;
+    let r = 0;
+    for (let i = 0; i < a.length; i++) r |= a[i] ^ b[i];
+    return r === 0;
+  } catch {
+    return false;
+  }
+};
+
 export default {
   async fetch(request, env) {
     const u = new URL(request.url);
@@ -100,7 +128,16 @@ export default {
     // paiement créé STRICTEMENT avant cette date. Date absente, invalide ou
     // non vérifiable => refus (fail-closed), jamais de délivrance.
     const LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z";
+    // Grille de CRÉATION (serveur) — le pass `sos` (1 €, rapport 24 h) a été
+    // RETIRÉ du parcours client : il n'est plus vendable, donc plus creatable.
     const PASS_PRICES = Object.freeze({
+      p30:{EUR:14.99,USD:11.99},
+      trip7:{EUR:4.99,USD:null},
+      season:{EUR:19.99,USD:null}
+    });
+    // Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
+    // sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
+    const FULFILL_PRICES = Object.freeze({
       p30:{EUR:14.99,USD:11.99},
       trip7:{EUR:4.99,USD:null},
       season:{EUR:19.99,USD:null},
@@ -125,12 +162,13 @@ export default {
       return Number.isFinite(ms)?ms:NaN;
     };
     const validateMollieAmount = (payment) => {
-      if (!payment || payment.status !== "paid") return {ok:false,reason:"not_paid"};
+      // `settled` = payé + viré : traité comme `paid` (cf. payment_status).
+      if (!payment || !["paid", "settled"].includes(payment.status)) return {ok:false,reason:"not_paid"};
       const {pass,isLegacy}=resolvePass(payment);
       const currency=String(payment.amount?.currency||"").toUpperCase();
       const value=Number(payment.amount?.value);
       const cents=Math.round(value*100);
-      if (!DAYS_TABLE[pass] || !PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
+      if (!DAYS_TABLE[pass] || !FULFILL_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
       if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
       if (isLegacy) {
         // ── P0-2 — contrôle serveur de la fenêtre historique ─────────────────
@@ -146,8 +184,8 @@ export default {
         if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
         return {ok:true,pass,currency,isLegacy:true};
       }
-      if (!Object.prototype.hasOwnProperty.call(PASS_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
-      const expected=PASS_PRICES[pass][currency];
+      if (!Object.prototype.hasOwnProperty.call(FULFILL_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
+      const expected=FULFILL_PRICES[pass][currency];
       if (expected === null) {
         // Preserve the existing variable-amount contract for products whose
         // currency price is null in create_payment; never accept zero/negative.
@@ -212,18 +250,72 @@ export default {
       logGrantEvent(cid,"grant_granted",{});
       return {granted:true,pass,email,days};
     };
+    // Révocation d'un droit B2C (paiement annulé / expiré /.failed / remboursé).
+    // `public.payment_grants` n'a pas de colonne `status` : on EXPIRE la ligne
+    // (même sémantique que workers/sg-payments et public/api/mollie-lib.php).
+    // Best-effort : une révocation ratée ne doit pas faire échouer le webhook,
+    // mais elle est tracée (corrélation seule, aucun identifiant de paiement).
+    const revokeB2CPass=async(paymentId,cid)=>{
+      if(!paymentId||!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return false;
+      try {
+        const r=await fetch(String(env.SUPABASE_URL).replace(/\/+$/,"")+"/rest/v1/payment_grants?payment_id=eq."+encodeURIComponent(paymentId)+"&type=eq.b2c_pass",{
+          method:"PATCH",
+          headers:{
+            apikey:env.SUPABASE_SERVICE_KEY,
+            Authorization:"Bearer "+env.SUPABASE_SERVICE_KEY,
+            "Content-Type":"application/json",
+            Prefer:"return=minimal"
+          },
+          body:JSON.stringify({expires_at:new Date().toISOString()})
+        });
+        if(!r.ok){ logGrantEvent(cid,"grant_revoke_failed",{status:r.status}); return false; }
+        logGrantEvent(cid,"grant_revoked",{});
+        return true;
+      } catch {
+        logGrantEvent(cid,"grant_revoke_unreachable",{});
+        return false;
+      }
+    };
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
       const raw=await request.text();
-      const contentType=request.headers.get("content-type")||"";
-      // This endpoint is for Mollie's classic Payments webhook: form-encoded id.
-      // The handler never trusts an asserted status; it fetches the payment from
-      // the authenticated Mollie API before any grant decision.
-      if(!contentType.toLowerCase().includes("application/x-www-form-urlencoded")){
-        return out({error:"unsupported_webhook_contract"},415);
+      // ── Signature Mollie : OBLIGATOIRE (fail-closed) ────────────────────────
+      // AVANT : ce endpoint ne vérifiait RIEN et n'acceptait aucun secret →
+      // n'importe qui pouvait POSTer un `id=tr_…` et déclencher une délivrance.
+      // Sans secret → 503 ; signature invalide → 403. La signature est
+      // comparée à temps constant sur le CORPS BRUT.
+      const webhookSecret=env.MOLLIE_WEBHOOK_SECRET;
+      if(!webhookSecret) return out({error:"payment_backend_not_configured"},503);
+      const signature=request.headers.get("X-Mollie-Signature")||request.headers.get("x-mollie-signature")||"";
+      if(!await verifyMollieHmac(raw,signature,webhookSecret)) return out({error:"invalid_signature"},403);
+      // ── Format CLASSIQUE (form `id=tr_…`) ou NEXT-GEN (JSON event) ─────────
+      // Le handler ne fait JAMAIS confiance au statut porté par le corps :
+      // l'état est relu auprès de l'API Mollie avant toute décision d'octroi.
+      const contentType=String(request.headers.get("content-type")||"").toLowerCase();
+      let id="",event="",eventId="",generation="classic";
+      if(contentType.includes("application/x-www-form-urlencoded")){
+        const form=new URLSearchParams(raw);
+        id=String(form.get("id")||"").trim();
+        event=String(form.get("event")||"").trim();
+      }else{
+        let body=null;try{body=JSON.parse(raw)}catch{return out({error:"invalid_payload"},400)}
+        if(!body||typeof body!=="object"||Array.isArray(body))return out({error:"invalid_payload"},400);
+        const rawId=String(body.id||"").trim();
+        eventId=String(body.eventId||"").trim()||(rawId.startsWith("event_")?rawId:"");
+        const entityId=String(body.entityId||"").trim();
+        id=entityId;
+        event=String(body.type||body.event||"").trim();
+        if(entityId){ generation="nextgen"; }
+        else if(/^(tr|sub)_[A-Za-z0-9]+$/.test(rawId)){ id=rawId; generation="classic"; }
+        else { generation="nextgen"; }
       }
-      const id=String(new URLSearchParams(raw).get("id")||"").trim();
-      if(!/^tr_[A-Za-z0-9]+$/.test(id)) return out({error:"invalid_payment_id"},400);
+      // Entité qui n'est pas un paiement (payment-link, subscription,
+      // événement inconnu) : 200 sans action — Mollie ne doit pas rejouer.
+      // Un webhook CLASSIQUE avec un identifiant mal formé reste un 400.
+      if(!/^tr_[A-Za-z0-9]+$/.test(id)){
+        if(generation==="classic") return out({error:"invalid_payment_id"},400);
+        return out({received:true,granted:false,reason:"unsupported_entity"},200);
+      }
       if(!env.MOLLIE_API_KEY) return out({error:"payment_backend_not_configured"},503);
       let p,payment;
       try {
@@ -236,16 +328,28 @@ export default {
         return out({error:"mollie_api_unavailable"},503);
       }
       if(!p.ok) { logGrantEvent(cid,"mollie_lookup_failed",{status:p.status}); return out({error:"mollie_payment_lookup_failed"},p.status===404?404:502); }
-      if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
+      const status=String(payment.status||"");
+      // ── Remboursement / chargeback : l'accès est RETIRÉ ────────────────────
+      if(/refunded|chargeback/.test(event)){
+        await revokeB2CPass(id,cid);
+        return out({received:true,paymentId:id,status,event,granted:false,revoked:true},200);
+      }
+      // ── État terminal négatif : on libère un droit en attente ──────────────
+      if(["canceled","expired","failed"].includes(status)){
+        await revokeB2CPass(id,cid);
+        return out({received:true,paymentId:id,status,event,granted:false,revoked:true},200);
+      }
+      // `settled` = payé + viré : traité comme `paid`.
+      if(!["paid","settled"].includes(status)) return out({received:true,paymentId:id,status,granted:false},200);
       const validation=validateMollieAmount(payment);
       if(!validation.ok){
         logGrantEvent(cid,"grant_rejected",{reason:validation.reason});
-        return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
+        return out({received:true,paymentId:id,status,granted:false,reason:validation.reason},200);
       }
       const grant=await grantB2CPassIdempotent(payment,cid);
       if(grant.error) return out({error:grant.error},503);
-      if(!grant.granted) return out({received:true,paymentId:id,status:payment.status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
-      return out({received:true,paymentId:id,status:payment.status,granted:true},200);
+      if(!grant.granted) return out({received:true,paymentId:id,status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
+      return out({received:true,paymentId:id,status,granted:true},200);
     }
     if(u.pathname==="/api/mollie.php" || u.pathname==="/api/mollie"){
       if(request.method==="OPTIONS") return new Response(null,{status:204,headers});
@@ -267,7 +371,9 @@ export default {
             return out({error:"mollie_api_unavailable"},503);
           }
           if(!p.ok){ logGrantEvent(cid,"mollie_lookup_failed",{status:p.status}); return out({error:x.detail||x.title||"Mollie status error"},p.status===404?404:502); }
-          if(x.status!=="paid")return out({paid:false,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
+          // `settled` = payé + viré : traité comme `paid` (cohérence avec
+          // public/api/mollie.php et workers/sg-payments).
+          if(!["paid","settled"].includes(x.status))return out({paid:false,status:x.status,paymentId:x.id,terminal:["canceled","expired","failed"].includes(x.status)},200);
           const requestedEmail=String(d.email||"").trim().toLowerCase();
           const paymentEmail=String(x.metadata?.email||"").trim().toLowerCase();
           if(requestedEmail&&paymentEmail&&requestedEmail!==paymentEmail){ logGrantEvent(cid,"grant_rejected",{reason:"payment_owner_mismatch"}); return out({error:"payment_owner_mismatch"},403); }

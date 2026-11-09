@@ -18,24 +18,32 @@
 //
 // Offre B2C : AUCUN abonnement. Un pass = une durée fixe = un paiement unique.
 
-/** Clés de pass acceptées par le serveur (mollie.php $passPrices). */
-export const PASS_KEYS = Object.freeze(["p30", "trip7", "season", "sos"])
+/**
+ * Clés de pass acceptées par le serveur (mollie.php $passPrices).
+ *
+ * ⚠️ 2026-11-09 — Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours
+ * client : plus aucune création de paiement `sos` n'est acceptée (serveur
+ * fail-closed) et plus aucun CTA/deep-link ne l'expose. La LIVRAISON des
+ * paiements `sos` DÉJÀ encaissés reste possible côté backfill contrôlé
+ * (scripts/automation/backfill-mollie-grants.cjs) : encaisser sans livrer
+ * serait un trou de confiance.
+ */
+export const PASS_KEYS = Object.freeze(["p30", "trip7", "season"])
 
 /** Durée d'accès en jours (workers/sargagame DAYS_TABLE + premium-page OFFERS). */
-export const PASS_DAYS = Object.freeze({ p30: 30, trip7: 7, season: 210, sos: 1 })
+export const PASS_DAYS = Object.freeze({ p30: 30, trip7: 7, season: 210 })
 
 /**
  * Montants de BASE en centimes, par devise.
  *   eur → public/api/mollie.php $passPrices (valeurs exactes).
  *   usd → p30 = 11.99 (mollie.php) ; trip7 = 5.99 (allowlist create-checkout.php
- *         $ALLOWED_CENTS USD = [599]) ; season/sos = null = NON VENDU en USD
+ *         $ALLOWED_CENTS USD = [599]) ; season = null = NON VENDU en USD
  *         (aucun montant serveur déterministe → pas d'offre affichable).
  */
 export const PASS_BASE_CENTS = Object.freeze({
   p30: Object.freeze({ eur: 1499, usd: 1199 }),
   trip7: Object.freeze({ eur: 499, usd: 599 }),
   season: Object.freeze({ eur: 1999, usd: null }),
-  sos: Object.freeze({ eur: 100, usd: null }),
 })
 
 /** Surcharge USD « haute saison » : juin → novembre, SAUF trip7 (cf. mollie.php). */
@@ -58,11 +66,6 @@ export const PASS_COPY = Object.freeze({
     fr: { title: "Pass Saison", sub: "Toute la saison · Toutes les plages", days: "210 jours" },
     en: { title: "Season pass", sub: "All season · All beaches", days: "210 days" },
     es: { title: "Pase Temporada", sub: "Toda la temporada · Todas las playas", days: "210 días" },
-  },
-  sos: {
-    fr: { title: "SOS Plage", sub: "Alerte immédiate · 24 h", days: "24 heures" },
-    en: { title: "SOS Beach", sub: "Immediate alert · 24 h", days: "24 hours" },
-    es: { title: "SOS Playa", sub: "Alerta inmediata · 24 h", days: "24 horas" },
   },
 })
 
