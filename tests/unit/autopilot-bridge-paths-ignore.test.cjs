@@ -203,6 +203,7 @@ const AUTOPILOT_BRIDGE_FILES = [
   'scripts/autopilot/lib/agent-prompt.cjs',
   'scripts/autopilot/lib/agent-prompt.probe.cjs',
   'scripts/autopilot/lib/agent-router.cjs',
+  'scripts/autopilot/lib/agent-router.test.cjs',
   'scripts/autopilot/lib/final-scope.cjs',
   'scripts/autopilot/lib/final-scope.test.cjs',
   'scripts/autopilot/lib/mission-lifecycle.cjs',

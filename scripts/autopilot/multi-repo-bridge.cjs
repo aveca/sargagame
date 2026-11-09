@@ -498,9 +498,19 @@ function toOpportunity(task, issue, repoFullName, options = {}) {
   });
 
   // Routage réel : quel agent / quel modèle va exécuter cette mission.
+  //
+  // `options.router` est un point d'INJECTION (symétrique à `options.safety`
+  // ci-dessus) : il permet de tester le pont avec une décision de routage
+  // DÉTERMINISTE. Sans lui, le test dépend de la machine : le routeur ne
+  // retient que les agents RÉELLEMENT installé (un binaire `opencode`
+  // présent sur le PC du fondateur, absent sur un runner CI) — le même
+  // test passait en local et échouait en CI. Un test qui dépend de
+  // l'installation de la machine est un test non déterministe : il doit
+  // être rendu explicite, pas contourné.
+  const router = options.router || agentRouter;
   let agent = null;
   try {
-    agent = agentRouter.route({ type: task.type || '', priority: task.priority });
+    agent = router.route({ type: task.type || '', priority: task.priority });
   } catch (e) {
     agent = { ok: false, reason: 'routage impossible: ' + e.message };
   }
@@ -665,6 +675,12 @@ function publishStatus(repoFullName, issueNumber, status, details = '', options 
  * @param {function} options.saveQueue
  * @param {function} options.writeOpportunityFile
  * @param {function} options.publishStatus
+ * @param {{route:Function}} [options.router]  routeur d'agent injecté (tests
+ *        déterministes). Par défaut : `lib/agent-router.cjs`, qui ne retient
+ *        que les agents RÉELLEMENT installés — donc une assertion de test
+ *        sur l'agent retenu dépend de la machine (cf. run CI 42651059357).
+ * @param {{evaluateMissionSafety:Function}} [options.safety] verdict de
+ *        sécurité injecté (tests) ; par défaut : `lib/safety-guard.cjs`.
  */
 function ingestMultiRepo(options = {}) {
   const dry = options.dry === true;
@@ -677,6 +693,12 @@ function ingestMultiRepo(options = {}) {
   const loadQueue = options.loadQueue || mem.loadQueue;
   const saveQueue = options.saveQueue || mem.saveQueue;
   const writeOppFile = options.writeOpportunityFile || mem.writeOpportunityFile;
+  // Points d'injection (tests déterministes, indépendants de la machine) :
+  // le routage d'agent et le verdict de sécurité sont résolus par défaut via
+  // les modules réels, mais peuvent être fournis par l'appelant.
+  // `null` = « utilise le module réel » (le `||` de `toOpportunity`).
+  const router = options.router || null;
+  const safetyInjector = options.safety || null;
 
   if (!dry) C.ensureDirs();
 
@@ -728,7 +750,7 @@ function ingestMultiRepo(options = {}) {
       // ne doit JAMAIS faire perdre une mission).
       const comments = loadComments(repoFullName, issue.number) || [];
 
-      const opp = toOpportunity(task, issue, repoFullName, { comments });
+      const opp = toOpportunity(task, issue, repoFullName, { comments, router, safety: safetyInjector });
       if (opp.rejected) {
         rejected += 1;
         perRepo[repoFullName].rejected += 1;

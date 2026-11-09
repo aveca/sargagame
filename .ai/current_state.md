@@ -69,8 +69,10 @@
 
 ### Branche / PR
 - Branche : `agent/coding/autopilot-bridge-20261109`
-- PR : à ouvrir vers `main` (NON mergée)
-- Commit head : à compléter après commit
+- PR : **#1378** — OPEN, NON mergée (base `main`)
+- Commit head : `41f2e6a838efe31bbc9c3cdceb6123fb61868c9b` (complété par le commit de correction CI décrit ci-dessous)
+
+> **Complément (après premier push)** : la CI de #1378 a révélé le **défaut #23** — `multi-repo-bridge-e2e.test.cjs` exigeait un agent **réellement installé** (binaire `opencode` absent du runner CI) : le test passait en local et échouait en CI. Correctif : point d'injection `options.router` dans le pont + test vérifiant la **décision** de routage (et non l'installation de la machine) + nouveau scénario « machine sans agent » (la mission reste importée et actionnable) + nouveau `lib/agent-router.test.cjs`. Suite après correctif : **186/190** (les 4 échecs restent les **mêmes préexistants**).
 
 ---
 

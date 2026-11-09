@@ -106,12 +106,16 @@ const ghState = {
   listCalls: [],
 };
 
-function fakeGh(args) {
+// Faux `gh` paramétré par ÉTAT : chaque scénario a sa propre banque
+// d'issues/commentaires. Sans cela, deux scénarios se contaminent (le
+// second voit les issues du premier) et les compteurs deviennent
+// inexploitables.
+function fakeGh(args, state = ghState) {
   const cmd = args[0];
   if (cmd === 'issue' && args[1] === 'list') {
     const repo = args[args.indexOf('--repo') + 1];
-    ghState.listCalls.push(repo);
-    const issues = (ghState.repos[repo] && ghState.repos[repo].issues) || [];
+    state.listCalls.push(repo);
+    const issues = (state.repos[repo] && state.repos[repo].issues) || [];
     return JSON.stringify(issues.map(i => ({
       number: i.number, title: i.title, body: i.body, url: i.url, createdAt: i.createdAt,
     })));
@@ -119,14 +123,14 @@ function fakeGh(args) {
   if (cmd === 'issue' && args[1] === 'view') {
     const number = Number(args[2]);
     const repo = args[args.indexOf('--repo') + 1];
-    const comments = (ghState.repos[repo] && ghState.repos[repo].comments[number]) || [];
+    const comments = (state.repos[repo] && state.repos[repo].comments[number]) || [];
     return JSON.stringify({ comments });
   }
   if (cmd === 'issue' && args[1] === 'comment') {
     const number = Number(args[2]);
     const repo = args[args.indexOf('--repo') + 1];
     const body = args[args.indexOf('--body') + 1];
-    ghState.published.push({ repo, issue: number, body });
+    state.published.push({ repo, issue: number, body });
     return '';
   }
   throw new Error('gh simulé : commande non supportée ' + cmd + ' ' + args[1]);
@@ -178,6 +182,28 @@ check('mission de test créée dans le second dépôt', ghState.repos[OTHER].iss
 // ═══════════════════════════════════════════════════════════════════════════
 
 console.log('=== ÉTAPE 3 : détection automatique par le pont ===');
+// Routeur INJECTÉ : la décision de routage est déterministe et ne dépend
+// PAS de la machine qui exécute le test.
+//
+// Pourquoi cette injection est obligatoire : le routeur réel ne retient que
+// les agents RÉELLEMENT INSTALLÉS (binaire `opencode` présent sur le PC du
+// fondateur, ABSENT sur un runner CI). Le test exigeait `opp.agent.agent`
+// non vide → il passait en local et ÉCHOUAIT en CI (run 42651059357 :
+// « FAIL agent routé décidé … reason: Aucun agent exécutable installé »).
+// Un test qui dépend de l'installation de la machine est un test non
+// déterministe : on rend la dépendance explicite, on ne l'assouplit pas.
+const ROUTED = {
+  ok: true,
+  agent: 'opencode',
+  engine: 'opencode',
+  declaredAgent: 'hermes',
+  model: 'qwen3.5:9b',
+  profile: 'DEBUG_COMPLEX',
+  reason: 'profil DEBUG_COMPLEX → agent opencode (modèle qwen3.5:9b)',
+  source: 'test:injected',
+};
+const fakeRouter = { route: () => ({ ...ROUTED }) };
+
 const ingest = bridge.ingestMultiRepo({
   gh: fakeGh,
   log: () => {},
@@ -185,6 +211,7 @@ const ingest = bridge.ingestMultiRepo({
   queue: memory,
   saveQueue: () => {},
   writeOpportunityFile: () => {},
+  router: fakeRouter,
 });
 check('mission importée', ingest.imported === 1, JSON.stringify(ingest.perRepo));
 check('mission du second dépôt relayée (reste chez elle)', ingest.relayed === 1, JSON.stringify(ingest.perRepo));
@@ -203,8 +230,57 @@ check('commentaire utile reçu (marqueur du commentaire)', !!(opp && opp.mission
 check('critères d\'acceptation reçus', !!(opp && opp.mission.acceptance.includes(BODY_MARKER)));
 check('instructions complémentaires reçues', !!(opp && opp.mission.instructions.includes('sans toucher')));
 check('contraintes reçues', !!(opp && opp.mission.constraints.length === 1));
-check('agent routé décidé', !!(opp && opp.agent && opp.agent.agent), JSON.stringify(opp && opp.agent));
+// Invariant CORRECT et déterministe : le pont enregistre la DÉCISION de
+// routage (agent retenu, moteur réel, écart avec le profil Factory, profil,
+// raison) — pas « un agent est installé sur cette machine ».
+check('décision de routage enregistrée', !!(opp && opp.agent && opp.agent.profile), JSON.stringify(opp && opp.agent));
+check('agent routé = celui injecté', !!(opp && opp.agent && opp.agent.agent === ROUTED.agent), JSON.stringify(opp && opp.agent));
+check('moteur réel enregistré', !!(opp && opp.agent && opp.agent.engine === ROUTED.engine));
+check('écart avec le profil Factory conservé', !!(opp && opp.agent && opp.agent.declaredAgent === ROUTED.declaredAgent));
+check('modèle routé enregistré', !!(opp && opp.agent && opp.agent.model === ROUTED.model));
+check('raison de routage conservée', !!(opp && opp.agent && opp.agent.reason === ROUTED.reason));
 check('branche d\'opportunité connue', !!(opp && opp.fingerprint));
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ÉTAPE 4b : SANS injection, l'import reste correct même si AUCUN agent
+// n'est installé sur la machine.
+//
+// L'import est une opération de DONNÉE : une mission sans agent disponible
+// doit être QUELUE (elle s'exécutera quand un agent sera présent), pas
+// perdue. Et la décision doit porter sa raison (« aucun agent exécutable
+// installé ») : c'est ce qui permet à l'opérateur de comprendre pourquoi
+// la mission n'avance pas.
+// ═══════════════════════════════════════════════════════════════════════════
+
+console.log('=== ÉTAPE 4b : import sans agent installé (machine vierge) ===');
+{
+  const memory2 = { opportunities: [], relayed: [], blockedSafety: [] };
+  const gh2 = {
+    repos: {
+      [LOCAL]: { issues: [], comments: {} },
+      [OTHER]: { issues: [], comments: {} },
+    },
+    published: [],
+    listCalls: [],
+  };
+  const t2 = taskBlock({ task_id: 'E2E-TASK-NOAGENT', issue_number: 9404 });
+  gh2.repos[LOCAL].issues.push(issueOf(9404, t2, LOCAL));
+  const ingest2 = bridge.ingestMultiRepo({
+    gh: (args) => fakeGh(args, gh2),
+    log: () => {},
+    localRepo: LOCAL,
+    queue: memory2,
+    saveQueue: () => {},
+    writeOpportunityFile: () => {},
+    // Routeur qui ne trouve AUCUN agent installé (machine vierge / CI).
+    router: { route: () => ({ ok: false, agent: null, engine: null, declaredAgent: null, model: null, profile: 'DEFAULT', reason: 'Aucun agent exécutable installé', source: 'test:none' }) },
+  });
+  const opp2 = memory2.opportunities.find(o => o.id === 'E2E-TASK-NOAGENT');
+  check('mission sans agent TOUJOURS importée (pas perdue)', ingest2.imported === 1 && !!opp2, JSON.stringify(ingest2.perRepo));
+  check('décision de routage présente malgré l\'absence d\'agent', !!(opp2 && opp2.agent && opp2.agent.profile === 'DEFAULT'));
+  check('raison « aucun agent » conservée', !!(opp2 && opp2.agent && /Aucun agent/.test(opp2.agent.reason)), JSON.stringify(opp2 && opp2.agent));
+  check('mission reste actionnable (file, pas abandon)', !!(opp2 && opp2.actionable === 'agent'));
+}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // ÉTAPE 5-6 : démarrage réel de l'agent + heartbeat
