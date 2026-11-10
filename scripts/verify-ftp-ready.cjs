@@ -6,7 +6,7 @@
 const fs = require('fs')
 const path = require('path')
 const { execFileSync } = require('child_process')
-const { evaluateObservation, evaluatePublicationEligibility, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
+const { evaluateObservation, evaluatePublicationEligibility, evaluateFleetPublicationEligibility, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
 
 function readGitHeadJson(relPath) {
   try {
@@ -78,7 +78,8 @@ function main() {
   const rootFreshness = evaluateObservation(data.erddapTimestamp)
   const rootPrevious = readGitHeadJson('public/api/copernicus/sargassum.json')
   // The working tree file is the candidate (already overwritten by fetch). Compare
-  // against the last committed observation so a newer-but-over-SLA fetch can ship.
+  // against the last committed observation to reject regressions; the 900-minute
+  // operational SLA remains mandatory even when the candidate is newer.
   const rootElig = evaluatePublicationEligibility(data.erddapTimestamp, {
     previousTimestamp: rootPrevious && rootPrevious.erddapTimestamp
   })
@@ -86,8 +87,6 @@ function main() {
     const marker = !rootFreshness.ok ? 'observation hors SLA — ' : ''
     console.error(`❌ Observation satellite racine refusée : ${marker}${rootElig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
     ok = false
-  } else if (!rootFreshness.ok) {
-    console.warn(`   ⚠ Observation racine au-delà des ${MAX_AGE_MINUTES} min opérationnelles (${Math.round(rootFreshness.ageMinutes)} min) — publication autorisée, ce n'est pas une régression.`)
   } else {
     console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min (SLA ${MAX_AGE_MINUTES} min) ✓`)
   }
@@ -176,6 +175,7 @@ function main() {
   // Require the six production regions and also validate every additional regional
   // payload already present (e.g. Barbados), so no stale side payload is skipped.
   const regionDirs = [...new Set([...requiredRegionDirs, ...discoveredRegionDirs])]
+  const requiredRegionEligibility = []
   for (const dirName of regionDirs) {
     const regPath = path.join(copDir, dirName, 'sargassum.json')
     if (!fs.existsSync(regPath)) {
@@ -213,15 +213,23 @@ function main() {
     const elig = evaluatePublicationEligibility(reg.erddapTimestamp, {
       previousTimestamp: prevReg && prevReg.erddapTimestamp
     })
+    requiredRegionEligibility.push({ regionId: dirName, publishable: elig.publishable, reason: elig.reason })
     if (!elig.publishable) {
       const marker = !freshness.ok ? 'observation hors SLA — ' : ''
       console.error(`❌ [${dirName}] observation refusée : ${marker}${elig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
       ok = false
-    } else if (!freshness.ok) {
-      console.warn(`   ⚠ [${dirName}] au-delà des ${MAX_AGE_MINUTES} min opérationnelles (${Math.round(freshness.ageMinutes)} min) — publication autorisée, ce n'est pas une régression.`)
     } else {
       console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min ✓`)
     }
+  }
+
+  const fleetEligibility = evaluateFleetPublicationEligibility(requiredRegionEligibility, requiredRegionDirs.length)
+  if (!fleetEligibility.publishable) {
+    const blocked = fleetEligibility.blockedRegions.length
+      ? fleetEligibility.blockedRegions.join(', ')
+      : `résultats valides ${fleetEligibility.checked}/${fleetEligibility.expected}`
+    console.error(`❌ Garde flotte six régions refusée : ${blocked}`)
+    ok = false
   }
 
   console.log('')
