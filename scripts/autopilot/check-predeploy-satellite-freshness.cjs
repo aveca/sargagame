@@ -10,7 +10,8 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..', '..');
 const MAX_AGE_MINUTES = 900;
 const PUBLIC_STALE_MINUTES = 2160;
-const MAX_PUBLISHABLE_MINUTES = 7 * 24 * 60;
+// Backward-compatible export: publication has no grace window beyond the 900-minute SLA.
+const MAX_PUBLISHABLE_MINUTES = MAX_AGE_MINUTES;
 
 function evaluateObservation(erddapTimestamp, now = Date.now()) {
   const observedAt = Date.parse(String(erddapTimestamp ?? ''));
@@ -30,10 +31,9 @@ function evaluateObservation(erddapTimestamp, now = Date.now()) {
   return { ok: true, reason: 'observation dans le SLA', ageMinutes };
 }
 
-// Publication/deploy eligibility is separate from the operational 900-minute SLA.
-// The SLA still classifies freshness (ok=false when older than 15h). Blocking
-// publication of a NEWER observation than the one already shipped left production
-// on 13-day-old data while a ~34h observation was available (Nov 2026).
+// Publication is allowed only inside the strict operational 900-minute SLA.
+// A newer observation does not become publishable merely because it improves
+// on an older live/repository reference.
 function evaluatePublicationEligibility(erddapTimestamp, options = {}) {
   const now = options.now ?? Date.now();
   const previousTimestamp = options.previousTimestamp ?? null;
@@ -55,36 +55,38 @@ function evaluatePublicationEligibility(erddapTimestamp, options = {}) {
   if (!Number.isFinite(now) || now <= 0) {
     return { ...base, publishable: false, withinOperationalSla: false, isNewerThanPrevious };
   }
-  if (base.ageMinutes != null && base.ageMinutes < 0) {
+  if (!base.ok) {
     return { ...base, publishable: false, withinOperationalSla: false, isNewerThanPrevious };
   }
   if (isOlderThanPrevious) {
     return {
       ...base,
       publishable: false,
-      withinOperationalSla: !!base.ok,
+      withinOperationalSla: true,
       isNewerThanPrevious: false,
       reason: `observation plus ancienne que la référence (${erddapTimestamp} < ${previousTimestamp})`
-    };
-  }
-  if (base.ageMinutes != null && base.ageMinutes > MAX_PUBLISHABLE_MINUTES) {
-    return {
-      ...base,
-      publishable: false,
-      withinOperationalSla: false,
-      isNewerThanPrevious,
-      reason: `observation trop ancienne pour publication (${base.ageMinutes.toFixed(2)} min > ${MAX_PUBLISHABLE_MINUTES} min)`
     };
   }
   return {
     ...base,
     publishable: true,
-    withinOperationalSla: !!base.ok,
+    withinOperationalSla: true,
     isNewerThanPrevious,
-    publicStale: base.ageMinutes != null ? base.ageMinutes >= PUBLIC_STALE_MINUTES : null,
-    reason: base.ok
-      ? base.reason
-      : `publication autorisée au-delà des ${MAX_AGE_MINUTES} min (${base.ageMinutes.toFixed(0)} min), pas une régression`
+    publicStale: base.ageMinutes >= PUBLIC_STALE_MINUTES,
+    reason: base.reason
+  };
+}
+
+// A production release is atomic across the six configured regions: one missing,
+// invalid, stale, or otherwise ineligible region blocks the entire fleet.
+function evaluateFleetPublicationEligibility(regionResults, expectedCount = 6) {
+  const results = Array.isArray(regionResults) ? regionResults : [];
+  const blocked = results.filter(result => !result || result.publishable !== true);
+  return {
+    publishable: results.length === expectedCount && blocked.length === 0,
+    checked: results.length,
+    expected: expectedCount,
+    blockedRegions: blocked.map(result => result && result.regionId ? result.regionId : 'unknown')
   };
 }
 
@@ -153,10 +155,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  if (!eligibility.withinOperationalSla) {
-    console.warn(`WARN ${prefix} operational SLA exceeded but deploy allowed (better than live or within 7-day publish window): ${eligibility.reason || result.reason}`);
-  }
-  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
+  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min withinOperationalSla=true publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
 }
 if (require.main === module) {
   Promise.resolve(main()).catch((error) => {
@@ -170,6 +169,7 @@ module.exports = {
   MAX_PUBLISHABLE_MINUTES,
   evaluateObservation,
   evaluatePublicationEligibility,
+  evaluateFleetPublicationEligibility,
   readLiveObservationTimestamp,
   checkPreparedRegion
 };
