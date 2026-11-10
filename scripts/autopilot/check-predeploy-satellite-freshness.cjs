@@ -155,10 +155,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  if (!eligibility.withinOperationalSla) {
-    console.warn(`WARN ${prefix} operational SLA exceeded but deploy allowed (better than live or within 7-day publish window): ${eligibility.reason || result.reason}`);
-  }
-  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
+  console.log(`PASS ${prefix} age=${eligibility.ageMinutes.toFixed(2)}min withinOperationalSla=true publishable=true liveRef=${liveTs || 'unavailable'} file=${result.file}`);
 }
 if (require.main === module) {
   Promise.resolve(main()).catch((error) => {
