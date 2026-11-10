@@ -47,8 +47,10 @@
 
 ### Branche / PR
 - Branche : `agent/coding/livrables-audit-ux-b2b-20261110` (base `origin/main` = `a6e14b9ce`)
-- PR : (ouverte sur cette branche, base `main`)
-- Commit head : (voir PR)
+- PR : **#1402 — MERGED** le 2026-11-10T08:36:51Z, merge commit `14335075c19dc9a8bcd52883b0c50e0e88d9190a`
+- Commit head : `6598a082221d207df81cb750fe2975d293e343371` · **CI verte sur le SHA exact** (`test-frontend` ✅ 2 min 31 · `perf` ✅ 24 s · `lighthouse-report` ✅ 3 min 9 · `GitGuardian` ✅) et **re-vérifiée verte sur le commit de merge** `14335075c` (`CI Tests` ✅ · `Perf Budget + Lighthouse` ✅ · `Daily Copernicus + Deploy` ✅)
+- **Aucun déploiement déclenché** : le workflow `Cloudflare Production` ignore `.ai/**` (paths-ignore) → les 6 sites sont **inchangés** par cette PR
+- État prod au moment de la fusion : **inchangé** — le live sert toujours l'ancien bundle (54 écarts mesurés, `ux-audit/live-verify-20261110-0830.txt`), le déploiement reste bloqué par le gate satellite.
 
 ---
 ## 2026-11-10 05:45 UTC · Agent: OpenCode (coding) — post-merge PR #1383
