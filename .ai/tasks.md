@@ -79,7 +79,7 @@
 ### TASK-P1-004 Remplacer les routes Cloudflare `DOMAINE/* → sg-noso` (après déploiement)
 - **Priorité** : P1
 - **Rôle** : devops_agent + qa_agent
-- **Statut** : [ ] **BLOQUÉ par le déploiement** (gate satellite) — script prêt et vérifié en `plan`, **aucune écriture effectuée**
+- **Statut** : [~] TASK-P1-004 — in_progress by devops_agent
 - **Description** : les 6 domaines pointent vers le worker réécrivain `sg-noso`. Il faut les **remplacer** (et non les supprimer) par `DOMAINE/* → sargagame-<région>`.
 - **Mapping live PROUVÉ** (service bindings réels de `sg-noso`, lus via l'API) : `sargasses-guadeloupe.com → sargagame-gp` · `sargasses-martinique.com → sargagame-mq` · `sargassummiami.com → sargagame-florida` · `sargassumpuntacana.com → sargagame-puntacana` · `sargassumcancun.com → sargagame-rivieramaya` · `sargazotulum.com → sargagame-tulum`. Les 6 workers existent et portent un binding `assets` + 3 secrets + l'URL Supabase ; les 102 routes `/api/* → sg-payments` (plus spécifiques) restent prioritaires.
 - **Séquence IMPÉRATIVE** : (1) déploiement du bundle #1383, (2) `node sg-live-verify-final.cjs` → 0 écart, (3) `node sg-cf-remove-noso-routes.cjs apply` (create → verify → delete), (4) re-vérification live des 6 domaines.
