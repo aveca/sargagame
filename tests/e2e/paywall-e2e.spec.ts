@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test"
+import { stubFreshSatellite } from "./helpers/satellite-freshness"
 
 /**
  * E2E REEL du paywall (r�gression P0 2026-10-23).
@@ -63,6 +64,11 @@ for (const vp of [
     })
 
     await page.setViewportSize({ width: vp.width, height: vp.height })
+    // Précondition déterministe : le CTA « voir les 7 jours » de la fiche
+    // n'existe que si la plage a un VERDICT satellite (< 12 h). Sans cette
+    // précondition, le test ne pouvait passer que pendant la fenêtre de
+    // publication NOAA (1×/jour). Voir `tests/e2e/helpers/satellite-freshness.ts`.
+    await stubFreshSatellite(page)
     await page.goto(BASE_URL + "/", { waitUntil: "load", timeout: 60000 })
     await page.waitForTimeout(4000)
     await dismissCookieBanner(page)
