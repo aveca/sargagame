@@ -5,7 +5,20 @@
  */
 const fs = require('fs')
 const path = require('path')
-const { evaluateObservation, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
+const { execFileSync } = require('child_process')
+const { evaluateObservation, evaluatePublicationEligibility, MAX_AGE_MINUTES } = require('./autopilot/check-predeploy-satellite-freshness.cjs')
+
+function readGitHeadJson(relPath) {
+  try {
+    const raw = execFileSync('git', ['show', `HEAD:${relPath}`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
 
 const root = path.join(__dirname, '..')
 // Allowlist des sources LIVE (partagée racine + régions) — cf. garde MOAT #1.
@@ -63,9 +76,18 @@ function main() {
   // Operational SLA is separate from the public 36-hour stale marker.
   // updatedAt proves publication time only; erddapTimestamp proves observation time.
   const rootFreshness = evaluateObservation(data.erddapTimestamp)
-  if (!rootFreshness.ok) {
-    console.error(`❌ Observation satellite racine refusée : ${rootFreshness.reason} (SLA ${MAX_AGE_MINUTES} min)`)
+  const rootPrevious = readGitHeadJson('public/api/copernicus/sargassum.json')
+  // The working tree file is the candidate (already overwritten by fetch). Compare
+  // against the last committed observation so a newer-but-over-SLA fetch can ship.
+  const rootElig = evaluatePublicationEligibility(data.erddapTimestamp, {
+    previousTimestamp: rootPrevious && rootPrevious.erddapTimestamp
+  })
+  if (!rootElig.publishable) {
+    const marker = !rootFreshness.ok ? 'observation hors SLA — ' : ''
+    console.error(`❌ Observation satellite racine refusée : ${marker}${rootElig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
     ok = false
+  } else if (!rootFreshness.ok) {
+    console.warn(`   ⚠ Observation racine au-delà des ${MAX_AGE_MINUTES} min opérationnelles (${Math.round(rootFreshness.ageMinutes)} min) — publication autorisée, ce n'est pas une régression.`)
   } else {
     console.log(`   observation racine: ${rootFreshness.ageMinutes.toFixed(2)} min (SLA ${MAX_AGE_MINUTES} min) ✓`)
   }
@@ -187,9 +209,16 @@ function main() {
       continue
     }
     const freshness = evaluateObservation(reg.erddapTimestamp)
-    if (!freshness.ok) {
-      console.error(`❌ [${dirName}] observation refusée : ${freshness.reason} (SLA ${MAX_AGE_MINUTES} min)`)
+    const prevReg = readGitHeadJson(`public/api/copernicus/${dirName}/sargassum.json`)
+    const elig = evaluatePublicationEligibility(reg.erddapTimestamp, {
+      previousTimestamp: prevReg && prevReg.erddapTimestamp
+    })
+    if (!elig.publishable) {
+      const marker = !freshness.ok ? 'observation hors SLA — ' : ''
+      console.error(`❌ [${dirName}] observation refusée : ${marker}${elig.reason} (SLA ${MAX_AGE_MINUTES} min)`)
       ok = false
+    } else if (!freshness.ok) {
+      console.warn(`   ⚠ [${dirName}] au-delà des ${MAX_AGE_MINUTES} min opérationnelles (${Math.round(freshness.ageMinutes)} min) — publication autorisée, ce n'est pas une régression.`)
     } else {
       console.log(`   région ${dirName}: source=${regSource}, observation=${freshness.ageMinutes.toFixed(2)} min ✓`)
     }

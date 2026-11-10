@@ -1,3 +1,45 @@
+## 2026-11-10 00:03 UTC · Agent: Cursor (data/growth)
+
+### Travail effectué
+- **Résumé 1 ligne** : la publication satellite n'est plus bloquée par le SLA de 900 min quand l'observation est plus récente que celle déjà publiée (plafond 7 jours, jamais une régression, une source dégradée ou un pic tout-vert) ; les e-mails de vente B2C/B2B fondateur sont rebranchés.
+- **Détails** :
+  - `verify-ftp-ready` et le gate pré-déploiement comparent l'observation candidate à celle déjà commitée ou live. Le libellé « frais » reste 900 min. Au-delà de 7 jours, plus ancienne, source non live ou pic tout-vert : refus.
+  - Le workflow ne classe `BLOCKED_STALE_SOURCE` que si le script sort en erreur. Un avertissement de publication autorisée ne fait plus échouer le job.
+  - `data-refresh` / `daily-copernicus` ne dispatchent la prod que si les données ont changé.
+  - Timeout du bulletin week-end porté à 40 min.
+  - Workflow `sales-lifecycle-emails` : briefing matin aux abonnés actifs (désinscription + CTA pass 30 jours 14,99 € / $16.99), relance panier une fois, expiration, bienvenue payant, digest B2B uniquement vers yacovassaraf@gmail.com. Aucun cold email hôtel.
+
+### Fichiers modifiés
+- `scripts/autopilot/check-predeploy-satellite-freshness.cjs` — éligibilité de publication séparée du SLA 900 min.
+- `scripts/verify-ftp-ready.cjs` — publie si pas de régression.
+- `.github/workflows/data-refresh.yml`, `daily-copernicus.yml`, `weekend-email.yml`, `sales-lifecycle-emails.yml`.
+- `scripts/automation/send-b2c-morning-alerts.cjs`, `send-b2b-weekly-digest.cjs`, `recover-abandoned-cart.cjs`, `pass-expiry-winback.cjs`, `planner-alerts.cjs`.
+- `tests/unit/publication-eligibility.test.cjs`.
+
+### Tests réalisés
+- [ ] `npm run build` → non requis (aucun bundle applicatif, aucun PHP, aucun paywall)
+- [x] `node tests/unit/publication-eligibility.test.cjs` → 44 assertions
+- [x] `node tests/unit/predeploy-satellite-freshness.test.cjs` → 29 assertions
+- [x] `node tests/unit/copernicus-publication-status.test.cjs` → 12 cas
+- [x] `node tests/unit/copernicus-workflow-status-contract.test.cjs` → OK
+- [x] `node --check` sur les `.cjs` touchés → OK
+- [x] YAML des 4 workflows parsé → OK
+
+### Problèmes restants
+- [ ] La prod sert encore l'observation du 27 oct tant que `Data Freshness` n'a pas fetché ERDDAP et que le déploiement n'est pas vert. — P0 — lancer le workflow après merge.
+- [ ] Le RPC `sg_claim_b2c_alert_delivery` doit exister en base pour que le briefing matin parte vraiment (sinon fail-closed, zéro doublon). — P1 — vérifier au premier `--send`.
+
+### Prochaine action recommandée
+1. Merger, déclencher `Data Freshness (ERDDAP → repo)`, vérifier les 6 domaines. — Rôle : devops
+2. Dry-run `sales-lifecycle-emails` avec `send=false`. — Rôle : growth
+
+### Branche / PR
+- Branche : `cursor/data-freshness-sales-emails-42fc`
+- PR : ouverte dans ce run
+- Commit head : voir le commit de cette branche
+
+---
+
 ## 2026-11-09 15:36 UTC · Agent: OpenCode (coding/autopilot)
 
 ### Travail effectué

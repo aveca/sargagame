@@ -1,0 +1,182 @@
+name: Sales lifecycle emails
+
+# Customer emails that drive revenue without depending on a perfectly fresh
+# satellite observation (the daily-copernicus email-automation job is skipped
+# whenever the 900-minute SLA gate fails).
+#
+# Recipients:
+#   • B2C morning briefing — opted-in public.b2c_alerts only
+#   • Abandoned checkout — people who started a Mollie/Stripe payment
+#   • Pass expiry — people who already bought a pass
+#   • Welcome paid (Mollie) — new buyers
+#   • Planner trip alerts — people who left an email for a trip date
+#   • Weekly B2B digest — yacovassaraf@gmail.com only (never prospects)
+#
+# Never sends cold emails to hotels or B2B prospects.
+# Manual dispatch is dry-run unless "send" is set to true.
+
+on:
+  schedule:
+    - cron: '0 11 * * *'   # 07:00 AST — morning B2C briefing
+    - cron: '30 14 * * *'  # abandoned checkout + expiry + welcome paid + planner
+    - cron: '0 13 * * 1'   # Monday 09:00 AST — founder B2B digest
+  workflow_dispatch:
+    inputs:
+      send:
+        description: 'Actually send emails? (false = dry-run)'
+        type: boolean
+        default: false
+      job:
+        description: 'Which job to run'
+        type: choice
+        default: all
+        options:
+          - all
+          - morning
+          - checkout
+          - digest
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sales-lifecycle-emails
+  cancel-in-progress: false
+
+jobs:
+  morning:
+    if: "(github.event_name == 'schedule' && github.event.schedule == '0 11 * * *') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'all' || github.event.inputs.job == 'morning'))"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Send B2C morning beach briefing
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then
+            node scripts/automation/send-b2c-morning-alerts.cjs --send
+          else
+            node scripts/automation/send-b2c-morning-alerts.cjs
+          fi
+
+  checkout:
+    if: "(github.event_name == 'schedule' && github.event.schedule == '30 14 * * *') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'all' || github.event.inputs.job == 'checkout'))"
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Recover abandoned checkouts (once per payment)
+        id: cart
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          MOLLIE_CART_RECOVERY: '1'
+        run: |
+          FLAG=""
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then FLAG="--send"; fi
+          node scripts/automation/recover-abandoned-cart.cjs $FLAG --since-days=2 --once --max=40
+      - name: Pass expiry renewal reminders
+        id: expiry
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: |
+          FLAG=""
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then FLAG="--send"; fi
+          node scripts/automation/pass-expiry-winback.cjs $FLAG
+      - name: Welcome paid (Mollie)
+        id: welcome
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          MOLLIE_API_KEY: ${{ secrets.MOLLIE_API_KEY }}
+        run: |
+          FLAG=""
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then FLAG="--send"; fi
+          node scripts/automation/welcome-paid-mollie.cjs $FLAG
+      - name: Planner trip alerts (opted-in emails)
+        id: planner
+        continue-on-error: true
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          FLAG=""
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then FLAG="--send"; fi
+          node scripts/automation/planner-alerts.cjs $FLAG
+      - name: Fail if a customer email step failed
+        if: steps.cart.outcome == 'failure' || steps.expiry.outcome == 'failure' || steps.welcome.outcome == 'failure' || steps.planner.outcome == 'failure'
+        run: |
+          echo "::error::Une étape d'email client a échoué (cart=${{ steps.cart.outcome }} expiry=${{ steps.expiry.outcome }} welcome=${{ steps.welcome.outcome }} planner=${{ steps.planner.outcome }})."
+          exit 1
+      - name: Commit email state markers
+        if: always()
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          for f in scripts/automation/data/cart-recovery-sent.json scripts/automation/data/pass-expiry-winback-sent.json scripts/automation/data/welcome-paid-mollie-sent.json; do
+            [ -f "$f" ] && git add "$f"
+          done
+          if git diff --cached --quiet; then echo "Email state unchanged."; exit 0; fi
+          git commit -m "chore: sales email state $(date -u +'%Y-%m-%d %H:%M UTC')" || exit 0
+          git push || echo "Push of email markers skipped (conflict or rights)."
+
+  digest:
+    if: "(github.event_name == 'schedule' && github.event.schedule == '0 13 * * 1') || (github.event_name == 'workflow_dispatch' && (github.event.inputs.job == 'all' || github.event.inputs.job == 'digest'))"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - name: Weekly B2B digest to founder only
+        env:
+          SMTP_HOST: premium115.web-hosting.com
+          SMTP_PORT: '465'
+          SMTP_USER: alerte@sargasses-martinique.com
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event.inputs.send }}" = "true" ]; then
+            node scripts/automation/send-b2b-weekly-digest.cjs --send
+          else
+            node scripts/automation/send-b2b-weekly-digest.cjs
+          fi
