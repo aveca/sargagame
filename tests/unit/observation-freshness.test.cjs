@@ -17,9 +17,8 @@ async function main() {
  const component=fs.readFileSync(path.resolve(__dirname,'../../src/BeachSheet.jsx'),'utf8')
  assert.match(component,/if\(!hasTrustedObservation\)return null/)
  assert.match(component,/data-testid="stale-observation-notice"/)
- assert.match(component,/hasTrustedObservation&&<StorySection delay=\{\.15\}/)
- assert.match(component,/showSOS && hasTrustedObservation/)
+ assert.doesNotMatch(component,/showSOS/)
  assert.doesNotMatch(component,/sargData\?\.erddapTimestamp\s*\|\|\s*sargData\?\.updatedAt/)
- console.log('PASS: stale/unknown observations suppress beach verdict, forecast and paid SOS report')
+ console.log('PASS: stale/unknown observations suppress beach verdict and forecast (paid SOS report removed)')
 }
 main().catch(e=>{console.error(e);process.exitCode=1})

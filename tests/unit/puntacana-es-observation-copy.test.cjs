@@ -49,8 +49,11 @@ assert.match(copy, /hora.*confianza|confianza.*hora/i, 'guide tells visitors to 
 assert.match(copy, /no se promete una frecuencia fija/i, 'guide explicitly rejects a fixed update schedule')
 assert.match(copy, /solo se muestra cuando/i, 'forecast is conditional on validated inputs')
 assert.match(copy, /no se publica una recomendación de playa limpia/i, 'delayed data cannot support a clean-beach recommendation')
-assert.match(page.sections[2].text, /USD 5\.99/, 'existing USD Pass price is preserved')
-assert.match(page.faq[4].a, /USD 5\.99/, 'existing USD Pass FAQ price is preserved')
+// 2026-11-09 : offre B2C validée = trip7 $8.99 (plus $5.99).
+assert.match(page.sections[2].text, /USD 8\.99/, 'existing USD Pass price is preserved')
+assert.match(page.faq[4].a, /USD 8\.99/, 'existing USD Pass FAQ price is preserved')
+assert.doesNotMatch(page.sections[2].text, /USD 5\.99/, 'the retired USD Pass price is gone')
+assert.doesNotMatch(page.faq[4].a, /USD 5\.99/, 'the retired USD Pass FAQ price is gone')
 
 const generator = fs.readFileSync(path.join(root, 'scripts/lib/region-seo-pages.cjs'), 'utf8')
 assert.match(generator, /extraPages/, 'regional SEO generator still consumes extraPages')

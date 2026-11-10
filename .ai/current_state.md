@@ -1,3 +1,141 @@
+## 2026-11-10 04:40 UTC · Agent: OpenCode (coding)
+
+### Travail effectué
+- **Résumé 1 ligne** : alignement DURABLE du dépôt sur l'offre B2C live validée (trip7 7,99 € / $8.99 · p30 14,99 € / $16.99 · season 24,99 € / $27.99), suppression de la surcharge USD « +15 % », retrait définitif du pass SOS (1 €), et resynchronisation du worker de production `sg-payments` sur son code LIVE (source de vérité serveur) avec les garde-fous du durcissement re-appliqués par-dessus.
+- **Détails** :
+  - **Constat de départ (vérifié LIVE, lecture seule)** : le serveur de paiement `sg-payments` **en production** facturait déjà 7,99 € / 14,99 € / 24,99 € (EUR) et 8,99 $ / 16,99 $ / 27,99 $ (USD), **sans** surcharge saisonnière ; le **dépôt** était en retard (trip7 4,99 €, season 19,99 €, USD 11,99 $ / 5,99 $). Le code live a été récupéré via l'API Cloudflare (`GET /accounts/{id}/workers/scripts/sg-payments/content/v2`, SHA-256 `C478F188…CFA1A`, 137 457 o) puis resynchronisé **à l'identique** dans `workers/sg-payments/index.js` — sans réécriture de mémoire. Un déploiement du fichier du dépôt aurait **régressé** la production.
+  - **Contrôle de non-régression du durcissement** (comparaison automatique HEAD(#1383) ↔ LIVE ↔ fichier courant) : **0 fonction** du durcissement P0.118 §5/§6/§7 perdue ; tous les marqueurs présents dans les trois versions (signature fail-closed 503/403, parse classique + Next-gen `entityId`/`eventId`, idempotence RPC `sg_upsert_payment_grant` + `ON CONFLICT`, marqueur KV posé **après** l'écriture, révocation `payment.refunded`). Seule variable de #1383 absente du live : `FULFILL_PRICES` → ré-appliquée.
+  - **Séparation CRÉATION / LIVRAISON** (2 workers + PHP) : `PASS_PRICES` = grille de création (3 passes, **sans** `sos`) ; `FULFILL_PRICES` = grille de livraison (**avec** `sos` à 1,00 €) pour livrer un paiement `sos` **déjà encaissé** — encaisser sans livrer serait un trou de confiance. La **création** de `sos` est refusée en **410 `offre_indisponible`** (contrat live), un pass inconnu en **400 « Prix invalide »** (fail-closed, 0 création Mollie).
+  - **Fenêtre historique** : `HISTORICAL_PASS_PRICES` / `HISTORICAL_PRICES` + `OFFER_CUTOFF_DATE` = **2026-11-09T00:00:00Z** : les montants de l'ancienne offre (trip7 4,99 € / $5.99, p30 11,99 $, season 19,99 €) restent livrables **uniquement** pour un paiement créé **avant** la coupure (date de création vérifiable). Un paiement **nouveau** à l'ancien tarif est **refusé**.
+  - **Surcharge USD « +15 % » supprimée partout** (client, PHP, workers, `/premium/`, CGV, copy) : le serveur live facture le montant **affiché** ; l'affichage et le débit ne peuvent plus diverger. Le bandeau de surcoût de `PassOffer.jsx` est retiré (il affichait un montant différent du montant débité).
+  - **Copy alignée sur l'offre validée** : `/offres/`, `/cgv.html`, `/a-propos/`, `/about/`, `/onboarding.html`, `/veilleur/`, `src/HomeAZ.jsx`, `src/HomeJuicy.jsx`, `src/VerticalesMap.jsx`, `src/PremiumModal.jsx`, `regions/*.json` (`tripPass` = 7,99 € / $8.99) et `regions/seo-content/*.json`.
+  - **Généré `/premium/`** : `public/premium/index.html` (servi tel quel — `gen-premium-pages.cjs` n'est pas dans `npm run build`) et `scripts/lib/premium-page.cjs` portent les 3 passes EUR **et** USD, sans `HIGH_MONTHS` / `RATE` / `sos`.
+  - **Non touché (volontairement)** : `public/api/mollie-passlinks.json` et `mol_paylink_grid()` (liens Mollie réels + clé API absente en local) ; l'abonnement B2C mensuel **4,99 €/mois** (produit distinct, encore live : `B2C_SUB_PLANS.monthly`) ; les secrets de production (`MOLLIE_API_KEY`, `MOLLIE_WEBHOOK_SECRET`, `SUPABASE_SERVICE_KEY`) — aucun secret lu, écrit ou deviné.
+  - **Diff applicatif** : 42 fichiers, +933 / −493 (hors `.ai/`).
+
+### Fichiers modifiés
+- `src/lib/pricing.js` — source unique des prix client : 7,99/14,99/24,99 € + 8,99/16,99/27,99 $, plus de `sos`, plus de surcharge saisonnière.
+- `src/PassOffer.jsx` — bandeau de surcoût « +15 % » retiré ; montant affiché = montant débité.
+- `src/PremiumModal.jsx` — CTA trip7 à 7,99 € / $8.99, saison à 24,99 € ; présélection URL via `resolvePass` (plus de centimes figés, plus de clé serveur invalide `saison`).
+- `src/Sargasses_PROD.jsx` — `EUR_TRIP_CENTS` = 799, `PRICE_TRIP` par défaut = $8.99.
+- `src/HomeAZ.jsx`, `src/HomeJuicy.jsx`, `src/VerticalesMap.jsx` — prix d'entrée « dès 7,99 € / from $8.99 ».
+- `public/api/mollie.php` — grille de création = 3 passes (sans `sos`), plus de surcharge ×1,15.
+- `public/api/mollie-lib.php` — `mol_historical_pass_prices()` + `mol_offer_cutoff_date()` (2026-11-09) : livraison des paiements antérieurs à la coupure.
+- `public/api/mollie-config.example.php` — template purgé de `sos` / `p7`, montants de l'offre documentés.
+- `public/api/create-checkout.php`, `public/api/paypal.php` — allowlists = [799, 1499, 2499] EUR / [899, 1699, 2799] USD (anti-tampering).
+- `scripts/lib/premium-page.cjs`, `public/premium/index.html` — catalogue `/premium/` = 3 passes EUR + 3 USD, sans `sos`, sans `HIGH_MONTHS`/`RATE`.
+- `public/offres/index.html`, `public/cgv.html`, `public/a-propos/index.html`, `public/about/index.html`, `public/onboarding.html`, `public/veilleur/index.html` — copy publique alignée (7,99 € / 8,99 $ / 14,99 € / 16,99 $ / 24,99 € / 27,99 $).
+- `regions/mq.json`, `regions/gp.json`, `regions/florida.json`, `regions/puntacana.json`, `regions/rivieramaya.json`, `regions/tulum.json`, `regions/barbados.json`, `regions/seo-content/*.json` — `tripPass` = 7,99 € / $8.99.
+- `workers/sargagame/index.js` — **déployé par la CI sur les 6 workers régionaux** : grilles création/livraison séparées, `sos` → 410, `HISTORICAL_PRICES` + `OFFER_CUTOFF_DATE`, plus de ×1,15.
+- `workers/sg-payments/index.js` — resynchronisé à l'identique sur le live, puis garde-fous re-appliqués (`FULFILL_PRICES`, `HISTORICAL_PASS_PRICES`, `OFFER_CUTOFF_DATE`, fail-closed création, 400 sur prix invalide, `payment_status` propriétaire + `passEnd`).
+- `workers/sg-payments/PROVENANCE.md` — §8 (resync live, SHA-256, taille), §8.1 (offre), §8.2 (garde-fous), §8.3 (contrôle de non-régression) + rappel de déploiement.
+- `tests/unit/price-parity.test.cjs` — réécrit : verrouille la parité affichage/débit sur les 8 sources de prix + les surfaces publiées.
+- `tests/unit/pass-offer-copy.test.cjs`, `tests/unit/sos-public-surface-removed.test.cjs`, `tests/unit/mollie-payment-logic.test.cjs`, `tests/unit/mollie-fulfillment-review.test.cjs`, `tests/unit/puntacana-es-observation-copy.test.cjs` — attentes alignées (410 `sos`, 7,99 €, refus de l'ancien tarif, $8.99).
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (`✓ built in 4.24s`, sitemap 98 URLs, 136 pages plages)
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (exact 211235 / 215040 bytes) → exit 0
+- [x] `php -l` sur `mollie.php`, `mollie-lib.php`, `mollie-config.example.php`, `create-checkout.php`, `paypal.php` → **No syntax errors detected** (5/5)
+- [x] `node --check` sur `pricing.js`, `premium-page.cjs`, `workers/sargagame/index.js`, `workers/sg-payments/index.js` → exit 0 (4/4)
+- [x] `node scripts/ux-smoke.mjs` (build prod + `vite preview` :4173) → **4 tokens OK** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npm test` → **188/188 fichier(s) de test OK** (runner `scripts/run-tests.cjs`)
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0 (`REGIONS_OK`)
+- [x] Vérification du **build** : **0 marqueur SOS** dans `dist/` (`sg-soscta`, `sg_sos_checkout`, `SOS PLAGE 24H`, `sos_success`, `SOSPlage`) ; anciens montants USD (5.99 / 11.99 / 19.99) **absents** ; `dist/premium/index.html` = 799/1499/2499 + 899/1699/2799, sans `HIGH_MONTHS`/`RATE`. Le seul « 4,99 » résiduel = l'**abonnement B2C mensuel** (produit distinct, non modifié).
+- [x] Contrôle de non-régression du durcissement (#1383 ↔ LIVE ↔ courant) → 0 fonction perdue (voir script `sg-compare-worker2.cjs`)
+- [ ] `npx playwright test` → **NON EXÉCUTÉ** (aucun e2e de paiement impacted conservé ; le parcours e2e SOS a été supprimé avec le parcours)
+
+### Problèmes restants / Blockers
+- [ ] **BLOQUÉ — preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test ou live), pas de `STRIPE_TEST_SECRET_KEY` (sk_test) pour `sg-payments-staging`, pas de clé service Supabase staging → impossible de prouver « paiement réel + webhook + attribution d'accès » de bout en bout. Sévérité **P0**. Action : exécution par le fondateur sur un paiement sandbox, puis LIVE contrôlé.
+- [ ] **PRÊT MAIS NON ACTIVÉ** : le patch est dans le dépôt (branche + PR) ; le merge déclenche le déploiement FTP des **6 sites** et des **6 workers régionaux** (`workers/sargagame/index.js` est le `main` de `wrangler.template.jsonc`). Le worker `sg-payments` **n'est pas déployé par la CI** (aucun workflow ne le mentionne) → son redéploiement reste manuel et non requis par ce patch. Sévérité **P0**. Action : merge sous verrou de certification (CI verte sur le SHA exact), puis vérification live.
+- [ ] **À FAIRE APRÈS DÉPLOIEMENT — retirer `sg-noso` des 6 routes Cloudflare** : les 6 domaines pointent encore vers `sg-noso` (`DOMAINE/* → sg-noso`). Le worker est **conservé** (routes re-créables en 1 appel) ; le retrait n'est déclenché **qu'après** correctif déployé + vérification live des 6 domaines. Sévérité **P1**. Action : retirer les routes, puis re-vérifier.
+- [ ] **BUG LIVE — bundle USD à 499** : le bundle live USD (`sargassummiami.com`) annonce encore `ud=499` pour trip7 alors que le catalogue live `/premium/` et le serveur live sont à 899. Le patch du dépôt corrige la source ; la correction en production dépend du déploiement. Sévérité **P1**. Action : re-vérifier les 6 domaines après déploiement (799/899, 1499/1699, 2499/2799).
+- [ ] **NON VÉRIFIÉ — marqueurs SOS encore présents dans les bundles live** : cohérent avec l'absence de déploiement ; à re-vérifier après merge (`/?sos=1` → 410 attendu). Sévérité **P1**.
+- [ ] **Livrables toujours introuvables** : `/workspace/sargagame-b2c-offer-durable.patch`, audit UX + `mockup-gp.html` (`/workspace/ux-audit/`), relances B2B #4–#10 (`/workspace/b2b_outreach.md`). Sévérité **P2**. Action : produire les fichiers ; **rien en ligne sans validation de Yacov** pour la maquette UX et les relances.
+- [ ] **BLOQUÉ — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`) → lancement manuel par Yacov en `send=false`. Sévérité **P2**.
+
+### Prochaine action recommandée
+1. Rebaser `agent/coding/p0-sos-retrait-mollie-live-20261109` sur `origin/main`, rejouer le gate, commit + push, mettre à jour la PR **#1383**, attendre la **CI verte sur le SHA exact**, puis merger (mandat fondateur) — Rôle : coding_agent
+2. Après merge : re-vérifier les 6 domaines (bundles 799/899 · 1499/1699 · 2499/2799, 0 marqueur SOS, `/?sos=1` → 410, `/api/mollie-pay?pass=sos` → 410) puis **retirer `sg-noso`** des 6 routes et re-vérifier — Rôle : devops_agent + qa_agent
+3. Présenter à Yacov l'audit UX + `mockup-gp.html` (validation requise avant mise en ligne) et préparer les relances B2B #4–#10 en **brouillons** — Rôle : growth_agent + ui_ux_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
+- PR : **#1383** (base `main`) — head précédent `dc83bdd44a2f15473212858b06c98f8022b9c49e`, **CONFLICTING/DIRTY** vs `origin/main` (`ff12dbfd3`) au début de cette session ; le rebase + le commit du patch ci-dessus sont **la prochaine action**
+- Commit head : 9ecf0ca6488189cfe3b86a630f3394a8081596b3 (patch )ac75194 + merge origin/main f12dbfd3)
+
+---
+## 2026-11-09 12:40 UTC · Agent: OpenCode (coding)
+
+### Travail effectué
+- **Résumé 1 ligne** : parcours de paiement SOS (1 €) retiré du client ET de la création serveur (fail-closed), tout en conservant la livraison des paiements `sos` déjà encaissés ; webhook Mollie fiabilisé (classique + Next-gen, signature fail-closed, révocation, idempotence) et trou de prix du worker de prod `sg-payments` refermé.
+- **Détails** :
+  - **Retrait de la surface publique SOS** (confirmé) : deep-link `?sos=1`, state `showSOS`, FAB `.sg-soscta`, bloc SOS de la fiche plage, modal `SOSPlage` (`src/SOSPlage.jsx` supprimé), `src/lib/sos-observation-state.mjs` supprimé, classe `.sg-soscta` retirée du CSS, `src/lib/pricing.js` (PASS_KEYS/PASS_DAYS/PASS_BASE_CENTS/PASS_COPY) sans `sos`, catalogue `/premium/` (`scripts/lib/premium-page.cjs` + `public/premium/index.html`) purgé, template `public/api/mollie-config.example.php` purgé. Aucun événement de funnel `sg_sos_*` n'est plus émis ni allowlisté.
+  - **Script à risque supprimé** : `test-mollie-api.mjs` (racine) créait un **paiement LIVE** de 1 € contre la production via `/?sos_success=1`. Supprimé (non référencé nulle part).
+  - **Création serveur fail-closed** : `public/api/mollie.php` (allowlist `$passPrices` sans `sos`), `workers/sargagame/index.js` (`PASS_PRICES` sans `sos` + `FULFILL_PRICES` avec `sos`), `workers/sg-payments/index.js` (`PASS_PRICES` sans `sos` + `FULFILL_PRICES` avec `sos`). **Trou refermé dans le worker de production** : `create_payment` faisait `if (pass && PASS_PRICES[pass]) … else if (!pass …)` → un pass inconnu (`sos` ou arbitraire) ne passait dans **aucune** branche → **aucun contrôle de prix** → un montant libre (0,01 €, 999 €) pouvait être encaissé. Règle appliquée : pass connu → montant contrôlé ; pass inconnu → `400 Prix invalide` (vérifié par exécution réelle sur les deux workers, aucun appel Mollie de création émis).
+  - **Livraison `sos` CONSERVÉE** (décision de mission) : encaisser sans livrer serait un trou de confiance. `FULFILL_PRICES` (2 workers), `DAYS_TABLE`/`PASS_DURATIONS` (sos = 1 j), `mol_pass_prices()` (PHP) et le webhook PHP livrent toujours un paiement `sos` déjà encaissé.
+  - **Webhook Mollie fiabilisé** :
+    - `public/api/mollie-webhook.php` réécrit : parse **classique** (`application/x-www-form-urlencoded`, `id=tr_…`) **+ Next-gen** (JSON `{resource:"event", id:"event_…", type:"payment.paid", entityId:"tr_…"}` — l'`id` d'événement n'est **PAS** l'`entityId`), signature `X-Mollie-Signature` comparée à temps constant (503 sans secret, 403 signature invalide), état réel relu auprès de l'API Mollie (jamais le corps), `settled` traité comme `paid`, **révocation** sur `canceled`/`expired`/`failed`/`refunded`, délivrance idempotente.
+    - `workers/sargagame/index.js` : le webhook **ne vérifiait aucune signature** (n'importe qui pouvait POSTer un `id=tr_…`) → signature fail-closed ajoutée (503 sans `MOLLIE_WEBHOOK_SECRET`, 403 sinon), support des deux formats, révocation durable (expiration de la ligne `payment_grants` — la table n'a pas de colonne `status`), `settled` accepté.
+  - **BUG CRITIQUE corrigé — montant illisible** : `validateMollieAmountPHP()` lisait `$payment->amount->currency` alors que le runtime renvoie un **tableau** → montant lu à `null`/0 → **tout pass B2C payé était refusé** (`amount_mismatch`) → **argent encaissé, accès JAMAIS délivré**. Correctif : lecture via `mol_payment_amount()` (tableau OU objet) + validateur partagé `mol_validate_pass_amount()` (alias legacy `p7` + date de coupure). Le test `b2b-conversion-instrumentation.test.cjs` verrouillait ce bug comme un comportement « attendu » → corrigé (un p30 à 14,99 € est désormais **accepté**, un montant faux toujours refusé).
+  - **Confirmation serveur** : `payment_status` (PHP) et `workers/sg-payments` relisent l'état chez Mollie, **refusent un paiement appartenant à un autre email** (`403 payment_owner_mismatch`), **délivrent le droit de façon idempotente** (RPC `sg_upsert_payment_grant`) et valident le format `tr_…`. Le webhook seul n'est plus le point unique de délivrance **Contrôle propriétaire désormais effectif** : les 5 appels client `payment_status` (`src/PremiumModal.jsx` ×4, `src/Sargasses_PROD.jsx` ×1) transmettent l’email de la commande — sans lui, le refus `payment_owner_mismatch` du serveur aurait été inerte. Garde-fou ajouté dans `tests/unit/mollie-payment-logic.test.cjs` (audit automatique de tous les appels). (un webhook perdu ne doit pas signifier « payé sans accès »).
+  - **Idempotence** : `public/api/mollie-lib.php` passe désormais par la **RPC idempotente** `sg_upsert_payment_grant` (`ON CONFLICT (payment_id) DO NOTHING`) au lieu d'un POST direct (qui échouait en doublon sur `unique(payment_id)` → 500 → rejeu en boucle de Mollie). Repli INSERT conservé.
+  - **Révocation durable** : `mol_b2c_pass_revoke()` expire désormais la ligne Supabase (`expires_at`) et supprime le transient `/tmp` ; `revokeB2CPass()` ajouté au worker régional.
+  - **Post-déploiement** : `--sos-test` **inversé** — il vérifie désormais l'**ABSENCE** de surface SOS servie (marqueurs `sg-soscta`, `SOS PLAGE 24H`, `sos_success`, `sg_sos_checkout`… + catalogue `/premium/`). Lecture seule : **aucune requête de création de paiement** n'est émise (un POST `create_payment` en prod créerait un paiement LIVE, interdit sans validation explicite).
+  - **Aucun secret, aucun prix modifié, aucune migration rejouée** (001–008 déjà appliquées), aucune donnée scientifique touchée.
+
+### Fichiers modifiés
+- `src/Sargasses_PROD.jsx` — deep-link `?sos=1`, state `showSOS`, FAB `.sg-soscta`, overlay `LazySOSPlage`, événements `sg_sos_*` : supprimés.
+- `src/BeachSheet.jsx` — bloc SOS payant + composant `SOSPlage` + état `showSOS` : supprimés.
+- `src/SOSPlage.jsx` — **supprimé**.
+- `src/lib/sos-observation-state.mjs` — **supprimé**.
+- `src/app-runtime.css` — classe `.sg-soscta` : supprimée (commentaires de contexte mis à jour).
+- `src/lib/pricing.js` — grille client sans `sos` (PASS_KEYS / PASS_DAYS / PASS_BASE_CENTS / PASS_COPY).
+- `src/WorldMapView.jsx` — commentaire obsolète (CTA « SOS doré ») corrigé.
+- `public/api/mollie.php` — allowlist de création sans `sos` ; `payment_status` devient une confirmation serveur (relit Mollie, contrôle propriétaire, délivrance idempotente).
+- `public/api/mollie-lib.php` — `mol_pass_prices()`, `mol_legacy_pass_aliases/prices/cutoff_date()`, `mol_validate_pass_amount()` (montant via `mol_payment_amount()`), `mol_b2c_grant_upsert()` (RPC idempotente), `mol_b2c_pass_revoke()` durable.
+- `public/api/mollie-webhook.php` — réécrit : classique + Next-gen, signature fail-closed, révocation, `settled`, idempotence.
+- `public/api/mollie-config.example.php` — entrée `sos` retirée.
+- `public/premium/index.html` — catalogue embarqué purgé de `sos`.
+- `scripts/lib/premium-page.cjs` — `OFFERS` sans `sos`.
+- `scripts/autopilot/post-deploy-verify.cjs` — `--sos-test` inversé (absence de surface SOS), plus de contrôle de présence.
+- `.github/workflows/cloudflare-production.yml` — commentaire du contrôle post-déploiement aligné (commande inchangée).
+- `workers/sargagame/index.js` — `PASS_PRICES` (création) sans `sos` + `FULFILL_PRICES` (livraison) avec `sos` ; webhook signature + Next-gen + révocation (`revokeB2CPass`) ; `validateMollieAmount` accepte `settled` ; `payment_status` accepte `settled`.
+- `workers/sg-payments/index.js` — `PASS_PRICES`/`FULFILL_PRICES` séparés ; **trou de prix refermé** (pass inconnu → 400) ; `payment_status` devient confirmation serveur (propriétaire + délivrance idempotente) ; refus de prix renvoyé en **400** (et non 500).
+- `test-mollie-api.mjs` — **supprimé** (créait un paiement LIVE de 1 € en production).
+- `tests/unit/sos-public-surface-removed.test.cjs` — **nouveau** : absence de surface publique + création refusée (exécution réelle sur les 2 workers) + livraison conservée + confirmation serveur.
+- `tests/unit/mollie-webhook-p03.test.cjs`, `tests/unit/mollie-fulfillment-review.test.cjs` — contrat webhook mis à jour (signature obligatoire, Next-gen, 403/503).
+- `tests/unit/mollie-payment-logic.test.cjs`, `tests/unit/price-parity.test.cjs`, `tests/unit/pass-offer-copy.test.cjs`, `tests/unit/funnel-checkout-events.test.cjs`, `tests/unit/observation-freshness.test.cjs`, `tests/unit/b2b-conversion-instrumentation.test.cjs`, `tests/ux-first-screen-cta.test.cjs` — attentes alignées sur le retrait.
+- `tests/unit/sos-observation-state.test.cjs`, `sos-mollie-return-pending.test.cjs`, `sos-modal.test.cjs`, `sos-checkout-freshness-gate.test.cjs`, `tests/e2e/sos-plage-checkout.spec.ts` — **supprimés**.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0 (`✓ built in 3.33s`, sitemap 98 URLs OK)
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (exact 211220 / 215040 bytes) → exit 0
+- [x] `php -l` sur `mollie.php`, `mollie-lib.php`, `mollie-webhook.php`, `mollie-config.example.php` → **No syntax errors detected** (PHP 8.4.22)
+- [x] `node scripts/ux-smoke.mjs` (build prod + `vite preview` :4173) → **4 tokens OK** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npm test` (runner maison, 180 fichiers) → **179/180 OK** ; le seul échec restant (`tests/sitemap-guard-beach-pages.test.cjs`) exige `dist/` et passe après build (`RESULTAT ✓ TOUS LES TESTS OK`)
+- [x] `node scripts/agent-handoff.cjs` non requis ; `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → exit 0
+- [x] `git diff --check` → exit 0 (avertissements CRLF uniquement)
+- [x] `npx playwright test` → **NON EXÉCUTÉ** (aucun e2e de paiement impacted conservé ; le parcours e2e SOS a été supprimé avec le parcours)
+- [x] Preuve exécutée du trou de prix refermé : `create_payment(pass=sos)` et `create_payment(pass=inconnu)` → **400 « Prix invalide »** sur les DEUX workers, **0 appel de création Mollie** ; `create_payment(pass=trip7, 499)` → 200 et 1 création (non-régression)
+
+### Problèmes restants / Blockers
+- [ ] **BLOQUÉ — bout-en-bout LIVE non démontrable** : aucun accès API Mollie/Cloudflare local, pas de `MOLLIE_API_KEY` LIVE dans l'environnement, aucun secret de webhook disponible → impossible de prouver « paiement réel + webhook + attribution d'accès » de bout en bout. Sévérité **P0**. Action : exécution par le fondateur sur un paiement sandbox puis LIVE contrôlé, avec relecture du `payment_status` et du grant `payment_grants`.
+- [ ] **BLOQUÉ — code réellement déployé non diffable** : SHA-256 du fichier repo `workers/sg-payments/index.js` = `ded72d33…` ; commit `18cb16d7e` → `d075f3e6…` ; `agents/deployments.md` annonce `fcf4e333…` (v382) → aucune correspondance → l'état réel de la production ne peut pas être affirmé. Sévérité **P0**. Action : re-fetch de l'API Cloudflare (`GET /accounts/{id}/workers/scripts/sg-payments`) pour comparer octet pour octet avant toute activation.
+- [ ] **PRÊT MAIS NON ACTIVÉ** : la branche `agent/coding/p0-sos-retrait-mollie-live-20261109` corrige le worker de prod **en dépôt** ; le déploiement du Worker `sg-payments` (v382 → nouvelle version) **n'est pas effectué** et **ne doit pas l'être sans validation explicite**. Sévérité **P0**. Action : revue de la PR, puis déploiement contrôlé par le fondateur.
+- [ ] **BLOQUÉ — vérification prod des 6 domaines** : limitée à des GET non authentifiés ; aucune preuve d'achat possible ; le contrôle post-déploiement inversé (`sos_public_surface`) n'a **pas** été rejoué contre la prod (les marqueurs SOS y sont encore présents tant que le build n'est pas déployé). Sévérité **P1**. Action : rejouer `node scripts/autopilot/post-deploy-verify.cjs --all --sos-test` après déploiement.
+- [ ] **NON VÉRIFIÉ — absence de clé Mollie LIVE** : le refus de création `sos` et la signature webhook sont prouvés par exécution locale (mocks), **pas** contre l'API Mollie. Sévérité **P1**. Action : test d'intégration sandbox.
+
+### Prochaine action recommandée
+1. Faire relire la PR (chemin financier) puis décider du déploiement du Worker `sg-payments` — Rôle : coding_agent + security_agent, **avec accord explicite du fondateur**
+2. Rejouer le contrôle post-déploiement inversé sur les 6 domaines et prouver « webhook → grant → accès » sur un paiement **sandbox** — Rôle : qa_agent
+3. Comparer le code live du Worker (`GET /workers/scripts/sg-payments`) au SHA du dépôt avant activation — Rôle : devops_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
+- PR : **#1383** (base `main`) — **NON mergée, AUCUN déploiement déclenché** — CI **verte** sur le SHA exact (`test-frontend` ✅, `perf` ✅, `lighthouse-report` ✅, `GitGuardian` ✅)
+- Commit head : `7225b3729de7ef7c5d54a0eac995b53257e07ddb` (mission `dd3ae1026` + merge `origin/main` `827351232` ; + commits de documentation de handoff par-dessus)
+
+---
 ## 2026-11-10 00:03 UTC · Agent: Cursor (data/growth)
 
 ### Travail effectué
@@ -120,6 +258,7 @@
 > **Neutralité production confirmée** : **0 run** `cloudflare-production.yml` sur la branche (les derniers runs datent du 2026-11-07) — aucun déploiement, aucun secret de paiement réécrit.
 
 ---
+
 
 ## 2026-11-08 06:15 UTC · Agent: OpenCode (coding/autopilot)
 

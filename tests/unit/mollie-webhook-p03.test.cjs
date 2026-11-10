@@ -1,9 +1,20 @@
 const assert = require("node:assert/strict");
+const crypto = require("node:crypto");
 
+// Contrat P0 2026-11-09 — le webhook EXIGE une signature Mollie valide
+// (fail-closed) et accepte les DEUX formats officiels :
+//   • CLASSIQUE : `application/x-www-form-urlencoded`, corps `id=tr_…`
+//   • NEXT-GEN  : JSON `{resource:"event", id:"event_…", type:"payment.paid",
+//                 entityId:"tr_…"}`
+// L'état du paiement n'est JAMAIS lu dans le corps : il est relu auprès de
+// l'API Mollie (autorité).
 (async () => {
   const { default: worker } = await import("../../workers/sargagame/index.js");
+  const WEBHOOK_SECRET = "test_only_webhook_secret";
+  const sign = (body) => crypto.createHmac("sha256", WEBHOOK_SECRET).update(body).digest("hex");
   const env = {
     MOLLIE_API_KEY: "test_only_key",
+    MOLLIE_WEBHOOK_SECRET: WEBHOOK_SECRET,
     SUPABASE_URL: "https://supabase.test",
     SUPABASE_SERVICE_KEY: "test_only_service_key"
   };
@@ -38,10 +49,19 @@ const assert = require("node:assert/strict");
     };
   }
   function classicRequest(id = "tr_classictest", contentType = "application/x-www-form-urlencoded") {
+    const body = "id=" + encodeURIComponent(id);
     return new Request("https://worker.test/api/mollie-webhook", {
       method: "POST",
-      headers: { "content-type": contentType },
-      body: "id=" + encodeURIComponent(id)
+      headers: { "content-type": contentType, "X-Mollie-Signature": "sha256=" + sign(body) },
+      body
+    });
+  }
+  function nextgenRequest(entityId = "tr_classictest", type = "payment.paid") {
+    const body = JSON.stringify({ resource: "event", id: "event_classictest01", type, entityId });
+    return new Request("https://worker.test/api/mollie-webhook", {
+      method: "POST",
+      headers: { "content-type": "application/json", "X-Mollie-Signature": "sha256=" + sign(body) },
+      body
     });
   }
   async function webhook(payment, request = classicRequest()) {
@@ -55,7 +75,7 @@ const assert = require("node:assert/strict");
   }
 
   try {
-    // Classic Mollie webhook has no HMAC header; the API lookup is the authority.
+    // CLASSIQUE : signature valide + relecture de l'état chez Mollie.
     let result = await webhook(makePayment());
     assert.equal(result.response.status, 200);
     assert.equal(result.body.granted, true);
@@ -67,6 +87,15 @@ const assert = require("node:assert/strict");
     // Repeated webhook reaches the same atomic RPC with the same Mollie payment ID.
     result = await webhook(makePayment());
     assert.equal(result.response.status, 200);
+    assert.equal(state.rpcCalls.length, 1);
+    assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classictest");
+
+    // NEXT-GEN : l'identifiant d'ÉVÉNEMENT n'est pas l'identifiant d'ENTITÉ.
+    // C'est `entityId` qui désigne le paiement.
+    result = await webhook(makePayment(), nextgenRequest());
+    assert.equal(result.response.status, 200);
+    assert.equal(result.body.granted, true);
+    assert.equal(state.mollieLookups, 1);
     assert.equal(state.rpcCalls.length, 1);
     assert.equal(state.rpcCalls[0].body.p_payment_id, "tr_classictest");
 
@@ -85,15 +114,42 @@ const assert = require("node:assert/strict");
     assert.equal(result.body.granted, false);
     assert.equal(state.rpcCalls.length, 0);
 
-    // Wrong content type and malformed IDs are rejected before any API lookup.
-    result = await webhook(makePayment(), new Request("https://worker.test/api/mollie-webhook", {
-      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: "tr_classictest" })
-    }));
-    assert.equal(result.response.status, 415);
-    assert.equal(state.mollieLookups, 0);
+    // A classique webhook with a malformed id is rejected before any API lookup.
     result = await webhook(makePayment(), classicRequest("not-a-payment-id"));
     assert.equal(result.response.status, 400);
     assert.equal(state.mollieLookups, 0);
+
+    // A Next-gen event about a non-payment entity is acknowledged (200) so that
+    // Mollie does not retry forever — but nothing is granted and no lookup runs.
+    result = await webhook(makePayment(), nextgenRequest("pl_abc123", "payment-link.paid"));
+    assert.equal(result.response.status, 200);
+    assert.equal(result.body.granted, false);
+    assert.equal(result.body.reason, "unsupported_entity");
+    assert.equal(state.mollieLookups, 0);
+
+    // SECURITY — signature is mandatory (fail-closed).
+    result = await webhook(makePayment(), new Request("https://worker.test/api/mollie-webhook", {
+      method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: "id=tr_classictest"
+    }));
+    assert.equal(result.response.status, 403);
+    assert.equal(result.body.error, "invalid_signature");
+    assert.equal(state.mollieLookups, 0);
+    assert.equal(state.rpcCalls.length, 0);
+
+    result = await webhook(makePayment(), new Request("https://worker.test/api/mollie-webhook", {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded", "X-Mollie-Signature": "sha256=" + "f".repeat(64) },
+      body: "id=tr_classictest"
+    }));
+    assert.equal(result.response.status, 403);
+    assert.equal(state.rpcCalls.length, 0);
+
+    // No secret configured => 503, the endpoint is unavailable (never open).
+    const noSecretEnv = Object.assign({}, env);
+    delete noSecretEnv.MOLLIE_WEBHOOK_SECRET;
+    const noSecret = await worker.fetch(classicRequest(), noSecretEnv);
+    assert.equal(noSecret.status, 503);
+    assert.equal(state.rpcCalls.length, 0);
 
     // RPC failure leaves the grant pending and requests Mollie retry (HTTP 503).
     state.payment = makePayment();
@@ -110,7 +166,7 @@ const assert = require("node:assert/strict");
     assert.equal(lookupFail.status, 404);
     assert.equal(state.rpcCalls.length, 0);
 
-    console.log("PASS: classic webhook without signature, authenticated lookup, validation, malformed input, retries on RPC outage");
+    console.log("PASS: webhook signé (classique + next-gen), relecture authentifiée de l'état Mollie, validation, refus sans signature, reprises sur panne RPC");
   } finally {
     globalThis.fetch = originalFetch;
   }

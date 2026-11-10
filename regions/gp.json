@@ -10,7 +10,7 @@
   "pricing": {
     "monthly": "4,99 €",
     "yearly": "49 €",
-    "tripPass": "4,99 €"
+    "tripPass": "7,99 €"
   },
   "stripeProducts": {
     "monthly": "price_existing_EUR_mo",

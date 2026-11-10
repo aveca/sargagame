@@ -1943,8 +1943,8 @@ export default function WorldMapView({
 
         {/* CTA PRINCIPAL « Trouve ta plage » (mission P0 refonte UX 2026-10-14) — une seule
             action dominante sur l'accueil : ouvre le parcours TrouvePlage IN-APP via onFind
-            (plus d'URL « secrète » ?recommend=1). La peinture (gradient teal = action libre,
-            distincte du SOS doré payant) vit dans la classe .sg-mapfind (app-runtime.css,
+            (plus d'URL « secrète » ?recommend=1). La peinture (gradient or = action
+            libre, unique CTA dominant) vit dans la classe .sg-mapfind (app-runtime.css,
             triple-classe + !important pour survivre au skin .theme-comic/.sg-onink-scope
             qui sinon strippe fond/bordure, cf. note sg-mapchip). Pleine largeur mobile,
             max 380, au-dessus de la frise des jours : bande 76-120px (frise 120-156,

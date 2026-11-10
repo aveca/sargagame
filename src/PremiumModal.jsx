@@ -963,7 +963,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
             <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
         </button>}
@@ -1341,14 +1341,14 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </div>
           {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : pass one-time,
               accès numérique immédiat → pas de garantie de remboursement volontaire. */}
-          {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
+          {/* A/B pw_season : alternative pass saison 24,99 € (paiement unique 6 mois,
               sans abo) — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
           {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
               <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
                 <b style={{fontSize:13.5,color:"#0d0b14",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
               </span>
               <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
             </span>
@@ -2066,7 +2066,10 @@ const walletRedirect=useCallback(async(method)=>{
           window.location.href=d.checkoutUrl;return
         }
         // Pas de 3DS : confirme côté serveur (source de vérité) puis débloque.
-        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+        // `email` est transmis pour que le serveur applique le CONTRÔLE
+        // PROPRIÉTAIRE (payment_owner_mismatch) : l'email de la commande est
+        // exactement celui stocké dans metadata.email par create_payment.
+        const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email})})
         const cd=await cr.json().catch(()=>({}))
         if(cd.terminal&&cd.status){
           const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
@@ -2110,7 +2113,8 @@ const walletRedirect=useCallback(async(method)=>{
       let canAP=false;try{canAP=window.ApplePaySession.canMakePayments()}catch(_){}
       if(canAP && applePayDomainReady){
         try{
-          const cents=_pc?_pc.cents:499
+          // Repli = Trip Pass (offre validée 2026-11-09 : 7,99 € / $8.99).
+          const cents=_pc?_pc.cents:(PAY_CUR==="usd"?899:799)
           const ses=new window.ApplePaySession(3,{countryCode:"FR",currencyCode:(PAY_CUR==="usd"?"USD":"EUR"),merchantCapabilities:["supports3DS"],
             supportedNetworks:["visa","masterCard","amex","cartesBancaires","maestro"],
             total:{label:_t(lang,"Pass Sargasses","Sargasses Pass","Pase Sargazo"),amount:(cents/100).toFixed(2)},
@@ -2136,14 +2140,14 @@ const walletRedirect=useCallback(async(method)=>{
 const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)})
               const d=await r.json().catch(()=>({}))
               if(!r.ok||d.error||(!d.paymentId&&!d.subscriptionId)){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error(d.error||"payment failed")}
-              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})})
+              const cr=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email:apEmail})})
               const cd=await cr.json().catch(()=>({}))
               if(cd.terminal&&cd.status){
                 const statusMsg={canceled:_t(lang,"Paiement annulé","Payment canceled","Pago cancelado"),expired:_t(lang,"Paiement expiré","Payment expired","Pago expirado"),failed:_t(lang,"Paiement échoué","Payment failed","Pago fallido")}
                 throw new Error(statusMsg[cd.status]||_t(lang,"Paiement non confirmé. Réessaie.","Payment not confirmed. Retry.","Pago no confirmado. Reintenta."))
               }
               let paid=cd.paid===true
-              if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
+              if(!paid){for(let a=0;a<3;a++){await new Promise(r=>setTimeout(r,2000));try{const r2=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:d.paymentId,email:apEmail})});const d2=await r2.json().catch(()=>({}));if(d2.paid===true||d2.status==="paid"){paid=true;break}}catch(_){}}if(!paid){ses.completePayment(window.ApplePaySession.STATUS_FAILURE);throw new Error("not paid")}}
               ses.completePayment(window.ApplePaySession.STATUS_SUCCESS)
               if(apEmail){try{localStorage.setItem("sg_email",apEmail)}catch(_){}}
               if(_pc){localStorage.setItem("sg_premium_pass_end",String(Date.now()+(_pc.days||7)*86400000));track("sg_conversion",{session_id:d.paymentId,method:"applepay",plan:_pc.pass,pass_days:_pc.days})}
@@ -2317,9 +2321,9 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[passSeq,sargData,beach,island,_trackRec,lang])
-  // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
+  // A/B pw_season : surface le SKU « pass saison » dormant (24,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
-  // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
+  // (allowlist serveur pay_once = [799, 1499, 2499]¢ ; 2499 OK). Cash d'avance + zéro churn.
   // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
   const pwSeason=!IS_NEW_REGION&&(()=>{try{const q=window.location.search;if(/[?&]pwseason=1/.test(q))return true;if(/[?&]pwseason=0/.test(q))return false;return abVariant("pw_season",["control","season"],[.5,.5])==="season"}catch(_){return false}})()
   // A/B pw_trippass (USD only) : propose un accès UNIQUE 7 jours (one-time,
@@ -2352,12 +2356,12 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     setPayStep(true)
   },[source,setPayStep])
   // ── Trip Pass EUR (MQ/GP) — MIROIR du Trip Pass USD ci-dessus ────────────────
-  // Accès UNIQUE 7 jours, 4,99 € one-time (EUR_TRIP_CENTS=499), sans abonnement.
+  // Accès UNIQUE 7 jours, 7,99 € one-time (EUR_TRIP_CENTS=799), sans abonnement.
   // EUR uniquement (!IS_NEW_REGION) : les régions USD utilisent tripAB/startTripPass.
   // A/B pw_trippass_eur (override ?pwtripeur=1/0). Chemin de checkout SÉPARÉ de
   // l'abo (passCtxRef + action:pay_once, devise EUR) — ZÉRO contact avec
-  // effectivePlan/stripeLinkFor. 499¢ DOIT être dans l'allowlist serveur pay_once
-  // EUR. Le pass off-site historique (PassOffer/pwPass, p7/p30 799¢+) reste intact.
+  // effectivePlan/stripeLinkFor. 799¢ DOIT être dans l'allowlist serveur pay_once
+  // EUR. Le pass off-site historique (PassOffer/pwPass, p30 1499¢+) reste intact.
   // A/B pw_trippass_eur_ab (override ?pwtripeur=1/0). 50/50 control vs trip.
   // Rollback QA : ?pwtripeur=0 force control, ?pwtripeur=1 force trip.
   const tripEurAB=!IS_NEW_REGION&&(()=>{try{
@@ -2474,7 +2478,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
               {_t(lang,`Activer l'alerte sur ${beach.name}`,`Activate alert on ${beach.name}`,`Activar alerta en ${beach.name}`)}
             </div>
             <div style={{font:"600 12px/1 system-ui,sans-serif",opacity:.78,marginTop:3}}>
-              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):_t(lang,"Pass dès 4,99 € · paiement unique, sans abonnement","Pass from €4.99 · one-time, no subscription","Pase desde 4,99 € · pago único, sin suscripción")}
+              {PAY_CAPTURE_ONLY?_t(lang,"7 jours premium offerts · juste ton email","7 days premium on us · just your email","7 días premium gratis · solo tu email"):_t(lang,"Pass dès 7,99 € · paiement unique, sans abonnement","Pass from €7.99 · one-time, no subscription","Pase desde 7,99 € · pago único, sin suscripción")}
             </div>
           </button>
           <div style={{textAlign:"center",marginTop:13,font:"600 10.5px/1 system-ui,sans-serif",color:"rgba(234,247,244,.5)",letterSpacing:".015em"}}>
@@ -3142,7 +3146,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           <div style={{marginTop:14,padding:"14px 16px",borderRadius:14,
             border:`1px solid ${C.gold}`,background:"rgba(245,158,11,.07)"}}>
             <div style={{fontSize:12.5,fontWeight:700,color:C.gold,letterSpacing:".01em",marginBottom:8}}>
-              {_t(lang,"4,99 € · 7 jours","€4.99 · 7 days","4,99 € · 7 días")}
+              {_t(lang,"7,99 € · 7 jours","€7.99 · 7 days","7,99 € · 7 días")}
             </div>
             <div style={{fontSize:13,color:"rgba(255,255,255,.82)",lineHeight:1.35,marginBottom:10}}>
               {_t(lang,
@@ -3336,7 +3340,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           {!PAY_CAPTURE_ONLY&&PAY_PROVIDER==="mollie"&&(()=>{
             const w=walletAvail()
             if(!w.apple&&!w.google)return null
-            const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?499:499)
+            // Repli = Trip Pass (offre validée 2026-11-09 : 7,99 € / $8.99).
+            const cents = passCtxRef.current?.cents ?? (PAY_CUR==="usd"?899:799)
             const amountStr = (cents/100).toFixed(2) + (PAY_CUR==="usd"?" $":" €")
             // Ordre : device natif en premier
             const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent)

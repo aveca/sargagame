@@ -52,7 +52,7 @@ const COPY={
     exit:"Voir ma plage — gratuit", exitSub:"Vous gérez un rivage ? → Espace pro",
     foot:"Le verdict reste 100 % donnée mesurée, l'argent ne touche jamais la mesure. Les paliers sous la ligne de flottaison ne sont ni vendus ni promis tant qu'on ne sait pas les mesurer.",
     tiers:[
-      {market:"B2C · voyageurs",              value:"Votre plage aujourd'hui : mer propre ou pas.",   line:"Le verdict du jour, gratuit. Pass séjour dès 4,99 €.", prices:["4,99 €"], cta:"Voir ma plage — gratuit"},
+      {market:"B2C · voyageurs",              value:"Votre plage aujourd'hui : mer propre ou pas.",   line:"Le verdict du jour, gratuit. Pass séjour dès 7,99 €.", prices:["7,99 €"], cta:"Voir ma plage — gratuit"},
       {market:"Hôtels & clubs de plage",       value:"L'état de vos plages sur votre site, daté.",     line:"79 €/mois ou 690 €/an · essai 30 j sans carte.", prices:["79 €/mois","690 €/an"], cta:"Essayer 30 jours"},
       {market:"Mairies & offices de tourisme", value:"Toute la commune, baie par baie.",               line:"L'accès Territoire self-serve se met en place — dites-nous où vous en êtes.", note:"accès self-serve en préparation"},
       {market:"Immobilier côtier",             value:"Lire l'exposition d'un rivage dans le temps.",   line:"Pas encore mesuré → pas encore promis."},
@@ -77,7 +77,7 @@ const COPY={
     exit:"See my beach — free", exitSub:"You manage a shore? → Pro space",
     foot:"The verdict stays 100% measured data, money never touches the measurement. The tiers below the waterline are neither sold nor promised until we can measure them.",
     tiers:[
-      {market:"B2C · travellers",             value:"Your beach today: clean water or not.",           line:"Today's verdict, free. Trip pass from $5.99.", prices:["$5.99"], cta:"See my beach — free"},
+      {market:"B2C · travellers",             value:"Your beach today: clean water or not.",           line:"Today's verdict, free. Trip pass from $8.99.", prices:["$8.99"], cta:"See my beach — free"},
       {market:"Hotels & beach clubs",         value:"Your beaches' status on your own site, dated.",   line:"$89/mo or $790/yr · 30-day trial, no card.", prices:["$89/mo","$790/yr"], cta:"Start 30 days"},
       {market:"Town halls & tourism offices", value:"The whole town, bay by bay.",                     line:"Self-serve Territory access is being built — tell us where you stand.", note:"self-serve access in the works"},
       {market:"Coastal real estate",          value:"Read a shore's exposure over time.",              line:"Not measured yet → not promised yet."},

@@ -2,36 +2,47 @@
 // Génère la page /premium/ pour une région donnée.
 //
 // SOURCE DE VÉRITÉ DES PRIX : le serveur.
-//   • public/api/mollie.php          → $passPrices (EUR/USD) + surcharge USD +15 %
+//   • public/api/mollie.php          → $passPrices (EUR/USD)
+//   • public/api/mollie-lib.php      → mol_pass_prices() (grille de livraison)
 //   • public/api/create-checkout.php → $ALLOWED_CENTS (anti-tampering)
 //   • workers/sargagame/index.js     → PASS_PRICES / DAYS_TABLE
+//   • workers/sg-payments/index.js   → PASS_PRICES (serveur de paiement Mollie)
 // La parité est verrouillée par tests/unit/price-parity.test.cjs.
 //
 // Aucun secret n'est stocké ici ; la page appelle l'endpoint /api/mollie.php existant.
 //
-// RÈGLE DE FONDERIE (identique à src/lib/pricing.js) :
-//   • le serveur VALIDE le montant de BASE puis APPLIQUE la surcharge USD
-//     de haute saison (+15 %, juin→novembre, SAUF trip7) ;
-//   • le client ENVOIE la base et AFFICHE le montant effectif.
-//   → envoyer 1379¢ en USD serait REJETÉ (montant hors base autorisée) ;
-//     afficher 11,99 $ alors que 13,79 $ est débité serait une divergence.
+// ── OFFRE B2C VALIDÉE (2026-11-09) ───────────────────────────────────────────
+//   trip7  → 7,99 €   / $8.99   (7 jours)
+//   p30   → 14,99 €  / $16.99  (30 jours — produit mis en avant)
+//   season→ 24,99 €  / $27.99  (210 jours)
+// Montants identiques à ceux du worker de paiement EN PRODUCTION (sg-payments).
+//
+// ⚠️ 2026-11-09 — PLUS DE SURCHARGE USD DE HAUTE SAISON (+15 %).
+// Elle a été retirée côté serveur : le montant affiché est EXACTEMENT le
+// montant débité. Un client qui voyait « 16,99 $ (+15 %) » et payait 19,54 $
+// avait une divergence affichage/débit — c'est exactement ce que cette
+// suppression supprime.
 'use strict';
 
 // Passs B2C — paiement unique, JAMAIS d'abonnement.
-//   eur : prix serveur exact (mollie.php $passPrices).
-//   usd : p30 = 11.99 (mollie.php) ; trip7 = 5.99 (allowlist create-checkout.php
-//         USD = [599]) ; season / sos = null → NON commercialisés en USD
-//         (le serveur n'a pas de montant déterministe → pas d'offre affichable).
+//   eur : prix serveur exact (mollie.php $passPrices + workers/sg-payments).
+//   usd : idem (serveur live PASS_PRICES).
+//
+// ⚠️ 2026-11-09 — le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du
+// parcours client : il n'est plus affiché, plus vendu, plus créable côté
+// serveur. La LIVRAISON des paiements `sos` DÉJÀ encaissés reste possible
+// (backfill contrôlé + webhook) : encaisser sans livrer serait un trou de
+// confiance. Ne pas réintroduire `sos` dans OFFERS.
 const OFFERS = Object.freeze([
-  { pass: 'trip7', cents: 499, cur: 'EUR', price: '4,99 €', days: 7 },
+  { pass: 'trip7', cents: 799, cur: 'EUR', price: '7,99 €', days: 7 },
   { pass: 'p30',  cents: 1499, cur: 'EUR', price: '14,99 €', days: 30, best: true },
-  { pass: 'season', cents: 1999, cur: 'EUR', price: '19,99 €', days: 210 },
-  { pass: 'sos',   cents: 100, cur: 'EUR', price: '1,00 €', days: 1 },
+  { pass: 'season', cents: 2499, cur: 'EUR', price: '24,99 €', days: 210 },
 ]);
 
 const USD_OFFERS = Object.freeze([
-  { pass: 'trip7', cents: 599, cur: 'USD', price: '$5.99', days: 7 },
-  { pass: 'p30',  cents: 1199, cur: 'USD', price: '$11.99', days: 30, best: true },
+  { pass: 'trip7', cents: 899, cur: 'USD', price: '$8.99', days: 7 },
+  { pass: 'p30',  cents: 1699, cur: 'USD', price: '$16.99', days: 30, best: true },
+  { pass: 'season', cents: 2799, cur: 'USD', price: '$27.99', days: 210 },
 ]);
 
 // Domaines à facturation USD (miroir de regions/*.json currency = "USD").
@@ -43,20 +54,15 @@ const USD_DOMAINS = Object.freeze([
   'sargassumbarbados.com',
 ]);
 
-// Surcharge USD de haute saison (mollie.php) : juin→novembre, sauf trip7.
-const USD_HIGH_SEASON_MONTHS = Object.freeze([6, 7, 8, 9, 10, 11]);
-const USD_HIGH_SEASON_RATE = 0.15;
-
-function isUsdHighSeason(date) {
-  const m = (date || new Date()).getMonth() + 1;
-  return USD_HIGH_SEASON_MONTHS.indexOf(m) !== -1;
-}
-
-// Montant EFFECTIF débité (centimes) = base +15 % si USD hors saison haute.
-function effectiveCents(offer, date) {
-  if (offer.cur !== 'USD' || offer.pass === 'trip7') return offer.cents;
-  if (!isUsdHighSeason(date)) return offer.cents;
-  return Math.round(offer.cents * (1 + USD_HIGH_SEASON_RATE));
+/**
+ * Montant EFFECTIF débité (centimes).
+ *
+ * ⚠️ 2026-11-09 : il n'y a PLUS de surcharge USD de haute saison — le
+ * serveur live facture le montant affiché. La fonction est conservée pour
+ * l'API (tests, imports) mais renvoie le montant de catalogue tel quel.
+ */
+function effectiveCents(offer) {
+  return offer.cents;
 }
 
 const T = {
@@ -74,12 +80,11 @@ const T = {
     bad: 'Entrez un email valide.',
     err: 'Paiement impossible. Réessayez.',
     legal: 'Accès à durée fixe — sans reconduction automatique.',
-    highSeason: (base, eff) => `Tarif haute saison (+15 %) déjà inclus : ${eff} (base ${base})`,
   },
   en: {
     lang: 'en',
     title: (n) => `${n} sargassum forecasts — Premium access`,
-    meta: (n) => `Full sargassum forecasts, beach by beach, in ${n}. Day +1 to +7 and alerts. From €4.99.`,
+    meta: (n) => `Full sargassum forecasts, beach by beach, in ${n}. Day +1 to +7 and alerts. From €7.99.`,
     h1: (n) => `See the state of every ${n} beach before you go`,
     sub: '7-day forecasts · push alerts · live map · no ads',
     cta: (p, d) => `Access — ${p} (${d} days)`,
@@ -90,12 +95,11 @@ const T = {
     bad: 'Enter a valid email.',
     err: 'Payment failed. Try again.',
     legal: 'Fixed-term access — no automatic renewal.',
-    highSeason: (base, eff) => `High-season rate (+15%) already included: ${eff} (base ${base})`,
   },
   es: {
     lang: 'es',
     title: (n) => `Pronóstico de sargazo ${n} — Acceso premium`,
-    meta: (n) => `Pronósticos de sargasso completos, playa por playa, en ${n}. De J+1 a J+7 y alertas. Desde 4,99 €.`,
+    meta: (n) => `Pronósticos de sargasso completos, playa por playa, en ${n}. De J+1 a J+7 y alertas. Desde 7,99 €.`,
     h1: (n) => `Ve el estado de cada playa de ${n} antes de ir`,
     sub: 'Pronóstico 7 días · alertas push · mapa en directo · sin publicidad',
     cta: (p, d) => `Acceder — ${p} (${d} días)`,
@@ -106,7 +110,6 @@ const T = {
     bad: 'Ingresa un email válido.',
     err: 'Pago imposible. Vuelve a intentarlo.',
     legal: 'Acceso por tiempo fijo — sin renovación automática.',
-    highSeason: (base, eff) => `Tarifa alta temporada (+15 %) ya incluida: ${eff} (base ${base})`,
   },
 };
 
@@ -126,7 +129,8 @@ function money(cents, cur, lang) {
 }
 
 // BLOCS DE PRIX EMBARQUÉS (JSON) : la page choisit son catalogue selon le
-// domaine ET applique la surcharge USD de haute saison au moment de l'affichage.
+// domaine. Le montant affiché EST le montant débité (plus de surcharge
+// saisonnière depuis le 2026-11-09).
 const CATALOGUE = {
   eur: OFFERS.map((o) => ({ pass: o.pass, cents: o.cents, cur: o.cur, price: o.price, days: o.days, best: !!o.best })),
   usd: USD_OFFERS.map((o) => ({ pass: o.pass, cents: o.cents, cur: o.cur, price: o.price, days: o.days, best: !!o.best })),
@@ -137,8 +141,6 @@ function buildPage(region) {
   const lang = Tl.lang;
   const catalogueJson = JSON.stringify(CATALOGUE);
   const usdDomainsJson = JSON.stringify(USD_DOMAINS);
-  const monthsJson = JSON.stringify(USD_HIGH_SEASON_MONTHS);
-  const rate = USD_HIGH_SEASON_RATE;
 
   return `<!DOCTYPE html>
 <html lang="${Tl.lang}">
@@ -197,23 +199,17 @@ footer{margin-top:40px;padding:24px;color:var(--muted);font-size:.85rem;border-t
 <script>
 const CATALOGUE = ${catalogueJson};
 const USD_DOMAINS = ${usdDomainsJson};
-const HIGH_MONTHS = ${monthsJson};
-const RATE = ${rate};
 const IS_USD = USD_DOMAINS.indexOf(String(location.hostname).toLowerCase()) !== -1;
 const CUR = IS_USD ? 'usd' : 'eur';
 const OFFERS = CATALOGUE[CUR];
-const HI = IS_USD && HIGH_MONTHS.indexOf(new Date().getMonth() + 1) !== -1;
 function money(c){ const v = c / 100; return CUR === 'usd' ? '$' + v.toFixed(2) : (${JSON.stringify(lang)} === 'en' ? '€' + v.toFixed(2) : v.toFixed(2).replace('.', ',') + ' €'); }
-function eff(o){ return (CUR === 'usd' && o.pass !== 'trip7' && HI) ? Math.round(o.cents * (1 + RATE)) : o.cents; }
 function label(o){ return o.days + (${JSON.stringify(lang)} === 'en' ? ' days' : ${JSON.stringify(lang)} === 'es' ? ' días' : ' jours'); }
-function buyLabel(o){ return ${JSON.stringify(Tl.buy('X', 'Y'))}.replace('X', String(o.days)).replace('Y', money(eff(o))); }
+function buyLabel(o){ return ${JSON.stringify(Tl.buy('X', 'Y'))}.replace('X', String(o.days)).replace('Y', money(o.cents)); }
 const host = document.getElementById('offers');
 host.innerHTML = OFFERS.map(function(o){
-  const base = money(o.cents), e = money(eff(o));
-  const hi = (eff(o) !== o.cents) ? '<div class="hi on">' + ${JSON.stringify(Tl.highSeason('BASE', 'EFF'))}.replace('BASE', base).replace('EFF', e) + '</div>' : '';
   return '<div class="offer ' + (o.best ? 'best' : '') + '">' +
-    '<div class="price">' + e + '</div>' +
-    '<div class="days">' + label(o) + '</div>' + hi +
+    '<div class="price">' + money(o.cents) + '</div>' +
+    '<div class="days">' + label(o) + '</div>' +
     '<button class="buy" data-pass="' + o.pass + '" data-cents="' + o.cents + '" data-cur="' + o.cur + '">' + buyLabel(o) + '</button>' +
     (o.best ? '<span class="badge">' + ${JSON.stringify(Tl.best)} + '</span>' : '') +
     '</div>';
@@ -260,4 +256,4 @@ btn.addEventListener('click', async function() {
 </html>`;
 }
 
-module.exports = { buildPage, OFFERS, USD_OFFERS, USD_DOMAINS, effectiveCents, isUsdHighSeason, money };
+module.exports = { buildPage, OFFERS, USD_OFFERS, USD_DOMAINS, effectiveCents, money };
