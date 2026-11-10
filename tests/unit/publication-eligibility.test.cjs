@@ -123,6 +123,6 @@ check(dataRefresh.includes("steps.publish.outputs.changed == 'true'"), 'data-ref
 check(dataRefresh.includes('[ "$rc" -ne 0 ] && grep -q \'observation hors SLA\''), 'a strict over-SLA rejection is classified as BLOCKED_STALE_SOURCE');
 const daily = read('.github/workflows/daily-copernicus.yml');
 check(daily.includes('[ "$rc" -ne 0 ] && grep -q \'observation hors SLA\''), 'daily-copernicus uses the same exit-code gate');
-check(!/console\.warn\([\s\S]{0,280}observation hors SLA/.test(verify), 'the allowed-publication warning does not contain the blocking phrase');
+check(!verify.includes('publication autorisée, ce n\'est pas une régression'), 'the publication gate contains no over-SLA allowance warning');
 
 console.log(`PUBLICATION_ELIGIBILITY_AND_SALES_EMAIL_TESTS PASS (${assertions} assertions)`);
