@@ -79,6 +79,8 @@ check(/sg_b2b_emit_conversion\(\$id, 'pro_annual', 'annual'\)/.test(hook),
 check(/sg_b2b_emit_conversion\(\$subscription->id, \$planKey, 'monthly'\)/.test(hook),
   'le mensuel émet la conversion (déduplonnée par identifiant d\'abonnement)')
 check(/in_array\(\$source, \['b2b_annual'\], true\)/.test(hook) &&
+      /mol_paylink_classify/.test(hook) &&
+      /\$isApprovedAnnual\s*&&\s*!\$pass/.test(hook) &&
       /in_array\(\$planKey, \['pro_monthly', 'brief_monthly'\], true\)/.test(hook),
   'les deux plans B2B payables sont couverts')
 
