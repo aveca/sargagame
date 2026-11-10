@@ -121,8 +121,8 @@ export default {
     // accepté QUE pour des paiements DÉJÀ CRÉÉS (webhook / payment_status),
     // jamais à la création : create_payment le refuse explicitement.
     const LEGACY_PASS_ALIASES = Object.freeze({ p7: "trip7" });
-    // Montants historiques acceptés pour un code legacy. Le tarif courant
-    // (trip7 à 4,99) n'est PAS accepté pour un code legacy.
+    // Montants historiques acceptés pour un code legacy (`p7`). Ils ne
+    // s'appliquent qu'aux paiements DÉJÀ CRÉÉS avant la coupure du 2026-08-01.
     const LEGACY_PRICES = Object.freeze({ trip7: { EUR: [7.99], USD: [5.99] } });
     // Date de coupure UNIQUE : un ancien pass n'est valable que pour un
     // paiement créé STRICTEMENT avant cette date. Date absente, invalide ou
@@ -130,19 +130,34 @@ export default {
     const LEGACY_CUTOFF_DATE = "2026-08-01T00:00:00Z";
     // Grille de CRÉATION (serveur) — le pass `sos` (1 €, rapport 24 h) a été
     // RETIRÉ du parcours client : il n'est plus vendable, donc plus creatable.
+    //
+    // OFFRE VALIDÉE 2026-11-09 (miroir EXACT du serveur de paiement live
+    // workers/sg-payments) : trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99
+    // · season = 24,99 € / $27.99. Aucun surcoût saisonnier (+15 %) : le
+    // montant affiché est le montant facturé.
     const PASS_PRICES = Object.freeze({
-      p30:{EUR:14.99,USD:11.99},
-      trip7:{EUR:4.99,USD:null},
-      season:{EUR:19.99,USD:null}
+      p30:{EUR:14.99,USD:16.99},
+      trip7:{EUR:7.99,USD:8.99},
+      season:{EUR:24.99,USD:27.99}
     });
     // Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
     // sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
     const FULFILL_PRICES = Object.freeze({
-      p30:{EUR:14.99,USD:11.99},
-      trip7:{EUR:4.99,USD:null},
-      season:{EUR:19.99,USD:null},
+      p30:{EUR:14.99,USD:16.99},
+      trip7:{EUR:7.99,USD:8.99},
+      season:{EUR:24.99,USD:27.99},
       sos:{EUR:1.00,USD:null}
     });
+    // Montants de l'ANCIENNE offre — acceptés UNIQUEMENT pour un paiement
+    // DÉJÀ encaissé avant le changement d'offre du 2026-11-09 (date de
+    // création vérifiable). Sans cette fenêtre, les ventes payées à l'ancien
+    // tarif ne seraient jamais livrées (argent encaissé, accès jamais délivré).
+    const HISTORICAL_PRICES = Object.freeze({
+      p30:{EUR:[14.99],USD:[11.99]},
+      trip7:{EUR:[4.99],USD:[5.99]},
+      season:{EUR:[19.99],USD:[]}
+    });
+    const OFFER_CUTOFF_DATE = "2026-11-09T00:00:00Z";
     // Résolution du pass : code canonique + indicateur legacy.
     const resolvePass = (payment) => {
       const raw=String(payment?.metadata?.pass||"");
@@ -193,9 +208,16 @@ export default {
         if (cents <= 50 || cents >= upper) return {ok:false,reason:"amount_out_of_range"};
       } else {
         const acceptable=[Math.round(expected*100)];
-        // The create_payment route applies a 15% USD seasonal adjustment to
-        // passes other than trip7. Allow the adjusted amount on a delayed webhook.
-        if (currency === "USD" && pass !== "trip7") acceptable.push(Math.round(acceptable[0]*1.15));
+        // Montant de l'ancienne offre : accepté UNIQUEMENT pour un paiement
+        // créé avant la coupure du 2026-11-09 (date vérifiable). Un paiement
+        // NOUVEL au tarif ancien reste refusé.
+        const historical=HISTORICAL_PRICES[pass]||{};
+        if (Object.prototype.hasOwnProperty.call(historical,currency)) {
+          const created=parseCreatedAt(payment.createdAt);
+          if (Number.isFinite(created) && created < Date.parse(OFFER_CUTOFF_DATE)) {
+            for (const n of historical[currency]) acceptable.push(Math.round(n*100));
+          }
+        }
         if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
       }
       return {ok:true,pass,currency};
@@ -421,12 +443,17 @@ export default {
           // paiement, même avec un montant valide : les tarifs historiques
           // (EUR 7,99 / USD 5,99) ne s'appliquent qu'aux paiements déjà créés.
           if(pass && Object.prototype.hasOwnProperty.call(LEGACY_PASS_ALIASES,pass)) return out({error:"Prix invalide"},400);
+          // ⚠️ 2026-11-09 — SOS (1 €, rapport 24 h) : offre RETIRÉE du parcours
+          // client. La création est refusée en 410 « offre_indisponible » (même
+          // contrat que le serveur live sg-payments), pas en 400 flou.
+          if(pass==="sos" || d.source==="sos_plage") return out({error:"offre_indisponible"},410);
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
           const prices=PASS_PRICES;
           let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
           if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
           if(!valid)return out({error:"Prix invalide"},400);
-          if(currency==="USD"&&pass&&pass!=="trip7"){const m=new Date().getUTCMonth()+1;if(m>=6&&m<=11)cents=Math.round(cents*1.15)}
+          // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) :
+          // le serveur live facture le montant affiché (montant validé ci-dessus).
           const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";
           const meta=Object.assign({},d.metadata||{},{source:d.source||"unknown",pass:pass||"",email:String(d.email||""),lang:d.lang||"fr"});
           const body={amount:{value:(cents/100).toFixed(2),currency},description:d.description||(pass?"Sargasses Pass "+pass:"Sargasses"),redirectUrl:d.redirectUrl||base+"/?mollie_return=1",webhookUrl:d.webhookUrl||base+"/api/mollie-webhook.php",metadata:meta,locale:d.locale||(currency==="USD"?"en_US":"fr_FR")};

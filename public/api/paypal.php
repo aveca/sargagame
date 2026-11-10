@@ -103,11 +103,13 @@ function pp_api($method, $path, $body = null, $token = null) {
 
 // Devise + montants autorises PAR REGION (anti-tampering, meme allowlist que
 // create-checkout.php pay_once). Forge d'un montant hors-liste -> rejet.
+// ⚠️ 2026-11-09 — OFFRE VALIDÉE : EUR 799/1499/2499 (7,99/14,99/24,99 €)
+// et USD 899/1699/2799 ($8.99/$16.99/$27.99). Aucun surcoût saisonnier.
 function pp_currency_and_allowed($island) {
     $usd = in_array($island, ['florida', 'rivieramaya', 'puntacana'], true);
     return [
         $usd ? 'USD' : 'EUR',
-        $usd ? [599] : [799, 999, 1499, 1999, 2499],
+        $usd ? [899, 1699, 2799] : [799, 1499, 2499],
     ];
 }
 

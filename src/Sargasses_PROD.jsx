@@ -1851,10 +1851,11 @@ function pricePerDay(){
 // par create-region-payment-links.cjs). Jamais branché sur effectivePlan /
 // stripeLinkFor (chemin funnel protégé) : chemin de checkout séparé.
 const LINK_TRIP=REGION_PAY?(REGION_PAY.tripPass||""):""
-export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$5.99"):null
-// Montant du Trip Pass en cents, dérivé du prix région ("$5.99" → 599). Doit
+// Prix du Trip Pass affiché (offre validée 2026-11-09 : trip7 = 7,99 € / $8.99).
+export const PRICE_TRIP=REGION_PAY?(REGION.pricing?.tripPass||"$8.99"):null
+// Montant du Trip Pass en cents, dérivé du prix région ("$8.99" → 899). Doit
 // matcher l'allowlist serveur create-checkout.php action:pay_once ($USD_ISLANDS
-// → [599]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
+// → [899]). 0 si non-parsable → startTripPass devient inerte (jamais d'appel
 // avec un montant hors allowlist qui se ferait rejeter 400).
 export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(/[^\d.]/g,""));return Number.isFinite(n)&&n>0?Math.round(n*100):0})()
 // ── Offres EUR (MQ/GP) en MIROIR de l'US — Trip Pass 7j + Annuel ──────────────
@@ -1863,12 +1864,12 @@ export const TRIP_CENTS=(()=>{const n=parseFloat(String(PRICE_TRIP||"").replace(
 // n'est lisible que pour les NOUVELLES régions). Les valeurs miroir du bloc
 // `pricing` ajouté à regions/mq.json + gp.json (source de vérité config).
 //
-// TRIP PASS EUR : accès UNIQUE 7 jours, 4,99 € one-time (miroir du tripPass USD
-// $5.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
-// devise EUR. 499¢ DOIT être dans l'allowlist serveur pay_once EUR
-// (create-checkout.php → [499, 799, ...]). EUR uniquement (!IS_NEW_REGION).
-export const EUR_TRIP_CENTS=499
-export const PRICE_TRIP_EUR=getLang()==="en"?"€4.99":"4,99 €"
+// TRIP PASS EUR : accès UNIQUE 7 jours, 7,99 € one-time (miroir du tripPass USD
+// $8.99). Chemin de checkout SÉPARÉ de l'abo (passCtxRef + action:pay_once),
+// devise EUR. 799¢ DOIT être dans l'allowlist serveur pay_once EUR
+// (create-checkout.php → [799, 1499, 2499]). EUR uniquement (!IS_NEW_REGION).
+export const EUR_TRIP_CENTS=799
+export const PRICE_TRIP_EUR=getLang()==="en"?"€7.99":"7,99 €"
 // ANNUEL EUR : 49 €/an (miroir du yearly USD $79). DÉJÀ entièrement câblé côté
 // code (hasAnnual=true pour EUR → toggle annuel, défaut=annuel, serveur 'subscribe'
 // résout prices['annual'] depuis stripe-config.php). Seul l'affichage du prix

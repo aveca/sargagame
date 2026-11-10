@@ -7,42 +7,81 @@ var ALLOWED_ORIGINS = [
   "https://sargasses-guadeloupe.com",
   "https://sargassumpuntacana.com",
   "https://sargassummiami.com",
-  "https://sargassumcancun.com"
+  "https://sargassumcancun.com",
+  "https://sargazotulum.com"
 ];
 var ALLOWED_HOSTS = [
   "sargasses-martinique.com",
   "sargasses-guadeloupe.com",
   "sargassumpuntacana.com",
   "sargassummiami.com",
-  "sargassumcancun.com"
+  "sargassumcancun.com",
+  "sargazotulum.com"
 ];
 // Grille de CRÉATION — les passes commercialement ouverts.
+// OFFRE VALIDÉE 2026-11-09 (miroir EXACT du serveur live et de
+// public/api/mollie.php $passPrices) :
+//   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
+// `monthly` / `annual` = abonnements B2C legacy (4,99 €/mois, 49 €/an).
 // Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours client
-// (2026-11-09) : il n'est plus vendable, donc plus créable.
+// (2026-11-09) : il n'est plus vendable, donc plus créable (410).
 var PASS_PRICES = {
-  p30: { EUR: 14.99, USD: 11.99 },
-  trip7: { EUR: 4.99, USD: null },
-  season: { EUR: 19.99, USD: null }
+  p30: { EUR: 14.99, USD: 16.99 },
+  trip7: { EUR: 7.99, USD: 8.99 },
+  season: { EUR: 24.99, USD: 27.99 },
+  monthly: { EUR: 4.99, USD: 4.99 },
+  annual: { EUR: 49, USD: 49 }
 };
 // Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés :
 // sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
 // La CRÉATION reste interdite (cf. PASS_PRICES ci-dessus).
 var FULFILL_PRICES = {
-  p30: { EUR: 14.99, USD: 11.99 },
-  trip7: { EUR: 4.99, USD: null },
-  season: { EUR: 19.99, USD: null },
-  sos: { EUR: 1.0, USD: null }
+  p30: { EUR: 14.99, USD: 16.99 },
+  trip7: { EUR: 7.99, USD: 8.99 },
+  season: { EUR: 24.99, USD: 27.99 },
+  monthly: { EUR: 4.99, USD: 4.99 },
+  annual: { EUR: 49, USD: 49 },
+  sos: { EUR: 1.00, USD: null }
+};
+// Montants de l'ANCIENNE offre B2C — acceptés UNIQUEMENT pour un paiement
+// DÉJÀ encaissé avant le changement d'offre du 2026-11-09 (date de création
+// vérifiable). Un paiement NOUVEL au tarif ancien reste refusé.
+var HISTORICAL_PASS_PRICES = {
+  p30: { EUR: [14.99], USD: [11.99] },
+  trip7: { EUR: [4.99], USD: [5.99] },
+  season: { EUR: [19.99], USD: [] }
+};
+var OFFER_CUTOFF_DATE = "2026-11-09T00:00:00Z";
+var B2C_SUB_PLANS = {
+  monthly: { pass: "monthly", amount: 4.99, currency: "EUR", description: "Sargasses Premium \u2014 mensuel (4,99 \u20AC)", interval: "1 month" },
+  annual: { pass: "annual", amount: 49, currency: "EUR", description: "Sargasses Premium \u2014 annuel (49 \u20AC)", interval: "12 months" }
 };
 var B2B_PLANS = {
   pro_monthly: { amount: 79, currency: "EUR", description: "Sargasses Pro \u2014 mensuel (79 \u20AC/mois)", interval: "1 month" },
   brief_monthly: { amount: 29, currency: "EUR", description: "Sargasses Brief \u2014 mensuel (29 \u20AC/mois)", interval: "1 month" },
   pro_monthly_usd: { amount: 89, currency: "USD", description: "Sargassum Pro \u2014 monthly ($89/mo)", interval: "1 month" },
-  brief_monthly_usd: { amount: 39, currency: "USD", description: "Sargassum Brief \u2014 monthly ($39/mo)", interval: "1 month" }
+  brief_monthly_usd: { amount: 39, currency: "USD", description: "Sargassum Brief \u2014 monthly ($39/mo)", interval: "1 month" },
+  pro_annual: { amount: 690, currency: "EUR", description: "Sargasses Pro \u2014 annuel (690 \u20AC/an)", interval: null },
+  pro_annual_usd: { amount: 790, currency: "USD", description: "Sargassum Pro \u2014 yearly ($790/yr)", interval: null }
 };
 // Read-only verified live b2b_subscriptions.plan CHECK: free, alert, dashboard, enterprise.
 // No approved mapping currently exists from B2B_PLANS keys to this schema contract.
 var B2B_SUBSCRIPTION_SCHEMA_PLANS = new Set(["free", "alert", "dashboard", "enterprise"]);
-var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, sos: 1 };
+var PASS_DURATIONS = { p30: 30, trip7: 7, season: 210, monthly: 30, annual: 365, sos: 1 };
+var PLAN_ALIASES = {
+  premium_monthly: "monthly",
+  premium_mo: "monthly",
+  premium_yearly: "annual",
+  premium_yr: "annual",
+  yearly: "annual",
+  pro: "pro_monthly",
+  pro_yearly: "pro_annual"
+};
+function normalizePlanKey(raw) {
+  const k = String(raw || "").trim();
+  return PLAN_ALIASES[k] || k;
+}
+__name(normalizePlanKey, "normalizePlanKey");
 var CLICK_REDIRECT_HOSTS = ["sargasses-martinique.com", "sargasses-guadeloupe.com", "sargassumpuntacana.com", "sargassummiami.com", "sargassumcancun.com"];
 var COLLECT_HOSTS = [
   "sargasses-martinique.com",
@@ -664,6 +703,12 @@ var index_default = {
       if (request.method === "GET") return new Response(JSON.stringify({ ok: true }), { headers: { "Content-Type": "application/json" } });
       return handleWebhook(request, env, ctx);
     }
+    if (path === "/api/mollie-return") {
+      return handleMollieReturn(request, env, ctx);
+    }
+    if (path === "/api/mollie-pay" || path === "/api/mollie-pay/") {
+      return handleMolliePayPage(request, env);
+    }
     if (path === "/api/widget-token.php") {
       const k = url.searchParams.get("k") || "";
       const payload = await widgetVerify(env, k);
@@ -722,7 +767,7 @@ var index_default = {
       return handleUnsubscribe(request, env);
     }
     if (path === "/api/mollie-health") {
-      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "sprint15", routes: 44 + 1 }), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-b2c", routes: 48 }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/api/mollie-kv-test") {
       const k = env.TRANSIENTS;
@@ -745,7 +790,7 @@ var index_default = {
       }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/api/mollie-health") {
-      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "sprint15", routes: 44 + 1 }), { headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-noso", routes: 48 }), { headers: { "Content-Type": "application/json" } });
     }
     if (path === "/collect.php") {
       return handleCollect(request, env, ctx);
@@ -905,10 +950,23 @@ var index_default = {
     if (path.startsWith("/api/partner/")) {
       return handlePartnerCommerce(request, env, ctx, path);
     }
+    if (path === "/api/create-checkout.php" || path === "/api/paypal.php") {
+      if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors(request) });
+      if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only", provider: "mollie" }), { status: 405, headers: cors(request) });
+      return handleLegacyCheckout(request, env);
+    }
     if (path.endsWith(".php")) {
       return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { "Content-Type": "application/json", "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store" } });
     }
-    if (request.method === "GET" && path === "/api/b2b-paylinks.json") return fetch(request);
+    if (request.method === "GET" && path === "/api/b2b-paylinks.json") {
+      const host = request.headers.get("Host") || ALLOWED_HOSTS[0];
+      return new Response(JSON.stringify({
+        links: {
+          pro_annual: { url: `https://${host}/api/mollie-pay?plan=pro_annual`, amount: 690, currency: "EUR" },
+          pro_annual_usd: { url: `https://${host}/api/mollie-pay?plan=pro_annual_usd`, amount: 790, currency: "USD" }
+        }
+      }), { headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store", ...cors(request) } });
+    }
     return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: { "Content-Type": "application/json" } });
   },
   async scheduled(event, env, ctx) {
@@ -1413,6 +1471,9 @@ async function handleMollie(request, env) {
     const profileId = env.MOLLIE_PROFILE_ID || "pfl_t8KCk4Cm2C";
     const host = request.headers.get("Host") || ALLOWED_HOSTS[0];
     if (action === "create_payment") {
+      if (String(body.pass || "") === "sos" || String(body.source || "") === "sos_plage") {
+        return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: h });
+      }
       const { pass, email, source, description, method: payMethod, cardToken, cents, amount: amountObj, locale, metadata: userMeta, applePayPaymentToken, redirectUrl: userRedirect, referredBy, myReferralCode, lang } = body;
       let amount;
       let amountVal;
@@ -1442,10 +1503,6 @@ async function handleMollie(request, env) {
         if (expected !== null && Math.abs(amountVal - expected) >= 0.02) throw new Error("Prix invalide");
         if (expected === null && (amountVal <= 0.5 || amountVal >= 50)) throw new Error("Prix invalide");
       } else if (amountVal <= 0 || amountVal >= 300) throw new Error("Prix invalide");
-      if (currency === "USD" && pass && pass !== "trip7") {
-        const m = (/* @__PURE__ */ new Date()).getMonth() + 1;
-        if (m >= 6 && m <= 11) amount.value = (parseFloat(amount.value) * 1.15).toFixed(2);
-      }
       const metadata = userMeta || {};
       metadata.source = source || "unknown";
       metadata.pass = pass || "";
@@ -1464,47 +1521,84 @@ async function handleMollie(request, env) {
       }
       if (userId) metadata.user_id = userId;
       const kind = pass ? "pass" : "pro";
-      const redirectUrl = userRedirect || `https://${host}/payment/good.html?kind=${kind}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(pass || "annual")}`;
+      const returnRef = crypto.randomUUID();
+      const backUrl = userRedirect || `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(pass || "annual")}`;
+      metadata.return_ref = returnRef;
+      const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
       if (pass && email) {
         const idemKey = `mol_${await hashString(email + "|" + pass)}`;
         const ex = await kv(env).get(idemKey);
         if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
         await kv(env).put(idemKey, "1", { expirationTtl: 60 });
       }
-      const pd = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : "Sargasses"), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || "fr_FR" };
+      const pd = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : "Sargasses"), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (currency === "USD" ? "en_US" : "fr_FR") };
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
       if (cardToken) pd.cardToken = cardToken;
       if (payMethod) pd.method = payMethod;
       const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
       return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null }), { headers: h });
     }
     if (action === "create_subscription") {
-      const { plan: planKey, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
-      const plan = B2B_PLANS[planKey];
-      if (!plan) throw new Error(`Plan inconnu: ${planKey}`);
+      const { plan: rawPlan, hosted = true, customerId, email, name, mandateId, method: payMethod, metadata: userMeta } = body;
+      const planKey = normalizePlanKey(rawPlan);
+      const b2c = B2C_SUB_PLANS[planKey];
+      const b2b = B2B_PLANS[planKey];
+      if (!b2c && !b2b) throw new Error(`Plan inconnu: ${rawPlan || ""}`);
+      const plan = b2c || b2b;
       let cid = customerId;
       if (!cid && email) {
         const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
         const existing = (customers._embedded?.customers || []).find((c) => c.email === email);
         if (existing) cid = existing.id;
         else {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: "b2b_monthly_signup" } });
+          const nc = await mollieReq("POST", "v2/customers", apiKey, { email, name: name || "", metadata: { source: b2c ? "b2c_premium_signup" : "b2b_monthly_signup" } });
           cid = nc.id;
         }
       }
       if (!cid) throw new Error("customerId ou email requis");
-      const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-        amount: { value: plan.amount.toFixed(2), currency: plan.currency },
+      if (mandateId) {
+        const sub = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
+          amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
+          description: plan.description,
+          webhookUrl: `https://${host}/api/mollie-webhook`,
+          metadata: { ...userMeta || {}, source: b2c ? "premium_subscription" : "b2b_monthly", plan: planKey, email: email || "", pass: b2c ? b2c.pass : "" },
+          interval: plan.interval || "1 month",
+          mandateId,
+          ...payMethod ? { method: payMethod } : {}
+        });
+        const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
+        if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
+        return new Response(JSON.stringify(result), { headers: h });
+      }
+      const isAnnualB2B = !!(b2b && !b2b.interval);
+      const returnRef = crypto.randomUUID();
+      const metadata = {
+        ...userMeta || {},
+        source: b2c ? (body.source || "premium_subscription") : isAnnualB2B ? "b2b_annual" : "b2b_first",
+        plan: planKey,
+        email: email || "",
+        pass: b2c ? b2c.pass : "",
+        lang: body.lang || "fr",
+        customerId: cid,
+        interval: plan.interval || "",
+        return_ref: returnRef
+      };
+      const backUrl = `https://${host}/?paid=1&kind=${b2c ? "pass" : "pro"}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(planKey)}`;
+      const pd = {
+        amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
         description: plan.description,
+        redirectUrl: `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`,
         webhookUrl: `https://${host}/api/mollie-webhook`,
-        metadata: { ...userMeta || {}, source: "b2b_monthly", plan: planKey },
-        interval: plan.interval,
-        ...mandateId ? { mandateId } : {},
-        ...payMethod ? { method: payMethod } : {}
-      });
-      const result = { subscriptionId: sub.id, customerId: cid, status: sub.status };
-      if (hosted && sub._links?.checkout?.href) result.checkoutUrl = sub._links.checkout.href;
-      return new Response(JSON.stringify(result), { headers: h });
+        metadata,
+        locale: body.locale || "fr_FR",
+        customerId: cid
+      };
+      if (!isAnnualB2B) pd.sequenceType = "first";
+      if (payMethod) pd.method = payMethod;
+      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
+      return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, customerId: cid, user_id: null }), { headers: h });
     }
     if (action === "payment_status") {
       const paymentId = String(body.paymentId || "").trim();
@@ -1515,38 +1609,34 @@ async function handleMollie(request, env) {
       const p = await mollieReq("GET", `v2/payments/${paymentId}`, apiKey);
       const status = p.status || "unknown";
       const paid = ["paid", "settled"].includes(status);
-      const out = { paid, status, paymentId, terminal: ["canceled", "expired", "failed"].includes(status) };
-      // ── Confirmation SERVEUR + attribution des droits (P0 2026-11-09) ─────
-      // La redirection navigateur ne vaut RIEN : l'état ci-dessus est relu
-      // auprès de l'API Mollie. Le droit n'est délivré que si le montant, la
-      // devise et le propriétaire correspondent, et l'écriture est idempotente
-      // (RPC sg_upsert_payment_grant) → un rejeu ne double pas.
-      // Même règle que le webhook ET que public/api/mollie.php (cohérence des
-      // anciens callbacks) : le webhook seul ne doit pas être le point unique
-      // de délivrance, sinon un webhook perdu = argent encaissé sans accès.
+      // ── Contrôle du PROPRIÉTAIRE (P0 2026-11-09) ─────────────────────────
+      // La redirection navigateur ne vaut RIEN : l'état est relu auprès de
+      // l'API Mollie. Mais `payment_status` ne doit pas devenir une source de
+      // fuite : si l'appelant fournit un email, il doit être celui du
+      // paiement. Sans ce contrôle, un identifiant deviné suffit à lire le
+      // pass et l'email d'un client.
+      const metadata = p.metadata && typeof p.metadata === "object" && !Array.isArray(p.metadata) ? p.metadata : {};
+      const requestedEmail = String(body.email || "").trim().toLowerCase();
+      const ownerEmail = String(metadata.email || "").trim().toLowerCase();
+      if (requestedEmail && ownerEmail && ownerEmail !== requestedEmail) {
+        return new Response(JSON.stringify({ error: "payment_owner_mismatch", paid: false, status }), { status: 403, headers: h });
+      }
+      let granted = false;
+      let grant = null;
       if (paid) {
-        const metadata = p.metadata && typeof p.metadata === "object" && !Array.isArray(p.metadata) ? p.metadata : {};
-        const pass = String(metadata.pass || "");
-        const email = String(metadata.email || "");
-        const requestedEmail = String(body.email || "").trim().toLowerCase();
-        if (requestedEmail && email && email.trim().toLowerCase() !== requestedEmail) {
-          return new Response(JSON.stringify({ error: "payment_owner_mismatch", paid: false, status }), { status: 403, headers: h });
+        try {
+          grant = await fulfillPaidPayment(env, p, null, host);
+          granted = !!grant?.granted;
+        } catch (err) {
+          grant = { granted: false, error: String(err?.message || err).slice(0, 80) };
         }
-        const amt = validateMollieAmount(p, pass);
-        if (amt.ok && pass && FULFILL_PRICES[pass]) {
-          try {
-            await grantB2C(env, paymentId, pass, email, metadata, amt.currency);
-            out.granted = true;
-            out.pass = pass;
-            out.passEnd = (Math.floor(Date.now() / 1e3) + (PASS_DURATIONS[pass] || 30) * 86400) * 1000;
-          } catch {
-            out.granted = false;
-            out.grantPending = true;
-          }
-        } else {
-          out.granted = false;
-          out.reason = amt.ok ? "no_eligible_pass" : amt.reason;
-        }
+      }
+      const out = { paid, status, paymentId, terminal: ["canceled", "expired", "failed"].includes(status), granted, grant };
+      // Fin d'accès servie au client : la durée vient de la grille serveur.
+      const passKey = String(metadata.pass || "");
+      if (granted && passKey && PASS_DURATIONS[passKey]) {
+        out.pass = passKey;
+        out.passEnd = (Math.floor(Date.now() / 1e3) + PASS_DURATIONS[passKey] * 86400) * 1000;
       }
       return new Response(JSON.stringify(out), { headers: h });
     }
@@ -1683,7 +1773,8 @@ function parseMollieWebhook(request, raw) {
 __name(parseMollieWebhook, "parseMollieWebhook");
 function classifyPayment(metadata) {
   const source = String(metadata?.source || "");
-  if (source === "b2b_annual") return "b2b_annual";
+  if (source === "b2b_annual" || source === "b2b_espace_annual") return "b2b_annual";
+  if (source === "b2b_first" || source === "b2b_espace_monthly") return "b2b_first";
   if (source === "b2b_subscription") return "b2b_onboarding";
   if (source === "b2b_monthly" || source === "b2b_concierge") return "b2b_subscription_only";
   return "b2c";
@@ -1702,9 +1793,19 @@ function validateMollieAmount(payment, pass) {
     return { ok: true, currency, cents };
   }
   const acceptable = [Math.round(base * 100)];
-  // create_payment applique un ajustement saisonnier de +15 % en USD sur les
-  // pass hors trip7 : le webhook doit accepter le meme montant.
-  if (currency === "USD" && pass !== "trip7") acceptable.push(Math.round(acceptable[0] * 1.15));
+  // Montant de l'ANCIENNE offre : accepté UNIQUEMENT pour un paiement déjà
+  // encaissé avant la coupure du 2026-11-09 (date de création vérifiable).
+  // Sans cette fenêtre, les ventes payées à l'ancien tarif ne seraient jamais
+  // livrées (argent encaissé, accès jamais délivré). Un paiement NOUVEL au
+  // tarif ancien reste refusé.
+  const historical = HISTORICAL_PASS_PRICES[pass] || {};
+  if (Object.prototype.hasOwnProperty.call(historical, currency)) {
+    const createdRaw = payment?.createdAt;
+    const created = typeof createdRaw === "number" ? createdRaw : Date.parse(String(createdRaw || ""));
+    if (Number.isFinite(created) && created < Date.parse(OFFER_CUTOFF_DATE)) {
+      for (const n of historical[currency]) acceptable.push(Math.round(n * 100));
+    }
+  }
   if (!acceptable.some((n) => Math.abs(cents - n) <= 2)) return { ok: false, reason: "amount_mismatch" };
   return { ok: true, currency, cents };
 }
@@ -1743,13 +1844,16 @@ function validatePaymentForFulfillment(payment, metadata) {
   if (!["EUR", "USD"].includes(currency)) problems.push("currency_invalid");
 
   if (kind === "b2c") {
+    // Grille de LIVRAISON (pas de CRÉATION) : un paiement `sos` DÉJÀ encaissé
+    // doit pouvoir être livré — encaisser sans livrer serait un trou de
+    // confiance. La CRÉATION de `sos` reste interdite (cf. PASS_PRICES).
     if (!pass || !FULFILL_PRICES[pass]) problems.push("invalid_sku");
     else {
       const amt = validateMollieAmount(payment, pass);
       if (!amt.ok) problems.push(amt.reason);
     }
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
-  } else if (kind === "b2b_annual") {
+  } else if (kind === "b2b_annual" || kind === "b2b_first") {
     const amt = validateB2BAmount(payment, String(metadata?.plan || "pro_monthly"));
     if (!amt.ok) problems.push(amt.reason);
     if (!EMAIL_RE.test(email)) problems.push("invalid_email");
@@ -1861,6 +1965,155 @@ async function callPaymentGrantRpc(env, args) {
   }
 }
 __name(callPaymentGrantRpc, "callPaymentGrantRpc");
+async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, host) {
+  const interval = String(metadata?.interval || "");
+  const customerId = String(metadata?.customerId || "");
+  const planKey = String(metadata?.plan || "");
+  if (!interval || !customerId || !apiKey) return { created: false, reason: "not_recurring" };
+  const k = `mol_sub_from_${payment.id}`;
+  if (await kv(env).get(k)) return { created: false, reason: "already" };
+  const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
+  if (!plan || !plan.interval) return { created: false, reason: "no_plan_interval" };
+  try {
+    const sub = await mollieReq("POST", `v2/customers/${customerId}/subscriptions`, apiKey, {
+      amount: { value: Number(plan.amount).toFixed(2), currency: plan.currency },
+      description: plan.description,
+      webhookUrl: `https://${host}/api/mollie-webhook`,
+      metadata: { ...metadata, firstPaymentId: payment.id, plan: planKey },
+      interval: plan.interval
+    });
+    await kv(env).put(k, sub.id, { expirationTtl: 400 * 86400 });
+    return { created: true, subscriptionId: sub.id };
+  } catch (e) {
+    console.log("[sg] followup subscription failed:", String(e?.message || e).slice(0, 160));
+    return { created: false, reason: String(e?.message || e).slice(0, 80) };
+  }
+}
+__name(maybeCreateFollowupSubscription, "maybeCreateFollowupSubscription");
+async function fulfillPaidPayment(env, payment, ctx, host) {
+  const metadata = payment?.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
+  const check = validatePaymentForFulfillment(payment, metadata);
+  if (!check.ok) return { granted: false, reasons: check.problems, kind: check.kind };
+  if (check.kind === "b2b_onboarding") {
+    const onboarding = await grantOnboardingAuto(env, check.email, metadata);
+    return { granted: true, kind: "b2b_onboarding", email: onboarding.email_sent ? "sent" : "failed" };
+  }
+  if (check.kind === "b2b_annual" || check.kind === "b2b_first") {
+    const planKey = String(metadata.plan || "pro_monthly");
+    const days = check.kind === "b2b_annual" ? 365 : 30;
+    await grantB2B(env, check.email, planKey, payment.id, days, { metadata });
+    if (check.kind === "b2b_first") {
+      ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
+    }
+    return { granted: true, kind: check.kind, plan: planKey };
+  }
+  const email = check.email;
+  await grantB2C(env, payment.id, check.pass, email, metadata, check.currency);
+  if (metadata.interval && metadata.customerId) {
+    ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
+  }
+  return { granted: true, kind: "b2c_pass", pass: check.pass, email };
+}
+__name(fulfillPaidPayment, "fulfillPaidPayment");
+function escapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+__name(escapeHtml, "escapeHtml");
+async function handleMollieReturn(request, env, ctx) {
+  const url = new URL(request.url);
+  const ref = String(url.searchParams.get("ref") || "").trim();
+  const recRaw = ref ? await kv(env).get(`mol_return_${ref}`) : null;
+  let rec = null;
+  try {
+    rec = recRaw ? JSON.parse(recRaw) : null;
+  } catch {
+    rec = null;
+  }
+  const paymentId = rec?.paymentId || "";
+  const host = request.headers.get("Host") || ALLOWED_HOSTS[0];
+  let status = "unknown";
+  let granted = false;
+  let pass = "";
+  let email = "";
+  let plan = "";
+  let reasons = [];
+  if (paymentId && env.MOLLIE_API_KEY) {
+    try {
+      const payment = await mollieReq("GET", `v2/payments/${paymentId}`, env.MOLLIE_API_KEY);
+      status = payment.status || "unknown";
+      email = String(payment.metadata?.email || "");
+      pass = String(payment.metadata?.pass || "");
+      plan = String(payment.metadata?.plan || pass || "");
+      if (["paid", "settled"].includes(status)) {
+        const result = await fulfillPaidPayment(env, payment, ctx, host);
+        granted = !!result.granted;
+        reasons = result.reasons || [];
+      }
+    } catch (e) {
+      reasons = [String(e?.message || e).slice(0, 80)];
+    }
+  }
+  const paid = status === "paid" || status === "settled";
+  const days = PASS_DURATIONS[pass] || (plan === "pro_annual" || plan === "pro_annual_usd" ? 365 : plan && B2B_PLANS[plan] ? 30 : 0);
+  const home = `https://${host}/`;
+  const espace = `https://${host}/pro/espace/`;
+  const title = paid ? granted ? "Paiement confirmé" : "Paiement reçu" : status === "canceled" || status === "expired" || status === "failed" ? "Paiement non finalisé" : "Vérification du paiement";
+  const lead = paid && granted ? "Votre accès est activé. Merci !" : paid ? "Votre paiement a bien été reçu. L'activation peut prendre quelques instants." : status === "canceled" || status === "expired" || status === "failed" ? "Le paiement n'a pas abouti. Vous pouvez réessayer depuis le site." : "Si vous venez de payer, cette page se met à jour automatiquement.";
+  const showPro = !!(plan && String(plan).startsWith("pro"));
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Sargasses</title>
+<style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px;text-align:center}.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:32px 24px;box-shadow:0 10px 30px rgba(13,13,13,.08)}h1{margin:0 0 12px;font-size:28px}p{line-height:1.5;color:#5A5A5A}.cta{display:inline-block;margin:10px 6px 0;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 22px;border-radius:999px}.sec{background:#fff;border:2px solid #0D0D0D}</style></head>
+<body><div class="card"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(lead)}</p>
+<p><a class="cta" href="${home}">Retour au site</a>${showPro ? `<a class="cta sec" href="${espace}">Espace Pro</a>` : ""}</p></div>
+<script>(function(){try{var e=${JSON.stringify(email)};var d=${Number(days) || 0};var isPaid=${paid ? "true" : "false"};
+if(e) localStorage.setItem("sg_email", e);
+if(isPaid && d){ localStorage.setItem("sg_premium","1"); localStorage.setItem("sg_premium_pass_end", String(Date.now()+d*864e5)); if(e) localStorage.setItem("sg_premium_email", e); }
+}catch(x){}
+var pid=${JSON.stringify(paymentId)};
+if(!${paid ? "true" : "false"} && pid){var n=0;var t=setInterval(function(){n++;fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"payment_status",paymentId:pid})}).then(function(r){return r.json()}).then(function(j){if(j&&(j.paid||j.terminal)) location.reload();}).catch(function(){});if(n>=8)clearInterval(t);},2500);}
+})();</script></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+__name(handleMollieReturn, "handleMollieReturn");
+async function handleMolliePayPage(request, env) {
+  const url = new URL(request.url);
+  if (String(url.searchParams.get("pass") || "") === "sos" || String(url.searchParams.get("source") || "") === "sos_plage") {
+    return new Response(JSON.stringify({ error: "offre_indisponible" }), { status: 410, headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" } });
+  }
+  const planKey = normalizePlanKey(url.searchParams.get("plan") || "pro_annual");
+  const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
+  if (!plan) return new Response("Plan inconnu", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement — ${escapeHtml(plan.description)}</title>
+<style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px}.card{max-width:480px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:28px 22px}h1{font-size:24px;margin:0 0 8px}p{color:#5A5A5A;line-height:1.45}label{display:block;font-weight:700;margin:16px 0 8px}input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(13,13,13,.2);font:inherit}button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;font:inherit;cursor:pointer}.err{color:#E8522A;font-weight:700;margin-top:12px}</style></head>
+<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Mollie. Entrez votre email pour recevoir l'accès.</p>
+<label for="em">Email</label><input id="em" type="email" autocomplete="email" required placeholder="vous@etablissement.com">
+<button id="go" type="button">Payer maintenant →</button><div class="err" id="err" hidden></div></div>
+<script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement…";
+try{var r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"create_subscription",plan:${JSON.stringify(planKey)},email:em,hosted:true,source:"b2b_espace_annual",lang:"fr"})});
+var d=await r.json();if(d&&d.checkoutUrl){location.href=d.checkoutUrl;return;}err.hidden=false;err.textContent=d&&d.error?d.error:"Paiement indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}
+catch(e){err.hidden=false;err.textContent="Réseau indisponible.";this.disabled=false;this.textContent="Payer maintenant →";}};
+</script></body></html>`;
+  return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
+}
+__name(handleMolliePayPage, "handleMolliePayPage");
+async function handleLegacyCheckout(request, env) {
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "invalid_json", provider: "mollie" }), { status: 400, headers: cors(request) });
+  }
+  const action = String(body.action || "");
+  if (action === "setup" || action === "portal") {
+    return new Response(JSON.stringify({ error: "stripe_disabled", provider: "mollie" }), { status: 410, headers: cors(request) });
+  }
+  if (action === "pay_once") body.action = "create_payment";
+  else if (action === "subscribe") body.action = "create_subscription";
+  const headers = new Headers(request.headers);
+  headers.set("Content-Type", "application/json");
+  const forwarded = new Request(request.url, { method: "POST", headers, body: JSON.stringify(body) });
+  return handleMollie(forwarded, env);
+}
+__name(handleLegacyCheckout, "handleLegacyCheckout");
 async function handleWebhook(request, env, ctx) {
   const raw2 = await request.text();
   const secret = env.MOLLIE_WEBHOOK_SECRET;
@@ -1927,20 +2180,13 @@ async function handleWebhook(request, env, ctx) {
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: check.problems }));
       }
 
-      if (check.kind === "b2b_annual") {
-        const planKey = String(metadata.plan || "pro_monthly");
-        await grantB2B(env, check.email, planKey, parsed.entityId, 365, { metadata });
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
-        return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: "b2b_annual" }));
+      const host = request.headers.get("Host") || ALLOWED_HOSTS[0];
+      const fulfilled = await fulfillPaidPayment(env, payment, ctx, host);
+      if (!fulfilled.granted) {
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: fulfilled.reasons || ["fulfillment_failed"] }), { status: fulfilled.retry ? 409 : 200 });
       }
-      if (check.kind === "b2b_onboarding") {
-        const onboarding = await grantOnboardingAuto(env, check.email, metadata);
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
-        return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: "b2b_onboarding", email: onboarding.email_sent ? "sent" : "failed" }));
-      }
-      await grantB2C(env, parsed.entityId, check.pass, check.email, metadata, check.currency);
       await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
-      return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: "b2c_pass" }));
+      return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: fulfilled.kind }));
     }
     if (parsed.resource === "subscription") {
       const sub = await mollieReq("GET", `v2/subscriptions/${parsed.entityId}`, apiKey);

@@ -133,8 +133,11 @@ const assert = require("node:assert/strict");
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ action: "create_payment", pass: "sos", cents: 100, cur: "EUR", email: "" })
     }), env);
-    assert.equal(sosCreate.status, 400);
-    assert.equal((await sosCreate.json()).error, "Prix invalide");
+    // 2026-11-09 : le refus d'un pass « sos » est un 410 « offre_indisponible »
+    // (offre RETIRÉE), aligné sur le serveur de paiement live — pas un 400
+    // « Prix invalide » qui laisserait croire à une erreur de formulaire.
+    assert.equal(sosCreate.status, 410);
+    assert.equal((await sosCreate.json()).error, "offre_indisponible");
     assert.equal(createCalls.length, 0, "aucun paiement « sos » ne doit être créé");
 
     // ── CONTRÔLE PROPRIÉTAIRE : le client doit TOUJOURS transmettre l'email ──

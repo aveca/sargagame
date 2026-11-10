@@ -1,17 +1,17 @@
 import React,{useEffect,memo,useRef,useState}from"react"
 import{getSegment}from"./lib/segment.js"
 import{track,abVariant}from"./Sargasses_PROD.jsx"
-import{PASS_DAYS,formatCents,passBaseCents,passEffectiveCents,passHasSurcharge,passCopy,resolvePass}from"./lib/pricing.js"
+import{PASS_DAYS,formatCents,passBaseCents,passEffectiveCents,passCopy,resolvePass}from"./lib/pricing.js"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
 // Prix : source unique src/lib/pricing.js (miroir du serveur).
-//   baseCents = montant ENVOYÉ au serveur (le serveur valide la BASE puis
-//                applique la surcharge USD +15 % de juin à novembre)
+//   baseCents = montant ENVOYÉ au serveur
 //   effCents  = montant EFFECTIVEMENT DÉBITÉ = ce qu'on AFFICHE
-// Afficher la base alors que le serveur débite base+15 % = divergence (corrigée ici).
+// ⚠️ 2026-11-09 : plus de surcharge USD saisonnière — le serveur live
+// facture exactement le montant affiché (base = montant facturé).
 const money = (c, cur, lang) => formatCents(c, cur, lang)
 const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 
@@ -38,7 +38,6 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
   const effCents = passEffectiveCents(key, cur)
   const days = PASS_DAYS[key] || 30
   const copy = passCopy(key, lang)
-  const hasSurcharge = passHasSurcharge(key, cur)
   useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice",pass:key,copy_variant:copyVariant});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",pass:key,cents:effCents,copy_variant:copyVariant})}catch(_){}},[])
   const buy=()=>{
     sbeacon({stage:"cta",segment:seg,pass:key,cents:effCents,base_cents:baseCents,copy_variant:copyVariant})
@@ -141,21 +140,11 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {benefitCopy ? _t(lang, "Méthode, précision mesurée et limites →", "Method, measured accuracy & limitations →", "Método, precisión medida y límites →") : _t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
 
-        {/* Transparence prix : le montant affiché EST le montant débité. En USD,
-            la surcharge de haute saison (+15 %, juin→novembre) est déjà incluse
-            dans le chiffre affiché — l'ancien bandeau « +15 % » laissait croire
-            que le prix affiché augmentait au moment de payer. */}
-        {hasSurcharge && (() => {
-          const baseTxt = money(baseCents, cur, lang)
-          const effTxt = money(effCents, cur, lang)
-          return (
-            <div style={{ textAlign: "center", marginTop: 8, fontSize: 10.5, color: "rgba(234,247,244,.45)", letterSpacing: ".01em" }}>
-              {_t(lang, `Tarif haute saison (+15 %) déjà inclus : ${effTxt} (base ${baseTxt})`,
-                  `High-season rate (+15%) already included: ${effTxt} (base ${baseTxt})`,
-                  `Tarifa alta temporada (+15 %) ya incluida: ${effTxt} (base ${baseTxt})`)}
-            </div>
-          )
-        })()}
+        {/* Transparence prix : le montant affiché EST le montant débité.
+            ⚠️ 2026-11-09 — la surcharge USD saisonnière a été supprimée côté
+            serveur : le chiffre affiché est le chiffre facturé, sans surcoût
+            saisonnier. L'ancien bandeau de surcoût est donc retiré (il
+            affichait un montant différent de celui débité). */}
 
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>

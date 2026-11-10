@@ -66,7 +66,7 @@ try {
 
         // ── Validation prix côté serveur (anti-tampering) ─────────────────────
         // Allowlist complète : pass -> {EUR: montant, USD: montant|null}
-        // USD null = montant variable par région (trip7) → fallback plausibilité
+        // USD null = montant variable par région → fallback plausibilité
         //
         // ⚠️ 2026-11-09 — Le pass `sos` (1 €, rapport 24 h) a été RETIRÉ du
         // parcours client : il n'est PLUS dans l'allowlist de CRÉATION. Un
@@ -74,10 +74,14 @@ try {
         // Sa LIVRAISON (paiements déjà encaissés) reste gérée par le webhook et
         // par le backfill contrôlé — encaisser sans livrer serait un trou de
         // confiance. Tout pass inconnu est refusé (fail-closed).
+        //
+        // OFFRE VALIDÉE 2026-11-09 (miroir EXACT de workers/sg-payments, qui
+        // est le serveur de paiement EN PRODUCTION) :
+        //   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
         $passPrices = [
-            'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
-            'trip7'  => ['EUR' => 4.99,  'USD' => null],
-            'season' => ['EUR' => 19.99, 'USD' => null],
+            'p30'    => ['EUR' => 14.99, 'USD' => 16.99],
+            'trip7'  => ['EUR' => 7.99,  'USD' => 8.99],
+            'season' => ['EUR' => 24.99, 'USD' => 27.99],
         ];
         $priceValid = false;
         if ($pass && isset($passPrices[$pass])) {
@@ -85,7 +89,7 @@ try {
             if ($expected !== null) {
                 $priceValid = (abs($amountVal - $expected) < 0.02);
             } else {
-                // Prix USD variable (trip7/season) : plausibilité
+                // Prix USD variable : plausibilité
                 $priceValid = ($amountVal > 0.50 && $amountVal < 50);
             }
         } elseif (!$pass) {
@@ -97,13 +101,10 @@ try {
             throw new Exception('Prix invalide');
         }
 
-        // ── Surcharge USD peak season (juin-novembre, hors trip7) ─────────────
-        if ($currency === 'USD' && $pass && $pass !== 'trip7') {
-            $month = (int)date('n');
-            if ($month >= 6 && $month <= 11) {
-                $amount['value'] = (string)round((float)$amount['value'] * 1.15, 2);
-            }
-        }
+        // ⚠️ 2026-11-09 — PLUS de surcharge USD de haute saison (+15 %).
+        // Le worker live (sg-payments) facture le montant affiché : appliquer
+        // un surcoût ici créerait une divergence affichage/débit (16,99 $ affiché
+        // mais 19,54 $ débité). Le montant validé ci-dessus EST le montant débité.
 
         // ── Metadata : pass + email pour webhook + audit ──────────────────────
         $metadata = $data['metadata'] ?? [];

@@ -308,11 +308,11 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       assert.equal(state.createCalls.length, 0);
     });
 
-    await test('prix publics inchangés : p30 EUR 14,99 / trip7 EUR 4,99 / season 19,99', async () => {
+    await test('prix publics alignés sur l’offre validée : p30 EUR 14,99 / trip7 EUR 7,99 / season 24,99', async () => {
       const cases = [
         { pass: 'p30', cents: 1499, cur: 'EUR' },
-        { pass: 'trip7', cents: 499, cur: 'EUR' },
-        { pass: 'season', cents: 1999, cur: 'EUR' },
+        { pass: 'trip7', cents: 799, cur: 'EUR' },
+        { pass: 'season', cents: 2499, cur: 'EUR' },
       ];
       for (const c of cases) {
         state.createCalls = [];
@@ -331,7 +331,7 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       }
     });
 
-    await test('create_payment avec sos → 400 (pass retiré du parcours client)', async () => {
+    await test('create_payment avec sos → 410 (offre retirée du parcours client)', async () => {
       const response = await worker.fetch(
         new Request('https://worker.test/api/mollie', {
           method: 'POST',
@@ -340,9 +340,22 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
         }),
         env,
       );
-      assert.equal(response.status, 400);
-      assert.equal((await response.json()).error, 'Prix invalide');
+      assert.equal(response.status, 410);
+      assert.equal((await response.json()).error, 'offre_indisponible');
       assert.equal(state.createCalls.length, 0, 'aucun paiement ne doit être créé');
+    });
+
+    await test('create_payment avec un ANCIEN tarif → 400 (pas de nouvelle vente à l’ancien prix)', async () => {
+      const response = await worker.fetch(
+        new Request('https://worker.test/api/mollie', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ action: 'create_payment', pass: 'trip7', cents: 499, cur: 'EUR', email: 'x@example.com' }),
+        }),
+        env,
+      );
+      assert.equal(response.status, 400);
+      assert.equal(state.createCalls.length, 0);
     });
 
     await test('create_payment avec un pass INCONNU → 400 (fail-closed, aucun montant libre)', async () => {

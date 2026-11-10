@@ -155,8 +155,11 @@ check(!/action:\s*["']__payment_smoke__["']/.test(postDeploy.replace(/--data/g, 
   try {
     for (const [label, worker] of [['workers/sargagame', regional], ['workers/sg-payments', prodWorker]]) {
       const sos = await create(worker, 'sos', 100);
-      check(sos.status === 400 && /Prix invalide/.test(sos.body.error || ''),
-        label + ' : create_payment(pass=sos) → 400 « Prix invalide »');
+      // 2026-11-09 : le refus d'un pass `sos` est un 410 « offre_indisponible »
+      // (offre retirée), aligné sur le serveur de paiement live — pas un 400
+      // « Prix invalide » qui laisserait croire à une erreur de formulaire.
+      check(sos.status === 410 && /offre_indisponible/.test(sos.body.error || ''),
+        label + ' : create_payment(pass=sos) → 410 « offre_indisponible »');
       check(sos.creates === 0, label + ' : AUCUN paiement Mollie créé pour « sos »');
 
       const unknown = await create(worker, 'pass-inconnu', 1);
@@ -164,9 +167,13 @@ check(!/action:\s*["']__payment_smoke__["']/.test(postDeploy.replace(/--data/g, 
         label + ' : create_payment(pass inconnu) → 400 « Prix invalide » (fail-closed)');
       check(unknown.creates === 0, label + ' : aucun montant libre accepté pour un pass inconnu');
 
-      const legit = await create(worker, 'trip7', 499);
+      const legit = await create(worker, 'trip7', 799);
       check(legit.status === 200 && legit.creates === 1,
-        label + ' : create_payment(pass=trip7, 4,99 €) reste autorisé');
+        label + ' : create_payment(pass=trip7, 7,99 €) reste autorisé');
+
+      const ancienTarif = await create(worker, 'trip7', 499);
+      check(ancienTarif.status === 400 && ancienTarif.creates === 0,
+        label + ' : create_payment(pass=trip7, 4,99 € — ancien tarif) est refusé');
     }
   } finally {
     globalThis.fetch = originalFetch;

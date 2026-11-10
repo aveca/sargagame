@@ -22,8 +22,6 @@ h1{font-size:2rem;margin:0 0 8px;line-height:1.2;}
 .badge{position:absolute;top:-10px;right:-8px;background:var(--accent);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:10px;}
 .price{font-size:2rem;font-weight:700;margin:8px 0 4px;}
 .days{color:var(--muted);font-size:.9rem;margin-bottom:12px;}
-.hi{display:none;color:var(--muted);font-size:.78rem;margin:-6px 0 10px;}
-.hi.on{display:block;}
 button.buy{width:100%;padding:14px;border:none;border-radius:8px;background:var(--accent);color:#fff;font-weight:700;font-size:1rem;cursor:pointer;}
 button.buy:hover{background:var(--accent2);}
 button.buy:disabled{opacity:.6;cursor:not-allowed;}
@@ -53,25 +51,19 @@ footer{margin-top:40px;padding:24px;color:var(--muted);font-size:.85rem;border-t
 </main>
 <footer>Sargasses Martinique · Météo marine Copernicus · <a href="/" style="color:var(--accent);text-decoration:none;">Retour à la carte</a></footer>
 <script>
-const CATALOGUE = {"eur":[{"pass":"trip7","cents":499,"cur":"EUR","price":"4,99 €","days":7,"best":false},{"pass":"p30","cents":1499,"cur":"EUR","price":"14,99 €","days":30,"best":true},{"pass":"season","cents":1999,"cur":"EUR","price":"19,99 €","days":210,"best":false}],"usd":[{"pass":"trip7","cents":599,"cur":"USD","price":"$5.99","days":7,"best":false},{"pass":"p30","cents":1199,"cur":"USD","price":"$11.99","days":30,"best":true}]};
+const CATALOGUE = {"eur":[{"pass":"trip7","cents":799,"cur":"EUR","price":"7,99 €","days":7,"best":false},{"pass":"p30","cents":1499,"cur":"EUR","price":"14,99 €","days":30,"best":true},{"pass":"season","cents":2499,"cur":"EUR","price":"24,99 €","days":210,"best":false}],"usd":[{"pass":"trip7","cents":899,"cur":"USD","price":"$8.99","days":7,"best":false},{"pass":"p30","cents":1699,"cur":"USD","price":"$16.99","days":30,"best":true},{"pass":"season","cents":2799,"cur":"USD","price":"$27.99","days":210,"best":false}]};
 const USD_DOMAINS = ["sargassummiami.com","sargassumpuntacana.com","sargassumcancun.com","sargazotulum.com","sargassumbarbados.com"];
-const HIGH_MONTHS = [6,7,8,9,10,11];
-const RATE = 0.15;
 const IS_USD = USD_DOMAINS.indexOf(String(location.hostname).toLowerCase()) !== -1;
 const CUR = IS_USD ? 'usd' : 'eur';
 const OFFERS = CATALOGUE[CUR];
-const HI = IS_USD && HIGH_MONTHS.indexOf(new Date().getMonth() + 1) !== -1;
 function money(c){ const v = c / 100; return CUR === 'usd' ? '$' + v.toFixed(2) : ("fr" === 'en' ? '€' + v.toFixed(2) : v.toFixed(2).replace('.', ',') + ' €'); }
-function eff(o){ return (CUR === 'usd' && o.pass !== 'trip7' && HI) ? Math.round(o.cents * (1 + RATE)) : o.cents; }
 function label(o){ return o.days + ("fr" === 'en' ? ' days' : "fr" === 'es' ? ' días' : ' jours'); }
-function buyLabel(o){ return "Obtenir l'accès Y jours — X".replace('X', String(o.days)).replace('Y', money(eff(o))); }
+function buyLabel(o){ return "Obtenir l'accès Y jours — X".replace('X', String(o.days)).replace('Y', money(o.cents)); }
 const host = document.getElementById('offers');
 host.innerHTML = OFFERS.map(function(o){
-  const base = money(o.cents), e = money(eff(o));
-  const hi = (eff(o) !== o.cents) ? '<div class="hi on">' + "Tarif haute saison (+15 %) déjà inclus : EFF (base BASE)".replace('BASE', base).replace('EFF', e) + '</div>' : '';
   return '<div class="offer ' + (o.best ? 'best' : '') + '">' +
-    '<div class="price">' + e + '</div>' +
-    '<div class="days">' + label(o) + '</div>' + hi +
+    '<div class="price">' + money(o.cents) + '</div>' +
+    '<div class="days">' + label(o) + '</div>' +
     '<button class="buy" data-pass="' + o.pass + '" data-cents="' + o.cents + '" data-cur="' + o.cur + '">' + buyLabel(o) + '</button>' +
     (o.best ? '<span class="badge">' + "Le plus choisi" + '</span>' : '') +
     '</div>';

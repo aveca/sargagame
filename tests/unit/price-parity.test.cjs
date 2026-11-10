@@ -4,24 +4,37 @@
 /**
  * price-parity.test.cjs — PARITÉ DES PRIX B2C (source unique = le serveur).
  *
- * Écarts constatés avant ce correctif (2026-11-04) :
- *   • /offres/ affichait 7,99 € (7 j) et 24,99 € (saison) alors que le serveur
- *     débite 4,99 € et 19,99 € → le CTA « Pass 7 jours » facturait en plus
- *     30 jours à 14,99 € (le paramètre ?pass= n'existait pas) ;
- *   • PassOffer affichait 11,99 $ alors que mollie.php débite 13,79 $ en
- *     juin→novembre (surcharge USD +15 %) ;
- *   • /premium/index.html annonçait « 4,99 €/mois » et débait 14,99 € ;
- *   • la CGV annonçait 7,99 € / 24,99 € / 19,99 $ (saison).
+ * ⚠️ 2026-11-09 — NOUVEAU CONTRAT (offre validée + alignement sur le serveur
+ * de paiement EN PRODUCTION, `workers/sg-payments` live) :
+ *
+ *   pass     │ EUR    │ USD
+ *   ─────────┼────────┼────────
+ *   trip7    │ 7,99 € │ $8.99
+ *   p30      │ 14,99 €│ $16.99
+ *   season   │ 24,99 €│ $27.99
+ *
+ *   • PLUS DE SURCHARGE USD DE HAUTE SAISON (+15 %, juin→novembre) : elle
+ *     existait côté serveur (mollie.php ×1,15) et côté affichage. Le serveur
+ *     live facture le montant AFFICHÉ. Un client qui voyait « 16,99 $ » et
+ *     payait 19,54 $ avait une divergence affichage/débit : c'est supprimé.
+ *   • Les prix HISTORIQUES (trip7 4,99 € / $5.99, p30 11,99 $, season
+ *     19,99 €) restent LIVRABLES pour un paiement DÉJÀ encaissé avant la
+ *     coupure du 2026-11-09 (date de création vérifiable) — encaisser sans
+ *     livrer serait un trou de confiance. Un paiement NOUVEL au tarif ancien
+ *     reste REFUSÉ.
  *
  * Ce test verrouille la parité entre TOUTES les sources de prix :
  *   1. src/lib/pricing.js             (client, miroir du serveur)
- *   2. public/api/mollie.php          ($passPrices — SOURCE AUTORITATIVE)
- *   3. workers/sargagame/index.js     (PASS_PRICES / DAYS_TABLE — validation)
- *   4. scripts/lib/premium-page.cjs   (OFFERS / USD_OFFERS — page /premium/)
- *   5. public/api/create-checkout.php ($ALLOWED_CENTS — anti-tampering)
- *   6. regions/*.json                 (prix d'entrée affichés par région)
- * et vérifie que les surfaces PUBLIÉES affichent exactement ces montants,
- * avec le bon paramètre ?pass= (étape « durée » du tunnel).
+ *   2. public/api/mollie.php          ($passPrices — CRÉATION)
+ *   3. public/api/mollie-lib.php      (mol_pass_prices — LIVRAISON +
+ *                                      mol_historical_pass_prices — fenêtre)
+ *   4. workers/sargagame/index.js     (PASS_PRICES / FULFILL_PRICES /
+ *                                      HISTORICAL_PRICES — déployé par la CI)
+ *   5. workers/sg-payments/index.js   (serveur de paiement Mollie live)
+ *   6. scripts/lib/premium-page.cjs   (OFFERS / USD_OFFERS — page /premium/)
+ *   7. public/api/create-checkout.php ($ALLOWED_CENTS — anti-tampering)
+ *   8. regions/*.json                 (prix d'entrée affichés par région)
+ * et vérifie que les surfaces PUBLIÉES affichent exactement ces montants.
  */
 
 const assert = require('node:assert/strict');
@@ -37,6 +50,7 @@ const mollieLibSrc = read('public/api/mollie-lib.php');
 const workerJs = read('workers/sargagame/index.js');
 const workerPayJs = read('workers/sg-payments/index.js');
 const checkoutPhp = read('public/api/create-checkout.php');
+const paypalPhp = read('public/api/paypal.php');
 const premiumLib = require(path.join(root, 'scripts', 'lib', 'premium-page.cjs'));
 
 let failures = 0;
@@ -60,44 +74,45 @@ if (clientDaysRe) {
     if (kv.length === 2) clientDays[kv[0]] = Number(kv[1]);
   }
 }
-const clientHighMonths = (() => {
-  const r = /USD_HIGH_SEASON_MONTHS\s*=\s*Object\.freeze\(\[([^\]]+)\]\)/.exec(pricingSrc);
-  return r ? r[1].split(',').map((x) => Number(x.trim())).filter((n) => !isNaN(n)) : [];
-})();
-const clientHighRate = (() => {
-  const r = /USD_HIGH_SEASON_RATE\s*=\s*([\d.]+)/.exec(pricingSrc);
-  return r ? Number(r[1]) : null;
-})();
 
 console.log('1. src/lib/pricing.js');
 check(Object.keys(clientPrices).length === 3, 'les 3 passes sont déclarés (p30, trip7, season)');
 check(!('sos' in clientPrices), 'le pass « sos » n’est PLUS déclaré côté client (retrait 2026-11-09)');
-check(clientHighRate === 0.15, 'la surcharge USD de haute saison est de +15 %');
-check(JSON.stringify(clientHighMonths) === JSON.stringify([6, 7, 8, 9, 10, 11]), 'la fenêtre USD est juin → novembre');
+check(!/USD_HIGH_SEASON_RATE/.test(pricingSrc), 'plus de constante USD_HIGH_SEASON_RATE');
+check(!/USD_HIGH_SEASON_MONTHS/.test(pricingSrc), 'plus de fenêtre USD_HIGH_SEASON_MONTHS');
+check(!/isUsdHighSeason/.test(pricingSrc), 'plus de fonction isUsdHighSeason');
+check(!/passHasSurcharge/.test(pricingSrc), 'plus de fonction passHasSurcharge');
+check(!/1\.15/.test(pricingSrc), 'aucune surcharge ×1,15 résiduelle dans pricing.js');
+check(/function passEffectiveCents/.test(pricingSrc), 'passEffectiveCents existe (API conservée)');
+check(clientPrices.p30.eur === 1499 && clientPrices.p30.usd === 1699, 'p30 = 14,99 € / 16,99 $');
+check(clientPrices.trip7.eur === 799 && clientPrices.trip7.usd === 899, 'trip7 = 7,99 € / 8,99 $');
+check(clientPrices.season.eur === 2499 && clientPrices.season.usd === 2799, 'season = 24,99 € / 27,99 $');
 
-// ── 2. public/api/mollie.php (source autoritative) ────────────────────────────
+// ── 2. public/api/mollie.php (création — source autoritative) ─────────────────
 const serverPrices = {};
 const serverRe = /'(p30|trip7|season|sos)'\s*=>\s*\['EUR'\s*=>\s*([\d.]+),\s*'USD'\s*=>\s*([\d.]+|null)\]/g;
 while ((m = serverRe.exec(molliePhp))) {
   serverPrices[m[1]] = { eur: Math.round(Number(m[2]) * 100), usd: m[3] === 'null' ? null : Math.round(Number(m[3]) * 100) };
 }
-const bandRe = /\$amountVal\s*>\s*([\d.]+)\s*&&\s*\$amountVal\s*<\s*([\d.]+)/.exec(molliePhp);
-const usdBand = bandRe ? { min: Number(bandRe[1]), max: Number(bandRe[2]) } : null;
 
-console.log('\n2. public/api/mollie.php ($passPrices — autoritaire)');
+console.log('\n2. public/api/mollie.php ($passPrices — CRÉATION)');
 check(Object.keys(serverPrices).length === 3, 'les 3 passes sont définis côté serveur');
-check(!('sos' in serverPrices),
-  'le pass « sos » n’est PLUS créable côté serveur (allowlist de création)');
-check(/\$month\s*>=\s*6\s*&&\s*\$month\s*<=\s*11/.test(molliePhp), 'la fenêtre serveur est juin → novembre');
-check(/1\.15/.test(molliePhp), 'le serveur applique la surcharge ×1,15');
-check(/\$pass\s*!==\s*'trip7'/.test(molliePhp), 'le serveur exclut trip7 de la surcharge');
-check(!!usdBand, 'le serveur expose une bande de plausibilité pour les prix USD variables');
-// Grille de LIVRAISON : `sos` reste accepté pour les paiements DÉJÀ encaissés
-// (encaisser sans livrer serait un trou de confiance).
+check(!('sos' in serverPrices), 'le pass « sos » n’est PLUS créable côté serveur');
+check(!/1\.15/.test(molliePhp), 'le serveur n’applique PLUS la surcharge ×1,15');
+check(!/\$month\s*>=\s*6/.test(molliePhp), 'plus de fenêtre mensuelle de haute saison');
+check(serverPrices.p30.eur === 1499 && serverPrices.p30.usd === 1699, 'p30 serveur = 14,99 € / 16,99 $');
+check(serverPrices.trip7.eur === 799 && serverPrices.trip7.usd === 899, 'trip7 serveur = 7,99 € / 8,99 $');
+check(serverPrices.season.eur === 2499 && serverPrices.season.usd === 2799, 'season serveur = 24,99 € / 27,99 $');
+// Grille de LIVRAISON : `sos` reste accepté pour les paiements DÉJÀ encaissés.
 check(/'sos'\s*=>\s*\[\s*'EUR'\s*=>\s*1\.0/.test(mollieLibSrc),
   'la grille de LIVRAISON (mollie-lib.php) conserve « sos » pour les paiements déjà encaissés');
+// Fenêtre historique (montants de l'ancienne offre).
+check(/function mol_historical_pass_prices/.test(mollieLibSrc), 'mollie-lib.php expose mol_historical_pass_prices()');
+check(/function mol_offer_cutoff_date/.test(mollieLibSrc), 'mollie-lib.php expose mol_offer_cutoff_date()');
+check(/mol_offer_cutoff_date\(\)/.test(mollieLibSrc), 'la fenêtre historique est branchée sur la date de coupure');
+check(/2026-11-09/.test(mollieLibSrc), 'la date de coupure de l’ancienne offre est le 2026-11-09');
 
-// ── 3. workers/sargagame/index.js ───────────────────────────────────────────
+// ── 3. workers/sargagame/index.js (déployé par la CI sur les 6 workers) ───────
 const workerPrices = {};
 const workerRe = /(p30|trip7|season|sos):\{EUR:([\d.]+),USD:([\d.]+|null)\}/g;
 while ((m = workerRe.exec(workerJs))) {
@@ -115,14 +130,19 @@ console.log('\n3. workers/sargagame/index.js (validation des grants)');
 for (const pass of Object.keys(serverPrices)) {
   check(workerPrices[pass] && workerPrices[pass].eur === serverPrices[pass].eur,
     'worker ' + pass + ' EUR = ' + serverPrices[pass].eur + '¢ (identique au serveur)');
+  check(workerPrices[pass] && workerPrices[pass].usd === serverPrices[pass].usd,
+    'worker ' + pass + ' USD = ' + serverPrices[pass].usd + '¢ (identique au serveur)');
 }
 check(JSON.stringify(workerDays) === JSON.stringify({ p30: 30, trip7: 7, season: 210, sos: 1 }),
   'DAYS_TABLE worker = p30/trip7/season/sos avec les bonnes durées');
 check(!('p7' in workerDays) && !('saison' in workerDays), 'aucune clé legacy « p7 » / « saison » dans le worker');
+check(!/1\.15/.test(workerJs), 'le worker régional n’applique PLUS la surcharge ×1,15');
+check(/HISTORICAL_PRICES/.test(workerJs), 'le worker régional expose la grille HISTORICAL_PRICES');
+check(/OFFER_CUTOFF_DATE\s*=\s*"2026-11-09/.test(workerJs), 'le worker régional fixe la coupure au 2026-11-09');
+check(/created\s*<\s*Date\.parse\(OFFER_CUTOFF_DATE\)/.test(workerJs),
+  'la fenêtre historique est conditionnée par la date de création du paiement');
 
-// ── 3b. Grille de CRÉATION vs grille de LIVRAISON (retrait SOS 2026-11-09) ───
-// Le pass « sos » a été retiré du parcours client : il ne doit plus être
-// CRÉABLE, mais il doit rester LIVRABLE (paiements déjà encaissés).
+// ── 3b. Séparation CRÉATION / LIVRAISON (retrait SOS 2026-11-09) ──────────────
 const parsePriceBlock = (src, label) => {
   const re = new RegExp(label + '\\s*=\\s*(?:Object\\.freeze\\()?\\{([\\s\\S]*?)\\n\\s*\\}\\)?;');
   const m = re.exec(src);
@@ -142,15 +162,24 @@ check(Object.keys(workerCreate).length === 3 && !('sos' in workerCreate),
   'workers/sargagame PASS_PRICES (création) = 3 passes, sans « sos »');
 check('sos' in workerFulfill && workerFulfill.sos.eur === 100,
   'workers/sargagame FULFILL_PRICES (livraison) conserve « sos » à 1,00 €');
+check(/offre_indisponible/.test(workerJs) && /410/.test(workerJs),
+  'workers/sargagame refuse la création d’un pass « sos » en 410 « offre_indisponible »');
 
 const workerPayCreate = parsePriceBlock(workerPayJs, 'var PASS_PRICES');
 const workerPayFulfill = parsePriceBlock(workerPayJs, 'var FULFILL_PRICES');
-check(Object.keys(workerPayCreate).length === 3 && !('sos' in workerPayCreate),
-  'workers/sg-payments PASS_PRICES (création) = 3 passes, sans « sos »');
+check(!('sos' in workerPayCreate),
+  'workers/sg-payments PASS_PRICES (création) n’a PAS de « sos »');
 check('sos' in workerPayFulfill && workerPayFulfill.sos.eur === 100,
   'workers/sg-payments FULFILL_PRICES (livraison) conserve « sos » à 1,00 €');
 check(/hasOwnProperty\.call\(PASS_PRICES,\s*pass\)/.test(workerPayJs),
   'workers/sg-payments refuse un pass INCONNU à la création (fail-closed)');
+check(/HISTORICAL_PASS_PRICES/.test(workerPayJs), 'workers/sg-payments expose HISTORICAL_PASS_PRICES');
+check(/OFFER_CUTOFF_DATE\s*=\s*"2026-11-09/.test(workerPayJs), 'workers/sg-payments fixe la coupure au 2026-11-09');
+check(!/1\.15/.test(workerPayJs), 'workers/sg-payments n’applique PLUS la surcharge ×1,15');
+check(workerPayCreate.p30.eur === 1499 && workerPayCreate.p30.usd === 1699 &&
+  workerPayCreate.trip7.eur === 799 && workerPayCreate.trip7.usd === 899 &&
+  workerPayCreate.season.eur === 2499 && workerPayCreate.season.usd === 2799,
+  'workers/sg-payments PASS_PRICES = les 3 passes de l’offre validée (EUR + USD)');
 
 console.log('\n3c. Catalogue public /premium/');
 check(!premiumLib.OFFERS.some((o) => o.pass === 'sos'),
@@ -159,34 +188,13 @@ check(!premiumLib.USD_OFFERS.some((o) => o.pass === 'sos'),
   'scripts/lib/premium-page.cjs n’offre plus le pass « sos » en USD');
 
 // ── 4. Parité client ↔ serveur ↔ worker ──────────────────────────────────────
-// Cas particulier USD : mollie.php laisse le montant USD « variable par région »
-// pour trip7/season (bande de plausibilité). trip7 a un prix RÉGIONAL défini
-// ($5.99 dans regions/*.json, allowlist Stripe USD = [599]) → le client doit
-// l'utiliser. season/sos n'ont AUCUN prix défini en USD → non commercialisés
-// en USD → le client ne doit JAMAIS les afficher (resolvePass retombe sur p30).
-const usdVariableSold = { trip7: 599 };
-
 console.log('\n4. Parité client / serveur / worker');
 for (const pass of Object.keys(serverPrices)) {
   const c = clientPrices[pass] || {};
   check(c.eur === serverPrices[pass].eur, 'pricing.js ' + pass + '.eur = ' + serverPrices[pass].eur + '¢');
-  if (serverPrices[pass].usd !== null) {
-    check(c.usd === serverPrices[pass].usd, 'pricing.js ' + pass + '.usd = ' + serverPrices[pass].usd + '¢');
-  } else if (usdVariableSold[pass] != null) {
-    check(c.usd === usdVariableSold[pass], 'pricing.js ' + pass + '.usd = ' + usdVariableSold[pass] + '¢ (prix régional défini)');
-    check(!!usdBand && usdVariableSold[pass] / 100 > usdBand.min && usdVariableSold[pass] / 100 < usdBand.max,
-      'le prix USD ' + pass + ' reste dans la bande de plausibilité du serveur');
-  } else {
-    check(c.usd === null, 'pricing.js ' + pass + '.usd = null (aucun prix USD défini → non commercialisé en USD)');
-  }
+  check(c.usd === serverPrices[pass].usd, 'pricing.js ' + pass + '.usd = ' + serverPrices[pass].usd + '¢');
   check(clientDays[pass] === workerDays[pass], 'pricing.js ' + pass + '.days = ' + workerDays[pass] + ' j');
 }
-check(clientPrices.p30.eur === 1499, 'Pass 30 jours EUR = 14,99 €');
-check(clientPrices.trip7.eur === 499, 'Pass 7 jours EUR = 4,99 €');
-check(clientPrices.season.eur === 1999, 'Pass Saison EUR = 19,99 €');
-check(clientPrices.p30.usd === 1199, 'Pass 30 jours USD base = 11,99 $');
-check(clientPrices.trip7.usd === 599, 'Pass 7 jours USD = 5,99 $');
-check(clientPrices.season.usd === null, 'Pass Saison non commercialisé en USD');
 
 // ── 5. scripts/lib/premium-page.cjs (catalogue de la page /premium/) ─────────
 console.log('\n5. scripts/lib/premium-page.cjs (OFFERS)');
@@ -199,100 +207,116 @@ for (const o of premiumLib.USD_OFFERS) {
   check(clientPrices[o.pass] && clientPrices[o.pass].usd === o.cents,
     'USD_OFFERS ' + o.pass + ' = ' + o.cents + '¢ (identique au serveur)');
 }
-check(premiumLib.USD_OFFERS.length === 2, 'la page /premium/ n’offre que les passes vendus en USD');
-check(premiumLib.effectiveCents({ pass: 'p30', cents: 1199, cur: 'USD' }, new Date(2026, 10, 4)) === 1379,
-  'surcharge USD effective p30 en novembre = 1379¢ (13,79 $)');
-check(premiumLib.effectiveCents({ pass: 'p30', cents: 1199, cur: 'USD' }, new Date(2026, 0, 4)) === 1199,
-  'hors haute saison, p30 USD reste à 1199¢ (11,99 $)');
-check(premiumLib.effectiveCents({ pass: 'trip7', cents: 599, cur: 'USD' }, new Date(2026, 10, 4)) === 599,
+check(premiumLib.OFFERS.length === 3, 'la page /premium/ propose les 3 passes en EUR');
+check(premiumLib.USD_OFFERS.length === 3, 'la page /premium/ propose les 3 passes en USD');
+check(!/USD_HIGH_SEASON/.test(fs.readFileSync(path.join(root, 'scripts', 'lib', 'premium-page.cjs'), 'utf8')),
+  'plus de constante USD_HIGH_SEASON dans premium-page.cjs');
+check(premiumLib.effectiveCents({ pass: 'p30', cents: 1699, cur: 'USD' }, new Date(2026, 10, 4)) === 1699,
+  'aucune surcharge saisonnière : p30 USD reste à 1699¢ (16,99 $)');
+check(premiumLib.effectiveCents({ pass: 'p30', cents: 1699, cur: 'USD' }, new Date(2026, 0, 4)) === 1699,
+  'aucune surcharge saisonnière : p30 USD reste à 1699¢ (16,99 $) en janvier');
+check(premiumLib.effectiveCents({ pass: 'trip7', cents: 899, cur: 'USD' }, new Date(2026, 10, 4)) === 899,
   'trip7 USD n’est jamais surchargé');
 
-// ── 6. public/api/create-checkout.php (allowlist anti-tampering) ──────────────
-console.log('\n6. public/api/create-checkout.php ($ALLOWED_CENTS)');
+// ── 6. Allowlists anti-tampering ─────────────────────────────────────────────
+console.log('\n6. Allowlists anti-tampering (create-checkout.php / paypal.php)');
 const allowRe = /\$ALLOWED_CENTS\s*=\s*\$isUsd\s*\?\s*\[([\d,\s]+)\]\s*:\s*\[([\d,\s]+)\]/;
 const allowM = allowRe.exec(checkoutPhp);
 check(!!allowM, 'la ligne $ALLOWED_CENTS est retrouvée');
 if (allowM) {
   const usd = allowM[1].split(',').map((x) => Number(x.trim())).filter((n) => !isNaN(n));
   const eur = allowM[2].split(',').map((x) => Number(x.trim())).filter((n) => !isNaN(n));
-  // Invariant critique : aucun prix VIVANT ne doit être rejeté par l'allowlist.
-  check(eur.includes(clientPrices.p30.eur), 'EUR allowlist contient p30 (1499)');
-  check(eur.includes(clientPrices.trip7.eur), 'EUR allowlist contient trip7 (499)');
-  check(eur.includes(clientPrices.season.eur), 'EUR allowlist contient season (1999)');
-  check(usd.includes(clientPrices.trip7.usd), 'USD allowlist contient trip7 (599)');
-  // Résiduel documenté : montants legacy acceptés par l'endpoint Stripe (QA,
-  // atteint seulement via ?pay=stripe). Aucun prix affiché ne correspond.
-  const liveEur = [clientPrices.trip7.eur, clientPrices.p30.eur, clientPrices.season.eur];
-  const legacyEur = eur.filter((c) => liveEur.indexOf(c) === -1).sort((a, b) => a - b);
-  check(JSON.stringify(legacyEur) === JSON.stringify([799, 999, 2499]),
-    'les montants legacy de l’allowlist Stripe EUR sont exactement [799, 999, 2499] (résiduel documenté)');
-  const reportPath = path.join(root, 'reports', 'sargagame', 'REVENUE-STATE-2026-11-04.md');
-  const reportExists = fs.existsSync(reportPath);
-  check(reportExists, 'le rapport de vérité revenue existe (reports/sargagame/REVENUE-STATE-2026-11-04.md)');
-  if (reportExists) {
-    const report = fs.readFileSync(reportPath, 'utf8');
-    check(/799/.test(report) && /2499/.test(report),
-      'le rapport documente le résiduel 799 / 2499 (allowlist Stripe legacy)');
+  check(JSON.stringify(eur) === JSON.stringify([799, 1499, 2499]),
+    'allowlist EUR = [799, 1499, 2499] (7,99 / 14,99 / 24,99 €) — sans résidu legacy');
+  check(JSON.stringify(usd) === JSON.stringify([899, 1699, 2799]),
+    'allowlist USD = [899, 1699, 2799] ($8.99 / $16.99 / $27.99) — sans résidu legacy');
+  for (const pass of Object.keys(serverPrices)) {
+    check(eur.includes(clientPrices[pass].eur), 'allowlist EUR contient ' + pass + ' (' + clientPrices[pass].eur + ')');
+    check(usd.includes(clientPrices[pass].usd), 'allowlist USD contient ' + pass + ' (' + clientPrices[pass].usd + ')');
   }
+}
+const ppM = /pp_currency_and_allowed[\s\S]{0,400}?\[([\d,\s]+)\]\s*:\s*\[([\d,\s]+)\]/.exec(paypalPhp);
+check(!!ppM, 'la grille paypal.php est retrouvée');
+if (ppM) {
+  const usd = ppM[1].split(',').map((x) => Number(x.trim())).filter((n) => !isNaN(n));
+  const eur = ppM[2].split(',').map((x) => Number(x.trim())).filter((n) => !isNaN(n));
+  check(JSON.stringify(eur) === JSON.stringify([799, 1499, 2499]), 'allowlist paypal EUR = [799, 1499, 2499]');
+  check(JSON.stringify(usd) === JSON.stringify([899, 1699, 2799]), 'allowlist paypal USD = [899, 1699, 2799]');
 }
 
 // ── 7. Surfaces publiées : prix affichés = prix débités ───────────────────────
 console.log('\n7. Surfaces publiées (affichage = débit)');
 const offres = read('public/offres/index.html');
 check(offres.includes('14,99 €'), '/offres/ affiche 14,99 € (Pass 30 jours)');
-check(offres.includes('4,99 €'), '/offres/ affiche 4,99 € (Pass 7 jours)');
-check(offres.includes('19,99 €'), '/offres/ affiche 19,99 € (Pass Saison)');
-check(!offres.includes('24,99'), '/offres/ n’affiche plus 24,99 € (prix saison legacy)');
-check(!offres.includes('7,99'), '/offres/ n’affiche plus 7,99 € (prix 7 j legacy)');
+check(offres.includes('7,99 €'), '/offres/ affiche 7,99 € (Pass 7 jours)');
+check(offres.includes('24,99 €'), '/offres/ affiche 24,99 € (Pass Saison)');
+check(!/(?<![\d.,])4,99/.test(offres), '/offres/ n’affiche plus 4,99 € (ancien tarif)');
+check(!/(?<![\d.,])19,99/.test(offres), '/offres/ n’affiche plus 19,99 € (ancien tarif)');
 check(/pass=p30/.test(offres), '/offres/ : le CTA 30 jours porte ?pass=p30');
 check(/pass=trip7/.test(offres), '/offres/ : le CTA 7 jours porte ?pass=trip7');
 check(/pass=season/.test(offres), '/offres/ : le CTA saison porte ?pass=season (et NON ?pass=saison)');
 check(!/pass=saison/.test(offres), '/offres/ : aucune clé serveur invalide « saison »');
 
 const cgv = read('public/cgv.html');
-check(cgv.includes('4,99 \u20ac (zone EUR)'), 'CGV : Pass 7 jours = 4,99 € (zone EUR)');
-check(cgv.includes('14,99 \u20ac (zone EUR)'), 'CGV : Pass 30 jours = 14,99 € (zone EUR)');
-check(cgv.includes('19,99 \u20ac (zone EUR)'), 'CGV : Pass Saison = 19,99 € (zone EUR)');
-check(cgv.includes('+15 %'), 'CGV : la surcharge USD de haute saison est mentionnée');
-check(!cgv.includes('24,99'), 'CGV : plus de 24,99 € (prix saison legacy)');
-check(!/Pass 7 jours<\/strong> \u2014 7,99/.test(cgv), 'CGV : plus de 7,99 € (prix 7 j legacy)');
+check(cgv.includes('7,99 € (zone EUR)'), 'CGV : Pass 7 jours = 7,99 € (zone EUR)');
+check(cgv.includes('8,99 $ (zone USD)'), 'CGV : Pass 7 jours = 8,99 $ (zone USD)');
+check(cgv.includes('14,99 € (zone EUR)'), 'CGV : Pass 30 jours = 14,99 € (zone EUR)');
+check(cgv.includes('16,99 $ (zone USD)'), 'CGV : Pass 30 jours = 16,99 $ (zone USD)');
+check(cgv.includes('24,99 € (zone EUR)'), 'CGV : Pass Saison = 24,99 € (zone EUR)');
+check(cgv.includes('27,99 $ (zone USD)'), 'CGV : Pass Saison = 27,99 $ (zone USD)');
+check(!cgv.includes('+15 %'), 'CGV : plus de mention de la surcharge USD de haute saison');
+check(!/(?<![\d.,])4,99/.test(cgv), 'CGV : plus de 4,99 € (ancien tarif)');
+check(!/(?<![\d.,])19,99/.test(cgv), 'CGV : plus de 19,99 € (ancien tarif)');
 
 const premiumPage = read('public/premium/index.html');
 check(!/\/mois/.test(premiumPage), '/premium/ n’annonce plus aucun abonnement « /mois »');
-check(!/S\u2019abonner|S'abonner/.test(premiumPage), '/premium/ : plus de bouton « S’abonner »');
-check(premiumPage.includes('"cents":499') && premiumPage.includes('"cents":1499') &&
-  premiumPage.includes('"cents":1999'),
+check(!/S’abonner|S'abonner/.test(premiumPage), '/premium/ : plus de bouton « S’abonner »');
+check(premiumPage.includes('"cents":799') && premiumPage.includes('"cents":1499') &&
+  premiumPage.includes('"cents":2499'),
   '/premium/ : le catalogue embarqué contient les 3 passes EUR aux bons centimes');
+check(premiumPage.includes('"cents":899') && premiumPage.includes('"cents":1699') &&
+  premiumPage.includes('"cents":2799'),
+  '/premium/ : le catalogue embarqué contient les 3 passes USD aux bons centimes');
 check(!/"pass"\s*:\s*"sos"/.test(premiumPage) && !/"cents"\s*:\s*100[,\}]/.test(premiumPage),
   '/premium/ : le catalogue embarqué ne propose plus le pass « sos » (1,00 €)');
-check(premiumPage.includes('"cents":599') && premiumPage.includes('"cents":1199'),
-  '/premium/ : le catalogue embarqué contient les 2 passes USD aux bons centimes');
-check(!premiumPage.includes('"cents":799'), '/premium/ : plus de pass legacy à 799¢');
+check(!/HIGH_MONTHS/.test(premiumPage) && !/RATE = 0\.15/.test(premiumPage),
+  '/premium/ : plus de mécanisme de surcharge saisonnière');
+check(!/"cents":499/.test(premiumPage) && !/"cents":599/.test(premiumPage) &&
+  !/"cents":1199/.test(premiumPage) && !/"cents":1999/.test(premiumPage),
+  '/premium/ : plus aucun centime de l’ancienne offre');
 
-// Surfaces éditoriales : prix d'entrée = plus bas prix réellement débité (4,99 €).
+// Surfaces éditoriales : prix d’entrée = 7,99 € / $8.99 (offre validée).
 const entrySurfaces = [
-  'public/a-propos/index.html',
-  'public/about/index.html',
-  'public/veilleur/index.html',
-  'src/HomeAZ.jsx',
-  'src/HomeJuicy.jsx',
-  'src/VerticalesMap.jsx',
-  'src/PremiumModal.jsx',
+  ['public/a-propos/index.html', '7,99 €'],
+  ['public/about/index.html', '€7.99'],
+  ['public/veilleur/index.html', '7,99 €'],
+  ['src/HomeAZ.jsx', '7,99 €'],
+  ['src/HomeJuicy.jsx', '7,99 €'],
+  ['src/VerticalesMap.jsx', '7,99 €'],
 ];
-for (const f of entrySurfaces) {
+for (const [f, needle] of entrySurfaces) {
   const s = read(f);
-  check(!/d\u00e8s 7,99|d\u00e8s \u20ac7\.99|from \u20ac7\.99/.test(s), f + ' : plus de prix d’entrée 7,99 €');
+  check(s.includes(needle), f + ' : affiche le prix d’entrée ' + needle);
+  check(!/(?<![\d.,])4,99/.test(s) && !/(?<![\d.,])5\.99/.test(s),
+    f + ' : n’affiche plus l’ancien prix d’entrée (4,99 € / $5.99)');
 }
+const premiumModalSrc = read('src/PremiumModal.jsx');
+check(premiumModalSrc.includes('"7,99 € · 7 jours"'), 'PremiumModal : le CTA trip7 EUR affiche 7,99 €');
+check(premiumModalSrc.includes('"24,99 € une fois'), 'PremiumModal : le CTA saison EUR affiche 24,99 €');
+check(!/"4,99 € · 7 jours"/.test(premiumModalSrc), 'PremiumModal : plus de CTA trip7 à 4,99 €');
+check(!/19,99 € une fois/.test(premiumModalSrc), 'PremiumModal : plus de CTA saison à 19,99 €');
 
-// ── 8. Le client envoie la BASE, le serveur applique la surcharge ────────────
-console.log('\n8. Contrat base/effectif (client)');
+// ── 8. Le client envoie le montant affiché = montant débité ──────────────────
+console.log('\n8. Contrat affichage/débit (client)');
 const passOffer = read('src/PassOffer.jsx');
 check(/passBaseCents/.test(passOffer) && /passEffectiveCents/.test(passOffer),
-  'PassOffer distingue le montant de BASE (envoyé) du montant EFFECTIF (affiché)');
+  'PassOffer résout le montant de BASE et le montant EFFECTIF');
 check(/onBuy\(\{c:baseCents/.test(passOffer),
-  'PassOffer envoie les centimes de BASE au serveur (sinon 400 « Prix invalide »)');
-check(!/cents:\s*\{ eur: 1499, usd: 1199 \}/.test(passOffer),
+  'PassOffer envoie les centimes affichés au serveur (sinon 400 « Prix invalide »)');
+check(!/cents: \{ eur: 1499, usd: 1199 \}/.test(passOffer),
   'PassOffer ne fige plus les prix en dur (source unique : pricing.js)');
+check(!/passHasSurcharge/.test(passOffer), 'PassOffer n’affiche plus de bandeau « +15 % »');
+check(!/\+15/.test(passOffer), 'PassOffer ne mentionne plus le « +15 % »');
 
 const premiumModal = read('src/PremiumModal.jsx');
 check(/resolvePass/.test(premiumModal), 'PremiumModal résout le pass demandé via pricing.js');
@@ -306,9 +330,9 @@ check(/passBaseCents\("trip7","eur"\)/.test(premiumModal), 'PremiumModal prend l
 const prod = read('src/Sargasses_PROD.jsx');
 const eurTrip = /export const EUR_TRIP_CENTS=(\d+)/.exec(prod);
 check(!!eurTrip && Number(eurTrip[1]) === clientPrices.trip7.eur,
-  'Sargasses_PROD EUR_TRIP_CENTS = 499 (identique au serveur)');
-const priceTrip = /export const PRICE_TRIP=REGION_PAY\?\(REGION\.pricing\?\.tripPass\|\|"\$5\.99"\)/.test(prod);
-check(priceTrip, 'PRICE_TRIP par défaut = $5.99 (identique à trip7 USD)');
+  'Sargasses_PROD EUR_TRIP_CENTS = ' + clientPrices.trip7.eur + ' (identique au serveur)');
+const priceTrip = /export const PRICE_TRIP=REGION_PAY\?\(REGION\.pricing\?\.tripPass\|\|"\$8\.99"\)/.test(prod);
+check(priceTrip, 'PRICE_TRIP par défaut = $8.99 (identique à trip7 USD)');
 
 // ── 9. Prix d'entrée par région (regions/*.json) ────────────────────────────
 console.log('\n9. regions/*.json (prix d’entrée affichés)');
@@ -316,16 +340,16 @@ for (const f of fs.readdirSync(path.join(root, 'regions')).filter((x) => x.endsW
   const r = JSON.parse(fs.readFileSync(path.join(root, 'regions', f), 'utf8'));
   if (!r.pricing || !r.pricing.tripPass) continue;
   if (r.currency === 'USD') {
-    check(r.pricing.tripPass === '$5.99', f + ' : tripPass USD = $5.99 (identique à trip7 USD)');
+    check(r.pricing.tripPass === '$8.99', f + ' : tripPass USD = $8.99 (identique à trip7 USD)');
   } else {
-    check(r.pricing.tripPass === '4,99 €', f + ' : tripPass EUR = 4,99 € (identique à trip7 EUR)');
+    check(r.pricing.tripPass === '7,99 €', f + ' : tripPass EUR = 7,99 € (identique à trip7 EUR)');
   }
 }
 
 // ── 10. Mesure de l'écart affichage = débit ──────────────────────────────────
 console.log('\n10. Mesure de l’écart affichage/débit');
 check(/'amount'\s*=>\s*\['value'\s*=>\s*\$amount\['value'\]/.test(molliePhp),
-  'mollie.php renvoie le montant EFFECTIF dans la réponse create_payment');
+  'mollie.php renvoie le montant facturé dans la réponse create_payment');
 check(/sg_price_mismatch/.test(premiumModal),
   'PremiumModal compare le montant serveur au montant affiché (sg_price_mismatch)');
 check(/"sg_price_mismatch"/.test(prod),
@@ -337,6 +361,8 @@ const configExample = read('public/api/mollie-config.example.php');
 check(!/'\s*p7'\s*=>/.test(configExample), 'le template de config ne documente plus le pass legacy « p7 »');
 check(!/'\s*sos'\s*=>/.test(configExample), 'le template de config ne documente plus le pass « sos » (retrait 2026-11-09)');
 check(/'season'\s*=>/.test(configExample), 'le template de config documente la clé serveur « season »');
+check(configExample.includes("'cents' => 799"), 'le template de config documente trip7 = 799¢');
+check(configExample.includes("'cents' => 2499"), 'le template de config documente season = 2499¢');
 check(!/'monthly'\s*=>\s*\[\s*'amount'\s*=>\s*'4\.99'/.test(configExample),
   'le template de config ne documente plus l’abonnement B2C fantôme 4,99 €/mois');
 

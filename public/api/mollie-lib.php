@@ -518,17 +518,44 @@ function mol_b2c_grant_upsert(string $paymentId, string $pass, string $email, st
 /**
  * Grille des prix B2C — LIVRAISON (montants attendus pour un pass payé).
  *
+ * OFFRE VALIDÉE 2026-11-09 (miroir EXACT de workers/sg-payments, serveur de
+ * paiement EN PRODUCTION) :
+ *   trip7 = 7,99 € / $8.99 · p30 = 14,99 € / $16.99 · season = 24,99 € / $27.99
+ *
  * `sos` figure ici pour la LIVRAISON d'un paiement DÉJÀ encaissé (1 €, 24 h) :
  * sa CRÉATION est refusée par mollie.php. Sans cette ligne, l'argent déjà
  * encaissé ne serait jamais livré (trou de confiance).
  */
 function mol_pass_prices(): array {
     return [
-        'p30'    => ['EUR' => 14.99, 'USD' => 11.99],
-        'trip7'  => ['EUR' => 4.99,  'USD' => null],
-        'season' => ['EUR' => 19.99, 'USD' => null],
+        'p30'    => ['EUR' => 14.99, 'USD' => 16.99],
+        'trip7'  => ['EUR' => 7.99,  'USD' => 8.99],
+        'season' => ['EUR' => 24.99, 'USD' => 27.99],
         'sos'    => ['EUR' => 1.00,  'USD' => null],
     ];
+}
+
+/**
+ * Montants de l'ANCIENNE offre B2C — acceptés UNIQUEMENT pour un paiement
+ * DÉJÀ encaissé dont la date de création est vérifiable et strictement
+ * antérieure au changement d'offre (cf. mol_offer_cutoff_date()).
+ *
+ * Pourquoi : les ventes payées à l'ancien tarif (trip7 4,99 € / $5.99,
+ * p30 11,99 $, season 19,99 €) doivent TOUJOURS être livrées — encaisser sans
+ * livrer serait un trou de confiance. Un paiement NOUVEL au tarif ancien reste
+ * refusé : la fenêtre est fermée par la date, pas par l'ignorance.
+ */
+function mol_historical_pass_prices(): array {
+    return [
+        'p30'    => ['EUR' => [14.99], 'USD' => [11.99]],
+        'trip7'  => ['EUR' => [4.99],  'USD' => [5.99]],
+        'season' => ['EUR' => [19.99], 'USD' => []],
+    ];
+}
+
+/** Date de coupure de l'ancienne offre B2C (changement du 2026-11-09). */
+function mol_offer_cutoff_date(): string {
+    return '2026-11-09T00:00:00Z';
 }
 
 /** Alias historique du pass 7 jours (`p7`) → `trip7`. */
@@ -593,6 +620,27 @@ function mol_validate_pass_amount($payment): array {
     }
 
     $expected = $prices[$pass][$currency] ?? null;
+    if ($expected !== null && abs($value - $expected) < 0.02) {
+        return ['ok' => true, 'pass' => $pass, 'currency' => $currency, 'value' => $value];
+    }
+
+    // Montant de l'ANCIENNE offre : accepté UNIQUEMENT pour un paiement déjà
+    // encaissé AVANT le changement d'offre (date de création vérifiable).
+    // Sans cette branche, les ventes payées à l'ancien tarif ne seraient
+    // jamais livrées (argent encaissé, accès jamais délivré).
+    $historical = mol_historical_pass_prices();
+    if (!empty($historical[$pass][$currency])) {
+        $createdRaw = $payment->createdAt ?? '';
+        $created = is_numeric($createdRaw) ? (float)$createdRaw : strtotime((string)$createdRaw);
+        if ($created && $created < strtotime(mol_offer_cutoff_date())) {
+            foreach ($historical[$pass][$currency] as $n) {
+                if (abs($value - $n) <= 0.02) {
+                    return ['ok' => true, 'pass' => $pass, 'currency' => $currency, 'value' => $value, 'historical' => true];
+                }
+            }
+        }
+    }
+
     if ($expected === null) {
         if (!($value > 0.50 && $value < 50)) return ['ok' => false, 'error' => 'amount_out_of_range'];
     } elseif (abs($value - $expected) >= 0.02) {
