@@ -1,3 +1,14 @@
+## 2026-11-10 00:03 UTC — fraîcheur satellite publiable sans casser le SLA, e-mails de vente rebranchés
+
+- Le SLA opérationnel reste **900 min** (`evaluateObservation.ok`). Une observation plus récente que celle déjà commitée ou live, de moins de 7 jours, peut être publiée et déployée. Refus maintenu : plus ancienne, source non live, pic tout-vert, plus de 7 jours.
+- Le classement `BLOCKED_STALE_SOURCE` ne se déclenche que si `verify-ftp-ready` sort en erreur. Sinon le job restait rouge après un simple avertissement et la donnée ne partait jamais en prod.
+- Dispatch prod de `data-refresh` / `daily-copernicus` seulement si `publish.outputs.changed == true`.
+- Bulletin week-end : timeout job 40 min.
+- Nouveau workflow `sales-lifecycle-emails` : briefing matin opt-in, panier abandonné **une fois** (Mollie inclus, cap 40), expiration, bienvenue, digest B2B **uniquement** `yacovassaraf@gmail.com`. CTA pass 30 jours **14,99 € / $16.99**. Aucun e-mail prospect hôtel. Dry-run par défaut sur dispatch manuel.
+- Aucun fichier `workers/sg-payments`, paywall, prix front ou SOS modifié.
+
+---
+
 ## 2026-11-09 15:36 UTC — Pont autonome GitHub ↔ Factory V3 ↔ OpenCode : cycle de vie live complet + 9 défauts corrigés
 
 - **Défaut #23 — un test NON DÉTERMINISTE échouait en CI.** `multi-repo-bridge-e2e.test.cjs` exigeait `opp.agent.agent` non vide : le routeur ne retient que les agents **réellement installés** (binaire `opencode` présent sur le PC du fondateur, **absent** sur le runner CI) → le test passait en local et **échouait en CI** (run 42651059357 : « FAIL agent routé décidé … Aucun agent exécutable installé »). Correctif : le pont expose un **point d'injection** `options.router` (symétrique à `options.safety` déjà présent) ; le test injecte une décision **déterministe** et vérifie le routage **décision** (agent retenu, moteur réel, écart avec le profil Factory, modèle, raison) au lieu de « un agent est installé sur cette machine ». Nouveau scénario **4b** : sur une machine **sans aucun agent**, la mission est **quand même importée et reste actionnable** (une mission est une donnée : elle ne doit pas être perdue) et la décision porte sa raison (« aucun agent exécutable installé »). Nouveau `lib/agent-router.test.cjs` : mapping type → profil, invariant « l'agent retenu est **toujours** exécutable en non-interactif » (jamais de fausse preuve sur l'issue), stabilité de la décision, absence de secret.

@@ -29,7 +29,10 @@ const { getAllRegions } = require('../../regions/index.cjs')
 
 const args = process.argv.slice(2)
 const DO_SEND = args.includes('--send')
+const ONCE = args.includes('--once')
 const SINCE_DAYS = Number((args.find(a => a.startsWith('--since-days=')) || '--since-days=1').split('=')[1]) || 1
+const MAX_ARG = (args.find(a => a.startsWith('--max=')) || '').split('=')[1]
+const MAX_EMAILS = MAX_ARG ? (Number(MAX_ARG) || 40) : (ONCE ? 40 : Infinity)
 // --only=<email|hash|hash-prefix> : relance ciblée d'UN panier précis (le reste reste à la loop planifiée)
 const ONLY_RAW = (args.find(a => a.startsWith('--only=')) || '').split('=')[1] || null
 const ONLY_HASH = ONLY_RAW ? (ONLY_RAW.includes('@') ? require('crypto').createHash('sha256').update(ONLY_RAW.trim().toLowerCase()).digest('hex').slice(0, 32) : ONLY_RAW.toLowerCase()) : null
@@ -120,20 +123,21 @@ function loadCadence(p) {
 // intra-journée (le script tourne 4×/j).
 function cadenceDue(entry, nowMs) {
   const n = entry ? (entry.n || 0) : 0
-  if (n >= CADENCE_OFFSETS_H.length) return false
+  const limit = ONCE ? 1 : CADENCE_OFFSETS_H.length
+  if (n >= limit) return false
   const first = entry && entry.f ? entry.f : nowMs
-  return nowMs >= first + CADENCE_OFFSETS_H[n] * 3600e3
+  const offsetH = ONCE ? 0 : CADENCE_OFFSETS_H[n]
+  return nowMs >= first + offsetH * 3600e3
 }
 
 // ---- Copy par langue × motif --------------------------------------------
 // 3 langues (fr = MQ/GP EUR, es = rivieramaya USD, en = florida/puntacana/barbados USD).
-// Prix : EUR = pass d'entrée réel 7,99 € (public/api/mollie-config.example.php `p7`,
-// aligné PremiumModal.jsx "Pass dès 7,99 €") — PAS le tripPass legacy 4,99 € de
-// regions/*.json (stale, pré-refonte 3-tiers). USD = $5.99 (tier d'entrée USD).
+// CTA = pass 30 jours au tarif live (EUR 14,99 € · USD $16.99). Le lien ouvre
+// ?pass=p30. Pas le tarif d'entrée historique 7,99 € / $5.99.
 function copy(region, kind) {
   const lang = region.primaryLang === 'fr' ? 'fr' : region.primaryLang === 'es' ? 'es' : 'en'
   const name = region.name
-  const price = lang === 'fr' ? '7,99 €' : '$5.99'
+  const price = region.currency === 'USD' ? '$16.99' : '14,99 €'
   const SHARED = {
     fr: { f1t: 'Carte des plages en direct', f1d: `Vérifie n’importe quelle plage de ${name} en 5 secondes.`,
           f2t: 'Vraies données satellite', f2d: 'Imagerie satellite actualisée 4 fois par jour.',
@@ -215,7 +219,7 @@ function buildHTML(region, email, kind) {
   // sur paymentLinks.tripPass = lien Stripe DÉSACTIVÉ (USD) ou, à défaut, le domaine
   // NU (EUR sans paymentLinks) → le lead retombait sur la home et devait re-chercher
   // la caisse. ?paywall=1 rouvre directement le storefront pass on-site.
-  const link = `https://${domain}/?paywall=1&utm_source=email&utm_medium=cart_recovery&utm_campaign=recover`
+  const link = `https://${domain}/?paywall=1&pass=p30&utm_source=email&utm_medium=cart_recovery&utm_campaign=pass30`
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width"></head>
 <body style="margin:0;padding:0;background:#F7F5EF;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
 <div style="max-width:480px;margin:0 auto;padding:20px">
@@ -257,23 +261,30 @@ async function detectKind(session) {
 }
 
 async function main() {
-  if (!STRIPE_KEY) { console.error('STRIPE_SECRET_KEY introuvable (.env)'); process.exit(1) }
-  console.log(`=== Cart Recovery === mode=${DO_SEND ? 'SEND' : 'DRY-RUN'} | fenêtre=${SINCE_DAYS}j | smtp=${mailReady() ? 'ok' : 'ABSENT'}`)
-
-  // Clients déjà actifs → exclure
-  const subs = await listAll('subscriptions?status=all')
-  const activeCustIds = [...new Set(subs.filter(s => s.status === 'active' || s.status === 'trialing').map(s => s.customer))]
-  const activeHashes = new Set()
-  for (const cid of activeCustIds) { try { const c = await stripe(`customers/${cid}`); if (c.email) activeHashes.add(emailHash(c.email)) } catch {} }
+  if (!STRIPE_KEY && !MOLLIE_KEY) {
+    console.log('STRIPE_SECRET_KEY et MOLLIE_API_KEY absents — no-op.')
+    return
+  }
+  console.log(`=== Cart Recovery === mode=${DO_SEND ? 'SEND' : 'DRY-RUN'} | fenêtre=${SINCE_DAYS}j | once=${ONCE ? 'oui' : 'non'} | smtp=${mailReady() ? 'ok' : 'ABSENT'}`)
 
   const cadence = loadCadence(SENT_PATH)
   const NOW = Date.now()
   const bouncedSet = hashedSet(loadJSON(BOUNCED_PATH, [])) // ne JAMAIS écrire à une adresse morte
   const cutoff = NOW - SINCE_DAYS * 864e5
-  const sessions = await listAll('checkout/sessions', 400)
-
   const candidates = []
   const seen = new Set()
+  const activeHashes = new Set()
+
+  if (!STRIPE_KEY) {
+    console.log('STRIPE_SECRET_KEY absent — relance Stripe ignorée.')
+  } else {
+  // Clients déjà actifs → exclure
+  const subs = await listAll('subscriptions?status=all')
+  const activeCustIds = [...new Set(subs.filter(s => s.status === 'active' || s.status === 'trialing').map(s => s.customer))]
+  for (const cid of activeCustIds) { try { const c = await stripe(`customers/${cid}`); if (c.email) activeHashes.add(emailHash(c.email)) } catch {} }
+
+  const sessions = await listAll('checkout/sessions', 400)
+
   for (const s of sessions) {
     if (s.payment_status === 'paid') continue
     if (s.created * 1000 < cutoff) continue
@@ -292,6 +303,7 @@ async function main() {
     if (kind === 'skip-fraud') { console.log(`  ⏭️  ${logId(email)} : carte fraud-flagged — pas de relance`); continue }
     seen.add(h)
     candidates.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
+  }
   }
 
   // ── Source MOLLIE (caisse live on-site) — ADDITIVE, FAIL-OPEN, gatée ──────────
@@ -321,7 +333,7 @@ async function main() {
         seen.add(h)
         mollieCands.push({ email, region, kind, h, touch: (cadence[h]?.n || 0) + 1 })
       }
-      console.log(`Mollie paniers abandonnés : ${mollieCands.length} [${MOLLIE_SEND ? 'ENVOI' : 'DRY — log only, MOLLIE_CART_RECOVERY=1 pour activer'}]`)
+      console.log(`Mollie paniers abandonnés : ${mollieCands.length} [${!MOLLIE_SEND ? 'LOG' : (DO_SEND ? 'ENVOI' : 'DRY')}]`)
       for (const c of mollieCands) console.log(`  • ${logId(c.email)} | ${c.region.name} | ${c.kind} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'}`)
       if (MOLLIE_SEND) candidates.push(...mollieCands)
     } catch (e) { console.log(`  ⚠️ Mollie recovery skip (fail-open): ${e.message}`) }
@@ -357,6 +369,10 @@ async function main() {
     } catch (e) { console.log(`  ⚠️ Subscribers recovery skip (fail-open): ${e.message}`) }
   }
 
+  if (Number.isFinite(MAX_EMAILS) && candidates.length > MAX_EMAILS) {
+    console.log(`Cap ${MAX_EMAILS} — ${candidates.length - MAX_EMAILS} reporté(s).`)
+    candidates.length = MAX_EMAILS
+  }
   const byKind = candidates.reduce((m, c) => ((m[c.kind] = (m[c.kind] || 0) + 1), m), {})
   console.log(`Leads à relancer : ${candidates.length}`, byKind)
   for (const c of candidates) console.log(`  • ${logId(c.email)} | ${c.region.name} (${c.region.primaryLang}) | ${c.kind} | touche J${c.touch === 1 ? '0' : c.touch === 2 ? '1' : '3'} | "${copy(c.region, c.kind).subject}"`)
