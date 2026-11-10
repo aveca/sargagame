@@ -1,3 +1,50 @@
+## 2026-11-10 23:20 UTC · Agent: OpenCode (coding + QA) — état live réel des 6 domaines + diagnostic de la boucle Factory #1384
+
+### Travail effectué
+- **Résumé 1 ligne** : l'état **live** des 6 domaines et de la boucle Factory est établi et documenté ; une **découverte P0** (la conversion B2C est fermée hors fenêtre satellite) est consignée pour décision fondateur — **aucun code produit, aucun paiement, aucun déploiement, aucun merge**.
+- **Détails** :
+  - **P0 live — la vente B2C est fermée quand l'observation satellite a plus de 12 h** (`.ai/bugs.md` **BUG-2026-015**). Sur les 6 domaines : la fiche s'ouvre par le pin mais **ne contient aucun CTA paywall** (`lockCtaCount = 0`), l'accueil n'a **aucun CTA Premium**, la carte n'affiche **aucun nom de plage** (`labels = 0`). Le paywall reste atteignable **par deep-link `?paywall=1`** (prix p30 14,99 € correct). Cause : `src/ChasseHome.jsx:522` (`satelliteDecisionCurrent` ⇒ observation ERDDAP **< 12 h**), observation live `2026-11-09T12:00:00Z` = **2101 min (35 h)**, `stale = false`, NOAA publiant **1×/jour à 12:00Z** ⇒ fenêtre fermée **12 h sur 24**. Corroboré par l'audit E2E planifié sur `main` (run `42909506789`) : **16 défauts bloquants**, tous `pick-beach`/`nav-broken`, **une seule cause racine**. **Décision founder requise** : (a) découpler l'entrée paywall du verdict satellite (la prévision 7 j vient du pipeline forecast) ou (b) aligner le seuil UI (720 min) sur le SLA de déploiement (900 min) et la cadence NOAA. **Aucun correctif produit dans ce PR.**
+  - **État live des 6 domaines** (lecture seule) : HTTP 200 partout (325–457 ms) ; bundle servi **pré-#1383** (`/premium/` EUR 799/1499/2499, USD 899/1699, **season USD absent**, **surcharge +15 %** encore appliquée, marqueurs SOS `sg-soscta`/`sg_sos_checkout`/`SOS PLAGE 24H`/`SOSPlage`, `/?sos=1` → 200) ; `GET /api/mollie-pay?pass=sos` → **410** sur les 6 (la création SOS est bien close côté serveur financier).
+  - **Workers live** : `sg-payments` = `e1d72c56-6d52-4fef-961d-9071ab1731c0` (2026-11-10T00:48Z, « Return 410 for SOS GET /api/mollie-pay ») ⇒ **pré-#1383, non redéployé** ; `sg-noso` = `2f8cf9c4-925c-4c08-9ef0-8d59002cbb77` (00:50Z, « Disable USD +15% display markup »).
+  - **Diagnostic de la boucle Factory #1384** (« heartbeat expiré ») : **cause racine unique prouvée** — `cfg.mission.maxAttempts` (3) existait dans `.ai/autopilot/config.json` mais **n'était jamais lu** par `scripts/autopilot/lib/mission-watchdog.cjs`. Le watchdog écrivait `retrying` (état non terminal) et se retrouvait « périmé » au cycle suivant (heartbeat jamais émis) ⇒ **auto-reprise infinie**. Mesures : **242 commentaires `retrying`** pour **1** `imported` et **1** `blocked` (11:45:54Z), sur 254 commentaires ; `attempts = 242` dans `mission-state.json`.
+  - **Second défaut, prouvé** : le garde-fou de sécurité a été déclenché par un **commentaire de statut** (11:39:16Z, ligne « … merge, déploiement et LIVE comme étapes distinctes » — une *description* de protocole) alors que le **corps de la mission est propre** (`blocked:false`). Le garde-fou scanne titre + corps + **commentaires** ⇒ une mission légitime a été bloquée 13 h après son import, sur une trace durable (`blockedSafety`) devenue fausse. Correctif en cours : les commentaires de statut de la boucle (`<!-- autopilot-status:… -->`, `<!-- SARGAGAME-CYCLE-STATUS -->`) sont écartés du scan, et un blocage de sécurité devenu sans objet peut être **levé**.
+  - **Troisième défaut** : un **timeout transitoire** unique sur `sargazotulum.com` a déclenché `FACTORY_STOP` et arrêté toute la boucle 24/7 — alors que le domaine répond 200 (86–457 ms). Le health check ne confirmait pas la panne.
+
+### Fichiers modifiés
+- `.ai/bugs.md` — **BUG-2026-015** (nouveau) : conversion fermée hors fenêtre satellite (P0, décision founder).
+- `.ai/changelog.md` — entrée datée : découverte live, état des 6 domaines, diagnostic #1384.
+- `.ai/current_state.md` — ce handoff.
+- `.ai/tasks.md` — tâche P0 ajoutée (décision produit + correctif), non marquée done.
+
+### Tests réalisés
+- [x] Lecture seule live sur les 6 domaines (HTTP 200, prix `/premium/`, marqueurs SOS, `/?sos=1`, `GET /api/mollie-pay?pass=sos` → 410)
+- [x] Sonde navigateur (iPhone 12, lecture seule) sur les 6 domaines : `labels`, `lockCtaCount`, CTA accueil, ouverture de fiche, paywall par deep-link
+- [x] Age de l'observation satellite calculé sur le JSON live : **2101 min** → `isSatelliteFresh12h` = false
+- [x] Audit E2E planifié sur `main` (run `42909506789`) : **16 défauts bloquants**, cause unique
+- [x] Analyse de l'issue #1384 (254 commentaires) : répartition `imported` 1 / `retrying` 242 / `blocked` 1
+- [x] Reproduction locale du faux positif du garde-fou (corps propre + commentaire de statut → `blocked:true`) — verrouillée par un test
+
+### Problèmes restants
+- [ ] **P0 → BUG-2026-015** : conversion fermée ~12 h sur 24 — **décision founder requise** avant tout correctif.
+- [ ] **P0 → Merge de #1406** : autorisation explicite requise sur le SHA exact ; **non mergée**.
+- [ ] **P0 → `sg-payments` non redéployé** (action manuelle du fondateur) : live `e1d72c56…` (pré-#1383).
+- [ ] **P0 → Déploiement production bloqué** par le SLA satellite (`sourceAgeMinutes > 900`), NOAA 1×/jour à 12:00Z. **Aucun contournement tenté.**
+- [ ] **P1 → Retrait de `sg-noso` suspendu** au déploiement (routes à remplacer, pas à supprimer).
+- [ ] **P1 → BUG-2026-014** : « Around me » incliquable (z-index) — tâche UI dédiée.
+- [ ] **P1 → Preuve bout-en-bout LIVE impossible** : pas de clé Mollie, pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+
+### Prochaine action recommandée
+1. **Trancher BUG-2026-015** (entrée paywall découplée du verdict satellite **ou** seuil aligné sur le SLA/cadence NOAA) — Rôle : founder + product_agent
+2. **Autoriser (ou refuser) le merge de #1406 sur le SHA exact** — Rôle : founder
+3. Après merge et publication NOAA (~12:00Z) : déployer le bundle, **redéployer `sg-payments`**, re-vérifier les 6 domaines, puis remplacer les 6 routes `sg-noso` — Rôle : devops_agent + qa_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-money-hardening-20261110` (base `origin/main` `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`)
+- PR : **#1406** — https://github.com/aveca/sargagame/pull/1406 — **OPEN, NON MERGÉE**
+- Commits : `ddefd5e2f` (chemin argent) · `bb61ac37c` (harnais E2E) · `5e3e696e7` (handoff) · *(docs live)*
+
+---
+
 ## 2026-11-10 21:33 UTC · Agent: OpenCode (coding) — P0 « chemin argent » : serveur autoritaire sur le checkout, PR #1370 reprise et réconciliée (NON mergée)
 
 ### Travail effectué
