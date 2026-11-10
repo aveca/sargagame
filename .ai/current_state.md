@@ -1,3 +1,53 @@
+## 2026-11-10 08:05 UTC · Agent: OpenCode (coding + growth + ui) — les 3 livrables sont produits
+
+### Travail effectué
+- **Résumé 1 ligne** : les **3 artefacts manquants** sont produits et vérifiés — (1) patch durable de l'offre B2C (422 225 o, 64 fichiers, application contrôlée), (2) audit UX **live** factuel + maquette `mockup-gp.html` (3 langues, conforme aux interdits), (3) **7 brouillons** de relance B2B #4–#10 (**0 envoi**) — et la mémoire projet est à jour.
+- **Détails** :
+  - **Panel de personas exécuté** (obligation AGENTS.md) : `product-manager` + `ux-critic` + `adversarial-reviewer`, en lecture seule, sur la maquette et les relances → verdicts **convergents** sur la hiérarchie (p30 = carte primaire, seule surface or), l'honnêteté de la donnée et le plafond de 7 brouillons. Condensé + arbitrages : `ux-audit/panneau-verdicts.md`.
+  - **Livrable 1 — patch durable** : `sargagame-cycle4/sargagame-b2c-offer-durable.patch` (422 225 o, 64 fichiers, `git diff --binary ff12dbfd3 17d75ec0a`). **Vérifié** : `git apply --check` OK sur `ff12dbfd3`, puis application réelle → arbre identique au commit de la PR (hash du seul fichier nouveau `b5fb19a4…` identique). Un patch produit via `Set-Content` avait été **corrompu par l'encodage PowerShell** → il a été réécrit directement par `git diff --output`.
+  - **Livrable 2 — audit UX + maquette** : `ux-audit/AUDIT-UX.md` (audit factuel code + live, défauts P0/P1/P2 avec `fichier:ligne`, 3 corrections prioritaires), `ux-audit/mockup-gp.html` (maquette autonome **hors `public/`/`dist/`**, bandeau « MAQUETTE — non publiée », 3 offres, FR/EN/ES), `ux-audit/mockup-qa.json`, `ux-audit/audit-live-report.json`, `ux-audit/audit-live-verify.json` + 10 captures.
+    - **Défauts UX prouvés sur le live** : « LA plage propre chaque matin, 7h » (`src/PassOffer.jsx:91`, live GP + US) · aperçu de prévision **codé en dur** « Net / Limpio » (`src/PremiumModal.jsx:894`, visible sur Tulum) · compteur « ★ 630+ suivent leurs plages » (`:126`) · badge « 0,50 €/jour » / « $0.57/day » (`:16,50`) · 2ᵉ bouton de paiement « Payer 4,99 € » (abonnement mensuel distinct — **faux positif du 1er script corrigé**) · barre collante « Voir le prix → » qui déclenche le paiement (`:157-163`) · cibles < 44 px · « 4×/jour » encore publié (`public/onboarding.html:536,587`, `public/jeu/index.html:324`).
+    - **Maquette contrôlée** : 3 langues × 0 violation d'interdit · 1 seule surface or · 0 cible < 44 px · 0 contraste non-AA · 0 texte < 12 px · 0 débordement · 3 cartes / 3 CTA · prix au format de la langue · badge « **Notre recommandation** » (teal) au lieu du superlatif « Le plus choisi » (non prouvé) · abonnement mensuel conservé mais **explicitement étiqueté « /mois »**.
+    - **Faux positifs corrigés** (2 scripts) : le « 4,99 € » du paywall est l'**abonnement mensuel distinct** (pas l'ancien tarif trip7) ; les contrastes « non-AA » étaient des éléments **masqués par le modal** (mesure refaite sur le pixel réellement peint via `elementsFromPoint`).
+  - **Livrable 3 — relances B2B #4–#10** : `b2b_outreach.md` — **7 brouillons, 0 envoi**, ton doux, ≤ 280 mots, 1 destinataire, lien de désinscription + `List-Unsubscribe` + reply-to `alerte@sargasses-martinique.com` + mentions 97TECH/RCS, **0 appel**, **0 CT / CC / BCC**.
+    - **État de contact réconcilié par `emailHash` strict** (jamais par nom de domaine approchant) : les 7 ont reçu c0 (28/06) + c4 (02/07) ; 3 ont en plus une touche de juillet (Majesty Palm 07/07, La Suite Villa 14/07) → **n° 4 pour eux, n° 3 pour les 4 autres** ; Karibea : la touche du 14/07 est partie sur **une autre adresse** de la société (hash `d62ef580…` ≠ `34e3bf35…`) → 2 messages à cette adresse, 3 touches à l'entreprise. Dernier envoi 118–130 j (cadence 90 j respectée). **0 bounce, 0 opt-out.**
+    - **Faits mobilisables vérifiés** : observation publiée la plus récente = **9 nov. 12:00 UTC** (`erddapTimestamp`) ; **21/21 plages suivies classées propres** à ce relevé (`history.json`) ; Anse Mitan `clean` (AFAI 0,07) ; Pointe des Châteaux `clean` (AFAI 0,06). **Pointe du Bout / Anse Gros Raisins / Anse Mabouya ne sont PAS dans les 21 suivies** → aucun statut avancé ; **Le François n'a aucune plage suivie** → **aucune plage nommée** dans ce brouillon.
+    - **Écartés** : « la saison bat son plein » (faux en novembre), « 4×/jour », « X jours à éviter », « Le plus choisi », alerte « avant l'échouage », tout pourcentage mono-région.
+    - **QC automatisé** (`b2b_outreach_qa.json`) : 7/7 brouillons conformes (190–221 mots, 0 mot interdit, unsub + mentions + reply-to + CTA + « stop » + date de l'observation présents, **0 plage nommée pour Le François**).
+  - **Déploiement : toujours BLOQUÉ, et toujours pour la même raison externe.** Run `Daily Copernicus + Deploy` de 06:49Z → `GATE_STATUS: BLOCKED_STALE_SOURCE`, `sourceAgeMinutes: 1129` (> SLA 900) ; le commit de données `a6e14b9ce` (« refresh Copernicus 06:49 UTC ») ne change **rien** à l'ancienneté de l'observation (toujours `2026-11-09T12:00:00Z`). **Aucun contournement du gate n'a été tenté.** Le retrait de `sg-noso` reste donc **suspendu à la séquence** : (1) déploiement, (2) vérification live, (3) remplacement de route, (4) re-vérification.
+
+### Fichiers modifiés
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire projet à jour (ce handoff + changelog + tâche). **Aucun code applicatif, aucun prix, aucun secret, aucun déploiement.**
+- Livrables (hors dépôt, dans la racine de session `C:\Users\user\AppData\Local\Temp\opencode\sargagame-cycle4\`) : `sargagame-b2c-offer-durable.patch` · `ux-audit/AUDIT-UX.md` · `ux-audit/panneau-verdicts.md` · `ux-audit/mockup-gp.html` · `ux-audit/mockup-qa.json` · `ux-audit/audit-live-report.json` · `ux-audit/audit-live-verify.json` · `ux-audit/live-*.png` · `ux-audit/mockup-0*.png` · `b2b_outreach.md` · `b2b_outreach_qa.json`.
+
+### Tests réalisés
+- [x] Patch : `git apply --check` → exit 0 sur `ff12dbfd3` ; application réelle → arbre identique à `17d75ec0a` (hash `b5fb19a4…` contrôlé)
+- [x] Audit live (Playwright iPhone 12, reduced-motion, **lecture seule**, deep-link `?paywall=1`, 0 clic sur un CTA de paiement) : `audit-ux-live.mjs` + `audit-ux-verify.mjs` → rapport + 10 captures
+- [x] Maquette : `verify-mockup.mjs` → **3 langues, 0 violation, 1 or, 0 <44 px, 0 non-AA, 0 <12 px, 0 overflow, 3 cartes/3 CTA**
+- [x] Brouillons B2B : `sg-b2b-qa.cjs` → **7/7 conformes** ; réconciliation de l'état de contact par hash (`sg-b2b-truth-table.cjs`)
+- [ ] Gate applicatif (build / bundle / smoke / `npm test`) → **NON REJOUÉ** : cette livraison ne touche **aucun** fichier applicatif (`.ai/**` seul, hors périmètre de build) — le gate de la PR #1383 reste vert sur `17d75ec0a`.
+
+### Problèmes restants / Blockers
+- [ ] **P0 — Déploiement bloqué par le SLA satellite** : `sourceAgeMinutes 1129 > 900` ; NOAA publie 1 observation/jour à 12:00Z → fenêtre **12:00Z → 03:00Z**. Reprise automatique (cron 12:00Z / 18:00Z). Ne jamais dégrader le gate.
+- [ ] **P0 — Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test/live), pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+- [ ] **P1 — Retrait de `sg-noso`** : **suspendu au déploiement** (routes à REMPLACER, pas à supprimer). Scripts prêts : `sg-cf-remove-noso-routes.cjs plan|apply` + `sg-live-verify-final.cjs`.
+- [ ] **P1 — Worker `sg-payments` non redéployé** : aucun workflow CI ne le déploie → action manuelle du fondateur.
+- [ ] **P1 — Validation de Yacov requise** : (a) maquette UX → avant toute mise en ligne ; (b) **7 brouillons B2B → 0 envoi tant que l'accord n'est pas écrit**.
+- [ ] **P2 — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`).
+- [ ] **P2 — Dette copy repérée par l'audit** (à traiter dans une PR dédiée après validation) : « 4×/jour » dans `public/onboarding.html:536,587`, `public/jeu/index.html:324`, `public/themes-lab/*`, `scripts/automation/b2b-cold-outreach.cjs` ; « Le plus choisi » dans `scripts/lib/premium-page.cjs:77` ; libellés de plans incohérents (`src/PremiumModal.jsx:930-933`, bloc `hasAnnual` latent sur les régions USD).
+
+### Prochaine action recommandée
+1. Après le run de 12:00Z/18:00Z : `node sg-live-verify-final.cjs` (prix / marqueurs SOS / `/?sos=1` / 410 × 6 domaines), puis **remplacer** les 6 routes `DOMAINE/* → sg-noso` par `DOMAINE/* → sargagame-<région>` (mapping live exact), puis re-vérifier — Rôle : devops_agent + qa_agent
+2. Présenter à Yacov : `ux-audit/AUDIT-UX.md` + `ux-audit/mockup-gp.html` (captures FR/EN/ES) et les 7 brouillons `b2b_outreach.md` — **décision demandée** : maquette → mise en ligne ou non ; relances → envoi ou non — Rôle : founder + ui_ux_agent + growth_agent
+3. Demander à Yacov : clé Mollie test, `sk_test` Stripe, clé service Supabase staging, token GitHub `actions: write` — Rôle : founder
+4. Ouvrir une PR dédiée pour la **dette copy** listée ci-dessus (4×/jour, « Le plus choisi », libellés de plans) — **seulement après validation** — Rôle : coding_agent
+
+### Branche / PR
+- Branche : `agent/coding/livrables-audit-ux-b2b-20261110` (base `origin/main` = `a6e14b9ce`)
+- PR : (ouverte sur cette branche, base `main`)
+- Commit head : (voir PR)
+
+---
 ## 2026-11-10 05:45 UTC · Agent: OpenCode (coding) — post-merge PR #1383
 
 ### Travail effectué
@@ -26,7 +76,7 @@
 - [ ] **P1 — Retrait de `sg-noso` : RÉPLACEMENT de route (pas suppression)**. Le retrait est **neutre pour le paywall** (prouvé ci-dessus) mais **obligatoirement un remplacement** : les workers `sargagame-*` n'ont aucune route publique. Mapping à reprendre **exactement** des service bindings live : `sargasses-guadeloupe.com → sargagame-gp` · `sargasses-martinique.com → sargagame-mq` · `sargassummiami.com → sargagame-florida` · `sargassumpuntacana.com → sargagame-puntacana` · `sargassumcancun.com → sargagame-rivieramaya` · `sargazotulum.com → sargagame-tulum`. Worker `sg-noso` **conservé** (routes re-créables en 1 appel). Scripts prêts : `sg-cf-remove-noso-routes.cjs plan|apply` + `sg-live-verify-final.cjs` (lecture seule). **Séquence obligatoire** : (1) déploiement du patch validé, (2) vérification live des 6 domaines, (3) remplacement de route, (4) re-vérification live.
 - [ ] **P0 — Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test ou live), pas de `STRIPE_TEST_SECRET_KEY` (sk_test), pas de clé service Supabase staging → « paiement réel + webhook + attribution d'accès » non démontrable. Action : exécution par le fondateur sur un paiement sandbox.
 - [ ] **P1 — Worker `sg-payments` non redéployé** : aucun workflow CI ne le déploie. Le dépôt est désormais **en avance** sur le live (mêmes prix + garde-fous) ; le redéploiement est une action manuelle du fondateur (cf. `workers/sg-payments/PROVENANCE.md` §8 et « Rappel de déploiement »).
-- [ ] **P1 — Artefacts toujours introuvables** : `/workspace/sargagame-b2c-offer-durable.patch`, audit UX + `mockup-gp.html` (`/workspace/ux-audit/`), relances B2B #4–#10 (`/workspace/b2b_outreach.md`). Rien en ligne sans validation de Yacov (maquette UX, relances).
+- [x] **Artefacts livrables** : produits le 2026-11-10 (voir le handoff du 08:05 UTC plus haut) — patch durable `sargagame-b2c-offer-durable.patch`, audit UX + `ux-audit/mockup-gp.html`, relances B2B `b2b_outreach.md` (7 brouillons, 0 envoi). **Rien en ligne sans validation de Yacov** (maquette UX, relances).
 - [ ] **P2 — `sales-lifecycle-emails`** : token GitHub 403 sur `workflow_dispatch` (besoin `actions: write`) → lancement manuel par Yacov en `send=false`.
 
 ### Prochaine action recommandée
