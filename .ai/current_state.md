@@ -1,3 +1,55 @@
+## 2026-11-10 21:33 UTC · Agent: OpenCode (coding) — P0 « chemin argent » : serveur autoritaire sur le checkout, PR #1370 reprise et réconciliée (NON mergée)
+
+### Travail effectué
+- **Résumé 1 ligne** : le chemin argent B2C des 6 sites est durci côté **serveur** (le worker qui encaisse réellement), réconcilié avec #1383 sans la régresser, et couvert par 99 assertions — **aucun paiement réel, aucun merge, aucun déploiement**.
+- **Détails** :
+  - **PR #1370 reprise, pas mergée telle quelle** : head `4809a76f83a174c3c8778eb369ac0b84c3c1bc60`, en retard sur #1383 (déjà mergée `1261f1ebf`) — prix périmés et diff vs `main` qui **supprimait** `handleMollieReturn`, `handleMolliePayPage`, `handleLegacyCheckout`, les 410 B2B, les plans B2B annuels et les abonnements B2C (⇒ merge naïf = régression). Branche neuve `agent/coding/p0-money-hardening-20261110` sur `origin/main` = `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`. **#1294 est un doublon** (déjà dans `main`) → pas de cherry-pick, documenté.
+  - **Failles fermées** (`workers/sg-payments/index.js`, serveur réel des 6 domaines sur `/api/*`) : `pass` inconnu ou **absent** ⇒ montant libre encaissable (0,01 €…299 €) ; montant/devise dictés par le client ; `source`/`plan`/`offer_kind` client **choisissant la classification du webhook** ⇒ **365 jours d'accès B2B « pro_annual » payés 29 €** (offre annuelle approuvée : 690 €) ; `redirectUrl` client (open redirect) ; `Host` client en URL de webhook (exfiltration vers un domaine arbitraire) ; `pfl_…` de profil marchand codé en dur (jamais utilisé) ; paiement `mode:"test"` rapporté `paid` par `payment_status` (⇒ Premium déverrouillé côté front).
+  - **Garde-fous** : `resolvePassOffer(pass, cur)` serveur autoritaire (grille unique `PASS_PRICES`) · `400 unknown_offer` / `400 price_mismatch` avec **0 appel Mollie** · `offer_kind` écrit par le serveur · métadonnées client filtrées (`RESERVED_METADATA_KEYS`) · `source` = attribution seule · **durée B2B dérivée du CATALOGUE du plan** (`B2B_PLANS[plan].interval`) + refus `offer_kind_plan_mismatch` (annuel sur plan mensuel) et `b2b_offer_with_pass` · **un pass B2C légitime reste B2C** (une source forgée ne prive pas l'acheteur) · `requestHost()` + `safeRedirectUrl()` (retour/webhook confinés à la flotte) · `mollieProfileId()` (binding uniquement) · `payment_status` : `mode` exposé, `paid=false` si test, contrôle propriétaire.
+  - **Même traitement** : `workers/sargagame/index.js` (workers régionaux), `public/api/mollie.php` (création fail-closed, email obligatoire, metadata + URLs serveur), `public/api/mollie-webhook.php` (B2B annuel reconnu par **montant approuvé** 290/690/1990 € · 390/790 $ **ou** `offer_kind` serveur ; `source` = trace seulement).
+  - **Harnais E2E réparé** (défaut pré-existant, reproduit à l'identique sur le build de référence) : la carte ne peint un verdict par plage que si l'observation satellite a **moins de 12 h** (NOAA publie 1×/jour à 12:00Z) ⇒ les tests n'étaient verts que dans la fenêtre de fraîcheur, et l'interception de `window.track` **n'interceptait rien** (le front appelle sa fonction importée ; télémétrie distante désactivée en local). → helper `tests/e2e/helpers/satellite-freshness.ts` (charge utile réelle, horodatage ERDDAP « maintenant », **aucun verdict fabriqué**) + capture au **sink first-party** `/collect.php` + assertions **renforcées** (`sg_session_start` **ET** `sg_beach_open`) + specs `around-me` (serveur du harnais, gate réel `?world_around_me=1`, bandeau cookies). **`tests/e2e` : 11 passed/14 failed → 18 passed/7 failed** ; les 7 restants = **un seul vrai bug produit** (`.ai/bugs.md` BUG-2026-014, la carte `z-index:1020` recouvre le panneau `z-index:20` ⇒ « Me localiser » incliquable) — **hors périmètre** de ce PR (feature flaggée, domaine UI).
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — worker financier live : création, classification, livraison, idempotence (cœur du correctif).
+- `workers/sargagame/index.js` — workers régionaux : mêmes garanties de création.
+- `public/api/mollie.php` — checkout PHP : grille serveur, email obligatoire, metadata + URLs flotte.
+- `public/api/mollie-webhook.php` — webhook PHP : classification `offer_kind` / montant approuvé.
+- `tests/unit/p0-money-path-offer-resolution.test.cjs` — **nouveau**, 99 assertions (0 paiement réel, appels sortants interceptés).
+- `tests/unit/b2b-conversion-instrumentation.test.cjs` — contrat **renforcé** (exige `mol_paylink_classify` + `$isApprovedAnnual && !$pass`).
+- `tests/e2e/funnel-payment.spec.ts`, `tests/e2e/qualite-ui-ux.spec.ts`, `tests/e2e/paywall-e2e.spec.ts`, `tests/e2e/around-me.spec.ts`, `tests/e2e/helpers/satellite-freshness.ts` (nouveau), `tests/e2e/helpers/cookie-banner.ts` (nouveau) — harnais E2E.
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md`, `.ai/bugs.md` — mémoire projet à jour.
+
+### Tests réalisés
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko gzip ≤ 210 Ko** (211232/215040)
+- [x] `php -l` → OK sur `mollie.php`, `mollie-webhook.php`, `mollie-lib.php`
+- [x] `npx esbuild workers/sg-payments/index.js workers/sargagame/index.js --bundle=false` → exit 0
+- [x] `npm test` → **190/190 fichiers OK** (l'échec initial `sitemap-guard-beach-pages` était un **ordre de build** : il passe une fois `dist/` présent)
+- [x] `node scripts/ux-smoke.mjs` → **4 tokens** : `FUNNEL_REACHED=map+fiche+paywall`, `ERRORS=[]`, `WHITE_OR_TRANSPARENT_BUTTONS=[]`, `RM_INFINITE=[]`
+- [x] `npx playwright test tests/e2e/funnel-payment.spec.ts` → **4/4**, stable sur 3 exécutions (≈ 7 s contre 30 s de timeout avant)
+- [x] `npx playwright test tests/e2e` → 18 passed / **7 failed** (cause unique = BUG-2026-014, bug produit réel)
+- [x] `node -e "require('./regions/index.cjs').assertAllRegionsValid()"` → OK ; `git diff --check` → exit 0
+
+### Problèmes restants
+- [ ] **P0 → Déploiement production bloqué par le SLA satellite** : ERDDAP NOAA `time_coverage_end = 2026-11-09T12:00:00Z`, `sourceAgeMinutes 1129 > 900` ; NOAA publie 1×/jour à 12:00Z → fenêtre **12:00Z→03:00Z** ; cron `daily-copernicus` 00:00/06:00/12:00/18:00Z. **Aucun contournement tenté.**
+- [ ] **P0 → Preuve bout-en-bout LIVE impossible** : pas de clé Mollie (test/live), pas de `STRIPE_TEST_SECRET_KEY`, pas de clé service Supabase staging.
+- [ ] **P0 → Worker `sg-payments` non redéployé** (action manuelle du fondateur) : version live `e1d72c56-6d52-4fef-961d-9071ab1731c0` (pré-#1383), SHA-256 `C478F188…CFA1A`, 137 931 o — le live est **en retard** sur `main` et sur ce PR.
+- [ ] **P1 → Retrait de `sg-noso` suspendu au déploiement** (routes à **remplacer**, pas à supprimer ; scripts `sg-cf-remove-noso-routes.cjs` en create→verify→delete + `sg-live-verify-final.cjs`).
+- [ ] **P1 → BUG-2026-014** (nouveau) : la carte recouvre le panneau « Around me » ⇒ « Me localiser » incliquable sur mobile. Correctif UI hors périmètre de ce PR.
+- [ ] **P1 → Autorisation requise** : merge de ce PR (SHA exact) **et** déploiement financier live.
+
+### Prochaine action recommandée
+1. Relire la PR et **autoriser (ou refuser) le merge sur le SHA exact** de la branche `agent/coding/p0-money-hardening-20261110` — Rôle : founder
+2. Après merge : **déployer** le bundle puis **redéployer `sg-payments`** (action manuelle), puis re-vérifier les 6 domaines (prix / SOS / 410) — Rôle : devops_agent + qa_agent
+3. Tâche UI dédiée : BUG-2026-014 (`z-index` du panneau « Around me ») — Rôle : ui_ux_agent
+
+### Branche / PR
+- Branche : `agent/coding/p0-money-hardening-20261110` (base `origin/main` `0160a4dd73a2b4bf5505ec2507a243b80f7b84ac`)
+- PR : *(à ouvrir — branche poussée, PR NON mergée)*
+- Commits : `ddefd5e2f` (chemin argent) · `bb61ac37c` (harnais E2E) · `docs(handoff)`
+
+---
+
 ## 2026-11-10 08:05 UTC · Agent: OpenCode (coding + growth + ui) — les 3 livrables sont produits
 
 ### Travail effectué

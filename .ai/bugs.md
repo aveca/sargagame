@@ -7,6 +7,15 @@
 
 ## 🟥 Non résolus
 
+### BUG-2026-014 — « Around me » : la carte recouvre le panneau, « Me localiser » est incliquable (mobile)
+
+- **Date** : 2026-11-10 · **Sévérité** : MEDIUM (fonctionnalité **flaggée** `?world_around_me=1`, donc hors funnel par défaut — mais **inutilisable** quand le flag est actif)
+- **Fichiers** : `src/world/AroundMeController.jsx:96-108` (racine du panneau : `position:"relative"`, `zIndex:20`) · `src/WorldMapView.jsx:1355-1367` (racine de la carte : `position:"fixed"`, `zIndex:1020`, `inset:0`)
+- **Description** : dans la vue « carte monde », le panneau « Around me » est rendu **avant** `<LazyWorldMapView>` (cf. `src/Sargasses_PROD.jsx:14813-14824`). La carte est un overlay `position:fixed; inset:0; z-index:1020` : elle **peint par-dessus** le panneau (`z-index:20`) et **intercepte le clic**. Conséquence réelle : le bouton « Me localiser » n'est pas cliquable sur mobile — la fonctionnalité ne peut pas être utilisée. Le `toBeVisible()` de Playwright passe pourtant (il vérifie la boîte, pas la superposition), d'où une fausse impression de couverture.
+- **Reproduction** : `npx playwright test tests/e2e/around-me.spec.ts` → **7 échecs**, tous avec la même cause : `<svg role="img" data-sg-live="1" …> from <div data-sg-live="1" class="sg-onink-scope"> subtree intercepts pointer events`. Sonde directe (iPhone 12, 390×844) : `document.elementFromPoint(cx, cy)` au centre du bouton → renvoie le `<svg>` de la carte, **pas** le bouton.
+- **Preuve** : capture `test-results/around-me-probe.png` + mesures de la sonde (bouton à `top:186px`, dans le viewport ; contrôleur `z-index:20` ; wrapper carte `z-index:1020`).
+- **Plan** : sortir le contrôleur du flux normal et le poser **au-dessus** de la carte (`position:fixed`/`absolute`, `z-index ≥ 1021`, `pointer-events:auto`), puis rejouer les 10 tests `around-me`. **HORS périmètre du PR « chemin argent »** (fonctionnalité flaggée, domaine UI) → tâche UI dédiée. Correctif harnais déjà appliqué dans le PR courant : la spec vise le bon serveur, le bon gate (`?world_around_me=1`) et referme le bandeau cookies — elle échoue désormais sur le **vrai** bug au lieu d'une illusion de test.
+
 ### BUG-2026-013 — Boucle Factory : le modèle local corrompt les chemins et écrit à côté de la cible
 
 - **Date** : 2026-11-08 · **Sévérité** : HIGH (bloque la production de PR par l'agent)
