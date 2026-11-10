@@ -61,7 +61,7 @@
 ### Branche / PR
 - Branche : `agent/coding/p0-sos-retrait-mollie-live-20261109`
 - PR : **#1383** (base `main`) — head précédent `dc83bdd44a2f15473212858b06c98f8022b9c49e`, **CONFLICTING/DIRTY** vs `origin/main` (`ff12dbfd3`) au début de cette session ; le rebase + le commit du patch ci-dessus sont **la prochaine action**
-- Commit head : *(à renseigner après commit)*
+- Commit head : 9ecf0ca6488189cfe3b86a630f3394a8081596b3 (patch )ac75194 + merge origin/main f12dbfd3)
 
 ---
 ## 2026-11-09 12:40 UTC · Agent: OpenCode (coding)
