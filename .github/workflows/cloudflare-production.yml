@@ -455,7 +455,12 @@ jobs:
           VITE_REGION: ${{ matrix.id }}
         run: node scripts/autopilot/check-predeploy-satellite-freshness.cjs
       - name: Deploy Worker
-        run: npx --yes wrangler@latest deploy --config wrangler.jsonc --strict
+        # `--strict` abandonne le déploiement dès que le Worker a été modifié
+        # via l'API script (le `secret put` de l'étape suivante, ou un réglage
+        # dashboard). Depuis ce blocage, aucun asset ne part, y compris le JSON
+        # satellite. On déploie le Worker du dépôt puis on réécrit les secrets.
+        # workers/sg-payments n'est pas ce Worker et n'est pas modifié ici.
+        run: npx --yes wrangler@latest deploy --config wrangler.jsonc
       - name: Configure Worker secrets
         run: |
           printf '%s' "$MOLLIE_API_KEY" | npx --yes wrangler@latest secret put MOLLIE_API_KEY --config wrangler.jsonc
