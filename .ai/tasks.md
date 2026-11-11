@@ -86,7 +86,7 @@
 ### TASK-P1-011 Contexte des prospects B2B perdu à l'écriture (action fondatrice)
 - **Priorité** : P1
 - **Rôle** : fondateur (Apps Script) ou coding_agent (schéma Supabase à fournir)
-- **Statut** : [ ] bloqué — décision requise
+- **Statut** : [~] TASK-P1-011 — in_progress by fondateur_agent
 - **Description** : la sheet `emails` ne conserve que `[date, email, island, source]` (`scripts/automation/fetch-subscribers.cjs`, plage `emails!A:E`) → **l'hôtel, la zone et la langue d'une demande B2B sont perdus** à l'écriture, alors que le formulaire les collecte. Deux voies : (A) modifier `scripts/appscript/Code.js` pour ajouter les colonnes → **clasp push = fondateur mobile** (bloqué par AGENTS.md) ; (B) route Worker → table `b2b_leads` — **impossible en l'état** : le DDL de `b2b_leads` n'est pas dans le dépôt (RLS active, privilèges anon révoqués par `scripts/migrations/003_b2b_leads_least_privilege.sql`) → aucun schéma vérifiable, donc rien n'a été écrit.
 
 ### TASK-P1-012 Punta Cana ES : URL 404 + landing sans formulaire
