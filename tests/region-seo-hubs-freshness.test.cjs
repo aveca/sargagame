@@ -161,6 +161,14 @@ try {
   assert.ok(freshEnMap.includes('987/100'));
   assert.ok(freshEnForecast.includes('987/100'));
   assert.ok(freshEnForecast.includes('Fri: Avoid'));
+
+  // Regression: semáforo must be bilingual (es + en hreflang cluster).
+  const freshEnSemaforo = readPage(freshDir, 'en', 'semaforo-del-sargazo');
+  assert.ok(freshEnSemaforo.includes('Sargassum Traffic Light'), 'EN semáforo page must use English title');
+  assert.match(freshEsSemaforo, /hreflang="en"/, 'ES semáforo must link to EN alternate');
+  assert.match(freshEnSemaforo, /hreflang="es"/, 'EN semáforo must link to ES alternate');
+  assert.match(freshEnSemaforo, /hreflang="en"/, 'EN semáforo must self-link');
+  assert.match(freshEnSemaforo, /hreflang="x-default"/, 'EN semáforo must have x-default');
 } finally {
   fs.rmSync(freshDir, { recursive: true, force: true });
 }
