@@ -1,3 +1,17 @@
+## 2026-11-11 23:30 UTC - Issue #1400 : le garde-fou de sécurité se bloquait lui-même (métadiscours corrigé)
+
+- **Faux positif mesuré** : la mission `[AUTOPILOT] SARG-P0-FIX-BEACH-JOURNEYS-LOCAL-20261110` (correctif d'audit **local uniquement**) était bloquée `production-deploy` par la seule phrase « Le script d'audit utilise des URL de domaines publics en dur, ce qui déclenche à tort le garde-fou production-deploy et empêche une reproduction locale sûre. » — le motif `production → deploy` matchait la DESCRIPTION de la règle, et la mission se bloquait toute seule.
+- `scripts/autopilot/lib/safety-guard.cjs` :
+  - Nouvelle exemption **métadiscours** (`POLICY_REFERENCE`) : une phrase qui référence le garde-fou lui-même (garde-fou, safety guard, identifiant de catégorie, « à tort », « faux positif », « motif : », règles de sécurité, policy…) n'est pas une demande d'opération interdite.
+  - **Garde-fou du garde-fou** (fail-closed) : l'exemption ne s'applique que si la phrase ne contient aucun `STRICT_IMPERATIVE` (déploie/merger/push en prod, crée un paiement, ajoute le secret…). Un ordre dissimulé dans du vocabulaire de règle reste bloqué.
+  - Lookbehind anti-tiret sur les impératifs : le « deploy » de l'identifiant `production-deploy` (et le « merge » de `payments-security-merge`) n'est plus pris pour un commandement.
+  - `DESCRIPTIVE_GOVERNOR` : « empêche de / détecte / permet de / peut » + infinitif = description, pas un ordre.
+- `scripts/autopilot/lib/safety-guard.test.cjs` : +8 assertions (section 4bis) — phrases réelles de #1400, statut du pont citant le motif, mission de maintenance du garde-fou, et 3 cas adversariaux (ordre derrière « policy », « garde-fou levé », référence de catégorie).
+- **Vérifié sur le texte réel intégral de l'issue #1400** (titre + corps + 5 commentaires, 6983 caractères scannés) : `blocked=false`, 0 catégorie.
+- Tests : `node scripts/autopilot/lib/safety-guard.test.cjs` → OK (26 assertions) ; suite `scripts/autopilot/lib/*.test.cjs` → 7/7 OK.
+- Non modifié : les 7 catégories bloquantes, les négations, le masquage de secrets, les consommateurs (`multi-repo-bridge.cjs`, `orchestrator.cjs`, signature inchangée).
+- Limites documentées : un commandement à l'infinitif accolé à une référence de règle sans verbe descriptif (« le garde-fou est levé : merger main ») reste un angle théorique ; la phrase de tâche AUTOPILOT_TASK reste la source d'instruction exécutable.
+
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.

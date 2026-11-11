@@ -1,3 +1,38 @@
+## 2026-11-11 23:30 UTC · Agent: OpenCode (coding) — issue #1400 garde-fou auto-bloquant
+
+### Travail effectué
+- **Résumé 1 ligne** : débloqué l'issue #1400 — le garde-fou de sécurité matchait ses propres catégories dans le texte descriptif d'une mission ; ajout d'une exemption « métadiscours » fail-closed + 8 tests, vérifié sur le texte réel de l'issue.
+- **Détails** :
+  - Reproduction sur le texte réel : `blocked=true` avec la seule phrase du diagnostic (« déclenche à tort le garde-fou production-deploy »).
+  - Correction dans `safety-guard.cjs` : `POLICY_REFERENCE` + `STRICT_IMPERATIVE` + `DESCRIPTIVE_GOVERNOR`, exemption appliquée après les négations et avant la détection de catégorie.
+  - Anti-contournement préservé : une phrase qui référence une règle ET contient un impératif direct reste bloquée (3 cas adversariaux testés).
+
+### Fichiers modifiés
+- `scripts/autopilot/lib/safety-guard.cjs` — exemption métadiscours + impératifs stricts + verbes descriptifs
+- `scripts/autopilot/lib/safety-guard.test.cjs` — +8 assertions (26 total)
+- `.ai/changelog.md`, `.ai/current_state.md`, `.ai/tasks.md` — handoff
+
+### Tests réalisés
+- [x] `node --check` sur les 2 fichiers modifiés → OK
+- [x] `node scripts/autopilot/lib/safety-guard.test.cjs` → OK (26 assertions, 0 échec)
+- [x] Suite `scripts/autopilot/lib/*.test.cjs` → 7/7 OK
+- [x] Texte réel #1400 (titre + corps + 5 commentaires) → `blocked=false` (avant : `blocked=true`)
+- [x] `git diff --check` → propre
+- [ ] Build/smoke/bundle non applicables (scripts autopilot uniquement, aucune UI/PHP/donnée touchée)
+
+### Problèmes restants
+- [ ] Le dispatch de la mission #1400 (audit parcours plages/fiches sur builds locaux, loopback-only) reste à relancer une fois la PR fusionnée et les services du pont redémarrés (service 4187 arrêté au moment du correctif).
+- [ ] Un ordre à l'infinitif sans verbe descriptif derrière une référence de règle reste un angle théorique (documenté dans le module).
+
+### Prochaine action recommandée
+1. Relire + fusionner la PR du garde-fou (aucun code applicatif touché) — Rôle : fondateur/release
+2. Relancer le pont (service 4187) puis re-dispatcher #1400 en local (builds locaux, aucune requête externe) — Rôle : autopilot
+
+### Branche / PR
+- Branche : `agent/coding/issue1400-safety-guard-policy`
+- PR : à créer (sans merge automatique)
+- Commit head : à définir
+
 ## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué

@@ -21,6 +21,12 @@
  *     d'override dans ce module ;
  *   - la détection est faite sur le TEXTE INTÉGRAL (titre + corps + commentaires
  *     + bloc AUTOPILOT_TASK), pas sur le seul titre ;
+ *   - une phrase NIÉE (« aucun merge », « ne pas déployer ») n'est pas un ordre ;
+ *   - une phrase qui référence le garde-fou lui-même (règle, catégorie, faux
+ *     positif) est un métadiscours et n'est pas un ordre, SAUF si elle contient
+ *     aussi un impératif direct (« le garde-fou est levé : déploie en prod ») —
+ *     cas réel issue#1400 : la mission se bloquait en décrivant son propre
+ *     correctif (« déclenche à tort le garde-fou production-deploy ») ;
  *   - les extraits publiés sont MASQUÉS (un secret ne doit jamais fuiter dans
  *     un commentaire GitHub ni dans un log) ;
  *   - le module est 100 % déterministe et sans dépendance : il est testable
@@ -176,6 +182,85 @@ function isNegated(sentence) {
 }
 
 /**
+ * MÉTADISCOURS — une phrase qui PARLE du garde-fou (référence à une règle, à
+ * une catégorie, à un faux positif) n'est pas une DEMANDE d'opération interdite.
+ *
+ * Cas réel (issue sargagame#1400) : la mission décrivait un correctif d'audit
+ * avec « …ce qui déclenche à tort le garde-fou production-deploy… » — le motif
+ * `production → deploy` matchait la DESCRIPTION elle-même et la mission se
+ * bloquait toute seule. Une référence à une catégorie est une DONNÉE, pas un
+ * ordre ; même raisonnement que pour les négations.
+ *
+ * Garde-fou du garde-fou (fail-closed) : l'exemption ne s'applique que si la
+ * phrase ne contient AUCUN impératif direct de l'opération interdite (déploie,
+ * merge, push en prod, crée un paiement, ajoute le secret…). Une phrase qui
+ * mélange vocabulaire de règle et ordre reste donc bloquée.
+ */
+const POLICY_REFERENCE = [
+  /\bgarde[- ]?fou?s?\b/i,
+  /\bsafety[- ]?guard\b/i,
+  // Les identifiants de catégories eux-mêmes (le statut du pont et les rapports
+  // les citent : « motif : déploiement en production [production-deploy] »).
+  /\b(?:production-deploy|payments-security-merge|payment-live|secrets-permissions|irreversible-migration|mass-send-spend)\b/i,
+  /\bcat(?:é|e)gor(?:ie|ies)\b/i,
+  /\b(?:règles?|rules?)\s+de\s+s(?:é|e)curit(?:é|e)\b/i,
+  /\bsafety\s+rules?\b/i,
+  /\bpolicy\b/i,
+  /\bfaux\s+positif[s]?\b/i,
+  /\bà\s+tort\b/i,
+  /\bpar\s+erreur\b/i,
+  /\bmotif\s*(?::|de\s+blocage)\b/i,
+  /\bauto-?autorisation\b/i,
+  /\bhumanGate\b/,
+  /\bP0\s*§\s*7\b/i,
+  /\bmission\s+P0\b/i,
+];
+
+/**
+ * IMPÉRATIFS DIRECTS — formes verbales qui ORDONNENT l'opération (jamais le
+ * nom d'action comme « déploiement », jamais le pluriel nominal « merges »).
+ * Lookbehind anti-tiret : « deploy » dans l'identifiant de catégorie
+ * « production-deploy » (et « merge » dans « payments-security-merge ») n'est
+ * pas un ordre — cas réel #1400.
+ */
+const STRICT_IMPERATIVE = [
+  /(?<![-])d(?:é|e)ploi(?:e|es|ez|er)\b/i,
+  /(?<![-])deploy(?:ez|er)?\b/i,
+  /\b(?:mets?|mett(?:ez|re))\b[^.]{0,20}\b(?:en\s+)?(?:prod(?:uction)?|ligne)\b/i,
+  /\b(?:pousse[sz]?|push(?:e[sz]?|er)?)\b[^.]{0,50}\b(?:prod|main|master|direct|live)\b/i,
+  /(?<![-])merg(?:e|ez|er)\b/i,
+  /\bfusionn(?:e|ez|er)\b/i,
+  /\bcr(?:é|e)(?:(?:é|e)[sz]?|er)\b[^.]{0,40}\b(?:paiement|payment|transaction|charge|refund|remboursement)\b/i,
+  /\brembours(?:e|ez|er)\b/i,
+  /\b(?:ajoute|ajoutez|ajouter)\b[^.]{0,30}\b(?:secret|token|credential|api[_ -]?key)\b/i,
+  /\bmodifi(?:e|ez|er)\b[^.]{0,30}\b(?:prix|tarif|price|forfait)\b/i,
+  /\b(?:envoi(?:e|ez)|envoy(?:e|ez|er))\b[^.]{0,60}\b(?:masse|massif|bulk|tous\s+les\s+utilisateurs|all\s+users)\b/i,
+  /\bsupprim(?:e|ez|er)\b[^.]{0,40}\b(?:table|colonne|database|base\s+de\s+donn)/i,
+  /\brm\s+-rf\b/i,
+  /\brotat(?:e|ez)\b[^.]{0,30}\b(?:secret|token|key)\b/i,
+];
+
+/**
+ * VERBES DESCRIPTEFS — quand un verbe descriptif (empêche, détecte, permet…)
+ * gouverne un infinitif, c'est une DESCRIPTION de la politique, pas un ordre
+ * (« le garde-fou empêche de merger sur main »). On retire ces constructions
+ * AVANT la recherche d'impératif, pour que l'infinitif dépendant ne soit pas
+ * pris pour un commandement.
+ */
+const DESCRIPTIVE_GOVERNOR = /\b(?:emp(?:ê|e)che[sz]?|bloqu\w*|interd\w*|refus\w*|d(?:é|e)tect\w*|d(?:é|e)clench\w*|permett\w*|p(?:e|ê)ut|pourr\w*|(?:é|e)vit\w*|pr(?:é|e)voit)\s+(?:à\s+tort\s+)?(?:de\s+|d'|l')?(?:[a-zàâäéèêëîïôöùûüç]+(?:er|ez|e)\b)?/gi;
+
+/** La phrase référence-t-elle le garde-fou ou ses règles ? */
+function hasPolicyReference(sentence) {
+  return POLICY_REFERENCE.some(re => re.test(sentence));
+}
+
+/** La phrase contient-elle un impératif direct d'opération interdite ? */
+function hasStrictImperative(sentence) {
+  const stripped = String(sentence || '').replace(DESCRIPTIVE_GOVERNOR, ' ');
+  return STRICT_IMPERATIVE.some(re => re.test(stripped));
+}
+
+/**
  * Évalue la sécurité d'une mission.
  *
  * @param {object} input
@@ -205,6 +290,10 @@ function evaluateMissionSafety(input = {}) {
       // Une phrase niée (« aucun merge », « ne pas déployer ») n'est pas une
       // demande d'opération interdite.
       if (isNegated(raw)) continue;
+      // Une phrase qui référence le garde-fou lui-même (règle, catégorie, faux
+      // positif) est un métadiscours : ce n'est une demande que si elle
+      // contient aussi un impératif direct (« le garde-fou est levé : déploie »).
+      if (hasPolicyReference(raw) && !hasStrictImperative(raw)) continue;
       for (const re of rule.patterns) {
         const m = re.exec(raw);
         if (!m) continue;
@@ -234,4 +323,6 @@ module.exports = {
   evaluateMissionSafety,
   maskSecrets,
   isNegated,
+  hasPolicyReference,
+  hasStrictImperative,
 };
