@@ -1,3 +1,17 @@
+## 2026-11-11 14:05 UTC - PR B « chemin argent » : le paiement Pro livre enfin l'accès (email + jeton au retour) — PR ouverte, non mergée, aucun déploiement
+
+- **Défaut commercial P0 mesuré sur le LIVE** : le parcours `https://sargasses-martinique.com/pro/espace/` (« S'abonner — 79 €/mois ») **encaissait sans livrer**. Audit du Worker live `sg-payments` (version `payfix-20261110-b2c`, 48 routes) : `fulfillPaidPayment` créait le grant durable + le jeton KV, **mais aucun email n'était envoyé**, et `handleMollieReturn` affichait « Paiement reçu » **sans aucun lien jeton** → un client payait 79 €/mois sans jamais recevoir son accès.
+- **Correctifs (PR B)** :
+  1. `deliverProAccessEmail()` — email transactionnel de livraison (FR/EN/ES) portant `https://<domaine>/pro/espace/?k=<jeton>` + `/?k=<jeton>`, offre/montant repris de `B2B_PLANS` (source de vérité), envoi via `sendEmail()` (4 fournisseurs, issue honnête). **Idempotent** : marqueur KV `mollie_pro_access_<id>` → un rejeu n'envoie rien ; ambiguïté conservée (pas de doublon), refus explicite libéré (réessai possible).
+  2. `handleMollieReturn` — bouton « Mon Espace Pro » portant le jeton quand l'accès est actif.
+  3. **Garde-fou double abonnement** : `maybeCreateFollowupSubscription` recréait un abonnement à chaque renouvellement (héritage `metadata.firstPaymentId` + `sequenceType: "recurring"`) → débit 2×/3× par mois. Refus explicite des renouvellements + marqueur scopé **client + offre**.
+  4. `public/api/mollie.php` — URL de webhook par défaut : `/public/api/mollie-webhook.php` (**404 live**) → `/api/mollie-webhook.php` (route joignable).
+- **Preuve (test comportemental, pas d'inspection de texte seule)** : `tests/unit/p0-pro-access-delivery.test.cjs` → **40 assertions PASS** : webhook d'un paiement Pro payé → 1 email contenant le lien `/pro/espace/?k=` → le jeton **extrait de l'email** est vérifié par `/api/widget-token.php` (`pro: true`) ; rejeu + second événement → **0 email** ; page de retour → lien jeton + « Mon Espace Pro » ; renouvellement → **0 abonnement** + email de jeton renouvelé ; URL PHP vérifiée.
+- **Gate** : `npm test` **190/190 OK** · `npm run build` exit 0 · budget **206,3 Ko ≤ 210 Ko** · `php -l` OK · `esbuild` exit 0 · `git diff --check` exit 0 · 14 tests Mollie existants rejoués PASS.
+- **Checkout TEST de bout en bout (live, antérieur)** : `POST /api/mollie.php {action:"create_subscription", plan:"pro_monthly"}` → checkout Mollie **79,00 €** « testmode payment » → carte test 4543 4740 0224 9996 → statut **Payé** → retour `/api/mollie-return` « Paiement reçu ». **Aucun droit créé** : `validatePaymentForFulfillment` refuse `mode !== "live"` (`not_live_mode`) — comportement voulu, la preuve bout-en-bout exigera une transaction LIVE.
+- **BLOQUANT VENTE (fondateur)** : le secret `MOLLIE_API_KEY` déployé est une clé **TEST** sur les 6 domaines → **zéro encaissement réel possible** tant que la clé LIVE n'est pas posée. Aucun secret touché, aucun prix modifié, aucune donnée inventée, **aucun déploiement**.
+
+---
 ## 2026-11-10 08:05 UTC - Les 3 livrables sont produits : patch durable vérifié, audit UX live + maquette GP conformes, 7 brouillons B2B (0 envoi)
 
 - **Panel de personas exécuté** (obligation AGENTS.md) : `product-manager` + `ux-critic` + `adversarial-reviewer`, lecture seule. Verdicts convergents : p30 = carte primaire (seule surface or), honnêteté de la donnée avant conversion, plafond de 7 brouillons. Arbitrages et désaccords résolus : `ux-audit/panneau-verdicts.md`.

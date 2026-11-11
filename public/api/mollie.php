@@ -123,7 +123,7 @@ try {
         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
         $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
-        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
+        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/api/mollie-webhook.php";
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -173,7 +173,7 @@ try {
         $planKey = $data['plan'] ?? '';          // 'pro_monthly' | 'brief_monthly'
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
         $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/pro/espace/';
-        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
+        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/api/mollie-webhook.php';
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         $metadata = $data['metadata'] ?? [];
         $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';

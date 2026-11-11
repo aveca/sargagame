@@ -1,3 +1,47 @@
+## 2026-11-11 14:05 UTC · Agent: OpenCode (coding) — PR B « chemin argent » : le paiement Pro livre enfin l'accès
+
+### Travail effectué
+- **Résumé 1 ligne** : le parcours Pro 79 €/mois **encaissait sans livrer** — le webhook créait le droit (grant durable + jeton KV) mais **n'envoyait aucun email**, et la page de retour ne portait **aucun lien jeton** ; corrigé, testé, **PR ouverte, non mergée, aucun déploiement**.
+- **Détails** :
+  - **Défaut D1 — aucun email de livraison** : `workers/sg-payments/index.js` (`fulfillPaidPayment` → branche `b2b_first`/`b2b_annual`) créait le grant mais n'envoyait rien. Le client payait 79 €/mois et ne recevait **aucun accès**. Nouvelle fonction `deliverProAccessEmail()` : email transactionnel (FR/EN/ES, langue alignée sur `/pro/espace/`) portant le lien `https://<domaine>/pro/espace/?k=<jeton>` + le lien carte `/?k=<jeton>`, offre et montant repris de `B2B_PLANS` (source de vérité, **aucun montant inventé**), envoi via `sendEmail()` (4 fournisseurs, issue de livraison **honnête** : `success` / `ambiguous` / `rejected`).
+  - **Défaut D2 — page de retour sans jeton** : `handleMollieReturn` renvoie désormais un bouton **« Mon Espace Pro »** qui porte le jeton (`?k=`) quand l'accès est actif, + une ligne qui confirme l'activation.
+  - **Défaut D3 — double abonnement au renouvellement (argent)** : `maybeCreateFollowupSubscription` recréait un abonnement à **chaque** paiement de renouvellement (le paiement hérite `metadata.firstPaymentId` et `sequenceType: "recurring"`) → le client aurait été **débité 2×, 3×… par mois**. Garde-fous : refus si `firstPaymentId` présent, refus si `sequenceType !== "first"`, marqueur KV désormais **scopé client + offre** (`mol_sub_cust_<customerId>_<planKey>`, l'ancienne clé par paiement reste lue → migration sans risque).
+  - **Défaut D4 — URL de webhook PHP 404** : `public/api/mollie.php` pointait par défaut sur `/public/api/mollie-webhook.php` (**404 live**, le Worker intercepte `/public/**`). Les 2 défauts pointent maintenant sur `/api/mollie-webhook.php` (route joignable).
+  - **Idempotence de la livraison** : marqueur KV `mollie_pro_access_<idPaiement>` — un rejeu du webhook **et** un second événement pour le même paiement n'envoient **aucun second email**. En cas d'issue ambiguë (le fournisseur a *pu* accepter), le marqueur est conservé (pas de doublon) ; en cas de refus explicite, il est libéré (un rejeu peut réessayer).
+  - **PR A (séparée)** : BUG-2026-015 — l'offre B2C est découplée de la fraîcheur satellite (CTA d'achat + date de dernière observation, données toujours suspendues) → **PR #1410**.
+
+### Fichiers modifiés
+- `workers/sg-payments/index.js` — livraison email + jeton au retour + garde-fou double abonnement.
+- `public/api/mollie.php` — URL de webhook par défaut joignable (2 lignes).
+- `tests/unit/p0-pro-access-delivery.test.cjs` — **nouveau**, 40 assertions (test comportemental : webhook, email, jeton vérifié, rejeu, page de retour, renouvellement, URL PHP).
+- `.ai/current_state.md`, `.ai/changelog.md`, `.ai/tasks.md` — mémoire projet à jour.
+
+### Tests réalisés
+- [x] `node tests/unit/p0-pro-access-delivery.test.cjs` → **40 assertions PASS** (dont « le jeton livré est vérifié `pro:true` »)
+- [x] `npm test` → **190/190 OK** (le fichier `sitemap-guard-beach-pages` exige `dist/` : OK après build)
+- [x] `npm run build` → exit 0
+- [x] `node scripts/check-bundle-budget.cjs` → **206,3 Ko ≤ 210 Ko** (exit 0)
+- [x] `php -l public/api/mollie.php` → OK · `npx esbuild workers/sg-payments/index.js` → exit 0 · `git diff --check` → exit 0
+- [x] 14 tests Mollie/paiement existants rejoués → PASS (aucune régression)
+
+### Problèmes restants
+- [ ] **BLOQUANT VENTE — clé Mollie LIVE** : le secret `MOLLIE_API_KEY` déployé est une clé **TEST** (bandeau « this is a testmode payment » sur les 6 domaines) → **aucun encaissement réel possible** tant que le fondateur n'a pas posé la clé LIVE. Action fondateur, non exécutable par l'agent (secret).
+- [ ] **Livraison non validable en TEST** : `validatePaymentForFulfillment` impose `mode === "live"` (`not_live_mode`) → par conception, un paiement testmode ne délivre aucun droit. La preuve bout-en-bout exigera une transaction LIVE.
+- [ ] **Déploiement du Worker `sg-payments`** : le code de la PR B n'est **pas** redéployé (aucun déploiement financier sans validation explicite).
+- [ ] **PHP = chemin de repli seulement** : les 6 domaines sont servis par le Worker `sg-payments` ; le PHP (`mollie.php`, `mollie-webhook.php`) n'est **pas** le chemin live. Le PHP **n'envoie toujours pas** l'email de livraison (helper `mol_b2b_trial_email` absent du dépôt, dette connue R8) : à traiter si un domaine repassait en PHP-only.
+
+### Prochaine action recommandée
+1. **Fondateur** — poser la clé Mollie **LIVE** (secret `MOLLIE_API_KEY`) sur `sg-payments` → Rôle : fondateur (autorisation explicite requise)
+2. **Fondateur** — valider le déploiement de la PR B (SHA exact + preuve + rollback) → Rôle : fondateur
+3. **DevOps** — redéployer `sg-payments` sur le SHA validé, puis rejouer le parcours Pro live (checkout → webhook → email → accès) → Rôle : devops
+
+### Branche / PR
+- Branche : `agent/coding/p0-pro-delivery-20261111`
+- PR : (à l'ouverture — voir `.ai/changelog.md`)
+- Commit head : (à l'ouverture)
+
+---
+
 ## 2026-11-10 08:05 UTC · Agent: OpenCode (coding + growth + ui) — les 3 livrables sont produits
 
 ### Travail effectué
