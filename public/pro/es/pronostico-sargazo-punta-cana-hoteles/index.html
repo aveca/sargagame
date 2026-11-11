@@ -366,26 +366,62 @@
   });
 
 
-  // --- Captura de lead B2B → Apps Script (fuente dedicada) ---
+  // --- Captura de lead B2B → persistance vérifiable (JSON) + succès après confirmation réelle ---
+  // (1) Enregistrement du prospect : best-effort vers Apps Script (même patron que submitLead).
+  // (2) Confirmation de persistance : POST /api/b2b-trial.php → {ok, token, days: 30}.
+  //     Le succès n'est affiché qu'après réponse JSON vérifiable. Jamais de succès factice.
   var form=document.getElementById('b2b-form');
+  var formOk=document.getElementById('form-ok');
+  var btn=form.querySelector('button[type="submit"]');
+  var busy=false;
+  function formErr(msg){
+    var el=document.getElementById('form-err');
+    if(!el){el=document.createElement('p');el.id='form-err';el.style.cssText='color:#dc2626;margin-top:10px;font-size:13px;display:none';form.appendChild(el);}
+    el.textContent=msg;el.style.display='block';
+  }
+  function formErrHide(){var el=document.getElementById('form-err');if(el)el.style.display='none';}
   form.addEventListener('submit',function(e){
     e.preventDefault();
+    if(busy)return;                       // anti double-clic
+    formErrHide();
     var fd=new FormData(form);
-    var payload={
-      email:(fd.get('email')||'').trim(),
-      island:'PUNTACANA',
-      source:'b2b_hotel_request',
-      hotel_name:(fd.get('hotel_name')||'').trim(),
-      note:(fd.get('note')||'').trim(),
-      zone:'Punta Cana',
-      lang:'es',
-      date:new Date().toISOString()
-    };
-    fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}).catch(function(){});
-    try{if(window.gtag)gtag('event','sg_b2b_signup',{vertical:'hotels',zone:'puntacana',lang:'es'});}catch(_){}
-    form.style.display='none';
-    document.getElementById('form-ok').style.display='block';
-    document.getElementById('form-ok').scrollIntoView({behavior:'smooth',block:'center'});
+    var email=(fd.get('email')||'').trim();
+    var hotelName=(fd.get('hotel_name')||'').trim();
+    var note=(fd.get('note')||'').trim();
+    if(!email)return;
+    busy=true;
+    if(btn){btn.disabled=true;btn.textContent='Enviando…';}
+    // (1) Lead — best-effort, indépendant, n'empêche jamais le token.
+    (function(){
+      var body=JSON.stringify({
+        email:email,island:'PUNTACANA',source:'b2b_hotel_request',
+        hotel_name:hotelName,note:note,zone:'Punta Cana',lang:'es',
+        date:new Date().toISOString()
+      });
+      var sent=false;
+      try{if(navigator.sendBeacon)sent=navigator.sendBeacon(ENDPOINT,body);}catch{}
+      if(!sent){fetch(ENDPOINT,{method:'POST',mode:'no-cors',keepalive:true,headers:{'Content-Type':'text/plain'},body:body}).catch(function(){});}
+    })();
+    // (2) Persistance vérifiable → JSON {ok, token, days: 30}
+    fetch('/api/b2b-trial.php',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,name:hotelName,island:'PUNTACANA',beach:'Punta Cana',marketingConsent:0,consentSource:'b2b_trial_form'})})
+    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(function(d){
+      if(d&&d.ok&&d.token){
+        // Persistance réelle confirmée → afficher le succès
+        form.style.display='none';
+        formOk.style.display='block';
+        formOk.scrollIntoView({behavior:'smooth',block:'center'});
+        // Conversion UNIQUEMENT après confirmation réelle
+        try{if(window.gtag)gtag('event','sg_b2b_signup',{vertical:'hotels',zone:'puntacana',lang:'es'});}catch(_){}
+      }else{throw new Error(d&&d.error?d.error:'résultat invalide');}
+    })
+    .catch(function(err){
+      // Erreur réseau visible, champs conservés, bouton réactivé
+      busy=false;
+      if(btn){btn.disabled=false;btn.textContent='Recibir el resumen gratuito';}
+      formErr('Impossible d\'enregistrer votre demande pour le moment. Vérifiez votre connexion et réessayez.');
+    });
   });
 })();
 </script>
