@@ -213,7 +213,7 @@ export default function WelcomePoste({ lang="fr", allBeaches=[], favorites=[], o
 
           {/* [D] PREUVE — 1 ligne + lien, encart sobre */}
           <div style={{...card, background:"#fff8e8", borderStyle:"dashed"}}>
-            <div style={{...subTxt, color:"#3a3548"}}>{_t(lang,"On ne te demande pas de nous croire : 76 à 79 % de justesse selon la saison, confiance forte J0-J3. On publie nos erreurs, datées.","Don't take our word: 76-79% accuracy by season, strong confidence D0-D3. We publish our errors, dated.","No nos creas: 76-79 % de acierto según temporada, confianza alta D0-D3. Publicamos nuestros errores, fechados.")}</div>
+            <div style={{...subTxt, color:"#3a3548"}}>{_t(lang,"Nos résultats sont publiés et datés ; la fiabilité varie selon le régime et l’horizon.","Our results are published and dated; reliability varies by regime and forecast horizon.","Publicamos resultados fechados; la fiabilidad varía según el régimen y el horizonte de previsión.")}</div>
             <button onClick={openProof} style={{marginTop:8, background:"none", border:"none", padding:0, font:"800 12px/1.2 'Bricolage Grotesque',system-ui,sans-serif", color:INK, textDecoration:"underline", cursor:"pointer"}}>{_t(lang,"Va voir ce qu'on vaut →","See what we're worth →","Mira lo que valemos →")}</button>
           </div>
 
