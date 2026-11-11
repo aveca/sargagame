@@ -563,14 +563,20 @@ console.log('=== ÉTAPE 11d : levée du faux blocage (cas réel #1384) ===');
 
   const ingestRelease = bridge.ingestMultiRepo({
     gh: fakeGh, log: () => {}, localRepo: LOCAL, queue: memory, saveQueue: () => {}, writeOpportunityFile: () => {},
+    // Scheduler injecté : la mission n'a JAMAIS été claimée → elle doit
+    // redevenir `new` (sélectionnable par `analyze`), et non `picked`
+    // (statut « réclamé », invisible au pool).
+    schedulerState: { claimedIds: [] },
   });
 
   const releasedOpp = memory.opportunities.find(o => o.id === 'E2E-TASK-FALSEBLOCK');
   const releasedState = lifecycleForRelease.findByTaskId('E2E-TASK-FALSEBLOCK');
 
   check('la levée est signalée', ingestRelease.released === 1, JSON.stringify(ingestRelease));
-  check('la mission n\'est PAS re-bloquée', releasedOpp && releasedOpp.status === 'picked',
+  check('la mission redevient SÉLECTIONNABLE (statut new)', releasedOpp && releasedOpp.status === 'new',
     releasedOpp && releasedOpp.status);
+  check('le statut de sortie de la levée est tracé', releasedOpp && releasedOpp.safetyReleasedTo === 'new',
+    releasedOpp && releasedOpp.safetyReleasedTo);
   check('le motif de blocage est purgé', releasedOpp && releasedOpp.blockReason === null,
     JSON.stringify(releasedOpp && releasedOpp.blockReason));
   check('le marqueur de sécurité est levé', releasedOpp && releasedOpp.safety && releasedOpp.safety.blocked === false,
@@ -587,6 +593,45 @@ console.log('=== ÉTAPE 11d : levée du faux blocage (cas réel #1384) ===');
   check('aucun commentaire "blocked" publié pour cette mission',
     !ghState.published.some(c => c.issue === 9606 && c.body.includes('**blocked**')),
     JSON.stringify(ghState.published.filter(c => c.issue === 9606).map(c => c.body.slice(0, 60))));
+}
+
+console.log('=== ÉTAPE 11e : mission DÉJÀ claimée par le scheduler → statut picked ===');
+{
+  // Cas symétrique : si le scheduler a déjà claimé la mission, la lever en
+  // `new` l'exposerait au pool pendant que le scheduler la croit claimée
+  // (risque de doublon). Elle doit rester `picked`.
+  const claimedTask = taskBlock({
+    task_id: 'E2E-TASK-CLAIMED',
+    issue_number: 9607,
+    title: 'Mission déjà claimée par le scheduler',
+    diagnostic: 'Corriger un défaut observé sur la page plage.',
+  });
+  ghState.repos[LOCAL].issues.push(issueOf(9607, claimedTask, LOCAL));
+  memory.opportunities.push({
+    id: 'E2E-TASK-CLAIMED',
+    fingerprint: bridge.fingerprint(LOCAL, 9607, 'E2E-TASK-CLAIMED'),
+    title: claimedTask.title,
+    type: 'agent-task',
+    status: 'blocked',
+    repository_full_name: LOCAL,
+    issue_number: 9607,
+    blockReason: '[safety] déploiement en production [production-deploy]',
+    safety: { blocked: true, reason: 'déploiement en production [production-deploy]' },
+  });
+
+  bridge.ingestMultiRepo({
+    gh: fakeGh, log: () => {}, localRepo: LOCAL, queue: memory, saveQueue: () => {}, writeOpportunityFile: () => {},
+    schedulerState: { claimedIds: ['E2E-TASK-CLAIMED'] },
+  });
+
+  const claimedOpp = memory.opportunities.find(o => o.id === 'E2E-TASK-CLAIMED');
+  check('mission déjà claimée → statut picked (pas re-exposée au pool)',
+    claimedOpp && claimedOpp.status === 'picked', claimedOpp && claimedOpp.status);
+  check('mission déjà claimée → levée du marqueur de sécurité',
+    claimedOpp && claimedOpp.safety && claimedOpp.safety.blocked === false,
+    JSON.stringify(claimedOpp && claimedOpp.safety));
+  check('mission déjà claimée → toujours une seule entrée',
+    memory.opportunities.filter(o => o.id === 'E2E-TASK-CLAIMED').length === 1);
 }
 
 console.log(failures === 0 ? 'E2E-BRIDGE TESTS : OK (0 échec)' : `E2E-BRIDGE TESTS : ${failures} ÉCHEC(S)`);

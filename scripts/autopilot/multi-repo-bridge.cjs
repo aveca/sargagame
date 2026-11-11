@@ -37,6 +37,7 @@ const mem = require('./lib/memory.cjs');
 const safety = require('./lib/safety-guard.cjs');
 const lifecycle = require('./lib/mission-lifecycle.cjs');
 const agentRouter = require('./lib/agent-router.cjs');
+const scheduler = require('./lib/scheduler.cjs');
 
 /** Dépôts autorisés. Liste fermée : aucun autre dépôt n'est jamais lu. */
 const ALLOWED_REPOS = ['aveca/bot-wow', 'aveca/sargagame'];
@@ -321,16 +322,48 @@ function recordBlockedSafety(queue, repoFullName, issueNumber, taskId, key, reas
  *
  * Un blocage pour un autre motif (PR en cours, mission rejetée) n'est JAMAIS
  * levé par cette fonction.
+ *
+ * ── Statut de sortie : `new` ou `picked` ? ─────────────────────────────────
+ * Ce n'est PAS un détail : c'est la différence entre une mission RELANCÉE et
+ * une mission LIBÉRÉE mais INVISIBLE.
+ *
+ *   - `analyze.cjs` ne sélectionne QUE les opportunités en statut `new`
+ *     (`pool = queue.filter(o => o.status === 'new')`) ;
+ *   - `picked` signifie « RÉCLAMÉE par le scheduler » : `persistClaimed`
+ *     la traite comme déjà claimée, et `analyze` l'ignore ;
+ *   - `restoreSelected` ne restaure que l'opportunité REFERENCÉE par le
+ *     scheduler (`claimedId` / `selectedId`).
+ *
+ * Mettre la mission libérée en `picked` sans que le scheduler la référence
+ * revient donc à la rendre INEXÉCUTABLE : elle ne serait plus jamais
+ * sélectionnée (constaté en exécution réelle le 2026-11-11 : mission #1384
+ * libérée, statut `picked`, jamais sélectionnée).
+ *
+ * Règle retenue :
+ *   - si le scheduler a DÉJÀ claimé la mission (`claimedIds`) → `picked`
+ *     (le scheduler la restaurera : pas de doublon) ;
+ *   - sinon → `new` (elle redevient sélectionnable par `analyze`).
+ *
+ * Dans les deux cas, une seule entrée en queue : la levée ne crée JAMAIS de
+ * doublon d'opportunité.
  */
-function releaseSafetyBlocked(queue, opp) {
+function releaseSafetyBlocked(queue, opp, schedulerState = null) {
   if (!queue || !opp) return null;
   const queued = (queue.opportunities || []).find(o =>
     o && (o.id === opp.id || o.fingerprint === opp.fingerprint));
   if (!queued || !queued.safety || queued.safety.blocked !== true) return null;
   if (queued.status !== 'blocked') return null;
-  queued.status = 'picked';
+
+  let st = schedulerState;
+  if (!st) {
+    try { st = scheduler.loadScheduler(); } catch (_) { st = { claimedIds: [] }; }
+  }
+  const alreadyClaimed = Array.isArray(st && st.claimedIds) && st.claimedIds.includes(queued.id);
+
+  queued.status = alreadyClaimed ? 'picked' : 'new';
   queued.blockReason = null;
   queued.safetyReleasedAt = C.nowIso();
+  queued.safetyReleasedTo = queued.status;
   queued.safety = { blocked: false, reason: queued.safety.reason || '', releasedAt: queued.safetyReleasedAt };
   if (Array.isArray(queue.blockedSafety)) {
     queue.blockedSafety = queue.blockedSafety.filter(e => {
@@ -755,6 +788,10 @@ function publishStatus(repoFullName, issueNumber, status, details = '', options 
  *        sur l'agent retenu dépend de la machine (cf. run CI 42651059357).
  * @param {{evaluateMissionSafety:Function}} [options.safety] verdict de
  *        sécurité injecté (tests) ; par défaut : `lib/safety-guard.cjs`.
+ * @param {{claimedIds:string[]}} [options.schedulerState] état du scheduler
+ *        injecté (tests) ; par défaut : `lib/scheduler.cjs`. Détermine si une
+ *        mission libérée redevient `new` (sélectionnable) ou `picked`
+ *        (déjà claimée par le scheduler).
  */
 function ingestMultiRepo(options = {}) {
   const dry = options.dry === true;
@@ -845,7 +882,7 @@ function ingestMultiRepo(options = {}) {
       // cela la mission restait bloquée indéfiniment, sur la foi d'une trace
       // durable devenue fausse.
       if (!(opp.safety && opp.safety.blocked)) {
-        const released = releaseSafetyBlocked(queue, opp);
+        const released = releaseSafetyBlocked(queue, opp, options.schedulerState || null);
         if (released) {
           releasedCount += 1;
           log(`[bridge] LEVÉE ${repoFullName} #${opp.issue_number} ${opp.id} — le blocage de sécurité ne s'applique plus`);
