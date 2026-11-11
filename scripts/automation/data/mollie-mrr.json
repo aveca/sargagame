@@ -2,8 +2,8 @@
   "schema_version": 3,
   "attribution_policy": "sargasses-brand-and-plan-v1",
   "mollie_account_payments_this_month": 0,
-  "date": "2026-11-10",
-  "timestamp": "2026-11-10T23:06:08.307Z",
+  "date": "2026-11-11",
+  "timestamp": "2026-11-11T05:38:22.162Z",
   "source": "mollie-api",
   "mrr": {
     "total_eur": 0,
@@ -299,6 +299,40 @@
     {
       "schema_version": 3,
       "date": "2026-11-10",
+      "mrr": {
+        "total_eur": 0,
+        "subscriptions_eur": 0,
+        "passes_month_eur": 0,
+        "b2b_month_eur": 0,
+        "by_currency": {
+          "EUR": {
+            "subscriptions": 0,
+            "passes_month": 0,
+            "b2b_month": 0,
+            "total": 0,
+            "revenue_month": 0,
+            "payments": 0
+          }
+        }
+      },
+      "customers": {
+        "active_subs": 0,
+        "paid_this_month": 0,
+        "unique_payers_all": 0,
+        "unattributed_active_subs": 0,
+        "unattributed_paid_this_month": 0
+      },
+      "revenue": 0,
+      "revenue_by_currency": {},
+      "unattributed": {
+        "active_subscriptions": 0,
+        "payments_this_month": 0,
+        "revenue_this_month_by_currency": {}
+      }
+    },
+    {
+      "schema_version": 3,
+      "date": "2026-11-11",
       "mrr": {
         "total_eur": 0,
         "subscriptions_eur": 0,
