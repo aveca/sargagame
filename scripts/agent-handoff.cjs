@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * agent-handoff.cjs — Script de handoff automatisé entre agents
- * 
+ *
  * Usage:
  *   node scripts/agent-handoff.cjs                    # Mode interactif
  *   node scripts/agent-handoff.cjs --auto             # Mode auto (pick + claim)
@@ -30,30 +30,31 @@ function readFile(p) { return fs.readFileSync(p, 'utf-8'); }
 function writeFile(p, c) { fs.writeFileSync(p, c, 'utf-8'); }
 function run(cmd) { return execSync(cmd, { encoding: 'utf-8', stdio: 'pipe' }).trim(); }
 
+// Deux formats de ligne de statut sont supportés :
+//   Format A (liste) : - [ ] TASK-PX-XXX ...
+//   Format B (détail) : - **Statut** : [ ] TASK-PX-XXX ...
+const STATUS_RE = /^\s*-\s*(?:\*\*Statut\*\*\s*:\s*)?\[([ x~])\]\s*(TASK-P\d-\d{3})/;
+
 function parseTasks(content) {
   const lines = content.split('\n');
   const tasks = [];
   let currentSection = '';
-  
+  const seenIds = new Set();
+
   for (const line of lines) {
     if (line.startsWith('## ')) currentSection = line.slice(3).trim();
-    
-    // Format 1: liste avec checkbox - [ ] TASK-PX-XXX
-    let match = line.match(/^-\s*\[([ x~])\]\s*(TASK-P\d-\d{3})\s*(.*)/);
-    
+
+    const match = line.match(STATUS_RE);
     if (match) {
+      if (seenIds.has(match[2])) continue;
+      seenIds.add(match[2]);
       tasks.push({
         status: match[1],
         id: match[2],
-        rest: match[3].trim(),
+        rest: line.slice(match[0].length).trim(),
         section: currentSection
       });
-      continue;
     }
-    
-    // Format 2: header ### TASK-PX-XXX - only if NO list item exists for this task
-    // Headers are documentation, not task trackers. The list format is the source of truth.
-    // Skip headers to avoid auto-claiming done/in_progress tasks as pending.
   }
   return tasks;
 }
@@ -62,13 +63,13 @@ function findNextTask(tasks) {
   const priorityOrder = { 'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3 };
   const pending = tasks.filter(t => t.status === ' ' && t.id);
   if (!pending.length) return null;
-  
+
   pending.sort((a, b) => {
     const pa = priorityOrder[a.id.split('-')[1]?.[0]] || 99;
     const pb = priorityOrder[b.id.split('-')[1]?.[0]] || 99;
     return pa - pb;
   });
-  
+
   return pending[0];
 }
 
@@ -86,27 +87,39 @@ function getAgentTypeForTask(taskId) {
   return 'coding';
 }
 
+function buildStatusLineRe(taskId) {
+  // Match une ligne contenant le taskId dans un contexte de statut :
+  //   - **Statut** : [ ] TASK-PX-XXX ...
+  //   - **Statut** : [~] TASK-PX-XXX ... in_progress by ...
+  return new RegExp(`^(\\s*-\\s*(?:\\*\\*Statut\\*\\*\\s*:\\s*)?\\[)([ x~])(\\]\\s*${taskId}\\b.*?)$`, 'm');
+}
+
 function claimTask(taskId, agentType) {
   let content = readFile(TASKS_FILE);
-  
+
   // Check if already claimed (in progress)
-  const inProgressMatch = content.match(new RegExp(`^(- \\[~\\] ${taskId} .*in_progress)`, 'm'));
-  if (inProgressMatch) {
-    console.log(`⏭ Task ${taskId} already in progress, skipping claim`);
-    return;
+  const re = buildStatusLineRe(taskId);
+  const m = content.match(re);
+  if (m) {
+    const status = m[2];
+    if (status === '~') {
+      console.log(`⏭ Task ${taskId} already in progress, skipping claim`);
+      return;
+    }
+    if (status === 'x') {
+      console.log(`⏭ Task ${taskId} already done, skipping claim`);
+      return;
+    }
   }
-  
-  // Check if already done
-  const doneMatch = content.match(new RegExp(`^(- \\[x\\] ${taskId})`, 'm'));
-  if (doneMatch) {
-    console.log(`⏭ Task ${taskId} already done, skipping claim`);
-    return;
+
+  // Replace [ ] with [~] on the status line of this task
+  const replaced = content.replace(re, `$1~$3`);
+  if (replaced === content) {
+    console.log(`❌ Could not find a pending status line for ${taskId}`);
+    process.exit(1);
   }
-  
-  content = content.replace(
-    new RegExp(`^(- \\[ \\] ${taskId})`, 'm'),
-    `$1 — in_progress by ${agentType}_agent`
-  );
+  content = replaced;
+
   writeFile(TASKS_FILE, content);
   run(`git add ${TASKS_FILE}`);
   run(`git commit -m "chore(tasks): claim ${taskId} by ${agentType}_agent"`);
@@ -115,10 +128,14 @@ function claimTask(taskId, agentType) {
 
 function completeTask(taskId, agentType) {
   let content = readFile(TASKS_FILE);
-  content = content.replace(
-    new RegExp(`^(- \\[~\\] ${taskId} .*in_progress by ${agentType}_agent)`, 'm'),
-    `$1 → [x] done by ${agentType}_agent (${new Date().toISOString().split('T')[0]})`
-  );
+  const re = buildStatusLineRe(taskId);
+  const replaced = content.replace(re, `$1x$3`);
+  if (replaced === content) {
+    console.log(`❌ Could not find an in-progress status line for ${taskId}`);
+    process.exit(1);
+  }
+  content = replaced;
+
   writeFile(TASKS_FILE, content);
   run(`git add ${TASKS_FILE}`);
   run(`git commit -m "chore(tasks): complete ${taskId} by ${agentType}_agent"`);
@@ -135,7 +152,7 @@ function createBranch(taskId, agentType) {
 function generateHandoff(taskId, agentType, branch, summary, files, tests, issues, nextActions) {
   const template = readFile(HANDOFF_TEMPLATE);
   const now = new Date().toISOString().replace('T', ' ').split('.')[0] + ' UTC';
-  
+
   const handoff = `## ${now} · Agent: ${agentType.charAt(0).toUpperCase() + agentType.slice(1)} Agent (${agentType})
 
 ### Travail effectué
@@ -163,7 +180,7 @@ ${nextActions.map((a, i) => `${i + 1}. ${a}`).join('\n')}
 ---
 
 `;
-  
+
   const stateContent = readFile(STATE_FILE);
   const newState = handoff + stateContent;
   writeFile(STATE_FILE, newState);
@@ -192,7 +209,7 @@ ${files.map(f => `- \`${f}\``).join('\n')}
 
 function showStatus() {
   console.log('\n=== AGENT HANDOFF STATUS ===\n');
-  
+
   const state = readFile(STATE_FILE);
   const firstEntry = state.split('---')[1]?.trim();
   if (firstEntry) {
@@ -200,19 +217,19 @@ function showStatus() {
     console.log(firstEntry.split('\n').slice(0, 10).join('\n'));
     console.log('...');
   }
-  
+
   const tasks = parseTasks(readFile(TASKS_FILE));
   const pending = tasks.filter(t => t.status === ' ').length;
   const inProgress = tasks.filter(t => t.status === '~').length;
   const done = tasks.filter(t => t.status === 'x').length;
-  
+
   console.log(`\n📊 Tasks: ${pending} pending, ${inProgress} in progress, ${done} done`);
-  
+
   const next = findNextTask(tasks);
   if (next) {
     console.log(`\n🎯 Prochaine tâche: ${next.id} (${next.section})`);
   }
-  
+
   try {
     const gitStatus = run('git status --short');
     if (gitStatus) {
@@ -221,7 +238,7 @@ function showStatus() {
     } else {
       console.log('\n🔄 Git: clean');
     }
-    
+
     const branch = run('git branch --show-current');
     console.log(`\n🌿 Current branch: ${branch}`);
   } catch (e) {
@@ -241,7 +258,7 @@ if (COMPLETE) {
     console.log('❌ No task in progress');
     process.exit(1);
   }
-  
+
   const agentType = getAgentTypeForTask(inProg.id);
   completeTask(inProg.id, agentType);
   console.log('✅ Task marked complete. Remember to:');
@@ -263,16 +280,16 @@ if (FORCE_TASK) {
 if (AUTO) {
   const tasks = parseTasks(readFile(TASKS_FILE));
   const next = findNextTask(tasks);
-  
+
   if (!next) {
     console.log('✅ No pending tasks!');
     process.exit(0);
   }
-  
+
   const agentType = getAgentTypeForTask(next.id);
   claimTask(next.id, agentType);
   const branch = createBranch(next.id, agentType);
-  
+
   console.log(`\n🚀 Auto-picked: ${next.id} for ${agentType}_agent`);
   console.log(`Branch: ${branch}`);
   console.log(`\nNext steps:`);
