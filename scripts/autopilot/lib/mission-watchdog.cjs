@@ -16,11 +16,45 @@
  *      n'est JAMAIS relancée.
  *
  * Module pur (aucun effet de bord à l'import) : il est testable hors-ligne.
+ *
+ * ── Défaut réel du 2026-11-10 (mission #1384, 242 reprises) ────────────────
+ * Le watchdog neconsultait QUE la queue pour décider si une mission était
+ * terminale. Conséquences observées sur l'issue #1384 :
+ *   - la boucle se relançait ELLE-MÊME : le watchdog écrivait `retrying` (un
+ *     état NON terminal) et le cycle suivant retrouvait la mission « périmée »
+ *     (heartbeat jamais émis) → 242 reprises, 242 commentaires `retrying`, 242
+ *     lancements d'agent pour une mission qui n'avancait pas ;
+ *   - il réarmait (`status: 'picked'`) une mission que le garde-fou de
+ *     sécurité avait NEUTRALISÉE (`status: 'blocked'`) → fail-open sur le
+ *     chemin de reprise ;
+ *   - `cfg.mission.maxAttempts` (3) existait dans la configuration mais
+ *     n'était JAMAIS lu : le plafond de reprises n'existait nulle part.
+ *
+ * Corrections (fail-closed) :
+ *   - l'état DURABLE (`mission-state.json`) fait autorité : une mission
+ *     `completed` / `blocked` / `failed` n'est JAMAIS relancée ;
+ *   - une mission neutralisée par le garde-fou (`safety.blocked`) n'est JAMAIS
+ *     réarmée ;
+ *   - `cfg.mission.maxAttempts` est appliqué : au plafond, la mission passe
+ *     en `failed` (terminal) et n'est plus jamais reprise — le spam de
+ *     commentaires est donc borné par ce plafond.
  */
 
 'use strict';
 
 const lifecycle = require('./mission-lifecycle.cjs');
+
+/** États TERMINaux de la queue (état de sélection). */
+const TERMINAL_QUEUE_STATUS = ['ready-to-merge', 'done', 'blocked', 'rejected'];
+
+/**
+ * États TERMINaux de la mission (état DURABLE).
+ *
+ * L'état durable fait autorité : il est écrit par le pont ET par l'agent
+ * (publication de statut), là où la queue ne décrit que la sélection. Une
+ * mission terminale côté durable ne doit JAMAIS repartir.
+ */
+const TERMINAL_MISSION_STATES = ['completed', 'blocked', 'failed'];
 
 /**
  * @param {object} opts
@@ -42,6 +76,14 @@ function runMissionWatchdog(opts = {}) {
     ? Number(cfg.mission.watchdogStaleSeconds) * 1000
     : 15 * 60 * 1000;
 
+  // Plafond de REPRISES par mission (fail-closed : au plafond, la mission est
+  // terminale). La configuration le prévoyait déjà (`mission.maxAttempts`) mais
+  // le watchdog ne le lisait pas : la boucle pouvait reprendre une mission
+  // indéfiniment (242 fois observées sur #1384).
+  const maxAttempts = Number(cfg.mission && cfg.mission.maxAttempts) > 0
+    ? Math.floor(Number(cfg.mission.maxAttempts))
+    : 3;
+
   let stale;
   try {
     stale = lc.stale({ staleAfterMs });
@@ -53,12 +95,13 @@ function runMissionWatchdog(opts = {}) {
 
   let resumed = 0;
   let skipped = 0;
+  let exhausted = 0;
   const queue = mem.loadQueue();
   const opps = queue.opportunities || [];
   for (const m of stale) {
     const opp = opps.find(o => o && o.id === m.taskId);
     // Mission déjà terminale côté queue → on ne la relance JAMAIS.
-    if (!opp || ['ready-to-merge', 'done', 'blocked', 'rejected'].includes(opp.status)) {
+    if (!opp || TERMINAL_QUEUE_STATUS.includes(opp.status)) {
       skipped += 1;
       // CORRECTION (défaut réel du 2026-11-09) : l'ancien code écrivait
       // `completed` pour TOUTE opportunité terminale. Une mission bloquée
@@ -85,6 +128,78 @@ function runMissionWatchdog(opts = {}) {
       } catch (_) {}
       continue;
     }
+
+    // ── L'ÉTAT DURABLE FAIT AUTORITÉ ──────────────────────────────────────
+    // Défaut réel du 2026-11-10 (#1384) : la terminalité n'était lue que dans
+    // la QUEUE. Or la queue est l'état de SÉLECTION (elle repasse `picked` à
+    // chaque reprise) alors que `mission-state.json` est l'état DURABLE de la
+    // mission. Une mission terminale côté durable mais réarmée côté queue
+    // repartait — boucle sans fin. On refuse donc de relancer une mission
+    // que l'état durable déclare terminale.
+    if (TERMINAL_MISSION_STATES.includes(m.state)) {
+      skipped += 1;
+      try {
+        lc.patch(m.taskId, m.repo, m.issue, {
+          state: m.state,
+          reason: `mission terminale (durable: ${m.state}) — non relancée`,
+        });
+      } catch (_) {}
+      log(`watchdog missions : ${m.taskId} terminale (${m.state}) — non relancée`);
+      continue;
+    }
+
+    // ── GARDE-FOU DE SÉCURITÉ SUR LE CHEMIN DE REPRISE ───────────────────
+    // Le garde-fou est appliqué à l'IMPORT (pont multi-dépôt). Une mission
+    // NEUTRALISÉE (`safety.blocked`, statut `blocked`) ne doit JAMAIS être
+    // réarmée par le watchdog : la neutraliser puis la réarmer est un
+    // fail-open (la mission serait exécutée malgré l'interdiction).
+    if (opp && opp.safety && opp.safety.blocked) {
+      skipped += 1;
+      const reason = `neutralisée par le garde-fou (${opp.safety.reason || 'safety'}) — non relancée`;
+      try {
+        lc.patch(m.taskId, m.repo, m.issue, { state: 'blocked', reason });
+      } catch (_) {}
+      try {
+        mem.updateOpportunity(m.taskId, { status: 'blocked', blockReason: reason });
+      } catch (e) {
+        log(`watchdog missions : neutralisation non écrite pour ${m.taskId}: ${e.message}`);
+      }
+      log(`watchdog missions : ${m.taskId} ${reason}`);
+      continue;
+    }
+
+    // ── PLAFOND DE REPRISES ───────────────────────────────────────────────
+    // Au plafond, la mission devient TERMINALE (`failed`) : elle n'est plus
+    // reprise et le spam de commentaires cesse. Sans ce plafond, la boucle
+    // se relançait elle-même (242 fois sur #1384).
+    const attempts = Number(m.attempts || 0);
+    if (attempts >= maxAttempts) {
+      exhausted += 1;
+      skipped += 1;
+      const reason = `plafond de reprises atteint (${attempts}/${maxAttempts}) — mission abandonnée, intervention humaine requise`;
+      log(`watchdog missions : ${m.taskId} — ${reason}`);
+      try {
+        lc.patch(m.taskId, m.repo, m.issue, { state: 'failed', reason, attempts });
+      } catch (_) {}
+      try {
+        mem.updateOpportunity(m.taskId, { status: 'rejected', blockReason: reason });
+      } catch (e) {
+        log(`watchdog missions : abandon non écrit pour ${m.taskId}: ${e.message}`);
+      }
+      if (publish) {
+        try {
+          publish(m.repo, Number(m.issue), 'failed', reason, {
+            taskId: m.taskId,
+            fingerprint: m.fingerprint || undefined,
+            evidence: { attempts, maxAttempts, reason },
+          });
+        } catch (e) {
+          log(`watchdog missions : publication "failed" en erreur: ${e.message}`);
+        }
+      }
+      continue;
+    }
+
     const hbAge = m.lastHeartbeatAt ? Math.round((Date.now() - Date.parse(m.lastHeartbeatAt)) / 1000) : null;
     const dead = m.pid && !lc.pidAlive(m.pid);
     const reason = `reprise automatique : ${dead ? 'agent mort' : 'heartbeat expiré'}${hbAge !== null ? ` (${hbAge}s sans heartbeat)` : ''}`;
@@ -111,7 +226,8 @@ function runMissionWatchdog(opts = {}) {
           evidence: {
             agent: m.agent || undefined,
             branch: m.branch || undefined,
-            attempts: (m.attempts || 0) + 1,
+            attempts: attempts + 1,
+            maxAttempts,
             lastHeartbeatAt: m.lastHeartbeatAt || undefined,
             reason,
           },
@@ -130,7 +246,7 @@ function runMissionWatchdog(opts = {}) {
         issue: m.issue,
         fingerprint: m.fingerprint,
         state: 'retrying',
-        attempts: (m.attempts || 0) + 1,
+        attempts: attempts + 1,
         reason,
       });
     } catch (e) {
@@ -138,7 +254,7 @@ function runMissionWatchdog(opts = {}) {
     }
     resumed += 1;
   }
-  return { resumed, checked: stale.length, skipped };
+  return { resumed, checked: stale.length, skipped, exhausted };
 }
 
-module.exports = { runMissionWatchdog };
+module.exports = { runMissionWatchdog, TERMINAL_QUEUE_STATUS, TERMINAL_MISSION_STATES };

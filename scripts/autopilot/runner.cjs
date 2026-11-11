@@ -70,6 +70,10 @@ const COOLDOWN_MS = (process.env.SARGA_AUTOPILOT_COOLDOWN_MS || '30000') | 0;
 
 let orchestratorProcess = null;
 let isShuttingDown = false;
+// Reference vers l'ecriture d'instantane, pour que le gestionnaire `exit`
+// (niveau processus) puisse marquer `alive:false` meme sur un crash non
+// rattrape — sinon `status.json` reste `alive:true` avec un PID disparu.
+let statusSnapshotWriter = null;
 
 function setupSignalHandlers() {
   const handleSignal = (sig) => {
@@ -85,9 +89,16 @@ function setupSignalHandlers() {
   };
   process.on('SIGINT', () => handleSignal('SIGINT'));
   process.on('SIGTERM', () => handleSignal('SIGTERM'));
-  if (process.platform === 'win32') {
-    process.on('exit', () => { if (orchestratorProcess) { try { execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true }); } catch (_) {} } });
-  }
+  process.on('exit', () => {
+    try {
+      if (orchestratorProcess) {
+        if (process.platform === 'win32') execSync(`taskkill /T /F /PID ${orchestratorProcess.pid}`, { stdio: 'ignore', windowsHide: true });
+      }
+    } catch (_) {}
+    try {
+      if (statusSnapshotWriter) statusSnapshotWriter(false, 'process exit');
+    } catch (_) {}
+  });
 }
 
 async function main() {
@@ -147,14 +158,20 @@ async function main() {
    * Ecrit l'instantane d'etat externe (monitoring sans intervention humaine).
    * Facteurise pour pouvoir le reecrire PENDANT un cycle long : voir le
    * "gardien de vie" plus bas.
+   *
+   * `alive` : l'état réel du processus. Un runner arrêté doit laisser
+   * `alive:false` — sinon le snapshot MENT (défaut réel du 2026-11-10 :
+   * `status.json` annonçait `alive:true`, `pid:29568` et un heartbeat figé
+   * depuis ~10 h alors que le PID 29568 n'existait plus : tout moniteur, et
+   * le fondateur, concluaient que la boucle tournait encore).
    */
-  function writeStatusSnapshot() {
+  function writeStatusSnapshot(alive = true, stopReason = null) {
     try {
       const ls = lock.status();
       const manualSession = require('./local-model-router.cjs').manualOpencodeSessionActive();
       fs.writeFileSync(C.paths.statusFile, JSON.stringify({
-        alive: true,
-        pid: process.pid,
+        alive: Boolean(alive),
+        pid: alive ? process.pid : null,
         lockPid: ls.lock?.pid,
         startedAt: ls.lock?.startedAt,
         lastHeartbeat: ls.lock?.heartbeatAt,
@@ -179,6 +196,7 @@ async function main() {
           openrouterKey: process.env.OPENROUTER_API_KEY ? 'SET' : 'NOT SET',
         },
         notify: notify.channelsStatus(),
+        ...(stopReason ? { stopReason, stoppedAt: new Date().toISOString() } : {}),
         timestamp: new Date().toISOString()
       }, null, 2));
     } catch (e) {
@@ -187,6 +205,9 @@ async function main() {
       rlog(`status write failed (non-fatal): ${e.message}`);
     }
   }
+  // Expose l'ecriture au gestionnaire `exit` du processus (marquage
+  // `alive:false` meme sur crash non rattrape).
+  statusSnapshotWriter = writeStatusSnapshot;
 
   // MAIN 24/7 LOOP
   while (!isShuttingDown && !fs.existsSync(C.paths.stopFile)) {
@@ -392,6 +413,11 @@ async function main() {
   const stopReason = fs.existsSync(C.paths.stopFile) ? 'STOP file détecté — arrêt propre demandé' : (isShuttingDown ? 'Signal d\'arrêt reçu (SIGINT/SIGTERM)' : `Condition d'arrêt orchestrator (dernier cycle ${cycleCount}, erreurs consécutives ${consecutiveErrors})`);
   notify.runnerStopped(stopReason);
   lock.release();
+  // L'instantane d'etat doit dire la VERITE : le runner s'arrete, donc
+  // `alive:false`. Sans cette ecriture, `status.json` continuait d'annoncer
+  // `alive:true` avec le PID d'un processus disparu (defaut reel du
+  // 2026-11-10 : heartbeat fige depuis ~10 h, PID 29568 inexistant).
+  writeStatusSnapshot(false, stopReason);
   rlog('AUTOPILOT 24/7 STOPPED');
   process.exit(0);
 }
