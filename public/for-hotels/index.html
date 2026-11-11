@@ -329,19 +329,22 @@
     var email=(f.email.value||"").trim();
     if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){f.email.focus();return;}
     var island=location.hostname.indexOf("guadeloupe")>-1?"GP":location.hostname.indexOf("martinique")>-1?"MQ":"US";
-    var body=JSON.stringify({
+    var payload={
       email:email,island:island,source:"b2b_hotel_request",date:new Date().toISOString(),
       name:(f.name.value||"").trim(),hotel:(f.hotel.value||"").trim(),
       beach:(f.beach.value||"").trim(),region:(f.region.value||"").trim()
-    });
-    try{
-      if(navigator.sendBeacon){navigator.sendBeacon(APPS_SCRIPT_URL,body);}
-      else{fetch(APPS_SCRIPT_URL,{method:"POST",mode:"no-cors",keepalive:true,headers:{"Content-Type":"text/plain"},body:body});}
-    }catch(_){}
-    f.querySelectorAll("input,select,button").forEach(function(el){el.disabled=true;});
-    btn.disabled=false;
-    btn.textContent="You're in — first brief on its way «";
-    btn.style.background="#1c8f4e";btn.style.color="#fff";
+    };
+    // Accusé serveur RÉEL : avant, `sendBeacon` partait sans réponse possible et
+    // la page affichait « You're in » même si la demande n'était PAS enregistrée
+    // (prospect perdu, aucun signal). Le succes n'est plus affiché que si le
+    // serveur confirme {ok:true}; sinon le formulaire reste rempli et l'erreur
+    // est explicite (réessai possible, l'Apps Script déduplique par email).
+    sgB2BCapture(APPS_SCRIPT_URL,payload,{form:f,lang:'en',source:'for_hotels',button:btn,keepalive:true,onSuccess:function(){
+      f.querySelectorAll("input,select,button").forEach(function(el){el.disabled=true;});
+      btn.disabled=false;
+      btn.textContent="You're in — first brief on its way «";
+      btn.style.background="#1c8f4e";btn.style.color="#fff";
+    }});
   });
 })();
 </script>
@@ -356,5 +359,6 @@
   </div>
 </footer>
 
+  <script src="/b2b-capture.js"></script>
 </body>
 </html>
