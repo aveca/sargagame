@@ -1,3 +1,20 @@
+## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
+
+### Travail effectué
+- **Résumé 1 ligne** : defect #2 (semáforo ES sans hreflang `en`) corrigé pour Riviera Maya ; page EN émise, cluster hreflang es+en+x-default vérifié sur les deux langues, test de régression ajouté.
+- **Détails** :
+  - `scripts/lib/region-seo-pages.cjs` : `buildSlugMap` — slug `semaforo` basé sur `primary === 'es'` (au lieu de `lang === 'es'`) ; `emitLangPages` — bloc semáforo émis pour toute langue ayant un slug défini, copy EN (title/desc/H1/intro) quand `lang === 'en'`.
+  - `tests/region-seo-hubs-freshness.test.cjs` : 5 assertions de régression (titre EN, hreflang es/en/x-default sur ES + EN).
+  - Build MQ (défaut), Riviera Maya (es+en), Florida (en) : exit 0.
+  - `node tests/region-seo-hubs-freshness.test.cjs` → OK.
+  - Vérifié sur build réel : `dist/semaforo-del-sargazo/` + `dist/en/semaforo-del-sargazo/` existent, hreflang cluster complet (es, en, x-default) sur les deux.
+  - Florida (EN primaire) : aucune page semáforo émise — pas de régression.
+- **Fichiers modifiés** : `scripts/lib/region-seo-pages.cjs`, `tests/region-seo-hubs-freshness.test.cjs`.
+- **Tests réalisés** : `npm run build` (MQ, rivieramaya, florida) exit 0 ; `node tests/region-seo-hubs-freshness.test.cjs` → OK.
+- **Problèmes restants** : défauts MQ/GP dans `vite.config.js` (denylistés, non corrigibles dans cette mission).
+- **Prochaine action recommandée** : committer la branche `seo/ahrefs-repair-issue1408`, pousser, créer PR.
+- **Branche / PR** : Branche : `seo/ahrefs-repair-issue1408` ; PR : à créer ; Commit head : à définir.
+
 ## 2026-11-10 08:05 UTC · Agent: OpenCode (coding + growth + ui) — les 3 livrables sont produits
 
 ### Travail effectué

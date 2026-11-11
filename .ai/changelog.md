@@ -1,3 +1,16 @@
+## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
+
+- **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.
+- `scripts/lib/region-seo-pages.cjs` :
+  - `buildSlugMap` : `semaforo: lang === 'es' ? 'semaforo-del-sargazo' : null` → `primary === 'es' ? 'semaforo-del-sargazo' : null` (le slug est défini pour ES et ses secondaires, jamais pour les régions EN primaires).
+  - `emitLangPages` : le bloc `if (lang === 'es')` devient `if (!slugIndex[lang].semaforo) { skip } else { ... }` avec copy EN complète (title `Sargassum Traffic Light —`, desc, H1, intro) quand `lang === 'en'`.
+- `tests/region-seo-hubs-freshness.test.cjs` : +5 assertions de régression (titre EN, hreflang es/en/x-default sur les pages ES et EN).
+- Vérifié sur build réel (Riviera Maya `es+en`) : `dist/semaforo-del-sargazo/index.html` et `dist/en/semaforo-del-sargazo/index.html` existent, cluster hreflang es+en+x-default sur les deux, contenu EN sur `/en/`.
+- Florida (primaire `en`) : aucune page semáforo émise — pas de régression.
+- Builds MQ (défaut), Riviera Maya, Florida : `npm run build` exit 0.
+- `node tests/region-seo-hubs-freshness.test.cjs` → OK.
+- Non corrigés (denylist `vite.config.js`) : défauts MQ/GP sur `/previsions/`, `/fiabilite/`, `/sargasses-pour-hotels/`, `/pro/widget-sargasses-hotel/` (hreflang manquants) et meta descriptions tronquées.
+
 ## 2026-11-10 08:05 UTC - Les 3 livrables sont produits : patch durable vérifié, audit UX live + maquette GP conformes, 7 brouillons B2B (0 envoi)
 
 - **Panel de personas exécuté** (obligation AGENTS.md) : `product-manager` + `ux-critic` + `adversarial-reviewer`, lecture seule. Verdicts convergents : p30 = carte primaire (seule surface or), honnêteté de la donnée avant conversion, plafond de 7 brouillons. Arbitrages et désaccords résolus : `ux-audit/panneau-verdicts.md`.
