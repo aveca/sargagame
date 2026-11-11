@@ -596,6 +596,20 @@ PR: #810 (auto-merged)
 
 ---
 
+## 2026-11-11 15:20 UTC - PR #1412 : les captures B2B ne s'annoncent plus « réussies » sans confirmation serveur
+
+- **Défaut commercial mesuré sur le LIVE** : les **20 blocs de capture B2B** (hotels, collectivités, brief gratuit, landing `/for-hotels/`) affichaient « merci / you're in / listo » **SANS confirmation serveur**. Le POST partait en `mode:'no-cors'` (ou en `sendBeacon` sur `/for-hotels/`, sans réponse possible) → le navigateur ne pouvait pas savoir si la demande avait été enregistrée → **un prospect perdu se voyait comme un succès** (0 signal, 0 relance, 0 vente).
+- **Le sink répondait très bien** (le défaut était côté client) : `POST https://script.google.com/macros/s/AKfycb…/exec` (Content-Type `text/plain` + en-tête `Origin`) → **200**, `Access-Control-Allow-Origin: *`, corps `{"ok":true,"action":"email_saved"}`.
+- **Correctif (PR #1412**, branche `agent/coding/b2b-capture-ack-20261111`, commit `5e742758a`, base `origin/main` `37336290a` — **NON mergée, AUCUN déploiement**) :
+  1. `public/b2b-capture.js` (nouveau, partagé par les 12 pages) : POST en `mode:'cors'` + `Content-Type: text/plain` → **requête simple → aucun preflight** ; **le succès n'est affiché que si le serveur confirme `{ok:true}`** ; en cas d'échec → formulaire **resté visible**, message d'erreur FR/EN/ES, bouton **réactivé** (réessai possible, l'Apps Script déduplique par email → pas de doublon), événement **`sg_b2b_capture_failed`** (CTA en échec mesurable).
+  2. Les 20 blocs : panneau de succès **déplacé dans `onSuccess`** ; l'**événement d'intention** (`sg_b2b_signup` / `sg_b2b_leadmagnet`) reste émis au submit → aucun dashboard cassé ; `/for-hotels/` passe de `sendBeacon` à la voie confirmée.
+  3. **Aucun état serveur nouveau** (le sink reste l'Apps Script), aucun secret, aucun prix, aucune donnée inventée.
+- **Preuve** : `tests/unit/b2b-capture-ack.test.cjs` → **84 assertions PASS** (contrat de source sur les 12 pages + comportement du helper : succès confirmé → `onSuccess` ; erreur HTTP / `{ok:false}` / réseau coupé → **aucun** `onSuccess`, erreur affichée, bouton réactivé).
+- **Gate** : `npm test` **190/190** · `npm run build` exit 0 · budget **206,3 Ko ≤ 210 Ko** · 12 scripts inline vérifiés (`node --check`) · `dist/b2b-capture.js` présent.
+- **Constats voisins (non corrigés, action fondatrice)** : la sheet `emails` ne garde que `[date, email, island, source]` → **hôtel / zone / langue perdus** à l'écriture (corriger = `clasp push` = fondateur mobile) ; `sargassumpuntacana.com/pro/es/pronostico-sargazo-punta-cana-hotels/` → **404** (la version ES est sur le domaine Martinique) ; la landing `sargassumpuntacana.com/es/sargazo-para-hoteles/` **n'a aucun formulaire** → aucune capture pour le visiteur espagnol de Punta Cana.
+
+---
+
 ## Conventions
 
 - Date JJJJ-MM
