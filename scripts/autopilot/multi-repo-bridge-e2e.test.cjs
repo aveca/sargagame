@@ -491,5 +491,103 @@ console.log('=== ÉTAPE 11c : verrou d\'exécution dans l\'orchestrateur ===');
     orchestrator.evaluateOpportunitySafety(frozen).blocked === true);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// ÉTAPE 11d : levée d'un blocage de sécurité devenu SANS OBJET (cas #1384)
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// Reproduction EXACTE du défaut réel du 2026-11-10 (mission #1384) :
+//   - le CORPS de la mission est PROPRE (aucune demande de mise en ligne) ;
+//   - un COMMENTAIRE DE STATUT de la boucle contient « … déploiement et LIVE
+//     comme étapes distinctes » → le garde-fou le lit comme une demande de
+//     mise en production et bloque la mission ;
+//   - la mission accumule alors des tentatives (242 sur #1384) ;
+//   - le blocage, inscrit dans la trace durable, survit au faux positif.
+//
+// Attendu : le verdict courant est SAIN (les commentaires machine sont
+// écartés du scan) -> le blocage est LEVE, la trace `blockedSafety` purgée,
+// le compteur de tentatives REMIS À ZÉRO (les 242 tentatives étaient un
+// artefact du livelock, pas du travail réel) -> la mission repart avec un
+// budget neuf et borné, et n'est PAS dupliquée.
+
+console.log('=== ÉTAPE 11d : levée du faux blocage (cas réel #1384) ===');
+{
+  const falseBlockTask = taskBlock({
+    task_id: 'E2E-TASK-FALSEBLOCK',
+    issue_number: 9606,
+    title: 'Réparer la capture B2B avec accusé après persistance',
+    diagnostic: 'Les formulaires déclarent un succès sans preuve de stockage. Persister la demande et ne répondre succès qu\'après accusé.',
+  });
+  ghState.repos[LOCAL].issues.push(issueOf(9606, falseBlockTask, LOCAL));
+  // Le commentaire de statut de la boucle : c'est LUI qui déclenchait le
+  // garde-fou (faux positif), pas le corps de la mission.
+  ghState.repos[LOCAL].comments[9606] = [
+    {
+      author: { login: 'aveca' },
+      createdAt: '2026-11-10T11:39:16Z',
+      body: '<!-- SARGAGAME-CYCLE-STATUS -->\n- Vérifier PR, CI sur SHA exact, merge, déploiement et LIVE comme étapes distinctes',
+    },
+  ];
+
+  // L'opportunité est DÉJÀ dans la queue, BLOQUÉE par le garde-fou.
+  memory.opportunities.push({
+    id: 'E2E-TASK-FALSEBLOCK',
+    fingerprint: bridge.fingerprint(LOCAL, 9606, 'E2E-TASK-FALSEBLOCK'),
+    title: falseBlockTask.title,
+    type: 'agent-task',
+    status: 'blocked',
+    repository_full_name: LOCAL,
+    issue_number: 9606,
+    blockReason: '[safety] déploiement en production [production-deploy]',
+    safety: { blocked: true, reason: 'déploiement en production [production-deploy]' },
+  });
+  memory.blockedSafety.push({
+    fingerprint: bridge.fingerprint(LOCAL, 9606, 'E2E-TASK-FALSEBLOCK'),
+    repository_full_name: LOCAL,
+    issue_number: 9606,
+    task_id: 'E2E-TASK-FALSEBLOCK',
+    reason: 'déploiement en production [production-deploy]',
+    blockedAt: '2026-11-10T11:45:56.828Z',
+  });
+
+  // État durable : mission bloquée, 242 tentatives (artefact du livelock).
+  const lifecycleForRelease = require('./lib/mission-lifecycle.cjs');
+  lifecycleForRelease.upsert({
+    taskId: 'E2E-TASK-FALSEBLOCK',
+    repo: LOCAL,
+    issue: 9606,
+    fingerprint: bridge.fingerprint(LOCAL, 9606, 'E2E-TASK-FALSEBLOCK'),
+    state: 'blocked',
+    attempts: 242,
+    reason: 'déploiement en production [production-deploy]',
+  });
+
+  const ingestRelease = bridge.ingestMultiRepo({
+    gh: fakeGh, log: () => {}, localRepo: LOCAL, queue: memory, saveQueue: () => {}, writeOpportunityFile: () => {},
+  });
+
+  const releasedOpp = memory.opportunities.find(o => o.id === 'E2E-TASK-FALSEBLOCK');
+  const releasedState = lifecycleForRelease.findByTaskId('E2E-TASK-FALSEBLOCK');
+
+  check('la levée est signalée', ingestRelease.released === 1, JSON.stringify(ingestRelease));
+  check('la mission n\'est PAS re-bloquée', releasedOpp && releasedOpp.status === 'picked',
+    releasedOpp && releasedOpp.status);
+  check('le motif de blocage est purgé', releasedOpp && releasedOpp.blockReason === null,
+    JSON.stringify(releasedOpp && releasedOpp.blockReason));
+  check('le marqueur de sécurité est levé', releasedOpp && releasedOpp.safety && releasedOpp.safety.blocked === false,
+    JSON.stringify(releasedOpp && releasedOpp.safety));
+  check('la trace blockedSafety est purgée',
+    !memory.blockedSafety.some(e => String(e.task_id || e) === 'E2E-TASK-FALSEBLOCK'),
+    JSON.stringify(memory.blockedSafety.map(e => e.task_id || e)));
+  check('l\'état durable repasse à imported', releasedState && releasedState.state === 'imported',
+    releasedState && releasedState.state);
+  check('le compteur de tentatives est REMIS À ZÉRO (artefact du livelock)',
+    releasedState && releasedState.attempts === 0, String(releasedState && releasedState.attempts));
+  check('la mission n\'est PAS dupliquée',
+    memory.opportunities.filter(o => o.id === 'E2E-TASK-FALSEBLOCK').length === 1);
+  check('aucun commentaire "blocked" publié pour cette mission',
+    !ghState.published.some(c => c.issue === 9606 && c.body.includes('**blocked**')),
+    JSON.stringify(ghState.published.filter(c => c.issue === 9606).map(c => c.body.slice(0, 60))));
+}
+
 console.log(failures === 0 ? 'E2E-BRIDGE TESTS : OK (0 échec)' : `E2E-BRIDGE TESTS : ${failures} ÉCHEC(S)`);
 process.exit(failures === 0 ? 0 : 1);

@@ -853,6 +853,18 @@ function ingestMultiRepo(options = {}) {
             lifecycle.patch(opp.id, repoFullName, opp.issue_number, {
               state: 'imported',
               reason: 'blocage de sécurité levé : le verdict courant est sain',
+              // RÉINITIALISATION du compteur de tentatives.
+              //
+              // Les tentatives accumulées avant la levée sont un ARTEFACT du
+              // défaut (auto-reprise infinie : 242 sur #1384), pas du travail
+              // réel. Sans cette remise à zéro, la mission levée serait
+              // « déjà au plafond » pour le watchdog et partirait en `failed`
+              // sans jamais être exécutée — la levée serait alors vide de
+              // sens. La reprise repart donc avec un budget NEUF et borné
+              // (`mission.maxAttempts`), soit exactement UNE reprise propre.
+              attempts: 0,
+              lastHeartbeatAt: null,
+              pid: null,
             });
           } catch (e) {
             log(`[bridge] levée non écrite dans l'état durable (non-fatal): ${e.message}`);
