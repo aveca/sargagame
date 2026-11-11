@@ -1,19 +1,25 @@
 import React,{useEffect,memo,useRef,useState}from"react"
 import{getSegment}from"./lib/segment.js"
 import{track,abVariant}from"./Sargasses_PROD.jsx"
+import{PASS_DAYS,formatCents,passBaseCents,passEffectiveCents,passCopy,resolvePass}from"./lib/pricing.js"
 
 const _t = (l, fr, en, es) => (l === "en" ? en : l === "es" ? es : fr)
 const SEG_URL = "https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec"
 function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", e: "sg_pass_seg", p: p || {}, t: Date.now() }); if (navigator.sendBeacon) navigator.sendBeacon(SEG_URL, b); else fetch(SEG_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain" }, body: b }).catch(() => {}) } catch (_) {} }
 
-const PASS = { key: "p30", cents: { eur: 1499, usd: 1199 }, days: 30 }
-
-const money = (c, cur, lang) => (cur === "usd" ? "$" + (c / 100).toFixed(2) : lang === "en" ? "€" + (c / 100).toFixed(2) : (c / 100).toFixed(2).replace(".", ",") + " €")
+// Prix : source unique src/lib/pricing.js (miroir du serveur).
+//   baseCents = montant ENVOYÉ au serveur
+//   effCents  = montant EFFECTIVEMENT DÉBITÉ = ce qu'on AFFICHE
+// ⚠️ 2026-11-09 : plus de surcharge USD saisonnière — le serveur live
+// facture exactement le montant affiché (base = montant facturé). L'ancien
+// bandeau de surcoût est donc retiré (il affichait un montant différent de
+// celui débité).
+const money = (c, cur, lang) => formatCents(c, cur, lang)
 const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 
 const Ck = () => (<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#FFC72C" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>)
 
-const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy }) {
+const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", community = 0, freshTs = null, onBuy, passKey = "p30" }) {
   const v2Enabled=(()=>{try{return !/[?&]sguxv2=0(?:&|$)/.test(window.location.search)}catch(_){return true}})()
   const cur = currency === "usd" ? "usd" : "eur"
   const seg = getSegment()
@@ -26,16 +32,24 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
     return assigned
   }catch(_){return "control"}})()
   const benefitCopy=copyVariant==="benefit"
-  const cents = PASS.cents[cur]
-  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice",copy_variant:copyVariant});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",copy_variant:copyVariant})}catch(_){}},[])
+  // Pass affiché : celui demandé par l'URL (?pass=) s'il est VENDU dans cette
+  // devise, sinon l'offre principale p30. On n'affiche jamais un prix non
+  // débitable (ex. Pass Saison n'existe pas en USD côté serveur).
+  const key = resolvePass(passKey, cur)
+  const baseCents = passBaseCents(key, cur)
+  const effCents = passEffectiveCents(key, cur)
+  const days = PASS_DAYS[key] || 30
+  const copy = passCopy(key, lang)
+  useEffect(()=>{sbeacon({stage:"view",segment:seg,model:"oneprice",pass:key,copy_variant:copyVariant});try{track("sg_pass_offer_view",{segment:seg,model:"oneprice",pass:key,cents:effCents,copy_variant:copyVariant})}catch(_){}},[])
   const buy=()=>{
-    sbeacon({stage:"cta",segment:seg,pass:PASS.key,cents,copy_variant:copyVariant})
-    try{track("sg_pass_cta",{cents,pass:PASS.key,segment:seg,copy_variant:copyVariant})}catch(_){}
+    sbeacon({stage:"cta",segment:seg,pass:key,cents:effCents,base_cents:baseCents,copy_variant:copyVariant})
+    try{track("sg_pass_cta",{cents:effCents,base_cents:baseCents,pass:key,segment:seg,copy_variant:copyVariant})}catch(_){}
     localStorage.setItem('sg_checkout_started_at', Date.now())
-    if(onBuy)onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})
+    // c = centimes de BASE (ce que le serveur attend) ; cents = montant effectif.
+    if(onBuy)onBuy({c:baseCents,cents:effCents,baseCents,pass:key,days,segment:seg})
   }
   const lost = cur === "usd" ? "$200" : lang === "en" ? "€200" : "200 €"
-  const pd = perDay(cents, PASS.days, cur, lang)
+  const pd = perDay(effCents, days, cur, lang)
   const noSticky = /[?&]nosticky=0(?:&|$)/.test(window.location.search)
 
   return (
@@ -63,14 +77,14 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
             <span style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
               <span style={{ minWidth: 0 }}>
                 <span style={{ display: "block", fontSize: 19, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>
-                  {_t(lang, "Pass 30 jours", "30-day pass", "Pase 30 días")}
+                  {copy.title}
                 </span>
                 <span style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "rgba(234,247,244,.6)", marginTop: 4 }}>
-                  {_t(lang, "Toutes les plages · Prévision 7 j", "All beaches · 7-day forecast", "Todas las playas · Pronóstico 7 d")}
+                  {copy.sub}
                 </span>
               </span>
               <span style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", flexShrink: 0 }}>
-                <span className="anton" style={{ fontSize: 36, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(cents, cur, lang)}</span>
+                <span className="anton" style={{ fontSize: 36, color: "#FFC72C", lineHeight: .85, letterSpacing: "-.01em" }}>{money(effCents, cur, lang)}</span>
                 <span style={{ display: "inline-block", marginTop: 10, fontSize: 11, fontWeight: 800, color: "#190c2c", background: "linear-gradient(135deg,#FFE47A,#FFC72C)", padding: "4px 11px", borderRadius: 999, boxShadow: "0 2px 0 0 rgba(0,0,0,.20)" }}>{pd}</span>
               </span>
             </span>
@@ -128,17 +142,10 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {benefitCopy ? _t(lang, "Méthode, précision mesurée et limites →", "Method, measured accuracy & limitations →", "Método, precisión medida y límites →") : _t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
 
-        {/* Transparence prix USD haute saison (juin-nov) */}
-        {cur === "usd" && (() => { const m = new Date().getMonth() + 1; return (m >= 6 && m <= 11) ? (
-          <div style={{ textAlign: "center", marginTop: 8, fontSize: 10.5, color: "rgba(234,247,244,.45)", letterSpacing: ".01em" }}>
-            {_t(lang, "Tarif haute saison · +15 % sur les passes 30 j et saison", "High-season rate · +15 % on 30-day & season passes", "Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
-          </div>
-        ) : null })()}
-
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Pas d'abonnement", "No subscription", "Sin suscripción")}</span><span aria-hidden="true">·</span>
-          <span>{_t(lang, "30 jours", "30 days", "30 días")}</span><span aria-hidden="true">·</span>
+          <span>{copy.days}</span><span aria-hidden="true">·</span>
           <span>{_t(lang, "Paiement sécurisé", "Secure payment", "Pago seguro")}</span>
         </div>
       </div>

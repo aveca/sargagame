@@ -924,7 +924,7 @@ function WorldPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
         {onSeason&&<button type="button" className="pww-season-alt" onClick={onSeason}>
           <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
             <b style={{fontSize:13.5,color:"#0D0D0D",fontWeight:800}}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0D0D0D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{verticalAlign:"-2px",marginRight:3}}><path d="M12 5v2M6 11l1 1M2 18h20M18 11l-1 1M8.5 18a3.5 3.5 0 0 1 7 0"/></svg>{_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+            <em style={{fontSize:11.5,color:"#5A5A5A",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
           </span>
           <span style={{fontSize:18,fontWeight:800,color:"#0D0D0D",flexShrink:0}}>→</span>
         </button>}
@@ -1298,14 +1298,14 @@ function ComicPaywall({lang,beach,topName,topScore,exSwitch,wkend,ctxName,ctxSta
           </div>
           {/* Garantie « satisfait ou remboursé » RETIRÉE (décision 2026-06-29) : pass one-time,
               accès numérique immédiat → pas de garantie de remboursement volontaire. */}
-          {/* A/B pw_season : alternative pass saison 19,99 € (paiement unique 6 mois,
+          {/* A/B pw_season : alternative pass saison 24,99 € (paiement unique 6 mois,
               sans abo) — cash d'avance, zéro churn. Chemin pay_once
               on-site existant (onSeason → passCtxRef + payStep). Réversible ?pwseason=0. */}
           {onSeason&&<button type="button" onClick={onSeason} style={{display:"block",width:"100%",marginTop:12,padding:"11px 13px",borderRadius:12,cursor:"pointer",border:"1.5px dashed rgba(13,11,20,.34)",background:"rgba(13,11,20,.04)",fontFamily:"inherit",textAlign:"left"}}>
             <span style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:10}}>
               <span style={{display:"flex",flexDirection:"column",gap:2,minWidth:0}}>
                 <b style={{fontSize:13.5,color:"#0d0b14",fontWeight:800}}>🌅 {_t(lang,"Plutôt un pass saison ?","Prefer a season pass?","¿Mejor un pase de temporada?")}</b>
-                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"19,99 € une fois · toute la saison · sans abonnement","€19.99 once · all season · no subscription","19,99 € una vez · toda la temporada · sin suscripción")}</em>
+                <em style={{fontSize:11.5,color:"rgba(13,11,20,.62)",fontStyle:"normal"}}>{_t(lang,"24,99 € une fois · toute la saison · sans abonnement","€24.99 once · all season · no subscription","24,99 € una vez · toda la temporada · sin suscripción")}</em>
               </span>
               <span style={{fontSize:18,fontWeight:800,color:"#0d0b14",flexShrink:0}}>→</span>
             </span>
@@ -2241,7 +2241,7 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
     return {beachName:_nameOf(fcLvl),days,proofLine,relHref:_relHref(lang),freshLine,hasGrid:!!(fcLvl&&fc.length>0)}
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[passSeq,sargData,beach,island,_trackRec,lang])
-  // A/B pw_season : surface le SKU « pass saison » dormant (19,99 € paiement UNIQUE,
+  // A/B pw_season : surface le SKU « pass saison » dormant (24,99 € paiement UNIQUE,
   // 6 mois d'accès, sans abo) comme alternative dans ComicPaywall. EUR uniquement
   // (allowlist serveur pay_once = [799..2499]¢ ; 1999 OK). Cash d'avance + zéro churn.
   // Réversible ?pwseason=0 ; ?pwseason=1 force. Chemin pay_once on-site déjà éprouvé (p30).
@@ -2458,8 +2458,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
@@ -2471,8 +2471,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:1999,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:1999,days:210,cur:"eur"};setPayStep(true)}):undefined}
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}
         {!passOnly&&!pwComic&&(<>
@@ -3108,14 +3108,10 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             </div>
           </div>
         </div>
-        {/* Transparence prix USD haute saison (juin-nov) : afficher la tarification
-            saisonnière AVANT le paiement pour préserver la confiance (moat honnêteté).
-            Petit texte discret, pas de bloc séparé — ne casse pas le flow. */}
-        {PAY_CUR==="usd"&&(()=>{const m=new Date().getMonth()+1;return(m>=6&&m<=11)?(
-          <div style={{textAlign:"center",marginTop:6,fontSize:10.5,color:"rgba(255,255,255,.45)",letterSpacing:".01em"}}>
-            {_t(lang,"Tarif haute saison en cours · +15 % applies outside trip passes","High-season rate · +15 % on 30-day & season passes","Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
-          </div>
-        ):null})()}
+        {/* ⚠️ 2026-11-09 — la surcharge USD de haute saison (+15 %) a été supprimée
+            côté serveur : le montant affiché est le montant facturé. Aucun
+            bandeau de surcoût n'est affiché (il indiquait un montant différent
+            de celui débité). */}
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>

@@ -24,8 +24,8 @@ check(app.includes('"pass_copy": null'), 'experiment is enabled in the A/B freez
 check(offer.includes('track("sg_pass_offer_view"') && offer.includes('copy_variant:copyVariant'), 'variant attribution is included on offer view')
 check(offer.includes('track("sg_pass_cta"') && offer.includes('copy_variant:copyVariant'), 'variant attribution is included on CTA click')
 check(abFetch.includes("id: 'pass_copy', dimension: 'customEvent:ab_pass_copy'") && abFetch.includes("metric: 'sg_pass_cta'"), 'GA4 evaluator is wired to measure pass CTA by variant')
-check(offer.includes('cents: { eur: 1499, usd: 1199 }, days: 30'), 'price and pass duration are unchanged')
-check(offer.includes('onBuy({c:cents,pass:PASS.key,days:PASS.days,segment:seg})'), 'checkout callback and payment path remain unchanged')
+check(offer.includes('from"./lib/pricing.js"') && offer.includes('passBaseCents') && offer.includes('PASS_DAYS') && offer.includes('resolvePass'), 'prix et durée issus de src/lib/pricing.js (pas de prix en dur)')
+check(offer.includes('onBuy({c:baseCents,cents:effCents,baseCents,pass:key,days,segment:seg})'), 'callback de paiement passe le prix de base et le prix effectif')
 
 console.log('\nPASS_COPY_TESTS', failures === 0 ? 'PASS' : 'FAIL')
 process.exit(failures ? 1 : 0)

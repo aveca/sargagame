@@ -7,10 +7,22 @@ export default {
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
+    // ── Grille de CRÉATION — `sos` RETIRÉ : plus vendable (410 offre_indisponible) ──
+    // OFFRE VALIDÉE 2026-11-09 : trip7 7,99 € / $8.99 · p30 14,99 € / $16.99
+    // · season 24,99 € / $27.99. Aucun surcoût saisonnier (+15 %) : le montant
+    // affiché est le montant facturé.
     const PASS_PRICES = Object.freeze({
-      p30:{EUR:14.99,USD:11.99},
-      trip7:{EUR:4.99,USD:null},
-      season:{EUR:19.99,USD:null},
+      p30:{EUR:14.99,USD:16.99},
+      trip7:{EUR:7.99,USD:8.99},
+      season:{EUR:24.99,USD:27.99}
+    });
+    // ── Grille de LIVRAISON — inclut `sos` pour les paiements DÉJÀ encaissés ──
+    // Sans elle, l'argent déjà pris ne serait jamais livré (trou de confiance).
+    // Utilisée par validateMollieAmount (webhook + payment_status).
+    const FULFILL_PRICES = Object.freeze({
+      p30:{EUR:14.99,USD:16.99},
+      trip7:{EUR:7.99,USD:8.99},
+      season:{EUR:24.99,USD:27.99},
       sos:{EUR:1.00,USD:null}
     });
     const validateMollieAmount = (payment) => {
@@ -19,10 +31,10 @@ export default {
       const currency=String(payment.amount?.currency||"").toUpperCase();
       const value=Number(payment.amount?.value);
       const cents=Math.round(value*100);
-      if (!DAYS_TABLE[pass] || !PASS_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
+      if (!DAYS_TABLE[pass] || !FULFILL_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
       if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
-      if (!Object.prototype.hasOwnProperty.call(PASS_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
-      const expected=PASS_PRICES[pass][currency];
+      if (!Object.prototype.hasOwnProperty.call(FULFILL_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
+      const expected=FULFILL_PRICES[pass][currency];
       if (expected === null) {
         // Preserve the existing variable-amount contract for products whose
         // currency price is null in create_payment; never accept zero/negative.
@@ -30,9 +42,9 @@ export default {
         if (cents <= 50 || cents >= upper) return {ok:false,reason:"amount_out_of_range"};
       } else {
         const acceptable=[Math.round(expected*100)];
-        // The create_payment route applies a 15% USD seasonal adjustment to
-        // passes other than trip7. Allow the adjusted amount on a delayed webhook.
-        if (currency === "USD" && pass !== "trip7") acceptable.push(Math.round(acceptable[0]*1.15));
+        // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) : le
+        // serveur live facture le montant affiché (base uniquement). Un
+        // paiement déjà créé au tarif +15 % n'est plus réconcilié ici.
         if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
       }
       return {ok:true,pass,currency};
@@ -174,12 +186,17 @@ export default {
         }
         if(d.action==="create_payment" || d.action==="applepay_session"){
           const pass=d.pass||null, currency=String(d.cur||"EUR").toUpperCase();
+          // ⚠️ 2026-11-09 — `sos` (1 €, rapport 24 h) : offre RETIRÉE du parcours
+          // client. La création est refusée en 410 « offre_indisponible » (même
+          // contrat que le serveur live sg-payments), pas en 400 flou.
+          if(pass==="sos" || d.source==="sos_plage") return out({error:"offre_indisponible"},410);
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
-          const prices={p30:{EUR:14.99,USD:11.99},trip7:{EUR:4.99,USD:null},season:{EUR:19.99,USD:null},sos:{EUR:1.00,USD:null}};
+          const prices=PASS_PRICES;
           let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
           if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
           if(!valid)return out({error:"Prix invalide"},400);
-          if(currency==="USD"&&pass&&pass!=="trip7"){const m=new Date().getUTCMonth()+1;if(m>=6&&m<=11)cents=Math.round(cents*1.15)}
+          // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) : le
+          // serveur live facture le montant affiché (montant validé ci-dessus).
           const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";
           const meta=Object.assign({},d.metadata||{},{source:d.source||"unknown",pass:pass||"",email:String(d.email||""),lang:d.lang||"fr"});
           const body={amount:{value:(cents/100).toFixed(2),currency},description:d.description||(pass?"Sargasses Pass "+pass:"Sargasses"),redirectUrl:d.redirectUrl||base+"/?mollie_return=1",webhookUrl:d.webhookUrl||base+"/api/mollie-webhook.php",metadata:meta,locale:d.locale||(currency==="USD"?"en_US":"fr_FR")};
