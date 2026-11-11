@@ -37,8 +37,9 @@
 
 ### Branche / PR
 - Branche : `agent/coding/p0-pro-delivery-20261111`
-- PR : (à l'ouverture — voir `.ai/changelog.md`)
-- Commit head : (à l'ouverture)
+- PR : **#1411** (https://github.com/aveca/sargagame/pull/1411) — ouverte, **NON mergée**, **aucun déploiement**
+- Commit head : `4098f7866c194ecc697d8fdcd85de802b5d4641a`
+- PR A (séparée) : **#1410** — commit `5dad516b194ab6354b645e6d51d4ce78a4105d02`
 
 ---
 

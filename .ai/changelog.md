@@ -1,4 +1,6 @@
-## 2026-11-11 14:05 UTC - PR B « chemin argent » : le paiement Pro livre enfin l'accès (email + jeton au retour) — PR ouverte, non mergée, aucun déploiement
+## 2026-11-11 14:05 UTC - PR B « chemin argent » : le paiement Pro livre enfin l'accès (email + jeton au retour) — PR #1411, non mergée, aucun déploiement
+
+- **PR** : **#1411** (https://github.com/aveca/sargagame/pull/1411), branche `agent/coding/p0-pro-delivery-20261111`, commit head `4098f7866c194ecc697d8fdcd85de802b5d4641a`, base `origin/main` `37336290afdf54c274f80cddd2300a9fbfb80fec`. **NON mergée, AUCUN déploiement** (chemin financier → validation explicite requise).
 
 - **Défaut commercial P0 mesuré sur le LIVE** : le parcours `https://sargasses-martinique.com/pro/espace/` (« S'abonner — 79 €/mois ») **encaissait sans livrer**. Audit du Worker live `sg-payments` (version `payfix-20261110-b2c`, 48 routes) : `fulfillPaidPayment` créait le grant durable + le jeton KV, **mais aucun email n'était envoyé**, et `handleMollieReturn` affichait « Paiement reçu » **sans aucun lien jeton** → un client payait 79 €/mois sans jamais recevoir son accès.
 - **Correctifs (PR B)** :
