@@ -521,3 +521,48 @@ Après réception du rapport, ChatGPT vérifie directement sur GitHub le commit,
 - Préserver les changements locaux, les secrets et l'historique Git ; jamais de force-push.
 - Les règles spécifiques de ce dépôt, notamment celles relatives aux paiements, aux données, à la production et au déploiement, restent prioritaires. Ne pas effectuer de suppression irréversible, migration destructive, fusion ou déploiement de production sans autorisation explicite.
 - N'utiliser que les outils réellement disponibles. Si l'accès navigateur/runtime local manque, le signaler sans prétendre avoir testé.
+
+
+---
+
+## MANDAT COMMERCIAL PRIORITAIRE — référence au 2026-11-11
+
+Cette section est une décision produit explicite du fondateur. Elle prime sur les anciens objectifs, tableaux de bord, rapports et hypothèses commerciales contradictoires.
+
+### Périmètre actif
+- **BOT-WOW** : https://bot-wow.com/
+- **Sargasses / Sargagame** : réseau de sites de prévision sargasses et offres B2C/B2B.
+- Tous les autres projets et dépôts sont hors périmètre commercial actif, sauf demande explicite ultérieure du fondateur. Les dépôts Factory/orchestration ne servent qu'à exécuter et superviser le travail de ces deux produits.
+
+### Référence de revenus — ZÉRO
+- La référence commerciale actuelle est **0 € de ventes attribuables aux parcours des sites depuis plusieurs mois**.
+- Les anciens paiements réglés directement avec des clients en dehors du site sont exclus : ils ne constituent PAS des ventes générées par le projet/site et ne doivent jamais être réintégrés au chiffre d'affaires, au funnel, aux taux de conversion ou aux objectifs.
+- Ne pas rouvrir les investigations de ces anciens paiements, ne pas tenter de récupérer ces transactions comme ventes du site et ne pas relancer ces anciens clients au titre de cette décision.
+- Les paiements TEST, simulations, démonstrations, tentatives expirées/annulées/échouées, commandes non encaissées et simples clics/intentions ne sont jamais des ventes.
+- Ne jamais déduire un encaissement réel du seul fait qu'une requête a été lancée avec `testmode=false`. Vérifier le mode et les preuves de transaction disponibles.
+- Une vente n'est comptabilisée que si elle est nouvelle, attribuable au parcours commercial du site, réellement encaissée en environnement LIVE et confirmée par une preuve fiable. Séparer les devises ; déduire remboursements/annulations lorsqu'ils sont vérifiés. Si l'attribution ou le mode est incertain, classer NON VÉRIFIÉ et ne pas compter.
+
+### Objectif et ordre de priorité
+**Objectif absolu : réaliser le plus rapidement possible de nouvelles ventes réelles et des encaissements pour BOT-WOW et Sargasses/Sargagame.**
+1. Chercher et corriger d'abord les blocages prouvés empêchant une vente, un paiement ou la livraison d'une nouvelle commande.
+2. Prioriser acquisition qualifiée, offres et messages commerciaux véridiques, CTA, conversion, relance autorisée de prospects récents identifiés, rétention et preuve de livraison.
+3. Préférer les actions rapides, mesurables, à faible coût et directement reliées à une vente.
+4. Les audits répétitifs, refontes décoratives, métriques de vanité et développements sans lien démontré avec l'acquisition, la conversion ou la livraison passent après les actions commerciales.
+5. À chaque mission, expliciter le résultat commercial visé, la preuve attendue et la mesure disponible. Ne jamais inventer trafic, prospects, ventes, attribution ou KPI.
+
+### Garde-fous
+- Ne jamais utiliser de données TEST comme preuve de vente LIVE.
+- Ne pas modifier prix, checkout, configuration de paiement, webhooks, licences, secrets, migrations, DNS, remboursements, transferts, dépenses ou infrastructure critique sans autorisation spécifique préalable.
+- Les communications commerciales autorisées doivent rester ciblées, véridiques, conformes aux règles applicables et adressées à des prospects identifiés ; aucun envoi massif ni spam.
+- Ne jamais annoncer une vente, livraison, correction, fusion ou mise en production sans preuve correspondante.
+- Reprendre l'état confirmé le plus récent et éviter de répéter un contrôle déjà conclu sans nouvel élément.
+
+### Reporting obligatoire
+Afficher séparément :
+- **VENTES SITE LIVE CONFIRMÉES** : nombre et montant encaissé, devise par devise, période et preuve.
+- **TEST / SIMULATION** : séparé, jamais additionné aux ventes.
+- **HORS PÉRIMÈTRE** : paiements manuels historiques, exclus des résultats.
+- **NON VÉRIFIÉ** : toute transaction dont le mode, l'attribution ou l'encaissement n'est pas prouvé.
+- **PROCHAINE ACTION COMMERCIALE** : action concrète la plus rapide susceptible de produire une nouvelle vente.
+
+Ne jamais présenter le montant brut des tentatives de paiement comme du chiffre d'affaires. Le zéro commercial est le point de départ à améliorer, pas une raison de fabriquer des ventes ou des métriques.
