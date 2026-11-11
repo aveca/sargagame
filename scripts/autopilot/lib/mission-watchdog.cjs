@@ -58,6 +58,15 @@ const TERMINAL_QUEUE_STATUS = ['ready-to-merge', 'done', 'blocked', 'rejected'];
 const TERMINAL_MISSION_STATES = ['completed', 'blocked', 'failed'];
 
 /**
+ * Missions `actionable: 'human'` déjà signalées au journal.
+ *
+ * Le watchdog passe à chaque cycle sur la même mission en attente humaine :
+ * on ne veut pas une ligne de journal par cycle. Le motif est journalise
+ * UNE fois par mission et par processus.
+ */
+const HUMAN_SKIP_REASONS = new Set();
+
+/**
  * @param {object} opts
  * @param {object} opts.cfg         configuration autopilot (mission.*)
  * @param {function} opts.log        journalisation
@@ -149,6 +158,26 @@ function runMissionWatchdog(opts = {}) {
         });
       } catch (_) {}
       log(`watchdog missions : ${m.taskId} terminale (${m.state}) — non relancée`);
+      continue;
+    }
+
+    // ── MISSION NON EXÉCUTABLE PAR L'AGENT ─────────────────────────────────
+    // Une mission `actionable: 'human'` n'est PAS du ressort de l'agent :
+    // `analyze.cjs` la rétrograde ainsi quand son périmètre touche un
+    // chemin interdit (`policy.denyGlobs`, ex. `workers/**` = chemin de
+    // paiement). La reprendre ne peut donc RIEN produire : l'agent ne
+    // l'exécutera pas, et le watchdog publierait un `retrying` trompeur
+    // avant de l'abandonner en `failed` au plafond — un état terminal
+    // mensonger pour une mission qui attend un humain.
+    //
+    // Elle reste en file (`new`) pour un traitement humain, et n'est pas
+    // relancée par la boucle.
+    if (opp && opp.actionable === 'human') {
+      skipped += 1;
+      if (!HUMAN_SKIP_REASONS.has(m.taskId)) {
+        HUMAN_SKIP_REASONS.add(m.taskId);
+        log(`watchdog missions : ${m.taskId} actionnable=human — non relancée par l'agent (traitement humain requis)`);
+      }
       continue;
     }
 

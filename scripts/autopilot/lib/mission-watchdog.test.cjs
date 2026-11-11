@@ -249,6 +249,31 @@ console.log('=== 6b. reprise d\'une mission déjà claimée → picked ===');
     h.patches.some(p => p.id === 'T-CLAIMED' && p.patch.status === 'picked'), JSON.stringify(h.patches));
 }
 
+// ── 6c. Une mission `actionable: 'human'` n'est PAS reprise par l'agent ────
+
+console.log('=== 6c. mission actionnable=human → non reprise ===');
+{
+  const h = harness([
+    {
+      id: 'T-HUMAN', status: 'new', repository_full_name: 'aveca/sargagame', issue_number: 98,
+      actionable: 'human',
+      actionableReason: 'périmètre workers/** interdit (chemin de paiement)',
+    },
+  ]);
+  staleMission('T-HUMAN', 98, { attempts: 0 });
+  const res = h.run();
+  check('mission humaine NON reprise', res.resumed === 0, JSON.stringify(res));
+  // `skipped` peut compter d'autres missions périmées laissées par les
+  // scénarios précédents (l'état durable est partagé dans le fichier de
+  // test) : l'assertion porte donc sur l'ABSENCE d'effet sur T-HUMAN.
+  check('mission humaine ignorée', res.skipped >= 1, JSON.stringify(res));
+  check('aucune publication `retrying`', !h.published.some(p => p.status === 'retrying'),
+    JSON.stringify(h.published.map(p => p.status)));
+  check('aucune remise en file', h.patches.length === 0, JSON.stringify(h.patches));
+  check('la mission reste en file pour un traitement humain',
+    h.queue.opportunities[0].status === 'new', h.queue.opportunities[0].status);
+}
+
 // ── 7. Le garde-fou ignore les commentaires de STATUT de la boucle ─────────
 
 console.log('=== 7. garde-fou : les échos de statut ne bloquent pas ===');
