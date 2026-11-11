@@ -1141,3 +1141,43 @@ La CI tourne sur la ref de merge de la PR (`main ∪ branche`), ce qui explique 
 | 2026-07-30 | Claude Code | Payment fix | mollie.php, PremiumModal.jsx, Sargasses_PROD.jsx |
 | 2026-07-01 | Claude Code | B2B recurring | mollie-lib.php, mollie.php |
 | 2026-06-29 | Claude Code | Pricing B2B panel | mollie-paylinks.cjs, B2B_*.md |
+
+---
+
+## 2026-11-11 15:20 UTC · Agent: OpenCode (coding) — PR #1412 : les captures B2B ne s'annoncent plus « réussies » sans confirmation serveur
+
+> *(Entrée **appendée en fin de fichier** et non en tête : la PR #1411 insère son propre handoff en tête du même fichier, et un conflit de merge obligerait le fondateur — qui travaille sur mobile — à arbitrer un fichier de mémoire projet. Les deux PR restent donc fusionnables sans intervention.)*
+
+### Travail effectué
+- **Résumé 1 ligne** : les **20 blocs de capture B2B** (hotels, collectivités, brief gratuit, landing `/for-hotels/`) affichaient **« merci / you're in / listo » SANS confirmation serveur** — un prospect perdu se voyait comme un succès (0 signal, 0 relance, 0 vente). Corrigé : le succès n'est plus affiché que si le serveur confirme `{ok:true}`.
+- **Détails** :
+  - **Défaut mesuré sur le LIVE** : le POST partait en `mode:'no-cors'` (ou en `sendBeacon` sur `/for-hotels/`, sans réponse possible) → le navigateur ne pouvait **pas savoir** si la demande avait été enregistrée. Le sink, lui, répond très bien : `POST https://script.google.com/macros/s/AKfycb…/exec` (Content-Type `text/plain` + `Origin`) → **200**, `Access-Control-Allow-Origin: *`, corps `{"ok":true,"action":"email_saved"}` → le défaut était **côté client**, pas côté serveur.
+  - **Correctif** : `public/b2b-capture.js` (nouveau, partagé par les 12 pages) — POST en `mode:'cors'` + `Content-Type: text/plain` → **requête simple** (CORS-safelisted) → **aucun preflight** ; succès affiché **uniquement** sur `{ok:true}` ; en cas d'échec : formulaire **resté visible**, message d'erreur FR/EN/ES, bouton **réactivé** (réessai possible — l'Apps Script **déduplique par email** → pas de doublon), événement **`sg_b2b_capture_failed`** (les CTA en échec deviennent mesurables, ils ne l'étaient pas).
+  - **Les 20 blocs** : le panneau de succès est **déplacé dans `onSuccess`** (il ne peut plus s'exécuter sans confirmation) ; l'**événement d'intention** (`sg_b2b_signup` / `sg_b2b_leadmagnet`) reste émis au submit → **aucun dashboard cassé**, mesure d'intention inchangée ; `/for-hotels/` passe de `sendBeacon` à la voie confirmée.
+  - **Aucun état serveur nouveau** : le sink reste l'Apps Script existante (destination des prospects) ; aucun secret, aucun prix, aucune donnée inventée.
+- **Preuve** : `tests/unit/b2b-capture-ack.test.cjs` → **84 assertions PASS** (contrat de source sur les 12 pages + **comportement** du helper : succès confirmé → `onSuccess` ; erreur HTTP / `{ok:false}` / **réseau coupé** → **aucun** `onSuccess`, message d'erreur, bouton réactivé, échec mesuré).
+
+### Fichiers modifiés
+- `public/b2b-capture.js` — **nouveau**, helper d'accusé serveur (partagé).
+- `public/for-hotels/index.html`, `public/pro/**/index.html` (11 pages) — 20 blocs de capture passés par le helper.
+- `tests/unit/b2b-capture-ack.test.cjs` — **nouveau**, 84 assertions.
+
+### Tests réalisés
+- [x] `npm test` → **190/190 OK**
+- [x] `npm run build` → exit 0 · `node scripts/check-bundle-budget.cjs` → **206,3 Ko ≤ 210 Ko**
+- [x] 12 scripts inline des pages patchées vérifiés (`node --check`) → 0 erreur · `dist/b2b-capture.js` présent (4 710 o)
+
+### Problèmes restants
+- [ ] **Contexte du prospect perdu (action fondateur)** : la sheet `emails` ne conserve que `[date, email, island, source]` (`scripts/automation/fetch-subscribers.cjs` : plage `emails!A:E`) → **l'hôtel, la zone et la langue d'une demande sont perdus** à l'écriture. Corriger exige de modifier l'Apps Script (`scripts/appscript/Code.js`) → **clasp push = fondateur mobile** (bloqué par AGENTS.md). PR D possible : route Worker → Supabase, mais le **DDL de `b2b_leads` n'est pas dans le dépôt** (RLS active, anon révoqué) → aucun schéma vérifiable, donc rien n'a été écrit.
+- [ ] **URL ES Punta Cana en 404 sur le domaine PC** : `https://sargassumpuntacana.com/pro/es/pronostico-sargazo-punta-cana-hotels/` → **404** (3/3 mesures) ; la version ES vit sur le domaine Martinique (`…/pro/es/pronostico-sargazo-punta-cana-hoteles/` → 200). La landing `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` (200) **n'a aucun formulaire** (0 `<form>`, 0 `<input>`) → le visiteur espagnol de Punta Cana n'a **aucune capture** sur son propre domaine.
+- [ ] **Post-déploiement (PR #1412)** : vérifier `GET /b2b-capture.js` → **200** sur les 6 domaines (l'asset est dans le même arbre que les pages).
+
+### Prochaine action recommandée
+1. **Fondateur** — merger #1412 (risque faible, aucun paiement touché) et vérifier `/b2b-capture.js` en 200 sur les 6 domaines → Rôle : fondateur
+2. **Fondateur** — décider du sort du contexte prospect perdu (Apps Script `clasp push` vs route Worker + schéma Supabase) → Rôle : fondateur
+3. **DevOps** — rollout #1411 (chemin argent) après pose de la clé Mollie LIVE → Rôle : devops
+
+### Branche / PR
+- Branche : `agent/coding/b2b-capture-ack-20261111`
+- PR : **#1412** (https://github.com/aveca/sargagame/pull/1412) — ouverte, **NON mergée**, aucun déploiement
+- Commit head : `5e742758a`

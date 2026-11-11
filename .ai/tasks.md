@@ -76,6 +76,24 @@
 
 ## P1 — Haute priorité
 
+### TASK-P1-010 Captures B2B : accusé serveur réel (livré, en attente de merge)
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Statut** : [x] code livré — PR **#1412** ouverte, non mergée, aucun déploiement
+- **Description** : les 20 blocs de capture B2B (hotels, collectivités, brief gratuit, `/for-hotels/`) affichaient un succès **non confirmé** (POST `no-cors` / `sendBeacon`) → un prospect perdu se voyait comme une vente potentielle. Corrigé par `public/b2b-capture.js` (helper partagé) : succès affiché **uniquement** sur `{ok:true}` du serveur ; échec → formulaire visible + message + bouton réactivé + événement `sg_b2b_capture_failed`. Preuve : `tests/unit/b2b-capture-ack.test.cjs` (**84 assertions**). Post-déploiement : vérifier `GET /b2b-capture.js` → 200 sur les 6 domaines.
+
+### TASK-P1-011 Contexte des prospects B2B perdu à l'écriture (action fondatrice)
+- **Priorité** : P1
+- **Rôle** : fondateur (Apps Script) ou coding_agent (schéma Supabase à fournir)
+- **Statut** : [ ] bloqué — décision requise
+- **Description** : la sheet `emails` ne conserve que `[date, email, island, source]` (`scripts/automation/fetch-subscribers.cjs`, plage `emails!A:E`) → **l'hôtel, la zone et la langue d'une demande B2B sont perdus** à l'écriture, alors que le formulaire les collecte. Deux voies : (A) modifier `scripts/appscript/Code.js` pour ajouter les colonnes → **clasp push = fondateur mobile** (bloqué par AGENTS.md) ; (B) route Worker → table `b2b_leads` — **impossible en l'état** : le DDL de `b2b_leads` n'est pas dans le dépôt (RLS active, privilèges anon révoqués par `scripts/migrations/003_b2b_leads_least_privilege.sql`) → aucun schéma vérifiable, donc rien n'a été écrit.
+
+### TASK-P1-012 Punta Cana ES : URL 404 + landing sans formulaire
+- **Priorité** : P1
+- **Rôle** : coding_agent
+- **Statut** : [ ] à faire
+- **Description** : (1) `https://sargassumpuntacana.com/pro/es/pronostico-sargazo-punta-cana-hotels/` → **404** mesuré 3/3 (la version ES est publiée sur le domaine Martinique : `https://sargasses-martinique.com/pro/es/pronostico-sargazo-punta-cana-hoteles/` → 200) → **corriger le lien/canonique** pour que le domaine Punta Cana serve sa version ES ou y renvoie ; (2) la landing commerciale `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` (200) **ne contient aucun formulaire** (0 `<form>`, 0 `<input>`) → le visiteur espagnol de Punta Cana n'a **aucune capture** sur son propre domaine → y brancher le formulaire B2B (mêmes assurances que #1412).
+
 ### TASK-P1-004 Remplacer les routes Cloudflare `DOMAINE/* → sg-noso` (après déploiement)
 - **Priorité** : P1
 - **Rôle** : devops_agent + qa_agent
