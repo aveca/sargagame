@@ -358,9 +358,9 @@ function releaseSafetyBlocked(queue, opp, schedulerState = null) {
   if (!st) {
     try { st = scheduler.loadScheduler(); } catch (_) { st = { claimedIds: [] }; }
   }
-  const alreadyClaimed = Array.isArray(st && st.claimedIds) && st.claimedIds.includes(queued.id);
 
-  queued.status = alreadyClaimed ? 'picked' : 'new';
+  // Règle UNIQUE de reprise (cf. `scheduler.resumableStatus`).
+  queued.status = scheduler.resumableStatus(queued.id, st);
   queued.blockReason = null;
   queued.safetyReleasedAt = C.nowIso();
   queued.safetyReleasedTo = queued.status;

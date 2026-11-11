@@ -43,6 +43,7 @@
 'use strict';
 
 const lifecycle = require('./mission-lifecycle.cjs');
+const scheduler = require('./scheduler.cjs');
 
 /** États TERMINaux de la queue (état de sélection). */
 const TERMINAL_QUEUE_STATUS = ['ready-to-merge', 'done', 'blocked', 'rejected'];
@@ -63,6 +64,8 @@ const TERMINAL_MISSION_STATES = ['completed', 'blocked', 'failed'];
  * @param {function} opts.publish    (repo, issue, status, detail, options) => boolean
  * @param {object} opts.mem          module memory (injecté pour les tests)
  * @param {function} opts.lifecycle  module lifecycle (injecté pour les tests)
+ * @param {object} opts.schedulerState état du scheduler injecté (tests) ;
+ *        détermine le statut de reprise (`new` ou `picked`).
  * @returns {{resumed:number, checked:number, skipped:number}}
  */
 function runMissionWatchdog(opts = {}) {
@@ -71,6 +74,7 @@ function runMissionWatchdog(opts = {}) {
   const publish = opts.publish || null;
   const mem = opts.mem || require('./memory.cjs');
   const lc = opts.lifecycle || lifecycle;
+  const schedulerState = opts.schedulerState || null;
 
   const staleAfterMs = Number(cfg.mission && cfg.mission.watchdogStaleSeconds) > 0
     ? Number(cfg.mission.watchdogStaleSeconds) * 1000
@@ -207,9 +211,17 @@ function runMissionWatchdog(opts = {}) {
 
     // 1. Reprise dans la queue (état sélectionnable, SANS créer de doublon :
     //    l'opportunité existe déjà, elle n'est pas recréée).
+    //
+    //    Le statut de reprise est celui de `scheduler.resumableStatus` :
+    //    `new` si le scheduler n'a JAMAIS claimé la mission (elle doit
+    //    redevenir sélectionnable par `analyze`), `picked` si le scheduler
+    //    l'a déjà claimée (il la restaurera). Mettre `picked` par défaut
+    //    rendait la mission INEXÉCUTABLE : `analyze` ne sélectionne que les
+    //    opportunités en `new` (constaté en exécution réelle le 2026-11-11
+    //    sur la mission #1384, reprise 242 fois et jamais exécutée).
     try {
       mem.updateOpportunity(m.taskId, {
-        status: opp.status === 'validation' ? 'in_progress' : 'picked',
+        status: scheduler.resumableStatus(m.taskId, schedulerState),
         blockReason: null,
         missionRetriedAt: new Date().toISOString(),
       });

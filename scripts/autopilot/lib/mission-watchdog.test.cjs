@@ -60,7 +60,7 @@ function harness(opps) {
     patches,
     published,
     mem,
-    run(cfg) {
+    run(cfg, schedulerState) {
       return watchdog.runMissionWatchdog({
         cfg: cfg || { mission: { watchdogStaleSeconds: 60, maxAttempts: 3 } },
         log: () => {},
@@ -69,6 +69,7 @@ function harness(opps) {
           return true;
         },
         mem,
+        schedulerState: schedulerState || { claimedIds: [] },
       });
     },
   };
@@ -228,10 +229,24 @@ console.log('=== 6. reprise nominale ===');
   check('statut `retrying` publié', h.published.some(p => p.status === 'retrying'),
     JSON.stringify(h.published.map(p => p.status)));
   check('opportunité remise en file',
-    h.patches.some(p => p.id === 'T-OK' && p.patch.status === 'picked'), JSON.stringify(h.patches));
+    h.patches.some(p => p.id === 'T-OK' && p.patch.status === 'new'), JSON.stringify(h.patches));
   check('état durable → retrying', lifecycle.findByTaskId('T-OK').state === 'retrying');
   check('tentative incrémentée', lifecycle.findByTaskId('T-OK').attempts === 1,
     String(lifecycle.findByTaskId('T-OK').attempts));
+}
+
+// ── 6b. Une mission DÉJÀ CLAIMÉE par le scheduler repart en `picked` ────────
+
+console.log('=== 6b. reprise d\'une mission déjà claimée → picked ===');
+{
+  const h = harness([
+    { id: 'T-CLAIMED', status: 'picked', repository_full_name: 'aveca/sargagame', issue_number: 97 },
+  ]);
+  staleMission('T-CLAIMED', 97, { attempts: 0 });
+  const res = h.run({ mission: { watchdogStaleSeconds: 60, maxAttempts: 3 } }, { claimedIds: ['T-CLAIMED'] });
+  check('mission reprise', res.resumed === 1, JSON.stringify(res));
+  check('statut `picked` (déjà claimée : pas re-exposée au pool)',
+    h.patches.some(p => p.id === 'T-CLAIMED' && p.patch.status === 'picked'), JSON.stringify(h.patches));
 }
 
 // ── 7. Le garde-fou ignore les commentaires de STATUT de la boucle ─────────

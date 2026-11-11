@@ -99,7 +99,10 @@ console.log('=== 3. watchdog (reprise + non-relance) ===');
   check('la mission terminale est ignorée', res.skipped === 1, JSON.stringify(res));
   check('statut retrying publié', published.some(p => p.status === 'retrying' && p.issue === 77), JSON.stringify(published));
   check('la mission terminale n\'est pas republiée', !published.some(p => p.issue === 79));
-  check('opportunité remise en file (sans doublon)', patches.some(p => p.id === 'T-STALE' && p.patch.status === 'picked'), JSON.stringify(patches));
+  // Statut de reprise : `new` quand le scheduler n'a jamais claimé la mission
+  // (seul statut sélectionnable par `analyze.cjs`) — cf.
+  // `scheduler.resumableStatus`.
+  check('opportunité remise en file (sans doublon)', patches.some(p => p.id === 'T-STALE' && p.patch.status === 'new'), JSON.stringify(patches));
   check('opportunité terminale non modifiée', !patches.some(p => p.id === 'T-DONE'));
   check('état durable repassé à retrying', lifecycle.findByTaskId('T-STALE').state === 'retrying');
 }
