@@ -1,257 +1,170 @@
 /**
  * Agent Handoff Task Claiming Tests
- * Tests the task claiming logic against the actual .ai/tasks.md format
+ *
+ * Ces tests exercent le CONTRAT RÉEL (scripts/automation/agent-task-state.cjs),
+ * pas une copie réimplémentée : c'est précisément cette réimplémentation qui a
+ * laissé passer le défaut « Status line not found » (pick et claim n'avaient
+ * pas le même contrat). Les scénarios historiques sont conservés, mais ils
+ * pilotent désormais le contrat via son CLI.
  */
+'use strict'
+const fs = require('fs')
+const path = require('path')
+const nodeAssert = require('assert')
 
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const H = require('./helpers/agent-task-state.cjs')
+const { runContract, runContractRaw, makeTempDir, writeFile } = H
 
-const TASKS_FILE = path.join(__dirname, '..', '..', '.ai', 'tasks.md');
-
-function readTasks() {
-  return fs.readFileSync(TASKS_FILE, 'utf-8');
+let passed = 0
+let failed = 0
+function test (name, fn) {
+  try {
+    fn()
+    console.log('  ✓ ' + name)
+    passed++
+  } catch (e) {
+    console.log('  ✗ ' + name + ' :: ' + (e && e.message ? e.message : e))
+    failed++
+  }
 }
 
-function parseTasks(content) {
-  const sections = content.split(/(^### TASK-P\d-\d{3}(?=[\s.:—-]|$))/m);
-  const priorityOrder = { P0: 0, P1: 1, P2: 2, P3: 3 };
-  const candidates = [];
+const FIXTURE_P0 = [
+  '### TASK-P0-000. Test hermétique P0',
+  '- **Priorité** : P0',
+  '- **Rôle** : coding_agent',
+  '- **Statut** : [ ] disponible',
+  '- **Description** : entrée de test — jamais exécutée.',
+  '',
+  '### TASK-P9-900 Sentinelle de fin de fixture'
+].join('\n')
 
-  for (let i = 1; i < sections.length; i += 2) {
-    const taskHeader = sections[i];
-    const taskContent = sections[i + 1] || '';
-    const taskId = taskHeader.trim().replace('### ', '');
+// Test 1: Parse tasks and pick next available (entrée P0 synthétique)
+test('Parse tasks and pick next available (entrée P0 synthétique)', () => {
+  const dir = makeTempDir()
+  const f = writeFile(dir, 'tasks.md', FIXTURE_P0)
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === 'TASK-P0-000', 'Next task should be TASK-P0-000 (P0 priority)')
+})
 
-    const statusMatch = taskContent.match(/^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$/m);
-    if (!statusMatch) {
-      continue;
-    }
+// Test 2: Claim TASK-P0-000
+test('Claim TASK-P0-000', () => {
+  const dir = makeTempDir()
+  const f = writeFile(dir, 'tasks.md', FIXTURE_P0)
+  runContract(['claim', '--tasks', f, '--out', f, '--task-id', 'TASK-P0-000', '--agent-type', 'coding'])
+  const after = fs.readFileSync(f, 'utf8')
+  assert(after.includes('- **Statut** : [~] TASK-P0-000 — in_progress by coding_agent'),
+    'Status should be updated to in_progress')
+  assert(!after.includes('in_progress by coding_agent disponible'),
+    'the original tail should not survive in the claim line')
+})
 
-    const status = statusMatch[1];
-    if (status === ' ') {
-      const roleMatch = taskContent.match(/\*\*R[oô]le\*\*\s*:\s*(\w+)/);
-      const role = roleMatch ? roleMatch[1] : 'coding';
-      const priority = priorityOrder[taskId.split('-')[1]] ?? 99;
-      candidates.push({ priority, taskId, role });
-    }
-  }
+// Test 3: Claim already claimed task should fail
+test('Claim already claimed task should fail', () => {
+  const dir = makeTempDir()
+  const f = writeFile(dir, 'tasks.md', FIXTURE_P0)
+  runContract(['claim', '--tasks', f, '--out', f, '--task-id', 'TASK-P0-000', '--agent-type', 'coding'])
+  let threw = false, msg = ''
+  try { runContract(['claim', '--tasks', f, '--out', f, '--task-id', 'TASK-P0-000', '--agent-type', 'qa']) }
+  catch (e) { threw = true; msg = (e && e.stderr ? e.stderr.toString() : (e.message || '')) }
+  assert(threw, 'should have thrown for already claimed task')
+  assert(msg.includes('already claimed'), 'wrong error: ' + msg)
+})
 
-  if (!candidates.length) return null;
-  candidates.sort((a, b) => a.priority - b.priority || a.taskId.localeCompare(b.taskId));
-  return candidates[0];
+// Test 4: Claim non-existent task should fail
+test('Claim non-existent task should fail', () => {
+  const dir = makeTempDir()
+  const f = writeFile(dir, 'tasks.md', FIXTURE_P0)
+  let threw = false, msg = ''
+  try { runContract(['claim', '--tasks', f, '--out', f, '--task-id', 'TASK-P3-999', '--agent-type', 'coding']) }
+  catch (e) { threw = true; msg = (e && e.stderr ? e.stderr.toString() : (e.message || '')) }
+  assert(threw, 'should have thrown for non-existent task')
+  assert(msg.includes('not found'), 'wrong error: ' + msg)
+})
+
+// Test 5: Priority ordering (P0 before P1 before P2)
+test('Priority ordering (P0 first)', () => {
+  const dir = makeTempDir()
+  const content = [
+    '### TASK-P2-001. Lower priority first',
+    '- **Statut** : [ ] pending',
+    '### TASK-P1-001. Higher priority second',
+    '- **Statut** : [ ] pending',
+    '### TASK-P0-001. Highest priority last',
+    '- **Statut** : [ ] pending',
+    '### TASK-P9-900 Sentinelle'
+  ].join('\n')
+  const f = writeFile(dir, 'tasks.md', content)
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === 'TASK-P0-001', 'Expected TASK-P0-001, got ' + (r && r.taskId))
+})
+
+// Test 6: Malformed task (missing status) should be skipped
+test('Malformed task without status line should be skipped', () => {
+  const dir = makeTempDir()
+  const content = FIXTURE_P0 + '\n\n### TASK-P9-001\nNo status line here\n'
+  const f = writeFile(dir, 'tasks.md', content)
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === 'TASK-P0-000', 'Malformed task affected selection')
+})
+
+// Test 7: Empty backlog returns null (no candidate)
+test('Empty backlog returns no candidate', () => {
+  const dir = makeTempDir()
+  const f = writeFile(dir, 'tasks.md', '# Backlog\n\n---\n')
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === '', 'Expected no candidate, got ' + (r && r.taskId))
+})
+
+// Test 8: Punctuation after the task ID is accepted
+test('Punctuated task header is parsed', () => {
+  const dir = makeTempDir()
+  const content = [
+    '### TASK-P2-004. Transitions',
+    '- **Rôle** : coding',
+    '- **Statut** : [ ] pending',
+    '### TASK-P9-900 Sentinelle'
+  ].join('\n')
+  const f = writeFile(dir, 'tasks.md', content)
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === 'TASK-P2-004', 'Expected TASK-P2-004, got ' + (r && r.taskId))
+})
+
+// Test 9: Priority extraction and ordering (P0 selected ahead of P1/P2)
+test('Priority extraction and ordering', () => {
+  const dir = makeTempDir()
+  const content = [
+    '### TASK-P2-001. Lower priority first',
+    '- **Statut** : [ ] pending',
+    '### TASK-P1-001: Higher priority second',
+    '- **Statut** : [ ] pending',
+    '### TASK-P0-001 — Highest priority last',
+    '- **Statut** : [ ] pending',
+    '### TASK-P9-900 Sentinelle'
+  ].join('\n')
+  const f = writeFile(dir, 'tasks.md', content)
+  const r = runContract(['pick', '--tasks', f])
+  assert(r && r.taskId === 'TASK-P0-001', 'Expected TASK-P0-001, got ' + (r && r.taskId))
+})
+
+// Test 10: le format réel du backlog est parsable sans crash
+test('Le backlog live .ai/tasks.md est parsable par le contrat', () => {
+  const r = runContract(['pick', '--tasks', H.LIVE_TASKS])
+  assert(r && typeof r.taskId === 'string', 'pick doit renvoyer un JSON valide')
+  // Aucune tâche n'est réclamable sur le backlog courant (toutes claimées/done/bloquées)
+  nodeAssert.strictEqual(r.taskId, '', 'aucune tâche ne doit être réclamable sur le backlog courant')
+  nodeAssert.strictEqual(r.reason, 'no_candidate')
+})
+
+// Test 11: déterminisme de pick sur le backlog live
+test('pick est déterministe sur le backlog live', () => {
+  const a = runContractRaw(['pick', '--tasks', H.LIVE_TASKS])
+  const b = runContractRaw(['pick', '--tasks', H.LIVE_TASKS])
+  nodeAssert.strictEqual(a, b, 'pick doit être déterministe')
+})
+
+console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`)
+process.exit(failed > 0 ? 1 : 0)
+
+function assert (cond, msg) {
+  if (!cond) throw new Error(msg || 'assertion failed')
 }
-
-function claimTask(content, taskId, agentType) {
-  // Find the task section
-  if (!/^TASK-P[0-3]-[0-9]{3}$/.test(taskId)) throw new Error(`Invalid task ID: ${taskId}`);
-  const taskSectionPattern = new RegExp(`(^###\\s+${taskId}(?=[\\s.:—-]|$).*?)(?=^###\\s+TASK-P\\d-\\d{3}(?=[\\s.:—-]|$)|(?![\\s\\S]))`, 'ms');
-  const taskMatch = content.match(taskSectionPattern);
-  if (!taskMatch) throw new Error(`Task ${taskId} not found`);
-
-  const taskContent = taskMatch[1];
-  const statusPattern = /^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$/m;
-  const statusMatch = taskContent.match(statusPattern);
-  if (!statusMatch) throw new Error(`Status line not found in task ${taskId}`);
-
-  const statusChar = statusMatch[1];
-  if (statusChar !== ' ') {
-    throw new Error(`Task ${taskId} already claimed (status: ${statusChar})`);
-  }
-
-  const agentLabel = agentType.endsWith('_agent') ? agentType : `${agentType}_agent`;
-  const newStatus = `- **Statut** : [~] ${taskId} — in_progress by ${agentLabel}`;
-
-  const newContent = content.slice(0, taskMatch.index + statusMatch.index) + 
-                     newStatus + 
-                     content.slice(taskMatch.index + statusMatch.index + statusMatch[0].length);
-  
-  return newContent;
-}
-
-function runTests() {
-  const content = readTasks();
-  // Herméticité (2026-10-13) : le backlog live évolue — les agents claiment les
-  // tâches (ex. TASK-P0-001 claimé le 13/10 11:31 UTC, ce qui cassait ces tests).
-  // La logique (parse/claim/priorité) est donc testée sur une entrée P0
-  // synthétique non claimée, jamais sur l'état mutable du fichier.
-  // Note technique : claimTask capture une section jusqu'au prochain en-tête
-  // `### TASK-P` — la fixture se termine donc par une sentinelle d'en-tête,
-  // sinon la dernière section ne correspond pas (lookahead sans succès).
-  const contentWithP0 = content + '\n\n### TASK-P0-000. Test hermétique P0\n- **Priorité** : P0\n- **Rôle** : coding\n- **Statut** : [ ] disponible\n- **Description** : entrée de test — jamais exécutée.\n\n### TASK-P9-900 Sentinelle de fin de fixture\n';
-  
-  console.log('=== Agent Handoff Task Claiming Tests ===\n');
-  
-  let passed = 0;
-  let failed = 0;
-
-  // Test 1: Parse tasks and find next available (entrée P0 synthétique)
-  console.log('Test 1: Parse tasks and pick next available');
-  try {
-    const nextTask = parseTasks(contentWithP0);
-    if (nextTask && nextTask.taskId === 'TASK-P0-000') {
-      console.log('  ✓ PASS: Next task is TASK-P0-000 (P0 priority)');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Expected TASK-P0-000, got', nextTask?.taskId);
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  // Test 2: Claim TASK-P0-000 (synthétique — l'état du P0 live n'est pas requis)
-  console.log('Test 2: Claim TASK-P0-000');
-  try {
-    const newContent = claimTask(contentWithP0, 'TASK-P0-000', 'coding');
-    // Verify the status was updated
-    if (newContent.includes('- **Statut** : [~] TASK-P0-000 — in_progress by coding_agent') && !newContent.includes('in_progress by coding_agent disponible')) {
-      console.log('  ✓ PASS: Status updated to in_progress');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Status not updated correctly');
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  // Test 3: Claim already claimed task should fail
-  console.log('Test 3: Claim already claimed task should fail');
-  try {
-    // First claim it
-    let newContent = claimTask(contentWithP0, 'TASK-P0-000', 'coding');
-    // Try to claim again
-    claimTask(newContent, 'TASK-P0-000', 'qa');
-    console.log('  ✗ FAIL: Should have thrown for already claimed task');
-    failed++;
-  } catch (e) {
-    if (e.message.includes('already claimed')) {
-      console.log('  ✓ PASS: Correctly rejects already claimed task');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Wrong error:', e.message);
-      failed++;
-    }
-  }
-
-  // Test 4: Claim non-existent task should fail
-  console.log('Test 4: Claim non-existent task should fail');
-  try {
-    claimTask(content, 'TASK-P3-999', 'coding');
-    console.log('  ✗ FAIL: Should have thrown for non-existent task');
-    failed++;
-  } catch (e) {
-    if (e.message.includes('not found')) {
-      console.log('  ✓ PASS: Correctly rejects non-existent task');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Wrong error:', e.message);
-      failed++;
-    }
-  }
-
-  // Test 5: Priority ordering (P0 before P1 before P2)
-  console.log('Test 5: Priority ordering');
-  try {
-    const nextTask = parseTasks(contentWithP0);
-    if (nextTask && nextTask.taskId.startsWith('TASK-P0')) {
-      console.log('  ✓ PASS: P0 task selected first');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Expected P0 task, got', nextTask?.taskId);
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  // Test 6: Malformed task (missing status) should be skipped
-  console.log('Test 6: Malformed task without status line should be skipped');
-  try {
-    const testContent = contentWithP0 + '\n\n### TASK-P9-001\nNo status line here\n';
-    const nextTask = parseTasks(testContent);
-    // Should still pick the original valid P0 task
-    if (nextTask && nextTask.taskId === 'TASK-P0-000') {
-      console.log('  ✓ PASS: Malformed task skipped, valid P0 task picked');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Malformed task affected selection');
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  // Test 7: Empty backlog
-  console.log('Test 7: Empty backlog returns null');
-  try {
-    const emptyContent = '# Backlog\n\n---';
-    const nextTask = parseTasks(emptyContent);
-    if (nextTask === null) {
-      console.log('  ✓ PASS: Empty backlog returns null');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Expected null, got', nextTask);
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-
-  // Test 8: Punctuation after the task ID is accepted.
-  console.log('Test 8: Punctuated task header is parsed');
-  try {
-    const punctuated = [
-      '### TASK-P2-004. Transitions',
-      '- **Rôle** : coding',
-      '- **Statut** : [ ] pending'
-    ].join('\n');
-    const nextTask = parseTasks(punctuated);
-    if (nextTask && nextTask.taskId === 'TASK-P2-004') {
-      console.log('  ✓ PASS: TASK-P2-004. parsed as stable task ID');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Expected TASK-P2-004, got', nextTask?.taskId);
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  // Test 9: P0 > P1 > P2 even when the lower-priority task appears first.
-  console.log('Test 9: Priority extraction and ordering');
-  try {
-    const priorityFixture = [
-      '### TASK-P2-001. Lower priority first',
-      '- **Statut** : [ ] pending',
-      '### TASK-P1-001: Higher priority second',
-      '- **Statut** : [ ] pending',
-      '### TASK-P0-001 — Highest priority last',
-      '- **Statut** : [ ] pending'
-    ].join('\n');
-    const nextTask = parseTasks(priorityFixture);
-    if (nextTask && nextTask.taskId === 'TASK-P0-001') {
-      console.log('  ✓ PASS: P0 selected ahead of P1 and P2');
-      passed++;
-    } else {
-      console.log('  ✗ FAIL: Expected TASK-P0-001, got', nextTask?.taskId);
-      failed++;
-    }
-  } catch (e) {
-    console.log('  ✗ FAIL:', e.message);
-    failed++;
-  }
-
-  console.log(`\n=== Results: ${passed} passed, ${failed} failed ===`);
-  process.exit(failed > 0 ? 1 : 0);
-}
-
-runTests();

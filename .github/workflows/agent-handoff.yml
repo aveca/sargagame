@@ -70,133 +70,71 @@ jobs:
       - name: Pick next task
         id: pick_task
         run: |
-          # Si task_id forc� via workflow_dispatch
+          # CONTRAT UNIQUE de l'etat des taches : scripts/automation/agent-task-state.cjs
+          # (pick -> claim -> release). Aucun parsing inline ici : une seule
+          # implementation, executee reellement par les tests unitaires.
+          #
+          # Regles appliquees par le contrat :
+          #  - une tache n'est retenue que si elle est RECLAMABLE (statut [ ],
+          #    une seule ligne de statut, role dispatchable) ;
+          #  - le role est normalise vers le vocabulaire du dispatch
+          #    (devops_agent -> devops, QA_agent -> qa, UX_agent -> ui) ;
+          #  - plus aucun repli « [ ] ailleurs dans la tache » (c'etait la
+          #    divergence pick/claim qui produisait « Status line not found »).
+          PICK_JSON=$(node scripts/automation/agent-task-state.cjs pick --tasks .ai/tasks.md)
+          TASK_ID=$(printf '%s' "$PICK_JSON" | jq -r '.taskId')
+          AGENT_TYPE=$(printf '%s' "$PICK_JSON" | jq -r '.agentType')
+
           if [ -n "${{ github.event.inputs.task_id }}" ]; then
             TASK_ID="${{ github.event.inputs.task_id }}"
             AGENT_TYPE="${{ github.event.inputs.agent_type }}"
             echo "Forced task: $TASK_ID by $AGENT_TYPE"
-          else
-            # Parser .ai/tasks.md pour trouver la premi�re t�che [ ] non assign�e
-            # Priorit� : P0 > P1 > P2 > P3, ordre FIFO dans le fichier
-            # Format r�el : ### TASK-PX-XXX ... - **Statut** : [ ] pending
-            # On utilise Python pour parser correctement le format markdown
-            python3 <<'PY' > /tmp/pick_task.json
-          import re, json, sys
-          with open('.ai/tasks.md', 'r', encoding='utf-8') as f:
-              content = f.read()
-
-          # Find all task sections with their status
-          # Pattern: ### TASK-PX-XXX followed by content until next ### or end
-          # Then find **Statut** : [ ] ...
-          sections = re.split(r'(^### TASK-P\d-\d{3}(?=[\s.:—-]|$))', content, flags=re.MULTILINE)
-          # sections alternates: prefix, task_id, content, task_id, content...
-
-          priority_order = {'P0': 0, 'P1': 1, 'P2': 2, 'P3': 3}
-          candidates = []
-
-          for i in range(1, len(sections), 2):
-              task_header = sections[i]
-              task_content = sections[i+1] if i+1 < len(sections) else ''
-              task_id = task_header.strip().replace('### ', '')
-              
-              # Check for status line in this task's content
-              # Format: - **Statut** : [ ] pending
-              status_match = re.search(r'^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$', task_content, re.MULTILINE)
-              if not status_match:
-                  # Fallback: look for [ ] anywhere in task
-                  if '- [ ]' in task_content or '[ ]' in task_content:
-                      status = ' '
-                  else:
-                      continue
-              else:
-                  status = status_match.group(1)
-              
-              if status == ' ':
-                  # Extract role
-                  role_match = re.search(r'\*\*R[oô]le\*\*\s*:\s*(\w+)', task_content)
-                  role = role_match.group(1) if role_match else 'coding'
-                  priority = priority_order.get(task_id.split('-')[1] if len(task_id.split('-')) > 1 else 'Z', 99)
-                  candidates.append((priority, task_id, role))
-
-          if not candidates:
-              print(json.dumps({"task_id": "", "agent_type": ""}))
-              sys.exit(0)
-
-          candidates.sort(key=lambda x: (x[0], x[1]))
-          task_id, role = candidates[0][1], candidates[0][2]
-          print(json.dumps({"task_id": task_id, "agent_type": role}))
-          PY
-            if [ -s /tmp/pick_task.json ]; then
-              TASK_ID=$(jq -r '.task_id' /tmp/pick_task.json)
-              AGENT_TYPE=$(jq -r '.agent_type' /tmp/pick_task.json)
-            else
-              TASK_ID=""
-              AGENT_TYPE=""
-            fi
-            if [ -z "$TASK_ID" ]; then
-              echo "No pending tasks found"
-              echo "task_id=" >> "$GITHUB_OUTPUT"
-              echo "agent_type=" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-            echo "Auto-picked: $TASK_ID by $AGENT_TYPE"
+            PICK_JSON=$(node scripts/automation/agent-task-state.cjs pick \
+              --tasks .ai/tasks.md \
+              --task-id "$TASK_ID" \
+              --agent-type "$AGENT_TYPE")
+            TASK_ID=$(printf '%s' "$PICK_JSON" | jq -r '.taskId')
+            AGENT_TYPE=$(printf '%s' "$PICK_JSON" | jq -r '.agentType')
           fi
-          
-          echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
-          echo "agent_type=$AGENT_TYPE" >> $GITHUB_OUTPUT
 
+          if [ -z "$TASK_ID" ]; then
+            echo "No pending tasks found"
+            echo "task_id=" >> "$GITHUB_OUTPUT"
+            echo "agent_type=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Auto-picked: $TASK_ID by $AGENT_TYPE"
+          echo "task_id=$TASK_ID" >> "$GITHUB_OUTPUT"
+          echo "agent_type=$AGENT_TYPE" >> "$GITHUB_OUTPUT"
       # ══════════════════════════════════════════════════════════════
       # 4. CLAIM TASK — Marquer comme in_progress
       # ══════════════════════════════════════════════════════════════
       - name: Claim task in tasks.md
+        id: claim_task
         if: ${{ steps.pick_task.outputs.task_id != '' }}
         run: |
           TASK_ID="${{ steps.pick_task.outputs.task_id }}"
           AGENT_TYPE="${{ steps.pick_task.outputs.agent_type }}"
-          
-          # Mark the status line belonging to this task as in_progress.
-          python3 - "$TASK_ID" "$AGENT_TYPE" <<'PY'
-          import pathlib, re, sys
-          p = pathlib.Path('.ai/tasks.md')
-          task_id, agent_type = sys.argv[1], sys.argv[2]
-          content = p.read_text(encoding='utf-8')
-          
-          # Find the task section first
-          task_section_pattern = rf'(^###\s+{re.escape(task_id)}(?=[\s.:—-]|$).*?)(?=^###\s+TASK-P\d-\d{{3}}(?=[\s.:—-]|$)|\Z)'
-          task_match = re.search(task_section_pattern, content, re.MULTILINE | re.DOTALL)
-          if not task_match:
-              raise SystemExit(f'Task {task_id} not found')
-          
-          task_content = task_match.group(1)
-          
-          # Find the status line within this task
-          status_pattern = r'^-\s*\*\*Statut\*\*\s*:\s*\[([ x~])\]\s*(.+)$'
-          status_match = re.search(status_pattern, task_content, re.MULTILINE)
-          if not status_match:
-              raise SystemExit(f'Status line not found in task {task_id}')
-          
-          status_char = status_match.group(1)
-          status_rest = status_match.group(2)
-          full_status_line = status_match.group(0)
-          
-          if status_char != ' ':
-              raise SystemExit(f'Task {task_id} already claimed (status: {status_char})')
-          
-          # Replace only this specific line
-          agent_label = agent_type if agent_type.endswith('_agent') else f'{agent_type}_agent'
-          new_status = f'- **Statut** : [~] {task_id} — in_progress by {agent_label}'
-          
-          # Replace in the full content using precise positions
-          new_content = content[:task_match.start(1) + status_match.start(0)] + new_status + content[task_match.start(1) + status_match.end(0):]
-          p.write_text(new_content, encoding='utf-8')
-          PY
-          
+
+          # CONTRAT UNIQUE : le script reecrit UNIQUEMENT la ligne de statut de
+          # la tache. Le motif est ancre a la ligne : il ne peut pas supprimer
+          # la ligne suivante (bug historique) et accepte un statut « [ ] »
+          # sans texte (cause exacte du P1 « Status line not found »).
+          # La ligne d'origine est memorisee dans le state file pour permettre
+          # une restauration EXACTE par l'etape « Release claim on failure ».
+          node scripts/automation/agent-task-state.cjs claim \
+            --tasks .ai/tasks.md \
+            --out .ai/tasks.md \
+            --task-id "$TASK_ID" \
+            --agent-type "$AGENT_TYPE" \
+            --state-file "$RUNNER_TEMP/agent-claim.json"
+
           git config user.name "agent-handoff[bot]"
           git config user.email "agent-handoff@users.noreply.github.com"
           git add .ai/tasks.md
           git commit -m "chore(tasks): claim $TASK_ID by ${AGENT_TYPE}_agent"
           git push
-
+          echo "claimed=true" >> "$GITHUB_OUTPUT"
       # ══════════════════════════════════════════════════════════════
       # 5. CREATE BRANCH — Branche de travail agent/<type>/<task>
       # ══════════════════════════════════════════════════════════════
@@ -375,3 +313,45 @@ jobs:
         run: |
           echo "Task handoff prepared: ${{ steps.pick_task.outputs.task_id }}"
           echo "No implicit merge is performed by this workflow."
+
+      # ══════════════════════════════════════════════════════════════
+      # 11. RELEASE — Restaurer la tache si le handoff a echoue
+      # ══════════════════════════════════════════════════════════════
+      # Une tache reclamee ne doit JAMAIS rester bloquee a [~] in_progress
+      # quand le dispatch a echoue : le 2026-11-10, TASK-P1-004 est restee
+      # claimée par devops_agent alors que le dispatch ne connaissait pas ce
+      # role (« Unknown agent type: devops_agent »). La restauration est
+      # EXACTE (ligne d'origine restauree au caractere pres) et CONDITIONNELLE :
+      # elle n'agit QUE si la ligne de statut est encore celle de CE claim.
+      - name: Release claim on failure
+        if: ${{ failure() && steps.claim_task.outputs.claimed == 'true' }}
+        run: |
+          set -euo pipefail
+          TASK_ID="${{ steps.pick_task.outputs.task_id }}"
+          STATE_FILE="$RUNNER_TEMP/agent-claim.json"
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          if [ ! -f "$STATE_FILE" ]; then
+            echo "::warning::Aucun etat de claim ($STATE_FILE) : rien a restaurer."
+            exit 0
+          fi
+          # Le contrat doit survivre au changement de branche : copie hors arbre.
+          cp scripts/automation/agent-task-state.cjs "$RUNNER_TEMP/agent-task-state.cjs"
+          # La restauration se fait sur la branche par defaut (la claim y a ete
+          # poussee) : on repart de origin/<branche par defaut> pour ne jamais
+          # pousser le travail de l'agent sur cette branche.
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout -B "release/$TASK_ID" "origin/$DEFAULT_BRANCH"
+          RELEASE_JSON=$(node "$RUNNER_TEMP/agent-task-state.cjs" release \
+            --tasks .ai/tasks.md \
+            --out .ai/tasks.md \
+            --state-file "$STATE_FILE")
+          echo "$RELEASE_JSON"
+          if [ "$(printf '%s' "$RELEASE_JSON" | jq -r '.released')" != "true" ]; then
+            echo "::warning::Claim non restaure (raison ci-dessus) : aucune ecriture."
+            exit 0
+          fi
+          git config user.name "agent-handoff[bot]"
+          git config user.email "agent-handoff@users.noreply.github.com"
+          git add .ai/tasks.md
+          git commit -m "chore(tasks): release claim $TASK_ID after failed handoff run ${{ github.run_id }}"
+          git push origin HEAD:"$DEFAULT_BRANCH"
