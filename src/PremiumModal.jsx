@@ -3188,14 +3188,10 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             </div>
           </div>
         </div>
-        {/* Transparence prix USD haute saison (juin-nov) : afficher la tarification
-            saisonnière AVANT le paiement pour préserver la confiance (moat honnêteté).
-            Petit texte discret, pas de bloc séparé — ne casse pas le flow. */}
-        {PAY_CUR==="usd"&&(()=>{const m=new Date().getMonth()+1;return(m>=6&&m<=11)?(
-          <div style={{textAlign:"center",marginTop:6,fontSize:10.5,color:"rgba(255,255,255,.45)",letterSpacing:".01em"}}>
-            {_t(lang,"Tarif haute saison en cours · +15 % applies outside trip passes","High-season rate · +15 % on 30-day & season passes","Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
-          </div>
-        ):null})()}
+        {/* ⚠️ 2026-11-09 — la surcharge USD de haute saison (+15 %) a été supprimée
+            côté serveur : le montant affiché est le montant facturé. Aucun
+            bandeau de surcoût n'est affiché (il indiquait un montant différent
+            de celui débité). */}
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>
