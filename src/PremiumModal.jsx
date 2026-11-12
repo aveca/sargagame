@@ -11,6 +11,10 @@ import { legalHref as _legalHref } from "./lib/legal-links.js"
 // Source de vérité des prix B2C (miroir du serveur) — voir src/lib/pricing.js.
 import { PASS_DAYS, passBaseCents, resolvePass } from "./lib/pricing.js"
 import { selectB2bPaylink } from "./lib/b2b-paylink-offer.mjs"
+// Accusés serveur réels du parcours B2B (lead + essai) : le succès n'est
+// affiché qu'après confirmation de persistance. Même règle que les pages
+// statiques /pro/** (public/b2b-capture.js, PR #1412).
+import { submitB2BWithAck, b2bAckMessage } from "./lib/b2b-ack.js"
 import * as SG from "./Sargasses_PROD.jsx"
 const {
   BEACHES_FALLBACK, BEACH_TO_SARG, C, COMIC, EUR_TRIP_CENTS, IS_NEW_REGION, LINK_ANNUAL, LINK_MONTHLY,
@@ -111,14 +115,32 @@ function TerritoireMeeting({lang,email,org}){
   const [phone,setPhone]=useState("")
   const [sent,setSent]=useState(false)
   const [busy,setBusy]=useState(false)
+  const [err,setErr]=useState("")
   const submit=()=>{
     if(sent||busy)return
     setBusy(true)
+    setErr("")
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    try{track("sg_b2b_meeting_request",{})}catch(_){}
-    fetch("/api/b2b-meeting.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email,org,littoral:littoral.trim(),phone:phone.trim(),island})})
-      .then(()=>{setBusy(false);setSent(true)}).catch(()=>{setBusy(false);setSent(true)})
+    // ACCUSÉ RÉEL : le succès n'est affiché qu'après confirmation serveur
+    // (lead persisté + demande de RDV acceptée). Avant, `setSent(true)` était
+    // appelé MÊME sur erreur réseau → un prospect perdu se voyait comme
+    // enregistré (faux succès, issue #1273).
+    submitB2BWithAck({
+      lead:{email,island,source:"b2b_territoire_meeting",org},
+      meeting:{email,org,littoral:littoral.trim(),phone:phone.trim(),island},
+    }).then(res=>{
+      setBusy(false)
+      if(res.ok){
+        setSent(true)
+        try{track("sg_b2b_meeting_request",{})}catch(_){}
+      }else{
+        setErr(b2bAckMessage(res.reason,lang,res.stage))
+        try{track("sg_b2b_capture_failed",{stage:res.stage,reason:res.reason})}catch(_){}
+      }
+    }).catch(()=>{
+      setBusy(false)
+      setErr(b2bAckMessage("network",lang))
+    })
   }
   if(sent)return(
     <div style={{marginTop:14,padding:"13px 14px",borderRadius:14,border:`2.5px solid ${I.ink}`,background:"#fff",boxShadow:`2px 2px 0 ${I.ink}`}}>
@@ -133,6 +155,7 @@ function TerritoireMeeting({lang,email,org}){
       <input value={littoral} onChange={e=>setLittoral(e.target.value)} placeholder={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} aria-label={_t(lang,"Votre littoral (commune ou nb de plages)","Your coastline (town or # of beaches)","Su litoral (municipio o nº de playas)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:8}}/>
       <input value={phone} onChange={e=>setPhone(e.target.value)} inputMode="tel" autoComplete="tel" placeholder={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} aria-label={_t(lang,"Téléphone (facultatif)","Phone (optional)","Teléfono (opcional)")} style={{width:"100%",boxSizing:"border-box",padding:"11px 13px",borderRadius:11,border:`2px solid ${I.ink}`,background:"#fff",font:"700 16px/1 'Bricolage Grotesque'",color:I.ink,marginBottom:10}}/>
       <button onClick={submit} disabled={busy} style={{width:"100%",textAlign:"center",font:"800 14px/1 'Bricolage Grotesque'",padding:13,borderRadius:12,border:`2.5px solid ${I.ink}`,boxShadow:`2px 2px 0 ${I.ink}`,background:I.gold,color:I.ink,cursor:busy?"default":"pointer"}}>{busy?_t(lang,"Envoi…","Sending…","Enviando…"):_t(lang,"Planifier un point · recevoir un devis →","Schedule a call · get a quote →","Reservar · recibir presupuesto →")}</button>
+      {err?<p role="alert" style={{font:"700 12px/1.45 'Bricolage Grotesque'",color:"#b42318",background:"#fff",border:`2px solid ${I.ink}`,borderRadius:10,padding:"9px 11px",marginTop:9}}>{err}</p>:null}
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#dff1ec",marginTop:9}}>{_t(lang,"Données satellite publiques (Copernicus/NOAA), auditables · Devis, bon de commande, facture — conforme RGPD & marché public · Un interlocuteur dédié. Tarif indicatif HT.","Public satellite data (Copernicus/NOAA), auditable · Quote, purchase order, invoice — GDPR & public-procurement compliant · A dedicated contact. Indicative price excl. tax.","Datos satelitales públicos (Copernicus/NOAA), auditables · Presupuesto, orden de compra, factura — conforme RGPD · Un interlocutor dedicado. Precio indicativo sin IVA.")}</div>
       <div style={{font:"600 10.5px/1.4 'Bricolage Grotesque'",color:"#cfe9e3",marginTop:6}}>{_t(lang,"Vos coordonnées servent uniquement à vous recontacter (intérêt légitime), conservées 12 mois, supprimées sur simple demande.","Your details are used only to contact you (legitimate interest), kept 12 months, deleted on request.","Sus datos solo se usan para contactarle (interés legítimo), conservados 12 meses, eliminados a petición.")} <a href="/fiabilite/" style={{color:"#fdfcf7",textDecoration:"underline"}}>{_t(lang,"Voyez d'abord ce qu'on vaut →","See what we're worth first →","Vea primero lo que valemos →")}</a></div>
     </div>
@@ -157,6 +180,9 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   // serveur). Aucun email marketing n'est envoyé par ce flux.
   const [mktConsent,setMktConsent]=useState(false)
   const [busy,setBusy]=useState(false)
+  // Erreur VISIBLE : le serveur a refusé / le réseau a coupé / le délai a expiré
+  // → aucun succès affiché, les champs restent, l'hôtelier peut réessayer.
+  const [err,setErr]=useState("")
   // Querystring EFFECTIVE : le handler deeplink ?pro=1 fait replaceState AVANT le mount
   // lazy de ce chunk → location.search est déjà vidé. Il stashe search dans
   // sessionStorage sg_b2b_qs (pattern sg_deep_plan) : flags + ?beach= y survivent.
@@ -302,21 +328,51 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
   const submit=()=>{
     if(!valid||sent||busy)return
     try{localStorage.setItem("sg_b2b_lane",tier)}catch(_){}
+    // submitLead() reste appelé : il porte l'event GA4 `sg_email_submit` +
+    // l'event Supabase du funnel + le beacon de secours (le sink déduplique
+    // par email → aucun doublon possible avec l'appel accusé ci-dessous).
     try{submitLead(email.trim(),cur.source)}catch(_){}
     try{track("sg_b2b_intent",{tier:cur.id,price:cur.price,org:org.trim()?1:0})}catch(_){}
     // TOUS les tiers (Brief/Pro/Territoire) = essai 30 j émis INSTANTANÉMENT par
     // /api/b2b-trial.php (zéro call, zéro attente, zéro humain) → accès Pro tout de suite +
     // lien de paiement annuel direct. Territoire inclus (décision fondateur : tout self-serve).
     // Flag ?b2btrial=0 → ancien flux capture-lead + message 24 h.
-    if(!instantTrial){setSent(true);return}
-    setBusy(true)
     const island=(REGION&&REGION.id?String(REGION.id):"MQ").toUpperCase()
-    fetch("/api/b2b-trial.php",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email:email.trim(),name:org.trim(),island,marketingConsent:mktConsent?1:0,consentSource:"b2b_trial_form"})})
-      .then(r=>r.json()).then(d=>{
-        if(d&&d.ok&&d.token){setToken(d.token);try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
-        setBusy(false);setSent(true)   // échec → fallback gracieux : lead déjà capturé, message 24 h
-      }).catch(()=>{setBusy(false);setSent(true)})
+    setBusy(true)
+    setErr("")
+    // ACCUSÉ RÉEL (2 étapes, l'ordre compte) :
+    //   (1) le LEAD est écrit dans le sink des prospects et l'on exige son
+    //       accusé {ok:true} → un prospect n'est JAMAIS perdu en silence ;
+    //   (2) l'ESSAI est activé et l'on exige son accusé {ok:true,token}.
+    // Le succès n'est affiché qu'après les DEUX accusés. Un échec → message
+    // explicite + formulaire conservé + réessai possible (sans doublon).
+    const lead={email:email.trim(),island,source:cur.source,org:org.trim()}
+    const req=instantTrial
+      ? {lead,trial:{email:email.trim(),name:org.trim(),island,marketingConsent:mktConsent?1:0,consentSource:"b2b_trial_form"}}
+      : {lead}
+    submitB2BWithAck(req).then(res=>{
+      setBusy(false)
+      if(res.ok){
+        if(res.token){setToken(res.token)}
+        setSent(true)
+        // Lead CONFIRMÉ par le serveur → aiguille duale de `sg_b2b_capture_failed`
+        // (le lead existe, pas seulement l'intention). `sg_b2b_signup` reste un
+        // événement d'INTENTION émis au submit (pages statiques) : on ne le fait
+        // pas basculer ici, sinon les intentions ne seraient plus comparables
+        // entre le modal et les pages /pro/**.
+        try{track("sg_b2b_capture_confirmed",{stage:res.stage,tier:cur.id,island})}catch(_){}
+        // L'essai n'existe QUE si un token a été émis : en rollback
+        // (?b2btrial=0) le lead est capturé mais AUCUN trial n'est activé →
+        // pas d'`sg_b2b_trial_activated` (sinon conversion fictive).
+        if(res.token){try{track("sg_b2b_trial_activated",{tier:cur.id})}catch(_){}}
+      }else{
+        setErr(b2bAckMessage(res.reason,lang,res.stage))
+        try{track("sg_b2b_capture_failed",{stage:res.stage,reason:res.reason,tier:cur.id})}catch(_){}
+      }
+    }).catch(()=>{
+      setBusy(false)
+      setErr(b2bAckMessage("network",lang))
+    })
   }
   // ── Styles partagés de la séquence. Anti-thème OBLIGATOIRE : .theme-comic button
   //    {background:var(--sg-card)!important} repeint les boutons inline (la sélection
@@ -359,6 +415,13 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
         {_t(lang,"Oui, recevoir les alertes et les conseils Veilleur pour mon établissement (newsletter). Facultatif — désinscription en un clic.","Yes, receive Veilleur alerts and tips for my property (newsletter). Optional — one-click unsubscribe.","Sí, recibir alertas y consejos Veilleur para mi establecimiento (newsletter). Opcional — baja en un clic.")}
       </span>
     </label>)
+  // Bandeau d'erreur (serveur refusé / réseau coupé / délai dépassé) : il
+  // remplace l'ancien faux succès. Le formulaire reste affiché, les champs
+  // sont conservés et le bouton est réactivé → réessai possible (le sink
+  // déduplique par email → aucun doublon).
+  const errBox=err?(
+    <p role="alert" style={{font:"700 12.5px/1.45 'Bricolage Grotesque'",color:"#b42318",background:"#fff",border:`2.5px solid ${I.ink}`,borderRadius:12,padding:"10px 12px",marginTop:9,boxShadow:`2px 2px 0 ${I.ink}`}}>{err}</p>
+  ):null
   // Chip prix = INFORMATION dès É1 (règle « prix tôt »), jamais un lien (l'ASK vit à É4).
   const proPay=payOf("pro")
   const priceChip=(
@@ -423,6 +486,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button onClick={submit} disabled={!valid||busy} style={{width:"100%",textAlign:"center",font:"800 16px/1 'Bricolage Grotesque'",padding:16,borderRadius:15,border:`3px solid ${I.ink}`,boxShadow:`3px 3px 0 ${I.ink}`,background:valid?I.gold:"#e7e2d4",color:I.ink,cursor:valid&&!busy?"pointer":"default",opacity:valid?1:.7}}>{busy?_t(lang,"Activation…","Activating…","Activando…"):cur.cta}</button>
+          {errBox}
           <div style={{font:"700 11px/1.3 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Essai 30 j, sans carte, aucun prélèvement automatique · −2 mois en annuel · stop quand vous voulez","30-day trial, no card, no auto-charge · 2 months free yearly · stop anytime","Prueba 30 días, sin tarjeta, sin cobro automático · 2 meses gratis al año · pare cuando quiera")}</div>
           {consentBox}
           {payUrlOf(tier)&&<div style={{textAlign:"center",marginTop:8}}>
@@ -562,6 +626,7 @@ function B2BModal({lang,onClose,sargData=null,island=null,beach=null,source=""})
             aria-label={_t(lang,"Votre email pro","Your work email","Su email de trabajo")}
             style={{...inputStyle,padding:"14px 15px",marginBottom:11}}/>
           <button className="b2f-cta" onClick={submit} disabled={!valid||busy}>{busy?_t(lang,"Activation…","Activating…","Activando…"):_t(lang,"Activer mon essai 30 j →","Activate my 30-day trial →","Activar mi prueba de 30 días →")}</button>
+          {errBox}
           <div style={{font:"700 11px/1.4 'Bricolage Grotesque'",color:I.sub,textAlign:"center",marginTop:9}}>{_t(lang,"Accès immédiat — aucun email de confirmation à cliquer · premier brief demain matin à 7 h","Instant access — no confirmation email to click · first brief in your inbox tomorrow at 7am","Acceso inmediato — sin email de confirmación · primer informe mañana a las 7 h")}</div>
           <div style={{font:"600 10.5px/1.45 'Bricolage Grotesque'",color:"#6a6478",textAlign:"center",marginTop:7}}>{_t(lang,"Votre email sert à ouvrir votre accès et vous envoyer le brief (intérêt légitime) · conservé 12 mois · supprimé sur simple demande.","Your email is used to open your access and send your brief (legitimate interest) · kept 12 months · deleted on request.","Su email sirve para abrir su acceso y enviarle el informe (interés legítimo) · conservado 12 meses · eliminado a petición.")}</div>
           {consentBox}

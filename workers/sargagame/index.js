@@ -482,18 +482,21 @@ export default {
       const d=await verify(k); return out(d?{pro:true,host:d.h||null}:{pro:false},200);
     }
     if(u.pathname==="/api/b2b-trial.php" || u.pathname==="/api/b2b-trial"){
+      // FAIL-CLOSED (2026-11-11, issue #1273) : ce Worker régional NE PERSISTE
+      // AUCUN lead. Il rendait `{ok:true,token}` → le front affichait « essai
+      // activé » alors que PERSONNE n'était enregistré : prospect perdu, aucune
+      // relance possible, faux succès mesurable comme une vente. Le handler qui
+      // PERSISTE est `sg-payments` (Apps Script + Supabase + email
+      // transactionnel) — vérifié sur les 6 domaines live le 2026-11-11 (POST
+      // email invalide → 400 `invalid_email` + absence d'`access-control-allow-
+      // methods`, signature sg-payments). Tant que ce Worker n'écrit rien, il
+      // REFUSE explicitement : l'UI montre une erreur et l'hôtelier peut
+      // réessayer — jamais de faux succès. Si le routage d'un domaine change
+      // un jour vers ce Worker, l'échec est BRUANT (503), pas silencieux.
       if(request.method!=="POST")return out({error:"method_not_allowed"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
       const email=String(d.email||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return out({error:"invalid_email"},400);
-      const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
-      const base=env.MOLLIE_WEBHOOK_SECRET;
-      if(!base)return out({error:"payment_backend_not_configured"},503);
-      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
-      const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
-      const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-      const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw));
-      const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-      return out({ok:true,token,days:30},200);
+      return out({ok:false,error:"b2b_trial_not_persisted_here",handler:"sg-payments"},503);
     }
     if(u.pathname==="/api/mollie.php" && request.method==="POST"){
       // B2B recurring subscription compatibility with the former PHP endpoint.

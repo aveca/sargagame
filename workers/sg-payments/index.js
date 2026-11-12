@@ -870,22 +870,67 @@ var index_default = {
       const island = (input.island || "mq").replace(/[^A-Za-z]/g, "").toLowerCase();
       const ISLAND_MAP = { mq: "MQ", gp: "GP", florida: "florida", puntacana: "puntacana", rivieramaya: "rivieramaya" };
       const islandNorm = ISLAND_MAP[island] || "MQ";
-      const token = await widgetSign(env, { exp: Math.floor(Date.now() / 1e3) + 30 * 86400, type: "b2b_pro" });
+      // ── CONSENTEMENT MARKETING (optionnel, JAMAIS pré-coché) ────────────────
+      // Aligné sur public/api/b2b-trial.php : version + horodatage + source
+      // sont conservés avec le lead. L'essai reste TRANSACTIONNEL : cet
+      // endpoint n'envoie AUCUNE campagne marketing (email d'essai seul).
+      const CONSENT_VERSION = "2026-11-04";
+      const rawConsent = input.marketingConsent;
+      const marketingConsent = rawConsent === true || rawConsent === 1 || rawConsent === "1" || rawConsent === "true" || rawConsent === "on";
+      const consentSource = String(input.consentSource || "b2b_trial_form").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 40).toLowerCase() || "b2b_trial_form";
+      const consentTs = marketingConsent ? new Date().toISOString() : "";
       const domainMap = { MQ: "sargasses-martinique.com", GP: "sargasses-guadeloupe.com", florida: "sargassummiami.com", puntacana: "sargassumpuntacana.com", rivieramaya: "sargassumcancun.com" };
       const domain = domainMap[islandNorm] || "sargasses-martinique.com";
       const lang = ["florida", "puntacana", "rivieramaya"].includes(islandNorm) ? "en" : "fr";
+      // ── PERSISTANCE ATTENDUE (accusé serveur) ────────────────────────────────
+      // AVANT, les 3 écritures étaient en ctx.waitUntil (fire-and-forget) :
+      // `{ok:true}` ne prouvait RIEN — un lead perdu se voyait quand même
+      // activé (faux succès, issue #1273). Ici l'écriture du lead est ATTENDUE
+      // et son accusé est exigé : sans `{ok:true}` du sink, PAS de token et
+      // PAS de succès (fail-closed). Le sink déduplique par email → un
+      // réessai de l'hôtelier ne crée jamais de doublon.
+      const leadPayload = {
+        type: "email_signup",
+        email,
+        source: "b2b_trial",
+        island: islandNorm,
+        org: name,
+        marketing_consent: marketingConsent ? 1 : 0,
+        consent_v: marketingConsent ? CONSENT_VERSION : "",
+        consent_ts: consentTs,
+        consent_source: marketingConsent ? consentSource : ""
+      };
+      let leadSaved = false;
+      try {
+        const r = await fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(leadPayload) });
+        const j = r.ok ? await r.json().catch(() => null) : null;
+        leadSaved = !!(j && j.ok === true);
+      } catch (e) {
+        leadSaved = false;
+      }
+      if (!leadSaved) {
+        // Aucun accusé → aucun token, aucun faux succès (message sans PII).
+        console.log("b2b_trial: lead non confirmé par le sink — refus fail-closed");
+        return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
+      }
+      const token = await widgetSign(env, { exp: Math.floor(Date.now() / 1e3) + 30 * 86400, type: "b2b_pro" });
       const accessUrl = `https://${domain}/?k=${token}${beach ? `&beach=${beach}` : ""}${name ? `&name=${encodeURIComponent(name)}` : ""}`;
       const title = lang === "en" ? "Your PRO trial is active" : "Ton essai PRO est actif";
       const bodyText = lang === "en" ? `Hi ${name} Your 30-day PRO trial is ready.` : `Bonjour ${name} Ton essai PRO de 30 jours est actif.`;
       const cta = lang === "en" ? "Open my dashboard" : "Ouvrir mon espace";
       const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${bodyText}</p><p><a href="${accessUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 32px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p></div>`;
+      // Email TRANSACTIONNEL + télémétrie : best-effort (ce ne sont pas la
+      // preuve de persistance — c'est l'écriture du lead ci-dessus qui l'est).
       ctx.waitUntil(resendEmail(env, `Sargasses Pro <alerte@${domain}>`, [email], title, html).catch(() => {
-      }));
-      ctx.waitUntil(fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "email_signup", email, source: "b2b_trial", island: islandNorm, org: name }) }).catch(() => {
       }));
       ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_trial_started", params: { org: name, beach }, island: islandNorm }).catch(() => {
       }));
-      return new Response(JSON.stringify({ ok: true, token, days: 30 }), { headers: cors(request) });
+      // Consentement marketing : on ne trace QUE l'opt-in explicite (sans envoi).
+      if (marketingConsent) {
+        ctx.waitUntil(supa(env, "analytics_events", "POST", { event: "b2b_marketing_consent", params: { consent: 1, v: CONSENT_VERSION, ts: consentTs, src: consentSource }, island: islandNorm }).catch(() => {
+        }));
+      }
+      return new Response(JSON.stringify({ ok: true, token, days: 30, persisted: true }), { headers: cors(request) });
     }
     if (path === "/api/b2b-meeting.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "method_not_allowed" }), { status: 405, headers: cors(request) });
@@ -900,9 +945,22 @@ var index_default = {
       const html = `<div style="font-family:system-ui;max-width:520px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a"><h2>Nouvelle demande B2B \u2014 ${org}</h2><table style="width:100%;border-collapse:collapse"><tr><td style="padding:6px 0;font-weight:700;width:100px">Email</td><td>${email}</td></tr><tr><td style="padding:6px 0;font-weight:700">Organisation</td><td>${org}</td></tr><tr><td style="padding:6px 0;font-weight:700">Littoral</td><td>${littoral}</td></tr><tr><td style="padding:6px 0;font-weight:700">T\xE9l\xE9phone</td><td>${phone}</td></tr><tr><td style="padding:6px 0;font-weight:700">\xCEle</td><td>${island}</td></tr></table></div>`;
       ctx.waitUntil(resendEmail(env, "Sargasses B2B <alerte@sargasses-martinique.com>", ["contact@sargasses-martinique.com"], `Nouvelle demande B2B \u2014 ${org}`, html).catch(() => {
       }));
-      ctx.waitUntil(fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "email_signup", email, source: "b2b_territoire_meeting", island: island || "MQ", org }) }).catch(() => {
-      }));
-      return new Response(JSON.stringify({ ok: true }), { headers: cors(request) });
+      // PERSISTANCE ATTENDUE : la demande de RDV doit être enregistrée dans le
+      // sink AVANT d'accuser réception (sinon `{ok:true}` = faux succès et le
+      // prospect est perdu — issue #1273). Échec → 503, le front réessaie.
+      let meetingSaved = false;
+      try {
+        const r = await fetch("https://script.google.com/macros/s/AKfycbwkV1tQSEmrZ_zFPcIHBXh1EidFy16z72lx6ztABtVp4Ae3AikFHeGwN6JFMccbpoU07w/exec", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ type: "email_signup", email, source: "b2b_territoire_meeting", island: island || "MQ", org }) });
+        const j = r.ok ? await r.json().catch(() => null) : null;
+        meetingSaved = !!(j && j.ok === true);
+      } catch (e) {
+        meetingSaved = false;
+      }
+      if (!meetingSaved) {
+        console.log("b2b_meeting: demande non confirmée par le sink — refus fail-closed");
+        return new Response(JSON.stringify({ ok: false, error: "lead_not_persisted" }), { status: 503, headers: cors(request) });
+      }
+      return new Response(JSON.stringify({ ok: true, persisted: true }), { headers: cors(request) });
     }
     if (path === "/api/b2b-create-checkout.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });

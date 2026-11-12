@@ -103,6 +103,13 @@
         return data
       })
       .then(function (data) {
+        // CONVERSION CONFIRMÉE (l'aiguille duale de `sg_b2b_capture_failed`) :
+        // un lead ACCEPTÉ par le serveur est mesurable, pas seulement un clic.
+        // `sg_b2b_signup` reste émis au submit (intention, tableau de bord
+        // existant) — cet événement, lui, ne part qu'APRÈS l'accusé {ok:true}.
+        try {
+          if (global.gtag) global.gtag('event', 'sg_b2b_capture_confirmed', { source: o.source || 'b2b', lang: lang })
+        } catch (_) {}
         if (typeof o.onSuccess === 'function') o.onSuccess(data)
         return data
       })

@@ -71,5 +71,26 @@ check(!/\b(?:resend|sendgrid|mailgun|smtp|ses|sendmail)\w*\s*\(/i.test(trial),
 check(!/campaign|newsletter|drip|broadcast/i.test(trial.replace(/newsletter\)\.|consent/g, '')),
   'aucune logique de campagne / newsletter dans l’endpoint')
 
+// 4) WORKER PERSISTANT (`workers/sg-payments`) — le handler réellement routé
+//    sur les 6 domaines live. Avant, il IGNORAIT `marketingConsent` : le
+//    consentement collecté côté front était perdu. Il doit conserver
+//    version + horodatage + source, et ne pas pré-cocher l'opt-in.
+console.log('\n4. Consentement dans le worker persistant (sg-payments)')
+const prodWorker = read('workers/sg-payments/index.js')
+check(prodWorker.includes('const rawConsent = input.marketingConsent'),
+  'sg-payments lit marketingConsent dans la requête')
+check(/const marketingConsent = rawConsent === true \|\| rawConsent === 1 \|\| rawConsent === "1"/.test(prodWorker),
+  'sg-payments normalise le consentement (booléen / 1 / "1") — jamais pré-coché')
+check(/consent_v/.test(prodWorker) && /consent_ts/.test(prodWorker) && /consent_source/.test(prodWorker),
+  'sg-payments conserve version + horodatage + source du consentement')
+check(/b2b_marketing_consent/.test(prodWorker),
+  'sg-payments trace l’opt-in explicite (événement analytics)')
+check(!/marketingConsent\s*:\s*true/.test(prodWorker),
+  'sg-payments ne force jamais le consentement à true')
+check(!/waitUntil\(fetch\("https:\/\/script\.google\.com\/macros/.test(prodWorker),
+  'sg-payments n’écrit plus le lead en fire-and-forget (l’accusé est attendu)')
+check(/lead_not_persisted/.test(prodWorker),
+  'sg-payments refuse (503) si le sink n’accuse pas l’enregistrement')
+
 console.log('\nB2B_TRIAL_CONSENT_TESTS', failures === 0 ? 'PASS' : 'FAIL')
 process.exit(failures ? 1 : 0)
