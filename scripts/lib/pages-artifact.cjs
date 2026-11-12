@@ -81,7 +81,8 @@ function listBlockedFiles(dir) {
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const childRel = rel ? `${rel}/${entry.name}` : entry.name
       const childAbs = path.join(current, entry.name)
-      if (entry.isDirectory()) walk(childAbs, childRel)
+      if (entry.isSymbolicLink()) out.push(childRel)
+      else if (entry.isDirectory()) walk(childAbs, childRel)
       else if (isBlockedForPages(childRel)) out.push(childRel)
     }
   }
@@ -108,18 +109,30 @@ function buildPagesArtifact({ sourceDir, targetDir }) {
   if (!fs.existsSync(sourceDir)) {
     throw new Error(`[pages-artifact] source introuvable : ${sourceDir}`)
   }
+
+  const sourceAbs = path.resolve(sourceDir)
+  const targetAbs = path.resolve(targetDir)
+  // Les chemins source/cible ne doivent PAS se chevaucher dans aucun sens :
+  // une cible égale à la source, dedans OU au-dessus pourrait détruire le FTP.
+  const isSameOrWithin = (parent, child) => {
+    const relative = path.relative(parent, child)
+    return relative === '' || (
+      relative !== '..' &&
+      !relative.startsWith('..' + path.sep) &&
+      !path.isAbsolute(relative)
+    )
+  }
+  if (isSameOrWithin(sourceAbs, targetAbs) || isSameOrWithin(targetAbs, sourceAbs)) {
+    throw new Error(`[pages-artifact] source et cible ne doivent pas se chevaucher : source=${sourceAbs} cible=${targetAbs}`)
+  }
+
+  // Vérifier le chevauchement AVANT toute suppression : le FTP historique
+  // ne doit jamais être effacé par une cible mal configurée.
   if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true })
   fs.mkdirSync(targetDir, { recursive: true })
 
   const removed = []
   let copied = 0
-  const sourceAbs = path.resolve(sourceDir)
-  const targetAbs = path.resolve(targetDir)
-  // Garde-fou : la cible ne doit jamais être à l'intérieur de la source
-  // (la copie récurserait alors dans elle-même jusqu'au dépassement de pile).
-  if (targetAbs === sourceAbs || targetAbs.startsWith(sourceAbs + path.sep)) {
-    throw new Error(`[pages-artifact] la cible ne peut pas être à l'intérieur de la source : ${targetAbs}`)
-  }
   const walk = (current, rel, dest) => {
     fs.mkdirSync(dest, { recursive: true })
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
@@ -127,6 +140,9 @@ function buildPagesArtifact({ sourceDir, targetDir }) {
       const childAbs = path.join(current, entry.name)
       const childDest = path.join(dest, entry.name)
       if (path.resolve(childAbs) === targetAbs) continue
+      if (entry.isSymbolicLink()) {
+        throw new Error(`[pages-artifact] lien symbolique interdit dans la source : ${childRel}`)
+      }
       if (entry.isDirectory()) {
         walk(childAbs, childRel, childDest)
       } else if (isBlockedForPages(childRel)) {
