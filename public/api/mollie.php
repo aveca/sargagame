@@ -40,7 +40,7 @@ try {
         $pass = $data['pass'] ?? null;
         $email = $data['email'] ?? '';
         $source = $data['source'] ?? 'unknown';
-        $description = $data['description'] ?? ($pass ? "Sargasses Pass $pass" : 'Sargasses');
+        $description = $pass ? "Sargasses Pass $pass" : 'Sargasses';
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null);
         $cardToken = $data['cardToken'] ?? null;
 
@@ -88,17 +88,25 @@ try {
             $expected = $passPrices[$pass][$currency] ?? null;
             if ($expected !== null) {
                 $priceValid = (abs($amountVal - $expected) < 0.02);
-            } else {
-                // Prix USD variable : plausibilité
-                $priceValid = ($amountVal > 0.50 && $amountVal < 50);
             }
-        } elseif (!$pass) {
-            // Subscription (B2B monthly) — montants defined in mol_b2b_plans()
-            $priceValid = ($amountVal > 0 && $amountVal < 300);
         }
+        // ⚠️ P0 money path 2026-11-10 — un `pass` ABSENT ou INCONNU est
+        // désormais REFUSÉ (fail-closed). AVANT, la branche « Subscription
+        // (B2B monthly) » acceptait TOUT montant entre 0 € et 300 € : de
+        // l'argent était encaissé sans aucun service livrable. Les abonnements
+        // B2B passent par `create_subscription` (action dédiée, plan validé).
         if (!$priceValid) {
             error_log("[mollie.php] price tamper: pass=$pass amount=$amountVal currency=$currency");
             throw new Exception('Prix invalide');
+        }
+
+        // ── Email obligatoire ────────────────────────────────────────────────
+        // Sans email, le grant durable ne peut être rattaché à personne :
+        // argent payé sans accès livré (trou de confiance).
+        $email = strtolower(trim((string)($data['email'] ?? '')));
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            error_log("[mollie.php] invalid email on create_payment");
+            throw new Exception('Email invalide');
         }
 
         // ⚠️ 2026-11-09 — PLUS de surcharge USD de haute saison (+15 %).
@@ -106,10 +114,22 @@ try {
         // un surcoût ici créerait une divergence affichage/débit (16,99 $ affiché
         // mais 19,54 $ débité). Le montant validé ci-dessus EST le montant débité.
 
-        // ── Metadata : pass + email pour webhook + audit ──────────────────────
-        $metadata = $data['metadata'] ?? [];
-        $metadata['source'] = $source;
-        $metadata['pass'] = $pass ?? '';
+        // ── Metadata : la CLASSIFICATION est écrite par le serveur ────────────
+        // `offer_kind` détermine la classe de livraison côté webhook. Le client
+        // ne peut plus l'usurper (ni `offer_kind`, ni `source`, ni `plan`, ni
+        // `pass`, ni `email`) : AVANT, `source:"b2b_annual"` suffisait à
+        // obtenir 365 JOURS d'accès Pro pour un pass B2C à 14,99 €.
+        $reservedMeta = ['offer_kind', 'pass', 'plan', 'source', 'email', 'customerId', 'interval', 'return_ref', 'mode'];
+        $rawMeta = $data['metadata'] ?? [];
+        if (!is_array($rawMeta)) $rawMeta = [];
+        $metadata = [];
+        foreach ($rawMeta as $mk => $mv) {
+            if (in_array($mk, $reservedMeta, true)) continue;
+            $metadata[$mk] = $mv;
+        }
+        $metadata['source'] = substr((string)$source, 0, 40);
+        $metadata['offer_kind'] = 'b2c_pass';
+        $metadata['pass'] = $pass;
         $metadata['email'] = $email;
         $metadata['lang'] = $data['lang'] ?? 'fr';
         if (!empty($data['referredBy'])) $metadata['referredBy'] = $data['referredBy'];
@@ -120,10 +140,18 @@ try {
         // (payment->id n'existe pas encore). Le handler utilise le sessionStorage
         // ou localStorage (sg_email) pour retrouver le contexte. Sur iOS Safari
         // où sessionStorage est effacé, le fallback email vérifie via sgVerifySub.
-        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-        $host = $_SERVER['HTTP_HOST'] ?? 'sargasses-martinique.com';
-        $redirectUrl = $data['redirectUrl'] ?? "$scheme://$host/?mollie_return=1";
-        $webhookUrl = $data['webhookUrl'] ?? "$scheme://$host/public/api/mollie-webhook.php";
+        //
+        // ⚠️ P0 money path 2026-11-10 — `redirectUrl` / `webhookUrl` étaient
+        // 100 % client : open redirect après paiement + exfiltration des
+        // métadonnées vers un hôte arbitraire. Les deux URL sont désormais
+        // construites par le serveur, sur un domaine de la flotte.
+        $scheme = 'https';
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        $host = explode(':', $host)[0];
+        $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
+        if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
+        $redirectUrl = "$scheme://$host/?mollie_return=1";
+        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php";
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -172,12 +200,29 @@ try {
         // Hosted checkout for B2B monthly subscriptions
         $planKey = $data['plan'] ?? '';          // 'pro_monthly' | 'brief_monthly'
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
-        $redirectUrl = $data['redirectUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/pro/espace/';
-        $webhookUrl = $data['webhookUrl'] ?? (isset($_SERVER['HTTPS']) ? 'https' : 'http') . '://' . $_SERVER['HTTP_HOST'] . '/public/api/mollie-webhook.php';
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
-        $metadata = $data['metadata'] ?? [];
-        $metadata['source'] = $metadata['source'] ?? 'b2b_monthly';
+        // ⚠️ P0 money path 2026-11-10 — `offer_kind` est écrit par le serveur
+        // (à partir du catalogue de plans) ; le client ne peut plus choisir la
+        // classe de livraison d'un abonnement.
+        $reservedMeta = ['offer_kind', 'pass', 'plan', 'source', 'email', 'customerId', 'interval', 'return_ref', 'mode'];
+        $rawMeta = $data['metadata'] ?? [];
+        if (!is_array($rawMeta)) $rawMeta = [];
+        $metadata = [];
+        foreach ($rawMeta as $mk => $mv) {
+            if (in_array($mk, $reservedMeta, true)) continue;
+            $metadata[$mk] = $mv;
+        }
+        $metadata['source'] = 'b2b_monthly';
+        $metadata['offer_kind'] = 'b2b_monthly';
         $metadata['plan'] = $planKey;
+        // URL de retour et webhook : construits par le serveur (jamais client).
+        $scheme = 'https';
+        $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
+        $host = explode(':', $host)[0];
+        $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
+        if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
+        $redirectUrl = "$scheme://$host/pro/espace/";
+        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php";
 
         $plans = mol_b2b_plans();
         if (!isset($plans[$planKey])) {
