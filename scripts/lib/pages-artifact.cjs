@@ -77,6 +77,10 @@ function isBlockedForPages(relativePath) {
 function listBlockedFiles(dir) {
   const out = []
   if (!fs.existsSync(dir)) return out
+  // lstat is essential here: existsSync/readdirSync follow a symlink at the
+  // root itself, while the recursive walk only rejects child symlinks.
+  const rootStat = fs.lstatSync(dir)
+  if (rootStat.isSymbolicLink() || !rootStat.isDirectory()) return ['.']
   const walk = (current, rel) => {
     for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
       const childRel = rel ? `${rel}/${entry.name}` : entry.name
@@ -109,9 +113,30 @@ function buildPagesArtifact({ sourceDir, targetDir }) {
   if (!fs.existsSync(sourceDir)) {
     throw new Error(`[pages-artifact] source introuvable : ${sourceDir}`)
   }
+  const sourceStat = fs.lstatSync(sourceDir)
+  if (sourceStat.isSymbolicLink()) {
+    throw new Error(`[pages-artifact] la racine source ne peut pas être un lien symbolique : ${sourceDir}`)
+  }
+  if (!sourceStat.isDirectory()) {
+    throw new Error(`[pages-artifact] la source doit être un dossier : ${sourceDir}`)
+  }
 
-  const sourceAbs = path.resolve(sourceDir)
-  const targetAbs = path.resolve(targetDir)
+  // Résoudre aussi les parents existants par realpath : un chemin lexical
+  // non chevauchant peut devenir un alias du dossier FTP via un parent
+  // symbolique. Le suffixe inexistant est ensuite réappliqué sans le créer.
+  const resolvePhysicalPath = (candidate) => {
+    let cursor = path.resolve(candidate)
+    const suffix = []
+    while (!fs.existsSync(cursor)) {
+      const parent = path.dirname(cursor)
+      if (parent === cursor) throw new Error(`[pages-artifact] chemin impossible à résoudre : ${candidate}`)
+      suffix.unshift(path.basename(cursor))
+      cursor = parent
+    }
+    return path.resolve(fs.realpathSync(cursor), ...suffix)
+  }
+  const sourceAbs = resolvePhysicalPath(sourceDir)
+  const targetAbs = resolvePhysicalPath(targetDir)
   // Les chemins source/cible ne doivent PAS se chevaucher dans aucun sens :
   // une cible égale à la source, dedans OU au-dessus pourrait détruire le FTP.
   const isSameOrWithin = (parent, child) => {
