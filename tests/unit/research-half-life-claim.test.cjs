@@ -111,6 +111,15 @@ assert.doesNotMatch(fs.readFileSync(path.join(ROOT, 'regions/_staging/seo-conten
   }
 }
 
+const puntaCanaSeason = JSON.parse(fs.readFileSync(path.join(ROOT, 'regions', 'seo-content', 'puntacana.json'), 'utf8')).pages.season
+const puntaCanaSeasonCopy = JSON.stringify(puntaCanaSeason)
+assert.doesNotMatch(puntaCanaSeasonCopy, /reliably clean|almost every beach.{0,50}stays clean|skip the question entirely|daily satellite tracking/i,
+  'Punta Cana seasonal SEO copy must not promise clean beaches or a fixed satellite cadence')
+assert.match(puntaCanaSeason.intro, /generally a lower-risk period/i)
+assert.match(puntaCanaSeason.intro, /no month or beach is guaranteed clear/i)
+assert.match(puntaCanaSeason.tips, /timestamp and confidence/i)
+assert.match(puntaCanaSeason.tips, /treat the status as unknown/i)
+
 const hotelsLanding = fs.readFileSync(path.join(ROOT, 'public', 'for-hotels', 'index.html'), 'utf8')
 assert.ok(hotelsLanding.includes('NOAA/AOML ERDDAP'), 'B2B landing must identify the actual AFAI distribution source')
 assert.doesNotMatch(hotelsLanding, /4× a day|4× daily|four times a day|4x a day/i, 'B2B landing must not promise a fixed AFAI cadence')
