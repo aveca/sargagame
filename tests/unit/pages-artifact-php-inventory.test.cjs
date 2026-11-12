@@ -81,6 +81,9 @@ try {
   t(result.removed.length === 2, 'les fichiers interdits sont retirés (2)')
   t(!fs.existsSync(path.join(artifact, 'api', 'mollie.php')), 'le .php n’est pas dans l’artefact')
   t(!fs.existsSync(path.join(artifact, '.htaccess')), 'le .htaccess n’est pas dans l’artefact')
+  fs.writeFileSync(path.join(artifact, '.htaccess'), 'unexpected')
+  t(listBlockedFiles(artifact).includes('.htaccess'), 'l’inventaire détecte un .htaccess réintroduit')
+  fs.unlinkSync(path.join(artifact, '.htaccess'))
   t(fs.existsSync(path.join(artifact, 'index.html')), 'index.html est dans l’artefact')
   t(fs.existsSync(path.join(artifact, 'api', 'copernicus', 'sargassum.json')), 'la structure des répertoires est conservée')
   t(fs.existsSync(path.join(artifact, 'videos', 'hero.mp4')), 'les fichiers non-PHP sont conservés')
@@ -88,12 +91,57 @@ try {
   t(countPhpFiles(artifact) === 0, 'l’artefact produit ne contient aucun PHP')
   t(listBlockedFiles(artifact).length === 0, 'l’artefact produit ne contient aucun fichier bloqué')
 
-  // Garde-fou : une cible à l'intérieur de la source est refusée (récursion infinie).
+  // Garde-fous : le chevauchement est refusé AVANT toute suppression.
+  const nestedTarget = path.join(fixture, 'nested', 'artifact')
+  fs.mkdirSync(nestedTarget, { recursive: true })
+  const nestedSentinel = path.join(nestedTarget, 'must-survive.txt')
+  fs.writeFileSync(nestedSentinel, 'keep')
   let threw = false
   try {
-    buildPagesArtifact({ sourceDir: fixture, targetDir: path.join(fixture, 'nested', 'artifact') })
+    buildPagesArtifact({ sourceDir: fixture, targetDir: nestedTarget })
   } catch (_) { threw = true }
   t(threw, 'une cible imbriquée dans la source est refusée')
+  t(fs.existsSync(nestedSentinel), 'le garde-fou ne supprime pas une cible existante dans la source')
+
+  // Une cible parente de la source est tout aussi dangereuse (elle engloberait le FTP).
+  const overlapBase = fs.mkdtempSync(path.join(os.tmpdir(), 'sargagame-pages-overlap-'))
+  try {
+    const nestedSource = path.join(overlapBase, 'source')
+    fs.mkdirSync(nestedSource, { recursive: true })
+    const sourceSentinel = path.join(nestedSource, 'must-survive.txt')
+    fs.writeFileSync(sourceSentinel, 'keep')
+    let ancestorThrew = false
+    try {
+      buildPagesArtifact({ sourceDir: nestedSource, targetDir: overlapBase })
+    } catch (_) { ancestorThrew = true }
+    t(ancestorThrew, 'une cible parente de la source est refusée')
+    t(fs.existsSync(sourceSentinel), 'une cible parente ne peut pas effacer le dossier FTP source')
+  } finally {
+    fs.rmSync(overlapBase, { recursive: true, force: true })
+  }
+
+  // Les liens symboliques pourraient copier un fichier extérieur dans l’artefact public.
+  const symlinkBase = fs.mkdtempSync(path.join(os.tmpdir(), 'sargagame-pages-symlink-'))
+  try {
+    const symlinkSource = path.join(symlinkBase, 'source')
+    const outsideFile = path.join(symlinkBase, 'outside.txt')
+    fs.mkdirSync(symlinkSource, { recursive: true })
+    fs.writeFileSync(outsideFile, 'outside')
+    let symlinkCreated = false
+    try { fs.symlinkSync(outsideFile, path.join(symlinkSource, 'public-link.txt')); symlinkCreated = true } catch (_) {}
+    if (symlinkCreated) {
+      t(listBlockedFiles(symlinkSource).includes('public-link.txt'), 'l’inventaire signale les liens symboliques')
+      let symlinkThrew = false
+      try {
+        buildPagesArtifact({ sourceDir: symlinkSource, targetDir: path.join(symlinkBase, 'artifact') })
+      } catch (_) { symlinkThrew = true }
+      t(symlinkThrew, 'le constructeur refuse de copier un lien symbolique')
+    } else {
+      console.log('SKIP liens symboliques : création non autorisée sur cette plateforme')
+    }
+  } finally {
+    fs.rmSync(symlinkBase, { recursive: true, force: true })
+  }
 } finally {
   fs.rmSync(fixture, { recursive: true, force: true })
 }
@@ -179,6 +227,8 @@ for (const region of regions) {
 t(fs.existsSync(path.join(ROOT, 'scripts', 'inventory-pages-artifacts.cjs')), 'le script d’inventaire existe')
 const inventorySrc = fs.readFileSync(path.join(ROOT, 'scripts', 'inventory-pages-artifacts.cjs'), 'utf8')
 t(/PAGES_ARTIFACTS_PHP_FREE/.test(inventorySrc), 'l’inventaire émet un token lisible (PAGES_ARTIFACTS_PHP_FREE)')
+t(/blockedCount\s*===\s*0/.test(inventorySrc) && /row\.blockedFiles\.length/.test(inventorySrc),
+  'l’inventaire échoue aussi sur .htaccess/.htpasswd et les liens symboliques, pas seulement PHP')
 
 // ── G. .gitignore : les artefacts ne doivent jamais être commités ───────────
 const gitignore = fs.readFileSync(path.join(ROOT, '.gitignore'), 'utf8')
