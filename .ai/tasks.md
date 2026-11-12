@@ -34,7 +34,7 @@
 ### TASK-P0-008 B2B Punta Cana : persistance serveur réelle des prospects
 - **Priorité** : P1
 - **Rôle** : coding_agent
-- **Statut** : [ ] à faire
+- **Statut** : [~] TASK-P0-008 — in_progress by coding_agent
 - **Description** : issue #1273 / mission #1384. Le checker live `https://sargassumpuntacana.com/es/sargazo-para-hoteles/` et les pages `/pro/en/sargassum-forecast-punta-cana-hotels/` + `/pro/es/pronostico-sargazo-punta-cana-hoteles/` n'ont pas été sondés pour la **persistance** du prospect (accusé serveur après écriture réelle — **jamais** de fetch no-cors fictif). Les endpoints `/api/b2b-prospects.php|contacts|events|scores` répondent **410 `endpoint_retired`** → identifier le chemin d'écriture survivant avant de conclure « prospects perdus ». Objectif : **compter les prospects entrants exploitables** (sans prospection non sollicitée, sans faux témoignages, sans téléphone).
 
 ### TASK-P0-001 Configurer webhook secret Mollie en prod
