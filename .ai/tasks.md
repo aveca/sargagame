@@ -27,7 +27,7 @@
 ### TASK-P0-007 Encaissement réel : clé Mollie LIVE + rollout PR #1411
 - **Priorité** : P0
 - **Rôle** : fondateur (secret) puis devops
-- **Statut** : [ ] bloqué — action fondateur requise
+- **Statut** : [~] TASK-P0-007 — in_progress by fondateur_agent
 - **Description** : le secret `MOLLIE_API_KEY` déployé sur `sg-payments` est une clé **TEST** (bandeau « this is a testmode payment » sur les 6 domaines) → **aucun encaissement réel possible**. Déroulé : (1) poser la clé **LIVE** (secret — action fondateur, jamais en Git ni dans les logs), (2) valider le déploiement de la PR **#1411** (SHA exact `4098f7866c194ecc697d8fdcd85de802b5d4641a`, preuve TEST déjà au dossier, rollback `git revert 4098f7866`), (3) rejouer le parcours Pro live sur `https://sargasses-martinique.com/pro/espace/` (checkout → webhook → email de livraison → accès) et consigner la **preuve réelle**.
 - **Contraintes** : ne jamais compter un paiement TEST comme une vente, pas d'auto-commande du fondateur, pas d'accès Premium sans paiement confirmé, ne jamais fabriquer webhook/confirmation.
 
