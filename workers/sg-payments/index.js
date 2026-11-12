@@ -2150,8 +2150,19 @@ async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, h
   const customerId = String(metadata?.customerId || "");
   const planKey = String(metadata?.plan || "");
   if (!interval || !customerId || !apiKey) return { created: false, reason: "not_recurring" };
-  const k = `mol_sub_from_${payment.id}`;
-  if (await kv(env).get(k)) return { created: false, reason: "already" };
+  // GARDE-FOU « PAS DE DOUBLON D'ABONNEMENT » (P0 argent).
+  // Le paiement de RENOUVELLEMENT herite des metadata de l'abonnement, dont
+  // `firstPaymentId` : sans ce garde-fou, chaque renouvellement recraitait un
+  // NOUVEL abonnement pour le meme client → debit 2x, 3x… par mois.
+  if (metadata?.firstPaymentId) return { created: false, reason: "renewal_payment" };
+  const sequenceType = String(payment?.sequenceType || "");
+  if (sequenceType && sequenceType !== "first") return { created: false, reason: "not_first_sequence" };
+  // Marqueur par CLIENT + OFFRE (et non par paiement) : deux premiers
+  // paiements du meme client ne doivent creer qu'UN abonnement. L'ancienne
+  // cle par paiement est conservee en lecture (migration sans risque).
+  const k = `mol_sub_cust_${customerId}_${planKey}`;
+  const legacyKey = `mol_sub_from_${payment.id}`;
+  if (await kv(env).get(k) || await kv(env).get(legacyKey)) return { created: false, reason: "already" };
   const plan = B2B_PLANS[planKey] || B2C_SUB_PLANS[planKey];
   if (!plan || !plan.interval) return { created: false, reason: "no_plan_interval" };
   try {
@@ -2163,6 +2174,7 @@ async function maybeCreateFollowupSubscription(env, apiKey, payment, metadata, h
       interval: plan.interval
     });
     await kv(env).put(k, sub.id, { expirationTtl: 400 * 86400 });
+    await kv(env).put(legacyKey, sub.id, { expirationTtl: 400 * 86400 });
     return { created: true, subscriptionId: sub.id };
   } catch (e) {
     console.log("[sg] followup subscription failed:", String(e?.message || e).slice(0, 160));
@@ -2179,17 +2191,31 @@ async function fulfillPaidPayment(env, payment, ctx, host) {
     return { granted: true, kind: "b2b_onboarding", email: onboarding.email_sent ? "sent" : "failed" };
   }
   if (check.kind === "b2b_annual" || check.kind === "b2b_first") {
+    // RÉSOLUTION DU CONFLIT #1406 + #1411 (P0 « chemin argent ») :
+    //   - la DURÉE vient du CATALOGUE du plan (intervalle absent = annuel),
+    //     jamais d'un indicateur de métadonnées : un client ne peut plus
+    //     transformer 29 € de Brief mensuel en 365 jours d'accès (#1406) ;
+    //   - le jeton retourné par grantB2B est UTILISÉ pour LIVRER l'accès par
+    //     email (sinon le client paie et ne reçoit rien) (#1411).
+    // Les deux intentions sont conservées : aucune n'est sacrifiée.
     const planKey = String(metadata.plan || "");
     const plan = B2B_PLANS[planKey];
-    // La DURÉE vient du catalogue du plan (intervalle absent = annuel),
-    // jamais d'un indicateur de métadonnées : un client ne peut plus
-    // transformer 29 € de Brief mensuel en 365 jours d'accès.
     const days = plan && !plan.interval ? 365 : 30;
-    await grantB2B(env, check.email, planKey, payment.id, days, { metadata });
+    const grant = await grantB2B(env, check.email, planKey, payment.id, days, { metadata });
+    // LIVRAISON : l'email qui porte le lien d'acces. AVANT ce correctif, le
+    // droit etait cree SANS email → le client payait et ne recevait rien.
+    const delivery = await deliverProAccessEmail(env, {
+      email: check.email,
+      token: grant.token,
+      planKey,
+      host,
+      subId: payment.id,
+      days,
+    });
     if (check.kind === "b2b_first") {
       ctx?.waitUntil?.(maybeCreateFollowupSubscription(env, env.MOLLIE_API_KEY, payment, metadata, host));
     }
-    return { granted: true, kind: check.kind, plan: planKey };
+    return { granted: true, kind: check.kind, plan: planKey, email: check.email, token: grant.token, delivery };
   }
   const email = check.email;
   await grantB2C(env, payment.id, check.pass, email, metadata, check.currency);
@@ -2220,6 +2246,7 @@ async function handleMollieReturn(request, env, ctx) {
   let pass = "";
   let email = "";
   let plan = "";
+  let accessToken = "";
   let reasons = [];
   if (paymentId && env.MOLLIE_API_KEY) {
     try {
@@ -2232,6 +2259,7 @@ async function handleMollieReturn(request, env, ctx) {
         const result = await fulfillPaidPayment(env, payment, ctx, host);
         granted = !!result.granted;
         reasons = result.reasons || [];
+        accessToken = String(result.token || "");
       }
     } catch (e) {
       reasons = [String(e?.message || e).slice(0, 80)];
@@ -2241,13 +2269,23 @@ async function handleMollieReturn(request, env, ctx) {
   const days = PASS_DURATIONS[pass] || (plan === "pro_annual" || plan === "pro_annual_usd" ? 365 : plan && B2B_PLANS[plan] ? 30 : 0);
   const home = `https://${host}/`;
   const espace = `https://${host}/pro/espace/`;
+  // LIVRAISON : le lien jeton est porte par la page de retour (2e canal de
+  // livraison, en plus de l'email). AVANT, le bouton « Espace Pro » menait a
+  // une page SANS jeton → le client payait et ne pouvait pas ouvrir son espace.
+  const espaceUrl = accessToken ? `${espace}?k=${encodeURIComponent(accessToken)}` : espace;
   const title = paid ? granted ? "Paiement confirmé" : "Paiement reçu" : status === "canceled" || status === "expired" || status === "failed" ? "Paiement non finalisé" : "Vérification du paiement";
   const lead = paid && granted ? "Votre accès est activé. Merci !" : paid ? "Votre paiement a bien été reçu. L'activation peut prendre quelques instants." : status === "canceled" || status === "expired" || status === "failed" ? "Le paiement n'a pas abouti. Vous pouvez réessayer depuis le site." : "Si vous venez de payer, cette page se met à jour automatiquement.";
+  const deliveryNote = paid && granted
+    ? (accessToken
+      ? "Votre accès Pro est actif. Le bouton ci-dessous ouvre votre Espace Pro avec votre accès — vous l'avez aussi reçu par email."
+      : "Votre accès Pro est actif. Vous l'avez reçu par email.")
+    : "";
   const showPro = !!(plan && String(plan).startsWith("pro"));
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)} — Sargasses</title>
 <style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px;text-align:center}.card{max-width:520px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:32px 24px;box-shadow:0 10px 30px rgba(13,13,13,.08)}h1{margin:0 0 12px;font-size:28px}p{line-height:1.5;color:#5A5A5A}.cta{display:inline-block;margin:10px 6px 0;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;text-decoration:none;padding:14px 22px;border-radius:999px}.sec{background:#fff;border:2px solid #0D0D0D}</style></head>
 <body><div class="card"><h1>${escapeHtml(title)}</h1><p>${escapeHtml(lead)}</p>
-<p><a class="cta" href="${home}">Retour au site</a>${showPro ? `<a class="cta sec" href="${espace}">Espace Pro</a>` : ""}</p></div>
+${deliveryNote ? `<p>${escapeHtml(deliveryNote)}</p>` : ""}
+<p><a class="cta" href="${home}">Retour au site</a>${showPro ? `<a class="cta sec" href="${escapeHtml(espaceUrl)}">${granted ? "Mon Espace Pro" : "Espace Pro"}</a>` : ""}</p></div>
 <script>(function(){try{var e=${JSON.stringify(email)};var d=${Number(days) || 0};var isPaid=${paid ? "true" : "false"};
 if(e) localStorage.setItem("sg_email", e);
 if(isPaid && d){ localStorage.setItem("sg_premium","1"); localStorage.setItem("sg_premium_pass_end", String(Date.now()+d*864e5)); if(e) localStorage.setItem("sg_premium_email", e); }
@@ -2436,7 +2474,10 @@ async function handleWebhook(request, env, ctx) {
 __name(handleWebhook, "handleWebhook");
 async function grantB2B(env, customerId, planKey, subId, days = 30, options = {}) {
   const k = `mollie_grant_${subId}`;
-  if (await kv(env).get(k)) return { ok: true, already: true };
+  // Le jeton d'acces est rendu a l'appelant : c'est lui qui doit pouvoir
+  // LIVRER l'acces au client (email + lien sur la page de retour).
+  const existingToken = await kv(env).get(k);
+  if (existingToken) return { ok: true, already: true, token: existingToken };
   const exp = Math.floor(Date.now() / 1e3) + days * 86400;
   const expiresAt = new Date(exp * 1e3).toISOString();
   const grantedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -2467,9 +2508,102 @@ async function grantB2B(env, customerId, planKey, subId, days = 30, options = {}
   // SEULEMENT maintenant : jeton KV d'acces.
   const token = await widgetSign(env, { plan: planKey, customer_id: customerId, subscription_id: subId, exp, type: "b2b_pro" });
   await kv(env).put(k, token, { expirationTtl: (days + 1) * 86400 });
-  return { ok: true };
+  return { ok: true, token };
 }
 __name(grantB2B, "grantB2B");
+/**
+ * LIVRAISON de l'acces Pro apres paiement (P0 « chemin argent »).
+ *
+ * DEFAUT CORRIGE : le webhook CREAIT le droit (grant durable + jeton KV) mais
+ * N'ENVOYAIT AUCUN email → le client payait 79 €/mois et ne recevait jamais
+ * son accès. La page de retour ne portait pas non plus de lien jeton.
+ *
+ * REGLES :
+ *   - IDEMPOTENT : un paiement n'envoie qu'UN email de livraison (marqueur KV
+ *     `mollie_pro_access_<id>`). Un rejeu du webhook ne duplique rien.
+ *   - HONNETE : le libelle de l'offre vient de B2B_PLANS (source de verite),
+ *     jamais d'un montant ou d'une date inventee.
+ *   - BEST-EFFORT : un echec d'envoi ne bloque NI le grant NI le webhook, mais il
+ *     est REMONTE (livraison non confirmee) et le marqueur est libere afin
+ *     qu'un rejeu puisse reessayer. En cas de resultat ambigu (le fournisseur a
+ *     PU accepter le message), le marqueur est conserve : on ne reessaie pas
+ *     (risque de doublon) — le lien de la page de retour reste disponible.
+ */
+async function deliverProAccessEmail(env, options) {
+  const opts = options || {};
+  const email = String(opts.email || "").trim();
+  const token = String(opts.token || "");
+  const planKey = String(opts.planKey || "");
+  const subId = String(opts.subId || "").trim();
+  const days = Number(opts.days) > 0 ? Number(opts.days) : 30;
+  if (!email || !token) return { sent: false, reason: "missing_email_or_token" };
+  if (!subId) return { sent: false, reason: "missing_subscription_id" };
+
+  const domain = String(opts.host || ALLOWED_HOSTS[0]).toLowerCase().replace(/^www\./, "");
+  const markerKey = `mollie_pro_access_${subId}`;
+  const previous = await kv(env).get(markerKey);
+  if (previous) return { sent: false, reason: "already_delivered", marker: previous };
+  await kv(env).put(markerKey, "pending", { expirationTtl: 400 * 86400 });
+
+  // Langue : MEME regle que la page /pro/espace/ (derivee du domaine).
+  const lang = domain.includes("miami") || domain.includes("puntacana") ? "en" : domain.includes("cancun") ? "es" : "fr";
+  const plan = B2B_PLANS[planKey] || null;
+  const planLabel = plan ? plan.description : planKey;
+  const recurring = !!(plan && plan.interval);
+  const espaceUrl = `https://${domain}/pro/espace/?k=${encodeURIComponent(token)}`;
+  const mapUrl = `https://${domain}/?k=${encodeURIComponent(token)}`;
+  const title = lang === "en" ? "Your Pro access is active" : lang === "es" ? "Tu acceso Pro esta activo" : "Votre acces Pro est actif";
+  const subject = lang === "en" ? "Sargassum Pro — your access is active" : lang === "es" ? "Sargassum Pro — tu acceso esta activo" : "Sargasses Pro — votre acces est actif";
+  const lead = lang === "en" ? `Hello, your <b>${planLabel}</b> subscription is active and paid.`
+    : lang === "es" ? `Hola, tu suscripcion <b>${planLabel}</b> esta activa y pagada.`
+    : `Bonjour, votre abonnement <b>${planLabel}</b> est actif et paye.`;
+  const what = lang === "en" ? "You now have access to your Pro workspace: professional widget, sargassum alerts and beach forecasts, updated from the latest satellite observation."
+    : lang === "es" ? "Ya tienes acceso a tu espacio Pro: widget profesional, avisos de sargazo y pronosticos por playa, actualizados con la ultima observacion satelital."
+    : "Vous avez acces a votre Espace Pro : widget professionnel, alertes sargasses et previsions par plage, mis a jour avec la derniere observation satellite.";
+  const cta = lang === "en" ? "Open my Pro workspace" : lang === "es" ? "Abrir mi espacio Pro" : "Ouvrir mon Espace Pro";
+  const cta2 = lang === "en" ? "View the map with my access" : lang === "es" ? "Ver el mapa con mi acceso" : "Voir la carte avec mon acces";
+  const renewal = recurring
+    ? (lang === "en" ? `Access valid for ${days} days, renewed automatically at each payment.`
+      : lang === "es" ? `Acceso valido ${days} dias, renovado automaticamente en cada pago.`
+      : `Acces valable ${days} jours, renouvele automatiquement a chaque paiement.`)
+    : (lang === "en" ? `Access valid for ${days} days.`
+      : lang === "es" ? `Acceso valido ${days} dias.`
+      : `Acces valable ${days} jours.`);
+  const help = lang === "en" ? "For any question, or to cancel, just reply to this email."
+    : lang === "es" ? "Para cualquier pregunta, o para cancelar, responde a este correo."
+    : "Pour toute question, ou pour resilier, repondez simplement a cet email.";
+  const html = `<div style="font-family:system-ui;max-width:540px;margin:0 auto;padding:20px;font-size:15px;color:#1a1a1a;line-height:1.5"><h2 style="margin:0 0 12px;color:#0D1E1C">${title}</h2><p>${lead}</p><p>${what}</p><p><a href="${espaceUrl}" style="display:inline-block;background:linear-gradient(135deg,#FFC72C,#E8A800);color:#0D1E1C;font-weight:700;padding:14px 30px;border-radius:999px;text-decoration:none;font-size:16px">${cta} &rarr;</a></p><p><a href="${mapUrl}" style="color:#0d7f63;font-weight:700">${cta2}</a></p><p style="font-size:13px;color:#555">${renewal}</p><p style="font-size:13px;color:#555">${help}</p></div>`;
+
+  let result = null;
+  let timer = null;
+  try {
+    result = await Promise.race([
+      sendEmail(email, subject, html, domain, env),
+      new Promise((resolve) => {
+        timer = setTimeout(() => resolve({ success: false, ambiguous: true, error: "provider_timeout" }), 8000);
+      }),
+    ]);
+  } catch (e) {
+    await kv(env).delete(markerKey);
+    console.log("[sg] pro access email error:", String(e?.message || e).slice(0, 140));
+    return { sent: false, reason: "provider_exception" };
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+  if (result && result.success) {
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: true, provider: result.provider || null };
+  }
+  if (result && result.ambiguous) {
+    // Le fournisseur a PU accepter le message : on ne reessaie pas (doublon).
+    await kv(env).put(markerKey, "sent", { expirationTtl: 400 * 86400 });
+    return { sent: false, reason: "provider_delivery_unconfirmed", ambiguous: true, provider: result.provider || null };
+  }
+  await kv(env).delete(markerKey);
+  console.log("[sg] pro access email NOT confirmed:", String(result?.error || result?.provider || "unknown").slice(0, 120));
+  return { sent: false, reason: "provider_delivery_unconfirmed", provider: result?.provider || null };
+}
+__name(deliverProAccessEmail, "deliverProAccessEmail");
 async function grantB2C(env, paymentId, pass, email, meta, currency) {
   const k = `mol_b2c_pass_${paymentId}`;
   if (await kv(env).get(k)) return { ok: true, already: true };

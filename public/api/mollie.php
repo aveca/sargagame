@@ -144,14 +144,22 @@ try {
         // ⚠️ P0 money path 2026-11-10 — `redirectUrl` / `webhookUrl` étaient
         // 100 % client : open redirect après paiement + exfiltration des
         // métadonnées vers un hôte arbitraire. Les deux URL sont désormais
-        // construites par le serveur, sur un domaine de la flotte.
+        // construites par le serveur, sur un domaine de la flotte (#1406).
+        //
+        // RÉSOLUTION DU CONFLIT #1406 + #1411 :
+        //   - on garde la construction SERVEUR de #1406 (le client ne peut plus
+        //     imposer un hôte de redirection ni un webhook vers un tiers) ;
+        //   - on garde la correction de chemin de #1411 : le dossier `public/`
+        //     est la RACINE du site déployé, donc le webhook public est
+        //     `/api/mollie-webhook.php` (et NON `/public/api/...`, qui
+        //     répond 404 — vérifié en production le 2026-11-12).
         $scheme = 'https';
         $host = strtolower((string)($_SERVER['HTTP_HOST'] ?? ''));
         $host = explode(':', $host)[0];
         $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
         if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
         $redirectUrl = "$scheme://$host/?mollie_return=1";
-        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php";
+        $webhookUrl = "$scheme://$host/api/mollie-webhook.php";
 
         // ── Protection double checkout (idempotence 60s par email+pass) ───────
         if ($pass && $email) {
@@ -200,6 +208,10 @@ try {
         // Hosted checkout for B2B monthly subscriptions
         $planKey = $data['plan'] ?? '';          // 'pro_monthly' | 'brief_monthly'
         $hosted = $data['hosted'] ?? true;       // hosted checkout page (default true)
+        // RÉSOLUTION DU CONFLIT #1406 + #1411 : les URL de retour et de webhook
+        // de l'abonnement sont construites par le SERVEUR plus bas (allowlist
+        // flotte, anti open-redirect). On écarte donc la variante #1411 qui
+        // laissait le client fournir `redirectUrl` / `webhookUrl`.
         $paymentMethod = $data['method'] ?? ($data['paymentMethod'] ?? null); // optional: 'applepay', 'googlepay', etc.
         // ⚠️ P0 money path 2026-11-10 — `offer_kind` est écrit par le serveur
         // (à partir du catalogue de plans) ; le client ne peut plus choisir la
@@ -222,7 +234,9 @@ try {
         $fleet = ['sargasses-martinique.com', 'sargasses-guadeloupe.com', 'sargassumpuntacana.com', 'sargassummiami.com', 'sargassumcancun.com', 'sargazotulum.com'];
         if (!in_array($host, $fleet, true)) $host = 'sargasses-martinique.com';
         $redirectUrl = "$scheme://$host/pro/espace/";
-        $webhookUrl = "$scheme://$host/public/api/mollie-webhook.php";
+        // Chemin réel du webhook public : `/api/mollie-webhook.php`
+        // (`public/` est la racine du site déployé — voir #1411).
+        $webhookUrl = "$scheme://$host/api/mollie-webhook.php";
 
         $plans = mol_b2b_plans();
         if (!isset($plans[$planKey])) {
