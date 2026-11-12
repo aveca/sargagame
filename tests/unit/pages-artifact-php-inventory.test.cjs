@@ -139,6 +139,45 @@ try {
     } else {
       console.log('SKIP liens symboliques : création non autorisée sur cette plateforme')
     }
+
+    // La racine source elle-même peut être un lien : readdirSync la suivrait
+    // avant que la boucle récursive ne voie les liens enfants.
+    const sourceRootLink = path.join(symlinkBase, 'source-root-link')
+    let rootLinkCreated = false
+    try { fs.symlinkSync(symlinkSource, sourceRootLink, 'dir'); rootLinkCreated = true } catch (_) {}
+    if (rootLinkCreated) {
+      t(listBlockedFiles(sourceRootLink).includes('.'), 'l’inventaire bloque une racine source symbolique')
+      let rootLinkThrew = false
+      try {
+        buildPagesArtifact({ sourceDir: sourceRootLink, targetDir: path.join(symlinkBase, 'root-link-artifact') })
+      } catch (_) { rootLinkThrew = true }
+      t(rootLinkThrew, 'le constructeur refuse une racine source symbolique')
+    }
+
+    // Une cible symbolique vers la source (ou un parent symbolique qui y
+    // mène) doit être reconnue comme chevauchante AVANT toute suppression.
+    const targetAlias = path.join(symlinkBase, 'target-alias')
+    let targetAliasCreated = false
+    try { fs.symlinkSync(symlinkSource, targetAlias, 'dir'); targetAliasCreated = true } catch (_) {}
+    if (targetAliasCreated) {
+      let targetAliasThrew = false
+      try {
+        buildPagesArtifact({ sourceDir: symlinkSource, targetDir: targetAlias })
+      } catch (_) { targetAliasThrew = true }
+      t(targetAliasThrew, 'une cible symbolique vers la source est refusée')
+      t(fs.lstatSync(targetAlias).isSymbolicLink(), 'le refus conserve le lien cible symbolique')
+    }
+
+    const parentAlias = path.join(symlinkBase, 'parent-alias')
+    let parentAliasCreated = false
+    try { fs.symlinkSync(symlinkBase, parentAlias, 'dir'); parentAliasCreated = true } catch (_) {}
+    if (parentAliasCreated) {
+      let parentAliasThrew = false
+      try {
+        buildPagesArtifact({ sourceDir: symlinkSource, targetDir: path.join(parentAlias, 'source', 'artifact') })
+      } catch (_) { parentAliasThrew = true }
+      t(parentAliasThrew, 'un parent symbolique ne peut pas contourner le contrôle de chevauchement')
+    }
   } finally {
     fs.rmSync(symlinkBase, { recursive: true, force: true })
   }
