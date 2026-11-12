@@ -85,17 +85,18 @@ for (const region of regions) {
     phpPages,
     blockedFiles: blocked,
     phpFtp,
-    status: !pagesExists ? 'MISSING' : (blocked.length === 0 ? 'OK' : 'PHP_EXPOSED')
+    status: !pagesExists ? 'MISSING' : (blocked.length === 0 ? 'OK' : 'BLOCKED_FILES')
   })
 }
 
-const allOk = totalPagesPhp === 0 && missing === 0
+const blockedCount = rows.reduce((sum, row) => sum + row.blockedFiles.length, 0)
+const allOk = totalPagesPhp === 0 && missing === 0 && blockedCount === 0
 
 if (asJson) {
   console.log(JSON.stringify({
     generatedAt: new Date().toISOString(),
     regions: rows,
-    summary: { regions: rows.length, totalPagesPhp, missing, ok: allOk }
+    summary: { regions: rows.length, totalPagesPhp, blockedCount, missing, ok: allOk }
   }, null, 2))
 } else {
   console.log('INVENTAIRE ARTEFACTS PAGES (publication Cloudflare Pages) — ' + new Date().toISOString())
@@ -107,7 +108,7 @@ if (asJson) {
     for (const file of row.blockedFiles) console.log(`      ⚠ bloque mais présent : ${file}`)
   }
   console.log('')
-  console.log(`  régions live=${rows.length} contrôlées=${checked} artefacts_pages_manquants=${missing} php_dans_les_artefacts_pages=${totalPagesPhp}`)
+  console.log(`  régions live=${rows.length} contrôlées=${checked} artefacts_pages_manquants=${missing} php_dans_les_artefacts_pages=${totalPagesPhp} fichiers_bloques=${blockedCount}`)
   console.log('  (php_ftp > 0 est ATTENDU : les .php restent dans le dossier FTP historique = money path)')
   console.log('')
   console.log('PAGES_ARTIFACTS_PHP_FREE=' + (allOk ? 'true' : 'false'))
