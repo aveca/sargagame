@@ -56,38 +56,38 @@
       "intro": "Seaweed (sargassum) in Punta Cana changes beach by beach, day by day — and sometimes hour by hour in peak season. This page gives you the live status for every monitored beach from Uvero Alto to Juanillo, refreshed when new satellite observations are available from NOAA/AOML ERDDAP AFAI observations. No seasonal averages, no guesswork: just today's actual seaweed conditions, a Beach Score 0–100 for each spot, and a 7-day forecast so you can plan your beach days around the seaweed, not the other way around. Cap Cana and Cabeza de Toro tend to stay cleaner thanks to reef protection; the open Bávaro–Macao–Uvero Alto strip faces the Atlantic and collects more seaweed in season. But the ocean rewrites that pattern weekly — which is exactly why this live tracker exists. Check it the morning you head out, and you will know exactly what you are walking into."
     },
     "season": {
-      "intro": "Planning a Punta Cana trip and wondering about sargassum? Here's the honest 2026 picture — when the seaweed lands, when the beaches stay clear, and how to plan around it. Short answer: November to mid-March is reliably clean; the Great Atlantic Sargassum Belt arrives April through October, heaviest from May to August. If your dates are flexible, that one fact decides your trip.",
+      "intro": "Planning a Punta Cana trip? This calendar describes the usual seasonal pattern, not today's beach conditions. November through February is generally a lower-risk period than the main April–October bloom, but no month or beach is guaranteed clear. Wind, currents and local cleanup can change conditions from one beach to the next. Before choosing where to swim, check the latest published beach-level observation, its timestamp and confidence; if the reading is delayed or unverified, treat the current status as unknown.",
       "slug": "sargassum-season-punta-cana",
       "title": "Punta Cana Sargassum Season 2026 — Month-by-Month Guide",
-      "desc": "When is sargassum season in Punta Cana? April to October, peaking May–August. Month-by-month calendar, best travel windows and daily satellite tracking.",
+      "desc": "Month-by-month guide to Punta Cana's usual sargassum season, with practical advice for checking dated beach observations before you go.",
       "h1": "Sargassum Season in Punta Cana — 2026 Month-by-Month",
       "months": [
         {
           "period": "November – February",
-          "text": "The reliable window. Sargassum landings are rare and light, the Atlantic bloom is at its annual minimum, and almost every beach from Uvero Alto to Cap Cana stays clean for weeks at a stretch. If avoiding seaweed is your top priority, this is when to come."
+          "text": "Usually a lower-risk period than the main bloom months, but not a guarantee of clear beaches. Local wind, currents and cleanup can still produce different conditions along the coast. Check the latest dated observation for the specific beach you plan to visit."
         },
         {
           "period": "March",
-          "text": "The early-warning month. Satellites usually begin spotting the first mats of the new bloom drifting west across the Atlantic. Beaches typically remain clean, but stray patches can land, especially on the exposed Bávaro strip. Worth a glance at the map before booking excursions."
+          "text": "A transition period. Offshore mats may begin to appear, but timing and beach arrivals vary from year to year. Use the latest beach-level observation rather than assuming the whole coast is clear."
         },
         {
           "period": "April",
-          "text": "Season opens. Landings become regular on east-facing beaches — Bávaro, Arena Gorda, Macao — though volumes are still moderate and resort crews keep up with morning raking. Cap Cana and Cabeza de Toro usually stay comfortable. Daily map checks start paying off."
+          "text": "The main season often begins to build on exposed east-facing beaches such as Bávaro, Arena Gorda and Macao. Conditions vary by beach and day; a regional seasonal pattern is not a current beach verdict."
         },
         {
           "period": "May – June",
-          "text": "The first peak. The Great Atlantic Sargassum Belt now delivers steady volume, and the open coast can see heavy mornings several times a week. Differences between beaches widen dramatically — this is when a per-beach forecast matters most."
+          "text": "Often a higher-risk period as the Atlantic belt becomes more active. Exposed beaches can see heavier arrivals, while nearby beaches may differ. Check each beach's timestamp and confidence before making plans."
         },
         {
           "period": "July – August",
-          "text": "Peak of the season, coinciding with peak tourist demand. Heaviest landings of the year hit Macao, Uvero Alto and Bávaro; reef-sheltered Cap Cana fares best. Resorts rake aggressively but can fall behind on big-arrival days. Use the 7-day forecast to time beach days between pulses."
+          "text": "These are often among the higher-risk months, especially on the open Bávaro–Macao–Uvero Alto coast. Reef protection and resort cleanup may help locally, but neither guarantees a clear beach."
         },
         {
           "period": "September – October",
-          "text": "The slow fade. Volumes decline week by week, but the tail is unpredictable — a single late pulse can blanket a beach for two or three days. By late October most beaches are reliably clean again. Forecasts are decisive here, because averages mislead."
+          "text": "Landings often taper later in the season, but late pulses can still arrive and local conditions remain uneven. Do not rely on the calendar alone; check the latest published beach observation."
         }
       ],
-      "tips": "If your dates are flexible, book November through early March and skip the question entirely. Traveling in peak season? Favor Cap Cana or Cabeza de Toro over the open Bávaro strip, choose a resort with daily beach cleaning, and check our live map the week before you fly — conditions a month out tell you almost nothing. Once here, plan beach mornings (cleanest right after raking) and keep one backup excursion, like Saona Island, in your pocket for heavy days."
+      "tips": "If your dates are flexible, November through February is generally lower-risk than the main bloom season, but it is not a seaweed-free guarantee. For a specific beach day, check the latest published observation, its timestamp and confidence shortly before you go. If the reading is delayed or unverified, treat the status as unknown. Nearby beaches can differ; keep a flexible alternative rather than assuming any location will be clear."
     }
   },
   "beachBlurbs": {
