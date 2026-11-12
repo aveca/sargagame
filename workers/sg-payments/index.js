@@ -1587,17 +1587,26 @@ async function handleMollie(request, env) {
       const backUrl = userRedirect || `https://${host}/?paid=1&kind=${kind}&email=${encodeURIComponent(email || "")}&plan=${encodeURIComponent(pass || "annual")}`;
       metadata.return_ref = returnRef;
       const redirectUrl = `https://${host}/api/mollie-return?ref=${encodeURIComponent(returnRef)}`;
+      let idemKey = null;
       if (pass && email) {
-        const idemKey = `mol_${await hashString(email + "|" + pass)}`;
+        idemKey = `mol_${await hashString(email + "|" + pass)}`;
         const ex = await kv(env).get(idemKey);
         if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
-        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
+        await kv(env).put(idemKey, "1", { expirationTtl: 86400 });
       }
       const pd = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : "Sargasses"), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (currency === "USD" ? "en_US" : "fr_FR") };
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
       if (cardToken) pd.cardToken = cardToken;
       if (payMethod) pd.method = payMethod;
-      const payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      let payment;
+      try {
+        payment = await mollieReq("POST", "v2/payments", apiKey, pd);
+      } catch (e) {
+        // Le marqueur d'idempotence ne doit pas survivre à un échec de création :
+        // sinon un incident Mollie transitoire bloque tout retry pendant 24 h.
+        if (idemKey) await kv(env).delete(idemKey);
+        throw e;
+      }
       await kv(env).put(`mol_return_${returnRef}`, JSON.stringify({ paymentId: payment.id, back: backUrl }), { expirationTtl: 14 * 86400 });
       return new Response(JSON.stringify({ checkoutUrl: payment._links?.checkout?.href || null, paymentId: payment.id, user_id: userId || null }), { headers: h });
     }
