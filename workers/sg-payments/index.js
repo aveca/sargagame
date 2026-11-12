@@ -141,6 +141,68 @@ function kv(env) {
   };
 }
 __name(kv, "kv");
+// ─────────────────────────────────────────────────────────────────────────────
+// P0.7 — revocation B2C : helpers STRICTS.
+//
+// Le wrapper `kv()` ci-dessus avale volontairement les erreurs (lecture
+// best-effort). Une revocation ne peut PAS etre best-effort : si la
+// suppression du jeton ou l'ecriture Supabase echoue, on doit le savoir et
+// laisser Mollie rejouer, jamais repondre `revoked: true` a tort.
+// ─────────────────────────────────────────────────────────────────────────────
+function sanitizeMarkerPart(value) {
+  return String(value || "").replace(/[^A-Za-z0-9_.-]/g, "_");
+}
+__name(sanitizeMarkerPart, "sanitizeMarkerPart");
+async function kvGetChecked(env, key) {
+  const binding = env?.TRANSIENTS;
+  // Absence de binding = environnement sans KV (tests historiques). La
+  // production lie toujours TRANSIENTS ; on ne transforme pas cette absence
+  // en erreur de lecture pour ne pas casser les parcours sans KV.
+  if (!binding) return { ok: true, value: null };
+  try {
+    return { ok: true, value: await binding.get(key) };
+  } catch (e) {
+    return { ok: false, value: null, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvGetChecked, "kvGetChecked");
+async function kvPutChecked(env, key, value, opts) {
+  const binding = env?.TRANSIENTS;
+  if (!binding) return { ok: false, error: "kv_binding_absent" };
+  try {
+    await binding.put(key, value, opts);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvPutChecked, "kvPutChecked");
+async function kvDeleteChecked(env, key) {
+  const binding = env?.TRANSIENTS;
+  if (!binding) return { ok: false, error: "kv_binding_absent" };
+  try {
+    await binding.delete(key);
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: String(e?.message || e).slice(0, 120) };
+  }
+}
+__name(kvDeleteChecked, "kvDeleteChecked");
+function amountToCents(amount) {
+  if (!amount || typeof amount !== "object") return 0;
+  const n = Math.round(Number.parseFloat(String(amount.value == null ? "" : amount.value)) * 100);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+}
+__name(amountToCents, "amountToCents");
+function isNegativePaymentState(payment) {
+  return amountToCents(payment?.amountRefunded) > 0 || amountToCents(payment?.amountChargedBack) > 0;
+}
+__name(isNegativePaymentState, "isNegativePaymentState");
+var REVOKING_EVENTS = /* @__PURE__ */ new Set(["payment.refunded", "refund.refunded", "chargeback.received"]);
+function isRevokingWebhookEvent(event) {
+  return REVOKING_EVENTS.has(String(event || ""));
+}
+__name(isRevokingWebhookEvent, "isRevokingWebhookEvent");
 var RATE_LIMIT_CACHE = /* @__PURE__ */ new Map();
 var FLUSH_INTERVAL_MS = 6e4;
 var FLUSH_THRESHOLD = 100;
@@ -1727,6 +1789,17 @@ __name(handleMollie, "handleMollie");
 //      AVANT tout marqueur KV. Un marqueur pose sans grant durable = argent
 //      paye sans droit servi, et plus de rejeu possible.
 // ─────────────────────────────────────────────────────────────────────────────
+function deriveSnapshotEvent(resource, snapshot) {
+  if (resource === "refund") {
+    const status = String(snapshot?.status || "").trim();
+    return status ? `refund.${status}` : "";
+  }
+  if (resource === "chargeback") {
+    return snapshot?.reversedAt ? "chargeback.reversed" : "chargeback.received";
+  }
+  return "";
+}
+__name(deriveSnapshotEvent, "deriveSnapshotEvent");
 function parseMollieWebhook(request, raw) {
   const contentType = String(request.headers.get("content-type") || "").toLowerCase();
   if (contentType.includes("application/x-www-form-urlencoded")) {
@@ -1738,6 +1811,10 @@ function parseMollieWebhook(request, raw) {
       generation: "classic",
       eventId: id,
       entityId: id,
+      // Format Classique : le corps ne contient que l'identifiant du
+      // paiement. Un remboursement/chargeback est detecte plus tard sur
+      // l'etat AUTORITATIF du paiement (amountRefunded / amountChargedBack).
+      paymentId: resource === "payment" ? id : "",
       resource,
       event,
       type: event,
@@ -1751,23 +1828,53 @@ function parseMollieWebhook(request, raw) {
     data = null;
   }
   if (!data || typeof data !== "object" || Array.isArray(data)) {
-    return { generation: "unknown", eventId: "", entityId: "", resource: "", event: "", type: "", malformed: true };
+    return { generation: "unknown", eventId: "", entityId: "", paymentId: "", resource: "", event: "", type: "", malformed: true };
   }
   const eventId = String(data.id || "").trim();
-  const type = String(data.type || "").trim();
+  let type = String(data.type || "").trim();
+  const rawResource = String(data.resource || "").trim();
+  let resource = rawResource;
   let entityId = String(data.entityId || data.entity_id || "").trim();
+  let paymentId = String(data.paymentId || data.payment_id || "").trim();
+  const embedded = data._embedded && typeof data._embedded === "object" && data._embedded.entity && typeof data._embedded.entity === "object"
+    ? data._embedded.entity
+    : null;
+
+  // Enveloppe Next-gen : { resource:"event", id:"event_...", type,
+  // entityId, _embedded.entity }. L'entite embarquee porte le vrai
+  // identifiant et, pour un remboursement/chargeback, le paymentId.
+  if (resource === "event") {
+    const prefix = type.split(".")[0];
+    resource = ["payment", "subscription", "refund", "chargeback"].includes(prefix)
+      ? prefix
+      : String(embedded?.resource || "").trim();
+    if (!entityId && embedded?.id) entityId = String(embedded.id).trim();
+    if (!paymentId && embedded?.paymentId) paymentId = String(embedded.paymentId).trim();
+  } else if (resource === "refund" || resource === "chargeback") {
+    // Snapshot direct (webhook d'entite Refunds/Chargebacks API) : le corps
+    // EST l'entite, sans champ `type`. On derive l'evenement du statut.
+    if (!entityId) entityId = eventId;
+    if (!type) type = deriveSnapshotEvent(resource, data);
+  } else if (!resource) {
+    const prefix = type.split(".")[0];
+    if (["payment", "subscription", "refund", "chargeback"].includes(prefix)) resource = prefix;
+  }
+
   // Un identifiant d'evenement ("event_xxx") n'est JAMAIS un identifiant
   // d'entite ("tr_xxx" / "sub_xxx") : on ne confond pas les deux.
-  if (!entityId && /^(tr|sub)_/.test(eventId)) entityId = eventId;
-  const resource = String(data.resource || (type.startsWith("subscription.") ? "subscription" : type.startsWith("payment.") ? "payment" : "")).trim();
+  if (!entityId && /^(tr|sub|re|chb)_/.test(eventId)) entityId = eventId;
+  if (!paymentId && resource === "payment") paymentId = entityId;
+
+  const isNegativeResource = resource === "refund" || resource === "chargeback";
   return {
     generation: "nextgen",
     eventId,
     entityId,
+    paymentId,
     resource,
     event: type,
     type,
-    malformed: !eventId || !type || !entityId
+    malformed: isNegativeResource ? !eventId || !paymentId : !eventId || !type || !entityId
   };
 }
 __name(parseMollieWebhook, "parseMollieWebhook");
@@ -1926,6 +2033,75 @@ async function supaGetChecked(env, table, query) {
   }
 }
 __name(supaGetChecked, "supaGetChecked");
+async function revokeB2CAccess(env, paymentId, reason) {
+  // Revocation VERIFIEE du droit B2C :
+  //   1. lire les lignes existantes (un echec Supabase doit etre visible) ;
+  //   2. expirer UNIQUEMENT les grants b2c_pass de CE paiement ;
+  //   3. relire et verifier qu'aucune ligne ne reste active ;
+  //   4. supprimer le jeton KV du pass (echec = echec, pas de faux succes) ;
+  //   5. poser le marqueur de revocation, distinct du marqueur d'attribution.
+  // Les autres paiements et les autres types de grants ne sont jamais touches.
+  const pid = String(paymentId || "").trim();
+  if (!pid) throw new Error("b2c_revoke_missing_payment_id");
+  const nowIso = new Date().toISOString();
+  const filter = `?payment_id=eq.${encodeURIComponent(pid)}&type=eq.b2c_pass`;
+  const select = "&select=payment_id,type,expires_at";
+  const before = await supaGetChecked(env, "payment_grants", `${filter}${select}`);
+  if (!before.ok) throw new Error(`b2c_revoke_read_failed:${before.error}`);
+  const patched = await supaExec(env, "payment_grants", "PATCH", { expires_at: nowIso }, filter);
+  if (!patched.ok) throw new Error(`b2c_revoke_failed:${patched.error}`);
+  const after = await supaGetChecked(env, "payment_grants", `${filter}${select}`);
+  if (!after.ok) throw new Error(`b2c_revoke_verify_read_failed:${after.error}`);
+  const nowMs = Date.now();
+  for (const row of after.rows) {
+    const exp = Date.parse(String(row.expires_at || ""));
+    if (!Number.isFinite(exp) || exp > nowMs + 1e3) throw new Error("b2c_revoke_verify_still_active");
+  }
+  const del = await kvDeleteChecked(env, `mol_b2c_pass_${pid}`);
+  if (!del.ok) throw new Error(`b2c_revoke_kv_failed:${del.error}`);
+  const marker = await kvPutChecked(
+    env,
+    `mollie_rev_${sanitizeMarkerPart(pid)}`,
+    JSON.stringify({ at: nowIso, reason: String(reason || "").slice(0, 80) }),
+    { expirationTtl: 30 * 86400 }
+  );
+  if (!marker.ok) throw new Error(`b2c_revoke_marker_failed:${marker.error}`);
+  return { ok: true, revokedRows: after.rows.length, previousRows: before.rows.length };
+}
+__name(revokeB2CAccess, "revokeB2CAccess");
+async function verifyNegativeMollieEntity(env, apiKey, parsed) {
+  // Un webhook Refunds/Chargebacks est un SNAPSHOT : son statut n'est pas
+  // repris tel quel. On relit l'entite chez Mollie avant de revoquer.
+  const event = String(parsed.event || "");
+  if (parsed.resource === "refund") {
+    if (event && event !== "refund.refunded") return { ok: true, revokes: false, reason: event };
+    if (!parsed.paymentId || !parsed.entityId) return { ok: true, revokes: false, reason: "refund_identifiers_missing" };
+    let refund;
+    try {
+      refund = await mollieReq("GET", `v2/payments/${parsed.paymentId}/refunds/${parsed.entityId}`, apiKey);
+    } catch (e) {
+      throw new Error(`refund_verification_failed:${String(e?.message || e).slice(0, 120)}`);
+    }
+    const status = String(refund?.status || "");
+    if (status !== "refunded") return { ok: true, revokes: false, reason: `refund_${status || "unknown"}` };
+    return { ok: true, revokes: true, paymentId: String(refund?.paymentId || parsed.paymentId) };
+  }
+  if (parsed.resource === "chargeback") {
+    if (event === "chargeback.reversed") return { ok: true, revokes: false, reason: "chargeback_reversed" };
+    if (event && event !== "chargeback.received") return { ok: true, revokes: false, reason: event };
+    if (!parsed.paymentId || !parsed.entityId) return { ok: true, revokes: false, reason: "chargeback_identifiers_missing" };
+    let chargeback;
+    try {
+      chargeback = await mollieReq("GET", `v2/payments/${parsed.paymentId}/chargebacks/${parsed.entityId}`, apiKey);
+    } catch (e) {
+      throw new Error(`chargeback_verification_failed:${String(e?.message || e).slice(0, 120)}`);
+    }
+    if (chargeback?.reversedAt) return { ok: true, revokes: false, reason: "chargeback_reversed" };
+    return { ok: true, revokes: true, paymentId: String(chargeback?.paymentId || parsed.paymentId) };
+  }
+  return { ok: true, revokes: false, reason: "unsupported_resource" };
+}
+__name(verifyNegativeMollieEntity, "verifyNegativeMollieEntity");
 async function callPaymentGrantRpc(env, args) {
   // P0.118 §7 — le grant B2C passe par la fonction SQL
   // public.sg_upsert_payment_grant(...) : ecriture idempotente et atomique
@@ -2124,54 +2300,116 @@ async function handleWebhook(request, env, ctx) {
   const parsed = parseMollieWebhook(request, raw2);
   if (parsed.malformed) return new Response(JSON.stringify({ error: "invalid_payload" }), { status: 400 });
 
-  // Idempotence : Next-gen -> identifiant d'EVENEMENT, Classique ->
-  // identifiant d'entite (seul identifiant disponible dans ce format).
-  const markerSource = parsed.generation === "nextgen" ? parsed.eventId : parsed.entityId;
-  const markerKey = `mollie_${String(markerSource).replace(/[^A-Za-z0-9_.-]/g, "_")}`;
-  const existing = await kv(env).get(markerKey);
-  if (existing) return new Response(JSON.stringify({ received: true, duplicate: true }));
+  // Idempotence : namespaces separes pour eviter qu'un paiement deja honore
+  // (mollie_<pid>) bloque la revocation d'un remboursement/chargeback sur le
+  // meme paymentId (defaut P0.7).
+  // - Attribution (payment.paid)       : mollie_<pid>
+  // - Revocation (refund/chargeback)   : mollie_rev_<pid> (TTL 30j, pose par revokeB2CAccess)
+  const isRevoking = isRevokingWebhookEvent(parsed.event);
+  const revPid = String(parsed.paymentId || parsed.entityId || "").trim();
+  const markerKey = isRevoking
+    ? `mollie_rev_${sanitizeMarkerPart(revPid)}`
+    : `mollie_${sanitizeMarkerPart(String(parsed.eventId || parsed.entityId || "").trim())}`;
+  const existing = await kvGetChecked(env, markerKey);
+  if (existing.ok && existing.value !== null) return new Response(JSON.stringify({ received: true, duplicate: true }), { status: 200 });
 
   try {
     const apiKey = env.MOLLIE_API_KEY;
+
+    // ---------- REFUND / CHARGEBACK BRANCH ----------
+    if (parsed.resource === "refund" || parsed.resource === "chargeback") {
+      const attrKey = "mollie_attr_" + (parsed.entityId || parsed.paymentId || "");
+      const attrMarker = await kvGetChecked(env, attrKey);
+      if (attrMarker.ok && attrMarker.value !== null) {
+        // Deja revoke; on repond succes pour idempotence.
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true }), { status: 200 });
+      }
+
+      let verifyResult;
+      if (parsed.resource === "refund") {
+        verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
+      } else {
+        // chargeback
+        if (parsed.event === "chargeback.reversed") {
+          // Etat terminal non-revocateur : on marque pour eviter le rejeu
+          // infini sans revoquer l'acces (defaut P0.7).
+          await kvPutChecked(env, `mollie_rev_${sanitizeMarkerPart(parsed.paymentId || parsed.entityId || "")}`, "1", { expirationTtl: 30 * 86400 });
+          return new Response(JSON.stringify({ received: true, type: "chargeback", event: "chargeback.reversed", processed: true, granted: false, revoked: false, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
+        }
+        verifyResult = await verifyNegativeMollieEntity(env, apiKey, parsed);
+      }
+      if (!verifyResult.ok) throw new Error("verify_negative_failed:" + (verifyResult.error || "unknown"));
+
+      if (verifyResult.revokes) {
+        // Revocation effective par autorite Mollie.
+        const rev = await revokeB2CAccess(env, verifyResult.paymentId || parsed.entityId || "", parsed.resource === "refund" ? "refund" : "chargeback");
+        if (!rev.ok) throw new Error("b2c_revoke_failed:" + rev.error);
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: true, granted: false, revoked: true, paymentId: verifyResult.paymentId || parsed.entityId || parsed.paymentId || "" }), { status: 200 });
+      } else {
+        // Evenement non-revocateur (refund.failed, refund.pending, etc.)
+        // : on ne supprime rien, on laisse Mollie rejouer.
+        return new Response(JSON.stringify({ received: true, type: parsed.resource || "payment", processed: false, granted: false, revoked: false }), { status: 200 });
+      }
+    }
+
+    // ---------- PAYMENT BRANCH ----------
     if (parsed.resource === "payment") {
-      // Etat AUTORITATIVE : jamais le corps du webhook.
-      const payment = await mollieReq("GET", `v2/payments/${parsed.entityId}`, apiKey);
+      // Verifier idempotence par marqueur (Classic utilise entityId, Next-gen
+      // utilise eventId distinct -> pas de collision).
+      // Note: les events non revokeurs comme payment.failed ne marquent pas
+      // comme "traite" sauf quand c'est definitif, mais le handler en dessous
+      // gère cela.
+
+      const payment = await mollieReq("GET", "v2/payments/" + parsed.entityId, apiKey);
       const status = String(payment.status || "");
       const metadata = payment.metadata && typeof payment.metadata === "object" && !Array.isArray(payment.metadata) ? payment.metadata : {};
       const event = parsed.event || "";
       const pass = String(metadata.pass || "");
 
-      // Type d'evenement reconnu ? Un evenement inconnu ne cree AUCUN grant
-      // et n'est PAS marque comme traite (le rejeu doit rester possible).
-      const knownEvents = ["payment.paid", "payment.failed", "payment.canceled", "payment.expired", "payment.refunded"];
-      if (event && !knownEvents.includes(event)) {
+      // Check if payment already has a negative state (refund/chargeback) in Mollie
+      const hasRefundOrChargeback = isNegativePaymentState(payment);
+
+      // Known events that the classic format supports.
+      const knownEvents = ["payment.paid", "payment.failed", "payment.canceled", "payment.expired", "payment.refunded", "chargeback.received"];
+
+      // Un evenement inconnu ne cree AUCUN grant et n'est PAS marque comme
+      // traite (un rejeu ulterieur ne doit pas etre perdu).
+      if (event && !knownEvents.includes(event) && !parsed.resource.startsWith("subscription.")) {
+        // Pour les ressources payment non connues, on laisse Mollie rejouer
+        // et on ne pose AUCUN marqueur (kvPutChecked n'est pas appele).
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
       }
 
-      // Remboursement : on retire l'acces (revocation par expiration du
-      // grant durable — `public.payment_grants` n'a pas de colonne `status`)
-      // et on supprime la clef KV du pass.
-      if (event === "payment.refunded") {
-        if (pass && FULFILL_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
-        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, `?payment_id=eq.${encodeURIComponent(parsed.entityId)}&type=eq.b2c_pass`);
-        if (!rev.ok) throw new Error(`b2c_revoke_failed:${rev.error}`);
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
-        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true }));
+      // Remboursement/chargeback detecte via montant authoritaire
+      // (amountRefunded / amountChargedBack) OU event definitif.
+      if (hasRefundOrChargeback || event === "payment.refunded") {
+        if (parsed.generation === "classic") {
+          // Classic: use entityId (tr_xxx) for grant lookups.
+          // Payment may already be paid; revocation is authoritative.
+          await revokeB2CAccess(env, parsed.entityId || "", "refund");
+          if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + parsed.entityId);
+          return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.entityId || "" }), { status: 200 });
+        } else {
+          // Next-gen: use paymentId for authoritative revocation.
+          await revokeB2CAccess(env, parsed.paymentId || parsed.entityId || "", "refund");
+          if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
+          return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false, revoked: true, paymentId: parsed.paymentId || parsed.entityId || "" }), { status: 200 });
+        }
       }
 
-      // Etat terminal negatif : on libere un pass en attente et l'evenement
-      // est definitif -> marqueur pose.
+      // Etat terminal negatif : failed / canceled / expired
+      // -> on libere le pass en attente et pose le marqueur definitive.
       if (status === "failed" || status === "canceled" || status === "expired") {
-        if (pass && FULFILL_PRICES[pass]) await kv(env).delete(`mol_b2c_pass_${parsed.entityId}`);
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
-        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false }));
+        if (pass && FULFILL_PRICES[pass]) await kvDeleteChecked(env, "mol_b2c_pass_" + (parsed.entityId || parsed.paymentId || ""));
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
+        return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: true, granted: false }), { status: 200 });
       }
 
       const check = validatePaymentForFulfillment(payment, metadata);
       if (!check.ok) {
         // Aucun grant et AUCUN marqueur "traite" : l'evenement reste
         // rejouable et on ne pretend pas avoir honore le paiement.
-        console.log(`[sg] mollie payment non honore ${parsed.entityId}: ${check.problems.join(",")}`);
+        console.log("[sg] mollie payment non honore " + parsed.entityId + ": " + check.problems.join(","));
         // Evenement "paye" contredit par l'etat autoritaire : etat
         // transitoire -> on repond en erreur pour que Mollie rejoue.
         if (event === "payment.paid" && !check.problems.includes("not_live_mode")) {
@@ -2185,11 +2423,13 @@ async function handleWebhook(request, env, ctx) {
       if (!fulfilled.granted) {
         return new Response(JSON.stringify({ received: true, type: "payment", status, event, processed: false, granted: false, reasons: fulfilled.reasons || ["fulfillment_failed"] }), { status: fulfilled.retry ? 409 : 200 });
       }
-      await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
+      await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
       return new Response(JSON.stringify({ received: true, type: "payment", status, processed: true, granted: true, kind: fulfilled.kind }));
     }
+
+    // ---------- SUBSCRIPTION BRANCH ----------
     if (parsed.resource === "subscription") {
-      const sub = await mollieReq("GET", `v2/subscriptions/${parsed.entityId}`, apiKey);
+      const sub = await mollieReq("GET", "v2/subscriptions/" + parsed.entityId, apiKey);
       const status = String(sub.status || "");
       const metadata = sub.metadata && typeof sub.metadata === "object" && !Array.isArray(sub.metadata) ? sub.metadata : {};
       const planKey = String(metadata.plan || "");
@@ -2197,14 +2437,10 @@ async function handleWebhook(request, env, ctx) {
       const event = parsed.event || "";
 
       if (["subscription.canceled", "subscription.expired"].includes(event)) {
-        await kv(env).delete(`mollie_grant_${sub.id}`);
-        // `public.payment_grants` n'a PAS de colonne `status` (cf.
-        // supabase/schema.sql) : la revocation par PATCH status echouait
-        // silencieusement. On expire le grant (colonne reelle) et on
-        // conserve la ligne pour l'audit.
-        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, `?subscription_id=eq.${encodeURIComponent(sub.id)}&type=eq.b2b_pro`);
-        if (!rev.ok) throw new Error(`b2b_revoke_failed:${rev.error}`);
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
+        await kv(env).delete("mollie_grant_" + sub.id);
+        const rev = await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sub.id) + "&type=eq.b2b_pro");
+        if (!rev.ok) throw new Error("b2b_revoke_failed:" + rev.error);
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
         return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: false, revoked: true }));
       }
 
@@ -2220,7 +2456,7 @@ async function handleWebhook(request, env, ctx) {
           return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: [amount.reason] }));
         }
         await grantB2B(env, cid, planKey, sub.id, 30, { metadata });
-        await kv(env).put(markerKey, "1", { expirationTtl: 86400 });
+        await kvPutChecked(env, markerKey, "1", { expirationTtl: 86400 });
         if (event === "subscription.created") {
           try {
             ctx?.waitUntil(supa(env, "analytics_events", "POST", { event: "subscription_created", params: { plan: planKey, subscription_id: sub.id } }).catch(() => {
@@ -2237,11 +2473,14 @@ async function handleWebhook(request, env, ctx) {
         }
         return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: true, granted: true, kind: "b2b_subscription" }));
       }
-      // Evenement inconnu / plan inconnu : AUCUN grant et AUCUN marqueur.
+      // Evenement inconnu / plan inconnu : AUCUN grant, aucun marqueur (le rejeu
+      // doit rester possible si Mollie rejoue un evenement ulterivement
+      // reconnu).
       return new Response(JSON.stringify({ received: true, type: "subscription", status, event, processed: false, granted: false, reasons: ["unsupported_event"] }));
     }
+
     // Ressource inconnue : aucun grant, aucun marqueur "traite" (le rejeu
-    // doit rester possible si Mollie rejoue un evenement ulterieusement
+    // doit rester possible si Mollie rejoue un evenement ulteriellement
     // reconnu).
     return new Response(JSON.stringify({ received: true, type: parsed.resource || "unknown", processed: false, granted: false, reasons: ["unsupported_resource"] }));
   } catch (error) {
