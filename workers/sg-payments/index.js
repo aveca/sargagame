@@ -884,6 +884,36 @@ var index_default = {
     if (path === "/api/mollie-health") {
       return new Response(JSON.stringify({ ok: true, worker: "sg-payments", version: "payfix-20261110-b2c", routes: 48 }), { headers: { "Content-Type": "application/json" } });
     }
+    if (path === "/api/mollie-mode") {
+      // DIAGNOSTIC DU MODE DU BACKEND MOLLIE — LECTURE SEULE.
+      // - ne cree AUCUNE transaction : aucun POST vers api.mollie.com ;
+      // - ne retourne JAMAIS la cle ni un fragment de cle (un mode, rien de plus) ;
+      // - `mode` = contrat Mollie sur le prefixe de la cle (`live_` / `test_`) ;
+      // - `api_mode` = champ `mode` renvoye par l'API Mollie elle-meme
+      //   (GET /v2/payments?limit=1 : lecture seule, aucune creation) ;
+      // - sert a verifier le mode LIVE sur les six domaines SANS transaction.
+      const key = String(env.MOLLIE_API_KEY || "");
+      const mode = key.startsWith("live_") ? "live" : key.startsWith("test_") ? "test" : "unknown";
+      let apiMode = "not_checked";
+      if (key) {
+        try {
+          const r = await fetch("https://api.mollie.com/v2/payments?limit=1", {
+            headers: { Authorization: "Bearer " + key },
+          });
+          if (r.status === 401) apiMode = "unauthorized";
+          else if (r.ok) {
+            const j = await r.json();
+            const p = j && j._embedded && j._embedded.payments && j._embedded.payments[0];
+            apiMode = p && p.mode ? String(p.mode) : "no_payment_yet";
+          } else apiMode = "http_" + r.status;
+        } catch {
+          apiMode = "unreachable";
+        }
+      }
+      return new Response(JSON.stringify({ ok: true, mode, api_mode: apiMode }), {
+        headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+      });
+    }
     if (path === "/api/mollie-kv-test") {
       const k = env.TRANSIENTS;
       const hasBinding = !!k;
