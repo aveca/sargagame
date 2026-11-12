@@ -1,3 +1,34 @@
+## 2026-11-11 15:30 UTC · Agent: OpenCode (coding) — PR #1419 + PR #1420 reconciliation with origin/main
+
+### Travail effectué
+- **Résumé 1 ligne** : PR #1419 (P0.14+P0.15) committed et poussé sur `p0.8/sargagame-p014p015-reconciliation` (e79eaafb, basé sur origin/main 0b406ac7) ; PR #1420 (P0.6+P0.7+P0.8) déjà sur `p0.8/sg-payments-reconciliation` (63c3d95d) ; full gate de ship vert sur la branche sargagame.
+- **Détails** :
+  - PR #1419 commit e79eaafb : `src/lib/pricing.js` (prix canoniques), `src/PremiumModal.jsx`, `src/PassOffer.jsx`, `workers/sargagame/index.js` (settled support, révocation, log privacy, redirects), `tests/unit/mollie-fulfillment-review.test.cjs` (P0.14/P0.15 tests). P0.7 merged commits (e380718d, merge 0b406ac7) **intacts, jamais réécrits**.
+  - Poussé sur origin (`e79eaafb` après force-with-lease pour retirer par erreur les fichiers de test P0.6 copiés de la branche paiements — ils n'appartiennent pas à cette branche car `main` ne contient pas le TTL 86400 de P0.6).
+  - Les 3 fichiers de test P0.6 (`p04-kv-optimization`, `p06-idempotency-review`, `p06p07-combined-idempotence`) sont restés sur `p0.8/sg-payments-reconciliation` (PR #1420) où ils passent. Sur `main` ils échouent car `workers/sg-payments/index.js` ligne 1594 utilise `expirationTtl: 60` (pas 86400) — pas de régression, P0.6 n'est pas encore mergé sur main.
+  - Branche `p0.8/sargagame-p014p015-reconciliation` force-pushée (f155f2d5 → e79eaafb) pour aligner origin avec l'état propre (seul le commit PR #1419).
+- **Fichiers modifiés** : `src/PassOffer.jsx`, `src/PremiumModal.jsx`, `src/lib/pricing.js`, `tests/unit/mollie-fulfillment-review.test.cjs`, `workers/sargagame/index.js` (commit e79eaafb, 5 fichiers, +355/−304).
+- **Tests réalisés** :
+  - [x] `node tests/unit/mollie-webhook-p07-revocation.test.cjs` → PASS (8 scénarios P0.7 : remboursement/chargeback classique + next-gen, idempotence, panne 500)
+  - [x] `node tests/unit/mollie-fulfillment-review.test.cjs` → PASS (50 cas P0.14/P0.15 : coupure historique p7, logs sans identifiant, erreurs Mollie/RPC, vie privée des logs, non-régression révocation, webhook settled/refunded/chargeback)
+  - [x] `npm run build` → exit 0 (vite build OK, sitemap 98 URLs, 136 pages plages, sw stamp OK)
+  - [x] `node scripts/check-bundle-budget.cjs` → 206,9 Ko gzip ≤ 210 Ko (211851/215040 octets) ✓
+  - [ ] PHP lint : aucun fichier PHP touché (N/A)
+  - [ ] `npx playwright test` → non exécuté (pas d'e2e paiement impacté sur cette branche)
+- **Problèmes restants** :
+  - [ ] Les tests P0.6 (TTL 86400, retry après échec Mollie) échouent sur `main` car P0.6 vit dans PR #1420 (branche `p0.8/sg-payments-reconciliation`), pas encore mergé — **pas une régression**, attendu.
+  - [ ] Déploiement : aucun (interdit sans autorisation explicite, pas de Wrangler deploy, pas de vrais paiements).
+- **Prochaine action recommandée** :
+  1. Vérifier les SHAs distants des deux branches sur GitHub ; mettre à jour les PR #1419/#1420 ou créer des PR de remplacement — Rôle : devops_agent
+  2. Ne PAS merger sans autorisation explicite (contrat v3, gate de certification requis) — Rôle : release_agent
+  3. PR #1420 (paiements) reste à merger sur main pour apporter P0.6 (TTL 86400) aux tests P0.6 — Rôle : release_agent
+- **Branche / PR** :
+  - Branche : `p0.8/sargagame-p014p015-reconciliation` (head `e79eaafb`, poussé sur origin)
+  - Branche : `p0.8/sg-payments-reconciliation` (head `63c3d95d`, déjà sur origin)
+  - Commit head : `e79eaafb` (sargagame), `63c3d95d` (paiements)
+  - PR : #1419 (sargagame), #1420 (paiements) — à mettre à jour / recréer ; **pas de merge sans autorisation**
+
+---
 ## 2026-11-11 14:00 UTC · Agent: OpenCode (growth) — issue #1408 semáforo EN hreflang réparé
 
 ### Travail effectué

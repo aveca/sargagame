@@ -1,3 +1,17 @@
+## 2026-11-11 15:30 UTC - PR #1419 + PR #1420 réconciliés avec origin/main
+
+- **PR #1419 (P0.14+P0.15)** committed et poussé sur `p0.8/sargagame-p014p015-reconciliation` (commit `e79eaafb`, basé sur `origin/main` `0b406ac7`) :
+  - `src/lib/pricing.js` : prix canoniques alignés sur l'offre validée
+  - `src/PremiumModal.jsx`, `src/PassOffer.jsx` : mises à jour paywall
+  - `workers/sargagame/index.js` : support `settled`, révocation, privacy des logs, redirects
+  - `tests/unit/mollie-fulfillment-review.test.cjs` : tests P0.14/P0.15 (50 cas)
+  - Commits P0.7 merges (e380718d, 0b406ac7) **intacts, jamais réécrits**
+- **PR #1420 (P0.6+P0.7+P0.8)** déjà sur `p0.8/sg-payments-reconciliation` (commit `63c3d95d`) : TTL 86400, delete-on-failure, namespace de révocation `mollie_rev_<pid>`
+- Les 3 fichiers de test P0.6 copiés par erreur sur la branche sargagame ont été **retirés** (force-with-lease `f155f2d5` → `e79eaafb`) : ils appartiennent à PR #1420 et échouent sur `main` qui n'a pas encore P0.6 (TTL 60 au lieu de 86400 sur le marqueur d'idempotence) — pas une régression.
+- **Gate de ship (branche sargagame)** : `npm run build` exit 0 · `check-bundle-budget` 206,9 Ko ≤ 210 Ko ✓ · tests P0.7 revocation PASS (8 scénarios) · tests P0.14/P0.15 fulfillment PASS (50 cas)
+- Aucun déploiement, aucun vrai paiement, aucun secret/tarif modifié, aucun merge (autorisation requise)
+
+---
 ## 2026-11-11 14:00 UTC - Issue #1408 : semáforo EN hreflang réparé (Riviera Maya)
 
 - **Defect #2 corrigé** : la page Semáforo del sargazo de Riviera Maya n'émettait que les hreflang `es` + `x-default`, manquant la variante `en`.
