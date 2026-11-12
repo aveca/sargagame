@@ -11,7 +11,9 @@ function sbeacon(p) { try { const b = JSON.stringify({ type: "analytics_event", 
 //   baseCents = montant ENVOYÉ au serveur
 //   effCents  = montant EFFECTIVEMENT DÉBITÉ = ce qu'on AFFICHE
 // ⚠️ 2026-11-09 : plus de surcharge USD saisonnière — le serveur live
-// facture exactement le montant affiché (base = montant facturé).
+// facture exactement le montant affiché (base = montant facturé). L'ancien
+// bandeau de surcoût est donc retiré (il affichait un montant différent de
+// celui débité).
 const money = (c, cur, lang) => formatCents(c, cur, lang)
 const perDay = (c, days, cur, lang) => { const v = c / 100 / days; const s = (cur === "usd" ? "$" + v.toFixed(2) : lang === "en" ? "€" + v.toFixed(2) : v.toFixed(2).replace(".", ",") + " €"); return _t(lang, `${s}/jour`, `${s}/day`, `${s}/día`) }
 
@@ -62,7 +64,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {_t(lang, <>Sache où sera la mer <span style={{ color: "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: "#FFC72C" }}>mañana</span>.</>)}
         </h2>
         <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
-          {_t(lang, "Dernière observation satellite · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Latest available satellite observation · 7-day forecast · Alert when your beach changes. One price, no subscription.", "Última observación satelital disponible · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
+          {_t(lang, "Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "7-day forecast · Alert when your beach flips. One price, no subscription.", "Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
         </p>
 
         <div style={{ margin: "18px 0 0" }}>
@@ -139,12 +141,6 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           style={{ display: "block", textAlign: "center", margin: "10px 0 0", fontSize: 12, fontWeight: 800, color: "#FFC72C", textDecoration: "underline", textUnderlineOffset: 2 }}>
           {benefitCopy ? _t(lang, "Méthode, précision mesurée et limites →", "Method, measured accuracy & limitations →", "Método, precisión medida y límites →") : _t(lang, "Avant de payer, voyez nos erreurs →", "Before you pay, see our errors →", "Antes de pagar, vea nuestros errores →")}
         </a>
-
-        {/* Transparence prix : le montant affiché EST le montant débité.
-            ⚠️ 2026-11-09 — la surcharge USD saisonnière a été supprimée côté
-            serveur : le chiffre affiché est le chiffre facturé, sans surcoût
-            saisonnier. L'ancien bandeau de surcoût est donc retiré (il
-            affichait un montant différent de celui débité). */}
 
         <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 12px", margin: "14px 0 2px", fontSize: 10.5, fontWeight: 700, letterSpacing: ".01em", color: "rgba(234,247,244,.42)", lineHeight: 1.5 }}>
           <span>Mollie</span><span aria-hidden="true">·</span>

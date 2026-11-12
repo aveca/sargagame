@@ -40,6 +40,9 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
     rpcStatus: 204,
     rpcCode: 'rpc_test_failure',
     rpcCalls: [],
+    revokeStatus: 200,
+    revokeCode: 'revoke_test_failure',
+    revokeCalls: [],
     createCalls: [],
   };
 
@@ -84,6 +87,16 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       });
     }
 
+    if (url.startsWith(env.SUPABASE_URL + '/rest/v1/payment_grants') && method === 'PATCH') {
+      state.revokeCalls = state.revokeCalls || [];
+      state.revokeCalls.push({ url, body: JSON.parse(init.body || '{}') });
+      if (state.revokeStatus === 200) return new Response(null, { status: 200 });
+      return new Response(JSON.stringify({ code: state.revokeCode || 'revoke_test_failure' }), {
+        status: state.revokeStatus,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     throw new Error('Unexpected fetch URL: ' + url);
   };
 
@@ -97,6 +110,9 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
     state.rpcCode = 'rpc_test_failure';
     state.rpcCalls = [];
     state.createCalls = [];
+    state.revokeStatus = 200;
+    state.revokeCode = 'revoke_test_failure';
+    state.revokeCalls = [];
     try {
       await fn();
       passed += 1;
@@ -476,6 +492,68 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       assert.equal(state.rpcCalls[0].body.p_payment_id, state.rpcCalls[1].body.p_payment_id);
     });
 
+    console.log('P0.14 — régressions webhook (settled, révocation, statut paiement)');
+
+    await test('webhook statut "settled" → grant (Mollie settled = fonds reçus)', async () => {
+      const p = legacyPayment('tr_settled', { status: 'settled' });
+      const r = await webhook(p);
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.granted, true);
+      assert.equal(state.rpcCalls.length, 1);
+      assert.equal(state.rpcCalls[0].body.p_payment_id, 'tr_settled');
+    });
+
+    for (const status of ['refunded', 'canceled', 'expired', 'failed', 'chargeback']) {
+      await test('webhook statut "' + status + '" → révocation du grant, aucun paiement nouveau', async () => {
+        const pid = 'tr_' + status;
+        const p = legacyPayment(pid, { status: status });
+        const r = await webhook(p);
+        assert.equal(r.response.status, 200);
+        assert.equal(r.body.granted, false);
+        assert.equal(r.body.revoked, true);
+        assert.equal(state.revokeCalls.length, 1);
+        assert.ok(typeof state.revokeCalls[0].body.expires_at === 'string', 'expires_at doit être définie (révocation par expiration)');
+        assert.ok(state.revokeCalls[0].url.includes('payment_id=eq.' + pid));
+        assert.equal(state.rpcCalls.length, 0, 'aucun grant ne doit être créé pour un statut terminal négatif');
+      });
+    }
+
+    await test('webhook statut "refunded" répété → révocation idempotente, pas d\'erreur', async () => {
+      const p = legacyPayment('tr_refundreplay', { status: 'refunded' });
+      const first = await webhook(p);
+      assert.equal(first.body.revoked, true);
+      const second = await webhook(p);
+      assert.equal(second.body.revoked, true);
+      assert.equal(state.revokeCalls.length, 2);
+    });
+
+    await test('webhook révocation : panne RPC Supabase → HTTP 503, pas de succès annoncé', async () => {
+      const p = legacyPayment('tr_revokefail', { status: 'refunded' });
+      state.revokeStatus = 500;
+      const r = await webhook(p);
+      assert.equal(r.response.status, 503);
+      assert.equal(state.revokeCalls.length, 1);
+    });
+
+    await test('payment_status statut "settled" → paid:true', async () => {
+      const p = legacyPayment('tr_stsettled', { status: 'settled' });
+      const r = await paymentStatus(p, { email: 'legacy@example.com' });
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.paid, true);
+      assert.equal(r.body.status, 'settled');
+      assert.equal(state.rpcCalls.length, 1);
+    });
+
+    await test('payment_status statut "refunded" → paid:false, terminal:true', async () => {
+      const p = legacyPayment('tr_strefunded', { status: 'refunded' });
+      const r = await paymentStatus(p);
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.paid, false);
+      assert.equal(r.body.status, 'refunded');
+      assert.equal(r.body.terminal, true);
+      assert.equal(state.rpcCalls.length, 0);
+    });
+
     console.log('P0-3 — logs sans identifiant de paiement');
 
     await test('console.error capturé : l\'identifiant Mollie source n\'apparaît dans AUCUN log', async () => {
@@ -539,6 +617,92 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       assert.ok(!dump.includes('tr_p7after2'), 'aucun paymentId dans les logs');
       assert.ok(!dump.includes('legacy@example.com'), 'aucun email dans les logs');
     });
+
+    console.log('P0.15 — vie privée des logs (tous les endpoints)');
+
+    await test('log privacy : payment_status ne fuit ni paymentId ni email', async () => {
+      const secretId = 'tr_LEAKSTATUS9f3a2b';
+      const secretEmail = 'leak-status@example.com';
+      const p = {
+        id: secretId,
+        status: 'paid',
+        amount: { currency: 'EUR', value: '7.99' },
+        metadata: { pass: 'trip7', email: secretEmail, source: 'test' },
+        createdAt: BEFORE_CUTOFF,
+      };
+      const captured = [];
+      const originalError = console.error;
+      console.error = (...args) => { captured.push(args); };
+      try {
+        await paymentStatus(p, { email: secretEmail });
+      } finally {
+        console.error = originalError;
+      }
+      const dump = captured.map((args) => args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')).join('\n');
+      assert.ok(!dump.includes(secretId), 'paymentId ne doit pas apparaître dans les logs de payment_status');
+      assert.ok(!dump.includes(secretEmail), 'email ne doit pas apparaître dans les logs de payment_status');
+      assert.ok(!dump.includes('LEAKSTATUS'), 'aucune trace du paymentId dans les logs de payment_status');
+    });
+
+    await test('log privacy : révocation ne fuit pas le paymentId', async () => {
+      const secretId = 'tr_LEAKREVOKE9f3a2b';
+      const p = legacyPayment(secretId, { status: 'refunded' });
+      const captured = [];
+      const originalError = console.error;
+      console.error = (...args) => { captured.push(args); };
+      try {
+        await webhook(p);
+      } finally {
+        console.error = originalError;
+      }
+      const dump = captured.map((args) => args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')).join('\n');
+      assert.ok(!dump.includes(secretId), 'paymentId ne doit pas apparaître dans les logs de révocation');
+      assert.ok(!dump.includes('LEAKREVOKE'), 'aucune trace du paymentId dans les logs de révocation');
+      assert.ok(dump.includes('payment_terminal'), 'l\'événement de révocation doit être journalisé');
+    });
+
+    await test('log privacy : grant_ok ne fuit pas le type de pass', async () => {
+      const p = legacyPayment('tr_grantokprivacy', { status: 'paid' });
+      const captured = [];
+      const originalError = console.error;
+      console.error = (...args) => { captured.push(args); };
+      try {
+        await webhook(p);
+      } finally {
+        console.error = originalError;
+      }
+      const dump = captured.map((args) => args.map((a) => (typeof a === 'string' ? a : JSON.stringify(a))).join(' ')).join('\n');
+      assert.ok(!dump.includes('trip7'), 'le type de pass ne doit pas apparaître dans les logs');
+      assert.ok(!dump.includes('p7'), 'le type de pass legacy ne doit pas apparaître dans les logs');
+      assert.ok(dump.includes('grant_ok'), 'l\'événement de délivrance doit être journalisé');
+    });
+
+    console.log('P0.15 — non-régression : ancienne paid après révocation');
+
+    await test('ancienne notification paid après révocation → le grant a bien été révoqué avant', async () => {
+      const pid = 'tr_paidafterrevoke';
+      const pRefunded = legacyPayment(pid, { status: 'refunded' });
+      state.payments[pid] = pRefunded;
+
+      // 1. Révocation : le grant doit être révoqué (expires_at dans le passé)
+      const first = await webhook(pRefunded);
+      assert.equal(first.response.status, 200);
+      assert.equal(first.body.revoked, true);
+      assert.equal(state.revokeCalls.length, 1);
+      assert.ok(typeof state.revokeCalls[0].body.expires_at === 'string');
+      const expiresAt = Date.parse(state.revokeCalls[0].body.expires_at);
+      assert.ok(expiresAt <= Date.now() + 5000, 'expires_at doit être dans le passé (révocation effective)');
+
+      // 2. Notification paid antiga pour le même payment : le webhook tente toujours
+      //    une nouvelle délivrance (chaque notification est traitée indépendamment
+      //    sur l'état actuel de Mollie). Ce test documente le comportement actuel.
+      const pPaid = legacyPayment(pid, { status: 'paid' });
+      state.payments[pid] = pPaid;
+      const second = await webhook(pPaid);
+      assert.equal(second.response.status, 200);
+      assert.equal(second.body.granted, true, 'une notification paid tente une nouvelle délivrance');
+      assert.equal(state.rpcCalls.length, 1, 'une nouvelle tentative de grant est effectuée');
+    });
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -548,7 +712,7 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
     for (const f of failures) console.error('  - ' + f);
     process.exitCode = 1;
   } else {
-    console.log('\nPASS: ' + passed + ' cas — coupure p7, logs sans identifiant, erreurs Mollie/RPC, idempotence');
+    console.log('\nPASS: ' + passed + ' cas — coupure p7, logs sans identifiant, erreurs Mollie/RPC, idempotence, vie privée des logs, non-régression révocation');
   }
 })().catch((error) => {
   console.error(error);
