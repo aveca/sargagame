@@ -1529,7 +1529,7 @@ async function handleMollie(request, env) {
         const idemKey = `mol_${await hashString(email + "|" + pass)}`;
         const ex = await kv(env).get(idemKey);
         if (ex) throw new Error("Paiement d\xE9j\xE0 en cours.");
-        await kv(env).put(idemKey, "1", { expirationTtl: 60 });
+        await kv(env).put(idemKey, "1", { expirationTtl: 86400 });
       }
       const pd = { amount, description: description || (pass ? `Sargasses Pass ${pass}` : "Sargasses"), redirectUrl, webhookUrl: `https://${host}/api/mollie-webhook`, metadata, locale: locale || (currency === "USD" ? "en_US" : "fr_FR") };
       if (applePayPaymentToken) pd.applePayPaymentToken = applePayPaymentToken;
