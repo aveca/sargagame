@@ -40,6 +40,9 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
     rpcStatus: 204,
     rpcCode: 'rpc_test_failure',
     rpcCalls: [],
+    revokeStatus: 200,
+    revokeCode: 'revoke_test_failure',
+    revokeCalls: [],
     createCalls: [],
   };
 
@@ -84,6 +87,16 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       });
     }
 
+    if (url.startsWith(env.SUPABASE_URL + '/rest/v1/payment_grants') && method === 'PATCH') {
+      state.revokeCalls = state.revokeCalls || [];
+      state.revokeCalls.push({ url, body: JSON.parse(init.body || '{}') });
+      if (state.revokeStatus === 200) return new Response(null, { status: 200 });
+      return new Response(JSON.stringify({ code: state.revokeCode || 'revoke_test_failure' }), {
+        status: state.revokeStatus,
+        headers: { 'content-type': 'application/json' },
+      });
+    }
+
     throw new Error('Unexpected fetch URL: ' + url);
   };
 
@@ -97,6 +110,9 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
     state.rpcCode = 'rpc_test_failure';
     state.rpcCalls = [];
     state.createCalls = [];
+    state.revokeStatus = 200;
+    state.revokeCode = 'revoke_test_failure';
+    state.revokeCalls = [];
     try {
       await fn();
       passed += 1;
@@ -474,6 +490,68 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
       assert.equal(second.body.granted, true);
       assert.equal(state.rpcCalls.length, 2);
       assert.equal(state.rpcCalls[0].body.p_payment_id, state.rpcCalls[1].body.p_payment_id);
+    });
+
+    console.log('P0.14 — régressions webhook (settled, révocation, statut paiement)');
+
+    await test('webhook statut "settled" → grant (Mollie settled = fonds reçus)', async () => {
+      const p = legacyPayment('tr_settled', { status: 'settled' });
+      const r = await webhook(p);
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.granted, true);
+      assert.equal(state.rpcCalls.length, 1);
+      assert.equal(state.rpcCalls[0].body.p_payment_id, 'tr_settled');
+    });
+
+    for (const status of ['refunded', 'canceled', 'expired', 'failed', 'chargeback']) {
+      await test('webhook statut "' + status + '" → révocation du grant, aucun paiement nouveau', async () => {
+        const pid = 'tr_' + status;
+        const p = legacyPayment(pid, { status: status });
+        const r = await webhook(p);
+        assert.equal(r.response.status, 200);
+        assert.equal(r.body.granted, false);
+        assert.equal(r.body.revoked, true);
+        assert.equal(state.revokeCalls.length, 1);
+        assert.ok(typeof state.revokeCalls[0].body.expires_at === 'string', 'expires_at doit être définie (révocation par expiration)');
+        assert.ok(state.revokeCalls[0].url.includes('payment_id=eq.' + pid));
+        assert.equal(state.rpcCalls.length, 0, 'aucun grant ne doit être créé pour un statut terminal négatif');
+      });
+    }
+
+    await test('webhook statut "refunded" répété → révocation idempotente, pas d\'erreur', async () => {
+      const p = legacyPayment('tr_refundreplay', { status: 'refunded' });
+      const first = await webhook(p);
+      assert.equal(first.body.revoked, true);
+      const second = await webhook(p);
+      assert.equal(second.body.revoked, true);
+      assert.equal(state.revokeCalls.length, 2);
+    });
+
+    await test('webhook révocation : panne RPC Supabase → HTTP 503, pas de succès annoncé', async () => {
+      const p = legacyPayment('tr_revokefail', { status: 'refunded' });
+      state.revokeStatus = 500;
+      const r = await webhook(p);
+      assert.equal(r.response.status, 503);
+      assert.equal(state.revokeCalls.length, 1);
+    });
+
+    await test('payment_status statut "settled" → paid:true', async () => {
+      const p = legacyPayment('tr_stsettled', { status: 'settled' });
+      const r = await paymentStatus(p, { email: 'legacy@example.com' });
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.paid, true);
+      assert.equal(r.body.status, 'settled');
+      assert.equal(state.rpcCalls.length, 1);
+    });
+
+    await test('payment_status statut "refunded" → paid:false, terminal:true', async () => {
+      const p = legacyPayment('tr_strefunded', { status: 'refunded' });
+      const r = await paymentStatus(p);
+      assert.equal(r.response.status, 200);
+      assert.equal(r.body.paid, false);
+      assert.equal(r.body.status, 'refunded');
+      assert.equal(r.body.terminal, true);
+      assert.equal(state.rpcCalls.length, 0);
     });
 
     console.log('P0-3 — logs sans identifiant de paiement');
