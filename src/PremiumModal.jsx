@@ -2538,8 +2538,13 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
+<<<<<<< HEAD
           onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
+=======
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
+>>>>>>> 4ae51bf7 (feat(sargagame): migrer réécritures sg-noso vers prix canoniques (P0))
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
@@ -2551,8 +2556,13 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
+<<<<<<< HEAD
           onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
+=======
+          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
+            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
+>>>>>>> 4ae51bf7 (feat(sargagame): migrer réécritures sg-noso vers prix canoniques (P0))
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}
         {!passOnly&&!pwComic&&(<>
@@ -3188,14 +3198,10 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
             </div>
           </div>
         </div>
-        {/* Transparence prix USD haute saison (juin-nov) : afficher la tarification
-            saisonnière AVANT le paiement pour préserver la confiance (moat honnêteté).
-            Petit texte discret, pas de bloc séparé — ne casse pas le flow. */}
-        {PAY_CUR==="usd"&&(()=>{const m=new Date().getMonth()+1;return(m>=6&&m<=11)?(
-          <div style={{textAlign:"center",marginTop:6,fontSize:10.5,color:"rgba(255,255,255,.45)",letterSpacing:".01em"}}>
-            {_t(lang,"Tarif haute saison en cours · +15 % applies outside trip passes","High-season rate · +15 % on 30-day & season passes","Tarifa alta temporada · +15 % en pases de 30 días y temporada")}
-          </div>
-        ):null})()}
+        {/* ⚠️ 2026-11-09 — la surcharge USD de haute saison (+15 %) a été supprimée
+            côté serveur : le montant affiché est le montant facturé. Aucun
+            bandeau de surcoût n'est affiché (il indiquait un montant différent
+            de celui débité). */}
         <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:6,marginTop:8}}>
           <span style={{display:"inline-flex",alignItems:"center",gap:4,
             fontSize:10,color:"rgba(255,255,255,.6)",fontWeight:500}}>

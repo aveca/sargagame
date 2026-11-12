@@ -25,6 +25,7 @@ check(app.includes('"pass_copy": null'), 'experiment is enabled in the A/B freez
 check(offer.includes('track("sg_pass_offer_view"') && offer.includes('copy_variant:copyVariant'), 'variant attribution is included on offer view')
 check(offer.includes('track("sg_pass_cta"') && offer.includes('copy_variant:copyVariant'), 'variant attribution is included on CTA click')
 check(abFetch.includes("id: 'pass_copy', dimension: 'customEvent:ab_pass_copy'") && abFetch.includes("metric: 'sg_pass_cta'"), 'GA4 evaluator is wired to measure pass CTA by variant')
+<<<<<<< HEAD
 
 // ── Contrat de prix (2026-11-09) ─────────────────────────────────────────────
 // AVANT : `const PASS = { key:"p30", cents:{eur:1499,usd:1199}, days:30 }` figé
@@ -62,6 +63,10 @@ check(offer.includes('resolvePass(passKey, cur)'), 'PassOffer falls back to the 
 check(/onBuy\(\{c:baseCents,cents:effCents,baseCents,pass:key,days,segment:seg\}\)/.test(offer),
   'checkout callback sends the BASE cents and reports the EFFECTIVE cents')
 check(offer.includes('track("sg_pass_cta"') && offer.includes('base_cents:baseCents'), 'CTA event carries both base and effective cents')
+=======
+check(offer.includes('from"./lib/pricing.js"') && offer.includes('passBaseCents') && offer.includes('PASS_DAYS') && offer.includes('resolvePass'), 'prix et durée issus de src/lib/pricing.js (pas de prix en dur)')
+check(offer.includes('onBuy({c:baseCents,cents:effCents,baseCents,pass:key,days,segment:seg})'), 'callback de paiement passe le prix de base et le prix effectif')
+>>>>>>> 4ae51bf7 (feat(sargagame): migrer réécritures sg-noso vers prix canoniques (P0))
 
 console.log('\nPASS_COPY_TESTS', failures === 0 ? 'PASS' : 'FAIL')
 process.exit(failures ? 1 : 0)

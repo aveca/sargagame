@@ -4,7 +4,7 @@
 //   • public/api/mollie.php          → $passPrices (EUR/USD)
 //   • public/api/mollie-lib.php      → mol_pass_prices() (grille de livraison)
 //   • public/api/create-checkout.php → $ALLOWED_CENTS (anti-tampering)
-//   • workers/sargagame/index.js     → PASS_PRICES / DAYS_TABLE
+//   • workers/sargagame/index.js     → PASS_PRICES / FULFILL_PRICES / DAYS_TABLE
 //   • workers/sg-payments/index.js   → PASS_PRICES (serveur de paiement Mollie)
 //   • scripts/lib/premium-page.cjs   → OFFERS / USD_OFFERS (page /premium/)
 // La parité des sources est verrouillée par tests/unit/price-parity.test.cjs.
@@ -31,9 +31,7 @@
  * ⚠️ 2026-11-09 — Le pass « SOS » (1 €, rapport 24 h) a été RETIRÉ du parcours
  * client : plus aucune création de paiement `sos` n'est acceptée (serveur
  * fail-closed) et plus aucun CTA/deep-link ne l'expose. La LIVRAISON des
- * paiements `sos` DÉJÀ encaissés reste possible côté backfill contrôlé
- * (scripts/automation/backfill-mollie-grants.cjs) : encaisser sans livrer
- * serait un trou de confiance.
+ * paiements `sos` DÉJÀ encaissés reste possible côté backfill contrôlé.
  */
 export const PASS_KEYS = Object.freeze(["p30", "trip7", "season"])
 
