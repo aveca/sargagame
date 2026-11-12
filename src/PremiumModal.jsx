@@ -2538,13 +2538,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"world"});startCheckout(effectivePlan,"world")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-<<<<<<< HEAD
           onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
-=======
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
->>>>>>> 4ae51bf7 (feat(sargagame): migrer réécritures sg-noso vers prix canoniques (P0))
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"world_close"});onClose()}}/>}
         {!passOnly&&pwComic&&!pwWorld&&<ComicPaywall lang={lang} beach={beach} source={source}
           topName={_topName} topScore={_topScore} exSwitch={_exSwitch} wkend={_wkend}
@@ -2556,13 +2551,8 @@ const r=await fetch("/api/mollie.php",{method:"POST",headers:{"Content-Type":"ap
           onStart={()=>{track("sg_premium_modal_cta",{plan:effectivePlan,source:source||"unknown",skin:"comic"});startCheckout(effectivePlan,"comic")}}
           onAlready={verifyExistingSub}
           onB2B={()=>{try{track("sg_b2b_open",{source:source||"unknown"})}catch(_){}; setShowB2B(true)}}
-<<<<<<< HEAD
           onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:passBaseCents("season","eur"),source:source||"unknown",onsite:1})}catch(_){}
             passCtxRef.current={pass:"season",cents:passBaseCents("season","eur"),eff:passBaseCents("season","eur"),days:PASS_DAYS.season,cur:"eur"};setPayStep(true)}):undefined}
-=======
-          onSeason={(!PAY_CAPTURE_ONLY&&pwSeason)?(()=>{try{track("sg_pass_cta",{pass:"season",cents:2499,source:source||"unknown",onsite:1})}catch(_){}
-            passCtxRef.current={pass:"season",cents:2499,days:210,cur:"eur"};setPayStep(true)}):undefined}
->>>>>>> 4ae51bf7 (feat(sargagame): migrer réécritures sg-noso vers prix canoniques (P0))
           onClose={()=>{const ts=Math.round((Date.now()-modalOpenedAt.current)/1000);track("sg_premium_modal_close",{source:source||"unknown",time_spent:ts,via:"comic_close"});onClose()}}/>}
         {showB2B&&<B2BModal lang={lang} sargData={sargData} island={island} beach={beach||null} source={source||"paywall"} onClose={()=>setShowB2B(false)}/>}
         {!passOnly&&!pwComic&&(<>
