@@ -26,6 +26,19 @@ export default {
         return redirect301("https://" + u.hostname + "/carte-sargasses/" + qs);
       }
     }
+    // ── Protection des logs (P0-3) ─────────────────────────────────────────
+    // Seuls les champs explicitement autorisés peuvent apparaître dans les
+    // logs : aucun paymentId, email, métadonnée, token ou secret ne doit
+    // jamais fuiter. L'identifiant de corrélation aléatoire est transmis
+    // séparément (jamais dérivé du paymentId).
+    const SAFE_LOG_FIELDS = Object.freeze(["status", "code", "reason"]);
+    const logGrantEvent = (cid, event, fields) => {
+      const safe = {};
+      for (const k of SAFE_LOG_FIELDS) {
+        if (fields && fields[k] !== undefined && fields[k] !== null) safe[k] = fields[k];
+      }
+      console.error(`[mollie-grant] ${event}`, { cid, ...safe });
+    };
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
     // ── Grille de CRÉATION — `sos` RETIRÉ : plus vendable (410 offre_indisponible) ──
     // OFFRE VALIDÉE 2026-11-09 : trip7 7,99 € / $8.99 · p30 14,99 € / $16.99
@@ -214,17 +227,17 @@ export default {
         // Statuts terminaux négatifs : révoquer tout accès précédemment délivré.
         if(["canceled","expired","failed","refunded","chargeback"].includes(status)){
           const rev=await revokeB2CPass(id);
-          console.error("[mollie-webhook] payment terminal", {cid,status,revoked:rev.revoked,error:rev.error});
+          logGrantEvent(cid, "payment_terminal", {status, code: rev.error});
           if(!rev.revoked) return out({error:"revoke_sync_failed",reason:rev.error},503);
           return out({received:true,paymentId:id,status,granted:false,revoked:true},200);
         }
         if(!["paid","settled"].includes(status)) return out({received:true,paymentId:id,status,granted:false},200);
         const validation=validateMollieAmount(payment);
         if(!validation.ok){
-          console.error("[mollie-webhook] grant rejected", {cid,reason:validation.reason});
+          logGrantEvent(cid, "grant_rejected", {reason: validation.reason});
           return out({received:true,paymentId:id,status,granted:false,reason:validation.reason},200);
         }
-        console.error("[mollie-webhook] grant ok", {cid,pass:validation.pass});
+        logGrantEvent(cid, "grant_ok", {});
         const grant=await grantB2CPassIdempotent(payment);
         if(grant.error) return out({error:grant.error},503);
         if(!grant.granted) return out({received:true,paymentId:id,status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
@@ -248,17 +261,17 @@ export default {
       const status=String(payment.status||"unknown");
       if(["canceled","expired","failed","refunded","chargeback"].includes(status)){
         const rev=await revokeB2CPass(id);
-        console.error("[mollie-webhook] payment terminal", {cid,status,revoked:rev.revoked,error:rev.error});
+        logGrantEvent(cid, "payment_terminal", {status, code: rev.error});
         if(!rev.revoked) return out({error:"revoke_sync_failed",reason:rev.error},503);
         return out({received:true,paymentId:id,status,granted:false,revoked:true},200);
       }
       if(!["paid","settled"].includes(status)) return out({received:true,paymentId:id,status,granted:false},200);
       const validation=validateMollieAmount(payment);
       if(!validation.ok){
-        console.error("[mollie-webhook] grant rejected", {cid,reason:validation.reason});
+        logGrantEvent(cid, "grant_rejected", {reason: validation.reason});
         return out({received:true,paymentId:id,status,granted:false,reason:validation.reason},200);
       }
-      console.error("[mollie-webhook] grant ok", {cid,pass:validation.pass});
+      logGrantEvent(cid, "grant_ok", {});
       const grant=await grantB2CPassIdempotent(payment);
       if(grant.error) return out({error:grant.error},503);
       if(!grant.granted) return out({received:true,paymentId:id,status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
