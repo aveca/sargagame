@@ -6,6 +6,26 @@ export default {
     const headers = {"content-type":"application/json; charset=utf-8","cache-control":"no-store","access-control-allow-methods":"POST,OPTIONS","access-control-allow-headers":"Content-Type"};
     if (allowed.includes(origin)) headers["access-control-allow-origin"]=origin;
     const out=(x,s)=>new Response(JSON.stringify(x),{status:s,headers});
+    // ── Redirections 301 (préservation du référencement après suppression de pages) ──
+    // Seul GET/HEAD est redirigé ; POST et autres méthodes passent normalement.
+    const redirect301 = (target) => new Response(null, {
+      status: 301,
+      headers: { "location": target, "cache-control": "public, max-age=300" }
+    });
+    const { pathname: path, search: qs } = u;
+    const method = request.method;
+    if ((method === "GET" || method === "HEAD")) {
+      // /meteo-sargasses-guadeloupe : MQ → canonical GP (exact path uniquement, pas de préfixe)
+      if (u.hostname === "sargasses-martinique.com" &&
+          (path === "/meteo-sargasses-guadeloupe" || path === "/meteo-sargasses-guadeloupe/")) {
+        return redirect301("https://sargasses-guadeloupe.com/meteo-sargasses-guadeloupe/" + qs);
+      }
+      // /sarg_carte_satellite_app : MQ et GP → canonical régional /carte-sargasses/
+      if ((u.hostname === "sargasses-martinique.com" || u.hostname === "sargasses-guadeloupe.com") &&
+          (path === "/sarg_carte_satellite_app" || path === "/sarg_carte_satellite_app/" || path === "/sarg_carte_satellite_app.html")) {
+        return redirect301("https://" + u.hostname + "/carte-sargasses/" + qs);
+      }
+    }
     const DAYS_TABLE = Object.freeze({p30:30,trip7:7,season:210,sos:1});
     // ── Grille de CRÉATION — `sos` RETIRÉ : plus vendable (410 offre_indisponible) ──
     // OFFRE VALIDÉE 2026-11-09 : trip7 7,99 € / $8.99 · p30 14,99 € / $16.99
@@ -25,37 +45,75 @@ export default {
       season:{EUR:24.99,USD:27.99},
       sos:{EUR:1.00,USD:null}
     });
+    // ── Prix HISTORIQUES (ancienne offre) — acceptés UNIQUEMENT pour un
+    // paiement DÉJÀ encaissé avant la coupure du 2026-11-09 (date de création
+    // vérifiable). Encaisser sans livrer serait un trou de confiance.
+    // Un paiement NOUVEL au tarif ancien reste refusé (400).
+    const HISTORICAL_PRICES = Object.freeze({
+      p30: { EUR: [14.99], USD: [11.99] },
+      trip7: { EUR: [7.99], USD: [5.99] },
+      season: { EUR: [19.99], USD: [] }
+    });
+    const OFFER_CUTOFF_DATE = "2026-11-09";
+    // P0-2 — p7 legacy pass cutoff (2026-08-01), distinct from the general
+    // offer cutoff (2026-11-09). Les passes p7 créées à partir de cette date
+    // ne sont plus délivrables (legacy_expired).
+    const P7_CUTOFF_DATE = "2026-08-01T00:00:00Z";
     const validateMollieAmount = (payment) => {
       if (!payment || payment.status !== "paid") return {ok:false,reason:"not_paid"};
       const pass=String(payment.metadata?.pass||"");
+      const normPass = pass === "p7" ? "trip7" : pass;
+      const isLegacyP7 = pass === "p7";
       const currency=String(payment.amount?.currency||"").toUpperCase();
       const value=Number(payment.amount?.value);
       const cents=Math.round(value*100);
-      if (!DAYS_TABLE[pass] || !FULFILL_PRICES[pass]) return {ok:false,reason:"unknown_pass"};
+      if (!DAYS_TABLE[normPass] || !FULFILL_PRICES[normPass]) return {ok:false,reason:"unknown_pass"};
       if (!Number.isFinite(value) || !Number.isInteger(cents) || cents <= 0) return {ok:false,reason:"invalid_amount"};
-      if (!Object.prototype.hasOwnProperty.call(FULFILL_PRICES[pass],currency)) return {ok:false,reason:"unsupported_currency"};
-      const expected=FULFILL_PRICES[pass][currency];
+      if (!Object.prototype.hasOwnProperty.call(FULFILL_PRICES[normPass],currency)) return {ok:false,reason:"unsupported_currency"};
+      const createdTs = payment.createdAt || payment.created;
+      // Une date sans fuseau horaire (Z / +HH:MM) n'est pas vérifiable.
+      const hasTz = createdTs && (/Z$|[+-]\d{2}:?\d{2}$/.test(createdTs));
+      const created = hasTz ? Date.parse(createdTs) : null;
+      const p7Cutoff = Date.parse(P7_CUTOFF_DATE);
+      const createdBeforeP7Cutoff = created && created < p7Cutoff;
+      const createdBeforeOfferCutoff = created && created < Date.parse(OFFER_CUTOFF_DATE);
+      // Legacy p7 passes : seuls les prix historiques sont acceptés, et uniquement
+      // avant la coupure P7 (2026-08-01). Jamais le tarif courant.
+      if (isLegacyP7) {
+        if (!createdBeforeP7Cutoff) return {ok:false,reason:"legacy_expired"};
+        const hist = HISTORICAL_PRICES[normPass];
+        if (hist && hist[currency] && hist[currency].some(h => Math.abs(cents - Math.round(h*100)) <= 2)) {
+          return {ok:true,pass:normPass,currency};
+        }
+        return {ok:false,reason:"amount_mismatch"};
+      }
+      // Passes non-legacy : prix courant, sauf prix historique avant la coupure.
+      const expected=FULFILL_PRICES[normPass][currency];
       if (expected === null) {
         // Preserve the existing variable-amount contract for products whose
         // currency price is null in create_payment; never accept zero/negative.
         const upper = currency === "USD" && pass !== "trip7" ? 5750 : 5000;
         if (cents <= 50 || cents >= upper) return {ok:false,reason:"amount_out_of_range"};
-      } else {
-        const acceptable=[Math.round(expected*100)];
-        // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) : le
-        // serveur live facture le montant affiché (base uniquement). Un
-        // paiement déjà créé au tarif +15 % n'est plus réconcilié ici.
-        if (!acceptable.some(n => Math.abs(cents-n) <= 2)) return {ok:false,reason:"amount_mismatch"};
+      } else if (![Math.round(expected*100)].some(n => Math.abs(cents-n) <= 2)) {
+        // Prix historique accepté uniquement avant la coupure de l'offre.
+        if (createdBeforeOfferCutoff) {
+          const hist = HISTORICAL_PRICES[normPass];
+          if (hist && hist[currency] && hist[currency].some(h => Math.abs(cents - Math.round(h*100)) <= 2)) {
+            return {ok:true,pass:normPass,currency};
+          }
+        }
+        return {ok:false,reason:"amount_mismatch"};
       }
-      return {ok:true,pass,currency};
+      return {ok:true,pass:normPass,currency};
     };
     const grantB2CPassIdempotent=async(payment)=>{
       const md=payment?.metadata||{};
       const pass=String(md.pass||"");
+      const normPass = pass === "p7" ? "trip7" : pass;
       const email=String(md.email||"").trim();
-      const days=DAYS_TABLE[pass];
+      const days=DAYS_TABLE[normPass];
       if(!days)return {granted:false,skipped:true,reason:"unknown_pass"};
-      if(pass!=="sos"&&!email)return {granted:false,skipped:true,reason:"email_required"};
+      if(normPass!=="sos"&&!email)return {granted:false,skipped:true,reason:"email_required"};
       if(!payment?.id)return {granted:false,skipped:true,reason:"payment_id_required"};
       if(!env.SUPABASE_URL||!env.SUPABASE_SERVICE_KEY)return {granted:false,error:"payment_backend_not_configured"};
       let r;
@@ -70,12 +128,12 @@ export default {
           },
           body:JSON.stringify({
             p_payment_id:String(payment.id),
-            p_pass:pass,
+            p_pass:normPass,
             p_email:email,
             p_currency:String(payment.amount?.currency||"EUR").toUpperCase(),
             p_expires_at:new Date(Date.now()+days*86400000).toISOString(),
             p_granted_at:new Date().toISOString(),
-            p_metadata:md
+            p_metadata:Object.assign({},md,{pass:normPass})
           })
         });
       } catch {
@@ -92,13 +150,57 @@ export default {
     if (u.pathname==="/api/mollie-webhook.php" || u.pathname==="/api/mollie-webhook") {
       if(request.method!=="POST") return out({error:"POST only"},405);
       const raw=await request.text();
+      const cid="req_"+Math.floor(Math.random()*0x100000000).toString(16).padStart(8,"0")+Math.floor(Math.random()*0x100000000).toString(16).padStart(8,"0")+Math.floor(Math.random()*0x100000000).toString(16).padStart(8,"0")+Math.floor(Math.random()*0x100000000).toString(16).padStart(8,"0");
       const contentType=request.headers.get("content-type")||"";
-      // This endpoint is for Mollie's classic Payments webhook: form-encoded id.
-      // The handler never trusts an asserted status; it fetches the payment from
-      // the authenticated Mollie API before any grant decision.
-      if(!contentType.toLowerCase().includes("application/x-www-form-urlencoded")){
-        return out({error:"unsupported_webhook_contract"},415);
+      const isNextGen=contentType.toLowerCase().includes("application/json");
+      const isClassic=contentType.toLowerCase().includes("application/x-www-form-urlencoded");
+      if(!isClassic && !isNextGen) return out({error:"unsupported_webhook_contract"},415);
+      // Signature requise (fail-closed). Sans secret configuré → 503.
+      const secret=env.MOLLIE_WEBHOOK_SECRET;
+      if(!secret) return out({error:"payment_backend_not_configured"},503);
+      const sig=request.headers.get("x-mollie-signature")||"";
+      const hex=sig.replace(/^sha256=/,"");
+      let sigOk=false;
+      try {
+        if(/^[0-9a-fA-F]{64}$/.test(hex)) {
+          const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(secret),{name:"HMAC",hash:"SHA-256"},false,["verify"]);
+          const sigBytes=new Uint8Array(hex.match(/.{1,2}/g).map(b=>parseInt(b,16)));
+          sigOk=await crypto.subtle.verify("HMAC",key,sigBytes,new TextEncoder().encode(raw));
+        }
+      } catch {}
+      if(!sigOk) return out({error:"invalid_signature"},403);
+
+      if(isNextGen) {
+        let body;
+        try { body=JSON.parse(raw); } catch { return out({error:"invalid_json"},400); }
+        const entityId=String(body.entityId||body.id||"").trim();
+        if(body.resource==="event" && body.type && !body.type.startsWith("payment.")) {
+          return out({reason:"unsupported_entity",granted:false},200);
+        }
+        if(!/^tr_[A-Za-z0-9]+$/.test(entityId)) return out({error:"invalid_payment_id"},400);
+        const id=entityId;
+        let p,payment;
+        try {
+          p=await fetch("https://api.mollie.com/v2/payments/"+encodeURIComponent(id),{headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY}});
+          try { payment=await p.json(); } catch { return out({error:"mollie_invalid_response"},502); }
+        } catch {
+          return out({error:"mollie_api_unavailable"},503);
+        }
+        if(!p.ok) return out({error:"mollie_payment_lookup_failed"},p.status===404?404:502);
+        if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
+        const validation=validateMollieAmount(payment);
+        if(!validation.ok){
+          console.error("[mollie-webhook] grant rejected", {cid,reason:validation.reason});
+          return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
+        }
+        console.error("[mollie-webhook] grant ok", {cid,pass:validation.pass});
+        const grant=await grantB2CPassIdempotent(payment);
+        if(grant.error) return out({error:grant.error},503);
+        if(!grant.granted) return out({received:true,paymentId:id,status:payment.status,granted:false,reason:grant.reason||"pass_not_eligible"},200);
+        return out({received:true,paymentId:id,status:payment.status,granted:true},200);
       }
+
+      // CLASSIC : form-encoded id
       const id=String(new URLSearchParams(raw).get("id")||"").trim();
       if(!/^tr_[A-Za-z0-9]+$/.test(id)) return out({error:"invalid_payment_id"},400);
       if(!env.MOLLIE_API_KEY) return out({error:"payment_backend_not_configured"},503);
@@ -115,9 +217,10 @@ export default {
       if(payment.status!=="paid") return out({received:true,paymentId:id,status:payment.status||"unknown",granted:false},200);
       const validation=validateMollieAmount(payment);
       if(!validation.ok){
-        console.error("[mollie-webhook] grant rejected", {paymentId:id,reason:validation.reason});
+        console.error("[mollie-webhook] grant rejected", {cid,reason:validation.reason});
         return out({received:true,paymentId:id,status:payment.status,granted:false,reason:validation.reason},200);
       }
+      console.error("[mollie-webhook] grant ok", {cid,pass:validation.pass});
       const grant=await grantB2CPassIdempotent(payment);
       if(grant.error) return out({error:grant.error},503);
       if(!grant.granted) return out({received:true,paymentId:id,status:payment.status,granted:false,reason:grant.reason||"pass_not_eligible"},200);

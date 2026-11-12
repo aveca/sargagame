@@ -64,7 +64,7 @@ const PassOffer = memo(function PassOffer({ lang = "fr", currency = "eur", commu
           {_t(lang, <>Sache où sera la mer <span style={{ color: "#FFC72C" }}>demain</span>.</>, <>Know where the sea will be <span style={{ color: "#FFC72C" }}>tomorrow</span>.</>, <>Sabe dónde estará el mar <span style={{ color: "#FFC72C" }}>mañana</span>.</>)}
         </h2>
         <p style={{ fontSize: 13.5, lineHeight: 1.5, fontWeight: 600, color: "rgba(234,247,244,.70)", margin: "10px 0 0" }}>
-          {_t(lang, "Satellite 4×/jour · Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "Satellite 4×/day · 7-day forecast · Alert when your beach flips. One price, no subscription.", "Satélite 4×/día · Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
+          {_t(lang, "Prévision 7 jours · Alerte si ta plage bascule. Un prix, pas d'abonnement.", "7-day forecast · Alert when your beach flips. One price, no subscription.", "Pronóstico 7 días · Alerta si tu playa cambia. Un precio, sin suscripción.")}
         </p>
 
         <div style={{ margin: "18px 0 0" }}>
