@@ -177,8 +177,33 @@ try {
         }
 
         // Vérification indépendante du montant et de la devise (anti-tampering).
+        // ── P0 money path 2026-11-10 : la classe de livraison n'est plus
+        // déduite de `source` (champ choisi par le client). Elle vient :
+        //   • du MONTANT pour un paiement issu d'un LIEN DE PAIEMENT Mollie
+        //     (donc sans metadata) : seul un montant de la grille annuelle
+        //     APPROUVÉE (290/690/1990 EUR - 390/790 USD) ouvre 365 jours ;
+        //   • de `offer_kind`, écrit par le SERVEUR à la création.
+        // Un paiement porteur d'un pass B2C ne peut JAMAIS être requalifié
+        // en B2B annuel : c'est exactement le forged-metadata qui offrait
+        // 365 jours d'acces Pro pour un pass B2C a 14,99 €.
+        $offerKind = (string)($metadata['offer_kind'] ?? '');
+        $source = $metadata['source'] ?? 'unknown';
+        $pass = $metadata['pass'] ?? '';
+        $email = $metadata['email'] ?? '';
+        $sgAmt = mol_payment_amount($payment);
+        $annualTier = mol_paylink_classify($sgAmt['value'] ?? null, $sgAmt['currency'] ?? null);
+        $isApprovedAnnual = is_array($annualTier) && (($annualTier['kind'] ?? '') === 'b2b_annual');
+        // Attribution HISTORIQUE du canal annuel (paiements crees avant le
+        // correctif). Ce signal NE VAUT PAS autorisation : il ne sert qu'a la
+        // trace. L'octroi de 365 jours exige le montant APPROUVE ET l'absence
+        // de pass B2C.
+        $legacyAnnualSource = in_array($source, ['b2b_annual'], true);
+        // Un paiement SANS pass et dont le montant est une offre B2B annuelle
+        // approuvée : c'est un paiement de lien de paiement (pas de metadata).
+        // Le controle du montant base sur le pass ne s'y applique pas.
+        $skipPassAmountCheck = ($isApprovedAnnual && !$pass);
         $amountCheck = validateMollieAmountPHP($payment);
-        if(!$amountCheck['ok']){
+        if(!$skipPassAmountCheck && !$amountCheck['ok']){
             // TÉLÉMÉTRIE (2026-11-04) : le refus est rendu VISIBLE.
             // ⚠️ Le code HTTP reste 400 et AUCUN accès n'est accordé : ce bloc
             // n'écrit que dans `analytics_events` (table de mesure, sans secret).
@@ -199,11 +224,15 @@ try {
             exit;
         }
 
-        $source = $metadata['source'] ?? 'unknown';
-        $pass = $metadata['pass'] ?? '';
-        $email = $metadata['email'] ?? '';
+        // ── P0 money path 2026-11-10 : l'octroi B2B annuel est recognise
+        // par le MONTANT APPROUVE (paiement de lien de paiement, sans
+        // metadata) ou par offer_kind ecrit par le SERVEUR a la creation.
+        // source reste une attribution de canal : il ne selectionne plus
+        // l'octroi de 365 jours. ($offerKind, $source, $pass, $email,
+        // $sgAmt, $annualTier et $isApprovedAnnual sont determines
+        // AVANT le controle du montant.)
 
-        if (in_array($source, ['b2b_annual'], true)) {
+        if ($isApprovedAnnual && !$pass) {
             $grant = mol_b2b_grant_once($email, 'pro_monthly', $id, 365);
             // TÉLÉMÉTRIE (2026-11-04) : conversion B2B annuelle.
             // Déduplonnée par identifiant de paiement → un encaissement
@@ -215,10 +244,10 @@ try {
                 echo json_encode(['error' => 'mirror_failed', 'retry' => true]);
                 exit;
             }
-            error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id");
-        } elseif (in_array($source, ['b2b_monthly'], true)) {
+            error_log("[mollie-webhook] payment.paid b2b_annual paymentId=$id tier=" . ($annualTier['tier'] ?? '?') . " legacy_source=" . ($legacyAnnualSource ? '1' : '0'));
+        } elseif ($offerKind === 'b2b_monthly') {
             // B2B monthly - grant handled by subscription webhook
-            error_log("[mollie-webhook] payment.paid source=$source paymentId=$id");
+            error_log("[mollie-webhook] payment.paid offer_kind=b2b_monthly paymentId=$id");
         } elseif ($pass && in_array($pass, ['p30', 'trip7', 'p7', 'season', 'sos'], true)) {
             // B2C pass — grant côté serveur (backup du localStorage frontend)
             // sos (rapport 24h) : LIVRAISON d'un paiement déjà encaissé uniquement

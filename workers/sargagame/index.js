@@ -429,16 +429,29 @@ export default {
           }
           if(!customer?.id)throw new Error("customerId ou email requis");
           const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";
+          // P0 money path : l'URL du webhook et la classification de l'offre
+          // sont écrites par le SERVEUR. `d.webhookUrl` client-Controlait
+          // l'URL de rappel Mollie (exfiltration des métadonnées) et
+          // `d.source`/`d.metadata` pouvaient usurper la classe de livraison.
+          const rawSubMeta=(d.metadata&&typeof d.metadata==="object"&&!Array.isArray(d.metadata))?d.metadata:{};
+          const subMeta={};
+          for(const [k,v] of Object.entries(rawSubMeta)){
+            if(k==="offer_kind"||k==="pass"||k==="plan"||k==="source"||k==="email"||k==="customerId"||k==="interval"||k==="return_ref"||k==="mode")continue;
+            subMeta[k]=v;
+          }
+          subMeta.source="b2b_monthly";
+          subMeta.offer_kind="b2b_subscription";
+          subMeta.plan=d.plan;
           const sr=await fetch("https://api.mollie.com/v2/customers/"+encodeURIComponent(customer.id)+"/subscriptions",{method:"POST",headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({
             amount:{currency:"EUR",value:plan.amount},description:plan.description,interval:"1 month",
-            webhookUrl:d.webhookUrl||base+"/api/mollie-webhook.php",metadata:Object.assign({},d.metadata||{},{source:d.source||"b2b_monthly",plan:d.plan}),
+            webhookUrl:base+"/api/mollie-webhook.php",metadata:subMeta,
             ...(d.mandateId?{mandateId:d.mandateId}:{}),...(d.method?{method:d.method}:{})
           })});
           const sub=await sr.json();if(!sr.ok)throw new Error(sub.detail||sub.title||"Mollie subscription error");
           return out({subscriptionId:sub.id,customerId:customer.id,status:sub.status,checkoutUrl:sub._links?.checkout?.href||null},200);
         }
         if(d.action==="create_payment" || d.action==="applepay_session"){
-          const pass=d.pass||null, currency=String(d.cur||"EUR").toUpperCase();
+          const pass=String(d.pass||"").trim(), currency=String(d.cur||"EUR").toUpperCase();
           // P0-2 : un ancien code (p7) ne doit JAMAIS pouvoir créer un
           // paiement, même avec un montant valide : les tarifs historiques
           // (EUR 7,99 / USD 5,99) ne s'appliquent qu'aux paiements déjà créés.
@@ -447,21 +460,45 @@ export default {
           // client. La création est refusée en 410 « offre_indisponible » (même
           // contrat que le serveur live sg-payments), pas en 400 flou.
           if(pass==="sos" || d.source==="sos_plage") return out({error:"offre_indisponible"},410);
+          // ── P0 money path : le SERVEUR décide du SKU, de la devise et du montant.
+          // AVANT : un `pass` absent ouvrait un MONTANT LIBRE (< 300 €) sans
+          // service livré, `d.redirectUrl`/`d.webhookUrl` étaient 100 % client
+          // (open redirect + exfiltration) et `d.metadata` était recopié tel quel.
+          const row=Object.prototype.hasOwnProperty.call(PASS_PRICES,pass)?PASS_PRICES[pass]:null;
+          if(!row) return out({error:"Prix invalide",reason:"unknown_offer"},400);
+          if(!Object.prototype.hasOwnProperty.call(row,currency)) return out({error:"Prix invalide",reason:"unknown_offer"},400);
+          const expected=Math.round(Number(row[currency])*100);
+          if(!Number.isFinite(expected)||expected<=0) return out({error:"Prix invalide",reason:"unknown_offer"},400);
           let cents=d.cents==null?null:Number(d.cents); if(cents==null&&d.amount&&d.amount.value)cents=Math.round(Number(d.amount.value)*100);
-          const prices=PASS_PRICES;
-          let valid=Number.isInteger(cents)&&cents>0&&["EUR","USD"].includes(currency);
-          if(pass&&prices[pass]){const e=prices[pass][currency];valid=valid&&(e===null?(cents>50&&cents<5000):Math.abs(cents/100-e)<.02)}else valid=valid&&!pass&&cents<30000;
-          if(!valid)return out({error:"Prix invalide"},400);
+          if(!Number.isInteger(cents)||cents<=0||Math.abs(cents-expected)>2) return out({error:"Prix invalide",reason:"price_mismatch"},400);
+          // Email obligatoire : sans email, le grant durable ne peut être
+          // rattaché à personne => argent payé sans accès livré.
+          const email=String(d.email||"").trim().toLowerCase();
+          if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return out({error:"invalid_email"},400);
           // ⚠️ 2026-11-09 — plus de surcharge USD de haute saison (+15 %) :
           // le serveur live facture le montant affiché (montant validé ci-dessus).
           const base=allowed.includes(u.origin)?u.origin:"https://sargasses-martinique.com";
-          const meta=Object.assign({},d.metadata||{},{source:d.source||"unknown",pass:pass||"",email:String(d.email||""),lang:d.lang||"fr"});
-          const body={amount:{value:(cents/100).toFixed(2),currency},description:d.description||(pass?"Sargasses Pass "+pass:"Sargasses"),redirectUrl:d.redirectUrl||base+"/?mollie_return=1",webhookUrl:d.webhookUrl||base+"/api/mollie-webhook.php",metadata:meta,locale:d.locale||(currency==="USD"?"en_US":"fr_FR")};
+          // Métadonnées : la CLASSIFICATION est écrite par le serveur, jamais
+          // par le client.
+          const rawMeta=(d.metadata&&typeof d.metadata==="object"&&!Array.isArray(d.metadata))?d.metadata:{};
+          const meta={};
+          for(const [k,v] of Object.entries(rawMeta)){
+            if(k==="offer_kind"||k==="pass"||k==="plan"||k==="source"||k==="email"||k==="customerId"||k==="interval"||k==="return_ref"||k==="mode")continue;
+            meta[k]=v;
+          }
+          meta.source=String(d.source||"unknown").slice(0,40);
+          meta.offer_kind="b2c_pass";
+          meta.pass=pass;
+          meta.email=email;
+          meta.lang=d.lang||"fr";
+          // URL de retour et webhook : construits par le serveur (jamais client).
+          // Le montant DÉBITÉ est celui du catalogue, pas celui dicté par le client.
+          const body={amount:{value:(expected/100).toFixed(2),currency},description:"Sargasses Pass "+pass,redirectUrl:base+"/?mollie_return=1",webhookUrl:base+"/api/mollie-webhook.php",metadata:meta,locale:d.locale||(currency==="USD"?"en_US":"fr_FR")};
           if(d.method||d.paymentMethod)body.method=d.method||d.paymentMethod;
           if(d.applePayPaymentToken)body.applePayPaymentToken=d.applePayPaymentToken;
           const r=await fetch("https://api.mollie.com/v2/payments",{method:"POST",headers:{Authorization:"Bearer "+env.MOLLIE_API_KEY,"Content-Type":"application/json"},body:JSON.stringify(body)});
           const p=await r.json(); if(!r.ok)throw new Error(p.detail||p.title||"Mollie error");
-          return out({checkoutUrl:p._links&&p._links.checkout&&p._links.checkout.href||null,paymentId:p.id},200);
+          return out({checkoutUrl:p._links&&p._links.checkout&&p._links.checkout.href||null,paymentId:p.id,amount:{value:body.amount.value,currency:body.amount.currency},pass},200);
         }
         return out({error:"Unknown action"},400);
       }catch(e){return out({error:e.message||"backend_error"},400)}
@@ -482,18 +519,21 @@ export default {
       const d=await verify(k); return out(d?{pro:true,host:d.h||null}:{pro:false},200);
     }
     if(u.pathname==="/api/b2b-trial.php" || u.pathname==="/api/b2b-trial"){
+      // FAIL-CLOSED (2026-11-11, issue #1273) : ce Worker régional NE PERSISTE
+      // AUCUN lead. Il rendait `{ok:true,token}` → le front affichait « essai
+      // activé » alors que PERSONNE n'était enregistré : prospect perdu, aucune
+      // relance possible, faux succès mesurable comme une vente. Le handler qui
+      // PERSISTE est `sg-payments` (Apps Script + Supabase + email
+      // transactionnel) — vérifié sur les 6 domaines live le 2026-11-11 (POST
+      // email invalide → 400 `invalid_email` + absence d'`access-control-allow-
+      // methods`, signature sg-payments). Tant que ce Worker n'écrit rien, il
+      // REFUSE explicitement : l'UI montre une erreur et l'hôtelier peut
+      // réessayer — jamais de faux succès. Si le routage d'un domaine change
+      // un jour vers ce Worker, l'échec est BRUANT (503), pas silencieux.
       if(request.method!=="POST")return out({error:"method_not_allowed"},405);
       let d;try{d=await request.json()}catch{return out({error:"invalid_json"},400)}
       const email=String(d.email||"").trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return out({error:"invalid_email"},400);
-      const payload={h:email,exp:Math.floor(Date.now()/1000)+30*86400};
-      const base=env.MOLLIE_WEBHOOK_SECRET;
-      if(!base)return out({error:"payment_backend_not_configured"},503);
-      const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(base+"|sgwidget-pro-v1"));
-      const key=await crypto.subtle.importKey("raw",digest,{name:"HMAC",hash:"SHA-256"},false,["sign"]);
-      const raw=btoa(String.fromCharCode(...new TextEncoder().encode(JSON.stringify(payload)))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-      const sig=await crypto.subtle.sign("HMAC",key,new TextEncoder().encode(raw));
-      const token=raw+"."+btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-      return out({ok:true,token,days:30},200);
+      return out({ok:false,error:"b2b_trial_not_persisted_here",handler:"sg-payments"},503);
     }
     if(u.pathname==="/api/mollie.php" && request.method==="POST"){
       // B2B recurring subscription compatibility with the former PHP endpoint.

@@ -1,0 +1,45 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "sg-payments",
+  "main": "index.js",
+  "compatibility_date": "2026-08-19",
+  "workers_dev": true,
+  // Les 6 domaines publics sont des ROUTES / DOMAINES PERSONNALISES de la
+  // Worker, configures MANUELLEMENT dans le dashboard Cloudflare (le droit
+  // `Workers Routes:Edit` n'est pas accorde au compte de deploiement, et les
+  // routes ont donc ete retirees de la config pour ne jamais les ecraser
+  // par erreur).
+  // INTERDIT : ne jamais ajouter une cle `routes` ici. Un `wrangler deploy`
+  // avec des routes declarerait (ou supprimerait) des domaines en
+  // production. Les domaines ne se deplient QUE par le dashboard.
+  //
+  // Le binding KV est celui du live (PROVENANCE.md) : il porte les marqueurs
+  // d'idempotence du webhook et les jetons d'acces B2C.
+  "kv_namespaces": [
+    {
+      "binding": "TRANSIENTS",
+      "id": "528c05c792e046029a84e2fdb84f4ae6"
+    }
+  ],
+  // AUCUNE variable n'est declaree ici : `SUPABASE_URL` est un binding
+  // `plain_text` deja pose dans le dashboard. Le deploiement DOIT donc etre
+  // lance avec `--keep-vars`, sinon les variables posees au dashboard sont
+  // effacees et la Worker casse (Supabase injoignable).
+  //
+  // Les secrets (`MOLLIE_API_KEY`, `MOLLIE_PROFILE_ID`, `MOLLIE_WEBHOOK_SECRET`,
+  // `RESEND_API_KEY`, `SUPABASE_SERVICE_KEY`) ne sont JAMAIS dans ce fichier :
+  // ils vivent dans le dashboard (`wrangler secret put`), et `NAMECHEAP_MAIL_TOKEN`
+  // reste a ajouter si le relais Namecheap doit rester actif.
+  //
+  // Cron : le handler `scheduled` de la source fait tourner le drip B2B a CHAQUE
+  // cron, et les alertes B2C en plus quand `event.cron === "0 6,18 * * *"`.
+  // Le cron est donc declare explicitement : un deploiement sans declaration
+  // explicite laisse le declenchement a la discretion de la plateforme, et la
+  // perte du cron = perte silencieuse des emails commerciaux (drip + alertes).
+  "triggers": {
+    "crons": ["0 6,18 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}
