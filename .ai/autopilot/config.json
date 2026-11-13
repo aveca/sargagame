@@ -143,6 +143,7 @@
       "sargassumpuntacana.com",
       "sargassumcancun.com"
     ],
-    "timeoutMs": 10000
+    "timeoutMs": 10000,
+    "confirmAttempts": 3
   }
 }

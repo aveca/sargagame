@@ -37,6 +37,7 @@ const mem = require('./lib/memory.cjs');
 const safety = require('./lib/safety-guard.cjs');
 const lifecycle = require('./lib/mission-lifecycle.cjs');
 const agentRouter = require('./lib/agent-router.cjs');
+const scheduler = require('./lib/scheduler.cjs');
 
 /** Dépôts autorisés. Liste fermée : aucun autre dépôt n'est jamais lu. */
 const ALLOWED_REPOS = ['aveca/bot-wow', 'aveca/sargagame'];
@@ -302,6 +303,77 @@ function recordBlockedSafety(queue, repoFullName, issueNumber, taskId, key, reas
   }
 }
 
+/**
+ * LEVÉE d'un blocage de SÉCURITÉ devenue sans objet.
+ *
+ * Un blocage est DEFINITIF tant que le garde-fou le justifie. Mais un
+ * blocage peut avoir été décidé sur une FAUX POSITIF : c'est exactement ce
+ * qui est arrivé le 2026-11-10 à la mission `SARG-B2B-LEAD-ACK-20261109`
+ * (#1384) — le corps de la mission était propre (`blocked:false`), et c'est
+ * un COMMENTAIRE DE STATUT de la boucle (« … déploiement et LIVE comme étapes
+ * distinctes ») qui avait déclenché `production-deploy`. Le blocage étant
+ * inscrit dans la trace durable (`blockedSafety`), la mission restait
+ * bloquée indéfiniment, sans aucune nouvelle trace.
+ *
+ * On ne lève QUE si :
+ *   - le verdict courant est explicitement SAIN (`safety.blocked` absent) ;
+ *   - l'opportunité porte le marqueur `safety.blocked` (donc c'est bien le
+ *     garde-fou qui l avait bloquée, pas une PR ouverte ou un autre motif).
+ *
+ * Un blocage pour un autre motif (PR en cours, mission rejetée) n'est JAMAIS
+ * levé par cette fonction.
+ *
+ * ── Statut de sortie : `new` ou `picked` ? ─────────────────────────────────
+ * Ce n'est PAS un détail : c'est la différence entre une mission RELANCÉE et
+ * une mission LIBÉRÉE mais INVISIBLE.
+ *
+ *   - `analyze.cjs` ne sélectionne QUE les opportunités en statut `new`
+ *     (`pool = queue.filter(o => o.status === 'new')`) ;
+ *   - `picked` signifie « RÉCLAMÉE par le scheduler » : `persistClaimed`
+ *     la traite comme déjà claimée, et `analyze` l'ignore ;
+ *   - `restoreSelected` ne restaure que l'opportunité REFERENCÉE par le
+ *     scheduler (`claimedId` / `selectedId`).
+ *
+ * Mettre la mission libérée en `picked` sans que le scheduler la référence
+ * revient donc à la rendre INEXÉCUTABLE : elle ne serait plus jamais
+ * sélectionnée (constaté en exécution réelle le 2026-11-11 : mission #1384
+ * libérée, statut `picked`, jamais sélectionnée).
+ *
+ * Règle retenue :
+ *   - si le scheduler a DÉJÀ claimé la mission (`claimedIds`) → `picked`
+ *     (le scheduler la restaurera : pas de doublon) ;
+ *   - sinon → `new` (elle redevient sélectionnable par `analyze`).
+ *
+ * Dans les deux cas, une seule entrée en queue : la levée ne crée JAMAIS de
+ * doublon d'opportunité.
+ */
+function releaseSafetyBlocked(queue, opp, schedulerState = null) {
+  if (!queue || !opp) return null;
+  const queued = (queue.opportunities || []).find(o =>
+    o && (o.id === opp.id || o.fingerprint === opp.fingerprint));
+  if (!queued || !queued.safety || queued.safety.blocked !== true) return null;
+  if (queued.status !== 'blocked') return null;
+
+  let st = schedulerState;
+  if (!st) {
+    try { st = scheduler.loadScheduler(); } catch (_) { st = { claimedIds: [] }; }
+  }
+
+  // Règle UNIQUE de reprise (cf. `scheduler.resumableStatus`).
+  queued.status = scheduler.resumableStatus(queued.id, st);
+  queued.blockReason = null;
+  queued.safetyReleasedAt = C.nowIso();
+  queued.safetyReleasedTo = queued.status;
+  queued.safety = { blocked: false, reason: queued.safety.reason || '', releasedAt: queued.safetyReleasedAt };
+  if (Array.isArray(queue.blockedSafety)) {
+    queue.blockedSafety = queue.blockedSafety.filter(e => {
+      const fp = typeof e === 'string' ? e : (e && e.fingerprint);
+      return fp !== opp.fingerprint && fp !== opp.legacyFingerprint;
+    });
+  }
+  return queued;
+}
+
 // ── Lecture GitHub ───────────────────────────────────────────────────────────
 
 /** Issues ouvertes `[AUTOPILOT]` d'un dépôt donné. */
@@ -455,6 +527,38 @@ function opportunityType(task) {
   return task && task.mode === 'auto' ? 'auto-task' : 'agent-task';
 }
 
+/**
+ * Commentaires RETENUS pour l'évaluation de sécurité.
+ *
+ * Le garde-fou scanne titre + corps + commentaires. Les commentaires de
+ * STATUT produits par la boucle elle-même ne sont PAS des instructions :
+ *
+ *   - `<!-- autopilot-status:… -->` : c'est l'ÉCHO du garde-fou. Sans ce
+ *     filtre, le commentaire « blocked — déploiement en production
+ *     [production-deploy] » RE-DÉCLENCHERAIT le garde-fou au cycle suivant
+ *     (auto-amplification : le verdict se réécrit lui-même) ;
+ *   - `<!-- SARGAGAME-CYCLE-STATUS -->` : rapport de statut de l'agent sur la
+ *     mission. Défaut réel du 2026-11-10 (#1384) : la ligne « Vérifier PR,
+ *     CI sur SHA exact, merge, déploiement et LIVE comme étapes distinctes »
+ *     (une DESCRIPTION de protocole, pas une demande) a fait basculer une
+ *     mission legitimate en `blocked` 13 h après son import, alors que le
+ *     corps de la mission était propre (verdict `blocked:false`).
+ *
+ * Le corps de la mission (titre + bloc AUTOPILOT_TASK) reste INTÉGRALEMENT
+ * protégé : c'est lui qui porte la demande d'exécution. Seuls les
+ * commentaires générés mécaniquement par la boucle sont écartés ; un
+ * commentaire humain ordinaire reste entièrement scanné.
+ */
+const MACHINE_STATUS_MARKERS = ['<!-- autopilot-status:', '<!-- SARGAGAME-CYCLE-STATUS -->'];
+
+function safetyRelevantComments(comments) {
+  const list = Array.isArray(comments) ? comments : [];
+  return list.filter(c => {
+    const body = String((c && c.body) || '');
+    return !MACHINE_STATUS_MARKERS.some(marker => body.includes(marker));
+  });
+}
+
 function toOpportunity(task, issue, repoFullName, options = {}) {
   if (!isAllowedRepo(repoFullName)) {
     return { rejected: true, reason: 'repository_not_allowed: ' + repoFullName };
@@ -490,10 +594,13 @@ function toOpportunity(task, issue, repoFullName, options = {}) {
   const missionText = buildMissionText(issue, comments, task);
 
   // Garde-fou de sécurité : fail-closed, jamais contournable par la mission.
+  // Les commentaires de STATUT de la boucle sont écartés du scan (cf.
+  // `safetyRelevantComments`) : ils ne sont pas des instructions, et l'écho
+  // du propre verdict du garde-fou ne doit pas le re-déclencher.
   const safetyVerdict = options.safety || safety.evaluateMissionSafety({
     title: issue.title,
     body: issue.body,
-    comments: comments.map(c => c.body).join('\n'),
+    comments: safetyRelevantComments(comments).map(c => c.body).join('\n'),
     task,
   });
 
@@ -681,6 +788,10 @@ function publishStatus(repoFullName, issueNumber, status, details = '', options 
  *        sur l'agent retenu dépend de la machine (cf. run CI 42651059357).
  * @param {{evaluateMissionSafety:Function}} [options.safety] verdict de
  *        sécurité injecté (tests) ; par défaut : `lib/safety-guard.cjs`.
+ * @param {{claimedIds:string[]}} [options.schedulerState] état du scheduler
+ *        injecté (tests) ; par défaut : `lib/scheduler.cjs`. Détermine si une
+ *        mission libérée redevient `new` (sélectionnable) ou `picked`
+ *        (déjà claimée par le scheduler).
  */
 function ingestMultiRepo(options = {}) {
   const dry = options.dry === true;
@@ -716,6 +827,7 @@ function ingestMultiRepo(options = {}) {
   let rejected = 0;
   let blocked = 0;
   let neutralized = 0;
+  let releasedCount = 0;
   let statusFailures = 0;
   const perRepo = {};
   const relayedTasks = [];
@@ -763,6 +875,39 @@ function ingestMultiRepo(options = {}) {
       // prix, un paiement réel, un secret, une migration irréversible, un envoi
       // massif ou une fusion paiements/sécurité est BLOQUÉE et signalée
       // explicitement. Elle n'est JAMAIS enfilée, JAMAIS exécutée.
+      //
+      // CAS DE LEVÉE : si le verdict courant est SAIN alors que l'opportunité
+      // porte encore un blocage de sécurité (faux positif sur un commentaire
+      // de statut — cf. `releaseSafetyBlocked`), le blocage est levé : sans
+      // cela la mission restait bloquée indéfiniment, sur la foi d'une trace
+      // durable devenue fausse.
+      if (!(opp.safety && opp.safety.blocked)) {
+        const released = releaseSafetyBlocked(queue, opp, options.schedulerState || null);
+        if (released) {
+          releasedCount += 1;
+          log(`[bridge] LEVÉE ${repoFullName} #${opp.issue_number} ${opp.id} — le blocage de sécurité ne s'applique plus`);
+          try {
+            lifecycle.patch(opp.id, repoFullName, opp.issue_number, {
+              state: 'imported',
+              reason: 'blocage de sécurité levé : le verdict courant est sain',
+              // RÉINITIALISATION du compteur de tentatives.
+              //
+              // Les tentatives accumulées avant la levée sont un ARTEFACT du
+              // défaut (auto-reprise infinie : 242 sur #1384), pas du travail
+              // réel. Sans cette remise à zéro, la mission levée serait
+              // « déjà au plafond » pour le watchdog et partirait en `failed`
+              // sans jamais être exécutée — la levée serait alors vide de
+              // sens. La reprise repart donc avec un budget NEUF et borné
+              // (`mission.maxAttempts`), soit exactement UNE reprise propre.
+              attempts: 0,
+              lastHeartbeatAt: null,
+              pid: null,
+            });
+          } catch (e) {
+            log(`[bridge] levée non écrite dans l'état durable (non-fatal): ${e.message}`);
+          }
+        }
+      }
       if (opp.safety && opp.safety.blocked) {
         // Une mission déjà enfilée AVANT l'arrivée du garde-fou (ou importée
         // par une autre voie) doit être NEUTRALISÉE dans la queue : sinon
@@ -948,8 +1093,9 @@ function ingestMultiRepo(options = {}) {
 
   // La queue est persistée s'il y a eu un import, un relay, un blocage
   // sécurité OU une NEUTRALISATION (une mission déjà enfilée qui devient
-  // interdite DOIT être retirée du sélecteur, sinon elle s'exécuterait).
-  if ((imported || relayed || blocked || neutralized) && !dry) saveQueue(queue);
+  // interdite DOIT être retirée du sélecteur, sinon elle s'exécuterait) OU
+  // une LEVÉE de blocage devenu sans objet.
+  if ((imported || relayed || blocked || neutralized || releasedCount) && !dry) saveQueue(queue);
 
   return {
     imported,
@@ -960,6 +1106,7 @@ function ingestMultiRepo(options = {}) {
     rejected,
     blocked,
     neutralized,
+    released: releasedCount,
     statusFailures,
     perRepo,
     relayedTasks,
@@ -1062,6 +1209,9 @@ module.exports = {
   recordRelayed,
   buildBlockedIndex,
   recordBlockedSafety,
+  releaseSafetyBlocked,
+  safetyRelevantComments,
+  MACHINE_STATUS_MARKERS,
   loadOpenAutopilotIssuesForRepo,
   loadIssueComments,
   isAutopilotComment,
