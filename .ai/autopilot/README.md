@@ -56,3 +56,19 @@ npm run autopilot:status
 ```
 
 Pour une exécution continue, utiliser le runner 24/7 documenté dans `scripts/autopilot/runner.cjs`.
+
+## Statut des missions GitHub
+
+Consultez l'état des missions importées depuis GitHub :
+
+```bash
+node scripts/autopilot/status.cjs
+```
+
+Cette commande affiche notamment :
+
+```text
+missions    : <N> active(s) / <M> suivie(s)
+```
+
+Chaque mission est publiée sur son issue dédiée. Le cycle de vie s'incarne dans l'évolution des threads GitHub (labels, commentaires, états). Ne vous fiez qu'à `node scripts/autopilot/status.cjs` pour obtenir un état vérifiable et stable.</content>
