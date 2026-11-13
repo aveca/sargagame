@@ -168,7 +168,7 @@ check(!/action:\s*["']__payment_smoke__["']/.test(postDeploy.replace(/--data/g, 
       check(unknown.creates === 0, label + ' : aucun montant libre accepté pour un pass inconnu');
 
       const legit = await create(worker, 'trip7', 799);
-      check(legit.status === 200 && legit.creates === 1,
+      check(legit.status === 200 && legit.creates === 0 && String(legit.body.checkoutUrl || '').startsWith('https://buy.stripe.com/'),
         label + ' : create_payment(pass=trip7, 7,99 €) reste autorisé');
 
       const ancienTarif = await create(worker, 'trip7', 499);

@@ -324,10 +324,13 @@ const sign = (body) => crypto.createHmac('sha256', WEBHOOK_SECRET).update(body).
           }),
           env,
         );
+        const body = await response.json();
         assert.equal(response.status, 200, c.pass + ' doit rester creatible');
-        assert.equal(state.createCalls.length, 1);
-        assert.equal(state.createCalls[0].amount.value, (c.cents / 100).toFixed(2));
-        assert.equal(state.createCalls[0].metadata.pass, c.pass);
+        assert.equal(state.createCalls.length, 0, c.pass + ' ne crée plus de paiement Mollie');
+        assert.equal(body.provider, 'stripe_link');
+        assert.equal(body.amount.value, (c.cents / 100).toFixed(2));
+        assert.equal(body.pass, c.pass);
+        assert.ok(String(body.checkoutUrl).startsWith('https://buy.stripe.com/'));
       }
     });
 

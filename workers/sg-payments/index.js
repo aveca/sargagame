@@ -2357,8 +2357,8 @@ async function handleStripeWebhook(request, env) {
       await revokeB2CAccess(env, sessionId, type);
       await supaExec(env, "payment_grants", "PATCH", { expires_at: new Date().toISOString() }, "?subscription_id=eq." + encodeURIComponent(sessionId) + "&type=eq.b2b_pro");
       const prev = await kv(env).get("stripe_session_" + sessionId);
-      let rec = { state: "revoked" };
-      try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "revoked", accessUrl: null }); } catch (_) {}
+      let rec = { state: "ended" };
+      try { if (prev) rec = Object.assign(JSON.parse(prev), { state: "ended", accessUrl: null }); } catch (_) {}
       await kv(env).put("stripe_session_" + sessionId, JSON.stringify(rec), { expirationTtl: 400 * 86400 });
     }
     if (eventId) await kv(env).put("stripe_evt_" + eventId, "done", { expirationTtl: 30 * 86400 });
