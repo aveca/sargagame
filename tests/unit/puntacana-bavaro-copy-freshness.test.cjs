@@ -93,7 +93,7 @@ assert.doesNotMatch(
 assert.match(content.pages.season.intro, /no garantizan playas limpias/i);
 assert.match(
   content.extraPages.find(page => page.slug === 'sargazo-punta-cana-hoy').sections.find(section => /por qué hay sargazo/i.test(section.h2)).text,
-  /no existe un plazo fijo/i
+  /no existe un plazo universal de limpieza/i
 );
 
 console.log('PUNTACANA_SPANISH_COPY_FRESHNESS PASS (routes, sitemap, cadence, live claims, observation handling)');
