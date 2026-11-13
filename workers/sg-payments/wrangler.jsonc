@@ -4,14 +4,10 @@
   "main": "index.js",
   "compatibility_date": "2026-08-19",
   "workers_dev": true,
-  // Les 6 domaines publics sont des ROUTES / DOMAINES PERSONNALISES de la
-  // Worker, configures MANUELLEMENT dans le dashboard Cloudflare (le droit
-  // `Workers Routes:Edit` n'est pas accorde au compte de deploiement, et les
-  // routes ont donc ete retirees de la config pour ne jamais les ecraser
-  // par erreur).
-  // INTERDIT : ne jamais ajouter une cle `routes` ici. Un `wrangler deploy`
-  // avec des routes declarerait (ou supprimerait) des domaines en
-  // production. Les domaines ne se deplient QUE par le dashboard.
+  // Les routes ci-dessous sont la liste durable. Un `wrangler deploy` qui
+  // reconcilie les routes ne doit pas effacer /api/stripe-* ni les routes
+  // API deja servies par sg-payments. Ne pas reduire cette liste a un sous-
+  // ensemble : les motifs absents peuvent etre retires au deploiement.
   //
   // Le binding KV est celui du live (PROVENANCE.md) : il porte les marqueurs
   // d'idempotence du webhook et les jetons d'acces B2C.
@@ -31,14 +27,74 @@
   // ils vivent dans le dashboard (`wrangler secret put`), et `NAMECHEAP_MAIL_TOKEN`
   // reste a ajouter si le relais Namecheap doit rester actif.
   //
-  // Cron : le handler `scheduled` de la source fait tourner le drip B2B a CHAQUE
-  // cron, et les alertes B2C en plus quand `event.cron === "0 6,18 * * *"`.
-  // Le cron est donc declare explicitement : un deploiement sans declaration
-  // explicite laisse le declenchement a la discretion de la plateforme, et la
-  // perte du cron = perte silencieuse des emails commerciaux (drip + alertes).
+  // Les deux crons du live. Le drip B2B tourne a chaque declenchement ; les
+  // alertes B2C seulement sur "0 6,18 * * *". Oublier le cron horaire dans
+  // cette liste le supprime au prochain deploy-sg-payments.
   "triggers": {
-    "crons": ["0 6,18 * * *"]
+    "crons": ["0 6,18 * * *", "0 0-5,7-17,19-23 * * *"]
   },
+  "routes": [
+    { "pattern": "sargasses-martinique.com/api/stripe-*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/mollie*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/b2b-*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/create-checkout*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/widget-token*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/track-*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/paypal*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/api/copernicus/forecast*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/collect.php", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-martinique.com/_cron/*", "zone_name": "sargasses-martinique.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/stripe-*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/mollie*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/b2b-*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/create-checkout*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/widget-token*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/track-*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/paypal*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/api/copernicus/forecast*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/collect.php", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargasses-guadeloupe.com/_cron/*", "zone_name": "sargasses-guadeloupe.com" },
+    { "pattern": "sargassummiami.com/api/stripe-*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/mollie*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/b2b-*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/create-checkout*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/widget-token*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/track-*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/paypal*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/api/copernicus/forecast*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/collect.php", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassummiami.com/_cron/*", "zone_name": "sargassummiami.com" },
+    { "pattern": "sargassumcancun.com/api/stripe-*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/mollie*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/b2b-*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/create-checkout*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/widget-token*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/track-*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/paypal*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/api/copernicus/forecast*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/collect.php", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumcancun.com/_cron/*", "zone_name": "sargassumcancun.com" },
+    { "pattern": "sargassumpuntacana.com/api/stripe-*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/mollie*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/b2b-*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/create-checkout*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/widget-token*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/track-*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/paypal*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/api/copernicus/forecast*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/collect.php", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargassumpuntacana.com/_cron/*", "zone_name": "sargassumpuntacana.com" },
+    { "pattern": "sargazotulum.com/api/stripe-*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/mollie*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/b2b-*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/create-checkout*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/widget-token*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/track-*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/paypal*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/api/copernicus/forecast*", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/collect.php", "zone_name": "sargazotulum.com" },
+    { "pattern": "sargazotulum.com/_cron/*", "zone_name": "sargazotulum.com" }
+  ],
   "observability": {
     "enabled": true
   }
