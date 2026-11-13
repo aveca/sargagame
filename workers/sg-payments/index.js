@@ -1183,40 +1183,11 @@ var index_default = {
     }
     if (path === "/api/b2b-create-checkout.php") {
       if (request.method !== "POST") return new Response(JSON.stringify({ error: "POST only" }), { status: 405, headers: cors(request) });
-      if (!await rateLimit(env, "b2b_checkout", 100)) return new Response(JSON.stringify({ error: "rate_limited" }), { status: 429, headers: cors(request) });
-      const input = await request.json();
-      if (!input.prospect_id || !input.concierge_id || !input.email) {
-        return new Response(JSON.stringify({ error: "prospect_id, concierge_id, email required" }), { status: 400, headers: cors(request) });
-      }
-      try {
-        const apiKey = env.MOLLIE_API_KEY;
-        const plan = B2B_PLANS.brief_monthly;
-        const customers = await mollieReq("GET", "v2/customers?limit=50", apiKey);
-        let cid = null;
-        for (const c of customers._embedded?.customers || []) {
-          if (c.email === input.email) {
-            cid = c.id;
-            break;
-          }
-        }
-        if (!cid) {
-          const nc = await mollieReq("POST", "v2/customers", apiKey, { email: input.email, name: input.name || "", metadata: { source: "b2b_concierge_checkout" } });
-          cid = nc.id;
-        }
-        const host = requestHost(request);
-        const subscription = await mollieReq("POST", `v2/customers/${cid}/subscriptions`, apiKey, {
-          amount: { value: plan.amount.toFixed(2), currency: plan.currency },
-          description: plan.description,
-          webhookUrl: `https://${host}/api/mollie-webhook`,
-          metadata: { source: "b2b_concierge", prospect_id: input.prospect_id, concierge_id: input.concierge_id, plan: "brief_monthly" },
-          interval: plan.interval
-        });
-        const checkoutUrl = subscription._links?.checkout?.href || null;
-        await supa(env, "b2b_payments", "POST", { prospect_id: input.prospect_id, concierge_id: input.concierge_id, amount: plan.amount, status: "pending", mollie_payment_id: subscription.id });
-        return new Response(JSON.stringify({ checkoutUrl, customerId: cid, subscriptionId: subscription.id }), { headers: cors(request) });
-      } catch (e) {
-        return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: cors(request) });
-      }
+      const host = requestHost(request);
+      return new Response(JSON.stringify({ error: "use_pricing_page", url: "https://" + host + "/pro/pricing/" }), {
+        status: 410,
+        headers: { ...cors(request), "Cache-Control": "no-store" }
+      });
     }
     if (path === "/api/b2b-contacts.php" || path === "/api/b2b-events.php" || path === "/api/b2b-scores.php" || path === "/api/b2b-forecast-delivery.php") {
       return new Response(JSON.stringify({ error: "endpoint_retired" }), {
@@ -2842,7 +2813,7 @@ async function handleMolliePayPage(request, env) {
   if (!plan) return new Response("Plan inconnu", { status: 404, headers: { "Content-Type": "text/plain; charset=utf-8" } });
   const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement — ${escapeHtml(plan.description)}</title>
 <style>body{font-family:system-ui,sans-serif;background:#FDFCF7;color:#0D0D0D;margin:0;padding:40px 20px}.card{max-width:480px;margin:0 auto;background:#fff;border:1px solid rgba(13,13,13,.12);border-radius:20px;padding:28px 22px}h1{font-size:24px;margin:0 0 8px}p{color:#5A5A5A;line-height:1.45}label{display:block;font-weight:700;margin:16px 0 8px}input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1.5px solid rgba(13,13,13,.2);font:inherit}button{width:100%;margin-top:18px;padding:14px;border:0;border-radius:14px;background:linear-gradient(135deg,#FFE47A,#FFC72C 50%,#E8A317);color:#190c2c;font-weight:800;font:inherit;cursor:pointer}.err{color:#E8522A;font-weight:700;margin-top:12px}</style></head>
-<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Mollie. Entrez votre email pour recevoir l'accès.</p>
+<body><div class="card"><h1>${escapeHtml(plan.description)}</h1><p>Paiement sécurisé via Stripe. Entrez votre email pour recevoir l'accès.</p>
 <label for="em">Email</label><input id="em" type="email" autocomplete="email" required placeholder="vous@etablissement.com">
 <button id="go" type="button">Payer maintenant →</button><div class="err" id="err" hidden></div></div>
 <script>document.getElementById("go").onclick=async function(){var em=document.getElementById("em").value.trim();var err=document.getElementById("err");err.hidden=true;if(!/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(em)){err.hidden=false;err.textContent="Email requis.";return;}this.disabled=true;this.textContent="Ouverture du paiement…";

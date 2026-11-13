@@ -917,6 +917,14 @@ function prepareNewRegion(region) {
   // oracle (region-langs.cjs) que region-seo-pages → cohérence build ↔ déploiement.
   for (const d of require('./lib/region-langs.cjs').secondaryLangDirs(region)) skip.delete(d)
   copyRecursive(dist, out, skip)
+  const { writeCommercialPages } = require('./lib/write-commercial-pages.cjs')
+  writeCommercialPages(out, region, root)
+  const merciSrc = path.join(root, 'public', 'merci')
+  const merciDest = path.join(out, 'merci')
+  if (fs.existsSync(path.join(merciSrc, 'index.html'))) fs.cpSync(merciSrc, merciDest, { recursive: true })
+  const { localizeProPricing } = require('./lib/localize-pro-pricing.cjs')
+  const pricing = localizeProPricing(out, region, root)
+  if (pricing.copied) console.log(`   → /pro/pricing/ en ${pricing.lang} pour ${region.domain}`)
   assertWorkerAssetIgnore(out, `${region.id} Worker assets package`)
 
   // Pages partagees (public/about, /research, /investigacion, /for-hotels) :
