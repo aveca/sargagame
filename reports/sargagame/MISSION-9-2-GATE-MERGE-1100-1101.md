@@ -1,88 +1,103 @@
-# Rapport de mission 9.2 — Certification E2E et certification de déploiement (PR #1100)
+# Mission 9.2 — Gate, merge et vérification post-déploiement
 
-## 1. Résumé exécutif
+**Mise à jour finale : 2026-10-28 (UTC)**  
+**Dépôt :** [aveca/sargagame](https://github.com/aveca/sargagame)
 
-La mission 9.2 a pour objectif de finaliser la PR #1100 (correction du mojibake UTF-8 dans les pages publiques B2B EN/ES), de vérifier que tous les contrôles CI sont verts sur le HEAD final, de coordonner avec la PR #1101, et de publier un rapport de clôture versionné sur GitHub.
+## 1. Résultat exécutif
 
-**Statut final : PR #1100 ouverte et prête pour fusion. Les contrôles CI ne peuvent pas être vérifiés localement (gh CLI indisponible). Le rapport est publié sur GitHub.**
+Les deux PR SEO ont été fusionnées sur `main`. Les contrôles requis des PR étaient verts sur leurs HEAD exacts. Après fusion de #1100, les six déploiements de domaines et les six déploiements Pages ont réussi, ainsi que le contrôle de cohérence de flotte (`32/32 PASS`).
 
-## 2. État de référence
+**La livraison n'est toutefois pas entièrement certifiée :**
+- le job post-déploiement échoue sur la fraîcheur de l'observation satellite, mesurée à **2 314 minutes**, pour un seuil configuré à **2 160 minutes (36 h)** ;
+- le code source corrigé est présent sur `main`, mais l'outil de consultation web continue à retourner une représentation ancienne de la page de recherche. La purge Cloudflare ciblée a été acceptée, mais la vérification HTML directe sans cache n'a pas pu être établie ; l'API Browser Rendering a répondu HTTP 429.
 
-| Élément | SHA | Description |
-|---------|-----|-------------|
-| HEAD de la branche (local et distant) | `5b0d88202fc8fec3310cc0e664c8c9d55efaa1ea` | Branche `agent/growth/mission-9-seo-mojibake`, synchronisée avec `origin` |
-| HEAD de `main` | `e5d85e5d4277c49f8b82048f44ab3eb7159e1755` | Base de la PR #1100 |
-| Diff local vs distant | Aucun | La branche est parfaitement synchronisée avec l'origine |
-| Fichiers non suivis | `artifacts/` | Captures d'écran de test (conservées, non commitées) |
+Ces deux problèmes ne doivent pas être transformés en faux succès en modifiant artificiellement les horodatages ou en abaissant les exigences de vérification.
 
-## 3. Travail effectué dans cette session
+## 2. Fusions confirmées
 
-### 4.1 Corrigé : reste de mojibake dans `public/pro/es/pricing/index.html`
+| PR | Résultat | Commit |
+|---|---|---|
+| [#1101 — méthodologie de persistance](https://github.com/aveca/sargagame/pull/1101) | Fusionnée (squash) | [`75d6d6ec4140751b565a75312d9f1abbdc67bd8b`](https://github.com/aveca/sargagame/commit/75d6d6ec4140751b565a75312d9f1abbdc67bd8b) |
+| [#1100 — correction du mojibake](https://github.com/aveca/sargagame/pull/1100) | Fusionnée (squash) | [`e5a9b76b4838e3e41bd7a7b0eebce43dffe0e999`](https://github.com/aveca/sargagame/commit/e5a9b76b4838e3e41bd7a7b0eebce43dffe0e999) |
 
-Le test de régression `tests/unit/mojibake-regression.test.cjs` détectait 5 occurrences de `¡` (point d'exclamation inversé) à la place de `á` (a accent aigu) dans `public/pro/es/pricing/index.html` :
-- `est¡` → `está` (3 occurrences)
-- `cu¡nto` → `cuánto` (2 occurrences)
+La PR #1100 a été fusionnée depuis le HEAD testé `29e5279a82e4034c8bd8a806fe7bc9c21eb001c9`. L'état GitHub avant fusion indiquait `mergeable=true`.
 
-Ces 5 occurrences ont été corrigées par remplacement ciblé `¡` → `á` après une lettre suivie d'une minuscule, d'un espace ou d'une ponctuation (conforme à l'orthographe espagnole où `¡` ne suit jamais une lettre).
+## 3. Périmètre nettoyé avant fusion de #1100
 
-### 4.2 Commit et push
+Les changements hors périmètre suivants ont été retirés de la PR avant validation finale :
+- `public/api/b2b-partners.json` : instantané restauré depuis `main` ; le changement isolé de `updatedAt` n'appartenait pas à la correction d'encodage.
+- `public/api/copernicus/sargassum.json` : instantané restauré depuis `main` ; le diff de données générées n'avait pas de lien avec le correctif SEO.
+- `tests/e2e/ui-chat-button.spec.ts` : test lié au chat retiré de cette PR SEO, car il était indépendant et ne faisait pas échouer le test lorsque le bouton était absent.
 
-- Commit `5b0d88202` : `test(seo): test de régression mojibake` (ajout du fichier de test)
-- Commit `876b518df` (précédent) : `fix(seo): corriger le mojibake á→¡ dans public/pro/es/pricing/index.html (#1035)`
-- Commit `542c6ee4e` (précédent) : `docs(report): rapport de finalisation Mission 9.1 PR #1100`
-- Toutes les modifications sont commitées et poussées sur `origin agent/growth/mission-9-seo-mojibake` (`Everything up-to-date`)
+Diff final déclaré par GitHub avant la fusion : **27 fichiers**.
 
-## 5. Tests exécutés localement
+## 4. Contrôles sur les HEAD exacts
 
-| Test | Commande | Résultat |
-|------|----------|----------|
-| Test de régression mojibake | `node tests/unit/mojibake-regression.test.cjs` | ✅ 0 fichier avec mojibake, 0 occurrence |
-| Build de production | `npm run build` | ✅ exit 0, bundle 180.03 Ko ≤ 210 Ko |
-| Test E2E chat (précédent) | `tests/e2e/ui-chat-button.spec.ts` | ✅ Bouton « Demander au Veilleur » ouvre le chat ; chat ne s'ouvre pas automatiquement après 10s |
+### Avant la fusion de #1100
 
-## 6. Coordination avec PR #1101
+| Contrôle | Run | Résultat |
+|---|---|---|
+| CI Tests, HEAD `29e5279a` | [40620916649](https://github.com/aveca/sargagame/actions/runs/40620916649) | SUCCESS |
+| Perf Budget + Lighthouse, HEAD `29e5279a` | [40620916550](https://github.com/aveca/sargagame/actions/runs/40620916550) | SUCCESS — `perf` et `lighthouse-report` réussis |
 
-La PR #1101 (`fix/research-persistence-method-copy-20261027`) corrige l'affirmation sur la demi-vie de 3,5 jours dans `public/research/index.html`.
+### Après la fusion, sur `main` / merge SHA `e5a9b76b`
 
-La PR #1100 modifie également `public/research/index.html` (+6 -6 lignes), mais uniquement pour corriger du mojibake (remplacement de `âš ️` → `⚠️`, `â‰¥0.40` → `≥0.40`, `â†’` → `→`). Aucun texte scientifique n'est modifié.
+| Contrôle | Run | Résultat |
+|---|---|---|
+| CI Tests | [40621433528](https://github.com/aveca/sargagame/actions/runs/40621433528) | SUCCESS |
+| Perf Budget + Lighthouse | [40621433437](https://github.com/aveca/sargagame/actions/runs/40621433437) | SUCCESS — `perf` et `lighthouse-report` réussis |
+| Cloudflare Production | [40621433419](https://github.com/aveca/sargagame/actions/runs/40621433419) | Déploiements réussis ; `post-deploy-verify` FAILED sur la fraîcheur satellite |
+| Daily Copernicus + Deploy | [40621433529](https://github.com/aveca/sargagame/actions/runs/40621433529) | Builds et `health-check` réussis ; `fetch-data` SKIPPED sur cet événement `push` |
 
-**Conclusion : les deux PR sont compatibles.** Elles modifient des aspects différents du même fichier (encodage vs contenu scientifique). Aucun conflit n'est attendu lors de la fusion des deux PR.
+## 5. Vérifications de la source sur `main`
 
-**Cependant :** `gh` CLI n'est pas disponible dans cet environnement, donc la PR #1101 n'a pas pu être consultée directement sur GitHub pour confirmer qu'elle ne modifie pas les mêmes lignes que la PR #1100. Cette vérification doit être faite manuellement sur l'interface web GitHub avant la fusion.
+Les fichiers de source récupérés depuis GitHub contiennent la correction attendue :
+- `public/pro/es/pricing/index.html` : `está` et `cuánto` présents ; `est¡` et `cu¡nto` absents.
+- `public/research/index.html` : ancienne affirmation `3.5-day half-life` absente ; formulation de la demi-vie de cinq jours des nappes flottantes présente ; stock échoué à terre décrit séparément comme provisoire et non calibré sur la vérité terrain de saison active.
+- `tests/unit/mojibake-regression.test.cjs` : test de régression inclus dans la PR fusionnée.
 
-## 7. Contrôles CI — NON VÉRIFIÉS
+Les rapports de la mission locale indiquaient également un test mojibake réussi et un build local réussi avec un bundle de 180,03 Ko, inférieur au budget de 210 Ko. Le pipeline de performance GitHub est lui aussi vert sur le commit de fusion.
 
-`gh` CLI n'est pas disponible dans cet environnement. Les contrôles CI GitHub n'ont pas pu être vérifiés via la ligne de commande.
+## 6. État du déploiement de la flotte
 
-D'après le rapport 9.1 :
-- CI Tests : succès sur le SHA précédent (run `40619446124`)
-- Perf Budget + Lighthouse : run `40619446132` (en cours lors de la dernière vérification)
+Dans le run [Cloudflare Production #40621433419](https://github.com/aveca/sargagame/actions/runs/40621433419) :
+- les six builds de régions ont réussi ;
+- `certification-gate` et `mollie-live-gate` ont réussi ;
+- les six déploiements Pages et les six déploiements de domaines ont réussi ;
+- `verify-fleet` a terminé avec **32/32 PASS**, avec `version.json` cohérent sur les six domaines (`v221`, build `fe9a6ea3`) ;
+- `post-deploy-verify` a échoué pour les six domaines sur le contrôle `satellite_freshness` : **2 314 min > 2 160 min**.
 
-Ces résultats concernent le SHA précédent. Un nouveau SHA (`5b0d88202` puis `625ad8219` puis `85638ae04`) a été poussé depuis. Les checks CI doivent être revalidés sur GitHub.
+Lien de l'incident existant : [#1058 — LIVE-INCIDENT](https://github.com/aveca/sargagame/issues/1058). L'incident a été mis à jour avec les résultats des runs #40620728256 et #40621433419.
 
-**Action requise :** Vérifier manuellement sur https://github.com/aveca/sargagame/actions que les checks CI sont verts sur le HEAD `5b0d88202` (ou `625ad8219` / `85638ae04` selon la branche distante actuelle).
+Le workflow `Daily Copernicus + Deploy` déclenché par le push a ignoré `fetch-data`. Il n'a donc pas rafraîchi le snapshot. Au relevé GitHub, le snapshot versionné avait `updatedAt=2026-10-27T22:23:35.695Z` et `erddapTimestamp=2026-10-26T12:00:00Z` ; l'âge est recalculé depuis l'horodatage réel de l'observation, pas depuis `updatedAt`.
 
-## 8. Blocages restants
+**Action à mener séparément :** vérifier si ERDDAP expose une observation plus récente et comprendre le déclenchement/skip du job `fetch-data`. Ne jamais modifier `erddapTimestamp`, `stale`, `dataAgeMinutes` ou le seuil de 36 h pour masquer le signal.
 
-| Élément | Statut | Détail |
-|---------|--------|--------|
-| Vérification CI GitHub | ⏳ En attente | `gh` CLI non disponible. À vérifier manuellement sur GitHub Actions. |
-| Coordination PR #1101 | ⏳ En attente | `gh` CLI non disponible. Risque de conflit sur `public/research/index.html` à vérifier manuellement. |
-| Fusion PR #1100 | ⏳ En attente | En attente des checks CI verts et de la vérification de la coordination avec PR #1101. |
-| Déploiement production | ⏳ En attente | À faire après fusion de PR #1100 si les checks sont verts. |
+## 7. Vérification du contenu HTML public — non certifiée
 
-## 9. Prochaine action
+Après les déploiements, la consultation web a encore retourné pour `https://sargassummiami.com/research/` l'ancienne formule `3.5-day half-life` et les caractères `âš` / `â‰`, alors que la source sur `main` est corrigée.
 
-1. Vérifier sur GitHub que les checks CI sont verts sur la branche `agent/growth/mission-9-seo-mojibake` (HEAD `5b0d88202` ou `625ad8219` selon le dernier push)
-2. Vérifier PR #1101 sur GitHub pour confirmer l'absence de conflit sur `public/research/index.html`
-3. Fusionner PR #1100 si tous les checks sont verts
-4. Vérifier le déploiement et le statut live après fusion
-5. Fusionner PR #1101 si ses propres checks sont verts
+Une purge Cloudflare ciblée a été acceptée (HTTP 200) sur les URL exactes `/research`, `/research/`, `/research/index.html`, `/pro/es/pricing`, `/pro/es/pricing/` et `/pro/es/pricing/index.html`, sur les six zones :
+- `sargassummiami.com`
+- `sargasses-martinique.com`
+- `sargasses-guadeloupe.com`
+- `sargassumpuntacana.com`
+- `sargassumcancun.com`
+- `sargazotulum.com`
+
+La consultation web a continué à restituer l'ancienne page après la purge. La tentative de vérification indépendante via Cloudflare Browser Rendering a reçu HTTP 429 (limite de débit). Il n'est donc **pas prouvé** si l'ancienne représentation vient encore du cache/CDN réel ou du cache de l'outil de consultation. Le contrôle automatisé actuel vérifie l'intégrité de l'HTML de la racine et les bundles, mais n'atteste pas directement le contenu de ces deux sous-pages.
+
+**Action à mener :** effectuer un GET direct non mis en cache des deux pages après déploiement et comparer leur corps HTML aux artefacts préparés pour la région, en conservant les en-têtes et les empreintes de preuve. Ne conclure à la résolution que si le contenu effectivement servi est confirmé.
+
+## 8. Conclusion finale
+
+- **PR #1100 et #1101 :** fusionnées.
+- **CI Tests et Perf/Lighthouse :** réussis sur les HEAD requis.
+- **Déploiement des six domaines :** étapes de déploiement réussies ; cohérence flotte 32/32.
+- **Certification post-déploiement complète :** non acquise, en raison du signal de fraîcheur satellite.
+- **Validation indépendante des copies HTML corrigées :** non acquise ; la consultation web est ancienne et la vérification navigateur directe a été limitée par HTTP 429.
+- **Incident #1058 :** ouvert et mis à jour.
+
+Ce rapport distingue les commits fusionnés, les étapes de livraison confirmées et les preuves encore manquantes. Aucune hausse de trafic, de classement SEO ou de revenu n'est revendiquée sans mesure.
 
 ---
-
-**Rapport généré le :** 2026-10-27  
-**Déposé dans :** `reports/sargagame/MISSION-9-2-GATE-MERGE-1100-1101.md`  
-**Branche :** `agent/growth/mission-9-seo-mojibake`  
-**PR :** #1100 — https://github.com/aveca/sargagame/pull/1100  
-**PR #1101 :** https://github.com/aveca/sargagame/pull/1101
